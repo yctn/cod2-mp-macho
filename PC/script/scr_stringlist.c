@@ -106,10 +106,18 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
     byte *base = *(byte **)imp_scrMemTreePub;
-    if (stringValue == 374) {
-        unsigned short old_ref = *(unsigned short *)(base + 374 * 8 + 2);
-        Com_Printf("DBG SL_AddRefToString(374): refcount %u -> %u ret=%p\n", old_ref, old_ref + 1, __builtin_return_address(0));
+
+    /* Fix #105: Guard against stale VM bytecode calling AddRef on freed nodes.
+     * After SL_ShutdownSystem frees server strings, stale bytecode refs can
+     * call SL_AddRefToString on freed memory. Writing to bytes 2-3 of a freed
+     * node corrupts the treap 'next' pointer, leading to buddy-merge over
+     * allocated data (the "eft" corruption). */
+    {
+        extern int MT_IsNodeCovered(int nodeNum);
+        if (MT_IsNodeCovered(stringValue))
+            return 0;
     }
+
     *(unsigned short *)(base + stringValue * 8 + 2) += 1;
     return 0;
 }
@@ -1245,46 +1253,14 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
     unsigned int esi_chain_next_idx;
     unsigned short *ecx_hash;
 
-    /* DBG: monitor when slot 703 word1 changes to 23 */
+    /* Fix #105: Guard against stale refs on freed nodes.
+     * After SL_ShutdownSystem, stale bytecode may call AddRef then RemoveRef
+     * on freed memory. The bytes are treap data now — reading entry[0] as
+     * byteLen would produce garbage. Skip entirely if covered by free block. */
     {
-        static unsigned short prev_w1_703 = 0;
-        unsigned short cur_w1_703 = SG_W1(703);
-        if (cur_w1_703 == 23 && prev_w1_703 != 23) {
-            /* Dump the chain at hash 703 */
-            unsigned int walk = 703;
-            int i;
-            Com_Printf("DBG slot703 changed to sv=23 at SL_RemoveRefToString(%u)! prev_w1=%u\n",
-                stringValue, (unsigned int)prev_w1_703);
-            Com_Printf("  Chain from slot 703:");
-            for (i = 0; i < 10 && walk != 0; i++) {
-                unsigned short w0 = SG_W0(walk);
-                unsigned short w1 = SG_W1(walk);
-                Com_Printf(" [%u: w0=0x%04x sv=%u]", walk, (unsigned int)w0, (unsigned int)w1);
-                walk = w0 & 0x3fff;
-                if (walk == 703) break; /* cycle */
-            }
-            Com_Printf("\n");
-            /* Also dump what string sv=3088 and sv=3100 point to */
-            {
-                byte *b = *(byte **)imp_scrMemTreePub;
-                Com_Printf("  sv=%u: byteLen=%u str=\"%.16s\"\n", stringValue,
-                    (unsigned int)(unsigned char)b[stringValue*8], (const char *)(b + stringValue*8 + 4));
-                Com_Printf("  sv=3100: byteLen=%u str=\"%.16s\"\n",
-                    (unsigned int)(unsigned char)b[3100*8], (const char *)(b + 3100*8 + 4));
-                Com_Printf("  sv=23: byteLen=%u str=\"%.16s\"\n",
-                    (unsigned int)(unsigned char)b[23*8], (const char *)(b + 23*8 + 4));
-            }
-        }
-        prev_w1_703 = cur_w1_703;
-    }
-
-    /* DBG: track SL_RemoveRefToString(374) */
-    if (stringValue == 374) {
-        Com_Printf("DBG SL_RemoveRefToString(374): refcount=%u -> %u ret=%p str=\"%.16s\"\n",
-            (unsigned int)*(unsigned short *)(entry + 2),
-            (unsigned int)*(unsigned short *)(entry + 2) - 1,
-            __builtin_return_address(0),
-            (const char *)(entry + 4));
+        extern int MT_IsNodeCovered(int nodeNum);
+        if (MT_IsNodeCovered(stringValue))
+            return 0;
     }
 
     /* Compute strlen from entry[0] (same pattern as SL_GetStringLen) */
@@ -1299,17 +1275,6 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
     }
     ecx_len += 1;  /* .Lf43f48_00043f71: addl $1, %ecx */
     len = ecx_len;
-
-    /* DBG: detect strings with unexpectedly large len */
-    if (len > 200) {
-        /* Check if this node is in the free tree (would mean stale string list entry) */
-        extern void MT_VerifyNotInTree(int nodeNum);
-        MT_VerifyNotInTree(stringValue);
-        Com_Printf("DBG SL_RemoveRef: sv=%u byteLen=%u len=%u refcount=%u str=\"%.32s\"\n",
-            stringValue, (unsigned int)(unsigned char)entry[0], len,
-            (unsigned int)*(unsigned short *)(entry + 2),
-            (const char *)(entry + 4));
-    }
 
     /* Decrement refcount */
     {
@@ -1337,50 +1302,9 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         edi_newEntry = (unsigned short *)((char *)&scrStringGlob + edx_offset);
         newEntry_idx = hash_slot;
 
-        {
-            static unsigned int mt_cycle_buckets = 0; /* bitmask of buckets with cycles */
-            static int mt_cycle_warned = 0;
-            extern unsigned char scrMemTreeGlob_arr[] __asm__("scrMemTreeGlob");
-            /* Compute which bucket this free goes to */
-            int bucket = 0;
-            unsigned int sz = len + 4;
-            { unsigned int s2 = sz; while (s2 > 8 && bucket < 16) { s2 = (s2 + 1) >> 1; bucket++; } }
-            if (mt_cycle_buckets & (1u << bucket)) {
-                /* Already know this bucket has a cycle, skip silently */
-            } else {
-                /* Quick cycle check */
-                unsigned short *root = (unsigned short *)(scrMemTreeGlob_arr + 0x80300 + bucket * 2);
-                unsigned short cur = *root;
-                int steps = 0;
-                while (cur != 0 && steps < 100000) {
-                    cur = *(unsigned short *)(scrMemTreeGlob_arr + cur * 8);
-                    steps++;
-                }
-                if (steps >= 100000) {
-                    if (!mt_cycle_warned) {
-                        Com_Printf("MT_FreeIndex: tree cycle in bucket %d, skipping affected frees\n", bucket);
-                        mt_cycle_warned = 1;
-                    }
-                    mt_cycle_buckets |= (1u << bucket);
-                } else {
-                    /* Fix #104: Guard against double-free.
-                     * After SL_ShutdownSystem frees a string, stale bytecode refs
-                     * can do SL_AddRefToString(sv) on freed memory (refcount 0→1),
-                     * then SL_RemoveRefToString drops it to 0 → double MT_FreeIndex.
-                     * Check if the node is already covered by any free block
-                     * (either directly in tree or as part of a larger merged block). */
-                    {
-                        extern int MT_IsNodeCovered(int nodeNum);
-                        if (MT_IsNodeCovered(stringValue)) {
-                            /* Node is already free (covered by a free block) — skip */
-                            Com_Printf("FIX104: skipped double-free of sv=%u (covered by free block)\n", stringValue);
-                        } else {
-                            MT_FreeIndex(stringValue, len + 4);
-                        }
-                    }
-                }
-            }
-        }
+        /* Free the memory node. The MT_IsNodeCovered guard at the top
+         * of this function already prevents double-frees from stale refs. */
+        MT_FreeIndex(stringValue, len + 4);
 
         /* Re-read chain_next */
         esi_chain_next_idx = (unsigned int)(SG_W0(hash_slot) & 0x3fff);
@@ -1547,12 +1471,6 @@ unsigned int SL_ShutdownSystem(unsigned int user)
     unsigned int sv;
     byte *mem;
 
-    {
-        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
-        Com_Printf("DBG SL_ShutdownSystem(%d): totalAlloc=%d totalAllocBuckets=%d\n",
-            user, *(int *)(scrMemTreeGlob_arr2 + 525092), *(int *)(scrMemTreeGlob_arr2 + 525096));
-    }
-
     for (esi = 1; esi < 0x4000; esi++)
     {
     retry_slot:
@@ -1574,12 +1492,6 @@ unsigned int SL_ShutdownSystem(unsigned int user)
 
         if (SG_RESTART != (void *)0)
             goto retry_slot;
-    }
-
-    {
-        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
-        Com_Printf("DBG SL_ShutdownSystem(%d) EXIT: totalAlloc=%d totalAllocBuckets=%d\n",
-            user, *(int *)(scrMemTreeGlob_arr2 + 525092), *(int *)(scrMemTreeGlob_arr2 + 525096));
     }
 
     return 0;
