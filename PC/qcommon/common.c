@@ -2087,6 +2087,17 @@ void Com_Init_Try_Block_Function(char *commandLine)
     Netchan_Init(Com_Milliseconds() & 0xffff);
 
     Scr_Init();
+    /* DBG: count free script variables after Scr_Init */
+    {
+        extern unsigned char scrVarGlob[];
+        int freeCount = 0;
+        unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
+        while (idx != 0 && freeCount < 70000) {
+            freeCount++;
+            idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
+        }
+        Com_Printf("DBG after Scr_Init: %d free script variables\n", freeCount);
+    }
     {
         int dev = com_developer->current.integer;
         int enabled = (dev || com_logfile->current.integer) ? 1 : 0;

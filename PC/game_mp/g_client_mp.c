@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+extern void Com_Printf(const char *fmt, ...);
 extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
 extern float AngleDelta(float a1, float a2);
 extern float AngleNormalize180(float angle);
@@ -89,9 +90,9 @@ void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right
 /* line 426 */
 void ClientBegin(int clientNum)
 {
-    byte *level = *(byte **)level_ptr;
-    byte *client = *(byte **)level + clientNum * CLIENT_STRIDE;
-    byte *ents = *(byte **)g_entities_ptr;
+    byte *level = (byte *)level_ptr;
+    byte *client = level +clientNum * CLIENT_STRIDE;
+    byte *ents = (byte *)g_entities_ptr;
     byte *scr_data = *(byte **)g_scr_data_ptr;
     gentity_t *ent;
 
@@ -107,14 +108,14 @@ void ClientBegin(int clientNum)
 /* line 596 */
 void ClientDisconnect(int clientNum)
 {
-    byte *level = *(byte **)level_ptr;
+    byte *level = (byte *)level_ptr;
     byte *client;
     gentity_t *ent;
     byte *ents;
     int i;
 
-    client = *(byte **)level + clientNum * CLIENT_STRIDE;
-    ents = *(byte **)g_entities_ptr;
+    client = level +clientNum * CLIENT_STRIDE;
+    ents = (byte *)g_entities_ptr;
     ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
 
     if (Scr_IsSystemActive(1)) {
@@ -129,7 +130,7 @@ void ClientDisconnect(int clientNum)
     /* Stop other players following this client */
     if (*(int *)(level + 0x1e4) > 0) {
         for (i = 0; i < *(int *)(level + 0x1e4); i++) {
-            byte *otherClient = *(byte **)level + i * CLIENT_STRIDE;
+            byte *otherClient = level +i * CLIENT_STRIDE;
             gentity_t *otherEnt = (gentity_t *)(ents + i * GENTITY_STRIDE);
 
             if (*(int *)(otherClient + 0x26c4) == 0)
@@ -182,7 +183,7 @@ int G_GetNonPVSFriendlyInfo(gentity_t *pSelf, vec_t *vPosition, int iLastUpdateE
     else
         iBaseEnt = iLastUpdateEnt + 1;
 
-    ents = *(byte **)g_entities_ptr;
+    ents = (byte *)g_entities_ptr;
 
     for (iEntCount = 0; iEntCount < 64; iEntCount++) {
         ent_num = (iBaseEnt + iEntCount) % 64;
@@ -309,11 +310,11 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 
     /* Set voice chat timestamp */
     {
-        byte *level = *(byte **)level_ptr;
+        byte *level = (byte *)level_ptr;
         *(int *)(talkerClient + 0x2808) = *(int *)(level + 0x1ec);
     }
 
-    ents = *(byte **)g_entities_ptr;
+    ents = (byte *)g_entities_ptr;
 
     for (otherPlayer = 0; otherPlayer < 64; otherPlayer++) {
         otherEnt = ents + otherPlayer * GENTITY_STRIDE;
@@ -469,18 +470,18 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     byte savedSess[0x100];
     byte *scr_data;
 
-    ents = *(byte **)g_entities_ptr;
+    ents = (byte *)g_entities_ptr;
     clientNum = ((byte *)ent - ents) / GENTITY_STRIDE;
 
     client = *(byte **)((byte *)ent + 0x158);
-    level = *(byte **)level_ptr;
+    level = (byte *)level_ptr;
 
     /* Check if player is in turret */
     if (*(byte *)(client + 0xe) & 0x80) {
         if (*(int *)(client + 0xa0) & 0x300) {
             /* Stop using turret first */
             int turretEntNum = *(int *)(client + 0x594);
-            byte *turretEnt = *(byte **)level_ptr + 4;
+            byte *turretEnt = (byte *)level_ptr + 4;
             turretEnt = *(byte **)turretEnt;
             byte *actualTurretEnt = turretEnt + turretEntNum * GENTITY_STRIDE;
             G_ClientStopUsingTurret((gentity_t *)actualTurretEnt);
@@ -542,7 +543,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     /* Get user command */
     {
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         int clientIdx = (int)(client - *(byte **)lev) / 4;
         /* Complex multiplication to compute client index from pointer offset */
         int ucmdIdx;
@@ -584,7 +585,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
         dvar = *(byte **)dvar;
         int dvarVal = *(int *)(dvar + 8);
         int time = dvarVal * 5 * 5 * 5;  /* dvarVal * 125 */
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         int serverTime = *(int *)(lev + 0x1ec);
         *(int *)(client + 0x2800) = serverTime + time * 8;
     }
@@ -592,7 +593,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     *(int *)(client + 0x27bc) = *(int *)(client + 0x26cc);
 
     {
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         *(int *)(lev + 0x20) = 1;
         *(int *)(client + 0x28a0) = *(int *)(lev + 0x1ec);
         *(int *)(client + 0x26c8) = *(int *)(lev + 0x1ec);
@@ -622,7 +623,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
         /* Turret - use tag position */
         byte *scr_data = *(byte **)g_scr_data_ptr;
         int turretEntNum = *(int *)(ps + 0x594);
-        byte *ents = *(byte **)g_entities_ptr;
+        byte *ents = (byte *)g_entities_ptr;
         gentity_t *turretEnt = (gentity_t *)(ents + turretEntNum * GENTITY_STRIDE);
 
         if (!G_DObjGetWorldTagPos(turretEnt, *(unsigned short *)(scr_data + 0x9a), origin)) {
@@ -643,7 +644,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
     fBobCycle = BG_GetBobCycle(ps);
 
     {
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         int serverTime = *(int *)(lev + 0x1ec);
         xyspeed = BG_GetSpeed(ps, serverTime);
     }
@@ -748,7 +749,7 @@ void ClientUserinfoChanged(int clientNum)
     char oldname[0x400];
     byte *scr_data;
 
-    ents = *(byte **)g_entities_ptr;
+    ents = (byte *)g_entities_ptr;
     client = *(byte **)(ents + clientNum * GENTITY_STRIDE + 0x158);
 
     SV_GetUserinfo(clientNum, userinfo, 0x400);
@@ -772,7 +773,7 @@ void ClientUserinfoChanged(int clientNum)
 
     /* If client is connected and level has restarted, use different name field */
     if (*(int *)(client + 0x26c4) == 2) {
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         if (*(int *)(lev + 0x214) != 0) {
             const char *name = Info_ValueForKey(userinfo, "name");
             char *shortName = (char *)(client + 0x2708);
@@ -905,11 +906,11 @@ char * ClientConnect(int clientNum, int scriptPersId)
     int pXAnimTree;
     char userinfo[0x400];
 
-    ents = *(byte **)g_entities_ptr;
+    ents = (byte *)g_entities_ptr;
     ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
 
-    level = *(byte **)level_ptr;
-    client = *(byte **)level + clientNum * CLIENT_STRIDE;
+    level = (byte *)level_ptr;
+    client = level +clientNum * CLIENT_STRIDE;
 
     /* Clear client */
     memset(client, 0, CLIENT_STRIDE);
@@ -964,6 +965,29 @@ char * ClientConnect(int clientNum, int scriptPersId)
         }
     }
 
+    /* DBG: count free script variables */
+    {
+        extern unsigned char scrVarGlob[];
+        extern void *imp_scrVarPub;
+        extern unsigned char g_scr_data[];
+        int freeCount = 0;
+        unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
+        while (idx != 0 && freeCount < 70000) {
+            freeCount++;
+            idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
+        }
+        extern unsigned char scrVmPub[];
+        unsigned int codeBase = *(unsigned int *)((char *)imp_scrVarPub + 0x48);
+        unsigned int handle = *(unsigned int *)(g_scr_data + 16);
+        unsigned int startGameTypeHandle = *(unsigned int *)(g_scr_data + 0x10b4);
+        unsigned int vmTop = *(unsigned int *)(scrVmPub + 16);
+        unsigned int vmDepth = *(unsigned int *)(scrVmPub + 8);
+        unsigned int vmInUse = *(unsigned int *)(scrVmPub + 24);
+        Com_Printf("DBG ClientConnect: %d free vars, codeBase=0x%x, handle=%u, startGT=%u\n",
+            freeCount, codeBase, handle, startGameTypeHandle);
+        Com_Printf("DBG ClientConnect: vmTop=0x%x, vmDepth=%d, vmInUse=%d\n",
+            vmTop, vmDepth, vmInUse);
+    }
     Scr_PlayerConnect(ent);
     CalculateRanks();
 

@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+static const char str_dbg_spawn[] = "after G_SpawnEntities";
+static const char str_dbg_load[] = "after GScr_LoadScripts";
+static const char str_dbg_endload[] = "after Scr_EndLoadScripts";
+
 extern entityHandler_t entityHandlers[20]; /* 0x0 */
 extern struct bgs_t level_bgs; /* 0x0 */
 extern struct level_locals_t level; /* 0x0 */
@@ -308,6 +312,19 @@ int ExitLevel(void)
     return 0;
 }
 
+/* DBG: count and print free script variables */
+void DBG_PrintFreeVars(const char *label)
+{
+    extern unsigned char scrVarGlob[];
+    int freeCount = 0;
+    unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
+    while (idx != 0 && freeCount < 70000) {
+        freeCount++;
+        idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
+    }
+    Com_Printf("DBG %s: %d free vars\n", label, freeCount);
+}
+
 /* line 763 */
 __attribute__((naked))
 int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist)
@@ -402,6 +419,9 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0x400, 4(%esp)\n"
         "movl $g_entities, (%esp)\n"
         "calll G_SpawnEntitiesFromString\n"
+        "pushl %ebx\n" "pushl %esi\n" "pushl %edi\n"
+        "movl $str_dbg_spawn, (%esp)\n" "calll DBG_PrintFreeVars\n"
+        "popl %edi\n" "popl %esi\n" "popl %ebx\n"
         "movl $0, level+28\n" /* line 818 */
         "movl level+12, %eax\n" /* line 820 */
         "movl %eax, 0xc(%esp)\n"
@@ -428,7 +448,10 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll Scr_BeginLoadScripts\n" /* line 829 */
         "movl $1, (%esp)\n" /* line 830 */
         "calll GScr_LoadScripts\n"
-        "calll Scr_EndLoadScripts\n" /* line 831 */
+        "pushl %ebx\n" "pushl %esi\n" "pushl %edi\n"
+        "movl $str_dbg_load, (%esp)\n" "calll DBG_PrintFreeVars\n"
+        "popl %edi\n" "popl %esi\n" "popl %ebx\n"
+        /* Scr_EndLoadScripts already called inside GScr_LoadScripts — removed duplicate */
         "nop\nnop\nnop\nnop\nnop\n" /* line 833: was call 0x1ab854 (raw Mac addr) */
         "movl $1, (%esp)\n" /* line 834 */
         "calll Scr_FreeScripts\n"
@@ -436,6 +459,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll GScr_LoadAnimScripts\n" /* line 836 */
         "calll Scr_EndLoadAnimScripts\n" /* line 837 */
         "calll G_RegisterDvars\n" /* line 839 */
+        "calll G_LoadStructs\n" /* load script_struct entities and call gametype main() */
         "movl 0x10(%ebp), %eax\n" /* line 842 | restart */
         "testl %eax, %eax\n"
         "je .Lf1abbfa_001ac0a1\n"
@@ -1158,7 +1182,7 @@ int G_ShutdownGame(qboolean freeScripts)
     if (freeScripts) {
         Mantle_ShutdownAnims();
         GScr_FreeScripts();
-        Scr_FreeScripts(1);
+        Scr_FreeScripts(0); /* full shutdown — zero code base */
 
         /* Free XAnimTrees in level_bgs (stride 0x4b8) */
         for (ptr = (char *)&level_bgs; ptr != (char *)((char *)&level_bgs + 77312); ptr += 0x4b8) {

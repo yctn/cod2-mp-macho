@@ -461,6 +461,18 @@ static void SV_InitGameVM(int restart, int savepersist)
     svs = (char *)imp_svs;
     G_InitGame(*(int *)(svs + 4), Sys_MillisecondsRaw(), restart, savepersist);
 
+    /* DBG: count free script variables after G_InitGame */
+    {
+        extern unsigned char scrVarGlob[];
+        int freeCount = 0;
+        unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
+        while (idx != 0 && freeCount < 70000) {
+            freeCount++;
+            idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
+        }
+        Com_Printf("DBG after G_InitGame: %d free script variables\n", freeCount);
+    }
+
     Sys_LoadingKeepAlive();
 
     /* Clear client gentityNum for all clients */

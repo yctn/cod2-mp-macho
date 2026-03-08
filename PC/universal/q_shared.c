@@ -515,6 +515,7 @@ static void Info_SetValueForKey_Internal(char *s, const char *key, const char *v
     }
 
     strcat(newi, s);
+    strcpy(s, newi);
 }
 
 void Info_SetValueForKey(char *s, const char *key, const char *value)

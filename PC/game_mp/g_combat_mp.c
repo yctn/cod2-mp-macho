@@ -53,7 +53,7 @@ extern byte *g_debug_damage_ptr; /* imp_g_debugDamage */
 extern byte *g_scr_data_ptr; /* imp_scr_const */
 extern int g_sNextDmgTableId; /* 0x195b048 */
 extern int g_time; /* imp_level_bgs */
-extern byte *g_time_ptr; /* imp_bgs */
+extern byte g_time_ptr[]; /* imp_bgs */
 extern int g_phys_world; /* imp_vec3_origin */
 
 /* line 99 */

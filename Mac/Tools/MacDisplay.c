@@ -509,9 +509,22 @@ static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
     );
 }
 
+static int swap_count = 0;
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
 {
     extern void *sdl_gl_window;
+    extern unsigned int glGetError(void);
+    extern void glGetIntegerv(unsigned int pname, int *params);
+    swap_count++;
+    if (swap_count <= 5) {
+        unsigned int err = glGetError();
+        int vp[4] = {0};
+        glGetIntegerv(0x0BA2 /*GL_VIEWPORT*/, vp);
+        int sc[4] = {0};
+        glGetIntegerv(0x0C10 /*GL_SCISSOR_BOX*/, sc);
+        fprintf(stderr, "[SwapCtx#%d] glErr=0x%x viewport=[%d,%d,%d,%d] scissor=[%d,%d,%d,%d]\n",
+                swap_count, err, vp[0], vp[1], vp[2], vp[3], sc[0], sc[1], sc[2], sc[3]);
+    }
     if (sdl_gl_window) {
         extern void SDL_GL_SwapWindow(void *);
         SDL_GL_SwapWindow(sdl_gl_window);

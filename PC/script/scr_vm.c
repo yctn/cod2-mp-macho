@@ -62,6 +62,7 @@ const char * Scr_GetDebugString(unsigned int index);
 float Scr_GetFloat(unsigned int index);
 int Scr_GetInt(unsigned int index);
 static unsigned int VM_Execute(struct function_stack_t fs);
+static unsigned int VM_Execute_ext(void);
 static void VM_Resume(unsigned int timeId);
 void Scr_RunCurrentThreads(void);
 void Scr_IncTime(void);
@@ -8253,7 +8254,33 @@ void Scr_IncTime(void)
     );
 }
 
-/* overload skip: VM_Execute (0x875ea) */
+/* Reconstructed wrapper for the overloaded VM_Execute at 0x875ea.
+ * The original was skipped by the decompiler. External callers
+ * (Scr_AddExecThread, Scr_ExecEntThreadNum, Scr_ExecThread) pass
+ * parameters in registers: edx=pos, ecx=paramcount, eax=threadId.
+ * This wrapper sets up the function_stack_t struct on the stack
+ * and calls the real (stack-based) VM_Execute. */
+static __attribute__((naked))
+unsigned int VM_Execute_ext(void)
+{
+    __asm__ __volatile__ (
+        "subl $0x14, %esp\n"          /* 20 bytes for function_stack_t */
+        "movl %edx, (%esp)\n"         /* fs.pos = code position */
+        "movl %eax, 4(%esp)\n"        /* fs.localId = thread id */
+        "movl %ecx, 8(%esp)\n"        /* fs.localVarCount = paramcount */
+        /* Push PRECODEPOS marker (type 8) onto value stack */
+        "movl scrVmPub+16, %eax\n"    /* current value stack top */
+        "addl $8, %eax\n"             /* advance to next slot */
+        "movl $8, 4(%eax)\n"          /* type = 8 (PRECODEPOS) */
+        "movl %eax, scrVmPub+16\n"    /* update global top */
+        "addl $1, scrVmPub+24\n"      /* increment inUse count */
+        "movl %eax, 0xc(%esp)\n"      /* fs.top = new top (with marker) */
+        "movl %eax, 0x10(%esp)\n"     /* fs.startTop */
+        "calll VM_Execute\n"
+        "addl $0x14, %esp\n"
+        "retl\n"
+    );
+}
 
 /* line 3993 */
 __attribute__((naked))
@@ -8286,7 +8313,7 @@ void Scr_AddExecThread(scr_func_t handle, unsigned int paramcount)
         "calll AllocThread\n"
         "movl 0xc(%ebp), %ecx\n" /* paramcount */
         "movl %ebx, %edx\n" /* pos */
-        "calll VM_Execute\n"
+        "calll VM_Execute_ext\n"
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
         "addl $1, scrVmPub+28\n" /* line 4031 */
@@ -8334,7 +8361,7 @@ scr_thread_t Scr_ExecEntThreadNum(int entnum, int classnum, scr_func_t handle, u
         "calll AllocThread\n"
         "movl 0x14(%ebp), %ecx\n" /* paramcount */
         "movl %esi, %edx\n" /* pos */
-        "calll VM_Execute\n"
+        "calll VM_Execute_ext\n"
         "movl %eax, %ebx\n" /* objId */
         "movl scrVmPub+16, %edx\n" /* line 3977 | value */
         /* { scope 2 */
@@ -8392,7 +8419,7 @@ scr_thread_t Scr_ExecThread(scr_func_t handle, unsigned int paramcount)
         "calll AllocThread\n"
         "movl 0xc(%ebp), %ecx\n" /* paramcount */
         "movl %ebx, %edx\n" /* pos */
-        "calll VM_Execute\n"
+        "calll VM_Execute_ext\n"
         "movl %eax, %ebx\n" /* pos */
         "movl scrVmPub+16, %edx\n" /* line 3912 | value */
         /* { scope 2 */

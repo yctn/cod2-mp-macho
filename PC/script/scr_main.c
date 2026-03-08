@@ -310,30 +310,45 @@ void Scr_PostCompileScripts(void)
 /* line 383 */
 void Scr_EndLoadScripts(void)
 {
+    extern void DBG_PrintFreeVars(const char *label);
     byte *scrCompPub = (byte *)imp_scrCompilePub;
     byte *scrVarPub = (byte *)imp_scrVarPub;
+
+    DBG_PrintFreeVars("EndLoad:entry");
 
     *(int *)(scrCompPub + 0x18) = 0;
     Hunk_ClearToMark(*(int *)(scrVarPub + 4));
     SL_ShutdownSystem(2);
 
+    DBG_PrintFreeVars("EndLoad:after SL_Shutdown");
+
     *(byte *)(scrCompPub + 0x24) = 0;
+
+    Com_Printf("DBG EndLoad: obj8=%u objC=%u obj10=%u obj14=%u\n",
+        *(unsigned int *)(scrCompPub + 8),
+        *(unsigned int *)(scrCompPub + 0xc),
+        *(unsigned int *)(scrCompPub + 0x10),
+        *(unsigned int *)(scrCompPub + 0x14));
 
     ClearObject(*(unsigned int *)(scrCompPub + 8));
     RemoveRefToObject(*(unsigned int *)(scrCompPub + 8));
     *(int *)(scrCompPub + 8) = 0;
+    DBG_PrintFreeVars("EndLoad:after clear obj8");
 
     ClearObject(*(unsigned int *)(scrCompPub + 0xc));
     RemoveRefToObject(*(unsigned int *)(scrCompPub + 0xc));
     *(int *)(scrCompPub + 0xc) = 0;
+    DBG_PrintFreeVars("EndLoad:after clear objC");
 
     ClearObject(*(unsigned int *)(scrCompPub + 0x10));
     RemoveRefToObject(*(unsigned int *)(scrCompPub + 0x10));
     *(int *)(scrCompPub + 0x10) = 0;
+    DBG_PrintFreeVars("EndLoad:after clear obj10");
 
     ClearObject(*(unsigned int *)(scrCompPub + 0x14));
     RemoveRefToObject(*(unsigned int *)(scrCompPub + 0x14));
     *(int *)(scrCompPub + 0x14) = 0;
+    DBG_PrintFreeVars("EndLoad:after clear obj14");
 }
 
 /* line 444 */
@@ -389,14 +404,18 @@ void Scr_FreeScripts(int sys)
         Scr_EndLoadAnimTrees();
     }
 
-    SL_ShutdownSystem(1);
+    SL_ShutdownSystem(sys);
     Scr_ShutdownOpcodeLookup();
 
-    scrVarPub = (byte *)imp_scrVarPub;
-    *(int *)(scrVarPub + 0x48) = 0;
-    *(int *)(scrCompPub + 0x30) = 0;
-    *(int *)(scrVarPub + 0x4c) = 0;
-    *(int *)(scrVarPub + 0x3c) = 0;
+    /* Only zero code base on full shutdown (sys=0), not during init (sys=1).
+       Scr_BeginLoadScripts will set the code base for the next load. */
+    if (sys == 0) {
+        scrVarPub = (byte *)imp_scrVarPub;
+        *(int *)(scrVarPub + 0x48) = 0;
+        *(int *)(scrCompPub + 0x30) = 0;
+        *(int *)(scrVarPub + 0x4c) = 0;
+        *(int *)(scrVarPub + 0x3c) = 0;
+    }
 }
 
 /* line 67 */
