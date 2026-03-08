@@ -1733,5 +1733,15 @@ __asm__(
     ".long 0x00000000\n"
     ".long 0x00000000\n"
     ".long 0x00000000\n"
+    ".long str_00227b44\n"  /* "lightGridWeightSampler1" (fix #126: was truncated) */
+    ".long 0x00000006\n"
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"  /* null terminator */
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"
+    ".long 0x00000000\n"
     ".previous\n"
 );
