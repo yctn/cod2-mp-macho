@@ -9,7 +9,7 @@ extern void Com_SafeClientDObjFree(int entNum);
 extern void XAnimFreeTree(void *tree, void *allocInfo);
 
 extern char **cg_glob; /* imp_cg — pointer to cg_t base */
-extern centity_s **cg_entities; /* imp_cg_entities — pointer to centity array */
+extern centity_s **cg_entities_glob; /* imp_cg_entities — pointer to centity array */
 extern void *cg_xanimInfo; /* imp_MT_Free — XAnim allocator */
 
 /* cg_t field offsets (from $_3724 in STABS) */
@@ -46,7 +46,7 @@ void CG_SafeDObjFree(int iEntNum)
     *(int *)(base + CG_ENTITY_LAST_TYPE + iEntNum * 4) = 0;
     *(int *)(base + CG_ENTITY_LAST_XMODEL + iEntNum * 4) = 0;
 
-    centity_s *ents = *cg_entities;
+    centity_s *ents = *cg_entities_glob;
     if (ents[iEntNum].tree) {
         XAnimFreeTree((void *)ents[iEntNum].tree, cg_xanimInfo);
         ents[iEntNum].tree = 0;
@@ -63,7 +63,7 @@ void CG_FreeClientDObjInfo(void)
         *(int *)(base + CG_ENTITY_LAST_TYPE + i * 4) = 0;
         *(int *)(base + CG_ENTITY_LAST_XMODEL + i * 4) = 0;
 
-        centity_s *ents = *cg_entities;
+        centity_s *ents = *cg_entities_glob;
         if (ents[i].tree) {
             XAnimFreeTree((void *)ents[i].tree, cg_xanimInfo);
             ents[i].tree = 0;
@@ -81,7 +81,7 @@ void CG_FreeEntityDObjInfo(void)
         *(int *)(base + CG_ENTITY_LAST_TYPE + i * 4) = 0;
         *(int *)(base + CG_ENTITY_LAST_XMODEL + i * 4) = 0;
 
-        centity_s *ents = *cg_entities;
+        centity_s *ents = *cg_entities_glob;
         if (ents[i].tree) {
             XAnimFreeTree((void *)ents[i].tree, cg_xanimInfo);
             ents[i].tree = 0;

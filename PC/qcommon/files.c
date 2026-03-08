@@ -671,7 +671,7 @@ const char * FS_ReferencedIwdNames(void)
             }
             /* line 1095 | append gamedir (at offset 0x200) */
             I_strncat(info8, 0x2000, (char *)iwd + 0x200);
-            I_strncat(info8, 0x2000, " "); /* line 1096 | separator */
+            I_strncat(info8, 0x2000, "/"); /* line 1096 | separator between gamedir and iwdname */
             /* line 1097 | append iwd name (at offset 0x100) */
             I_strncat(info8, 0x2000, (char *)iwd + 0x100);
         }

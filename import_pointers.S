@@ -602,6 +602,10 @@ imp_bgs: .long bgs
 imp_bulletPriorityMap: .long bulletPriorityMap
 .globl imp_cg
 imp_cg: .long cg
+.globl cg_glob
+.set cg_glob, imp_cg
+.globl cg_ptr
+.set cg_ptr, imp_cg
 .globl imp_cgDC
 imp_cgDC: .long cgDC
 .globl imp_cg_blood
@@ -674,6 +678,10 @@ imp_cg_drawTurretCrosshair: .long cg_drawTurretCrosshair
 imp_cg_dumpAnims: .long cg_dumpAnims
 .globl imp_cg_entities
 imp_cg_entities: .long cg_entities
+.globl cg_entities_glob
+.set cg_entities_glob, imp_cg_entities
+.globl cg_entities_ptr
+.set cg_entities_ptr, imp_cg_entities
 .globl imp_cg_errorDecay
 imp_cg_errorDecay: .long cg_errorDecay
 .globl imp_cg_footsteps
@@ -894,6 +902,10 @@ imp_cg_weapons: .long cg_weapons
 imp_cg_youInKillCamSize: .long cg_youInKillCamSize
 .globl imp_cgs
 imp_cgs: .long cgs
+.globl cgs_glob
+.set cgs_glob, imp_cgs
+.globl cgs_ptr
+.set cgs_ptr, imp_cgs
 .globl imp_chatField
 imp_chatField: .long chatField
 .globl imp_chat_team

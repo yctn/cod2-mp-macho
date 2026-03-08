@@ -131,37 +131,40 @@ char cg_dvar_debug[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_footsteps[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_shellshock_max[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_shellshock_min[64] __attribute__((aligned(4))) = {0};
-char cg_entities[64] __attribute__((aligned(4))) = {0};
-char cg_entities_glob[64] __attribute__((aligned(4))) = {0};
-char cg_entities_ptr[64] __attribute__((aligned(4))) = {0};
+extern unsigned char cg_entitiesArray[];
+void *cg_entities __attribute__((aligned(4))) = (void *)cg_entitiesArray;
+/* cg_entities_glob: aliased to imp_cg_entities in import_pointers.S */
+/* cg_entities_ptr: aliased to imp_cg_entities in import_pointers.S */
 char cg_eventNames[64] __attribute__((aligned(4))) = {0};
-char cg_glob[64] __attribute__((aligned(4))) = {0};
+/* cg_glob: aliased to imp_cg in import_pointers.S */
 char cg_globSnap[64] __attribute__((aligned(4))) = {0};
 /* cg_globUI: aliased to legacyHacks via --defsym */
 char cg_hud_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_itemCount[64] __attribute__((aligned(4))) = {0};
 char cg_itemDefs[64] __attribute__((aligned(4))) = {0};
 char cg_itemInfo[64] __attribute__((aligned(4))) = {0};
-char cg_items[64] __attribute__((aligned(4))) = {0};
+extern unsigned char cg_itemsArray[];
+void *cg_items __attribute__((aligned(4))) = (void *)cg_itemsArray;
 char _cg_p[64] __attribute__((aligned(4))) = {0};
 char cg_pmove_mins[64] __attribute__((aligned(4))) = {0};
-char cg_ptr[64] __attribute__((aligned(4))) = {0};
+/* cg_ptr: aliased to imp_cg in import_pointers.S */
 extern unsigned char cgsArray[];
 void *cgs __attribute__((aligned(4))) = (void *)cgsArray;
-char cgs_glob[64] __attribute__((aligned(4))) = {0};
+/* cgs_glob: aliased to imp_cgs in import_pointers.S */
 char cg_sprite2_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_sprite3_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_sprite4_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_sprite5_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_sprite6_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_sprite_ptr[64] __attribute__((aligned(4))) = {0};
-char cgs_ptr[64] __attribute__((aligned(4))) = {0};
+/* cgs_ptr: aliased to imp_cgs in import_pointers.S */
 char cg_tags_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_uiglob[64] __attribute__((aligned(4))) = {0};
 char cg_viewscreen_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_weapinfo_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_weaponDefs[64] __attribute__((aligned(4))) = {0};
-char cg_weapons[64] __attribute__((aligned(4))) = {0};
+extern unsigned char cg_weaponsArray[];
+void *cg_weapons __attribute__((aligned(4))) = (void *)cg_weaponsArray;
 char cg_xanimInfo[64] __attribute__((aligned(4))) = {0};
 extern unsigned char clients[];
 void *cl __attribute__((aligned(4))) = (void *)clients;

@@ -1057,7 +1057,7 @@ void SV_SendClientGameState(client_t *client)
         "pushl %ebx\n"
         "subl $0x13c, %esp\n"
         /* { scope 1 */
-        "movl $0x4000, 4(%esp)\n" /* line 932 */
+        "movl $0x20000, 4(%esp)\n" /* line 932 — increased from 0x4000 for larger gamestates */
         "leal -0x1c(%ebp), %eax\n" /* msgBuffer_large_local */
         "movl %eax, (%esp)\n"
         "calll LargeLocal_LargeLocal\n"
@@ -1095,7 +1095,7 @@ void SV_SendClientGameState(client_t *client)
         "movl $0, 0x6e5b0(%edx)\n" /* line 949 */
         "movl 0x6e5b4(%edx), %eax\n" /* line 954 */
         "movl %eax, 0x2081c(%edx)\n"
-        "movl $0x4000, 8(%esp)\n" /* line 956 */
+        "movl $0x20000, 8(%esp)\n" /* line 956 — increased from 0x4000 for larger gamestates */
         "movl %esi, 4(%esp)\n" /* msgBuffer */
         "leal -0x34(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"

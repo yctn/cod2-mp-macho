@@ -703,9 +703,17 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
     );
 }
 
-/* line 390 */
-__attribute__((naked))
+/* line 390 — CD key validation bypassed for decompilation */
 qboolean CL_CDKeyValidate(const char *key, const char *checksum)
+{
+    (void)key;
+    (void)checksum;
+    return 1;
+}
+
+#if 0 /* original naked asm */
+__attribute__((naked))
+qboolean CL_CDKeyValidate_orig(const char *key, const char *checksum)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 390 */
@@ -769,6 +777,7 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
         "retl\n"
     );
 }
+#endif /* original naked asm */
 
 /* line 432 */
 int CL_SortGlobalServers(void)

@@ -9,6 +9,7 @@ extern int cl_connectedToPureServer; /* 0x0 */
 extern char * svc_strings[256]; /* 0x0 */
 
 /* Global pointer externs - these are indirect pointers to game structures */
+extern void *cl;                /* pointer to clients (clientActive_t) — link_stubs.c */
 extern byte cls_ptr[];          /* defsym alias for imp_cls — single deref */
 extern byte **clc_ptr;          /* imp_clc - clientConnection_t** */
 extern dvar_t *com_dedicated;
@@ -90,12 +91,13 @@ void CL_SystemInfoChanged(void)
     value = (char *)LargeLocal_GetBuf(&value_large_local);
 
     /* line 582 */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     clc = *clc_ptr;
-    systemInfo = (char *)(clc + 0x470c + *(int *)(clc + 0x2710));
+    /* config strings and sv_serverid are in clientActive_t (cl), not clientConnection_t (clc) */
+    systemInfo = (char *)(cls + 0x470c + *(int *)(cls + 0x2710));
 
     /* line 583 - sv_serverid */
-    *(int *)(clc + 0x8628) = atoi(Info_ValueForKey(systemInfo, "sv_serverid"));
+    *(int *)(cls + 0x8628) = atoi(Info_ValueForKey(systemInfo, "sv_serverid"));
 
     /* line 586 */
     if (*(int *)((*clc_ptr) + 0x407a0) != 0) {
@@ -166,7 +168,7 @@ void CL_ParseGamestate(msg_t *msg)
     *(int *)(clc + 0x2013c) = MSG_ReadLong(msg);
 
     /* line 652 */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     *(int *)(cls + 0x858c) = 1;
 
     for (;;) {
@@ -191,7 +193,7 @@ void CL_ParseGamestate(msg_t *msg)
             len = strlen(s);
 
             /* line 674 */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             if (len + 1 + *(int *)(cls + 0x858c) > 0x3e80) {
                 Com_Error(1, "\x15MAX_GAMESTATE_CHARS exceeded");
             }
@@ -494,7 +496,7 @@ void CL_ParseSnapshot(msg_t *msg)
         old = NULL;
     } else {
         /* line 454 */
-        cls = *(byte **)cls_ptr;
+        cls = (byte *)cl;
         old = CL_SnapSlot(cls, oldMessageNum);
 
         /* line 455 */
@@ -538,7 +540,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* ---- CL_ParsePacketEntities (inlined, line 142+) ---- */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     *(int *)(newSnap + 0x26cc) = *(int *)(cls + 0x85d0);
     *(int *)(newSnap + 0x26c4) = 0;
 
@@ -582,7 +584,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 82-95: CL_DeltaEntity - copy old entity unchanged */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             memcpy(CL_EntitySlot(cls, *(int *)(cls + 0x85d0)), oldEntitySlot, 0xf0);
             *(int *)(cls + 0x85d0) += 1;
             *(int *)(newSnap + 0x26c4) += 1;
@@ -605,7 +607,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 82-95: CL_DeltaEntity - delta */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             if (!MSG_ReadDeltaEntity(msg, (entityState_t *)oldEntitySlot,
                     (entityState_t *)CL_EntitySlot(cls, *(int *)(cls + 0x85d0)),
                     oldEntityNum)) {
@@ -628,7 +630,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 231 - CL_DeltaEntity with baseline */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             if (!MSG_ReadDeltaEntity(msg,
                     (entityState_t *)(cls + 0x970e0 + newnum * 240),
                     (entityState_t *)CL_EntitySlot(cls, *(int *)(cls + 0x85d0)),
@@ -650,7 +652,7 @@ void CL_ParseSnapshot(msg_t *msg)
         }
 
         /* CL_DeltaEntity - copy unchanged */
-        cls = *(byte **)cls_ptr;
+        cls = (byte *)cl;
         memcpy(CL_EntitySlot(cls, *(int *)(cls + 0x85d0)), oldEntitySlot, 0xf0);
         *(int *)(cls + 0x85d0) += 1;
         *(int *)(newSnap + 0x26c4) += 1;
@@ -675,7 +677,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* ---- CL_ParsePacketClients (inlined, line 277+) ---- */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     *(int *)(newSnap + 0x26d0) = *(int *)(cls + 0x85d4);
     *(int *)(newSnap + 0x26c8) = 0;
 
@@ -716,7 +718,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 113-126: CL_DeltaClient - copy old */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             memcpy(CL_ClientSlot(cls, *(int *)(cls + 0x85d4)), oldClientSlot, 0x5c);
             *(int *)(cls + 0x85d4) += 1;
             *(int *)(newSnap + 0x26c8) += 1;
@@ -739,7 +741,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 113-126: CL_DeltaClient - delta */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             if (!MSG_ReadDeltaClient(msg, (clientState_t *)oldClientSlot,
                     (clientState_t *)CL_ClientSlot(cls, *(int *)(cls + 0x85d4)),
                     oldClientNum)) {
@@ -765,7 +767,7 @@ void CL_ParseSnapshot(msg_t *msg)
             memset(&dummy, 0, sizeof(clientState_t));
 
             /* line 113-126: CL_DeltaClient - delta with dummy baseline */
-            cls = *(byte **)cls_ptr;
+            cls = (byte *)cl;
             if (!MSG_ReadDeltaClient(msg, (clientState_t *)&dummy,
                     (clientState_t *)CL_ClientSlot(cls, *(int *)(cls + 0x85d4)),
                     newnum)) {
@@ -786,7 +788,7 @@ void CL_ParseSnapshot(msg_t *msg)
         }
 
         /* CL_DeltaClient - copy unchanged */
-        cls = *(byte **)cls_ptr;
+        cls = (byte *)cl;
         memcpy(CL_ClientSlot(cls, *(int *)(cls + 0x85d4)), oldClientSlot, 0x5c);
         *(int *)(cls + 0x85d4) += 1;
         *(int *)(newSnap + 0x26c8) += 1;
@@ -820,7 +822,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 516 */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     {
         int oldMsg = *(int *)(cls + 0x24) + 1;
         int serverMessageSequence = *(int *)(newSnap + 0xc);
@@ -839,7 +841,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 528 */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     *(int *)(cls + 0x2700) = *(int *)(cls + 0x20);
 
     /* line 529 - copy newSnap to current snap */
@@ -865,7 +867,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 542 - copy current snap to frame ring buffer */
-    cls = *(byte **)cls_ptr;
+    cls = (byte *)cl;
     memcpy(CL_SnapSlot(cls, *(int *)(cls + 0x24)), cls + 0x18, 0x26d8);
 
     /* line 544 */
@@ -889,7 +891,7 @@ void CL_ParseServerMessage(msg_t *msg)
     int cmd;
 
     /* line 887 */
-    LargeLocal_LargeLocal(&msgCompressed_buf_large_local, 0x4000);
+    LargeLocal_LargeLocal(&msgCompressed_buf_large_local, 0x20000);
     msgCompressed_buf = (byte *)LargeLocal_GetBuf(&msgCompressed_buf_large_local);
 
     /* line 892 */
@@ -902,7 +904,7 @@ void CL_ParseServerMessage(msg_t *msg)
     }
 
     /* line 901 */
-    MSG_Init(&msgCompressed, msgCompressed_buf, 0x4000);
+    MSG_Init(&msgCompressed, msgCompressed_buf, 0x20000);
 
     /* line 902 - decompress message */
     msgCompressed.cursize = MSG_ReadBitsCompress(msg->data + msg->readcount,

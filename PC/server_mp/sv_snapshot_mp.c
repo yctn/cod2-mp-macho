@@ -1153,7 +1153,7 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
     byte *dvar;
     int svsTime;
 
-    LargeLocal_LargeLocal(compressedBuf_ll, 0x4000);
+    LargeLocal_LargeLocal(compressedBuf_ll, 0x20000);
     compressedBuf = LargeLocal_GetBuf(compressedBuf_ll);
 
     /* Copy sequence number as first 4 bytes */
