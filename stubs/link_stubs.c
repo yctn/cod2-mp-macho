@@ -129,8 +129,8 @@ char cg_dvar1[64] __attribute__((aligned(4))) = {0};
 char cg_dvar2[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_debug[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_footsteps[64] __attribute__((aligned(4))) = {0};
-char cg_dvar_shellshock_max[64] __attribute__((aligned(4))) = {0};
-char cg_dvar_shellshock_min[64] __attribute__((aligned(4))) = {0};
+/* cg_dvar_shellshock_max: aliased to imp_bg_fallDamageMaxHeight in import_pointers.S */
+/* cg_dvar_shellshock_min: aliased to imp_bg_fallDamageMinHeight in import_pointers.S */
 extern unsigned char cg_entitiesArray[];
 void *cg_entities __attribute__((aligned(4))) = (void *)cg_entitiesArray;
 /* cg_entities_glob: aliased to imp_cg_entities in import_pointers.S */
@@ -145,7 +145,7 @@ char cg_itemDefs[64] __attribute__((aligned(4))) = {0};
 char cg_itemInfo[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cg_itemsArray[];
 void *cg_items __attribute__((aligned(4))) = (void *)cg_itemsArray;
-char _cg_p[64] __attribute__((aligned(4))) = {0};
+/* _cg_p: aliased to imp_cg in import_pointers.S */
 char cg_pmove_mins[64] __attribute__((aligned(4))) = {0};
 /* cg_ptr: aliased to imp_cg in import_pointers.S */
 extern unsigned char cgsArray[];
@@ -216,35 +216,7 @@ char dvar_developer[64] __attribute__((aligned(4))) = {0};
 char dvar_errorDecay[64] __attribute__((aligned(4))) = {0};
 char dvar_nopredict[64] __attribute__((aligned(4))) = {0};
 char dvar_ptr_195ee78[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_fadein[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_fadeout[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_loopfadein[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_loopfadeout[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_looptype[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_mouseenable[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_mousefadein[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_mousereducemax[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_mousesensitivity[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_mouseturnrate[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_screenblend[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_screenenabled[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_screentype[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_sounddrylevel[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_sounddrylevellooptype[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundendduration[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundfade[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundfadein[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundfadeout[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundloopsilent[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundmodenddelay[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundroomtype[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundwetlevel[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_soundwetlevellooptype[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_viewkickfadein[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_viewkickperiod[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_viewkickpitch[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_viewkickradius[64] __attribute__((aligned(4))) = {0};
-char _dvar_shellshock_viewkickyaw[64] __attribute__((aligned(4))) = {0};
+/* _dvar_shellshock_*: 29 aliases defined in import_pointers.S (fix #123) */
 char dvar_synchronous[64] __attribute__((aligned(4))) = {0};
 /* dx_device_ptr: alias for imp_dx — defined in import_pointers.S */
 /* dx_fence: alias for imp_alwaysfails — defined in import_pointers.S */
@@ -310,7 +282,7 @@ fxAttributeFlags[24] __attribute__((aligned(4))) = {
     { str_0021a16c, { 0x400000, 0 } }, /* blocksSight */
     { str_0021a178, { 0x800000, 0 } }, /* disableFarPlaneCulling */
 };
-char fx_developer_check_ptr[64] __attribute__((aligned(4))) = {0};
+/* fx_developer_check_ptr: aliased to imp_g_rendererExists in import_pointers.S */
 /* fx_helper_ptr: alias for imp_theFxHelper — defined in import_pointers.S */
 /* fx_scheduler_ptr: alias for imp_theFxScheduler — defined in import_pointers.S */
 char fx_sort_ptr[64] __attribute__((aligned(4))) = {0};

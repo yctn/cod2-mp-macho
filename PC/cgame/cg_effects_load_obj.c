@@ -28,7 +28,19 @@ extern const char *Com_SurfaceTypeToName(int type);
 extern int stricmp(const char *s1, const char *s2);
 extern void *FX_RegisterEffect(const char *name);
 
-static const char *g_TypeName[11]; /* g_TypeName */
+static const char *g_TypeName[11] = {
+    "bullet_small_normal",
+    "bullet_small_reflect",
+    "bullet_large_normal",
+    "bullet_large_reflect",
+    "shotgun_normal",
+    "shotgun_reflect",
+    "bullet_ap_normal",
+    "bullet_ap_reflect",
+    "grenade_bounce",
+    "grenade_explode",
+    "rocket_explode"
+};
 
 static int compare_impact_files(const int *pe0, const int *pe1)
 {

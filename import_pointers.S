@@ -572,8 +572,12 @@ imp_bg_bobMax: .long bg_bobMax
 .globl g_bobMax_ptr
 .globl imp_bg_fallDamageMaxHeight
 imp_bg_fallDamageMaxHeight: .long bg_fallDamageMaxHeight
+.globl cg_dvar_shellshock_max
+.set cg_dvar_shellshock_max, imp_bg_fallDamageMaxHeight
 .globl imp_bg_fallDamageMinHeight
 imp_bg_fallDamageMinHeight: .long bg_fallDamageMinHeight
+.globl cg_dvar_shellshock_min
+.set cg_dvar_shellshock_min, imp_bg_fallDamageMinHeight
 .globl imp_bg_foliagesnd_fastinterval
 imp_bg_foliagesnd_fastinterval: .long bg_foliagesnd_fastinterval
 .globl imp_bg_foliagesnd_maxspeed
@@ -606,6 +610,8 @@ imp_cg: .long cg
 .set cg_glob, imp_cg
 .globl cg_ptr
 .set cg_ptr, imp_cg
+.globl _cg_p
+.set _cg_p, imp_cg
 .globl imp_cgDC
 imp_cgDC: .long cgDC
 .globl imp_cg_blood
@@ -856,6 +862,65 @@ imp_cg_shock_volume_shellshock: .long cg_shock_volume_shellshock
 imp_cg_shock_volume_voice: .long cg_shock_volume_voice
 .globl imp_cg_shock_volume_weapon
 imp_cg_shock_volume_weapon: .long cg_shock_volume_weapon
+/* shellshock dvar import pointer aliases (fix #123) */
+.globl _dvar_shellshock_fadein
+.set _dvar_shellshock_fadein, imp_cg_shock_screenBlendFadeTime
+.globl _dvar_shellshock_fadeout
+.set _dvar_shellshock_fadeout, imp_cg_shock_screenBlendTime
+.globl _dvar_shellshock_screenblend
+.set _dvar_shellshock_screenblend, imp_cg_shock_viewKickPeriod
+.globl _dvar_shellshock_screentype
+.set _dvar_shellshock_screentype, imp_cg_shock_viewKickRadius
+.globl _dvar_shellshock_screenenabled
+.set _dvar_shellshock_screenenabled, imp_cg_shock_sound
+.globl _dvar_shellshock_soundfadein
+.set _dvar_shellshock_soundfadein, imp_cg_shock_soundFadeInTime
+.globl _dvar_shellshock_soundfadeout
+.set _dvar_shellshock_soundfadeout, imp_cg_shock_soundFadeOutTime
+.globl _dvar_shellshock_loopfadein
+.set _dvar_shellshock_loopfadein, imp_cg_shock_soundLoopFadeTime
+.globl _dvar_shellshock_loopfadeout
+.set _dvar_shellshock_loopfadeout, imp_cg_shock_soundLoopEndDelay
+.globl _dvar_shellshock_looptype
+.set _dvar_shellshock_looptype, imp_cg_shock_soundRoomType
+.globl _dvar_shellshock_sounddrylevellooptype
+.set _dvar_shellshock_sounddrylevellooptype, imp_cg_shock_soundDryLevel
+.globl _dvar_shellshock_soundwetlevellooptype
+.set _dvar_shellshock_soundwetlevellooptype, imp_cg_shock_soundWetLevel
+.globl _dvar_shellshock_soundloopsilent
+.set _dvar_shellshock_soundloopsilent, imp_cg_shock_soundModEndDelay
+.globl _dvar_shellshock_viewkickfadein
+.set _dvar_shellshock_viewkickfadein, imp_cg_shock_volume_auto
+.globl _dvar_shellshock_viewkickperiod
+.set _dvar_shellshock_viewkickperiod, imp_cg_shock_volume_auto2d
+.globl _dvar_shellshock_viewkickradius
+.set _dvar_shellshock_viewkickradius, imp_cg_shock_volume_menu
+.globl _dvar_shellshock_viewkickpitch
+.set _dvar_shellshock_viewkickpitch, imp_cg_shock_volume_weapon
+.globl _dvar_shellshock_viewkickyaw
+.set _dvar_shellshock_viewkickyaw, imp_cg_shock_volume_voice
+.globl _dvar_shellshock_soundroomtype
+.set _dvar_shellshock_soundroomtype, imp_cg_shock_volume_item
+.globl _dvar_shellshock_sounddrylevel
+.set _dvar_shellshock_sounddrylevel, imp_cg_shock_volume_body
+.globl _dvar_shellshock_soundwetlevel
+.set _dvar_shellshock_soundwetlevel, imp_cg_shock_volume_local
+.globl _dvar_shellshock_soundmodenddelay
+.set _dvar_shellshock_soundmodenddelay, imp_cg_shock_volume_music
+.globl _dvar_shellshock_soundendduration
+.set _dvar_shellshock_soundendduration, imp_cg_shock_volume_announcer
+.globl _dvar_shellshock_soundfade
+.set _dvar_shellshock_soundfade, imp_cg_shock_volume_shellshock
+.globl _dvar_shellshock_mouseenable
+.set _dvar_shellshock_mouseenable, imp_cg_shock_mouse
+.globl _dvar_shellshock_mousefadein
+.set _dvar_shellshock_mousefadein, imp_cg_shock_mouse_fadeTime
+.globl _dvar_shellshock_mouseturnrate
+.set _dvar_shellshock_mouseturnrate, imp_cg_shock_mouse_maxpitchspeed
+.globl _dvar_shellshock_mousereducemax
+.set _dvar_shellshock_mousereducemax, imp_cg_shock_mouse_maxyawspeed
+.globl _dvar_shellshock_mousesensitivity
+.set _dvar_shellshock_mousesensitivity, imp_cg_shock_mouse_sensitivityscale
 .globl imp_cg_showmiss
 imp_cg_showmiss: .long cg_showmiss
 .globl imp_cg_subtitleCharHeight
@@ -1232,6 +1297,8 @@ imp_g_playerCollisionEjectSpeed: .long g_playerCollisionEjectSpeed
 imp_g_qport: .long g_qport
 .globl imp_g_rendererExists
 imp_g_rendererExists: .long g_rendererExists
+.globl fx_developer_check_ptr
+.set fx_developer_check_ptr, imp_g_rendererExists
 .globl imp_g_scr_data
 imp_g_scr_data: .long g_scr_data
 .globl imp_g_skinBuffers
