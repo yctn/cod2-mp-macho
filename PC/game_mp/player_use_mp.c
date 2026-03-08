@@ -180,7 +180,7 @@ check_activate:
             /* Set use entity and time */
             *(int *)(client + CLIENT_USE_ENTNUM) = *(int *)(client + PS_CURSORHINTENTINDEX);
             client = (byte *)ent->client;
-            levelTime = *(int *)(*(byte **)&level_ptr + 0x1EC);
+            levelTime = *(int *)((byte *)level_ptr + 0x1EC);
             *(int *)(client + CLIENT_USE_TIME) = levelTime;
             activated = 1;
             client = (byte *)ent->client;
@@ -221,7 +221,7 @@ check_held_use:
         return;
 
     /* Check hold time */
-    levelTime = *(int *)(*(byte **)&level_ptr + 0x1EC);
+    levelTime = *(int *)((byte *)level_ptr + 0x1EC);
     if (levelTime - *(int *)(client + CLIENT_USE_HOLD_TIME) < *(int *)(*(byte **)&g_useActivateHoldTime + 8))
         return;
 

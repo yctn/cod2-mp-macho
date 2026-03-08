@@ -364,6 +364,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll Rand_Init\n"
         "calll G_SetupWeaponDef\n" /* line 786 */
         "calll G_RegisterDvars\n" /* early call to ensure g_gametype is set before gametype check */
+        "calll BG_RegisterDvars\n" /* register bgame dvars (bg_bobMax etc.) on server side */
         "movl $level+520, %edi\n" /* edi = &level.teamFlags for gametype check */
         "movl 0x10(%ebp), %edx\n" /* line 788 | restart */
         "testl %edx, %edx\n"

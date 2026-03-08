@@ -131,7 +131,7 @@ short int CheckTeamStatus(void)
     byte *sessCheck;
     gclient_t *cl;
 
-    level = *(byte **)&level_ptr;
+    level = (byte *)level_ptr;
     time = *(int *)(level + 0x1ec);
     lastTime = *(int *)(level + 0x20c);
 
@@ -140,7 +140,7 @@ short int CheckTeamStatus(void)
 
     *(int *)(level + 0x20c) = time;
 
-    maxClients = *(int *)(*(int *)sv_maxclients + 8);
+    maxClients = *(int *)(sv_maxclients + 8);
     if (maxClients <= 0)
         return 0;
 
@@ -154,6 +154,8 @@ short int CheckTeamStatus(void)
 
         /* Check pm_flags for spectator/limbo */
         cl = *(gclient_t **)(entBase + 0x158);
+        if (cl == NULL)
+            continue;
         if (*(byte *)((byte *)cl + 0xe) & 0x40)
             continue;
 

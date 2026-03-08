@@ -58,7 +58,7 @@ void Scr_GetClientField(gclient_t *client, int offset);
 /* Helper: compute client number from gclient_t pointer */
 static int ClientNum(byte *pSelf)
 {
-    byte *level = *(byte **)level_ptr;
+    byte *level = (byte *)level_ptr;
     byte *clients = *(byte **)level;
     return ((int)((byte *)pSelf - clients)) / CLIENT_STRIDE;
 }
@@ -67,7 +67,7 @@ static int ClientNum(byte *pSelf)
 static byte *ClientEntity(byte *pSelf)
 {
     int num = ClientNum(pSelf);
-    byte *entities = *(byte **)g_entities_ptr;
+    byte *entities = (byte *)g_entities_ptr;
     return entities + num * ENTITY_STRIDE;
 }
 
@@ -274,7 +274,7 @@ static void ClientScr_SetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *entities = *(byte **)g_entities_ptr;
+    byte *entities = (byte *)g_entities_ptr;
     int clientNum = ClientNum(pb);
     char szConfigString[1024];
     int icon;
@@ -326,7 +326,7 @@ static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
 {
     byte *pb = (byte *)pSelf;
     byte *scr = *(byte **)&g_scr_data_ptr;
-    byte *entities = *(byte **)g_entities_ptr;
+    byte *entities = (byte *)g_entities_ptr;
     int clientNum = ClientNum(pb);
     int team;
 

@@ -345,12 +345,12 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     }
 
     if (inflictor == NULL) {
-        byte *ents = *(byte **)g_entities_ptr;
+        byte *ents = (byte *)g_entities_ptr;
         inflictor = (gentity_t *)(ents + 0x8bba0);
     }
 
     if (attacker == NULL) {
-        byte *ents = *(byte **)g_entities_ptr;
+        byte *ents = (byte *)g_entities_ptr;
         attacker = (gentity_t *)(ents + 0x8bba0);
     }
 
@@ -477,7 +477,7 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
 
     for (e = 0; e < numListedEntities; e++) {
         int entIdx = entityList[e];
-        ent = *(byte **)g_entities_ptr + entIdx * 560;
+        ent = (byte *)g_entities_ptr + entIdx * 560;
 
         if ((gentity_t *)ent == ignore) {
             continue;
@@ -516,7 +516,7 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
 
         /* Check player intermission */
         if (*(int *)(ent + 0x158) != 0) {
-            byte *lev = *(byte **)level_ptr;
+            byte *lev = (byte *)level_ptr;
             if (*(int *)(lev + 0x35f4) != 0) {
                 continue;
             }
@@ -620,7 +620,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     if (*(int *)((byte *)attacker + 4) == 9) {
         int ownerNum = *(int *)((byte *)attacker + 0x150);
         if (ownerNum != 0x3ff) {
-            byte *ents = *(byte **)g_entities_ptr;
+            byte *ents = (byte *)g_entities_ptr;
             gentity_t *owner = (gentity_t *)(ents + ownerNum * 560);
             attacker = owner;
         }
@@ -640,7 +640,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
         if (att_ps != NULL && (*(int *)(att_ps + 0xa0) & 0x300) != 0) {
             /* Resolve turret entity weapon */
             int ownerIdx = *(int *)((byte *)attacker + 0x74);
-            byte *ents = *(byte **)g_entities_ptr;
+            byte *ents = (byte *)g_entities_ptr;
             byte *mg42Ent = ents + ownerIdx * 560;
             if (*(int *)(mg42Ent + 4) == 9) {
                 iWeapon = *(int *)(mg42Ent + 0xc8);
@@ -689,11 +689,11 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
     /* Update score for connected players watching this entity */
     {
-        byte *lev = *(byte **)level_ptr;
+        byte *lev = (byte *)level_ptr;
         int maxClients = *(int *)(lev + 0x1e4);
 
         if (maxClients > 0) {
-            byte *ents = *(byte **)g_entities_ptr;
+            byte *ents = (byte *)g_entities_ptr;
             int offset = 0;
             byte *entPtr = ents;
 

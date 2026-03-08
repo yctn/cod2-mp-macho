@@ -182,11 +182,11 @@ void Svcmd_EntityList_f(void)
     int eType;
     unsigned short classname;
 
-    level = *(byte **)&level_ptr;
+    level = (byte *)level_ptr;
     numEntities = *(int *)(level + 0xc);
 
     for (e = 1; e < numEntities; e++) {
-        ent = *(byte **)&g_entities_ptr + e * 0x230;
+        ent = (byte *)g_entities_ptr + e * 0x230;
 
         /* Check r.inuse at offset 0xFC */
         if (*(byte *)(ent + 0xfc) == 0)

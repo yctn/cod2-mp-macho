@@ -213,7 +213,7 @@ void SV_Netchan_PrintProfileStats(qboolean bPrintToConsole)
     }
 
     /* Update per-client profiling stats */
-    numClients = *(int *)(*(byte **)sv_ptr + 8);
+    numClients = *(int *)((byte *)sv_ptr + 8);
     for (i = 0; i < numClients; i++) {
         byte *cl = clientBase + (long)i * CLIENT_STRIDE;
         if (*(int *)(cl + CLIENT_STATE_OFF) == 0)
@@ -304,7 +304,7 @@ void SV_Netchan_PrintProfileStats(qboolean bPrintToConsole)
     }
 
     /* Accumulate per-client stats into totals */
-    numClients = *(int *)(*(byte **)sv_ptr + 8);
+    numClients = *(int *)((byte *)sv_ptr + 8);
     for (i = 0; i < numClients; i++) {
         byte *cl = clientBase + (long)i * CLIENT_STRIDE;
         if (*(int *)(cl + CLIENT_STATE_OFF) == 0)
@@ -404,7 +404,7 @@ void SV_Netchan_PrintProfileStats(qboolean bPrintToConsole)
     }
 
     /* Print per-client stats */
-    numClients = *(int *)(*(byte **)sv_ptr + 8);
+    numClients = *(int *)((byte *)sv_ptr + 8);
     for (i = 0; i < numClients; i++) {
         byte *cl = clientBase + (long)i * CLIENT_STRIDE;
 

@@ -13,7 +13,7 @@ extern float sqrtf(float x);
  */
 
 extern clipMap_t cm;
-#define cm_ptr (*(clipMap_t **)&cm)
+#define cm_ptr (&cm)
 
 extern float Vec3Normalize(vec3_t v);
 

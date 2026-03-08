@@ -568,6 +568,8 @@ imp_bg_bobAmplitudeProne: .long bg_bobAmplitudeProne
 imp_bg_bobAmplitudeStanding: .long bg_bobAmplitudeStanding
 .globl imp_bg_bobMax
 imp_bg_bobMax: .long bg_bobMax
+.set g_bobMax_ptr, imp_bg_bobMax
+.globl g_bobMax_ptr
 .globl imp_bg_fallDamageMaxHeight
 imp_bg_fallDamageMaxHeight: .long bg_fallDamageMaxHeight
 .globl imp_bg_fallDamageMinHeight
@@ -898,6 +900,8 @@ imp_chatField: .long chatField
 imp_chat_team: .long chat_team
 .globl imp_cl
 imp_cl: .long cl
+.set cl_ptr, imp_cl
+.globl cl_ptr
 .globl imp_cl_activeAction
 imp_cl_activeAction: .long cl_activeAction
 .globl imp_cl_anglespeedkey
@@ -992,12 +996,16 @@ imp_colorWhite: .long colorWhite
 imp_colorYellow: .long colorYellow
 .globl imp_com_dedicated
 imp_com_dedicated: .long com_dedicated
+.set sv_dedicated_dvar, imp_com_dedicated
+.globl sv_dedicated_dvar
 .globl imp_com_developer
 imp_com_developer: .long com_developer
 .globl imp_com_errorEntered
 imp_com_errorEntered: .long com_errorEntered
 .globl imp_com_expectedHunkUsage
 imp_com_expectedHunkUsage: .long com_expectedHunkUsage
+.set sv_expectedHunkUsage_dvar, imp_com_expectedHunkUsage
+.globl sv_expectedHunkUsage_dvar
 .globl imp_com_fileAccessed
 imp_com_fileAccessed: .long com_fileAccessed
 .globl imp_com_fixedConsolePosition
@@ -1010,8 +1018,12 @@ imp_com_logfile: .long com_logfile
 imp_com_playerProfile: .long com_playerProfile
 .globl imp_com_statmon
 imp_com_statmon: .long com_statmon
+.set sm_dvar_ptr, imp_com_statmon
+.globl sm_dvar_ptr
 .globl imp_com_sv_running
 imp_com_sv_running: .long com_sv_running
+.set sv_running_dvar, imp_com_sv_running
+.globl sv_running_dvar
 .globl imp_com_timescaleValue
 imp_com_timescaleValue: .long com_timescaleValue
 .globl imp_com_viewlog
@@ -1024,6 +1036,8 @@ imp_developer: .long developer
 imp_dvarCount: .long dvarCount
 .globl imp_dvar_modifiedFlags
 imp_dvar_modifiedFlags: .long dvar_modifiedFlags
+.set com_dvarflags_ptr, imp_dvar_modifiedFlags
+.globl com_dvarflags_ptr
 .globl imp_dx
 imp_dx: .long dx
 .globl imp_dxState
@@ -1144,6 +1158,8 @@ imp_g_current_bandwidth_setting: .long g_current_bandwidth_setting
 imp_g_deadChat: .long g_deadChat
 .globl imp_g_debugDamage
 imp_g_debugDamage: .long g_debugDamage
+.set g_debug_damage_ptr, imp_g_debugDamage
+.globl g_debug_damage_ptr
 .globl imp_g_debugLocDamage
 imp_g_debugLocDamage: .long g_debugLocDamage
 .globl imp_g_dedicated
@@ -1194,6 +1210,8 @@ imp_g_motd: .long g_motd
 imp_g_oldVoting: .long g_oldVoting
 .globl imp_g_password
 imp_g_password: .long g_password
+.set g_password_ptr, imp_g_password
+.globl g_password_ptr
 .globl imp_g_playerCollisionEjectSpeed
 imp_g_playerCollisionEjectSpeed: .long g_playerCollisionEjectSpeed
 .globl imp_g_qport
@@ -1294,6 +1312,8 @@ imp_net_showprofile: .long net_showprofile
 imp_nextdemo: .long nextdemo
 .globl imp_nextmap
 imp_nextmap: .long nextmap
+.set nextmap_dvar, imp_nextmap
+.globl nextmap_dvar
 .globl imp_playerMaxs
 imp_playerMaxs: .long playerMaxs
 .globl imp_playerMins
@@ -1642,90 +1662,166 @@ imp_sunFlareArray: .long sunFlareArray
 imp_sv: .long sv
 .globl imp_sv_allowAnonymous
 imp_sv_allowAnonymous: .long sv_allowAnonymous
+.set sv_allowAnonymous_dvar, imp_sv_allowAnonymous
+.globl sv_allowAnonymous_dvar
 .globl imp_sv_allowDownload
 imp_sv_allowDownload: .long sv_allowDownload
+.set sv_allowDownload_dvar, imp_sv_allowDownload
+.globl sv_allowDownload_dvar
 .globl imp_sv_allowedClan1
 imp_sv_allowedClan1: .long sv_allowedClan1
+.set sv_allowedClan1_dvar, imp_sv_allowedClan1
+.globl sv_allowedClan1_dvar
 .globl imp_sv_allowedClan2
 imp_sv_allowedClan2: .long sv_allowedClan2
+.set sv_allowedClan2_dvar, imp_sv_allowedClan2
+.globl sv_allowedClan2_dvar
 .globl imp_sv_cheats
 imp_sv_cheats: .long sv_cheats
+.set sv_cheats_dvar, imp_sv_cheats
+.globl sv_cheats_dvar
 .globl imp_sv_debugRate
 imp_sv_debugRate: .long sv_debugRate
+.set sv_debugRate_dvar, imp_sv_debugRate
+.globl sv_debugRate_dvar
 .globl imp_sv_debugReliableCmds
 imp_sv_debugReliableCmds: .long sv_debugReliableCmds
+.set sv_debugReliableCmds_dvar, imp_sv_debugReliableCmds
+.globl sv_debugReliableCmds_dvar
 .globl imp_sv_disableClientConsole
 imp_sv_disableClientConsole: .long sv_disableClientConsole
+.set sv_disableClientConsole_dvar, imp_sv_disableClientConsole
+.globl sv_disableClientConsole_dvar
 .globl imp_sv_floodProtect
 imp_sv_floodProtect: .long sv_floodProtect
+.set sv_floodProtect_dvar, imp_sv_floodProtect
+.globl sv_floodProtect_dvar
 .globl imp_sv_fps
 imp_sv_fps: .long sv_fps
+.set sv_fps_dvar, imp_sv_fps
+.globl sv_fps_dvar
 .globl imp_sv_gametype
 imp_sv_gametype: .long sv_gametype
+.set sv_gametype_dvar, imp_sv_gametype
+.globl sv_gametype_dvar
 .globl imp_sv_hostname
 imp_sv_hostname: .long sv_hostname
+.set sv_hostname_dvar, imp_sv_hostname
+.globl sv_hostname_dvar
 .globl imp_sv_iwdNames
 imp_sv_iwdNames: .long sv_iwdNames
+.set sv_iwdNames_dvar, imp_sv_iwdNames
+.globl sv_iwdNames_dvar
 .globl imp_sv_iwds
 imp_sv_iwds: .long sv_iwds
+.set sv_iwds_dvar, imp_sv_iwds
+.globl sv_iwds_dvar
 .globl imp_sv_kickBanTime
 imp_sv_kickBanTime: .long sv_kickBanTime
+.set sv_kickBanTime_dvar, imp_sv_kickBanTime
+.globl sv_kickBanTime_dvar
 .globl imp_sv_mapRotation
 imp_sv_mapRotation: .long sv_mapRotation
+.set sv_mapRotation_dvar, imp_sv_mapRotation
+.globl sv_mapRotation_dvar
 .globl imp_sv_mapRotationCurrent
 imp_sv_mapRotationCurrent: .long sv_mapRotationCurrent
+.set sv_mapRotationCurrent_dvar, imp_sv_mapRotationCurrent
+.globl sv_mapRotationCurrent_dvar
 .globl imp_sv_mapname
 imp_sv_mapname: .long sv_mapname
+.set sv_mapname_dvar, imp_sv_mapname
+.globl sv_mapname_dvar
 .globl imp_sv_maxPing
 imp_sv_maxPing: .long sv_maxPing
+.set sv_maxPing_dvar, imp_sv_maxPing
+.globl sv_maxPing_dvar
 .globl imp_sv_maxRate
 imp_sv_maxRate: .long sv_maxRate
+.set sv_maxRate_dvar, imp_sv_maxRate
+.globl sv_maxRate_dvar
 .globl imp_sv_maxclients
 imp_sv_maxclients: .long sv_maxclients
+.set sv_maxclients_dvar, imp_sv_maxclients
+.globl sv_maxclients_dvar
 .globl imp_sv_minPing
 imp_sv_minPing: .long sv_minPing
+.set sv_minPing_dvar, imp_sv_minPing
+.globl sv_minPing_dvar
 .globl imp_sv_packet_info
 imp_sv_packet_info: .long sv_packet_info
+.set sv_packet_info_dvar, imp_sv_packet_info
+.globl sv_packet_info_dvar
 .globl imp_sv_padPackets
 imp_sv_padPackets: .long sv_padPackets
+.set sv_padPackets_dvar, imp_sv_padPackets
+.globl sv_padPackets_dvar
 .globl imp_sv_paused
 imp_sv_paused: .long sv_paused
 .globl imp_sv_privateClients
 imp_sv_privateClients: .long sv_privateClients
+.set sv_privateClients_dvar, imp_sv_privateClients
+.globl sv_privateClients_dvar
 .globl imp_sv_privatePassword
 imp_sv_privatePassword: .long sv_privatePassword
 .globl imp_sv_pure
 imp_sv_pure: .long sv_pure
+.set sv_pure_dvar, imp_sv_pure
+.globl sv_pure_dvar
 .globl imp_sv_reconnectlimit
 imp_sv_reconnectlimit: .long sv_reconnectlimit
+.set sv_reconnectlimit_dvar, imp_sv_reconnectlimit
+.globl sv_reconnectlimit_dvar
 .globl imp_sv_referencedIwdNames
 imp_sv_referencedIwdNames: .long sv_referencedIwdNames
+.set sv_referencedIwdNames_dvar, imp_sv_referencedIwdNames
+.globl sv_referencedIwdNames_dvar
 .globl imp_sv_referencedIwds
 imp_sv_referencedIwds: .long sv_referencedIwds
+.set sv_referencedIwds_dvar, imp_sv_referencedIwds
+.globl sv_referencedIwds_dvar
 .globl imp_sv_serverId_value
 imp_sv_serverId_value: .long sv_serverId_value
 .globl imp_sv_serverid
 imp_sv_serverid: .long sv_serverid
+.set sv_serverid_dvar, imp_sv_serverid
+.globl sv_serverid_dvar
 .globl imp_sv_showAverageBPS
 imp_sv_showAverageBPS: .long sv_showAverageBPS
+.set sv_showAverageBPS_dvar, imp_sv_showAverageBPS
+.globl sv_showAverageBPS_dvar
 .globl imp_sv_showCommands
 imp_sv_showCommands: .long sv_showCommands
+.set sv_showCommands_dvar, imp_sv_showCommands
+.globl sv_showCommands_dvar
 .globl imp_sv_timeout
 imp_sv_timeout: .long sv_timeout
+.set sv_timeout_dvar, imp_sv_timeout
+.globl sv_timeout_dvar
 .globl imp_sv_voice
 imp_sv_voice: .long sv_voice
+.set sv_voice_dvar, imp_sv_voice
+.globl sv_voice_dvar
 .globl imp_sv_voiceQuality
 imp_sv_voiceQuality: .long sv_voiceQuality
+.set sv_voiceQuality_dvar, imp_sv_voiceQuality
+.globl sv_voiceQuality_dvar
 .globl imp_sv_zombietime
 imp_sv_zombietime: .long sv_zombietime
+.set sv_zombietime_dvar, imp_sv_zombietime
+.globl sv_zombietime_dvar
 .globl imp_svs
 imp_svs: .long svs
 .globl imp_tess
 imp_tess: .long tess
 .globl imp_theFxHelper
 imp_theFxHelper: .long theFxHelper
+.set fx_helper_ptr, imp_theFxHelper
+.globl fx_helper_ptr
 .globl imp_theFxScheduler
 imp_theFxScheduler: .long theFxScheduler
+.set fx_scheduler_ptr, imp_theFxScheduler
+.globl fx_scheduler_ptr
 .globl imp_updateScreenCalled
 imp_updateScreenCalled: .long updateScreenCalled
 .globl imp_var_typename
@@ -1736,6 +1832,8 @@ imp_vbr_nb_thresh: .long vbr_nb_thresh
 imp_vec3_colorintensity: .long vec3_colorintensity
 .globl imp_vec3_origin
 imp_vec3_origin: .long vec3_origin
+.set trace_mins, imp_vec3_origin
+.globl trace_mins
 .globl imp_vidConfig
 imp_vidConfig: .long vidConfig
 .globl imp_vid_xpos

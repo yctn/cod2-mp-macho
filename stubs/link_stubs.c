@@ -173,7 +173,7 @@ char CloseComponent[64] __attribute__((aligned(4))) = {0};
 char CloseMovieFile[64] __attribute__((aligned(4))) = {0};
 char CloseRgn[64] __attribute__((aligned(4))) = {0};
 char cl_packetdelay[64] __attribute__((aligned(4))) = {0};
-char cl_ptr[64] __attribute__((aligned(4))) = {0};
+/* cl_ptr: alias for imp_cl — defined in import_pointers.S */
 char cl_showPackets[64] __attribute__((aligned(4))) = {0};
 char cls_ptr[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cls[];
@@ -181,7 +181,7 @@ void *cls_ptr_195ecac = (void *)cls; /* GOT alias: pointer to cls BSS struct */
 char cm_global[64] __attribute__((aligned(4))) = {0};
 char cm_phys_ptr[64] __attribute__((aligned(4))) = {0};
 char com_checksumFeed_dvar[64] __attribute__((aligned(4))) = {0};
-char com_dvarflags_ptr[64] __attribute__((aligned(4))) = {0};
+/* com_dvarflags_ptr: alias for imp_dvar_modifiedFlags — defined in import_pointers.S */
 char com_errorEntered_ptr[64] __attribute__((aligned(4))) = {0};
 char commandsList[64] __attribute__((aligned(4))) = {0};
 char compPointerConfig[64] __attribute__((aligned(4))) = {0};
@@ -257,8 +257,8 @@ char ForeColor[64] __attribute__((aligned(4))) = {0};
 char FrameRoundRect[64] __attribute__((aligned(4))) = {0};
 char fxAttributeFlags[64] __attribute__((aligned(4))) = {0};
 char fx_developer_check_ptr[64] __attribute__((aligned(4))) = {0};
-char fx_helper_ptr[64] __attribute__((aligned(4))) = {0};
-char fx_scheduler_ptr[64] __attribute__((aligned(4))) = {0};
+/* fx_helper_ptr: alias for imp_theFxHelper — defined in import_pointers.S */
+/* fx_scheduler_ptr: alias for imp_theFxScheduler — defined in import_pointers.S */
 char fx_sort_ptr[64] __attribute__((aligned(4))) = {0};
 char fxSpawnFlags[64] __attribute__((aligned(4))) = {0};
 char fx_time_dst1[64] __attribute__((aligned(4))) = {0};
@@ -267,12 +267,12 @@ char fx_time_src1[64] __attribute__((aligned(4))) = {0};
 char fx_time_src2[64] __attribute__((aligned(4))) = {0};
 /* g_backEndData: decompiler alias for imp_dxState — now a symbol alias in import_pointers.S */
 /* g_banIPs_dvar: aliased to g_banIPs in import_pointers.S */
-char g_bobMax_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_bobMax_ptr: alias for imp_bg_bobMax — defined in import_pointers.S */
 char g_cheats_dvar[64] __attribute__((aligned(4))) = {0};
 char g_clients_ptr[64] __attribute__((aligned(4))) = {0};
 char g_creatingTexture[64] __attribute__((aligned(4))) = {0};
 char g_deadChat_ptr[64] __attribute__((aligned(4))) = {0};
-char g_debug_damage_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_debug_damage_ptr: alias for imp_g_debugDamage — defined in import_pointers.S */
 /* g_drawSurf: decompiler alias for imp_tess — now a symbol alias in import_pointers.S */
 /* g_dx: decompiler alias for BSS 'dx' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxCaps: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
@@ -315,7 +315,7 @@ char gfxBuf[64] __attribute__((aligned(4))) = {0};
 /* gfxScene: decompiler alias for imp_scene — now a symbol alias in import_pointers.S */
 char GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE[64] __attribute__((aligned(4))) = {0};
 char GoToBeginningOfMovie[64] __attribute__((aligned(4))) = {0};
-char g_password_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_password_ptr: alias for imp_g_password — defined in import_pointers.S */
 char g_phys_world[64] __attribute__((aligned(4))) = {0};
 /* g_renderer_ptr: linker alias to re */
 /* g_renderState: decompiler alias for imp_r_fog — now a symbol alias in import_pointers.S */
@@ -382,7 +382,7 @@ char NewHandle[64] __attribute__((aligned(4))) = {0};
 char NewMenu[64] __attribute__((aligned(4))) = {0};
 char NewMovieFromFile[64] __attribute__((aligned(4))) = {0};
 char NewRgn[64] __attribute__((aligned(4))) = {0};
-char nextmap_dvar[64] __attribute__((aligned(4))) = {0};
+/* nextmap_dvar: alias for imp_nextmap — defined in import_pointers.S */
 char NormalizeThemeDrawingState[64] __attribute__((aligned(4))) = {0};
 char OffsetRect[64] __attribute__((aligned(4))) = {0};
 char OpenAComponent[64] __attribute__((aligned(4))) = {0};
@@ -490,7 +490,7 @@ char ShowControl[64] __attribute__((aligned(4))) = {0};
 char ShowMenuBar[64] __attribute__((aligned(4))) = {0};
 char showpackets_dvar[64] __attribute__((aligned(4))) = {0};
 char SizeWindow[64] __attribute__((aligned(4))) = {0};
-char sm_dvar_ptr[64] __attribute__((aligned(4))) = {0};
+/* sm_dvar_ptr: alias for imp_com_statmon — defined in import_pointers.S */
 char sm_mtl_init[64] __attribute__((aligned(4))) = {0};
 char sm_mtl_vtable[64] __attribute__((aligned(4))) = {0};
 char _snd_local_listener[64] __attribute__((aligned(4))) = {0};
@@ -500,56 +500,56 @@ char speex_uwb_mode_ptr[64] __attribute__((aligned(4))) = {0};
 char speex_wb_mode_ptr[64] __attribute__((aligned(4))) = {0};
 char StartMovie[64] __attribute__((aligned(4))) = {0};
 char StopMovie[64] __attribute__((aligned(4))) = {0};
-char sv_allowAnonymous_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_allowDownload_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_allowedClan1_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_allowedClan2_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_cheats_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_allowAnonymous_dvar: alias for imp_sv_allowAnonymous — defined in import_pointers.S */
+/* sv_allowDownload_dvar: alias for imp_sv_allowDownload — defined in import_pointers.S */
+/* sv_allowedClan1_dvar: alias for imp_sv_allowedClan1 — defined in import_pointers.S */
+/* sv_allowedClan2_dvar: alias for imp_sv_allowedClan2 — defined in import_pointers.S */
+/* sv_cheats_dvar: alias for imp_sv_cheats — defined in import_pointers.S */
 char sv_cheats_ptr[64] __attribute__((aligned(4))) = {0};
 char s_vc_logCount[64] __attribute__((aligned(4))) = {0};
 char sv_com_dvarDump_ptr[64] __attribute__((aligned(4))) = {0};
-char sv_debugRate_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_debugReliableCmds_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_dedicated_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_debugRate_dvar: alias for imp_sv_debugRate — defined in import_pointers.S */
+/* sv_debugReliableCmds_dvar: alias for imp_sv_debugReliableCmds — defined in import_pointers.S */
+/* sv_dedicated_dvar: alias for imp_com_dedicated — defined in import_pointers.S */
 char sv_dedicated_dvar2[64] __attribute__((aligned(4))) = {0};
-char sv_disableClientConsole_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_expectedHunkUsage_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_floodProtect_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_fps_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_gametype_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_hostname_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_iwdNames_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_iwds_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_kickBanTime_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_mapname_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_mapRotationCurrent_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_mapRotation_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_maxclients_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_maxPing_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_maxRate_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_minPing_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_disableClientConsole_dvar: alias for imp_sv_disableClientConsole — defined in import_pointers.S */
+/* sv_expectedHunkUsage_dvar: alias for imp_com_expectedHunkUsage — defined in import_pointers.S */
+/* sv_floodProtect_dvar: alias for imp_sv_floodProtect — defined in import_pointers.S */
+/* sv_fps_dvar: alias for imp_sv_fps — defined in import_pointers.S */
+/* sv_gametype_dvar: alias for imp_sv_gametype — defined in import_pointers.S */
+/* sv_hostname_dvar: alias for imp_sv_hostname — defined in import_pointers.S */
+/* sv_iwdNames_dvar: alias for imp_sv_iwdNames — defined in import_pointers.S */
+/* sv_iwds_dvar: alias for imp_sv_iwds — defined in import_pointers.S */
+/* sv_kickBanTime_dvar: alias for imp_sv_kickBanTime — defined in import_pointers.S */
+/* sv_mapname_dvar: alias for imp_sv_mapname — defined in import_pointers.S */
+/* sv_mapRotationCurrent_dvar: alias for imp_sv_mapRotationCurrent — defined in import_pointers.S */
+/* sv_mapRotation_dvar: alias for imp_sv_mapRotation — defined in import_pointers.S */
+/* sv_maxclients_dvar: alias for imp_sv_maxclients — defined in import_pointers.S */
+/* sv_maxPing_dvar: alias for imp_sv_maxPing — defined in import_pointers.S */
+/* sv_maxRate_dvar: alias for imp_sv_maxRate — defined in import_pointers.S */
+/* sv_minPing_dvar: alias for imp_sv_minPing — defined in import_pointers.S */
 char sv_minPingRate_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_packet_info_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_padPackets_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_privateClients_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_packet_info_dvar: alias for imp_sv_packet_info — defined in import_pointers.S */
+/* sv_padPackets_dvar: alias for imp_sv_padPackets — defined in import_pointers.S */
+/* sv_privateClients_dvar: alias for imp_sv_privateClients — defined in import_pointers.S */
 char sv_privatePassword_dvar[64] __attribute__((aligned(4))) = {0};
 /* sv_ptr: linker alias to sv */
-char sv_pure_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_reconnectlimit_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_referencedIwdNames_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_referencedIwds_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_running_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_serverid_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_showAverageBPS_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_pure_dvar: alias for imp_sv_pure — defined in import_pointers.S */
+/* sv_reconnectlimit_dvar: alias for imp_sv_reconnectlimit — defined in import_pointers.S */
+/* sv_referencedIwdNames_dvar: alias for imp_sv_referencedIwdNames — defined in import_pointers.S */
+/* sv_referencedIwds_dvar: alias for imp_sv_referencedIwds — defined in import_pointers.S */
+/* sv_running_dvar: alias for imp_com_sv_running — defined in import_pointers.S */
+/* sv_serverid_dvar: alias for imp_sv_serverid — defined in import_pointers.S */
+/* sv_showAverageBPS_dvar: alias for imp_sv_showAverageBPS — defined in import_pointers.S */
 char sv_showcommands_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_showCommands_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_showCommands_dvar: alias for imp_sv_showCommands — defined in import_pointers.S */
 /* svs_ptr: linker alias to svs */
-char sv_timeout_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_voice_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_voiceQuality_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_zombietime_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_timeout_dvar: alias for imp_sv_timeout — defined in import_pointers.S */
+/* sv_voice_dvar: alias for imp_sv_voice — defined in import_pointers.S */
+/* sv_voiceQuality_dvar: alias for imp_sv_voiceQuality — defined in import_pointers.S */
+/* sv_zombietime_dvar: alias for imp_sv_zombietime — defined in import_pointers.S */
 char tr[64] __attribute__((aligned(4))) = {0};
-char trace_mins[64] __attribute__((aligned(4))) = {0};
+/* trace_mins: alias for imp_vec3_origin — defined in import_pointers.S */
 char TXNSetTypeAttributes[64] __attribute__((aligned(4))) = {0};
 char UI_Component_g[64] __attribute__((aligned(4))) = {0};
 char ui_globals_195ecac[64] __attribute__((aligned(4))) = {0};
