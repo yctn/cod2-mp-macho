@@ -39,6 +39,7 @@ extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 extern void CL_DrawString(int x, int y, const char *str, int color, int size);
 extern void NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to);
+static int cl_decode_count = 0;
 
 void CL_Netchan_Decode(byte *data, int size);
 void CL_Netchan_TransmitNextFragment(netchan_t *chan);

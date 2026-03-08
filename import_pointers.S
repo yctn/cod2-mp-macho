@@ -968,6 +968,8 @@ imp_clc: .long clc
 imp_clients: .long clients
 .globl imp_cls
 imp_cls: .long cls
+.set cls_ptr, imp_cls
+.globl cls_ptr
 .globl imp_cm
 imp_cm: .long cm
 .globl imp_colorBlack
@@ -1740,6 +1742,8 @@ imp_sv_maxPing: .long sv_maxPing
 imp_sv_maxRate: .long sv_maxRate
 .set sv_maxRate_dvar, imp_sv_maxRate
 .globl sv_maxRate_dvar
+.set sv_minPingRate_dvar, imp_sv_maxRate
+.globl sv_minPingRate_dvar
 .globl imp_sv_maxclients
 imp_sv_maxclients: .long sv_maxclients
 .set sv_maxclients_dvar, imp_sv_maxclients
@@ -1748,6 +1752,10 @@ imp_sv_maxclients: .long sv_maxclients
 imp_sv_minPing: .long sv_minPing
 .set sv_minPing_dvar, imp_sv_minPing
 .globl sv_minPing_dvar
+.globl imp_showpackets
+imp_showpackets: .long showpackets
+.set showpackets_dvar, imp_showpackets
+.globl showpackets_dvar
 .globl imp_sv_packet_info
 imp_sv_packet_info: .long sv_packet_info
 .set sv_packet_info_dvar, imp_sv_packet_info

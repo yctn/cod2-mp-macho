@@ -41,7 +41,7 @@ extern void CL_DrawString(int x, int y, const char *str, int color, int size);
 
 void SV_Netchan_Decode(client_t *client, byte *data, int size);
 Bool SV_Netchan_TransmitNextFragment(netchan_t *chan);
-Bool SV_Netchan_Transmit(client_t *client, byte *data, int length);
+Bool SV_Netchan_Transmit(client_t *client, int length, byte *data);
 void SV_Netchan_AddOOBProfilePacket(int iLength);
 void SV_Netchan_PrintProfileStats(qboolean bPrintToConsole);
 
@@ -109,7 +109,7 @@ Bool SV_Netchan_TransmitNextFragment(netchan_t *chan)
 }
 
 /* line 100 */
-Bool SV_Netchan_Transmit(client_t *client, byte *data, int length)
+Bool SV_Netchan_Transmit(client_t *client, int length, byte *data)
 {
     byte *cl = (byte *)client;
     int outgoingSequence;

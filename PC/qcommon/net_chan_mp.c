@@ -689,7 +689,7 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
     MSG_Init(&send, send_buf, 0x578);
     MSG_WriteLong(&send, chan->outgoingSequence | 0x80000000);
 
-    if (chan->sock > 0) {
+    if (chan->sock == 0) {
         MSG_WriteShort(&send, chan->qport);
     }
 
@@ -777,7 +777,7 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
     MSG_WriteLong(&send, chan->outgoingSequence);
     chan->outgoingSequence++;
 
-    if (chan->sock > 0) {
+    if (chan->sock == 0) {
         MSG_WriteShort(&send, chan->qport);
     }
 

@@ -175,7 +175,7 @@ char CloseRgn[64] __attribute__((aligned(4))) = {0};
 char cl_packetdelay[64] __attribute__((aligned(4))) = {0};
 /* cl_ptr: alias for imp_cl — defined in import_pointers.S */
 char cl_showPackets[64] __attribute__((aligned(4))) = {0};
-char cls_ptr[64] __attribute__((aligned(4))) = {0};
+/* cls_ptr: alias for imp_cls — defined in import_pointers.S */
 extern unsigned char cls[];
 void *cls_ptr_195ecac = (void *)cls; /* GOT alias: pointer to cls BSS struct */
 char cm_global[64] __attribute__((aligned(4))) = {0};
@@ -488,7 +488,7 @@ char SetWindowTitleWithCFString[64] __attribute__((aligned(4))) = {0};
 char SetWRefCon[64] __attribute__((aligned(4))) = {0};
 char ShowControl[64] __attribute__((aligned(4))) = {0};
 char ShowMenuBar[64] __attribute__((aligned(4))) = {0};
-char showpackets_dvar[64] __attribute__((aligned(4))) = {0};
+/* showpackets_dvar: alias for imp_showpackets — defined in import_pointers.S */
 char SizeWindow[64] __attribute__((aligned(4))) = {0};
 /* sm_dvar_ptr: alias for imp_com_statmon — defined in import_pointers.S */
 char sm_mtl_init[64] __attribute__((aligned(4))) = {0};
@@ -528,7 +528,7 @@ char sv_dedicated_dvar2[64] __attribute__((aligned(4))) = {0};
 /* sv_maxPing_dvar: alias for imp_sv_maxPing — defined in import_pointers.S */
 /* sv_maxRate_dvar: alias for imp_sv_maxRate — defined in import_pointers.S */
 /* sv_minPing_dvar: alias for imp_sv_minPing — defined in import_pointers.S */
-char sv_minPingRate_dvar[64] __attribute__((aligned(4))) = {0};
+/* sv_minPingRate_dvar: alias for imp_sv_maxRate — defined in import_pointers.S */
 /* sv_packet_info_dvar: alias for imp_sv_packet_info — defined in import_pointers.S */
 /* sv_padPackets_dvar: alias for imp_sv_padPackets — defined in import_pointers.S */
 /* sv_privateClients_dvar: alias for imp_sv_privateClients — defined in import_pointers.S */
