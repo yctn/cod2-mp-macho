@@ -119,12 +119,12 @@ char AUGraphGetCPULoad[64] __attribute__((aligned(4))) = {0};
 char AUGraphGetNodeInfo[64] __attribute__((aligned(4))) = {0};
 char AUGraphNewNode[64] __attribute__((aligned(4))) = {0};
 char AUGraphUpdate[64] __attribute__((aligned(4))) = {0};
-/* bg_itemlist_ptr: aliased to imp_bg_itemlist in import_pointers.S (fix #126) */
+char bg_itemlist_ptr[64] __attribute__((aligned(4))) = {0};
 char bg_weaponInfoMem[64] __attribute__((aligned(4))) = {0};
 char buf[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cgArray[];
 void *cg __attribute__((aligned(4))) = (void *)cgArray;
-/* cg_debug_ptr: aliased to imp_cg_debugPosition in import_pointers.S (fix #126) */
+char cg_debug_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_dvar1[64] __attribute__((aligned(4))) = {0};
 char cg_dvar2[64] __attribute__((aligned(4))) = {0};
 char cg_dvar_debug[64] __attribute__((aligned(4))) = {0};
@@ -135,34 +135,34 @@ extern unsigned char cg_entitiesArray[];
 void *cg_entities __attribute__((aligned(4))) = (void *)cg_entitiesArray;
 /* cg_entities_glob: aliased to imp_cg_entities in import_pointers.S */
 /* cg_entities_ptr: aliased to imp_cg_entities in import_pointers.S */
-/* cg_eventNames: aliased to imp_eventnames in import_pointers.S (fix #126) */
+char cg_eventNames[64] __attribute__((aligned(4))) = {0};
 /* cg_glob: aliased to imp_cg in import_pointers.S */
-/* cg_globSnap: aliased to imp_cg_hudDamageIconTime in import_pointers.S (fix #126) */
+char cg_globSnap[64] __attribute__((aligned(4))) = {0};
 /* cg_globUI: aliased to legacyHacks via --defsym */
-/* cg_hud_ptr: aliased to imp_hud_fade_offhand in import_pointers.S (fix #126) */
-/* cg_itemCount: aliased to imp_bg_numItems in import_pointers.S (fix #126) */
-/* cg_itemDefs: aliased to imp_cg_items in import_pointers.S (fix #126) */
-/* cg_itemInfo: aliased to imp_bg_itemlist in import_pointers.S (fix #126) */
+char cg_hud_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_itemCount[64] __attribute__((aligned(4))) = {0};
+char cg_itemDefs[64] __attribute__((aligned(4))) = {0};
+char cg_itemInfo[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cg_itemsArray[];
 void *cg_items __attribute__((aligned(4))) = (void *)cg_itemsArray;
 /* _cg_p: aliased to imp_cg in import_pointers.S */
-/* cg_pmove_mins: aliased to imp_vec3_origin in import_pointers.S (fix #126) */
+char cg_pmove_mins[64] __attribute__((aligned(4))) = {0};
 /* cg_ptr: aliased to imp_cg in import_pointers.S */
 extern unsigned char cgsArray[];
 void *cgs __attribute__((aligned(4))) = (void *)cgsArray;
 /* cgs_glob: aliased to imp_cgs in import_pointers.S */
-/* cg_sprite2_ptr: aliased to imp_cg_voiceIconSize in import_pointers.S (fix #126) */
-/* cg_sprite3_ptr: aliased to imp_cg_scriptIconSize in import_pointers.S (fix #126) */
-/* cg_sprite4_ptr: aliased to imp_cg_constantSizeHeadIcons in import_pointers.S (fix #126) */
-/* cg_sprite5_ptr: aliased to imp_cg_youInKillCamSize in import_pointers.S (fix #126) */
-/* cg_sprite6_ptr: aliased to imp_cg_connectionIconSize in import_pointers.S (fix #126) */
-/* cg_sprite_ptr: aliased to imp_cg_headIconMinScreenRadius in import_pointers.S (fix #126) */
+char cg_sprite2_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_sprite3_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_sprite4_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_sprite5_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_sprite6_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_sprite_ptr[64] __attribute__((aligned(4))) = {0};
 /* cgs_ptr: aliased to imp_cgs in import_pointers.S */
-/* cg_tags_ptr: aliased to imp_scr_const in import_pointers.S (fix #126) */
-/* cg_uiglob: aliased to imp_legacyHacks in import_pointers.S (fix #126) */
-/* cg_viewscreen_ptr: aliased to imp_cg_viewsize in import_pointers.S (fix #126) */
-/* cg_weapinfo_ptr: aliased to imp_cg_weapons in import_pointers.S (fix #126) */
-/* cg_weaponDefs: aliased to imp_cg_weapons in import_pointers.S (fix #126) */
+char cg_tags_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_uiglob[64] __attribute__((aligned(4))) = {0};
+char cg_viewscreen_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_weapinfo_ptr[64] __attribute__((aligned(4))) = {0};
+char cg_weaponDefs[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cg_weaponsArray[];
 void *cg_weapons __attribute__((aligned(4))) = (void *)cg_weaponsArray;
 char cg_xanimInfo[64] __attribute__((aligned(4))) = {0};
@@ -175,15 +175,15 @@ char ClipRect[64] __attribute__((aligned(4))) = {0};
 char CloseComponent[64] __attribute__((aligned(4))) = {0};
 char CloseMovieFile[64] __attribute__((aligned(4))) = {0};
 char CloseRgn[64] __attribute__((aligned(4))) = {0};
-/* cl_packetdelay: aliased to imp_cl_paused in import_pointers.S (fix #126) */
+char cl_packetdelay[64] __attribute__((aligned(4))) = {0};
 /* cl_ptr: alias for imp_cl — defined in import_pointers.S */
-/* cl_showPackets: aliased to imp_cl_shownuments in import_pointers.S (fix #126) */
+char cl_showPackets[64] __attribute__((aligned(4))) = {0};
 /* cls_ptr: alias for imp_cls — defined in import_pointers.S */
 extern unsigned char cls[];
 void *cls_ptr_195ecac = (void *)cls; /* GOT alias: pointer to cls BSS struct */
 char cm_global[64] __attribute__((aligned(4))) = {0};
 char cm_phys_ptr[64] __attribute__((aligned(4))) = {0};
-/* com_checksumFeed_dvar: aliased to imp_com_frameTime in import_pointers.S (fix #126) */
+char com_checksumFeed_dvar[64] __attribute__((aligned(4))) = {0};
 /* com_dvarflags_ptr: alias for imp_dvar_modifiedFlags — defined in import_pointers.S */
 char com_errorEntered_ptr[64] __attribute__((aligned(4))) = {0};
 char commandsList[64] __attribute__((aligned(4))) = {0};
@@ -200,24 +200,24 @@ char __DefaultRuneLocale[64] __attribute__((aligned(4))) = {0};
 char DisableControl[64] __attribute__((aligned(4))) = {0};
 char DMGetFirstScreenDevice[64] __attribute__((aligned(4))) = {0};
 char DMGetNextScreenDevice[64] __attribute__((aligned(4))) = {0};
-/* download_ui_ptr: aliased to imp_legacyHacks in import_pointers.S (fix #126) */
+char download_ui_ptr[64] __attribute__((aligned(4))) = {0};
 char DrawThemeFocusRect[64] __attribute__((aligned(4))) = {0};
 char DrawThemeMenuBarBackground[64] __attribute__((aligned(4))) = {0};
-/* dvar_autoPickup: aliased to imp_cg_predictItems in import_pointers.S (fix #126) */
-/* dvar_compassClampDist: aliased to imp_cg_hudObjectiveMaxRange in import_pointers.S (fix #126) */
-/* dvar_compassClampSaturation: aliased to imp_cg_hudObjectiveMinAlpha in import_pointers.S (fix #126) */
-/* dvar_compassFade: aliased to imp_hud_fade_compass in import_pointers.S (fix #126) */
-/* dvar_compassMaxRange: aliased to imp_cg_hudCompassMaxRange in import_pointers.S (fix #126) */
-/* dvar_compassMinRange: aliased to imp_cg_hudCompassMinRange in import_pointers.S (fix #126) */
-/* dvar_compassMinSaturation: aliased to imp_cg_hudCompassMinRadius in import_pointers.S (fix #126) */
-/* dvar_compassPingFadeTime: aliased to imp_cg_hudCompassSoundPingFadeTime in import_pointers.S (fix #126) */
-/* dvar_compassSize: aliased to imp_cg_hudCompassSize in import_pointers.S (fix #126) */
-/* dvar_developer: aliased to imp_cg_showmiss in import_pointers.S (fix #126) */
-/* dvar_errorDecay: aliased to imp_cg_errorDecay in import_pointers.S (fix #126) */
-/* dvar_nopredict: aliased to imp_cg_nopredict in import_pointers.S (fix #126) */
+char dvar_autoPickup[64] __attribute__((aligned(4))) = {0};
+char dvar_compassClampDist[64] __attribute__((aligned(4))) = {0};
+char dvar_compassClampSaturation[64] __attribute__((aligned(4))) = {0};
+char dvar_compassFade[64] __attribute__((aligned(4))) = {0};
+char dvar_compassMaxRange[64] __attribute__((aligned(4))) = {0};
+char dvar_compassMinRange[64] __attribute__((aligned(4))) = {0};
+char dvar_compassMinSaturation[64] __attribute__((aligned(4))) = {0};
+char dvar_compassPingFadeTime[64] __attribute__((aligned(4))) = {0};
+char dvar_compassSize[64] __attribute__((aligned(4))) = {0};
+char dvar_developer[64] __attribute__((aligned(4))) = {0};
+char dvar_errorDecay[64] __attribute__((aligned(4))) = {0};
+char dvar_nopredict[64] __attribute__((aligned(4))) = {0};
 char dvar_ptr_195ee78[64] __attribute__((aligned(4))) = {0};
 /* _dvar_shellshock_*: 29 aliases defined in import_pointers.S (fix #123) */
-/* dvar_synchronous: aliased to imp_cg_synchronousClients in import_pointers.S (fix #126) */
+char dvar_synchronous[64] __attribute__((aligned(4))) = {0};
 /* dx_device_ptr: alias for imp_dx — defined in import_pointers.S */
 /* dx_fence: alias for imp_alwaysfails — defined in import_pointers.S */
 char dxIter[64] __attribute__((aligned(4))) = {0};
@@ -225,7 +225,7 @@ char __dyld_func_lookup[64] __attribute__((aligned(4))) = {0};
 char EnableControl[64] __attribute__((aligned(4))) = {0};
 char encode_vol_ptr[64] __attribute__((aligned(4))) = {0};
 char EndMediaEdits[64] __attribute__((aligned(4))) = {0};
-/* entityHandlers_ptr: aliased to imp_entityHandlers in import_pointers.S (fix #126) */
+char entityHandlers_ptr[64] __attribute__((aligned(4))) = {0};
 char EqualRect[64] __attribute__((aligned(4))) = {0};
 int FindNextComponent() { return 0; } /* Mac Carbon stub: no audio components */
 char ForeColor[64] __attribute__((aligned(4))) = {0};
@@ -322,15 +322,15 @@ char fx_time_src2[64] __attribute__((aligned(4))) = {0};
 /* g_banIPs_dvar: aliased to g_banIPs in import_pointers.S */
 /* g_bobMax_ptr: alias for imp_bg_bobMax — defined in import_pointers.S */
 char g_cheats_dvar[64] __attribute__((aligned(4))) = {0};
-/* g_clients_ptr: aliased to imp_entityHandlers in import_pointers.S (fix #126) */
+char g_clients_ptr[64] __attribute__((aligned(4))) = {0};
 char g_creatingTexture[64] __attribute__((aligned(4))) = {0};
-/* g_deadChat_ptr: aliased to imp_voice_deadChat in import_pointers.S (fix #126) */
+char g_deadChat_ptr[64] __attribute__((aligned(4))) = {0};
 /* g_debug_damage_ptr: alias for imp_g_debugDamage — defined in import_pointers.S */
 /* g_drawSurf: decompiler alias for imp_tess — now a symbol alias in import_pointers.S */
 /* g_dx: decompiler alias for BSS 'dx' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxCaps: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxIter: decompiler alias for 'alwaysfails' — now a symbol alias in stubs/symbol_aliases.S */
-/* g_enemylookDist: aliased to imp_g_friendlyfireDist in import_pointers.S (fix #126) */
+char g_enemylookDist[64] __attribute__((aligned(4))) = {0};
 /* g_entities_ptr: alias defined in literals.S as .set g_entities_ptr, g_entities */
 char GetAvailableWindowPositioningBounds[64] __attribute__((aligned(4))) = {0};
 char GetComponentVersion[64] __attribute__((aligned(4))) = {0};
@@ -362,35 +362,35 @@ char GetTrackMedia[64] __attribute__((aligned(4))) = {0};
 char GetWindowPortBounds[64] __attribute__((aligned(4))) = {0};
 char GetWindowResizeLimits[64] __attribute__((aligned(4))) = {0};
 char GetWRefCon[64] __attribute__((aligned(4))) = {0};
-/* g_friendlylookDist: aliased to imp_g_friendlyNameDist in import_pointers.S (fix #126) */
+char g_friendlylookDist[64] __attribute__((aligned(4))) = {0};
 /* gfx_buf: decompiler alias for imp_tess — now a symbol alias in import_pointers.S */
 char gfxBuf[64] __attribute__((aligned(4))) = {0};
 /* gfxScene: decompiler alias for imp_scene — now a symbol alias in import_pointers.S */
 char GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE[64] __attribute__((aligned(4))) = {0};
 char GoToBeginningOfMovie[64] __attribute__((aligned(4))) = {0};
 /* g_password_ptr: alias for imp_g_password — defined in import_pointers.S */
-/* g_phys_world: aliased to imp_vec3_origin in import_pointers.S (fix #126) */
+char g_phys_world[64] __attribute__((aligned(4))) = {0};
 /* g_renderer_ptr: linker alias to re */
 /* g_renderState: decompiler alias for imp_r_fog — now a symbol alias in import_pointers.S */
 char g_ri[64] __attribute__((aligned(4))) = {0};
-/* g_scr_data_ptr: aliased to imp_scr_const in import_pointers.S (fix #126) */
+char g_scr_data_ptr[64] __attribute__((aligned(4))) = {0};
 void GScr_LoadAnimScripts(void) {}
 void GScr_PostResetTimeout(void) {}
 char g_sNextDmgTableId[64] __attribute__((aligned(4))) = {0};
 void G_SpawnTriggerHurt(void) {}
-/* g_sv_running_ptr: aliased to imp_voice_global in import_pointers.S (fix #126) */
+char g_sv_running_ptr[64] __attribute__((aligned(4))) = {0};
 /* g_time: decompiler alias for imp_level_bgs — now a defsym alias */
 /* g_time_ptr: decompiler alias for imp_bgs — now a defsym alias */
-/* g_trace_zero_ptr: aliased to imp_vec3_origin in import_pointers.S (fix #126) */
+char g_trace_zero_ptr[64] __attribute__((aligned(4))) = {0};
 char g_unknown_195f22c[64] __attribute__((aligned(4))) = {0};
 char g_unknown_195f230[64] __attribute__((aligned(4))) = {0};
-/* g_useActivateHoldTime: aliased to imp_g_useholdspawndelay in import_pointers.S (fix #126) */
-/* g_useActivateReuseTime: aliased to imp_g_useholdtime in import_pointers.S (fix #126) */
+char g_useActivateHoldTime[64] __attribute__((aligned(4))) = {0};
+char g_useActivateReuseTime[64] __attribute__((aligned(4))) = {0};
 char g_vidConfig[64] __attribute__((aligned(4))) = {0};
 /* g_viewInfo: decompiler alias for imp_r_zfar — now a symbol alias in import_pointers.S */
 /* g_viewParms: decompiler alias for imp_backEndData — now a symbol alias in import_pointers.S */
-/* g_voiceChatsAllowed_ptr: aliased to imp_voice_localEcho in import_pointers.S (fix #126) */
-/* g_voiceChatTalkingDuration_ptr: aliased to imp_g_inactivity in import_pointers.S (fix #126) */
+char g_voiceChatsAllowed_ptr[64] __attribute__((aligned(4))) = {0};
+char g_voiceChatTalkingDuration_ptr[64] __attribute__((aligned(4))) = {0};
 char HandleControlKey[64] __attribute__((aligned(4))) = {0};
 char HideControl[64] __attribute__((aligned(4))) = {0};
 char HideMenuBar[64] __attribute__((aligned(4))) = {0};
@@ -465,7 +465,7 @@ char QDLocalToGlobalPoint[64] __attribute__((aligned(4))) = {0};
 char QDRegisterNamedPixMapCursor[64] __attribute__((aligned(4))) = {0};
 char QDSetNamedPixMapCursor[64] __attribute__((aligned(4))) = {0};
 char QuitAppModalLoopForWindow[64] __attribute__((aligned(4))) = {0};
-/* rcon_password_dvar: aliased to imp_rcon_password in import_pointers.S (fix #126) */
+char rcon_password_dvar[64] __attribute__((aligned(4))) = {0};
 /* r_contentmask: alias for imp_vec3_origin — defined in import_pointers.S */
 /* r_defaultColor: alias for imp_colorWhite — defined in import_pointers.S */
 /* r_device_ptr: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
@@ -560,7 +560,7 @@ char StopMovie[64] __attribute__((aligned(4))) = {0};
 /* sv_cheats_dvar: alias for imp_sv_cheats — defined in import_pointers.S */
 char sv_cheats_ptr[64] __attribute__((aligned(4))) = {0};
 char s_vc_logCount[64] __attribute__((aligned(4))) = {0};
-/* sv_com_dvarDump_ptr: aliased to imp_cl_paused in import_pointers.S (fix #126) */
+char sv_com_dvarDump_ptr[64] __attribute__((aligned(4))) = {0};
 /* sv_debugRate_dvar: alias for imp_sv_debugRate — defined in import_pointers.S */
 /* sv_debugReliableCmds_dvar: alias for imp_sv_debugReliableCmds — defined in import_pointers.S */
 /* sv_dedicated_dvar: alias for imp_com_dedicated — defined in import_pointers.S */
@@ -585,7 +585,7 @@ char sv_dedicated_dvar2[64] __attribute__((aligned(4))) = {0};
 /* sv_packet_info_dvar: alias for imp_sv_packet_info — defined in import_pointers.S */
 /* sv_padPackets_dvar: alias for imp_sv_padPackets — defined in import_pointers.S */
 /* sv_privateClients_dvar: alias for imp_sv_privateClients — defined in import_pointers.S */
-/* sv_privatePassword_dvar: aliased to imp_sv_privatePassword in import_pointers.S (fix #126) */
+char sv_privatePassword_dvar[64] __attribute__((aligned(4))) = {0};
 /* sv_ptr: linker alias to sv */
 /* sv_pure_dvar: alias for imp_sv_pure — defined in import_pointers.S */
 /* sv_reconnectlimit_dvar: alias for imp_sv_reconnectlimit — defined in import_pointers.S */
@@ -594,7 +594,7 @@ char sv_dedicated_dvar2[64] __attribute__((aligned(4))) = {0};
 /* sv_running_dvar: alias for imp_com_sv_running — defined in import_pointers.S */
 /* sv_serverid_dvar: alias for imp_sv_serverid — defined in import_pointers.S */
 /* sv_showAverageBPS_dvar: alias for imp_sv_showAverageBPS — defined in import_pointers.S */
-/* sv_showcommands_dvar: aliased to imp_sv_debugReliableCmds in import_pointers.S (fix #126) */
+char sv_showcommands_dvar[64] __attribute__((aligned(4))) = {0};
 /* sv_showCommands_dvar: alias for imp_sv_showCommands — defined in import_pointers.S */
 /* svs_ptr: linker alias to svs */
 /* sv_timeout_dvar: alias for imp_sv_timeout — defined in import_pointers.S */
