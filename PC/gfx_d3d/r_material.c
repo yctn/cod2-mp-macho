@@ -217,7 +217,7 @@ void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, i
 /* line 981 */
 Bool Material_IsDefault(const Material *material)
 {
-    const Material *defaultMtl = *(const Material **)(*(int *)imp_rgp + 0x102c);
+    const Material *defaultMtl = *(const Material **)((byte *)imp_rgp + 0x102c);
     if (material->textures != defaultMtl->textures)
         return 0;
     if (material->constants != defaultMtl->constants)
@@ -1777,7 +1777,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
 /* line 1119 */
 MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack)
 {
-    if (*name == '\0')
+    if (name == NULL || *name == '\0')
         return rgp.defaultMaterial;
     return Material_Register(name, imageTrack);
 }

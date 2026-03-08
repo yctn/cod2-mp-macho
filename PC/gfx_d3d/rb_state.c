@@ -2206,7 +2206,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
 /* line 1777 */
 void RB_BindDefaultImages(void)
 {
-    void *defaultImage = *(void **)(*(byte **)imp_rgp + 0x1008);
+    void *defaultImage = *(void **)((byte *)imp_rgp + 0x1008);
 
     for (int i = 0; i < 16; i++) {
         RB_SetSampler(i, *((byte *)&dxState + 0x20e4 + i), defaultImage);

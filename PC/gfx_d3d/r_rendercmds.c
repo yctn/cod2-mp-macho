@@ -165,11 +165,11 @@ GfxViewParms * R_AllocViewParms(void)
 /* line 1806 */
 void R_BeginDebugFrame(void)
 {
-    if (!*(char *)*(int *)imp_rg)
+    if (!*(char *)imp_rg)
         return;
     *(GfxCmdArray **)&s_debugFrameGlob = s_cmdList;
     *(GfxBackEndData * *)((char *)&s_debugFrameGlob + 4) = frontEndDataOut;
-    if (*(int *)((char *)*(int *)imp_dx + 0x2dc0)) {
+    if (*(int *)((char *)imp_dx + 0x2dc0)) {
         *(char *)((char *)&s_debugFrameGlob + 8) = 1;
         R_UnlockSkinnedCache();
     }

@@ -115,7 +115,7 @@ void R_SkinGfxEntity(GfxEntity *ent)
 void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *material, int *lmapIndex)
 {
     int ent, matIndex;
-    int *base = *(int **)imp_rgp;
+    int *base = (int *)imp_rgp;
 
     if ((int)sortValue >= 0) {
         ent = (sortValue >> 4) & 0xfff;

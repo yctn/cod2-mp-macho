@@ -59,7 +59,14 @@ float FX_CreateDefaultEffect(void)
 {
     defaultEffect = FX_TryRegisterEffect("default_fx");
     if (defaultEffect == NULL) {
-        Com_Error(1, "^1ERROR: could not load default effect file '%s'", "default_fx");
+        /* default_fx.efx not in any IWD; pure mode blocks loose .efx files.
+           Create a minimal empty effect template in-memory. */
+        char *nameBuf;
+        defaultEffect = (EffectTemplate *)Hunk_AllocAlignInternal(0x68, 4);
+        memset(defaultEffect, 0, 0x68);
+        nameBuf = (char *)Hunk_AllocAlignInternal(11, 4);
+        strcpy(nameBuf, "default_fx");
+        *(char **)defaultEffect = nameBuf;
     }
 }
 

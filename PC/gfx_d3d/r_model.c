@@ -97,20 +97,20 @@ struct XModel * R_RegisterModel(const char *name)
 /* line 200 */
 GfxBrushModel * R_RegisterInlineModel(int modelIndex)
 {
-    int *world = *(int **)(*(int *)imp_rgp + 0x109c);
+    int *world = *(int **)((byte *)imp_rgp + 0x109c);
     return (GfxBrushModel *)(*(int *)((byte *)world + 0x138) + modelIndex * 32);
 }
 
 /* line 218 */
 void R_SetIgnorePrecacheErrors(qboolean ignore)
 {
-    *(byte *)(*(int *)imp_rg + 2) = (ignore != 0);
+    *(byte *)((byte *)imp_rg + 2) = (ignore != 0);
 }
 
 /* line 224 */
 qboolean R_GetIgnorePrecacheErrors(void)
 {
-    return *(byte *)(*(int *)imp_rg + 2) != 0;
+    return *(byte *)((byte *)imp_rg + 2) != 0;
 }
 
 /* line 587 */
@@ -158,7 +158,7 @@ struct DObj_s * R_GetGfxEntityDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     if (!obj) {
         obj = *(struct DObj_s **)((byte *)sceneEnt + 4);
     } else {
-        obj = *(struct DObj_s **)(*(int *)imp_rg + 0x3110);
+        obj = *(struct DObj_s **)((byte *)imp_rg + 0x3110);
         DObjSetModel(obj, *(void **)((byte *)sceneEnt + 4));
     }
     return obj;

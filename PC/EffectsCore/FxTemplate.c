@@ -1494,7 +1494,7 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
         "movl 0x10(%ebp), %eax\n" /* line 121 | grp */
         "movl 0x10(%eax), %esi\n"
         "testl %esi, %esi\n" /* line 1642 | pairs */
-        "je 0x5f124\n"
+        "je .Lpc_return_1\n"
         "movl 0x14(%ebp), %eax\n" /* channelId */
         "shll $6, %eax\n"
         "movl %eax, -0x44(%ebp)\n"
@@ -1514,7 +1514,7 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
         "jmp .Lf5f038_0005f0ad\n"
         ".Lf5f038_0005f084:\n"
         "cmpl $1, 0x14(%ebp)\n" /* line 1650 | channelId */
-        "jbe 0x5f1bc\n"
+        "jbe .Lpc_rgb_curve\n"
         "movl 0x14(%ebp), %ecx\n" /* line 1653 | channelId */
         "movl %ecx, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* pairs */
@@ -1524,7 +1524,7 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
         "movl 4(%esi), %eax\n" /* line 80 */
         "movl %eax, %esi\n"
         "testl %eax, %eax\n" /* line 1642 */
-        "je 0x5f124\n"
+        "je .Lpc_return_1\n"
         ".Lf5f038_0005f0ad:\n"
         "movl (%esi), %ebx\n" /* line 49 */
         "movl %esi, (%esp)\n" /* line 1646 | pairs */
@@ -1539,13 +1539,109 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
-        "jne 0x5f131\n"
+        "jne .Lpc_key_not_scale\n"
         /* { scope 2: this */
         /* { scope 3 */
         "leal -0x1c(%ebp), %edx\n" /* line 311 | max */
         "movl %edx, 0xc(%esp)\n"
         "leal -0x20(%ebp), %ecx\n" /* min */
         "movl %ecx, 8(%esp)\n"
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
+        "movl %edi, (%esp)\n" /* val */
+        "calll sscanf\n"
+        /* store scale min/max into backCompatibleParameters */
+        "movl -0x3c(%ebp), %eax\n" /* this (backCompat + channelId*64) */
+        "flds -0x20(%ebp)\n" /* min */
+        "fstps 0x18(%eax)\n"
+        "flds -0x1c(%ebp)\n" /* max */
+        "fstps 0x1c(%eax)\n"
+        "jmp .Lpc_next_pair\n"
+
+        /* 0x5f131: key != "scale" — check remaining keys */
+        ".Lpc_key_not_scale:\n"
+        "movl $str_0021a478, 4(%esp)\n" /* "start" */
+        "movl %ebx, (%esp)\n"
+        "calll stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lpc_parse_start\n"
+        "movl $str_0021a480, 4(%esp)\n" /* "parm" */
+        "movl %ebx, (%esp)\n"
+        "calll stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lpc_next_pair\n" /* skip parm for now */
+        "movl $str_0021a488, 4(%esp)\n" /* "parms" */
+        "movl %ebx, (%esp)\n"
+        "calll stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lpc_next_pair\n" /* skip parms for now */
+        "movl $str_0021a490, 4(%esp)\n" /* "flag" */
+        "movl %ebx, (%esp)\n"
+        "calll stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lpc_parse_flags\n"
+        "movl $str_0021a498, 4(%esp)\n" /* "flags" */
+        "movl %ebx, (%esp)\n"
+        "calll stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lpc_parse_flags\n"
+        /* unknown key — print error and skip */
+        "movl %ebx, 4(%esp)\n"
+        "movl $str_0021a4a0, (%esp)\n" /* "Unknown key parsing a channel: %s\n" */
+        "calll FX_Print\n"
+        "jmp .Lpc_next_pair\n"
+
+        /* parse "start": sscanf(val, "%f %f", &min, &max) */
+        ".Lpc_parse_start:\n"
+        "leal -0x1c(%ebp), %edx\n"
+        "movl %edx, 0xc(%esp)\n"
+        "leal -0x20(%ebp), %ecx\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
+        "movl %edi, (%esp)\n"
+        "calll sscanf\n"
+        "movl -0x3c(%ebp), %eax\n"
+        "flds -0x20(%ebp)\n"
+        "fstps 0x08(%eax)\n" /* start min */
+        "flds -0x1c(%ebp)\n"
+        "fstps 0x0c(%eax)\n" /* start max */
+        "jmp .Lpc_next_pair\n"
+
+        /* parse "flag"/"flags": call ParseFlags with attribute table */
+        ".Lpc_parse_flags:\n"
+        "movl $0x18, 0xc(%esp)\n" /* 24 entries */
+        "movl $fxAttributeFlags, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n" /* val */
+        "movl 8(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll PrimitiveTemplate_ParseFlags\n"
+        "jmp .Lpc_next_pair\n"
+
+        /* 0x5f1bc: channelId <= 1 — RGB channel curve */
+        ".Lpc_rgb_curve:\n"
+        "movl 0x14(%ebp), %ecx\n" /* channelId */
+        "movl %ecx, 8(%esp)\n"
+        "movl %esi, 4(%esp)\n" /* pairs */
+        "movl 8(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll PrimitiveTemplate_ParseChannelRgbCurve\n"
+        /* fall through to next pair */
+
+        /* advance to next pair */
+        ".Lpc_next_pair:\n"
+        "movl 4(%esi), %eax\n" /* pairs->next */
+        "movl %eax, %esi\n"
+        "testl %eax, %eax\n"
+        "jne .Lf5f038_0005f0ad\n"
+
+        /* 0x5f124: return 1 */
+        ".Lpc_return_1:\n"
+        "movl $1, %eax\n"
+        "addl $0x6c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
     );
 }
 
