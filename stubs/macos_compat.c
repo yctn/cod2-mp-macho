@@ -285,8 +285,13 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
     return (ContextRef)ctx;
 }
 
+static int swap_diag = 0;
 void MacDisplay_SwapContext(ContextRef ctx)
 {
+    if (swap_diag < 5) {
+        fprintf(stderr, "[SWAP#%d] win=%p ctx=%p\n", swap_diag, sdl_gl_window, (void*)(uintptr_t)ctx);
+        swap_diag++;
+    }
     if (sdl_gl_window)
         SDL_GL_SwapWindow(sdl_gl_window);
 }

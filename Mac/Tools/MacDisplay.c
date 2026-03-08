@@ -511,7 +511,12 @@ static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
 
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
 {
-    return MacDisplay_SwapContext_impl(inContextRef);
+    extern void *sdl_gl_window;
+    if (sdl_gl_window) {
+        extern void SDL_GL_SwapWindow(void *);
+        SDL_GL_SwapWindow(sdl_gl_window);
+    }
+    return 1;
 }
 
 /* line 1747 */

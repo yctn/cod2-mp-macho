@@ -94,7 +94,15 @@ void RB_SetGammaRamp(const GfxGammaRamp *gammaTable);
 static void RB_TouchAllImagesCmd(GfxRenderCommandExecState *execState);
 qboolean RB_IsGpuFenceFinished(void);
 void RB_GpuWaited(int ticks);
-void RB_EndFrame(void);
+static void RB_EndFrame_real(void);
+void RB_EndFrame(void)
+{
+    static int rbef = 0;
+    rbef++;
+    if (rbef <= 5) fprintf(stderr, "[RB_EndFrame_wrap#%d]\n", rbef);
+    RB_EndFrame_real();
+    if (rbef <= 5) fprintf(stderr, "[RB_EndFrame_wrap#%d returned]\n", rbef);
+}
 void RB_InitBackendGlobalStructs(void);
 void RB_RegisterBackendAssets(void);
 void RB_LookupColor(int c, byte *color);
@@ -317,7 +325,7 @@ void RB_GpuWaited(int ticks)
 
 /* line 3710 */
 __attribute__((naked))
-void RB_EndFrame(void)
+static void RB_EndFrame_real(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 3710 */
@@ -5625,6 +5633,7 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
 int g_rb_exec_count = 0; /* diagnostic */
 static const char rb_diag_fmt[] = "RB_Exec #%d firstCmd=%d\n";
 static const char rb_diag_dispatch_fmt[] = "  dispatch cmd=%d func=%p\n";
+static const char rb_endframe_fmt[] = "[RB_EndFrame] dev=%p vtable=%p Present=%p\n";
 static const char rb_diag_post_fmt[] = "  dispatch returned\n";
 int g_rb_dispatch_count = 0; /* diagnostic: how many commands dispatched */
 int g_rb_first_cmd = -1; /* diagnostic: first command word seen */
