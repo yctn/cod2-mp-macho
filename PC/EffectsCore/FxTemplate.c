@@ -11,7 +11,7 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-extern const FxFlagEntry fxAttributeFlags[24]; /* 0x0 */
+extern const FxFlagEntry fxAttributeFlags[26]; /* 0x0 */
 extern const FxFlagEntry fxSpawnFlags[13]; /* 0x0 */
 extern Bool g_rendererExists; /* 0x0 */
 
@@ -1608,7 +1608,7 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
 
         /* parse "flag"/"flags": call ParseFlags with attribute table */
         ".Lpc_parse_flags:\n"
-        "movl $0x18, 0xc(%esp)\n" /* 24 entries */
+        "movl $0x1a, 0xc(%esp)\n" /* 26 entries */
         "movl $fxAttributeFlags, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* val */
         "movl 8(%ebp), %eax\n"
@@ -3643,7 +3643,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "testl %eax, %eax\n"
         "jne .Lf5fee0_00060fc3\n"
         ".Lf5fee0_00060f76:\n"
-        "movl $0x18, 0xc(%esp)\n" /* line 903 */
+        "movl $0x1a, 0xc(%esp)\n" /* 26 entries */
         "movl $fxAttributeFlags, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* channelId */
         "movl 8(%ebp), %edx\n" /* this */

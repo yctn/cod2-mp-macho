@@ -255,17 +255,23 @@ extern const char str_0021a158[]; /* emitFx */
 extern const char str_0021a160[]; /* relative */
 extern const char str_0021a16c[]; /* blocksSight */
 extern const char str_0021a178[]; /* disableFarPlaneCulling */
+extern const char str_0021a024[]; /* absoluteVel */
+extern const char str_0021a068[]; /* useBBox */
+extern const char str_0021a070[]; /* usePhysics */
+extern const char str_0021a07c[]; /* impactKills */
+extern const char str_0021a088[]; /* impactFx */
+extern const char str_0021a1a4[]; /* linear */
 struct { const char *flag; unsigned int masks[2]; }
-fxAttributeFlags[24] __attribute__((aligned(4))) = {
+fxAttributeFlags[26] __attribute__((aligned(4))) = {
     { str_00219f74, { 0x000001, 0 } }, /* org2fromTrace */
     { str_00219f84, { 0x000002, 0 } }, /* traceImpactFx */
     { str_00219f94, { 0x000004, 0 } }, /* org2isOffset */
     { str_00219fa4, { 0x000008, 0 } }, /* cheapOrgCalc */
     { str_00219fb4, { 0x000010, 0 } }, /* cheapOrg2Calc */
-    { str_00219fc4, { 0x000020, 0 } }, /* orgOnSphere */
-    { str_00219fd0, { 0x000040, 0 } }, /* orgOnCylinder */
-    { str_00219fe0, { 0x000080, 0 } }, /* axisFromSphere */
-    { str_00219ff0, { 0x000100, 0 } }, /* randrotaroundfwd */
+    { str_0021a024, { 0x000020, 0 } }, /* absoluteVel (was spawn→attr) */
+    { str_0021a068, { 0x000040, 0 } }, /* useBBox (was spawn→attr) */
+    { str_0021a070, { 0x000080, 0 } }, /* usePhysics (was spawn→attr) */
+    { str_0021a07c, { 0x000100, 0 } }, /* impactKills (was spawn→attr) */
     { str_0021a09c, { 0x000200, 0 } }, /* useAlpha */
     { str_0021a0a8, { 0x000400, 0 } }, /* useRandomColors */
     { str_0021a0b8, { 0x000800, 0 } }, /* useRandomAlpha */
@@ -281,6 +287,8 @@ fxAttributeFlags[24] __attribute__((aligned(4))) = {
     { str_0021a160, { 0x200000, 0 } }, /* relative */
     { str_0021a16c, { 0x400000, 0 } }, /* blocksSight */
     { str_0021a178, { 0x800000, 0 } }, /* disableFarPlaneCulling */
+    { str_0021a088, { 0x1000000, 0 } }, /* impactFx (also in spawnFlags) */
+    { str_0021a1a4, { 0x2000000, 0 } }, /* linear */
 };
 /* fx_developer_check_ptr: aliased to imp_g_rendererExists in import_pointers.S */
 /* fx_helper_ptr: alias for imp_theFxHelper — defined in import_pointers.S */
@@ -302,14 +310,14 @@ struct { const char *flag; unsigned int masks[2]; }
 fxSpawnFlags[13] __attribute__((aligned(4))) = {
     { str_0021a004, { 0, 0x001 } }, /* evenDistribution */
     { str_0021a018, { 0, 0x002 } }, /* frustumCull */
-    { str_0021a024, { 0, 0x004 } }, /* absoluteVel */
+    { str_00219fc4, { 0, 0x004 } }, /* orgOnSphere (was attr→spawn) */
     { str_0021a030, { 0, 0x008 } }, /* absoluteAccel */
     { str_0021a040, { 0, 0x010 } }, /* depthHack */
     { str_0021a04c, { 0, 0x020 } }, /* setShaderTime */
     { str_0021a05c, { 0, 0x040 } }, /* useModel */
-    { str_0021a068, { 0, 0x080 } }, /* useBBox */
-    { str_0021a070, { 0, 0x100 } }, /* usePhysics */
-    { str_0021a07c, { 0, 0x200 } }, /* impactKills */
+    { str_00219fd0, { 0, 0x080 } }, /* orgOnCylinder (was attr→spawn) */
+    { str_00219fe0, { 0, 0x100 } }, /* axisFromSphere (was attr→spawn) */
+    { str_00219ff0, { 0, 0x200 } }, /* randrotaroundfwd (was attr→spawn) */
     { str_0021a088, { 0, 0x400 } }, /* impactFx */
     { str_0021a094, { 0, 0x800 } }, /* deathFx */
     { str_0021a158, { 0, 0x1000 } }, /* emitFx (reuse) */
