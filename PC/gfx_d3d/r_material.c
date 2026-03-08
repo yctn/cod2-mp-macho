@@ -3,6 +3,10 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
+
+extern void Com_Printf(const char *fmt, ...);
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -370,34 +374,12 @@ void Material_UpdatePicmipAll(void)
 }
 
 /* line 1588 */
-__attribute__((naked))
-int Material_LoadFile(const char *filename, fileHandle_t *file)
+extern int FS_FOpenFileRead(const char *filename, int *file, int uniqueFILE);
+int Material_LoadFile(const char *filename, int *file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1588 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 1592 | filename */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002243a8, 8(%esp)\n" /* "materials/%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0x48(%ebp), %ebx\n" /* fullFilename */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl $1, 8(%esp)\n" /* line 1593 */
-        "movl 0xc(%ebp), %eax\n" /* file */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0x130(%eax)\n"
-        /* } scope */
-        "addl $0x54, %esp\n" /* line 1594 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char fullFilename[64];
+    Com_sprintf(fullFilename, 64, "materials/%s", filename);
+    return FS_FOpenFileRead(fullFilename, file, 1);
 }
 
 /* line 1261 */

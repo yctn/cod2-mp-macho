@@ -256,7 +256,8 @@ void CL_ParseGamestate(msg_t *msg)
     Com_Printf("DBG: CL_InitDownloads returned\n");
 
     /* line 732 */
-    Dvar_SetInt(*(void **)cl_packetdelay, 0);
+    if (cl_packetdelay && *(void **)cl_packetdelay)
+        Dvar_SetInt(*(void **)cl_packetdelay, 0);
 }
 
 /* line 748 */

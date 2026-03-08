@@ -31,7 +31,7 @@ extern void Cmd_TokenizeString2(const char *text, int flags);
 extern void Cmd_AddCommand(const char *cmd, void (*func)(void));
 extern int I_stricmp(const char *s1, const char *s2);
 extern int I_strnicmp(const char *s1, const char *s2, int n);
-extern void I_strncat(char *dest, const char *src, int maxLen);
+extern void I_strncat(char *dest, int size, const char *src);
 extern void I_strncpyz(char *dest, const char *src, int maxLen);
 extern void CM_LoadMap(const char *name, int *checksum);
 extern void CM_LinkWorld(void);
@@ -959,10 +959,8 @@ void CL_UpdateLevelHunkUsage(void)
     int buflen;
 
     memusage = Hunk_Used();
-    Com_Printf("DBG CL_UpdateLevelHunkUsage: memusage=%d\n", memusage);
 
     len = FS_FOpenFileByMode("hunkusage.dat", &handle, 0);
-    Com_Printf("DBG CL_UpdateLevelHunkUsage: hunkusage.dat len=%d\n", len);
     if (len < 0)
         goto write_new;
 
@@ -977,11 +975,9 @@ void CL_UpdateLevelHunkUsage(void)
 
     buftrav = buf;
     outbuf[0] = '\0';
-    Com_Printf("DBG: buf=%p outbuf=%p buflen=%d\n", buf, outbuf, buflen);
 
     while (1) {
         token = Com_Parse(&buftrav);
-        Com_Printf("DBG: token=%p '%s'\n", token, token ? token : "(null)");
         if (!token || *token == '\0')
             break;
 
@@ -1002,8 +998,8 @@ void CL_UpdateLevelHunkUsage(void)
         }
 
         /* Copy non-matching entries to output */
-        I_strncat(outbuf, token, buflen);
-        I_strncat(outbuf, " ", buflen);
+        I_strncat(outbuf, buflen, token);
+        I_strncat(outbuf, buflen, " ");
 
         token = Com_Parse(&buftrav);
         if (!token || *token == '\0') {
@@ -1011,8 +1007,8 @@ void CL_UpdateLevelHunkUsage(void)
             continue;
         }
 
-        I_strncat(outbuf, token, buflen);
-        I_strncat(outbuf, "\n", buflen);
+        I_strncat(outbuf, buflen, token);
+        I_strncat(outbuf, buflen, "\n");
     }
 
     /* Write updated file */
@@ -1034,7 +1030,6 @@ void CL_UpdateLevelHunkUsage(void)
 
 write_new:
     /* Append our entry */
-    Com_Printf("DBG CL_UpdateLevelHunkUsage: write_new\n");
     len = FS_FOpenFileByMode("hunkusage.dat", &handle, 2);
     if (!handle) {
         Com_Error(ERR_DROP, "CL_UpdateLevelHunkUsage: cannot open for append");
@@ -1042,7 +1037,6 @@ write_new:
 
     {
         char *cl = CL_LOCAL;
-        Com_Printf("DBG CL_UpdateLevelHunkUsage: cl=%p cl+0x8590=%p\n", cl, cl + 0x8590);
         Com_sprintf(outstr, 256, "%s %i\n", cl + 0x8590, memusage);
     }
     FS_Write(outstr, strlen(outstr), handle);
@@ -1109,15 +1103,10 @@ void CL_InitCGame(void)
         Com_Printf("CL_InitCGame: %5.2f seconds\n", elapsed);
     }
 
-    Com_Printf("DBG: calling RE->EndRegistration\n");
     RE->EndRegistration();
-    Com_Printf("DBG: calling Com_TouchMemory\n");
     Com_TouchMemory();
-    Com_Printf("DBG: calling Con_ClearNotify\n");
     Con_ClearNotify();
-    Com_Printf("DBG: calling Con_ClearSubtitles\n");
     Con_ClearSubtitles();
-    Com_Printf("DBG: calling CL_UpdateLevelHunkUsage\n");
     CL_UpdateLevelHunkUsage();
 }
 
