@@ -5246,8 +5246,8 @@ void BG_LoadAnim(playerState_t *ps, char *animName, animBodyPart_t bodyPart, qbo
         "movl %eax, (%esp)\n"
         "calll Scr_PrecacheAnimTrees\n"
         "movl bgs, %esi\n" /* line 3529 | bodyPart */
-        "movl $str_002aef88, (%esp)\n" /* line 3510 */
-        "calll Scr_FindAnimTree\n"
+        "movl $str_002aef88, (%esp)\n" /* line 3510 | "multiplayer" */
+        "calll Scr_FindAnimTree_asm\n" /* wrapper returns in eax, not hidden ptr */
         "movl %eax, %ebx\n" /* duration */
         "testl %eax, %eax\n" /* line 3511 */
         "je 0x184a28\n"
@@ -5273,6 +5273,18 @@ void BG_LoadAnim(playerState_t *ps, char *animName, animBodyPart_t bodyPart, qbo
         "movl %eax, -0x50(%ebp)\n"
         "movl globalScriptData, %eax\n" /* line 672 */
         "movl -0x50(%ebp), %edx\n"
+        /* TRUNCATED: remaining BG_LoadAnim logic not yet decompiled.
+         * Original continues with animation index setup using treeSize.
+         * For now, clean up and return safely. */
+        "leal -0x20(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll ZN10LargeLocalD1Ev\n"
+        "addl $0x6c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
     );
 }
 

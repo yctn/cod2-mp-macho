@@ -460,6 +460,13 @@ struct scr_animtree_t Scr_FindAnimTree(const char *filename)
     return result;
 }
 
+/* Wrapper for ASM callers that expect result in eax (no hidden pointer) */
+void *Scr_FindAnimTree_asm(const char *filename)
+{
+    struct scr_animtree_t result = Scr_FindAnimTree(filename);
+    return (void *)result.anims;
+}
+
 /* line 738 */
 void Scr_FindAnim(const char *filename, const char *animName, scr_anim_t *anim, int user)
 {

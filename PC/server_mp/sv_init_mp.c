@@ -953,10 +953,12 @@ void SV_SpawnServer(const char *server)
         const char *ext = GetBspExtension();
         Com_sprintf(filename, 64, "maps/mp/%s.%s", server, ext);
     }
+    { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("SV: before CM_LoadMap"); }
     Com_LoadBsp(filename);
     CM_LoadMap(filename, &checksum);
     Com_UnloadBsp();
     CM_LinkWorld();
+    { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("SV: after CM_LoadMap"); }
 
     /* Update serverId */
     sv_serverId_value = (sv_serverId_value + 16) & 0xff;
@@ -977,6 +979,7 @@ void SV_SpawnServer(const char *server)
     Com_LoadSoundAliases(filename, "all_mp", 2);
 
     /* Init game progs */
+    { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("SV: before SV_InitGameProgs"); }
     SV_InitGameProgs(savepersist);
 
     /* Init FX system */

@@ -319,6 +319,7 @@ const char * Hunk_SetDataForFile(int type, const char *name, void *data, Alloc_t
     int hash;
     int nameLen;
     fileData_t *fd;
+    static int dbg_type_counts[8];
 
     hash = FS_HashFileName(name, 0x400);
     nameLen = strlen(name) + 1;
@@ -328,6 +329,14 @@ const char * Hunk_SetDataForFile(int type, const char *name, void *data, Alloc_t
     strcpy(fd->name, name);
     fd->next = (int)com_fileDataHashTable[hash];
     com_fileDataHashTable[hash] = fd;
+
+    /* DBG: count assets by type */
+    if (type < 8) dbg_type_counts[type]++;
+    if (type == 2 || type == 4 || type == 5) {
+        Com_Printf("DBG ASSET t=%i #%i high=%iMB %s\n",
+            type, dbg_type_counts[type], TO_MB(hunk_high.permanent), name);
+    }
+
     return fd->name;
 }
 
@@ -434,7 +443,15 @@ int Hunk_Used(void)
     return hunk_low.permanent + hunk_high.permanent;
 }
 
+/* DBG: callable from anywhere to print hunk status */
+void DBG_Hunk_PrintUsage(const char *label)
+{
+    Com_Printf("DBG HUNK [%s]: low=%i MB, high=%i MB, total=%i MB\n",
+        label, TO_MB(hunk_low.permanent), TO_MB(hunk_high.permanent), TO_MB(s_hunkTotal));
+}
+
 /* line 1331 */
+static int dbg_hunk_last_reported; /* last reported MB threshold */
 void * Hunk_AllocInternal(int size)
 {
     int newHighUsed;
@@ -448,6 +465,11 @@ void * Hunk_AllocInternal(int size)
     if (s_hunkTotal < newHighUsed + hunk_low.temp) {
         Com_Error(1, "Hunk_AllocAlign failed on %i bytes (total %i MB, low %i MB, high %i MB)",
                   size, TO_MB(s_hunkTotal), TO_MB(hunk_low.temp), TO_MB(newHighUsed));
+    }
+
+    /* DBG: report large allocs */
+    if (size > 500000) {
+        Com_Printf("DBG HUNK ALLOC: %i bytes (high now %i MB)\n", size, TO_MB(newHighUsed));
     }
 
     memset(buf, 0, size);
@@ -487,6 +509,18 @@ void * Hunk_AllocAlignInternal(int size, int alignment)
     if (s_hunkTotal < newHighUsed + hunk_low.temp) {
         Com_Error(1, "Hunk_AllocAlign failed on %i bytes (total %i MB, low %i MB, high %i MB)",
                   size, TO_MB(s_hunkTotal), TO_MB(hunk_low.temp), TO_MB(newHighUsed));
+    }
+
+    /* DBG: count all align allocs */
+    {
+        static int dbg_align_count;
+        static int dbg_align_total;
+        dbg_align_count++;
+        dbg_align_total += size;
+        if (size > 100000) {
+            Com_Printf("DBG ALIGN #%i: %i bytes align %i (total %i MB in %i allocs)\n",
+                dbg_align_count, size, alignment, dbg_align_total >> 20, dbg_align_count);
+        }
     }
 
     memset(buf, 0, size);

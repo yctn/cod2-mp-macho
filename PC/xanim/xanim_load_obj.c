@@ -181,7 +181,6 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
 
     /* line 168 - read framerate */
     sQ2 = ConsumeShort(&pos);
-
     /* line 170 - allocate XAnimParts (0x2c = 44 bytes) */
     parts = (XAnimParts *)Alloc(0x2c);
 
@@ -246,46 +245,59 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
             /* line 204 */
             deltaPart->quat->u.frame0[1] = quat[1];
         } else {
+            /* Fix #105: decompiler had <= (wrong) — need indices when count < numloopframes.
+             * Also swapped quat/trans frame formats. Delta quat reads compressed
+             * 2-component quat (2 bytes/frame), not vec3 (12 bytes/frame). */
             int numFrames;
-            if (sQ2 <= (short int)numloopframes) {
+            if (sQ2 >= (short int)numloopframes) {
                 /* numFrames == numloopframes: no index table needed */
                 deltaPart->quat = (XAnimDeltaPartQuat *)Alloc(8);
                 numFrames = (int)(unsigned short int)sQ2;
             } else if (bSmallIndices) {
-                /* line 296 - small indices */
+                /* small indices (u8) */
                 numFrames = (int)(unsigned short int)sQ2;
                 deltaPart->quat = (XAnimDeltaPartQuat *)Alloc(14 + 2 * numFrames);
-                /* line 302 */
                 memcpy(((char *)deltaPart->quat) + 8, pos, numFrames);
                 pos += numFrames;
             } else {
-                /* line 308-309 - large indices */
+                /* large indices (u16) */
                 numFrames = (int)(unsigned short int)sQ2;
                 {
                     int idxBytes = numFrames * 2;
                     deltaPart->quat = (XAnimDeltaPartQuat *)Alloc(14 + idxBytes);
-                    /* line 315 */
                     memcpy(((char *)deltaPart->quat) + 8, pos, idxBytes);
                     pos += idxBytes;
                 }
             }
 
-            /* line 329-330 */
+            /* Delta quat: compressed 2-component quaternion (2 bytes read, 4 stored) */
             deltaPart->quat->size = (unsigned short int)(sQ2 - 1);
-            deltaPart->quat->u.frames.frames = (XQuat2 *)Alloc(numFrames * 12);
+            deltaPart->quat->u.frames.frames = (XQuat2 *)Alloc(numFrames * 4);
 
-            /* line 332 - read delta quat frames (3 floats each as ints) */
             {
                 int k;
                 for (k = 0; k < numFrames; k++) {
-                    int val0, val1, val2;
-                    char *frameBase = (char *)deltaPart->quat->u.frames.frames + k * 12;
-                    val0 = ConsumeInt(&pos);
-                    *(int *)(frameBase + 0) = val0;
-                    val1 = ConsumeInt(&pos);
-                    *(int *)(frameBase + 4) = val1;
-                    val2 = ConsumeInt(&pos);
-                    *(int *)(frameBase + 8) = val2;
+                    short int v0, v1;
+                    short int *framePtr;
+                    v0 = ConsumeShort(&pos);
+                    framePtr = (short int *)((char *)deltaPart->quat->u.frames.frames + k * 4);
+                    framePtr[0] = v0;
+                    v1 = QuatSqrt(0x3fff0001 - (int)v0 * (int)v0);
+                    framePtr[1] = v1;
+                }
+            }
+
+            /* Sign fixup loop for delta quat */
+            {
+                int k;
+                for (k = 1; k < numFrames; k++) {
+                    short int *cur = (short int *)((char *)deltaPart->quat->u.frames.frames + k * 4);
+                    short int *prev = (short int *)((char *)deltaPart->quat->u.frames.frames + (k - 1) * 4);
+                    int dot = (int)cur[0] * (int)prev[0] + (int)cur[1] * (int)prev[1];
+                    if (dot < 0) {
+                        cur[0] = -cur[0];
+                        cur[1] = -cur[1];
+                    }
                 }
             }
         }
@@ -318,19 +330,20 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
                 to[2] = v2;
             }
         } else {
+            /* Fix #105: same <= → >= fix, and delta trans reads vec3 (12 bytes/frame). */
             int numFrames;
-            if (sQ2 <= (short int)numloopframes) {
+            if (sQ2 >= (short int)numloopframes) {
                 /* No index table */
                 deltaPart->trans = (XAnimDeltaPartTrans *)Alloc(8);
                 numFrames = (int)(unsigned short int)sQ2;
             } else if (bSmallIndices) {
-                /* small indices */
+                /* small indices (u8) */
                 numFrames = (int)(unsigned short int)sQ2;
                 deltaPart->trans = (XAnimDeltaPartTrans *)Alloc(10 + 2 * numFrames);
                 memcpy(((char *)deltaPart->trans) + 8, pos, numFrames);
                 pos += numFrames;
             } else {
-                /* large indices */
+                /* large indices (u16) */
                 numFrames = (int)(unsigned short int)sQ2;
                 {
                     int idxBytes = numFrames * 2;
@@ -340,35 +353,21 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
                 }
             }
 
-            /* line 248-249 */
+            /* Delta trans: vec3 (3 ints = 12 bytes per frame) */
             deltaPart->trans->size = (unsigned short int)(sQ2 - 1);
-            deltaPart->trans->u.frames.frames = (vec3_t *)Alloc(numFrames * 4);
+            deltaPart->trans->u.frames.frames = (vec3_t *)Alloc(numFrames * 12);
 
-            /* line 251 - read delta trans frames and do sign fixup */
             {
                 int k;
                 for (k = 0; k < numFrames; k++) {
-                    short int v0, v1;
-                    short int *framePtr;
-                    v0 = ConsumeShort(&pos);
-                    framePtr = (short int *)((char *)deltaPart->trans->u.frames.frames + k * 4);
-                    framePtr[0] = v0;
-                    v1 = QuatSqrt(0x3fff0001 - (int)v0 * (int)v0);
-                    framePtr[1] = v1;
-                }
-            }
-
-            /* Sign fixup loop for delta trans (line 258) */
-            {
-                int k;
-                for (k = 1; k < numFrames; k++) {
-                    short int *cur = (short int *)((char *)deltaPart->trans->u.frames.frames + k * 4);
-                    short int *prev = (short int *)((char *)deltaPart->trans->u.frames.frames + (k - 1) * 4);
-                    int dot = (int)cur[0] * (int)prev[0] + (int)cur[1] * (int)prev[1];
-                    if (dot < 0) {
-                        cur[0] = -cur[0];
-                        cur[1] = -cur[1];
-                    }
+                    int val0, val1, val2;
+                    char *frameBase = (char *)deltaPart->trans->u.frames.frames + k * 12;
+                    val0 = ConsumeInt(&pos);
+                    *(int *)(frameBase + 0) = val0;
+                    val1 = ConsumeInt(&pos);
+                    *(int *)(frameBase + 4) = val1;
+                    val2 = ConsumeInt(&pos);
+                    *(int *)(frameBase + 8) = val2;
                 }
             }
         }
@@ -490,7 +489,7 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
                 /* Multiple frames */
                 numQFrames = (int)numQuatIndices;
 
-                if (numQuatIndices <= numloopframes) {
+                if (numQuatIndices >= numloopframes) {
                     /* No index table needed */
                     if (isSimpleQuat) {
                         part->quat = (XAnimPartQuat *)Alloc(8);
@@ -499,32 +498,16 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
                     }
                     numQFrames = (int)numQuatIndices;
                 } else if (bSmallIndices) {
-                    if (isSimpleQuat) {
-                        /* line 425-426 */
-                        part->quat = (XAnimPartQuat *)Alloc(10 + 2 * numQFrames);
-                        memcpy(((char *)part->quat) + 8, pos, numQFrames);
-                        pos += numQFrames;
-                    } else {
-                        /* line 437-438 */
-                        int idxBytes = numQFrames * 2;
-                        part->quat = (XAnimPartQuat *)Alloc(10 + idxBytes);
-                        memcpy(((char *)part->quat) + 8, pos, idxBytes);
-                        pos += idxBytes;
-                    }
+                    /* Fix #105b: small indices are u8 regardless of quat type */
+                    part->quat = (XAnimPartQuat *)Alloc(10 + 2 * numQFrames);
+                    memcpy(((char *)part->quat) + 8, pos, numQFrames);
+                    pos += numQFrames;
                 } else {
-                    if (isSimpleQuat) {
-                        /* line 437-438 large indices for simple quat */
-                        int idxBytes = numQFrames * 2;
-                        part->quat = (XAnimPartQuat *)Alloc(10 + idxBytes);
-                        memcpy(((char *)part->quat) + 8, pos, idxBytes);
-                        pos += idxBytes;
-                    } else {
-                        /* line 437-438 large indices for full quat */
-                        int idxBytes = numQFrames * 2;
-                        part->quat = (XAnimPartQuat *)Alloc(10 + idxBytes);
-                        memcpy(((char *)part->quat) + 8, pos, idxBytes);
-                        pos += idxBytes;
-                    }
+                    /* Large indices: u16 */
+                    int idxBytes = numQFrames * 2;
+                    part->quat = (XAnimPartQuat *)Alloc(10 + idxBytes);
+                    memcpy(((char *)part->quat) + 8, pos, idxBytes);
+                    pos += idxBytes;
                 }
 
                 if (isSimpleQuat) {
@@ -652,7 +635,7 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
                     /* Multiple trans frames */
                     int numTFrames = (int)numTransIndices;
 
-                    if (numTransIndices <= numloopframes) {
+                    if (numTransIndices >= numloopframes) {
                         /* No index table */
                         part->trans = (XAnimPartTrans *)Alloc(8);
                     } else if (bSmallIndices) {
@@ -690,6 +673,7 @@ XAnimParts * XAnimLoadFile(const char *name, Alloc_t Alloc)
             }
         }
     }
+
 
     /* line 611 - read notify tracks */
     {

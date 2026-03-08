@@ -439,7 +439,7 @@ char RGBForeColor[64] __attribute__((aligned(4))) = {0};
 char r_glob[64] __attribute__((aligned(4))) = {0};
 extern unsigned char rgp[];
 void *r_glob_ptr = (void *)rgp;
-char r_lightGridContrast[64] __attribute__((aligned(4))) = {0};
+/* r_lightGridContrast: alias to imp_r_vc_makelog in import_pointers.S */
 char r_lightGridEnableTweaks[64] __attribute__((aligned(4))) = {0};
 char r_lightGridSpread[64] __attribute__((aligned(4))) = {0};
 char r_lightGridSunDir[64] __attribute__((aligned(4))) = {0};

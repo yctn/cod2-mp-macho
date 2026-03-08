@@ -1594,6 +1594,8 @@ imp_r_testTransform: .long r_testTransform
 imp_r_textureMode: .long r_textureMode
 .globl imp_r_vc_makelog
 imp_r_vc_makelog: .long r_vc_makelog
+.globl r_lightGridContrast
+.set r_lightGridContrast, imp_r_vc_makelog
 .globl imp_r_vc_showlog
 imp_r_vc_showlog: .long r_vc_showlog
 .globl imp_r_xdebug
