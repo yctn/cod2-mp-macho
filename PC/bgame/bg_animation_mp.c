@@ -24,7 +24,7 @@ static loadAnim_t *g_pLoadAnims; /* g_pLoadAnims */
 static int *g_piNumLoadAnims; /* g_piNumLoadAnims */
 static char input[100000]; /* input */
 static qboolean bScriptFileLoaded; /* bScriptFileLoaded */
-static animStringItem_t weaponStrings[128]; /* weaponStrings */
+extern animStringItem_t weaponStrings[]; /* weaponStrings — bss.c (NOT static, animConditionsTable points to global) */
 extern animStringItem_t animStateStr[5]; /* animStateStr */
 extern animStringItem_t animMoveTypesStr[42]; /* animMoveTypesStr */
 extern animStringItem_t animEventTypesStr[20]; /* animEventTypesStr */
@@ -3264,15 +3264,17 @@ int BG_AnimationIndexForString(const char *string, const char *string_1)
         "subl $0x1c, %esp\n"
         "movl g_pLoadAnims, %ecx\n" /* line 411 */
         "testl %ecx, %ecx\n"
-        "je 0x182c95\n"
+        "je .Lf182b8a_error_null\n"
         /* { scope 1 */
         /* { scope 2 */
         "movl 8(%ebp), %edx\n" /* line 363 | string */
         "movzbl (%edx), %eax\n"
         "testb %al, %al\n"
-        "jne 0x182c5e\n"
+        "jne .Lf182b8a_hash_compute\n"
+        ".Lf182b8a_hash_zero:\n"
         "xorl %edi, %edi\n" /* line 369 | hash */
         /* } scope */
+        ".Lf182b8a_after_hash:\n"
         "movl g_pLoadAnims, %edx\n" /* line 438 */
         "movl %edx, %ebx\n" /* pAnim */
         "movl g_piNumLoadAnims, %eax\n"
@@ -3295,7 +3297,7 @@ int BG_AnimationIndexForString(const char *string, const char *string_1)
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
-        "je 0x182c54\n"
+        "je .Lf182b8a_match_found\n"
         "movl g_piNumLoadAnims, %eax\n"
         "addl $1, %esi\n" /* line 438 | i */
         "addl $0x48, %ebx\n" /* pAnim */
@@ -3322,6 +3324,48 @@ int BG_AnimationIndexForString(const char *string, const char *string_1)
         "calll strcpy\n"
         "movl %edi, 4(%ebx)\n" /* line 449 | hash, pAnim */
         "movl g_piNumLoadAnims, %edx\n" /* line 450 */
+        "addl $1, (%edx)\n"
+        /* match found — return index in %esi */
+        ".Lf182b8a_match_found:\n"
+        "movl %esi, %eax\n"
+        "addl $0x1c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* hash computation for input string */
+        ".Lf182b8a_hash_compute:\n"
+        "xorl %edi, %edi\n" /* hash = 0 */
+        "movl $0x77, %ebx\n"
+        ".Lf182b8a_hash_loop:\n"
+        "movsbl %al, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll ___tolower\n"
+        "movsbl %al, %eax\n"
+        "imull %ebx, %eax\n"
+        "addl %eax, %edi\n"
+        "movl 8(%ebp), %edx\n"
+        "movzbl -0x76(%edx, %ebx), %eax\n"
+        "addl $1, %ebx\n"
+        "testb %al, %al\n"
+        "jne .Lf182b8a_hash_loop\n"
+        "cmpl $-1, %edi\n"
+        "je .Lf182b8a_hash_zero\n"
+        "jmp .Lf182b8a_after_hash\n"
+        /* error: g_pLoadAnims is NULL */
+        ".Lf182b8a_error_null:\n"
+        "movl 8(%ebp), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $str_002aef4c, (%esp)\n" /* "BG_AnimationIndexForString: unknown player animation '%s'" */
+        "calll BG_AnimParseError\n"
+        "movl $-1, %eax\n"
+        "addl $0x1c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
     );
 }
 
@@ -4393,7 +4437,8 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "cmpl $4, -0x140(%ebp)\n" /* line 1307 | parseMode */
         "ja .Lf183890_00183987\n"
         "movl -0x140(%ebp), %ecx\n" /* parseMode */
-        "jmpl *g_color_table+512(, %ecx, 4)\n"
+        "jmpl *.Lparsemode_jmptable(, %ecx, 4)\n"
+        ".Lparsemode_case0:\n"
         "movl $str_002160dc, 4(%esp)\n" /* line 1311 */
         "movl %esi, (%esp)\n" /* token */
         "calll I_stricmp\n"
@@ -4502,6 +4547,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl -0x130(%ebp), %esi\n" /* line 1341 | defineType, fname */
         "addl $1, numDefines(, %esi, 4)\n"
         "jmp .Lf183890_00183987\n"
+        ".Lparsemode_case1:\n"
         "movl $str_0021e50c, 4(%esp)\n" /* line 1348 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
@@ -4519,6 +4565,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183c62\n"
+        ".Lparsemode_case3:\n"
         "movl $str_0021e50c, 4(%esp)\n" /* line 1449 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
@@ -5062,6 +5109,15 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl $str_002af4e8, (%esp)\n" /* "BG_AnimParseAnimScript: exceeded maximum global items (%i)" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_001840cd\n"
+        ".section .rodata\n"
+        ".align 4\n"
+        ".Lparsemode_jmptable:\n"
+        ".long .Lparsemode_case0\n"
+        ".long .Lparsemode_case1\n"
+        ".long .Lparsemode_case1\n"
+        ".long .Lparsemode_case3\n"
+        ".long .Lparsemode_case3\n"
+        ".section .text\n"
     );
 }
 
