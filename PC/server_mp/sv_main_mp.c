@@ -80,7 +80,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "testl %edx, %edx\n"
         "jne .Lf1593ae_00159569\n"
         "movl %eax, %edx\n"
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%eax), %ebx\n" /* line 291 | i */
+        "movl 0x20814(%eax), %ebx\n" /* line 291 | i */
         "movl %ebx, %eax\n" /* i */
         "subl 0x20810(%edx), %eax\n"
         "cmpl $0x3f, %eax\n"
@@ -125,12 +125,12 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl 8(%ebp), %ebx\n" /* client, toIndex */
         ".Lf1593ae_00159454:\n"
         "addl $1, %esi\n" /* line 258 | to */
-        "cmpl %esi, GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ebx)\n" /* to, toIndex */
+        "cmpl %esi, 0x20814(%ebx)\n" /* to, toIndex */
         "jge .Lf1593ae_001593ff\n"
         ".Lf1593ae_0015945f:\n"
         "leal -1(%edi), %eax\n" /* line 269 */
         "movl 8(%ebp), %edi\n" /* client */
-        "movl %eax, GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi)\n"
+        "movl %eax, 0x20814(%edi)\n"
         /* } scope */
         "movl 0xc(%ebp), %edx\n" /* line 294 | type */
         "testl %edx, %edx\n"
@@ -189,7 +189,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         /* } scope */
         ".Lf1593ae_00159509:\n"
         "leal 1(%ebx), %eax\n" /* line 306 | i */
-        "movl %eax, GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx)\n"
+        "movl %eax, 0x20814(%edx)\n"
         "movl %eax, %ebx\n" /* i */
         "movl 8(%ebp), %edi\n" /* client, from */
         ".Lf1593ae_00159517:\n"
@@ -235,7 +235,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl 8(%ebp), %eax\n" /* line 316 | client */
         "movl 0x20810(%eax), %ebx\n" /* i */
         "addl $1, %ebx\n" /* i */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%eax), %ebx\n" /* i */
+        "cmpl 0x20814(%eax), %ebx\n" /* i */
         "jle .Lf1593ae_00159756\n"
         ".Lf1593ae_001595a1:\n"
         "movl 0x10(%ebp), %eax\n" /* line 320 | cmd */
@@ -269,7 +269,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl %eax, 0x10(%ebp)\n" /* cmd */
         "movl $1, %esi\n" /* to */
         "movl 8(%ebp), %edi\n" /* client, from */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi), %ebx\n" /* from, i */
+        "movl 0x20814(%edi), %ebx\n" /* from, i */
         "movl %edi, %edx\n" /* from */
         "movl %eax, %ecx\n"
         "jmp .Lf1593ae_0015952f\n"
@@ -320,10 +320,10 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "calll memcpy\n"
         "addl $1, %edi\n" /* line 301 | from */
         "movl -0x30(%ebp), %esi\n" /* to */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ebx), %edi\n" /* i, from */
+        "cmpl 0x20814(%ebx), %edi\n" /* i, from */
         "jle .Lf1593ae_00159671\n"
         "movl 8(%ebp), %ecx\n" /* client */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ecx), %ebx\n" /* i */
+        "movl 0x20814(%ecx), %ebx\n" /* i */
         "movl %ecx, %edi\n" /* from */
         "jmp .Lf1593ae_00159517\n"
         /* { scope 2: str1 */
@@ -388,7 +388,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 316 | i */
         "movl 8(%ebp), %edi\n" /* client, from */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi), %ebx\n" /* from, i */
+        "cmpl 0x20814(%edi), %ebx\n" /* from, i */
         "jle .Lf1593ae_0015975a\n"
         "jmp .Lf1593ae_001595a1\n"
         ".Lf1593ae_001597a2:\n"
@@ -1864,7 +1864,7 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "movl %edx, (%esp)\n"
         "calll MSG_ReadLong\n"
         "movl %eax, 0x20810(%ebx)\n" /* cl */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ebx), %edx\n" /* line 1089 | cl */
+        "movl 0x20814(%ebx), %edx\n" /* line 1089 | cl */
         "movl %edx, %ecx\n"
         "subl %eax, %ecx\n"
         "cmpl $0x7f, %ecx\n"

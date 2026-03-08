@@ -1116,7 +1116,7 @@ void SV_SendClientGameState(client_t *client)
         "movl %edx, (%esp)\n"
         "calll MSG_WriteByte\n"
         "movl 8(%ebp), %edx\n" /* line 970 | client */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx), %eax\n"
+        "movl 0x20814(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x34(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"
@@ -3000,7 +3000,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "jne .Lf17cf24_0017d3a4\n"
         ".Lf17cf24_0017d3c7:\n"
         "movl $0, 0x20810(%edx)\n" /* line 708 */
-        "movl $0, GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx)\n" /* line 709 */
+        "movl $0, 0x20814(%edx)\n" /* line 709 */
         "movl %edx, %ebx\n" /* ping */
         ".Lf17cf24_0017d3dd:\n"
         "movl $0x78f0c, 8(%esp)\n" /* line 715 */
@@ -3019,7 +3019,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "calll Scr_AllocArray\n" /* line 720 */
         "movw %ax, 0x765f0(%ebx)\n" /* ping */
         "movl -0x524(%ebp), %eax\n" /* line 723 | challenge */
-        "movl %eax, COpenGL_SetColorMaterialEnable(%ebx)\n" /* ping */
+        "movl %eax, 0x765e8(%ebx)\n" /* ping */
         "movl -0x52c(%ebp), %edx\n" /* line 726 | guid */
         "movl %edx, 0x765ec(%ebx)\n" /* ping */
         "movzbl -0x511(%ebp), %eax\n" /* line 729 */
@@ -3769,7 +3769,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "movl 0x20818(%edx), %eax\n"
         "movl %eax, 0x20d08(%edx)\n"
         "movl 8(%ebp), %edx\n" /* line 1941 | cl */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx), %eax\n"
+        "movl 0x20814(%edx), %eax\n"
         "subl 0x20810(%edx), %eax\n"
         "cmpl $0x7f, %eax\n"
         "jle .Lf17ded4_0017df36\n"
@@ -3786,7 +3786,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "movl 8(%ebp), %ecx\n" /* line 1938 | cl */
         "movl $0xffffffff, 0x20d08(%ecx)\n"
         "movl 8(%ebp), %edx\n" /* line 1941 | cl */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx), %eax\n"
+        "movl 0x20814(%edx), %eax\n"
         "subl 0x20810(%edx), %eax\n"
         "cmpl $0x7f, %eax\n"
         "jg .Lf17ded4_0017df0a\n"
@@ -4193,7 +4193,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "testl %eax, %eax\n"
         "jne .Lf17e2ae_0017e3b3\n"
         ".Lf17e2ae_0017e4ce:\n"
-        "movl COpenGL_SetColorMaterialEnable(%edi), %ebx\n" /* line 2202 | cl, msg */
+        "movl 0x765e8(%edi), %ebx\n" /* line 2202 | cl, msg */
         "movl 0x6e5c4(%edi), %ecx\n" /* cl */
         "movl %ecx, -0x24(%ebp)\n"
         "movl 0x6e5c8(%edi), %edx\n" /* cl */

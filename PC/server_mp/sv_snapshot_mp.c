@@ -2145,7 +2145,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl 8(%ebp), %ecx\n" /* line 559 | client */
         "movl 0x20810(%ecx), %ebx\n" /* i */
         "addl $1, %ebx\n" /* i */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ecx), %ebx\n" /* i */
+        "cmpl 0x20814(%ecx), %ebx\n" /* i */
         "jle .Lf193c24_001946d7\n"
         ".Lf193c24_00194655:\n"
         "movl $str_002b040c, (%esp)\n" /* line 562 */
@@ -2167,7 +2167,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl 8(%ebp), %edx\n" /* line 531 | client */
         "movl 0x20810(%edx), %ebx\n" /* i */
         "addl $1, %ebx\n" /* i */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx), %ebx\n" /* i */
+        "cmpl 0x20814(%edx), %ebx\n" /* i */
         "jle .Lf193c24_0019471d\n"
         ".Lf193c24_001946aa:\n"
         "movl %edx, %ecx\n"
@@ -2202,7 +2202,7 @@ void SV_SendClientSnapshot(client_t *client)
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 559 | i */
         "movl 8(%ebp), %eax\n" /* client */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%eax), %ebx\n" /* i */
+        "cmpl 0x20814(%eax), %ebx\n" /* i */
         "jle .Lf193c24_001946d5\n"
         "jmp .Lf193c24_00194655\n"
         ".Lf193c24_0019471d:\n"
@@ -2243,7 +2243,7 @@ void SV_SendClientSnapshot(client_t *client)
         "calll MSG_WriteString\n"
         "addl $1, %ebx\n" /* line 531 | i */
         "movl 8(%ebp), %edx\n" /* client */
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edx), %ebx\n" /* i */
+        "cmpl 0x20814(%edx), %ebx\n" /* i */
         "jle .Lf193c24_00194722\n"
         "jmp .Lf193c24_001946aa\n"
         ".Lf193c24_0019479e:\n"
