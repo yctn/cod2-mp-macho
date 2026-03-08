@@ -358,6 +358,8 @@ void Scr_PrecacheAnimTrees(Alloc_t Alloc, int user)
     int count = *(int *)(scrAnimPub + 0x40c + user * 4);
     int i;
 
+    Com_Printf("DBG Scr_PrecacheAnimTrees: user=%d count=%d Alloc=%p\n", user, count, Alloc);
+
     if (count <= 0)
         return;
 

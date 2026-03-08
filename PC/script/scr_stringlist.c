@@ -106,10 +106,9 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
     byte *base = *(byte **)imp_scrMemTreePub;
-    /* DBG */
-    if (stringValue == 23) {
-        unsigned short old_ref = *(unsigned short *)(base + 23 * 8 + 2);
-        Com_Printf("DBG SL_AddRefToString(23): refcount %u -> %u\n", old_ref, old_ref + 1);
+    if (stringValue == 374) {
+        unsigned short old_ref = *(unsigned short *)(base + 374 * 8 + 2);
+        Com_Printf("DBG SL_AddRefToString(374): refcount %u -> %u ret=%p\n", old_ref, old_ref + 1, __builtin_return_address(0));
     }
     *(unsigned short *)(base + stringValue * 8 + 2) += 1;
     return 0;
@@ -236,6 +235,12 @@ unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int le
     /* Decrement refcount */
     ref = *(unsigned short *)(entry + 2) - 1;
     *(unsigned short *)(entry + 2) = ref;
+
+    if (stringValue == 374) {
+        Com_Printf("DBG SL_RemoveRefToStringOfLen(374): refcount=%u -> %u len=%u ret=%p str=\"%.16s\"\n",
+            ref + 1, ref, len, __builtin_return_address(0), (const char *)(entry + 4));
+    }
+
     if (ref != 0)
         return 0;
 
@@ -642,6 +647,10 @@ loop_top:
                                 sv_head = (unsigned int)entry_ptr[1];
                             }
                             esi_sv = sv_head;
+                            if (esi_sv == 374) {
+                                Com_Printf("DBG SL_GetStringOfLen FOUND-HEAD sv=374: refcount=%u user=%u ret=%p\n",
+                                    (unsigned int)*(unsigned short *)(refEntry + 2), user, __builtin_return_address(0));
+                            }
                             return esi_sv;
                         }
                     }
@@ -754,6 +763,8 @@ loop_top:
 
                         /* .Lf43a06_00043d54: */
                         esi_sv = (unsigned int)MT_AllocIndex((int)(len + 4), type);
+                        if (esi_sv >= 370 && esi_sv <= 376)
+                            Com_Printf("DBG SL alloc-path1 sv=%u str=\"%.16s\" len=%u numBytes=%u\n", esi_sv, str, len, len+4);
 
                         newNode = (unsigned short *)((char *)&scrStringGlob + newIndex * 4);
 
@@ -812,6 +823,8 @@ loop_top:
                     }
 
                     esi_sv = (unsigned int)MT_AllocIndex((int)(len + 4), type);
+                    if (esi_sv >= 370 && esi_sv <= 376)
+                        Com_Printf("DBG SL alloc-path2 sv=%u str=\"%.16s\" len=%u numBytes=%u\n", esi_sv, str, len, len+4);
 
                     /* "movl -0x38(%ebp), %eax; movzwl 2(%eax), %ecx" - ecx = entry->word1 (old sv on freelist = garbage/0) */
                     /* "movzwl scrStringGlob(%ebx), %edx; andl $0x3fff, %edx" - edx = SG_W0(hash) & 0x3fff = newIndex2->next in freelist */
@@ -876,6 +889,8 @@ loop_top:
 
                     /* .Lf43a06_00043aff: */
                     esi_sv = (unsigned int)MT_AllocIndex((int)(len + 4), type);
+                    if (esi_sv >= 370 && esi_sv <= 376)
+                        Com_Printf("DBG SL alloc-path3 sv=%u str=\"%.16s\" len=%u numBytes=%u\n", esi_sv, str, len, len+4);
 
                     newNode3 = (unsigned short *)((char *)&scrStringGlob + newIndex3 * 4);
 
@@ -934,6 +949,46 @@ store_and_return:
         newMem[1] = (byte)user;
         *(unsigned short *)(newMem + 2) = 1;
         newMem[0] = (byte)byteLen;
+    }
+
+    if (esi_sv == 374) {
+        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
+        unsigned short tree1_head = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*1);
+        unsigned short tree2_head = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*2);
+        /* Check tree[1] for node 374 and tree[2] for node 372 */
+        unsigned int w0_374 = *(unsigned int *)(scrMemTreeGlob_arr2 + 374*8);
+        unsigned int w1_374 = *(unsigned int *)(scrMemTreeGlob_arr2 + 374*8 + 4);
+        unsigned int w0_372 = *(unsigned int *)(scrMemTreeGlob_arr2 + 372*8);
+        unsigned int w1_372 = *(unsigned int *)(scrMemTreeGlob_arr2 + 372*8 + 4);
+        Com_Printf("DBG SL_GetStringOfLen ALLOC sv=374: str=\"%.16s\" user=%u len=%u ret=%p "
+                   "tree1_hd=%u tree2_hd=%u mt374=[%08x %08x] mt372=[%08x %08x]\n",
+            str, user, len, __builtin_return_address(0),
+            tree1_head, tree2_head, w0_374, w1_374, w0_372, w1_372);
+        /* Full tree check: for each level, search BST for 374's aligned ancestor */
+        {
+            extern int MT_SearchTreeAny(int nodeNum);
+            extern int MT_SearchTreeLevel(int nodeNum, int level);
+            int level;
+            if (MT_SearchTreeAny(374))
+                Com_Printf("TREE BUG: sv=374 still in tree after alloc!\n");
+            /* At each level, the block that would contain 374 is at 374 & ~((1<<level)-1) */
+            for (level = 1; level <= 16; level++) {
+                unsigned int ancestor = 374u & ~((1u << level) - 1u);
+                unsigned short tree_head = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*level);
+                if (MT_SearchTreeLevel(ancestor, level)) {
+                    Com_Printf("TREE OVERLAP: level=%d node=%u covers 374! tree_head=%u\n",
+                        level, ancestor, tree_head);
+                }
+            }
+            /* Also dump tree heads for levels 7-16 */
+            {
+                int l;
+                for (l = 7; l <= 12; l++) {
+                    unsigned short h = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*l);
+                    if (h) Com_Printf("  tree[%d] head=%u\n", l, h);
+                }
+            }
+        }
     }
 
     /* DBG: detect when any hash entry points to sv=23 */
@@ -1223,12 +1278,13 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         prev_w1_703 = cur_w1_703;
     }
 
-    /* DBG: track SL_RemoveRefToString(23) */
-    if (stringValue == 23) {
-        Com_Printf("DBG SL_RemoveRefToString(23): byteLen=%u refcount=%u retaddr=%p\n",
-            (unsigned int)(unsigned char)entry[0],
+    /* DBG: track SL_RemoveRefToString(374) */
+    if (stringValue == 374) {
+        Com_Printf("DBG SL_RemoveRefToString(374): refcount=%u -> %u ret=%p str=\"%.16s\"\n",
             (unsigned int)*(unsigned short *)(entry + 2),
-            __builtin_return_address(0));
+            (unsigned int)*(unsigned short *)(entry + 2) - 1,
+            __builtin_return_address(0),
+            (const char *)(entry + 4));
     }
 
     /* Compute strlen from entry[0] (same pattern as SL_GetStringLen) */
@@ -1307,14 +1363,19 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
                     }
                     mt_cycle_buckets |= (1u << bucket);
                 } else {
-                    int bkt_before = *(int *)(scrMemTreeGlob_arr + 525096);
-                    MT_FreeIndex(stringValue, len + 4);
+                    /* Fix #104: Guard against double-free.
+                     * After SL_ShutdownSystem frees a string, stale bytecode refs
+                     * can do SL_AddRefToString(sv) on freed memory (refcount 0→1),
+                     * then SL_RemoveRefToString drops it to 0 → double MT_FreeIndex.
+                     * Check if the node is already covered by any free block
+                     * (either directly in tree or as part of a larger merged block). */
                     {
-                        int bkt_after = *(int *)(scrMemTreeGlob_arr + 525096);
-                        int bkt_delta = bkt_before - bkt_after;
-                        if (bkt_delta > 32 || bkt_delta < 0) {
-                            Com_Printf("DBG SL_Free: sv=%u len=%u numBytes=%u delta=%d (before=%d after=%d)\n",
-                                stringValue, len, len + 4, bkt_delta, bkt_before, bkt_after);
+                        extern int MT_IsNodeCovered(int nodeNum);
+                        if (MT_IsNodeCovered(stringValue)) {
+                            /* Node is already free (covered by a free block) — skip */
+                            Com_Printf("FIX104: skipped double-free of sv=%u (covered by free block)\n", stringValue);
+                        } else {
+                            MT_FreeIndex(stringValue, len + 4);
                         }
                     }
                 }

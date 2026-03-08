@@ -50,6 +50,44 @@ unsigned int MT_AddMemoryNode(int newNode)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x28, %esp\n"
+        /* DBG: catch any block covering node 374: node <= 374 < node + (1<<level) */
+        "cmpl $374, %eax\n"
+        "jg .Ldbg_addnode_skip\n"  /* node > 374 → can't cover 374 */
+        "movl %edx, -0x18(%ebp)\n" /* save level */
+        "movl %eax, -0x14(%ebp)\n" /* save node */
+        "movl $1, %ecx\n"
+        "shll %cl, %ecx\n"  /* oops, need to use edx as shift count */
+        "movl $1, %ecx\n"
+        "movl %edx, -0x18(%ebp)\n"
+        "movb %dl, %cl\n"  /* cl = level */
+        "movl $1, %esi\n"
+        "shll %cl, %esi\n"  /* esi = 1 << level */
+        "addl %eax, %esi\n" /* esi = node + (1 << level) = end of block */
+        "cmpl $374, %esi\n"
+        "jle .Ldbg_addnode_skip2\n" /* end <= 374 → doesn't cover 374 */
+        /* Block covers 374: check if 374 is allocated (refcount > 0) */
+        "movl %eax, -0x14(%ebp)\n"
+        "movl imp_scrMemTreePub, %ecx\n"
+        "movl (%ecx), %ecx\n"       /* ecx = scrMemTreePub base */
+        "movzwl 2994(%ecx), %ecx\n"  /* refcount at node 374 (374*8+2=2994) */
+        "testl %ecx, %ecx\n"
+        "jz .Ldbg_addnode_skip2\n"   /* refcount=0 → 374 is free, OK */
+        /* 374 is allocated but being covered by this block! */
+        "movl %ecx, 0x10(%esp)\n"   /* arg5: refcount */
+        "movl -0x18(%ebp), %ecx\n"
+        "movl %ecx, 8(%esp)\n"      /* arg2: level */
+        "movl %eax, 4(%esp)\n"      /* arg1: node */
+        "movl 4(%ebp), %ecx\n"
+        "movl %ecx, 0xc(%esp)\n"    /* arg4: caller */
+        "jmp .Ldbg_addnode_print\n"
+        ".Ldbg_addnode_str: .asciz \"ADDNODE-COVERS-374: node=%u level=%d caller=%p ref374=%u\\n\"\n"
+        ".Ldbg_addnode_print:\n"
+        "movl $.Ldbg_addnode_str, (%esp)\n"
+        "calll Com_Printf\n"
+        ".Ldbg_addnode_skip2:\n"
+        "movl -0x14(%ebp), %eax\n"
+        "movl -0x18(%ebp), %edx\n"
+        ".Ldbg_addnode_skip:\n"
         "movl %eax, -0x34(%ebp)\n"
         /* { scope 1: num */
         "leal 0x80300(%edx, %edx), %edx\n" /* line 298 | size */
@@ -657,6 +695,45 @@ static int MT_SearchTreeRec(int node, int target, int depth)
     next = (word0 >> 16) & 0xFFFF;
     return MT_SearchTreeRec(prev, target, depth + 1) || MT_SearchTreeRec(next, target, depth + 1);
 }
+/* Returns 1 if nodeNum is found in any tree level */
+int MT_SearchTreeAny(int nodeNum)
+{
+    int size;
+    unsigned short head;
+    for (size = 0; size <= 16; size++) {
+        head = *(unsigned short *)((char *)scrMemTreeGlob + 525056 + 2 * size);
+        if (MT_SearchTreeRec(head, nodeNum, 0))
+            return 1;
+    }
+    return 0;
+}
+
+/* Check if nodeNum is covered by any free block (either directly in tree or
+ * as part of a larger ancestor block at any level). */
+int MT_IsNodeCovered(int nodeNum)
+{
+    int level;
+    unsigned short head;
+    /* Check if node itself is in any tree level */
+    for (level = 0; level <= 16; level++) {
+        head = *(unsigned short *)((char *)scrMemTreeGlob + 525056 + 2 * level);
+        if (!head) continue;
+        /* At this level, the ancestor block containing nodeNum starts at: */
+        unsigned int ancestor = (unsigned int)nodeNum & ~((1u << level) - 1u);
+        if (MT_SearchTreeRec(head, ancestor, 0))
+            return 1;
+    }
+    return 0;
+}
+
+int MT_SearchTreeLevel(int nodeNum, int level)
+{
+    unsigned short head;
+    if (level < 0 || level > 16) return 0;
+    head = *(unsigned short *)((char *)scrMemTreeGlob + 525056 + 2 * level);
+    return MT_SearchTreeRec(head, nodeNum, 0);
+}
+
 void MT_VerifyNotInTree(int nodeNum)
 {
     int size;
@@ -912,8 +989,12 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movzbl -0x58(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
         "jmp .Ldbg_print_alloc\n"
-        ".Ldbg_alloc_str: .asciz \"DBG MT_AllocIndex RETURNS node=%d size=%d numBytes=%d\\n\"\n"
+        ".Ldbg_alloc_str: .asciz \"DBG MT_AllocIndex RETURNS node=%d size=%d newSize=%d numBytes=%d\\n\"\n"
         ".Ldbg_skip_23:\n"
+        "cmpl $374, %eax\n"
+        "je .Ldbg_do_print\n"
+        "cmpl $372, %eax\n"
+        "je .Ldbg_do_print\n"
         "cmpl $976, %eax\n"
         "je .Ldbg_do_print\n"
         "cmpl $592, %eax\n"
@@ -923,8 +1004,10 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movzbl -0x58(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
         ".Ldbg_print_alloc:\n"
-        "movl 8(%ebp), %ecx\n"
+        "movl -0x54(%ebp), %ecx\n"
         "movl %ecx, 0xc(%esp)\n"
+        "movl 8(%ebp), %ecx\n"
+        "movl %ecx, 0x10(%esp)\n"
         "movl $.Ldbg_alloc_str, (%esp)\n"
         "calll Com_Printf\n"
         ".Ldbg_skip_alloc:\n"
@@ -1475,6 +1558,23 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x7c, %esp\n"
+        /* DBG: log frees of nodes 368-383 */
+        "movl 8(%ebp), %eax\n"
+        "cmpl $368, %eax\n"
+        "jl .Ldbg_freeindex_skip\n"
+        "cmpl $383, %eax\n"
+        "jg .Ldbg_freeindex_skip\n"
+        "movl 0xc(%ebp), %ecx\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 4(%ebp), %ecx\n"
+        "movl %ecx, 0xc(%esp)\n"
+        "jmp .Ldbg_fi_print\n"
+        ".Ldbg_fi_str: .asciz \"FREEINDEX: node=%u numBytes=%d ret=%p\\n\"\n"
+        ".Ldbg_fi_print:\n"
+        "movl $.Ldbg_fi_str, (%esp)\n"
+        "calll Com_Printf\n"
+        ".Ldbg_freeindex_skip:\n"
         "movl 0xc(%ebp), %ebx\n" /* numBytes */
         /* { scope 1 */
         /* { scope 2: parentNode, prevScore, oldNodeValue */
@@ -1563,6 +1663,25 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         ".Lf457e8_000458fa:\n"
         "movl -0x54(%ebp), %edx\n" /* line 667 | size */
         "movl 8(%ebp), %eax\n" /* nodeNum */
+        /* DBG: catch when node 372 is added at level >= 2 (4-node block overlapping 374) */
+        "cmpl $372, %eax\n"
+        "jne .Ldbg_free_skip\n"
+        "cmpl $2, %edx\n"
+        "jl .Ldbg_free_skip\n"
+        "movl %edx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl 0xc(%ebp), %ecx\n" /* original numBytes param */
+        "movl %ecx, 4(%esp)\n"
+        "jmp .Ldbg_free_print\n"
+        ".Ldbg_free_str: .asciz \"MERGE372: MT_FreeIndex adding node=%u at level=%d (orig_nb=%d) ret=%p\\n\"\n"
+        ".Ldbg_free_print:\n"
+        "movl 4(%ebp), %ecx\n" /* return address */
+        "movl %ecx, 0x10(%esp)\n"
+        "movl $.Ldbg_free_str, (%esp)\n"
+        "calll Com_Printf\n"
+        "movl -0x54(%ebp), %edx\n" /* restore edx=size */
+        "movl 8(%ebp), %eax\n" /* restore eax=nodeNum */
+        ".Ldbg_free_skip:\n"
         "calll MT_AddMemoryNode\n"
         /* } scope */
         "addl $0x7c, %esp\n" /* line 676 */

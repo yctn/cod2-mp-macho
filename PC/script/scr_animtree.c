@@ -4,6 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern void Com_Printf(const char *fmt, ...);
+extern int MT_SearchTreeAny(int nodeNum);
+
 enum {
     SCR_ANIMTREE_NAMES = 0,
     SCR_ANIMTREE_XANIM = 1,
@@ -327,6 +330,18 @@ static unsigned int Scr_UsingTreeInternal(const char *filename, int *index, int 
     unsigned int name;
     int i;
 
+    /* DBG: check sv=374 state before CreateCanonicalFilename */
+    {
+        byte *base374 = *(byte **)imp_scrMemTreePub;
+        unsigned short ref374 = *(unsigned short *)(base374 + 374 * 8 + 2);
+        static unsigned short prev_ref374 = 0xFFFF;
+        if (ref374 != prev_ref374) {
+            Com_Printf("DBG sv374 CHECK: refcount changed %u -> %u str=\"%.12s\" before UsingTreeInternal('%s')\n",
+                       prev_ref374, ref374, (const char *)(base374 + 374*8+4), filename);
+            prev_ref374 = ref374;
+        }
+    }
+
     name = Scr_CreateCanonicalFilename(filename);
     id = FindVariable(scrAnimPub.animtrees, name);
 
@@ -340,6 +355,8 @@ static unsigned int Scr_UsingTreeInternal(const char *filename, int *index, int 
                 break;
             }
         }
+        Com_Printf("DBG Scr_UsingTreeInternal: FOUND '%s' user=%d id=%u index=%d nameId=%u\n",
+                   filename, user, id, *index, name);
     } else {
         id = GetNewVariable(scrAnimPub.animtrees, name);
         fileId = GetObjectA(id);
@@ -353,6 +370,8 @@ static unsigned int Scr_UsingTreeInternal(const char *filename, int *index, int 
         scrAnimGlob.using_xanim_lookup[user][scrAnimPub.xanim_num[user]] =
             (unsigned short)id;
         *index = scrAnimPub.xanim_num[user];
+        Com_Printf("DBG Scr_UsingTreeInternal: NEW '%s' user=%d id=%u index=%d nameId=%u\n",
+                   filename, user, id, *index, name);
     }
 
     names = GetArray(GetVariable(fileId, SCR_ANIMTREE_NAMES));
@@ -447,10 +466,39 @@ void Scr_FindAnim(const char *filename, const char *animName, scr_anim_t *anim, 
     int index;
     unsigned int name;
 
+    {
+        static unsigned short fa_prev374 = 0xFFFF;
+        byte *b374 = *(byte **)imp_scrMemTreePub;
+        unsigned short r_entry = *(unsigned short *)(b374 + 374*8+2);
+        if (r_entry != fa_prev374) {
+            Com_Printf("DBG FindAnim ENTRY sv374: %u -> %u str='%.12s' anim='%s'\n",
+                       fa_prev374, r_entry, (const char *)(b374+374*8+4), animName);
+            fa_prev374 = r_entry;
+        }
+        /* Check if sv=374 is in free tree while it should be allocated */
+        if (r_entry == 1) {
+            extern void MT_VerifyNotInTree(int nodeNum);
+            MT_VerifyNotInTree(374);
+            MT_VerifyNotInTree(373);
+            MT_VerifyNotInTree(372);
+        }
+    }
     name = SL_GetLowercaseString_(animName, 4, 0);
     Scr_EmitAnimationInternal(
         (char *)anim, name, Scr_UsingTreeInternal(filename, &index, user));
     SL_RemoveRefToString(name);
+    /* Check: after freeing this anim name, did node 374's refcount get corrupted? */
+    {
+        byte *b374 = *(byte **)imp_scrMemTreePub;
+        unsigned short r = *(unsigned short *)(b374 + 374*8+2);
+        static int fa_caught = 0;
+        if (!fa_caught && r != 1 && r != 0 && r != 2) {
+            /* refcount is bogus — the free corrupted node 374 */
+            Com_Printf("TREE CORRUPT after RemoveRef: sv374 ref=%u str='%.12s' anim='%s' freed_sv=%u\n",
+                       r, (const char *)(b374+374*8+4), animName, name);
+            fa_caught = 1;
+        }
+    }
 }
 
 /* line 164 */
@@ -651,6 +699,9 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
     id = scrAnimGlob.using_xanim_lookup[user][index];
     filenameId = GetVariableName(id) & 0xffff;
     fileId = FindObject(id);
+
+    Com_Printf("DBG Scr_LoadAnimTreeAtIndex: index=%d user=%d id=%u filenameId=%u str='%s'\n",
+               index, user, id, filenameId, SL_ConvertToString(filenameId));
 
     if (FindVariable(fileId, SCR_ANIMTREE_XANIM)) {
         return;
