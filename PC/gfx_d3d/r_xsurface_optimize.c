@@ -235,7 +235,7 @@ void XModelUnoptimize(XModel *model)
                     vbVtable = *(void ***)surf->surfRigid.vb;
                     ((void (__attribute__((cdecl)) *)(void *))vbVtable[8 / 4])(surf->surfRigid.vb);
                     surf->surfRigid.vb = NULL;
-                } while (*fenceFlag != 0);
+                } while (fenceFlag && *fenceFlag != 0);
             }
         }
     }

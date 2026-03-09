@@ -15,7 +15,6 @@ extern byte **clc_ptr;          /* imp_clc - clientConnection_t** */
 extern dvar_t *com_dedicated;
 extern byte **cl_paused;        /* imp_net_lanauthorize - dvar_t** */
 extern byte **cl_packetdelay;   /* imp_cl_paused - dvar_t** */
-extern byte *com_frameTime;     /* imp_cls */
 extern byte **download_ui_ptr;  /* imp_legacyHacks - download progress** */
 extern byte **cl_shownet;       /* imp_cl_shownet - dvar_t** */
 extern byte **cl_showPackets;   /* imp_cl_shownuments - dvar_t** */
@@ -676,7 +675,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 257 */
-    if (*(byte *)((*cl_showPackets) + 8) != 0) {
+    if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
         Com_Printf("Entities in packet: %i\n", *(int *)(newSnap + 0x26c4));
     }
 
@@ -812,7 +811,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 391 */
-    if (*(byte *)((*cl_showPackets) + 8) != 0) {
+    if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
         Com_Printf("Clients in packet: %i\n", *(int *)(newSnap + 0x26c8));
     }
 
@@ -869,7 +868,7 @@ void CL_ParseSnapshot(msg_t *msg)
             int idx = (parseEntNum - i) & 0x1f;
             byte *slot = cls + 0x49464 + idx * 12;
             if (*(int *)slot >= snapTime) {
-                *(int *)(cls + 0x2c) = *(int *)(com_frameTime + 0x118) - *(int *)(slot + 4);
+                *(int *)(cls + 0x2c) = *(int *)(*(byte **)cls_ptr + 0x118) - *(int *)(slot + 4);
                 break;
             }
         }
@@ -961,8 +960,8 @@ void CL_ParseServerMessage(msg_t *msg)
             CL_ParseGamestate(&msgCompressed);
             break;
         }
-        case 2: {
-            /* svc_configstring / svc_serverCommand (line 863) */
+        case 4: {
+            /* svc_serverCommand (line 863) */
             int seq = MSG_ReadLong(&msgCompressed);
             char *str = MSG_ReadString(&msgCompressed);
             byte *clc = *clc_ptr;
@@ -974,11 +973,11 @@ void CL_ParseServerMessage(msg_t *msg)
             I_strncpyz((char *)(clc + 0x20144 + (seq & 0x7f) * 0x400), str, 0x400);
             break;
         }
-        case 3:
+        case 5:
             /* svc_download (line 957) */
             CL_ParseDownload(&msgCompressed);
             break;
-        case 4:
+        case 6:
             /* svc_snapshot (line 953) */
             CL_ParseSnapshot(&msgCompressed);
             break;
