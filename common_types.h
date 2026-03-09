@@ -6433,7 +6433,7 @@ struct GfxDebugPoly {
 struct GfxDrawGroupCommands {
     Bool isIssuingGlue;
     int begin;
-    int perView[4];
+    int perView[10];
     int end;
 };
 

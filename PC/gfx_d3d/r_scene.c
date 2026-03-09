@@ -1028,6 +1028,17 @@ void R_AddClearCommandsForFrameBuffer(void)
     );
 }
 
+/* diagnostic for R_RenderScene */
+static void R_RenderScene_diag(int registered, int norefresh, int drawSurfCount)
+{
+    static int diag = 0;
+    if (diag < 20) {
+        fprintf(stderr, "[R_RenderScene#%d] registered=%d norefresh=%d drawSurfCount=%d\n",
+                diag, registered, norefresh, drawSurfCount);
+        diag++;
+    }
+}
+
 /* line 1476 */
 __attribute__((naked))
 void R_RenderScene(const refdef_t *refdef)
@@ -1042,6 +1053,22 @@ void R_RenderScene(const refdef_t *refdef)
         "movl 8(%ebp), %esi\n" /* refdef */
         /* { scope 1: pointLightPartitions */
         "movl imp_rg, %ebx\n" /* line 1491 | drawSurfs */
+
+        /* DIAGNOSTIC: check early exit conditions */
+        "pushl %esi\n"
+        "movl imp_rgp, %eax\n"
+        "movl 0x109c(%eax), %eax\n"
+        "pushl %eax\n"                 /* drawSurfCount */
+        "movl imp_r_norefresh, %eax\n"
+        "movl (%eax), %eax\n"
+        "movzbl 8(%eax), %eax\n"
+        "pushl %eax\n"                 /* norefresh */
+        "movzbl (%ebx), %eax\n"
+        "pushl %eax\n"                 /* registered */
+        "calll R_RenderScene_diag\n"
+        "addl $12, %esp\n"
+        "popl %esi\n"
+
         "cmpb $0, (%ebx)\n" /* drawSurfs */
         "je .Lfc643c_000c6a10\n"
         "movl imp_r_norefresh, %eax\n" /* line 1501 */

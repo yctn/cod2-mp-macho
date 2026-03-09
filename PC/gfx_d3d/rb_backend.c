@@ -18,8 +18,14 @@ extern int printf(const char *, ...);
 
 static int diag_rb_frame = 0;
 static int diag_rb_cmds_in_frame = 0;
+static int diag_rb_has_drawsurfs = 0;
+static int diag_rb_has_beginview = 0;
+static int diag_rb_skip_this_frame = 0;
 static void diag_rb_cmd(int cmdType) {
-    if (diag_rb_frame < 3) {
+    if (cmdType == 12) diag_rb_has_beginview++;
+    if (cmdType == 23) diag_rb_has_drawsurfs++;
+    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
+    if (trace) {
         static const char *cmdNames[] = {
             "NULL", "Goto", "Call", "Return", "SetMaterialColor", "SetLightProps",
             "?6", "?7", "?8", "?9", "SaveScreen", "ClearScreen",
@@ -30,9 +36,9 @@ static void diag_rb_cmd(int cmdType) {
             "?28", "BlendSaved", "?30", "?31", "?32", "TouchAllImages"
         };
         const char *name = (cmdType >= 0 && cmdType < 34) ? cmdNames[cmdType] : "???";
-        printf("  cmd[%d] = %d (%s)\n", diag_rb_cmds_in_frame, cmdType, name);
-        diag_rb_cmds_in_frame++;
+        fprintf(stderr, "  cmd[%d] = %d (%s)\n", diag_rb_cmds_in_frame, cmdType, name);
     }
+    diag_rb_cmds_in_frame++;
 }
 
 static int diag_rb_entry_count = 0;
@@ -44,15 +50,22 @@ static void diag_rb_entry(void) {
 }
 
 static void diag_rb_frame_start(void) {
-    if (diag_rb_frame < 3) {
-        printf("=== RB frame %d ===\n", diag_rb_frame);
-        diag_rb_cmds_in_frame = 0;
+    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
+    if (trace) {
+        fprintf(stderr, "=== RB frame %d ===\n", diag_rb_frame);
     }
+    diag_rb_cmds_in_frame = 0;
+    diag_rb_has_drawsurfs = 0;
+    diag_rb_has_beginview = 0;
+    diag_rb_skip_this_frame = 0;
 }
 
 static void diag_rb_frame_end(void) {
-    if (diag_rb_frame < 3) {
-        printf("=== RB frame %d end (%d cmds) ===\n", diag_rb_frame, diag_rb_cmds_in_frame);
+    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
+    if (trace) {
+        fprintf(stderr, "=== RB frame %d end: %d cmds, %d beginview, %d drawsurfs, skip=%d ===\n",
+                diag_rb_frame, diag_rb_cmds_in_frame, diag_rb_has_beginview,
+                diag_rb_has_drawsurfs, diag_rb_skip_this_frame);
     }
     diag_rb_frame++;
 }
@@ -5646,6 +5659,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "pushl %ebp\n" /* line 3915 */
         "movl %esp, %ebp\n"
         "incl g_rb_exec_count\n"
+        "calll diag_rb_frame_start\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
@@ -5657,6 +5671,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "testl %ecx, %ecx\n"
         "je .Lfd9182_diag_noDisable\n"
         "movl $1, g_rb_skip_reason\n" /* diagnostic: disableRendering */
+        "movl $1, diag_rb_skip_this_frame\n"
         "jmp .Lfd9182_000d9535\n"
         ".Lfd9182_diag_noDisable:\n"
         "movl imp_dx, %esi\n" /* line 3932 */
@@ -5724,6 +5739,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "cmpb $0, 8(%eax)\n"
         "je .Lfd9182_diag_noSkip\n"
         "movl $3, g_rb_skip_reason\n" /* diagnostic: skipBackEnd */
+        "movl $3, diag_rb_skip_this_frame\n"
         "jmp .Lfd9182_000d9594\n"
         ".Lfd9182_diag_noSkip:\n"
         "movl backEndData, %edx\n" /* line 3970 */
@@ -5746,6 +5762,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "testw %ax, %ax\n"
         "jne .Lfd9182_000d9c52\n"
         "movl $4, g_rb_skip_reason\n" /* diagnostic: empty buffer */
+        "movl $4, diag_rb_skip_this_frame\n"
         ".Lfd9182_000d92b6:\n"
         "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
@@ -5893,6 +5910,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "movb $1, 0x2d68(%eax)\n"
         /* } scope */
         ".Lfd9182_000d9535:\n"
+        "calll diag_rb_frame_end\n"
         "addl $0x4c, %esp\n" /* line 4075 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -6305,18 +6323,12 @@ void RB_ExecuteRenderCommands(const void *data)
         ".Lfd9182_000d9c55:\n"
         "movzwl %ax, %eax\n" /* line 3985 */
         "incl g_rb_dispatch_count\n" /* diagnostic */
-        /* DIAG: print cmd before dispatch (first 20 dispatches) */
-        "cmpl $20, g_rb_dispatch_count\n"
-        "jg .Lfd9182_diag_skip_dispatch\n"
-        "pushal\n"
-        "movl RB_RenderCommandTable(, %eax, 4), %edx\n"
-        "pushl %edx\n"
+        /* DIAG: call diag_rb_cmd for every dispatched command */
         "pushl %eax\n"
-        "pushl $rb_diag_dispatch_fmt\n"
-        "calll printf\n"
-        "addl $12, %esp\n"
-        "popal\n"
-        ".Lfd9182_diag_skip_dispatch:\n"
+        "pushl %eax\n"
+        "calll diag_rb_cmd\n"
+        "addl $4, %esp\n"
+        "popl %eax\n"
         "movl %ebx, (%esp)\n"
         "calll *RB_RenderCommandTable(, %eax, 4)\n"
         /* DIAG: print after dispatch returns */

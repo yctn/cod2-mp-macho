@@ -755,9 +755,20 @@ void CL_SwitchFog(int fogvar, int startTime, int transitionTime)
 }
 
 /* line 940 */
+extern void *s_cmdList;
 void CL_RenderScene(const refdef_t *fd)
 {
-    RE->RenderScene(fd);
+    static int diag = 0;
+    if (diag < 10) {
+        int used_before = s_cmdList ? *(int *)((char *)s_cmdList + 0x30000) : -1;
+        RE->RenderScene(fd);
+        int used_after = s_cmdList ? *(int *)((char *)s_cmdList + 0x30000) : -1;
+        fprintf(stderr, "[CL_RenderScene#%d] cmdList=%p before=%d after=%d delta=%d\n",
+                diag, s_cmdList, used_before, used_after, used_after - used_before);
+        diag++;
+    } else {
+        RE->RenderScene(fd);
+    }
 }
 
 /* line 946 */

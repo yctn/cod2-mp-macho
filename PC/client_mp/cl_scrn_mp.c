@@ -8,6 +8,12 @@
 #include <strings.h>
 #define stricmp strcasecmp
 
+extern void *s_cmdList;
+static int cmdlist_used(void) {
+    if (!s_cmdList) return -1;
+    return *(int *)((char *)s_cmdList + 0x30000);
+}
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  */
@@ -270,6 +276,11 @@ static void SCR_UpdateFrame(void)
     int gameLoaded = CLS_CONN_STATE_FLAG(cls);
 
     static int frame_diag = 0;
+    int trace_frame = (frame_diag >= 440 && frame_diag < 445);
+    if (trace_frame) {
+        fprintf(stderr, "[TRACE#%d] after_BeginFrame: cmdUsed=%d cmdList=%p\n",
+                frame_diag, cmdlist_used(), s_cmdList);
+    }
     {
         byte *clc_tmp = *(byte **)clc_ptr_195ee8c;
         int cs_tmp = *(int *)clc_tmp;
@@ -366,6 +377,10 @@ static void SCR_UpdateFrame(void)
             int serverTime = *(int *)(dv + 0x26f0);
 
             int result = CG_DrawActiveFrame(serverTime, needRender, 0, 0, 1);
+            if (trace_frame) {
+                fprintf(stderr, "[TRACE#%d] after_CG_DrawActiveFrame: cmdUsed=%d result=%d\n",
+                        frame_diag-1, cmdlist_used(), result);
+            }
             if (result == 0) {
                 CL_SendCmdInternal();
             }
@@ -438,34 +453,29 @@ check_ui:
             ck1++;
         }
     }
+    if (trace_frame) {
+        fprintf(stderr, "[TRACE#%d] before_EndView: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
+    }
     RE_FUNC(re_ptr_195eca8, 0xb8, re_int_func)(0);
-    {
-        static int ck2 = 0;
-        if (ck2 < 10) { fprintf(stderr, "[ck:post_render#%d]\n", ck2); ck2++; }
+    if (trace_frame) {
+        fprintf(stderr, "[TRACE#%d] after_EndView: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
     }
 
 end_frame_draw:
     re = re_ptr_195eca8;
-    {
-        static int ck3 = 0;
-        if (ck3 < 10) { fprintf(stderr, "[ck:doneViews#%d]\n", ck3); ck3++; }
-    }
     RE_FUNC(re, 0xbc, re_void_func)();
-    {
-        static int ck4 = 0;
-        if (ck4 < 10) { fprintf(stderr, "[ck:postDoneViews#%d]\n", ck4); ck4++; }
+    if (trace_frame) {
+        fprintf(stderr, "[TRACE#%d] after_DoneViews: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
     }
     Con_DrawConsole();
-    {
-        static int ck5 = 0;
-        if (ck5 < 10) { fprintf(stderr, "[ck:postConsole#%d]\n", ck5); ck5++; }
+    if (trace_frame) {
+        fprintf(stderr, "[TRACE#%d] after_Console: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
     }
     {
-        static int ef_diag = 0;
         void *fn = *(void **)((byte *)re + 0xac);
-        if (ef_diag < 5) {
-            printf("  end_frame_draw: re=%p re+0xac fn=%p\n", re, fn);
-            ef_diag++;
+        if (trace_frame) {
+            fprintf(stderr, "[TRACE#%d] before_EndFrame: cmdUsed=%d fn=%p\n",
+                    frame_diag-1, cmdlist_used(), fn);
         }
         if (fn) ((re_void_func)fn)();
     }

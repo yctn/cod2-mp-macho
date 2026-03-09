@@ -646,8 +646,14 @@ DP4 oPos.z," */
         "movl s_cmdList, %ecx\n" /* line 950 */
         "movl 0x30000(%ecx), %ebx\n"
         /* DIAG: print s_cmdList, usedTotal, remaining before backend exec */
+        /* Print for frames 1-10 AND 100-110 (gameplay) */
         "cmpl $10, g_endframe_count\n"
+        "jle .Lfc844a_diag_print2\n"
+        "cmpl $100, g_endframe_count\n"
+        "jl .Lfc844a_diag_skip2\n"
+        "cmpl $110, g_endframe_count\n"
         "jg .Lfc844a_diag_skip2\n"
+        ".Lfc844a_diag_print2:\n"
         "pushal\n"
         "movl $0x30000, %eax\n"
         "subl %ebx, %eax\n"
