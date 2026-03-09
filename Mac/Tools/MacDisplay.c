@@ -525,6 +525,38 @@ short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
         fprintf(stderr, "[SwapCtx#%d] glErr=0x%x viewport=[%d,%d,%d,%d] scissor=[%d,%d,%d,%d]\n",
                 swap_count, err, vp[0], vp[1], vp[2], vp[3], sc[0], sc[1], sc[2], sc[3]);
     }
+    {
+        extern int g_rb_endsurface_count, g_rb_endsurface_notechnique;
+        extern int g_rb_endsurface_dxstate, g_rb_endsurface_draw;
+        extern int rb_rdsl_call_count;
+        extern int rb_drawsurfscmd_count, rb_drawsurfscmd_dxskip;
+        if (swap_count >= 435 && swap_count <= 445) {
+            fprintf(stderr, "[RBdiag#%d] endSurf=%d noTech=%d dxSkip=%d draw=%d rdsl=%d dsCmd=%d dsCmdDxSkip=%d\n",
+                    swap_count, g_rb_endsurface_count, g_rb_endsurface_notechnique,
+                    g_rb_endsurface_dxstate, g_rb_endsurface_draw, rb_rdsl_call_count,
+                    rb_drawsurfscmd_count, rb_drawsurfscmd_dxskip);
+            /* Reset for next frame */
+            g_rb_endsurface_count = 0;
+            g_rb_endsurface_notechnique = 0;
+            g_rb_endsurface_dxstate = 0;
+            g_rb_endsurface_draw = 0;
+            rb_rdsl_call_count = 0;
+            rb_drawsurfscmd_count = 0;
+            rb_drawsurfscmd_dxskip = 0;
+        }
+    }
+    if (swap_count == 440) {
+        /* Read center pixel to see if anything was drawn */
+        unsigned char px[4] = {0};
+        glReadPixels(320, 240, 1, 1, 0x1908/*GL_RGBA*/, 0x1401/*GL_UNSIGNED_BYTE*/, px);
+        unsigned int err2 = glGetError();
+        fprintf(stderr, "[PIXEL] center=(%d,%d,%d,%d) glErr=0x%x\n", px[0], px[1], px[2], px[3], err2);
+        /* Also read a few spots */
+        glReadPixels(100, 100, 1, 1, 0x1908, 0x1401, px);
+        fprintf(stderr, "[PIXEL] 100,100=(%d,%d,%d,%d)\n", px[0], px[1], px[2], px[3]);
+        glReadPixels(500, 400, 1, 1, 0x1908, 0x1401, px);
+        fprintf(stderr, "[PIXEL] 500,400=(%d,%d,%d,%d)\n", px[0], px[1], px[2], px[3]);
+    }
     if (sdl_gl_window) {
         extern void SDL_GL_SwapWindow(void *);
         SDL_GL_SwapWindow(sdl_gl_window);

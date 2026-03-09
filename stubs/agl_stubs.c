@@ -372,13 +372,18 @@ void glBindProgramARB(GLenum target, GLuint program)
 {
     typedef void (*fn_t)(GLenum, GLuint);
     static fn_t real_fn = NULL;
-    if (!real_fn) real_fn = (fn_t)dlsym(RTLD_NEXT, "glBindProgramARB");
+    if (!real_fn) {
+        real_fn = (fn_t)SDL_GL_GetProcAddress("glBindProgramARB");
+        if (!real_fn)
+            real_fn = (fn_t)dlsym(RTLD_NEXT, "glBindProgramARB");
+        fprintf(stderr, "[glBindProgramARB] resolved real_fn=%p via SDL\n", real_fn);
+    }
 
     static int bind_log_count = 0;
     bind_log_count++;
     /* Log the first 100 and then any during rendering (after swap#0) */
     extern int g_draw_count;
-    if (bind_log_count <= 100 || (g_draw_count > 0 && bind_log_count <= 200)) {
+    if (bind_log_count <= 100 || (g_draw_count > 880 && bind_log_count <= 350)) {
         fprintf(stderr, "[bind#%d] target=0x%x program=%u draws=%d\n", bind_log_count, target, program, g_draw_count);
     }
     real_fn(target, program);
@@ -536,9 +541,13 @@ void aglSwapBuffers(AGLContext ctx)
         extern int g_dip_numelems_zero, g_dip_gl_draw;
         extern int g_dip_last_numelems, g_dip_last_mode;
         extern int g_fp_enable_count, g_fp_bind_count, g_vp_enable_count;
+        extern int g_dip_vs_null, g_dip_vs_bound, g_dip_vs_skip;
+        extern int g_svs_count;
         fprintf(stderr, "  DIP: dflag0=%d glDraw=%d isTri=%d | vp=%d fp_en=%d fp_bind=%d\n",
                 g_dip_drawflag_zero, g_dip_gl_draw, g_dip_is_tri,
                 g_vp_enable_count, g_fp_enable_count, g_fp_bind_count);
+        fprintf(stderr, "  VP: svs=%d vsSkip=%d vsNull=%d vsBound=%d\n",
+                g_svs_count, g_dip_vs_skip, g_dip_vs_null, g_dip_vs_bound);
         fprintf(stderr, "  draws=%d endsurf=%d drw=%d vprog=%d fprog=%d depth=%d blend=%d cull=%d\n",
                 g_draw_count, g_rb_endsurface_count, g_rb_endsurface_draw,
                 prog_v, prog_f, depth_test, blend, cull);

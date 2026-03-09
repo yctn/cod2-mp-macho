@@ -5814,6 +5814,45 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
     );
 }
 
+extern int g_draw_count;
+extern unsigned char glIsEnabled(unsigned int);
+extern void glGetIntegerv(unsigned int, int *);
+int g_dip_vs_null = 0;     /* DIP VP binding: shader was null */
+int g_dip_vs_bound = 0;    /* DIP VP binding: called SetVP */
+int g_dip_vs_skip = 0;     /* DIP VP validation: flag was 0 (skipped) */
+
+/* Diagnostic called from DIP asm at VP validation check point */
+extern char dip_mNeedsVSVal __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
+static int g_dip_vp_diag = 0;
+void dip_vp_check(void *device) {
+    if (g_dip_vp_diag < 5 && g_draw_count > 880) {
+        g_dip_vp_diag++;
+        int vsValid = dip_mNeedsVSVal;
+        void *shader = *(void **)((char *)device + 0xbb4);
+        fprintf(stderr, "[DIP-VP#%d] dc=%d vsValid=%d shader=%p\n",
+                g_draw_count, g_dip_vp_diag, vsValid, shader);
+    }
+}
+
+static int g_dip_diag_done = 0;
+void dip_gl_diag(int mode, int low, int high, int count) {
+    if (g_dip_diag_done < 10 && g_draw_count > 880) {
+        g_dip_diag_done++;
+        int vp_en = glIsEnabled(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
+        int fp_en = glIsEnabled(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
+        int vp_id = 0, fp_id = 0;
+        glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &vp_id);
+        glGetIntegerv(0x8677 /*GL_FRAGMENT_PROGRAM_BINDING_ARB*/, &fp_id);
+        int depth = glIsEnabled(0xb71 /*GL_DEPTH_TEST*/);
+        int cm[4] = {0};
+        glGetIntegerv(0x0C23 /*GL_COLOR_WRITEMASK*/, cm);
+        int dm = 0;
+        glGetIntegerv(0x0B72 /*GL_DEPTH_WRITEMASK*/, &dm);
+        fprintf(stderr, "[DIP#%d] mode=%d low=%d high=%d count=%d vp_en=%d vp_id=%d fp_en=%d fp_id=%d depth=%d cm=(%d%d%d%d) dm=%d\n",
+                g_draw_count, mode, low, high, count, vp_en, vp_id, fp_en, fp_id, depth, cm[0],cm[1],cm[2],cm[3], dm);
+    }
+}
+
 /* line 1774 */
 int g_draw_count = 0; /* diagnostic draw call counter */
 __attribute__((naked))
@@ -5967,9 +6006,19 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "addl -0x20(%ebp), %eax\n" /* High */
         "jmp .Lf12a10_00012a90\n"
         ".Lf12a10_00012bb4:\n"
+        /* DIAG: call dip_vp_check(device=esi) */
+        "pushal\n"
+        "pushl %esi\n"
+        "calll dip_vp_check\n"
+        "addl $4, %esp\n"
+        "popal\n"
         "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %ebx\n" /* line 1858 | Mode */
         "cmpb $0, (%ebx)\n" /* Mode */
-        "jne .Lf12a10_00012d15\n"
+        "jne .Lf12a10_00012d15_diag\n"
+        "incl g_dip_vs_skip\n"
+        "jmp .Lf12a10_00012bc3\n"
+        ".Lf12a10_00012d15_diag:\n"
+        "jmp .Lf12a10_00012d15\n"
         ".Lf12a10_00012bc3:\n"
         "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 1863 */
         "cmpb $0, (%eax)\n"
@@ -6052,6 +6101,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl -0x1c(%ebp), %eax\n" /* Low */
         "movl %eax, 4(%esp)\n"
         "movl $4, (%esp)\n"
+        /* diagnostic: save args and call dip_gl_diag */
+        "pushl %ebx\n"       /* count (Mode) */
+        "pushl -0x20(%ebp)\n" /* High */
+        "pushl -0x1c(%ebp)\n" /* Low */
+        "pushl $4\n"          /* mode */
+        "calll dip_gl_diag\n"
+        "addl $16, %esp\n"
         "incl g_dip_gl_draw\n"
         "calll glDrawRangeElements\n"
         "movl -0x48(%ebp), %eax\n" /* line 1939 | p16Indices */
@@ -6073,7 +6129,11 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         ".Lf12a10_00012d15:\n"
         "movl 0xbb4(%esi), %eax\n" /* line 3018 | this */
         "testl %eax, %eax\n"
-        "je .Lf12a10_00012e14\n"
+        "jne .Lf12a10_vs_notnull\n"
+        "incl g_dip_vs_null\n"
+        "jmp .Lf12a10_00012e14\n"
+        ".Lf12a10_vs_notnull:\n"
+        "incl g_dip_vs_bound\n"
         /* { scope 2 */
         "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 587 */
         "cmpb $0, 0x80d(%ebx)\n"

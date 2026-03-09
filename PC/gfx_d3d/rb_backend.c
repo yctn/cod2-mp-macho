@@ -17,6 +17,8 @@
 extern int printf(const char *, ...);
 static const char rb_rdsl_fmt[] = "[RB_RDSL#%d] surfs=%p count=%d tech=%d order=%d\n";
 static const char rb_dxstate_skip_fmt[] = "[DRAWSURF_SKIP#%d] dxState+0x20c8=%d\n";
+int rb_drawsurfscmd_count = 0;
+int rb_drawsurfscmd_dxskip = 0;
 
 static int diag_rb_frame = 0;
 static int diag_rb_cmds_in_frame = 0;
@@ -2639,9 +2641,13 @@ void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
         "cmpb $0, backEnd+1212\n" /* line 1233 */
         "jne .Lfd65a0_000d6628\n"
         ".Lfd65a0_000d65d8:\n"
+        "incl rb_drawsurfscmd_count\n"
         "movl imp_dxState, %eax\n" /* line 1235 */
         "cmpb $0, 0x20c8(%eax)\n"
-        "jne .Lfd65a0_000d6606\n"
+        "je .Lfd65a0_dxstate_ok\n"
+        "incl rb_drawsurfscmd_dxskip\n"
+        "jmp .Lfd65a0_000d6606\n"
+        ".Lfd65a0_dxstate_ok:\n"
         "movl 4(%ebx), %eax\n" /* line 1238 | cmd */
         "movl %eax, 0xc(%esp)\n"
         "movl 0x10(%ebx), %eax\n" /* cmd */

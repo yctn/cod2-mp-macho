@@ -1694,25 +1694,29 @@ HRESULT CDirect3DDevice_SetVertexDeclaration(const CDirect3DDevice * _this, IDir
 }
 
 /* line 4222 */
-__attribute__((naked))
+int g_svs_count = 0; /* SetVertexShader call count */
+static int g_svs_diag = 0;
+extern int g_draw_count;
+extern char mNeedsVSVal __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
+extern char mNeedsTVal __asm__("__ZN15CDirect3DDevice30mNeedsTransformationValidationE");
+extern char mNeedsRVal __asm__("__ZN15CDirect3DDevice29mNeedsRasterizationValidationE");
 HRESULT CDirect3DDevice_SetVertexShader(const CDirect3DDevice * _this, IDirect3DVertexShader9 *pShader)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4222 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %eax\n" /* pShader */
-        "cmpl %eax, 0xbb4(%edx)\n" /* line 4224 */
-        "je .Lf149e6_00014a12\n"
-        "movl %eax, 0xbb4(%edx)\n" /* line 4232 */
-        "movb $1, __ZN15CDirect3DDevice28mNeedsVertexShaderValidationE\n" /* line 644 */
-        "movb $1, __ZN15CDirect3DDevice30mNeedsTransformationValidationE\n" /* line 645 */
-        "movb $1, __ZN15CDirect3DDevice29mNeedsRasterizationValidationE\n" /* line 646 */
-        ".Lf149e6_00014a12:\n"
-        "xorl %eax, %eax\n" /* line 4240 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    g_svs_count++;
+    if (g_svs_diag < 5 && g_draw_count > 880) {
+        g_svs_diag++;
+        fprintf(stderr, "[SVS#%d] dc=%d this=%p pShader=%p cur=%p\n",
+                g_svs_count, g_draw_count, _this, pShader,
+                *(void **)((char *)_this + 0xbb4));
+    }
+    void *cur = *(void **)((char *)_this + 0xbb4);
+    if (pShader == (IDirect3DVertexShader9 *)cur)
+        return 0;
+    *(void **)((char *)_this + 0xbb4) = pShader;
+    mNeedsVSVal = 1;
+    mNeedsTVal = 1;
+    mNeedsRVal = 1;
+    return 0;
 }
 
 /* line 4277 */

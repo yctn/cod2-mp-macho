@@ -237,30 +237,46 @@ unsigned int COpenGL_SetBlend(const COpenGL * _this, int ForceValidation, GLenum
 
 /* line 2174 */
 __attribute__((naked))
+extern int g_vp_enable_count;
+static int g_svp_diag = 0;
 unsigned int COpenGL_SetVertexProgram(const COpenGL * _this, const COpenGLVertexProgram *pOGLVertexProgramInfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2174 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "incl g_vp_enable_count\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 108 | pOGLVertexProgramInfo */
-        "movl 0xc(%eax), %eax\n"
-        "cmpl 0x67c(%edx), %eax\n" /* line 2185 */
-        "je .Lf2095c_00020986\n"
-        "movl %eax, 0x67c(%edx)\n" /* line 112 */
-        "movl %eax, 0xc(%ebp)\n" /* line 2188 | pOGLVertexProgramInfo */
-        "movl $0x8620, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 2191 */
-        /* { scope 1 */
-        "jmp glBindProgramARB\n" /* line 2188 */
-        /* } scope */
-        ".Lf2095c_00020986:\n"
-        "popl %ebp\n" /* line 2191 */
-        "retl\n"
-    );
+    int progID = *(int *)((char *)pOGLVertexProgramInfo + 0xc);
+    g_vp_enable_count++;
+    if (g_svp_diag < 10 && g_vp_enable_count > 870) {
+        g_svp_diag++;
+        fprintf(stderr, "[SVP#%d] vpInfo=%p progID=%d cached=0x%x\n",
+                g_vp_enable_count, pOGLVertexProgramInfo, progID,
+                *(int *)((char *)_this + 0x67c));
+    }
+    int cached = *(int *)((char *)_this + 0x67c);
+    if (progID == cached)
+        return 0;
+    *(int *)((char *)_this + 0x67c) = progID;
+    /* Call real GL function directly, bypassing interceptor */
+    {
+        typedef void (*bind_fn_t)(unsigned int, unsigned int);
+        static bind_fn_t real_bind = 0;
+        if (!real_bind) {
+            extern void *SDL_GL_GetProcAddress(const char *);
+            real_bind = (bind_fn_t)SDL_GL_GetProcAddress("glBindProgramARB");
+            fprintf(stderr, "[SVP] real glBindProgramARB=%p\n", real_bind);
+        }
+        real_bind(0x8620, progID);
+    }
+    /* Verify VP actually bound */
+    if (g_svp_diag < 10 && g_vp_enable_count > 870) {
+        extern unsigned int glGetError(void);
+        extern void glGetIntegerv(unsigned int, int *);
+        unsigned int err = glGetError();
+        int actual_vp = 0;
+        glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &actual_vp);
+        extern unsigned char glIsEnabled(unsigned int);
+        int vp_enabled = glIsEnabled(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
+        fprintf(stderr, "[SVP-verify#%d] bound progID=%d actual_vp=%d err=0x%x enabled=%d\n",
+                g_vp_enable_count, progID, actual_vp, err, vp_enabled);
+    }
+    return 0;
 }
 
 /* line 704 */
