@@ -10,11 +10,15 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static vec4_t color; /* color */
+/* color: original Mac static was 128 bytes containing sign masks at offsets 16, 32, 64, 96.
+ * Was declared as static vec4_t color (16 bytes BSS) — shadowed the real 128-byte rodata array.
+ * All color+N references in inline ASM replaced with sse_float_sign_mask from literals.S. */
 static int dpvsConfig; /* dpvsConfig */
 static struct DpvsScene dpvsScene; /* dpvsScene */
 static int dpvsGlob; /* dpvsGlob */
-static vec4_t standardFrustumSidePlanes[4]; /* standardFrustumSidePlanes */
+/* Fix #143: was static vec4_t (zeroed BSS) shadowing rodata with correct plane data.
+ * This caused R_FrustumClipPlanes to produce degenerate frustum planes that culled everything. */
+extern const unsigned char standardFrustumSidePlanes[];
 
 extern void R_UpdateXModelBounds(void *sceneEnt, void *ent);
 extern void R_SkinSceneEnt(void *sceneEnt, void *ent);
@@ -45,7 +49,9 @@ void R_DrawModel(int entIndex)
     if (!*(byte *)((char *)&dpvsGlob + 103))
         return;
 
-    byte *base = *(byte **)imp_scene;
+    /* Fix #143: was *(byte **)imp_scene — double-deref reads scene.viewCount as ptr.
+     * imp_scene stores &scene, so (byte *)imp_scene = &scene directly. */
+    byte *base = (byte *)imp_scene;
     byte *sceneEnt = base + 0x5c4 + entIndex * 52;
     byte *ent = *(byte **)(base + 0x10) + entIndex * 116;
 
@@ -1056,6 +1062,7 @@ void R_AddWorldSurfaceWithCull(int stackLevel)
         "subl $0x2c, %esp\n"
         "movl %eax, %ebx\n" /* surfIndex */
         "movl 8(%ebp), %edi\n" /* stackLevel */
+
         /* { scope 1: occluderIndex */
         "leal (, %eax, 4), %eax\n" /* line 1072 */
         "movl %eax, -0x20(%ebp)\n"
@@ -1958,6 +1965,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "movl %eax, -0x54(%ebp)\n"
         "movl %edx, -0x58(%ebp)\n"
         "movl %ecx, -0x5c(%ebp)\n"
+
         /* { scope 1: sceneEnt, ent, count */
         "cmpb $0, dpvsGlob+100\n" /* line 1491 */
         "je .Lff02fa_000f0363\n"
@@ -2295,6 +2303,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         ".Lff02fa_000f075c:\n"
         "movl %ebx, %eax\n" /* line 1498 | smodelChildIndex */
         "addl 0x2c(%edi), %eax\n" /* tree */
+
         "movl $0, (%esp)\n"
         "movl -0x5c(%ebp), %ecx\n"
         "movl -0x58(%ebp), %edx\n"
@@ -3944,7 +3953,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "je .Lff1d30_000f2b21\n"
         "movl -0x18f0(%ebp), %ecx\n" /* line 2083 | portal */
         "movss 0x14(%ecx), %xmm0\n" /* scale */
-        "xorps color+16, %xmm0\n" /* scale */
+        "xorps sse_float_sign_mask, %xmm0\n" /* scale — was color+16, fix #143 */
         "addl $8, %ecx\n"
         "movl %ecx, -0x18f4(%ebp)\n"
         /* { scope 2: screenSpaceWinding, forceBevels */
@@ -5040,7 +5049,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "maxss %xmm0, %xmm4\n"
         "ucomiss %xmm4, %xmm3\n" /* line 2120 */
         "jae .Lff2c88_000f3ac7\n"
-        "movss color+32, %xmm0\n" /* line 216 */
+        "movss sse_float_sign_mask, %xmm0\n" /* line 216 — was color+32, fix #143 */
         "movss (%esi), %xmm3\n"
         "xorps %xmm0, %xmm3\n"
         "movss %xmm3, dpvsGlob+20\n"
@@ -5086,7 +5095,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl $4, -0xe4(%ebp)\n" /* frustumPlaneCount */
         "jmp .Lff2c88_000f30fc\n"
         ".Lff2c88_000f2fbf:\n"
-        "movss color+32, %xmm0\n" /* line 216 */
+        "movss sse_float_sign_mask, %xmm0\n" /* line 216 — was color+32, fix #143 */
         "movss 0xc(%edx), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, dpvsGlob+72\n"
@@ -5402,6 +5411,21 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl $dpvsGlob, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* cell */
         "calll R_VisitPortals\n"
+
+        /* DIAGNOSTIC: print state after R_VisitPortals */
+        "pushl %eax\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %ebx\n"              /* cellPtr */
+        "movzbl dpvsGlob+100, %eax\n"
+        "pushl %eax\n"              /* drawWorld */
+        "pushl 0xc(%ebp)\n"        /* cameraCellIndex */
+        "calll R_dpvs_diag_print\n"
+        "addl $12, %esp\n"
+        "popl %edx\n"
+        "popl %ecx\n"
+        "popl %eax\n"
+
         /* } scope */
         /* { scope 2: entityCount */
         ".Lff2c88_000f34c1:\n"

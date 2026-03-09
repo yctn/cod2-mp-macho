@@ -692,6 +692,16 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
     scene.polyCount++;
 }
 
+void R_dpvs_diag_print(int cameraCellIndex, int drawWorld, int cellPtr)
+{
+    static int diag = 0;
+    if (diag < 30) {
+        fprintf(stderr, "[DPVS#%d] cellIdx=%d drawWorld=%d drawSurfCount=%d\n",
+                diag, cameraCellIndex, drawWorld, scene.drawSurfCount);
+    }
+    diag++;
+}
+
 /* line 696 */
 void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
 {
