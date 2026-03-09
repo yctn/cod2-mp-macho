@@ -2023,9 +2023,45 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice * _this, DWORD Count, const 
         "movl %eax, (%esp)\n"
         "calll glClearStencil\n"
         "jmp .Lf14b2c_00014bb9\n"
-        /* { scope 2 */
+        /* { scope 2: D3D depth compare func (0-7) → GL depth func */
         ".Lf14b2c_00014dcd:\n"
-        "jmpl *0x2edf48(, %eax, 4)\n" /* line 2466 */
+        "jmpl *.Ljt_depthfunc(, %eax, 4)\n" /* line 2466 — was raw Mac 0x2edf48 */
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_depthfunc:\n"
+        ".long .Lf14b2c_df_default\n"   /* 0: invalid → default (0) */
+        ".long .Lf14b2c_df_never\n"     /* 1: D3DCMP_NEVER → GL_NEVER 0x200 */
+        ".long .Lf14b2c_df_less\n"      /* 2: D3DCMP_LESS → GL_LESS 0x201 */
+        ".long .Lf14b2c_df_equal\n"     /* 3: D3DCMP_EQUAL → GL_EQUAL 0x202 */
+        ".long .Lf14b2c_df_lequal\n"    /* 4: D3DCMP_LESSEQUAL → GL_LEQUAL 0x203 */
+        ".long .Lf14b2c_df_greater\n"   /* 5: D3DCMP_GREATER → GL_GREATER 0x204 */
+        ".long .Lf14b2c_df_notequal\n"  /* 6: D3DCMP_NOTEQUAL → GL_NOTEQUAL 0x205 */
+        ".long .Lf14b2c_df_gequal\n"    /* 7: D3DCMP_GREATEREQUAL → GL_GEQUAL 0x206 */
+        ".popsection\n"
+        ".Lf14b2c_df_default:\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_never:\n"
+        "movl $0x200, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_less:\n"
+        "movl $0x201, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_equal:\n"
+        "movl $0x202, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_lequal:\n"
+        "movl $0x203, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_greater:\n"
+        "movl $0x204, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_notequal:\n"
+        "movl $0x205, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
+        ".Lf14b2c_df_gequal:\n"
+        "movl $0x206, %eax\n"
+        "jmp .Lf14b2c_00014ca7\n"
         /* } scope */
         ".Lf14b2c_00014dd4:\n"
         "movl $0xbd0, (%esp)\n" /* line 2447 */
