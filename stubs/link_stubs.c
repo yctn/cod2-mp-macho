@@ -12,11 +12,11 @@
 extern const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, int flags);
 extern const dvar_t * Dvar_RegisterBool(const char *dvarName, int value, int flags);
 
-const dvar_t * Dvar_RegisterString_mac(const char *name, const char *value, int min, int max, int flags) {
+const dvar_t * Dvar_RegisterString_mac(const char *name, const char *value, int flags) {
     return Dvar_RegisterString(name, value ? value : "", flags);
 }
 
-const dvar_t * Dvar_RegisterBool_mac(const char *name, int value, int min, int max, int flags) {
+const dvar_t * Dvar_RegisterBool_mac(const char *name, int value, int flags) {
     return Dvar_RegisterBool(name, value, flags);
 }
 

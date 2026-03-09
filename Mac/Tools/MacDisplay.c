@@ -535,21 +535,61 @@ short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
     {
         extern int g_rb_endsurface_count, g_rb_endsurface_notechnique;
         extern int g_rb_endsurface_dxstate, g_rb_endsurface_draw;
+        extern int g_rb_endsurface_flag1skip, g_rb_endsurface_flag2skip;
+        extern int g_rb_endsurface_idxzero;
+        extern int g_rb_tess_type_counts[8], g_rb_tess_type_idxzero[8];
         extern int rb_rdsl_call_count;
         extern int rb_drawsurfscmd_count, rb_drawsurfscmd_dxskip;
-        if (swap_count <= 10 || (swap_count >= 435 && swap_count <= 445)) {
-            fprintf(stderr, "[RBdiag#%d] endSurf=%d noTech=%d dxSkip=%d draw=%d rdsl=%d dsCmd=%d dsCmdDxSkip=%d\n",
-                    swap_count, g_rb_endsurface_count, g_rb_endsurface_notechnique,
-                    g_rb_endsurface_dxstate, g_rb_endsurface_draw, rb_rdsl_call_count,
-                    rb_drawsurfscmd_count, rb_drawsurfscmd_dxskip);
+        extern int g_dsc_techtype[3], g_dsc_surfcount[3];
+        extern int g_rdsl_ignore_decal, g_rdsl_ignore_techm1, g_rdsl_ignore_technull, g_rdsl_noignore;
+        static const char *sf_names[] = {"BAD","POLY","ENT","SKIN","RIGID","SCACHE","TRI","RAW"};
+        if (swap_count <= 10 || (swap_count >= 435 && swap_count <= 450)) {
+            fprintf(stderr, "[RBdiag#%d] endSurf=%d idxZ=%d draw=%d dsCmd=%d\n",
+                    swap_count, g_rb_endsurface_count, g_rb_endsurface_idxzero,
+                    g_rb_endsurface_draw, rb_drawsurfscmd_count);
+            fprintf(stderr, "  passes: ");
+            for (int i = 0; i < rb_drawsurfscmd_count && i < 3; i++)
+                fprintf(stderr, "tech=%d surfs=%d ", g_dsc_techtype[i], g_dsc_surfcount[i]);
+            fprintf(stderr, "\n");
+        {
+            extern int g_rdsl_sortchange, g_rdsl_bf_entry;
+            fprintf(stderr, "  ignore: decal=%d techM1=%d techNull=%d ok=%d sortchg=%d bfentry=%d\n",
+                    g_rdsl_ignore_decal, g_rdsl_ignore_techm1,
+                    g_rdsl_ignore_technull, g_rdsl_noignore,
+                    g_rdsl_sortchange, g_rdsl_bf_entry);
+            g_rdsl_ignore_decal = 0; g_rdsl_ignore_techm1 = 0;
+            g_rdsl_ignore_technull = 0; g_rdsl_noignore = 0;
+            g_rdsl_sortchange = 0; g_rdsl_bf_entry = 0;
+        }
+            fprintf(stderr, "  tess: ");
+            for (int i = 0; i < 8; i++) {
+                if (g_rb_tess_type_counts[i])
+                    fprintf(stderr, "%s=%d(%dz) ", sf_names[i], g_rb_tess_type_counts[i], g_rb_tess_type_idxzero[i]);
+            }
+            fprintf(stderr, "\n");
             /* Reset for next frame */
             g_rb_endsurface_count = 0;
             g_rb_endsurface_notechnique = 0;
             g_rb_endsurface_dxstate = 0;
             g_rb_endsurface_draw = 0;
+            g_rb_endsurface_flag1skip = 0;
+            g_rb_endsurface_flag2skip = 0;
+            g_rb_endsurface_idxzero = 0;
+            for (int i = 0; i < 8; i++) { g_rb_tess_type_counts[i] = 0; g_rb_tess_type_idxzero[i] = 0; }
             rb_rdsl_call_count = 0;
             rb_drawsurfscmd_count = 0;
             rb_drawsurfscmd_dxskip = 0;
+        }
+    }
+    {
+        extern int g_sync_count, g_sync_newgl, g_sync_dirty, g_sync_update;
+        extern int g_sync_nosurfs, g_sync_hassurfs;
+        if (swap_count <= 10 || (swap_count >= 435 && swap_count <= 450)) {
+            fprintf(stderr, "[TexSync#%d] sync=%d newGL=%d dirty=%d update=%d nosurf=%d hassurf=%d\n",
+                    swap_count, g_sync_count, g_sync_newgl, g_sync_dirty, g_sync_update,
+                    g_sync_nosurfs, g_sync_hassurfs);
+            g_sync_count = 0; g_sync_newgl = 0; g_sync_dirty = 0; g_sync_update = 0;
+            g_sync_nosurfs = 0; g_sync_hassurfs = 0;
         }
     }
     if (swap_count == 440 || swap_count == 441 || swap_count == 445) {

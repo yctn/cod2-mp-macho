@@ -4,6 +4,18 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern int g_rb_tess_type_counts[8]; /* diagnostic */
+extern int g_rb_tess_type_idxzero[8]; /* diagnostic */
+int g_rb_last_tess_type = 0; /* diagnostic */
+int g_dsc_techtype[3] = {0};
+int g_dsc_surfcount[3] = {0};
+int g_rdsl_ignore_decal = 0;
+int g_rdsl_ignore_techm1 = 0;
+int g_rdsl_ignore_technull = 0;
+int g_rdsl_noignore = 0;
+int g_rdsl_sortchange = 0;
+int g_rdsl_bf_entry = 0;
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  *   #include "PC/universal/com_math.h"
@@ -2232,6 +2244,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "cmpl -0x48(%ebp), %eax\n" /* prevSort */
         "je .Lfd5f2e_000d610b\n"
         ".Lfd5f2e_000d6060:\n"
+        "incl g_rdsl_sortchange\n"
         "movl %eax, -0x48(%ebp)\n" /* line 1027 | prevSort */
         "leal -0x20(%ebp), %eax\n" /* line 1028 | lightmap */
         "movl %eax, 0xc(%esp)\n"
@@ -2267,20 +2280,27 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         /* } scope */
         /* } scope */
         ".Lfd5f2e_000d60bf:\n"
+        "incl g_rdsl_bf_entry\n"
         "movl -0x1c(%ebp), %esi\n" /* line 1032 | material */
         "movl imp_r_drawDecals, %eax\n" /* line 917 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd5f2e_000d60d5\n"
         "testb $0x30, 0x30(%esi)\n"
-        "jne .Lfd5f2e_000d60e9\n"
+        "je .Lfd5f2e_000d60d5\n"
+        "incl g_rdsl_ignore_decal\n"
+        "jmp .Lfd5f2e_000d60e9\n"
         ".Lfd5f2e_000d60d5:\n"
         "cmpl $-1, %ebx\n" /* line 926 */
-        "je .Lfd5f2e_000d60e9\n"
+        "jne .Lfd5f2e_000d60d5b\n"
+        "incl g_rdsl_ignore_techm1\n"
+        "jmp .Lfd5f2e_000d60e9\n"
+        ".Lfd5f2e_000d60d5b:\n"
         "movl 0x38(%esi), %eax\n" /* line 929 */
         "movl 4(%eax, %ebx, 4), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfd5f2e_000d61cc\n"
+        "incl g_rdsl_ignore_technull\n"
         ".Lfd5f2e_000d60e9:\n"
         "movb $1, -0x5c(%ebp)\n" /* line 1032 | ignoreSurfs */
         ".Lfd5f2e_000d60ed:\n"
@@ -2298,6 +2318,8 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         ".Lfd5f2e_000d6111:\n"
         "movl 4(%edi), %eax\n" /* line 1151 | drawSurf */
         "movl (%eax), %edx\n"
+        "incl g_rb_tess_type_counts(, %edx, 4)\n" /* diagnostic: count per type */
+        "movl %edx, g_rb_last_tess_type\n" /* diagnostic: track last type for idxzero */
         "movl %eax, (%esp)\n"
         "calll *rb_tessTable(, %edx, 4)\n"
         "jmp .Lfd5f2e_000d60ed\n"
@@ -2358,6 +2380,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         /* } scope */
         /* } scope */
         ".Lfd5f2e_000d61cc:\n"
+        "incl g_rdsl_noignore\n"
         "movb $0, -0x5c(%ebp)\n" /* line 1032 | ignoreSurfs */
         "movl -0x24(%ebp), %ecx\n" /* line 1036 | entityIndex */
         "cmpl %ecx, -0x58(%ebp)\n" /* entityIndexPrev */
@@ -2642,6 +2665,16 @@ void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
         "jne .Lfd65a0_000d6628\n"
         ".Lfd65a0_000d65d8:\n"
         "incl rb_drawsurfscmd_count\n"
+        /* diagnostic: store per-pass techType and drawSurfCount */
+        "movl rb_drawsurfscmd_count, %eax\n"
+        "decl %eax\n"
+        "cmpl $3, %eax\n"
+        "jge .Lfd65a0_skip_dslog\n"
+        "movl 0x10(%ebx), %ecx\n"
+        "movl %ecx, g_dsc_techtype(,%eax,4)\n"
+        "movl 0xc(%ebx), %ecx\n"
+        "movl %ecx, g_dsc_surfcount(,%eax,4)\n"
+        ".Lfd65a0_skip_dslog:\n"
         "movl imp_dxState, %eax\n" /* line 1235 */
         "cmpb $0, 0x20c8(%eax)\n"
         "je .Lfd65a0_dxstate_ok\n"

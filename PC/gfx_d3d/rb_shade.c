@@ -3861,6 +3861,12 @@ int g_rb_endsurface_count = 0; /* diagnostic */
 int g_rb_endsurface_notechnique = 0; /* diagnostic: technique==NULL */
 int g_rb_endsurface_dxstate = 0; /* diagnostic: dxState+0x20c8 non-zero */
 int g_rb_endsurface_draw = 0; /* diagnostic: reached RB_DrawSingleTechnique */
+int g_rb_endsurface_flag1skip = 0; /* diagnostic: technique flag1 + backEnd==0xe */
+int g_rb_endsurface_flag2skip = 0; /* diagnostic: technique flag2 + backEnd==0xe */
+int g_rb_endsurface_idxzero = 0; /* diagnostic: indexCount==0 */
+int g_rb_tess_type_counts[8] = {0}; /* diagnostic: per surface type dispatch count */
+int g_rb_tess_type_idxzero[8] = {0}; /* diagnostic: per type zero-index count */
+extern int g_rb_last_tess_type;
 /* line 1712 */
 __attribute__((naked))
 void RB_EndSurface(void)
@@ -3910,7 +3916,10 @@ void RB_EndSurface(void)
         "testb $1, %al\n"
         "je .Lff9de4_000f9e62\n"
         "cmpl $0xe, 0x2e84(%esi)\n"
-        "je .Lff9de4_000f9e2b\n"
+        "jne .Lff9de4_flag1_nonskip\n"
+        "incl g_rb_endsurface_flag1skip\n"
+        "jmp .Lff9de4_000f9e2b\n"
+        ".Lff9de4_flag1_nonskip:\n"
         ".Lff9de4_000f9e62:\n"
         "testb $2, %al\n" /* line 1705 */
         "jne .Lff9de4_000f9fb0\n"
@@ -3922,7 +3931,12 @@ void RB_EndSurface(void)
         ".Lff9de4_000f9e78:\n"
         "movl 0x5a7d0(%edi), %ecx\n" /* line 1744 */
         "testl %ecx, %ecx\n"
-        "je .Lff9de4_000f9e49\n"
+        "jne .Lff9de4_idxnonzero\n"
+        "incl g_rb_endsurface_idxzero\n"
+        "movl g_rb_last_tess_type, %eax\n"
+        "incl g_rb_tess_type_idxzero(, %eax, 4)\n"
+        "jmp .Lff9de4_000f9e49\n"
+        ".Lff9de4_idxnonzero:\n"
         "movl $0, -0x2c(%ebp)\n" /* line 1667 */
         "movl 0x5a7d4(%edi), %eax\n" /* line 1668 */
         "movl %eax, -0x28(%ebp)\n"
@@ -4008,6 +4022,7 @@ void RB_EndSurface(void)
         ".Lff9de4_000f9fb0:\n"
         "cmpl $0xe, 0x2e88(%esi)\n" /* line 1705 */
         "jne .Lff9de4_000f9e6a\n"
+        "incl g_rb_endsurface_flag2skip\n"
         "jmp .Lff9de4_000f9e2b\n"
         /* } scope */
         ".Lff9de4_000f9fc2:\n"

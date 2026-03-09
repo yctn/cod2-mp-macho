@@ -3312,6 +3312,17 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     /* Set triangle mode */
     *(int *)(tess + 0x5a7b8) = 1;
 
+    /* diagnostic: log first few TessTriangles calls */
+    {
+        static int tess_tri_diag = 0;
+        if (tess_tri_diag < 20) {
+            fprintf(stderr, "[TessTri#%d] indexCount=%d vertexCount=%d firstVertex=%d indices=%p\n",
+                    tess_tri_diag, (int)tri->indexCount, (int)tri->vertexCount,
+                    tri->firstVertex, (void *)tri->indices);
+            tess_tri_diag++;
+        }
+    }
+
     /* Copy index data */
     Com_Memcpy(
         *(char **)(tess + 0x5a7b4) + *(int *)(tess + 0x5a7e0) * 2,

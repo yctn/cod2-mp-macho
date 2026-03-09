@@ -3,6 +3,14 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
+
+int g_sync_count = 0;
+int g_sync_newgl = 0;
+int g_sync_dirty = 0;
+int g_sync_update = 0;
+int g_sync_nosurfs = 0;
+int g_sync_hassurfs = 0;
 
 /* Original includes (from N_BINCL debug info):
  *   #include "Mac/DirectX 9/CDirect3D.h"
@@ -3579,6 +3587,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
         /* { scope 1: this, Value */
+        "incl g_sync_count\n"
         "movl 0xc(%ebp), %edx\n" /* line 908 | pTex */
         "movl (%edx), %eax\n"
         "movl %edx, (%esp)\n"
@@ -4027,6 +4036,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "jmp .Lf10a4a_00010d4d\n"
         /* { scope 2 */
         ".Lf10a4a_000110bc:\n"
+        "incl g_sync_newgl\n"
         "movl $4, (%esp)\n" /* line 564 */
         "calll __Znwm\n"
         "movl %eax, %ebx\n" /* TexID */
@@ -4074,6 +4084,13 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "subl %edx, %eax\n" /* line 73 */
         "sarl $2, %eax\n"
         "testl %eax, %eax\n"
+        "jne .Lf10a4a_hassurfs\n"
+        "incl g_sync_nosurfs\n"
+        "jmp .Lf10a4a_surfscheck_done\n"
+        ".Lf10a4a_hassurfs:\n"
+        "incl g_sync_hassurfs\n"
+        ".Lf10a4a_surfscheck_done:\n"
+        "testl %eax, %eax\n"
         "jne .Lf10a4a_000115a7\n"
         ".Lf10a4a_00011189:\n"
         "testb %bl, %bl\n" /* line 953 | RecreateTextureData */
@@ -4084,6 +4101,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
+        "incl g_sync_update\n"
         "movzbl %bl, %eax\n" /* line 956 | RecreateTextureData */
         "movl %eax, 4(%esp)\n"
         "movl -0x4c(%ebp), %edx\n" /* p2DTexture */
@@ -4375,7 +4393,10 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl %eax, (%esp)\n"
         "calll CDirect3DSurface_IsDirty\n"
         "testb %al, %al\n" /* line 953 */
-        "jne .Lf10a4a_00011191\n"
+        "je .Lf10a4a_dirty_skip\n"
+        "incl g_sync_dirty\n"
+        "jmp .Lf10a4a_00011191\n"
+        ".Lf10a4a_dirty_skip:\n"
         "jmp .Lf10a4a_00011189\n"
         ".Lf10a4a_000115be:\n"
         "movl $1, %eax\n" /* line 91 */
