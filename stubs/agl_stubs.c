@@ -70,45 +70,7 @@ void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, G
     static fn_t real_fn = NULL;
     if (!real_fn) real_fn = (fn_t)dlsym(RTLD_NEXT, "glDrawRangeElements");
 
-    static int gdre_total = 0;
-    gdre_total++;
-
-    /* Test: disable ARB programs for one draw to see if fixed-function works */
-    extern int g_draw_count;
-    static int noarb_test = 0;
-    int did_disable = 0;
-    if (noarb_test == 0 && g_draw_count > 3000 && count == 6) {
-        noarb_test = 1;
-        did_disable = 1;
-        /* Disable ARB programs, fall back to fixed-function */
-        typedef void (*disable_fn)(GLenum);
-        static disable_fn myDisable = NULL;
-        if (!myDisable) myDisable = (disable_fn)dlsym(RTLD_NEXT, "glDisable");
-        myDisable(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        myDisable(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
-        /* Set up a simple projection for the fixed-function path */
-        fprintf(stderr, "[NOARB-TEST] disabled VP/FP for dc=%d count=%d\n", g_draw_count, count);
-    }
-
     real_fn(mode, start, end, count, type, indices);
-
-    if (did_disable) {
-        /* Read pixel */
-        typedef void (*readPx_fn)(int, int, int, int, GLenum, GLenum, void *);
-        static readPx_fn myRead = NULL;
-        if (!myRead) myRead = (readPx_fn)dlsym(RTLD_NEXT, "glReadPixels");
-        unsigned char px[4] = {0};
-        if (myRead) myRead(320, 240, 1, 1, 0x1908, 0x1401, px);
-        GLenum err = glGetError();
-        fprintf(stderr, "[NOARB-RESULT] px=(%d,%d,%d,%d) err=0x%x\n",
-                px[0], px[1], px[2], px[3], err);
-        /* Re-enable */
-        typedef void (*enable_fn)(GLenum);
-        static enable_fn myEnable = NULL;
-        if (!myEnable) myEnable = (enable_fn)dlsym(RTLD_NEXT, "glEnable");
-        myEnable(0x8620);
-        myEnable(0x8804);
-    }
 }
 
 /* Intercept glTexImage2D to check texture uploads */

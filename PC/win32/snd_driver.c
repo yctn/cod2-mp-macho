@@ -721,7 +721,7 @@ void SND_Update2DChannelReverb(int index)
     void *pAlias = *(void **)(ch + 0x358);
     float reverbLevel;
 
-    if (pAlias == NULL || (*(byte *)(*(byte **)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias + 0x2c) & 0x10))) {
+    if (pAlias == NULL || (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias + 0x2c) & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = *(float *)(*(byte **)(sndGlob + 0x2d8) + 0x10);
@@ -737,7 +737,7 @@ void SND_Update3DChannelReverb(int index)
     void *pAlias = *(void **)(ch + 0x358);
     float reverbLevel;
 
-    if (pAlias == NULL || (*(byte *)(*(byte **)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias + 0x2c) & 0x10))) {
+    if (pAlias == NULL || (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias + 0x2c) & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = *(float *)(*(byte **)(sndGlob + 0x2d8) + 0x10);
@@ -1222,7 +1222,7 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     AIL_set_sample_loop_count(handle, (*(byte *)((byte *)pAlias0 + 0x2c) & 1) ^ 1);
 
     /* Reverb */
-    if (*(byte *)(*(byte **)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
+    if (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
         reverbLevel = *(float *)(*(byte **)(*(byte **)imp_g_snd + 0x2d8) + 0x10);
     } else {
         reverbLevel = 0;
@@ -1781,7 +1781,7 @@ got_handle:
     AIL_set_stream_loop_count(handle, (*(byte *)((byte *)pAlias0 + 0x2c) & 1) ^ 1);
 
     /* Reverb */
-    if (*(byte *)(*(byte **)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
+    if (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
         reverbLevel = *(float *)(*(byte **)(*(byte **)imp_g_snd + 0x2d8) + 0x10);
     } else {
         reverbLevel = 0;
@@ -2028,7 +2028,7 @@ Bool SND_InitDriver(void)
     mss_3d_provider = Dvar_RegisterString((const char *)str_00219b04, (const char *)str_00219ae4, 0x1021);
 
     /* Read snd_khz */
-    sndKhzVal = *(int *)(*(byte **)(*(byte **)imp_snd_khz) + 8);
+    sndKhzVal = *(int *)((byte *)(*(byte **)imp_snd_khz) + 8);
     switch (sndKhzVal) {
         case 0x2c: /* 44 khz */
             freq = 0xac44;
@@ -2052,7 +2052,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_bits */
-    sndBitsVal = *(int *)(*(byte **)(*(byte **)imp_snd_bits) + 8);
+    sndBitsVal = *(int *)((byte *)(*(byte **)imp_snd_bits) + 8);
     if (sndBitsVal == 8) {
         bytes = 1;
         bits = 8;
@@ -2065,7 +2065,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_channels (stereo) */
-    if (*(byte *)(*(byte **)(*(byte **)imp_snd_stereo) + 8) != 0) {
+    if (*(byte *)((byte *)(*(byte **)imp_snd_stereo) + 8) != 0) {
         channelStr = (const char *)str_00219b90; /* "stereo" */
         numChannels = 2;
     } else {

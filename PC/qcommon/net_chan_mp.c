@@ -94,7 +94,7 @@ void NetProf_PrepProfiling(netProfileInfo_t * *pProf)
         /* profiling was off, turn it on */
         {
             /* check com_sv_running->integer (offset 8) */
-            int sv_running = *(int *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8);
+            int sv_running = *(int *)((byte *)(*(void **)imp_com_sv_running) + 8);
             if (sv_running != 0) {
                 /* server is running - check legacyHacks->field4 */
                 int lh_field = *(int *)((byte *)(*(void **)imp_legacyHacks) + 4);

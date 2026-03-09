@@ -234,7 +234,7 @@ Bool Material_IsDefault(const Material *material)
 /* line 1278 */
 Bool R_IsMaterialRefractive(MaterialHandle handle)
 {
-    if (*(int *)((byte *)(*(void **)(*(int *)imp_r_rendererInUse)) + 8) == 2)
+    if (*(int *)((byte *)(*(int *)imp_r_rendererInUse) + 8) == 2)
         return 0;
     MaterialTechniqueSet *ts = handle->techniqueSet;
     MaterialTechnique *tech = ts->techniques[21];

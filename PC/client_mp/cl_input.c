@@ -647,7 +647,7 @@ void IN_LowerStance(void)
     int val;
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
         return;
-    statePtr = (int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 8);
+    statePtr = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
     val = *statePtr;
     if (val <= 0)
         *statePtr = 1;
@@ -2015,9 +2015,9 @@ void IN_DownDown(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0xdc));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
 }
 
 /* line 315 */
@@ -2025,9 +2025,9 @@ void IN_DownUp(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0xdc));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
 }
 
 /* line 602 */
@@ -2035,9 +2035,9 @@ void IN_Prone_Down(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0x1f4));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
 }
 
 /* line 609 */
@@ -2045,9 +2045,9 @@ void IN_Prone_Up(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0x1f4));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
 }
 
 /* line 108 */

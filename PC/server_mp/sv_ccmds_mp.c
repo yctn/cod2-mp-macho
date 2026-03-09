@@ -564,7 +564,7 @@ int SV_KickClient_f(void)
 static short int SV_Ban_f(void)
 {
     void *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
+    if (!*(byte *)((byte *)(*(void **)imp_com_sv_running) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -584,7 +584,7 @@ static short int SV_Ban_f(void)
 static short int SV_BanNum_f(void)
 {
     void *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
+    if (!*(byte *)((byte *)(*(void **)imp_com_sv_running) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -1041,7 +1041,7 @@ static short int SV_Systeminfo_f(void)
 static short int SV_DumpUser_f(void)
 {
     byte *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
+    if (!*(byte *)((byte *)(*(void **)imp_com_sv_running) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -1216,7 +1216,7 @@ short int SV_AddOperatorCommands(void)
     Cmd_AddCommand("devmap", (void (*)(void))SV_Map_f);
     Cmd_SetAutoComplete("devmap", "maps/mp", "d3dbsp");
     Cmd_AddCommand("killserver", (void (*)(void))SV_KillServer_f);
-    if (*(int *)((byte *)(*(void **)(*(void **)imp_com_dedicated)) + 8))
+    if (*(int *)((byte *)(*(void **)imp_com_dedicated) + 8))
     {
         Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
         Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);

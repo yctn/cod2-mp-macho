@@ -479,7 +479,7 @@ void R_ShutdownModels(void)
 /* line 211 */
 void R_FinishLoadingModels(void)
 {
-    if (*(int *)((byte *)(*(void **)(*(int *)imp_r_optimizeXModels)) + 8) == 0)
+    if (*(int *)((byte *)(*(int *)imp_r_optimizeXModels) + 8) == 0)
         return;
     DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }
