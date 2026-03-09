@@ -282,12 +282,17 @@ static void SCR_UpdateFrame(void)
                 frame_diag, cmdlist_used(), s_cmdList);
     }
     {
-        byte *clc_tmp = *(byte **)clc_ptr_195ee8c;
-        int cs_tmp = *(int *)clc_tmp;
+        extern unsigned char clientConnections[];
+        static int last_cs = -1;
+        int cs_direct = *(int *)clientConnections;
         int fs_tmp = UI_IsFullscreen();
-        if (frame_diag < 10 || (frame_diag < 500 && (frame_diag % 50 == 0)) || cs_tmp >= 6) {
-            fprintf(stderr, "[frame#%d] gameLoaded=%d connstate=%d fullscr=%d\n",
-                    frame_diag, gameLoaded, cs_tmp, fs_tmp);
+        if (cs_direct != last_cs) {
+            fprintf(stderr, "[frame#%d] connstate CHANGED %d -> %d\n", frame_diag, last_cs, cs_direct);
+            last_cs = cs_direct;
+        }
+        if (frame_diag < 10 || (frame_diag < 500 && (frame_diag % 50 == 0)) || cs_direct >= 6) {
+            fprintf(stderr, "[frame#%d] gL=%d cs=%d fs=%d\n",
+                    frame_diag, gameLoaded, cs_direct, fs_tmp);
         }
         frame_diag++;
     }

@@ -4579,7 +4579,13 @@ Bool CL_ConnectionlessPacket(netadr_t from, msg_t *msg, int time)
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"
         "calll CL_SetupForNewServerMap\n"
+        /* Fix #151: Don't downgrade connstate if already past 'connected' (5).
+           The 'loadingnewmap' OOB packet can arrive via loopback AFTER the
+           gamestate has already been processed (state 6/7/8). */
+        "cmpl $5, (%ebx)\n"
+        "jg .Lf14aef6_skip_state5\n"
         "movl $5, (%ebx)\n" /* line 2689 | c */
+        ".Lf14aef6_skip_state5:\n"
         "calll UI_DrawConnectScreen\n" /* line 2690 */
         "jmp .Lf14aef6_0014afb0\n"
     );
@@ -4587,7 +4593,26 @@ Bool CL_ConnectionlessPacket(netadr_t from, msg_t *msg, int time)
 
 /* line 2733 */
 __attribute__((naked))
+Bool CL_PacketEvent_real(netadr_t from, msg_t *msg, int time);
+
 Bool CL_PacketEvent(netadr_t from, msg_t *msg, int time)
+{
+    static int _cpe_cnt = 0;
+    Bool ret;
+    int first4 = (msg && msg->cursize >= 4) ? *(int *)msg->data : 0;
+    if (_cpe_cnt < 30) {
+        fprintf(stderr, "[CPE-pre#%d] from.type=%d cursize=%d cs=%d first4=0x%x\n",
+            _cpe_cnt, *(int *)&from, msg ? msg->cursize : -1, *(int *)&clientConnections[0], first4);
+    }
+    ret = CL_PacketEvent_real(from, msg, time);
+    if (_cpe_cnt < 30) {
+        fprintf(stderr, "[CPE-post#%d] ret=%d cs=%d\n", _cpe_cnt, ret, *(int *)&clientConnections[0]);
+        _cpe_cnt++;
+    }
+    return ret;
+}
+
+Bool CL_PacketEvent_real(netadr_t from, msg_t *msg, int time)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2733 */
@@ -4782,6 +4807,14 @@ Bool CL_PacketEvent(netadr_t from, msg_t *msg, int time)
         "movl 0x14(%ebp), %eax\n" /* line 2799 | msg */
         "movl %eax, (%esp)\n"
         "calll CL_ParseServerMessage\n"
+        /* Diagnostic: print connstate after ParseServerMessage */
+        "jmp .Ldbg_psm_skip\n"
+        ".Ldbg_psm_str: .asciz \"DBG: after ParseServerMessage connstate=%d\\n\"\n"
+        ".Ldbg_psm_skip:\n"
+        "pushl clientConnections\n"
+        "pushl $.Ldbg_psm_str\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
         "movl 0x14(%ebp), %edx\n" /* line 2800 | msg */
         "movl (%edx), %edx\n"
         "testl %edx, %edx\n"
@@ -6391,13 +6424,22 @@ void CL_DownloadsComplete(void)
         "pushl $.Ldbg_dl1_str\n"
         "calll Com_Printf\n"
         "addl $4, %esp\n"
+        /* Diagnostic: print connstate before CL_InitCGame */
+        "jmp .Ldbg_st1_skip\n"
+        ".Ldbg_st1_str: .asciz \"DBG: connstate before CL_InitCGame = %d\\n\"\n"
+        ".Ldbg_st1_skip:\n"
+        "pushl clientConnections\n"
+        "pushl $.Ldbg_st1_str\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
         "calll CL_InitCGame\n" /* line 2126 */
         "jmp .Ldbg_dl2_skip\n"
-        ".Ldbg_dl2_str: .asciz \"DBG: CL_InitCGame returned\\n\"\n"
+        ".Ldbg_dl2_str: .asciz \"DBG: CL_InitCGame returned, connstate = %d\\n\"\n"
         ".Ldbg_dl2_skip:\n"
+        "pushl clientConnections\n"
         "pushl $.Ldbg_dl2_str\n"
         "calll Com_Printf\n"
-        "addl $4, %esp\n"
+        "addl $8, %esp\n"
         "calll FS_ReferencedIwdPureChecksums\n" /* line 1769 */
         "movl %eax, %ebx\n"
         "movl $str_002a96d8, 8(%esp)\n" /* line 1772 */

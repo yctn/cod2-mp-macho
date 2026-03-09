@@ -886,6 +886,15 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         }
     }
 
+    {
+        static int _ncp_cnt = 0;
+        if (_ncp_cnt < 30) {
+            fprintf(stderr, "[NCP#%d] seq=%d inSeq=%d frag=%d fStart=%d fLen=%d sock=%d cursize=%d\n",
+                _ncp_cnt, sequence, chan->incomingSequence, fragmented, fragmentStart, fragmentLength, chan->sock, msg->cursize);
+            _ncp_cnt++;
+        }
+    }
+
     /* out-of-order check */
     if (sequence <= chan->incomingSequence) {
         if (showdrop->current.enabled || showpackets->current.enabled) {

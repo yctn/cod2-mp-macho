@@ -163,6 +163,12 @@ long unsigned int SV_GameSendServerCommand(int clientNum, svscmd_type type, cons
     char *clients_base;
     char *client;
 
+    {
+        static int _gssc_cnt = 0;
+        if (_gssc_cnt < 50)
+            Com_Printf("[GSSC#%d] clientNum=%d type=%d text='%.60s'\n", _gssc_cnt++, clientNum, type, text ? text : "(null)");
+    }
+
     if (clientNum == -1) {
         SV_SendServerCommand((void *)0, type, "%s", text);
     } else if (clientNum >= 0) {

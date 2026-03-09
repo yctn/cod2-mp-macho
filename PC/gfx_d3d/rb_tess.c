@@ -3262,6 +3262,10 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
 }
 
 /* line 1553 */
+int g_tt_last_cached = -1;
+void *g_tt_last_tess = 0;
+int g_tt_seq = 0;
+int g_tt_last_seq = 0;
 void RB_TessTriangles(const surfaceType_t *surfType)
 {
     char *tess;
@@ -3316,9 +3320,9 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     {
         static int tess_tri_diag = 0;
         if (tess_tri_diag < 20) {
-            fprintf(stderr, "[TessTri#%d] indexCount=%d vertexCount=%d firstVertex=%d indices=%p\n",
+            fprintf(stderr, "[TessTri#%d] ic=%d vc=%d fv=%d tess=%p cached_before=%d\n",
                     tess_tri_diag, (int)tri->indexCount, (int)tri->vertexCount,
-                    tri->firstVertex, (void *)tri->indices);
+                    tri->firstVertex, (void *)tess, *(int *)(tess + 0x5a7e0));
             tess_tri_diag++;
         }
     }
@@ -3330,7 +3334,21 @@ void RB_TessTriangles(const surfaceType_t *surfType)
         (int)tri->indexCount * 2);
 
     /* Update state */
-    *(int *)(tess + 0x5a7e0) += (int)tri->indexCount;
+    {
+        int *cached_ptr = (int *)(tess + 0x5a7e0);
+        *cached_ptr += (int)tri->indexCount;
+        g_tt_last_cached = *cached_ptr;
+        g_tt_last_tess = tess;
+        g_tt_last_seq = ++g_tt_seq;
+        {
+            static int ttwaddr = 0;
+            if (ttwaddr < 3) {
+                fprintf(stderr, "[TT-WRITE#%d] ptr=%p val=%d ic=%d tess=%p\n",
+                        ttwaddr, (void *)cached_ptr, *cached_ptr, (int)tri->indexCount, (void *)tess);
+                ttwaddr++;
+            }
+        }
+    }
     *(int *)(tess + 0x5a7e8) = tri->firstVertex;
     *(int *)(tess + 0x5a7e4) = (int)tri->vertexCount;
 }

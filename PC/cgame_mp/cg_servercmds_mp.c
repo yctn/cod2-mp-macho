@@ -329,6 +329,7 @@ static void CG_OpenScriptMenu(void)
     const char *arg2;
 
     menuIndex = atoi(CG_Argv(1));
+    Com_Printf("[OPENMENU] menuIndex=%d\n", menuIndex);
 
     if ((unsigned int)menuIndex > 31) {
         Com_Printf((const char *)str_002b8070, menuIndex);
@@ -337,6 +338,7 @@ static void CG_OpenScriptMenu(void)
     }
 
     pszMenu = CL_GetConfigString(menuIndex + 0x4de);
+    Com_Printf("[OPENMENU] cs[%d]='%s'\n", menuIndex + 0x4de, pszMenu ? pszMenu : "(null)");
 
     if (*pszMenu == '\0') {
         Com_Printf((const char *)str_002b80b4, menuIndex);
@@ -1869,12 +1871,22 @@ void CG_ServerCommand(void)
 void CG_ExecuteNewServerCommands(int latestSequence)
 {
     char *cgs;
+    static int _svrcmd_cnt = 0;
 
     cgs = CGS_PTR;
+
+    if (_svrcmd_cnt < 20 || (latestSequence != *(int *)(cgs + 0x5e98) && _svrcmd_cnt < 200)) {
+        Com_Printf("[EXECSVR] call#%d latestSeq=%d storedSeq=%d\n", _svrcmd_cnt, latestSequence, *(int *)(cgs + 0x5e98));
+    }
+    _svrcmd_cnt++;
 
     while (*(int *)(cgs + 0x5e98) < latestSequence) {
         *(int *)(cgs + 0x5e98) += 1;
         if (CL_GetServerCommand(*(int *)(cgs + 0x5e98))) {
+            {
+                const char *_cmd0 = CG_Argv(0);
+                Com_Printf("[SVRCMD] seq=%d cmd='%s' argc=%d\n", *(int *)(cgs + 0x5e98), _cmd0 ? _cmd0 : "(null)", Cmd_Argc());
+            }
             CG_ServerCommand();
         }
     }

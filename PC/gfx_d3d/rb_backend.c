@@ -2346,6 +2346,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "movl (%eax), %edx\n"
         "incl g_rb_tess_type_counts(, %edx, 4)\n" /* diagnostic: count per type */
         "movl %edx, g_rb_last_tess_type\n" /* diagnostic: track last type for idxzero */
+        "incl g_tess_since_begin\n"
         "movl %eax, (%esp)\n"
         "calll *rb_tessTable(, %edx, 4)\n"
         "jmp .Lfd5f2e_000d60ed\n"

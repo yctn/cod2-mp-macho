@@ -35,9 +35,13 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
 void RB_EndSurface(void);
 
 /* line 1587 */
+extern int g_tess_since_begin;
+int g_begin_surface_calls = 0;
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex)
 {
     char *tess = RB_TessBase();
+    g_begin_surface_calls++;
+    g_tess_since_begin = 0;
     *(int *)(tess + 0x5a7cc) = 0;
     *(int *)(tess + 0x5a7b8) = 0;
     *(int *)(tess + 0x5a7d0) = 0;
@@ -3867,6 +3871,45 @@ int g_rb_endsurface_idxzero = 0; /* diagnostic: indexCount==0 */
 int g_rb_tess_type_counts[8] = {0}; /* diagnostic: per surface type dispatch count */
 int g_rb_tess_type_idxzero[8] = {0}; /* diagnostic: per type zero-index count */
 extern int g_rb_last_tess_type;
+int g_tess_since_begin = 0; /* count TessXxx calls since last BeginSurface */
+extern int g_begin_surface_calls;
+extern int g_tt_last_cached;
+extern void *g_tt_last_tess;
+extern int g_tt_seq, g_tt_last_seq;
+int g_es_seq = 0;
+void diag_idxzero(void *tess_base) {
+    static int count = 0;
+    g_es_seq++;
+    if (count < 10) {
+        const void *mat = *(const void **)((char *)tess_base + 0x5a7bc);
+        int techType = *(int *)((char *)tess_base + 0x5a7c0);
+        int cachedIdx = *(int *)((char *)tess_base + 0x5a7e0);
+        int normalIdx = *(int *)((char *)tess_base + 0x5a7d0);
+        const char *mname = mat ? *(const char **)mat : "(null)";
+        /* also read the actual memory address for the cached count */
+        int *cached_addr = (int *)((char *)tess_base + 0x5a7e0);
+        fprintf(stderr, "[idxZ#%d] mat='%s' tech=%d c=%d n=%d tc=%d ttc=%d ttseq=%d esseq=%d addr=%p val=%d\n",
+                count, mname, techType, cachedIdx, normalIdx, g_tess_since_begin,
+                g_tt_last_cached, g_tt_last_seq, g_es_seq, (void *)cached_addr, *cached_addr);
+        count++;
+    }
+}
+void diag_endsurface_entry(void *tess_base) {
+    static int count = 0;
+    static int started = 0;
+    int cached = *(int *)((char *)tess_base + 0x5a7e0);
+    int normal = *(int *)((char *)tess_base + 0x5a7d0);
+    int techType = *(int *)((char *)tess_base + 0x5a7c0);
+    /* start logging when we see techType 1 (SKY) = start of 3D rendering */
+    if (!started && techType == 1) started = 1;
+    if (started && count < 70) {
+        const void *mat = *(const void **)((char *)tess_base + 0x5a7bc);
+        const char *mname = mat ? *(const char **)mat : "(null)";
+        fprintf(stderr, "[ES#%d] mat='%.20s' tech=%d c=%d n=%d tc=%d\n",
+                count, mname, techType, cached, normal, g_tess_since_begin);
+        count++;
+    }
+}
 /* line 1712 */
 __attribute__((naked))
 void RB_EndSurface(void)
@@ -3878,6 +3921,10 @@ void RB_EndSurface(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
+        "movl imp_tess, %edi\n"
+        "pushl %edi\n"
+        "calll diag_endsurface_entry\n"
+        "addl $4, %esp\n"
         "movl imp_tess, %edi\n"
         "movl 0x5a7bc(%edi), %eax\n"
         "movl 0x38(%eax), %edx\n"
@@ -3935,6 +3982,9 @@ void RB_EndSurface(void)
         "incl g_rb_endsurface_idxzero\n"
         "movl g_rb_last_tess_type, %eax\n"
         "incl g_rb_tess_type_idxzero(, %eax, 4)\n"
+        "pushl %edi\n"
+        "calll diag_idxzero\n"
+        "addl $4, %esp\n"
         "jmp .Lff9de4_000f9e49\n"
         ".Lff9de4_idxnonzero:\n"
         "movl $0, -0x2c(%ebp)\n" /* line 1667 */

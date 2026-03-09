@@ -47,6 +47,7 @@ extern void CL_MouseEvent(int dx, int dy);
 #define K_MWHEELUP    0xce
 
 static int mouse_active;
+static int relative_mode_ok;
 
 static int sdl_key_to_engine(SDL_Keycode sym)
 {
@@ -112,13 +113,16 @@ void IN_Init(void)
 {
     int ret;
     mouse_active = 1;
+    relative_mode_ok = 0;
     /* Hide OS cursor, use relative mode so game cursor tracks from (0,0) */
     SDL_ShowCursor(SDL_DISABLE);
     ret = SDL_SetRelativeMouseMode(SDL_TRUE);
     if (ret != 0) {
         fprintf(stderr, "[IN_Init] SDL_SetRelativeMouseMode FAILED: %s\n", SDL_GetError());
+        fprintf(stderr, "[IN_Init] Falling back to manual mouse delta tracking\n");
     } else {
         fprintf(stderr, "[IN_Init] SDL_SetRelativeMouseMode OK\n");
+        relative_mode_ok = 1;
     }
 }
 
@@ -131,6 +135,14 @@ void IN_Shutdown(void)
 void IN_Frame(void)
 {
     SDL_Event ev;
+
+    /* Retry relative mouse mode if it failed at init (window may now have focus) */
+    if (mouse_active && !relative_mode_ok) {
+        if (SDL_SetRelativeMouseMode(SDL_TRUE) == 0) {
+            relative_mode_ok = 1;
+            fprintf(stderr, "[IN_Frame] SDL_SetRelativeMouseMode now OK\n");
+        }
+    }
 
     while (SDL_PollEvent(&ev)) {
         switch (ev.type) {
@@ -167,7 +179,23 @@ void IN_Frame(void)
 
         case SDL_MOUSEMOTION:
             if (mouse_active) {
-                CL_MouseEvent(ev.motion.xrel, ev.motion.yrel);
+                if (relative_mode_ok) {
+                    CL_MouseEvent(ev.motion.xrel, ev.motion.yrel);
+                } else {
+                    /* Fallback: compute delta from window center and warp back */
+                    SDL_Window *win = SDL_GetMouseFocus();
+                    if (win) {
+                        int w, h;
+                        SDL_GetWindowSize(win, &w, &h);
+                        int cx = w / 2, cy = h / 2;
+                        int dx = ev.motion.x - cx;
+                        int dy = ev.motion.y - cy;
+                        if (dx != 0 || dy != 0) {
+                            CL_MouseEvent(dx, dy);
+                            SDL_WarpMouseInWindow(win, cx, cy);
+                        }
+                    }
+                }
             }
             break;
 

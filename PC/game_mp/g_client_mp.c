@@ -101,13 +101,17 @@ void ClientBegin(int clientNum)
     byte *scr_data = *(byte **)g_scr_data_ptr;
     gentity_t *ent;
 
+    Com_Printf("[ClientBegin] clientNum=%d scr_data_0x6c=%d\n", clientNum, (int)*(unsigned short *)(scr_data + 0x6c));
+
     *(int *)(client + 0x26c4) = 2;
     *(int *)(client + 4) = 4;
 
     CalculateRanks();
 
     ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
+    Com_Printf("[ClientBegin] calling Scr_Notify on ent=%p\n", (void*)ent);
     Scr_Notify(ent, *(unsigned short *)(scr_data + 0x6c), 0);
+    Com_Printf("[ClientBegin] Scr_Notify returned\n");
 }
 
 /* line 596 */

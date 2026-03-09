@@ -258,11 +258,21 @@ void CL_ParseGamestate(msg_t *msg)
     /* line 726 */
     Com_Printf("DBG: calling CL_InitDownloads\n");
     CL_InitDownloads();
-    Com_Printf("DBG: CL_InitDownloads returned\n");
+    {
+        extern unsigned char clientConnections[];
+        Com_Printf("DBG: CL_InitDownloads returned, connstate=%d\n",
+                    *(int *)clientConnections);
+    }
 
     /* line 732 */
     if (cl_packetdelay && *(void **)cl_packetdelay)
         Dvar_SetInt(*(void **)cl_packetdelay, 0);
+
+    {
+        extern unsigned char clientConnections[];
+        Com_Printf("DBG: end of CL_ParseGamestate, connstate=%d\n",
+                    *(int *)clientConnections);
+    }
 }
 
 /* line 748 */
@@ -951,13 +961,23 @@ void CL_ParseServerMessage(msg_t *msg)
         }
 
         /* line 930 - command dispatch */
+        {
+            static int psm_count = 0;
+            if (psm_count < 20) {
+                fprintf(stderr, "[PSM#%d] cmd=%d readcount=%d cursize=%d\n",
+                        psm_count, cmd, msgCompressed.readcount, msgCompressed.cursize);
+                psm_count++;
+            }
+        }
         switch (cmd) {
         case 0:
             /* svc_nop / svc_bad - handled as default */
             break;
         case 1: {
             /* svc_gamestate (line 950) */
+            fprintf(stderr, "[PSM] Calling CL_ParseGamestate\n");
             CL_ParseGamestate(&msgCompressed);
+            fprintf(stderr, "[PSM] CL_ParseGamestate returned\n");
             break;
         }
         case 4: {
