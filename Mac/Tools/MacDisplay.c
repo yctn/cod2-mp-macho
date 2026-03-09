@@ -560,6 +560,17 @@ short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
             g_rdsl_ignore_decal = 0; g_rdsl_ignore_techm1 = 0;
             g_rdsl_ignore_technull = 0; g_rdsl_noignore = 0;
             g_rdsl_sortchange = 0; g_rdsl_bf_entry = 0;
+            {
+                extern void *g_technull_mat;
+                extern int g_technull_type, g_technull_saved;
+                if (g_technull_saved > 0) {
+                    const char *mname = g_technull_mat ? *(const char **)g_technull_mat : "(null)";
+                    void *ts = g_technull_mat ? *(void **)((char *)g_technull_mat + 0x38) : 0;
+                    const char *tsname = ts ? *(const char **)ts : "(no ts)";
+                    fprintf(stderr, "  [techNull-LIGHTMAP] count=%d last-mat='%s' ts='%s'\n", g_technull_saved, mname, tsname);
+                    g_technull_saved = 0;
+                }
+            }
         }
             fprintf(stderr, "  tess: ");
             for (int i = 0; i < 8; i++) {

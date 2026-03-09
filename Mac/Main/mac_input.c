@@ -110,10 +110,16 @@ static int sdl_key_to_engine(SDL_Keycode sym)
 
 void IN_Init(void)
 {
+    int ret;
     mouse_active = 1;
     /* Hide OS cursor, use relative mode so game cursor tracks from (0,0) */
     SDL_ShowCursor(SDL_DISABLE);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+    ret = SDL_SetRelativeMouseMode(SDL_TRUE);
+    if (ret != 0) {
+        fprintf(stderr, "[IN_Init] SDL_SetRelativeMouseMode FAILED: %s\n", SDL_GetError());
+    } else {
+        fprintf(stderr, "[IN_Init] SDL_SetRelativeMouseMode OK\n");
+    }
 }
 
 void IN_Shutdown(void)

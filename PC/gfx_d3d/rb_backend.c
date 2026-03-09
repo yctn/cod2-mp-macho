@@ -15,6 +15,22 @@ int g_rdsl_ignore_technull = 0;
 int g_rdsl_noignore = 0;
 int g_rdsl_sortchange = 0;
 int g_rdsl_bf_entry = 0;
+void *g_technull_mat = 0;
+int g_technull_type = 0;
+int g_technull_saved = 0;
+
+void rdsl_log_null_technique2(void *material, int techType)
+{
+    static int count = 0;
+    if (count < 30) {
+        const char *matName = material ? *(const char **)material : "(null)";
+        void *techSet = material ? *(void **)((char *)material + 0x38) : NULL;
+        const char *tsName = techSet ? *(const char **)techSet : "(no ts)";
+        fprintf(stderr, "[techNull#%d] mat='%s' ts='%s' type=%d\n",
+                count, matName ? matName : "?", tsName ? tsName : "?", techType);
+        count++;
+    }
+}
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -2301,6 +2317,16 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "testl %ecx, %ecx\n"
         "jne .Lfd5f2e_000d61cc\n"
         "incl g_rdsl_ignore_technull\n"
+        /* Save material ptr and techtype for first NULL tech occurrence */
+        /* Only save for LIGHTMAP type (6) */
+        "cmpl $6, %ebx\n"
+        "jne .Lskip_technull_save\n"
+        "cmpl $30, g_technull_saved\n"
+        "jge .Lskip_technull_save\n"
+        "movl %esi, g_technull_mat\n"
+        "movl %ebx, g_technull_type\n"
+        "incl g_technull_saved\n"
+        ".Lskip_technull_save:\n"
         ".Lfd5f2e_000d60e9:\n"
         "movb $1, -0x5c(%ebp)\n" /* line 1032 | ignoreSurfs */
         ".Lfd5f2e_000d60ed:\n"
