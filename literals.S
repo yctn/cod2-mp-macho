@@ -1906,11 +1906,23 @@ __ZTV21IDirect3DBaseTexture9: .space 128, 0
 .globl __ZTV21IDirect3DCubeTexture9
 __ZTV21IDirect3DCubeTexture9: .space 128, 0
 .globl __ZTV22CVAOPacketProgrammable
-__ZTV22CVAOPacketProgrammable: .space 128, 0
+__ZTV22CVAOPacketProgrammable:
+    .long 0  /* RTTI offset */
+    .long 0  /* typeinfo pointer */
+    .long ZN22CVAOPacketProgrammableD1Ev  /* [8] D1 destructor */
+    .long ZN22CVAOPacketProgrammableD0Ev  /* [12] D0 destructor */
+    .long CVAOPacketProgrammable_IsFixedFunction  /* [16] IsFixedFunction (returns false) */
+    .space 108, 0  /* padding to preserve original 128 byte size */
 .globl __ZTV22IDirect3DVertexShader9
 __ZTV22IDirect3DVertexShader9: .space 128, 0
 .globl __ZTV23CVAOPacketFixedFunction
-__ZTV23CVAOPacketFixedFunction: .space 128, 0
+__ZTV23CVAOPacketFixedFunction:
+    .long 0  /* RTTI offset */
+    .long 0  /* typeinfo pointer */
+    .long ZN23CVAOPacketFixedFunctionD1Ev  /* [8] D1 destructor */
+    .long ZN23CVAOPacketFixedFunctionD0Ev  /* [12] D0 destructor */
+    .long CVAOPacketFixedFunction_IsFixedFunction  /* [16] IsFixedFunction (returns true) */
+    .space 108, 0  /* padding to preserve original 128 byte size */
 .globl __ZTV23IDirect3DVolumeTexture9
 __ZTV23IDirect3DVolumeTexture9: .space 128, 0
 .globl __ZTV4Line
