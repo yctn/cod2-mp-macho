@@ -125,10 +125,10 @@ char buf[64] __attribute__((aligned(4))) = {0};
 extern unsigned char cgArray[];
 void *cg __attribute__((aligned(4))) = (void *)cgArray;
 char cg_debug_ptr[64] __attribute__((aligned(4))) = {0};
-char cg_dvar1[64] __attribute__((aligned(4))) = {0};
-char cg_dvar2[64] __attribute__((aligned(4))) = {0};
-char cg_dvar_debug[64] __attribute__((aligned(4))) = {0};
-char cg_dvar_footsteps[64] __attribute__((aligned(4))) = {0};
+/* cg_dvar1: aliased to imp_cg_nopredict in import_pointers.S */
+/* cg_dvar2: aliased to imp_cg_synchronousClients in import_pointers.S */
+/* cg_dvar_debug: aliased to imp_cg_debugEvents in import_pointers.S */
+/* cg_dvar_footsteps: aliased to imp_cg_footsteps in import_pointers.S */
 /* cg_dvar_shellshock_max: aliased to imp_bg_fallDamageMaxHeight in import_pointers.S */
 /* cg_dvar_shellshock_min: aliased to imp_bg_fallDamageMinHeight in import_pointers.S */
 extern unsigned char cg_entitiesArray[];
@@ -177,7 +177,7 @@ char CloseMovieFile[64] __attribute__((aligned(4))) = {0};
 char CloseRgn[64] __attribute__((aligned(4))) = {0};
 char cl_packetdelay[64] __attribute__((aligned(4))) = {0};
 /* cl_ptr: alias for imp_cl — defined in import_pointers.S */
-char cl_showPackets[64] __attribute__((aligned(4))) = {0};
+/* cl_showPackets: aliased to imp_cl_shownuments in import_pointers.S */
 /* cls_ptr: alias for imp_cls — defined in import_pointers.S */
 extern unsigned char cls[];
 void *cls_ptr_195ecac = (void *)cls; /* GOT alias: pointer to cls BSS struct */
@@ -187,7 +187,7 @@ char com_checksumFeed_dvar[64] __attribute__((aligned(4))) = {0};
 /* com_dvarflags_ptr: alias for imp_dvar_modifiedFlags — defined in import_pointers.S */
 char com_errorEntered_ptr[64] __attribute__((aligned(4))) = {0};
 char commandsList[64] __attribute__((aligned(4))) = {0};
-char compPointerConfig[64] __attribute__((aligned(4))) = {0};
+/* compPointerConfig: aliased to imp_cg_hudCompassSpringyPointers in import_pointers.S */
 char com_statmon_ptr[64] __attribute__((aligned(4))) = {0};
 char CreateEvent[64] __attribute__((aligned(4))) = {0};
 char CreateNewWindow[64] __attribute__((aligned(4))) = {0};
@@ -203,21 +203,21 @@ char DMGetNextScreenDevice[64] __attribute__((aligned(4))) = {0};
 char download_ui_ptr[64] __attribute__((aligned(4))) = {0};
 char DrawThemeFocusRect[64] __attribute__((aligned(4))) = {0};
 char DrawThemeMenuBarBackground[64] __attribute__((aligned(4))) = {0};
-char dvar_autoPickup[64] __attribute__((aligned(4))) = {0};
-char dvar_compassClampDist[64] __attribute__((aligned(4))) = {0};
-char dvar_compassClampSaturation[64] __attribute__((aligned(4))) = {0};
-char dvar_compassFade[64] __attribute__((aligned(4))) = {0};
-char dvar_compassMaxRange[64] __attribute__((aligned(4))) = {0};
-char dvar_compassMinRange[64] __attribute__((aligned(4))) = {0};
-char dvar_compassMinSaturation[64] __attribute__((aligned(4))) = {0};
-char dvar_compassPingFadeTime[64] __attribute__((aligned(4))) = {0};
-char dvar_compassSize[64] __attribute__((aligned(4))) = {0};
-char dvar_developer[64] __attribute__((aligned(4))) = {0};
-char dvar_errorDecay[64] __attribute__((aligned(4))) = {0};
-char dvar_nopredict[64] __attribute__((aligned(4))) = {0};
+/* dvar_autoPickup: aliased to imp_cg_predictItems in import_pointers.S */
+/* dvar_compassClampDist: aliased to imp_cg_hudObjectiveMaxRange in import_pointers.S */
+/* dvar_compassClampSaturation: aliased to imp_cg_hudObjectiveMinAlpha in import_pointers.S */
+/* dvar_compassFade: aliased to imp_hud_fade_compass in import_pointers.S */
+/* dvar_compassMaxRange: aliased to imp_cg_hudCompassMaxRange in import_pointers.S */
+/* dvar_compassMinRange: aliased to imp_cg_hudCompassMinRange in import_pointers.S */
+/* dvar_compassMinSaturation: aliased to imp_cg_hudCompassMinRadius in import_pointers.S */
+/* dvar_compassPingFadeTime: aliased to imp_cg_hudCompassSoundPingFadeTime in import_pointers.S */
+/* dvar_compassSize: aliased to imp_cg_hudCompassSize in import_pointers.S */
+/* dvar_developer: aliased to imp_cg_showmiss in import_pointers.S */
+/* dvar_errorDecay: aliased to imp_cg_errorDecay in import_pointers.S */
+/* dvar_nopredict: aliased to imp_cg_nopredict in import_pointers.S */
 char dvar_ptr_195ee78[64] __attribute__((aligned(4))) = {0};
 /* _dvar_shellshock_*: 29 aliases defined in import_pointers.S (fix #123) */
-char dvar_synchronous[64] __attribute__((aligned(4))) = {0};
+/* dvar_synchronous: aliased to imp_cg_synchronousClients in import_pointers.S */
 /* dx_device_ptr: alias for imp_dx — defined in import_pointers.S */
 /* dx_fence: alias for imp_alwaysfails — defined in import_pointers.S */
 char dxIter[64] __attribute__((aligned(4))) = {0};

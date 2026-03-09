@@ -642,6 +642,8 @@ imp_cg_crosshairEnemyColor: .long cg_crosshairEnemyColor
 imp_cg_cursorHints: .long cg_cursorHints
 .globl imp_cg_debugEvents
 imp_cg_debugEvents: .long cg_debugEvents
+.globl cg_dvar_debug
+.set cg_dvar_debug, imp_cg_debugEvents
 .globl imp_cg_debugPosition
 imp_cg_debugPosition: .long cg_debugPosition
 .globl imp_cg_descriptiveText
@@ -690,8 +692,12 @@ imp_cg_entities: .long cg_entities
 .set cg_entities_ptr, imp_cg_entities
 .globl imp_cg_errorDecay
 imp_cg_errorDecay: .long cg_errorDecay
+.globl dvar_errorDecay
+.set dvar_errorDecay, imp_cg_errorDecay
 .globl imp_cg_footsteps
 imp_cg_footsteps: .long cg_footsteps
+.globl cg_dvar_footsteps
+.set cg_dvar_footsteps, imp_cg_footsteps
 .globl imp_cg_fov
 imp_cg_fov: .long cg_fov
 .globl imp_cg_fovMin
@@ -728,16 +734,28 @@ imp_cg_hintFadeTime: .long cg_hintFadeTime
 imp_cg_hudChatPosition: .long cg_hudChatPosition
 .globl imp_cg_hudCompassMaxRange
 imp_cg_hudCompassMaxRange: .long cg_hudCompassMaxRange
+.globl dvar_compassMaxRange
+.set dvar_compassMaxRange, imp_cg_hudCompassMaxRange
 .globl imp_cg_hudCompassMinRadius
 imp_cg_hudCompassMinRadius: .long cg_hudCompassMinRadius
+.globl dvar_compassMinSaturation
+.set dvar_compassMinSaturation, imp_cg_hudCompassMinRadius
 .globl imp_cg_hudCompassMinRange
 imp_cg_hudCompassMinRange: .long cg_hudCompassMinRange
+.globl dvar_compassMinRange
+.set dvar_compassMinRange, imp_cg_hudCompassMinRange
 .globl imp_cg_hudCompassSize
 imp_cg_hudCompassSize: .long cg_hudCompassSize
+.globl dvar_compassSize
+.set dvar_compassSize, imp_cg_hudCompassSize
 .globl imp_cg_hudCompassSoundPingFadeTime
 imp_cg_hudCompassSoundPingFadeTime: .long cg_hudCompassSoundPingFadeTime
+.globl dvar_compassPingFadeTime
+.set dvar_compassPingFadeTime, imp_cg_hudCompassSoundPingFadeTime
 .globl imp_cg_hudCompassSpringyPointers
 imp_cg_hudCompassSpringyPointers: .long cg_hudCompassSpringyPointers
+.globl compPointerConfig
+.set compPointerConfig, imp_cg_hudCompassSpringyPointers
 .globl imp_cg_hudDamageIconHeight
 imp_cg_hudDamageIconHeight: .long cg_hudDamageIconHeight
 .globl imp_cg_hudDamageIconInScope
@@ -774,8 +792,12 @@ imp_cg_hudGrenadePointerPulseMin: .long cg_hudGrenadePointerPulseMin
 imp_cg_hudGrenadePointerWidth: .long cg_hudGrenadePointerWidth
 .globl imp_cg_hudObjectiveMaxRange
 imp_cg_hudObjectiveMaxRange: .long cg_hudObjectiveMaxRange
+.globl dvar_compassClampDist
+.set dvar_compassClampDist, imp_cg_hudObjectiveMaxRange
 .globl imp_cg_hudObjectiveMinAlpha
 imp_cg_hudObjectiveMinAlpha: .long cg_hudObjectiveMinAlpha
+.globl dvar_compassClampSaturation
+.set dvar_compassClampSaturation, imp_cg_hudObjectiveMinAlpha
 .globl imp_cg_hudProneY
 imp_cg_hudProneY: .long cg_hudProneY
 .globl imp_cg_hudSayPosition
@@ -794,10 +816,16 @@ imp_cg_marksLimit: .long cg_marksLimit
 imp_cg_minicon: .long cg_minicon
 .globl imp_cg_nopredict
 imp_cg_nopredict: .long cg_nopredict
+.globl dvar_nopredict
+.set dvar_nopredict, imp_cg_nopredict
+.globl cg_dvar1
+.set cg_dvar1, imp_cg_nopredict
 .globl imp_cg_paused
 imp_cg_paused: .long cg_paused
 .globl imp_cg_predictItems
 imp_cg_predictItems: .long cg_predictItems
+.globl dvar_autoPickup
+.set dvar_autoPickup, imp_cg_predictItems
 .globl imp_cg_scoreboardBannerHeight
 imp_cg_scoreboardBannerHeight: .long cg_scoreboardBannerHeight
 .globl imp_cg_scoreboardScrollStep
@@ -923,6 +951,8 @@ imp_cg_shock_volume_weapon: .long cg_shock_volume_weapon
 .set _dvar_shellshock_mousesensitivity, imp_cg_shock_mouse_sensitivityscale
 .globl imp_cg_showmiss
 imp_cg_showmiss: .long cg_showmiss
+.globl dvar_developer
+.set dvar_developer, imp_cg_showmiss
 .globl imp_cg_subtitleCharHeight
 imp_cg_subtitleCharHeight: .long cg_subtitleCharHeight
 .globl imp_cg_subtitlePosX
@@ -933,6 +963,10 @@ imp_cg_subtitlePosY: .long cg_subtitlePosY
 imp_cg_subtitles: .long cg_subtitles
 .globl imp_cg_synchronousClients
 imp_cg_synchronousClients: .long cg_synchronousClients
+.globl dvar_synchronous
+.set dvar_synchronous, imp_cg_synchronousClients
+.globl cg_dvar2
+.set cg_dvar2, imp_cg_synchronousClients
 .globl imp_cg_teamChatsOnly
 imp_cg_teamChatsOnly: .long cg_teamChatsOnly
 .globl imp_cg_thirdPerson
@@ -1029,6 +1063,8 @@ imp_cl_showTimeDelta: .long cl_showTimeDelta
 imp_cl_shownet: .long cl_shownet
 .globl imp_cl_shownuments
 imp_cl_shownuments: .long cl_shownuments
+.globl cl_showPackets
+.set cl_showPackets, imp_cl_shownuments
 .globl imp_cl_talking
 imp_cl_talking: .long cl_talking
 .globl imp_cl_voice
@@ -1337,6 +1373,8 @@ imp_historyEditLines: .long historyEditLines
 imp_hud_fade_ammodisplay: .long hud_fade_ammodisplay
 .globl imp_hud_fade_compass
 imp_hud_fade_compass: .long hud_fade_compass
+.globl dvar_compassFade
+.set dvar_compassFade, imp_hud_fade_compass
 .globl imp_hud_fade_healthbar
 imp_hud_fade_healthbar: .long hud_fade_healthbar
 .globl imp_hud_fade_offhand
