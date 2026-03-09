@@ -5817,6 +5817,23 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
 extern int g_draw_count;
 extern unsigned char glIsEnabled(unsigned int);
 extern void glGetIntegerv(unsigned int, int *);
+
+/* Diagnostic for ValidateRasterization */
+static int g_valrast_diag = 0;
+void valrast_trace(int draw_count, void *device, void *pPixelShader) {
+    if (g_valrast_diag < 50 || (draw_count > 870 && g_valrast_diag < 100)) {
+        g_valrast_diag++;
+        /* Check the CTexStage array for texture pointers */
+        unsigned char *dev = (unsigned char *)device;
+        void *texStages = *(void **)(dev + 0x608);
+        void *tex0 = texStages ? *(void **)((unsigned char *)texStages + 4) : NULL;
+        int numUnits_lo = *(int *)(dev + 0x504);
+        int numUnits_hi = *(int *)(dev + 0x508);
+        fprintf(stderr, "[ValRast#%d] draw=%d dev=%p pPS=%p texStages=%p tex0=%p units=(%d,%d)\n",
+                g_valrast_diag, draw_count, device, pPixelShader, texStages, tex0,
+                numUnits_lo, numUnits_hi);
+    }
+}
 int g_dip_vs_null = 0;     /* DIP VP binding: shader was null */
 int g_dip_vs_bound = 0;    /* DIP VP binding: called SetVP */
 int g_dip_vs_skip = 0;     /* DIP VP validation: flag was 0 (skipped) */
@@ -5862,6 +5879,15 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "pushl %ebp\n" /* line 1774 */
         "movl %esp, %ebp\n"
         "incl g_draw_count\n"
+        /* Fix #145: Force rasterization validation every draw.
+           Texture creation (glTexImage2D→glBindTexture) changes GL texture
+           state without updating the COpenGL/CDirect3DDevice cache, causing
+           ValidateRasterization to be skipped on subsequent draws. This
+           ensures textures are always re-bound before drawing. */
+        "pushl %eax\n"
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n"
+        "movb $1, (%eax)\n"
+        "popl %eax\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
@@ -6035,6 +6061,15 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "cmpb $0, (%eax)\n"
         "je .Lf12a10_00012c16\n"
         ".Lf12a10_00012bf5:\n"
+        /* DIAGNOSTIC: trace ValRast being called */
+        "pushal\n"
+        "movl 0xbb8(%esi), %eax\n"  /* pPixelShader from this */
+        "pushl %eax\n"
+        "pushl %esi\n"
+        "pushl g_draw_count\n"
+        "calll valrast_trace\n"
+        "addl $12, %esp\n"
+        "popal\n"
         "movl -0x3c(%ebp), %eax\n" /* line 1876 */
         "addl %edi, %eax\n" /* BaseVertexIndex */
         "movl %eax, 8(%esp)\n"

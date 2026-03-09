@@ -265,16 +265,25 @@ unsigned int COpenGL_SetVertexProgram(const COpenGL * _this, const COpenGLVertex
         real_bind(0x8620, progID);
     }
     /* Verify VP actually bound */
-    if (g_svp_diag < 10 && g_vp_enable_count > 870) {
+    if (g_svp_diag < 20 && g_vp_enable_count > 870) {
         extern unsigned int glGetError(void);
         extern void glGetIntegerv(unsigned int, int *);
-        unsigned int err = glGetError();
+        /* Clear any pre-existing error */
+        while (glGetError() != 0) {}
+        /* Now check if program is valid */
+        typedef unsigned char (*isProgFn)(unsigned int);
+        static isProgFn isProg = 0;
+        if (!isProg) {
+            extern void *SDL_GL_GetProcAddress(const char *);
+            isProg = (isProgFn)SDL_GL_GetProcAddress("glIsProgramARB");
+        }
+        int valid = isProg ? isProg(progID) : -1;
+        unsigned int err_after_bind = glGetError();
         int actual_vp = 0;
         glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &actual_vp);
-        extern unsigned char glIsEnabled(unsigned int);
-        int vp_enabled = glIsEnabled(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        fprintf(stderr, "[SVP-verify#%d] bound progID=%d actual_vp=%d err=0x%x enabled=%d\n",
-                g_vp_enable_count, progID, actual_vp, err, vp_enabled);
+        unsigned int err_after_query = glGetError();
+        fprintf(stderr, "[SVP-verify#%d] progID=%d valid=%d actual_vp=%d err_bind=0x%x err_query=0x%x\n",
+                g_vp_enable_count, progID, valid, actual_vp, err_after_bind, err_after_query);
     }
     return 0;
 }
