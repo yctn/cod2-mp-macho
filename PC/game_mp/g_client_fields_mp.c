@@ -24,7 +24,7 @@ extern int GScr_GetStatusIconIndex(const char *name);
 extern int GScr_GetHeadIconIndex(const char *name);
 extern void SV_GetConfigstring(int index, char *buf, int bufSize);
 
-extern byte *g_scr_data_ptr; /* imp_scr_const - direct pointer to scr data */
+/* imp_scr_const declared in generated_syms.h as void* */
 extern byte level_ptr[];      /* imp_level - points to level struct */
 extern byte g_entities_ptr[]; /* imp_g_entities - points to entity array */
 
@@ -82,7 +82,7 @@ static void ClientScr_ReadOnly(gclient_t *pSelf, const client_fields_s *pField)
 static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     unsigned short str;
     int clientNum;
 
@@ -113,7 +113,7 @@ static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pF
 static void ClientScr_GetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     int team = *(int *)(pb + 0x274c);
 
     switch (team) {
@@ -138,7 +138,7 @@ static void ClientScr_GetSessionTeam(gclient_t *pSelf, const client_fields_s *pF
 static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     unsigned short str;
 
     str = Scr_GetConstString(0);
@@ -165,7 +165,7 @@ static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *p
 static void ClientScr_GetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     int state = *(int *)(pb + 0x26a8);
 
     switch (state) {
@@ -297,7 +297,7 @@ static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     byte *pEnt;
     unsigned short str;
 
@@ -325,7 +325,7 @@ static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
 static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     byte *pb = (byte *)pSelf;
-    byte *scr = *(byte **)&g_scr_data_ptr;
+    byte *scr = imp_scr_const;
     byte *entities = (byte *)g_entities_ptr;
     int clientNum = ClientNum(pb);
     int team;

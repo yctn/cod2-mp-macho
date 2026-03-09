@@ -50,7 +50,7 @@ extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
 extern byte level_ptr[]; /* imp_level */
 extern byte *g_clients_ptr; /* imp_entityHandlers */
 extern byte *g_debug_damage_ptr; /* imp_g_debugDamage */
-extern byte *g_scr_data_ptr; /* imp_scr_const */
+/* imp_scr_const declared in generated_syms.h as void* */
 extern int g_sNextDmgTableId; /* 0x195b048 */
 extern int g_time; /* imp_level_bgs */
 extern byte g_time_ptr[]; /* imp_bgs */
@@ -392,7 +392,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     Scr_AddEntity(attacker);
     Scr_AddInt(damage);
     {
-        byte *scr_data = *(byte **)g_scr_data_ptr;
+        byte *scr_data = imp_scr_const;
         Scr_Notify(targ, *(unsigned short *)(scr_data + 8), 2);
     }
 
@@ -414,7 +414,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
         /* Notify "death" */
         Scr_AddEntity(attacker);
         {
-            byte *scr_data = *(byte **)g_scr_data_ptr;
+            byte *scr_data = imp_scr_const;
             Scr_Notify(targ, *(unsigned short *)(scr_data + 0xa), 1);
         }
 
@@ -629,7 +629,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     /* Notify "death" to attacker */
     Scr_AddEntity(attacker);
     {
-        byte *scr_data = *(byte **)g_scr_data_ptr;
+        byte *scr_data = imp_scr_const;
         Scr_Notify(self, *(unsigned short *)(scr_data + 0xa), 1);
     }
 

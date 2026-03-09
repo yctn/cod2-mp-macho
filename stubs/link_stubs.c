@@ -381,7 +381,7 @@ char g_phys_world[64] __attribute__((aligned(4))) = {0};
 /* g_renderer_ptr: linker alias to re */
 /* g_renderState: decompiler alias for imp_r_fog — now a symbol alias in import_pointers.S */
 char g_ri[64] __attribute__((aligned(4))) = {0};
-char g_scr_data_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_scr_data_ptr: replaced with imp_scr_const import pointer */
 void GScr_LoadAnimScripts(void) {}
 void GScr_PostResetTimeout(void) {}
 char g_sNextDmgTableId[64] __attribute__((aligned(4))) = {0};

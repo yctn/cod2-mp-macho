@@ -61,7 +61,6 @@ extern unsigned char g_clients[]; /* BSS client array - used for client data acc
    In decomp, level and g_clients are separate BSS arrays.
    Client data access must use g_clients, not level_ptr. */
 #define CLIENT_BASE g_clients
-extern byte *g_scr_data_ptr; /* imp_scr_const */
 extern byte *g_sv_running_ptr; /* imp_voice_global */
 extern byte *g_deadChat_ptr; /* imp_voice_deadChat */
 extern byte *g_voiceChatsAllowed_ptr; /* imp_voice_localEcho */
@@ -98,7 +97,7 @@ void ClientBegin(int clientNum)
     byte *level = (byte *)CLIENT_BASE;
     byte *client = level +clientNum * CLIENT_STRIDE;
     byte *ents = (byte *)g_entities_ptr;
-    byte *scr_data = *(byte **)g_scr_data_ptr;
+    byte *scr_data = imp_scr_const;
     gentity_t *ent;
 
     Com_Printf("[ClientBegin] clientNum=%d scr_data_0x6c=%d\n", clientNum, (int)*(unsigned short *)(scr_data + 0x6c));
@@ -131,7 +130,7 @@ void ClientDisconnect(int clientNum)
         Scr_AddString("disconnect");
         Scr_AddString("^1teleport");
         {
-            byte *scr_data = *(byte **)g_scr_data_ptr;
+            byte *scr_data = imp_scr_const;
             Scr_Notify(ent, *(unsigned short *)(scr_data + 0x70), 2);
         }
     }
@@ -504,7 +503,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     *(int *)((byte *)ent + 0x7c) = 0x3ff;
 
-    scr_data = *(byte **)g_scr_data_ptr;
+    scr_data = imp_scr_const;
     Scr_SetString((unsigned short *)((byte *)ent + 0x168), *(unsigned short *)(scr_data + 0x32));
 
     *(int *)((byte *)ent + 0x184) = 0x2810011;
@@ -630,7 +629,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
 
     if (*(int *)(ps + 0xa0) & 0x300) {
         /* Turret - use tag position */
-        byte *scr_data = *(byte **)g_scr_data_ptr;
+        byte *scr_data = imp_scr_const;
         int turretEntNum = *(int *)(ps + 0x594);
         byte *ents = (byte *)g_entities_ptr;
         gentity_t *turretEnt = (gentity_t *)(ents + turretEntNum * GENTITY_STRIDE);

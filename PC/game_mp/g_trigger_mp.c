@@ -30,7 +30,7 @@ extern void AddPointToBounds(vec_t *point, vec_t *mins, vec_t *maxs);
 extern int CM_AreaEntities(vec_t *mins, vec_t *maxs, int *list, int maxCount, int mask);
 
 extern byte level_ptr[];         /* imp_level */
-extern byte *g_scr_data_ptr;    /* imp_scr_const */
+/* imp_scr_const declared in generated_syms.h as void* */
 extern byte g_entities_ptr[];    /* imp_g_entities */
 extern byte *g_trace_zero_ptr;  /* imp_vec3_origin */
 
@@ -71,7 +71,7 @@ void G_Trigger(gentity_t *self, gentity_t *other)
 
     if (triggerCount == 0x100) {
         Scr_AddEntity(other);
-        Scr_Notify(self, *(unsigned short *)(g_scr_data_ptr + 0x54), 1);
+        Scr_Notify(self, *(unsigned short *)(imp_scr_const + 0x54), 1);
         return;
     }
 
@@ -451,7 +451,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
     for (i = 0; i < iNum; i++) {
         pHit = g_entities + iTouch[i] * ENTITY_STRIDE;
 
-        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(g_scr_data_ptr + 0x5a))
+        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(imp_scr_const + 0x5a))
             continue;
 
         if (!(*(byte *)(pHit + 0x175) & 0x40))
@@ -463,7 +463,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(g_scr_data_ptr + 8), 2);
+        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(imp_scr_const + 8), 2);
 
         Activate_trigger_damage((gentity_t *)pHit, pActivator, iDamage, iMOD);
 
@@ -496,7 +496,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
     for (i = 0; i < iNum; i++) {
         pHit = g_entities + iTouch[i] * ENTITY_STRIDE;
 
-        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(g_scr_data_ptr + 0x5a))
+        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(imp_scr_const + 0x5a))
             continue;
 
         if (!SV_SightTraceToEntity(vStart, (vec_t *)g_trace_zero_ptr, (vec_t *)g_trace_zero_ptr,
@@ -505,7 +505,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(g_scr_data_ptr + 8), 2);
+        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(imp_scr_const + 8), 2);
 
         Activate_trigger_damage((gentity_t *)pHit, pActivator, iDamage, iMOD);
 
