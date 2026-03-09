@@ -285,11 +285,16 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
     void *texture;
     void **vtable;
 
-    /* No D3D device (com_skipRenderer 1) — skip GPU upload */
-    if (*(int *)imp_dx == 0 || *(int *)(*(int *)imp_dx) == 0)
+    /* No D3D device (com_skipRenderer 1) — skip GPU upload.
+     * imp_dx = &dx (DxGlobals BSS struct). Device ptr at offset +8.
+     * Original decompiler checked *(int *)imp_dx which reads dx.hinst (0 on Linux). */
+    if (*(int *)((byte *)imp_dx + 8) == 0 || *(int *)(*(int *)((byte *)imp_dx + 8)) == 0)
         return;
 
     if (image->mapType == 4) {
+        /* TODO: Volume texture upload needs CDirect3DVolumeTexture vtable */
+        return;
+#if 0 /* disabled until volume texture vtable is populated */
         /* line 298: 3D Volume texture upload */
         srcWidth = Image_Max1(image->width >> mipLevel);
         srcHeight = Image_Max1(image->height >> mipLevel);
@@ -330,6 +335,7 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
         /* LockBox on IDirect3DVolumeTexture9 */
         do {
             texture = (void *)image->texture.volmap;
+            if (!texture || !*(void **)texture) return;
             vtable = *(void ***)texture;
             ((LockBoxFn)vtable[VTABLE_LOCKRECT])(texture, mipLevel, &lockedBox, 0, 0);
         } while (*(volatile int *)imp_alwaysfails);
@@ -387,11 +393,12 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
         } while (*(volatile int *)imp_alwaysfails);
 
         return;
+#endif
     }
 
     if (image->mapType == 5) {
         /* line 305: Skip non-zero mip levels if device doesn't support them */
-        if (mipLevel != 0 && *(byte *)((*(int *)imp_dx) + 0x2d7b) == 0) {
+        if (mipLevel != 0 && *(byte *)((byte *)imp_dx + 0x2d7b) == 0) {
             return;
         }
         /* Fall through to default 2D/cube upload path */
@@ -405,14 +412,18 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
         /* line 131: 2D texture path - LockRect without face parameter */
         do {
             texture = (void *)image->texture.map;
+            if (!texture || !*(void **)texture) return; /* safety: skip if no texture object */
             vtable = *(void ***)texture;
+            if (!vtable[VTABLE_LOCKRECT]) return;
             ((LockRectFn)vtable[VTABLE_LOCKRECT])(texture, mipLevel, &lockedRect, 0, 0);
         } while (*(volatile int *)imp_alwaysfails);
     } else {
         /* line 141: Cubemap/default path - LockRect with face parameter */
         do {
             texture = (void *)image->texture.cubemap;
+            if (!texture || !*(void **)texture) return; /* safety: skip if no texture object */
             vtable = *(void ***)texture;
+            if (!vtable[VTABLE_LOCKRECT]) return;
             ((LockRectCubeFn)vtable[VTABLE_LOCKRECT])(texture, face, mipLevel, &lockedRect, 0, 0);
         } while (*(volatile int *)imp_alwaysfails);
     }

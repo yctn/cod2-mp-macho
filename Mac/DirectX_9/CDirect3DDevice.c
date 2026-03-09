@@ -11968,6 +11968,19 @@ HRESULT CDirect3DDevice_SetVertexShaderConstantF(const CDirect3DDevice * _this, 
         "movl 0xc(%ebp), %ebx\n" /* StartRegister */
         "leal 1(%ebx, %eax), %edi\n"
         ".Lf2bd82c_002bd84a:\n"
+        /* DIAG: check for NaN at register 23 */
+        "cmpl $23, %ebx\n"
+        "jne .Lf2bd82c_no_nan_check\n"
+        "movl (%esi), %eax\n"
+        "andl $0x7f800000, %eax\n"
+        "cmpl $0x7f800000, %eax\n"
+        "jne .Lf2bd82c_no_nan_check\n"
+        "pushal\n"
+        "pushl %esi\n"
+        "calll diag_nan_env23\n"
+        "addl $4, %esp\n"
+        "popal\n"
+        ".Lf2bd82c_no_nan_check:\n"
         "movl %esi, 8(%esp)\n" /* line 4378 | pf */
         "movl %ebx, 4(%esp)\n"
         "movl $0x8620, (%esp)\n"

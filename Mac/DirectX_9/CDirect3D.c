@@ -5814,6 +5814,21 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
     );
 }
 
+/* Diagnostic: trace NaN being written to VP env register 23 */
+static int nan_diag_count = 0;
+void diag_nan_env23(const float *data) {
+    if (nan_diag_count < 20) {
+        nan_diag_count++;
+        void *ra0 = __builtin_return_address(0);
+        void *ra1 = __builtin_return_address(1);
+        void *ra2 = __builtin_return_address(2);
+        void *ra3 = __builtin_return_address(3);
+        fprintf(stderr, "[NaN-ENV23#%d] data=[%g,%g,%g,%g] ra=%p ra1=%p ra2=%p ra3=%p\n",
+                nan_diag_count, data[0], data[1], data[2], data[3],
+                ra0, ra1, ra2, ra3);
+    }
+}
+
 extern int g_draw_count;
 extern unsigned char glIsEnabled(unsigned int);
 extern void glGetIntegerv(unsigned int, int *);
@@ -5841,15 +5856,18 @@ int g_dip_is_tri = 0;
 int g_dip_drawflag_zero = 0;
 int g_dip_numelems_zero = 0;
 int g_dip_gl_draw = 0;
+int g_dip_last_mode = 0;
+int g_dip_last_numelems = 0;
 
 /* Periodic DIP counter dump - call from dip_vp_check or similar */
 static int g_dip_dump_done = 0;
 void dip_counter_dump(void) {
-    if (g_dip_dump_done < 5 && g_draw_count > 870 && (g_draw_count % 200 == 0)) {
+    if (g_dip_dump_done < 10 && (g_draw_count % 500 == 0)) {
         g_dip_dump_done++;
-        fprintf(stderr, "[DIP-COUNTERS dc=%d] tri=%d drawflag0=%d vs_skip=%d numelems0=%d gl_draw=%d vs_null=%d vs_bound=%d\n",
+        fprintf(stderr, "[DIP-COUNTERS dc=%d] tri=%d drawflag0=%d vs_skip=%d numelems0=%d gl_draw=%d vs_null=%d vs_bound=%d mode=%d\n",
                 g_draw_count, g_dip_is_tri, g_dip_drawflag_zero, g_dip_vs_skip,
-                g_dip_numelems_zero, g_dip_gl_draw, g_dip_vs_null, g_dip_vs_bound);
+                g_dip_numelems_zero, g_dip_gl_draw, g_dip_vs_null, g_dip_vs_bound,
+                g_dip_last_mode);
     }
 }
 
@@ -5892,11 +5910,11 @@ void dip_gl_diag(int mode, int low, int high, int count) {
 int g_draw_count = 0; /* diagnostic draw call counter */
 void dip_entry_trace(void) {
     static int dip_trace_count = 0;
-    /* Print first 5 calls, then every 500th call */
     if (dip_trace_count < 5 || (g_draw_count % 500 == 0 && dip_trace_count < 50)) {
         dip_trace_count++;
         fprintf(stderr, "[DIP-ENTRY#%d] g_draw_count=%d\n", dip_trace_count, g_draw_count);
     }
+    dip_counter_dump();
 }
 __attribute__((naked))
 HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
