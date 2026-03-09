@@ -5837,17 +5837,35 @@ void valrast_trace(int draw_count, void *device, void *pPixelShader) {
 int g_dip_vs_null = 0;     /* DIP VP binding: shader was null */
 int g_dip_vs_bound = 0;    /* DIP VP binding: called SetVP */
 int g_dip_vs_skip = 0;     /* DIP VP validation: flag was 0 (skipped) */
+int g_dip_is_tri = 0;
+int g_dip_drawflag_zero = 0;
+int g_dip_numelems_zero = 0;
+int g_dip_gl_draw = 0;
+
+/* Periodic DIP counter dump - call from dip_vp_check or similar */
+static int g_dip_dump_done = 0;
+void dip_counter_dump(void) {
+    if (g_dip_dump_done < 5 && g_draw_count > 870 && (g_draw_count % 200 == 0)) {
+        g_dip_dump_done++;
+        fprintf(stderr, "[DIP-COUNTERS dc=%d] tri=%d drawflag0=%d vs_skip=%d numelems0=%d gl_draw=%d vs_null=%d vs_bound=%d\n",
+                g_draw_count, g_dip_is_tri, g_dip_drawflag_zero, g_dip_vs_skip,
+                g_dip_numelems_zero, g_dip_gl_draw, g_dip_vs_null, g_dip_vs_bound);
+    }
+}
 
 /* Diagnostic called from DIP asm at VP validation check point */
 extern char dip_mNeedsVSVal __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
 static int g_dip_vp_diag = 0;
+extern char dip_sDrawFlag __asm__("__ZN7COpenGL9sDrawFlagE");
 void dip_vp_check(void *device) {
+    dip_counter_dump();
     if (g_dip_vp_diag < 5 && g_draw_count > 880) {
         g_dip_vp_diag++;
         int vsValid = dip_mNeedsVSVal;
+        int drawFlag = dip_sDrawFlag;
         void *shader = *(void **)((char *)device + 0xbb4);
-        fprintf(stderr, "[DIP-VP#%d] dc=%d vsValid=%d shader=%p\n",
-                g_draw_count, g_dip_vp_diag, vsValid, shader);
+        fprintf(stderr, "[DIP-VP#%d] dc=%d vsValid=%d drawFlag=%d shader=%p\n",
+                g_draw_count, g_dip_vp_diag, vsValid, drawFlag, shader);
     }
 }
 
@@ -5872,6 +5890,14 @@ void dip_gl_diag(int mode, int low, int high, int count) {
 
 /* line 1774 */
 int g_draw_count = 0; /* diagnostic draw call counter */
+void dip_entry_trace(void) {
+    static int dip_trace_count = 0;
+    /* Print first 5 calls, then every 500th call */
+    if (dip_trace_count < 5 || (g_draw_count % 500 == 0 && dip_trace_count < 50)) {
+        dip_trace_count++;
+        fprintf(stderr, "[DIP-ENTRY#%d] g_draw_count=%d\n", dip_trace_count, g_draw_count);
+    }
+}
 __attribute__((naked))
 HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
 {
@@ -5879,6 +5905,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "pushl %ebp\n" /* line 1774 */
         "movl %esp, %ebp\n"
         "incl g_draw_count\n"
+        "pushal\n"
+        "calll dip_entry_trace\n"
+        "popal\n"
         /* Fix #145: Force rasterization validation every draw.
            Texture creation (glTexImage2D→glBindTexture) changes GL texture
            state without updating the COpenGL/CDirect3DDevice cache, causing

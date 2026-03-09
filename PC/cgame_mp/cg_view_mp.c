@@ -97,7 +97,7 @@ float CG_GetViewFov(void)
     if (*(int *)(cg_s + 0x25bc8) == 5) {
         fov_x = 90.0f;
     } else {
-        fov_x = *(float *)(*(char **)(*(int *)imp_cg_fov) + 8);
+        fov_x = *(float *)((char *)(*(int *)imp_cg_fov) + 8);
 
         if (BG_IsAimDownSightWeapon(weapIndex)) {
             float fPosLerp = *(float *)(cg_s + 0x25ca0);
@@ -132,11 +132,11 @@ float CG_GetViewFov(void)
     }
 
     /* Apply fov scale */
-    fov_x *= *(float *)(*(char **)(*(int *)imp_cg_fovScale) + 8);
+    fov_x *= *(float *)((char *)(*(int *)imp_cg_fovScale) + 8);
 
     /* Clamp to minimum */
     {
-        float fovClamp = *(float *)(*(char **)(*(int *)imp_cg_fovMin) + 8);
+        float fovClamp = *(float *)((char *)(*(int *)imp_cg_fovMin) + 8);
         if (fovClamp > fov_x) {
             fov_x = fovClamp;
         }
@@ -172,7 +172,7 @@ static void CG_CalcFov(void)
 
     *(float *)(cg_s + 0x28580) = fov_x;
     *(float *)(cg_s + 0x28584) = fov_y;
-    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)(*(char **)(*(int *)imp_cg_fov) + 8);
+    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)((char *)(*(int *)imp_cg_fov) + 8);
 }
 
 /* line 49 */
@@ -1277,7 +1277,7 @@ void CG_InitView(void)
     *(int *)(cg_s + 0x285b8) = *(int *)(cg_s + 0x25bb0);
     *(int *)(cg_s + 0x285bc) = 0x3f800000;
 
-    if (*(unsigned char *)(*(char **)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
+    if (*(unsigned char *)((char *)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
         renderPlayerState = 1;
     } else if (*(int *)(*(char **)(cg_s + 0x24) + 0x10) > 5) {
         renderPlayerState = 1;

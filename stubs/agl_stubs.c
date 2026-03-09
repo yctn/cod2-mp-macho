@@ -70,285 +70,44 @@ void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, G
     static fn_t real_fn = NULL;
     if (!real_fn) real_fn = (fn_t)dlsym(RTLD_NEXT, "glDrawRangeElements");
 
-    /* Print return address for first few draws */
-    static int draw_bt_count = 0;
-    if (draw_bt_count < 2) {
-        draw_bt_count++;
-        void *ra0 = __builtin_return_address(0);
-        void *ra1 = __builtin_return_address(1);
-        void *ra2 = __builtin_return_address(2);
-        void *ra3 = __builtin_return_address(3);
-        void *ra4 = __builtin_return_address(4);
-        void *ra5 = __builtin_return_address(5);
-        void *ra6 = __builtin_return_address(6);
-        void *ra7 = __builtin_return_address(7);
-        fprintf(stderr, "[glDraw caller #%d] ra0=%p ra1=%p ra2=%p ra3=%p ra4=%p ra5=%p ra6=%p ra7=%p\n",
-                draw_bt_count, ra0, ra1, ra2, ra3, ra4, ra5, ra6, ra7);
-    }
+    static int gdre_total = 0;
+    gdre_total++;
 
-    static int draw_dump_count = 0;
-    if (draw_dump_count < 3) {
-        draw_dump_count++;
-        GLint fp_id = 0, vp_id = 0;
-        glGetIntegerv(0x8677 /*GL_FRAGMENT_PROGRAM_BINDING_ARB*/, &fp_id);
-        glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &vp_id);
-        GLboolean fp_on = glIsEnabled(0x8804);
-        GLboolean vp_on = glIsEnabled(0x8620);
-
-        /* Check textures on first 4 units */
-        typedef void (*glActiveTexFn)(GLenum);
-        static glActiveTexFn glActiveTex = NULL;
-        if (!glActiveTex) glActiveTex = (glActiveTexFn)dlsym(RTLD_NEXT, "glActiveTextureARB");
-        int tex_ids[4] = {0};
-        for (int i = 0; i < 4; i++) {
-            if (glActiveTex) glActiveTex(0x84c0 + i);
-            glGetIntegerv(0x8069, &tex_ids[i]);
-        }
-        if (glActiveTex) glActiveTex(0x84c0); /* restore unit 0 */
-
-        /* Check first vertex attrib pointer */
-        typedef void (*glGetVAPFn)(GLuint, GLenum, void**);
-        static glGetVAPFn glGetVAP = NULL;
-        if (!glGetVAP) glGetVAP = (glGetVAPFn)dlsym(RTLD_NEXT, "glGetVertexAttribPointervARB");
-        void *attr0_ptr = NULL, *attr3_ptr = NULL;
-        if (glGetVAP) {
-            glGetVAP(0, 0x8645 /*GL_VERTEX_ATTRIB_ARRAY_POINTER*/, &attr0_ptr);
-            glGetVAP(3, 0x8645, &attr3_ptr); /* attr 3 is often color */
-        }
-
-        /* Check enabled vertex attribs */
-        typedef void (*glGetVAIFn)(GLuint, GLenum, GLint*);
-        static glGetVAIFn glGetVAI = NULL;
-        if (!glGetVAI) glGetVAI = (glGetVAIFn)dlsym(RTLD_NEXT, "glGetVertexAttribivARB");
-        int attr_enabled[8] = {0};
-        if (glGetVAI) {
-            for (int i = 0; i < 8; i++)
-                glGetVAI(i, 0x8622 /*GL_VERTEX_ATTRIB_ARRAY_ENABLED*/, &attr_enabled[i]);
-        }
-
-        /* Check VP env parameters 23-26 (transformation matrix) */
-        typedef void (*glGetProgramEnvParamFn)(GLenum, GLuint, float*);
-        static glGetProgramEnvParamFn glGetEnvParam = NULL;
-        if (!glGetEnvParam) glGetEnvParam = (glGetProgramEnvParamFn)dlsym(RTLD_NEXT, "glGetProgramEnvParameterfvARB");
-        float env23[4] = {0}, env24[4] = {0};
-        if (glGetEnvParam) {
-            glGetEnvParam(0x8620, 23, env23);
-            glGetEnvParam(0x8620, 24, env24);
-        }
-
-        /* Read first vertex from attrib 0 and attrib 5 */
-        typedef void (*glGetVAPFn2)(GLuint, GLenum, GLint*);
-        static glGetVAPFn2 glGetVAI2 = NULL;
-        if (!glGetVAI2) glGetVAI2 = (glGetVAPFn2)dlsym(RTLD_NEXT, "glGetVertexAttribivARB");
-        int attr5_size = 0, attr5_type = 0, attr5_stride = 0;
-        void *attr5_ptr = NULL;
-        if (glGetVAI2) {
-            glGetVAI2(5, 0x8623 /*GL_VERTEX_ATTRIB_ARRAY_SIZE*/, &attr5_size);
-            glGetVAI2(5, 0x8625 /*GL_VERTEX_ATTRIB_ARRAY_TYPE*/, &attr5_type);
-            glGetVAI2(5, 0x8624 /*GL_VERTEX_ATTRIB_ARRAY_STRIDE*/, &attr5_stride);
-        }
-        if (glGetVAP) glGetVAP(5, 0x8645, &attr5_ptr);
-
-        /* Try to read first vertex of attr5 */
-        float attr5_val[4] = {-999,-999,-999,-999};
-        if (attr5_ptr && attr_enabled[5]) {
-            /* Read 4 bytes as floats if type is float */
-            if (attr5_type == 0x1406) { /* GL_FLOAT */
-                for (int i = 0; i < attr5_size && i < 4; i++)
-                    attr5_val[i] = ((float*)attr5_ptr)[i];
-            } else if (attr5_type == 0x1401) { /* GL_UNSIGNED_BYTE */
-                for (int i = 0; i < attr5_size && i < 4; i++)
-                    attr5_val[i] = ((unsigned char*)attr5_ptr)[i] / 255.0f;
-            }
-        }
-
-        fprintf(stderr, "[draw#%d] mode=%d count=%d vp=%d fp=%d tex=[%d,%d,%d,%d]\n",
-                draw_dump_count, mode, count, vp_on, fp_on,
-                tex_ids[0], tex_ids[1], tex_ids[2], tex_ids[3]);
-        fprintf(stderr, "[draw#%d] env23=[%.3f,%.3f,%.3f,%.3f] env24=[%.3f,%.3f,%.3f,%.3f]\n",
-                draw_dump_count, env23[0],env23[1],env23[2],env23[3],
-                env24[0],env24[1],env24[2],env24[3]);
-        fprintf(stderr, "[draw#%d] attr5: en=%d size=%d type=0x%x stride=%d ptr=%p val=[%.3f,%.3f,%.3f,%.3f]\n",
-                draw_dump_count, attr_enabled[5], attr5_size, attr5_type, attr5_stride, attr5_ptr,
-                attr5_val[0], attr5_val[1], attr5_val[2], attr5_val[3]);
-    }
-    /* Check tess buffer and screen placement data */
-    extern unsigned char tess[];
-    extern unsigned char cls[];
-    static int draw_state_count = 0;
-    if (draw_state_count < 3) {
-        float aspect_ratio_pixel = *(float *)(cls + 0x2a0a78);
-        int vid_w = *(int *)(cls + 0x2a0a64);
-        int vid_h = *(int *)(cls + 0x2a0a68);
-        fprintf(stderr, "[drawDiag#%d] cls=%p aspect=%.6f vidW=%d vidH=%d\n",
-                draw_state_count+1, cls, aspect_ratio_pixel, vid_w, vid_h);
-    }
-    if (draw_state_count < 5) {
-        draw_state_count++;
-        GLenum err = glGetError();
-        GLint depth_func = 0;
-        glGetIntegerv(0x0B74 /*GL_DEPTH_FUNC*/, &depth_func);
-        GLboolean depth_write = 0;
-        glGetBooleanv(0x0B72 /*GL_DEPTH_WRITEMASK*/, &depth_write);
-        GLboolean cmask[4] = {0};
-        glGetBooleanv(0x0C23 /*GL_COLOR_WRITEMASK*/, cmask);
-        GLboolean depth_on = glIsEnabled(0x0B71 /*GL_DEPTH_TEST*/);
-        GLboolean scissor_on = glIsEnabled(0x0C11 /*GL_SCISSOR_TEST*/);
-        GLint scissor[4] = {0};
-        if (scissor_on) glGetIntegerv(0x0C10 /*GL_SCISSOR_BOX*/, scissor);
-
-        /* Read vertex position from attr0 */
-        typedef void (*glGetVAPFn)(GLuint, GLenum, void**);
-        static glGetVAPFn myGetVAP = NULL;
-        if (!myGetVAP) myGetVAP = (glGetVAPFn)dlsym(RTLD_NEXT, "glGetVertexAttribPointervARB");
-        typedef void (*glGetVAIFn2)(GLuint, GLenum, GLint*);
-        static glGetVAIFn2 myGetVAI = NULL;
-        if (!myGetVAI) myGetVAI = (glGetVAIFn2)dlsym(RTLD_NEXT, "glGetVertexAttribivARB");
-        void *attr0_ptr = NULL;
-        int attr0_stride = 0, attr0_en = 0, attr0_size = 0;
-        GLint vbo_bound = 0;
-        if (myGetVAP) myGetVAP(0, 0x8645, &attr0_ptr);
-        if (myGetVAI) {
-            myGetVAI(0, 0x8624 /*STRIDE*/, &attr0_stride);
-            myGetVAI(0, 0x8622 /*ENABLED*/, &attr0_en);
-            myGetVAI(0, 0x8623 /*SIZE*/, &attr0_size);
-        }
-        glGetIntegerv(0x8894 /*GL_ARRAY_BUFFER_BINDING*/, &vbo_bound);
-
-        /* Read from first indexed vertex */
-        float pos[3] = {-999,-999,-999};
-        unsigned char *vbase = (unsigned char *)attr0_ptr;
-        if (vbase && !vbo_bound && attr0_stride > 0) {
-            /* Read vertex at index 'start' */
-            float *vp = (float *)(vbase + start * attr0_stride);
-            pos[0] = vp[0]; pos[1] = vp[1]; pos[2] = vp[2];
-        }
-
-        /* Also dump raw hex of first 16 bytes at attr0_ptr */
-        unsigned int raw[4] = {0};
-        if (vbase && !vbo_bound) {
-            unsigned char *p = vbase + start * (attr0_stride ? attr0_stride : 64);
-            raw[0] = *(unsigned int *)(p + 0);
-            raw[1] = *(unsigned int *)(p + 4);
-            raw[2] = *(unsigned int *)(p + 8);
-            raw[3] = *(unsigned int *)(p + 12);
-        }
-
-        GLint viewport[4] = {0};
-        glGetIntegerv(0x0BA2 /*GL_VIEWPORT*/, viewport);
-        GLfloat clearcolor[4] = {0};
-        glGetFloatv(0x0C22 /*GL_COLOR_CLEAR_VALUE*/, clearcolor);
-        GLboolean blend_on = glIsEnabled(0x0BE2 /*GL_BLEND*/);
-        GLint blend_src = 0, blend_dst = 0;
-        glGetIntegerv(0x0BE1 /*GL_BLEND_SRC*/, &blend_src);
-        glGetIntegerv(0x0BE0 /*GL_BLEND_DST*/, &blend_dst);
-        fprintf(stderr, "[drawstate#%d] err=%d depth=%d func=0x%x zmask=%d cmask=(%d,%d,%d,%d) scissor=%d vbo=%d\n",
-                draw_state_count, err, depth_on, depth_func, depth_write,
-                cmask[0],cmask[1],cmask[2],cmask[3], scissor_on, vbo_bound);
-        fprintf(stderr, "  viewport=(%d,%d,%d,%d) clear=(%.3f,%.3f,%.3f,%.3f) blend=%d src=0x%x dst=0x%x\n",
-                viewport[0],viewport[1],viewport[2],viewport[3],
-                clearcolor[0],clearcolor[1],clearcolor[2],clearcolor[3],
-                blend_on, blend_src, blend_dst);
-        fprintf(stderr, "  attr0: en=%d ptr=%p stride=%d size=%d start=%u pos=(%.3f,%.3f,%.3f) raw=%08x %08x %08x %08x\n",
-                attr0_en, attr0_ptr, attr0_stride, attr0_size, start,
-                pos[0], pos[1], pos[2], raw[0], raw[1], raw[2], raw[3]);
+    /* Test: disable ARB programs for one draw to see if fixed-function works */
+    extern int g_draw_count;
+    static int noarb_test = 0;
+    int did_disable = 0;
+    if (noarb_test == 0 && g_draw_count > 3000 && count == 6) {
+        noarb_test = 1;
+        did_disable = 1;
+        /* Disable ARB programs, fall back to fixed-function */
+        typedef void (*disable_fn)(GLenum);
+        static disable_fn myDisable = NULL;
+        if (!myDisable) myDisable = (disable_fn)dlsym(RTLD_NEXT, "glDisable");
+        myDisable(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
+        myDisable(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
+        /* Set up a simple projection for the fixed-function path */
+        fprintf(stderr, "[NOARB-TEST] disabled VP/FP for dc=%d count=%d\n", g_draw_count, count);
     }
 
     real_fn(mode, start, end, count, type, indices);
 
-    /* DIAGNOSTIC: Inject a test triangle draw to verify geometry rendering */
-    static int inject_count = 0;
-    extern int g_draw_count;
-    if (inject_count == 0 && g_draw_count > 870) {
-        inject_count = 1;
-
-        /* Disable ARB programs, use fixed-function */
-        glDisable(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        glDisable(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
-        glDisable(0x0B71 /*GL_DEPTH_TEST*/);
-        glDisable(0x0BE2 /*GL_BLEND*/);
-        glDisable(0x0DE1 /*GL_TEXTURE_2D*/);
-
-        /* Setup orthographic projection */
-        glMatrixMode(0x1701 /*GL_PROJECTION*/);
-        glLoadIdentity();
-        glOrtho(-1, 1, -1, 1, -1, 1);
-        glMatrixMode(0x1700 /*GL_MODELVIEW*/);
-        glLoadIdentity();
-
-        /* Disable all vertex attrib arrays */
-        typedef void (*disableVAA_fn)(GLuint);
-        static disableVAA_fn myDisable = NULL;
-        if (!myDisable) myDisable = (disableVAA_fn)SDL_GL_GetProcAddress("glDisableVertexAttribArrayARB");
-        if (myDisable) for (int i = 0; i < 16; i++) myDisable(i);
-
-        /* Use fixed-function vertex arrays */
-        float verts[] = {
-            -0.5f, -0.5f, 0.0f,
-             0.5f, -0.5f, 0.0f,
-             0.0f,  0.5f, 0.0f,
-        };
-        glEnableClientState(0x8074 /*GL_VERTEX_ARRAY*/);
-        glVertexPointer(3, 0x1406 /*GL_FLOAT*/, 0, verts);
-        glColor4f(0.0f, 1.0f, 0.0f, 1.0f); /* green */
-        glDrawArrays(0x0004 /*GL_TRIANGLES*/, 0, 3);
-        glDisableClientState(0x8074);
-
-        /* Read pixel at center */
+    if (did_disable) {
+        /* Read pixel */
+        typedef void (*readPx_fn)(int, int, int, int, GLenum, GLenum, void *);
+        static readPx_fn myRead = NULL;
+        if (!myRead) myRead = (readPx_fn)dlsym(RTLD_NEXT, "glReadPixels");
         unsigned char px[4] = {0};
-        glReadPixels(320, 240, 1, 1, 0x1908, 0x1401, px);
+        if (myRead) myRead(320, 240, 1, 1, 0x1908, 0x1401, px);
         GLenum err = glGetError();
-        fprintf(stderr, "[INJECT-TRI] fixed-func tri px=(%d,%d,%d,%d) err=0x%x\n",
-                px[0],px[1],px[2],px[3], err);
-
-        /* Now re-enable ARB programs and try drawing the same triangle */
-        glEnable(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        glEnable(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
-        glColor4f(1.0f, 0.0f, 0.0f, 1.0f); /* red */
-        glEnableClientState(0x8074);
-        glVertexPointer(3, 0x1406, 0, verts);
-        glDrawArrays(0x0004, 0, 3);
-        glDisableClientState(0x8074);
-
-        unsigned char px2[4] = {0};
-        glReadPixels(320, 240, 1, 1, 0x1908, 0x1401, px2);
-        err = glGetError();
-        fprintf(stderr, "[INJECT-TRI] ARB-prog tri px=(%d,%d,%d,%d) err=0x%x\n",
-                px2[0],px2[1],px2[2],px2[3], err);
-    }
-
-    /* Check for GL error after draw */
-    static int post_draw_count = 0;
-    if (post_draw_count < 8) {
-        post_draw_count++;
-        GLenum err = glGetError();
-        if (err) fprintf(stderr, "[drawERR#%d] glError=0x%x after draw\n", post_draw_count, err);
-
-        /* Read a pixel after this draw */
-        unsigned char rpx[4] = {0};
-        glReadPixels(320, 240, 1, 1, 0x1908, 0x1401, rpx);
-        glGetError(); /* clear */
-        fprintf(stderr, "[postdraw#%d] px=(%d,%d,%d,%d)\n", post_draw_count, rpx[0],rpx[1],rpx[2],rpx[3]);
-
-        /* Read texture content of currently bound texture on unit 0 */
-        GLint tex_id = 0;
-        glGetIntegerv(0x8069 /*GL_TEXTURE_BINDING_2D*/, &tex_id);
-        GLint tw = 0, th = 0;
-        glGetTexLevelParameteriv(0x0DE1 /*GL_TEXTURE_2D*/, 0, 0x1000 /*GL_TEXTURE_WIDTH*/, &tw);
-        glGetTexLevelParameteriv(0x0DE1, 0, 0x1001 /*GL_TEXTURE_HEIGHT*/, &th);
-        /* Read first few pixels of the texture */
-        unsigned char tex_px[16] = {0}; /* 4 RGBA pixels */
-        if (tw > 0 && th > 0 && tw <= 4096 && th <= 4096) {
-            /* Read just 1 pixel at (0,0) */
-            glGetTexImage(0x0DE1, 0, 0x1908 /*GL_RGBA*/, 0x1401 /*GL_UNSIGNED_BYTE*/, tex_px);
-            GLenum terr = glGetError();
-            fprintf(stderr, "[texread#%d] texid=%d %dx%d px0=(%d,%d,%d,%d) px1=(%d,%d,%d,%d) err=0x%x\n",
-                    post_draw_count, tex_id, tw, th,
-                    tex_px[0],tex_px[1],tex_px[2],tex_px[3],
-                    tex_px[4],tex_px[5],tex_px[6],tex_px[7], terr);
-        } else {
-            fprintf(stderr, "[texread#%d] texid=%d invalid %dx%d\n", post_draw_count, tex_id, tw, th);
-        }
+        fprintf(stderr, "[NOARB-RESULT] px=(%d,%d,%d,%d) err=0x%x\n",
+                px[0], px[1], px[2], px[3], err);
+        /* Re-enable */
+        typedef void (*enable_fn)(GLenum);
+        static enable_fn myEnable = NULL;
+        if (!myEnable) myEnable = (enable_fn)dlsym(RTLD_NEXT, "glEnable");
+        myEnable(0x8620);
+        myEnable(0x8804);
     }
 }
 
@@ -576,6 +335,60 @@ void glProgramEnvParameter4fvARB(GLenum target, GLuint index, const float *param
         void *ra = __builtin_return_address(0);
         fprintf(stderr, "[ENV-NaN#%d] target=0x%x idx=%u val=[%g,%g,%g,%g] ra=%p\n",
                 nan_count, target, index, params[0], params[1], params[2], params[3], ra);
+    }
+
+    /* Detect extreme matrix values in env 23-26 */
+    static int extreme_log = 0;
+    if (index >= 23 && index <= 26 && target == 0x8620) {
+        int has_extreme = 0;
+        for (int i = 0; i < 4; i++) {
+            float v = params[i] < 0 ? -params[i] : params[i];
+            if (v > 1e6) has_extreme = 1;
+        }
+        if (has_extreme && extreme_log < 3) {
+            extreme_log++;
+            void *ra = __builtin_return_address(0);
+            extern unsigned char backEnd[];
+            int stackLevel = *(int *)(backEnd + 0x2e80);
+            /* Compute activeMatrices = backEnd + 0x4e0 + level * 3552 */
+            unsigned char *activeMatrices = backEnd + 0x4e0 + stackLevel * 3552;
+            fprintf(stderr, "[ENV-EXTREME#%d] idx=%u val=[%.6g,%.6g,%.6g,%.6g] ra=%p\n",
+                    extreme_log, index, params[0], params[1], params[2], params[3], ra);
+            fprintf(stderr, "  stackLevel=%d activeMatrices=%p (backEnd+0x%x)\n",
+                    stackLevel, activeMatrices, (int)(activeMatrices - backEnd));
+            fprintf(stderr, "  data_ptr=%p offset_from_active=0x%x\n",
+                    params, (int)((unsigned char*)params - activeMatrices));
+            /* Dump viewParms pointer and its matrices */
+            void **vpPtr = (void **)(backEnd + 0x3c8);
+            fprintf(stderr, "  viewParms ptr=%p\n", *vpPtr);
+            if (*vpPtr) {
+                float *vpView = (float *)((char *)*vpPtr + 0x48);
+                float *vpProj = (float *)((char *)*vpPtr + 0x88);
+                fprintf(stderr, "  vpView=[%.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g]\n",
+                        vpView[0],vpView[1],vpView[2],vpView[3],
+                        vpView[4],vpView[5],vpView[6],vpView[7],
+                        vpView[8],vpView[9],vpView[10],vpView[11],
+                        vpView[12],vpView[13],vpView[14],vpView[15]);
+                fprintf(stderr, "  vpProj=[%.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g]\n",
+                        vpProj[0],vpProj[1],vpProj[2],vpProj[3],
+                        vpProj[4],vpProj[5],vpProj[6],vpProj[7],
+                        vpProj[8],vpProj[9],vpProj[10],vpProj[11],
+                        vpProj[12],vpProj[13],vpProj[14],vpProj[15]);
+            }
+            /* Dump the active matrices View (+0x230) and Proj (+0x340) within activeMatrices */
+            float *amView = (float *)(activeMatrices + 0x230);
+            float *amProj = (float *)(activeMatrices + 0x340);
+            fprintf(stderr, "  amView=[%.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g]\n",
+                    amView[0],amView[1],amView[2],amView[3],
+                    amView[4],amView[5],amView[6],amView[7],
+                    amView[8],amView[9],amView[10],amView[11],
+                    amView[12],amView[13],amView[14],amView[15]);
+            fprintf(stderr, "  amProj=[%.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g / %.3g,%.3g,%.3g,%.3g]\n",
+                    amProj[0],amProj[1],amProj[2],amProj[3],
+                    amProj[4],amProj[5],amProj[6],amProj[7],
+                    amProj[8],amProj[9],amProj[10],amProj[11],
+                    amProj[12],amProj[13],amProj[14],amProj[15]);
+        }
     }
 
     /* Also log first few calls for all env params */
