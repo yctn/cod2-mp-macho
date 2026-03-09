@@ -270,12 +270,14 @@ static void SCR_UpdateFrame(void)
     int gameLoaded = CLS_CONN_STATE_FLAG(cls);
 
     static int frame_diag = 0;
-    if (frame_diag < 10) {
+    {
         byte *clc_tmp = *(byte **)clc_ptr_195ee8c;
         int cs_tmp = *(int *)clc_tmp;
         int fs_tmp = UI_IsFullscreen();
-        fprintf(stderr, "[frame#%d] gameLoaded=%d connstate=%d fullscr=%d\n",
-                frame_diag, gameLoaded, cs_tmp, fs_tmp);
+        if (frame_diag < 10 || (frame_diag < 500 && (frame_diag % 50 == 0)) || cs_tmp >= 6) {
+            fprintf(stderr, "[frame#%d] gameLoaded=%d connstate=%d fullscr=%d\n",
+                    frame_diag, gameLoaded, cs_tmp, fs_tmp);
+        }
         frame_diag++;
     }
 

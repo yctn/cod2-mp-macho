@@ -18,6 +18,15 @@ extern const dvar_t *cl_analog_attack_threshold; /* 0x0 */
 extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
+
+__asm__(".Lclwp_fmt: .asciz \"[CL_WritePacket] serverId=%d\\n\"\n");
+static int cl_wp_dbg_count = 0;
+void CL_WritePacketDbg(const char *fmt, int serverId) {
+    if (cl_wp_dbg_count < 20 || (cl_wp_dbg_count % 500 == 0)) {
+        fprintf(stderr, fmt, serverId);
+    }
+    cl_wp_dbg_count++;
+}
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */
 extern kbutton_t *kb; /* kb */
@@ -932,6 +941,17 @@ void CL_WritePacket(void)
         "movl %edx, (%esp)\n"
         "calll MSG_Init\n"
         "movl 0x8628(%ebx), %eax\n" /* line 1560 | cmd */
+        /* DEBUG: print serverId being written */
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "pushl %eax\n"
+        "pushl %eax\n"
+        "pushl $.Lclwp_fmt\n"
+        "calll CL_WritePacketDbg\n"
+        "addl $8, %esp\n"
+        "popl %eax\n"
+        "popl %ebx\n"
+        "popl %esi\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x30(%ebp), %eax\n" /* buf */
         "movl %eax, (%esp)\n"

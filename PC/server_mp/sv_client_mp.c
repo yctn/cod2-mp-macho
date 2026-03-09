@@ -12,6 +12,15 @@ extern void Com_DPrintf(const char *fmt, ...);
 extern const char *SV_Cmd_Argv(int arg);
 extern int atoi(const char *s);
 
+__asm__(".Lsvexec_fmt: .asciz \"[SV_ExecMsg] clServerId=%d svServerId=%d clState=%d\\n\"\n");
+static int sv_exec_dbg_count = 0;
+void SV_ExecDbg(const char *fmt, int clSid, int svSid, int clState) {
+    if (sv_exec_dbg_count < 20 || (sv_exec_dbg_count % 500 == 0)) {
+        fprintf(stderr, fmt, clSid, svSid, clState);
+    }
+    sv_exec_dbg_count++;
+}
+
 void SV_AuthorizeRequest(struct netadr_t from, int challenge);
 static qboolean SV_IsBannedGuid(void);
 void SV_BanGuidBriefly(int guid);
@@ -4061,6 +4070,17 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl 0x765f8(%edi), %edx\n" /* line 2183 | cl */
         "movl imp_sv_serverId_value, %eax\n"
         "movl (%eax), %eax\n"
+        /* DEBUG: print serverId comparison */
+        "pushl %eax\n"
+        "pushl %edx\n"
+        "pushl (%edi)\n"
+        "pushl %eax\n"
+        "pushl %edx\n"
+        "pushl $.Lsvexec_fmt\n"
+        "calll SV_ExecDbg\n"
+        "addl $16, %esp\n"
+        "popl %edx\n"
+        "popl %eax\n"
         "cmpl %eax, %edx\n"
         "je .Lf17e2ae_0017e319\n"
         "cmpb $0, 0x20c68(%edi)\n" /* cl */

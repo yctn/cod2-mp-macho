@@ -97,7 +97,13 @@ void CL_SystemInfoChanged(void)
     systemInfo = (char *)(cls + 0x470c + *(int *)(cls + 0x2710));
 
     /* line 583 - sv_serverid */
-    *(int *)(cls + 0x8628) = atoi(Info_ValueForKey(systemInfo, "sv_serverid"));
+    {
+        const char *sid_str = Info_ValueForKey(systemInfo, "sv_serverid");
+        int sid_val = atoi(sid_str);
+        *(int *)(cls + 0x8628) = sid_val;
+        fprintf(stderr, "[CL_SystemInfoChanged] sv_serverid='%s' val=%d cls=%p cls+0x8628=%p\n",
+                sid_str ? sid_str : "(null)", sid_val, cls, cls + 0x8628);
+    }
 
     /* line 586 */
     if (*(int *)((*clc_ptr) + 0x407a0) != 0) {
@@ -881,6 +887,14 @@ void CL_ParseSnapshot(msg_t *msg)
 
     /* line 549 */
     *(int *)(cls + 0x2708) = 1;
+    {
+        static int snap_diag = 0;
+        if (snap_diag < 5) {
+            fprintf(stderr, "[CL_ParseSnapshot#%d] set newSnapshots=1 at %p\n",
+                    snap_diag, (void *)(cls + 0x2708));
+            snap_diag++;
+        }
+    }
 
     ZN10LargeLocalD1Ev(&newSnap_large_local);
 }

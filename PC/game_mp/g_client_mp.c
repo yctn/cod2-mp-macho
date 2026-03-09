@@ -55,7 +55,12 @@ extern vec3_t playerMins; /* 0x0 */
 extern vec3_t playerMaxs; /* 0x0 */
 
 extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
-extern byte level_ptr[]; /* imp_level */
+extern byte level_ptr[]; /* imp_level - used for level metadata */
+extern unsigned char g_clients[]; /* BSS client array - used for client data access */
+/* In original game, imp_level pointed to combined level+clients memory.
+   In decomp, level and g_clients are separate BSS arrays.
+   Client data access must use g_clients, not level_ptr. */
+#define CLIENT_BASE g_clients
 extern byte *g_scr_data_ptr; /* imp_scr_const */
 extern byte *g_sv_running_ptr; /* imp_voice_global */
 extern byte *g_deadChat_ptr; /* imp_voice_deadChat */
@@ -90,7 +95,7 @@ void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right
 /* line 426 */
 void ClientBegin(int clientNum)
 {
-    byte *level = (byte *)level_ptr;
+    byte *level = (byte *)CLIENT_BASE;
     byte *client = level +clientNum * CLIENT_STRIDE;
     byte *ents = (byte *)g_entities_ptr;
     byte *scr_data = *(byte **)g_scr_data_ptr;
@@ -108,7 +113,7 @@ void ClientBegin(int clientNum)
 /* line 596 */
 void ClientDisconnect(int clientNum)
 {
-    byte *level = (byte *)level_ptr;
+    byte *level = (byte *)CLIENT_BASE;
     byte *client;
     gentity_t *ent;
     byte *ents;
@@ -310,7 +315,7 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 
     /* Set voice chat timestamp */
     {
-        byte *level = (byte *)level_ptr;
+        byte *level = (byte *)CLIENT_BASE;
         *(int *)(talkerClient + 0x2808) = *(int *)(level + 0x1ec);
     }
 
@@ -474,14 +479,14 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     clientNum = ((byte *)ent - ents) / GENTITY_STRIDE;
 
     client = *(byte **)((byte *)ent + 0x158);
-    level = (byte *)level_ptr;
+    level = (byte *)CLIENT_BASE;
 
     /* Check if player is in turret */
     if (*(byte *)(client + 0xe) & 0x80) {
         if (*(int *)(client + 0xa0) & 0x300) {
             /* Stop using turret first */
             int turretEntNum = *(int *)(client + 0x594);
-            byte *turretEnt = (byte *)level_ptr + 4;
+            byte *turretEnt = (byte *)CLIENT_BASE + 4;
             turretEnt = *(byte **)turretEnt;
             byte *actualTurretEnt = turretEnt + turretEntNum * GENTITY_STRIDE;
             G_ClientStopUsingTurret((gentity_t *)actualTurretEnt);
@@ -543,7 +548,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     /* Get user command */
     {
-        byte *lev = (byte *)level_ptr;
+        byte *lev = (byte *)CLIENT_BASE;
         int clientIdx = (int)(client - *(byte **)lev) / 4;
         /* Complex multiplication to compute client index from pointer offset */
         int ucmdIdx;
@@ -585,7 +590,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
         dvar = *(byte **)dvar;
         int dvarVal = *(int *)(dvar + 8);
         int time = dvarVal * 5 * 5 * 5;  /* dvarVal * 125 */
-        byte *lev = (byte *)level_ptr;
+        byte *lev = (byte *)CLIENT_BASE;
         int serverTime = *(int *)(lev + 0x1ec);
         *(int *)(client + 0x2800) = serverTime + time * 8;
     }
@@ -593,7 +598,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     *(int *)(client + 0x27bc) = *(int *)(client + 0x26cc);
 
     {
-        byte *lev = (byte *)level_ptr;
+        byte *lev = (byte *)CLIENT_BASE;
         *(int *)(lev + 0x20) = 1;
         *(int *)(client + 0x28a0) = *(int *)(lev + 0x1ec);
         *(int *)(client + 0x26c8) = *(int *)(lev + 0x1ec);
@@ -644,7 +649,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
     fBobCycle = BG_GetBobCycle(ps);
 
     {
-        byte *lev = (byte *)level_ptr;
+        byte *lev = (byte *)CLIENT_BASE;
         int serverTime = *(int *)(lev + 0x1ec);
         xyspeed = BG_GetSpeed(ps, serverTime);
     }
@@ -773,7 +778,7 @@ void ClientUserinfoChanged(int clientNum)
 
     /* If client is connected and level has restarted, use different name field */
     if (*(int *)(client + 0x26c4) == 2) {
-        byte *lev = (byte *)level_ptr;
+        byte *lev = (byte *)CLIENT_BASE;
         if (*(int *)(lev + 0x214) != 0) {
             const char *name = Info_ValueForKey(userinfo, "name");
             char *shortName = (char *)(client + 0x2708);
@@ -909,7 +914,7 @@ char * ClientConnect(int clientNum, int scriptPersId)
     ents = (byte *)g_entities_ptr;
     ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
 
-    level = (byte *)level_ptr;
+    level = (byte *)CLIENT_BASE;
     client = level +clientNum * CLIENT_STRIDE;
 
     /* Clear client */

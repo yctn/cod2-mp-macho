@@ -178,6 +178,7 @@ static void CL_FirstSnapshot(void)
     char *clui = CLUI_STATE;
 
     *(int *)clui = 8; /* CA_ACTIVE */
+    fprintf(stderr, "[CL_FirstSnapshot] set connstate=8 clui=%p\n", clui);
     int serverTime = *(int *)(cl + 0x20);
     char *cls = CLS;
     *(int *)(cl + 0x26fc) = serverTime - *(int *)(cls + 0x118);
@@ -1342,6 +1343,17 @@ void CL_SetCGameTime(void)
 
     if (state != 8 && state != 7)
         return;
+
+    {
+        static int sct_diag = 0;
+        if (sct_diag < 20 || (sct_diag % 200 == 0)) {
+            char *cl_tmp = CL_LOCAL;
+            fprintf(stderr, "[CL_SetCGameTime#%d] state=%d cl=%p newSnap=%d snap.valid=%d\n",
+                    sct_diag, state, cl_tmp, *(int *)(cl_tmp + 0x2708),
+                    *(int *)(cl_tmp + 0x18));
+        }
+        sct_diag++;
+    }
 
     if (state == 7) {
         /* CA_PRIMED */

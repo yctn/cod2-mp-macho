@@ -961,12 +961,10 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         return 0;
     }
 
-    /* Reassemble: write sequence into fragmentBuffer header and copy into msg */
+    /* Reassemble: write sequence into msg header and copy fragment data after it */
     {
-        byte *fragBuf = msg->data;
-        *(int *)(msg->data + 4) = sequence; /* write sequence at +4 */
-        /* copy fragmentBuffer contents (starting at data+4) into msg */
-        memcpy(fragBuf + 4, chan->fragmentBuffer, chan->fragmentLength);
+        *(int *)(msg->data) = sequence; /* write clean sequence at offset 0 */
+        memcpy(msg->data + 4, chan->fragmentBuffer, chan->fragmentLength);
         msg->cursize = chan->fragmentLength + 4;
         chan->fragmentLength = 0;
         MSG_BeginReading(msg);

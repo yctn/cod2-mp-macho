@@ -8,6 +8,15 @@ extern void Scr_FreeValue(int value);
 extern void SV_ResetSkeletonCache(void);
 extern void G_RunFrame(int levelTime);
 
+__asm__(".Lsvpkt_fmt: .asciz \"[SV_PktEvt] netchan=%d clState=%d serverId=%d relAck=%d\\n\"\n");
+static int sv_pkt_dbg_count = 0;
+void SV_PktEvtDbg(const char *fmt, int netchanResult, int clState, int serverId, int relAck) {
+    if (sv_pkt_dbg_count < 30 || (sv_pkt_dbg_count % 500 == 0)) {
+        fprintf(stderr, fmt, netchanResult, clState, serverId, relAck);
+    }
+    sv_pkt_dbg_count++;
+}
+
 extern struct serverStatic_t svs; /* 0x0 */
 extern struct server_t sv; /* 0x0 */
 extern const dvar_t *sv_fps; /* 0x0 */
@@ -1848,6 +1857,8 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "leal 0x6e5b4(%ebx), %eax\n" /* cl */
         "movl %eax, (%esp)\n"
         "calll Netchan_Process\n"
+        /* DEBUG: save netchan result for diagnostic */
+        "movl %eax, -0x50(%ebp)\n"
         "testl %eax, %eax\n"
         "je .Lf15a94c_0015aad1\n"
         "movl -0x58(%ebp), %ecx\n" /* line 1073 | msg */
@@ -1858,6 +1869,18 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "movl %eax, (%esp)\n"
         "calll MSG_ReadLong\n"
         "movl %eax, 0x20818(%ebx)\n" /* cl */
+        /* DEBUG: print packet info */
+        "pushl %eax\n"
+        "pushl %ebx\n"
+        "pushl %eax\n" /* relAck */
+        "pushl 0x765f8(%ebx)\n" /* serverId */
+        "pushl (%ebx)\n" /* clState */
+        "pushl -0x50(%ebp)\n" /* netchanResult */
+        "pushl $.Lsvpkt_fmt\n"
+        "calll SV_PktEvtDbg\n"
+        "addl $20, %esp\n"
+        "popl %ebx\n"
+        "popl %eax\n"
         "testl %eax, %eax\n" /* line 1076 */
         "js .Lf15a94c_0015aad1\n"
         "movl -0x58(%ebp), %edx\n" /* line 1084 | msg */

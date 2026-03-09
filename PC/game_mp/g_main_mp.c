@@ -10,6 +10,11 @@ static const char str_dbg_spawn[] = "after G_SpawnEntities";
 static const char str_dbg_load[] = "after GScr_LoadScripts";
 static const char str_dbg_endload[] = "after Scr_EndLoadScripts";
 
+__asm__(".Lginit_fmt: .asciz \"[G_InitGame] level.clients=%p\\n\"\n");
+void G_InitDbgPrint(const char *fmt, void *ptr) {
+    fprintf(stderr, fmt, ptr);
+}
+
 extern entityHandler_t entityHandlers[20]; /* 0x0 */
 extern struct bgs_t level_bgs; /* 0x0 */
 extern struct level_locals_t level; /* 0x0 */
@@ -67,7 +72,7 @@ extern const dvar_t *g_TeamColor_Allies; /* 0x0 */
 extern const dvar_t *g_TeamColor_Axis; /* 0x0 */
 extern const dvar_t *g_voteAbstainWeight; /* 0x0 */
 extern const dvar_t *g_dumpAnims; /* 0x0 */
-static gclient_t g_clients[64]; /* g_clients */
+extern unsigned char g_clients[]; /* BSS g_clients array (665856 bytes = 64 * gclient_s) */
 
 /* Extern functions needed for C conversions */
 extern void Com_ServerDObjCreate(DObjModel_s *models, int numModels, struct XAnimTree_s *tree, int handle, clientInfo_t *ci);
@@ -154,6 +159,10 @@ int G_GetClientScore(int clientNum)
 /* line 556 */
 int G_GetClientArchiveTime(int clientNum)
 {
+    if (!level.clients) {
+        fprintf(stderr, "[G_GetClientArchiveTime] level.clients is NULL! clientNum=%d\n", clientNum);
+        return 0;
+    }
     return level.clients[clientNum].sess.archiveTime;
 }
 
@@ -358,6 +367,13 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0xffffffff, level+13828\n" /* line 781 */
         "movl $g_entities, level+4\n" /* level.gentities = g_entities (decompiler missed) */
         "movl $g_clients, level\n" /* level.clients = g_clients (decompiler missed) */
+        /* DEBUG: verify level.clients was set */
+        "pushl %esi\n"
+        "pushl level\n"
+        "pushl $.Lginit_fmt\n"
+        "calll G_InitDbgPrint\n"
+        "addl $8, %esp\n"
+        "popl %esi\n"
         "movl %esi, (%esp)\n" /* line 783 | randomSeed */
         "calll srand\n"
         "movl %esi, (%esp)\n" /* line 784 | randomSeed */
