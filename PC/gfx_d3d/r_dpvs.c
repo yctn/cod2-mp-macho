@@ -3878,7 +3878,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "addl $0x200, %edx\n"
         "addl $0x200, %ecx\n"
         "movl %edx, (%ecx)\n" /* line 2045 */
-        "cmpl $MacBuilder_SetControlFontStyle, %ebx\n" /* line 2044 | bevelVertIndex */
+        "cmpl $0x3fc0, %ebx\n" /* line 2044 | 255 entries * 0x40 step — was Mac symbol MacBuilder_SetControlFontStyle */
         "jne .Lff1d30_000f1d64\n"
         "movl $0, 0x1fe00(%eax)\n" /* line 2046 */
         "movl %eax, dpvsGlob+96\n" /* line 2047 */

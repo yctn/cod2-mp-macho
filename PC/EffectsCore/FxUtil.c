@@ -724,9 +724,9 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         "cmpb $0, 8(%eax)\n"
         "je .Lf59d14_00059db2\n"
         "movl imp_theFxScheduler, %edx\n" /* line 2172 */
-        "movl (%edx), %eax\n"
-        "leal 4(%eax), %esi\n" /* prevNext */
-        "movl 4(%eax), %ebx\n" /* line 2173 | scheduled */
+        /* fix: imp_theFxScheduler stores &struct, not &ptr — no extra deref */
+        "leal 4(%edx), %esi\n" /* prevNext */
+        "movl 4(%edx), %ebx\n" /* line 2173 | scheduled */
         "testl %ebx, %ebx\n" /* scheduled */
         "je .Lf59d14_00059db2\n"
         "movl %edx, -0x54(%ebp)\n"
@@ -752,8 +752,8 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         "movl 0x4c(%ebx), %eax\n" /* line 2193 | scheduled */
         "movl %eax, (%esi)\n" /* prevNext */
         "movl -0x54(%ebp), %edx\n" /* line 2194 */
-        "movl (%edx), %eax\n"
-        "subl $1, 8(%eax)\n"
+        /* fix: edx is struct address directly, no extra deref */
+        "subl $1, 8(%edx)\n"
         "movl 0xc(%ebx), %eax\n" /* line 2200 | scheduled */
         "testl %eax, %eax\n"
         "js .Lf59d14_00059dff\n"
@@ -800,8 +800,8 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* fx */
         "movl -0x54(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
+        /* fix: edx is struct address directly, no extra deref */
+        "movl %edx, (%esp)\n"
         "calll FxScheduler_CreateEffect\n"
         "jmp .Lf59d14_00059da0\n"
         ".Lf59d14_00059dff:\n"

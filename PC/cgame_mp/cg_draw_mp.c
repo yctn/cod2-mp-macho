@@ -4233,7 +4233,7 @@ unsigned int CG_Draw2D(void)
         "movss 8(%eax), %xmm0\n"
         "addss 8(%edx), %xmm0\n"
         "movaps %xmm2, %xmm1\n"
-        "xorps colorWhiteFaded+48, %xmm1\n"
+        "xorps sse_float_sign_mask, %xmm1\n"
         "movss %xmm1, -0x118(%ebp)\n" /* line 30 */
         "movss %xmm0, -0x114(%ebp)\n" /* line 31 */
         "movl (%ecx), %eax\n" /* line 1940 */
@@ -4721,7 +4721,7 @@ unsigned int CG_Draw2D(void)
         "pxor %xmm0, %xmm0\n" /* line 913 */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cebea_001cf1d6\n"
-        "xorps colorWhiteFaded+48, %xmm1\n" /* line 915 */
+        "xorps sse_float_sign_mask, %xmm1\n" /* line 915 */
         "movss lit4_002ed6a8, %xmm0\n" /* line 916 | 16.0f */
         "movaps %xmm0, %xmm3\n"
         "cmpltss %xmm1, %xmm0\n"
@@ -5296,7 +5296,7 @@ unsigned int CG_Draw2D(void)
         "movss -0x67c(%ebp), %xmm4\n"
         "subss %xmm3, %xmm4\n"
         "movss -0x62c(%ebp), %xmm0\n" /* line 1988 */
-        "xorps colorWhiteFaded+48, %xmm0\n"
+        "xorps sse_float_sign_mask, %xmm0\n"
         "movss %xmm0, -0x108(%ebp)\n"
         "movss %xmm0, -0x120(%ebp)\n"
         "movss -0x674(%ebp), %xmm0\n" /* line 1989 */
@@ -5304,7 +5304,7 @@ unsigned int CG_Draw2D(void)
         "movss %xmm0, -0x110(%ebp)\n"
         "movss %xmm0, -0x118(%ebp)\n"
         "movss -0x630(%ebp), %xmm0\n" /* line 1990 */
-        "xorps colorWhiteFaded+48, %xmm0\n"
+        "xorps sse_float_sign_mask, %xmm0\n"
         "movss %xmm0, -0x114(%ebp)\n"
         "movss %xmm0, -0x11c(%ebp)\n"
         "movss -0x670(%ebp), %xmm0\n" /* line 1991 */
@@ -5550,7 +5550,7 @@ unsigned int CG_Draw2D(void)
         "movl imp_cg_hudGrenadeIconMaxHeight, %eax\n" /* line 2058 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "xorps colorWhiteFaded+48, %xmm0\n"
+        "xorps sse_float_sign_mask, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf1cebea_001cfe79\n"
         "jmp .Lf1cebea_001cff68\n"
