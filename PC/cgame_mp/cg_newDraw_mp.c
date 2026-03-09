@@ -321,7 +321,7 @@ float CG_CalcPlayerHealth(void)
 /* line 1002 */
 void CG_ResetLowHealthOverlay(void)
 {
-    byte *cg = *(byte **)(*(int *)imp_cg);
+    byte *cg = (byte *)*(int *)imp_cg;
     *(byte *)(cg + 0x2be20) = 0;
     *(float *)(cg + 0x2be10) = *(float *)((byte *)hud_healthOverlay_phaseEnd_toAlpha + 8);
     *(int *)(cg + 0x2be18) = 0;
@@ -1101,7 +1101,7 @@ void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textSt
 /* line 1722 */
 const char * CG_GetKillerText(void)
 {
-    byte *cg = *(byte **)(*(int *)imp_cg);
+    byte *cg = (byte *)*(int *)imp_cg;
     if (!*(byte *)(cg + 0x2b54c))
         return "";
     return va("Fragged by %s", (const char *)(cg + 0x2b54c));
@@ -1110,7 +1110,7 @@ const char * CG_GetKillerText(void)
 /* line 1768 */
 const char * CG_GameTypeString(void)
 {
-    return (const char *)((byte *)*(void **)*(void **)imp_cgs + 0x5ea4);
+    return (const char *)((byte *)*(void **)imp_cgs + 0x5ea4);
 }
 
 /* line 1926 */

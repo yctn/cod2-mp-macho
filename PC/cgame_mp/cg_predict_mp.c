@@ -60,6 +60,20 @@ extern const dvar_t **dvar_developer;    /* imp_cg_showmiss — developer */
 extern const dvar_t **dvar_autoPickup;   /* imp_cg_predictItems — cg_autoPickup */
 extern const dvar_t **dvar_errorDecay;   /* imp_cg_errorDecay — cg_errorDecay */
 
+/* Safe dvar access: returns 0 if dvar_t** stub is zeroed */
+static inline int dvar_get_int_safe(const dvar_t **pp) {
+    if (!pp || !*pp) return 0;
+    return *(int *)((byte *)*pp + 8);
+}
+static inline float dvar_get_float_safe(const dvar_t **pp) {
+    if (!pp || !*pp) return 0.0f;
+    return *(float *)((byte *)*pp + 8);
+}
+static inline int dvar_get_bool_safe(const dvar_t **pp) {
+    if (!pp || !*pp) return 0;
+    return *(byte *)((byte *)*pp + 8);
+}
+
 /* cg_t field offsets */
 #define CG_DEMOYPE          0x08
 #define CG_SNAP              0x20
@@ -221,8 +235,7 @@ void CG_PredictPlayerState(void)
     }
 
     /* Check nopredict / synchronous dvars */
-    if (*(byte *)((byte *)*dvar_nopredict + 8) != 0 ||
-        *(byte *)((byte *)*dvar_synchronous + 8) != 0) {
+    if (dvar_get_bool_safe(dvar_nopredict) || dvar_get_bool_safe(dvar_synchronous)) {
         CG_InterpolatePlayerState(1);
         goto cleanup;
     }
@@ -257,7 +270,7 @@ void CG_PredictPlayerState(void)
     {
         usercmd_t oldestCmd;
         if (!CL_GetUserCmd(oldest, &oldestCmd)) {
-            if (*(int *)((byte *)*dvar_developer + 8) != 0)
+            if (dvar_get_int_safe(dvar_developer) != 0)
                 Com_Printf("CG_PredictPlayerState: CMD_BACKUP exceeded\n");
             goto cleanup;
         }
@@ -326,7 +339,7 @@ void CG_PredictPlayerState(void)
             ps->delta_angles[1] += (int)(deltaAngles[1] * (65536.0f / 360.0f)) & 0xffff;
 
             /* Check prediction error */
-            if (*(int *)((byte *)*dvar_developer + 8) != 0) {
+            if (dvar_get_int_safe(dvar_developer) != 0) {
                 /* Compare old predicted origin with mover-adjusted origin */
                 float *oldOrig = &((playerState_t *)oldPlayerState)->origin[0];
                 isMatch = (oldOrig[0] == oldOrigin[0] &&
@@ -348,11 +361,11 @@ void CG_PredictPlayerState(void)
                 float *predictedError;
                 float errorDecayVal;
 
-                if (*(int *)((byte *)*dvar_developer + 8) != 0)
+                if (dvar_get_int_safe(dvar_developer) != 0)
                     Com_Printf("Prediction miss: %f\n", (double)len);
 
                 /* Apply error decay */
-                errorDecayVal = *(float *)((byte *)*dvar_errorDecay + 8);
+                errorDecayVal = dvar_get_float_safe(dvar_errorDecay);
                 predictedError = (float *)(cg + CG_PREDICTEDERROR);
 
                 if (errorDecayVal == 0.0f) {
@@ -369,7 +382,7 @@ void CG_PredictPlayerState(void)
                     if (t < 0.0f)
                         t = 0.0f;
 
-                    if (t > 0.0f && *(int *)((byte *)*dvar_developer + 8) != 0)
+                    if (t > 0.0f && dvar_get_int_safe(dvar_developer) != 0)
                         Com_Printf("Double prediction decay: %f\n", (double)t);
 
                     /* Scale existing error by decay factor */
@@ -407,7 +420,7 @@ void CG_PredictPlayerState(void)
 
                         /* Item pickup prediction */
                         if (ent->eType == 3 && !inDeadState) { /* ET_ITEM */
-                            if (*(byte *)((byte *)*dvar_autoPickup + 8) == 0)
+                            if (dvar_get_bool_safe(dvar_autoPickup) == 0)
                                 continue;
 
                             cg = *cg_glob;
@@ -449,7 +462,7 @@ void CG_PredictPlayerState(void)
 
 postPredict:
     /* Debug output */
-    if (*(int *)((byte *)*dvar_developer + 8) > 1) {
+    if (dvar_get_int_safe(dvar_developer) > 1) {
         cg = *cg_glob;
         Com_Printf("[%i : %i] ", cg_pmove[0].cmd.serverTime, *(int *)(cg + CG_TIME));
     }
@@ -466,7 +479,7 @@ postPredict:
             ps->origin, deltaAngles);
     } else {
         /* No prediction occurred */
-        if (*(int *)((byte *)*dvar_developer + 8) != 0)
+        if (dvar_get_int_safe(dvar_developer) != 0)
             Com_Printf("not moved\n");
     }
 

@@ -962,11 +962,11 @@ void CG_SetNextSnap(snapshot_t *snap_param)
             if (!(*(int *)(nextSnap + SNAP_PS + 0x0e) & 0x40))
             {
                 /* Check two dvars */
-                char *dv1 = *cg_dvar1;
-                if (*(char *)(dv1 + 8) == 0)
+                char *dv1 = cg_dvar1 ? *cg_dvar1 : NULL;
+                if (!dv1 || *(char *)(dv1 + 8) == 0)
                 {
-                    char *dv2 = *cg_dvar2;
-                    if (*(char *)(dv2 + 8) == 0)
+                    char *dv2 = cg_dvar2 ? *cg_dvar2 : NULL;
+                    if (!dv2 || *(char *)(dv2 + 8) == 0)
                         return;
                 }
             }

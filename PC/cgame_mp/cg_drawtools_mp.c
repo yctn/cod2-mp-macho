@@ -223,8 +223,8 @@ void CG_UpdateCompassOrientation(void) {
 }
 
 void CG_UpdateCompPointerOrientation(void) {
-    char *config = *compPointerConfig;
-    if (*(char *)(config + 8) == 0) {
+    char *config = compPointerConfig ? *compPointerConfig : NULL;
+    if (!config || *(char *)(config + 8) == 0) {
         char *cg = *cg_glob;
         *(float *)(cg + 0x2c5b8) = *(float *)(cg + 0x285cc);
         return;

@@ -186,12 +186,14 @@ static void CL_FirstSnapshot(void)
     *(int *)(clui + 0x407c4) = serverTime;
 
     /* Execute autorecord command if set */
-    char *autorecDvar = *(char **)*(void **)imp_cl_activeAction;
-    const char *autorecStr = *(const char **)(autorecDvar + 8);
-    if (*autorecStr) {
-        Cbuf_AddText(autorecStr);
-        Cbuf_AddText("\n");
-        Dvar_SetString(autorecDvar, "");
+    char *autorecDvar = (char *)*(void **)imp_cl_activeAction;
+    if (autorecDvar) {
+        const char *autorecStr = *(const char **)(autorecDvar + 8);
+        if (autorecStr && *autorecStr) {
+            Cbuf_AddText(autorecStr);
+            Cbuf_AddText("\n");
+            Dvar_SetString(autorecDvar, "");
+        }
     }
 }
 

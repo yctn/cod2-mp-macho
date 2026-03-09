@@ -65,7 +65,7 @@ void CG_FxTest(void)
         Com_Printf((const char *)str_002b74e0);
     }
 
-    cg_s = *(char **)(*(int *)imp_cg);
+    cg_s = (char *)*(int *)imp_cg;
     fxName = cg_s + 0x2bfdc;
     I_strncpyz(fxName, CG_Argv(1), 0x40);
 
@@ -90,7 +90,7 @@ float CG_GetViewFov(void)
     char *weapDef;
     float fov_x;
 
-    cg_s = *(char **)(*(int *)imp_cg);
+    cg_s = (char *)*(int *)imp_cg;
     weapIndex = BG_GetViewmodelWeaponIndex((void *)(cg_s + 0x25bc4));
     weapDef = (char *)BG_GetWeaponDef(weapIndex);
 
@@ -127,7 +127,7 @@ float CG_GetViewFov(void)
     }
 
     /* Scope overlay check */
-    if (*(int *)(*(char **)(*(int *)imp_cg) + 0x25c64) & 0x300) {
+    if (*(int *)((char *)*(int *)imp_cg + 0x25c64) & 0x300) {
         fov_x = 55.0f;
     }
 
@@ -159,8 +159,8 @@ static void CG_CalcFov(void)
     halfAngle = (double)fov * 0.017453292519943295 * 0.5;
     tanVal = (float)tan(halfAngle) * 0.75f;
 
-    cg_s = *(char **)(*(int *)imp_cg);
-    fov_x = (float)((double)atanf(tanVal * *(float *)(*(char **)(*(int *)imp_cgs) + 0x5e94)) * 57.29577951308232 * 2.0);
+    cg_s = (char *)*(int *)imp_cg;
+    fov_x = (float)((double)atanf(tanVal * *(float *)((char *)*(int *)imp_cgs + 0x5e94)) * 57.29577951308232 * 2.0);
     fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
 
     if (CG_PointContents((const vec_t *)(cg_s + 0x28588), -1, 0x20)) {
@@ -178,7 +178,7 @@ static void CG_CalcFov(void)
 /* line 49 */
 void CG_FxSetTestPosition(void)
 {
-    char *cg_s = *(char **)(*(int *)imp_cg);
+    char *cg_s = (char *)*(int *)imp_cg;
     float *start = (float *)(cg_s + 0x28588);
     float *dir = (float *)(cg_s + 0x28594);
     float *result = (float *)(cg_s + 0x2c01c);
@@ -1273,7 +1273,7 @@ void CG_InitView(void)
     char *cg_s;
     int renderPlayerState;
 
-    cg_s = *(char **)(*(int *)imp_cg);
+    cg_s = (char *)*(int *)imp_cg;
     *(int *)(cg_s + 0x285b8) = *(int *)(cg_s + 0x25bb0);
     *(int *)(cg_s + 0x285bc) = 0x3f800000;
 
@@ -1289,7 +1289,7 @@ void CG_InitView(void)
     CG_PredictPlayerState();
     CL_ResetSkeletonCache(0);
 
-    cg_s = *(char **)(*(int *)imp_cg);
+    cg_s = (char *)*(int *)imp_cg;
     CG_UpdateViewWeaponAnim((void *)(cg_s + 0x25bc4));
     CG_CalcViewValues();
     CL_FX_AdjustCamera((void *)(cg_s + 0x28570));

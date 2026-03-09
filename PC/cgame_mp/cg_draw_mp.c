@@ -204,7 +204,7 @@ unsigned int CG_CalculateFPS(void)
 /* line 639 */
 unsigned int CG_AddLagometerFrameInfo(void)
 {
-    byte *cg = *(byte **)(*(int *)imp_cg);
+    byte *cg = (byte *)*(int *)imp_cg;
     int index = *(int *)((char *)&lagometer + 512);
     lagometer.frameSamples[index & 0x7f] = *(int *)(cg + 0x25bb0) - *(int *)(cg + 0x1c);
     *(int *)((char *)&lagometer + 512) = index + 1;

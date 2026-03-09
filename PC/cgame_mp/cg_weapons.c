@@ -201,7 +201,7 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
 /* line 1246 */
 void CG_HoldBreathInit(void)
 {
-    byte *p = *(byte **)*(void **)imp_cg;
+    byte *p = (byte *)*(void **)imp_cg;
     *(int *)(p + 0x2cd00) = -1;
     *(int *)(p + 0x2cd04) = 0;
     *(int *)(p + 0x2cd08) = 0;

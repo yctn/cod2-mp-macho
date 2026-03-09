@@ -5255,6 +5255,8 @@ void XAnimClearTree(XAnimTree *tree)
         "subl $0x2c, %esp\n"
         /* { scope 1 */
         "movl 8(%ebp), %edx\n" /* line 3803 | tree */
+        "testl %edx, %edx\n"
+        "je .Lxanimcleartree_ret\n"
         "movzwl 8(%edx), %eax\n"
         "movzwl %ax, %edi\n"
         "testw %ax, %ax\n" /* line 3804 */
@@ -5323,6 +5325,10 @@ void XAnimClearTree(XAnimTree *tree)
         /* } scope */
         ".Lf3c802_0003c8d8:\n"
         "addl $0x2c, %esp\n" /* line 3866 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        ".Lxanimcleartree_ret:\n"
+        "leal -0xc(%ebp), %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
