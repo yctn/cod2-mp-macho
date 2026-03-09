@@ -507,7 +507,8 @@ void aglSwapBuffers(AGLContext ctx)
     extern int g_rb_endsurface_dxstate;
     extern int g_rb_endsurface_draw;
     static int swap_diag = 0;
-    if (swap_diag < 10) {
+    int do_diag = (swap_diag < 10 || (swap_diag >= 436 && swap_diag < 445));
+    if (do_diag) {
         unsigned char px[4] = {0};
         GLint vp[4] = {0};
         GLint prog_v = 0, prog_f = 0;
@@ -545,7 +546,7 @@ void aglSwapBuffers(AGLContext ctx)
     }
 
     /* Diagnostic: read game's rendering output (read-only, no state changes!) */
-    if (swap_diag < 10) {
+    if (do_diag) {
         while (glGetError() != 0) {}
 
         unsigned char game_px[4] = {0};

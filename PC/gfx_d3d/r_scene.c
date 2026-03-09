@@ -1032,11 +1032,11 @@ void R_AddClearCommandsForFrameBuffer(void)
 static void R_RenderScene_diag(int registered, int norefresh, int drawSurfCount)
 {
     static int diag = 0;
-    if (diag < 20) {
-        fprintf(stderr, "[R_RenderScene#%d] registered=%d norefresh=%d drawSurfCount=%d\n",
-                diag, registered, norefresh, drawSurfCount);
-        diag++;
+    if (diag < 20 || (diag >= 60 && diag < 70)) {
+        fprintf(stderr, "[R_RenderScene#%d] registered=%d norefresh=%d drawSurfCount=%d scene.dsc=%d\n",
+                diag, registered, norefresh, drawSurfCount, scene.drawSurfCount);
     }
+    diag++;
 }
 
 /* line 1476 */

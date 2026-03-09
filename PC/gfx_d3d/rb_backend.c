@@ -15,6 +15,8 @@
  */
 
 extern int printf(const char *, ...);
+static const char rb_rdsl_fmt[] = "[RB_RDSL#%d] surfs=%p count=%d tech=%d order=%d\n";
+static const char rb_dxstate_skip_fmt[] = "[DRAWSURF_SKIP#%d] dxState+0x20c8=%d\n";
 
 static int diag_rb_frame = 0;
 static int diag_rb_cmds_in_frame = 0;
@@ -49,10 +51,11 @@ static void diag_rb_entry(void) {
     }
 }
 
+extern unsigned char dxState[];
 static void diag_rb_frame_start(void) {
     int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
     if (trace) {
-        fprintf(stderr, "=== RB frame %d ===\n", diag_rb_frame);
+        fprintf(stderr, "=== RB frame %d === dxState[0x20c8]=%d\n", diag_rb_frame, dxState[0x20c8]);
     }
     diag_rb_cmds_in_frame = 0;
     diag_rb_has_drawsurfs = 0;
@@ -60,12 +63,17 @@ static void diag_rb_frame_start(void) {
     diag_rb_skip_this_frame = 0;
 }
 
+extern int rb_rdsl_call_count;
+extern int g_dip_gl_draw;
+extern int g_rb_endsurface_count;
+extern int g_rb_endsurface_draw;
 static void diag_rb_frame_end(void) {
     int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
     if (trace) {
-        fprintf(stderr, "=== RB frame %d end: %d cmds, %d beginview, %d drawsurfs, skip=%d ===\n",
+        fprintf(stderr, "=== RB frame %d end: %d cmds, %d bv, %d ds, rdsl=%d glDraw=%d endsurf=%d esDraw=%d ===\n",
                 diag_rb_frame, diag_rb_cmds_in_frame, diag_rb_has_beginview,
-                diag_rb_has_drawsurfs, diag_rb_skip_this_frame);
+                diag_rb_has_drawsurfs, rb_rdsl_call_count,
+                g_dip_gl_draw, g_rb_endsurface_count, g_rb_endsurface_draw);
     }
     diag_rb_frame++;
 }
@@ -2130,12 +2138,15 @@ void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 936 */
-static __attribute__((naked))
+int rb_rdsl_diag = 0;
+int rb_rdsl_call_count = 0;
+__attribute__((naked))
 void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechniqueType techType, GfxDrawSurfOrder order)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 936 */
         "movl %esp, %ebp\n"
+        "incl rb_rdsl_call_count\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
