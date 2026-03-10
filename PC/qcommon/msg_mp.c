@@ -13,10 +13,88 @@ static char string_00f10c60[1024]; /* string */
 static struct huffman_t msgHuff; /* msgHuff */
 static qboolean msgInit; /* msgInit */
 extern unsigned int kbitmask[33]; /* kbitmask */
-static const NetField entityStateFields[59]; /* entityStateFields */
-static const NetField archivedEntityFields[68]; /* archivedEntityFields */
-static const NetField clientStateFields[22]; /* clientStateFields */
-static const NetField playerStateFields[105]; /* playerStateFields */
+
+#define PSF(x) #x, __builtin_offsetof(playerState_t, x)
+#define CSF(x) #x, __builtin_offsetof(clientState_t, x)
+#define AEF(x) #x, __builtin_offsetof(archivedEntity_t, x)
+#define ESF(x) #x, __builtin_offsetof(entityState_t, x)
+
+static const NetField playerStateFields[105] = {
+    { PSF(commandTime), 32 }, { PSF(origin[1]), 0 }, { PSF(origin[0]), 0 }, { PSF(bobCycle), 8 },
+    { PSF(viewangles[1]), -100 }, { PSF(origin[2]), 0 }, { PSF(velocity[1]), 0 }, { PSF(velocity[0]), 0 },
+    { PSF(viewangles[0]), -100 }, { PSF(movementDir), -8 }, { PSF(velocity[2]), 0 }, { PSF(eventSequence), 8 },
+    { PSF(legsAnim), 10 }, { PSF(aimSpreadScale), 0 }, { PSF(weaponTime), -16 }, { PSF(pm_flags), 27 },
+    { PSF(events[0]), 8 }, { PSF(events[1]), 8 }, { PSF(events[2]), 8 }, { PSF(events[3]), 8 },
+    { PSF(weapAnim), 10 }, { PSF(viewHeightCurrent), 0 }, { PSF(torsoTimer), 16 }, { PSF(torsoAnim), 10 },
+    { PSF(eFlags), 24 }, { PSF(fWeaponPosFrac), 0 }, { PSF(holdBreathScale), 0 }, { PSF(weaponstate), 5 },
+    { PSF(viewHeightTarget), -8 }, { PSF(weaponDelay), -16 }, { PSF(legsTimer), 16 }, { PSF(viewHeightLerpTarget), -8 },
+    { PSF(groundEntityNum), 10 }, { PSF(pm_time), -16 }, { PSF(eventParms[3]), 8 }, { PSF(eventParms[1]), 8 },
+    { PSF(eventParms[0]), 8 }, { PSF(eventParms[2]), 8 }, { PSF(weapon), 7 }, { PSF(weapons[0]), 32 },
+    { PSF(viewHeightLerpDown), 1 }, { PSF(weaponslots[0]), 32 }, { PSF(delta_angles[0]), 16 }, { PSF(delta_angles[1]), 16 },
+    { PSF(cursorHintString), -8 }, { PSF(offHandIndex), 7 }, { PSF(clientNum), 8 }, { PSF(viewlocked_entNum), 16 },
+    { PSF(viewmodelIndex), 8 }, { PSF(viewHeightLerpTime), 32 }, { PSF(speed), 16 }, { PSF(mins[1]), 0 },
+    { PSF(mins[0]), 0 }, { PSF(maxs[2]), 0 }, { PSF(maxs[1]), 0 }, { PSF(maxs[0]), 0 },
+    { PSF(gravity), 16 }, { PSF(damageTimer), 16 }, { PSF(cursorHint), 8 }, { PSF(mantleState.flags), 4 },
+    { PSF(flinchYaw), 16 }, { PSF(fWaistPitch), 0 }, { PSF(mantleState.timer), 32 }, { PSF(fTorsoPitch), 0 },
+    { PSF(proneTorsoPitch), 0 }, { PSF(holdBreathTimer), 16 }, { PSF(jumpTime), 32 }, { PSF(viewangles[2]), -100 },
+    { PSF(foliageSoundTime), 32 }, { PSF(weapons[1]), 32 }, { PSF(damageEvent), 8 }, { PSF(damageDuration), 16 },
+    { PSF(damageYaw), 8 }, { PSF(proneDirection), 0 }, { PSF(proneDirectionPitch), 0 }, { PSF(mantleState.yaw), 0 },
+    { PSF(mantleState.transIndex), 4 }, { PSF(fTorsoHeight), 0 }, { PSF(damagePitch), 8 }, { PSF(jumpOriginZ), 0 },
+    { PSF(pm_type), 8 }, { PSF(viewlocked), 8 }, { PSF(weaponrechamber[0]), 32 }, { PSF(vLadderVec[0]), 0 },
+    { PSF(weaponslots[4]), 32 }, { PSF(weaponRestrictKickTime), -16 }, { PSF(vLadderVec[1]), 0 }, { PSF(viewAngleClampRange[1]), 0 },
+    { PSF(viewAngleClampRange[0]), 0 }, { PSF(viewAngleClampBase[1]), 0 }, { PSF(weaponrechamber[1]), 32 }, { PSF(leanf), 0 },
+    { PSF(damageCount), 7 }, { PSF(grenadeTimeLeft), -16 }, { PSF(deltaTime), 32 }, { PSF(shellshockTime), 32 },
+    { PSF(shellshockIndex), 4 }, { PSF(shellshockDuration), 16 }, { PSF(vLadderVec[2]), 0 }, { PSF(delta_angles[2]), 16 },
+    { PSF(viewHeightLerpPosAdj), 0 }, { PSF(mins[2]), 0 }, { PSF(viewAngleClampBase[0]), 0 }, { PSF(adsDelayTime), 32 },
+    { PSF(iCompassFriendInfo), 32 },
+};
+
+static const NetField clientStateFields[22] = {
+    { CSF(team), 2 }, { CSF(name[0]), 32 }, { CSF(name[4]), 32 }, { CSF(modelindex), 8 },
+    { CSF(attachModelIndex[1]), 8 }, { CSF(attachModelIndex[0]), 8 }, { CSF(name[8]), 32 }, { CSF(name[12]), 32 },
+    { CSF(name[16]), 32 }, { CSF(name[20]), 32 }, { CSF(name[24]), 32 }, { CSF(name[28]), 32 },
+    { CSF(attachTagIndex[5]), 5 }, { CSF(attachTagIndex[0]), 5 }, { CSF(attachTagIndex[1]), 5 }, { CSF(attachTagIndex[2]), 5 },
+    { CSF(attachTagIndex[3]), 5 }, { CSF(attachTagIndex[4]), 5 }, { CSF(attachModelIndex[2]), 8 }, { CSF(attachModelIndex[3]), 8 },
+    { CSF(attachModelIndex[4]), 8 }, { CSF(attachModelIndex[5]), 8 },
+};
+
+static const NetField archivedEntityFields[68] = {
+    { AEF(r.absmin[1]), 0 }, { AEF(r.absmax[1]), 0 }, { AEF(r.absmin[0]), 0 }, { AEF(r.absmax[0]), 0 },
+    { AEF(r.absmin[2]), 0 }, { AEF(r.absmax[2]), 0 }, { AEF(s.pos.trBase[1]), 0 }, { AEF(s.pos.trBase[0]), 0 },
+    { AEF(s.eType), 8 }, { AEF(s.eFlags), 24 }, { AEF(s.pos.trBase[2]), 0 }, { AEF(r.svFlags), 32 },
+    { AEF(s.groundEntityNum), 10 }, { AEF(s.apos.trBase[1]), 0 }, { AEF(s.clientNum), 8 }, { AEF(s.apos.trBase[0]), 0 },
+    { AEF(s.index), 10 }, { AEF(s.apos.trBase[2]), 0 }, { AEF(s.eventSequence), 8 }, { AEF(s.events[0]), 8 },
+    { AEF(s.legsAnim), 10 }, { AEF(s.events[1]), 8 }, { AEF(s.events[2]), 8 }, { AEF(s.events[3]), 8 },
+    { AEF(s.weapon), 7 }, { AEF(s.pos.trType), 8 }, { AEF(s.pos.trTime), 32 }, { AEF(s.apos.trType), 8 },
+    { AEF(s.solid), 24 }, { AEF(s.pos.trDuration), 32 }, { AEF(s.eventParms[0]), 8 }, { AEF(s.torsoAnim), 10 },
+    { AEF(s.pos.trDelta[0]), 0 }, { AEF(s.pos.trDelta[1]), 0 }, { AEF(s.angles2[1]), 0 }, { AEF(s.angles2[0]), 0 },
+    { AEF(s.animMovetype), 4 }, { AEF(s.pos.trDelta[2]), 0 }, { AEF(s.otherEntityNum), 10 }, { AEF(s.eventParms[1]), 8 },
+    { AEF(s.surfType), 8 }, { AEF(s.eventParm), 8 }, { AEF(s.eventParms[2]), 8 }, { AEF(s.scale), 8 },
+    { AEF(s.eventParms[3]), 8 }, { AEF(s.fTorsoHeight), 0 }, { AEF(s.fWaistPitch), 0 }, { AEF(s.fTorsoPitch), 0 },
+    { AEF(s.apos.trTime), 32 }, { AEF(s.apos.trDelta[0]), 0 }, { AEF(s.apos.trDelta[2]), 0 }, { AEF(r.clientMask[0]), 32 },
+    { AEF(r.clientMask[1]), 32 }, { AEF(s.leanf), 0 }, { AEF(s.apos.trDelta[1]), 0 }, { AEF(s.loopSound), 8 },
+    { AEF(s.attackerEntityNum), 10 }, { AEF(s.iHeadIcon), 4 }, { AEF(s.iHeadIconTeam), 2 }, { AEF(s.apos.trDuration), 32 },
+    { AEF(s.time), 32 }, { AEF(s.time2), 32 }, { AEF(s.origin2[0]), 0 }, { AEF(s.origin2[1]), 0 },
+    { AEF(s.origin2[2]), 0 }, { AEF(s.angles2[2]), 0 }, { AEF(s.constantLight), 32 }, { AEF(s.dmgFlags), 32 },
+};
+
+static const NetField entityStateFields[59] = {
+    { ESF(pos.trTime), 32 }, { ESF(pos.trBase[1]), 0 }, { ESF(pos.trBase[0]), 0 }, { ESF(pos.trDelta[0]), 0 },
+    { ESF(pos.trDelta[1]), 0 }, { ESF(angles2[1]), 0 }, { ESF(apos.trBase[1]), -100 }, { ESF(pos.trDelta[2]), 0 },
+    { ESF(pos.trBase[2]), 0 }, { ESF(apos.trBase[0]), -100 }, { ESF(eventSequence), 8 }, { ESF(legsAnim), 10 },
+    { ESF(eType), 8 }, { ESF(eFlags), 24 }, { ESF(otherEntityNum), 10 }, { ESF(surfType), 8 },
+    { ESF(eventParm), 8 }, { ESF(scale), 8 }, { ESF(clientNum), 8 }, { ESF(torsoAnim), 10 },
+    { ESF(groundEntityNum), 10 }, { ESF(events[0]), 8 }, { ESF(events[1]), 8 }, { ESF(events[2]), 8 },
+    { ESF(angles2[0]), 0 }, { ESF(events[3]), 8 }, { ESF(apos.trBase[2]), -100 }, { ESF(pos.trType), 8 },
+    { ESF(fWaistPitch), 0 }, { ESF(fTorsoPitch), 0 }, { ESF(apos.trTime), 32 }, { ESF(solid), 24 },
+    { ESF(apos.trDelta[0]), 0 }, { ESF(apos.trType), 8 }, { ESF(animMovetype), 4 }, { ESF(fTorsoHeight), 0 },
+    { ESF(apos.trDelta[2]), 0 }, { ESF(weapon), 7 }, { ESF(index), 10 }, { ESF(apos.trDelta[1]), 0 },
+    { ESF(eventParms[0]), 8 }, { ESF(eventParms[1]), 8 }, { ESF(eventParms[2]), 8 }, { ESF(eventParms[3]), 8 },
+    { ESF(iHeadIcon), 4 }, { ESF(pos.trDuration), 32 }, { ESF(iHeadIconTeam), 2 }, { ESF(time), 32 },
+    { ESF(leanf), 0 }, { ESF(attackerEntityNum), 10 }, { ESF(time2), 32 }, { ESF(loopSound), 8 },
+    { ESF(origin2[2]), 0 }, { ESF(origin2[0]), 0 }, { ESF(origin2[1]), 0 }, { ESF(angles2[2]), 0 },
+    { ESF(constantLight), 32 }, { ESF(apos.trDuration), 32 }, { ESF(dmgFlags), 32 },
+};
 
 void MSG_BeginReading(msg_t *msg);
 void MSG_WriteBits(msg_t *msg, int value, int bits);
@@ -9027,4 +9105,3 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         "jmp .Lf177192_001776d8\n"
     );
 }
-
