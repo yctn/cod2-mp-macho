@@ -1998,7 +1998,7 @@ void ZN16OpaqueContextRefD1Ev(void) /* OpaqueContextRef_~OpaqueContextRef */
         "movl (%ebx), %eax\n" /* line 1899 | this */
         "testl %eax, %eax\n"
         "je .Lf560e_00005661\n"
-        "calll glFinish\n" /* line 1921 */
+        /* glFinish removed - crashes in Mesa/gallium during context teardown */
         "testb $1, sSwapCount\n" /* line 1923 */
         "jne .Lf560e_00005667\n"
         ".Lf560e_0000562c:\n"

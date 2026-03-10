@@ -9217,9 +9217,7 @@ void ZN15CDirect3DDeviceD0Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1a50e_0001a573:\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_Shutdown\n"
+        /* COpenGL_Shutdown skipped in D0 dtor - GL calls crash in Mesa/gallium during teardown */
         "leal 8(%ebx), %eax\n" /* line 176 | this */
         "movl %eax, (%esp)\n"
         "calll MacDisplay_ReleaseContext\n"
@@ -10171,9 +10169,7 @@ void ZN15CDirect3DDeviceD2Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1b886_0001b8eb:\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_Shutdown\n"
+        /* COpenGL_Shutdown skipped in D1 dtor - GL calls crash in Mesa/gallium during teardown */
         "leal 8(%ebx), %eax\n" /* line 176 | this */
         "movl %eax, (%esp)\n"
         "calll MacDisplay_ReleaseContext\n"
@@ -10287,9 +10283,7 @@ void ZN15CDirect3DDeviceD1Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1b96e_0001b9d3:\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_Shutdown\n"
+        /* COpenGL_Shutdown skipped in D2 dtor - GL calls crash in Mesa/gallium during teardown */
         "leal 8(%ebx), %eax\n" /* line 176 | this */
         "movl %eax, (%esp)\n"
         "calll MacDisplay_ReleaseContext\n"
