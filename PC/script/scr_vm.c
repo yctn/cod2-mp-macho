@@ -3959,6 +3959,15 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 8(%ebp), %ecx\n" /* fs */
         ".Lf840ae_00084119:\n"
         "movzbl (%ecx), %edi\n" /* line 401 | opcode */
+        /* DBG: record opcode in ring buffer */
+        "pushl %eax\n"
+        "movl dbg_op_ring_idx, %eax\n"
+        "andl $31, %eax\n"
+        "movl %ecx, dbg_op_ring(, %eax, 8)\n"
+        "movl %edi, dbg_op_ring+4(, %eax, 8)\n"
+        "addl $1, dbg_op_ring_idx\n"
+        "popl %eax\n"
+        /* end DBG */
         "leal 1(%ecx), %esi\n" /* line 402 | builtinIndex */
         "movl %esi, 8(%ebp)\n" /* builtinIndex, fs */
         "cmpl $0x86, %edi\n" /* line 412 | opcode */
@@ -3972,6 +3981,15 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl $8, 4(%eax)\n" /* line 1678 */
         "movl 8(%ebp), %ecx\n" /* fs */
         "movzbl (%ecx), %edi\n" /* line 401 | opcode */
+        /* DBG: record opcode in ring buffer (second dispatch path) */
+        "pushl %eax\n"
+        "movl dbg_op_ring_idx, %eax\n"
+        "andl $31, %eax\n"
+        "movl %ecx, dbg_op_ring(, %eax, 8)\n"
+        "movl %edi, dbg_op_ring+4(, %eax, 8)\n"
+        "addl $1, dbg_op_ring_idx\n"
+        "popl %eax\n"
+        /* end DBG */
         "leal 1(%ecx), %esi\n" /* line 402 | builtinIndex */
         "movl %esi, 8(%ebp)\n" /* builtinIndex, fs */
         "cmpl $0x86, %edi\n" /* line 412 | opcode */
@@ -4133,7 +4151,72 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl scrVmPub+12, %edx\n" /* line 938 */
         "movl %eax, (%edx)\n"
         "movl imp_scrCompilePub, %eax\n" /* line 946 */
-        "calll *0x38(%eax, %ecx, 4)\n"
+        /* DBG: range-check builtin index before access */
+        "cmpl $0x4000, %ecx\n"
+        "jb .Ldbg_builtin_inrange\n"
+        /* out of range — dump ring buffer and abort */
+        "pushl %ecx\n"
+        "pushl $str_dbg_op_hdr\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
+        /* dump last 32 entries */
+        "xorl %eax, %eax\n"
+        ".Ldbg_dump_loop:\n"
+        "pushl %eax\n"
+        "movl dbg_op_ring_idx, %edx\n"
+        "addl %eax, %edx\n"
+        "andl $31, %edx\n"
+        "pushl dbg_op_ring+4(, %edx, 8)\n"
+        "pushl dbg_op_ring(, %edx, 8)\n"
+        "pushl %eax\n"
+        "pushl $str_dbg_op_dump\n"
+        "calll Com_Printf\n"
+        "addl $16, %esp\n"
+        "popl %eax\n"
+        "addl $1, %eax\n"
+        "cmpl $32, %eax\n"
+        "jl .Ldbg_dump_loop\n"
+        "popl %ecx\n"
+        "movl $1, (%esp)\n"
+        "calll _exit\n"
+        ".Ldbg_builtin_inrange:\n"
+        "movl 0x38(%eax, %ecx, 4), %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Ldbg_builtin_ok\n"
+        /* null — dump ring buffer and abort */
+        "pushl %ecx\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl $str_dbg_null_builtin\n"
+        "calll Com_Printf\n"
+        "addl $12, %esp\n"
+        "popl %ecx\n"
+        /* dump ring buffer */
+        "pushl %ecx\n"
+        "pushl $str_dbg_op_hdr\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
+        "xorl %eax, %eax\n"
+        ".Ldbg_dump_loop2:\n"
+        "pushl %eax\n"
+        "movl dbg_op_ring_idx, %edx\n"
+        "addl %eax, %edx\n"
+        "andl $31, %edx\n"
+        "pushl dbg_op_ring+4(, %edx, 8)\n"
+        "pushl dbg_op_ring(, %edx, 8)\n"
+        "pushl %eax\n"
+        "pushl $str_dbg_op_dump\n"
+        "calll Com_Printf\n"
+        "addl $16, %esp\n"
+        "popl %eax\n"
+        "addl $1, %eax\n"
+        "cmpl $32, %eax\n"
+        "jl .Ldbg_dump_loop2\n"
+        "popl %ecx\n"
+        "movl $1, (%esp)\n"
+        "calll _exit\n"
+        ".Ldbg_builtin_ok:\n"
+        "calll *%eax\n"
         ".Lf840ae_00084366:\n"
         "movl scrVmPub+16, %edx\n" /* line 950 */
         "movl %edx, 0x14(%ebp)\n"
@@ -4254,6 +4337,9 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testl %edi, %edi\n" /* opcode */
         "jne .Lf840ae_000842f1\n"
         ".Lf840ae_0008451c:\n"
+        /* Fix #154b: Restore scrVmPub.top = startTop before returning */
+        "movl 0x18(%ebp), %edx\n"
+        "movl %edx, scrVmPub+16\n"
         "subl $1, g_script_error_level\n" /* line 1876 */
         "movl 0xc(%ebp), %eax\n" /* line 1878 */
         /* } scope */
@@ -5694,6 +5780,15 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "jmp .Lf840ae_00084a3a\n"
         ".Lf840ae_0008578c:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1345 */
+        /* DBG: print value type before CastBool */
+        "pushl 4(%eax)\n"
+        "pushl (%eax)\n"
+        "pushl 8(%ebp)\n"
+        "pushl $str_dbg_castbool\n"
+        "calll Com_Printf\n"
+        "addl $16, %esp\n"
+        /* end DBG */
+        "movl 0x14(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
         /* { scope 2 */
@@ -7009,6 +7104,17 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl $str_0021ced0, 0x10(%edx)\n" /* "function called with too many parameters" */
         "jmp .Lf840ae_00084c55\n"
         ".Lf840ae_00086a6e:\n"
+        /* DBG: script error recovery — print error message */
+        "movl imp_scrVarPub, %eax\n"
+        "movl 0x10(%eax), %ecx\n"     /* error message string */
+        "pushl %ecx\n"
+        "movl 8(%ebp), %eax\n"
+        "movzbl -1(%eax), %ecx\n"
+        "pushl %ecx\n"
+        "pushl %eax\n"
+        "pushl $str_dbg_scr_error\n"
+        "calll Com_Printf\n"
+        "addl $16, %esp\n"
         "movl $0, -0x48(%ebp)\n" /* line 384 | fieldValueId */
         "movl $0, -0x44(%ebp)\n" /* objectId */
         "movl $0, -0x40(%ebp)\n" /* waitTime */
@@ -8276,7 +8382,7 @@ static __attribute__((naked))
 unsigned int VM_Execute_ext(void)
 {
     __asm__ __volatile__ (
-        "subl $0x14, %esp\n"          /* 20 bytes for function_stack_t */
+        "subl $0x1c, %esp\n"          /* 28 bytes: 20 for function_stack_t + 8 for saves */
         "movl %edx, (%esp)\n"         /* fs.pos = code position */
         "movl %eax, 4(%esp)\n"        /* fs.localId = thread id */
         "movl %ecx, 8(%esp)\n"        /* fs.localVarCount = paramcount */
@@ -8288,11 +8394,33 @@ unsigned int VM_Execute_ext(void)
         "addl $1, scrVmPub+24\n"      /* increment inUse count */
         "movl %eax, 0xc(%esp)\n"      /* fs.top = new top (with marker) */
         "movl %eax, 0x10(%esp)\n"     /* fs.startTop */
+        /* Save function_count and function_frame in spare stack slots */
+        "movl scrVmPub+8, %eax\n"
+        "movl %eax, 0x14(%esp)\n"     /* save function_count */
+        "movl scrVmPub+12, %eax\n"
+        "movl %eax, 0x18(%esp)\n"     /* save function_frame */
         "calll VM_Execute\n"
-        "addl $0x14, %esp\n"
+        /* Restore function_count and function_frame */
+        "pushl %eax\n"                /* save return value */
+        "movl 0x18(%esp), %ecx\n"     /* 0x14+4 due to push */
+        "movl %ecx, scrVmPub+8\n"     /* restore function_count */
+        "movl 0x1c(%esp), %ecx\n"     /* 0x18+4 due to push */
+        "movl %ecx, scrVmPub+12\n"    /* restore function_frame */
+        "popl %eax\n"                 /* restore return value */
+        "addl $0x1c, %esp\n"
         "retl\n"
     );
 }
+static const char str_dbg_vmexec_top0[] = "DBG ERROR: scrVmPub.top is NULL after VM_Execute!\n";
+static const char str_dbg_null_builtin[] = "DBG ERROR: NULL builtin index=%d pos=%p\n";
+static const char str_dbg_builtin_oor[] = "DBG FATAL: builtin index %d out of range, pos=%p byte[-3]=%02x byte[-1]=%02x\n";
+/* Ring buffer for opcode tracing: 32 entries of [pos, opcode] pairs */
+static unsigned int dbg_op_ring[64]; /* 32 pairs of (pos, opcode) */
+static int dbg_op_ring_idx;
+static const char str_dbg_op_dump[] = "  op[%d]: pos=%p opcode=0x%02x\n";
+static const char str_dbg_op_hdr[] = "Last 32 opcodes before fatal:\n";
+static const char str_dbg_scr_error[] = "DBG: VM_Execute script error recovery at fs=%p opcode=0x%02x msg=%s\n";
+static const char str_dbg_castbool[] = "DBG: op 0x5f CastBool at fs=%p val=0x%x type=%d\n";
 
 /* line 3993 */
 __attribute__((naked))
@@ -8977,9 +9105,18 @@ unsigned int Scr_GetConstStringIncludeNull(unsigned int index)
 const char * SL_ConvertToString(unsigned int stringValue);
 
 /* line 4563 */
+extern void Com_Printf(const char *fmt, ...);
+static int dbg_scr_getstring_count = 0;
 const char * Scr_GetString(unsigned int index)
 {
-    return SL_ConvertToString(Scr_GetConstString(index));
+    unsigned int strIdx = Scr_GetConstString(index);
+    const char *s = SL_ConvertToString(strIdx);
+    if (dbg_scr_getstring_count < 200) {
+        dbg_scr_getstring_count++;
+        if (!s[0])
+            Com_Printf("DBG Scr_GetString(%u): strIdx=%u -> EMPTY\n", index, strIdx);
+    }
+    return s;
 }
 
 /* line 4523 */

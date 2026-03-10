@@ -5215,7 +5215,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "jg .Lf95e60_000961a7\n"
         "xorl %ebx, %ebx\n" /* i */
         ".Lf95e60_000960fb:\n"
-        "cmpl $0x400, %edx\n" /* line 1851 */
+        "cmpl $0x4000, %edx\n" /* line 1851 - was 0x400, too small */
         "je .Lf95e60_00096267\n"
         ".Lf95e60_00096107:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1854 | func */
@@ -6661,7 +6661,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "jg .Lf96d1c_0009711c\n"
         "xorl %ebx, %ebx\n" /* i */
         ".Lf96d1c_00096fab:\n"
-        "cmpl $0x400, %edx\n" /* line 1851 */
+        "cmpl $0x4000, %edx\n" /* line 1851 - was 0x400, too small */
         "je .Lf96d1c_00097173\n"
         ".Lf96d1c_00096fb7:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1854 | meth */

@@ -316,9 +316,13 @@ unsigned int GScr_AllocString(const char *s)
 /* line 57 */
 unsigned int Scr_LoadLevel(void)
 {
-    if (*(unsigned int *)&g_scr_data)
+    unsigned int handle = *(unsigned int *)&g_scr_data;
+    Com_Printf("[Scr_LoadLevel] handle=%u\n", handle);
+    if (handle)
     {
-        Scr_FreeThread(Scr_ExecThread(*(unsigned int *)&g_scr_data, 0) & 0xFFFF);
+        unsigned int threadId = Scr_ExecThread(handle, 0);
+        Com_Printf("[Scr_LoadLevel] thread=%u completed\n", threadId);
+        Scr_FreeThread(threadId & 0xFFFF);
     }
     return 0;
 }
@@ -419,7 +423,9 @@ unsigned int print(void)
 /* line 623 */
 unsigned int assertCmd(void)
 {
-    if (!Scr_GetInt(0))
+    int v = Scr_GetInt(0);
+    Com_Printf("DBG assert: val=%d\n", v);
+    if (!v)
         Scr_Error("assert fail");
     return 0;
 }
@@ -443,17 +449,20 @@ unsigned int assertmsgCmd(void)
 unsigned int GScr_IsDefined(void)
 {
     int type = Scr_GetType(0);
+    int result;
 
     if (type == 1) {
         int ptype = Scr_GetPointerType(0);
         if (ptype > 0x16 || ptype == 0x14) {
-            Scr_AddInt(0);
+            result = 0;
         } else {
-            Scr_AddInt(1);
+            result = 1;
         }
     } else {
-        Scr_AddInt(type != 0);
+        result = (type != 0);
     }
+    Com_Printf("DBG isDefined: type=%d result=%d\n", type, result);
+    Scr_AddInt(result);
     return 0;
 }
 
@@ -481,7 +490,10 @@ unsigned int GScr_IsAlive(void)
 /* line 730 */
 unsigned int GScr_GetDvar(void)
 {
-    Scr_AddString(Dvar_GetVariantString(Scr_GetString(0)));
+    const char *name = Scr_GetString(0);
+    const char *val = Dvar_GetVariantString(name);
+    Com_Printf("DBG getCvar('%s') = '%s'\n", name, val);
+    Scr_AddString(val);
     return 0;
 }
 
@@ -2446,7 +2458,11 @@ unsigned int Scr_PrecacheShader(void)
     const char *shaderName;
     if (!*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("PrecacheShader must be called before any wait statements in the gametype or level script");
-    shaderName = Scr_GetString(0);
+    {
+        int ptype = Scr_GetType(0);
+        shaderName = Scr_GetString(0);
+        Com_Printf("DBG PrecacheShader: '%s' type=%d\n", shaderName, ptype);
+    }
     if (!shaderName[0])
         Scr_ParamError(0, "shader name can't be empty");
     G_ShaderIndex(shaderName);
@@ -5273,13 +5289,58 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
 }
 
 /* line 6341 */
+extern void DBG_PrintFreeVars(const char *label);
 unsigned int Scr_LoadGameType(void)
 {
     unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 8);
     extern void *imp_scrVarPub;
     unsigned int codeBase = *(unsigned int *)((char *)imp_scrVarPub + 0x48);
+    /* Print all g_scr_data handles for debugging */
+    Com_Printf("[Scr_LoadGameType] g_scr_data handles: +0=%u +4=%u +8=%u +12=%u +16=%u +20=%u +24=%u +28=%u\n",
+        *(unsigned int *)((char *)&g_scr_data + 0),
+        *(unsigned int *)((char *)&g_scr_data + 4),
+        *(unsigned int *)((char *)&g_scr_data + 8),
+        *(unsigned int *)((char *)&g_scr_data + 12),
+        *(unsigned int *)((char *)&g_scr_data + 16),
+        *(unsigned int *)((char *)&g_scr_data + 20),
+        *(unsigned int *)((char *)&g_scr_data + 24),
+        *(unsigned int *)((char *)&g_scr_data + 28));
     Com_Printf("[Scr_LoadGameType] handle=%u codeBase=0x%x pos=0x%x\n", handle, codeBase, codeBase + handle);
+    /* Print first 32 bytes of bytecode at pos */
+    unsigned char *pos = (unsigned char *)(codeBase + handle);
+    Com_Printf("[Scr_LoadGameType] bytecode: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+        pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7],
+        pos[8], pos[9], pos[10], pos[11], pos[12], pos[13], pos[14], pos[15]);
+    Com_Printf("[Scr_LoadGameType]          %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+        pos[16], pos[17], pos[18], pos[19], pos[20], pos[21], pos[22], pos[23],
+        pos[24], pos[25], pos[26], pos[27], pos[28], pos[29], pos[30], pos[31]);
+    /* Dump compiled builtin function table */
+    extern void *imp_scrCompilePub;
+    unsigned int *ftable = (unsigned int *)((char *)imp_scrCompilePub + 0x38);
+    Com_Printf("[Scr_LoadGameType] scrCompilePub builtins: [0]=%p [1]=%p [2]=%p [3]=%p [4]=%p [5]=%p [6]=%p [7]=%p\n",
+        (void *)ftable[0], (void *)ftable[1], (void *)ftable[2], (void *)ftable[3],
+        (void *)ftable[4], (void *)ftable[5], (void *)ftable[6], (void *)ftable[7]);
+    Com_Printf("[Scr_LoadGameType] builtins cont: [8]=%p [9]=%p [10]=%p [11]=%p [12]=%p [13]=%p [14]=%p [15]=%p\n",
+        (void *)ftable[8], (void *)ftable[9], (void *)ftable[10], (void *)ftable[11],
+        (void *)ftable[12], (void *)ftable[13], (void *)ftable[14], (void *)ftable[15]);
+    extern int dbg_alloc_counter;
+    extern int dbg_getvar_counter;
+    dbg_alloc_counter = 0;
+    dbg_getvar_counter = 0;
+    extern void *imp_scrVarPub;
+    unsigned int levelId = *(unsigned int *)((byte *)imp_scrVarPub + 0x24);
+    unsigned int timeArrayId = *(unsigned int *)((byte *)imp_scrVarPub + 0x1c);
+    unsigned int pauseArrayId = *(unsigned int *)((byte *)imp_scrVarPub + 0x20);
+    Com_Printf("[Scr_LoadGameType] scrVarPub: levelId=%u timeArrayId=%u pauseArrayId=%u\n", levelId, timeArrayId, pauseArrayId);
+    /* Dump first 80 bytes of scrVarPub */
+    unsigned char *svp = (unsigned char *)imp_scrVarPub;
+    Com_Printf("[Scr_LoadGameType] scrVarPub raw: ");
+    for (int i = 0; i < 80; i++) Com_Printf("%02x ", svp[i]);
+    Com_Printf("\n");
+    DBG_PrintFreeVars("before Scr_LoadGameType exec");
     unsigned int threadId = Scr_ExecThread(handle, 0);
+    Com_Printf("[Scr_LoadGameType] total allocations: %d\n", dbg_alloc_counter);
+    DBG_PrintFreeVars("after Scr_LoadGameType exec");
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }
@@ -5287,7 +5348,32 @@ unsigned int Scr_LoadGameType(void)
 /* line 6356 */
 unsigned int Scr_StartupGameType(void)
 {
-    unsigned int threadId = Scr_ExecThread(*(unsigned int *)((char *)&g_scr_data + 12), 0);
+    extern void *imp_scrVarPub;
+    unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 12);
+    const char *codeBase = *(const char **)((char *)imp_scrVarPub + 0x48);
+    const char *endBuf = *(const char **)((char *)imp_scrVarPub + 0x4c);
+    const char *pos = codeBase + handle;
+    {
+        int i;
+        Com_Printf("DBG [Scr_StartupGameType] handle=%u codeBase=%p endBuf=%p pos=%p level_init=%d\n",
+                   handle, codeBase, endBuf, pos, *(int *)((char *)imp_level + 0x1c));
+        {
+            extern unsigned char scrCompilePub_bss[];
+            __asm__(".set scrCompilePub_bss, scrCompilePub");
+            Com_Printf("DBG scrCompilePub count=%d (at offset 0x34)\n",
+                       *(int *)(scrCompilePub_bss + 0x34));
+        }
+        Com_Printf("DBG bytecode dump (offset 0x150-0x1a0):\n");
+        for (i = 0x150; i < 0x1a0; i += 16) {
+            Com_Printf("  +%03x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+                i,
+                (unsigned char)pos[i+0], (unsigned char)pos[i+1], (unsigned char)pos[i+2], (unsigned char)pos[i+3],
+                (unsigned char)pos[i+4], (unsigned char)pos[i+5], (unsigned char)pos[i+6], (unsigned char)pos[i+7],
+                (unsigned char)pos[i+8], (unsigned char)pos[i+9], (unsigned char)pos[i+10], (unsigned char)pos[i+11],
+                (unsigned char)pos[i+12], (unsigned char)pos[i+13], (unsigned char)pos[i+14], (unsigned char)pos[i+15]);
+        }
+    }
+    unsigned int threadId = Scr_ExecThread(handle, 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }

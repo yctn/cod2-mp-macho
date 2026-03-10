@@ -84,22 +84,41 @@ const char * SL_ConvertToString(unsigned int stringValue)
 {
     if (!stringValue)
         return 0;
-    return (const char *)(*(byte **)imp_scrMemTreePub + stringValue * 8 + 4);
+    byte *base = *(byte **)imp_scrMemTreePub;
+    const char *result = (const char *)(base + stringValue * 8 + 4);
+    if (!result[0] && stringValue > 1) {
+        /* Print first few bytes at this location for debugging */
+        byte *entry = base + stringValue * 8;
+        Com_Printf("DBG SL_Convert EMPTY: strVal=%u base=%p entry=%p bytes=[%02x %02x %02x %02x %02x %02x %02x %02x]\n",
+            stringValue, base, entry, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7]);
+    }
+    return result;
 }
 
 /* line 759 */
+static int dbg_transfer_count = 0;
+static int dbg_transfer_decr = 0;
+static int dbg_transfer_setbit = 0;
 unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 {
     byte *entry = *(byte **)imp_scrMemTreePub + stringValue * 8;
+    dbg_transfer_count++;
     if (entry[1] & user)
     {
+        dbg_transfer_decr++;
         *(unsigned short *)(entry + 2) -= 1;
     }
     else
     {
+        dbg_transfer_setbit++;
         entry[1] |= (byte)user;
     }
     return 0;
+}
+void DBG_PrintTransferStats(void)
+{
+    Com_Printf("DBG SL_TransferRefToUser stats: total=%d decr=%d setbit=%d\n",
+        dbg_transfer_count, dbg_transfer_decr, dbg_transfer_setbit);
 }
 
 /* line 810 */
@@ -1468,8 +1487,12 @@ unsigned int SL_ShutdownSystem(unsigned int user)
     unsigned char user_notb = (unsigned char)(~(unsigned char)user);
     byte *base;
     unsigned short *entry_ptr;
+    extern void DBG_PrintTransferStats(void);
+    if (user == 1) DBG_PrintTransferStats();
     unsigned int sv;
     byte *mem;
+    static int dbg_shutdown_count = 0;
+    int freed_count = 0, underflow_count = 0, survived_count = 0;
 
     for (esi = 1; esi < 0x4000; esi++)
     {
@@ -1486,12 +1509,41 @@ unsigned int SL_ShutdownSystem(unsigned int user)
         if (!((unsigned char)mem[1] & (unsigned char)user))
             continue;
 
+        {
+            unsigned short refcount_before = *(unsigned short *)(mem + 2);
+            if (dbg_shutdown_count < 3 && user == 1) {
+                const char *str_data = (const char *)(mem + 4);
+                if (refcount_before == 1) {
+                    Com_Printf("DBG SHUTDOWN(1) WILL-FREE: sv=%u ref=%u user=0x%02x str=\"%.24s\"\n",
+                        sv, refcount_before, (unsigned)mem[1], str_data);
+                    freed_count++;
+                } else if (refcount_before == 0) {
+                    underflow_count++;
+                } else {
+                    survived_count++;
+                }
+            } else if (user == 1) {
+                if (refcount_before == 1)
+                    freed_count++;
+                else if (refcount_before == 0)
+                    underflow_count++;
+                else
+                    survived_count++;
+            }
+        }
+
         mem[1] &= user_notb;
         SG_RESTART = (void *)0;
         SL_RemoveRefToString(sv);
 
         if (SG_RESTART != (void *)0)
             goto retry_slot;
+    }
+
+    if (user == 1) {
+        Com_Printf("DBG SL_ShutdownSystem(1) SUMMARY: freed=%d underflow=%d survived=%d\n",
+            freed_count, underflow_count, survived_count);
+        dbg_shutdown_count++;
     }
 
     return 0;

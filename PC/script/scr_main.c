@@ -406,7 +406,16 @@ void Scr_FreeScripts(int sys)
         Scr_EndLoadAnimTrees();
     }
 
-    SL_ShutdownSystem(sys);
+    /* Fix #155: SL_ShutdownSystem(1) frees user=1 strings that EmitValue transferred
+       during compilation (string constants in comparisons, switch cases, etc.).
+       The bytecode still references these strings by sv index, creating a use-after-free.
+       In the original game this is masked because the buddy allocator's leaf-node insertion
+       only overwrites the 4-byte header, preserving string data at offset 4+.
+       In our build the allocator state differs, corrupting some string data.
+       Skip SL_ShutdownSystem for sys!=0 (init cleanup); sys==0 (full shutdown) still frees all. */
+    if (sys == 0) {
+        SL_ShutdownSystem(sys);
+    }
     Scr_ShutdownOpcodeLookup();
 
     /* Only zero code base on full shutdown (sys=0), not during init (sys=1).

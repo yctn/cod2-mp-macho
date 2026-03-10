@@ -13,6 +13,16 @@ extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern scr_classStruct_t g_classMap[4]; /* 0x0 */
 extern unsigned char scrVarGlob[]; /* scrVarGlob - base of 16-byte variable entries */
 
+/* DBG: allocation counter for debugging script variable exhaustion */
+int dbg_alloc_counter = 0;
+static const char str_dbg_alloc_fmt[] = "DBG AllocValue exhausted after %d allocations\n";
+static const char str_dbg_site_classmap1[] = "DBG exceeded at: Scr_SetClassMap site1\n";
+static const char str_dbg_site_classmap2[] = "DBG exceeded at: Scr_SetClassMap site2\n";
+static const char str_dbg_site_gamvar1[] = "DBG exceeded at: Scr_AllocGameVariable site1\n";
+static const char str_dbg_site_gamvar2[] = "DBG exceeded at: Scr_AllocGameVariable site2\n";
+static const char str_dbg_getvar_fmt[] = "DBG GetVariable #%d: parentId=%d name=%d freeHead=%d\n";
+int dbg_getvar_counter = 0;
+
 extern void * MT_Alloc(int size, int type);
 extern void MT_Free(void *ptr, int type);
 extern char * va(const char *format, ...);
@@ -5123,6 +5133,22 @@ unsigned int GetVariable(unsigned int parentId, unsigned int unsignedValue)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
+        /* DBG: count and trace GetVariable calls */
+        "addl $1, dbg_getvar_counter\n"
+        "cmpl $5, dbg_getvar_counter\n"
+        "jbe .Ldbg_getvar_trace\n"
+        "movzwl scrVarGlob+4, %eax\n"
+        "cmpl $100, %eax\n"
+        "ja .Ldbg_getvar_skip\n"
+        ".Ldbg_getvar_trace:\n"
+        "pushl scrVarGlob+4\n"
+        "pushl 0xc(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl dbg_getvar_counter\n"
+        "pushl $str_dbg_getvar_fmt\n"
+        "calll Com_Printf\n"
+        "addl $20, %esp\n"
+        ".Ldbg_getvar_skip:\n"
         "movl 8(%ebp), %edi\n" /* parentId */
         "movl 0xc(%ebp), %eax\n" /* line 1138 | unsignedValue */
         "leal (%edi, %eax), %ecx\n"
@@ -5740,10 +5766,16 @@ JCOEF Scr_SetClassMap(int classnum)
         "movzwl -0x1e(%ebp), %eax\n"
         "jmp .Lf8c978_0008c9ce\n"
         ".Lf8c978_0008cb1e:\n"
+        "pushl $str_dbg_site_classmap1\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8c978_0008c991\n"
         ".Lf8c978_0008cb2f:\n"
+        "pushl $str_dbg_site_classmap2\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "movl $str_0021d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
         "calll Scr_TerminalError\n"
         "jmp .Lf8c978_0008ca2d\n"
@@ -5989,6 +6021,7 @@ unsigned int AllocValue(void)
         "movl %eax, %edx\n" /* line 1601 */
         "shll $4, %edx\n"
         "movl $0x60, scrVarGlob+8(%edx)\n" /* line 1602 */
+        "addl $1, dbg_alloc_counter\n" /* DBG: count allocations */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1607 */
         "popl %ebx\n"
@@ -5999,6 +6032,13 @@ unsigned int AllocValue(void)
         /* { scope 1 */
         ".Lf8cd70_0008ce27:\n"
         "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
+        /* DBG: print allocation count before terminal error */
+        "pushl %eax\n"
+        "pushl dbg_alloc_counter\n"
+        "pushl $str_dbg_alloc_fmt\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
+        "popl %eax\n"
         "calll Scr_TerminalError\n"
         "jmp .Lf8cd70_0008cd89\n"
         ".Lf8cd70_0008ce38:\n"
@@ -9414,11 +9454,17 @@ JCOEF Scr_AllocGameVariable(void)
         "jmp .Lf8f292_0008f388\n"
         /* } scope */
         ".Lf8f292_0008f477:\n"
+        "pushl $str_dbg_site_gamvar1\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f292_0008f2cb\n"
         /* { scope 1 */
         ".Lf8f292_0008f488:\n"
+        "pushl $str_dbg_site_gamvar2\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "movl $str_0021d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f292_0008f34d\n"
@@ -13003,6 +13049,11 @@ JCOEF Scr_CastBool(VariableValue *value)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* value */
         "movl 4(%esi), %ebx\n" /* line 2803 | value */
+        /* Fix #155: treat undefined (type 0) as false instead of erroring.
+           Script threads execute immediately, so level vars like level.xenon
+           may be checked before they're set by the parent thread. */
+        "testl %ebx, %ebx\n"
+        "jz .Lf91980_castbool_undef\n"
         "cmpl $6, %ebx\n"
         "je .Lf91980_000919df\n"
         "cmpl $5, %ebx\n" /* line 2809 */
@@ -13075,6 +13126,15 @@ JCOEF Scr_CastBool(VariableValue *value)
         "movl %ecx, (%esp)\n"
         "calll MT_Free\n"
         "jmp .Lf91980_000919a4\n"
+        /* Fix #155: undefined → false */
+        ".Lf91980_castbool_undef:\n"
+        "movl $0, (%esi)\n"       /* value = 0 (false) */
+        "movl $6, 4(%esi)\n"      /* type = int */
+        "addl $0x10, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
     );
 }
 

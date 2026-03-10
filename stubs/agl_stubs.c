@@ -23,6 +23,9 @@ static void crash_handler(int sig, siginfo_t *info, void *ucontext) {
     fprintf(stderr, "\n*** SIGSEGV at eip=0x%08x addr=%p ***\n", eip, info->si_addr);
     fprintf(stderr, "  eax=%08x ebx=%08x ecx=%08x edx=%08x esp=%08x ebp=%08x\n",
             eax, ebx, ecx, edx, esp, ebp);
+    unsigned int *sp = (unsigned int *)(unsigned long)esp;
+    fprintf(stderr, "  stack: [esp]=%08x [esp+4]=%08x [esp+8]=%08x [esp+c]=%08x\n",
+            sp[0], sp[1], sp[2], sp[3]);
     void *bt[20];
     int n = backtrace(bt, 20);
     backtrace_symbols_fd(bt, n, 2);

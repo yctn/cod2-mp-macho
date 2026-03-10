@@ -8,6 +8,14 @@
 
 static const char str_dbg_spawn[] = "after G_SpawnEntities";
 static const char str_dbg_load[] = "after GScr_LoadScripts";
+static const char str_dbg_vmtop_fmt[] = "DBG vmtop before init: %p\n";
+static const char str_dbg_vmtop2_fmt[] = "DBG vmtop after init: %p\n";
+static const char str_dbg_ff_before[] = "DBG function_frame before Scr_LoadGameType: %p\n";
+static const char str_dbg_ff_after_load[] = "DBG function_frame after Scr_LoadGameType: %p\n";
+static const char str_dbg_ff_after_startup[] = "DBG function_frame after Scr_StartupGameType: %p\n";
+static const char str_dbg_ff_trace[] = "DBG function_frame after Scr_InitSystem: %p\n";
+static const char str_dbg_ff_agv[] = "DBG function_frame after Scr_AllocGameVariable: %p\n";
+static const char str_dbg_ff_gls[] = "DBG function_frame after G_LoadStructs: %p\n";
 static const char str_dbg_endload[] = "after Scr_EndLoadScripts";
 
 __asm__(".Lginit_fmt: .asciz \"[G_InitGame] level.clients=%p\\n\"\n");
@@ -325,13 +333,27 @@ int ExitLevel(void)
 void DBG_PrintFreeVars(const char *label)
 {
     extern unsigned char scrVarGlob[];
-    int freeCount = 0;
-    unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
-    while (idx != 0 && freeCount < 70000) {
-        freeCount++;
-        idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
+    /* Count used variables by scanning all 65535 entries for non-zero type */
+    int usedCount = 0;
+    for (int i = 1; i <= 65535; i++) {
+        unsigned int type_flags = *(unsigned int *)(scrVarGlob + i * 16 + 8);
+        if (type_flags & 0x1f) { /* has a type set */
+            usedCount++;
+        }
     }
-    Com_Printf("DBG %s: %d free vars\n", label, freeCount);
+    /* Walk free list to count actual free entries */
+    unsigned short freeHead = *(unsigned short *)(scrVarGlob + 4);
+    int freeListLen = 0;
+    unsigned short idx = freeHead;
+    while (idx != 0 && freeListLen < 70000) {
+        freeListLen++;
+        /* Free list links: entry[idx].hash.id gives the entryValue index,
+           then entryValue.u.next (offset 4) gives the next free entry */
+        unsigned short entryValueIdx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16);
+        unsigned short next = *(unsigned short *)(scrVarGlob + (unsigned int)entryValueIdx * 16 + 4);
+        idx = next;
+    }
+    Com_Printf("DBG %s: %d used vars, freeHead=%u, freeListLen=%d\n", label, usedCount, freeHead, freeListLen);
 }
 
 /* line 763 */
@@ -476,11 +498,50 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll GScr_LoadAnimScripts\n" /* line 836 */
         "calll Scr_EndLoadAnimScripts\n" /* line 837 */
         "calll G_RegisterDvars\n" /* line 839 */
+        /* Fix #154: Missing init calls — were raw Mac addresses that got NOP'd */
+        "pushl scrVmPub+16\n"
+        "pushl $str_dbg_vmtop_fmt\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
+        "calll Scr_FreeEntityList\n"
+        "calll Scr_InitSystem\n"          /* sets scrVarPub.levelId, timeArrayId, etc */
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_trace\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
+        "movl $1, (%esp)\n"
+        "calll Scr_SetLoading\n"          /* scrVmPub.loading = true */
+        "calll Scr_AllocGameVariable\n"   /* alloc game-level script vars */
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_agv\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
         "calll G_LoadStructs\n" /* load script_struct entities */
-        /* Gametype init — originally dispatched through game module export table.
-           Scr_StartupGameType runs _callbacksetup::setupCallbacks(). */
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_gls\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
+        /* Script init — originally dispatched through game module export table.
+           Scr_LoadLevel runs mp_toujane::main() to set game["allies"]/game["axis"].
+           Scr_LoadGameType runs dm::main(). Scr_StartupGameType runs Callback_StartGameType.
+           Must run with level.initializing=1 so PrecacheString/PrecacheModel work. */
+        "movl $1, level+28\n" /* re-enable precache for gametype script init */
         "pushl %ebx\n" "pushl %esi\n" "pushl %edi\n"
+        "calll Scr_LoadLevel\n" /* Fix #155: run map script first to set team vars */
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_before\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
+        "calll Scr_LoadGameType\n"
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_after_load\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
         "calll Scr_StartupGameType\n"
+        "pushl scrVmPub+12\n"
+        "pushl $str_dbg_ff_after_startup\n"
+        "calll Com_Printf\n"
+        "addl $8, %esp\n"
         "popl %edi\n" "popl %esi\n" "popl %ebx\n"
         "movl 0x10(%ebp), %eax\n" /* line 842 | restart */
         "testl %eax, %eax\n"

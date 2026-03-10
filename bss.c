@@ -595,7 +595,7 @@ unsigned char g_script_error_level[32]; /* g_script_error_level */
 unsigned char g_script_error[2400]; /* g_script_error */
 unsigned char scrVarPub[262240]; /* scrVarPub */
 unsigned char scrVarGlob[1048608]; /* scrVarGlob */
-unsigned char scrCompilePub[4196]; /* scrCompilePub */
+unsigned char scrCompilePub[65592]; /* scrCompilePub - 0x38 header + 16384*4 entries */
 unsigned char scrParserPub[28]; /* scrParserPub */
 unsigned char scrParserGlob[128]; /* scrParserGlob */
 unsigned char scrAnimPub[1152]; /* scrAnimPub */
