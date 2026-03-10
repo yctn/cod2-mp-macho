@@ -660,7 +660,7 @@ void IN_RaiseStance(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
+    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     if (*stance > 1)
         *stance = 1;
     else if (*stance == 1)
@@ -672,7 +672,7 @@ void IN_ToggleCrouch(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
+    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 1) ? 1 : 0;
 }
 
@@ -681,7 +681,7 @@ void IN_ToggleProne(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
+    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 2) ? 2 : 0;
 }
 
@@ -690,7 +690,7 @@ void IN_GoProne(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    *(int *)(*(byte **)*(void **)imp_legacyHacks + 8) = 2;
+    *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 2;
 }
 
 /* line 760 */
@@ -698,7 +698,7 @@ void IN_GoCrouch(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    *(int *)(*(byte **)*(void **)imp_legacyHacks + 8) = 1;
+    *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 1;
 }
 
 /* line 776 */
@@ -2054,7 +2054,7 @@ void IN_Prone_Up(void)
 void IN_MLookUp(void)
 {
     *(byte *)((byte *)kb + 0x114) = 0;
-    if (*(byte *)(*(byte **)*(void **)imp_cl_freelook + 8) == 0) {
+    if (*(byte *)((byte *)*(void **)imp_cl_freelook + 8) == 0) {
         byte *cl = (byte *)*(void **)imp_cl;
         *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
     }
