@@ -558,14 +558,9 @@ scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int p
 }
 
 /* line 930 */
-extern unsigned int FindEntityId(int entnum, int classnum);
 void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 {
-    int entnum = *(int *)ent;
-    unsigned int eid = FindEntityId(entnum, 0);
-    Com_Printf("[Scr_Notify] entnum=%d stringValue=%d paramcount=%u FindEntityId=%u\n",
-        entnum, stringValue, paramcount, eid);
-    Scr_NotifyNum(entnum, 0, (unsigned short)stringValue, paramcount);
+    Scr_NotifyNum(*(int *)ent, 0, (unsigned short)stringValue, paramcount);
 }
 
 /* line 225 */

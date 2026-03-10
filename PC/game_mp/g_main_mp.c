@@ -476,7 +476,12 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll GScr_LoadAnimScripts\n" /* line 836 */
         "calll Scr_EndLoadAnimScripts\n" /* line 837 */
         "calll G_RegisterDvars\n" /* line 839 */
-        "calll G_LoadStructs\n" /* load script_struct entities and call gametype main() */
+        "calll G_LoadStructs\n" /* load script_struct entities */
+        /* Gametype init — originally dispatched through game module export table.
+           Scr_StartupGameType runs _callbacksetup::setupCallbacks(). */
+        "pushl %ebx\n" "pushl %esi\n" "pushl %edi\n"
+        "calll Scr_StartupGameType\n"
+        "popl %edi\n" "popl %esi\n" "popl %ebx\n"
         "movl 0x10(%ebp), %eax\n" /* line 842 | restart */
         "testl %eax, %eax\n"
         "je .Lf1abbfa_001ac0a1\n"

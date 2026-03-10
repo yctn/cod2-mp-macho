@@ -5275,7 +5275,11 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
 /* line 6341 */
 unsigned int Scr_LoadGameType(void)
 {
-    unsigned int threadId = Scr_ExecThread(*(unsigned int *)((char *)&g_scr_data + 8), 0);
+    unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 8);
+    extern void *imp_scrVarPub;
+    unsigned int codeBase = *(unsigned int *)((char *)imp_scrVarPub + 0x48);
+    Com_Printf("[Scr_LoadGameType] handle=%u codeBase=0x%x pos=0x%x\n", handle, codeBase, codeBase + handle);
+    unsigned int threadId = Scr_ExecThread(handle, 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }
@@ -5291,15 +5295,9 @@ unsigned int Scr_StartupGameType(void)
 /* line 6370 */
 unsigned int Scr_PlayerConnect(gentity_t *self)
 {
-    extern unsigned int FindEntityId(int entnum, int classnum);
     unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 16);
-    Com_Printf("[Scr_PlayerConnect] ent=%p entnum=%d handle=%u\n", (void*)self, *(int*)self, handle);
     unsigned int threadId = Scr_ExecEntThread(self, handle, 0);
-    unsigned int eid = FindEntityId(*(int*)self, 0);
-    Com_Printf("[Scr_PlayerConnect] threadId=0x%x FindEntityId=%u (after ExecEntThread)\n", threadId, eid);
     Scr_FreeThread(threadId & 0xffff);
-    eid = FindEntityId(*(int*)self, 0);
-    Com_Printf("[Scr_PlayerConnect] FindEntityId=%u (after FreeThread)\n", eid);
     return 0;
 }
 

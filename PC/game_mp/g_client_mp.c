@@ -100,17 +100,13 @@ void ClientBegin(int clientNum)
     byte *scr_data = imp_scr_const;
     gentity_t *ent;
 
-    Com_Printf("[ClientBegin] clientNum=%d scr_data_0x6c=%d\n", clientNum, (int)*(unsigned short *)(scr_data + 0x6c));
-
     *(int *)(client + 0x26c4) = 2;
     *(int *)(client + 4) = 4;
 
     CalculateRanks();
 
     ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
-    Com_Printf("[ClientBegin] calling Scr_Notify on ent=%p\n", (void*)ent);
     Scr_Notify(ent, *(unsigned short *)(scr_data + 0x6c), 0);
-    Com_Printf("[ClientBegin] Scr_Notify returned\n");
 }
 
 /* line 596 */
@@ -973,29 +969,6 @@ char * ClientConnect(int clientNum, int scriptPersId)
         }
     }
 
-    /* DBG: count free script variables */
-    {
-        extern unsigned char scrVarGlob[];
-        extern void *imp_scrVarPub;
-        extern unsigned char g_scr_data[];
-        int freeCount = 0;
-        unsigned short idx = *(unsigned short *)(scrVarGlob + 4);
-        while (idx != 0 && freeCount < 70000) {
-            freeCount++;
-            idx = *(unsigned short *)(scrVarGlob + (unsigned int)idx * 16 + 4);
-        }
-        extern unsigned char scrVmPub[];
-        unsigned int codeBase = *(unsigned int *)((char *)imp_scrVarPub + 0x48);
-        unsigned int handle = *(unsigned int *)(g_scr_data + 16);
-        unsigned int startGameTypeHandle = *(unsigned int *)(g_scr_data + 0x10b4);
-        unsigned int vmTop = *(unsigned int *)(scrVmPub + 16);
-        unsigned int vmDepth = *(unsigned int *)(scrVmPub + 8);
-        unsigned int vmInUse = *(unsigned int *)(scrVmPub + 24);
-        Com_Printf("DBG ClientConnect: %d free vars, codeBase=0x%x, handle=%u, startGT=%u\n",
-            freeCount, codeBase, handle, startGameTypeHandle);
-        Com_Printf("DBG ClientConnect: vmTop=0x%x, vmDepth=%d, vmInUse=%d\n",
-            vmTop, vmDepth, vmInUse);
-    }
     Scr_PlayerConnect(ent);
     CalculateRanks();
 
