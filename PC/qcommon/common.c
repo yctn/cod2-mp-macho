@@ -509,7 +509,7 @@ void Com_WriteCDKey(void)
 {
     extern qboolean CL_CDKeyValidate(const char *key, const char *checksum);
     extern void MacPreferences_PutString(const char *key, const char *value);
-    char regkey[20];
+    char regkey[21];
 
     if (!CL_CDKeyValidate(cl_cdkey, cl_cdkeychecksum)) {
         memset(cl_cdkey, ' ', 16);
@@ -518,7 +518,7 @@ void Com_WriteCDKey(void)
     }
     memcpy(regkey, cl_cdkey, 16);
     memcpy(regkey + 16, cl_cdkeychecksum, 4);
-    regkey[20 - 1] = '\0';
+    regkey[20] = '\0';
     MacPreferences_PutString("codkey", regkey);
 }
 

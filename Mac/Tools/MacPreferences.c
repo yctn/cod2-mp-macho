@@ -34,7 +34,7 @@ static void ensure_prefs_path(void)
     }
 }
 
-bool MacPreferences_GetString(const char *inKey, char *outString, int inMaxString, const char *inDefault)
+unsigned char MacPreferences_GetString(const char *inKey, char *outString, int inMaxString, const char *inDefault)
 {
     FILE *f;
     char line[MAX_LINE];
@@ -189,7 +189,7 @@ unsigned char MacPreferences_PutBoolean(const char *inKey, int inBoolean)
     return MacPreferences_PutString(inKey, buffer);
 }
 
-bool MacPreferences_GetBoolean(const char *inKey, int inDefault)
+unsigned char MacPreferences_GetBoolean(const char *inKey, int inDefault)
 {
     char buffer[256];
     int result = (unsigned char)inDefault;

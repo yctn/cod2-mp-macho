@@ -4,6 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 #include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 
 extern int I_stricmp(const char *s1, const char *s2);
@@ -336,6 +337,24 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
     buf2[4] = '\0';
 }
 
+/* Compute CRC-16/ARC checksum over cdkey, matching the check in CL_CheckForResend */
+void CL_ComputeCDKeyChecksum(const char *key, char *checksumOut)
+{
+    unsigned int crc = 0;
+    int i, j;
+
+    for (i = 0; i < 16; i++) {
+        crc ^= (unsigned char)key[i];
+        for (j = 0; j < 8; j++) {
+            if (crc & 1)
+                crc = (crc >> 1) ^ 0xa001;
+            else
+                crc >>= 1;
+        }
+    }
+    sprintf(checksumOut, "%04X", crc);
+}
+
 /* line 631 */
 void CLUI_SetCDKey(char *buf, char *buf2)
 {
@@ -345,8 +364,8 @@ void CLUI_SetCDKey(char *buf, char *buf2)
     memcpy(cdkey, buf, 16);
     cdkey[16] = '\0';
 
-    memcpy(cdkey2, buf2, 4);
-    cdkey2[4] = '\0';
+    /* Compute the correct checksum to match the connection handshake verification */
+    CL_ComputeCDKeyChecksum(cdkey, cdkey2);
 
     Com_WriteCDKey();
 }
