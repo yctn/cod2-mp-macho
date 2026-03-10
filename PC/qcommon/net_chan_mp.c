@@ -703,7 +703,11 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
             fragmentLength = remaining;
         }
 
-        MSG_WriteShort(&send, fragStart);
+        if (chan->sock == 0) {
+            MSG_WriteLong(&send, fragStart);
+        } else {
+            MSG_WriteShort(&send, fragStart);
+        }
         MSG_WriteShort(&send, fragmentLength);
         MSG_WriteData(&send, chan->unsentBuffer + fragStart, fragmentLength);
     }
@@ -845,7 +849,11 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
     }
 
     if (fragmented) {
-        fragmentStart  = MSG_ReadShort(msg);
+        if (chan->sock == 0) {
+            fragmentStart = MSG_ReadLong(msg);
+        } else {
+            fragmentStart = MSG_ReadShort(msg);
+        }
         fragmentLength = MSG_ReadShort(msg);
     } else {
         fragmentStart  = 0;
