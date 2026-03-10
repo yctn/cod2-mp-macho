@@ -1,1 +1,6 @@
 *.o
+*.log
+*.err
+*.bak
+*.out
+*.dat
