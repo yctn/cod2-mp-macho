@@ -2813,7 +2813,9 @@ typedef int baseIndex;  /* opaque */
 typedef int baseVertex;  /* opaque */
 typedef int bb;  /* opaque */
 typedef int blens;  /* opaque */
+#if !defined(__cplusplus) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L)
 typedef int bool;  /* opaque */
+#endif
 typedef int boolean;  /* opaque */
 typedef int bound;  /* opaque */
 typedef int brushmodel;  /* opaque */

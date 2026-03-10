@@ -3,7 +3,6 @@
 
 #include "common_types.h"
 #include "imports.h"
-#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/q_shared.h"
@@ -11,14 +10,12 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static int diag_drawtext_count = 0;
 void diag_drawtext(const char *text, void *font, float x, float y, float scale) {
-    if (diag_drawtext_count < 100) {
-        fprintf(stderr, "[DrawText] text='%.40s' font=%p x=%08x y=%08x scale=%08x\n",
-                text ? text : "(null)", font,
-                *(unsigned int*)&x, *(unsigned int*)&y, *(unsigned int*)&scale);
-    }
-    diag_drawtext_count++;
+    (void)text;
+    (void)font;
+    (void)x;
+    (void)y;
+    (void)scale;
 }
 
 extern const dvar_t *ui_smallFont; /* 0x0 */
@@ -10154,4 +10151,3 @@ void UI_DrawConnectScreen(void)
         "jmp .Lf1571ec_001572c0\n"
     );
 }
-

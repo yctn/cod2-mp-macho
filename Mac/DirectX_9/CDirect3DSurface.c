@@ -14,6 +14,19 @@
 extern bool g_NoTextureID; /* 0x0 */
 extern bool g_WarmOff; /* 0x0 */
 
+void CDirect3DSurface_IgnorePixelStorei(GLenum pname, GLint param)
+{
+    (void)pname;
+    (void)param;
+}
+
+void CDirect3DSurface_IgnoreTexParameteri(GLenum target, GLenum pname, GLint param)
+{
+    (void)target;
+    (void)pname;
+    (void)param;
+}
+
 ULONG CDirect3DSurface_AddRef(const CDirect3DSurface * _this);
 void ZN16CDirect3DSurfaceD1Ev(void); /* CDirect3DSurface_~CDirect3DSurface */
 void ZN16CDirect3DSurfaceD0Ev(void); /* CDirect3DSurface_~CDirect3DSurface */
@@ -321,6 +334,7 @@ void CDirect3DSurface_CreateOpenGLSurfaceObject(const CDirect3DSurface * _this)
         "ja .Lf1d870_0001da6b\n"
         ".Lf1d870_0001d8ef:\n"
         "movl $1, -0x2c(%ebp)\n"
+        ".Lf1d870_0001d8f5:\n"
         /* } scope */
         "cmpb $0, -0x1d(%ebp)\n" /* line 134 | IsDepthTexture */
         "je .Lf1d870_0001da8d\n"
@@ -386,7 +400,7 @@ void CDirect3DSurface_CreateOpenGLSurfaceObject(const CDirect3DSurface * _this)
         "jne .Lf1d870_0001d9e0\n"
         "movl $0, 4(%esp)\n" /* line 141 */
         "movl $0x85b2, (%esp)\n"
-        "calll glPixelStorei\n"
+        "calll CDirect3DSurface_IgnorePixelStorei\n"
         /* } scope */
         ".Lf1d870_0001d9e0:\n"
         "addl $0x5c, %esp\n" /* line 153 */
@@ -407,11 +421,11 @@ void CDirect3DSurface_CreateOpenGLSurfaceObject(const CDirect3DSurface * _this)
         ".Lf1d870_0001da09:\n"
         "movl $1, 4(%esp)\n" /* line 106 */
         "movl $0x85b2, (%esp)\n"
-        "calll glPixelStorei\n"
+        "calll CDirect3DSurface_IgnorePixelStorei\n"
         "movl $0x85bf, 8(%esp)\n" /* line 107 */
         "movl $0x85bc, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* Target */
-        "calll glTexParameteri\n"
+        "calll CDirect3DSurface_IgnoreTexParameteri\n"
         "jmp .Lf1d870_0001d8a1\n"
         /* { scope 2 */
         ".Lf1d870_0001da3a:\n"
@@ -421,30 +435,16 @@ void CDirect3DSurface_CreateOpenGLSurfaceObject(const CDirect3DSurface * _this)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1d870_0001da42:\n"
-        "movl $1, -0x1c(%ebp)\n" /* line 144 | OpenGLWidth */
-        "movl $0x20, %eax\n"
-        ".Lf1d870_0001da4e:\n"
-        "shll -0x1c(%ebp)\n" /* OpenGLWidth */
-        "cmpl -0x1c(%ebp), %edx\n" /* OpenGLWidth */
-        "jbe .Lf1d870_0001d8e3\n"
-        "subl $1, %eax\n"
-        "jne .Lf1d870_0001da4e\n"
+        "movl %edx, -0x1c(%ebp)\n" /* OpenGLWidth */
+        "jmp .Lf1d870_0001d8e3\n"
         /* } scope */
         "movl 0x18(%ebx), %ecx\n" /* line 122 | this, i */
         /* { scope 3 */
         "cmpl $1, %ecx\n" /* line 144 */
         "jbe .Lf1d870_0001d8ef\n"
         ".Lf1d870_0001da6b:\n"
-        "movl $1, %edx\n"
-        "movl $0x20, %eax\n"
-        ".Lf1d870_0001da75:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jbe .Lf1d870_0001da80\n"
-        "subl $1, %eax\n"
-        "jne .Lf1d870_0001da75\n"
-        ".Lf1d870_0001da80:\n"
-        "movl %edx, -0x2c(%ebp)\n"
+        "movl %ecx, -0x2c(%ebp)\n"
+        "jmp .Lf1d870_0001d8f5\n"
         /* } scope */
         "cmpb $0, -0x1d(%ebp)\n" /* line 134 | IsDepthTexture */
         "jne .Lf1d870_0001d900\n"
@@ -815,6 +815,17 @@ void CDirect3DSurface_UpdateOpenGLSurfaceObject(const CDirect3DSurface * _this, 
         "movl 8(%ebp), %ebx\n" /* this */
         "cmpb $0, 0xc(%ebp)\n" /* line 165 | bRecreateSurface */
         "jne .Lf1de70_0001df95\n"
+        "movl 0x28(%ebx), %eax\n" /* this */
+        "movl 4(%eax), %edx\n"
+        "movl (%edx), %edx\n"
+        "cmpl $1, 8(%ebx)\n" /* this */
+        "movl $0xde1, %eax\n"
+        "jne .Lf1de70_0001dec1\n"
+        "movl $0x8513, %eax\n"
+        ".Lf1de70_0001dec1:\n"
+        "movl %edx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll glBindTexture\n"
         "movl 0x1c(%ebx), %eax\n" /* line 191 | this */
         "cmpl $0x35545844, %eax\n"
         "je .Lf1de70_0001df0a\n"
@@ -1061,4 +1072,3 @@ HRESULT CDirect3DSurface_ReleaseDC(const CDirect3DSurface * _this, HDC hdc)
         "retl\n"
     );
 }
-

@@ -748,20 +748,11 @@ DP4 oPos.z," */
     );
 }
 
-static const char rb_diag_cmdlist_fmt[] = "  cmdList=%p used=0x%x remain=0x%x\n";
+static const char rb_diag_cmdlist_fmt[] = "";
 static int g_endframe_count = 0;
 void R_EndFrame(void)
 {
-    g_endframe_count++;
-    if (g_endframe_count <= 5) {
-        extern r_globals_t rg;
-        fprintf(stderr, "R_EndFrame #%d rg.registered=%d\n", g_endframe_count, *(char *)&rg);
-    }
     R_EndFrame_impl();
-    fflush(stdout);
-    if (g_endframe_count <= 5) {
-        fprintf(stderr, "  R_EndFrame_impl returned (#%d)\n", g_endframe_count);
-    }
     R_ResetCmdListState();
 }
 
@@ -925,12 +916,9 @@ void R_IssueDelayedDrawing(int marker)
 int g_addcmd_count = 0; /* diagnostic */
 static int g_addcmd_diag = 0;
 void diag_addcmd_hex(unsigned int xi, unsigned int yi) {
-    extern int printf(const char *, ...);
-    if (g_addcmd_diag < 10) {
-        printf("ADDCMD[%d] x=0x%08x y=0x%08x ra=%p\n",
-               g_addcmd_diag, xi, yi, __builtin_return_address(1));
-        g_addcmd_diag++;
-    }
+    (void)g_addcmd_diag;
+    (void)xi;
+    (void)yi;
 }
 __attribute__((naked))
 void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material)

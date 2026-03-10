@@ -3,7 +3,6 @@
 
 #include "common_types.h"
 #include "imports.h"
-#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/ui/ui_utils.h"
@@ -11,32 +10,15 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-/* Diagnostic: trace Item_Paint flow */
-static int diag_item_paint_count = 0;
 void diag_item_paint_enter(void *item) {
-    const char *name = *(const char **)((char*)item + 0xC0);
-    int staticFlags = *(int*)((char*)item + 0xe8);
-    int type = *(int*)((char*)item + 0x270);
-    if (diag_item_paint_count < 200) {
-        fprintf(stderr, "[ItemPaint] name=%-30s type=%2d flags=%08x\n",
-                name ? name : "(null)", type, staticFlags);
-    }
-    diag_item_paint_count++;
+    (void)item;
 }
 void diag_item_paint_skip(void *item, int reason) {
-    const char *name = *(const char **)((char*)item + 0xC0);
-    if (diag_item_paint_count < 200) {
-        fprintf(stderr, "[ItemPaint] SKIP name=%-30s reason=%d\n",
-                name ? name : "(null)", reason);
-    }
+    (void)item;
+    (void)reason;
 }
 void diag_item_paint_draw(void *item) {
-    const char *name = *(const char **)((char*)item + 0xC0);
-    if (diag_item_paint_count < 200) {
-        unsigned int *fc = (unsigned int *)((char*)item + 0x1cc);
-        fprintf(stderr, "[ItemPaint] DRAW name=%-30s foreColor=%08x %08x %08x %08x\n",
-                name ? name : "(null)", fc[0], fc[1], fc[2], fc[3]);
-    }
+    (void)item;
 }
 
 extern unsigned char updateScreenCalled[];
@@ -15129,4 +15111,3 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
         "jmp .Lf16f5ce_0016f947\n"
     );
 }
-

@@ -5,7 +5,7 @@
 #include "imports.h"
 
 static char buf[1024]; /* buf */
-static char basename[64]; /* basename */
+static char fs_map_basename[64]; /* basename */
 static char info2[8192]; /* info2 */
 static char info3[8192]; /* info3 */
 static char info4[8192]; /* info4 */
@@ -951,19 +951,19 @@ const char * FS_GetMapBaseName(const char *mapname)
     }
 
     /* line 1657 | copy len bytes */
-    memcpy(basename, mapname, len);
-    basename[len] = '\0'; /* line 1658 */
+    memcpy(fs_map_basename, mapname, len);
+    fs_map_basename[len] = '\0'; /* line 1658 */
 
     /* line 1661-1664 | replace '%' with '_' */
-    p = basename;
-    while (p < basename + len) {
+    p = fs_map_basename;
+    while (p < fs_map_basename + len) {
         if (*p == '%') { /* line 1663 */
             *p = '_'; /* line 1664 */
         }
         p++;
     }
 
-    return basename; /* line 1668 */
+    return fs_map_basename; /* line 1668 */
 }
 
 /* line 465 */

@@ -714,7 +714,7 @@ void CDirect3DTexture_CDirect3DTexture(const CDirect3DTexture * _this, UINT32 Wi
         "movl %eax, %ebx\n" /* TextureSizeInBytes */
         "movl -0x40(%ebp), %edx\n"
         "movl %edx, 0x20(%esp)\n"
-        "movl %esi, 0x1c(%esp)\n"
+        "movl $0, 0x1c(%esp)\n"
         "movl 0x1c(%ebp), %eax\n" /* Format */
         "movl %eax, 0x18(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* Height */
@@ -1561,4 +1561,3 @@ void ZNSt6vectorIP16CDirect3DSurfaceSaIS1_EE7reserveEm(void) /* std_vector<CDire
         "calll __ZSt17__throw_bad_allocv\n" /* line 86 */
     );
 }
-

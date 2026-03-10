@@ -122,7 +122,7 @@ unsigned char info4[8192]; /* info4 */
 unsigned char info3[8192]; /* info3 */
 unsigned char info2[8192]; /* info2 */
 unsigned char buf_00482a80[1024]; /* buf */
-unsigned char basename[128]; /* basename */
+unsigned char basename_00482e80[128]; /* basename */
 unsigned char sString[128]; /* sString */
 unsigned char sString_00482f80[64]; /* sString */
 unsigned char sTemp[64]; /* sTemp */

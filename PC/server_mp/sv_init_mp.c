@@ -564,12 +564,14 @@ next_client1:
 
     /* SV_DropAllClients - line 1373 */
     client = *(byte **)((byte *)imp_svs + SVS_CLIENTS_OFF);
-    maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
-    for (i = 0; i < maxclients; i++) {
-        if (*(int *)(client + CLIENT_STATE_OFF) > 1) {
-            SV_DropClient(client, "EXE_DISCONNECTED");
+    if (client != NULL && *(byte **)imp_sv_maxclients != NULL) {
+        maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
+        for (i = 0; i < maxclients; i++) {
+            if (*(int *)(client + CLIENT_STATE_OFF) > 1) {
+                SV_DropClient(client, "EXE_DISCONNECTED");
+            }
+            client += CLIENT_SIZE;
         }
-        client += CLIENT_SIZE;
     }
 
     /* SV_ClearServer - line 543 */

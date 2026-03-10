@@ -17,6 +17,8 @@ extern qboolean UI_CheckExecKey(int key);
 extern void CL_SwitchToLocalClient(int localClientNum);
 extern void UI_Init(void);
 extern void UI_Component_Init(void);
+extern qboolean UI_IsFullscreen(void);
+extern qboolean UI_SetActiveMenu(int menu);
 extern const char *Key_KeynumToString(int keynum, int translate);
 extern const char *Key_GetBinding(int keynum);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
@@ -432,6 +434,9 @@ void CL_InitUI(void)
     UI_Init();
     CL_SwitchToLocalClient(0);
     UI_Component_Init();
+
+    if (!UI_ClientIsInGame() && !UI_IsFullscreen())
+        UI_SetActiveMenu(1);
 }
 
 /* line 963 */
@@ -601,4 +606,3 @@ apply_sortdir:
         diff = -diff;
     return diff;
 }
-

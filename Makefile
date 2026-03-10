@@ -4,7 +4,7 @@
 CC = gcc
 SDL2_CFLAGS = $(shell pkg-config --cflags sdl2 2>/dev/null || echo -I/usr/include/SDL2)
 SDL2_LIBS = $(shell pkg-config --libs sdl2 2>/dev/null || echo -lSDL2)
-CFLAGS = -m32 -fno-pie -no-pie -w -O0 -g -msse -fno-omit-frame-pointer -IPC/speex -I. $(SDL2_CFLAGS)
+CFLAGS = -std=gnu11 -m32 -fno-pie -no-pie -w -O0 -g -msse -fno-omit-frame-pointer -IPC/speex -I. $(SDL2_CFLAGS)
 LDFLAGS = -m32 -no-pie -L/usr/lib32 -L/usr/lib/i386-linux-gnu
 LIBS = -lGL -lm -lpthread -ldl /usr/lib32/libstdc++.so.6 $(SDL2_LIBS)
 TARGET = cod2_linux

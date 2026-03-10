@@ -335,7 +335,7 @@ int errno(); /* _errno */
 /* expf() — provided by system headers */
 /* fclose() — provided by system headers */
 /* fflush() — provided by system headers */
-int fileno(); /* _fileno */
+/* fileno() — provided by system headers */
 /* floor() — provided by system headers */
 /* floorf() — provided by system headers */
 /* fopen() — provided by system headers */
@@ -348,7 +348,7 @@ int fileno(); /* _fileno */
 /* getcwd() — provided by system headers */
 /* getenv() — provided by system headers */
 /* gethostbyname() — provided by system headers */
-int getrlimit(); /* _getrlimit */
+/* getrlimit() — provided by system headers */
 /* inet_addr() — provided by system headers */
 /* ioctl() — provided by system headers */
 /* isatty() — provided by system headers */
@@ -370,17 +370,17 @@ int mach_init_routine(); /* _mach_init_routine */
 /* pow() — provided by system headers */
 /* printf() — provided by system headers */
 /* pthread_create() — provided by system headers */
-int pthread_getschedparam(); /* _pthread_getschedparam */
+/* pthread_getschedparam() — provided by system headers */
 int pthread_main_np(); /* _pthread_main_np */
 /* pthread_mutex_destroy() — provided by system headers */
 /* pthread_mutex_init() — provided by system headers */
 /* pthread_mutex_lock() — provided by system headers */
 /* pthread_mutex_unlock() — provided by system headers */
-int pthread_mutexattr_destroy(); /* _pthread_mutexattr_destroy */
-int pthread_mutexattr_init(); /* _pthread_mutexattr_init */
-int pthread_mutexattr_settype(); /* _pthread_mutexattr_settype */
-int pthread_setschedparam(); /* _pthread_setschedparam */
-int putenv(); /* _putenv */
+/* pthread_mutexattr_destroy() — provided by system headers */
+/* pthread_mutexattr_init() — provided by system headers */
+/* pthread_mutexattr_settype() — provided by system headers */
+/* pthread_setschedparam() — provided by system headers */
+/* putenv() — provided by system headers */
 /* puts() — provided by system headers */
 /* qsort() — provided by system headers */
 /* rand() — provided by system headers */
@@ -391,13 +391,13 @@ int putenv(); /* _putenv */
 /* remove() — provided by system headers */
 /* rename() — provided by system headers */
 /* rewind() — provided by system headers */
-int sched_get_priority_max(); /* _sched_get_priority_max */
-int sched_get_priority_min(); /* _sched_get_priority_min */
+/* sched_get_priority_max() — provided by system headers */
+/* sched_get_priority_min() — provided by system headers */
 /* select() — provided by system headers */
 /* send() — provided by system headers */
 /* sendto() — provided by system headers */
 /* setjmp() — provided by system headers */
-int setrlimit(); /* _setrlimit */
+/* setrlimit() — provided by system headers */
 /* setsockopt() — provided by system headers */
 /* sin() — provided by system headers */
 /* sinf() — provided by system headers */

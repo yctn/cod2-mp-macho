@@ -1759,9 +1759,21 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
 /* line 1119 */
 MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack)
 {
+    MaterialHandle material;
+
+    (void)baseImageFlags;
+
     if (name == NULL || *name == '\0')
         return rgp.defaultMaterial;
-    return Material_Register(name, imageTrack);
+
+    material = Material_Register(name, imageTrack);
+    if (material != NULL)
+        return material;
+
+    if (strncmp(name, "ui/", 3) == 0 || strncmp(name, "ui_", 3) == 0)
+        return rgp.whiteMaterial ? rgp.whiteMaterial : rgp.defaultMaterial;
+
+    return rgp.defaultMaterial;
 }
 
 /* line 1345 */
@@ -2336,4 +2348,3 @@ void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void) /* void s
         "jmp .Lf2bfa70_002bfba3\n"
     );
 }
-

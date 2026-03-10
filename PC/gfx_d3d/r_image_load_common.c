@@ -29,6 +29,17 @@ static int Image_Max1(int val)
     return val > 1 ? val : 1;
 }
 
+static void Image_DebugUploadSample(const GfxImage *image, D3DFORMAT format, int mipLevel,
+                                    const byte *src, int srcWidth, int srcHeight)
+{
+    (void)image;
+    (void)format;
+    (void)mipLevel;
+    (void)src;
+    (void)srcWidth;
+    (void)srcHeight;
+}
+
 /* line 403 */
 void Image_GetPicmip(const GfxImage *image, Picmip *picmip)
 {
@@ -407,6 +418,8 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
     /* Default: 2D texture / cubemap upload */
     srcWidth = Image_Max1(image->width >> mipLevel);
     srcHeight = Image_Max1(image->height >> mipLevel);
+
+    Image_DebugUploadSample(image, format, mipLevel, src, srcWidth, srcHeight);
 
     if (image->mapType == 3) {
         /* line 131: 2D texture path - LockRect without face parameter */

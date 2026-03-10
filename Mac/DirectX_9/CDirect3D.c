@@ -5835,41 +5835,24 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
     );
 }
 
-/* Diagnostic: trace NaN being written to VP env register 23 */
-static int nan_diag_count = 0;
-void diag_nan_env23(const float *data) {
-    if (nan_diag_count < 20) {
-        nan_diag_count++;
-        void *ra0 = __builtin_return_address(0);
-        void *ra1 = __builtin_return_address(1);
-        void *ra2 = __builtin_return_address(2);
-        void *ra3 = __builtin_return_address(3);
-        fprintf(stderr, "[NaN-ENV23#%d] data=[%g,%g,%g,%g] ra=%p ra1=%p ra2=%p ra3=%p\n",
-                nan_diag_count, data[0], data[1], data[2], data[3],
-                ra0, ra1, ra2, ra3);
-    }
+void diag_nan_env23(const float *data)
+{
+    (void)data;
 }
 
-extern int g_draw_count;
-extern unsigned char glIsEnabled(unsigned int);
-extern void glGetIntegerv(unsigned int, int *);
-
-/* Diagnostic for ValidateRasterization */
-static int g_valrast_diag = 0;
-void valrast_trace(int draw_count, void *device, void *pPixelShader) {
-    if (g_valrast_diag < 50 || (draw_count > 870 && g_valrast_diag < 100)) {
-        g_valrast_diag++;
-        /* Check the CTexStage array for texture pointers */
-        unsigned char *dev = (unsigned char *)device;
-        void *texStages = *(void **)(dev + 0x608);
-        void *tex0 = texStages ? *(void **)((unsigned char *)texStages + 4) : NULL;
-        int numUnits_lo = *(int *)(dev + 0x504);
-        int numUnits_hi = *(int *)(dev + 0x508);
-        fprintf(stderr, "[ValRast#%d] draw=%d dev=%p pPS=%p texStages=%p tex0=%p units=(%d,%d)\n",
-                g_valrast_diag, draw_count, device, pPixelShader, texStages, tex0,
-                numUnits_lo, numUnits_hi);
-    }
+static void diag_dump_tex0(int draw_count, void *tex0)
+{
+    (void)draw_count;
+    (void)tex0;
 }
+
+void valrast_trace(int draw_count, void *device, void *pPixelShader)
+{
+    (void)draw_count;
+    (void)device;
+    (void)pPixelShader;
+}
+
 int g_dip_vs_null = 0;     /* DIP VP binding: shader was null */
 int g_dip_vs_bound = 0;    /* DIP VP binding: called SetVP */
 int g_dip_vs_skip = 0;     /* DIP VP validation: flag was 0 (skipped) */
@@ -5880,62 +5863,25 @@ int g_dip_gl_draw = 0;
 int g_dip_last_mode = 0;
 int g_dip_last_numelems = 0;
 
-/* Periodic DIP counter dump - call from dip_vp_check or similar */
-static int g_dip_dump_done = 0;
-void dip_counter_dump(void) {
-    if (g_dip_dump_done < 10 && (g_draw_count % 500 == 0)) {
-        g_dip_dump_done++;
-        fprintf(stderr, "[DIP-COUNTERS dc=%d] tri=%d drawflag0=%d vs_skip=%d numelems0=%d gl_draw=%d vs_null=%d vs_bound=%d mode=%d\n",
-                g_draw_count, g_dip_is_tri, g_dip_drawflag_zero, g_dip_vs_skip,
-                g_dip_numelems_zero, g_dip_gl_draw, g_dip_vs_null, g_dip_vs_bound,
-                g_dip_last_mode);
-    }
+void dip_counter_dump(void) {}
+
+void dip_vp_check(void *device)
+{
+    (void)device;
 }
 
-/* Diagnostic called from DIP asm at VP validation check point */
-extern char dip_mNeedsVSVal __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
-static int g_dip_vp_diag = 0;
-extern char dip_sDrawFlag __asm__("__ZN7COpenGL9sDrawFlagE");
-void dip_vp_check(void *device) {
-    dip_counter_dump();
-    if (g_dip_vp_diag < 5 && g_draw_count > 880) {
-        g_dip_vp_diag++;
-        int vsValid = dip_mNeedsVSVal;
-        int drawFlag = dip_sDrawFlag;
-        void *shader = *(void **)((char *)device + 0xbb4);
-        fprintf(stderr, "[DIP-VP#%d] dc=%d vsValid=%d drawFlag=%d shader=%p\n",
-                g_draw_count, g_dip_vp_diag, vsValid, drawFlag, shader);
-    }
-}
-
-static int g_dip_diag_done = 0;
-void dip_gl_diag(int mode, int low, int high, int count) {
-    if (g_dip_diag_done < 10 && g_draw_count > 880) {
-        g_dip_diag_done++;
-        int vp_en = glIsEnabled(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        int fp_en = glIsEnabled(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
-        int vp_id = 0, fp_id = 0;
-        glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &vp_id);
-        glGetIntegerv(0x8677 /*GL_FRAGMENT_PROGRAM_BINDING_ARB*/, &fp_id);
-        int depth = glIsEnabled(0xb71 /*GL_DEPTH_TEST*/);
-        int cm[4] = {0};
-        glGetIntegerv(0x0C23 /*GL_COLOR_WRITEMASK*/, cm);
-        int dm = 0;
-        glGetIntegerv(0x0B72 /*GL_DEPTH_WRITEMASK*/, &dm);
-        fprintf(stderr, "[DIP#%d] mode=%d low=%d high=%d count=%d vp_en=%d vp_id=%d fp_en=%d fp_id=%d depth=%d cm=(%d%d%d%d) dm=%d\n",
-                g_draw_count, mode, low, high, count, vp_en, vp_id, fp_en, fp_id, depth, cm[0],cm[1],cm[2],cm[3], dm);
-    }
+void dip_gl_diag(int mode, int low, int high, int count)
+{
+    (void)mode;
+    (void)low;
+    (void)high;
+    (void)count;
 }
 
 /* line 1774 */
 int g_draw_count = 0; /* diagnostic draw call counter */
-void dip_entry_trace(void) {
-    static int dip_trace_count = 0;
-    if (dip_trace_count < 5 || (g_draw_count % 500 == 0 && dip_trace_count < 50)) {
-        dip_trace_count++;
-        fprintf(stderr, "[DIP-ENTRY#%d] g_draw_count=%d\n", dip_trace_count, g_draw_count);
-    }
-    dip_counter_dump();
+void dip_entry_trace(void)
+{
 }
 __attribute__((naked))
 HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
@@ -6478,4 +6424,3 @@ void ZN23CVAOPacketFixedFunctionD0Ev(void) /* CVAOPacketFixedFunction_~CVAOPacke
         "jmp __ZdlPv\n"
     );
 }
-

@@ -3950,6 +3950,17 @@ int PC_ReadTokenHandle(int handle, pc_token_t *pc_token)
     }
 
     for (;;) {
+        source = sourceFiles[handle];
+        if (!source) {
+            return 0;
+        }
+
+        script = (struct script_s *)source->scriptstack;
+        while (script != NULL && script->script_p != NULL &&
+               script->script_p < script->end_p && *script->script_p == '`') {
+            ++script->script_p;
+        }
+
         ret = PC_ReadToken(sourceFiles[handle], &token);
         if (ret) {
             strcpy(pc_token->string, token.string);

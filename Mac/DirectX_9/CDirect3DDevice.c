@@ -1694,24 +1694,16 @@ HRESULT CDirect3DDevice_SetVertexDeclaration(const CDirect3DDevice * _this, IDir
 }
 
 /* line 4222 */
-int g_svs_count = 0; /* SetVertexShader call count */
-static int g_svs_diag = 0;
-extern int g_draw_count;
 extern char mNeedsVSVal __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
 extern char mNeedsTVal __asm__("__ZN15CDirect3DDevice30mNeedsTransformationValidationE");
 extern char mNeedsRVal __asm__("__ZN15CDirect3DDevice29mNeedsRasterizationValidationE");
 HRESULT CDirect3DDevice_SetVertexShader(const CDirect3DDevice * _this, IDirect3DVertexShader9 *pShader)
 {
-    g_svs_count++;
-    if (g_svs_diag < 5 && g_draw_count > 880) {
-        g_svs_diag++;
-        fprintf(stderr, "[SVS#%d] dc=%d this=%p pShader=%p cur=%p\n",
-                g_svs_count, g_draw_count, _this, pShader,
-                *(void **)((char *)_this + 0xbb4));
-    }
     void *cur = *(void **)((char *)_this + 0xbb4);
+
     if (pShader == (IDirect3DVertexShader9 *)cur)
         return 0;
+
     *(void **)((char *)_this + 0xbb4) = pShader;
     mNeedsVSVal = 1;
     mNeedsTVal = 1;
@@ -6945,29 +6937,10 @@ static HRESULT CDirect3DDevice_StretchRectToBackBuffer(
         GLint dstY1 = (GLint)destHeight - pDestRect->top;
         GLenum blitFilter = (Filter == 1 /*D3DTEXF_LINEAR*/) ? 0x2601 /*GL_LINEAR*/ : 0x2600 /*GL_NEAREST*/;
 
-        static int diag_count = 0;
-        if (diag_count < 3) {
-            fprintf(stderr, "[StretchRect#%d] tex=%u target=0x%x src=(%d,%d,%d,%d) srcH=%u dst=(%d,%d,%d,%d) dstH=%u srcGL=(%d,%d,%d,%d) dstGL=(%d,%d,%d,%d)\n",
-                diag_count, textureName, sourceTarget,
-                pSourceRect->left, pSourceRect->top, pSourceRect->right, pSourceRect->bottom, sourceHeight,
-                pDestRect->left,   pDestRect->top,   pDestRect->right,   pDestRect->bottom,   destHeight,
-                pSourceRect->left, srcY0, pSourceRect->right, srcY1,
-                pDestRect->left,   dstY0, pDestRect->right,   dstY1);
-        }
-
         s_glGenFramebuffers(1, &fbo);
         s_glBindFramebuffer(0x8ca8 /*GL_READ_FRAMEBUFFER*/, fbo);
         s_glFramebufferTexture2D(0x8ca8, 0x8ce0 /*GL_COLOR_ATTACHMENT0*/, sourceTarget, textureName, 0);
         fboStatus = ((PFNGLCHECKFRAMEBUFFERSTATUSPROC)SDL_GL_GetProcAddress("glCheckFramebufferStatus"))(0x8ca8);
-        if (diag_count < 3) {
-            unsigned char spx[4] = {0};
-            glReadBuffer(0x8ce0 /*GL_COLOR_ATTACHMENT0*/);
-            glReadPixels((pSourceRect->left + pSourceRect->right)/2,
-                         (srcY0 + srcY1)/2, 1, 1, 0x1908, 0x1401, spx);
-            fprintf(stderr, "[StretchRect#%d] FBO status=0x%x src_center_px=(%d,%d,%d,%d) err=0x%x\n",
-                    diag_count, fboStatus, spx[0],spx[1],spx[2],spx[3], glGetError());
-            diag_count++;
-        }
         if (fboStatus != 0x8cd5 /*GL_FRAMEBUFFER_COMPLETE*/) {
             s_glBindFramebuffer(0x8d40 /*GL_FRAMEBUFFER*/, 0);
             s_glDeleteFramebuffers(1, &fbo);

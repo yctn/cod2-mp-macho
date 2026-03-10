@@ -238,53 +238,30 @@ unsigned int COpenGL_SetBlend(const COpenGL * _this, int ForceValidation, GLenum
 /* line 2174 */
 __attribute__((naked))
 extern int g_vp_enable_count;
-static int g_svp_diag = 0;
 unsigned int COpenGL_SetVertexProgram(const COpenGL * _this, const COpenGLVertexProgram *pOGLVertexProgramInfo)
 {
     int progID = *(int *)((char *)pOGLVertexProgramInfo + 0xc);
-    g_vp_enable_count++;
-    if (g_svp_diag < 10 && g_vp_enable_count > 870) {
-        g_svp_diag++;
-        fprintf(stderr, "[SVP#%d] vpInfo=%p progID=%d cached=0x%x\n",
-                g_vp_enable_count, pOGLVertexProgramInfo, progID,
-                *(int *)((char *)_this + 0x67c));
-    }
     int cached = *(int *)((char *)_this + 0x67c);
+
     if (progID == cached)
         return 0;
+
     *(int *)((char *)_this + 0x67c) = progID;
-    /* Call real GL function directly, bypassing interceptor */
     {
         typedef void (*bind_fn_t)(unsigned int, unsigned int);
         static bind_fn_t real_bind = 0;
+
         if (!real_bind) {
             extern void *SDL_GL_GetProcAddress(const char *);
             real_bind = (bind_fn_t)SDL_GL_GetProcAddress("glBindProgramARB");
-            fprintf(stderr, "[SVP] real glBindProgramARB=%p\n", real_bind);
         }
-        real_bind(0x8620, progID);
+
+        if (real_bind)
+            real_bind(0x8620, progID);
+        else
+            glBindProgramARB(0x8620, progID);
     }
-    /* Verify VP actually bound */
-    if (g_svp_diag < 20 && g_vp_enable_count > 870) {
-        extern unsigned int glGetError(void);
-        extern void glGetIntegerv(unsigned int, int *);
-        /* Clear any pre-existing error */
-        while (glGetError() != 0) {}
-        /* Now check if program is valid */
-        typedef unsigned char (*isProgFn)(unsigned int);
-        static isProgFn isProg = 0;
-        if (!isProg) {
-            extern void *SDL_GL_GetProcAddress(const char *);
-            isProg = (isProgFn)SDL_GL_GetProcAddress("glIsProgramARB");
-        }
-        int valid = isProg ? isProg(progID) : -1;
-        unsigned int err_after_bind = glGetError();
-        int actual_vp = 0;
-        glGetIntegerv(0x8626 /*GL_VERTEX_PROGRAM_BINDING_ARB*/, &actual_vp);
-        unsigned int err_after_query = glGetError();
-        fprintf(stderr, "[SVP-verify#%d] progID=%d valid=%d actual_vp=%d err_bind=0x%x err_query=0x%x\n",
-                g_vp_enable_count, progID, valid, actual_vp, err_after_bind, err_after_query);
-    }
+
     return 0;
 }
 
@@ -5382,4 +5359,3 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE5eraseEN9__gnu_cxx17__normal_iterato
         "retl\n"
     );
 }
-

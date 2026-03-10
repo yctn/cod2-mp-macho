@@ -528,7 +528,7 @@ int MacOpenGLUtils_GetOpenGLTextureType(bool *CreateOpenGLResources, GLenum *Ope
         "movl 0x10(%ebp), %eax\n" /* line 676 | OpenGLFormat */
         "movl $0x80e1, (%eax)\n"
         "movl 0x14(%ebp), %eax\n" /* line 678 | OpenGLElementType */
-        "movl $0x8035, (%eax)\n"
+        "movl $0x1401, (%eax)\n"
         "popl %ebp\n" /* line 732 */
         "retl\n"
         ".Lf25ac4_00025b87:\n"

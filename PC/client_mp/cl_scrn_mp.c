@@ -8,12 +8,6 @@
 #include <strings.h>
 #define stricmp strcasecmp
 
-extern void *s_cmdList;
-static int cmdlist_used(void) {
-    if (!s_cmdList) return -1;
-    return *(int *)((char *)s_cmdList + 0x30000);
-}
-
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  */
@@ -275,28 +269,6 @@ static void SCR_UpdateFrame(void)
     byte *cls = cls_ptr_195ecac;
     int gameLoaded = CLS_CONN_STATE_FLAG(cls);
 
-    static int frame_diag = 0;
-    int trace_frame = (frame_diag >= 440 && frame_diag < 445);
-    if (trace_frame) {
-        fprintf(stderr, "[TRACE#%d] after_BeginFrame: cmdUsed=%d cmdList=%p\n",
-                frame_diag, cmdlist_used(), s_cmdList);
-    }
-    {
-        extern unsigned char clientConnections[];
-        static int last_cs = -1;
-        int cs_direct = *(int *)clientConnections;
-        int fs_tmp = UI_IsFullscreen();
-        if (cs_direct != last_cs) {
-            fprintf(stderr, "[frame#%d] connstate CHANGED %d -> %d\n", frame_diag, last_cs, cs_direct);
-            last_cs = cs_direct;
-        }
-        if (frame_diag < 10 || (frame_diag < 500 && (frame_diag % 50 == 0)) || cs_direct >= 6) {
-            fprintf(stderr, "[frame#%d] gL=%d cs=%d fs=%d\n",
-                    frame_diag, gameLoaded, cs_direct, fs_tmp);
-        }
-        frame_diag++;
-    }
-
     if (!gameLoaded) {
         RE_FUNC(re, 0xc8, re_int4_func)(1, (int)(unsigned int)ptr_195f58c, 0, 0);
         goto end_frame;
@@ -382,10 +354,6 @@ static void SCR_UpdateFrame(void)
             int serverTime = *(int *)(dv + 0x26f0);
 
             int result = CG_DrawActiveFrame(serverTime, needRender, 0, 0, 1);
-            if (trace_frame) {
-                fprintf(stderr, "[TRACE#%d] after_CG_DrawActiveFrame: cmdUsed=%d result=%d\n",
-                        frame_diag-1, cmdlist_used(), result);
-            }
             if (result == 0) {
                 CL_SendCmdInternal();
             }
@@ -424,21 +392,9 @@ check_ui:
     /* Draw UI if conditions met */
     {
         byte *dv = *(byte **)dvar_ptr_195ee78;
-        static int ui_diag = 0;
-        if (ui_diag < 3) {
-            byte *clc2 = *(byte **)clc_ptr_195ee8c;
-            int cs = *(int *)clc2;
-            int fs = UI_IsFullscreen();
-            fprintf(stderr, "[ui#%d] dv_flag=0x%x connstate=%d fullscr=%d\n",
-                    ui_diag, *(byte *)(dv + 4), cs, fs);
-            ui_diag++;
-        }
-        if (*(byte *)(dv + 4) & 8) {
-            byte *clc2 = *(byte **)clc_ptr_195ee8c;
-            if (*(int *)clc2 != 1) {
-                UI_Refresh();
-            }
-        }
+
+        if (*(byte *)(dv + 4) & 8)
+            UI_Refresh();
     }
 
     /* Check net display profile */
@@ -450,38 +406,14 @@ check_ui:
     }
 
     /* Render screen */
-    {
-        static int ck1 = 0;
-        if (ck1 < 10) {
-            void *fn = *(void **)((byte *)re_ptr_195eca8 + 0xb8);
-            fprintf(stderr, "[ck:render#%d] R_EndView=%p\n", ck1, fn);
-            ck1++;
-        }
-    }
-    if (trace_frame) {
-        fprintf(stderr, "[TRACE#%d] before_EndView: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
-    }
     RE_FUNC(re_ptr_195eca8, 0xb8, re_int_func)(0);
-    if (trace_frame) {
-        fprintf(stderr, "[TRACE#%d] after_EndView: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
-    }
 
 end_frame_draw:
     re = re_ptr_195eca8;
     RE_FUNC(re, 0xbc, re_void_func)();
-    if (trace_frame) {
-        fprintf(stderr, "[TRACE#%d] after_DoneViews: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
-    }
     Con_DrawConsole();
-    if (trace_frame) {
-        fprintf(stderr, "[TRACE#%d] after_Console: cmdUsed=%d\n", frame_diag-1, cmdlist_used());
-    }
     {
         void *fn = *(void **)((byte *)re + 0xac);
-        if (trace_frame) {
-            fprintf(stderr, "[TRACE#%d] before_EndFrame: cmdUsed=%d fn=%p\n",
-                    frame_diag-1, cmdlist_used(), fn);
-        }
         if (fn) ((re_void_func)fn)();
     }
     Sys_IsMainThread();
@@ -491,13 +423,8 @@ end_frame:
     RE_FUNC(re_ptr_195eca8, 0xbc, re_void_func)();
     Con_DrawConsole();
     {
-        static int ef_diag2 = 0;
         byte *re2 = re_ptr_195eca8;
         void *fn = *(void **)((byte *)re2 + 0xac);
-        if (ef_diag2 < 5) {
-            printf("  end_frame: re=%p re+0xac fn=%p\n", re2, fn);
-            ef_diag2++;
-        }
         if (fn) ((re_void_func)fn)();
     }
     Sys_IsMainThread();
@@ -506,13 +433,6 @@ end_frame:
 /* line 403 */
 void SCR_UpdateScreenInternal(void)
 {
-    static int scr_diag = 0;
-    if (scr_diag < 3) {
-        fprintf(stderr, "[scr#%d] reent=%d init=%d guard=%d\n",
-                scr_diag, updateScreenCalled, scr_initialized, *(int *)ptr_195eea4);
-        scr_diag++;
-    }
-
     if (updateScreenCalled)
         return;
 

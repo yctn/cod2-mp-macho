@@ -7,6 +7,12 @@
 
 extern punctuation_t default_punctuations[53]; /* 0x0 */
 extern void FreeMemory(void *ptr);
+extern void *GetClearedMemory(unsigned long size);
+extern int FS_FOpenFileRead(const char *filename, fileHandle_t *file, qboolean uniqueFILE);
+extern int FS_Read(void *buffer, int len, fileHandle_t f);
+extern void FS_FCloseFile(fileHandle_t f);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern int Com_Compress(char *data_p);
 
 void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations);
 void ScriptError(script_t *script, char *str);
@@ -20,6 +26,16 @@ void FreeScript(script_t *script);
 script_t * LoadScriptFile(const char *filename);
 int PS_ReadString(script_t *script, token_t *token, int quote);
 int PS_ReadToken(script_t *script, token_t *token);
+
+static void Script_SanitizeBuffer(struct script_s *script)
+{
+    char *p;
+
+    for (p = script->buffer; p < script->end_p; ++p) {
+        if (*p == '`')
+            *p = ' ';
+    }
+}
 
 /* line 146 */
 __attribute__((naked))
@@ -976,89 +992,45 @@ void FreeScript(script_t *script)
 }
 
 /* line 1371 */
-__attribute__((naked))
 script_t * LoadScriptFile(const char *filename)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1371 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* filename */
-        /* { scope 1 */
-        "movl %edi, 0xc(%esp)\n" /* line 1379 | filename */
-        "movl $str_00216058, 8(%esp)\n" /* "%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0x5c(%ebp), %ebx\n" /* pathname, script */
-        "movl %ebx, (%esp)\n" /* script */
-        "calll Com_sprintf\n"
-        "movl $1, 8(%esp)\n" /* line 1380 */
-        "leal -0x1c(%ebp), %eax\n" /* fp */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* script */
-        "calll FS_FOpenFileRead\n"
-        "movl %eax, %esi\n" /* length */
-        "movl -0x1c(%ebp), %eax\n" /* line 1381 | fp */
-        "testl %eax, %eax\n"
-        "jne .Lfc3410_000c3467\n"
-        "xorl %ebx, %ebx\n" /* script */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1411 | script */
-        "addl $0x6c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc3410_000c3467:\n"
-        "leal 0x4d1(%esi), %eax\n" /* line 1384 | length */
-        "movl %eax, (%esp)\n"
-        "calll GetClearedMemory\n"
-        "movl %eax, %ebx\n" /* script */
-        "movl %edi, 4(%esp)\n" /* line 1387 | filename */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "leal 0x4d0(%ebx), %eax\n" /* line 1388 | script */
-        "movl %eax, 0x40(%ebx)\n" /* script */
-        "movb $0, 0x4d0(%ebx, %esi)\n" /* line 1389 | script */
-        "movl %esi, 0x58(%ebx)\n" /* line 1390 | length, script */
-        "movl 0x40(%ebx), %eax\n" /* line 1392 | script */
-        "movl %eax, 0x44(%ebx)\n" /* script */
-        "movl %eax, 0x4c(%ebx)\n" /* line 1394 | script */
-        "leal (%esi, %eax), %eax\n" /* line 1396 | length */
-        "movl %eax, 0x48(%ebx)\n" /* script */
-        "movl $0, 0x64(%ebx)\n" /* line 1398 | script */
-        "movl $1, 0x5c(%ebx)\n" /* line 1400 | script */
-        "movl $1, 0x60(%ebx)\n" /* line 1401 | script */
-        "movl $default_punctuations, 4(%esp)\n" /* line 263 */
-        "movl %ebx, (%esp)\n"
-        "calll PS_CreatePunctuationTable\n"
-        "movl $default_punctuations, 0x6c(%ebx)\n" /* line 264 */
-        "movl -0x1c(%ebp), %eax\n" /* line 1405 | fp */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* length */
-        "movl 0x40(%ebx), %eax\n" /* script */
-        "movl %eax, (%esp)\n"
-        "calll FS_Read\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1406 | fp */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl 0x40(%ebx), %eax\n" /* line 1408 | script */
-        "movl %eax, (%esp)\n"
-        "calll Com_Compress\n"
-        "movl %eax, 0x58(%ebx)\n" /* script */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1411 | script */
-        "addl $0x6c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char pathname[64];
+    fileHandle_t fp;
+    int length;
+    struct script_s *script;
+
+    Com_sprintf(pathname, sizeof(pathname), "%s", filename);
+    length = FS_FOpenFileRead(pathname, &fp, 1);
+    if (!fp)
+        return (script_t *)0;
+
+    script = GetClearedMemory(length + 0x4d1);
+    if (!script) {
+        FS_FCloseFile(fp);
+        return (script_t *)0;
+    }
+
+    strcpy(script->filename, filename);
+    script->buffer = (char *)script + 0x4d0;
+    script->buffer[length] = '\0';
+    script->length = length;
+    script->script_p = script->buffer;
+    script->lastscript_p = script->buffer;
+    script->end_p = script->buffer + length;
+    script->tokenavailable = 0;
+    script->line = 1;
+    script->lastline = 1;
+
+    PS_CreatePunctuationTable((script_t *)script, default_punctuations);
+    script->punctuations = default_punctuations;
+
+    FS_Read(script->buffer, length, fp);
+    FS_FCloseFile(fp);
+
+    script->length = Com_Compress(script->buffer);
+    script->end_p = script->buffer + script->length;
+    Script_SanitizeBuffer(script);
+    return (script_t *)script;
 }
 
 /* line 455 */

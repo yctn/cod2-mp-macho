@@ -526,6 +526,11 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "movl %ebx, 4(%esp)\n" /* face */
         "movl %eax, (%esp)\n"
         "calll memcpy\n"
+        /* The original Mac code byte-swapped every pixel after wavelet decompression.
+         * Keep that only on big-endian targets; on little-endian Linux the decompressor
+         * output already matches the ARGB upload layout used by the rest of the renderer.
+         */
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
         /* { scope 3 */
         "movl -0x74(%ebp), %eax\n" /* line 166 */
         "testl %eax, %eax\n"
@@ -553,6 +558,9 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "cmpl -0x74(%ebp), %edi\n" /* i */
         "jne .Lffcbcc_000fcd6b\n"
         /* } scope */
+#else
+        "jmp .Lffcbcc_000fcd99\n"
+#endif
         ".Lffcbcc_000fcd99:\n"
         "movl -0x88(%ebp), %esi\n" /* line 176 | fileHeader */
         "movzbl 8(%esi), %eax\n" /* fileHeader */
@@ -2155,4 +2163,3 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fde24\n"
     );
 }
-

@@ -48,22 +48,18 @@ static long long get_ms(void) {
 int g_rb_draw_diag_count = 0;
 void diag_rb_draw(unsigned int x_hex, unsigned int y_hex, unsigned int mat_ptr)
 {
-    if (g_rb_draw_diag_count < 40) {
-        fprintf(stderr, "RB_Draw[%d] mat=%08x x=%08x y=%08x\n",
-                g_rb_draw_diag_count, mat_ptr, x_hex, y_hex);
-        g_rb_draw_diag_count++;
-    }
+    (void)x_hex;
+    (void)y_hex;
+    (void)mat_ptr;
 }
 
 /* Diagnostic: dump x,y,retaddr inside R_AddCmdDrawStretchPic */
 int g_addcmd_diag_count = 0;
 void diag_addcmd(unsigned int x_hex, unsigned int y_hex, unsigned int retaddr)
 {
-    if (g_addcmd_diag_count < 40) {
-        fprintf(stderr, "AddCmd[%d] x=%08x y=%08x ra=%08x\n",
-                g_addcmd_diag_count, x_hex, y_hex, retaddr);
-        g_addcmd_diag_count++;
-    }
+    (void)x_hex;
+    (void)y_hex;
+    (void)retaddr;
 }
 
 /* Intercept glDrawRangeElements to dump GL state at draw time */

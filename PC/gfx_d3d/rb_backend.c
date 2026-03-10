@@ -21,15 +21,8 @@ int g_technull_saved = 0;
 
 void rdsl_log_null_technique2(void *material, int techType)
 {
-    static int count = 0;
-    if (count < 30) {
-        const char *matName = material ? *(const char **)material : "(null)";
-        void *techSet = material ? *(void **)((char *)material + 0x38) : NULL;
-        const char *tsName = techSet ? *(const char **)techSet : "(no ts)";
-        fprintf(stderr, "[techNull#%d] mat='%s' ts='%s' type=%d\n",
-                count, matName ? matName : "?", tsName ? tsName : "?", techType);
-        count++;
-    }
+    (void)material;
+    (void)techType;
 }
 
 /* Original includes (from N_BINCL debug info):
@@ -54,43 +47,17 @@ static int diag_rb_has_drawsurfs = 0;
 static int diag_rb_has_beginview = 0;
 static int diag_rb_skip_this_frame = 0;
 static void diag_rb_cmd(int cmdType) {
-    if (cmdType == 12) diag_rb_has_beginview++;
-    if (cmdType == 23) diag_rb_has_drawsurfs++;
-    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
-    if (trace) {
-        static const char *cmdNames[] = {
-            "NULL", "Goto", "Call", "Return", "SetMaterialColor", "SetLightProps",
-            "?6", "?7", "?8", "?9", "SaveScreen", "ClearScreen",
-            "BeginView", "SetViewport", "SetRenderTarget", "StretchPic",
-            "StretchPicRotate", "StretchRaw", "DrawQuadPic", "DrawSprite",
-            "DrawFullScreenQuad", "DrawText", "DrawTextInSpace", "DrawSurfs",
-            "DrawSun", "EarlyPostFx", "LatePostFx", "DrawSunPost",
-            "?28", "BlendSaved", "?30", "?31", "?32", "TouchAllImages"
-        };
-        const char *name = (cmdType >= 0 && cmdType < 34) ? cmdNames[cmdType] : "???";
-        fprintf(stderr, "  cmd[%d] = %d (%s)\n", diag_rb_cmds_in_frame, cmdType, name);
-    }
-    diag_rb_cmds_in_frame++;
+    (void)cmdType;
 }
 
 static int diag_rb_entry_count = 0;
 static void diag_rb_entry(void) {
-    if (diag_rb_entry_count < 5) {
-        printf("RB_ExecuteRenderCommands ENTERED (#%d)\n", diag_rb_entry_count);
-        diag_rb_entry_count++;
-    }
+    (void)diag_rb_entry_count;
 }
 
 extern unsigned char dxState[];
 static void diag_rb_frame_start(void) {
-    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
-    if (trace) {
-        fprintf(stderr, "=== RB frame %d === dxState[0x20c8]=%d\n", diag_rb_frame, dxState[0x20c8]);
-    }
-    diag_rb_cmds_in_frame = 0;
-    diag_rb_has_drawsurfs = 0;
-    diag_rb_has_beginview = 0;
-    diag_rb_skip_this_frame = 0;
+    (void)dxState;
 }
 
 extern int rb_rdsl_call_count;
@@ -98,14 +65,10 @@ extern int g_dip_gl_draw;
 extern int g_rb_endsurface_count;
 extern int g_rb_endsurface_draw;
 static void diag_rb_frame_end(void) {
-    int trace = (diag_rb_frame >= 436 && diag_rb_frame < 445);
-    if (trace) {
-        fprintf(stderr, "=== RB frame %d end: %d cmds, %d bv, %d ds, rdsl=%d glDraw=%d endsurf=%d esDraw=%d ===\n",
-                diag_rb_frame, diag_rb_cmds_in_frame, diag_rb_has_beginview,
-                diag_rb_has_drawsurfs, rb_rdsl_call_count,
-                g_dip_gl_draw, g_rb_endsurface_count, g_rb_endsurface_draw);
-    }
-    diag_rb_frame++;
+    (void)rb_rdsl_call_count;
+    (void)g_dip_gl_draw;
+    (void)g_rb_endsurface_count;
+    (void)g_rb_endsurface_draw;
 }
 
 extern struct materialCommands_t tess; /* 0x0 */
@@ -148,11 +111,7 @@ void RB_GpuWaited(int ticks);
 static void RB_EndFrame_real(void);
 void RB_EndFrame(void)
 {
-    static int rbef = 0;
-    rbef++;
-    if (rbef <= 5) fprintf(stderr, "[RB_EndFrame_wrap#%d]\n", rbef);
     RB_EndFrame_real();
-    if (rbef <= 5) fprintf(stderr, "[RB_EndFrame_wrap#%d returned]\n", rbef);
 }
 void RB_InitBackendGlobalStructs(void);
 void RB_RegisterBackendAssets(void);
@@ -5721,10 +5680,10 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
 }
 
 int g_rb_exec_count = 0; /* diagnostic */
-static const char rb_diag_fmt[] = "RB_Exec #%d firstCmd=%d\n";
-static const char rb_diag_dispatch_fmt[] = "  dispatch cmd=%d func=%p\n";
-static const char rb_endframe_fmt[] = "[RB_EndFrame] dev=%p vtable=%p Present=%p\n";
-static const char rb_diag_post_fmt[] = "  dispatch returned\n";
+static const char rb_diag_fmt[] = "";
+static const char rb_diag_dispatch_fmt[] = "";
+static const char rb_endframe_fmt[] = "";
+static const char rb_diag_post_fmt[] = "";
 int g_rb_dispatch_count = 0; /* diagnostic: how many commands dispatched */
 int g_rb_first_cmd = -1; /* diagnostic: first command word seen */
 int g_rb_skip_reason = 0; /* diagnostic: 1=disableRendering, 2=needToTouch+recover_fail, 3=skipBackEnd, 4=empty_buf */

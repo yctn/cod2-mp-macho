@@ -510,179 +510,17 @@ static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
     );
 }
 
-static int swap_count = 0;
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
 {
     extern void *sdl_gl_window;
-    extern unsigned int glGetError(void);
-    extern void glGetIntegerv(unsigned int pname, int *params);
-    typedef void (*glReadPx_fn)(int, int, int, int, unsigned int, unsigned int, void *);
-    static glReadPx_fn myReadPx = NULL;
-    if (!myReadPx) myReadPx = (glReadPx_fn)dlsym(RTLD_NEXT, "glReadPixels");
-    swap_count++;
-    if (swap_count <= 10) {
-        unsigned int err = glGetError();
-        int vp[4] = {0};
-        glGetIntegerv(0x0BA2 /*GL_VIEWPORT*/, vp);
-        int sc[4] = {0};
-        glGetIntegerv(0x0C10 /*GL_SCISSOR_BOX*/, sc);
-        unsigned char px[4] = {0};
-        if (myReadPx) myReadPx(320, 240, 1, 1, 0x1908, 0x1401, px);
-        glGetError(); /* clear */
-        fprintf(stderr, "[SwapCtx#%d] glErr=0x%x viewport=[%d,%d,%d,%d] px=(%d,%d,%d,%d)\n",
-                swap_count, err, vp[0], vp[1], vp[2], vp[3], px[0], px[1], px[2], px[3]);
-    }
-    {
-        extern int g_rb_endsurface_count, g_rb_endsurface_notechnique;
-        extern int g_rb_endsurface_dxstate, g_rb_endsurface_draw;
-        extern int g_rb_endsurface_flag1skip, g_rb_endsurface_flag2skip;
-        extern int g_rb_endsurface_idxzero;
-        extern int g_rb_tess_type_counts[8], g_rb_tess_type_idxzero[8];
-        extern int rb_rdsl_call_count;
-        extern int rb_drawsurfscmd_count, rb_drawsurfscmd_dxskip;
-        extern int g_dsc_techtype[3], g_dsc_surfcount[3];
-        extern int g_rdsl_ignore_decal, g_rdsl_ignore_techm1, g_rdsl_ignore_technull, g_rdsl_noignore;
-        static const char *sf_names[] = {"BAD","POLY","ENT","SKIN","RIGID","SCACHE","TRI","RAW"};
-        if (swap_count <= 10 || (swap_count >= 435 && swap_count <= 450)) {
-            fprintf(stderr, "[RBdiag#%d] endSurf=%d idxZ=%d draw=%d dsCmd=%d\n",
-                    swap_count, g_rb_endsurface_count, g_rb_endsurface_idxzero,
-                    g_rb_endsurface_draw, rb_drawsurfscmd_count);
-            fprintf(stderr, "  passes: ");
-            for (int i = 0; i < rb_drawsurfscmd_count && i < 3; i++)
-                fprintf(stderr, "tech=%d surfs=%d ", g_dsc_techtype[i], g_dsc_surfcount[i]);
-            fprintf(stderr, "\n");
-        {
-            extern int g_rdsl_sortchange, g_rdsl_bf_entry;
-            fprintf(stderr, "  ignore: decal=%d techM1=%d techNull=%d ok=%d sortchg=%d bfentry=%d\n",
-                    g_rdsl_ignore_decal, g_rdsl_ignore_techm1,
-                    g_rdsl_ignore_technull, g_rdsl_noignore,
-                    g_rdsl_sortchange, g_rdsl_bf_entry);
-            g_rdsl_ignore_decal = 0; g_rdsl_ignore_techm1 = 0;
-            g_rdsl_ignore_technull = 0; g_rdsl_noignore = 0;
-            g_rdsl_sortchange = 0; g_rdsl_bf_entry = 0;
-            {
-                extern void *g_technull_mat;
-                extern int g_technull_type, g_technull_saved;
-                if (g_technull_saved > 0) {
-                    const char *mname = g_technull_mat ? *(const char **)g_technull_mat : "(null)";
-                    void *ts = g_technull_mat ? *(void **)((char *)g_technull_mat + 0x38) : 0;
-                    const char *tsname = ts ? *(const char **)ts : "(no ts)";
-                    fprintf(stderr, "  [techNull-LIGHTMAP] count=%d last-mat='%s' ts='%s'\n", g_technull_saved, mname, tsname);
-                    g_technull_saved = 0;
-                }
-            }
-        }
-            fprintf(stderr, "  tess: ");
-            for (int i = 0; i < 8; i++) {
-                if (g_rb_tess_type_counts[i])
-                    fprintf(stderr, "%s=%d(%dz) ", sf_names[i], g_rb_tess_type_counts[i], g_rb_tess_type_idxzero[i]);
-            }
-            fprintf(stderr, "\n");
-            /* Reset for next frame */
-            g_rb_endsurface_count = 0;
-            g_rb_endsurface_notechnique = 0;
-            g_rb_endsurface_dxstate = 0;
-            g_rb_endsurface_draw = 0;
-            g_rb_endsurface_flag1skip = 0;
-            g_rb_endsurface_flag2skip = 0;
-            g_rb_endsurface_idxzero = 0;
-            for (int i = 0; i < 8; i++) { g_rb_tess_type_counts[i] = 0; g_rb_tess_type_idxzero[i] = 0; }
-            rb_rdsl_call_count = 0;
-            rb_drawsurfscmd_count = 0;
-            rb_drawsurfscmd_dxskip = 0;
-        }
-    }
-    {
-        extern int g_sync_count, g_sync_newgl, g_sync_dirty, g_sync_update;
-        extern int g_sync_nosurfs, g_sync_hassurfs;
-        if (swap_count <= 10 || (swap_count >= 435 && swap_count <= 450)) {
-            fprintf(stderr, "[TexSync#%d] sync=%d newGL=%d dirty=%d update=%d nosurf=%d hassurf=%d\n",
-                    swap_count, g_sync_count, g_sync_newgl, g_sync_dirty, g_sync_update,
-                    g_sync_nosurfs, g_sync_hassurfs);
-            g_sync_count = 0; g_sync_newgl = 0; g_sync_dirty = 0; g_sync_update = 0;
-            g_sync_nosurfs = 0; g_sync_hassurfs = 0;
-        }
-    }
-    if (swap_count == 440 || swap_count == 441 || swap_count == 445) {
-        /* Read center pixel to see if anything was drawn */
-        unsigned char px[4] = {0};
-        if (myReadPx) myReadPx(320, 240, 1, 1, 0x1908, 0x1401, px);
-        glGetError(); /* clear */
-        fprintf(stderr, "[PIXEL#%d] center=(%d,%d,%d,%d)\n", swap_count, px[0], px[1], px[2], px[3]);
-        if (myReadPx) myReadPx(100, 100, 1, 1, 0x1908, 0x1401, px);
-        fprintf(stderr, "[PIXEL#%d] 100,100=(%d,%d,%d,%d)\n", swap_count, px[0], px[1], px[2], px[3]);
-        if (myReadPx) myReadPx(500, 400, 1, 1, 0x1908, 0x1401, px);
-        fprintf(stderr, "[PIXEL#%d] 500,400=(%d,%d,%d,%d)\n", swap_count, px[0], px[1], px[2], px[3]);
-    }
-    /* Test: inject a fixed-function triangle at frame 442 to verify GL works */
-    if (swap_count == 442) {
-        typedef void (*v_ui)(unsigned int);
-        typedef void (*v_v)(void);
-        typedef void (*v_ui4d)(unsigned int, double, double, double, double, double, double);
-        typedef void (*v_4f)(float, float, float, float);
-        typedef void (*v_2f)(float, float);
-        typedef unsigned int (*ui_v)(void);
-        v_ui myPushAttrib = (v_ui)dlsym(RTLD_NEXT, "glPushAttrib");
-        v_v myPopAttrib = (v_v)dlsym(RTLD_NEXT, "glPopAttrib");
-        v_ui myDisable = (v_ui)dlsym(RTLD_NEXT, "glDisable");
-        v_ui myMatrixMode = (v_ui)dlsym(RTLD_NEXT, "glMatrixMode");
-        v_v myPushMatrix = (v_v)dlsym(RTLD_NEXT, "glPushMatrix");
-        v_v myPopMatrix = (v_v)dlsym(RTLD_NEXT, "glPopMatrix");
-        v_v myLoadIdentity = (v_v)dlsym(RTLD_NEXT, "glLoadIdentity");
-        v_ui4d myOrtho = (v_ui4d)dlsym(RTLD_NEXT, "glOrtho");
-        /* glOrtho takes 6 doubles, use proper signature */
-        typedef void (*ortho_fn)(double, double, double, double, double, double);
-        ortho_fn realOrtho = (ortho_fn)dlsym(RTLD_NEXT, "glOrtho");
-        v_4f myColor4f = (v_4f)dlsym(RTLD_NEXT, "glColor4f");
-        v_ui myBegin = (v_ui)dlsym(RTLD_NEXT, "glBegin");
-        v_2f myVertex2f = (v_2f)dlsym(RTLD_NEXT, "glVertex2f");
-        v_v myEnd = (v_v)dlsym(RTLD_NEXT, "glEnd");
-        ui_v myGetError = (ui_v)dlsym(RTLD_NEXT, "glGetError");
+    (void)inContextRef;
 
-        myPushAttrib(0xFFFFFFFF);
-        myDisable(0x8620 /*GL_VERTEX_PROGRAM_ARB*/);
-        myDisable(0x8804 /*GL_FRAGMENT_PROGRAM_ARB*/);
-        myDisable(0x0B71 /*GL_DEPTH_TEST*/);
-        myDisable(0x0BE2 /*GL_BLEND*/);
-        myDisable(0x0DE1 /*GL_TEXTURE_2D*/);
-        myDisable(0x0C11 /*GL_SCISSOR_TEST*/);
-
-        myMatrixMode(0x1701 /*GL_PROJECTION*/);
-        myPushMatrix();
-        myLoadIdentity();
-        realOrtho(0, 640, 0, 480, -1, 1);
-        myMatrixMode(0x1700 /*GL_MODELVIEW*/);
-        myPushMatrix();
-        myLoadIdentity();
-
-        /* Draw a bright red quad in center of screen */
-        myColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-        myBegin(0x0007 /*GL_QUADS*/);
-        myVertex2f(200.0f, 140.0f);
-        myVertex2f(440.0f, 140.0f);
-        myVertex2f(440.0f, 340.0f);
-        myVertex2f(200.0f, 340.0f);
-        myEnd();
-
-        myGetError(); /* clear */
-
-        /* Read pixel at center */
-        unsigned char tpx[4] = {0};
-        if (myReadPx) myReadPx(320, 240, 1, 1, 0x1908, 0x1401, tpx);
-        myGetError();
-        fprintf(stderr, "[INJECT#442] center px=(%d,%d,%d,%d)\n",
-                tpx[0], tpx[1], tpx[2], tpx[3]);
-
-        myMatrixMode(0x1701);
-        myPopMatrix();
-        myMatrixMode(0x1700);
-        myPopMatrix();
-        myPopAttrib();
-    }
     if (sdl_gl_window) {
         extern void SDL_GL_SwapWindow(void *);
+
         SDL_GL_SwapWindow(sdl_gl_window);
     }
+
     return 1;
 }
 
@@ -7430,4 +7268,3 @@ void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_ite
         "jmp .Lf2bb652_002bbffd\n"
     );
 }
-
