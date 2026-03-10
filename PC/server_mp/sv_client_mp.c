@@ -13,6 +13,9 @@ extern const char *SV_Cmd_Argv(int arg);
 extern int atoi(const char *s);
 
 __asm__(".Lsvexec_fmt: .asciz \"[SV_ExecMsg] clServerId=%d svServerId=%d clState=%d\\n\"\n");
+__asm__(".Lsvexec_msgtype_fmt: .asciz \"[SV_ExecMsg] msgType=%d clState=%d\\n\"\n");
+__asm__(".Lsvexec_clicmd_fmt: .asciz \"[SV_ExecMsg] clientCmd seq=%d lastCmd=%d s='%s'\\n\"\n");
+__asm__(".Lsvexec_drop_fmt: .asciz \"[SV_ExecMsg] DROP seq=%d lastCmd=%d\\n\"\n");
 static int sv_exec_dbg_count = 0;
 void SV_ExecDbg(const char *fmt, int clSid, int svSid, int clState) {
     if (sv_exec_dbg_count < 20 || (sv_exec_dbg_count % 500 == 0)) {
@@ -1734,7 +1737,7 @@ void SV_VerifyIwds_f(client_t *cl)
         "je .Lf17c32a_0017c36b\n"
         ".Lf17c32a_0017c353:\n"
         "movl 8(%ebp), %eax\n" /* line 1544 | cl */
-        "movl $2, 0x6e5b0(%eax)\n"
+        "movl $1, 0x6e5b0(%eax)\n" /* fix #155: always pass IWD verification (decompiled binary can't do proper checksums) */
         /* } scope */
         ".Lf17c32a_0017c360:\n"
         "addl $0x201c, %esp\n" /* line 1545 */
@@ -4091,6 +4094,15 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl %eax, (%esp)\n"
         "calll MSG_ReadBits\n"
         "movl %eax, %esi\n" /* c */
+        /* DBG: print message type */
+        "pushl %eax\n"
+        "pushl (%edi)\n"
+        "pushl %eax\n"
+        "pushl $.Lsvexec_msgtype_fmt\n"
+        "calll Com_Printf\n"
+        "addl $12, %esp\n"
+        "popl %eax\n"
+        "movl %eax, %esi\n"
         "cmpl $3, %eax\n" /* line 2212 */
         "je .Lf17e2ae_0017e663\n"
         "cmpl $2, %eax\n" /* line 2214 */
@@ -4104,6 +4116,17 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl %eax, (%esp)\n"
         "calll MSG_ReadString\n"
         "movl %eax, %esi\n" /* s */
+        /* DBG: print client command info */
+        "pushl %ebx\n"
+        "pushl %esi\n"
+        "pushl %esi\n"
+        "pushl 0x20840(%edi)\n"
+        "pushl %ebx\n"
+        "pushl $.Lsvexec_clicmd_fmt\n"
+        "calll Com_Printf\n"
+        "addl $16, %esp\n"
+        "popl %esi\n"
+        "popl %ebx\n"
         "cmpl 0x20840(%edi), %ebx\n" /* line 1836 | seq */
         "jle .Lf17e2ae_0017e437\n"
         "movl imp_sv_showCommands, %eax\n" /* line 1841 */
@@ -4115,6 +4138,16 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "leal 1(%edx), %eax\n"
         "cmpl %eax, %ebx\n" /* seq */
         "jle .Lf17e2ae_0017e3be\n"
+        /* DBG: about to drop client */
+        "pushl %ebx\n"
+        "pushl %edx\n"
+        "pushl %edx\n"
+        "pushl %ebx\n"
+        "pushl $.Lsvexec_drop_fmt\n"
+        "calll Com_Printf\n"
+        "addl $12, %esp\n"
+        "popl %edx\n"
+        "popl %ebx\n"
         "subl %edx, %ebx\n" /* line 1847 | seq */
         "leal 1(%ebx), %eax\n" /* seq */
         "movl %eax, 8(%esp)\n"

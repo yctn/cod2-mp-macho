@@ -14,6 +14,7 @@ extern void Scr_AddEntityNum(int entNum, int classnum);
 extern int Scr_ExecEntThreadNum(int entNum, int classnum, scr_func_t handle, unsigned int paramcount);
 extern void Scr_NotifyNum(int entNum, int classnum, int stringValue, unsigned int paramcount);
 extern void Scr_Error(const char *msg);
+extern void Com_Printf(const char *fmt, ...);
 
 extern spawn_t spawns[22]; /* 0x0 */
 static const ent_field_t fields[11]; /* fields */
@@ -557,9 +558,14 @@ scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int p
 }
 
 /* line 930 */
+extern unsigned int FindEntityId(int entnum, int classnum);
 void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 {
-    Scr_NotifyNum(*(int *)ent, 0, (unsigned short)stringValue, paramcount);
+    int entnum = *(int *)ent;
+    unsigned int eid = FindEntityId(entnum, 0);
+    Com_Printf("[Scr_Notify] entnum=%d stringValue=%d paramcount=%u FindEntityId=%u\n",
+        entnum, stringValue, paramcount, eid);
+    Scr_NotifyNum(entnum, 0, (unsigned short)stringValue, paramcount);
 }
 
 /* line 225 */

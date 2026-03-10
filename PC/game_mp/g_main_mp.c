@@ -469,7 +469,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $str_dbg_load, (%esp)\n" "calll DBG_PrintFreeVars\n"
         "popl %edi\n" "popl %esi\n" "popl %ebx\n"
         /* Scr_EndLoadScripts already called inside GScr_LoadScripts — removed duplicate */
-        "nop\nnop\nnop\nnop\nnop\n" /* line 833: was call 0x1ab854 (raw Mac addr) */
+        "calll GScr_LoadConsts\n" /* line 833: was NOP'd raw Mac addr, restored */
         "movl $1, (%esp)\n" /* line 834 */
         "calll Scr_FreeScripts\n"
         "calll Scr_BeginLoadAnimScripts\n" /* line 835 */

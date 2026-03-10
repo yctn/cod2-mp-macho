@@ -5291,11 +5291,15 @@ unsigned int Scr_StartupGameType(void)
 /* line 6370 */
 unsigned int Scr_PlayerConnect(gentity_t *self)
 {
+    extern unsigned int FindEntityId(int entnum, int classnum);
     unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 16);
-    Com_Printf("[Scr_PlayerConnect] ent=%p handle=%u\n", (void*)self, handle);
+    Com_Printf("[Scr_PlayerConnect] ent=%p entnum=%d handle=%u\n", (void*)self, *(int*)self, handle);
     unsigned int threadId = Scr_ExecEntThread(self, handle, 0);
-    Com_Printf("[Scr_PlayerConnect] threadId=0x%x\n", threadId);
+    unsigned int eid = FindEntityId(*(int*)self, 0);
+    Com_Printf("[Scr_PlayerConnect] threadId=0x%x FindEntityId=%u (after ExecEntThread)\n", threadId, eid);
     Scr_FreeThread(threadId & 0xffff);
+    eid = FindEntityId(*(int*)self, 0);
+    Com_Printf("[Scr_PlayerConnect] FindEntityId=%u (after FreeThread)\n", eid);
     return 0;
 }
 
