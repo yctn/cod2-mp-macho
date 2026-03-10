@@ -427,7 +427,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "calll Dvar_GetString\n"
         "cmpb $0, (%eax)\n" /* line 206 */
         "jne .Lf15fbbe_0016008d\n"
-        "movl $0x73, %eax\n"
+        "movl $0x76, %eax\n"
         ".Lf15fbbe_0015fc4a:\n"
         "cmpl %ebx, %eax\n" /* prot */
         "je .Lf15fbbe_0015fc6f\n"

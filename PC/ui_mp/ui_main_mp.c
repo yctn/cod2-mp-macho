@@ -4187,7 +4187,7 @@ void UI_BuildServerDisplayList(qboolean force)
         ".Lf151d58_00151ec7:\n"
         "movl $str_002aa83c, (%esp)\n" /* line 2858 */
         "calll UI_SafeTranslateString\n"
-        "movl $str_002167d8, 8(%esp)\n" /* "1.0" */
+        "movl $str_002167d8, 8(%esp)\n" /* "1.3" */
         "movl %eax, 4(%esp)\n"
         "movl $str_002aa850, (%esp)\n" /* "%s - %s" */
         "calll va\n"

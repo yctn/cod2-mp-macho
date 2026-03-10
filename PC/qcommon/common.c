@@ -1975,7 +1975,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
     int i;
 
     /* Print version string */
-    Com_Printf("%s %s build %s %s\n", "CoD2 MP", "1.0", "MacOSXS-i386", "Apr 18 2006");
+    Com_Printf("%s %s build %s %s\n", "CoD2 MP", "1.3", "MacOSXS-i386", "Apr 18 2006");
 
     /* Clear pushed events */
     memset(com_pushedEvents, 0, sizeof(com_pushedEvents));
@@ -2094,11 +2094,11 @@ void Com_Init_Try_Block_Function(char *commandLine)
 
     /* Register version dvars */
     {
-        char *s = va("%s %s build %s %s", "CoD2 MP", "1.0", getBuildNumber(), "MacOSXS-i386");
+        char *s = va("%s %s build %s %s", "CoD2 MP", "1.3", getBuildNumber(), "MacOSXS-i386");
         version = Dvar_RegisterString("version", "", 0x1040);
         Dvar_SetString(version, s);
     }
-    shortversion = Dvar_RegisterString("shortversion", "1.0", 0x1044);
+    shortversion = Dvar_RegisterString("shortversion", "1.3", 0x1044);
 
     FxMem_Init();
     Sys_Init();

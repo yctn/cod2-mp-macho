@@ -3416,7 +3416,7 @@ void CL_CheckForResend(void)
         "leal -0x43c(%ebp), %esi\n" /* info */
         "movl %esi, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x73, 4(%esp)\n" /* line 2335 */
+        "movl $0x76, 4(%esp)\n" /* line 2335 */
         "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
