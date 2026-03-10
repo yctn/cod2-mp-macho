@@ -327,11 +327,11 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
 
     Dvar_RegisterString((const char *)str_00216d64, (const char *)str_002157b8, 0x101c); /* "fs_game" */
 
-    cdkey = *(char **)imp_cl_cdkey;
+    cdkey = (char *)imp_cl_cdkey;
     memcpy(buf, cdkey, 16);
     buf[16] = '\0';
 
-    cdkey2 = *(char **)imp_cl_cdkeychecksum;
+    cdkey2 = (char *)imp_cl_cdkeychecksum;
     memcpy(buf2, cdkey2, 4);
     buf2[4] = '\0';
 }
@@ -339,8 +339,8 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
 /* line 631 */
 void CLUI_SetCDKey(char *buf, char *buf2)
 {
-    char *cdkey = *(char **)imp_cl_cdkey;
-    char *cdkey2 = *(char **)imp_cl_cdkeychecksum;
+    char *cdkey = (char *)imp_cl_cdkey;
+    char *cdkey2 = (char *)imp_cl_cdkeychecksum;
 
     memcpy(cdkey, buf, 16);
     cdkey[16] = '\0';
