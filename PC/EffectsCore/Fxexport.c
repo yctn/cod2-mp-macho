@@ -18,10 +18,12 @@ extern float FxScheduler_GetEffectLength(void *scheduler, EffectTemplate *fx);
 
 extern byte *fx_scheduler_ptr;  /* imp_theFxScheduler */
 extern byte *fx_helper_ptr;     /* imp_theFxHelper */
-extern byte *fx_time_src1;      /* imp_effectActiveCountBolt */
-extern byte *fx_time_dst1;      /* imp_privateEffectActiveCountBolt */
-extern byte *fx_time_src2;      /* imp_effectActiveCountNonBolt */
-extern byte *fx_time_dst2;      /* imp_privateEffectActiveCountNonBolt */
+/* fix #153: fx_time_* stubs were 64-byte arrays not aliased to import pointers.
+   Access the BSS globals directly instead. */
+extern int effectActiveCountBolt;
+extern int privateEffectActiveCountBolt;
+extern int effectActiveCountNonBolt;
+extern int privateEffectActiveCountNonBolt;
 
 int FX_GetBoneIndex(const int entNum, unsigned int bone);
 void FX_PlaySimpleEffect(EffectTemplate *fx, const vec_t *org);
@@ -46,21 +48,23 @@ int FX_GetBoneIndex(const int entNum, unsigned int bone)
 }
 
 /* line 60 */
+/* fix #153: fx_scheduler_ptr is imp_theFxScheduler which stores &theFxScheduler;
+   theFxScheduler stores the heap FxScheduler pointer — need double deref */
 void FX_PlaySimpleEffect(EffectTemplate *fx, const vec_t *org)
 {
-    FxScheduler_PlayEffect(*(void **)&fx_scheduler_ptr, fx, org);
+    FxScheduler_PlayEffect(*(void **)*(void **)&fx_scheduler_ptr, fx, org);
 }
 
 /* line 67 */
 void FX_PlayEffect(EffectTemplate *fx, const vec_t *org, const vec_t *fwd)
 {
-    FxScheduler_PlayEffect(*(void **)&fx_scheduler_ptr, fx, org, fwd);
+    FxScheduler_PlayEffect(*(void **)*(void **)&fx_scheduler_ptr, fx, org, fwd);
 }
 
 /* line 81 */
 void FX_PlayEntityEffect(EffectTemplate *fx, const vec_t *org, vec3_t *axis, const FxBoltInfo *bolt)
 {
-    FxScheduler_PlayEffect(*(void **)&fx_scheduler_ptr, fx, org, axis, bolt);
+    FxScheduler_PlayEffect(*(void **)*(void **)&fx_scheduler_ptr, fx, org, axis, bolt);
 }
 
 /* line 89 */
@@ -82,9 +86,11 @@ void FX_FreeActive(void)
 }
 
 /* line 107 */
+/* fix #153: fx_helper_ptr is imp_theFxHelper which stores &theFxHelper;
+   theFxHelper stores &theFxHelpers (BSS struct) — need double deref */
 void FX_AdjustCamera(PrimType (*refdef)[256], float zfar)
 {
-    FxHelper_AdjustCamera(*(void **)&fx_helper_ptr, refdef, zfar);
+    FxHelper_AdjustCamera(*(void **)*(void **)&fx_helper_ptr, refdef, zfar);
     fx_camera_valid = 1;
 }
 
@@ -92,21 +98,21 @@ void FX_AdjustCamera(PrimType (*refdef)[256], float zfar)
 void FX_AdjustTime(int time)
 {
     fx_camera_valid = 0;
-    FxHelper_AdjustTime(*(void **)&fx_helper_ptr, time);
-    *(int *)&fx_time_dst1 = *(int *)&fx_time_src1;
-    *(int *)&fx_time_dst2 = *(int *)&fx_time_src2;
+    FxHelper_AdjustTime(*(void **)*(void **)&fx_helper_ptr, time);
+    privateEffectActiveCountBolt = effectActiveCountBolt;
+    privateEffectActiveCountNonBolt = effectActiveCountNonBolt;
 }
 
 /* line 135 */
 void FX_WarpTime(int time)
 {
-    FxHelper_WarpTime(*(void **)&fx_helper_ptr, time);
+    FxHelper_WarpTime(*(void **)*(void **)&fx_helper_ptr, time);
 }
 
 /* line 143 */
 float FX_GetEffectLength(EffectTemplate *fx)
 {
-    return FxScheduler_GetEffectLength(*(void **)&fx_scheduler_ptr, fx);
+    return FxScheduler_GetEffectLength(*(void **)*(void **)&fx_scheduler_ptr, fx);
 }
 
 /* line 29 */

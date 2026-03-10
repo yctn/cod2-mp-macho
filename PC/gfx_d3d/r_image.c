@@ -2220,6 +2220,8 @@ void R_ShutdownImages(void)
         "testl %edx, %edx\n"
         "je .Lfe8c02_000e8ccd\n"
         "movl (%edx), %eax\n" /* line 295 */
+        "cmpl $0, 8(%eax)\n" /* fix #153: skip Release if vtable entry is NULL (zeroed vtable) */
+        "je .Lfe8c02_000e8ccd\n"
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         "movl $0, 4(%ebx)\n" /* line 298 */
