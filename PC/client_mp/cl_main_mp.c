@@ -6440,6 +6440,16 @@ void CL_DownloadsComplete(void)
         "pushl $.Ldbg_dl2_str\n"
         "calll Com_Printf\n"
         "addl $8, %esp\n"
+        /* Fix #152: Clear cl_paused after CL_InitCGame to prevent
+         * server pause deadlock. cl_paused=1 was set above to tell
+         * the server to pause during cgame loading. Now loading is
+         * done, so clear it so the server resumes ticking and sends
+         * the first snapshot. */
+        "movl $0, 4(%esp)\n"
+        "movl imp_cl_paused, %eax\n"
+        "movl (%eax), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll Dvar_SetInt\n"
         "calll FS_ReferencedIwdPureChecksums\n" /* line 1769 */
         "movl %eax, %ebx\n"
         "movl $str_002a96d8, 8(%esp)\n" /* line 1772 */

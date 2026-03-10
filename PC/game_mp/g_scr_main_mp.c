@@ -5291,7 +5291,10 @@ unsigned int Scr_StartupGameType(void)
 /* line 6370 */
 unsigned int Scr_PlayerConnect(gentity_t *self)
 {
-    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)((char *)&g_scr_data + 16), 0);
+    unsigned int handle = *(unsigned int *)((char *)&g_scr_data + 16);
+    Com_Printf("[Scr_PlayerConnect] ent=%p handle=%u\n", (void*)self, handle);
+    unsigned int threadId = Scr_ExecEntThread(self, handle, 0);
+    Com_Printf("[Scr_PlayerConnect] threadId=0x%x\n", threadId);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }

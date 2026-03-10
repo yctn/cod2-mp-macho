@@ -1469,11 +1469,20 @@ int Com_EventLoop(void)
                 CL_PacketEvent(evFrom, &buf, evTime);
             }
             while (NET_GetLoopPacket(1, &evFrom, &buf)) {
+                static int _svpkt_cnt = 0;
+                _svpkt_cnt++;
                 CL_SwitchToLocalClient(0);
-                if (com_sv_running->current.enabled)
+                if (com_sv_running->current.enabled) {
+                    if (_svpkt_cnt <= 30)
+                        fprintf(stderr, "[SV_Loop#%d] sz=%d port=%d first4=0x%08x\n",
+                            _svpkt_cnt, buf.cursize, evFrom.port,
+                            (buf.cursize >= 4) ? *(int *)buf.data : 0);
                     SV_PacketEvent(evFrom, &buf);
-                else
+                } else {
+                    if (_svpkt_cnt <= 30)
+                        fprintf(stderr, "[SV_Loop#%d] sv_running=0, routing to CL\n", _svpkt_cnt);
                     CL_PacketEvent(evFrom, &buf, evTime);
+                }
             }
             ZN10LargeLocalD1Ev(&bufData_ll);
             return evTime;

@@ -4356,12 +4356,15 @@ void FX_Rewind(int time)
         "movl privateEffectActiveCountNonBolt, %ecx\n"
         "jmp .Lf5c510_0005c6f2\n"
         ".Lf5c510_0005c8a3:\n"
-        "movl $0, 8(%esp)\n" /* line 808 */
-        "movl $0, 4(%esp)\n"
         "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
+        "testl %eax, %eax\n" /* fix #152: null check before FxScheduler_Clean */
+        "je .Lf5c510_skip_clean\n"
+        "movl $0, 8(%esp)\n" /* line 808 */
+        "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_Clean\n"
+        ".Lf5c510_skip_clean:\n"
         /* } scope */
         "addl $0x2c, %esp\n" /* line 809 */
         "popl %ebx\n"

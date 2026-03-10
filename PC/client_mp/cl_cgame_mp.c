@@ -860,6 +860,9 @@ qboolean CL_Popup(const char *menu)
 {
     char *clui = CLUI_STATE;
 
+    Com_Printf("[CL_Popup] menu='%s' clui[0]=%d clui[0x407a0]=%d fullscreen=%d\n",
+        menu, *(int *)clui, *(int *)(clui + 0x407a0), UI_IsFullscreen());
+
     if (*(int *)clui != 8)
         return 0;
 
