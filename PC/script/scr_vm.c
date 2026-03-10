@@ -169,7 +169,7 @@ void Scr_ResetTimeout(void)
 {
     unsigned int tsc_low;
     __asm__ __volatile__ ("rdtsc" : "=a" (tsc_low) : : "edx");
-    *(unsigned int *)0x4ead98 = tsc_low >> 2;
+    *(unsigned int *)(scrVmGlob + 24) = tsc_low >> 2;
 }
 
 /* line 2620 */

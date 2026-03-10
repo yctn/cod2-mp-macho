@@ -3682,7 +3682,6 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
 }
 
 /* line 1648 */
-__attribute__((naked))
 /*
  * MSG_ReadDeltaUsercmdKey — C rewrite (fix #152)
  *
