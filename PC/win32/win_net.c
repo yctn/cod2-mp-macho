@@ -422,8 +422,9 @@ void NET_OpenIP(void)
             goto next_check;
         }
 
-        if (setsockopt(newsocket, 0xffff, 0x20, &sock_i, 4) == -1) {
+        if (setsockopt(newsocket, SOL_SOCKET, SO_BROADCAST, &sock_i, sizeof(sock_i)) == -1) {
             Com_Printf("WARNING: UDP_OpenSocket: setsockopt SO_BROADCAST: %s\n", strerror(errno));
+            closesocket(newsocket);
             ip_socket = 0;
             goto next_check;
         }
