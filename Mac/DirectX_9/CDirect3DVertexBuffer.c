@@ -9,11 +9,43 @@
  *   #include "Mac/DirectX 9/COpenGL.h"
  */
 
+typedef struct {
+    int vptr;
+    byte *allocation;
+    byte *data;
+    UINT32 length;
+    int freedLater;
+} CMemoryBufferImpl;
+
+typedef struct {
+    void *methods[15];
+    void (*Destroy)(const CDirect3DVertexBuffer *object);
+} CDirect3DVertexBufferVTable;
+
+typedef struct {
+    void **vtable;
+    ULONG refCount;
+    UINT32 lengthBytes;
+    CMemoryBufferImpl memory;
+    DWORD usage;
+    byte *lockPtr;
+    UINT32 lockSize;
+    unsigned char isLocked;
+    unsigned char pad[3];
+    unsigned char fenceList[8];
+    CStaticCacheInfo *staticCacheInfo;
+} CDirect3DVertexBufferImpl;
+
+static CDirect3DVertexBufferVTable *CDirect3DVertexBuffer_GetVTable(const CDirect3DVertexBuffer *object)
+{
+    return *(CDirect3DVertexBufferVTable **)object;
+}
+
 ULONG CDirect3DVertexBuffer_AddRef(const CDirect3DVertexBuffer * _this);
 HRESULT CDirect3DVertexBuffer_QueryInterface(const CDirect3DVertexBuffer * _this, const IID *iid, void * *ppvObj);
 ULONG CDirect3DVertexBuffer_Release(const CDirect3DVertexBuffer * _this);
 HRESULT CDirect3DVertexBuffer_Unlock(const CDirect3DVertexBuffer * _this);
-HRESULT CDirect3DVertexBuffer_GetDesc(const CDirect3DVertexBuffer * _this, void (*pDesc)());
+HRESULT CDirect3DVertexBuffer_GetDesc(const CDirect3DVertexBuffer * _this, D3DVERTEXBUFFER_DESC *pDesc);
 void ZN16CStaticCacheInfoD0Ev(void); /* CStaticCacheInfo_~CStaticCacheInfo */
 void CStaticCacheInfo_Flush(const CStaticCacheInfo * _this, void (*pStart)(), void (*pEnd)());
 void CDirect3DVertexBuffer_WaitFence(const CDirect3DVertexBuffer * _this, const void * pStart, UINT32 SizeInBytes);
@@ -39,103 +71,56 @@ void ZNSt4listIP6CFenceSaIS1_EE5eraseESt14_List_iteratorIS1_E(void); /* std_list
 void ZNSt6vectorI15CCacheInfoBlockSaIS0_EEC1Em(void); /* std_vector<CCacheInfoBlock, std_allocator<CCacheInfoBlock> >_vector */
 void ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERKm(void); /* std_vector<unsigned long, std_allocator<unsigned long> >__M_insert_aux */
 
-/* line 144 */
-__attribute__((naked))
 ULONG CDirect3DVertexBuffer_AddRef(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 144 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %eax\n" /* line 146 */
-        "addl $1, %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "popl %ebp\n" /* line 147 */
-        "retl\n"
-    );
+    CDirect3DVertexBufferImpl *vertexBuffer;
+
+    vertexBuffer = (CDirect3DVertexBufferImpl *)_this;
+    ++vertexBuffer->refCount;
+    return vertexBuffer->refCount;
 }
 
-/* line 133 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_QueryInterface(const CDirect3DVertexBuffer * _this, const IID *iid, void * *ppvObj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 133 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x10(%ebp), %edx\n" /* line 135 | ppvObj */
-        "movl %eax, (%edx)\n"
-        "movl (%eax), %edx\n" /* line 136 */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %eax, %eax\n" /* line 139 */
-        "leave\n"
-        "retl\n"
-    );
+    (void)iid;
+
+    *ppvObj = (void *)_this;
+    CDirect3DVertexBuffer_AddRef(_this);
+    return 0;
 }
 
-/* line 152 */
-__attribute__((naked))
 ULONG CDirect3DVertexBuffer_Release(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 152 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %ebx\n" /* line 154 */
-        "subl $1, %ebx\n"
-        "movl %ebx, 4(%edx)\n"
-        "testl %ebx, %ebx\n" /* line 156 */
-        "jne .Lf1f284_0001f2a3\n"
-        "movl (%edx), %eax\n" /* line 158 */
-        "movl %edx, (%esp)\n"
-        "calll *0x3c(%eax)\n"
-        ".Lf1f284_0001f2a3:\n"
-        "movl %ebx, %eax\n" /* line 162 */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CDirect3DVertexBufferImpl *vertexBuffer;
+    ULONG refCount;
+
+    vertexBuffer = (CDirect3DVertexBufferImpl *)_this;
+    refCount = --vertexBuffer->refCount;
+    if (!refCount) {
+        CDirect3DVertexBuffer_GetVTable(_this)->Destroy(_this);
+    }
+
+    return refCount;
 }
 
-/* line 251 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_Unlock(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 251 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 254 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return 0;
 }
 
-/* line 259 */
-__attribute__((naked))
-HRESULT CDirect3DVertexBuffer_GetDesc(const CDirect3DVertexBuffer * _this, void (*pDesc)())
+HRESULT CDirect3DVertexBuffer_GetDesc(const CDirect3DVertexBuffer * _this, D3DVERTEXBUFFER_DESC *pDesc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 259 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* pDesc */
-        "movl $0, (%edx)\n" /* line 264 */
-        "movl $6, 4(%edx)\n" /* line 265 */
-        "movl 0x20(%ecx), %eax\n" /* line 266 */
-        "movl %eax, 8(%edx)\n"
-        "movl $0, 0xc(%edx)\n" /* line 267 */
-        "movl 8(%ecx), %eax\n" /* line 268 */
-        "movl %eax, 0x10(%edx)\n"
-        "movl $0, 0x14(%edx)\n" /* line 269 */
-        "xorl %eax, %eax\n" /* line 272 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const CDirect3DVertexBufferImpl *vertexBuffer;
+
+    vertexBuffer = (const CDirect3DVertexBufferImpl *)_this;
+    pDesc->Format = 0;
+    pDesc->Type = D3DRTYPE_VERTEXBUFFER;
+    pDesc->Usage = vertexBuffer->usage;
+    pDesc->Pool = 0;
+    pDesc->Size = vertexBuffer->lengthBytes;
+    pDesc->FVF = 0;
+    return 0;
 }
 
 /* line 29 */
@@ -1358,107 +1343,61 @@ void ZN15CCacheInfoBlockD0Ev(void) /* CCacheInfoBlock_~CCacheInfoBlock */
     );
 }
 
-/* line 106 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_GetDevice(const CDirect3DVertexBuffer * _this, IDirect3DDevice9 * *ppDevice)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 106 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)ppDevice;
+    return 0;
 }
 
-/* line 107 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_SetPrivateData(const CDirect3DVertexBuffer * _this, const GUID *refguid, const void *pData, DWORD SizeOfData, DWORD Flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 107 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    (void)pData;
+    (void)SizeOfData;
+    (void)Flags;
+    return 0;
 }
 
-/* line 108 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_GetPrivateData(const CDirect3DVertexBuffer * _this, const GUID *refguid, void *pData, DWORD *pSizeOfData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 108 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    (void)pData;
+    (void)pSizeOfData;
+    return 0;
 }
 
-/* line 109 */
-__attribute__((naked))
 HRESULT CDirect3DVertexBuffer_FreePrivateData(const CDirect3DVertexBuffer * _this, const GUID *refguid)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 109 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    return 0;
 }
 
-/* line 110 */
-__attribute__((naked))
 DWORD CDirect3DVertexBuffer_SetPriority(const CDirect3DVertexBuffer * _this, DWORD PriorityNew)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 110 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)PriorityNew;
+    return 0;
 }
 
-/* line 111 */
-__attribute__((naked))
 DWORD CDirect3DVertexBuffer_GetPriority(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 111 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return 0;
 }
 
-/* line 112 */
-__attribute__((naked))
 void CDirect3DVertexBuffer_PreLoad(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 112 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 113 */
-__attribute__((naked))
 D3DRESOURCETYPE CDirect3DVertexBuffer_GetType(const CDirect3DVertexBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 113 */
-        "movl %esp, %ebp\n"
-        "movl $6, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return D3DRTYPE_VERTEXBUFFER;
 }
 
 /* line 95 */
@@ -1688,4 +1627,3 @@ void ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERK
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
-

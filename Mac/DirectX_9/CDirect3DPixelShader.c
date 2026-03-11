@@ -10,6 +10,51 @@
  *   #include "Mac/DirectX 9/CDirect3DDevice.h"
  */
 
+typedef struct {
+    void *methods[6];
+    void (*Destroy)(const CDirect3DPixelShader *object);
+} CDirect3DPixelShaderVTable;
+
+typedef struct {
+    void **vtable;
+    ULONG refCount;
+} CDirect3DPixelShaderImpl;
+
+typedef struct {
+    unsigned char pad0[0xc];
+    GLuint programId;
+} COpenGLATITextFragmentShaderImpl;
+
+typedef struct {
+    unsigned char pad0[0x10];
+    UINT32 stageCount;
+} COpenGLNVidiaRegisterCombinersProgramImpl;
+
+typedef struct {
+    unsigned char pad0[0x14];
+    GLuint programId;
+} COpenGLARBFragmentProgramImpl;
+
+typedef struct {
+    unsigned char pad0[0x81c];
+    GLuint boundFragmentProgram;
+    unsigned char fragmentProgramEnabled;
+} COpenGLPixelState;
+
+extern void *imp___ZN7COpenGL7sOpenGLE;
+extern int g_fp_enable_count;
+extern int g_fp_bind_count;
+
+static CDirect3DPixelShaderVTable *CDirect3DPixelShader_GetVTable(const CDirect3DPixelShader *object)
+{
+    return *(CDirect3DPixelShaderVTable **)object;
+}
+
+static COpenGLPixelState *CDirect3DPixelShader_GetOpenGLState(void)
+{
+    return (COpenGLPixelState *)imp___ZN7COpenGL7sOpenGLE;
+}
+
 ULONG CDirect3DPixelShader_AddRef(const CDirect3DPixelShader * _this);
 HRESULT CDirect3DPixelShader_QueryInterface(const CDirect3DPixelShader * _this, const IID *iid, J_COLOR_SPACE * *ppvObj);
 ULONG CDirect3DPixelShader_Release(const CDirect3DPixelShader * _this);
@@ -39,204 +84,103 @@ void ZN25COpenGLARBFragmentProgramD0Ev(void); /* COpenGLARBFragmentProgram_~COpe
 HRESULT CDirect3DPixelShader_GetDevice(const CDirect3DPixelShader * _this, IDirect3DDevice9 * *ppDevice);
 HRESULT CDirect3DPixelShader_GetFunction(const CDirect3DPixelShader * _this, J_COLOR_SPACE *pDstData, UINT *pSizeOfData);
 
-/* line 62 */
-__attribute__((naked))
 ULONG CDirect3DPixelShader_AddRef(const CDirect3DPixelShader * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 62 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %eax\n" /* line 64 */
-        "addl $1, %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "popl %ebp\n" /* line 65 */
-        "retl\n"
-    );
+    CDirect3DPixelShaderImpl *shader;
+
+    shader = (CDirect3DPixelShaderImpl *)_this;
+    ++shader->refCount;
+    return shader->refCount;
 }
 
-/* line 51 */
-__attribute__((naked))
 HRESULT CDirect3DPixelShader_QueryInterface(const CDirect3DPixelShader * _this, const IID *iid, J_COLOR_SPACE * *ppvObj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 51 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x10(%ebp), %edx\n" /* line 53 | ppvObj */
-        "movl %eax, (%edx)\n"
-        "movl (%eax), %edx\n" /* line 54 */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %eax, %eax\n" /* line 57 */
-        "leave\n"
-        "retl\n"
-    );
+    (void)iid;
+
+    *ppvObj = (J_COLOR_SPACE *)_this;
+    CDirect3DPixelShader_AddRef(_this);
+    return 0;
 }
 
-/* line 70 */
-__attribute__((naked))
 ULONG CDirect3DPixelShader_Release(const CDirect3DPixelShader * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %ebx\n" /* line 72 */
-        "subl $1, %ebx\n"
-        "movl %ebx, 4(%edx)\n"
-        "testl %ebx, %ebx\n" /* line 73 */
-        "jne .Lf1c01c_0001c03b\n"
-        "movl (%edx), %eax\n" /* line 75 */
-        "movl %edx, (%esp)\n"
-        "calll *0x18(%eax)\n"
-        ".Lf1c01c_0001c03b:\n"
-        "movl %ebx, %eax\n" /* line 79 */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CDirect3DPixelShaderImpl *shader;
+    ULONG refCount;
+
+    shader = (CDirect3DPixelShaderImpl *)_this;
+    refCount = --shader->refCount;
+    if (!refCount) {
+        CDirect3DPixelShader_GetVTable(_this)->Destroy(_this);
+    }
+
+    return refCount;
 }
 
-/* line 154 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLATITextFragmentShader_SetConstants(const COpenGLATITextFragmentShader * _this, UINT32 Register, const float * pConstantData, UINT32 Vector4fCount, UINT32 CommandNumber)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 154 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0x14(%ebp), %eax\n" /* line 158 | Vector4fCount */
-        "subl $1, %eax\n"
-        "cmpl $-1, %eax\n"
-        "je .Lf1c044_0001c080\n"
-        "movl 0x10(%ebp), %esi\n" /* pConstantData, pf */
-        "movl 0xc(%ebp), %ebx\n" /* Register */
-        "leal 1(%ebx, %eax), %edi\n"
-        ".Lf1c044_0001c062:\n"
-        "movl %esi, 8(%esp)\n" /* line 160 | pf */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x8200, (%esp)\n"
-        "calll glProgramEnvParameter4fvARB\n"
-        "addl $1, %ebx\n" /* line 161 */
-        "addl $0x10, %esi\n" /* line 162 | pf */
-        "cmpl %edi, %ebx\n" /* line 158 */
-        "jne .Lf1c044_0001c062\n"
-        /* } scope */
-        ".Lf1c044_0001c080:\n"
-        "addl $0x1c, %esp\n" /* line 164 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    UINT32 i;
+
+    (void)_this;
+    (void)CommandNumber;
+
+    for (i = 0; i < Vector4fCount; ++i) {
+        glProgramEnvParameter4fvARB(0x8200, Register + i, pConstantData + (i * 4));
+    }
+
+    return 0;
 }
 
-/* line 193 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLNVidiaRegisterCombinersProgram_Enable(const COpenGLNVidiaRegisterCombinersProgram * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 193 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 226 */
-        "retl\n"
-    );
+    (void)_this;
+    return 0;
 }
 
-/* line 246 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLNVidiaRegisterCombinersProgram_SetConstants(const COpenGLNVidiaRegisterCombinersProgram * _this, UINT32 Register, const float * pConstantData, UINT32 Vector4fCount, UINT32 CommandNumber)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 246 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %edx\n" /* pConstantData */
-        "movl 0x18(%ebp), %ecx\n" /* CommandNumber */
-        "movl 8(%ebp), %eax\n" /* line 254 | this */
-        "cmpl $2, 0x10(%eax)\n"
-        "ja .Lf1c08e_0001c0b2\n"
-        "movl %edx, 0xc(%ebp)\n" /* line 258 | Register */
-        "leal 0x852a(%ecx), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* this */
-        "popl %ebp\n" /* line 266 */
-        "jmp glCombinerParameterfvNV\n" /* line 258 */
-        ".Lf1c08e_0001c0b2:\n"
-        "movl %edx, 0x10(%ebp)\n" /* line 264 | pConstantData */
-        "movl $0x852a, 0xc(%ebp)\n" /* Register */
-        "leal 0x8550(%ecx), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* this */
-        "popl %ebp\n" /* line 266 */
-        "jmp glCombinerStageParameterfvNV\n" /* line 264 */
-    );
+    const COpenGLNVidiaRegisterCombinersProgramImpl *program;
+
+    (void)Register;
+    (void)Vector4fCount;
+
+    program = (const COpenGLNVidiaRegisterCombinersProgramImpl *)_this;
+    if (program->stageCount <= 2) {
+        glCombinerParameterfvNV(0x852a + CommandNumber, pConstantData);
+    } else {
+        glCombinerStageParameterfvNV(0x8550 + CommandNumber, 0x852a, pConstantData);
+    }
+
+    return 0;
 }
 
-/* line 350 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLARBFragmentProgram_Disable(const COpenGLARBFragmentProgram * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 350 */
-        "movl %esp, %ebp\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 354 */
-        "cmpb $0, 0x820(%eax)\n"
-        "jne .Lf1c0cc_0001c0df\n"
-        "popl %ebp\n" /* line 359 */
-        "retl\n"
-        ".Lf1c0cc_0001c0df:\n"
-        "movb $0, 0x820(%eax)\n" /* line 347 */
-        "movl $0x8804, 8(%ebp)\n" /* line 357 | this */
-        "popl %ebp\n" /* line 359 */
-        "jmp glDisable\n" /* line 357 */
-    );
+    COpenGLPixelState *openGLState;
+
+    (void)_this;
+
+    openGLState = CDirect3DPixelShader_GetOpenGLState();
+    if (!openGLState->fragmentProgramEnabled) {
+        return 0;
+    }
+
+    openGLState->fragmentProgramEnabled = 0;
+    glDisable(0x8804);
+    return 0;
 }
 
-/* line 364 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLARBFragmentProgram_SetConstants(const COpenGLARBFragmentProgram * _this, UINT32 Register, const float * pConstantData, UINT32 Vector4fCount, UINT32 CommandNumber)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 364 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0x14(%ebp), %eax\n" /* line 370 | Vector4fCount */
-        "subl $1, %eax\n"
-        "cmpl $-1, %eax\n"
-        "je .Lf1c0f4_0001c130\n"
-        "movl 0x10(%ebp), %esi\n" /* pConstantData, pf */
-        "movl 0xc(%ebp), %ebx\n" /* Register */
-        "leal 1(%ebx, %eax), %edi\n"
-        ".Lf1c0f4_0001c112:\n"
-        "movl %esi, 8(%esp)\n" /* line 372 | pf */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x8804, (%esp)\n"
-        "calll glProgramEnvParameter4fvARB\n"
-        "addl $1, %ebx\n" /* line 373 */
-        "addl $0x10, %esi\n" /* line 374 | pf */
-        "cmpl %edi, %ebx\n" /* line 370 */
-        "jne .Lf1c0f4_0001c112\n"
-        /* } scope */
-        ".Lf1c0f4_0001c130:\n"
-        "addl $0x1c, %esp\n" /* line 376 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    UINT32 i;
+
+    (void)_this;
+    (void)CommandNumber;
+
+    for (i = 0; i < Vector4fCount; ++i) {
+        glProgramEnvParameter4fvARB(0x8804, Register + i, pConstantData + (i * 4));
+    }
+
+    return 0;
 }
 
 /* line 29 */
@@ -274,127 +218,81 @@ void ZN20CDirect3DPixelShaderD0Ev(void) /* CDirect3DPixelShader_~CDirect3DPixelS
     );
 }
 
-/* line 121 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLATITextFragmentShader_Enable(const COpenGLATITextFragmentShader * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 121 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%esi), %eax\n" /* line 125 | this */
-        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
-        "cmpl %eax, 0x81c(%ebx)\n"
-        "je .Lf1c19e_0001c1d3\n"
-        "movl %eax, 4(%esp)\n" /* line 127 */
-        "movl $0x8200, (%esp)\n"
-        "calll glBindProgramARB\n"
-        "movl 0xc(%esi), %eax\n" /* line 346 | this */
-        "movl %eax, 0x81c(%ebx)\n"
-        ".Lf1c19e_0001c1d3:\n"
-        "cmpb $0, 0x820(%ebx)\n" /* line 130 */
-        "je .Lf1c19e_0001c1e3\n"
-        "addl $0x10, %esp\n" /* line 135 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1c19e_0001c1e3:\n"
-        "movb $1, 0x820(%ebx)\n" /* line 347 */
-        "movl $0x8200, 8(%ebp)\n" /* line 133 | this */
-        "addl $0x10, %esp\n" /* line 135 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp glEnable\n" /* line 133 */
-    );
+    const COpenGLATITextFragmentShaderImpl *shader;
+    COpenGLPixelState *openGLState;
+
+    shader = (const COpenGLATITextFragmentShaderImpl *)_this;
+    openGLState = CDirect3DPixelShader_GetOpenGLState();
+
+    if (openGLState->boundFragmentProgram != shader->programId) {
+        glBindProgramARB(0x8200, shader->programId);
+        openGLState->boundFragmentProgram = shader->programId;
+    }
+
+    if (!openGLState->fragmentProgramEnabled) {
+        openGLState->fragmentProgramEnabled = 1;
+        glEnable(0x8200);
+    }
+
+    return 0;
 }
 
-/* line 140 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLATITextFragmentShader_Disable(const COpenGLATITextFragmentShader * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 140 */
-        "movl %esp, %ebp\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 144 */
-        "cmpb $0, 0x820(%eax)\n"
-        "jne .Lf1c1fc_0001c20f\n"
-        "popl %ebp\n" /* line 149 */
-        "retl\n"
-        ".Lf1c1fc_0001c20f:\n"
-        "movb $0, 0x820(%eax)\n" /* line 347 */
-        "movl $0x8200, 8(%ebp)\n" /* line 147 | this */
-        "popl %ebp\n" /* line 149 */
-        "jmp glDisable\n" /* line 147 */
-    );
+    COpenGLPixelState *openGLState;
+
+    (void)_this;
+
+    openGLState = CDirect3DPixelShader_GetOpenGLState();
+    if (!openGLState->fragmentProgramEnabled) {
+        return 0;
+    }
+
+    openGLState->fragmentProgramEnabled = 0;
+    glDisable(0x8200);
+    return 0;
 }
 
-/* line 231 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLNVidiaRegisterCombinersProgram_Disable(const COpenGLNVidiaRegisterCombinersProgram * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 231 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 235 */
-        "cmpb $0, 0x820(%eax)\n"
-        "jne .Lf1c224_0001c23a\n"
-        "leave\n" /* line 241 */
-        "retl\n"
-        ".Lf1c224_0001c23a:\n"
-        "movb $0, 0x820(%eax)\n" /* line 347 */
-        "movl $0x86de, (%esp)\n" /* line 238 */
-        "calll glDisable\n"
-        "movl $0x8522, 8(%ebp)\n" /* line 239 | this */
-        "leave\n" /* line 241 */
-        "jmp glDisable\n" /* line 239 */
-    );
+    COpenGLPixelState *openGLState;
+
+    (void)_this;
+
+    openGLState = CDirect3DPixelShader_GetOpenGLState();
+    if (!openGLState->fragmentProgramEnabled) {
+        return 0;
+    }
+
+    openGLState->fragmentProgramEnabled = 0;
+    glDisable(0x86de);
+    glDisable(0x8522);
+    return 0;
 }
 
-/* line 330 */
-__attribute__((naked))
 J_COLOR_SPACE COpenGLARBFragmentProgram_Enable(const COpenGLARBFragmentProgram * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 330 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "incl g_fp_enable_count\n"
-        "movl 0x14(%esi), %eax\n" /* line 334 | this */
-        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
-        "cmpl %eax, 0x81c(%ebx)\n"
-        "je .Lf1c25a_0001c28f\n"
-        "incl g_fp_bind_count\n"
-        "movl %eax, 4(%esp)\n" /* line 336 */
-        "movl $0x8804, (%esp)\n"
-        "calll glBindProgramARB\n"
-        "movl 0x14(%esi), %eax\n" /* line 346 | this */
-        "movl %eax, 0x81c(%ebx)\n"
-        ".Lf1c25a_0001c28f:\n"
-        "cmpb $0, 0x820(%ebx)\n" /* line 339 */
-        "je .Lf1c25a_0001c29f\n"
-        "addl $0x10, %esp\n" /* line 345 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1c25a_0001c29f:\n"
-        "movb $1, 0x820(%ebx)\n" /* line 347 */
-        "movl $0x8804, 8(%ebp)\n" /* line 342 | this */
-        "addl $0x10, %esp\n" /* line 345 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp glEnable\n" /* line 342 */
-    );
+    const COpenGLARBFragmentProgramImpl *program;
+    COpenGLPixelState *openGLState;
+
+    program = (const COpenGLARBFragmentProgramImpl *)_this;
+    openGLState = CDirect3DPixelShader_GetOpenGLState();
+    ++g_fp_enable_count;
+
+    if (openGLState->boundFragmentProgram != program->programId) {
+        ++g_fp_bind_count;
+        glBindProgramARB(0x8804, program->programId);
+        openGLState->boundFragmentProgram = program->programId;
+    }
+
+    if (!openGLState->fragmentProgramEnabled) {
+        openGLState->fragmentProgramEnabled = 1;
+        glEnable(0x8804);
+    }
+
+    return 0;
 }
 
 /* line 29 */
@@ -1643,33 +1541,17 @@ void ZN25COpenGLARBFragmentProgramD0Ev(void) /* COpenGLARBFragmentProgram_~COpen
     );
 }
 
-/* line 41 */
-__attribute__((naked))
 HRESULT CDirect3DPixelShader_GetDevice(const CDirect3DPixelShader * _this, IDirect3DDevice9 * *ppDevice)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 41 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* ppDevice */
-        "movl $0, (%eax)\n"
-        "xorl %eax, %eax\n" /* ppDevice */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    *ppDevice = NULL;
+    return 0;
 }
 
-/* line 42 */
-__attribute__((naked))
 HRESULT CDirect3DPixelShader_GetFunction(const CDirect3DPixelShader * _this, J_COLOR_SPACE *pDstData, UINT *pSizeOfData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 42 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %eax\n" /* pSizeOfData */
-        "movl $0, (%eax)\n"
-        "xorl %eax, %eax\n" /* pSizeOfData */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)pDstData;
+    *pSizeOfData = 0;
+    return 0;
 }
-

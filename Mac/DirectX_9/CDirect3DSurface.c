@@ -14,6 +14,50 @@
 extern bool g_NoTextureID; /* 0x0 */
 extern bool g_WarmOff; /* 0x0 */
 
+typedef struct {
+    void *QueryInterface;
+    ULONG (*AddRef)(void *object);
+    ULONG (*Release)(void *object);
+} IUnknownLikeVTable;
+
+typedef struct {
+    void **vtable;
+    ULONG refCount;
+    SurfaceType surfaceType;
+    GLenum cubemapTarget;
+    UINT32 level;
+    UINT32 width;
+    UINT32 height;
+    D3DFORMAT format;
+    byte *surfaceMemory;
+    unsigned char isDirty;
+    unsigned char pad0[3];
+    void *owner;
+    unsigned char releaseOwnerOnDestroy;
+    unsigned char pad1[3];
+    GLenum openGLInternalFormat;
+    GLenum openGLFormat;
+    GLenum openGLElementType;
+} CDirect3DSurfaceImpl;
+
+extern void *vtbl_CDirect3DSurface[];
+void __ZdlPv(void *ptr);
+bool MacOpenGLUtils_IsCompressed(const D3DFORMAT *f);
+UINT32 MacOpenGLUtils_GetFormatSizeInBits(const D3DFORMAT *f);
+
+static IUnknownLikeVTable *CDirect3DSurface_GetIUnknownVTable(void *object)
+{
+    return *(IUnknownLikeVTable **)object;
+}
+
+static void CDirect3DSurface_Destroy(CDirect3DSurfaceImpl *surface)
+{
+    surface->vtable = vtbl_CDirect3DSurface;
+    if (surface->releaseOwnerOnDestroy && surface->owner) {
+        CDirect3DSurface_GetIUnknownVTable(surface->owner)->Release(surface->owner);
+    }
+}
+
 void CDirect3DSurface_IgnorePixelStorei(GLenum pname, GLint param)
 {
     (void)pname;
@@ -28,8 +72,8 @@ void CDirect3DSurface_IgnoreTexParameteri(GLenum target, GLenum pname, GLint par
 }
 
 ULONG CDirect3DSurface_AddRef(const CDirect3DSurface * _this);
-void ZN16CDirect3DSurfaceD1Ev(void); /* CDirect3DSurface_~CDirect3DSurface */
-void ZN16CDirect3DSurfaceD0Ev(void); /* CDirect3DSurface_~CDirect3DSurface */
+void ZN16CDirect3DSurfaceD1Ev(const CDirect3DSurface * _this); /* CDirect3DSurface_~CDirect3DSurface */
+void ZN16CDirect3DSurfaceD0Ev(const CDirect3DSurface * _this); /* CDirect3DSurface_~CDirect3DSurface */
 HRESULT CDirect3DSurface_QueryInterface(const CDirect3DSurface * _this, const IID *iid, void * *ppvObj);
 ULONG CDirect3DSurface_Release(const CDirect3DSurface * _this);
 HRESULT CDirect3DSurface_GetDesc(const CDirect3DSurface * _this, D3DSURFACE_DESC *pDesc);
@@ -52,241 +96,101 @@ HRESULT CDirect3DSurface_GetContainer(const CDirect3DSurface * _this, const IID 
 HRESULT CDirect3DSurface_GetDC(const CDirect3DSurface * _this, HDC *phdc);
 HRESULT CDirect3DSurface_ReleaseDC(const CDirect3DSurface * _this, HDC hdc);
 
-/* line 305 */
-__attribute__((naked))
 ULONG CDirect3DSurface_AddRef(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 305 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %eax\n" /* line 307 */
-        "addl $1, %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "popl %ebp\n" /* line 308 */
-        "retl\n"
-    );
+    CDirect3DSurfaceImpl *surface;
+
+    surface = (CDirect3DSurfaceImpl *)_this;
+    ++surface->refCount;
+    return surface->refCount;
 }
 
-/* line 280 */
-__attribute__((naked))
-void ZN16CDirect3DSurfaceD1Ev(void) /* CDirect3DSurface_~CDirect3DSurface */
+void ZN16CDirect3DSurfaceD1Ev(const CDirect3DSurface * _this) /* CDirect3DSurface_~CDirect3DSurface */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 280 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_CDirect3DSurface, (%eax)\n"
-        "cmpb $0, 0x2c(%eax)\n" /* line 282 */
-        "je .Lf1d6f4_0001d718\n"
-        "movl 0x28(%eax), %edx\n" /* line 284 */
-        "testl %edx, %edx\n"
-        "je .Lf1d6f4_0001d718\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        "movl 4(%eax), %ecx\n"
-        "popl %ebp\n" /* line 286 */
-        "jmpl *%ecx\n" /* line 284 */
-        ".Lf1d6f4_0001d718:\n"
-        "popl %ebp\n" /* line 286 */
-        "retl\n"
-    );
+    CDirect3DSurface_Destroy((CDirect3DSurfaceImpl *)_this);
 }
 
-/* line 280 */
-__attribute__((naked))
-void ZN16CDirect3DSurfaceD0Ev(void) /* CDirect3DSurface_~CDirect3DSurface */
+void ZN16CDirect3DSurfaceD0Ev(const CDirect3DSurface * _this) /* CDirect3DSurface_~CDirect3DSurface */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 280 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $vtbl_CDirect3DSurface, (%ebx)\n" /* this */
-        "cmpb $0, 0x2c(%ebx)\n" /* line 282 | this */
-        "je .Lf1d71a_0001d73f\n"
-        "movl 0x28(%ebx), %edx\n" /* line 284 | this */
-        "testl %edx, %edx\n"
-        "je .Lf1d71a_0001d73f\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%eax)\n"
-        ".Lf1d71a_0001d73f:\n"
-        "movl %ebx, 8(%ebp)\n" /* line 286 | this */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    CDirect3DSurface_Destroy((CDirect3DSurfaceImpl *)_this);
+    __ZdlPv((void *)_this);
 }
 
-/* line 294 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_QueryInterface(const CDirect3DSurface * _this, const IID *iid, void * *ppvObj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 294 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x10(%ebp), %edx\n" /* line 296 | ppvObj */
-        "movl %eax, (%edx)\n"
-        "movl (%eax), %edx\n" /* line 297 */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %eax, %eax\n" /* line 300 */
-        "leave\n"
-        "retl\n"
-    );
+    (void)iid;
+
+    *ppvObj = (void *)_this;
+    CDirect3DSurface_AddRef(_this);
+    return 0;
 }
 
-/* line 313 */
-__attribute__((naked))
 ULONG CDirect3DSurface_Release(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 313 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 4(%edx), %ebx\n" /* line 315 */
-        "subl $1, %ebx\n"
-        "movl %ebx, 4(%edx)\n"
-        "testl %ebx, %ebx\n" /* line 317 */
-        "jne .Lf1d766_0001d785\n"
-        "movl (%edx), %eax\n" /* line 319 */
-        "movl %edx, (%esp)\n"
-        "calll *0x48(%eax)\n"
-        ".Lf1d766_0001d785:\n"
-        "movl %ebx, %eax\n" /* line 323 */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CDirect3DSurfaceImpl *surface;
+    ULONG refCount;
+
+    surface = (CDirect3DSurfaceImpl *)_this;
+    refCount = --surface->refCount;
+    if (!refCount) {
+        ZN16CDirect3DSurfaceD0Ev(_this);
+    }
+
+    return refCount;
 }
 
-/* line 328 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_GetDesc(const CDirect3DSurface * _this, D3DSURFACE_DESC *pDesc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 328 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* pDesc */
-        "movl 0x1c(%edx), %eax\n" /* line 340 */
-        "movl %eax, (%ecx)\n"
-        "movl 0x14(%edx), %eax\n" /* line 341 */
-        "movl %eax, 0x18(%ecx)\n"
-        "movl 0x18(%edx), %eax\n" /* line 342 */
-        "movl %eax, 0x1c(%ecx)\n"
-        "xorl %eax, %eax\n" /* line 347 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const CDirect3DSurfaceImpl *surface;
+
+    surface = (const CDirect3DSurfaceImpl *)_this;
+    pDesc->Format = surface->format;
+    pDesc->Width = surface->width;
+    pDesc->Height = surface->height;
+    return 0;
 }
 
-/* line 356 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface * _this, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 356 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* line 361 | this */
-        "movl 0x20(%edx), %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* pLockedRect */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebp), %edi\n" /* line 365 | this */
-        "addl $0x1c, %edi\n"
-        "movl %edi, (%esp)\n"
-        "calll MacOpenGLUtils_IsCompressed\n"
-        "testb %al, %al\n"
-        "je .Lf1d7ac_0001d84d\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 373 | this */
-        "movl 0x14(%edx), %eax\n" /* Width */
-        "testl %eax, %eax\n" /* line 376 */
-        "jne .Lf1d7ac_0001d848\n"
-        "movl $4, %edx\n"
-        ".Lf1d7ac_0001d7e2:\n"
-        "movl 8(%ebp), %eax\n" /* line 381 | this, BlockSize */
-        "cmpl $0x31545844, 0x1c(%eax)\n"
-        "setne %al\n" /* BlockSize */
-        "movzbl %al, %eax\n" /* BlockSize */
-        "leal 8(, %eax, 8), %eax\n" /* BlockSize */
-        "shrl $2, %edx\n" /* line 383 */
-        "imull %edx, %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* pLockedRect */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        ".Lf1d7ac_0001d804:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 386 | pRect */
-        "testl %eax, %eax\n"
-        "je .Lf1d7ac_0001d837\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 389 | pLockedRect */
-        "movl 4(%eax), %esi\n" /* Address */
-        "movl 0x10(%ebp), %edx\n" /* line 390 | pRect */
-        "movl (%edx), %ebx\n"
-        "movl %edi, (%esp)\n"
-        "calll MacOpenGLUtils_GetFormatSizeInBits\n"
-        "imull %eax, %ebx\n" /* line 391 */
-        "shrl $3, %ebx\n"
-        "movl 0x10(%ebp), %edx\n" /* pRect */
-        "movl 4(%edx), %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* pLockedRect */
-        "imull (%edx), %eax\n"
-        "addl %eax, %ebx\n"
-        "addl %ebx, %esi\n" /* Address */
-        "movl %esi, 4(%edx)\n" /* Address */
-        /* } scope */
-        ".Lf1d7ac_0001d837:\n"
-        "movl 8(%ebp), %eax\n" /* line 63 | this */
-        "movb $1, 0x24(%eax)\n"
-        "xorl %eax, %eax\n" /* line 401 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d7ac_0001d848:\n"
-        "leal 3(%eax), %edx\n" /* line 376 */
-        "jmp .Lf1d7ac_0001d7e2\n"
-        /* } scope */
-        ".Lf1d7ac_0001d84d:\n"
-        "movl 8(%ebp), %eax\n" /* line 367 | this */
-        "movl 0x14(%eax), %ebx\n"
-        "movl %edi, (%esp)\n"
-        "calll MacOpenGLUtils_GetFormatSizeInBits\n"
-        "imull %eax, %ebx\n"
-        "shrl $3, %ebx\n"
-        "movl 0xc(%ebp), %edx\n" /* pLockedRect */
-        "movl %ebx, (%edx)\n"
-        "jmp .Lf1d7ac_0001d804\n"
-    );
+    CDirect3DSurfaceImpl *surface;
+    UINT32 formatBits;
+
+    (void)Flags;
+
+    surface = (CDirect3DSurfaceImpl *)_this;
+    pLockedRect->pBits = surface->surfaceMemory;
+
+    if (MacOpenGLUtils_IsCompressed(&surface->format)) {
+        UINT32 blocksWide;
+        UINT32 blockSize;
+
+        blocksWide = surface->width ? surface->width + 3 : 4;
+        blockSize = surface->format == D3DFMT_DXT1 ? 8 : 16;
+        pLockedRect->Pitch = (INT)(blockSize * (blocksWide >> 2));
+    } else {
+        formatBits = MacOpenGLUtils_GetFormatSizeInBits(&surface->format);
+        pLockedRect->Pitch = (INT)((surface->width * formatBits) >> 3);
+    }
+
+    if (pRect) {
+        byte *address;
+        UINT32 byteOffset;
+
+        address = (byte *)pLockedRect->pBits;
+        formatBits = MacOpenGLUtils_GetFormatSizeInBits(&surface->format);
+        byteOffset = ((UINT32)pRect->left * formatBits) >> 3;
+        byteOffset += (UINT32)pRect->top * (UINT32)pLockedRect->Pitch;
+        pLockedRect->pBits = address + byteOffset;
+    }
+
+    surface->isDirty = 1;
+    return 0;
 }
 
-/* line 408 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_UnlockRect(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 408 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 426 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return 0;
 }
 
 /* line 77 */
@@ -931,144 +835,81 @@ void CDirect3DSurface_UpdateOpenGLSurfaceObject(const CDirect3DSurface * _this, 
 
 /* overload skip: CDirect3DSurface_CDirect3DSurface (0x1dfae) */
 
-/* line 75 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_GetDevice(const CDirect3DSurface * _this, IDirect3DDevice9 * *ppDevice)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)ppDevice;
+    return 0;
 }
 
-/* line 76 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_SetPrivateData(const CDirect3DSurface * _this, const GUID *refguid, const void *pData, DWORD SizeOfData, DWORD Flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 76 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    (void)pData;
+    (void)SizeOfData;
+    (void)Flags;
+    return 0;
 }
 
-/* line 77 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_GetPrivateData(const CDirect3DSurface * _this, const GUID *refguid, void *pData, DWORD *pSizeOfData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    (void)pData;
+    (void)pSizeOfData;
+    return 0;
 }
 
-/* line 78 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_FreePrivateData(const CDirect3DSurface * _this, const GUID *refguid)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 78 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)refguid;
+    return 0;
 }
 
-/* line 79 */
-__attribute__((naked))
 DWORD CDirect3DSurface_SetPriority(const CDirect3DSurface * _this, DWORD PriorityNew)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 79 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)PriorityNew;
+    return 0;
 }
 
-/* line 80 */
-__attribute__((naked))
 DWORD CDirect3DSurface_GetPriority(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 80 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return 0;
 }
 
-/* line 81 */
-__attribute__((naked))
 void CDirect3DSurface_PreLoad(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 81 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 82 */
-__attribute__((naked))
 D3DRESOURCETYPE CDirect3DSurface_GetType(const CDirect3DSurface * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 82 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return D3DRTYPE_SURFACE;
 }
 
-/* line 83 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_GetContainer(const CDirect3DSurface * _this, const IID *riid, void * *ppContainer)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 83 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)riid;
+    (void)ppContainer;
+    return 0;
 }
 
-/* line 87 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_GetDC(const CDirect3DSurface * _this, HDC *phdc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 87 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)phdc;
+    return 0;
 }
 
-/* line 88 */
-__attribute__((naked))
 HRESULT CDirect3DSurface_ReleaseDC(const CDirect3DSurface * _this, HDC hdc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 88 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)hdc;
+    return 0;
 }
