@@ -14,6 +14,8 @@
 extern void G_FreeEntity(gentity_t *ent);
 extern void G_SetOrigin(gentity_t *ent, const vec_t *origin);
 extern qboolean G_SpawnString(const char *key, const char *defaultString, const char **out);
+extern qboolean G_SpawnFloat(const char *key, const char *defaultString, float *out);
+extern qboolean G_SpawnInt(const char *key, const char *defaultString, int *out);
 extern void Com_Error(int code, const char *fmt, ...);
 extern DObj_s * Com_GetServerDObj(int entNum);
 extern void DObjSetControlTagAngles(DObj_s *obj, int *partBits, unsigned short tag, vec_t *angles);
@@ -553,351 +555,141 @@ void turret_use(gentity_t *self, gentity_t *owner, gentity_t *activator)
 }
 
 /* line 971 */
-__attribute__((naked))
 void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 971 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* self */
-        "movl 0xc(%ebp), %eax\n" /* weaponinfoname */
-        "movl %eax, -0x1c(%ebp)\n" /* weaponinfoname */
-        "xorl %eax, %eax\n"
-        "xorl %edx, %edx\n"
-        "jmp .Lf1ba672_001ba699\n"
-        /* { scope 1 */
-        ".Lf1ba672_001ba68a:\n"
-        "addl $1, %eax\n" /* line 978 */
-        "leal 0x44(%ebx), %edx\n" /* weapDef */
-        "cmpl $0x20, %eax\n"
-        "je .Lf1ba672_001baa2c\n"
-        ".Lf1ba672_001ba699:\n"
-        "movl %edx, %ebx\n" /* line 980 | weapDef */
-        "leal turretInfo(%edx), %esi\n" /* pTurretInfo */
-        "movl turretInfo(%edx), %edx\n" /* line 981 */
-        "testl %edx, %edx\n"
-        "jne .Lf1ba672_001ba68a\n"
-        ".Lf1ba672_001ba6ab:\n"
-        "movl $0x44, 8(%esp)\n" /* line 988 */
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* pTurretInfo */
-        "calll memset\n"
-        "movl %esi, 0x15c(%edi)\n" /* line 989 | pTurretInfo, self */
-        "movl $1, turretInfo(%ebx)\n" /* line 990 | weapDef */
-        "movl -0x1c(%ebp), %eax\n" /* line 992 | weaponinfoname */
-        "movl %eax, (%esp)\n"
-        "calll G_GetWeaponIndexForName\n"
-        "movl %eax, 0xc8(%edi)\n" /* self */
-        "testl %eax, %eax\n" /* line 993 */
-        "je .Lf1ba672_001baa4d\n"
-        ".Lf1ba672_001ba6ec:\n"
-        "movl %eax, (%esp)\n" /* line 995 */
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %ebx\n" /* weapDef */
-        "cmpl $7, 0x7c(%eax)\n" /* line 997 */
-        "je .Lf1ba672_001ba717\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 998 | weaponinfoname */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b58d0, (%esp)\n" /* "G_SpawnTurret: weapon '%s' isn't a turret. This usually indi" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        ".Lf1ba672_001ba717:\n"
-        "movl imp_level, %eax\n" /* line 1001 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001baa73\n"
-        ".Lf1ba672_001ba727:\n"
-        "movl $0, 8(%esi)\n" /* line 1004 | pTurretInfo */
-        "movl 0x8c(%ebx), %eax\n" /* line 1006 | weapDef */
-        "movl %eax, 0x20(%esi)\n" /* pTurretInfo */
-        "movl $0xffffffff, 0x24(%esi)\n" /* line 1007 | pTurretInfo */
-        "movl $0, 0x28(%esi)\n" /* line 1009 | pTurretInfo */
-        "movl 0xb0(%ebx), %eax\n" /* line 1011 | weapDef */
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001ba758\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1ba672_001baa1c\n"
-        ".Lf1ba672_001ba758:\n"
-        "movb $0, 0x40(%esi)\n" /* line 1014 | pTurretInfo */
-        ".Lf1ba672_001ba75c:\n"
-        "movl 0xb4(%ebx), %eax\n" /* line 1016 | weapDef */
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001ba76f\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1ba672_001baa0c\n"
-        ".Lf1ba672_001ba76f:\n"
-        "movb $0, 0x41(%esi)\n" /* line 1019 | pTurretInfo */
-        ".Lf1ba672_001ba773:\n"
-        "movl 0xb8(%ebx), %eax\n" /* line 1021 | weapDef */
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001ba786\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1ba672_001ba9fc\n"
-        ".Lf1ba672_001ba786:\n"
-        "movb $0, 0x42(%esi)\n" /* line 1024 | pTurretInfo */
-        ".Lf1ba672_001ba78a:\n"
-        "movl 0xbc(%ebx), %eax\n" /* line 1026 | weapDef */
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001ba79d\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1ba672_001ba9b7\n"
-        ".Lf1ba672_001ba79d:\n"
-        "movb $0, 0x43(%esi)\n" /* line 1029 | pTurretInfo */
-        "movl imp_level, %eax\n" /* line 1031 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001ba9d4\n"
-        ".Lf1ba672_001ba7b3:\n"
-        "movl 0x52c(%ebx), %eax\n" /* line 1032 | weapDef */
-        "movl %eax, 0x10(%esi)\n" /* pTurretInfo */
-        ".Lf1ba672_001ba7bc:\n"
-        "movss 0x10(%esi), %xmm0\n" /* line 1033 | pTurretInfo */
-        "xorps sign+352, %xmm0\n"
-        "movss %xmm0, 0x10(%esi)\n" /* pTurretInfo */
-        "pxor %xmm1, %xmm1\n" /* line 1034 */
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf1ba672_001ba7db\n"
-        "movss %xmm1, 0x10(%esi)\n" /* line 1035 | pTurretInfo */
-        ".Lf1ba672_001ba7db:\n"
-        "movl imp_level, %eax\n" /* line 1037 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001bab74\n"
-        ".Lf1ba672_001ba7ed:\n"
-        "movl 0x528(%ebx), %eax\n" /* line 1038 | weapDef */
-        "movl %eax, 0x18(%esi)\n" /* pTurretInfo */
-        "ucomiss 0x18(%esi), %xmm1\n" /* line 1039 | pTurretInfo */
-        "ja .Lf1ba672_001babab\n"
-        ".Lf1ba672_001ba800:\n"
-        "movl imp_level, %eax\n" /* line 1042 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001bab44\n"
-        ".Lf1ba672_001ba812:\n"
-        "movl 0x530(%ebx), %eax\n" /* line 1043 | weapDef */
-        "movl %eax, 0xc(%esi)\n" /* pTurretInfo */
-        ".Lf1ba672_001ba81b:\n"
-        "movss 0xc(%esi), %xmm0\n" /* line 1044 | pTurretInfo */
-        "xorps sign+352, %xmm0\n"
-        "movaps %xmm1, %xmm2\n" /* line 1046 */
-        "cmpnltss %xmm0, %xmm2\n"
-        "andps %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movss %xmm0, 0xc(%esi)\n" /* pTurretInfo */
-        "movl imp_level, %eax\n" /* line 1048 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001bab14\n"
-        ".Lf1ba672_001ba84c:\n"
-        "movl 0x534(%ebx), %eax\n" /* line 1049 | weapDef */
-        "movl %eax, 0x14(%esi)\n" /* pTurretInfo */
-        ".Lf1ba672_001ba855:\n"
-        "ucomiss 0x14(%esi), %xmm1\n" /* line 1050 | pTurretInfo */
-        "ja .Lf1ba672_001babb7\n"
-        ".Lf1ba672_001ba85f:\n"
-        "movl $0xc2b40000, 0x1c(%esi)\n" /* line 1053 | pTurretInfo */
-        "movl 0x194(%edi), %eax\n" /* line 1055 | self */
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba87a\n"
-        "movl $0x64, 0x194(%edi)\n" /* line 1056 | self */
-        ".Lf1ba672_001ba87a:\n"
-        "movl imp_level, %eax\n" /* line 1058 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001baad1\n"
-        ".Lf1ba672_001ba88c:\n"
-        "movl 0x1ec(%ebx), %eax\n" /* line 1059 | weapDef */
-        "movl %eax, 0x19c(%edi)\n" /* self */
-        "movl 0x19c(%edi), %ecx\n" /* line 1061 | self */
-        "testl %ecx, %ecx\n"
-        "js .Lf1ba672_001bab05\n"
-        ".Lf1ba672_001ba8a6:\n"
-        "movl imp_level, %eax\n" /* line 1064 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "jne .Lf1ba672_001baaa9\n"
-        ".Lf1ba672_001ba8b8:\n"
-        "movl 0x540(%ebx), %eax\n" /* line 1065 | weapDef */
-        "movl %eax, 0x38(%esi)\n" /* pTurretInfo */
-        ".Lf1ba672_001ba8c1:\n"
-        "pxor %xmm0, %xmm0\n" /* line 1066 */
-        "ucomiss 0x38(%esi), %xmm0\n" /* pTurretInfo */
-        "jbe .Lf1ba672_001ba8d2\n"
-        "movl $0, 0x38(%esi)\n" /* line 1067 | pTurretInfo */
-        ".Lf1ba672_001ba8d2:\n"
-        "movl $3, 4(%esi)\n" /* line 1069 | pTurretInfo */
-        "movl $1, 0x184(%edi)\n" /* line 1071 | self */
-        "movl $0x200004, 0x11c(%edi)\n" /* line 1072 | self */
-        "movb $0, 0xf2(%edi)\n" /* line 1073 | self */
-        "movl $9, 4(%edi)\n" /* line 1074 | self */
-        "orl $__mh_execute_header, 0x174(%edi)\n" /* line 1075 | self */
-        "movl %edi, (%esp)\n" /* line 1077 | self */
-        "calll G_DObjUpdate\n"
-        "leal 0x104(%edi), %edx\n" /* line 1079 | self, v */
-        /* { scope 2 */
-        "movl $0xc2000000, %eax\n" /* line 191 */
-        "movl %eax, 0x104(%edi)\n"
-        "movl %eax, 4(%edx)\n" /* line 192 */
-        "movl $0, 8(%edx)\n" /* line 193 */
-        /* } scope */
-        "leal 0x110(%edi), %edx\n" /* line 1080 | self, v */
-        /* { scope 2 */
-        "movl $0x42000000, %eax\n" /* line 191 */
-        "movl %eax, 0x110(%edi)\n"
-        "movl %eax, 4(%edx)\n" /* line 192 */
-        "movl $0x42600000, 8(%edx)\n" /* line 193 */
-        /* } scope */
-        "leal 0x138(%edi), %eax\n" /* line 1082 | self */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* self */
-        "calll G_SetOrigin\n"
-        "leal 0x144(%edi), %eax\n" /* line 1083 | self */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* self */
-        "calll G_SetAngle\n"
-        "leal 0x68(%edi), %eax\n" /* line 1084 | self, v */
-        /* { scope 2 */
-        "movl $0, 0x68(%edi)\n" /* line 183 */
-        "movl $0, 4(%eax)\n" /* line 184 */
-        "movl $0, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "movb $0xd, 0x166(%edi)\n" /* line 1086 | self */
-        "movl imp_level, %eax\n" /* line 1087 */
-        "movl 0x1ec(%eax), %eax\n"
-        "addl $0x32, %eax\n"
-        "movl %eax, 0x190(%edi)\n" /* self */
-        "movl $3, 0x30(%edi)\n" /* line 1089 | self */
-        "movb $0, 0x161(%edi)\n" /* line 1090 | self */
-        "movl %edi, 8(%ebp)\n" /* line 1094 | self */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1095 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp SV_LinkEntity\n" /* line 1094 */
-        ".Lf1ba672_001ba9b7:\n"
-        "movl %eax, (%esp)\n" /* line 1027 */
-        "calll G_SoundAliasIndex\n"
-        "movb %al, 0x43(%esi)\n" /* pTurretInfo */
-        "movl imp_level, %eax\n" /* line 1031 */
-        "cmpb $0, 0x1348(%eax)\n"
-        "je .Lf1ba672_001ba7b3\n"
-        ".Lf1ba672_001ba9d4:\n"
-        "leal 0x10(%esi), %eax\n" /* pTurretInfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002b5950, (%esp)\n" /* "rightarc" */
-        "calll G_SpawnFloat\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba7bc\n"
-        "jmp .Lf1ba672_001ba7b3\n"
-        ".Lf1ba672_001ba9fc:\n"
-        "movl %eax, (%esp)\n" /* line 1022 */
-        "calll G_SoundAliasIndex\n"
-        "movb %al, 0x42(%esi)\n" /* pTurretInfo */
-        "jmp .Lf1ba672_001ba78a\n"
-        ".Lf1ba672_001baa0c:\n"
-        "movl %eax, (%esp)\n" /* line 1017 */
-        "calll G_SoundAliasIndex\n"
-        "movb %al, 0x41(%esi)\n" /* pTurretInfo */
-        "jmp .Lf1ba672_001ba773\n"
-        ".Lf1ba672_001baa1c:\n"
-        "movl %eax, (%esp)\n" /* line 1012 */
-        "calll G_SoundAliasIndex\n"
-        "movb %al, 0x40(%esi)\n" /* pTurretInfo */
-        "jmp .Lf1ba672_001ba75c\n"
-        ".Lf1ba672_001baa2c:\n"
-        "movl $0x20, 8(%esp)\n" /* line 986 */
-        "movl $str_002b5870, 4(%esp)\n" /* "G_SpawnTurret: max number of turrets (%d) exceeded" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1ba672_001ba6ab\n"
-        ".Lf1ba672_001baa4d:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 994 | weaponinfoname */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b58a4, 4(%esp)\n" /* "bad weaponinfo '%s' specified for turret" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0xc8(%edi), %eax\n" /* self */
-        "jmp .Lf1ba672_001ba6ec\n"
-        ".Lf1ba672_001baa73:\n"
-        "movl 0xc8(%edi), %eax\n" /* line 1001 | self */
-        "movl %eax, (%esp)\n"
-        "calll IsItemRegistered\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba727\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1002 | weaponinfoname */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b5934, (%esp)\n" /* "turret '%s' not precached" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        "jmp .Lf1ba672_001ba727\n"
-        ".Lf1ba672_001baaa9:\n"
-        "leal 0x38(%esi), %eax\n" /* line 1064 | pTurretInfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002162ac, 4(%esp)\n" /* "1" */
-        "movl $str_002218bc, (%esp)\n" /* "playerSpread" */
-        "calll G_SpawnFloat\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba8c1\n"
-        "jmp .Lf1ba672_001ba8b8\n"
-        ".Lf1ba672_001baad1:\n"
-        "leal 0x19c(%edi), %eax\n" /* line 1058 | self */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_0021952c, 4(%esp)\n" /* "0" */
-        "movl $str_0022096c, (%esp)\n" /* "damage" */
-        "calll G_SpawnInt\n"
-        "testl %eax, %eax\n"
-        "je .Lf1ba672_001ba88c\n"
-        "movl 0x19c(%edi), %ecx\n" /* line 1061 | self */
-        "testl %ecx, %ecx\n"
-        "jns .Lf1ba672_001ba8a6\n"
-        ".Lf1ba672_001bab05:\n"
-        "movl $0, 0x19c(%edi)\n" /* line 1062 | self */
-        "jmp .Lf1ba672_001ba8a6\n"
-        ".Lf1ba672_001bab14:\n"
-        "leal 0x14(%esi), %eax\n" /* line 1048 | pTurretInfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002b596c, (%esp)\n" /* "bottomarc" */
-        "calll G_SpawnFloat\n"
-        "pxor %xmm1, %xmm1\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba855\n"
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf1ba672_001ba84c\n"
-        ".Lf1ba672_001bab44:\n"
-        "leal 0xc(%esi), %eax\n" /* line 1042 | pTurretInfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002b5964, (%esp)\n" /* "toparc" */
-        "calll G_SpawnFloat\n"
-        "pxor %xmm1, %xmm1\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ba672_001ba81b\n"
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf1ba672_001ba812\n"
-        ".Lf1ba672_001bab74:\n"
-        "leal 0x18(%esi), %eax\n" /* line 1037 | pTurretInfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002b595c, (%esp)\n" /* "leftarc" */
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll G_SpawnFloat\n"
-        "testl %eax, %eax\n"
-        "movss -0x38(%ebp), %xmm1\n"
-        "je .Lf1ba672_001ba7ed\n"
-        "ucomiss 0x18(%esi), %xmm1\n" /* line 1039 | pTurretInfo */
-        "jbe .Lf1ba672_001ba800\n"
-        ".Lf1ba672_001babab:\n"
-        "movl $0, 0x18(%esi)\n" /* line 1040 | pTurretInfo */
-        "jmp .Lf1ba672_001ba800\n"
-        ".Lf1ba672_001babb7:\n"
-        "movl $0, 0x14(%esi)\n" /* line 1051 | pTurretInfo */
-        "jmp .Lf1ba672_001ba85f\n"
-    );
+    turretInfo_s *info;
+    WeaponDef *weapDef;
+    int i;
+
+    info = 0;
+    for (i = 0; i < 32; ++i) {
+        info = (turretInfo_s *)&turretInfo[i * (int)sizeof(turretInfo_s)];
+        if (!info->inuse) {
+            break;
+        }
+    }
+
+    if (i == 32) {
+        Com_Error(1, "G_SpawnTurret: max number of turrets (%d) exceeded", 32);
+    }
+
+    memset(info, 0, sizeof(*info));
+    self->pTurretInfo = info;
+    info->inuse = 1;
+
+    self->s.weapon = G_GetWeaponIndexForName(weaponinfoname);
+    if (!self->s.weapon) {
+        Com_Error(1, "bad weaponinfo '%s' specified for turret", weaponinfoname);
+    }
+
+    weapDef = BG_GetWeaponDef(self->s.weapon);
+    if (weapDef->weapClass != WEAPCLASS_TURRET) {
+        Scr_Error(va("G_SpawnTurret: weapon '%s' isn't a turret. This usually indicates that the weapon failed to load.", weaponinfoname));
+    }
+
+    if (!((level_locals_t *)imp_level)->initializing && !IsItemRegistered((unsigned int)self->s.weapon)) {
+        Scr_Error(va("turret '%s' not precached", weaponinfoname));
+    }
+
+    info->fireTime = 0;
+    info->stance = weapDef->stance;
+    info->prevStance = GMISC_TURRET_STANCE_INVALID;
+    info->fireSndDelay = 0;
+
+    if (weapDef->szFireLoopSound && *weapDef->szFireLoopSound) {
+        info->fireSnd = G_SoundAliasIndex(weapDef->szFireLoopSound);
+    }
+    if (weapDef->szFireLoopSoundPlayer && *weapDef->szFireLoopSoundPlayer) {
+        info->fireSndPlayer = G_SoundAliasIndex(weapDef->szFireLoopSoundPlayer);
+    }
+    if (weapDef->szFireStopSound && *weapDef->szFireStopSound) {
+        info->stopSnd = G_SoundAliasIndex(weapDef->szFireStopSound);
+    }
+    if (weapDef->szFireStopSoundPlayer && *weapDef->szFireStopSoundPlayer) {
+        info->stopSndPlayer = G_SoundAliasIndex(weapDef->szFireStopSoundPlayer);
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("rightarc", "", &info->arcmin[1])) {
+        info->arcmin[1] = weapDef->rightArc;
+    }
+    info->arcmin[1] = -info->arcmin[1];
+    if (info->arcmin[1] > 0.0f) {
+        info->arcmin[1] = 0.0f;
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("leftarc", "", &info->arcmax[1])) {
+        info->arcmax[1] = weapDef->leftArc;
+    }
+    if (info->arcmax[1] < 0.0f) {
+        info->arcmax[1] = 0.0f;
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("toparc", "", &info->arcmin[0])) {
+        info->arcmin[0] = weapDef->topArc;
+    }
+    info->arcmin[0] = -info->arcmin[0];
+    if (info->arcmin[0] > 0.0f) {
+        info->arcmin[0] = 0.0f;
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("bottomarc", "", &info->arcmax[0])) {
+        info->arcmax[0] = weapDef->bottomArc;
+    }
+    if (info->arcmax[0] < 0.0f) {
+        info->arcmax[0] = 0.0f;
+    }
+
+    info->dropPitch = -90.0f;
+
+    if (!self->health) {
+        self->health = 100;
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnInt("damage", "0", &self->damage)) {
+        self->damage = weapDef->damage;
+    }
+    if (self->damage < 0) {
+        self->damage = 0;
+    }
+
+    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("playerSpread", "1", &info->playerSpread)) {
+        info->playerSpread = weapDef->playerSpread;
+    }
+    if (info->playerSpread < 0.0f) {
+        info->playerSpread = 0.0f;
+    }
+
+    info->flags = 3;
+
+    self->clipmask = GMISC_CONTENTS_SOLID;
+    self->r.contents = GMISC_CONTENTS_NONCOLLIDING | GMISC_CONTENTS_DONOTENTER;
+    self->r.svFlags = 0;
+    self->s.eType = GMISC_ET_TURRET;
+    self->flags |= 0x1000u;
+
+    G_DObjUpdate(self);
+
+    self->r.mins[0] = -32.0f;
+    self->r.mins[1] = -32.0f;
+    self->r.mins[2] = 0.0f;
+    self->r.maxs[0] = 32.0f;
+    self->r.maxs[1] = 32.0f;
+    self->r.maxs[2] = 56.0f;
+
+    G_SetOrigin(self, self->r.currentOrigin);
+    G_SetAngle(self, self->r.currentAngles);
+
+    self->s.angles2[0] = 0.0f;
+    self->s.angles2[1] = 0.0f;
+    self->s.angles2[2] = 0.0f;
+
+    self->handler = GMISC_ENT_HANDLER_TURRET_INIT;
+    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+
+    self->s.apos.trType = TR_LINEAR_STOP;
+    self->takedamage = 0;
+
+    SV_LinkEntity(self);
 }
 
 /* line 1098 */
