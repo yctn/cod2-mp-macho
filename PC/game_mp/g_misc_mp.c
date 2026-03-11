@@ -22,6 +22,14 @@ extern void SV_LinkEntity(gentity_t *ent);
 extern void SetClientViewAngle(gentity_t *ent, vec_t *angles);
 extern void BG_PlayerStateToEntityState(playerState_t *ps, gentity_t *ent, qboolean snap, qboolean forceSnap);
 extern void G_AddEvent(gentity_t *ent, int event, int eventParm);
+extern WeaponDef *BG_GetWeaponDef(int iWeapon);
+extern float AngleSubtract(float a, float b);
+extern unsigned char G_PlaySoundAlias(gentity_t *ent, int index);
+extern float AngleNormalize180(float angle);
+extern void YawVectors(const vec_t yaw, vec_t *forward, vec_t *right);
+extern float Vec3Normalize(vec_t *v);
+extern float Q_acos(float x);
+extern unsigned char G_GeneralLink(gentity_t *ent);
 
 extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
@@ -32,8 +40,12 @@ enum {
     GMISC_EV_STANCE_FORCE_STAND = 0x8c,
     GMISC_EV_STANCE_FORCE_CROUCH = 0x8d,
     GMISC_EV_STANCE_FORCE_PRONE = 0x8e,
-    GMISC_ENTITYNUM_NONE = 0x3ff
+    GMISC_ENTITYNUM_NONE = 0x3ff,
+    GMISC_EF_FIRING = 0x40
 };
+
+/* `pitchCap` is the generated name for the reference field `triggerDown`. */
+#define GMISC_TRIGGER_DOWN(info) ((info)->pitchCap)
 
 void SP_info_null(gentity_t *self);
 void SP_info_notnull(gentity_t *self);
@@ -89,6 +101,148 @@ void G_InitTurrets(void)
     int i;
     for (i = 0; i < 32; i++)
         *(int *)&turretInfo[i] = 0;
+}
+
+static qboolean turret_UpdateTargetAngles(gentity_t *self, const float *desiredAngles, qboolean bManned)
+{
+    vec2_t downAngles;
+    vec2_t speed;
+    turretInfo_s *info;
+    qboolean complete;
+    float delta;
+    int i;
+
+    info = self->pTurretInfo;
+    complete = 1;
+
+    downAngles[1] = self->s.angles2[0];
+    self->s.angles2[0] = downAngles[1] + self->s.angles2[2];
+
+    if (bManned) {
+        WeaponDef *weapDef = BG_GetWeaponDef(self->s.weapon);
+        speed[0] = weapDef->maxTurnSpeed[0];
+        speed[1] = weapDef->maxTurnSpeed[1];
+    } else {
+        speed[0] = 200.0f;
+        speed[1] = 200.0f;
+    }
+
+    if ((info->flags & 0x200) && (info->flags & 0x100) && speed[0] < 360.0f) {
+        speed[0] = 360.0f;
+    }
+
+    for (i = 0; i < 2; ++i) {
+        speed[i] = speed[i] * 0.050000001f;
+        delta = AngleSubtract(desiredAngles[i], self->s.angles2[i]);
+
+        if (delta > speed[i]) {
+            complete = 0;
+            delta = speed[i];
+        } else if (-speed[i] > delta) {
+            complete = 0;
+            delta = -speed[i];
+        }
+
+        self->s.angles2[i] += delta;
+    }
+
+    downAngles[0] = self->s.angles2[0];
+    self->s.angles2[2] = downAngles[0];
+
+    if (info->flags & 0x200) {
+        if (info->flags & 0x400) {
+            if (GMISC_TRIGGER_DOWN(info) > self->s.angles2[0]) {
+                downAngles[0] = GMISC_TRIGGER_DOWN(info);
+            } else {
+                info->flags &= ~0x100u;
+            }
+        } else if (self->s.angles2[0] > GMISC_TRIGGER_DOWN(info)) {
+            downAngles[0] = GMISC_TRIGGER_DOWN(info);
+        } else {
+            info->flags &= ~0x100u;
+        }
+    }
+
+    delta = AngleSubtract(downAngles[0], downAngles[1]);
+    if (delta > speed[0]) {
+        complete = 0;
+        delta = speed[0];
+    } else if (-speed[0] > delta) {
+        complete = 0;
+        delta = -speed[0];
+    }
+
+    self->s.angles2[0] = downAngles[1] + delta;
+    self->s.angles2[2] = self->s.angles2[2] - self->s.angles2[0];
+    return complete;
+}
+
+static void turret_UpdateSound(gentity_t *self)
+{
+    turretInfo_s *info;
+
+    info = self->pTurretInfo;
+    self->s.loopSound = 0;
+
+    if (info->fireSndDelay <= 0) {
+        return;
+    }
+
+    self->s.loopSound = (unsigned char)info->fireSnd;
+    info->fireSndDelay -= 50;
+    if (info->fireSndDelay > 0 || !info->stopSnd) {
+        return;
+    }
+
+    self->s.loopSound = 0;
+    G_PlaySoundAlias(self, info->stopSnd);
+}
+
+static qboolean turret_ReturnToDefaultPos(gentity_t *self, qboolean bManned)
+{
+    vec2_t desiredAngles;
+    turretInfo_s *info;
+
+    info = self->pTurretInfo;
+    desiredAngles[0] = bManned ? 0.0f : info->dropPitch;
+    desiredAngles[1] = 0.0f;
+    return turret_UpdateTargetAngles(self, desiredAngles, bManned);
+}
+
+static qboolean turret_behind(gentity_t *self, gentity_t *other)
+{
+    vec3_t dir;
+    vec3_t forward;
+    turretInfo_s *info;
+    float angle;
+    float centerYaw;
+    float dot;
+    float minYaw;
+    float yawSpan;
+
+    info = self->pTurretInfo;
+    minYaw = self->r.currentAngles[1] + info->arcmin[1];
+    yawSpan = ((info->arcmax[1] < 0.0f ? -info->arcmax[1] : info->arcmax[1]) +
+        (info->arcmin[1] < 0.0f ? -info->arcmin[1] : info->arcmin[1])) * 0.5f;
+    centerYaw = AngleNormalize180(minYaw + yawSpan);
+
+    YawVectors(centerYaw, forward, 0);
+    Vec3Normalize(forward);
+
+    dir[0] = self->r.currentOrigin[0] - other->r.currentOrigin[0];
+    dir[1] = self->r.currentOrigin[1] - other->r.currentOrigin[1];
+    dir[2] = 0.0f;
+    Vec3Normalize(dir);
+
+    dot = forward[0] * dir[0] + forward[1] * dir[1] + forward[2] * dir[2];
+    if (dot < -1.0f) {
+        dot = -1.0f;
+    } else if (dot > 1.0f) {
+        dot = 1.0f;
+    }
+
+    angle = Q_acos(dot) * 57.29577951308232f;
+    return yawSpan >= angle;
 }
 
 /* line 724 */
