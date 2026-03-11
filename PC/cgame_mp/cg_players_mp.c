@@ -43,8 +43,8 @@ extern DObjAnimMat *CG_DObjGetLocalTagMatrix(const centity_t *cent, void *obj, u
 extern const char *CL_GetConfigString(int index);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 
-extern byte *cgs_ptr;           /* imp_cg */
-extern byte *cg_ptr;            /* imp_cgs */
+extern byte *cgs_ptr;           /* imp_cgs */
+extern byte *cg_ptr;            /* imp_cg */
 extern byte cg_entities_ptr[];   /* imp_cg_entities */
 extern byte *cg_tags_ptr;       /* imp_scr_const */
 extern byte *cg_sprite_ptr;     /* imp_cg_headIconMinScreenRadius */
@@ -70,7 +70,7 @@ void CG_UpdatePlayerDObj(centity_t *cent)
 {
     entityState_t *es;
     int clientNum;
-    byte *cgs;
+    byte *cg;
     byte *ci;
     void *obj;
 
@@ -80,8 +80,8 @@ void CG_UpdatePlayerDObj(centity_t *cent)
     es = &cent->nextState;
     clientNum = es->clientNum;
 
-    cgs = *(byte **)cgs_ptr;
-    ci = cgs + 0xe0914 + clientNum * CI_STRIDE;
+    cg = *(byte **)cg_ptr;
+    ci = cg + 0xe0914 + clientNum * CI_STRIDE;
 
     obj = Com_GetClientDObj(clientNum, cent->localClientNum);
     BG_UpdatePlayerDObj(obj, es, ci, 0);
@@ -91,7 +91,7 @@ void CG_UpdatePlayerDObj(centity_t *cent)
 void CG_ResetPlayerEntity(centity_t *cent)
 {
     entityState_t *es;
-    byte *cgs;
+    byte *cg;
     byte *ciBase;
     byte *ci;
     int clientNum;
@@ -99,10 +99,10 @@ void CG_ResetPlayerEntity(centity_t *cent)
     void *pAnimTree;
 
     es = &cent->nextState;
-    cgs = *(byte **)cgs_ptr;
+    cg = *(byte **)cg_ptr;
     clientNum = es->clientNum;
 
-    ciBase = cgs + 0xe0900 + clientNum * CI_STRIDE;
+    ciBase = cg + 0xe0900 + clientNum * CI_STRIDE;
     ci = ciBase + 0x14;
 
     deadFlag = es->eFlags & 0x20000;
@@ -111,12 +111,12 @@ void CG_ResetPlayerEntity(centity_t *cent)
         pAnimTree = *(void **)(ci + 0x4a4);
         if (pAnimTree) {
             /* Clear tree goal weights */
-            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cgs + 0xe08e4), 0);
+            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cg + 0xe08e4), 0);
 
             /* Set complete goal weights for 3 anim indices */
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
         }
 
         /* Zero out lerpAnim ranges */
@@ -137,7 +137,7 @@ void CG_ResetPlayerEntity(centity_t *cent)
 /* line 25 */
 static void CG_PlayerFloatSprite(centity_t *cent, MaterialHandle material, float additionalRadiusSize, int height, int fixedScreenSize)
 {
-    byte *cgs;
+    byte *cg;
     byte *snap;
     int clientNum;
     void *obj;
@@ -147,14 +147,14 @@ static void CG_PlayerFloatSprite(centity_t *cent, MaterialHandle material, float
     int drawFlags;
     int time;
 
-    cgs = *(byte **)cgs_ptr;
-    snap = *(byte **)(cgs + 0x24);
+    cg = *(byte **)cg_ptr;
+    snap = *(byte **)(cg + 0x24);
 
     /* Check if spectating/killcam */
     if (*(int *)(snap + 0x18) & 0xc00000) {
         clientNum = cent->nextState.number;
         if (clientNum == *(int *)(snap + 0xd8)) {
-            if (!*(int *)(cgs + 0x25bc0))
+            if (!*(int *)(cg + 0x25bc0))
                 return;
         }
     } else {
@@ -198,7 +198,7 @@ draw:
 /* line 75 */
 void CG_PlayerSprites(centity_t *cent)
 {
-    byte *cgs;
+    byte *cg;
     byte *snap;
     byte *ci;
     int iTeam;
@@ -208,17 +208,17 @@ void CG_PlayerSprites(centity_t *cent)
     int height;
     MaterialHandle material;
 
-    cgs = *(byte **)cgs_ptr;
+    cg = *(byte **)cg_ptr;
 
     /* Get target player's client info */
-    ci = cgs + 0xe0914 + cent->nextState.clientNum * CI_STRIDE;
+    ci = cg + 0xe0914 + cent->nextState.clientNum * CI_STRIDE;
     if (!*(int *)ci)
         return;
     iTeam = *(int *)(ci + 0x2c);
 
     /* Get local player's client info */
-    snap = *(byte **)(cgs + 0x24);
-    ci = cgs + 0xe0914 + *(int *)(snap + 0xd8) * CI_STRIDE;
+    snap = *(byte **)(cg + 0x24);
+    ci = cg + 0xe0914 + *(int *)(snap + 0xd8) * CI_STRIDE;
     if (!*(int *)ci)
         return;
     localTeam = *(int *)(ci + 0x2c);
@@ -246,12 +246,12 @@ void CG_PlayerSprites(centity_t *cent)
 
 check_local_player:
     /* Check if this is the local player */
-    cgs = *(byte **)cgs_ptr;
-    if (cent->nextState.number == *(int *)(cgs + 4)) {
-        if (*(int *)(cgs + 0x2cd14)) {
+    cg = *(byte **)cg_ptr;
+    if (cent->nextState.number == *(int *)(cg + 4)) {
+        if (*(int *)(cg + 0x2cd14)) {
             /* Show "you" indicator */
             height = (int)additionalRadiusSize;
-            material = *(MaterialHandle *)(*(byte **)cg_ptr + 0xba38);
+            material = *(MaterialHandle *)(cg + 0xba38);
             CG_PlayerFloatSprite(cent, material,
                 *(float *)(*(byte **)cg_sprite5_ptr + 8), height, 1);
             return;
@@ -262,7 +262,7 @@ check_local_player:
     eFlags = cent->nextState.eFlags;
     if (eFlags & 0x80) {
         height = (int)additionalRadiusSize;
-        material = *(MaterialHandle *)(*(byte **)cg_ptr + 0xba34);
+        material = *(MaterialHandle *)(cg + 0xba34);
         CG_PlayerFloatSprite(cent, material,
             *(float *)(*(byte **)cg_sprite6_ptr + 8), height, 0);
         return;
@@ -273,7 +273,7 @@ check_local_player:
         return;
 
     /* Check headicon timer */
-    if (*(int *)((byte *)cent + 0x218) > *(int *)(cgs + 0x25bb0)) {
+    if (*(int *)((byte *)cent + 0x218) > *(int *)(cg + 0x25bb0)) {
         height = (int)additionalRadiusSize;
         material = *(MaterialHandle *)((byte *)cent + 0x214);
         CG_PlayerFloatSprite(cent, material,
@@ -288,7 +288,7 @@ check_local_player:
     /* Show friendly indicator */
     additionalRadiusSize -= 5.0f;
     height = (int)additionalRadiusSize;
-    material = *(MaterialHandle *)(*(byte **)cg_ptr + 0xba30);
+    material = *(MaterialHandle *)(cg + 0xba30);
     CG_PlayerFloatSprite(cent, material,
         *(float *)(*(byte **)cg_sprite2_ptr + 8), height, 0);
 }
@@ -300,7 +300,7 @@ void CG_Player(centity_t *cent)
     int iClientNum;
     void *obj;
     byte body[0x74];
-    byte *cgs;
+    byte *cg;
 
     es = &cent->nextState;
 
@@ -313,12 +313,12 @@ void CG_Player(centity_t *cent)
         return;
 
     /* line 396: spectator/killcam check */
-    cgs = *(byte **)cgs_ptr;
+    cg = *(byte **)cg_ptr;
     {
-        byte *snap = *(byte **)(cgs + 0x24);
+        byte *snap = *(byte **)(cg + 0x24);
         if (*(int *)(snap + 0x18) & 0xc00000) {
             if (es->number == *(int *)(snap + 0xd8)) {
-                if (!*(int *)(cgs + 0x25bc0))
+                if (!*(int *)(cg + 0x25bc0))
                     return;
             }
         }
@@ -341,7 +341,7 @@ void CG_Player(centity_t *cent)
 
     /* line 419: compute CI and call BG_PlayerAnimation */
     {
-        byte *ci = cgs + 0xe0914 + iClientNum * CI_STRIDE;
+        byte *ci = cg + 0xe0914 + iClientNum * CI_STRIDE;
         BG_PlayerAnimation(obj, es, ci);
     }
 
@@ -359,7 +359,7 @@ void CG_Player(centity_t *cent)
 
         /* Turret animation processing */
         {
-            byte *ciBase = cgs + 0xe0900 + iClientNum * CI_STRIDE;
+            byte *ciBase = cg + 0xe0900 + iClientNum * CI_STRIDE;
             byte *turretCi = ciBase + 0x14;
             byte *pLerpAnim;
             int animValue;
@@ -426,7 +426,7 @@ void CG_Player(centity_t *cent)
             }
 
             /* line 226: check frame duration */
-            frameDuration = *(int *)(cgs + 0x25bac);
+            frameDuration = *(int *)(cg + 0x25bac);
             if (!frameDuration)
                 goto render;
 
@@ -435,7 +435,7 @@ void CG_Player(centity_t *cent)
 
             /* line 234 */
             pAnimTree = *(void **)(turretCi + 0x4a4);
-            pXAnims = *(void **)(cgs + 0xe08cc);
+            pXAnims = *(void **)(cg + 0xe08cc);
             baseAnim = (unsigned short)(animValue & ~0x200);
             if (!pAnimTree)
                 goto render;
@@ -773,7 +773,7 @@ void CG_Corpse(centity_t *cent)
     clientNum = cent->nextState.number;
 
     cg = *(byte **)cg_ptr;
-    ci = cg - 0x6bec + clientNum * CI_STRIDE;
+    ci = cg + 0xe0914 + clientNum * CI_STRIDE;
 
     /* Update player DObj */
     obj = Com_GetClientDObj(clientNum, cent->localClientNum);
