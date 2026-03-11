@@ -143,7 +143,7 @@ void Con_ToggleConsole_f(void)
     char *field;
     /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
        Fixed: only restrict when con_restricted IS set. */
-    if (*(byte *)((char *)con_restricted + 8)) {
+    if (con_restricted && con_restricted->current.enabled) {
         if (*(int *)((char *)*(void **)imp_keys + 0x780))
             goto toggle;
         if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
