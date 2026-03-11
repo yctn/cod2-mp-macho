@@ -6590,148 +6590,31 @@ void Dvar_SetColorByName(const char *dvarName, int r, int g, int b, int a)
 }
 
 /* line 2277 */
-__attribute__((naked))
 const dvar_t * Dvar_SetFromStringByNameFromSource(const char *dvarName, const char *string, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2277 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dvarName */
-        /* { scope 1: dvarDomain */
-        /* { scope 2 */
-        /* { scope 3 */
-        "testl %edi, %edi\n" /* line 68 */
-        "je .Lf56068_00056131\n"
-        ".Lf56068_0005607c:\n"
-        "movzbl (%edi), %eax\n" /* line 74 */
-        "testb %al, %al\n"
-        "jne .Lf56068_000560c6\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf56068_00056085:\n"
-        "movl dvarHashTable(, %eax, 4), %ebx\n" /* line 1054 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf56068_000560a9\n"
-        ".Lf56068_00056090:\n"
-        "movl (%ebx), %eax\n" /* line 1056 | var */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf56068_000560ab\n"
-        "movl 0x20(%ebx), %ebx\n" /* line 1054 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf56068_00056090\n"
-        ".Lf56068_000560a9:\n"
-        "xorl %ebx, %ebx\n" /* var */
-        /* } scope */
-        ".Lf56068_000560ab:\n"
-        "testl %ebx, %ebx\n" /* line 2282 | dvar */
-        "je .Lf56068_000560f2\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 2285 | source */
-        "movl 0xc(%ebp), %edx\n" /* string */
-        "movl %ebx, %eax\n" /* dvar */
-        "calll Dvar_SetFromStringFromSource\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 2288 | dvar */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: dvarDomain */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf56068_000560c6:\n"
-        "xorl %esi, %esi\n" /* line 74 | hash */
-        "movl $0x77, %ebx\n"
-        ".Lf56068_000560cd:\n"
-        "movsbl %al, %eax\n" /* line 76 */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "imull %ebx, %eax\n" /* line 77 */
-        "addl %eax, %esi\n" /* hash */
-        "movzbl -0x76(%edi, %ebx), %eax\n" /* line 74 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf56068_000560cd\n"
-        "movl %esi, %eax\n" /* hash */
-        "andl $0xff, %eax\n"
-        "jmp .Lf56068_00056085\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf56068_000560f2:\n"
-        "movl $0, -0x20(%ebp)\n" /* line 1803 | dvarDomain */
-        "movl $0, -0x1c(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1804 | dvarDomain */
-        "movl -0x1c(%ebp), %edx\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* string */
-        "movl %eax, (%esp)\n"
-        "movl $0x4000, %ecx\n"
-        "movl $7, %edx\n"
-        "movl %edi, %eax\n"
-        "calll Dvar_RegisterVariant\n"
-        "movl %eax, %ebx\n" /* var */
-        /* } scope */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 2288 | dvar */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: dvarDomain */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf56068_00056131:\n"
-        "movl $str_00219550, 4(%esp)\n" /* line 70 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf56068_0005607c\n"
-    );
+    const dvar_t *dvar;
+
+    dvar = Dvar_FindVar(dvarName);
+    if (dvar) {
+        Dvar_SetFromStringFromSourceReg(dvar, string, source);
+        return dvar;
+    }
+
+    return Dvar_RegisterString(dvarName, string, 0x4000);
 }
 
 /* line 2303 */
-__attribute__((naked))
 void Dvar_SetCommand(const char *dvarName, const char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2303 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $1, 8(%esp)\n" /* line 2307 */
-        "movl 0xc(%ebp), %eax\n" /* string */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetFromStringByNameFromSource\n"
-        "testl %eax, %eax\n" /* line 2311 */
-        "je .Lf5614a_00056177\n"
-        "cmpb $0, isLoadingAutoExecGlobalFlag\n"
-        "jne .Lf5614a_00056179\n"
-        /* } scope */
-        ".Lf5614a_00056177:\n"
-        "leave\n" /* line 2316 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5614a_00056179:\n"
-        "orw $0x8000, 4(%eax)\n" /* line 2323 */
-        "movl 8(%eax), %edx\n" /* line 2314 */
-        /* } scope */
-        "leave\n" /* line 2316 */
-        /* { scope 1 */
-        "jmp Dvar_UpdateResetValue\n" /* line 2314 */
-    );
+    const dvar_t *dvar;
+
+    dvar = Dvar_SetFromStringByNameFromSource(dvarName, string, (DvarSetSource)1);
+    if (!dvar || !isLoadingAutoExecGlobalFlag) {
+        return;
+    }
+
+    ((dvar_t *)dvar)->flags |= 0x8000;
+    Dvar_UpdateResetValueReg(dvar, dvar->current);
 }
 
 /* line 2292 */
