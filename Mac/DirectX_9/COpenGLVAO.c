@@ -54,7 +54,7 @@ typedef struct TriangleNode {
     Tuple triangle;
 } TriangleNode;
 
-typedef struct {
+typedef struct COpenGLVAOBindingNode {
     struct COpenGLVAOBindingNode *next;
     struct COpenGLVAOBindingNode *prev;
     GLuint *vaoId;
@@ -105,7 +105,7 @@ void COpenGLVAO_CreateNewBinding(const COpenGLVAO * _this)
 
     bindingNode = (COpenGLVAOBindingNode *)__Znwm(sizeof(*bindingNode));
     bindingNode->vaoId = vaoId;
-    bindingList = (char *)imp___ZN7COpenGL7sOpenGLE + 0x674;
+    bindingList = (char *)imp__ZN7COpenGL7sOpenGLE + 0x674;
     __ZNSt15_List_node_base4hookEPS_(bindingNode, bindingList);
 
     vao->mpVAOID = vaoId;

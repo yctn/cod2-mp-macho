@@ -50,11 +50,17 @@ typedef struct {
     bool (*isFixedFunction)(const CVAOPacket *);
 } CVAOPacketVTable;
 
+extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
+extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
+extern CVAOPacket CVAOPacket_sGenericPacket[1]; /* 0x0 */
+extern VAOSet CVAOPacket_sAllPackets; /* 0x0 */
+
 extern void *vtbl_CVAOPacket[];
 
 void __ZdlPv(void *ptr);
 void CBaseVA_Reset(const CBaseVA * _this);
 void COpenGLVAO_COpenGLVAO(const COpenGLVAO * _this);
+void COpenGLVAO_CreateNewBinding(const COpenGLVAO * _this);
 void ZN10COpenGLVAOD2Ev(const COpenGLVAO * _this);
 unsigned int COpenGL_SetVAO(const COpenGL * _this, const COpenGLVAO *VAO, int IsFixedFunction, int ForceValidation);
 
@@ -75,11 +81,6 @@ static void CVAOPacket_AdvanceCurrentPacket(void)
     nextPacket = CVAOPacket_sCurrentPacket + 1;
     CVAOPacket_sCurrentPacket = (nextPacket == 1) ? 0 : nextPacket;
 }
-
-extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
-extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
-extern CVAOPacket CVAOPacket_sGenericPacket[1]; /* 0x0 */
-extern VAOSet CVAOPacket_sAllPackets; /* 0x0 */
 
 void CVAOPacket_CVAOPacket(const CVAOPacket * _this);
 void ZN10CVAOPacketD2Ev(const CVAOPacket * _this); /* CVAOPacket_~CVAOPacket */
@@ -137,7 +138,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 
     CVAOPacket_sVAOStatus = bIsCached ? USING_CACHED_VAO : USING_VIRGIN_VAO;
     isFixedFunction = CVAOPacket_GetVTable(_this)->isFixedFunction(_this);
-    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
                    (const COpenGLVAO *)_this,
                    isFixedFunction,
                    0);
@@ -146,7 +147,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
 {
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    IsFixedFunction,
                    ForceValidation);
@@ -181,8 +182,8 @@ void CVAOPacket_InitializeGenericVAO(void)
     }
 
     for (i = 0; i < 16; ++i) {
-        genericPacket->mGenericArrays[i].mNeedsValidation = true;
-        genericPacket->mGenericArrays[i].mEnabled = false;
+        genericPacket->mGenericArrays[i].mNeedsValidation = 1;
+        genericPacket->mGenericArrays[i].mEnabled = 0;
         genericPacket->mGenericArrays[i].mVSize = 4;
         genericPacket->mGenericArrays[i].mVType = 0x1406;
         genericPacket->mGenericArrays[i].mNormalized = 0;
@@ -192,7 +193,7 @@ void CVAOPacket_InitializeGenericVAO(void)
 
     COpenGLVAO_CreateNewBinding((const COpenGLVAO *)genericPacket);
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    1,
                    1);
@@ -725,7 +726,7 @@ void GLOBAL__I__ZN10CVAOPacket10sVAOStatusE(void) /* global constructors keyed t
 bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this)
 {
     (void)_this;
-    return true;
+    return 1;
 }
 
 /* line 1144 */
