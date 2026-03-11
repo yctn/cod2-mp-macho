@@ -11,6 +11,7 @@
  */
 
 extern void Field_Clear(void *field);
+extern Bool Dvar_GetBool(const char *dvarName);
 extern int g_console_field_width; /* 0x0 */
 extern float g_console_char_height; /* 0x0 */
 extern const dvar_t *con_gamemessagetime; /* 0x0 */
@@ -143,7 +144,7 @@ void Con_ToggleConsole_f(void)
     char *field;
     /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
        Fixed: only restrict when con_restricted IS set. */
-    if (con_restricted && con_restricted->current.enabled) {
+    if (Dvar_GetBool("con_restricted")) {
         if (*(int *)((char *)*(void **)imp_keys + 0x780))
             goto toggle;
         if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
