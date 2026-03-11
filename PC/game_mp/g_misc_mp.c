@@ -25,6 +25,16 @@ extern void G_AddEvent(gentity_t *ent, int event, int eventParm);
 
 extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
+enum {
+    GMISC_TURRET_STANCE_INVALID = -1,
+    GMISC_TURRET_STANCE_CROUCH = 1,
+    GMISC_TURRET_STANCE_PRONE = 2,
+    GMISC_EV_STANCE_FORCE_STAND = 0x8c,
+    GMISC_EV_STANCE_FORCE_CROUCH = 0x8d,
+    GMISC_EV_STANCE_FORCE_PRONE = 0x8e,
+    GMISC_ENTITYNUM_NONE = 0x3ff
+};
+
 void SP_info_null(gentity_t *self);
 void SP_info_notnull(gentity_t *self);
 void SP_light(gentity_t *self);
@@ -311,96 +321,52 @@ void TeleportPlayer(gentity_t *player, vec_t *origin, vec_t *angles)
 }
 
 /* line 528 */
-__attribute__((naked))
 void G_ClientStopUsingTurret(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 528 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* self */
-        /* { scope 1 */
-        "movl 0x15c(%edi), %esi\n" /* line 533 | self, pTurretInfo */
-        "movl 0x150(%edi), %eax\n" /* line 536 | self */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %ebx\n" /* owner */
-        "subl %eax, %ebx\n" /* owner */
-        "shll $4, %ebx\n" /* owner */
-        "addl imp_g_entities, %ebx\n" /* owner */
-        "movl $0, 0x28(%esi)\n" /* line 539 | pTurretInfo */
-        "movl $0, 0x84(%edi)\n" /* line 540 | self */
-        "movl 0x24(%esi), %eax\n" /* line 542 | pTurretInfo */
-        "cmpl $-1, %eax\n"
-        "je .Lf1b9e98_001b9f0f\n"
-        "cmpl $2, %eax\n" /* line 544 */
-        "je .Lf1b9e98_001b9fa3\n"
-        "subl $1, %eax\n" /* line 546 */
-        "je .Lf1b9e98_001b9f86\n"
-        "movl $0, 8(%esp)\n" /* line 549 */
-        "movl $0x8c, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* owner */
-        "calll G_AddEvent\n"
-        ".Lf1b9e98_001b9f08:\n"
-        "movl $0xffffffff, 0x24(%esi)\n" /* line 551 | pTurretInfo */
-        ".Lf1b9e98_001b9f0f:\n"
-        "leal 0x144(%ebx), %eax\n" /* line 555 | owner */
-        "movl %eax, 8(%esp)\n"
-        "leal 0x2c(%esi), %eax\n" /* pTurretInfo */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* owner */
-        "calll TeleportPlayer\n"
-        "movl 0x158(%ebx), %eax\n" /* line 557 | owner */
-        "andl $0xfffffcff, 0xa0(%eax)\n"
-        "movl 0x158(%ebx), %eax\n" /* line 558 | owner */
-        "movl $0, 0x590(%eax)\n"
-        "movl 0x158(%ebx), %eax\n" /* line 559 | owner */
-        "movl $0x3ff, 0x594(%eax)\n"
-        "movb $0, 0x162(%ebx)\n" /* line 561 | owner */
-        "movl $0, 0x74(%ebx)\n" /* line 563 | owner */
-        "movb $0, 0x162(%edi)\n" /* line 565 | self */
-        "movl $0x3ff, 0x150(%edi)\n" /* line 566 | self */
-        "andl $0xfffff7ff, 4(%esi)\n" /* line 567 | pTurretInfo */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 568 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b9e98_001b9f86:\n"
-        "movl $0, 8(%esp)\n" /* line 547 */
-        "movl $0x8d, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* owner */
-        "calll G_AddEvent\n"
-        "jmp .Lf1b9e98_001b9f08\n"
-        ".Lf1b9e98_001b9fa3:\n"
-        "movl $0, 8(%esp)\n" /* line 545 */
-        "movl $0x8e, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* owner */
-        "calll G_AddEvent\n"
-        "jmp .Lf1b9e98_001b9f08\n"
-    );
+    turretInfo_s *pTurretInfo;
+    gentity_t *owner;
+
+    pTurretInfo = self->pTurretInfo;
+    owner = &((gentity_t *)imp_g_entities)[self->r.ownerNum];
+
+    pTurretInfo->fireSndDelay = 0;
+    self->s.loopSound = 0;
+
+    if (pTurretInfo->prevStance != GMISC_TURRET_STANCE_INVALID) {
+        if (pTurretInfo->prevStance == GMISC_TURRET_STANCE_PRONE) {
+            G_AddEvent(owner, GMISC_EV_STANCE_FORCE_PRONE, 0);
+        } else if (pTurretInfo->prevStance == GMISC_TURRET_STANCE_CROUCH) {
+            G_AddEvent(owner, GMISC_EV_STANCE_FORCE_CROUCH, 0);
+        } else {
+            G_AddEvent(owner, GMISC_EV_STANCE_FORCE_STAND, 0);
+        }
+
+        pTurretInfo->prevStance = GMISC_TURRET_STANCE_INVALID;
+    }
+
+    TeleportPlayer(owner, pTurretInfo->userOrigin, owner->r.currentAngles);
+
+    owner->client->ps.eFlags &= ~0x300;
+    owner->client->ps.viewlocked = 0;
+    owner->client->ps.viewlocked_entNum = GMISC_ENTITYNUM_NONE;
+    owner->active = 0;
+    owner->s.otherEntityNum = 0;
+
+    self->active = 0;
+    self->r.ownerNum = GMISC_ENTITYNUM_NONE;
+    pTurretInfo->flags &= ~0x800u;
 }
 
 /* line 861 */
 void G_FreeTurret(gentity_t *self)
 {
-    int ownerNum;
-    gentity_t *g_ents;
-
-    /* Check if owner entity has a client (entity stride 560 = 0x230, field 0x158 = client) */
-    ownerNum = *(int *)((byte *)self + 0x150);
-    g_ents = (gentity_t *)imp_g_entities;
-    if (*(int *)((byte *)g_ents + ownerNum * 560 + 0x158))
+    if (((gentity_t *)imp_g_entities)[self->r.ownerNum].client) {
         G_ClientStopUsingTurret(self);
+    }
 
-    *(unsigned char *)((byte *)self + 0x162) = 0;
-    **(int **)((byte *)self + 0x15c) = 0;
-    *(int *)((byte *)self + 0x15c) = 0;
+    self->active = 0;
+    self->pTurretInfo->inuse = 0;
+    self->pTurretInfo = 0;
 }
 
 /* line 756 */
@@ -2229,4 +2195,3 @@ void turret_think_client(gentity_t *self)
         "jmp .Lf1bac12_001bb3bc\n"
     );
 }
-

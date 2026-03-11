@@ -83,6 +83,7 @@ extern const dvar_t *g_dumpAnims; /* 0x0 */
 extern unsigned char g_clients[]; /* BSS g_clients array (665856 bytes = 64 * gclient_s) */
 
 /* Extern functions needed for C conversions */
+extern float ceilf(float x);
 extern void Com_ServerDObjCreate(DObjModel_s *models, int numModels, struct XAnimTree_s *tree, int handle, clientInfo_t *ci);
 extern int * Hunk_AllocLowInternal(int size);
 extern void SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask, int locational, unsigned char *priorityMap, int staticmodels);
@@ -99,6 +100,7 @@ extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 extern void FS_Write(const void *buffer, int len, fileHandle_t h);
 extern void FS_FCloseFile(fileHandle_t f);
 extern void G_FreeEntity(gentity_t *ent);
+extern void SV_UnlinkEntity(gentity_t *ent);
 extern void HudElem_DestroyAll(void);
 extern qboolean Scr_IsSystemActive(int inst);
 extern void Scr_ShutdownSystem(int inst, qboolean freeScripts);
@@ -109,9 +111,27 @@ extern void GScr_FreeScripts(void);
 extern void Scr_FreeScripts(int inst);
 extern void XAnimFreeTree(struct XAnimTree_s *tree, int inst);
 extern void Hunk_ClearToMarkLow(int mark);
+extern void G_RunMissile(gentity_t *ent);
+extern void G_RunItem(gentity_t *ent);
+extern void G_RunCorpse(gentity_t *ent);
+extern void G_RunMover(gentity_t *ent);
+extern void G_RunClient(gentity_t *ent);
+extern unsigned char G_GeneralLink(gentity_t *ent);
 
 /* Zero vector for locational trace functions */
 static vec3_t vec3_zero = {0.0f, 0.0f, 0.0f};
+
+enum {
+    GMAIN_CS_VOTE_TIME = 15,
+    GMAIN_ET_GENERAL = 0,
+    GMAIN_ET_PLAYER_CORPSE = 2,
+    GMAIN_ET_ITEM = 3,
+    GMAIN_ET_MISSILE = 4,
+    GMAIN_ET_SCRIPTMOVER = 6,
+    GMAIN_FL_NODRAW = 8,
+    GMAIN_EF_NODRAW = 0x20,
+    GMAIN_EFLAGS_UNKNOWN = 0x10000
+};
 
 int G_GetSavePersist(void);
 int G_SetSavePersist(qboolean savepersist);
@@ -136,7 +156,7 @@ qboolean G_LocationalTracePassed(const vec_t *start, const vec_t *end, int passE
 int G_SightTrace(int *hitNum, const vec_t *start, const vec_t *end, int passEntityNum, int contentmask);
 int G_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const char *pszText);
 int G_ShutdownGame(qboolean freeScripts);
-static int G_RunFrameForEntity(void);
+static int __attribute__((regparm(1))) G_RunFrameForEntity(gentity_t *ent);
 int G_RunFrame(int levelTime);
 
 /* line 510 */
@@ -1068,99 +1088,39 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 }
 
 /* line 1202 */
-__attribute__((naked))
 int CheckVote(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1202 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "movl level+2848, %eax\n" /* line 1209 */
-        "testl %eax, %eax\n"
-        "je .Lf1ac95a_001ac976\n"
-        "cmpl level+492, %eax\n"
-        "jl .Lf1ac95a_001aca91\n"
-        ".Lf1ac95a_001ac976:\n"
-        "movl level+2844, %eax\n" /* line 1214 */
-        "testl %eax, %eax\n"
-        "je .Lf1ac95a_001aca25\n"
-        "cmpl %eax, level+492\n" /* line 1218 */
-        "js .Lf1ac95a_001aca2b\n"
-        "movl level+2852, %ebx\n" /* line 1220 */
-        "movl level+2856, %edx\n"
-        "cvtsi2sdl %edx, %xmm0\n" /* line 1224 */
-        "movsd %xmm0, -0x10(%ebp)\n"
-        "leal (%ebx, %edx), %edx\n" /* line 1222 */
-        "movl level+2860, %eax\n"
-        "subl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movl g_voteAbstainWeight, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll ceilf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvtss2sd -0x14(%ebp), %xmm0\n"
-        "addsd -0x10(%ebp), %xmm0\n"
-        "cvttsd2si %xmm0, %eax\n"
-        "cmpl %eax, %ebx\n"
-        "jg .Lf1ac95a_001aca51\n"
-        ".Lf1ac95a_001ac9db:\n"
-        "movl $0x65, 4(%esp)\n" /* line 1248 */
-        "movl $str_002b4918, (%esp)\n" /* "%c "GAME_VOTEFAILED"" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0xffffffff, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        ".Lf1ac95a_001aca07:\n"
-        "movl $0, level+2844\n" /* line 1256 */
-        "movl $str_002157b8, 4(%esp)\n" /* line 1257 */
-        "movl $0xf, (%esp)\n"
-        "calll SV_SetConfigstring\n"
-        /* } scope */
-        ".Lf1ac95a_001aca25:\n"
-        "addl $0x24, %esp\n" /* line 1258 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1ac95a_001aca2b:\n"
-        "movl level+2860, %edx\n" /* line 1238 */
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "addl $1, %eax\n"
-        "cmpl level+2852, %eax\n" /* line 1239 */
-        "jle .Lf1ac95a_001aca51\n"
-        "subl %eax, %edx\n" /* line 1245 */
-        "cmpl %edx, level+2856\n"
-        "jle .Lf1ac95a_001aca25\n"
-        "jmp .Lf1ac95a_001ac9db\n"
-        ".Lf1ac95a_001aca51:\n"
-        "movl $0x65, 4(%esp)\n" /* line 1242 */
-        "movl $str_002b4900, (%esp)\n" /* "%c "GAME_VOTEPASSED"" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0xffffffff, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        "movl level+492, %eax\n" /* line 1243 */
-        "addl $0xbb8, %eax\n"
-        "movl %eax, level+2848\n"
-        "jmp .Lf1ac95a_001aca07\n"
-        ".Lf1ac95a_001aca91:\n"
-        "movl $0, level+2848\n" /* line 1211 */
-        "movl $level+796, 4(%esp)\n" /* line 1212 */
-        "movl $str_00215bbc, (%esp)\n" /* "%s\n" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "jmp .Lf1ac95a_001ac976\n"
-    );
+    if (level.voteExecuteTime && level.voteExecuteTime < level.time) {
+        level.voteExecuteTime = 0;
+        Cbuf_ExecuteText(2, va("%s\n", level.voteString));
+    }
+
+    if (!level.voteTime) {
+        return 0;
+    }
+
+    if (level.time >= level.voteTime) {
+        SV_GameSendServerCommand(-1, SV_CMD_CAN_IGNORE, va("%c \"GAME_VOTEFAILED\"", 101));
+    } else {
+        int passCount;
+
+        passCount = level.numVotingClients / 2 + 1;
+        if (level.voteYes >= passCount) {
+            SV_GameSendServerCommand(-1, SV_CMD_CAN_IGNORE, va("%c \"GAME_VOTEPASSED\"", 101));
+            level.voteExecuteTime = level.time + 3000;
+        } else if (level.voteNo > level.numVotingClients - passCount) {
+            SV_GameSendServerCommand(-1, SV_CMD_CAN_IGNORE, va("%c \"GAME_VOTEFAILED\"", 101));
+        } else if (level.voteYes > (int)ceilf((float)(level.numVotingClients - (level.voteYes + level.voteNo)) * g_voteAbstainWeight->current.value) + level.voteNo) {
+            SV_GameSendServerCommand(-1, SV_CMD_CAN_IGNORE, va("%c \"GAME_VOTEPASSED\"", 101));
+            level.voteExecuteTime = level.time + 3000;
+        } else {
+            return 0;
+        }
+    }
+
+    level.voteTime = 0;
+    SV_SetConfigstring(GMAIN_CS_VOTE_TIME, "");
+    return 0;
 }
 
 /* line 1324 */
@@ -1182,7 +1142,7 @@ int G_RunThink(gentity_t *ent)
     if (!think) {
         Com_Error(1, "NULL ent->think");
     }
-    think(ent);
+    ((void (*)(gentity_t *))think)(ent);
     return 0;
 }
 
@@ -1306,154 +1266,85 @@ int G_ShutdownGame(qboolean freeScripts)
 }
 
 /* line 1384 */
-static __attribute__((naked))
-int G_RunFrameForEntity(void)
+static int __attribute__((regparm(1))) G_RunFrameForEntity(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1384 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl %eax, %ebx\n" /* ent */
-        "movl level+488, %eax\n" /* line 1388 */
-        "cmpl %eax, 0x188(%ebx)\n" /* ent */
-        "je .Lf1aceea_001acf98\n"
-        "movl %eax, 0x188(%ebx)\n" /* line 1390 | ent */
-        "movl 0x158(%ebx), %eax\n" /* line 1399 | ent */
-        "testl %eax, %eax\n"
-        "je .Lf1aceea_001acfdd\n"
-        ".Lf1aceea_001acf19:\n"
-        "cmpl $0x10000, 8(%ebx)\n" /* line 1411 | ent */
-        "je .Lf1aceea_001acf9f\n"
-        "movl level+492, %eax\n"
-        ".Lf1aceea_001acf27:\n"
-        "subl 0x178(%ebx), %eax\n" /* line 1421 | ent */
-        "cmpl $0x12c, %eax\n"
-        "jle .Lf1aceea_001acf48\n"
-        "movl 0x17c(%ebx), %eax\n" /* line 1423 | ent */
-        "testl %eax, %eax\n"
-        "jne .Lf1aceea_001acfad\n"
-        "movl 0x180(%ebx), %eax\n" /* line 1429 | ent */
-        "testl %eax, %eax\n"
-        "jne .Lf1aceea_001acfbc\n"
-        ".Lf1aceea_001acf48:\n"
-        "movl 0x17c(%ebx), %esi\n" /* line 1438 | ent, think */
-        "testl %esi, %esi\n" /* think */
-        "jne .Lf1aceea_001acf98\n"
-        "movl 4(%ebx), %eax\n" /* line 1443 | ent */
-        "cmpl $4, %eax\n"
-        "je .Lf1aceea_001ad045\n"
-        "cmpl $3, %eax\n" /* line 1449 */
-        "je .Lf1aceea_001acfef\n"
-        "cmpl $2, %eax\n" /* line 1462 */
-        "je .Lf1aceea_001ad099\n"
-        "cmpb $0, 0x160(%ebx)\n" /* line 1468 | ent */
-        "jne .Lf1aceea_001acfd3\n"
-        "cmpl $6, %eax\n" /* line 1474 */
-        "je .Lf1aceea_001ad0a6\n"
-        "movl 0x158(%ebx), %edx\n" /* line 1480 | ent */
-        "testl %edx, %edx\n"
-        "je .Lf1aceea_001ad070\n"
-        "movl %ebx, (%esp)\n" /* line 1482 | ent */
-        "calll G_RunClient\n"
-        ".Lf1aceea_001acf98:\n"
-        "addl $0x10, %esp\n" /* line 1493 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1aceea_001acf9f:\n"
-        "movl level+492, %eax\n" /* line 1413 */
-        "cmpl 0x58(%ebx), %eax\n" /* ent */
-        "jle .Lf1aceea_001acf27\n"
-        ".Lf1aceea_001acfad:\n"
-        "movl %ebx, (%esp)\n" /* line 1426 | ent */
-        "calll G_FreeEntity\n"
-        "addl $0x10, %esp\n" /* line 1493 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1aceea_001acfbc:\n"
-        "movl $0, 0x180(%ebx)\n" /* line 1432 | ent */
-        "movl %ebx, (%esp)\n" /* line 1433 | ent */
-        "calll SV_UnlinkEntity\n"
-        "jmp .Lf1aceea_001acf48\n"
-        ".Lf1aceea_001acfd3:\n"
-        "movl %ebx, (%esp)\n" /* line 1470 | ent */
-        "calll G_RunItem\n"
-        "jmp .Lf1aceea_001acf98\n"
-        ".Lf1aceea_001acfdd:\n"
-        "testb $8, 0x175(%ebx)\n" /* line 1401 | ent */
-        "je .Lf1aceea_001ad03c\n"
-        "orl $0x20, 8(%ebx)\n" /* line 1403 | ent */
-        "jmp .Lf1aceea_001acf19\n"
-        ".Lf1aceea_001acfef:\n"
-        "movl 0x208(%ebx), %ecx\n" /* line 1451 | ent */
-        "testl %ecx, %ecx\n"
-        "je .Lf1aceea_001acfd3\n"
-        "movl %ebx, (%esp)\n" /* line 1453 | ent */
-        "calll G_GeneralLink\n"
-        /* { scope 1 */
-        "movl 0x190(%ebx), %eax\n" /* line 1329 */
-        "testl %eax, %eax\n" /* line 1330 */
-        "jle .Lf1aceea_001acf98\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf1aceea_001ad00b:\n"
-        "cmpl level+492, %eax\n" /* line 1334 */
-        "jg .Lf1aceea_001acf98\n"
-        "movl $0, 0x190(%ebx)\n" /* line 1339 */
-        "movzbl 0x166(%ebx), %eax\n" /* line 1340 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl entityHandlers(, %eax, 8), %esi\n" /* think */
-        "testl %esi, %esi\n" /* line 1341 | think */
-        "je .Lf1aceea_001ad052\n"
-        "movl %ebx, (%esp)\n" /* line 1345 */
-        "calll *%esi\n" /* think */
-        "jmp .Lf1aceea_001acf98\n"
-        /* } scope */
-        ".Lf1aceea_001ad03c:\n"
-        "andl $0xffffffdf, 8(%ebx)\n" /* line 1407 | ent */
-        "jmp .Lf1aceea_001acf19\n"
-        ".Lf1aceea_001ad045:\n"
-        "movl %ebx, (%esp)\n" /* line 1445 | ent */
-        "calll G_RunMissile\n"
-        "jmp .Lf1aceea_001acf98\n"
-        /* { scope 1 */
-        ".Lf1aceea_001ad052:\n"
-        "movl $str_002b4930, 4(%esp)\n" /* line 1343 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl %ebx, (%esp)\n" /* line 1345 */
-        "calll *%esi\n" /* think */
-        "jmp .Lf1aceea_001acf98\n"
-        /* } scope */
-        ".Lf1aceea_001ad070:\n"
-        "testl %eax, %eax\n" /* line 1486 */
-        "jne .Lf1aceea_001ad086\n"
-        "movl 0x208(%ebx), %esi\n" /* line 1488 | ent, think */
-        "testl %esi, %esi\n" /* think */
-        "je .Lf1aceea_001ad086\n"
-        "movl %ebx, (%esp)\n" /* line 1489 | ent */
-        "calll G_GeneralLink\n"
-        /* { scope 1 */
-        ".Lf1aceea_001ad086:\n"
-        "movl 0x190(%ebx), %eax\n" /* line 1329 */
-        "testl %eax, %eax\n" /* line 1330 */
-        "jg .Lf1aceea_001ad00b\n"
-        "jmp .Lf1aceea_001acf98\n"
-        /* } scope */
-        ".Lf1aceea_001ad099:\n"
-        "movl %ebx, (%esp)\n" /* line 1464 | ent */
-        "calll G_RunCorpse\n"
-        "jmp .Lf1aceea_001acf98\n"
-        ".Lf1aceea_001ad0a6:\n"
-        "movl %ebx, (%esp)\n" /* line 1476 | ent */
-        "calll G_RunMover\n"
-        "jmp .Lf1aceea_001acf98\n"
-    );
+    if (ent->processedFrame == level.framenum) {
+        return 0;
+    }
+
+    ent->processedFrame = level.framenum;
+
+    if (!ent->client) {
+        if (ent->flags & GMAIN_FL_NODRAW) {
+            ent->s.eFlags |= GMAIN_EF_NODRAW;
+        } else {
+            ent->s.eFlags &= ~GMAIN_EF_NODRAW;
+        }
+    }
+
+    if (ent->s.eFlags == GMAIN_EFLAGS_UNKNOWN && level.time > ent->s.time2) {
+        G_FreeEntity(ent);
+        return 0;
+    }
+
+    if (level.time - ent->eventTime > 300) {
+        if (ent->freeAfterEvent) {
+            G_FreeEntity(ent);
+            return 0;
+        }
+
+        if (ent->unlinkAfterEvent) {
+            ent->unlinkAfterEvent = 0;
+            SV_UnlinkEntity(ent);
+        }
+    }
+
+    if (ent->freeAfterEvent) {
+        return 0;
+    }
+
+    if (ent->s.eType == GMAIN_ET_MISSILE) {
+        G_RunMissile(ent);
+        return 0;
+    }
+
+    if (ent->s.eType == GMAIN_ET_ITEM) {
+        if (ent->tagInfo) {
+            G_GeneralLink(ent);
+            G_RunThink(ent);
+            return 0;
+        }
+
+        G_RunItem(ent);
+        return 0;
+    }
+
+    if (ent->s.eType == GMAIN_ET_PLAYER_CORPSE) {
+        G_RunCorpse(ent);
+        return 0;
+    }
+
+    if (ent->physicsObject) {
+        G_RunItem(ent);
+        return 0;
+    }
+
+    if (ent->s.eType == GMAIN_ET_SCRIPTMOVER) {
+        G_RunMover(ent);
+        return 0;
+    }
+
+    if (ent->client) {
+        G_RunClient(ent);
+        return 0;
+    }
+
+    if (ent->s.eType == GMAIN_ET_GENERAL && ent->tagInfo) {
+        G_GeneralLink(ent);
+    }
+
+    G_RunThink(ent);
+    return 0;
 }
 
 /* line 1503 */
