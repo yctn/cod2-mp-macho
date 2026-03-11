@@ -35,14 +35,29 @@ typedef struct {
     VertexProgramStreamState mGenericArrays[16];
 } CVAOPacketImpl;
 
+typedef struct CVAOPacketRbTreeNodeBase {
+    int _M_color;
+    struct CVAOPacketRbTreeNodeBase *_M_parent;
+    struct CVAOPacketRbTreeNodeBase *_M_left;
+    struct CVAOPacketRbTreeNodeBase *_M_right;
+} CVAOPacketRbTreeNodeBase;
+
 typedef struct {
-    void *unused;
-    void *headerParent;
-    void *root;
-    void *leftmost;
-    void *rightmost;
-    UINT32 nodeCount;
-} VAOSetImpl;
+    CVAOPacketRbTreeNodeBase _M_base;
+    UINT32 first;
+    CVAOPacketImpl second;
+} CVAOPacketRbTreeNode;
+
+typedef struct {
+    UINT32 first;
+    CVAOPacketImpl second;
+} CVAOPacketKeyValue;
+
+typedef struct {
+    int _M_key_compare_padding;
+    CVAOPacketRbTreeNodeBase _M_header;
+    UINT32 _M_node_count;
+} CVAOPacketRbTree;
 
 typedef struct {
     void (*deletingDtor)(void *);
@@ -69,6 +84,16 @@ static CVAOPacketImpl *CVAOPacket_GetGenericPacket(UINT32 index)
     return (CVAOPacketImpl *)((char *)CVAOPacket_sGenericPacket + index * sizeof(CVAOPacketImpl));
 }
 
+static CVAOPacketRbTreeNode *CVAOPacket_GetTreeNode(CVAOPacketRbTreeNodeBase *node)
+{
+    return (CVAOPacketRbTreeNode *)node;
+}
+
+static const CVAOPacketRbTreeNode *CVAOPacket_GetConstTreeNode(const CVAOPacketRbTreeNodeBase *node)
+{
+    return (const CVAOPacketRbTreeNode *)node;
+}
+
 static const CVAOPacketVTable *CVAOPacket_GetVTable(const CVAOPacket *packet)
 {
     return *(const CVAOPacketVTable * const *)packet;
@@ -93,12 +118,12 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length);
 bool CVAOPacket_IsCached(CVAOPacket *v);
 void CVAOPacket_Cache(CVAOPacket *v);
 void CVAOPacket_Shutdown(void);
-static void __static_initialization_and_destruction_0(void);
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority);
 static void GLOBAL__D__ZN10CVAOPacket10sVAOStatusE(void); /* global destructors keyed to CVAOPacket_sVAOStatus */
 static void GLOBAL__I__ZN10CVAOPacket10sVAOStatusE(void); /* global constructors keyed to CVAOPacket_sVAOStatus */
 bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this);
-void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11lower_boundERS1_(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_lower_bound */
-void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11upper_boundERS1_(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_upper_bound */
+CVAOPacketRbTreeNodeBase *ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11lower_boundERS1_(const CVAOPacketRbTree *tree, const UINT32 *key); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_lower_bound */
+CVAOPacketRbTreeNodeBase *ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11upper_boundERS1_(const CVAOPacketRbTree *tree, const UINT32 *key); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_upper_bound */
 void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE9_M_insertEPSt18_Rb_tree_node_baseSB_RKS3_(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >__M_insert */
 void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE12insert_equalERKS3_(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_insert_equal */
 void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >__M_erase */
@@ -156,18 +181,18 @@ void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
 
 void CVAOPacket_InitializeGenericVAO(void)
 {
-    VAOSetImpl *allPackets;
+    CVAOPacketRbTree *allPackets;
     CVAOPacketImpl *genericPacket;
     int i;
 
-    allPackets = (VAOSetImpl *)&CVAOPacket_sAllPackets;
+    allPackets = (CVAOPacketRbTree *)&CVAOPacket_sAllPackets;
     genericPacket = CVAOPacket_GetGenericPacket(0);
 
-    allPackets->nodeCount = 0;
-    allPackets->headerParent = NULL;
-    allPackets->root = NULL;
-    allPackets->leftmost = &allPackets->headerParent;
-    allPackets->rightmost = &allPackets->headerParent;
+    allPackets->_M_node_count = 0;
+    allPackets->_M_header._M_color = 0;
+    allPackets->_M_header._M_parent = NULL;
+    allPackets->_M_header._M_left = &allPackets->_M_header;
+    allPackets->_M_header._M_right = &allPackets->_M_header;
 
     genericPacket->mpVAOID = NULL;
     genericPacket->mCode = 0;
@@ -622,105 +647,41 @@ void CVAOPacket_Shutdown(void)
     );
 }
 
-/* line 300 */
-static __attribute__((naked))
-void __static_initialization_and_destruction_0(void)
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 300 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "cmpl $0xffff, %edx\n" /* line 19 */
-        "je .Lf11425e_00114275\n"
-        ".Lf11425e_0011426e:\n"
-        "addl $0x10, %esp\n" /* line 300 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf11425e_00114275:\n"
-        "cmpl $1, %eax\n" /* line 19 */
-        "je .Lf11425e_001142d5\n"
-        "testl %eax, %eax\n" /* line 21 */
-        "jne .Lf11425e_0011426e\n"
-        "movl $__ZN10CVAOPacket14sGenericPacketE, (%esp)\n"
-        "movl __ZN10CVAOPacket14sGenericPacketE, %eax\n"
-        "calll *(%eax)\n"
-        "movl __ZN10CVAOPacket11sAllPacketsE+8, %ebx\n" /* line 462 */
-        "testl %ebx, %ebx\n" /* line 1054 */
-        "jne .Lf11425e_0011429a\n"
-        "jmp .Lf11425e_0011426e\n"
-        ".Lf11425e_00114298:\n"
-        "movl %esi, %ebx\n"
-        ".Lf11425e_0011429a:\n"
-        "movl 0xc(%ebx), %eax\n" /* line 1056 | __initialize_p */
-        "movl %eax, 4(%esp)\n" /* __initialize_p */
-        "movl $__ZN10CVAOPacket11sAllPacketsE, (%esp)\n"
-        "calll ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E\n"
-        "movl 8(%ebx), %esi\n" /* line 489 */
-        "leal 0x14(%ebx), %eax\n" /* line 69 */
-        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
-        "movl %eax, (%esp)\n" /* line 37 */
-        "calll ZN10COpenGLVAOD2Ev\n"
-        "movl %ebx, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        "testl %esi, %esi\n" /* line 1054 */
-        "jne .Lf11425e_00114298\n"
-        "addl $0x10, %esp\n" /* line 300 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf11425e_001142d5:\n"
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+20\n" /* line 404 */
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+4\n" /* line 406 */
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+8\n" /* line 407 */
-        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+12\n" /* line 408 */
-        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+16\n" /* line 409 */
-        "movl $__ZN10CVAOPacket14sGenericPacketE, (%esp)\n" /* line 29 */
-        "calll COpenGLVAO_COpenGLVAO\n"
-        "movl $vtbl_CVAOPacket, __ZN10CVAOPacket14sGenericPacketE\n"
-        "addl $0x10, %esp\n" /* line 300 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf11425e_00114324:\n"
-        "movl %eax, (%esp)\n" /* line 397 | __initialize_p */
-        "calll __Unwind_Resume\n"
-        "jmp .Lf11425e_00114324\n"
-        "jmp .Lf11425e_00114324\n"
-    );
+    CVAOPacketRbTree *allPackets;
+
+    if (__priority != 0xffff) {
+        return;
+    }
+
+    if (__initialize_p == 1) {
+        allPackets = (CVAOPacketRbTree *)&CVAOPacket_sAllPackets;
+        allPackets->_M_node_count = 0;
+        allPackets->_M_header._M_color = 0;
+        allPackets->_M_header._M_parent = NULL;
+        allPackets->_M_header._M_left = &allPackets->_M_header;
+        allPackets->_M_header._M_right = &allPackets->_M_header;
+        CVAOPacket_CVAOPacket(&CVAOPacket_sGenericPacket[0]);
+        return;
+    }
+
+    if (__initialize_p == 0) {
+        ZN10CVAOPacketD2Ev(&CVAOPacket_sGenericPacket[0]);
+        CVAOPacket_Shutdown();
+    }
 }
 
 /* line 302 */
-static __attribute__((naked))
 void GLOBAL__D__ZN10CVAOPacket10sVAOStatusE(void) /* global destructors keyed to CVAOPacket_sVAOStatus */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 302 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(0, 0xffff);
 }
 
 /* line 301 */
-static __attribute__((naked))
 void GLOBAL__I__ZN10CVAOPacket10sVAOStatusE(void) /* global constructors keyed to CVAOPacket_sVAOStatus */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 301 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(1, 0xffff);
 }
 
 bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this)
@@ -729,82 +690,42 @@ bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this)
     return 1;
 }
 
-/* line 1144 */
-__attribute__((naked))
-void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11lower_boundERS1_(void) /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_lower_bound */
+CVAOPacketRbTreeNodeBase *ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11lower_boundERS1_(const CVAOPacketRbTree *tree, const UINT32 *key) /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_lower_bound */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1144 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        /* { scope 1 */
-        "movl 8(%eax), %ecx\n" /* line 462 */
-        "leal 4(%eax), %ebx\n" /* line 473 */
-        "testl %ecx, %ecx\n" /* line 1149 */
-        "je .Lf2c096e_002c099d\n"
-        "movl 0xc(%ebp), %edx\n" /* line 227 | __k */
-        "movl (%edx), %eax\n"
-        "jmp .Lf2c096e_002c0991\n"
-        ".Lf2c096e_002c0986:\n"
-        "movl 8(%ecx), %edx\n" /* line 489 */
-        "movl %ecx, %ebx\n"
-        "testl %edx, %edx\n" /* line 1149 */
-        "je .Lf2c096e_002c099d\n"
-        ".Lf2c096e_002c098f:\n"
-        "movl %edx, %ecx\n"
-        ".Lf2c096e_002c0991:\n"
-        "cmpl %eax, 0x10(%ecx)\n" /* line 1150 */
-        "jae .Lf2c096e_002c0986\n"
-        "movl 0xc(%ecx), %edx\n" /* line 497 */
-        "testl %edx, %edx\n" /* line 1149 */
-        "jne .Lf2c096e_002c098f\n"
-        /* } scope */
-        ".Lf2c096e_002c099d:\n"
-        "movl %ebx, %eax\n" /* line 1155 | __y */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CVAOPacketRbTreeNodeBase *x;
+    CVAOPacketRbTreeNodeBase *y;
+
+    x = tree->_M_header._M_parent;
+    y = (CVAOPacketRbTreeNodeBase *)&tree->_M_header;
+    while (x) {
+        if (CVAOPacket_GetConstTreeNode(x)->first >= *key) {
+            y = x;
+            x = x->_M_left;
+        } else {
+            x = x->_M_right;
+        }
+    }
+
+    return y;
 }
 
-/* line 1180 */
-__attribute__((naked))
-void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11upper_boundERS1_(void) /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_upper_bound */
+CVAOPacketRbTreeNodeBase *ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11upper_boundERS1_(const CVAOPacketRbTree *tree, const UINT32 *key) /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_upper_bound */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1180 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        /* { scope 1 */
-        "movl 8(%eax), %ecx\n" /* line 462 */
-        "leal 4(%eax), %ebx\n" /* line 473 */
-        "testl %ecx, %ecx\n" /* line 1185 */
-        "je .Lf2c09a2_002c09d1\n"
-        "movl 0xc(%ebp), %edx\n" /* line 227 | __k */
-        "movl (%edx), %eax\n"
-        "jmp .Lf2c09a2_002c09c5\n"
-        ".Lf2c09a2_002c09ba:\n"
-        "movl 8(%ecx), %edx\n" /* line 489 */
-        "movl %ecx, %ebx\n"
-        "testl %edx, %edx\n" /* line 1185 */
-        "je .Lf2c09a2_002c09d1\n"
-        ".Lf2c09a2_002c09c3:\n"
-        "movl %edx, %ecx\n"
-        ".Lf2c09a2_002c09c5:\n"
-        "cmpl 0x10(%ecx), %eax\n" /* line 1186 */
-        "jb .Lf2c09a2_002c09ba\n"
-        "movl 0xc(%ecx), %edx\n" /* line 497 */
-        "testl %edx, %edx\n" /* line 1185 */
-        "jne .Lf2c09a2_002c09c3\n"
-        /* } scope */
-        ".Lf2c09a2_002c09d1:\n"
-        "movl %ebx, %eax\n" /* line 1191 | __y */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CVAOPacketRbTreeNodeBase *x;
+    CVAOPacketRbTreeNodeBase *y;
+
+    x = tree->_M_header._M_parent;
+    y = (CVAOPacketRbTreeNodeBase *)&tree->_M_header;
+    while (x) {
+        if (*key < CVAOPacket_GetConstTreeNode(x)->first) {
+            y = x;
+            x = x->_M_left;
+        } else {
+            x = x->_M_right;
+        }
+    }
+
+    return y;
 }
 
 /* overload skip: CVAOPacket_CVAOPacket (0x2c09d6) */
