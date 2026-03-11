@@ -2415,10 +2415,11 @@ void CL_DrawText(const char *text, int maxChars, FontHandle font, float x, float
 /* line 5033 */
 void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor)
 {
+    (void)cursorPos;
+    (void)cursor;
     if (!text || !font)
         return;
-    cursor = (signed char)cursor;
-    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)((char *)&re + 300))(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
+    CL_DrawTextPhysical(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
 /* line 5039 */
