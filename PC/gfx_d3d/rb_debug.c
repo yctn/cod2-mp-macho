@@ -12,7 +12,7 @@
 extern refimport_t ri;                 /* imp_ri */
 extern r_global_permanent_t rgp;        /* imp_rgp */
 /* g_dxCaps was imp_r_rendererInUse */
-extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
+extern r_backEndGlobals_t backEnd;      /* imp_backEnd */
 extern void **g_drawSurf;              /* imp_tess */
 extern void **g_viewParms;             /* imp_backEndData */
 
@@ -97,7 +97,7 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
         return 0;
     }
 
-    backEndPtr = (byte *)*(int *)&backEnd;
+    backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
     if (*(byte *)(backEndPtr + 0x4bd) != 0) {
@@ -257,7 +257,7 @@ static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
         return 0;
     }
 
-    backEndPtr = (byte *)*(int *)&backEnd;
+    backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
     if (*(byte *)(backEndPtr + 0x4bd) != 0) {
@@ -539,7 +539,7 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
             data = *(byte **)g_viewParms;
             plume = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
 
-            backEndPtr = (byte *)*(int *)&backEnd;
+            backEndPtr = (byte *)&backEnd;
             time = *(int *)(backEndPtr + 0x3b8); /* sceneDef.time */
 
             startTime = *(int *)(plume + 0x20);
@@ -613,7 +613,7 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
     /* Draw debug polys if any */
     data = *(byte **)g_viewParms;
     if (*(int *)(data + DBGGLOB_OFF + 0x10) != 0) { /* debugGlobals.polyCount */
-        backEndPtr = (byte *)*(int *)&backEnd;
+        backEndPtr = (byte *)&backEnd;
         if (*(byte *)(backEndPtr + 0x4bd) != 0) {
             RB_Set3D();
         }

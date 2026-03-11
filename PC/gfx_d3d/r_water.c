@@ -16,7 +16,7 @@ static struct WaterGlob waterGlob; /* waterGlob */
 extern void **g_viewParms;          /* imp_backEndData */
 /* g_dxCaps was imp_r_rendererInUse */
 extern r_globals_t rg;             /* imp_rg */
-extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
+extern r_backEndGlobals_t backEnd; /* imp_backEnd */
 extern void **g_unknown_195f22c;    /* imp_g_WarmOff - upload lock flag */
 extern void **g_unknown_195f230;    /* imp_r_drawWater - water enabled check */
 
@@ -68,7 +68,7 @@ void RB_UploadWaterTexture(GfxImage *image, water_t *water)
     }
 
     /* line 398: Get current time */
-    t = backEnd->sceneDef.floatTime;
+    t = backEnd.sceneDef.floatTime;
 
     N = water->N;
     M = water->M;

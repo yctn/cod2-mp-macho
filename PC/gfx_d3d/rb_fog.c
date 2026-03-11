@@ -7,7 +7,7 @@
 extern void **g_renderState; /* imp_r_fog */
 extern void **g_viewParms;   /* imp_backEndData */
 extern r_globals_t rg;      /* imp_rg */
-extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
+extern r_backEndGlobals_t backEnd; /* imp_backEnd */
 extern void **g_backEndData; /* imp_dxState */
 /* g_dx was imp_dx, g_dxIter was imp_alwaysfails, g_dxCaps was imp_r_rendererInUse */
 extern void **g_drawSurf;    /* imp_tess */
@@ -26,6 +26,7 @@ GfxFogOffset RB_FogOffset(void)
 
 int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
 {
+    byte *backEndPtr = (byte *)&backEnd;
     byte *rgPtr = (byte *)&rg;
     int fogIndex = *(int *)(rgPtr + 0x150c);
 
@@ -39,7 +40,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
         if (fogColorSrc == 2) {
             fogColor = 0;
         } else {
-            fogColor = *(unsigned int *)((byte *)backEnd + 0x4c8);
+            fogColor = *(unsigned int *)(backEndPtr + 0x4c8);
         }
 
         fogColor |= 0xff000000;
@@ -64,7 +65,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
         if (renderMode == 0x20) {
             fogColor = 0;
         } else {
-            fogColor = *(unsigned int *)((byte *)backEnd + 0x4c8);
+            fogColor = *(unsigned int *)(backEndPtr + 0x4c8);
         }
 
         fogColor |= 0xff000000;
@@ -105,7 +106,7 @@ int RB_SetIteratorFog(void)
 
     /* Set backend fog color */
     unsigned int fogColorPacked = *(unsigned int *)(fog + 0xc);
-    *(unsigned int *)((byte *)backEnd + 0x4c8) = fogColorPacked;
+    *(unsigned int *)((byte *)&backEnd + 0x4c8) = fogColorPacked;
 
     /* Inline RB_UpdateFogColor logic */
     byte *rgPtr = (byte *)&rg;
@@ -135,7 +136,7 @@ int RB_SetIteratorFog(void)
         }
     }
 
-    byte *ecx = (byte *)backEnd;
+    byte *ecx = (byte *)&backEnd;
 
     /* Convert fog color bytes to floats (1/255 scale) */
     float inv255 = 0.003921568859368563f;

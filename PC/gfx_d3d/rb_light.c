@@ -19,7 +19,7 @@ extern int s_vc_logCount; /* 0xc96c84 */
 
 /* Global pointers used in this file */
 extern r_global_permanent_t rgp;        /* imp_rgp */
-extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
+extern r_backEndGlobals_t backEnd;      /* imp_backEnd */
 extern void **g_viewParms;              /* imp_backEndData */
 extern const dvar_t **r_lightGridSunDir;      /* imp_vec3_colorintensity — pointer to sun direction floats */
 extern const dvar_t **r_lightGridContrast;    /* imp_r_vc_makelog */
@@ -1017,7 +1017,7 @@ void RB_SetupEntityLighting(const GfxEntity *ent, GfxEntityLighting *lighting)
     unsigned char *entBytes = (unsigned char *)ent;
 
     /* Set viewCount from backEnd */
-    lighting->viewCount = backEnd->viewCount;
+    lighting->viewCount = backEnd.viewCount;
 
     /* Check renderFxFlags sign bit (offset 4 of GfxEntity) */
     if ((signed char)entBytes[4] < 0) {
