@@ -8,22 +8,54 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-extern qboolean G_SpawnStringInternal(const char *spawnVars, const char *key, const char *defaultString, const char **out);
+extern qboolean G_SpawnStringInternal(SpawnVar *spawnVar, const char *key, const char *defaultString, const char **out);
 extern void Scr_AddFields(const char *name, const void *fields);
 extern void Scr_AddEntityNum(int entNum, int classnum);
 extern int Scr_ExecEntThreadNum(int entNum, int classnum, scr_func_t handle, unsigned int paramcount);
 extern void Scr_NotifyNum(int entNum, int classnum, int stringValue, unsigned int paramcount);
 extern void Scr_Error(const char *msg);
 extern void Com_Printf(const char *fmt, ...);
+extern int atoi(const char *str);
+extern double atof(const char *str);
+extern unsigned int Scr_FindField(const char *name, int *type);
+extern void Scr_AddInt(int value);
+extern void Scr_AddString(const char *value);
+extern void Scr_AddFloat(float value);
+extern void Scr_AddVector(const float *value);
+extern void Scr_AddObject(unsigned int id);
+extern void Scr_AddConstString(unsigned int value);
+extern void Scr_SetString(scr_string_t *to, unsigned int value);
+extern const char *SL_ConvertToString(unsigned int stringValue);
+extern int G_GetWeaponIndexForName(const char *name);
+extern void *BG_GetWeaponDef(int weaponIndex);
+extern const gitem_t *BG_FindItemForWeapon(int weaponIndex);
+extern void G_SpawnItem(gentity_t *ent, const gitem_t *item);
+extern JCOEF Scr_AddClassField(int classnum, const char *name, unsigned int offset);
+extern void GScr_AddFieldsForClient(void);
+extern void Scr_ParamError(unsigned int index, const char *error);
+extern scr_entref_t Scr_GetEntityRef(unsigned int index);
+extern void Scr_FreeHudElemConstStrings(game_hudelem_t *hud);
+extern JCOEF Scr_FreeEntityNum(int entnum, int classnum);
+extern void Scr_SetDynamicEntityField(int entnum, int classnum, unsigned int index);
+extern unsigned int G_NewString(const char *string);
+extern int I_stricmp(const char *s0, const char *s1);
+extern unsigned char G_SetModel(gentity_t *ent, const char *modelName);
+extern const char *G_ModelName(int index);
+extern unsigned int Scr_GetConstString(unsigned int index);
+extern const char *Scr_GetString(unsigned int index);
+extern int Scr_GetOffset(int classnum, const char *name);
+extern unsigned int Scr_GetNumParam(void);
+extern void Scr_MakeArray(void);
+extern void Scr_AddArray(void);
 
 extern spawn_t spawns[22]; /* 0x0 */
 static const ent_field_t fields[11]; /* fields */
 
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out);
 static void Scr_ReadOnlyField(gentity_t *ent, int offset);
-static unsigned int G_SetEntityScriptVariableInternal(void);
+static unsigned int __attribute__((regparm(2))) G_SetEntityScriptVariableInternal(const char *key, const char *value);
 void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source);
-static const gitem_t * G_GetItemForClassname(void);
+static const gitem_t * __attribute__((regparm(1))) G_GetItemForClassname(const char *classname);
 qboolean G_CallSpawnEntity(gentity_t *ent);
 void GScr_AddFieldsForEntity(void);
 void GScr_AddFieldsForRadiant(void);
@@ -33,7 +65,7 @@ void Scr_FreeHudElem(game_hudelem_t *hud);
 void Scr_AddHudElem(game_hudelem_t *hud);
 scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int paramcount);
 void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount);
-static void G_ParseEntityField(gentity_t *ent);
+static void __attribute__((regparm(3))) G_ParseEntityField(const char *key, const char *value, gentity_t *ent);
 void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs);
 void Scr_GetEnt(void);
 void Scr_GetEntArray(void);
@@ -49,10 +81,30 @@ void Scr_FreeEntity(gentity_t *ent);
 void G_CallSpawn(void);
 void G_SpawnEntitiesFromString(void);
 
+static level_locals_t *G_Level(void)
+{
+    return (level_locals_t *)imp_level;
+}
+
+static SpawnVar *G_LevelSpawnVar(void)
+{
+    return &G_Level()->spawnVar;
+}
+
+static gentity_t *G_Entities(void)
+{
+    return (gentity_t *)imp_g_entities;
+}
+
+static int G_HudElemIndex(const game_hudelem_t *hud)
+{
+    return (int)(hud - (const game_hudelem_t *)imp_g_hudelems);
+}
+
 /* line 7 */
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out)
 {
-    return G_SpawnStringInternal((const char *)((byte *)imp_level + 0x1348), key, defaultString, out);
+    return G_SpawnStringInternal(G_LevelSpawnVar(), key, defaultString, out);
 }
 
 /* line 47 */
@@ -62,399 +114,144 @@ static void Scr_ReadOnlyField(gentity_t *ent, int offset)
 }
 
 /* line 160 */
-static __attribute__((naked))
-unsigned int G_SetEntityScriptVariableInternal(void)
+static unsigned int __attribute__((regparm(2))) G_SetEntityScriptVariableInternal(const char *key, const char *value)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 160 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %edx, %esi\n" /* value */
-        /* { scope 1 */
-        "leal -0x1c(%ebp), %edx\n" /* line 166 | type */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n" /* key */
-        "calll Scr_FindField\n"
-        "movl %eax, %edi\n" /* key, index */
-        "testl %eax, %eax\n" /* line 167 | key */
-        "je .Lf19e2c0_0019e2ef\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 170 | type, key */
-        "cmpl $4, %eax\n" /* key */
-        "je .Lf19e2c0_0019e315\n"
-        "jg .Lf19e2c0_0019e2f9\n"
-        "cmpl $2, %eax\n" /* key */
-        "je .Lf19e2c0_0019e357\n"
-        /* } scope */
-        ".Lf19e2c0_0019e2ef:\n"
-        "movl %edi, %eax\n" /* line 196 | index, key */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e2c0_0019e2f9:\n"
-        "cmpl $5, %eax\n" /* line 170 | key */
-        "je .Lf19e2c0_0019e361\n"
-        "cmpl $6, %eax\n" /* key */
-        "jne .Lf19e2c0_0019e2ef\n"
-        "movl %esi, (%esp)\n" /* line 181 | value */
-        "calll atoi\n"
-        "movl %eax, (%esp)\n" /* key */
-        "calll Scr_AddInt\n"
-        "jmp .Lf19e2c0_0019e2ef\n"
-        ".Lf19e2c0_0019e315:\n"
-        "xorl %eax, %eax\n" /* line 183 | key */
-        "movl %eax, -0x28(%ebp)\n" /* key, vec */
-        "movl %eax, -0x24(%ebp)\n" /* line 184 | key */
-        "movl %eax, -0x20(%ebp)\n" /* line 185 | key */
-        "leal -0x28(%ebp), %ebx\n" /* line 186 | vec */
-        "leal -0x20(%ebp), %eax\n" /* key */
-        "movl %eax, 0x10(%esp)\n" /* key */
-        "leal -0x24(%ebp), %eax\n" /* key */
-        "movl %eax, 0xc(%esp)\n" /* key */
-        "movl %ebx, 8(%esp)\n"
-        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
-        "movl %esi, (%esp)\n" /* value */
-        "calll sscanf\n"
-        "movl %ebx, (%esp)\n" /* line 187 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 196 | index, key */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e2c0_0019e357:\n"
-        "movl %esi, (%esp)\n" /* line 173 | value */
-        "calll Scr_AddString\n"
-        "jmp .Lf19e2c0_0019e2ef\n"
-        ".Lf19e2c0_0019e361:\n"
-        "movl %esi, (%esp)\n" /* line 177 | value */
-        "calll atof\n"
-        "fstpl -0x30(%ebp)\n"
-        "cvtsd2ss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        "jmp .Lf19e2c0_0019e2ef\n"
-    );
+    int type;
+    unsigned int index;
+
+    index = Scr_FindField(key, &type);
+    if (!index) {
+        return 0;
+    }
+
+    switch (type) {
+    case 2:
+        Scr_AddString(value);
+        break;
+    case 4:
+    {
+        vec3_t vec = {0.0f, 0.0f, 0.0f};
+        sscanf(value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
+        Scr_AddVector(vec);
+        break;
+    }
+    case 5:
+        Scr_AddFloat((float)atof(value));
+        break;
+    case 6:
+        Scr_AddInt(atoi(value));
+        break;
+    default:
+        break;
+    }
+
+    return index;
 }
 
 /* line 337 */
-__attribute__((naked))
 void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 337 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dest */
-        "movl 0xc(%ebp), %esi\n" /* source */
-        "movl fields, %eax\n" /* line 346 */
-        "testl %eax, %eax\n"
-        "je .Lf19e380_0019e3bf\n"
-        "movl $fields+8, %ebx\n"
-        ".Lf19e380_0019e39d:\n"
-        "cmpl $8, (%ebx)\n" /* line 348 */
-        "ja .Lf19e380_0019e3b5\n"
-        "movl (%ebx), %eax\n"
-        "jmpl *.Ljt_19e380_0(, %eax, 4)\n"
-        ".Lf19e380_0019e3ab:\n"
-        "movl -4(%ebx), %edx\n" /* line 363 */
-        "movzbl (%esi, %edx), %eax\n" /* source */
-        "movb %al, (%edi, %edx)\n" /* dest */
-        ".Lf19e380_0019e3b5:\n"
-        "movl 8(%ebx), %eax\n" /* line 346 */
-        "addl $0x10, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e380_0019e39d\n"
-        ".Lf19e380_0019e3bf:\n"
-        "addl $0x1c, %esp\n" /* line 370 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf19e380_0019e3c7:\n"
-        "movl -4(%ebx), %edx\n" /* line 357 */
-        "movl (%esi, %edx), %eax\n" /* source */
-        "movl %eax, (%edi, %edx)\n" /* dest */
-        "movl 8(%ebx), %eax\n" /* line 346 */
-        "addl $0x10, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e380_0019e39d\n"
-        "jmp .Lf19e380_0019e3bf\n"
-        ".Lf19e380_0019e3dc:\n"
-        "movl -4(%ebx), %edx\n" /* line 360 */
-        "movl (%esi, %edx), %eax\n" /* source */
-        "movl %eax, (%edi, %edx)\n" /* dest */
-        "movl 8(%ebx), %eax\n" /* line 346 */
-        "addl $0x10, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e380_0019e39d\n"
-        "jmp .Lf19e380_0019e3bf\n"
-        ".Lf19e380_0019e3f1:\n"
-        "movl -4(%ebx), %eax\n" /* line 351 */
-        "movzwl (%esi, %eax), %edx\n" /* source */
-        "movl %edx, 4(%esp)\n"
-        "leal (%edi, %eax), %eax\n" /* dest */
-        "movl %eax, (%esp)\n"
-        "calll Scr_SetString\n"
-        "movl 8(%ebx), %eax\n" /* line 346 */
-        "addl $0x10, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e380_0019e39d\n"
-        "jmp .Lf19e380_0019e3bf\n"
-        ".Lf19e380_0019e413:\n"
-        "movl -4(%ebx), %eax\n" /* line 354 | from */
-        "leal (%edi, %eax), %ecx\n" /* dest, to */
-        "leal (%esi, %eax), %eax\n" /* source, from */
-        /* { scope 1 */
-        "movl (%eax), %edx\n" /* line 199 */
-        "movl %edx, (%ecx)\n"
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl 8(%eax), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl 8(%ebx), %eax\n" /* line 346 */
-        "addl $0x10, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e380_0019e39d\n"
-        "jmp .Lf19e380_0019e3bf\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_19e380_0:\n"
-        ".long .Lf19e380_0019e3c7\n"
-        ".long .Lf19e380_0019e3dc\n"
-        ".long .Lf19e380_0019e3b5\n"
-        ".long .Lf19e380_0019e3f1\n"
-        ".long .Lf19e380_0019e413\n"
-        ".long .Lf19e380_0019e3b5\n"
-        ".long .Lf19e380_0019e3b5\n"
-        ".long .Lf19e380_0019e3b5\n"
-        ".long .Lf19e380_0019e3ab\n"
-        ".text\n"
-    );
+    const ent_field_t *field;
+
+    for (field = fields; field->name; ++field) {
+        switch (field->type) {
+        case F_INT:
+        case F_FLOAT:
+            *(int *)((byte *)dest + field->ofs) = *(const int *)((const byte *)source + field->ofs);
+            break;
+        case F_STRING:
+            Scr_SetString((scr_string_t *)((byte *)dest + field->ofs), *(const scr_string_t *)((const byte *)source + field->ofs));
+            break;
+        case F_VECTOR:
+        {
+            vec3_t *destVec = (vec3_t *)((byte *)dest + field->ofs);
+            const vec3_t *sourceVec = (const vec3_t *)((const byte *)source + field->ofs);
+
+            (*destVec)[0] = (*sourceVec)[0];
+            (*destVec)[1] = (*sourceVec)[1];
+            (*destVec)[2] = (*sourceVec)[2];
+            break;
+        }
+        case F_MODEL:
+            *(byte *)((byte *)dest + field->ofs) = *(const byte *)((const byte *)source + field->ofs);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 /* line 392 */
-static __attribute__((naked))
-const gitem_t * G_GetItemForClassname(void)
+static const gitem_t * __attribute__((regparm(1))) G_GetItemForClassname(const char *classname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 392 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %ebx\n" /* classname */
-        /* { scope 1 */
-        "movl $str_002b33f8, %edi\n" /* line 399 | itemIndex */
-        "movl $7, %ecx\n"
-        "cld\n"
-        "movl %eax, %esi\n" /* weapIndex */
-        "repe cmpsb %es:(%edi), (%esi)\n" /* itemIndex, weapIndex */
-        "movl $0, %edx\n"
-        "je .Lf19e43e_0019e469\n"
-        "movzbl -1(%esi), %edx\n" /* weapIndex */
-        "movzbl -1(%edi), %ecx\n" /* itemIndex */
-        "subl %ecx, %edx\n"
-        ".Lf19e43e_0019e469:\n"
-        "testl %edx, %edx\n"
-        "jne .Lf19e43e_0019e47e\n"
-        "leal 7(%ebx), %eax\n" /* line 401 | classname */
-        "movl %eax, (%esp)\n"
-        "calll G_GetWeaponIndexForName\n"
-        "movl %eax, %esi\n" /* weapIndex */
-        "testl %eax, %eax\n" /* line 402 */
-        "jne .Lf19e43e_0019e4cb\n"
-        ".Lf19e43e_0019e47e:\n"
-        "movl imp_bg_numItems, %eax\n" /* line 409 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "cmpl $0x81, %eax\n"
-        "jg .Lf19e43e_0019e49b\n"
-        ".Lf19e43e_0019e48f:\n"
-        "xorl %esi, %esi\n" /* weapIndex */
-        /* } scope */
-        ".Lf19e43e_0019e491:\n"
-        "movl %esi, %eax\n" /* line 418 | weapIndex */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e43e_0019e49b:\n"
-        "movl $0x81, %edi\n" /* line 409 | itemIndex */
-        "movl imp_bg_itemlist, %eax\n"
-        "addl $0x162c, %eax\n"
-        ".Lf19e43e_0019e4aa:\n"
-        "movl %eax, %esi\n" /* line 411 | weapIndex */
-        "movl %ebx, 4(%esp)\n" /* line 413 | classname */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf19e43e_0019e491\n"
-        "addl $1, %edi\n" /* line 409 | itemIndex */
-        "leal 0x2c(%esi), %eax\n" /* weapIndex */
-        "cmpl %edi, -0x1c(%ebp)\n" /* itemIndex */
-        "jne .Lf19e43e_0019e4aa\n"
-        "jmp .Lf19e43e_0019e48f\n"
-        ".Lf19e43e_0019e4cb:\n"
-        "movl %eax, (%esp)\n" /* line 404 */
-        "calll BG_GetWeaponDef\n"
-        "movl %esi, (%esp)\n" /* line 405 | weapIndex */
-        "calll BG_FindItemForWeapon\n"
-        "movl %eax, %esi\n" /* weapIndex */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 418 | weapIndex */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int weaponIndex;
+    int itemIndex;
+    int bgNumItems;
+    gitem_t *bgItemList;
+
+    if (!strncmp(classname, "weapon_", 7)) {
+        weaponIndex = G_GetWeaponIndexForName(classname + 7);
+        if (weaponIndex) {
+            BG_GetWeaponDef(weaponIndex);
+            return BG_FindItemForWeapon(weaponIndex);
+        }
+    }
+
+    bgNumItems = *(int *)imp_bg_numItems;
+    if (bgNumItems <= 0x81) {
+        return NULL;
+    }
+
+    bgItemList = (gitem_t *)imp_bg_itemlist;
+    for (itemIndex = 0x81; itemIndex < bgNumItems; ++itemIndex) {
+        if (!strcmp(bgItemList[itemIndex].classname, classname)) {
+            return &bgItemList[itemIndex];
+        }
+    }
+
+    return NULL;
 }
 
 /* line 481 */
-__attribute__((naked))
 qboolean G_CallSpawnEntity(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 481 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* ent */
-        /* { scope 1 */
-        "movzwl 0x168(%edi), %eax\n" /* line 487 | ent */
-        "testw %ax, %ax\n"
-        "jne .Lf19e4e8_0019e516\n"
-        "movl $str_002b3400, (%esp)\n" /* line 489 */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf19e4e8_0019e50e:\n"
-        "addl $0x1c, %esp\n" /* line 515 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e4e8_0019e516:\n"
-        "movzwl %ax, %eax\n" /* line 493 */
-        "movl %eax, (%esp)\n"
-        "calll SL_ConvertToString\n"
-        "movl %eax, %esi\n" /* classname */
-        "calll G_GetItemForClassname\n" /* line 495 */
-        "testl %eax, %eax\n" /* line 496 */
-        "je .Lf19e4e8_0019e545\n"
-        "movl %eax, 4(%esp)\n" /* line 498 */
-        "movl %edi, (%esp)\n" /* ent */
-        "calll G_SpawnItem\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 515 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e4e8_0019e545:\n"
-        "movl spawns, %eax\n" /* line 503 */
-        "testl %eax, %eax\n"
-        "je .Lf19e4e8_0019e56c\n"
-        "movl $spawns, %ebx\n"
-        ".Lf19e4e8_0019e553:\n"
-        "movl %esi, 4(%esp)\n" /* line 505 | classname */
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf19e4e8_0019e595\n"
-        "addl $8, %ebx\n" /* line 503 */
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e4e8_0019e553\n"
-        ".Lf19e4e8_0019e56c:\n"
-        "movzwl 0x168(%edi), %eax\n" /* line 513 | ent */
-        "movl %eax, (%esp)\n"
-        "calll SL_ConvertToString\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b3424, (%esp)\n" /* "%s doesn't have a spawn function
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 515 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e4e8_0019e595:\n"
-        "movl %edi, (%esp)\n" /* line 508 | ent */
-        "calll *4(%ebx)\n"
-        "movl $1, %eax\n"
-        "jmp .Lf19e4e8_0019e50e\n"
-    );
+    const char *classname;
+    const gitem_t *item;
+    int i;
+
+    if (!ent->classname) {
+        Com_Printf((const char *)str_002b3400);
+        return 0;
+    }
+
+    classname = SL_ConvertToString(ent->classname);
+    item = G_GetItemForClassname(classname);
+    if (item) {
+        G_SpawnItem(ent, item);
+        return 1;
+    }
+
+    for (i = 0; spawns[i].name; ++i) {
+        if (!strcmp(spawns[i].name, classname)) {
+            ((void (*)(gentity_t *))spawns[i].spawn)(ent);
+            return 1;
+        }
+    }
+
+    Com_Printf("%s doesn't have a spawn function\n", SL_ConvertToString(ent->classname));
+    return 0;
 }
 
 /* line 523 */
-__attribute__((naked))
 void GScr_AddFieldsForEntity(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 523 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl fields, %edx\n" /* line 527 */
-        "testl %edx, %edx\n"
-        "je .Lf19e5a6_0019e5e7\n"
-        "xorl %esi, %esi\n" /* line 523 */
-        "movl $fields+16, %ebx\n"
-        ".Lf19e5a6_0019e5bf:\n"
-        "movl %esi, %eax\n" /* line 531 */
-        "sarl $4, %eax\n"
-        "movzwl %ax, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_AddClassField\n"
-        "movl (%ebx), %edx\n" /* line 527 */
-        "addl $0x10, %esi\n"
-        "addl $0x10, %ebx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf19e5a6_0019e5bf\n"
-        ".Lf19e5a6_0019e5e7:\n"
-        "addl $0x10, %esp\n" /* line 535 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp GScr_AddFieldsForClient\n" /* line 534 */
-    );
+    int i;
+
+    for (i = 0; fields[i].name; ++i) {
+        Scr_AddClassField(0, fields[i].name, (unsigned int)i);
+    }
+
+    GScr_AddFieldsForClient();
 }
 
 /* line 543 */
@@ -470,85 +267,30 @@ void Scr_AddEntity(gentity_t *ent)
 }
 
 /* line 829 */
-__attribute__((naked))
 gentity_t * Scr_GetEntity(unsigned int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 829 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* index */
-        "movl %ebx, (%esp)\n" /* line 833 | index */
-        "calll Scr_GetEntityRef\n"
-        "movl %eax, %edx\n"
-        "shrl $0x10, %eax\n" /* line 834 */
-        "testw %ax, %ax\n"
-        "jne .Lf19e62c_0019e668\n"
-        "movzwl %dx, %eax\n" /* line 837 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl imp_g_entities, %edx\n"
-        ".Lf19e62c_0019e660:\n"
-        "movl %edx, %eax\n" /* line 841 */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf19e62c_0019e668:\n"
-        "movl $str_002b21c8, 4(%esp)\n" /* line 839 */
-        "movl %ebx, (%esp)\n" /* index */
-        "calll Scr_ParamError\n"
-        "xorl %edx, %edx\n"
-        "jmp .Lf19e62c_0019e660\n"
-    );
+    scr_entref_t ref;
+
+    ref = Scr_GetEntityRef(index);
+    if (ref.classnum) {
+        Scr_ParamError(index, (const char *)str_002b21c8);
+        return NULL;
+    }
+
+    return &G_Entities()[ref.entnum];
 }
 
 /* line 849 */
-__attribute__((naked))
 void Scr_FreeHudElem(game_hudelem_t *hud)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 849 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* hud */
-        "movl %ebx, (%esp)\n" /* line 855 | hud */
-        "calll Scr_FreeHudElemConstStrings\n"
-        "movl $1, 4(%esp)\n" /* line 856 */
-        "subl imp_g_hudelems, %ebx\n" /* hud */
-        "sarl $2, %ebx\n" /* hud */
-        "imull $0x8af8af8b, %ebx, %ebx\n" /* hud */
-        "movl %ebx, (%esp)\n" /* hud */
-        "calll Scr_FreeEntityNum\n"
-        "addl $0x14, %esp\n" /* line 857 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Scr_FreeHudElemConstStrings(hud);
+    Scr_FreeEntityNum(G_HudElemIndex(hud), 1);
 }
 
 /* line 865 */
-__attribute__((naked))
 void Scr_AddHudElem(game_hudelem_t *hud)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 865 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* hud */
-        "movl $1, 4(%esp)\n" /* line 871 */
-        "subl imp_g_hudelems, %eax\n"
-        "sarl $2, %eax\n"
-        "imull $0x8af8af8b, %eax, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        "leave\n" /* line 872 */
-        "retl\n"
-    );
+    Scr_AddEntityNum(G_HudElemIndex(hud), 1);
 }
 
 /* line 900 */
@@ -564,580 +306,249 @@ void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 }
 
 /* line 225 */
-static __attribute__((naked))
-void G_ParseEntityField(gentity_t *ent)
+static void __attribute__((regparm(3))) G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 225 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %eax, %esi\n" /* key */
-        "movl %edx, %edi\n" /* value */
-        "movl %ecx, -0x34(%ebp)\n"
-        /* { scope 1 */
-        "movl fields, %eax\n" /* line 232 */
-        "testl %eax, %eax\n"
-        "je .Lf19e73a_0019e771\n"
-        "movl $fields, %ebx\n"
-        ".Lf19e73a_0019e758:\n"
-        "movl %esi, 4(%esp)\n" /* line 234 | key */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf19e73a_0019e7a7\n"
-        "addl $0x10, %ebx\n" /* line 232 */
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf19e73a_0019e758\n"
-        ".Lf19e73a_0019e771:\n"
-        "movl %edi, %edx\n" /* line 209 */
-        "movl %esi, %eax\n"
-        "calll G_SetEntityScriptVariableInternal\n"
-        "testl %eax, %eax\n" /* line 210 */
-        "jne .Lf19e73a_0019e786\n"
-        /* } scope */
-        ".Lf19e73a_0019e77e:\n"
-        "addl $0x4c, %esp\n" /* line 280 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf19e73a_0019e786:\n"
-        "movl %eax, 8(%esp)\n" /* line 1059 */
-        "movl $0, 4(%esp)\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_SetDynamicEntityField\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 280 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e73a_0019e7a7:\n"
-        "cmpl $8, 8(%ebx)\n" /* line 239 */
-        "ja .Lf19e73a_0019e77e\n"
-        "movl 8(%ebx), %eax\n"
-        "jmpl *.Ljt_19e73a_0(, %eax, 4)\n"
-        ".Lf19e73a_0019e7b7:\n"
-        "movl 4(%ebx), %eax\n" /* line 253 */
-        "addl %eax, -0x34(%ebp)\n"
-        "movl %edi, (%esp)\n" /* value */
-        "calll atoi\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, (%edx)\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".Lf19e73a_0019e7cc:\n"
-        "movl 4(%ebx), %ecx\n" /* line 256 */
-        "addl %ecx, -0x34(%ebp)\n"
-        "movl %edi, (%esp)\n" /* value */
-        "calll atof\n"
-        "fstpl -0x30(%ebp)\n"
-        "cvtsd2ss -0x30(%ebp), %xmm0\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movss %xmm0, (%eax)\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".Lf19e73a_0019e7eb:\n"
-        "movl $0, 4(%esp)\n" /* line 242 */
-        "movl -0x34(%ebp), %eax\n"
-        "addl 4(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_SetString\n"
-        "movl 4(%ebx), %eax\n" /* line 243 */
-        "addl %eax, -0x34(%ebp)\n"
-        "movl %edi, (%esp)\n" /* value */
-        "calll G_NewString\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movw %ax, (%edx)\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".Lf19e73a_0019e81a:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, -0x24(%ebp)\n" /* vec */
-        "movl %eax, -0x20(%ebp)\n" /* line 184 */
-        "movl %eax, -0x1c(%ebp)\n" /* line 185 */
-        "leal -0x24(%ebp), %edx\n" /* line 247 | vec */
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x20(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
-        "movl %edi, (%esp)\n" /* value */
-        "calll sscanf\n"
-        "movl 4(%ebx), %edx\n" /* line 248 */
-        "movl -0x24(%ebp), %eax\n" /* vec */
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %eax, (%ecx, %edx)\n"
-        "movl 4(%ebx), %edx\n" /* line 249 */
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 4(%ecx, %edx)\n"
-        "movl 4(%ebx), %edx\n" /* line 250 */
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 8(%ecx, %edx)\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".Lf19e73a_0019e86f:\n"
-        "cmpb $0x2a, (%edi)\n" /* line 259 | value */
-        "je .Lf19e73a_0019e888\n"
-        "movl %edi, 4(%esp)\n" /* line 267 | value */
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll G_SetModel\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".Lf19e73a_0019e888:\n"
-        "leal 1(%edi), %eax\n" /* line 261 | value */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movzwl %ax, %eax\n" /* line 263 */
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 0x8c(%edx)\n"
-        "jmp .Lf19e73a_0019e77e\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_19e73a_0:\n"
-        ".long .Lf19e73a_0019e7b7\n"
-        ".long .Lf19e73a_0019e7cc\n"
-        ".long .Lf19e73a_0019e77e\n"
-        ".long .Lf19e73a_0019e7eb\n"
-        ".long .Lf19e73a_0019e81a\n"
-        ".long .Lf19e73a_0019e77e\n"
-        ".long .Lf19e73a_0019e77e\n"
-        ".long .Lf19e73a_0019e77e\n"
-        ".long .Lf19e73a_0019e86f\n"
-        ".text\n"
-    );
+    const ent_field_t *field;
+    unsigned int index;
+
+    for (field = fields; field->name; ++field) {
+        if (!I_stricmp(field->name, key)) {
+            byte *fieldData = (byte *)ent + field->ofs;
+
+            switch (field->type) {
+            case F_INT:
+                *(int *)fieldData = atoi(value);
+                break;
+            case F_FLOAT:
+                *(float *)fieldData = (float)atof(value);
+                break;
+            case F_STRING:
+                Scr_SetString((scr_string_t *)fieldData, 0);
+                *(scr_string_t *)fieldData = (scr_string_t)G_NewString(value);
+                break;
+            case F_VECTOR:
+            {
+                vec3_t vec = {0.0f, 0.0f, 0.0f};
+                sscanf(value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
+                ((vec3_t *)fieldData)[0][0] = vec[0];
+                ((vec3_t *)fieldData)[0][1] = vec[1];
+                ((vec3_t *)fieldData)[0][2] = vec[2];
+                break;
+            }
+            case F_MODEL:
+                if (*value == '*') {
+                    ent->model = (byte)(unsigned short)atoi(value + 1);
+                } else {
+                    G_SetModel(ent, value);
+                }
+                break;
+            default:
+                break;
+            }
+
+            return;
+        }
+    }
+
+    index = G_SetEntityScriptVariableInternal(key, value);
+    if (index) {
+        Scr_SetDynamicEntityField(ent->s.number, 0, index);
+    }
 }
 
 /* line 689 */
-__attribute__((naked))
 void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 689 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* type */
-        /* { scope 1 */
-        "cmpl $8, %eax\n" /* line 696 */
-        "ja .Lf19e8a4_0019e8d4\n"
-        "jmpl *.Ljt_19e8a4_0(, %eax, 4)\n"
-        ".Lf19e8a4_0019e8ba:\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 732 | ofs */
-        "movl 8(%ebp), %ebx\n" /* b */
-        "movzbl (%ecx, %ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll G_ModelName\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddString\n"
-        /* } scope */
-        ".Lf19e8a4_0019e8d4:\n"
-        "addl $0x24, %esp\n" /* line 738 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e8a4_0019e8da:\n"
-        "movl 8(%ebp), %ebx\n" /* line 711 | b */
-        "movl 0x10(%ebp), %edx\n" /* ofs */
-        "movl (%ebx, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e8ed:\n"
-        "movl 8(%ebp), %ebx\n" /* line 727 | b */
-        "movl 0x10(%ebp), %edx\n" /* ofs */
-        "movzwl (%ebx, %edx), %eax\n"
-        "testw %ax, %ax\n" /* line 728 */
-        "je .Lf19e8a4_0019e8d4\n"
-        "movzwl %ax, %eax\n" /* line 729 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddObject\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e909:\n"
-        "xorl %eax, %eax\n" /* line 717 */
-        "movl %eax, -0x14(%ebp)\n" /* vec */
-        "movl 8(%ebp), %ecx\n" /* line 718 | b */
-        "movl 0x10(%ebp), %ebx\n" /* ofs */
-        "movl (%ecx, %ebx), %edx\n"
-        "movl %edx, -0x10(%ebp)\n"
-        "movl %eax, -0xc(%ebp)\n" /* line 719 */
-        "leal -0x14(%ebp), %eax\n" /* line 720 | vec */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddVector\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e92a:\n"
-        "movl 8(%ebp), %edx\n" /* line 723 | b */
-        "movl 0x10(%ebp), %ecx\n" /* ofs */
-        "movl (%edx, %ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf19e8a4_0019e8d4\n"
-        "movl $0, 4(%esp)\n" /* line 820 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e94b:\n"
-        "movl 8(%ebp), %eax\n" /* line 708 | b */
-        "addl 0x10(%ebp), %eax\n" /* ofs */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddVector\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e95e:\n"
-        "movl 8(%ebp), %edx\n" /* line 699 | b */
-        "movl 0x10(%ebp), %ecx\n" /* ofs */
-        "movzwl (%edx, %ecx), %eax\n"
-        "testw %ax, %ax\n" /* line 700 */
-        "je .Lf19e8a4_0019e8d4\n"
-        "movzwl %ax, %eax\n" /* line 701 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddConstString\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e981:\n"
-        "movl 8(%ebp), %eax\n" /* line 705 | b */
-        "addl 0x10(%ebp), %eax\n" /* ofs */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddString\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".Lf19e8a4_0019e994:\n"
-        "movl 8(%ebp), %ecx\n" /* line 714 | b */
-        "movl 0x10(%ebp), %ebx\n" /* ofs */
-        "movl (%ecx, %ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        "jmp .Lf19e8a4_0019e8d4\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_19e8a4_0:\n"
-        ".long .Lf19e8a4_0019e8da\n"
-        ".long .Lf19e8a4_0019e994\n"
-        ".long .Lf19e8a4_0019e981\n"
-        ".long .Lf19e8a4_0019e95e\n"
-        ".long .Lf19e8a4_0019e94b\n"
-        ".long .Lf19e8a4_0019e92a\n"
-        ".long .Lf19e8a4_0019e909\n"
-        ".long .Lf19e8a4_0019e8ed\n"
-        ".long .Lf19e8a4_0019e8ba\n"
-        ".text\n"
-    );
+    switch (type) {
+    case F_INT:
+        Scr_AddInt(*(int *)(b + ofs));
+        break;
+    case F_FLOAT:
+        Scr_AddFloat(*(float *)(b + ofs));
+        break;
+    case F_LSTRING:
+        Scr_AddString((const char *)(b + ofs));
+        break;
+    case F_STRING:
+    {
+        scr_string_t stringValue = *(scr_string_t *)(b + ofs);
+        if (stringValue) {
+            Scr_AddConstString(stringValue);
+        }
+        break;
+    }
+    case F_VECTOR:
+        Scr_AddVector((float *)(b + ofs));
+        break;
+    case F_ENTITY:
+    {
+        gentity_t *ent = *(gentity_t **)(b + ofs);
+        if (ent) {
+            Scr_AddEntityNum(ent->s.number, 0);
+        }
+        break;
+    }
+    case F_VECTORHACK:
+    {
+        vec3_t vec = {0.0f, *(float *)(b + ofs), 0.0f};
+        Scr_AddVector(vec);
+        break;
+    }
+    case F_OBJECT:
+    {
+        unsigned int objectId = *(scr_string_t *)(b + ofs);
+        if (objectId) {
+            Scr_AddObject(objectId);
+        }
+        break;
+    }
+    case F_MODEL:
+        Scr_AddString(G_ModelName(*(byte *)(b + ofs)));
+        break;
+    default:
+        break;
+    }
 }
 
 /* line 945 */
-__attribute__((naked))
 void Scr_GetEnt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 945 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 957 */
-        "calll Scr_GetConstString\n"
-        "movw %ax, -0x1a(%ebp)\n" /* name */
-        "movl $1, (%esp)\n" /* line 958 */
-        "calll Scr_GetString\n"
-        "movl %eax, 4(%esp)\n" /* line 960 */
-        "movl $0, (%esp)\n"
-        "calll Scr_GetOffset\n"
-        "testl %eax, %eax\n" /* line 961 */
-        "js .Lf19e9ac_0019e9f4\n"
-        "shll $4, %eax\n" /* line 966 */
-        "leal fields(%eax), %edi\n" /* f */
-        "cmpl $3, 8(%edi)\n" /* line 969 | f */
-        "je .Lf19e9ac_0019e9fc\n"
-        /* } scope */
-        ".Lf19e9ac_0019e9f4:\n"
-        "addl $0x2c, %esp\n" /* line 990 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e9ac_0019e9fc:\n"
-        "movl imp_level, %ecx\n" /* line 973 */
-        "movl 0xc(%ecx), %ebx\n" /* ent */
-        "testl %ebx, %ebx\n" /* ent */
-        "jle .Lf19e9ac_0019e9f4\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl imp_g_entities, %ebx\n" /* ent */
-        "xorl %edx, %edx\n"
-        ".Lf19e9ac_0019ea13:\n"
-        "cmpb $0, 0xfc(%ebx)\n" /* line 975 | ent */
-        "je .Lf19e9ac_0019ea2e\n"
-        "movl 4(%edi), %eax\n" /* line 978 | f */
-        "movzwl (%ebx, %eax), %eax\n" /* ent */
-        "testw %ax, %ax\n" /* line 979 */
-        "je .Lf19e9ac_0019ea2e\n"
-        "cmpw %ax, -0x1a(%ebp)\n" /* line 981 | name */
-        "je .Lf19e9ac_0019ea5a\n"
-        ".Lf19e9ac_0019ea2e:\n"
-        "addl $1, %esi\n" /* line 973 | i */
-        "addl $0x230, %ebx\n" /* ent */
-        "cmpl 0xc(%ecx), %esi\n" /* i */
-        "jl .Lf19e9ac_0019ea13\n"
-        "testl %edx, %edx\n" /* line 988 */
-        "je .Lf19e9ac_0019e9f4\n"
-        "movl $0, 4(%esp)\n" /* line 820 */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 990 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19e9ac_0019ea5a:\n"
-        "testl %edx, %edx\n" /* line 983 */
-        "je .Lf19e9ac_0019ea74\n"
-        "movl $str_002b3454, (%esp)\n" /* line 984 */
-        "calll Scr_Error\n"
-        "movl %ebx, %edx\n" /* ent */
-        "movl imp_level, %ecx\n"
-        "jmp .Lf19e9ac_0019ea2e\n"
-        ".Lf19e9ac_0019ea74:\n"
-        "movl %ebx, %edx\n" /* line 983 | ent */
-        "jmp .Lf19e9ac_0019ea2e\n"
-    );
+    scr_string_t name;
+    int offset;
+    const ent_field_t *field;
+    gentity_t *found;
+    int i;
+    level_locals_t *level;
+    gentity_t *gentities;
+
+    name = (scr_string_t)Scr_GetConstString(0);
+    offset = Scr_GetOffset(0, Scr_GetString(1));
+    if (offset < 0) {
+        return;
+    }
+
+    field = &fields[offset];
+    if (field->type != F_STRING) {
+        return;
+    }
+
+    level = G_Level();
+    gentities = G_Entities();
+    found = NULL;
+
+    for (i = 0; i < level->num_entities; ++i) {
+        gentity_t *ent = &gentities[i];
+        scr_string_t fieldValue;
+
+        if (!ent->r.inuse) {
+            continue;
+        }
+
+        fieldValue = *(scr_string_t *)((byte *)ent + field->ofs);
+        if (!fieldValue || fieldValue != name) {
+            continue;
+        }
+
+        if (found) {
+            Scr_Error((const char *)str_002b3454);
+        }
+        found = ent;
+    }
+
+    if (found) {
+        Scr_AddEntityNum(found->s.number, 0);
+    }
 }
 
 /* line 998 */
-__attribute__((naked))
 void Scr_GetEntArray(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 998 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "calll Scr_GetNumParam\n" /* line 1009 */
-        "testl %eax, %eax\n"
-        "jne .Lf19ea78_0019eaf4\n"
-        "calll Scr_MakeArray\n" /* line 1011 */
-        "movl imp_level, %edx\n" /* line 1012 */
-        "movl 0xc(%edx), %edi\n" /* ent */
-        "testl %edi, %edi\n" /* ent */
-        "jle .Lf19ea78_0019eaec\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl imp_g_entities, %ebx\n"
-        "addl $0xfc, %ebx\n"
-        "movl %edx, %edi\n" /* ent */
-        "jmp .Lf19ea78_0019eabc\n"
-        ".Lf19ea78_0019eaae:\n"
-        "addl $1, %esi\n" /* i */
-        "addl $0x230, %ebx\n"
-        "cmpl 0xc(%edx), %esi\n" /* i */
-        "jge .Lf19ea78_0019eaec\n"
-        ".Lf19ea78_0019eabc:\n"
-        "cmpb $0, (%ebx)\n" /* line 1014 */
-        "je .Lf19ea78_0019eaae\n"
-        "movl $0, 4(%esp)\n" /* line 820 */
-        "movl -0xfc(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        "calll Scr_AddArray\n" /* line 1017 */
-        "movl %edi, %edx\n" /* ent */
-        "addl $1, %esi\n" /* line 1012 | i */
-        "addl $0x230, %ebx\n"
-        "cmpl 0xc(%edx), %esi\n" /* i */
-        "jl .Lf19ea78_0019eabc\n"
-        /* } scope */
-        ".Lf19ea78_0019eaec:\n"
-        "addl $0x2c, %esp\n" /* line 1049 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19ea78_0019eaf4:\n"
-        "movl $0, (%esp)\n" /* line 1022 */
-        "calll Scr_GetConstString\n"
-        "movw %ax, -0x1a(%ebp)\n" /* name */
-        "movl $1, (%esp)\n" /* line 1023 */
-        "calll Scr_GetString\n"
-        "movl %eax, 4(%esp)\n" /* line 1025 */
-        "movl $0, (%esp)\n"
-        "calll Scr_GetOffset\n"
-        "testl %eax, %eax\n" /* line 1026 */
-        "js .Lf19ea78_0019eaec\n"
-        "shll $4, %eax\n" /* line 1031 */
-        "addl $fields, %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* f */
-        "cmpl $3, 8(%eax)\n" /* line 1032 */
-        "jne .Lf19ea78_0019eaec\n"
-        "calll Scr_MakeArray\n" /* line 1035 */
-        "movl imp_level, %edx\n" /* line 1036 */
-        "movl 0xc(%edx), %esi\n" /* i */
-        "testl %esi, %esi\n" /* i */
-        "jle .Lf19ea78_0019eaec\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl imp_g_entities, %ebx\n"
-        "movl %ebx, %edi\n" /* ent */
-        "addl $0xfc, %ebx\n"
-        "movl %edx, -0x24(%ebp)\n"
-        ".Lf19ea78_0019eb5a:\n"
-        "cmpb $0, (%ebx)\n" /* line 1038 */
-        "je .Lf19ea78_0019eb74\n"
-        "movl -0x20(%ebp), %ecx\n" /* line 1041 | f */
-        "movl 4(%ecx), %eax\n"
-        "movzwl (%eax, %edi), %eax\n"
-        "testw %ax, %ax\n" /* line 1042 */
-        "je .Lf19ea78_0019eb74\n"
-        "cmpw %ax, -0x1a(%ebp)\n" /* line 1044 | name */
-        "je .Lf19ea78_0019eb8d\n"
-        ".Lf19ea78_0019eb74:\n"
-        "addl $1, %esi\n" /* line 1036 | i */
-        "addl $0x230, %edi\n" /* ent */
-        "addl $0x230, %ebx\n"
-        "cmpl %esi, 0xc(%edx)\n" /* i */
-        "jg .Lf19ea78_0019eb5a\n"
-        "jmp .Lf19ea78_0019eaec\n"
-        ".Lf19ea78_0019eb8d:\n"
-        "movl $0, 4(%esp)\n" /* line 820 */
-        "movl -0xfc(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        "calll Scr_AddArray\n" /* line 1047 */
-        "movl -0x24(%ebp), %edx\n"
-        "jmp .Lf19ea78_0019eb74\n"
-    );
+    level_locals_t *level;
+    gentity_t *gentities;
+    int i;
+
+    level = G_Level();
+    gentities = G_Entities();
+
+    if (!Scr_GetNumParam()) {
+        Scr_MakeArray();
+        for (i = 0; i < level->num_entities; ++i) {
+            if (!gentities[i].r.inuse) {
+                continue;
+            }
+            Scr_AddEntityNum(gentities[i].s.number, 0);
+            Scr_AddArray();
+        }
+        return;
+    }
+
+    {
+        scr_string_t name = (scr_string_t)Scr_GetConstString(0);
+        int offset = Scr_GetOffset(0, Scr_GetString(1));
+        const ent_field_t *field;
+
+        if (offset < 0) {
+            return;
+        }
+
+        field = &fields[offset];
+        if (field->type != F_STRING) {
+            return;
+        }
+
+        Scr_MakeArray();
+        for (i = 0; i < level->num_entities; ++i) {
+            scr_string_t fieldValue;
+
+            if (!gentities[i].r.inuse) {
+                continue;
+            }
+
+            fieldValue = *(scr_string_t *)((byte *)&gentities[i] + field->ofs);
+            if (!fieldValue || fieldValue != name) {
+                continue;
+            }
+
+            Scr_AddEntityNum(gentities[i].s.number, 0);
+            Scr_AddArray();
+        }
+    }
 }
 
 /* line 13 */
-__attribute__((naked))
 qboolean G_SpawnFloat(const char *key, const char *defaultString, float *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 13 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        /* { scope 1 */
-        "leal -0xc(%ebp), %eax\n" /* line 9 | s */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* defaultString */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* key */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_level, %eax\n"
-        "addl $0x1348, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll G_SpawnStringInternal\n"
-        "movl %eax, %ebx\n"
-        "movl -0xc(%ebp), %eax\n" /* line 19 | s */
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x20(%ebp)\n"
-        "movl 0x10(%ebp), %eax\n" /* out */
-        "cvtsd2ss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 21 | present */
-        "addl $0x34, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *s;
+    qboolean present;
+
+    present = G_SpawnStringInternal(G_LevelSpawnVar(), key, defaultString, &s);
+    *out = (float)atof(s);
+    return present;
 }
 
 /* line 24 */
-__attribute__((naked))
 qboolean G_SpawnInt(const char *key, const char *defaultString, int *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 24 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "leal -0xc(%ebp), %eax\n" /* line 9 | s */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* defaultString */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* key */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_level, %eax\n"
-        "addl $0x1348, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll G_SpawnStringInternal\n"
-        "movl %eax, %ebx\n"
-        "movl -0xc(%ebp), %eax\n" /* line 30 | s */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl 0x10(%ebp), %edx\n" /* out */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 32 | present */
-        "addl $0x24, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *s;
+    qboolean present;
+
+    present = G_SpawnStringInternal(G_LevelSpawnVar(), key, defaultString, &s);
+    *out = atoi(s);
+    return present;
 }
 
 /* line 35 */
-__attribute__((naked))
 qboolean G_SpawnVector(const char *key, const char *defaultString, float *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* out */
-        /* { scope 1 */
-        "leal -0xc(%ebp), %eax\n" /* line 9 | s */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* defaultString */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* key */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_level, %eax\n"
-        "addl $0x1348, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll G_SpawnStringInternal\n"
-        "movl %eax, %esi\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, (%ebx)\n" /* out */
-        "leal 4(%ebx), %ecx\n" /* line 184 | out */
-        "movl %eax, 4(%ebx)\n" /* out */
-        "leal 8(%ebx), %edx\n" /* line 185 | out */
-        "movl %eax, 8(%ebx)\n" /* out */
-        "movl %edx, 0x10(%esp)\n" /* line 42 */
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* out */
-        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
-        "movl -0xc(%ebp), %eax\n" /* s */
-        "movl %eax, (%esp)\n"
-        "calll sscanf\n"
-        /* } scope */
-        "movl %esi, %eax\n" /* line 44 | present */
-        "addl $0x30, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *s;
+    qboolean present;
+
+    present = G_SpawnStringInternal(G_LevelSpawnVar(), key, defaultString, &s);
+    out[0] = 0.0f;
+    out[1] = 0.0f;
+    out[2] = 0.0f;
+    sscanf(s, "%f %f %f", &out[0], &out[1], &out[2]);
+    return present;
 }
 
 /* line 1063 */
@@ -1915,4 +1326,3 @@ void G_SpawnEntitiesFromString(void)
         "jmp .Lf19f528_0019f545\n"
     );
 }
-
