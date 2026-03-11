@@ -1048,6 +1048,27 @@ static void R_RenderScene_diag(int registered, int norefresh, int drawSurfCount)
     }
     diag++;
 }
+extern unsigned char dpvsGlob[];
+static void R_WorldCheck_diag(void *rgp_field, void *cell_ptr, int cellIdx)
+{
+    static int diag = 0;
+    if (diag < 10 || (diag % 120 == 0 && diag < 600)) {
+        int cellCount = rgp_field ? *(int *)((char *)rgp_field + 0xfc) : -1;
+        void *cells = rgp_field ? *(void **)((char *)rgp_field + 0x100) : 0;
+        /* Check actual cell for this cellIdx, not always cell 0 */
+        int cellSize = 0x3c; /* sizeof(GfxCell) = 60: cellIdx*64 - cellIdx*4 */
+        void *thisCell = cells ? (char *)cells + cellIdx * cellSize : 0;
+        void *tree = 0;
+        int treeSC = 0;
+        if (thisCell) {
+            tree = *(void **)((char *)thisCell + 0x1c);
+            if (tree) treeSC = *(int *)((char *)tree + 0x28);
+        }
+        fprintf(stderr, "[WORLD#%d] ci=%d cc=%d cell=%p tree=%p tsc=%d dsc=%d\n",
+                diag, cellIdx, cellCount, thisCell, tree, treeSC, scene.drawSurfCount);
+    }
+    diag++;
+}
 
 /* line 1476 */
 __attribute__((naked))
@@ -1187,6 +1208,16 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_CellForPoint\n"
         "movl %eax, %edx\n"
         /* { scope 3: partitionIndex */
+        /* DIAG: check world data pointers */
+        "pushal\n"
+        "pushl %edx\n"  /* cellIdx */
+        "movl imp_rgp, %eax\n"
+        "movl 0x109c(%eax), %eax\n"
+        "pushl %eax\n"  /* dummy cell_ptr */
+        "pushl %eax\n"  /* rgp_field */
+        "calll R_WorldCheck_diag\n"
+        "addl $12, %esp\n"
+        "popal\n"
         "movl imp_rgp, %eax\n" /* line 956 */
         "movl 0x109c(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1200,6 +1231,7 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_AddWorldSurfacesDpvs\n"
         /* } scope */
         ".Lfc643c_000c6651:\n"
+        /* no extra diag here — R_WorldCheck_diag covers it */
         "calll CG_AddMarks\n" /* line 1328 */
         "calll FX_DrawScheduledEffects\n" /* line 1329 */
         "movl scene+1464, %eax\n" /* line 1331 */

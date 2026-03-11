@@ -64,11 +64,71 @@ extern int rb_rdsl_call_count;
 extern int g_dip_gl_draw;
 extern int g_rb_endsurface_count;
 extern int g_rb_endsurface_draw;
+extern int g_rb_endsurface_nomaterial;
+extern int g_rb_endsurface_notechnique;
+extern int g_rb_endsurface_dxstate;
+extern int g_rb_endsurface_idxzero;
+extern int g_rb_endsurface_flag1skip;
+extern int g_rb_endsurface_flag2skip;
+extern int g_dip_drawflag_zero;
+extern int g_dip_vs_null;
+extern int g_dip_vs_bound;
+extern int g_dip_vs_skip;
+extern int g_dip_numelems_zero;
+extern int g_dip_is_tri;
+extern int g_technull_saved;
+extern void *g_technull_mat;
+extern int g_technull_type;
+extern int g_tess_since_begin;
+extern int g_rb_tess_type_counts[];
+extern int g_rb_last_tess_type;
+extern int g_rb_exec_count;
+extern int g_dsc_techtype[];
+extern int g_dsc_surfcount[];
+extern int rb_drawsurfscmd_dxskip;
 static void diag_rb_frame_end(void) {
-    (void)rb_rdsl_call_count;
-    (void)g_dip_gl_draw;
-    (void)g_rb_endsurface_count;
-    (void)g_rb_endsurface_draw;
+    static int last_print = 0;
+    /* Print first 5 frames, then every 60 frames up to 900 */
+    if (g_rb_exec_count > last_print && (g_rb_exec_count <= 5 || (g_rb_exec_count % 60 == 0 && g_rb_exec_count <= 900))) {
+        fprintf(stderr, "[RB f%d] rdsl=%d es=%d/%d nomat=%d notech=%d dxst=%d idx0=%d f1=%d f2=%d gl=%d tri=%d df0=%d dsc=%d/%d/%d tnull=%d sort=%d bf=%d tt=%d/%d\n",
+            g_rb_exec_count, rb_rdsl_call_count, g_rb_endsurface_count, g_rb_endsurface_draw,
+            g_rb_endsurface_nomaterial, g_rb_endsurface_notechnique, g_rb_endsurface_dxstate,
+            g_rb_endsurface_idxzero, g_rb_endsurface_flag1skip, g_rb_endsurface_flag2skip,
+            g_dip_gl_draw, g_dip_is_tri, g_dip_drawflag_zero,
+            rb_drawsurfscmd_count, g_dsc_surfcount[0], g_dsc_surfcount[1],
+            g_rdsl_ignore_technull,
+            g_rdsl_sortchange, g_rdsl_bf_entry,
+            g_dsc_techtype[0], g_dsc_techtype[1]);
+        last_print = g_rb_exec_count;
+    }
+    /* Reset per-frame counters */
+    rb_rdsl_call_count = 0;
+    g_rb_endsurface_count = 0;
+    g_rb_endsurface_draw = 0;
+    g_rb_endsurface_nomaterial = 0;
+    g_rb_endsurface_notechnique = 0;
+    g_rb_endsurface_dxstate = 0;
+    g_rb_endsurface_idxzero = 0;
+    g_rb_endsurface_flag1skip = 0;
+    g_rb_endsurface_flag2skip = 0;
+    g_dip_gl_draw = 0;
+    g_dip_is_tri = 0;
+    g_dip_drawflag_zero = 0;
+    g_dip_vs_null = 0;
+    g_dip_vs_bound = 0;
+    g_dip_vs_skip = 0;
+    g_dip_numelems_zero = 0;
+    g_rdsl_ignore_technull = 0;
+    g_rdsl_ignore_decal = 0;
+    g_rdsl_ignore_techm1 = 0;
+    g_rdsl_noignore = 0;
+    g_rdsl_sortchange = 0;
+    g_rdsl_bf_entry = 0;
+    rb_drawsurfscmd_count = 0;
+    rb_drawsurfscmd_dxskip = 0;
+    g_technull_saved = 0;
+    memset(g_rb_tess_type_counts, 0, sizeof(int) * 8);
+    g_tess_since_begin = 0;
 }
 
 extern struct materialCommands_t tess; /* 0x0 */

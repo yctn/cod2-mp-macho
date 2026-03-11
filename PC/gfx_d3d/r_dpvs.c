@@ -15,10 +15,27 @@
  * All color+N references in inline ASM replaced with sse_float_sign_mask from literals.S. */
 static int dpvsConfig; /* dpvsConfig */
 static struct DpvsScene dpvsScene; /* dpvsScene */
-static int dpvsGlob; /* dpvsGlob */
+/* Fix: was 'static int dpvsGlob' (4 bytes) — shadowed the global
+ * dpvsGlob[224] from bss.c. C code (R_DpvsShouldFallbackAllCells,
+ * R_DrawModel) used &dpvsGlob as base for byte offsets (44, 103),
+ * reading garbage past the 4-byte int. ASM already uses the global
+ * symbol via linker. Must match. */
+extern unsigned char dpvsGlob[224]; /* dpvsGlob */
 /* Fix #143: was static vec4_t (zeroed BSS) shadowing rodata with correct plane data.
  * This caused R_FrustumClipPlanes to produce degenerate frustum planes that culled everything. */
 extern const unsigned char standardFrustumSidePlanes[];
+
+static int g_avis_count = 0;
+void R_AddVisSurf_diag_count(void)
+{
+    g_avis_count++;
+}
+int R_AddVisSurf_diag_get(void)
+{
+    int c = g_avis_count;
+    g_avis_count = 0;
+    return c;
+}
 
 extern void R_UpdateXModelBounds(void *sceneEnt, void *ent);
 extern void R_SkinSceneEnt(void *sceneEnt, void *ent);

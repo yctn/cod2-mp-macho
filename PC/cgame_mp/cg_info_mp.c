@@ -31,7 +31,7 @@ extern float UI_FillRect(float x, float y, float width, float height, int horzAl
 extern char **cg_glob;           /* imp_cg — pointer to cg_t base */
 extern char *cg_globUI[];         /* legacyHacks — first element is cg_t base pointer */
 extern const float *scrPlace;    /* imp_colorWhite — screen placement */
-extern char *loadingMessage;     /* imp_g_waitingForServer — loading message string */
+extern char loadingMessage[];     /* imp_g_waitingForServer — loading message string */
 
 /* cg_t field offsets */
 #define CG_LOADING_STRING    0x2a5fc  /* char[1024] — loading string buffer */
