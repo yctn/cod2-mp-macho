@@ -29,8 +29,8 @@ extern void Com_Printf(const char *fmt, ...);
 
 extern byte *cg_ptr;           /* imp_cg */
 extern byte *cg_weapinfo_ptr;  /* imp_cg_weapons */
-extern byte *cg_hud_ptr;       /* imp_hud_fade_offhand */
 extern byte *cg_tags_ptr;      /* imp_scr_const */
+extern const dvar_t *hud_fade_offhand; /* 0x0 */
 
 extern const char * offhandStrings[3]; /* offhandStrings */
 static const dvar_t *hud_flash_time_offhand; /* hud_flash_time_offhand */
@@ -57,7 +57,7 @@ void CG_OffhandRegisterDvars(void)
 void CG_DrawOffHandName(rectDef_s *rect, struct Font_s *font, float scale, vec_t *color, int textStyle, int weaponType)
 {
     byte *cg;
-    byte *hud;
+    const dvar_t *hud;
     float fade;
     float drawColor[4];
     const char *text;
@@ -76,9 +76,12 @@ void CG_DrawOffHandName(rectDef_s *rect, struct Font_s *font, float scale, vec_t
             return;
     }
 
-    hud = *(byte **)cg_hud_ptr;
-    time = (int)floorf(*(float *)(hud + 8) * 1000.0f + 0.5f);
-    fade = CG_FadeHudMenu(hud, *(int *)(cg + 0x2c5d0), time);
+    hud = hud_fade_offhand;
+    if (!hud)
+        return;
+
+    time = (int)floorf(hud->current.value * 1000.0f + 0.5f);
+    fade = CG_FadeHudMenu((void *)hud, *(int *)(cg + 0x2c5d0), time);
 
     if (fade == 0.0f)
         return;
@@ -191,7 +194,7 @@ void CG_SwitchOffHandCmd(void)
 void CG_DrawOffHandIcon(rectDef_s *rect, float scale, vec_t *color, MaterialHandle material, int weaponType)
 {
     byte *cg;
-    byte *hud;
+    const dvar_t *hud;
     float fade;
     float drawColor[4];
     int weapon;
@@ -212,9 +215,12 @@ void CG_DrawOffHandIcon(rectDef_s *rect, float scale, vec_t *color, MaterialHand
             return;
     }
 
-    hud = *(byte **)cg_hud_ptr;
-    time = (int)floorf(*(float *)(hud + 8) * 1000.0f + 0.5f);
-    fade = CG_FadeHudMenu(hud, *(int *)(cg + 0x2c5d0), time);
+    hud = hud_fade_offhand;
+    if (!hud)
+        return;
+
+    time = (int)floorf(hud->current.value * 1000.0f + 0.5f);
+    fade = CG_FadeHudMenu((void *)hud, *(int *)(cg + 0x2c5d0), time);
 
     if (fade == 0.0f)
         return;
@@ -257,7 +263,7 @@ draw_icon:
 void CG_DrawOffHandHighlight(rectDef_s *rect, float scale, vec_t *color, MaterialHandle material, int weaponType)
 {
     byte *cg;
-    byte *hud;
+    const dvar_t *hud;
     float fade;
     float flashColor[4];
     int weapon;
@@ -287,9 +293,12 @@ void CG_DrawOffHandHighlight(rectDef_s *rect, float scale, vec_t *color, Materia
     if (*(int *)(cg + 0x2be70) == 0)
         return;
 
-    hud = *(byte **)cg_hud_ptr;
-    time = (int)floorf(*(float *)(hud + 8) * 1000.0f + 0.5f);
-    fade = CG_FadeHudMenu(hud, *(int *)(cg + 0x2c5d0), time);
+    hud = hud_fade_offhand;
+    if (!hud)
+        return;
+
+    time = (int)floorf(hud->current.value * 1000.0f + 0.5f);
+    fade = CG_FadeHudMenu((void *)hud, *(int *)(cg + 0x2c5d0), time);
 
     if (fade == 0.0f)
         return;
@@ -345,7 +354,7 @@ void CG_DrawOffHandHighlight(rectDef_s *rect, float scale, vec_t *color, Materia
 void CG_DrawOffHandAmmo(rectDef_s *rect, struct Font_s *font, float scale, vec_t *color, int textStyle, int weaponType)
 {
     byte *cg;
-    byte *hud;
+    const dvar_t *hud;
     float fade;
     float drawColor[4];
     int weapon;
@@ -369,9 +378,12 @@ void CG_DrawOffHandAmmo(rectDef_s *rect, struct Font_s *font, float scale, vec_t
             return;
     }
 
-    hud = *(byte **)cg_hud_ptr;
-    time = (int)floorf(*(float *)(hud + 8) * 1000.0f + 0.5f);
-    fade = CG_FadeHudMenu(hud, *(int *)(cg + 0x2c5d0), time);
+    hud = hud_fade_offhand;
+    if (!hud)
+        return;
+
+    time = (int)floorf(hud->current.value * 1000.0f + 0.5f);
+    fade = CG_FadeHudMenu((void *)hud, *(int *)(cg + 0x2c5d0), time);
 
     if (fade == 0.0f)
         return;
