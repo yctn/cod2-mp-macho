@@ -10,11 +10,66 @@
  *   #include "Mac/DirectX 9/COpenGLVertexProgram.h"
  */
 
+typedef struct {
+    void **vtable;
+    bool mEnabled;
+    bool mNeedsValidation;
+    unsigned short padding;
+    GLint mVSize;
+    GLenum mVType;
+    GLsizei mStride;
+    const void *mpStream;
+} CBaseVAImpl;
+
+typedef struct {
+    void **vtable;
+    GLuint *mpVAOID;
+    UINT32 mCode;
+    UINT32 mReserved0C;
+    CBaseVAImpl mColorArray;
+    CBaseVAImpl mSecondaryColorArray;
+    CBaseVAImpl mNormalArray;
+    CBaseVAImpl mVertexArray;
+    CBaseVAImpl mTexCoordArrays[8];
+    VertexProgramStreamState mGenericArrays[16];
+} COpenGLVAOImpl;
+
+typedef struct {
+    UINT16 *current;
+    UINT16 *first;
+    UINT16 *last;
+    UINT16 **node;
+} UInt16DequeIterator;
+
+typedef struct {
+    UINT16 **map;
+    UINT32 mapSize;
+    UInt16DequeIterator start;
+    UInt16DequeIterator finish;
+} UInt16Deque;
+
+typedef struct TriangleNode {
+    struct TriangleNode *next;
+    struct TriangleNode *prev;
+    Tuple triangle;
+} TriangleNode;
+
+typedef struct {
+    struct COpenGLVAOBindingNode *next;
+    struct COpenGLVAOBindingNode *prev;
+    GLuint *vaoId;
+} COpenGLVAOBindingNode;
+
+void *__Znwm(size_t size);
+void __ZdlPv(void *ptr);
+void __ZNSt15_List_node_base4hookEPS_(void *node, void *position);
+void __ZNSt15_List_node_base6unhookEv(void *node);
+
 UINT32 COpenGLVAO_GetCode(const COpenGLVAO * _this);
-void ZNK10COpenGLVAOeqERKS_(void); /* COpenGLVAO_operator== */
+bool ZNK10COpenGLVAOeqERKS_(const COpenGLVAO * _this, const COpenGLVAO *v); /* COpenGLVAO_operator== */
 void COpenGLVAO_CreateNewBinding(const COpenGLVAO * _this);
-UINT32 CalculateScore(Tuple * *FIFO, Tuple *t);
-Tuple ChooseAndRemoveBestTriangle(Tuple * *FIFO, const new_allocator_UINT16 * *Triangles);
+UINT32 CalculateScore(const UInt16Deque *FIFO, const Tuple *t);
+Tuple ChooseAndRemoveBestTriangle(const UInt16Deque *FIFO, TriangleNode *Triangles);
 void COpenGLVAO_COpenGLVAO(const COpenGLVAO * _this);
 void ZN10COpenGLVAOD2Ev(void); /* COpenGLVAO_~COpenGLVAO */
 void ZN10COpenGLVAOD1Ev(void); /* COpenGLVAO_~COpenGLVAO */
@@ -27,201 +82,99 @@ void ZNSt5dequeItSaItEE16_M_push_back_auxERKt(void); /* std_deque<unsigned short
 void ZNSt5dequeItSaItEE5clearEv(void); /* std_deque<unsigned short, std_allocator<unsigned short> >_clear */
 void ZNSt11_Deque_baseItSaItEE17_M_initialize_mapEm(void); /* std__Deque_base<unsigned short, std_allocator<unsigned short> >__M_initialize_map */
 
-/* line 59 */
-__attribute__((naked))
 UINT32 COpenGLVAO_GetCode(const COpenGLVAO * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 59 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 8(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 62 */
-        "retl\n"
-    );
+    return ((const COpenGLVAOImpl *)_this)->mCode;
 }
 
-/* line 67 */
-__attribute__((naked))
-void ZNK10COpenGLVAOeqERKS_(void) /* COpenGLVAO_operator== */
+bool ZNK10COpenGLVAOeqERKS_(const COpenGLVAO * _this, const COpenGLVAO *v) /* COpenGLVAO_operator== */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 67 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this, v */
-        "movl 8(%eax), %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* v */
-        "cmpl 8(%eax), %edx\n"
-        "sete %al\n" /* v */
-        "movzbl %al, %eax\n" /* v */
-        "popl %ebp\n" /* line 70 */
-        "retl\n"
-    );
+    return COpenGLVAO_GetCode(_this) == COpenGLVAO_GetCode(v);
 }
 
-/* line 51 */
-__attribute__((naked))
 void COpenGLVAO_CreateNewBinding(const COpenGLVAO * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 51 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $4, (%esp)\n" /* line 573 */
-        "calll __Znwm\n"
-        "movl %eax, %ebx\n" /* VAOID */
-        "movl %eax, 4(%esp)\n" /* line 574 */
-        "movl $1, (%esp)\n"
-        "calll glGenVertexArraysAPPLE\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %esi\n" /* line 597 */
-        "addl $0x674, %esi\n"
-        /* { scope 2 */
-        "movl $0xc, (%esp)\n" /* line 88 */
-        "calll __Znwm\n"
-        "movl %ebx, 8(%eax)\n" /* line 104 */
-        "movl %esi, 4(%esp)\n" /* line 1152 */
-        "movl %eax, (%esp)\n"
-        "calll __ZNSt15_List_node_base4hookEPS_\n"
-        /* } scope */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 53 | this */
-        "movl %ebx, 4(%eax)\n"
-        "addl $0x10, %esp\n" /* line 54 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    COpenGLVAOImpl *vao;
+    GLuint *vaoId;
+    COpenGLVAOBindingNode *bindingNode;
+    void *bindingList;
+
+    vao = (COpenGLVAOImpl *)_this;
+    vaoId = (GLuint *)__Znwm(sizeof(*vaoId));
+    glGenVertexArraysAPPLE(1, vaoId);
+
+    bindingNode = (COpenGLVAOBindingNode *)__Znwm(sizeof(*bindingNode));
+    bindingNode->vaoId = vaoId;
+    bindingList = (char *)imp___ZN7COpenGL7sOpenGLE + 0x674;
+    __ZNSt15_List_node_base4hookEPS_(bindingNode, bindingList);
+
+    vao->mpVAOID = vaoId;
 }
 
-/* line 123 */
-__attribute__((naked))
-UINT32 CalculateScore(Tuple * *FIFO, Tuple *t)
+UINT32 CalculateScore(const UInt16Deque *FIFO, const Tuple *t)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 123 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %eax\n" /* FIFO */
-        "movl 0xc(%ebp), %esi\n" /* t */
-        "leal 8(%eax), %edx\n"
-        /* { scope 1 */
-        "movl 8(%eax), %ebx\n" /* line 131 */
-        "movl 8(%edx), %ecx\n"
-        "movl %ecx, -0x14(%ebp)\n"
-        "movl 0xc(%edx), %edx\n"
-        "movl %edx, -0x18(%ebp)\n"
-        /* } scope */
-        "movl 0x18(%eax), %eax\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "movb $0, -0x1a(%ebp)\n"
-        "movb $0, -0x19(%ebp)\n"
-        "xorl %edi, %edi\n"
-        ".Lf112b72_00112ba3:\n"
-        "cmpl %ebx, -0x10(%ebp)\n" /* line 128 */
-        "je .Lf112b72_00112bf9\n"
-        ".Lf112b72_00112ba8:\n"
-        "movzwl (%ebx), %ecx\n" /* line 130 */
-        "movzwl (%esi), %eax\n" /* t */
-        "movl $1, %edx\n"
-        "cmpl %ecx, %eax\n"
-        "cmovel %edx, %edi\n"
-        "movzwl 2(%esi), %eax\n" /* line 134 | t */
-        "cmpl %eax, %ecx\n"
-        "movzbl -0x19(%ebp), %eax\n"
-        "cmovel %edx, %eax\n"
-        "movb %al, -0x19(%ebp)\n"
-        "movzwl 4(%esi), %eax\n" /* line 138 | t */
-        "cmpl %eax, %ecx\n"
-        "movzbl -0x1a(%ebp), %ecx\n"
-        "cmovel %edx, %ecx\n"
-        "movb %cl, -0x1a(%ebp)\n"
-        "addl $2, %ebx\n" /* line 144 */
-        "cmpl %ebx, -0x14(%ebp)\n" /* line 145 */
-        "jne .Lf112b72_00112ba3\n"
-        "addl $4, -0x18(%ebp)\n" /* line 147 */
-        "movl -0x18(%ebp), %edx\n" /* line 232 */
-        "movl (%edx), %eax\n"
-        "leal 0x200(%eax), %ecx\n" /* line 233 */
-        "movl %ecx, -0x14(%ebp)\n"
-        "movl %eax, %ebx\n"
-        "cmpl %ebx, -0x10(%ebp)\n" /* line 128 */
-        "jne .Lf112b72_00112ba8\n"
-        ".Lf112b72_00112bf9:\n"
-        "movzbl -0x1a(%ebp), %eax\n"
-        "movl %edi, %ecx\n"
-        "movzbl %cl, %edx\n"
-        "movzbl -0x19(%ebp), %ecx\n"
-        "addl %ecx, %edx\n"
-        "addl %edx, %eax\n"
-        "addl $0x10, %esp\n" /* line 145 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const UINT16 *current;
+    const UINT16 *blockEnd;
+    const UINT16 *finish;
+    UINT16 **node;
+    unsigned int matches0;
+    unsigned int matches1;
+    unsigned int matches2;
+
+    current = FIFO->start.current;
+    blockEnd = FIFO->start.last;
+    node = FIFO->start.node;
+    finish = FIFO->finish.current;
+    matches0 = 0;
+    matches1 = 0;
+    matches2 = 0;
+
+    while (current != finish) {
+        while (current != blockEnd && current != finish) {
+            UINT16 vertex;
+
+            vertex = *current++;
+            if (vertex == t->v[0]) {
+                matches0 = 1;
+            }
+            if (vertex == t->v[1]) {
+                matches1 = 1;
+            }
+            if (vertex == t->v[2]) {
+                matches2 = 1;
+            }
+        }
+
+        if (current != finish) {
+            ++node;
+            current = *node;
+            blockEnd = current + 0x100;
+        }
+    }
+
+    return matches0 + matches1 + matches2;
 }
 
-/* line 148 */
-__attribute__((naked))
-Tuple ChooseAndRemoveBestTriangle(Tuple * *FIFO, const new_allocator_UINT16 * *Triangles)
+Tuple ChooseAndRemoveBestTriangle(const UInt16Deque *FIFO, TriangleNode *Triangles)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 148 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0x10(%ebp), %edi\n" /* line 152 | Triangles */
-        "movl (%edi), %esi\n" /* line 580 */
-        "cmpl %edi, %esi\n" /* line 153 */
-        "je .Lf112c12_00112c4d\n"
-        ".Lf112c12_00112c24:\n"
-        "leal 8(%esi), %ebx\n" /* line 135 */
-        "movl %ebx, 4(%esp)\n" /* line 155 */
-        "movl 0xc(%ebp), %eax\n" /* FIFO */
-        "movl %eax, (%esp)\n"
-        "calll CalculateScore\n"
-        "movl %eax, 8(%ebx)\n"
-        "cmpl 0x10(%ebp), %edi\n" /* line 157 | Triangles */
-        "je .Lf112c12_00112c84\n"
-        "movl 0x10(%esi), %eax\n" /* line 163 */
-        "cmpl 0x10(%edi), %eax\n"
-        "ja .Lf112c12_00112c84\n"
-        ".Lf112c12_00112c46:\n"
-        "movl (%esi), %esi\n" /* line 140 */
-        "cmpl %esi, 0x10(%ebp)\n" /* line 153 | Triangles */
-        "jne .Lf112c12_00112c24\n"
-        ".Lf112c12_00112c4d:\n"
-        "leal 8(%edi), %eax\n" /* line 171 */
-        "movl $0xc, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* BestTriangle */
-        "movl %eax, (%esp)\n"
-        "calll memmove\n"
-        "movl %edi, (%esp)\n" /* line 1159 */
-        "calll __ZNSt15_List_node_base6unhookEv\n"
-        "movl %edi, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        "movl 8(%ebp), %eax\n" /* line 176 | BestTriangle */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl $4\n"
-        ".Lf112c12_00112c84:\n"
-        "movl %esi, %edi\n" /* line 163 */
-        "jmp .Lf112c12_00112c46\n"
-    );
+    TriangleNode *bestTriangleNode;
+    TriangleNode *node;
+    Tuple bestTriangle;
+
+    bestTriangleNode = Triangles;
+    node = Triangles->next;
+    while (node != Triangles) {
+        node->triangle.Score = CalculateScore(FIFO, &node->triangle);
+        if (bestTriangleNode == Triangles || node->triangle.Score <= bestTriangleNode->triangle.Score) {
+            bestTriangleNode = node;
+        }
+        node = node->next;
+    }
+
+    memmove(&bestTriangle, &bestTriangleNode->triangle, sizeof(bestTriangle));
+    __ZNSt15_List_node_base6unhookEv(bestTriangleNode);
+    __ZdlPv(bestTriangleNode);
+    return bestTriangle;
 }
 
 /* line 15 */
@@ -1794,4 +1747,3 @@ void ZNSt11_Deque_baseItSaItEE17_M_initialize_mapEm(void) /* std__Deque_base<uns
         "calll __Unwind_Resume\n"
     );
 }
-

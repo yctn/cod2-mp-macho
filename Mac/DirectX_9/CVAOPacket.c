@@ -11,15 +11,80 @@
  *   #include "Mac/DirectX 9/CVertexArrays.h"
  */
 
+typedef struct {
+    void **vtable;
+    bool mEnabled;
+    bool mNeedsValidation;
+    unsigned short padding;
+    GLint mVSize;
+    GLenum mVType;
+    GLsizei mStride;
+    const void *mpStream;
+} CBaseVAImpl;
+
+typedef struct {
+    void **vtable;
+    GLuint *mpVAOID;
+    UINT32 mCode;
+    UINT32 mReserved0C;
+    CBaseVAImpl mColorArray;
+    CBaseVAImpl mSecondaryColorArray;
+    CBaseVAImpl mNormalArray;
+    CBaseVAImpl mVertexArray;
+    CBaseVAImpl mTexCoordArrays[8];
+    VertexProgramStreamState mGenericArrays[16];
+} CVAOPacketImpl;
+
+typedef struct {
+    void *unused;
+    void *headerParent;
+    void *root;
+    void *leftmost;
+    void *rightmost;
+    UINT32 nodeCount;
+} VAOSetImpl;
+
+typedef struct {
+    void (*deletingDtor)(void *);
+    void (*completeDtor)(void *);
+    bool (*isFixedFunction)(const CVAOPacket *);
+} CVAOPacketVTable;
+
+extern void *vtbl_CVAOPacket[];
+
+void __ZdlPv(void *ptr);
+void CBaseVA_Reset(const CBaseVA * _this);
+void COpenGLVAO_COpenGLVAO(const COpenGLVAO * _this);
+void ZN10COpenGLVAOD2Ev(const COpenGLVAO * _this);
+unsigned int COpenGL_SetVAO(const COpenGL * _this, const COpenGLVAO *VAO, int IsFixedFunction, int ForceValidation);
+
+static CVAOPacketImpl *CVAOPacket_GetGenericPacket(UINT32 index)
+{
+    return (CVAOPacketImpl *)((char *)CVAOPacket_sGenericPacket + index * sizeof(CVAOPacketImpl));
+}
+
+static const CVAOPacketVTable *CVAOPacket_GetVTable(const CVAOPacket *packet)
+{
+    return *(const CVAOPacketVTable * const *)packet;
+}
+
+static void CVAOPacket_AdvanceCurrentPacket(void)
+{
+    UINT32 nextPacket;
+
+    nextPacket = CVAOPacket_sCurrentPacket + 1;
+    CVAOPacket_sCurrentPacket = (nextPacket == 1) ? 0 : nextPacket;
+}
+
 extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
 extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
 extern CVAOPacket CVAOPacket_sGenericPacket[1]; /* 0x0 */
 extern VAOSet CVAOPacket_sAllPackets; /* 0x0 */
 
 void CVAOPacket_CVAOPacket(const CVAOPacket * _this);
-void ZN10CVAOPacketD2Ev(void); /* CVAOPacket_~CVAOPacket */
-void ZN10CVAOPacketD1Ev(void); /* CVAOPacket_~CVAOPacket */
-void ZN10CVAOPacketD0Ev(void); /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD2Ev(const CVAOPacket * _this); /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD1Ev(const CVAOPacket * _this); /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD0Ev(const CVAOPacket * _this); /* CVAOPacket_~CVAOPacket */
 void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached);
 void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation);
 void CVAOPacket_InitializeGenericVAO(void);
@@ -37,225 +102,102 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
 void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE12insert_equalERKS3_(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >_insert_equal */
 void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E(void); /* std__Rb_tree<unsigned int, std_pair<unsigned int const, CVAOPacket>, std__Select1st<std_pair<unsigned int const, CVAOPacket> >, std_less<unsigned int>, std_allocator<std_pair<unsigned int const, CVAOPacket> > >__M_erase */
 
-/* line 29 */
-__attribute__((naked))
 void CVAOPacket_CVAOPacket(const CVAOPacket * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 29 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll COpenGLVAO_COpenGLVAO\n"
-        "movl $vtbl_CVAOPacket, (%ebx)\n" /* this */
-        "addl $0x14, %esp\n" /* line 31 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CVAOPacketImpl *packet;
+
+    packet = (CVAOPacketImpl *)_this;
+    COpenGLVAO_COpenGLVAO((const COpenGLVAO *)packet);
+    packet->vtable = vtbl_CVAOPacket;
 }
 
-/* line 35 */
-__attribute__((naked))
-void ZN10CVAOPacketD2Ev(void) /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD2Ev(const CVAOPacket * _this) /* CVAOPacket_~CVAOPacket */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_CVAOPacket, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 37 | this */
-        "popl %ebp\n"
-        "jmp ZN10COpenGLVAOD2Ev\n"
-    );
+    CVAOPacketImpl *packet;
+
+    packet = (CVAOPacketImpl *)_this;
+    packet->vtable = vtbl_CVAOPacket;
+    ZN10COpenGLVAOD2Ev((const COpenGLVAO *)packet);
 }
 
-/* line 35 */
-__attribute__((naked))
-void ZN10CVAOPacketD1Ev(void) /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD1Ev(const CVAOPacket * _this) /* CVAOPacket_~CVAOPacket */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_CVAOPacket, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 37 | this */
-        "popl %ebp\n"
-        "jmp ZN10COpenGLVAOD2Ev\n"
-    );
+    ZN10CVAOPacketD2Ev(_this);
 }
 
-/* line 35 */
-__attribute__((naked))
-void ZN10CVAOPacketD0Ev(void) /* CVAOPacket_~CVAOPacket */
+void ZN10CVAOPacketD0Ev(const CVAOPacket * _this) /* CVAOPacket_~CVAOPacket */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $vtbl_CVAOPacket, (%ebx)\n" /* this */
-        "movl %ebx, (%esp)\n" /* line 37 | this */
-        "calll ZN10COpenGLVAOD2Ev\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN10CVAOPacketD2Ev(_this);
+    __ZdlPv((void *)_this);
 }
 
-/* line 163 */
-__attribute__((naked))
 void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 163 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "cmpb $1, 0xc(%ebp)\n" /* line 167 | bIsCached */
-        "sbbl %eax, %eax\n" /* s */
-        "addl $3, %eax\n" /* s */
-        /* { scope 1 */
-        "movl %eax, __ZN10CVAOPacket10sVAOStatusE\n" /* line 51 */
-        /* } scope */
-        "movl (%ebx), %eax\n" /* line 168 | this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll *8(%eax)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* this */
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_SetVAO\n"
-        "addl $0x14, %esp\n" /* line 169 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    bool isFixedFunction;
+
+    CVAOPacket_sVAOStatus = bIsCached ? USING_CACHED_VAO : USING_VIRGIN_VAO;
+    isFixedFunction = CVAOPacket_GetVTable(_this)->isFixedFunction(_this);
+    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+                   (const COpenGLVAO *)_this,
+                   isFixedFunction,
+                   0);
 }
 
-/* line 190 */
-__attribute__((naked))
 void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 190 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, __ZN10CVAOPacket10sVAOStatusE\n" /* line 51 */
-        "movzbl 0xc(%ebp), %eax\n" /* line 197 | ForceValidation */
-        "movl %eax, 0xc(%esp)\n"
-        "movzbl 8(%ebp), %eax\n" /* IsFixedFunction */
-        "movl %eax, 8(%esp)\n"
-        "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl $__ZN10CVAOPacket14sGenericPacketE, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_SetVAO\n"
-        "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n" /* line 198 */
-        "addl $1, %edx\n"
-        "xorl %eax, %eax\n" /* line 201 */
-        "cmpl $1, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, __ZN10CVAOPacket14sCurrentPacketE\n"
-        "leave\n" /* line 203 */
-        "retl\n"
-    );
+    CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
+    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+                   (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
+                   IsFixedFunction,
+                   ForceValidation);
+    CVAOPacket_AdvanceCurrentPacket();
 }
 
-/* line 174 */
-__attribute__((naked))
 void CVAOPacket_InitializeGenericVAO(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 174 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+20\n" /* missing static ctor: size = 0 */
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+4\n" /* sentinel parent */
-        "movl $0, __ZN10CVAOPacket11sAllPacketsE+8\n" /* root */
-        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+12\n" /* leftmost */
-        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+16\n" /* rightmost */
-        "movl $0, __ZN10CVAOPacket14sGenericPacketE+4\n" /* line 64 */
-        "movl $0, __ZN10CVAOPacket14sGenericPacketE+8\n" /* line 72 */
-        "movl $0, __ZN10CVAOPacket14sGenericPacketE+12\n" /* line 73 */
-        "movl $__ZN10CVAOPacket14sGenericPacketE+16, (%esp)\n" /* line 75 */
-        "calll CBaseVA_Reset\n"
-        "movl $__ZN10CVAOPacket14sGenericPacketE+40, (%esp)\n" /* line 76 */
-        "calll CBaseVA_Reset\n"
-        "movl $__ZN10CVAOPacket14sGenericPacketE+64, (%esp)\n" /* line 77 */
-        "calll CBaseVA_Reset\n"
-        "movl $__ZN10CVAOPacket14sGenericPacketE+88, (%esp)\n" /* line 78 */
-        "calll CBaseVA_Reset\n"
-        "xorl %esi, %esi\n"
-        "movl $__ZN10CVAOPacket14sGenericPacketE+112, %ebx\n"
-        ".Lf113cb4_00113d11:\n"
-        "movl %ebx, (%esp)\n" /* line 83 */
-        "calll CBaseVA_Reset\n"
-        "addl $1, %esi\n" /* line 81 */
-        "addl $0x18, %ebx\n"
-        "cmpl $8, %esi\n"
-        "jne .Lf113cb4_00113d11\n"
-        "xorl %edx, %edx\n"
-        "movl $0x130, %eax\n"
-        ".Lf113cb4_00113d2b:\n"
-        "movb $1, __ZN10CVAOPacket14sGenericPacketE(%eax)\n" /* line 95 */
-        "movb $0, __ZN10CVAOPacket14sGenericPacketE+1(%eax)\n" /* line 44 */
-        "movl $4, __ZN10CVAOPacket14sGenericPacketE+4(%eax)\n" /* line 45 */
-        "movl $0x1406, __ZN10CVAOPacket14sGenericPacketE+8(%eax)\n" /* line 46 */
-        "movb $0, __ZN10CVAOPacket14sGenericPacketE+12(%eax)\n" /* line 47 */
-        "movl $0, __ZN10CVAOPacket14sGenericPacketE+16(%eax)\n" /* line 48 */
-        "movl $0, __ZN10CVAOPacket14sGenericPacketE+20(%eax)\n" /* line 49 */
-        "addl $1, %edx\n" /* line 88 */
-        "addl $0x18, %eax\n"
-        "cmpl $0x10, %edx\n"
-        "jne .Lf113cb4_00113d2b\n"
-        /* } scope */
-        "movl $__ZN10CVAOPacket14sGenericPacketE, (%esp)\n" /* line 181 */
-        "calll COpenGLVAO_CreateNewBinding\n"
-        "movl $1, __ZN10CVAOPacket10sVAOStatusE\n" /* line 51 */
-        "movl $1, 0xc(%esp)\n" /* line 197 */
-        "movl $1, 8(%esp)\n"
-        "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl $__ZN10CVAOPacket14sGenericPacketE, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll COpenGL_SetVAO\n"
-        "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n" /* line 198 */
-        "addl $1, %edx\n"
-        "xorl %eax, %eax\n" /* line 201 */
-        "cmpl $1, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, __ZN10CVAOPacket14sCurrentPacketE\n"
-        "movl $0x85bf, 4(%esp)\n" /* line 183 */
-        "movl $0x851f, (%esp)\n"
-        "calll glVertexArrayParameteriAPPLE\n"
-        "addl $0x10, %esp\n" /* line 185 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    VAOSetImpl *allPackets;
+    CVAOPacketImpl *genericPacket;
+    int i;
+
+    allPackets = (VAOSetImpl *)&CVAOPacket_sAllPackets;
+    genericPacket = CVAOPacket_GetGenericPacket(0);
+
+    allPackets->nodeCount = 0;
+    allPackets->headerParent = NULL;
+    allPackets->root = NULL;
+    allPackets->leftmost = &allPackets->headerParent;
+    allPackets->rightmost = &allPackets->headerParent;
+
+    genericPacket->mpVAOID = NULL;
+    genericPacket->mCode = 0;
+    genericPacket->mReserved0C = 0;
+
+    CBaseVA_Reset((const CBaseVA *)&genericPacket->mColorArray);
+    CBaseVA_Reset((const CBaseVA *)&genericPacket->mSecondaryColorArray);
+    CBaseVA_Reset((const CBaseVA *)&genericPacket->mNormalArray);
+    CBaseVA_Reset((const CBaseVA *)&genericPacket->mVertexArray);
+    for (i = 0; i < 8; ++i) {
+        CBaseVA_Reset((const CBaseVA *)&genericPacket->mTexCoordArrays[i]);
+    }
+
+    for (i = 0; i < 16; ++i) {
+        genericPacket->mGenericArrays[i].mNeedsValidation = true;
+        genericPacket->mGenericArrays[i].mEnabled = false;
+        genericPacket->mGenericArrays[i].mVSize = 4;
+        genericPacket->mGenericArrays[i].mVType = 0x1406;
+        genericPacket->mGenericArrays[i].mNormalized = 0;
+        genericPacket->mGenericArrays[i].mStride = 0;
+        genericPacket->mGenericArrays[i].mpStream = NULL;
+    }
+
+    COpenGLVAO_CreateNewBinding((const COpenGLVAO *)genericPacket);
+    CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
+    COpenGL_SetVAO((const COpenGL *)imp___ZN7COpenGL7sOpenGLE,
+                   (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
+                   1,
+                   1);
+    CVAOPacket_AdvanceCurrentPacket();
+    glVertexArrayParameteriAPPLE(0x851f, 0x85bf);
 }
 
 /* line 219 */
@@ -780,17 +722,10 @@ void GLOBAL__I__ZN10CVAOPacket10sVAOStatusE(void) /* global constructors keyed t
     );
 }
 
-/* line 59 */
-__attribute__((naked))
 bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 59 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return true;
 }
 
 /* line 1144 */
@@ -1234,4 +1169,3 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "jmp .Lf2c0c78_002c0df5\n"
     );
 }
-
