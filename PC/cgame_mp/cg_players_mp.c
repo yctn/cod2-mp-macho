@@ -47,7 +47,6 @@ extern byte *cgs_ptr;           /* imp_cg */
 extern byte *cg_ptr;            /* imp_cgs */
 extern byte cg_entities_ptr[];   /* imp_cg_entities */
 extern byte *cg_tags_ptr;       /* imp_scr_const */
-extern byte **cg_debug_ptr;     /* imp_cg_debugPosition */
 extern byte *cg_sprite_ptr;     /* imp_cg_headIconMinScreenRadius */
 extern byte *cg_sprite2_ptr;    /* imp_cg_voiceIconSize */
 extern byte *cg_sprite3_ptr;    /* imp_cg_scriptIconSize */
@@ -132,14 +131,6 @@ void CG_ResetPlayerEntity(centity_t *cent)
         *(int *)(ci + 0x3b4) = 0;
         *(int *)(ci + 0x3b8) = *(int *)(ci + 0x3e8);
         *(int *)(ci + 0x3bc) = 0;
-    }
-
-    /* Debug print */
-    {
-        byte *debugDvar = *cg_debug_ptr;
-        if (debugDvar && *(byte *)(debugDvar + 8)) {
-            Com_Printf("%i ResetPlayerEntity yaw=%f\n", cent->nextState.number, (double)*(float *)(ci + 0x3b0));
-        }
     }
 }
 
