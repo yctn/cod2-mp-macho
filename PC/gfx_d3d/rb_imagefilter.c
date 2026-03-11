@@ -18,6 +18,8 @@ extern float sqrtf(float);
 
 extern bool g_LastGlowFilter;
 extern UINT32 g_TotalFilterPasses;
+extern bool g_ShowShadowCookies;
+extern UINT32 g_NumBlurShadowPasses;
 
 /*
  * Global pointers - these BSS symbols are declared as byte arrays in bss.c
@@ -641,6 +643,11 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
     int width, height;
     float scaledRadius;
     int oddPassCount;
+
+    /* Shadow-cookie visualization is a debug path in the D3D shim and
+     * should not hijack normal fullscreen blur copies. */
+    g_ShowShadowCookies = 0;
+    g_NumBlurShadowPasses = 0;
 
     /* line 59: scale radius by viewport height / 480 */
     be = (byte *)backEnd;
