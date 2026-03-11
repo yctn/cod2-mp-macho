@@ -30,6 +30,12 @@ extern void YawVectors(const vec_t yaw, vec_t *forward, vec_t *right);
 extern float Vec3Normalize(vec_t *v);
 extern float Q_acos(float x);
 extern unsigned char G_GeneralLink(gentity_t *ent);
+extern DObjAnimMat_s *G_DObjGetLocalTagMatrix(gentity_t *ent, unsigned int tagName);
+extern void AnglesToAxis(const vec_t *angles, vec_t *axis);
+extern void MatrixTransformVector(const vec_t *in1, const vec_t *in2, vec_t *out);
+extern void MatrixTransformVector43(const vec_t *in, const vec_t *mat, vec_t *out);
+extern int G_LocationalTrace(trace_t *results, const vec_t *start, const vec_t *end, int passEntityNum, int contentmask, unsigned char *priorityMap);
+extern unsigned char bulletPriorityMap[19];
 
 extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
@@ -246,172 +252,19 @@ static qboolean turret_behind(gentity_t *self, gentity_t *other)
 }
 
 /* line 724 */
-__attribute__((naked))
 void turret_think(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 724 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* self */
-        "movl imp_level, %eax\n" /* line 732 */
-        "movl 0x1ec(%eax), %eax\n"
-        "addl $0x32, %eax\n"
-        "movl %eax, 0x190(%esi)\n" /* self */
-        "movl 0x208(%esi), %ecx\n" /* line 734 | self */
-        "testl %ecx, %ecx\n"
-        "je .Lf1b9b0a_001b9b3c\n"
-        "movl %esi, (%esp)\n" /* line 735 | self */
-        "calll G_GeneralLink\n"
-        ".Lf1b9b0a_001b9b3c:\n"
-        "movl 0x150(%esi), %eax\n" /* line 739 | self */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "movl imp_g_entities, %eax\n"
-        "movl 0x158(%eax, %edx), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1b9b0a_001b9b69\n"
-        "addl $0x5c, %esp\n" /* line 747 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1b9b0a_001b9b69:\n"
-        "movl 0x15c(%esi), %edi\n" /* line 503 */
-        "movl $0, 0x84(%esi)\n" /* line 506 */
-        "movl 0x28(%edi), %eax\n" /* line 507 */
-        "testl %eax, %eax\n"
-        "jle .Lf1b9b0a_001b9ba1\n"
-        "movzbl 0x40(%edi), %eax\n" /* line 509 */
-        "movl %eax, 0x84(%esi)\n"
-        "movl 0x28(%edi), %eax\n" /* line 511 */
-        "subl $0x32, %eax\n"
-        "movl %eax, 0x28(%edi)\n"
-        "testl %eax, %eax\n" /* line 513 */
-        "jle .Lf1b9b0a_001b9cf0\n"
-        ".Lf1b9b0a_001b9b9b:\n"
-        "movl 0x15c(%esi), %edi\n"
-        ".Lf1b9b0a_001b9ba1:\n"
-        "andl $0xffffffbf, 8(%esi)\n" /* line 744 | self */
-        /* { scope 1: fSpeed, pitch */
-        "movl 0x1c(%edi), %eax\n" /* line 711 */
-        "movl %eax, -0x20(%ebp)\n" /* desiredAngles */
-        "movl $0, -0x1c(%ebp)\n" /* line 712 */
-        /* { scope 2 */
-        "movss 0x68(%esi), %xmm0\n" /* line 621 */
-        "movss %xmm0, -0x34(%ebp)\n" /* pitch */
-        "addss 0x70(%esi), %xmm0\n" /* line 622 */
-        "movss %xmm0, 0x68(%esi)\n"
-        "movl $0x43480000, %eax\n" /* line 631 */
-        "movl %eax, -0x28(%ebp)\n" /* fSpeed */
-        "movl %eax, -0x24(%ebp)\n" /* line 632 */
-        "movl 4(%edi), %eax\n" /* line 635 */
-        "testb $2, %ah\n"
-        "jne .Lf1b9b0a_001b9ccb\n"
-        ".Lf1b9b0a_001b9bdd:\n"
-        "movl %esi, %ebx\n" /* line 636 */
-        "movl $1, -0x30(%ebp)\n"
-        ".Lf1b9b0a_001b9be6:\n"
-        "movl -0x30(%ebp), %edx\n" /* line 724 */
-        "shll $2, %edx\n"
-        "leal -0x28(%ebp), %eax\n" /* fSpeed */
-        "addl %edx, %eax\n"
-        "movss -4(%eax), %xmm0\n" /* line 640 */
-        "mulss lit4_002ed72c, %xmm0\n" /* 0.05000000074505806f */
-        "movss %xmm0, -4(%eax)\n"
-        "movl 0x68(%ebx), %eax\n" /* line 642 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x24(%ebp, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "movss %xmm0, -0x48(%ebp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x48(%ebp), %xmm0\n" /* line 643 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf1b9b0a_001b9c38\n"
-        "xorps sign+320, %xmm0\n" /* line 648 */
-        "maxss %xmm1, %xmm0\n"
-        ".Lf1b9b0a_001b9c38:\n"
-        "addss 0x68(%ebx), %xmm0\n" /* line 653 */
-        "movss %xmm0, 0x68(%ebx)\n"
-        "addl $1, -0x30(%ebp)\n"
-        "addl $4, %ebx\n"
-        "cmpl $3, -0x30(%ebp)\n" /* line 638 */
-        "jne .Lf1b9b0a_001b9be6\n"
-        "movss 0x68(%esi), %xmm0\n" /* line 656 */
-        "movss %xmm0, 0x70(%esi)\n" /* line 657 */
-        "movl 4(%edi), %eax\n" /* line 659 */
-        "testb $2, %ah\n"
-        "je .Lf1b9b0a_001b9c76\n"
-        "testb $4, %ah\n" /* line 661 */
-        "jne .Lf1b9b0a_001b9ce0\n"
-        "movss 0x3c(%edi), %xmm1\n" /* line 663 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf1b9b0a_001b9ceb\n"
-        ".Lf1b9b0a_001b9c70:\n"
-        "andb $0xfe, %ah\n" /* line 673 */
-        "movl %eax, 4(%edi)\n"
-        ".Lf1b9b0a_001b9c76:\n"
-        "movss -0x34(%ebp), %xmm1\n" /* line 677 | pitch */
-        "movss %xmm1, 4(%esp)\n"
-        "movss %xmm0, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x4c(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm1\n"
-        "movss -0x28(%ebp), %xmm0\n" /* line 678 | fSpeed */
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf1b9b0a_001b9ca8\n"
-        "xorps sign+320, %xmm0\n" /* line 683 */
-        "maxss %xmm1, %xmm0\n"
-        ".Lf1b9b0a_001b9ca8:\n"
-        "movaps %xmm0, %xmm1\n"
-        "addss -0x34(%ebp), %xmm1\n" /* line 689 | pitch */
-        "movss %xmm1, 0x68(%esi)\n"
-        "movss 0x70(%esi), %xmm0\n" /* line 690 */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x70(%esi)\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 747 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: fSpeed, pitch */
-        /* { scope 2 */
-        ".Lf1b9b0a_001b9ccb:\n"
-        "testb $1, %ah\n" /* line 635 */
-        "je .Lf1b9b0a_001b9bdd\n"
-        "movl $0x43b40000, -0x28(%ebp)\n" /* line 636 | fSpeed */
-        "jmp .Lf1b9b0a_001b9bdd\n"
-        ".Lf1b9b0a_001b9ce0:\n"
-        "movss 0x3c(%edi), %xmm1\n" /* line 670 */
-        "ucomiss 0x68(%esi), %xmm1\n"
-        "jbe .Lf1b9b0a_001b9c70\n"
-        ".Lf1b9b0a_001b9ceb:\n"
-        "movaps %xmm1, %xmm0\n"
-        "jmp .Lf1b9b0a_001b9c76\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1b9b0a_001b9cf0:\n"
-        "cmpb $0, 0x42(%edi)\n" /* line 513 */
-        "je .Lf1b9b0a_001b9b9b\n"
-        "movl $0, 0x84(%esi)\n" /* line 515 */
-        "movzbl 0x42(%edi), %eax\n" /* line 516 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll G_PlaySoundAlias\n"
-        "movl 0x15c(%esi), %edi\n"
-        "jmp .Lf1b9b0a_001b9ba1\n"
-    );
+    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+
+    if (self->tagInfo) {
+        G_GeneralLink(self);
+    }
+
+    if (!((gentity_t *)imp_g_entities)[self->r.ownerNum].client) {
+        turret_UpdateSound(self);
+        self->s.eFlags &= ~GMISC_EF_FIRING;
+        turret_ReturnToDefaultPos(self, 0);
+    }
 }
 
 /* line 809 */
@@ -671,113 +524,25 @@ void turret_think_init(gentity_t *self)
 }
 
 /* line 878 */
-__attribute__((naked))
 qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 878 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* self */
-        "movl 0xc(%ebp), %edi\n" /* owner */
-        "cmpb $0, 0x162(%esi)\n" /* line 880 | self */
-        "jne .Lf1ba252_001ba3d4\n"
-        "movl 0x15c(%esi), %eax\n" /* self */
-        "testl %eax, %eax\n"
-        "je .Lf1ba252_001ba3d4\n"
-        /* { scope 1 */
-        "movss 0x10(%eax), %xmm2\n" /* line 840 */
-        "movss sign+336, %xmm0\n" /* line 841 */
-        "movaps %xmm2, %xmm1\n"
-        "andps %xmm0, %xmm1\n"
-        "movss %xmm1, -0x3c(%ebp)\n" /* yawSpan */
-        "movss 0x18(%eax), %xmm1\n"
-        "andps %xmm0, %xmm1\n"
-        "addss -0x3c(%ebp), %xmm1\n" /* yawSpan */
-        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "movss %xmm1, -0x3c(%ebp)\n" /* yawSpan */
-        "addss 0x148(%esi), %xmm2\n" /* line 842 */
-        "addss %xmm1, %xmm2\n"
-        "movss %xmm2, (%esp)\n"
-        "calll AngleNormalize180\n"
-        "movl $0, 8(%esp)\n" /* line 844 */
-        "leal -0x30(%ebp), %ebx\n" /* forward */
-        "movl %ebx, 4(%esp)\n"
-        "fstps (%esp)\n"
-        "calll YawVectors\n"
-        "movl %ebx, (%esp)\n" /* line 845 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss 0x138(%esi), %xmm0\n" /* line 248 */
-        "subss 0x138(%edi), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* dir */
-        "movss 0x13c(%esi), %xmm0\n" /* line 249 */
-        "subss 0x13c(%edi), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 848 */
-        "leal -0x24(%ebp), %eax\n" /* line 849 | dir */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss -0x30(%ebp), %xmm1\n" /* line 304 | forward */
-        "mulss -0x24(%ebp), %xmm1\n" /* dir */
-        "movss -0x2c(%ebp), %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 45 | 1.0f */
-        "movaps %xmm1, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "pxor %xmm4, %xmm4\n"
-        "movaps %xmm0, %xmm3\n"
-        "cmpnltss %xmm4, %xmm2\n"
-        "andps %xmm2, %xmm3\n"
-        "andnps %xmm1, %xmm2\n"
-        "orps %xmm3, %xmm2\n"
-        "movss lit4_002ed5dc, %xmm3\n" /* -1.0f */
-        "movaps %xmm3, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "movaps %xmm2, %xmm1\n"
-        "cmpltss %xmm4, %xmm0\n"
-        "andps %xmm0, %xmm1\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n" /* line 852 */
-        "calll Q_acos\n"
-        "fstps -0x40(%ebp)\n"
-        /* } scope */
-        "cvtss2sd -0x40(%ebp), %xmm0\n" /* line 883 */
-        "mulsd lit8_00307c40, %xmm0\n" /* 57.29577951308232 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "ucomiss -0x3c(%ebp), %xmm0\n" /* yawSpan */
-        "ja .Lf1ba252_001ba3d4\n"
-        "movl 0x158(%edi), %eax\n" /* line 886 | owner */
-        "movl 0x3c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1ba252_001ba3d4\n"
-        "cmpl $0x3ff, 0x60(%eax)\n" /* line 889 */
-        "je .Lf1ba252_001ba3d4\n"
-        "movl $1, %eax\n"
-        "addl $0x4c, %esp\n" /* line 893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1ba252_001ba3d4:\n"
-        "xorl %eax, %eax\n" /* line 889 */
-        "addl $0x4c, %esp\n" /* line 893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (self->active || !self->pTurretInfo) {
+        return 0;
+    }
+
+    if (!turret_behind(self, owner)) {
+        return 0;
+    }
+
+    if (owner->client->ps.grenadeTimeLeft) {
+        return 0;
+    }
+
+    if (owner->client->ps.groundEntityNum == GMISC_ENTITYNUM_NONE) {
+        return 0;
+    }
+
+    return 1;
 }
 
 /* line 896 */
