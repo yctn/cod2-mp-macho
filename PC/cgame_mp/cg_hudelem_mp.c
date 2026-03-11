@@ -60,7 +60,7 @@ static int cg_time(void) {
 /* Helper: get cgs->clientinfo / hudelem pointer base from snap */
 static char *cg_snap(void) {
     char *base = cg_base();
-    return *(char **)(base + 0x24);
+    return *(char **)(base + 0x20);
 }
 
 /* Helper: clamp 0..1 */

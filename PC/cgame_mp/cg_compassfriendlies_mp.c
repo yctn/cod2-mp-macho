@@ -44,7 +44,7 @@ extern const vec_t Vec2Normalize(vec_t *v);
  * cg_t field offsets (from binary layout, may differ from compiled struct).
  * The cg_t struct is very large; these are raw byte offsets.
  */
-#define CG_SNAP_PTR            0x24     /* snapshot_t* */
+#define CG_SNAP_PTR            0x20     /* snapshot_t* */
 #define CG_TIME                0x25bb0  /* int cg.time */
 #define CG_COMPASS_YAW         0x2c5b8  /* float - compass map yaw */
 #define CG_COMPASS_DISPLAYTIME 0x2c5c0  /* int - compass display start time */

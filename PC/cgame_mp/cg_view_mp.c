@@ -1279,7 +1279,7 @@ void CG_InitView(void)
 
     if (*(unsigned char *)((char *)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
         renderPlayerState = 1;
-    } else if (*(int *)(*(char **)(cg_s + 0x24) + 0x10) > 5) {
+    } else if (*(int *)(*(char **)(cg_s + 0x20) + 0x10) > 5) {
         renderPlayerState = 1;
     } else {
         renderPlayerState = 0;
@@ -1914,4 +1914,3 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "jmp .Lf1d25bc_001d2e41\n"
     );
 }
-

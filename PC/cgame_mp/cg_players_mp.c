@@ -148,7 +148,7 @@ static void CG_PlayerFloatSprite(centity_t *cent, MaterialHandle material, float
     int time;
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
 
     /* Check if spectating/killcam */
     if (*(int *)(snap + 0x18) & 0xc00000) {
@@ -217,7 +217,7 @@ void CG_PlayerSprites(centity_t *cent)
     iTeam = *(int *)(ci + 0x2c);
 
     /* Get local player's client info */
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     ci = cg + 0xe0914 + *(int *)(snap + 0xd8) * CI_STRIDE;
     if (!*(int *)ci)
         return;
@@ -315,7 +315,7 @@ void CG_Player(centity_t *cent)
     /* line 396: spectator/killcam check */
     cg = *(byte **)cg_ptr;
     {
-        byte *snap = *(byte **)(cg + 0x24);
+        byte *snap = *(byte **)(cg + 0x20);
         if (*(int *)(snap + 0x18) & 0xc00000) {
             if (es->number == *(int *)(snap + 0xd8)) {
                 if (!*(int *)(cg + 0x25bc0))

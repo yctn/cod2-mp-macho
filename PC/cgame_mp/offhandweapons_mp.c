@@ -133,7 +133,7 @@ void CG_UseOffHand(centity_t *cent, int event, int eventParam)
     clientNum = *(int *)(c + 0xf0);
     cg = *(byte **)cg_ptr;
 
-    if (clientNum == *(int *)(*(byte **)(cg + 0x24) + 0xd8)) {
+    if (clientNum == *(int *)(*(byte **)(cg + 0x20) + 0xd8)) {
         /* Local player - try view model tag */
         void *viewModel = *(void **)weapInfo;
         if (viewModel != NULL) {

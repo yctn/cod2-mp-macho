@@ -103,7 +103,7 @@ extern const char *va(const char *fmt, ...);
 #define CENT_ETYPE      0xf4   /* nextState.eType */
 
 /* cg_t field offsets */
-#define CG_SNAP         0x24
+#define CG_SNAP         0x20
 #define CG_LOCALCLIENT  0x04
 #define CG_FIELD_8      0x08
 #define CG_CLIENTNUM    0x25c90

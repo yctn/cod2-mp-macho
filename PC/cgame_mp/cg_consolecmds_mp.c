@@ -86,7 +86,7 @@ static void CG_SizeDown_f(void)
 static void CG_Viewpos_f(void)
 {
     byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x24);
+    byte *snap = *(byte **)(cg + 0x20);
 
     Com_Printf("(%i %i %i) : %i\n",
         (int)*(float *)(cg + 0x28588),
@@ -105,7 +105,7 @@ void CG_ScoresUp_f(void)
         return;
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     *(int *)(cg + 0x2b534) = 0;
     *(int *)(cg + 0x2b538) = *(int *)(cg + 0x25bb0);
 }
@@ -114,7 +114,7 @@ void CG_ScoresUp_f(void)
 void CG_ScoresDown_f(void)
 {
     byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x24);
+    byte *snap = *(byte **)(cg + 0x20);
     int serverCommandSequence = *(int *)(cg + 0x25bb0);
     int lastScoreTime = *(int *)(cg + 0x2aefc);
 
@@ -157,7 +157,7 @@ static void CG_ShellShock_f(void)
     cg = *(byte **)cg_ptr;
     CG_SetShellShockParmsFromDvars(cg + 0x68c4);
 
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     *(int *)(cg + 0x2ccf8) = *(int *)(cg + 0x25bb0);
     *(int *)(cg + 0x2ccfc) = (int)floorf((float)(duration * 1000.0) + 0.5f);
 }
@@ -210,7 +210,7 @@ static void CG_TellTarget_f(void)
 static void CG_QuickMessage_f(void)
 {
     byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x24);
+    byte *snap = *(byte **)(cg + 0x20);
     byte *field24 = *(byte **)(snap + 0x24);
 
     if (field24 == NULL)
@@ -233,7 +233,7 @@ static void CG_VoiceChat_f(void)
         return;
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     field24 = *(byte **)(snap + 0x24);
 
     if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
@@ -257,7 +257,7 @@ static void CG_TeamVoiceChat_f(void)
         return;
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     field24 = *(byte **)(snap + 0x24);
 
     if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
@@ -281,7 +281,7 @@ qboolean CG_ConsoleCommand(void)
     void (*func)(void);
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x24);
+    snap = *(byte **)(cg + 0x20);
     if (snap == NULL || *(byte **)(snap + 0x24) == NULL)
         return 0;
 

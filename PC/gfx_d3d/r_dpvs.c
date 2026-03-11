@@ -49,9 +49,7 @@ static qboolean R_DpvsShouldFallbackAllCells(int cameraCellIndex)
         return 0;
     if (!(*(const dvar_t **)imp_r_drawWorld)->current.integer)
         return 0;
-    /* The portal-walk state is still not trustworthy in this decomp. Use the
-     * engine's existing all-cells path so world geometry is visible first. */
-    return 1;
+    return *(int *)((byte *)&dpvsGlob + 44) == 0;
 }
 
 /* line 1145 */
