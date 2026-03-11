@@ -30,6 +30,12 @@ typedef struct CMemoryBufferFreeRequestNode {
 void *__Znwm(unsigned int size);
 void __ZdlPv(void *ptr);
 void __ZdaPv(void *ptr);
+extern void *vtbl_CMemoryBuffer[];
+
+static byte *CMemoryBuffer_AlignAllocation(byte *allocation)
+{
+    return (byte *)(((unsigned int)(allocation + 31)) & ~31U);
+}
 
 static CMemoryBufferFreeRequestNode *CMemoryBuffer_GetDelayedFreeHead(void)
 {
@@ -48,198 +54,88 @@ static void CMemoryBuffer_EnsureDelayedFreeListInitialized(void)
 
 void CMemoryBuffer_CMemoryBuffer(const CMemoryBuffer * _this, UINT32 Length);
 void CMemoryBuffer_Recreate(const CMemoryBuffer * _this);
-void ZN13CMemoryBufferD1Ev(void); /* CMemoryBuffer_~CMemoryBuffer */
-void ZN13CMemoryBufferD0Ev(void); /* CMemoryBuffer_~CMemoryBuffer */
+void ZN13CMemoryBufferD1Ev(const CMemoryBuffer * _this); /* CMemoryBuffer_~CMemoryBuffer */
+void ZN13CMemoryBufferD0Ev(const CMemoryBuffer * _this); /* CMemoryBuffer_~CMemoryBuffer */
 void CMemoryBuffer_Resize(const CMemoryBuffer * _this, UINT32 Length);
 void CMemoryBuffer_FreeLater(const CMemoryBuffer * _this, UINT32 Frames);
 void CMemoryBuffer_Update(void);
 void CMemoryBuffer_Reset(void);
-static void __static_initialization_and_destruction_0(void);
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority);
 static void GLOBAL__D__ZN13CMemoryBuffer20sDelayedFreeRequestsE(void); /* global destructors keyed to CMemoryBuffer_sDelayedFreeRequests */
 static void GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(void); /* global constructors keyed to CMemoryBuffer_sDelayedFreeRequests */
-void ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(void); /* std__List_base<CMemoryBuffer_FreeRequest, std_allocator<CMemoryBuffer_FreeRequest> >__M_clear */
+void ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(CMemoryBufferFreeRequestNode *head); /* std__List_base<CMemoryBuffer_FreeRequest, std_allocator<CMemoryBuffer_FreeRequest> >__M_clear */
 
 /* line 33 */
-__attribute__((naked))
 void CMemoryBuffer_CMemoryBuffer(const CMemoryBuffer * _this, UINT32 Length)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 33 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* Length */
-        "movl $vtbl_CMemoryBuffer, (%esi)\n" /* line 36 | this */
-        "testl %ebx, %ebx\n" /* Length */
-        "jne .Lf204ee_00020528\n"
-        "xorl %edx, %edx\n"
-        "movl %edx, 4(%esi)\n" /* this */
-        "movl %ebx, 0xc(%esi)\n" /* Length, this */
-        "xorl %eax, %eax\n"
-        "testl %ebx, %ebx\n" /* Length */
-        "sete %al\n"
-        "movl %eax, 0x10(%esi)\n" /* this */
-        "leal 0x1f(%edx), %eax\n" /* line 43 */
-        "andl $0xffffffe0, %eax\n"
-        "movl %eax, 8(%esi)\n" /* this */
-        "addl $0x10, %esp\n" /* line 44 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf204ee_00020528:\n"
-        "leal 0x1f(%ebx), %eax\n" /* line 36 | Length */
-        "andl $0xffffffe0, %eax\n"
-        "addl $0x1f, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, %edx\n"
-        "movl %edx, 4(%esi)\n" /* this */
-        "movl %ebx, 0xc(%esi)\n" /* Length, this */
-        "xorl %eax, %eax\n"
-        "testl %ebx, %ebx\n" /* Length */
-        "sete %al\n"
-        "movl %eax, 0x10(%esi)\n" /* this */
-        "leal 0x1f(%edx), %eax\n" /* line 43 */
-        "andl $0xffffffe0, %eax\n"
-        "movl %eax, 8(%esi)\n" /* this */
-        "addl $0x10, %esp\n" /* line 44 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferImpl *buffer;
+    byte *allocation;
+
+    buffer = (CMemoryBufferImpl *)_this;
+    buffer->vptr = (int)vtbl_CMemoryBuffer;
+    buffer->length = Length;
+    buffer->freedLater = Length == 0;
+
+    if (Length) {
+        allocation = (byte *)__Znam(((Length + 31) & ~31U) + 31);
+        buffer->allocation = allocation;
+        buffer->data = CMemoryBuffer_AlignAllocation(allocation);
+    } else {
+        buffer->allocation = NULL;
+        buffer->data = NULL;
+    }
 }
 
 /* line 71 */
-__attribute__((naked))
 void CMemoryBuffer_Recreate(const CMemoryBuffer * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 71 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebx), %eax\n" /* line 76 | this */
-        "addl $0x1f, %eax\n"
-        "andl $0xffffffe0, %eax\n"
-        "addl $0x1f, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, 4(%ebx)\n" /* this */
-        "addl $0x1f, %eax\n" /* line 77 */
-        "andl $0xffffffe0, %eax\n"
-        "movl %eax, 8(%ebx)\n" /* this */
-        "movl $0, 0x10(%ebx)\n" /* line 78 | this */
-        "addl $0x14, %esp\n" /* line 79 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferImpl *buffer;
+
+    buffer = (CMemoryBufferImpl *)_this;
+    buffer->allocation = (byte *)__Znam(((buffer->length + 31) & ~31U) + 31);
+    buffer->data = CMemoryBuffer_AlignAllocation(buffer->allocation);
+    buffer->freedLater = 0;
 }
 
 /* line 48 */
-__attribute__((naked))
-void ZN13CMemoryBufferD1Ev(void) /* CMemoryBuffer_~CMemoryBuffer */
+void ZN13CMemoryBufferD1Ev(const CMemoryBuffer * _this) /* CMemoryBuffer_~CMemoryBuffer */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 48 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $vtbl_CMemoryBuffer, (%ebx)\n" /* this */
-        "movl 0x10(%ebx), %ecx\n" /* line 24 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf20596_000205bc\n"
-        "movl 4(%ebx), %eax\n" /* line 26 */
-        "testl %eax, %eax\n"
-        "je .Lf20596_000205bc\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf20596_000205bc:\n"
-        "movl $0, 8(%ebx)\n" /* line 28 */
-        "movl $0, 4(%ebx)\n"
-        "addl $0x14, %esp\n" /* line 51 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferImpl *buffer;
+
+    buffer = (CMemoryBufferImpl *)_this;
+    buffer->vptr = (int)vtbl_CMemoryBuffer;
+
+    if (!buffer->freedLater && buffer->allocation) {
+        __ZdaPv(buffer->allocation);
+    }
+
+    buffer->data = NULL;
+    buffer->allocation = NULL;
 }
 
 /* line 48 */
-__attribute__((naked))
-void ZN13CMemoryBufferD0Ev(void) /* CMemoryBuffer_~CMemoryBuffer */
+void ZN13CMemoryBufferD0Ev(const CMemoryBuffer * _this) /* CMemoryBuffer_~CMemoryBuffer */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 48 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $vtbl_CMemoryBuffer, (%ebx)\n" /* this */
-        "movl 0x10(%ebx), %eax\n" /* line 24 */
-        "testl %eax, %eax\n"
-        "jne .Lf205d0_000205f6\n"
-        "movl 4(%ebx), %eax\n" /* line 26 */
-        "testl %eax, %eax\n"
-        "je .Lf205d0_000205f6\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf205d0_000205f6:\n"
-        "movl $0, 8(%ebx)\n" /* line 28 */
-        "movl $0, 4(%ebx)\n"
-        "movl %ebx, 8(%ebp)\n" /* line 51 | this */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN13CMemoryBufferD1Ev(_this);
+    __ZdlPv((void *)_this);
 }
 
 /* line 56 */
-__attribute__((naked))
 void CMemoryBuffer_Resize(const CMemoryBuffer * _this, UINT32 Length)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 56 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* Length */
-        "movl 0x10(%ebx), %eax\n" /* line 24 */
-        "testl %eax, %eax\n"
-        "jne .Lf20612_00020636\n"
-        "movl 4(%ebx), %eax\n" /* line 26 */
-        "testl %eax, %eax\n"
-        "je .Lf20612_00020636\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf20612_00020636:\n"
-        "movl $0, 8(%ebx)\n" /* line 28 */
-        "movl $0, 4(%ebx)\n"
-        "leal 0x1f(%esi), %eax\n" /* line 62 | Length */
-        "andl $0xffffffe0, %eax\n"
-        "addl $0x1f, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, 4(%ebx)\n" /* this */
-        "addl $0x1f, %eax\n" /* line 63 */
-        "andl $0xffffffe0, %eax\n"
-        "movl %eax, 8(%ebx)\n" /* this */
-        "movl %esi, 0xc(%ebx)\n" /* line 64 | Length, this */
-        "movl $0, 0x10(%ebx)\n" /* line 65 | this */
-        "addl $0x10, %esp\n" /* line 66 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferImpl *buffer;
+
+    buffer = (CMemoryBufferImpl *)_this;
+    if (!buffer->freedLater && buffer->allocation) {
+        __ZdaPv(buffer->allocation);
+    }
+
+    buffer->data = NULL;
+    buffer->allocation = NULL;
+    buffer->allocation = (byte *)__Znam(((Length + 31) & ~31U) + 31);
+    buffer->data = CMemoryBuffer_AlignAllocation(buffer->allocation);
+    buffer->length = Length;
+    buffer->freedLater = 0;
 }
 
 /* line 84 */
@@ -333,94 +229,49 @@ void CMemoryBuffer_Reset(void)
 }
 
 /* line 148 */
-static __attribute__((naked))
-void __static_initialization_and_destruction_0(void)
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 148 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "cmpl $0xffff, %edx\n" /* line 15 */
-        "je .Lf207be_000207ce\n"
-        ".Lf207be_000207cc:\n"
-        "leave\n" /* line 148 */
-        "retl\n"
-        ".Lf207be_000207ce:\n"
-        "cmpl $1, %eax\n" /* line 15 */
-        "je .Lf207be_000207e5\n"
-        "testl %eax, %eax\n"
-        "jne .Lf207be_000207cc\n"
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, (%esp)\n" /* line 332 */
-        "calll ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv\n"
-        "leave\n" /* line 148 */
-        "retl\n"
-        ".Lf207be_000207e5:\n"
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, __ZN13CMemoryBuffer20sDelayedFreeRequestsE\n" /* line 340 */
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, 0xff2d84\n" /* line 341 */
-        "leave\n" /* line 148 */
-        "retl\n"
-    );
+    CMemoryBufferFreeRequestNode *head;
+
+    if (__priority != 0xffff) {
+        return;
+    }
+
+    head = CMemoryBuffer_GetDelayedFreeHead();
+
+    if (__initialize_p == 1) {
+        head->next = head;
+        head->prev = head;
+        return;
+    }
+
+    if (__initialize_p == 0) {
+        ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(head);
+    }
 }
 
 /* line 150 */
-static __attribute__((naked))
 void GLOBAL__D__ZN13CMemoryBuffer20sDelayedFreeRequestsE(void) /* global destructors keyed to CMemoryBuffer_sDelayedFreeRequests */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 150 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(0, 0xffff);
 }
 
 /* line 149 */
-static __attribute__((naked))
 void GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(void) /* global constructors keyed to CMemoryBuffer_sDelayedFreeRequests */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 149 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(1, 0xffff);
 }
 
 /* line 69 */
-__attribute__((naked))
-void ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(void) /* std__List_base<CMemoryBuffer_FreeRequest, std_allocator<CMemoryBuffer_FreeRequest> >__M_clear */
+void ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(CMemoryBufferFreeRequestNode *head) /* std__List_base<CMemoryBuffer_FreeRequest, std_allocator<CMemoryBuffer_FreeRequest> >__M_clear */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 69 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "movl (%esi), %eax\n" /* line 72 | this, __cur */
-        "cmpl %eax, %esi\n" /* line 73 | this */
-        "jne .Lf2be0f6_002be10b\n"
-        "jmp .Lf2be0f6_002be119\n"
-        ".Lf2be0f6_002be109:\n"
-        "movl %ebx, %eax\n"
-        ".Lf2be0f6_002be10b:\n"
-        "movl (%eax), %ebx\n" /* line 76 */
-        "movl %eax, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        "cmpl %ebx, %esi\n" /* line 73 | this */
-        "jne .Lf2be0f6_002be109\n"
-        /* } scope */
-        ".Lf2be0f6_002be119:\n"
-        "addl $0x10, %esp\n" /* line 78 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
+    CMemoryBufferFreeRequestNode *node;
+    CMemoryBufferFreeRequestNode *next;
 
+    node = head->next;
+    while (node != head) {
+        next = node->next;
+        __ZdlPv(node);
+        node = next;
+    }
+}
