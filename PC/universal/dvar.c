@@ -37,6 +37,8 @@ static Bool isDvarSystemActive; /* isDvarSystemActive */
 static Bool isLoadingAutoExecGlobalFlag; /* isLoadingAutoExecGlobalFlag */
 
 extern char *va(const char *format, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern void Dvar_AddCommands(void);
 
 void Dvar_SetInAutoExec(int inAutoExec);
 Bool Dvar_IsSystemActive(void);
@@ -119,6 +121,52 @@ void Dvar_SetColorByName(const char *dvarName, int r, int g, int b, int a);
 const dvar_t * Dvar_SetFromStringByNameFromSource(const char *dvarName, const char *string, DvarSetSource source);
 void Dvar_SetCommand(const char *dvarName, const char *string);
 void Dvar_SetFromStringByName(const char *dvarName, const char *string);
+
+typedef const dvar_t *(__attribute__((regparm(3))) *DvarRegisterVariantRegparmFn)(
+    const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain);
+typedef void (__attribute__((regparm(3))) *DvarSetVariantRegparmFn)(
+    const dvar_t *dvar, DvarValue value, DvarSetSource source);
+typedef void (__attribute__((regparm(3))) *DvarSetFromStringFromSourceRegparmFn)(
+    const dvar_t *dvar, const char *string, DvarSetSource source);
+typedef void (__attribute__((regparm(2))) *DvarUpdateResetValueRegparmFn)(
+    const dvar_t *dvar, DvarValue value);
+typedef const char *(__attribute__((regparm(3))) *DvarDomainToStringRegparmFn)(
+    int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount);
+
+static const dvar_t *Dvar_RegisterVariantReg(const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain)
+{
+    return ((DvarRegisterVariantRegparmFn)Dvar_RegisterVariant)(dvarName, type, flags, value, domain);
+}
+
+static void Dvar_SetVariantReg(const dvar_t *dvar, DvarValue value, DvarSetSource source)
+{
+    ((DvarSetVariantRegparmFn)Dvar_SetVariant)(dvar, value, source);
+}
+
+static void Dvar_SetFromStringFromSourceReg(const dvar_t *dvar, const char *string, DvarSetSource source)
+{
+    ((DvarSetFromStringFromSourceRegparmFn)Dvar_SetFromStringFromSource)(dvar, string, source);
+}
+
+static void Dvar_UpdateResetValueReg(const dvar_t *dvar, DvarValue value)
+{
+    ((DvarUpdateResetValueRegparmFn)Dvar_UpdateResetValue)(dvar, value);
+}
+
+static const char *Dvar_DomainToString_InternalReg(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount)
+{
+    union {
+        DvarLimits domain;
+        struct {
+            uint32_t lo;
+            uint32_t hi;
+        } raw;
+    } bits;
+
+    bits.domain = domain;
+    return ((DvarDomainToStringRegparmFn)Dvar_DomainToString_Internal)(
+        type, bits.raw.lo, bits.raw.hi, outBuffer, outBufferLen, outLineCount);
+}
 
 /* line 45 */
 void Dvar_SetInAutoExec(int inAutoExec)
@@ -2773,53 +2821,17 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
 }
 
 /* line 824 */
-__attribute__((naked))
 const char * Dvar_DomainToString_GetLines(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 824 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %edx\n" /* domain */
-        "movl 0x10(%ebp), %ecx\n"
-        "movzbl 8(%ebp), %eax\n" /* line 827 | type */
-        "movl 0x1c(%ebp), %ebx\n" /* outLineCount */
-        "movl %ebx, 0x10(%ebp)\n" /* outLineCount */
-        "movl 0x18(%ebp), %ebx\n" /* outBufferLen, outLineCount */
-        "movl %ebx, 0xc(%ebp)\n" /* outLineCount, domain */
-        "movl 0x14(%ebp), %ebx\n" /* outBuffer, outLineCount */
-        "movl %ebx, 8(%ebp)\n" /* outLineCount, type */
-        "popl %ebx\n" /* line 828 */
-        "popl %ebp\n"
-        "jmp Dvar_DomainToString_Internal\n" /* line 827 */
-    );
+    return Dvar_DomainToString_InternalReg(type, domain, outBuffer, outBufferLen, outLineCount);
 }
 
 /* line 831 */
-__attribute__((naked))
 void Dvar_PrintDomain(int type, DvarLimits domain)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 831 */
-        "movl %esp, %ebp\n"
-        "subl $0x418, %esp\n"
-        /* { scope 1 */
-        "movzbl 8(%ebp), %eax\n" /* line 820 | type */
-        "movl $0, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x408(%ebp), %edx\n" /* domainBuffer */
-        "movl %edx, (%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* domain */
-        "movl 0x10(%ebp), %ecx\n"
-        "calll Dvar_DomainToString_Internal\n"
-        "movl %eax, 4(%esp)\n" /* line 834 */
-        "movl $str_002182fc, (%esp)\n" /* "  %s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "leave\n" /* line 835 */
-        "retl\n"
-    );
+    char domainBuffer[0x400];
+
+    Com_Printf("  %s\n", Dvar_DomainToString_InternalReg(type, domain, domainBuffer, sizeof(domainBuffer), NULL));
 }
 
 /* line 1310 */
@@ -3808,17 +3820,9 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
 }
 
 /* line 1406 */
-__attribute__((naked))
 void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1406 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0xc(%ebp), %edx\n" /* value */
-        "popl %ebp\n" /* line 1413 */
-        "jmp Dvar_UpdateResetValue\n" /* line 1412 */
-    );
+    Dvar_UpdateResetValueReg(dvar, value);
 }
 
 /* line 925 */
@@ -4364,18 +4368,9 @@ void Dvar_SetCheatState(void)
 }
 
 /* line 2327 */
-__attribute__((naked))
 void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2327 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0xc(%ebp), %ecx\n" /* setSource */
-        "movl 0x10(%eax), %edx\n" /* line 2335 */
-        "popl %ebp\n" /* line 2340 */
-        "jmp Dvar_SetVariant\n" /* line 2335 */
-    );
+    Dvar_SetVariantReg(dvar, dvar->reset, setSource);
 }
 
 /* line 2142 */
@@ -4460,18 +4455,9 @@ void Dvar_SetFromStringFromSource(DvarSetSource source)
 }
 
 /* line 2168 */
-__attribute__((naked))
 void Dvar_SetFromString(const dvar_t *dvar, const char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2168 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0xc(%ebp), %edx\n" /* string */
-        "xorl %ecx, %ecx\n" /* line 2170 */
-        "popl %ebp\n" /* line 2171 */
-        "jmp Dvar_SetFromStringFromSource\n" /* line 2170 */
-    );
+    Dvar_SetFromStringFromSourceReg(dvar, string, (DvarSetSource)0);
 }
 
 /* line 2130 */
@@ -5639,352 +5625,149 @@ const dvar_t * Dvar_RegisterColor(const char *dvarName, float r, float g, float 
 }
 
 /* line 1808 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterEnum(const char *dvarName, const char * *valueList, int defaultIndex, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1808 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* dvarName, valueList */
-        "movl %eax, -0x10(%ebp)\n" /* valueList, dvarName */
-        "movl 0xc(%ebp), %eax\n" /* valueList */
-        "movl 0x10(%ebp), %edi\n" /* defaultIndex */
-        "movl 0x14(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movl %eax, %esi\n" /* line 1816 */
-        "xorl %ebx, %ebx\n" /* line 1817 | dvarDomain */
-        "movl (%eax), %edx\n" /* line 1818 */
-        "testl %edx, %edx\n"
-        "je .Lf54cdc_00054d0c\n"
-        "xorl %edx, %edx\n"
-        ".Lf54cdc_00054d00:\n"
-        "addl $1, %edx\n" /* line 1819 */
-        "movl (%eax, %edx, 4), %ebx\n" /* line 1818 | dvarDomain */
-        "testl %ebx, %ebx\n" /* dvarDomain */
-        "jne .Lf54cdc_00054d00\n"
-        "movl %edx, %ebx\n" /* dvarDomain */
-        ".Lf54cdc_00054d0c:\n"
-        "movzwl %cx, %ecx\n" /* line 1821 */
-        "movl %ebx, 0xc(%ebp)\n" /* dvarDomain, valueList */
-        "movl %esi, 0x10(%ebp)\n" /* defaultIndex */
-        "movl %edi, 8(%ebp)\n" /* defaultIndex, dvarName */
-        "movl $6, %edx\n"
-        "movl -0x10(%ebp), %eax\n" /* dvarName */
-        /* } scope */
-        "addl $4, %esp\n" /* line 1822 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_RegisterVariant\n" /* line 1821 */
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+    int stringCount;
+
+    valueUnion.integer = defaultIndex;
+    domain.enumeration.stringCount = 0;
+    domain.enumeration.strings = valueList;
+
+    if (valueList) {
+        for (stringCount = 0; valueList[stringCount]; ++stringCount) {
+        }
+        domain.enumeration.stringCount = stringCount;
+    }
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_ENUM, flags, valueUnion, domain);
 }
 
 /* line 1793 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1793 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movzwl 0x10(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movl $0, -0x10(%ebp)\n" /* line 1803 | dvarDomain */
-        "movl $0, -0xc(%ebp)\n"
-        "movl -0x10(%ebp), %ebx\n" /* line 1804 | dvarDomain */
-        "movl -0xc(%ebp), %esi\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* value */
-        "movl %edx, (%esp)\n"
-        "movl $7, %edx\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1805 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+
+    valueUnion.string = value;
+    memset(&domain, 0, sizeof(domain));
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_STRING, flags, valueUnion, domain);
 }
 
 /* line 1779 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterVec4(const char *dvarName, float x, float y, float z, float w, float min, float max, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1779 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movzwl 0x24(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 447 | x */
-        "movl %edx, -0x18(%ebp)\n" /* vector */
-        "movl 0x10(%ebp), %edx\n" /* line 448 | y */
-        "movl %edx, -0x14(%ebp)\n"
-        "movl 0x14(%ebp), %edx\n" /* line 449 | z */
-        "movl %edx, -0x10(%ebp)\n"
-        "movl 0x18(%ebp), %edx\n" /* line 450 | w */
-        "movl %edx, -0xc(%ebp)\n"
-        "leal -0x18(%ebp), %edx\n" /* line 1786 | vector */
-        "movl 0x1c(%ebp), %ebx\n" /* line 1787 | min, dvarDomain */
-        "movl 0x20(%ebp), %esi\n" /* line 1788 | max */
-        "movl %ebx, 4(%esp)\n" /* line 1789 | dvarDomain */
-        "movl %esi, 8(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "movl $4, %edx\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+    vec4_t vector;
+
+    vector[0] = x;
+    vector[1] = y;
+    vector[2] = z;
+    vector[3] = w;
+    valueUnion.vector = vector;
+    domain.vector.min = min;
+    domain.vector.max = max;
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC4, flags, valueUnion, domain);
 }
 
 /* line 1765 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterVec3(const char *dvarName, float x, float y, float z, float min, float max, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1765 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movzwl 0x20(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 191 | x */
-        "movl %edx, -0x14(%ebp)\n" /* vector */
-        "movl 0x10(%ebp), %edx\n" /* line 192 | y */
-        "movl %edx, -0x10(%ebp)\n"
-        "movl 0x14(%ebp), %edx\n" /* line 193 | z */
-        "movl %edx, -0xc(%ebp)\n"
-        "leal -0x14(%ebp), %edx\n" /* line 1772 | vector */
-        "movl 0x18(%ebp), %ebx\n" /* line 1773 | min, dvarDomain */
-        "movl 0x1c(%ebp), %esi\n" /* line 1774 | max */
-        "movl %ebx, 4(%esp)\n" /* line 1775 | dvarDomain */
-        "movl %esi, 8(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "movl $3, %edx\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1776 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+    vec3_t vector;
+
+    vector[0] = x;
+    vector[1] = y;
+    vector[2] = z;
+    valueUnion.vector = vector;
+    domain.vector.min = min;
+    domain.vector.max = max;
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC3, flags, valueUnion, domain);
 }
 
 /* line 1751 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterVec2(const char *dvarName, float x, float y, float min, float max, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1751 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movzwl 0x1c(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 30 | x */
-        "movl %edx, -0x10(%ebp)\n" /* vector */
-        "movl 0x10(%ebp), %edx\n" /* line 31 | y */
-        "movl %edx, -0xc(%ebp)\n"
-        "leal -0x10(%ebp), %edx\n" /* line 1758 | vector */
-        "movl 0x14(%ebp), %ebx\n" /* line 1759 | min, dvarDomain */
-        "movl 0x18(%ebp), %esi\n" /* line 1760 | max */
-        "movl %ebx, 4(%esp)\n" /* line 1761 | dvarDomain */
-        "movl %esi, 8(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "movl $2, %edx\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1762 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+    vec2_t vector;
+
+    vector[0] = x;
+    vector[1] = y;
+    valueUnion.vector = vector;
+    domain.vector.min = min;
+    domain.vector.max = max;
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC2, flags, valueUnion, domain);
 }
 
 /* line 1739 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterFloat(const char *dvarName, float value, float min, float max, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1739 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 1744 | value */
-        "movl 0x10(%ebp), %ebx\n" /* line 1745 | min, dvarDomain */
-        "movl 0x14(%ebp), %esi\n" /* line 1746 | max */
-        "movzwl 0x18(%ebp), %ecx\n" /* line 1747 | flags */
-        "movl %ebx, 0xc(%ebp)\n" /* dvarDomain, value */
-        "movl %esi, 0x10(%ebp)\n" /* min */
-        "movl %edx, 8(%ebp)\n" /* dvarName */
-        "movl $1, %edx\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1748 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_RegisterVariant\n" /* line 1747 */
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+
+    valueUnion.value = value;
+    domain.value.min = min;
+    domain.value.max = max;
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_FLOAT, flags, valueUnion, domain);
 }
 
 /* line 1727 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterInt(const char *dvarName, int value, int min, int max, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1727 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movl 0xc(%ebp), %edx\n" /* value */
-        /* { scope 1 */
-        "movl 0x10(%ebp), %ebx\n" /* line 1733 | min, dvarDomain */
-        "movl 0x14(%ebp), %esi\n" /* line 1734 | max */
-        "movzwl 0x18(%ebp), %ecx\n" /* line 1735 | flags */
-        "movl %ebx, 0xc(%ebp)\n" /* dvarDomain, value */
-        "movl %esi, 0x10(%ebp)\n" /* min */
-        "movl %edx, 8(%ebp)\n" /* dvarName */
-        "movl $5, %edx\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1736 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_RegisterVariant\n" /* line 1735 */
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+
+    valueUnion.integer = value;
+    domain.integer.min = min;
+    domain.integer.max = max;
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_INT, flags, valueUnion, domain);
 }
 
 /* line 1716 */
-__attribute__((naked))
 const dvar_t * Dvar_RegisterBool(const char *dvarName, int value, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1716 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "xorl %edx, %edx\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movzwl 0x10(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "movb 0xc(%ebp), %dl\n" /* line 1721 | value */
-        "movl $0, -0x10(%ebp)\n" /* line 1722 | dvarDomain */
-        "movl $0, -0xc(%ebp)\n"
-        "movl -0x10(%ebp), %ebx\n" /* line 1723 | dvarDomain */
-        "movl -0xc(%ebp), %esi\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, 8(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "xorl %edx, %edx\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1724 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+
+    valueUnion.enabled = value != 0;
+    memset(&domain, 0, sizeof(domain));
+
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_BOOL, flags, valueUnion, domain);
 }
 
 /* line 2376 */
-__attribute__((naked))
 void Dvar_Init(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2376 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movb $1, isDvarSystemActive\n" /* line 2378 */
-        /* { scope 1 */
-        "movl $0, -0x10(%ebp)\n" /* line 1722 | dvarDomain */
-        "movl $0, -0xc(%ebp)\n"
-        "movl -0x10(%ebp), %eax\n" /* line 1723 | dvarDomain */
-        "movl -0xc(%ebp), %edx\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl $0x1018, %ecx\n"
-        "xorl %edx, %edx\n"
-        "movl $str_002198ac, %eax\n" /* "sv_cheats" */
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "movl %eax, dvar_cheats\n" /* line 2379 */
-        "calll Dvar_AddCommands\n" /* line 2382 */
-        "leave\n" /* line 2384 */
-        "retl\n"
-    );
+    DvarValue valueUnion;
+    DvarLimits domain;
+
+    isDvarSystemActive = 1;
+    valueUnion.enabled = 0;
+    memset(&domain, 0, sizeof(domain));
+    dvar_cheats = Dvar_RegisterVariantReg("sv_cheats", DVAR_TYPE_BOOL, 0x1018, valueUnion, domain);
+    Dvar_AddCommands();
 }
 
 /* line 2517 */
-__attribute__((naked))
 void Dvar_ResetDvars(unsigned int filter, DvarSetSource setSource)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2517 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xc, %esp\n"
-        "movl 8(%ebp), %esi\n" /* filter */
-        "movl 0xc(%ebp), %edi\n" /* setSource */
-        /* { scope 1 */
-        "movl sortedDvars, %ebx\n" /* line 2525 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf54f28_00054f4a\n"
-        "jmp .Lf54f28_00054f65\n"
-        ".Lf54f28_00054f43:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf54f28_00054f65\n"
-        ".Lf54f28_00054f4a:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 2527 | var */
-        "testl %esi, %eax\n" /* filter */
-        "je .Lf54f28_00054f43\n"
-        "movl 0x10(%ebx), %edx\n" /* line 2335 */
-        "movl %edi, %ecx\n"
-        "movl %ebx, %eax\n"
-        "calll Dvar_SetVariant\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 2525 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf54f28_00054f4a\n"
-        /* } scope */
-        ".Lf54f28_00054f65:\n"
-        "addl $0xc, %esp\n" /* line 2534 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *var;
+
+    for (var = sortedDvars; var; var = (dvar_t *)var->next) {
+        if (filter & var->flags) {
+            Dvar_SetVariantReg(var, var->reset, setSource);
+        }
+    }
 }
 
 /* line 2574 */
@@ -7846,4 +7629,3 @@ void Dvar_SetFromStringByName(const char *dvarName, const char *string)
 {
     Dvar_SetFromStringByNameFromSource(dvarName, string, 0);
 }
-
