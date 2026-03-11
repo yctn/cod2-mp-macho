@@ -34,6 +34,43 @@ static float CColorConverter_ByteToFloat(UINT8 value)
     return (float)value * (1.0f / 255.0f);
 }
 
+static UINT32 CColorConverter_FloatToByte(float value)
+{
+    float scaled;
+
+    if (0.0f > value) {
+        scaled = 0.0f;
+    } else if (1.0f < value) {
+        scaled = 255.0f;
+    } else {
+        scaled = value * 255.0f;
+    }
+
+    return (UINT32)(scaled + 0.5f);
+}
+
+static UINT32 CColorConverter_PackStdARGB(float r, float g, float b, float a)
+{
+    UINT32 packed;
+
+    packed = (CColorConverter_FloatToByte(b) << 24)
+           | (CColorConverter_FloatToByte(g) << 16)
+           | (CColorConverter_FloatToByte(r) << 8)
+           | CColorConverter_FloatToByte(a);
+    return CColorConverter_RotateRight32(packed, 8);
+}
+
+static UINT32 CColorConverter_PackATI4CompsARGB(float r, float g, float b, float a)
+{
+    UINT32 packed;
+
+    packed = (CColorConverter_FloatToByte(b) << 24)
+           | (CColorConverter_FloatToByte(g) << 16)
+           | (CColorConverter_FloatToByte(r) << 8)
+           | CColorConverter_FloatToByte(a);
+    return CColorConverter_RotateRight32(packed, 24);
+}
+
 static void CColorConverter_SetVTable(void *object, void **vtable)
 {
     *(void ***)object = vtable;
@@ -239,539 +276,55 @@ void StdConverterABGR_Convert(const StdConverterABGR * _this, const void * pDst,
 }
 
 /* line 99 */
-__attribute__((naked))
 void StdConverterARGB_Convert4ub4f(const StdConverterARGB * _this, const void * pDst, const float *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "subl $0x24, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* Src, pDst */
-        /* { scope 1 */
-        "movss (%eax), %xmm0\n" /* line 106 | r */
-        "movss 4(%eax), %xmm1\n" /* line 107 | g */
-        "movss 8(%eax), %xmm3\n" /* line 108 | b */
-        "movss 0xc(%eax), %xmm4\n" /* line 109 | a */
-        "pxor %xmm2, %xmm2\n" /* line 58 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lfd856_0000d970\n"
-        "movaps %xmm2, %xmm6\n"
-        ".Lfd856_0000d882:\n"
-        "ucomiss %xmm1, %xmm2\n"
-        "jbe .Lfd856_0000d95a\n"
-        "movaps %xmm2, %xmm5\n"
-        ".Lfd856_0000d88e:\n"
-        "ucomiss %xmm3, %xmm2\n"
-        "jbe .Lfd856_0000d944\n"
-        "movaps %xmm2, %xmm1\n"
-        ".Lfd856_0000d89a:\n"
-        "ucomiss %xmm4, %xmm2\n"
-        "ja .Lfd856_0000d8b4\n"
-        "ucomiss 0x2ed5d0, %xmm4\n" /* 1.0f */
-        "jbe .Lfd856_0000d9b6\n"
-        "movss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        ".Lfd856_0000d8b4:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 126 | 0.5f */
-        "addss %xmm0, %xmm1\n"
-        "fnstcw -0x12(%ebp)\n"
-        "movzwl -0x12(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x14(%ebp)\n"
-        "movss %xmm1, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $0x18, %ecx\n"
-        "addss %xmm0, %xmm5\n"
-        "movss %xmm5, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "shll $0x10, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm0, %xmm6\n"
-        "movss %xmm6, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm0, %xmm2\n"
-        "movss %xmm2, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "addl %eax, %ecx\n"
-        "rorl $8, %ecx\n" /* line 69 */
-        "movl 0xc(%ebp), %eax\n" /* pDst */
-        "movl %ecx, (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 128 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd856_0000d944:\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* line 58 | 1.0f */
-        "jbe .Lfd856_0000d996\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfd856_0000d89a\n"
-        ".Lfd856_0000d95a:\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "jbe .Lfd856_0000d9a6\n"
-        "movss 0x2ed5d4, %xmm5\n" /* 255.0f */
-        "jmp .Lfd856_0000d88e\n"
-        ".Lfd856_0000d970:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "jbe .Lfd856_0000d986\n"
-        "movss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfd856_0000d882\n"
-        ".Lfd856_0000d986:\n"
-        "movaps %xmm0, %xmm6\n"
-        "mulss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfd856_0000d882\n"
-        ".Lfd856_0000d996:\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfd856_0000d89a\n"
-        ".Lfd856_0000d9a6:\n"
-        "movaps %xmm1, %xmm5\n"
-        "mulss 0x2ed5d4, %xmm5\n" /* 255.0f */
-        "jmp .Lfd856_0000d88e\n"
-        ".Lfd856_0000d9b6:\n"
-        "movaps %xmm4, %xmm2\n"
-        "mulss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        "jmp .Lfd856_0000d8b4\n"
-    );
+    UINT32 packed;
+
+    (void)_this;
+
+    packed = CColorConverter_PackStdARGB(Src[0], Src[1], Src[2], Src[3]);
+    memcpy((void *)pDst, &packed, sizeof(packed));
 }
 
 /* line 195 */
-__attribute__((naked))
 void StdConverterARGB_ArrayConvert4f4ubG3(const StdConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 195 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %ebx\n" /* line 203 | pSrc, p */
-        "subl $4, %ebx\n" /* p */
-        "movl 0xc(%ebp), %esi\n" /* line 204 | pRawDst, pDst */
-        /* { scope 2: RGBA */
-        "movl 0x14(%ebp), %eax\n" /* line 205 | NumVertices */
-        "testl %eax, %eax\n"
-        "je .Lfd9c6_0000db44\n"
-        "xorl %edi, %edi\n" /* i */
-        "pxor %xmm5, %xmm5\n"
-        "movss 0x2ed5d8, %xmm7\n" /* 0.5f */
-        "fnstcw -0x1e(%ebp)\n"
-        "movzwl -0x1e(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x20(%ebp)\n"
-        "jmp .Lfd9c6_0000daf6\n"
-        /* { scope 3 */
-        ".Lfd9c6_0000da03:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* line 58 | 1.0f */
-        "jbe .Lfd9c6_0000db4c\n"
-        "movss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        ".Lfd9c6_0000da18:\n"
-        "ucomiss %xmm1, %xmm5\n"
-        "ja .Lfd9c6_0000db21\n"
-        ".Lfd9c6_0000da21:\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "jbe .Lfd9c6_0000db7c\n"
-        "movss 0x2ed5d4, %xmm4\n" /* 255.0f */
-        ".Lfd9c6_0000da36:\n"
-        "ucomiss %xmm2, %xmm5\n"
-        "ja .Lfd9c6_0000db2d\n"
-        ".Lfd9c6_0000da3f:\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "jbe .Lfd9c6_0000db6c\n"
-        "movss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        ".Lfd9c6_0000da54:\n"
-        "ucomiss %xmm3, %xmm5\n"
-        "ja .Lfd9c6_0000db39\n"
-        ".Lfd9c6_0000da5d:\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "jbe .Lfd9c6_0000db5c\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        ".Lfd9c6_0000da72:\n"
-        "addss %xmm7, %xmm0\n" /* line 227 */
-        "movss %xmm0, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $0x18, %ecx\n"
-        "addss %xmm7, %xmm4\n"
-        "movss %xmm4, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "shll $0x10, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm7, %xmm6\n"
-        "movss %xmm6, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm7, %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "leal (%ecx, %eax), %edx\n"
-        "movl %edx, %eax\n" /* line 69 */
-        "rorl $8, %eax\n"
-        "movl %eax, (%esi)\n"
-        "addl $4, %esi\n" /* line 230 | pDst */
-        /* } scope */
-        "addl $1, %edi\n" /* line 205 | i */
-        "cmpl %edi, 0x14(%ebp)\n" /* i, NumVertices */
-        "je .Lfd9c6_0000db41\n"
-        /* { scope 3 */
-        ".Lfd9c6_0000daf6:\n"
-        "movss 4(%ebx), %xmm0\n" /* line 207 | p, r */
-        "movss 8(%ebx), %xmm1\n" /* line 208 | p, g */
-        "movss 0xc(%ebx), %xmm2\n" /* line 209 | p, b */
-        "addl $0x10, %ebx\n" /* line 210 | p */
-        "movss (%ebx), %xmm3\n" /* p, a */
-        "ucomiss %xmm0, %xmm5\n" /* line 58 */
-        "jbe .Lfd9c6_0000da03\n"
-        "movaps %xmm5, %xmm6\n"
-        "ucomiss %xmm1, %xmm5\n"
-        "jbe .Lfd9c6_0000da21\n"
-        ".Lfd9c6_0000db21:\n"
-        "movaps %xmm5, %xmm4\n"
-        "ucomiss %xmm2, %xmm5\n"
-        "jbe .Lfd9c6_0000da3f\n"
-        ".Lfd9c6_0000db2d:\n"
-        "movaps %xmm5, %xmm0\n"
-        "ucomiss %xmm3, %xmm5\n"
-        "jbe .Lfd9c6_0000da5d\n"
-        ".Lfd9c6_0000db39:\n"
-        "movaps %xmm5, %xmm1\n"
-        "jmp .Lfd9c6_0000da72\n"
-        ".Lfd9c6_0000db41:\n"
-        "movl %edx, -0x10(%ebp)\n" /* RGBA */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfd9c6_0000db44:\n"
-        "addl $0x24, %esp\n" /* line 232 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2: RGBA */
-        /* { scope 3 */
-        ".Lfd9c6_0000db4c:\n"
-        "movaps %xmm0, %xmm6\n" /* line 58 */
-        "mulss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfd9c6_0000da18\n"
-        ".Lfd9c6_0000db5c:\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfd9c6_0000da72\n"
-        ".Lfd9c6_0000db6c:\n"
-        "movaps %xmm2, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lfd9c6_0000da54\n"
-        ".Lfd9c6_0000db7c:\n"
-        "movaps %xmm1, %xmm4\n"
-        "mulss 0x2ed5d4, %xmm4\n" /* 255.0f */
-        "jmp .Lfd9c6_0000da36\n"
-    );
+    UINT32 *pDst;
+    UINT32 i;
+
+    (void)_this;
+
+    pDst = (UINT32 *)pRawDst;
+    for (i = 0; i < NumVertices; ++i) {
+        *pDst++ = CColorConverter_PackStdARGB(pSrc[0], pSrc[1], pSrc[2], pSrc[3]);
+        pSrc += 4;
+    }
 }
 
 /* line 456 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_Convert4ub4f(const ATI4CompsConverterARGB * _this, const void * pDst, const float *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 456 */
-        "movl %esp, %ebp\n"
-        "subl $0x24, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* Src, pDst */
-        /* { scope 1 */
-        "movss (%eax), %xmm0\n" /* line 466 | r */
-        "movss 4(%eax), %xmm1\n" /* line 467 | g */
-        "movss 8(%eax), %xmm3\n" /* line 468 | b */
-        "movss 0xc(%eax), %xmm4\n" /* line 469 | a */
-        "pxor %xmm2, %xmm2\n" /* line 58 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lfdb8c_0000dca6\n"
-        "movaps %xmm2, %xmm6\n"
-        ".Lfdb8c_0000dbb8:\n"
-        "ucomiss %xmm1, %xmm2\n"
-        "jbe .Lfdb8c_0000dc90\n"
-        "movaps %xmm2, %xmm5\n"
-        ".Lfdb8c_0000dbc4:\n"
-        "ucomiss %xmm3, %xmm2\n"
-        "jbe .Lfdb8c_0000dc7a\n"
-        "movaps %xmm2, %xmm1\n"
-        ".Lfdb8c_0000dbd0:\n"
-        "ucomiss %xmm4, %xmm2\n"
-        "ja .Lfdb8c_0000dbea\n"
-        "ucomiss 0x2ed5d0, %xmm4\n" /* 1.0f */
-        "jbe .Lfdb8c_0000dcec\n"
-        "movss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        ".Lfdb8c_0000dbea:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 486 | 0.5f */
-        "addss %xmm0, %xmm1\n"
-        "fnstcw -0x12(%ebp)\n"
-        "movzwl -0x12(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x14(%ebp)\n"
-        "movss %xmm1, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $0x18, %ecx\n"
-        "addss %xmm0, %xmm5\n"
-        "movss %xmm5, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "shll $0x10, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm0, %xmm6\n"
-        "movss %xmm6, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm0, %xmm2\n"
-        "movss %xmm2, -0x24(%ebp)\n"
-        "flds -0x24(%ebp)\n"
-        "fldcw -0x14(%ebp)\n"
-        "fistpll -0x20(%ebp)\n"
-        "fldcw -0x12(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "addl %eax, %ecx\n"
-        "rorl $0x18, %ecx\n" /* line 438 */
-        "movl 0xc(%ebp), %eax\n" /* pDst */
-        "movl %ecx, (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 488 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfdb8c_0000dc7a:\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* line 58 | 1.0f */
-        "jbe .Lfdb8c_0000dccc\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbd0\n"
-        ".Lfdb8c_0000dc90:\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "jbe .Lfdb8c_0000dcdc\n"
-        "movss 0x2ed5d4, %xmm5\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbc4\n"
-        ".Lfdb8c_0000dca6:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "jbe .Lfdb8c_0000dcbc\n"
-        "movss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbb8\n"
-        ".Lfdb8c_0000dcbc:\n"
-        "movaps %xmm0, %xmm6\n"
-        "mulss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbb8\n"
-        ".Lfdb8c_0000dccc:\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbd0\n"
-        ".Lfdb8c_0000dcdc:\n"
-        "movaps %xmm1, %xmm5\n"
-        "mulss 0x2ed5d4, %xmm5\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbc4\n"
-        ".Lfdb8c_0000dcec:\n"
-        "movaps %xmm4, %xmm2\n"
-        "mulss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        "jmp .Lfdb8c_0000dbea\n"
-    );
+    UINT32 packed;
+
+    (void)_this;
+
+    packed = CColorConverter_PackATI4CompsARGB(Src[0], Src[1], Src[2], Src[3]);
+    memcpy((void *)pDst, &packed, sizeof(packed));
 }
 
 /* line 556 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_ArrayConvert4f4ubG3(const ATI4CompsConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 556 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %ebx\n" /* line 565 | pSrc, p */
-        "subl $4, %ebx\n" /* p */
-        "movl 0xc(%ebp), %esi\n" /* line 566 | pRawDst, pDst */
-        /* { scope 2: RGBA */
-        "movl 0x14(%ebp), %edx\n" /* line 567 | NumVertices */
-        "testl %edx, %edx\n"
-        "je .Lfdcfc_0000de7a\n"
-        "xorl %edi, %edi\n" /* i */
-        "pxor %xmm5, %xmm5\n"
-        "movss 0x2ed5d8, %xmm7\n" /* 0.5f */
-        "fnstcw -0x1e(%ebp)\n"
-        "movzwl -0x1e(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x20(%ebp)\n"
-        "jmp .Lfdcfc_0000de2c\n"
-        /* { scope 3 */
-        ".Lfdcfc_0000dd39:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* line 58 | 1.0f */
-        "jbe .Lfdcfc_0000de82\n"
-        "movss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        ".Lfdcfc_0000dd4e:\n"
-        "ucomiss %xmm1, %xmm5\n"
-        "ja .Lfdcfc_0000de57\n"
-        ".Lfdcfc_0000dd57:\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "jbe .Lfdcfc_0000deb2\n"
-        "movss 0x2ed5d4, %xmm4\n" /* 255.0f */
-        ".Lfdcfc_0000dd6c:\n"
-        "ucomiss %xmm2, %xmm5\n"
-        "ja .Lfdcfc_0000de63\n"
-        ".Lfdcfc_0000dd75:\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "jbe .Lfdcfc_0000dea2\n"
-        "movss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        ".Lfdcfc_0000dd8a:\n"
-        "ucomiss %xmm3, %xmm5\n"
-        "ja .Lfdcfc_0000de6f\n"
-        ".Lfdcfc_0000dd93:\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "jbe .Lfdcfc_0000de92\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        ".Lfdcfc_0000dda8:\n"
-        "addss %xmm7, %xmm0\n" /* line 589 */
-        "movss %xmm0, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $0x18, %ecx\n"
-        "addss %xmm7, %xmm4\n"
-        "movss %xmm4, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "shll $0x10, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm7, %xmm6\n"
-        "movss %xmm6, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %ecx\n"
-        "addss %xmm7, %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n"
-        "flds -0x30(%ebp)\n"
-        "fldcw -0x20(%ebp)\n"
-        "fistpll -0x2c(%ebp)\n"
-        "fldcw -0x1e(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "leal (%ecx, %eax), %edx\n"
-        "movl %edx, %eax\n" /* line 438 */
-        "rorl $0x18, %eax\n"
-        "movl %eax, (%esi)\n"
-        "addl $4, %esi\n" /* line 592 | pDst */
-        /* } scope */
-        "addl $1, %edi\n" /* line 567 | i */
-        "cmpl %edi, 0x14(%ebp)\n" /* i, NumVertices */
-        "je .Lfdcfc_0000de77\n"
-        /* { scope 3 */
-        ".Lfdcfc_0000de2c:\n"
-        "movss 4(%ebx), %xmm0\n" /* line 569 | p, r */
-        "movss 8(%ebx), %xmm1\n" /* line 570 | p, g */
-        "movss 0xc(%ebx), %xmm2\n" /* line 571 | p, b */
-        "addl $0x10, %ebx\n" /* line 572 | p */
-        "movss (%ebx), %xmm3\n" /* p, a */
-        "ucomiss %xmm0, %xmm5\n" /* line 58 */
-        "jbe .Lfdcfc_0000dd39\n"
-        "movaps %xmm5, %xmm6\n"
-        "ucomiss %xmm1, %xmm5\n"
-        "jbe .Lfdcfc_0000dd57\n"
-        ".Lfdcfc_0000de57:\n"
-        "movaps %xmm5, %xmm4\n"
-        "ucomiss %xmm2, %xmm5\n"
-        "jbe .Lfdcfc_0000dd75\n"
-        ".Lfdcfc_0000de63:\n"
-        "movaps %xmm5, %xmm0\n"
-        "ucomiss %xmm3, %xmm5\n"
-        "jbe .Lfdcfc_0000dd93\n"
-        ".Lfdcfc_0000de6f:\n"
-        "movaps %xmm5, %xmm1\n"
-        "jmp .Lfdcfc_0000dda8\n"
-        ".Lfdcfc_0000de77:\n"
-        "movl %edx, -0x10(%ebp)\n" /* RGBA */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfdcfc_0000de7a:\n"
-        "addl $0x24, %esp\n" /* line 594 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2: RGBA */
-        /* { scope 3 */
-        ".Lfdcfc_0000de82:\n"
-        "movaps %xmm0, %xmm6\n" /* line 58 */
-        "mulss 0x2ed5d4, %xmm6\n" /* 255.0f */
-        "jmp .Lfdcfc_0000dd4e\n"
-        ".Lfdcfc_0000de92:\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "jmp .Lfdcfc_0000dda8\n"
-        ".Lfdcfc_0000dea2:\n"
-        "movaps %xmm2, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lfdcfc_0000dd8a\n"
-        ".Lfdcfc_0000deb2:\n"
-        "movaps %xmm1, %xmm4\n"
-        "mulss 0x2ed5d4, %xmm4\n" /* 255.0f */
-        "jmp .Lfdcfc_0000dd6c\n"
-    );
+    UINT32 *pDst;
+    UINT32 i;
+
+    (void)_this;
+
+    pDst = (UINT32 *)pRawDst;
+    for (i = 0; i < NumVertices; ++i) {
+        *pDst++ = CColorConverter_PackATI4CompsARGB(pSrc[0], pSrc[1], pSrc[2], pSrc[3]);
+        pSrc += 4;
+    }
 }
 
 /* line 769 */
