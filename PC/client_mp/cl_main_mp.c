@@ -305,8 +305,8 @@ void CL_ShutdownDemo(void)
 /* line 1272 */
 int CL_GetSkelTimeStamp(int localClientNum)
 {
-    /* stride: localClientNum * 386821 * 4 = localClientNum * 1547284 */
-    return *(int *)(0x151228c + (unsigned)localClientNum * 386821 * 4);
+    char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
+    return *(int *)(client + 0x864c);
 }
 
 /* line 1279 */
