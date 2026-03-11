@@ -5124,6 +5124,15 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* material */
+        "testl %ebx, %ebx\n"
+        "jne .Lfd89e8_000d89fe\n"
+        "addl $0x1c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lfd89e8_000d89fe:\n"
         /* { scope 1 */
         "cmpb $0, backEnd+1213\n" /* line 437 */
         "je .Lfd89e8_000d8e4e\n"

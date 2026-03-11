@@ -3862,6 +3862,7 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
 }
 
 int g_rb_endsurface_count = 0; /* diagnostic */
+int g_rb_endsurface_nomaterial = 0; /* diagnostic: tess material missing */
 int g_rb_endsurface_notechnique = 0; /* diagnostic: technique==NULL */
 int g_rb_endsurface_dxstate = 0; /* diagnostic: dxState+0x20c8 non-zero */
 int g_rb_endsurface_draw = 0; /* diagnostic: reached RB_DrawSingleTechnique */
@@ -3900,6 +3901,11 @@ void RB_EndSurface(void)
         "addl $4, %esp\n"
         "movl imp_tess, %edi\n"
         "movl 0x5a7bc(%edi), %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lff9de4_diag_has_material\n"
+        "incl g_rb_endsurface_nomaterial\n"
+        "jmp .Lff9de4_000f9e2b\n"
+        ".Lff9de4_diag_has_material:\n"
         "movl 0x38(%eax), %edx\n"
         "movl 0x5a7c0(%edi), %eax\n"
         "movl 4(%edx, %eax, 4), %ebx\n"
