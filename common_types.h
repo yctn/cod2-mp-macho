@@ -4652,7 +4652,9 @@ typedef ptrdiff_t _DistanceType;
 typedef _ReferenceType2 _ReferenceType1;
 typedef CResInfo _ValueType1;
 typedef CResInfo _ValueType2;
+#if !defined(__GNUC__) && !defined(__clang__)
 typedef char * __builtin_va_list;
+#endif
 typedef int __darwin_ct_rune_t;
 typedef unsigned int __darwin_natural_t;
 typedef _opaque_pthread_t * __darwin_pthread_t;
@@ -4870,7 +4872,9 @@ typedef ULONG_PTR SIZE_T;
 typedef const WCHAR * LPCWSTR;
 typedef WCHAR * LPWSTR;
 typedef WindowPtr WindowRef;
+#if !defined(__GNUC__) && !defined(__clang__)
 typedef __builtin_va_list __gnuc_va_list;
+#endif
 typedef __darwin_natural_t natural_t;
 typedef __int32_t __darwin_blksize_t;
 typedef __int32_t __darwin_dev_t;
@@ -4917,7 +4921,9 @@ typedef FourCharCode OSType;
 typedef FourCharCode ResType;
 typedef FourCharCode TXNTypeRunAttributes;
 typedef OptionBits LSItemInfoFlags;
+#if !defined(__GNUC__) && !defined(__clang__)
 typedef __gnuc_va_list va_list;
+#endif
 typedef natural_t mach_port_name_t;
 typedef vec2_t hullPointsPool_t[16384];
 typedef vec3_t GfxPackedVector;

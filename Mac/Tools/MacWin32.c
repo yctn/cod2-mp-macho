@@ -16,6 +16,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include "stubs/gcc40_compat.h"
 
 /* --- Timer functions --- */
 
@@ -118,19 +119,17 @@ void WinSleep(DWORD dwMilliseconds)
 
 LONG InterlockedExchangeAdd(volatile LONG *Addend, LONG Value)
 {
-    return __sync_fetch_and_add(Addend, Value);
+    return cod2_sync_fetch_and_add_i32(Addend, Value);
 }
 
 LONG InterlockedCompareExchange(volatile LONG *Destination, LONG Exchange, LONG Comperand)
 {
-    __sync_val_compare_and_swap(Destination, Comperand, Exchange);
-    /* Return the old value - if it was Comperand, swap happened */
-    return Comperand;
+    return cod2_sync_val_compare_and_swap_i32(Destination, Comperand, Exchange);
 }
 
 LONG InterlockedExchange(volatile LONG *Target, LONG Value)
 {
-    return __sync_lock_test_and_set(Target, Value);
+    return cod2_sync_lock_test_and_set_i32(Target, Value);
 }
 
 /* --- Virtual key mapping --- */

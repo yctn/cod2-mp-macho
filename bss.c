@@ -1125,7 +1125,7 @@ int g_ScoresBanner_None; /* g_ScoresBanner_None */
 int g_ScoresBanner_Axis; /* g_ScoresBanner_Axis */
 int g_ScoresBanner_Allies; /* g_ScoresBanner_Allies */
 unsigned char g_smoothClients[8]; /* g_smoothClients */
-int g_banIPs; /* g_banIPs */
+int g_banIPs = 0; /* g_banIPs */
 __asm__(".globl g_banIPs_dvar\n.set g_banIPs_dvar, g_banIPs\n");
 int g_listEntity; /* g_listEntity */
 unsigned char g_deadChat[8]; /* g_deadChat */

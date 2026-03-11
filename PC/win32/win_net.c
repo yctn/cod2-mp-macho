@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include "stubs/gcc40_compat.h"
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
@@ -726,7 +727,7 @@ do_local_address:
                                     }
 
                                     /* extract IP from ioctl result (offset 20 in namebuf = sin_addr) */
-                                    ipaddr = __builtin_bswap32(*(unsigned long *)(namebuf + 20));
+                                    ipaddr = cod2_bswap32(*(unsigned long *)(namebuf + 20));
                                     localIP[numIP][0] = (ipaddr >> 24) & 0xFF;
                                     localIP[numIP][1] = (ipaddr >> 16) & 0xFF;
                                     localIP[numIP][2] = (ipaddr >> 8) & 0xFF;

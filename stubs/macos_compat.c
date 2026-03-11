@@ -7,6 +7,7 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
+#include "stubs/gcc40_compat.h"
 
 /* Forward declaration for ___maskrune */
 static unsigned int bsd_rune_data[13 + 256];
@@ -40,10 +41,10 @@ void DisposePtr(void *p) { free(p); }
 
 /* Mac Toolbox atomic ops (used by unconverted ASM) */
 int OTAtomicAdd32(int val, volatile int *addr) {
-    return __sync_add_and_fetch(addr, val);
+    return cod2_sync_add_and_fetch_i32(addr, val);
 }
 int OTCompareAndSwap32(int oldVal, int newVal, volatile int *addr) {
-    return __sync_bool_compare_and_swap(addr, oldVal, newVal);
+    return cod2_sync_bool_compare_and_swap_i32(addr, oldVal, newVal);
 }
 
 /* ___isnanf - macOS mangling of isnanf */
