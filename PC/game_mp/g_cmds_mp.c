@@ -11,6 +11,19 @@
 
 static char line[1024]; /* line */
 extern char * gc_orders[7]; /* gc_orders */
+extern level_locals_t level;
+extern gentity_t g_entities[1024];
+extern const dvar_t *g_cheats;
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern char *va(const char *fmt, ...);
+extern int SV_GetClientPing(int clientNum);
+extern void SV_GameSendServerCommand(int clientNum, int type, const char *text);
+extern int SV_Cmd_Argc(void);
+extern void SV_Cmd_ArgvBuffer(int arg, char *buffer, int bufferLength);
+
+enum {
+    GCMDS_MAX_CLIENTS = 64
+};
 
 void DeathmatchScoreboardMessage(gentity_t *ent);
 void Cmd_Score_f(gentity_t *ent);
@@ -32,131 +45,53 @@ void Cmd_Take_f(gentity_t *ent);
 void ClientCommand(int clientNum);
 
 /* line 13 */
-__attribute__((naked))
 void DeathmatchScoreboardMessage(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 13 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9bc, %esp\n"
-        /* { scope 1 */
-        "movb $0, -0x990(%ebp)\n" /* line 25 | string */
-        "movl imp_level, %edi\n" /* line 30 | cl */
-        "movl 0x218(%edi), %eax\n" /* cl */
-        "movl %eax, -0x99c(%ebp)\n" /* numSorted */
-        "cmpl $0x40, %eax\n" /* line 31 */
-        "jle .Lf1a2c34_001a2d7a\n"
-        "movl $0x40, -0x99c(%ebp)\n" /* numSorted */
-        ".Lf1a2c34_001a2c6c:\n"
-        "movl $0, -0x9a4(%ebp)\n" /* line 34 | stringlength */
-        "movl $0, -0x9a0(%ebp)\n" /* i */
-        "movl %edi, %esi\n" /* cl */
-        "jmp .Lf1a2c34_001a2d40\n"
-        /* { scope 2 */
-        ".Lf1a2c34_001a2c87:\n"
-        "movl $0xffffffff, %edx\n" /* line 41 */
-        ".Lf1a2c34_001a2c8c:\n"
-        "movl 0x26b0(%edi), %eax\n" /* line 46 | cl */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x26bc(%edi), %eax\n" /* cl */
-        "movl %eax, 0x18(%esp)\n"
-        "movl %edx, 0x14(%esp)\n"
-        "movl 0x26b8(%edi), %eax\n" /* cl */
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002b3600, 8(%esp)\n" /* " %i %i %i %i %i" */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* entry */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "cld\n" /* line 47 */
-        "movl $0xffffffff, %ecx\n"
-        "leal -0x418(%ebp), %edi\n" /* entry, cl */
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n" /* cl */
-        "notl %ecx\n"
-        "movl -0x9a4(%ebp), %eax\n" /* stringlength */
-        "leal -1(%ecx, %eax), %edi\n" /* cl */
-        "cmpl $0x400, %edi\n" /* line 48 | cl */
-        "jg .Lf1a2c34_001a2e17\n"
-        "leal -0x418(%ebp), %eax\n" /* line 50 | entry */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x990(%ebp), %eax\n" /* string */
-        "addl -0x9a4(%ebp), %eax\n" /* stringlength */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        /* } scope */
-        "addl $1, -0x9a0(%ebp)\n" /* line 34 | i */
-        "addl $4, %esi\n"
-        "movl -0x9a0(%ebp), %eax\n" /* i */
-        "cmpl %eax, -0x99c(%ebp)\n" /* numSorted */
-        "je .Lf1a2c34_001a2e00\n"
-        "movl %edi, -0x9a4(%ebp)\n" /* cl, stringlength */
-        "movl imp_level, %edi\n" /* cl */
-        ".Lf1a2c34_001a2d40:\n"
-        "leal 0x21c(%esi), %ebx\n" /* line 13 */
-        /* { scope 2 */
-        "movl 0x21c(%esi), %ecx\n" /* line 38 */
-        "leal (%ecx, %ecx, 4), %eax\n" /* line 39 */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movl (%edi), %edx\n" /* cl */
-        "leal (%edx, %eax, 4), %edi\n" /* cl */
-        "cmpl $1, 0x26c4(%edi)\n" /* line 41 | cl */
-        "je .Lf1a2c34_001a2c87\n"
-        "movl %ecx, (%esp)\n" /* line 44 */
-        "calll SV_GetClientPing\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1a2c34_001a2c8c\n"
-        /* } scope */
-        ".Lf1a2c34_001a2d7a:\n"
-        "movl -0x99c(%ebp), %eax\n" /* line 34 | numSorted */
-        "testl %eax, %eax\n"
-        "jg .Lf1a2c34_001a2c6c\n"
-        "movl $0, -0x9a0(%ebp)\n" /* i */
-        ".Lf1a2c34_001a2d92:\n"
-        "leal -0x990(%ebp), %eax\n" /* line 55 | string */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x204(%edi), %eax\n" /* cl */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x200(%edi), %eax\n" /* cl */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x9a0(%ebp), %eax\n" /* i */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x62, 4(%esp)\n"
-        "movl $str_002b3610, (%esp)\n" /* "%c %i %i %i%s" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl imp_g_entities, %eax\n"
-        "subl %eax, 8(%ebp)\n" /* ent */
-        "sarl $4, 8(%ebp)\n" /* ent */
-        "imull $0x8af8af8b, 8(%ebp), %eax\n" /* ent */
-        "movl %eax, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        /* } scope */
-        "addl $0x9bc, %esp\n" /* line 56 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a2c34_001a2e00:\n"
-        "movl -0x99c(%ebp), %eax\n" /* line 34 | numSorted */
-        "movl %eax, -0x9a0(%ebp)\n" /* i */
-        "movl imp_level, %edi\n" /* cl */
-        "jmp .Lf1a2c34_001a2d92\n"
-        ".Lf1a2c34_001a2e17:\n"
-        "movl imp_level, %edi\n" /* cl */
-        "jmp .Lf1a2c34_001a2d92\n"
-    );
+    gclient_t *client;
+    int clientNum;
+    char entry[1024];
+    int i;
+    int j;
+    int numSorted;
+    int ping;
+    char string[1400];
+    int stringlength;
+
+    string[0] = '\0';
+    stringlength = 0;
+
+    numSorted = level.numConnectedClients;
+    if (numSorted > GCMDS_MAX_CLIENTS) {
+        numSorted = GCMDS_MAX_CLIENTS;
+    }
+
+    for (i = 0; i < numSorted; ++i) {
+        clientNum = level.sortedClients[i];
+        client = &level.clients[clientNum];
+
+        if (client->sess.connected == CON_CONNECTING) {
+            Com_sprintf(entry, sizeof(entry), " %i %i %i %i %i",
+                level.sortedClients[i], client->sess.score, -1,
+                client->sess.deaths, client->sess.status_icon);
+        } else {
+            ping = SV_GetClientPing(clientNum);
+            Com_sprintf(entry, sizeof(entry), " %i %i %i %i %i",
+                level.sortedClients[i], client->sess.score, ping,
+                client->sess.deaths, client->sess.status_icon);
+        }
+
+        j = strlen(entry);
+        if (stringlength + j > 1024) {
+            break;
+        }
+
+        strcpy(string + stringlength, entry);
+        stringlength += j;
+    }
+
+    SV_GameSendServerCommand(ent - g_entities, SV_CMD_RELIABLE,
+        va("%c %i %i %i%s", 98, i, level.teamScores[TEAM_AXIS],
+            level.teamScores[TEAM_ALLIES], string));
 }
 
 /* line 66 */
@@ -166,128 +101,54 @@ void Cmd_Score_f(gentity_t *ent)
 }
 
 /* line 77 */
-__attribute__((naked))
 qboolean CheatsOk(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ent */
-        "movl imp_g_cheats, %eax\n" /* line 79 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1a2e2c_001a2e58\n"
-        "movl 0x194(%ebx), %edx\n" /* line 84 | ent */
-        "testl %edx, %edx\n"
-        "jle .Lf1a2e2c_001a2e97\n"
-        "movl $1, %eax\n"
-        "addl $0x14, %esp\n" /* line 90 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1a2e2c_001a2e58:\n"
-        "movl $0x65, 4(%esp)\n" /* line 81 */
-        "movl $str_002b3620, (%esp)\n" /* "%c "GAME_CHEATSNOTENABLED"" */
-        ".Lf1a2e2c_001a2e67:\n"
-        "calll va\n" /* line 86 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "subl imp_g_entities, %ebx\n" /* ent */
-        "sarl $4, %ebx\n" /* ent */
-        "imull $0x8af8af8b, %ebx, %eax\n" /* ent */
-        "movl %eax, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        "xorl %eax, %eax\n"
-        "addl $0x14, %esp\n" /* line 90 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1a2e2c_001a2e97:\n"
-        "movl $0x65, 4(%esp)\n" /* line 86 */
-        "movl $str_002b363c, (%esp)\n" /* "%c "GAME_MUSTBEALIVECOMMAND"" */
-        "jmp .Lf1a2e2c_001a2e67\n"
-    );
+    if (!g_cheats->current.enabled) {
+        SV_GameSendServerCommand(ent - g_entities, SV_CMD_CAN_IGNORE,
+            va("%c \"GAME_CHEATSNOTENABLED\"", 101));
+        return 0;
+    }
+
+    if (ent->health <= 0) {
+        SV_GameSendServerCommand(ent - g_entities, SV_CMD_CAN_IGNORE,
+            va("%c \"GAME_MUSTBEALIVECOMMAND\"", 101));
+        return 0;
+    }
+
+    return 1;
 }
 
 /* line 98 */
-__attribute__((naked))
 char * ConcatArgs(int start)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 98 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        /* { scope 1 */
-        "calll SV_Cmd_Argc\n" /* line 106 */
-        "cmpl 8(%ebp), %eax\n" /* line 107 | start */
-        "jg .Lf1a2ea8_001a2ee5\n"
-        "movl $0, -0x41c(%ebp)\n" /* len */
-        ".Lf1a2ea8_001a2ec8:\n"
-        "movl -0x41c(%ebp), %eax\n" /* line 124 | len */
-        "movb $0, line(%eax)\n"
-        /* } scope */
-        "movl $line, %eax\n" /* line 127 */
-        "addl $0x42c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a2ea8_001a2ee5:\n"
-        "movl 8(%ebp), %ebx\n" /* line 107 | start, i */
-        "movl $0, -0x41c(%ebp)\n" /* len */
-        "leal -0x418(%ebp), %esi\n" /* arg */
-        "movl %eax, -0x424(%ebp)\n"
-        "subl $1, %eax\n"
-        "movl %eax, -0x420(%ebp)\n"
-        ".Lf1a2ea8_001a2f07:\n"
-        "movl $0x400, 8(%esp)\n" /* line 109 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* i */
-        "calll SV_Cmd_ArgvBuffer\n"
-        "cld\n" /* line 110 */
-        "movl $0xffffffff, %ecx\n"
-        "movl %esi, %edi\n"
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %edx\n"
-        "movl -0x41c(%ebp), %edi\n" /* line 111 | len */
-        "addl %edx, %edi\n"
-        "cmpl $0x3fe, %edi\n"
-        "jg .Lf1a2ea8_001a2ec8\n"
-        "movl -0x41c(%ebp), %eax\n" /* line 115 | len */
-        "addl $line, %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "cmpl -0x420(%ebp), %ebx\n" /* line 117 | i */
-        "je .Lf1a2ea8_001a2f69\n"
-        "movb $0x20, line(%edi)\n" /* line 119 */
-        "addl $1, %edi\n" /* line 120 */
-        ".Lf1a2ea8_001a2f69:\n"
-        "movl %edi, -0x41c(%ebp)\n" /* len */
-        "addl $1, %ebx\n" /* line 107 | i */
-        "cmpl %ebx, -0x424(%ebp)\n" /* i */
-        "jne .Lf1a2ea8_001a2f07\n"
-        "movl -0x41c(%ebp), %eax\n" /* line 124 | len */
-        "movb $0, line(%eax)\n"
-        /* } scope */
-        "movl $line, %eax\n" /* line 127 */
-        "addl $0x42c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char arg[1024];
+    int argc;
+    int i;
+    int len;
+    int tlen;
+
+    argc = SV_Cmd_Argc();
+    len = 0;
+
+    for (i = start; i < argc; ++i) {
+        SV_Cmd_ArgvBuffer(i, arg, sizeof(arg));
+        tlen = strlen(arg);
+
+        if (len + tlen >= (int)sizeof(line) - 1) {
+            break;
+        }
+
+        memcpy(line + len, arg, tlen);
+        len += tlen;
+
+        if (i != argc - 1) {
+            line[len] = ' ';
+            ++len;
+        }
+    }
+
+    line[len] = '\0';
+    return line;
 }
 
 /* line 217 */
@@ -3445,4 +3306,3 @@ void ClientCommand(int clientNum)
         "jmp .Lf1a53ec_001a54b3\n"
     );
 }
-

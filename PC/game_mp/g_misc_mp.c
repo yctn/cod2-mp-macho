@@ -46,6 +46,30 @@ extern qboolean IsItemRegistered(unsigned int item);
 extern SoundAlias G_SoundAliasIndex(const char *name);
 extern void G_DObjUpdate(gentity_t *ent);
 extern void G_SetAngle(gentity_t *ent, const vec_t *angles);
+extern struct level_locals_t level;
+extern struct bgs_t level_bgs;
+extern void Com_Printf(const char *fmt, ...);
+extern qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, unsigned int tagName, vec3_t *tagMat);
+extern void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin);
+extern void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up);
+extern int G_TraceCapsule(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask);
+extern void Weapon_RocketLauncher_Fire(gentity_t *ent, float spread, weaponParms *wp);
+extern void Bullet_Fire(gentity_t *attacker, float spread, weaponParms *wp, gentity_t *weaponEnt, int gametime);
+extern const char *SL_ConvertToString(unsigned int stringValue);
+extern float vectosignedyaw(const vec3_t vec);
+extern void VectorAngleMultiply(vec3_t vec, float angle);
+extern float RotationToYaw(const vec2_t rot);
+extern void YawToAxis(float yaw, vec3_t axis[3]);
+extern void MatrixMultiply43(const vec_t *in1, const vec_t *in2, vec_t *out);
+extern void AxisToAngles(const vec_t *axis, vec_t *angles);
+extern void ConvertQuatToMat(const DObjAnimMat *mat, float axis[3][3]);
+extern void XAnimClearTreeGoalWeightsStrict(XAnimTree_s *tree, unsigned int animIndex, float blendTime);
+extern int XAnimGetNumChildren(const XAnim_s *anims, unsigned int animIndex);
+extern unsigned int XAnimGetChildAt(const XAnim_s *anims, unsigned int animIndex, unsigned int childIndex);
+extern void XAnimSetGoalWeight(XAnimTree_s *tree, unsigned int animIndex, float goalWeight, float goalTime, float rate, unsigned int notifyName, unsigned int notifyType, int bRestart);
+extern void XAnimCalcAbsDelta(XAnimTree_s *tree, unsigned int animIndex, float *rot, float *trans);
+extern float XAnimGetWeight(const XAnimTree_s *tree, unsigned int animIndex);
+extern const char *XAnimGetAnimDebugName(const XAnim_s *anims, unsigned int animIndex);
 
 extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
@@ -57,7 +81,9 @@ enum {
     GMISC_EV_STANCE_FORCE_CROUCH = 0x8d,
     GMISC_EV_STANCE_FORCE_PRONE = 0x8e,
     GMISC_ENTITYNUM_NONE = 0x3ff,
+    GMISC_ENTITYNUM_WORLD = 0x3fe,
     GMISC_EF_FIRING = 0x40,
+    GMISC_EF_TELEPORT_BIT = 0x2,
     GMISC_PMF_PRONE = 0x1,
     GMISC_PMF_DUCKED = 0x2,
     GMISC_EF_TURRET_PRONE = 0x100,
@@ -69,11 +95,85 @@ enum {
     GMISC_CONTENTS_SOLID = 0x1,
     GMISC_CONTENTS_NONCOLLIDING = 0x4,
     GMISC_CONTENTS_DONOTENTER = 0x200000,
-    GMISC_TURRET_TRACE_MASK = 0x811
+    GMISC_TURRET_TRACE_MASK = 0x811,
+    GMISC_MASK_PLAYERSOLID = 0x2810011,
+    GMISC_PLAYERVIEWLOCK_FULL = 0x1,
+    GMISC_PLAYERVIEWLOCK_WEAPONJITTER = 0x2,
+    GMISC_BUTTON_ATTACK = 0x1,
+    GMISC_PMOVE_HANDLER_SERVER = 0x1,
+    GMISC_DEFAULT_VIEWHEIGHT = 60,
+    GMISC_ANIM_TOGGLEBIT = 0x200,
+    GMISC_EV_FIRE_WEAPON_MG42 = 0xaf
 };
 
 /* `pitchCap` is the generated name for the reference field `triggerDown`. */
 #define GMISC_TRIGGER_DOWN(info) ((info)->pitchCap)
+
+static const vec3_t g_misc_vec3_origin = {0.0f, 0.0f, 0.0f};
+
+static inline float GMisc_Fabs(float value)
+{
+    return value < 0.0f ? -value : value;
+}
+
+static inline float GMisc_Clamp(float value, float minValue, float maxValue)
+{
+    if (value < minValue) {
+        return minValue;
+    }
+
+    if (value > maxValue) {
+        return maxValue;
+    }
+
+    return value;
+}
+
+static inline void GMisc_VectorCopy(const vec_t *src, vec_t *dst)
+{
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+}
+
+static inline void GMisc_VectorSubtract(const vec_t *a, const vec_t *b, vec_t *out)
+{
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+}
+
+static inline float GMisc_DotProduct(const vec_t *a, const vec_t *b)
+{
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+static inline void GMisc_VectorMA(const vec_t *base, float scale, const vec_t *dir, vec_t *out)
+{
+    out[0] = base[0] + scale * dir[0];
+    out[1] = base[1] + scale * dir[1];
+    out[2] = base[2] + scale * dir[2];
+}
+
+static inline void GMisc_Vec3Lerp(const vec_t *start, const vec_t *end, float fraction, vec_t *out)
+{
+    out[0] = start[0] + (end[0] - start[0]) * fraction;
+    out[1] = start[1] + (end[1] - start[1]) * fraction;
+    out[2] = start[2] + (end[2] - start[2]) * fraction;
+}
+
+static inline float GMisc_XAnimGoalTime(const XAnimTree_s *tree, unsigned int animIndex, float goalWeight)
+{
+    float delta;
+
+    delta = GMisc_Fabs(XAnimGetWeight(tree, animIndex) - goalWeight) * (1000.0f / level.frametime);
+    return delta > 0.0f ? 1.0f / delta : 0.0f;
+}
+
+static inline void GMisc_XAnimSetGoalWeight(XAnimTree_s *tree, unsigned int animIndex, float goalWeight, float goalTime)
+{
+    XAnimSetGoalWeight(tree, animIndex, goalWeight, goalTime, 1.0f, 0, 0, 0);
+}
 
 void SP_info_null(gentity_t *self);
 void SP_info_notnull(gentity_t *self);
@@ -705,1031 +805,287 @@ void SP_turret(gentity_t *self)
 }
 
 /* line 577 */
-__attribute__((naked))
+static void turret_clientaim(gentity_t *self, gentity_t *other)
+{
+    playerState_t *ps;
+    turretInfo_s *info;
+
+    info = self->pTurretInfo;
+    ps = &other->client->ps;
+
+    ps->viewlocked = GMISC_PLAYERVIEWLOCK_FULL;
+    ps->viewlocked_entNum = self->s.number;
+
+    self->s.angles2[0] = GMisc_Clamp(AngleSubtract(ps->viewangles[0], self->r.currentAngles[0]), info->arcmin[0], info->arcmax[0]);
+    self->s.angles2[1] = GMisc_Clamp(AngleSubtract(ps->viewangles[1], self->r.currentAngles[1]), info->arcmin[1], info->arcmax[1]);
+    self->s.angles2[2] = 0.0f;
+
+    if (info->flags & 0x800) {
+        info->flags &= ~0x800u;
+        self->s.eFlags ^= GMISC_EF_TELEPORT_BIT;
+    }
+}
+
+static void Turret_FillWeaponParms(gentity_t *ent, gentity_t *activator, weaponParms *wp)
+{
+    vec3_t diff;
+    vec3_t playerPos;
+    float flashTag[4][3];
+
+    if (!G_DObjGetWorldTagMatrix(ent, ((scr_const_t *)imp_scr_const)->tag_flash, (vec3_t *)flashTag)) {
+        Com_Error(1, "Couldn't find %s on turret (entity %d, classname '%s').\n",
+            "tag_flash", ent->s.number, SL_ConvertToString(ent->classname));
+    }
+
+    G_GetPlayerViewOrigin(activator, playerPos);
+    G_GetPlayerViewDirection(activator, wp->forward, wp->right, wp->up);
+
+    GMisc_VectorCopy(wp->forward, wp->gunForward);
+    GMisc_VectorSubtract(flashTag[3], playerPos, diff);
+    GMisc_VectorMA(playerPos, Vec3Normalize(diff), wp->forward, wp->muzzleTrace);
+}
+
+static void G_PlayerTurretPositionAndBlend(gentity_t *ent, gentity_t *pTurretEnt)
+{
+    float axis[4][3];
+    clientInfo_t *ci;
+    float fBlend;
+    float fDelta;
+    float fHeightRatio;
+    float fPrevBlend;
+    float fPrevTransZ;
+    unsigned int baseAnim;
+    unsigned int heightAnim;
+    int i;
+    int iBlend;
+    int iPrevBlend;
+    unsigned int leafAnim1;
+    unsigned int leafAnim2;
+    float localAxis[4][3];
+    float localYaw;
+    int numHorChildren;
+    int numVertChildren;
+    XAnimTree_s *pAnimTree;
+    lerpFrame_t *pLerpAnim;
+    XAnim_s *pXAnims;
+    trace_t trace;
+    vec2_t rot;
+    vec3_t end;
+    vec3_t endPos;
+    DObjAnimMat_s *tagMat;
+    vec3_t start;
+    vec3_t tagAxis[3];
+    float tagHeight;
+    vec3_t trans;
+    float turretAxis[4][3];
+    vec3_t vDelta;
+    WeaponDef *weapDef;
+
+    ci = &level_bgs.clientinfo[ent->s.clientNum];
+    pLerpAnim = &ci->legs;
+
+    if (!pLerpAnim->animationNumber || !pLerpAnim->animation || !(pLerpAnim->animation->flags & 4)) {
+        return;
+    }
+
+    tagMat = G_DObjGetLocalTagMatrix(pTurretEnt, ((scr_const_t *)imp_scr_const)->tag_weapon);
+    if (!tagMat) {
+        Com_Printf("WARNING: aborting player positioning on turret since 'tag_weapon' does not exist\n");
+        return;
+    }
+
+    weapDef = BG_GetWeaponDef(pTurretEnt->s.weapon);
+    pAnimTree = ci->pXAnimTree;
+    pXAnims = level_bgs.animScriptData.animTree.anims;
+    baseAnim = pLerpAnim->animationNumber & ~GMISC_ANIM_TOGGLEBIT;
+
+    ConvertQuatToMat(tagMat, tagAxis);
+    localYaw = vectosignedyaw(tagAxis[0]);
+
+    AnglesToAxis(pTurretEnt->r.currentAngles, (vec_t *)turretAxis);
+    GMisc_VectorCopy(pTurretEnt->r.currentOrigin, turretAxis[3]);
+    GMisc_VectorSubtract(ent->r.currentOrigin, turretAxis[3], vDelta);
+
+    tagHeight = GMisc_DotProduct(vDelta, turretAxis[2]);
+    fDelta = tagHeight - tagMat->trans[2];
+
+    XAnimClearTreeGoalWeightsStrict(pAnimTree, baseAnim, 0.0f);
+
+    numVertChildren = XAnimGetNumChildren(pXAnims, baseAnim);
+    if (!numVertChildren) {
+        Com_Error(1, "Player anim '%s' has no children", XAnimGetAnimDebugName(pXAnims, baseAnim));
+    }
+
+    fPrevTransZ = 0.0f;
+    fPrevBlend = 0.0f;
+    iPrevBlend = 0;
+    leafAnim2 = 0;
+    i = 0;
+
+    do {
+        heightAnim = XAnimGetChildAt(pXAnims, baseAnim, i);
+        GMisc_XAnimSetGoalWeight(pAnimTree, heightAnim, 1.0f, 1.0f);
+
+        numHorChildren = XAnimGetNumChildren(pXAnims, heightAnim);
+        if (!numHorChildren) {
+            Com_Error(1, "Player anim '%s' has no children", XAnimGetAnimDebugName(pXAnims, heightAnim));
+        }
+
+        fBlend = (float)numHorChildren * 0.5f - localYaw / weapDef->fAnimHorRotateInc;
+        if (fBlend < 0.0f) {
+            fBlend = 0.0f;
+        } else if (fBlend >= (float)(numHorChildren - 1)) {
+            fBlend = (float)(numHorChildren - 1);
+        }
+
+        iBlend = (int)fBlend;
+        fBlend -= (float)iBlend;
+
+        leafAnim1 = XAnimGetChildAt(pXAnims, heightAnim, iBlend);
+        GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim1, 1.0f - fBlend, 1.0f);
+
+        if (fBlend != 0.0f) {
+            leafAnim2 = XAnimGetChildAt(pXAnims, heightAnim, iBlend + 1);
+            GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim2, fBlend, 1.0f);
+        }
+
+        XAnimCalcAbsDelta(pAnimTree, heightAnim, rot, trans);
+        if (trans[2] >= fDelta) {
+            break;
+        }
+
+        fPrevTransZ = trans[2];
+        iPrevBlend = iBlend;
+        fPrevBlend = fBlend;
+        ++i;
+    } while (i < numVertChildren);
+
+    XAnimClearTreeGoalWeightsStrict(pAnimTree, baseAnim, 0.0f);
+    GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim1, 1.0f - fBlend, GMisc_XAnimGoalTime(pAnimTree, leafAnim1, 1.0f - fBlend));
+
+    if (fBlend != 0.0f) {
+        GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim2, fBlend, GMisc_XAnimGoalTime(pAnimTree, leafAnim2, fBlend));
+    }
+
+    if (!i || i == numVertChildren) {
+        GMisc_XAnimSetGoalWeight(pAnimTree, heightAnim, 1.0f, GMisc_XAnimGoalTime(pAnimTree, heightAnim, 1.0f));
+    } else {
+        fHeightRatio = (fDelta - fPrevTransZ) / (trans[2] - fPrevTransZ);
+        GMisc_XAnimSetGoalWeight(pAnimTree, heightAnim, fHeightRatio, GMisc_XAnimGoalTime(pAnimTree, heightAnim, fHeightRatio));
+
+        heightAnim = XAnimGetChildAt(pXAnims, baseAnim, i - 1);
+        GMisc_XAnimSetGoalWeight(pAnimTree, heightAnim, 1.0f - fHeightRatio, GMisc_XAnimGoalTime(pAnimTree, heightAnim, 1.0f - fHeightRatio));
+
+        leafAnim1 = XAnimGetChildAt(pXAnims, heightAnim, iPrevBlend);
+        GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim1, 1.0f - fPrevBlend, GMisc_XAnimGoalTime(pAnimTree, leafAnim1, 1.0f - fPrevBlend));
+
+        if (fPrevBlend != 0.0f) {
+            leafAnim2 = XAnimGetChildAt(pXAnims, heightAnim, iPrevBlend + 1);
+            GMisc_XAnimSetGoalWeight(pAnimTree, leafAnim2, fPrevBlend, GMisc_XAnimGoalTime(pAnimTree, leafAnim2, fPrevBlend));
+        }
+    }
+
+    XAnimCalcAbsDelta(pAnimTree, baseAnim, rot, trans);
+    VectorAngleMultiply(trans, localYaw);
+
+    localAxis[3][0] = trans[0] + tagMat->trans[0];
+    localAxis[3][1] = trans[1] + tagMat->trans[1];
+    localAxis[3][2] = tagHeight;
+
+    YawToAxis(RotationToYaw(rot) + localYaw, localAxis);
+    MatrixMultiply43((vec_t *)localAxis, (vec_t *)turretAxis, (vec_t *)axis);
+
+    GMisc_VectorCopy(axis[3], ent->client->ps.origin);
+    GMisc_VectorCopy(ent->client->ps.origin, start);
+    GMisc_VectorCopy(ent->client->ps.origin, end);
+
+    start[2] += ent->client->ps.viewHeightCurrent;
+    end[2] -= GMISC_DEFAULT_VIEWHEIGHT;
+
+    G_TraceCapsule(&trace, start, g_misc_vec3_origin, g_misc_vec3_origin, end, ent->s.number, GMISC_MASK_PLAYERSOLID);
+    if (trace.fraction < 1.0f) {
+        GMisc_Vec3Lerp(start, end, trace.fraction, endPos);
+        ent->client->ps.origin[2] = endPos[2];
+    }
+
+    BG_PlayerStateToEntityState(&ent->client->ps, ent, 1, GMISC_PMOVE_HANDLER_SERVER);
+    GMisc_VectorCopy(ent->client->ps.origin, ent->r.currentOrigin);
+
+    AxisToAngles((vec_t *)axis, ent->r.currentAngles);
+    SV_LinkEntity(ent);
+}
+
+static void Fire_Lead(gentity_t *ent, gentity_t *activator)
+{
+    weaponParms wp;
+
+    if (activator == &((gentity_t *)imp_g_entities)[GMISC_ENTITYNUM_NONE]) {
+        activator = &((gentity_t *)imp_g_entities)[GMISC_ENTITYNUM_WORLD];
+    }
+
+    Turret_FillWeaponParms(ent, activator, &wp);
+    wp.weapDef = BG_GetWeaponDef(ent->s.weapon);
+
+    if (wp.weapDef->weapType) {
+        Weapon_RocketLauncher_Fire(ent, 0.0f, &wp);
+    } else {
+        Bullet_Fire(activator, ent->pTurretInfo->playerSpread, &wp, ent, level.time);
+    }
+
+    G_AddEvent(ent, GMISC_EV_FIRE_WEAPON_MG42, activator->s.number);
+}
+
+static void turret_shoot_internal(gentity_t *self, gentity_t *other)
+{
+    self->pTurretInfo->fireSndDelay = 3 * BG_GetWeaponDef(self->s.weapon)->iFireTime;
+
+    if (other->client) {
+        Fire_Lead(self, other);
+        other->client->ps.viewlocked = GMISC_PLAYERVIEWLOCK_WEAPONJITTER;
+    }
+}
+
+static void turret_track(gentity_t *self, gentity_t *other)
+{
+    turretInfo_s *info;
+    WeaponDef *weapDef;
+
+    info = self->pTurretInfo;
+
+    turret_clientaim(self, other);
+    G_PlayerTurretPositionAndBlend(other, self);
+
+    weapDef = BG_GetWeaponDef(self->s.weapon);
+
+    other->client->ps.viewlocked = GMISC_PLAYERVIEWLOCK_FULL;
+    self->s.eFlags &= ~GMISC_EF_FIRING;
+    info->fireTime -= 50;
+
+    if (info->fireTime > 0) {
+        return;
+    }
+
+    info->fireTime = 0;
+    if (!(other->client->buttons & GMISC_BUTTON_ATTACK)) {
+        return;
+    }
+
+    info->fireTime = weapDef->iFireTime;
+    turret_shoot_internal(self, other);
+    self->s.eFlags |= GMISC_EF_FIRING;
+}
+
 void turret_think_client(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 577 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1cc, %esp\n"
-        "movl 8(%ebp), %edi\n" /* self */
-        /* { scope 1: pTurretInfo */
-        "movl 0x150(%edi), %eax\n" /* line 581 | self */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %esi\n"
-        "subl %eax, %esi\n"
-        "shll $4, %esi\n"
-        "addl imp_g_entities, %esi\n"
-        "cmpb $1, 0x162(%esi)\n" /* line 585 */
-        "je .Lf1bac12_001bac58\n"
-        ".Lf1bac12_001bac45:\n"
-        "movl %edi, (%esp)\n" /* line 593 | self */
-        "calll G_ClientStopUsingTurret\n"
-        /* } scope */
-        ".Lf1bac12_001bac4d:\n"
-        "addl $0x1cc, %esp\n" /* line 594 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: pTurretInfo */
-        ".Lf1bac12_001bac58:\n"
-        "movl 0x158(%esi), %ebx\n" /* line 585 | owner */
-        "movl 0x26a8(%ebx), %eax\n" /* owner */
-        "testl %eax, %eax\n"
-        "jne .Lf1bac12_001bac45\n"
-        /* { scope 2: i, numVertChildren, iPrevBlend, ci, ... */
-        "movl 0x15c(%edi), %eax\n" /* line 461 */
-        "movl %eax, -0x1a4(%ebp)\n" /* pTurretInfo */
-        "movl $1, 0x590(%ebx)\n" /* line 421 | pLerpAnim */
-        "movl (%edi), %eax\n" /* line 422 */
-        "movl %eax, 0x594(%ebx)\n" /* pLerpAnim */
-        "movl 0x144(%edi), %eax\n" /* line 424 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xe8(%ebx), %eax\n" /* pLerpAnim */
-        "movl %eax, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm0\n"
-        "movss %xmm0, 0x68(%edi)\n"
-        "movl -0x1a4(%ebp), %edx\n" /* line 425 | pTurretInfo */
-        "movss 0x14(%edx), %xmm2\n"
-        "movss 0xc(%edx), %xmm3\n"
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm5, %xmm5\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm5, %xmm1\n"
-        "andps %xmm1, %xmm4\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm4, %xmm1\n"
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm3, %xmm4\n"
-        "cmpnltss %xmm5, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x68(%edi)\n" /* line 425 */
-        "movl 0x148(%edi), %eax\n" /* line 427 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xec(%ebx), %eax\n" /* pLerpAnim */
-        "movl %eax, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm0\n"
-        "movss %xmm0, 0x6c(%edi)\n"
-        "movl -0x1a4(%ebp), %eax\n" /* line 428 | pTurretInfo */
-        "movss 0x18(%eax), %xmm2\n"
-        "movss 0x10(%eax), %xmm3\n"
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm5, %xmm5\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm5, %xmm1\n"
-        "andps %xmm1, %xmm4\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm4, %xmm1\n"
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm3, %xmm4\n"
-        "cmpnltss %xmm5, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x6c(%edi)\n" /* line 428 */
-        "movl $0, 0x70(%edi)\n" /* line 430 */
-        "movl -0x1a4(%ebp), %edx\n" /* line 432 | pTurretInfo */
-        "movl 4(%edx), %eax\n"
-        "testb $8, %ah\n"
-        "je .Lf1bac12_001bad93\n"
-        "andb $0xf7, %ah\n" /* line 434 */
-        "movl %eax, 4(%edx)\n"
-        "xorl $2, 8(%edi)\n" /* line 435 */
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        ".Lf1bac12_001bad93:\n"
-        "movl 0x90(%esi), %eax\n" /* line 237 */
-        "leal (%eax, %eax, 4), %ecx\n"
-        "movl %ecx, %edx\n"
-        "shll $4, %edx\n"
-        "subl %ecx, %edx\n"
-        "leal (%eax, %edx, 2), %edx\n"
-        "movl imp_level_bgs, %ecx\n"
-        "movl %ecx, -0x1a8(%ebp)\n"
-        "leal 0xb3bf0(%ecx, %edx, 8), %edx\n"
-        "leal 0xc(%edx), %eax\n"
-        "movl %eax, -0x188(%ebp)\n" /* ci */
-        "leal 0x38c(%edx), %ebx\n" /* line 241 | pLerpAnim */
-        "movl 0x10(%ebx), %eax\n" /* line 242 | pLerpAnim */
-        "testl %eax, %eax\n"
-        "je .Lf1bac12_001bade0\n"
-        "movl 0x14(%ebx), %eax\n" /* pLerpAnim */
-        "testl %eax, %eax\n"
-        "je .Lf1bac12_001bade0\n"
-        "testb $4, 0x50(%eax)\n"
-        "jne .Lf1bac12_001bae7a\n"
-        /* } scope */
-        ".Lf1bac12_001bade0:\n"
-        "movl 0xc8(%edi), %eax\n" /* line 472 */
-        "movl %eax, (%esp)\n"
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %edx\n"
-        "movl 0x158(%esi), %eax\n" /* line 474 */
-        "movl $1, 0x590(%eax)\n"
-        "andl $0xffffffbf, 8(%edi)\n" /* line 475 */
-        "movl -0x1a4(%ebp), %ecx\n" /* line 477 | pTurretInfo */
-        "movl 8(%ecx), %eax\n"
-        "subl $0x32, %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "testl %eax, %eax\n" /* line 479 */
-        "jle .Lf1bac12_001bb355\n"
-        /* } scope */
-        /* { scope 2: i, numVertChildren, iPrevBlend, ci, ... */
-        ".Lf1bac12_001bae1b:\n"
-        "movl 0x15c(%edi), %edx\n" /* line 503 */
-        "movl $0, 0x84(%edi)\n" /* line 506 */
-        "movl 0x28(%edx), %ecx\n" /* line 507 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1bac12_001bac4d\n"
-        "movzbl 0x40(%edx), %eax\n" /* line 509 */
-        "movl %eax, 0x84(%edi)\n"
-        "movl 0x28(%edx), %eax\n" /* line 511 */
-        "subl $0x32, %eax\n"
-        "movl %eax, 0x28(%edx)\n"
-        "testl %eax, %eax\n" /* line 513 */
-        "jg .Lf1bac12_001bac4d\n"
-        "cmpb $0, 0x42(%edx)\n"
-        "je .Lf1bac12_001bac4d\n"
-        "movl $0, 0x84(%edi)\n" /* line 515 */
-        "movzbl 0x42(%edx), %eax\n" /* line 516 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll G_PlaySoundAlias\n"
-        "jmp .Lf1bac12_001bac4d\n"
-        /* } scope */
-        /* { scope 2: i, numVertChildren, iPrevBlend, ci, ... */
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        ".Lf1bac12_001bae7a:\n"
-        "movl imp_scr_const, %eax\n" /* line 245 */
-        "movzwl 0x98(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll G_DObjGetLocalTagMatrix\n"
-        "movl %eax, -0x168(%ebp)\n" /* tagMat */
-        "testl %eax, %eax\n" /* line 246 */
-        "je .Lf1bac12_001bbe74\n"
-        "movl 0xc8(%edi), %eax\n" /* line 253 */
-        "movl %eax, (%esp)\n"
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, -0x184(%ebp)\n" /* weapDef */
-        "movl -0x188(%ebp), %eax\n" /* line 257 | ci */
-        "movl 0x4a4(%eax), %eax\n"
-        "movl %eax, -0x164(%ebp)\n" /* pAnimTree */
-        "movl -0x1a8(%ebp), %edx\n" /* line 258 */
-        "movl 0xb3bb4(%edx), %edx\n"
-        "movl %edx, -0x160(%ebp)\n" /* pXAnims */
-        "movl 0x10(%ebx), %ebx\n" /* line 259 | pLerpAnim */
-        "andb $0xfd, %bh\n" /* pLerpAnim */
-        "movl %ebx, -0x15c(%ebp)\n" /* pLerpAnim, baseAnim */
-        /* { scope 4 */
-        "movl -0x168(%ebp), %ecx\n" /* line 306 | tagMat */
-        "movss 0x1c(%ecx), %xmm1\n" /* scale */
-        /* { scope 5 */
-        "movaps %xmm1, %xmm3\n" /* line 272 */
-        "mulss (%ecx), %xmm3\n"
-        "movaps %xmm1, %xmm6\n" /* line 273 */
-        "mulss 4(%ecx), %xmm6\n"
-        "mulss 8(%ecx), %xmm1\n" /* line 274 */
-        /* } scope */
-        "movaps %xmm3, %xmm0\n" /* line 308 */
-        "mulss (%ecx), %xmm0\n"
-        "movss %xmm0, -0x14c(%ebp)\n" /* xx */
-        "movss 4(%ecx), %xmm5\n" /* line 309 */
-        "movaps %xmm3, %xmm4\n"
-        "mulss %xmm5, %xmm4\n"
-        "movss 8(%ecx), %xmm2\n" /* line 310 */
-        "movaps %xmm3, %xmm7\n"
-        "mulss %xmm2, %xmm7\n"
-        "movss 0xc(%ecx), %xmm0\n" /* line 311 */
-        "mulss %xmm0, %xmm3\n"
-        "mulss %xmm6, %xmm5\n" /* line 313 */
-        "movss %xmm5, -0x148(%ebp)\n" /* yy */
-        "movaps %xmm6, %xmm5\n" /* line 314 */
-        "mulss %xmm2, %xmm5\n"
-        "mulss %xmm0, %xmm6\n" /* line 315 */
-        "mulss %xmm1, %xmm2\n" /* line 317 */
-        "mulss %xmm0, %xmm1\n" /* line 318 */
-        "movss %xmm1, -0x1b0(%ebp)\n" /* zw */
-        "movss -0x148(%ebp), %xmm0\n" /* line 320 | yy */
-        "addss %xmm2, %xmm0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x8c(%ebp)\n" /* tagAxis */
-        "movss -0x1b0(%ebp), %xmm0\n" /* line 321 | zw */
-        "addss %xmm4, %xmm0\n"
-        "movss %xmm0, -0x88(%ebp)\n"
-        "movaps %xmm7, %xmm0\n" /* line 322 */
-        "subss %xmm6, %xmm0\n"
-        "movss %xmm0, -0x84(%ebp)\n"
-        "subss -0x1b0(%ebp), %xmm4\n" /* line 324 | zw */
-        "movss %xmm4, -0x80(%ebp)\n"
-        "addss -0x14c(%ebp), %xmm2\n" /* line 325 | xx */
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, -0x7c(%ebp)\n"
-        "movaps %xmm3, %xmm0\n" /* line 326 */
-        "addss %xmm5, %xmm0\n"
-        "movss %xmm0, -0x78(%ebp)\n"
-        "addss %xmm6, %xmm7\n" /* line 328 */
-        "movss %xmm7, -0x74(%ebp)\n"
-        "subss %xmm3, %xmm5\n" /* line 329 */
-        "movss %xmm5, -0x70(%ebp)\n"
-        "movss -0x14c(%ebp), %xmm2\n" /* line 330 | xx */
-        "addss -0x148(%ebp), %xmm2\n" /* yy */
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, -0x6c(%ebp)\n"
-        /* } scope */
-        "leal -0x8c(%ebp), %eax\n" /* line 262 | tagAxis */
-        "movl %eax, (%esp)\n"
-        "calll vectosignedyaw\n"
-        "fstps -0x180(%ebp)\n" /* localYaw */
-        "leal -0xbc(%ebp), %eax\n" /* line 264 | turretAxis */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x144(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll AnglesToAxis\n"
-        "leal 0x138(%edi), %edx\n"
-        /* { scope 4 */
-        "movl 0x138(%edi), %eax\n" /* line 199 */
-        "movl %eax, -0x98(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x94(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x90(%ebp)\n"
-        /* } scope */
-        "leal 0x138(%esi), %edx\n" /* line 267 */
-        "movl %edx, -0x1a0(%ebp)\n"
-        "movss 0x138(%esi), %xmm0\n" /* line 304 */
-        "subss -0x98(%ebp), %xmm0\n"
-        "mulss -0xa4(%ebp), %xmm0\n"
-        "movss %xmm0, -0x16c(%ebp)\n" /* tagHeight */
-        "movss 4(%edx), %xmm0\n"
-        "subss -0x94(%ebp), %xmm0\n"
-        "mulss -0xa0(%ebp), %xmm0\n"
-        "addss -0x16c(%ebp), %xmm0\n" /* tagHeight */
-        "movss %xmm0, -0x16c(%ebp)\n" /* tagHeight */
-        "movss 8(%edx), %xmm0\n"
-        "subss -0x90(%ebp), %xmm0\n"
-        "mulss -0x9c(%ebp), %xmm0\n"
-        "addss -0x16c(%ebp), %xmm0\n" /* tagHeight */
-        "movss %xmm0, -0x16c(%ebp)\n" /* tagHeight */
-        "movl -0x168(%ebp), %eax\n" /* line 269 | tagMat */
-        "subss 0x18(%eax), %xmm0\n"
-        "movss %xmm0, -0x17c(%ebp)\n" /* fDelta */
-        "movl $0, 8(%esp)\n" /* line 271 */
-        "movl -0x15c(%ebp), %edx\n" /* baseAnim */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x164(%ebp), %ecx\n" /* pAnimTree */
-        "movl %ecx, (%esp)\n"
-        "calll XAnimClearTreeGoalWeightsStrict\n"
-        "movl -0x15c(%ebp), %eax\n" /* line 273 | baseAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x160(%ebp), %edx\n" /* pXAnims */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetNumChildren\n"
-        "movl %eax, -0x190(%ebp)\n" /* numVertChildren */
-        "testl %eax, %eax\n" /* line 279 */
-        "je .Lf1bac12_001bbd68\n"
-        ".Lf1bac12_001bb121:\n"
-        "movl $0, -0x174(%ebp)\n" /* line 280 | fPrevBlend */
-        "pxor %xmm0, %xmm0\n"
-        "movss %xmm0, -0x140(%ebp)\n"
-        "movl $0, -0x18c(%ebp)\n" /* iPrevBlend */
-        "movl $0, -0x154(%ebp)\n" /* leafAnim2 */
-        "movl $0, -0x194(%ebp)\n" /* i */
-        "jmp .Lf1bac12_001bb27a\n"
-        ".Lf1bac12_001bb15a:\n"
-        "cvttss2si %xmm1, %ebx\n" /* line 296 | pLerpAnim */
-        ".Lf1bac12_001bb15e:\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 300 | pLerpAnim */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x13c(%ebp)\n"
-        "movl %ebx, 8(%esp)\n" /* line 302 | pLerpAnim */
-        "movl -0x150(%ebp), %eax\n" /* heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x160(%ebp), %edx\n" /* pXAnims */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, -0x158(%ebp)\n" /* leafAnim1 */
-        "movss lit4_002ed5d0, %xmm0\n" /* line 303 | 1.0f */
-        "subss -0x13c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x19c(%ebp)\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl $0x3f800000, 0xc(%esp)\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movss -0x13c(%ebp), %xmm0\n" /* line 305 */
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
-        "jp .Lf1bac12_001bb553\n"
-        "jne .Lf1bac12_001bb553\n"
-        ".Lf1bac12_001bb203:\n"
-        "leal -0x2c(%ebp), %edx\n" /* line 311 | trans */
-        "movl %edx, 0xc(%esp)\n"
-        "leal -0x20(%ebp), %ecx\n" /* rot */
-        "movl %ecx, 8(%esp)\n"
-        "movl -0x150(%ebp), %eax\n" /* heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimCalcAbsDelta\n"
-        "movss -0x24(%ebp), %xmm0\n" /* line 312 */
-        "movss %xmm0, -0x178(%ebp)\n" /* fPrevTransZ */
-        "ucomiss -0x17c(%ebp), %xmm0\n" /* fDelta */
-        "jae .Lf1bac12_001bbd53\n"
-        "addl $1, -0x194(%ebp)\n" /* line 319 | i */
-        "movl -0x194(%ebp), %eax\n" /* line 283 | i */
-        "cmpl %eax, -0x190(%ebp)\n" /* numVertChildren */
-        "jle .Lf1bac12_001bb605\n"
-        "movss %xmm0, -0x140(%ebp)\n"
-        "movss -0x13c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x174(%ebp)\n" /* fPrevBlend */
-        "movl %ebx, -0x18c(%ebp)\n" /* pLerpAnim, iPrevBlend */
-        ".Lf1bac12_001bb27a:\n"
-        "movl -0x194(%ebp), %eax\n" /* line 285 | i */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x15c(%ebp), %edx\n" /* baseAnim */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x160(%ebp), %ecx\n" /* pXAnims */
-        "movl %ecx, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, -0x150(%ebp)\n" /* heightAnim */
-        "movl $0, 0x1c(%esp)\n" /* line 286 */
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl $0x3f800000, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movl -0x150(%ebp), %edx\n" /* line 288 | heightAnim */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x160(%ebp), %ecx\n" /* pXAnims */
-        "movl %ecx, (%esp)\n"
-        "calll XAnimGetNumChildren\n"
-        "movl %eax, %ebx\n" /* pLerpAnim */
-        "testl %eax, %eax\n" /* line 289 */
-        "je .Lf1bac12_001bb5c5\n"
-        ".Lf1bac12_001bb306:\n"
-        "cvtsi2ssl %ebx, %xmm1\n" /* line 292 | pLerpAnim */
-        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "movss -0x180(%ebp), %xmm0\n" /* localYaw */
-        "movl -0x184(%ebp), %ecx\n" /* weapDef */
-        "divss 0x564(%ecx), %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "pxor %xmm0, %xmm0\n" /* line 294 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf1bac12_001bb5fa\n"
-        "leal -1(%ebx), %eax\n" /* line 296 | pLerpAnim */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf1bac12_001bb15a\n"
-        "cvttss2si %xmm0, %ebx\n" /* pLerpAnim */
-        "movaps %xmm0, %xmm1\n"
-        "jmp .Lf1bac12_001bb15e\n"
-        /* } scope */
-        ".Lf1bac12_001bb355:\n"
-        "movl $0, 8(%ecx)\n" /* line 481 */
-        "movl 0x158(%esi), %eax\n" /* line 483 */
-        "testb $1, 0x27bc(%eax)\n"
-        "je .Lf1bac12_001bae1b\n"
-        "movl 0x204(%edx), %eax\n" /* line 485 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0x15c(%edi), %ebx\n" /* line 445 | pLerpAnim */
-        "movl 0xc8(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_GetWeaponDef\n"
-        "movl 0x204(%eax), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, 0x28(%ebx)\n" /* pLerpAnim */
-        "movl 0x158(%esi), %eax\n" /* line 447 */
-        "testl %eax, %eax\n"
-        "je .Lf1bac12_001bb54a\n"
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        "movl imp_g_entities, %edx\n" /* line 170 */
-        "leal 0x8bdd0(%edx), %eax\n"
-        "cmpl %eax, %esi\n"
-        "je .Lf1bac12_001bbeeb\n"
-        "movl %esi, %ebx\n"
-        /* { scope 4 */
-        ".Lf1bac12_001bb3bc:\n"
-        "leal -0xbc(%ebp), %eax\n" /* line 140 | turretAxis */
-        "movl %eax, 8(%esp)\n"
-        "movl imp_scr_const, %eax\n"
-        "movzwl 0x8c(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll G_DObjGetWorldTagMatrix\n"
-        "testl %eax, %eax\n"
-        "je .Lf1bac12_001bbeb1\n"
-        ".Lf1bac12_001bb3e6:\n"
-        "leal -0x44(%ebp), %eax\n" /* line 143 | end */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll G_GetPlayerViewOrigin\n"
-        "leal -0x114(%ebp), %eax\n" /* line 144 */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x120(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x12c(%ebp), %eax\n" /* axis */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll G_GetPlayerViewDirection\n"
-        "movl -0x12c(%ebp), %eax\n" /* line 199 | axis */
-        "movl %eax, -0xfc(%ebp)\n"
-        "movl -0x128(%ebp), %eax\n" /* line 200 */
-        "movl %eax, -0xf8(%ebp)\n"
-        "movl -0x124(%ebp), %eax\n" /* line 201 */
-        "movl %eax, -0xf4(%ebp)\n"
-        "movss -0x98(%ebp), %xmm0\n" /* line 248 */
-        "subss -0x44(%ebp), %xmm0\n" /* end */
-        "movss %xmm0, -0x2c(%ebp)\n" /* trans */
-        "movss -0x94(%ebp), %xmm0\n" /* line 249 */
-        "subss -0x40(%ebp), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movss -0x90(%ebp), %xmm0\n" /* line 250 */
-        "subss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n"
-        "leal -0x2c(%ebp), %eax\n" /* line 149 | trans */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm1\n"
-        /* { scope 5 */
-        "movaps %xmm1, %xmm0\n" /* line 288 */
-        "mulss -0x12c(%ebp), %xmm0\n" /* axis */
-        "addss -0x44(%ebp), %xmm0\n" /* end */
-        "movss %xmm0, -0x108(%ebp)\n"
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss -0x128(%ebp), %xmm0\n"
-        "addss -0x40(%ebp), %xmm0\n"
-        "movss %xmm0, -0x104(%ebp)\n"
-        "mulss -0x124(%ebp), %xmm1\n" /* line 290 */
-        "addss -0x3c(%ebp), %xmm1\n"
-        "movss %xmm1, -0x100(%ebp)\n"
-        /* } scope */
-        /* } scope */
-        "movl 0xc8(%edi), %eax\n" /* line 174 */
-        "movl %eax, (%esp)\n"
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, -0xf0(%ebp)\n"
-        "movl 0x78(%eax), %eax\n" /* line 176 */
-        "testl %eax, %eax\n"
-        "jne .Lf1bac12_001bbe55\n"
-        "movl imp_level, %eax\n" /* line 179 */
-        "movl 0x1ec(%eax), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %edi, 0xc(%esp)\n"
-        "leal -0x12c(%ebp), %edx\n" /* axis */
-        "movl %edx, 8(%esp)\n"
-        "movl 0x15c(%edi), %eax\n"
-        "movl 0x38(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll Bullet_Fire\n"
-        ".Lf1bac12_001bb524:\n"
-        "movl (%ebx), %eax\n" /* line 184 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0xaf, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll G_AddEvent\n"
-        /* } scope */
-        "movl 0x158(%esi), %eax\n" /* line 451 */
-        "movl $2, 0x590(%eax)\n"
-        ".Lf1bac12_001bb54a:\n"
-        "orl $0x40, 8(%edi)\n" /* line 487 */
-        "jmp .Lf1bac12_001bae1b\n"
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        ".Lf1bac12_001bb553:\n"
-        "leal 1(%ebx), %eax\n" /* line 307 | pLerpAnim */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x150(%ebp), %eax\n" /* heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x160(%ebp), %edx\n" /* pXAnims */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, -0x154(%ebp)\n" /* leafAnim2 */
-        "movl $0, 0x1c(%esp)\n" /* line 308 */
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl $0x3f800000, 0xc(%esp)\n"
-        "movss -0x13c(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "jmp .Lf1bac12_001bb203\n"
-        ".Lf1bac12_001bb5c5:\n"
-        "movl -0x150(%ebp), %eax\n" /* line 290 | heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x160(%ebp), %edx\n" /* pXAnims */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetAnimDebugName\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1bac12_001bb306\n"
-        ".Lf1bac12_001bb5fa:\n"
-        "pxor %xmm1, %xmm1\n" /* line 294 */
-        "xorl %ebx, %ebx\n" /* pLerpAnim */
-        "jmp .Lf1bac12_001bb15e\n"
-        ".Lf1bac12_001bb605:\n"
-        "movss -0x13c(%ebp), %xmm0\n" /* line 283 */
-        "movss %xmm0, -0x174(%ebp)\n" /* fPrevBlend */
-        "movl %ebx, -0x18c(%ebp)\n" /* pLerpAnim, iPrevBlend */
-        ".Lf1bac12_001bb61b:\n"
-        "movl $0, 8(%esp)\n" /* line 322 */
-        "movl -0x15c(%ebp), %eax\n" /* baseAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimClearTreeGoalWeightsStrict\n"
-        "movl -0x158(%ebp), %ecx\n" /* line 324 | leafAnim1 */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "subss -0x19c(%ebp), %xmm2\n"
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 325 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bb6a2\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bb6a2:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x19c(%ebp), %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movl -0x158(%ebp), %eax\n" /* leafAnim1 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movss -0x13c(%ebp), %xmm0\n" /* line 327 */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jp .Lf1bac12_001bbd9d\n"
-        "jne .Lf1bac12_001bbd9d\n"
-        ".Lf1bac12_001bb709:\n"
-        "movl -0x194(%ebp), %eax\n" /* line 333 | i */
-        "testl %eax, %eax\n"
-        "je .Lf1bac12_001bb725\n"
-        "movl -0x190(%ebp), %ecx\n" /* numVertChildren */
-        "cmpl %ecx, -0x194(%ebp)\n" /* i */
-        "jne .Lf1bac12_001bb9cb\n"
-        ".Lf1bac12_001bb725:\n"
-        "movl -0x150(%ebp), %eax\n" /* line 336 | heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "subss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 337 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bb78c\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bb78c:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movl -0x150(%ebp), %ecx\n" /* heightAnim */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        ".Lf1bac12_001bb7d2:\n"
-        "leal -0x2c(%ebp), %edx\n" /* line 365 | trans */
-        "movl %edx, 0xc(%esp)\n"
-        "leal -0x20(%ebp), %ecx\n" /* rot */
-        "movl %ecx, 8(%esp)\n"
-        "movl -0x15c(%ebp), %eax\n" /* baseAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimCalcAbsDelta\n"
-        "movss -0x180(%ebp), %xmm0\n" /* line 366 | localYaw */
-        "movss %xmm0, 4(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n" /* trans */
-        "movl %eax, (%esp)\n"
-        "calll VectorAngleMultiply\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 58 | trans */
-        "movl -0x168(%ebp), %edx\n" /* tagMat */
-        "addss 0x10(%edx), %xmm0\n"
-        "movss %xmm0, -0xc8(%ebp)\n"
-        "leal -0xec(%ebp), %ebx\n" /* line 59 | localAxis */
-        "movss -0x28(%ebp), %xmm0\n"
-        "addss 0x14(%edx), %xmm0\n"
-        "movss %xmm0, -0xc4(%ebp)\n"
-        "movss -0x16c(%ebp), %xmm0\n" /* line 368 | tagHeight */
-        "movss %xmm0, -0xc0(%ebp)\n"
-        "leal -0x20(%ebp), %eax\n" /* line 370 | rot */
-        "movl %eax, (%esp)\n"
-        "calll RotationToYaw\n"
-        "fstps -0x198(%ebp)\n"
-        "movl %ebx, 4(%esp)\n" /* line 372 | pLerpAnim */
-        "movss -0x180(%ebp), %xmm0\n" /* localYaw */
-        "addss -0x198(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll YawToAxis\n"
-        "leal -0x12c(%ebp), %eax\n" /* line 374 | axis */
-        "movl %eax, 8(%esp)\n"
-        "leal -0xbc(%ebp), %edx\n" /* turretAxis */
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* pLerpAnim */
-        "calll MatrixMultiply43\n"
-        "movl 0x158(%esi), %edx\n" /* line 376 */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 4 */
-        "movl -0x108(%ebp), %eax\n" /* line 199 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x104(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x100(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0x158(%esi), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        /* } scope */
-        /* { scope 4 */
-        "movl 0x14(%eax), %eax\n" /* line 199 */
-        "movl %eax, -0x38(%ebp)\n" /* start */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movss 8(%edx), %xmm1\n" /* line 201 */
-        "movss %xmm1, -0x30(%ebp)\n"
-        "movl 0x158(%esi), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        /* } scope */
-        /* { scope 4 */
-        "movl 0x14(%eax), %eax\n" /* line 199 */
-        "movl %eax, -0x44(%ebp)\n" /* end */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x40(%ebp)\n"
-        "movss 8(%edx), %xmm0\n" /* line 201 */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        /* } scope */
-        "movl 0x158(%esi), %eax\n" /* line 382 */
-        "addss 0xf8(%eax), %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n"
-        "subss lit4_002ed7c8, %xmm0\n" /* line 383 | 60.0f */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movl $0x2810011, 0x18(%esp)\n" /* line 385 */
-        "movl (%esi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x44(%ebp), %eax\n" /* end */
-        "movl %eax, 0x10(%esp)\n"
-        "movl imp_vec3_origin, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* start */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x68(%ebp), %eax\n" /* trace */
-        "movl %eax, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        "movss -0x68(%ebp), %xmm2\n" /* line 386 | trace */
-        "ucomiss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "jb .Lf1bac12_001bbe85\n"
-        ".Lf1bac12_001bb964:\n"
-        "movl $1, 0xc(%esp)\n" /* line 393 */
-        "movl $1, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl 0x158(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_PlayerStateToEntityState\n"
-        "movl 0x158(%esi), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        /* { scope 4 */
-        "movl 0x14(%eax), %eax\n" /* line 199 */
-        "movl -0x1a0(%ebp), %ecx\n"
-        "movl %eax, (%ecx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x144(%esi), %eax\n" /* line 397 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x12c(%ebp), %eax\n" /* axis */
-        "movl %eax, (%esp)\n"
-        "calll AxisToAngles\n"
-        "movl %esi, (%esp)\n" /* line 399 */
-        "calll SV_LinkEntity\n"
-        "jmp .Lf1bac12_001bade0\n"
-        ".Lf1bac12_001bb9cb:\n"
-        "movss -0x17c(%ebp), %xmm0\n" /* line 343 | fDelta */
-        "subss -0x178(%ebp), %xmm0\n" /* fPrevTransZ */
-        "movss %xmm0, -0x170(%ebp)\n" /* fHeightRatio */
-        "movss -0x24(%ebp), %xmm0\n"
-        "subss -0x178(%ebp), %xmm0\n" /* fPrevTransZ */
-        "movss -0x170(%ebp), %xmm1\n" /* fHeightRatio */
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x170(%ebp)\n" /* fHeightRatio */
-        "movl -0x150(%ebp), %eax\n" /* line 345 | heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "subss -0x170(%ebp), %xmm2\n" /* fHeightRatio */
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 346 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bba6b\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bba6b:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, %ebx\n" /* pLerpAnim */
-        "movl %ebx, 0x10(%esp)\n" /* pLerpAnim */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x170(%ebp), %xmm0\n" /* fHeightRatio */
-        "movss %xmm0, 8(%esp)\n"
-        "movl -0x150(%ebp), %eax\n" /* heightAnim */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movl -0x194(%ebp), %eax\n" /* line 348 | i */
-        "subl $1, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x15c(%ebp), %ecx\n" /* baseAnim */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x160(%ebp), %eax\n" /* pXAnims */
-        "movl %eax, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, -0x144(%ebp)\n"
-        "movl %eax, 4(%esp)\n" /* line 350 */
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "movl %ebx, -0x1ac(%ebp)\n" /* pLerpAnim */
-        "movss -0x1ac(%ebp), %xmm3\n"
-        "subss -0x170(%ebp), %xmm3\n" /* fHeightRatio */
-        "subss %xmm3, %xmm2\n"
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 351 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bbb56\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bbb56:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm3, 8(%esp)\n"
-        "movl -0x144(%ebp), %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movl -0x18c(%ebp), %edx\n" /* line 353 | iPrevBlend */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x144(%ebp), %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x160(%ebp), %eax\n" /* pXAnims */
-        "movl %eax, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, %ebx\n" /* pLerpAnim */
-        "movl %eax, 4(%esp)\n" /* line 354 */
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
-        "subss -0x174(%ebp), %xmm3\n" /* fPrevBlend */
-        "subss %xmm3, %xmm2\n"
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 355 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bbc2b\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bbc2b:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm3, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* pLerpAnim */
-        "movl -0x164(%ebp), %ecx\n" /* pAnimTree */
-        "movl %ecx, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "movss -0x174(%ebp), %xmm0\n" /* line 357 | fPrevBlend */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jp .Lf1bac12_001bbc80\n"
-        "je .Lf1bac12_001bb7d2\n"
-        ".Lf1bac12_001bbc80:\n"
-        "movl -0x18c(%ebp), %eax\n" /* line 359 | iPrevBlend */
-        "addl $1, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x144(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x160(%ebp), %edx\n" /* pXAnims */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetChildAt\n"
-        "movl %eax, %ebx\n" /* pLerpAnim */
-        "movl %eax, 4(%esp)\n" /* line 360 */
-        "movl -0x164(%ebp), %ecx\n" /* pAnimTree */
-        "movl %ecx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "subss -0x174(%ebp), %xmm2\n" /* fPrevBlend */
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 361 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bbd08\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bbd08:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x174(%ebp), %xmm1\n" /* fPrevBlend */
-        "movss %xmm1, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* pLerpAnim */
-        "movl -0x164(%ebp), %eax\n" /* pAnimTree */
-        "movl %eax, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "jmp .Lf1bac12_001bb7d2\n"
-        ".Lf1bac12_001bbd53:\n"
-        "movss -0x140(%ebp), %xmm1\n" /* line 283 */
-        "movss %xmm1, -0x178(%ebp)\n" /* fPrevTransZ */
-        "jmp .Lf1bac12_001bb61b\n"
-        ".Lf1bac12_001bbd68:\n"
-        "movl -0x15c(%ebp), %ecx\n" /* line 280 | baseAnim */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x160(%ebp), %eax\n" /* pXAnims */
-        "movl %eax, (%esp)\n"
-        "calll XAnimGetAnimDebugName\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1bac12_001bb121\n"
-        ".Lf1bac12_001bbd9d:\n"
-        "movl -0x154(%ebp), %eax\n" /* line 329 | leafAnim2 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimGetWeight\n"
-        "fstps -0x1ac(%ebp)\n"
-        "movss -0x1ac(%ebp), %xmm2\n"
-        "subss -0x13c(%ebp), %xmm2\n"
-        "andps sign+368, %xmm2\n"
-        "movl imp_level, %eax\n"
-        "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "pxor %xmm0, %xmm0\n" /* line 330 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf1bac12_001bbe04\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "divss %xmm2, %xmm0\n"
-        ".Lf1bac12_001bbe04:\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x13c(%ebp), %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movl -0x154(%ebp), %eax\n" /* leafAnim2 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x164(%ebp), %edx\n" /* pAnimTree */
-        "movl %edx, (%esp)\n"
-        "calll XAnimSetGoalWeight\n"
-        "jmp .Lf1bac12_001bb709\n"
-        /* } scope */
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        ".Lf1bac12_001bbe55:\n"
-        "leal -0x12c(%ebp), %ecx\n" /* line 182 | axis */
-        "movl %ecx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Weapon_RocketLauncher_Fire\n"
-        "jmp .Lf1bac12_001bb524\n"
-        /* } scope */
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        ".Lf1bac12_001bbe74:\n"
-        "movl $str_002b59a8, (%esp)\n" /* line 248 */
-        "calll Com_Printf\n"
-        "jmp .Lf1bac12_001bade0\n"
-        ".Lf1bac12_001bbe85:\n"
-        "jp .Lf1bac12_001bb964\n" /* line 386 */
-        "movss -0x30(%ebp), %xmm0\n" /* line 1205 */
-        "movl 0x158(%esi), %eax\n" /* line 389 */
-        "movss -0x3c(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "mulss %xmm1, %xmm2\n"
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x1c(%eax)\n"
-        "jmp .Lf1bac12_001bb964\n"
-        /* } scope */
-        /* { scope 3: xx, yy, zw, flashTag, ... */
-        /* { scope 4 */
-        ".Lf1bac12_001bbeb1:\n"
-        "movzwl 0x168(%edi), %eax\n" /* line 141 */
-        "movl %eax, (%esp)\n"
-        "calll SL_ConvertToString\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%edi), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002b5a20, 8(%esp)\n" /* "tag_flash" */
-        "movl $str_002b5a2c, 4(%esp)\n" /* "Couldn't find %s on turret (entity %d, classname '%s').
-" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1bac12_001bb3e6\n"
-        /* } scope */
-        ".Lf1bac12_001bbeeb:\n"
-        "leal 0x8bba0(%edx), %ebx\n" /* line 170 */
-        "jmp .Lf1bac12_001bb3bc\n"
-    );
+    gentity_t *owner;
+
+    owner = &((gentity_t *)imp_g_entities)[self->r.ownerNum];
+
+    if (owner->active != 1 || owner->client->sess.sessionState != SESS_STATE_PLAYING) {
+        G_ClientStopUsingTurret(self);
+        return;
+    }
+
+    turret_track(self, owner);
+    turret_UpdateSound(self);
 }
