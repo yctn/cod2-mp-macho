@@ -27,8 +27,8 @@ extern void CL_Popup(const char *name);
 extern const char * UI_SafeTranslateString(const char *key);
 
 extern byte *cg_viewscreen_ptr; /* imp_cg_viewsize */
-extern byte *cgs_ptr;           /* imp_cg */
-extern byte *cg_ptr;            /* imp_cgs */
+extern byte *cgs_ptr;           /* imp_cgs */
+extern byte *cg_ptr;            /* imp_cg */
 
 static const consoleCommand_t commandsList[21]; /* commandsList */
 
@@ -85,50 +85,50 @@ static void CG_SizeDown_f(void)
 /* line 66 */
 static void CG_Viewpos_f(void)
 {
-    byte *cgs = *(byte **)cgs_ptr;
-    byte *snap = *(byte **)cgs;
+    byte *cg = *(byte **)cg_ptr;
+    byte *snap = *(byte **)(cg + 0x24);
 
     Com_Printf("(%i %i %i) : %i\n",
-        (int)*(float *)(snap + 0x28588),
-        (int)*(float *)(snap + 0x2858c),
-        (int)*(float *)(snap + 0x28590),
-        (int)*(float *)(snap + 0x285cc));
+        (int)*(float *)(cg + 0x28588),
+        (int)*(float *)(cg + 0x2858c),
+        (int)*(float *)(cg + 0x28590),
+        (int)*(float *)(cg + 0x285cc));
 }
 
 /* line 77 */
 void CG_ScoresUp_f(void)
 {
-    byte *cgs;
+    byte *cg;
     byte *snap;
 
     if (!CG_ScoreboardDisplayed())
         return;
 
-    cgs = *(byte **)cgs_ptr;
-    snap = *(byte **)cgs;
-    *(int *)(snap + 0x2b534) = 0;
-    *(int *)(snap + 0x2b538) = *(int *)(snap + 0x25bb0);
+    cg = *(byte **)cg_ptr;
+    snap = *(byte **)(cg + 0x24);
+    *(int *)(cg + 0x2b534) = 0;
+    *(int *)(cg + 0x2b538) = *(int *)(cg + 0x25bb0);
 }
 
 /* line 95 */
 void CG_ScoresDown_f(void)
 {
-    byte *cgs = *(byte **)cgs_ptr;
-    byte *snap = *(byte **)cgs;
-    int serverCommandSequence = *(int *)(snap + 0x25bb0);
-    int lastScoreTime = *(int *)(snap + 0x2aefc);
+    byte *cg = *(byte **)cg_ptr;
+    byte *snap = *(byte **)(cg + 0x24);
+    int serverCommandSequence = *(int *)(cg + 0x25bb0);
+    int lastScoreTime = *(int *)(cg + 0x2aefc);
 
     if (lastScoreTime + 2000 < serverCommandSequence) {
-        *(int *)(snap + 0x2aefc) = serverCommandSequence;
+        *(int *)(cg + 0x2aefc) = serverCommandSequence;
         CL_AddReliableCommand("score");
 
         if (!CG_ScoreboardDisplayed()) {
-            *(int *)(snap + 0x2af00) = 0;
-            *(int *)(snap + 0x2b53c) = 0;
+            *(int *)(cg + 0x2af00) = 0;
+            *(int *)(cg + 0x2b53c) = 0;
         }
     }
 
-    *(int *)(snap + 0x2b534) = 1;
+    *(int *)(cg + 0x2b534) = 1;
 }
 
 /* line 153 */
@@ -155,13 +155,11 @@ static void CG_ShellShock_f(void)
     duration = atof(arg);
 
     cg = *(byte **)cg_ptr;
-    cg = *(byte **)cg;
     CG_SetShellShockParmsFromDvars(cg + 0x68c4);
 
-    snap = *(byte **)cgs_ptr;
-    snap = *(byte **)snap;
-    *(int *)(snap + 0x2ccf8) = *(int *)(snap + 0x25bb0);
-    *(int *)(snap + 0x2ccfc) = (int)floorf((float)(duration * 1000.0) + 0.5f);
+    snap = *(byte **)(cg + 0x24);
+    *(int *)(cg + 0x2ccf8) = *(int *)(cg + 0x25bb0);
+    *(int *)(cg + 0x2ccfc) = (int)floorf((float)(duration * 1000.0) + 0.5f);
 }
 
 /* line 185 */
@@ -211,8 +209,8 @@ static void CG_TellTarget_f(void)
 /* line 238 */
 static void CG_QuickMessage_f(void)
 {
-    byte *cgs = *(byte **)cgs_ptr;
-    byte *snap = *(byte **)cgs;
+    byte *cg = *(byte **)cg_ptr;
+    byte *snap = *(byte **)(cg + 0x24);
     byte *field24 = *(byte **)(snap + 0x24);
 
     if (field24 == NULL)
@@ -227,15 +225,15 @@ static void CG_QuickMessage_f(void)
 static void CG_VoiceChat_f(void)
 {
     char chatCmd[64];
-    byte *cgs;
+    byte *cg;
     byte *snap;
     byte *field24;
 
     if (Cmd_Argc() != 2)
         return;
 
-    cgs = *(byte **)cgs_ptr;
-    snap = *(byte **)cgs;
+    cg = *(byte **)cg_ptr;
+    snap = *(byte **)(cg + 0x24);
     field24 = *(byte **)(snap + 0x24);
 
     if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
@@ -251,15 +249,15 @@ static void CG_VoiceChat_f(void)
 static void CG_TeamVoiceChat_f(void)
 {
     char chatCmd[64];
-    byte *cgs;
+    byte *cg;
     byte *snap;
     byte *field24;
 
     if (Cmd_Argc() != 2)
         return;
 
-    cgs = *(byte **)cgs_ptr;
-    snap = *(byte **)cgs;
+    cg = *(byte **)cg_ptr;
+    snap = *(byte **)(cg + 0x24);
     field24 = *(byte **)(snap + 0x24);
 
     if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
@@ -274,7 +272,7 @@ static void CG_TeamVoiceChat_f(void)
 /* line 365 */
 qboolean CG_ConsoleCommand(void)
 {
-    byte *cgs;
+    byte *cg;
     byte *snap;
     const char *cmd;
     byte *cmdList = (byte *)commandsList;
@@ -282,9 +280,9 @@ qboolean CG_ConsoleCommand(void)
     const char *name;
     void (*func)(void);
 
-    cgs = *(byte **)cgs_ptr;
-    snap = *(byte **)cgs;
-    if (*(byte **)(snap + 0x24) == NULL)
+    cg = *(byte **)cg_ptr;
+    snap = *(byte **)(cg + 0x24);
+    if (snap == NULL || *(byte **)(snap + 0x24) == NULL)
         return 0;
 
     cmd = CG_Argv(0);
