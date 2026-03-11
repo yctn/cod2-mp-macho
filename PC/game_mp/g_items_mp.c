@@ -12,11 +12,24 @@
  */
 
 extern qboolean itemRegistered[256]; /* 0x0 */
+extern level_locals_t level;
+extern int BG_GetNumWeapons(void);
+extern WeaponDef *BG_GetWeaponDef(int weaponIndex);
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern unsigned char G_SetConstString(scr_string_t *to, const char *from);
+extern char *I_strncat(char *dest, int size, const char *src);
+extern void SV_SetConfigstring(int index, const char *val);
 
 /* Entity field access macros */
 #define _ENT(e)           ((gentity_t *)(e))
 #define ENT_CLIENTNUM(e)  (_ENT(e)->s.clientNum)
 #define ENT_ACTIVE(e)     (_ENT(e)->active)
+
+enum {
+    GITEMS_ENTITYNUM_WORLD = 0x3fe,
+    GITEMS_CS_WEAPONS = 7,
+    GITEMS_CS_ITEMS = 8
+};
 
 void DroppedItemClearOwner(gentity_t *pSelf);
 void G_GetItemClassname(const gitem_t *item, scr_string_t *out);
@@ -40,74 +53,26 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item);
 /* line 711 */
 void DroppedItemClearOwner(gentity_t *pSelf)
 {
-    ENT_CLIENTNUM(pSelf) = 0x3FE; /* ENTITYNUM_NONE - 1 */
+    ENT_CLIENTNUM(pSelf) = GITEMS_ENTITYNUM_WORLD;
 }
 
 /* line 724 */
-__attribute__((naked))
 void G_GetItemClassname(const gitem_t *item, scr_string_t *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 724 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x11c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* item */
-        "movl 0xc(%ebp), %edi\n" /* out */
-        /* { scope 1 */
-        "movl %esi, %ecx\n" /* line 730 | item */
-        "subl imp_bg_itemlist, %ecx\n"
-        "sarl $2, %ecx\n"
-        "movl %ecx, %edx\n"
-        "shll $5, %edx\n"
-        "movl %ecx, %eax\n"
-        "shll $0xa, %eax\n"
-        "subl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $0xf, %edx\n"
-        "subl %eax, %edx\n"
-        "leal (%ecx, %edx, 4), %ebx\n"
-        "negl %ebx\n"
-        "calll BG_GetNumWeapons\n" /* line 731 */
-        "cmpl %eax, %ebx\n"
-        "jg .Lf1ad72a_001ad7b0\n"
-        "movl %ebx, (%esp)\n" /* line 733 */
-        "calll BG_GetWeaponDef\n"
-        "movl (%eax), %eax\n" /* line 734 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002b4978, 8(%esp)\n" /* "weapon_%s" */
-        "movl $0x100, 4(%esp)\n"
-        "leal -0x118(%ebp), %ebx\n" /* classname */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl %ebx, 4(%esp)\n" /* line 735 */
-        "movl %edi, (%esp)\n" /* out */
-        "calll G_SetConstString\n"
-        /* } scope */
-        "addl $0x11c, %esp\n" /* line 742 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1ad72a_001ad7b0:\n"
-        "movl (%esi), %eax\n" /* line 740 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* out */
-        "calll G_SetConstString\n"
-        /* } scope */
-        "addl $0x11c, %esp\n" /* line 742 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char classname[256];
+    int index;
+    WeaponDef *weapDef;
+
+    index = item - (gitem_t *)imp_bg_itemlist;
+
+    if (index > BG_GetNumWeapons()) {
+        G_SetConstString(out, item->classname);
+        return;
+    }
+
+    weapDef = BG_GetWeaponDef(index);
+    Com_sprintf(classname, sizeof(classname), "weapon_%s", weapDef->szInternalName);
+    G_SetConstString(out, classname);
 }
 
 /* line 1109 */
@@ -118,149 +83,68 @@ void ClearRegisteredItems(void)
 }
 
 /* line 1124 */
-__attribute__((naked))
 void SaveRegisteredWeapons(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1124 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x201c, %esp\n"
-        /* { scope 1 */
-        "movl imp_level, %eax\n" /* line 1130 */
-        "movl $0, 0x35fc(%eax)\n"
-        "movb $0, -0x2018(%ebp)\n" /* line 1133 | szConfigString */
-        "xorl %ebx, %ebx\n" /* weapDef */
-        "movl $1, %esi\n" /* weapIndex */
-        "leal -0x2018(%ebp), %edi\n" /* szConfigString */
-        "jmp .Lf1ad7f8_001ad868\n"
-        ".Lf1ad7f8_001ad829:\n"
-        "testl %ebx, %ebx\n" /* line 1138 | weapDef */
-        "je .Lf1ad7f8_001ad845\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 1139 */
-        "movl $0x2000, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_strncat\n"
-        ".Lf1ad7f8_001ad845:\n"
-        "movl %esi, (%esp)\n" /* line 1140 | weapIndex */
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %ebx\n" /* weapDef */
-        "movl (%eax), %eax\n" /* line 1141 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2000, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_strncat\n"
-        "addl $1, %esi\n" /* line 1136 | weapIndex */
-        ".Lf1ad7f8_001ad868:\n"
-        "calll BG_GetNumWeapons\n"
-        "cmpl %eax, %esi\n" /* weapIndex */
-        "jle .Lf1ad7f8_001ad829\n"
-        "movl %edi, 4(%esp)\n" /* line 1143 */
-        "movl $7, (%esp)\n"
-        "calll SV_SetConfigstring\n"
-        /* } scope */
-        "addl $0x201c, %esp\n" /* line 1144 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char string[8192];
+    WeaponDef *weapDef;
+    int weapIndex;
+
+    level.registerWeapons = 0;
+    string[0] = '\0';
+    weapDef = NULL;
+
+    for (weapIndex = 1; weapIndex <= BG_GetNumWeapons(); ++weapIndex) {
+        if (weapDef) {
+            I_strncat(string, sizeof(string), " ");
+        }
+
+        weapDef = BG_GetWeaponDef(weapIndex);
+        I_strncat(string, sizeof(string), weapDef->szInternalName);
+    }
+
+    SV_SetConfigstring(GITEMS_CS_WEAPONS, string);
 }
 
 /* line 1155 */
-__attribute__((naked))
 void SaveRegisteredItems(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1155 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x13c, %esp\n"
-        /* { scope 1 */
-        "movl imp_level, %eax\n" /* line 1163 */
-        "movl $0, 0x3600(%eax)\n"
-        "movl imp_bg_numItems, %eax\n" /* line 1168 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x130(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jg .Lf1ad88c_001ad8f1\n"
-        "movl $0, -0x12c(%ebp)\n" /* n */
-        "movl -0x12c(%ebp), %eax\n" /* n */
-        ".Lf1ad88c_001ad8c8:\n"
-        "movb $0, -0x119(%ebp, %eax)\n" /* line 1182 */
-        "leal -0x119(%ebp), %eax\n" /* line 1184 | string */
-        "movl %eax, 4(%esp)\n"
-        "movl $8, (%esp)\n"
-        "calll SV_SetConfigstring\n"
-        /* } scope */
-        "addl $0x13c, %esp\n" /* line 1185 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1ad88c_001ad8f1:\n"
-        "xorl %esi, %esi\n" /* line 1168 | i */
-        "xorl %ecx, %ecx\n"
-        "xorl %edi, %edi\n" /* digit */
-        "movl $0, -0x12c(%ebp)\n" /* n */
-        "movl $itemRegistered, %ebx\n"
-        "jmp .Lf1ad88c_001ad916\n"
-        ".Lf1ad88c_001ad908:\n"
-        "addl $1, %esi\n" /* i */
-        "addl $4, %ebx\n"
-        "cmpl %esi, -0x130(%ebp)\n" /* i */
-        "je .Lf1ad88c_001ad967\n"
-        ".Lf1ad88c_001ad916:\n"
-        "movl (%ebx), %eax\n" /* line 1170 */
-        "testl %eax, %eax\n"
-        "je .Lf1ad88c_001ad925\n"
-        "movl $1, %eax\n" /* line 1171 */
-        "shll %cl, %eax\n"
-        "addl %eax, %edi\n" /* digit */
-        ".Lf1ad88c_001ad925:\n"
-        "addl $1, %ecx\n" /* line 1172 */
-        "cmpl $4, %ecx\n" /* line 1173 */
-        "jne .Lf1ad88c_001ad908\n"
-        "movl $0x30, %eax\n" /* line 1175 */
-        "cmpl $9, %edi\n" /* digit */
-        "movl $0x57, %edx\n"
-        "cmovgl %edx, %eax\n"
-        "addl %edi, %eax\n" /* digit */
-        "movl -0x12c(%ebp), %edx\n" /* n */
-        "movb %al, -0x119(%ebp, %edx)\n"
-        "addl $1, %edx\n"
-        "movl %edx, -0x12c(%ebp)\n" /* n */
-        "xorl %edi, %edi\n" /* digit */
-        "xorb %cl, %cl\n"
-        "addl $1, %esi\n" /* line 1168 | i */
-        "addl $4, %ebx\n"
-        "cmpl %esi, -0x130(%ebp)\n" /* i */
-        "jne .Lf1ad88c_001ad916\n"
-        ".Lf1ad88c_001ad967:\n"
-        "testl %ecx, %ecx\n" /* line 1180 */
-        "je .Lf1ad88c_001ad99a\n"
-        "movl $0x30, %eax\n" /* line 1181 */
-        "cmpl $9, %edi\n" /* digit */
-        "movl $0x57, %edx\n"
-        "cmovgl %edx, %eax\n"
-        "addl %edi, %eax\n" /* digit */
-        "movl -0x12c(%ebp), %edx\n" /* n */
-        "movb %al, -0x119(%ebp, %edx)\n"
-        "addl $1, %edx\n"
-        "movl %edx, -0x12c(%ebp)\n" /* n */
-        "movl %edx, %eax\n"
-        "jmp .Lf1ad88c_001ad8c8\n"
-        ".Lf1ad88c_001ad99a:\n"
-        "movl -0x12c(%ebp), %eax\n" /* n */
-        "jmp .Lf1ad88c_001ad8c8\n"
-    );
+    int bits;
+    int digit;
+    int itemIdx;
+    int lastNonZeroChar;
+    int n;
+    char string[256];
+
+    level.bRegisterItems = 0;
+    bits = 0;
+    digit = 0;
+    n = 0;
+    lastNonZeroChar = 0;
+
+    for (itemIdx = 0; itemIdx < *(int *)imp_bg_numItems; ++itemIdx) {
+        if (itemRegistered[itemIdx]) {
+            digit += 1 << bits;
+        }
+
+        ++bits;
+
+        if (bits == 4) {
+            string[n] = digit + (digit < 10 ? '0' : 'W');
+            ++n;
+            lastNonZeroChar = n;
+            digit = 0;
+            bits = 0;
+        }
+    }
+
+    if (bits) {
+        string[n] = digit + (digit < 10 ? '0' : 'W');
+        ++n;
+        lastNonZeroChar = n;
+    }
+
+    string[lastNonZeroChar] = '\0';
+    SV_SetConfigstring(GITEMS_CS_ITEMS, string);
 }
 
 /* line 1214 */
@@ -3595,4 +3479,3 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "jmp .Lf1b078a_001b0816\n"
     );
 }
-

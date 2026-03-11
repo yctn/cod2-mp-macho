@@ -18,6 +18,7 @@ extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 extern char *va(const char *fmt, ...);
 extern int SV_GetClientPing(int clientNum);
 extern void SV_GameSendServerCommand(int clientNum, int type, const char *text);
+extern void SV_SetConfigstring(int index, const char *val);
 extern int SV_Cmd_Argc(void);
 extern void SV_Cmd_ArgvBuffer(int arg, char *buffer, int bufferLength);
 
@@ -152,69 +153,31 @@ char * ConcatArgs(int start)
 }
 
 /* line 217 */
-__attribute__((naked))
 void G_setfog(const char *fogstring)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 217 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x50, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* fogstring */
-        /* { scope 1 */
-        "movl %ebx, 4(%esp)\n" /* line 232 | fogstring */
-        "movl $0xc, (%esp)\n"
-        "calll SV_SetConfigstring\n"
-        "movl imp_level, %esi\n" /* line 235 */
-        "movl $0x7f7fffff, %eax\n"
-        "movl %eax, 0x1dd8(%esi)\n"
-        "movl %eax, 0x1ddc(%esi)\n" /* line 236 */
-        "leal -0x18(%ebp), %eax\n" /* line 237 | time */
-        "movl %eax, 0x20(%esp)\n"
-        "leal -0x24(%ebp), %edx\n" /* clr */
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "leal -0x20(%ebp), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl %edx, 0x14(%esp)\n"
-        "leal -0x14(%ebp), %eax\n" /* fDensity */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x10(%ebp), %eax\n" /* fFar */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0xc(%ebp), %eax\n" /* fNear */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b365c, 4(%esp)\n" /* "%f %f %f %f %f %f %d" */
-        "movl %ebx, (%esp)\n" /* fogstring */
-        "calll sscanf\n"
-        "cmpl $7, %eax\n"
-        "je .Lf1a2f98_001a3017\n"
-        /* } scope */
-        ".Lf1a2f98_001a3010:\n"
-        "addl $0x50, %esp\n" /* line 245 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a2f98_001a3017:\n"
-        "movss -0x14(%ebp), %xmm0\n" /* line 239 | fDensity */
-        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "jb .Lf1a2f98_001a3010\n"
-        "movss -0xc(%ebp), %xmm1\n" /* line 241 | fNear */
-        "movss -0x10(%ebp), %xmm0\n" /* fFar */
-        "subss %xmm1, %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x1dd8(%esi)\n"
-        "mulss %xmm0, %xmm0\n" /* line 242 */
-        "movss %xmm0, 0x1ddc(%esi)\n"
-        /* } scope */
-        "addl $0x50, %esp\n" /* line 245 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float fTime;
+    float r;
+    float g;
+    float b;
+    float fDensity;
+    float fFar;
+    float fNear;
+
+    SV_SetConfigstring(12, fogstring);
+
+    level.fFogOpaqueDist = 3.402823466e+38f;
+    level.fFogOpaqueDistSqrd = 3.402823466e+38f;
+
+    if (sscanf(fogstring, "%f %f %f %f %f %f %f", &fNear, &fFar, &fDensity, &r, &g, &b, &fTime) != 7) {
+        return;
+    }
+
+    if (fDensity < 1.0f) {
+        return;
+    }
+
+    level.fFogOpaqueDist = fFar;
+    level.fFogOpaqueDistSqrd = fFar * fFar;
 }
 
 /* line 732 */
