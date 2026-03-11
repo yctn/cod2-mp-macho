@@ -28,8 +28,8 @@ extern char *va(const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 
 extern byte *cg_ptr;           /* imp_cg */
-extern byte *cg_weapinfo_ptr;  /* imp_cg_weapons */
 extern byte *cg_tags_ptr;      /* imp_scr_const */
+extern byte *cg_weapons;       /* 0x0 */
 extern const dvar_t *hud_fade_offhand; /* 0x0 */
 
 extern const char * offhandStrings[3]; /* offhandStrings */
@@ -105,7 +105,7 @@ void CG_PrepOffHand(entityState_t *ent, int event, int eventParam)
     byte *weapInfo;
     int soundAlias;
 
-    weapInfo = *(byte **)cg_weapinfo_ptr;
+    weapInfo = cg_weapons;
     soundAlias = *(int *)(weapInfo + eventParam * 436 + 0xd8);
 
     if (soundAlias != 0) {
@@ -124,7 +124,7 @@ void CG_UseOffHand(centity_t *cent, int event, int eventParam)
     float origin[3];
     void *dobj;
 
-    weapInfo = *(byte **)cg_weapinfo_ptr + eventParam * 436;
+    weapInfo = cg_weapons + eventParam * 436;
     soundAlias = *(int *)(weapInfo + 0xdc);
 
     if (soundAlias == 0)
@@ -250,7 +250,7 @@ find_weapon:
     }
 
 draw_icon:
-    weapInfo = *(byte **)cg_weapinfo_ptr;
+    weapInfo = cg_weapons;
     iconMaterial = *(MaterialHandle *)(weapInfo + weapon * 436 + 0x138);
 
     r = (byte *)rect;
