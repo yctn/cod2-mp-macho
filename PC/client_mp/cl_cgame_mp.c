@@ -457,6 +457,7 @@ restart:
 
     switch (cmd[0]) {
     case 'd':
+    case 'w':
         if (argc - 1 <= 0) {
             Com_Error(ERR_SERVERDISCONNECT, "EXE_DISCONNECTED");
         }

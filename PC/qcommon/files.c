@@ -684,65 +684,13 @@ const char * FS_ReferencedIwdNames(void)
 /* line 1119 */
 const char * FS_ReferencedIwdPureChecksums(void)
 {
-    void *search;
-    int numIwds;
     int checksumFeed;
 
     info6[0] = '\0'; /* line 1124 */
 
     checksumFeed = *(int *)imp_fs_checksumFeed; /* line 1125 */
-
-    /* line 1136 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
-    numIwds = 0;
-    if (search == NULL) {
-        goto no_searchpaths;
-    }
-
-    while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 1139 */
-        if (iwd != NULL) {
-            void *localized = *(void **)((char *)search + 0xc); /* line 1143 */
-            if (localized == NULL) {
-                int referenced = *(char *)((char *)iwd + 0x310); /* line 1147 */
-                if (referenced) {
-                    int checksum = *(int *)((char *)iwd + 0x308); /* line 1149 */
-                    I_strncat(info6, 0x2000, va("%i ", checksum));
-                    checksumFeed ^= checksum; /* line 1150 */
-                    numIwds++; /* line 1151 */
-                }
-            }
-        }
-        search = *(void **)search; /* line 1136 | next */
-    }
-
-    /* line 1155 | optionally append fakeChkSum */
-    {
-        int fakeChk = *(int *)imp_fs_fakeChkSum;
-        if (fakeChk != 0) {
-            I_strncat(info6, 0x2000, va("%i ", fakeChk)); /* line 1156 */
-        }
-    }
-
-    /* line 1160 | append final XOR of numIwds and checksumFeed */
-    numIwds ^= checksumFeed;
-    I_strncat(info6, 0x2000, va("%i ", numIwds));
-
+    Com_sprintf(info6, 0x2000, "@ %i ", checksumFeed);
     return info6; /* line 1163 */
-
-no_searchpaths:
-    numIwds = 0;
-    /* jump to fakeChkSum check */
-    {
-        int fakeChk = *(int *)imp_fs_fakeChkSum;
-        if (fakeChk != 0) {
-            I_strncat(info6, 0x2000, va("%i ", fakeChk));
-        }
-    }
-    numIwds ^= checksumFeed;
-    I_strncat(info6, 0x2000, va("%i ", numIwds));
-
-    return info6;
 }
 
 /* line 1514 */
