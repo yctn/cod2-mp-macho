@@ -262,6 +262,7 @@ void CL_CubemapShot_f(void)
 static void SCR_UpdateFrame(void)
 {
     byte *re = re_ptr_195eca8;
+    static int s_prevConnstate = -1;
 
     RE_FUNC(re, 0xa8, re_void_func)();
     CL_ClearScene();
@@ -284,11 +285,20 @@ static void SCR_UpdateFrame(void)
 
     UI_UpdateTime(CLS_CLIENT_TIME(cls));
 
-    /* Close the startup main menu once a connection is in progress so the
-       connect screen / live game frame stays in front. */
+    /* Drop the startup main menu while connecting so the connect screen stays
+       in front. */
     if (connstate >= 3 && connstate <= 8 && UI_IsFullscreen() && UI_GetActiveMenu() == 1) {
         UI_SetActiveMenu(0);
     }
+
+    /* Some connect paths leave a fullscreen menu latched when the client
+       enters CA_ACTIVE. That forces renderScreen=0, which freezes gameplay
+       updates behind a white UI-only frame. Clear it once on the active
+       transition, but leave later user-opened menus alone. */
+    if (connstate == 8 && s_prevConnstate != 8 && UI_IsFullscreen()) {
+        UI_SetActiveMenu(0);
+    }
+    s_prevConnstate = connstate;
 
     if (UI_IsFullscreen()) {
         /* Fullscreen UI path */

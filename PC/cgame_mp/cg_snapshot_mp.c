@@ -1120,8 +1120,11 @@ void CG_ProcessSnapshots(void)
 {
     char *cg;
     int n;
-    int serverTime;
+    int cgTime;
+    int snapTime;
     char *snap;
+    char *curSnap;
+    char *nextSnap;
 
     /* line 587: get current snapshot number */
     cg = *cg_glob;
@@ -1143,140 +1146,85 @@ void CG_ProcessSnapshots(void)
     for (;;)
     {
         cg = *cg_glob;
+        curSnap = *(char **)(cg + CG_SNAP);
 
-        /* Check if we have a snap but no nextSnap */
-        if (*(char **)(cg + CG_SNAP) == NULL)
+        /* No current snapshot yet: bootstrap both current and next from the
+         * first active snapshot so the prediction path always has a snap. */
+        if (curSnap == NULL)
         {
-            /* No snap at all: read next */
             snap = CG_ReadNextSnapshot();
             if (!snap)
                 return;
 
-            /* line 614: check snapFlags for not-active bit */
             if (*(char *)snap & 2)
             {
-                /* Not active, continue loop */
                 continue;
             }
 
-            /* line 616-617: initial snapshot setup */
             CG_SetInitialSnapshot((snapshot_t *)snap);
             CG_SetNextSnap((snapshot_t *)snap);
-
-            /* Run CG_TransitionSnapshot inline (lines 244-292) */
             CG_TransitionSnapshot_Inline();
-
-            /* line 279: copy currentState from nextState for all entities */
-            /* (already done in CG_TransitionSnapshot_Inline) */
             continue;
         }
 
-        if (*(char **)(cg + CG_NEXTSNAP) != NULL)
+        nextSnap = *(char **)(cg + CG_NEXTSNAP);
+
+        if (nextSnap != NULL)
         {
-            /* line 633: have both snap and nextSnap */
             CG_SetFrameInterpolation();
+        }
 
-            /* line 641: check if nextSnap == snap (transitioning complete) */
+        /* If we already have a queued future snapshot, either keep
+         * interpolating toward it or transition to it when its time arrives. */
+        if (nextSnap != NULL && nextSnap != curSnap)
+        {
             cg = *cg_glob;
-            if (*(char **)(cg + CG_NEXTSNAP) == *(char **)(cg + CG_SNAP))
+            curSnap = *(char **)(cg + CG_SNAP);
+            nextSnap = *(char **)(cg + CG_NEXTSNAP);
+            cgTime = *(int *)(cg + CG_TIME);
+
+            if (cgTime < *(int *)(curSnap + SNAP_SERVERTIME) ||
+                cgTime >= *(int *)(nextSnap + SNAP_SERVERTIME))
             {
-                /* Already at the same snapshot */
-            }
-            else
-            {
-                /* line 643: check frameInterpolation */
-                int interp = *(int *)(cg + 0xc);  /* cubemapShot/demo related field? */
-                if (!interp)
-                {
-                    /* Need to transition and get next */
-                    goto read_and_set;
-                }
-            }
-
-            /* Read next snapshot */
-            snap = CG_ReadNextSnapshot();
-            if (!snap)
-            {
-                /* line 678: no more snapshots, check time */
-                cg = *cg_glob;
-                {
-                    char *curSnap = *(char **)(cg + CG_SNAP);
-                    int snapTime = *(int *)(curSnap + SNAP_SERVERTIME);
-                    if (*(int *)(cg + CG_TIME) < snapTime)
-                    {
-                        *(int *)(cg + CG_TIME) = snapTime;
-                        *(int *)(cg + CG_LATESTSERVERTIME) = snapTime;
-                    }
-                }
-                return;
-            }
-
-            /* line 647: got a snapshot */
-            /* line 653: check if snapFlags changed (bit 4) */
-            cg = *cg_glob;
-            {
-                char *oldNextSnap = *(char **)(cg + CG_NEXTSNAP);
-                if ((*(int *)snap ^ *(int *)oldNextSnap) & 4)
-                {
-                    /* line 655-656: reinitialize */
-                    CG_SetInitialSnapshot((snapshot_t *)snap);
-                    CG_SetNextSnap((snapshot_t *)snap);
-
-                    /* Run CG_TransitionSnapshot */
-                    CG_TransitionSnapshot_Inline();
-                    continue;
-                }
-
-                /* line 661: check that snap time hasn't gone backwards */
-                if (*(int *)(snap + SNAP_SERVERTIME) < *(int *)(oldNextSnap + SNAP_SERVERTIME))
-                {
-                    Com_Error(1, (const char *)str_002b8000);
-                }
-            }
-
-            /* line 664: set next snap */
-            CG_SetNextSnap((snapshot_t *)snap);
-
-            /* Check for transition needed (lines 668+) */
-            cg = *cg_glob;
-            {
-                int cgTime = *(int *)(cg + CG_TIME);
-                char *curSnap = *(char **)(cg + CG_SNAP);
-                char *nextSnap = *(char **)(cg + CG_NEXTSNAP);
-
-                if (cgTime < *(int *)(curSnap + SNAP_SERVERTIME))
-                    goto do_transition;
-
-                if (cgTime < *(int *)(nextSnap + SNAP_SERVERTIME))
-                    return;
-
-                do_transition:
-                /* Need to transition */
                 CG_TransitionSnapshot_Inline();
                 continue;
             }
+
+            return;
         }
-        else
+
+        /* Queue the next active snapshot now that the previous transition is
+         * complete and both snap pointers refer to the current frame. */
+        snap = CG_ReadNextSnapshot();
+        if (!snap)
         {
-            /* Have snap but no nextSnap */
-            read_and_set:
-            snap = CG_ReadNextSnapshot();
-            if (!snap)
-                return;
-
-            /* line 606: check snapFlags bit 2 */
-            if (*(char *)snap & 2)
+            snapTime = *(int *)(curSnap + SNAP_SERVERTIME);
+            if (*(int *)(cg + CG_TIME) < snapTime)
             {
-                /* Not active, continue */
-                continue;
+                *(int *)(cg + CG_TIME) = snapTime;
+                *(int *)(cg + CG_LATESTSERVERTIME) = snapTime;
             }
+            return;
+        }
 
-            /* line 616-617 */
+        if (*(char *)snap & 2)
+        {
+            continue;
+        }
+
+        if ((*(int *)snap ^ *(int *)curSnap) & 4)
+        {
             CG_SetInitialSnapshot((snapshot_t *)snap);
             CG_SetNextSnap((snapshot_t *)snap);
-
             CG_TransitionSnapshot_Inline();
             continue;
         }
+
+        if (*(int *)(snap + SNAP_SERVERTIME) < *(int *)(curSnap + SNAP_SERVERTIME))
+        {
+            Com_Error(1, (const char *)str_002b8000);
+        }
+
+        CG_SetNextSnap((snapshot_t *)snap);
     }
 }
