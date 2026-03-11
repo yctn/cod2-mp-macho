@@ -649,6 +649,12 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
     g_ShowShadowCookies = 0;
     g_NumBlurShadowPasses = 0;
 
+    /* The Mac D3D shim still falls over when restoring from the fullscreen
+     * blur target. Skip this optional post-effect path for now. */
+    if (renderTargetId == R_RENDERTARGET_BLURRED_SCREEN) {
+        return 0;
+    }
+
     /* line 59: scale radius by viewport height / 480 */
     be = (byte *)backEnd;
     {

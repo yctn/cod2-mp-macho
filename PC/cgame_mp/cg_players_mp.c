@@ -110,14 +110,15 @@ void CG_ResetPlayerEntity(centity_t *cent)
 
     if (!deadFlag) {
         pAnimTree = *(void **)(ci + 0x4a4);
+        if (pAnimTree) {
+            /* Clear tree goal weights */
+            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cgs + 0xe08e4), 0);
 
-        /* Clear tree goal weights */
-        XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cgs + 0xe08e4), 0);
-
-        /* Set complete goal weights for 3 anim indices */
-        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
-        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
-        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            /* Set complete goal weights for 3 anim indices */
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+        }
 
         /* Zero out lerpAnim ranges */
         memset(ciBase + 0x394, 0, 48);
@@ -446,6 +447,8 @@ void CG_Player(centity_t *cent)
             pAnimTree = *(void **)(turretCi + 0x4a4);
             pXAnims = *(void **)(cgs + 0xe08cc);
             baseAnim = (unsigned short)(animValue & ~0x200);
+            if (!pAnimTree)
+                goto render;
 
             /* line 306: quaternion to 3x3 rotation matrix */
             {
