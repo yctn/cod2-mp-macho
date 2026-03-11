@@ -92,6 +92,13 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color);
 void Item_Text_Wrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color);
 void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item);
+editFieldDef_t *Item_GetEditFieldDef(itemDef_t *item);
+const char *Dvar_GetVariantString(const char *dvarName);
+void I_strncpyz(char *dest, const char *src, int destsize);
+int Key_GetOverstrikeMode(void);
+FontHandle UI_GetFontHandle(int fontEnum, float scale);
+void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
+void UI_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style, int cursorPos, int cursor);
 void Script_SetItemColor(displayContextDef_t *dc, itemDef_t *item, const char * *args);
 void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, float fadeInAmount, float fadeClamp, float fadeCycle);
 void Menu_Setup(displayContextDef_t *dc);
@@ -6118,283 +6125,107 @@ void Item_Text_Paint(displayContextDef_t *dc, itemDef_t *item)
 }
 
 /* line 4016 */
-__attribute__((naked))
 void Item_TextField_Paint(displayContextDef_t *dc, itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4016 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4ac, %esp\n"
-        /* { scope 1: a */
-        "movl 0xc(%ebp), %eax\n" /* line 4030 | item */
-        "movl %eax, (%esp)\n"
-        "calll Item_GetEditFieldDef\n"
-        "movl %eax, %edi\n" /* editPtr */
-        "testl %eax, %eax\n" /* line 4032 */
-        "je .Lf1682a8_001684ab\n"
-        "movl 0xc(%ebp), %edx\n" /* line 4035 | item */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl %ecx, (%esp)\n"
-        "calll Item_Text_Paint\n"
-        "movb $0, -0x440(%ebp)\n" /* line 4037 | buff */
-        "movl 0xc(%ebp), %edx\n" /* line 4039 | item */
-        "movl 0x2c0(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1682a8_0016831e\n"
-        "cmpl $0x11, 0x270(%edx)\n" /* line 4041 */
-        "je .Lf1682a8_001685e8\n"
-        "movl %eax, (%esp)\n" /* line 4049 */
-        "calll Dvar_GetVariantString\n"
-        "movl $0x400, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x440(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        ".Lf1682a8_0016831e:\n"
-        "leal -0x440(%ebp), %edx\n" /* line 4053 | buff */
-        "movl %edx, 0xc(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* height */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* width */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        "movl %ecx, (%esp)\n"
-        "calll Item_SetTextExtents\n"
-        "movl 0xc(%ebp), %eax\n" /* line 4055 | item */
-        "movl 0x29c(%eax), %ebx\n" /* parent */
-        "movl 0xe8(%eax), %esi\n" /* line 143 */
-        "testl $4, %esi\n" /* line 155 */
-        "jne .Lf1682a8_001684b6\n"
-        "movl %eax, %edx\n"
-        "movl %eax, %ecx\n"
-        ".Lf1682a8_00168360:\n"
-        "addl $0x1cc, %edx\n" /* line 4067 */
-        "movl 0x1cc(%ecx), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* newColor */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %ecx, %edx\n"
-        "movl 0x294(%edx), %eax\n" /* line 4070 */
-        "testl %eax, %eax\n"
-        "je .Lf1682a8_001685cd\n"
-        ".Lf1682a8_00168391:\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf1682a8_001685cd\n"
-        "movss lit4_002ed740, %xmm0\n" /* 8.0f */
-        ".Lf1682a8_001683a2:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 99 | item */
-        "addl $0x210, %ecx\n"
-        "movl %ecx, -0x454(%ebp)\n" /* textRect */
-        "movl 0xc(%ebp), %eax\n" /* line 4072 | item */
-        "movss 0x210(%eax), %xmm1\n"
-        "movss %xmm1, -0x460(%ebp)\n" /* x */
-        "addss 8(%ecx), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x460(%ebp)\n" /* x */
-        "leal -0x440(%ebp), %eax\n" /* line 4073 | buff */
-        "addl 0x1c(%edi), %eax\n" /* editPtr */
-        "movl %eax, -0x45c(%ebp)\n" /* text */
-        "movl 0x18(%edi), %edx\n" /* line 4074 | editPtr */
-        "testl %edx, %edx\n"
-        "movl $0x7fffffff, %eax\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, -0x458(%ebp)\n" /* maxChars */
-        "testl $4, %esi\n" /* line 155 */
-        "je .Lf1682a8_001685d6\n"
-        "andl $2, %esi\n" /* line 4075 */
-        "je .Lf1682a8_00168416\n"
-        "movl g_editingField, %esi\n"
-        "testl %esi, %esi\n"
-        "jne .Lf1682a8_0016862c\n"
-        ".Lf1682a8_00168416:\n"
-        "movl -0x454(%ebp), %eax\n" /* textRect */
-        ".Lf1682a8_0016841c:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 4084 | item */
-        "movl 0x290(%ecx), %esi\n"
-        "movl 0x28c(%ecx), %ebx\n" /* parent */
-        "movl 0x14(%eax), %edi\n" /* editPtr */
-        "movl 0x10(%eax), %edx\n"
-        "movl %edx, -0x464(%ebp)\n"
-        "movss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x468(%ebp)\n"
-        "movl %ebx, 4(%esp)\n" /* line 3711 */
-        "movl 0x27c(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %esi, 0x24(%esp)\n" /* line 4084 */
-        "leal -0x30(%ebp), %edx\n" /* newColor */
-        "movl %edx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n" /* parent */
-        "movl %edi, 0x18(%esp)\n" /* editPtr */
-        "movl -0x464(%ebp), %ecx\n"
-        "movl %ecx, 0x14(%esp)\n"
-        "movss -0x468(%ebp), %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x460(%ebp), %xmm1\n" /* x */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x458(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x45c(%ebp), %edx\n" /* text */
-        "movl %edx, (%esp)\n"
-        "calll UI_DrawText\n"
-        /* } scope */
-        ".Lf1682a8_001684ab:\n"
-        "addl $0x4ac, %esp\n" /* line 4087 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: a */
-        ".Lf1682a8_001684b6:\n"
-        "testl $2, %esi\n" /* line 4057 */
-        "je .Lf1682a8_001685dd\n"
-        "movss lit4_002ed7f0, %xmm0\n" /* line 4059 | 0.800000011920929f */
-        "movss 0x25c(%ebx), %xmm1\n" /* parent */
-        "mulss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x40(%ebp)\n" /* lowLight */
-        "movss 0x260(%ebx), %xmm1\n" /* line 4060 | parent */
-        "mulss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x3c(%ebp)\n"
-        "movss 0x264(%ebx), %xmm1\n" /* line 4061 | parent */
-        "mulss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "mulss 0x268(%ebx), %xmm0\n" /* line 4062 | parent */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movl 8(%ebp), %edx\n" /* line 4063 | dc */
-        "movl 4(%edx), %ecx\n"
-        "movl $0x1b4e81b5, %edx\n"
-        "movl %ecx, %eax\n"
-        "imull %edx\n"
-        "sarl $3, %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll sinf\n"
-        "fstps -0x47c(%ebp)\n"
-        "movss -0x47c(%ebp), %xmm2\n" /* t */
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "mulss %xmm0, %xmm2\n" /* t */
-        "addss %xmm0, %xmm2\n" /* t */
-        "addl $0x25c, %ebx\n" /* parent */
-        "movl %ebx, -0x480(%ebp)\n" /* parent, a */
-        "movl $1, %edx\n"
-        "leal -0x40(%ebp), %ebx\n" /* lowLight, parent */
-        "pxor %xmm3, %xmm3\n"
-        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
-        /* { scope 2 */
-        ".Lf1682a8_0016856f:\n"
-        "movl -0x480(%ebp), %ecx\n" /* line 94 | a */
-        "movss -4(%ecx, %edx, 4), %xmm0\n"
-        "leal (, %edx, 4), %eax\n"
-        "movss -4(%ebx, %eax), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "mulss %xmm2, %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "leal -0x30(%ebp), %ecx\n" /* line 4016 | newColor */
-        "leal (%ecx, %eax), %eax\n"
-        "movss %xmm1, -4(%eax)\n" /* line 94 */
-        "ucomiss %xmm1, %xmm3\n" /* line 95 */
-        "ja .Lf1682a8_00168702\n"
-        "ucomiss %xmm4, %xmm1\n" /* line 97 */
-        "jbe .Lf1682a8_001685b4\n"
-        "movl $0x3f800000, -4(%eax)\n" /* line 98 */
-        ".Lf1682a8_001685b4:\n"
-        "addl $1, %edx\n"
-        "cmpl $5, %edx\n" /* line 92 */
-        "jne .Lf1682a8_0016856f\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        /* } scope */
-        "movl 0x294(%edx), %eax\n" /* line 4070 */
-        "testl %eax, %eax\n"
-        "jne .Lf1682a8_00168391\n"
-        ".Lf1682a8_001685cd:\n"
-        "pxor %xmm0, %xmm0\n"
-        "jmp .Lf1682a8_001683a2\n"
-        ".Lf1682a8_001685d6:\n"
-        "movl %ecx, %eax\n"
-        "jmp .Lf1682a8_0016841c\n"
-        ".Lf1682a8_001685dd:\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        "jmp .Lf1682a8_00168360\n"
-        ".Lf1682a8_001685e8:\n"
-        "movl %eax, (%esp)\n" /* line 4043 */
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 4044 */
-        "je .Lf1682a8_0016831e\n"
-        "cmpb $1, 6(%eax)\n"
-        "jne .Lf1682a8_0016831e\n"
-        "movl $2, 0xc(%esp)\n" /* line 4045 */
-        "movl $0x400, 8(%esp)\n"
-        "leal -0x440(%ebp), %ecx\n" /* buff */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_LocalizedFloatToString\n"
-        "jmp .Lf1682a8_0016831e\n"
-        ".Lf1682a8_0016862c:\n"
-        "calll Key_GetOverstrikeMode\n" /* line 4077 */
-        "cmpl $1, %eax\n"
-        "sbbl %ebx, %ebx\n" /* parent */
-        "andl $0x1d, %ebx\n" /* parent */
-        "addl $0x5f, %ebx\n" /* parent */
-        "movl 0xc(%ebp), %ecx\n" /* line 4080 | item */
-        "movl 0x2dc(%ecx), %esi\n"
-        "subl 0x1c(%edi), %esi\n" /* editPtr */
-        "movl 0x290(%ecx), %eax\n"
-        "movl %eax, -0x44c(%ebp)\n"
-        "movl 0x28c(%ecx), %edi\n" /* editPtr */
-        "movl 0x14(%ecx), %edx\n"
-        "movl %edx, -0x470(%ebp)\n"
-        "movl 0x10(%ecx), %ecx\n"
-        "movl %ecx, -0x46c(%ebp)\n"
-        "movl -0x454(%ebp), %eax\n" /* textRect */
-        "movss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x450(%ebp)\n"
-        "movl %edi, 4(%esp)\n" /* line 3711 */
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x27c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %ebx, 0x2c(%esp)\n" /* line 4080 | parent */
-        "movl %esi, 0x28(%esp)\n"
-        "movl -0x44c(%ebp), %ecx\n"
-        "movl %ecx, 0x24(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* newColor */
-        "movl %edx, 0x20(%esp)\n"
-        "movl %edi, 0x1c(%esp)\n" /* editPtr */
-        "movl -0x470(%ebp), %ecx\n"
-        "movl %ecx, 0x18(%esp)\n"
-        "movl -0x46c(%ebp), %edx\n"
-        "movl %edx, 0x14(%esp)\n"
-        "movss -0x450(%ebp), %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x460(%ebp), %xmm1\n" /* x */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x458(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x45c(%ebp), %edx\n" /* text */
-        "movl %edx, (%esp)\n"
-        "calll UI_DrawTextWithCursor\n"
-        "jmp .Lf1682a8_001684ab\n"
-        /* { scope 2 */
-        ".Lf1682a8_00168702:\n"
-        "movl $0, -4(%eax)\n" /* line 96 */
-        "jmp .Lf1682a8_001685b4\n"
-    );
+    editFieldDef_t *editPtr;
+    char buff[1024];
+    vec4_t newColor;
+    FontHandle font;
+    const char *value;
+    const char *text;
+    int width;
+    int height;
+    int textLen;
+    int paintOffset;
+    int maxChars;
+    int cursorPos;
+    int cursorChar;
+    float x;
+
+    editPtr = Item_GetEditFieldDef(item);
+    if (!editPtr) {
+        return;
+    }
+
+    Item_Text_Paint(dc, item);
+
+    buff[0] = '\0';
+    if (item->dvar) {
+        value = Dvar_GetVariantString(item->dvar);
+        if (value) {
+            I_strncpyz(buff, value, sizeof(buff));
+        }
+    }
+
+    Item_SetTextExtents(item, &width, &height, buff);
+    Item_TextColor(dc, item, &newColor);
+
+    textLen = 0;
+    while (textLen < (int)sizeof(buff) - 1 && buff[textLen] != '\0') {
+        textLen++;
+    }
+
+    paintOffset = editPtr->paintOffset;
+    if (paintOffset < 0) {
+        paintOffset = 0;
+    } else if (paintOffset > textLen) {
+        paintOffset = textLen;
+    }
+
+    maxChars = editPtr->maxPaintChars;
+    if (maxChars <= 0) {
+        maxChars = 0x7fffffff;
+    } else if (maxChars > (int)sizeof(buff) - 1 - paintOffset) {
+        maxChars = (int)sizeof(buff) - 1 - paintOffset;
+    }
+
+    x = item->textRect[0].x + item->textRect[0].w;
+    if (item->text && item->text[0]) {
+        x += 8.0f;
+    }
+
+    text = buff + paintOffset;
+    font = UI_GetFontHandle(item->fontEnum, item->textscale);
+    if (!font) {
+        return;
+    }
+
+    if (g_editingField && (item->window.staticFlags & 6) == 6) {
+        cursorChar = Key_GetOverstrikeMode() == 1 ? '_' : '|';
+        cursorPos = item->cursorPos[0] - paintOffset;
+        if (cursorPos < -1) {
+            cursorPos = -1;
+        } else if (cursorPos > textLen - paintOffset) {
+            cursorPos = textLen - paintOffset;
+        }
+
+        UI_DrawTextWithCursor(
+            text,
+            maxChars,
+            font,
+            x,
+            item->textRect[0].y,
+            item->window.rect[0].horzAlign,
+            item->window.rect[0].vertAlign,
+            item->textscale,
+            newColor,
+            item->textStyle,
+            cursorPos,
+            cursorChar);
+        return;
+    }
+
+    UI_DrawText(
+        text,
+        maxChars,
+        font,
+        x,
+        item->textRect[0].y,
+        item->window.rect[0].horzAlign,
+        item->window.rect[0].vertAlign,
+        item->textscale,
+        newColor,
+        item->textStyle);
 }
 
 /* line 4090 */
