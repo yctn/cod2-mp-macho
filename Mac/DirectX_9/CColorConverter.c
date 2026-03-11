@@ -13,6 +13,36 @@ extern unsigned char sStdConverterARGB[]; /* writable BSS — vtable set by glob
 extern unsigned char sStdConverterABGR[]; /* writable BSS */
 extern unsigned char sATI4CompsConverterARGB[]; /* writable BSS */
 extern unsigned char sATI4CompsConverterABGR[]; /* writable BSS */
+extern void *vtbl_StdConverterARGB[];
+extern void *vtbl_StdConverterABGR[];
+extern void *vtbl_ATI4CompsConverterARGB[];
+extern void *vtbl_ATI4CompsConverterABGR[];
+extern void *imp___ZN7COpenGL7sOpenGLE;
+extern void *imp___ZTV15CColorConverter;
+
+extern int MacDisplay_GetCardType(void);
+extern Boolean MacFeatures_IsAltiVecAvailable(void);
+void __ZdlPv(void *ptr);
+
+static UINT32 CColorConverter_RotateRight32(UINT32 value, unsigned int shift)
+{
+    return (value >> shift) | (value << (32 - shift));
+}
+
+static float CColorConverter_ByteToFloat(UINT8 value)
+{
+    return (float)value * (1.0f / 255.0f);
+}
+
+static void CColorConverter_SetVTable(void *object, void **vtable)
+{
+    *(void ***)object = vtable;
+}
+
+static void **CColorConverter_GetBaseVTable(void)
+{
+    return (void **)((char *)imp___ZTV15CColorConverter + 8);
+}
 
 void StdConverterARGB_Convert(const StdConverterARGB * _this, const void * pDst, const void * pSrc);
 void StdConverterABGR_Convert4ub4f(const StdConverterABGR * _this, const void * pDst, const float *Src);
@@ -37,7 +67,7 @@ void ATI4CompsConverterARGB_ArrayConvert4f4ubG3(const ATI4CompsConverterARGB * _
 void ATI4CompsConverterARGB_ArrayConvert4f4ub(const ATI4CompsConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices);
 void StdConverterARGB_ArrayConvert4f4ub(const StdConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices);
 const CColorConverter * CColorConverter_GetColorConverter(Format SrcFormat);
-static void __static_initialization_and_destruction_0(void);
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority);
 static void GLOBAL__D__ZN15CColorConverter17GetColorConverterENS_6FormatE(void); /* global destructors keyed to CColorConverter_GetColorConverter */
 static void GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE(void); /* global constructors keyed to CColorConverter_GetColorConverter */
 void CColorConverter_Convert4ub4f(const CColorConverter * _this, const void * Dest, const float *Src);
@@ -45,305 +75,167 @@ void CColorConverter_Convert4f4ubInverse(const CColorConverter * _this, float *D
 void CColorConverter_Convert3f4ubInverse(const CColorConverter * _this, float *Dest, const UINT8 *Src);
 void CColorConverter_ArrayConvert4f4ub(const CColorConverter * _this, const void * pDst, const float * pSrc, UINT32 NumVertices);
 ConverterType CColorConverter_GetType(const CColorConverter * _this);
-void ZN15CColorConverterD1Ev(void); /* CColorConverter_~CColorConverter */
-void ZN15CColorConverterD0Ev(void); /* CColorConverter_~CColorConverter */
+void ZN15CColorConverterD1Ev(CColorConverter * _this); /* CColorConverter_~CColorConverter */
+void ZN15CColorConverterD0Ev(CColorConverter * _this); /* CColorConverter_~CColorConverter */
 ConverterType ATI4CompsConverterARGB_GetType(const ATI4CompsConverterARGB * _this);
 ConverterType ATI4CompsConverterABGR_GetType(const ATI4CompsConverterABGR * _this);
 ConverterType StdConverterARGB_GetType(const StdConverterARGB * _this);
 ConverterType StdConverterABGR_GetType(const StdConverterABGR * _this);
-void ZN16StdConverterARGBD1Ev(void); /* StdConverterARGB_~StdConverterARGB */
-void ZN16StdConverterARGBD0Ev(void); /* StdConverterARGB_~StdConverterARGB */
-void ZN16StdConverterABGRD1Ev(void); /* StdConverterABGR_~StdConverterABGR */
-void ZN16StdConverterABGRD0Ev(void); /* StdConverterABGR_~StdConverterABGR */
-void ZN22ATI4CompsConverterARGBD1Ev(void); /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
-void ZN22ATI4CompsConverterARGBD0Ev(void); /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
-void ZN22ATI4CompsConverterABGRD1Ev(void); /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
-void ZN22ATI4CompsConverterABGRD0Ev(void); /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
+void ZN16StdConverterARGBD1Ev(StdConverterARGB * _this); /* StdConverterARGB_~StdConverterARGB */
+void ZN16StdConverterARGBD0Ev(StdConverterARGB * _this); /* StdConverterARGB_~StdConverterARGB */
+void ZN16StdConverterABGRD1Ev(StdConverterABGR * _this); /* StdConverterABGR_~StdConverterABGR */
+void ZN16StdConverterABGRD0Ev(StdConverterABGR * _this); /* StdConverterABGR_~StdConverterABGR */
+void ZN22ATI4CompsConverterARGBD1Ev(ATI4CompsConverterARGB * _this); /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
+void ZN22ATI4CompsConverterARGBD0Ev(ATI4CompsConverterARGB * _this); /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
+void ZN22ATI4CompsConverterABGRD1Ev(ATI4CompsConverterABGR * _this); /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
+void ZN22ATI4CompsConverterABGRD0Ev(ATI4CompsConverterABGR * _this); /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
 
 /* line 59 */
-__attribute__((naked))
 void StdConverterARGB_Convert(const StdConverterARGB * _this, const void * pDst, const void * pSrc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 59 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 69 | pSrc */
-        "movl (%eax), %eax\n"
-        "rorl $8, %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* pDst */
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 73 */
-        "retl\n"
-    );
+    UINT32 value;
+
+    (void)_this;
+
+    memcpy(&value, pSrc, sizeof(value));
+    value = CColorConverter_RotateRight32(value, 8);
+    memcpy((void *)pDst, &value, sizeof(value));
 }
 
 /* line 131 */
-__attribute__((naked))
 void StdConverterABGR_Convert4ub4f(const StdConverterABGR * _this, const void * pDst, const float *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 131 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 134 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)pDst;
+    (void)Src;
 }
 
 /* line 139 */
-__attribute__((naked))
 void StdConverterARGB_Convert4f4ubInverse(const StdConverterARGB * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 139 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* Dest */
-        "movl 0x10(%ebp), %edx\n" /* Src */
-        /* { scope 1 */
-        "movzbl 1(%edx), %eax\n" /* line 149 */
-        "cvtsi2ssl %eax, %xmm2\n" /* g */
-        "movzbl 2(%edx), %eax\n" /* line 150 */
-        "cvtsi2ssl %eax, %xmm3\n" /* b */
-        "movzbl 3(%edx), %eax\n" /* line 151 */
-        "cvtsi2ssl %eax, %xmm4\n" /* a */
-        "movzbl (%edx), %eax\n" /* line 153 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "mulss %xmm1, %xmm2\n" /* line 154 */
-        "movss %xmm2, 4(%ecx)\n"
-        "mulss %xmm1, %xmm3\n" /* line 155 */
-        "movss %xmm3, 8(%ecx)\n"
-        "mulss %xmm1, %xmm4\n" /* line 156 */
-        "movss %xmm4, 0xc(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 157 */
-        "retl\n"
-    );
+    (void)_this;
+
+    Dest[0] = CColorConverter_ByteToFloat(Src[0]);
+    Dest[1] = CColorConverter_ByteToFloat(Src[1]);
+    Dest[2] = CColorConverter_ByteToFloat(Src[2]);
+    Dest[3] = CColorConverter_ByteToFloat(Src[3]);
 }
 
 /* line 160 */
-__attribute__((naked))
 void StdConverterABGR_Convert4f4ubInverse(const StdConverterABGR * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 160 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 163 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 168 */
-__attribute__((naked))
 void StdConverterARGB_Convert3f4ubInverse(const StdConverterARGB * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 168 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* Dest */
-        "movl 0x10(%ebp), %edx\n" /* Src */
-        /* { scope 1 */
-        "movzbl 1(%edx), %eax\n" /* line 178 */
-        "cvtsi2ssl %eax, %xmm2\n" /* g */
-        "movzbl 2(%edx), %eax\n" /* line 179 */
-        "cvtsi2ssl %eax, %xmm3\n" /* b */
-        "movzbl (%edx), %eax\n" /* line 181 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "mulss %xmm1, %xmm2\n" /* line 182 */
-        "movss %xmm2, 4(%ecx)\n"
-        "mulss %xmm1, %xmm3\n" /* line 183 */
-        "movss %xmm3, 8(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 184 */
-        "retl\n"
-    );
+    (void)_this;
+
+    Dest[0] = CColorConverter_ByteToFloat(Src[0]);
+    Dest[1] = CColorConverter_ByteToFloat(Src[1]);
+    Dest[2] = CColorConverter_ByteToFloat(Src[2]);
 }
 
 /* line 187 */
-__attribute__((naked))
 void StdConverterABGR_Convert3f4ubInverse(const StdConverterABGR * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 187 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 190 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 425 */
-__attribute__((naked))
 void StdConverterABGR_ArrayConvert4f4ub(const StdConverterABGR * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 425 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 428 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)pRawDst;
+    (void)pSrc;
+    (void)NumVertices;
 }
 
 /* line 433 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_Convert(const ATI4CompsConverterARGB * _this, const void * pDst, const void * pSrc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 433 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 438 | pSrc */
-        "movl (%eax), %eax\n"
-        "rorl $0x18, %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* pDst */
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 442 */
-        "retl\n"
-    );
+    UINT32 value;
+
+    (void)_this;
+
+    memcpy(&value, pSrc, sizeof(value));
+    value = CColorConverter_RotateRight32(value, 24);
+    memcpy((void *)pDst, &value, sizeof(value));
 }
 
 /* line 445 */
-__attribute__((naked))
 void ATI4CompsConverterABGR_Convert(const ATI4CompsConverterABGR * _this, const void * pDst, const void * pSrc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 445 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 450 | pSrc */
-        "movl (%eax), %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* pDst */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 451 */
-        "retl\n"
-    );
+    (void)_this;
+
+    memcpy((void *)pDst, pSrc, sizeof(UINT32));
 }
 
 /* line 491 */
-__attribute__((naked))
 void ATI4CompsConverterABGR_Convert4ub4f(const ATI4CompsConverterABGR * _this, const void * pDst, const float *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 491 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 494 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)pDst;
+    (void)Src;
 }
 
 /* line 499 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_Convert4f4ubInverse(const ATI4CompsConverterARGB * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 499 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* Dest */
-        "movl 0x10(%ebp), %edx\n" /* Src */
-        /* { scope 1 */
-        "movzbl 2(%edx), %eax\n" /* line 510 */
-        "cvtsi2ssl %eax, %xmm2\n" /* g */
-        "movzbl 1(%edx), %eax\n" /* line 511 */
-        "cvtsi2ssl %eax, %xmm3\n" /* b */
-        "movzbl (%edx), %eax\n" /* line 512 */
-        "cvtsi2ssl %eax, %xmm4\n" /* a */
-        "movzbl 3(%edx), %eax\n" /* line 514 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "mulss %xmm1, %xmm2\n" /* line 515 */
-        "movss %xmm2, 4(%ecx)\n"
-        "mulss %xmm1, %xmm3\n" /* line 516 */
-        "movss %xmm3, 8(%ecx)\n"
-        "mulss %xmm1, %xmm4\n" /* line 517 */
-        "movss %xmm4, 0xc(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 518 */
-        "retl\n"
-    );
+    (void)_this;
+
+    Dest[0] = CColorConverter_ByteToFloat(Src[3]);
+    Dest[1] = CColorConverter_ByteToFloat(Src[2]);
+    Dest[2] = CColorConverter_ByteToFloat(Src[1]);
+    Dest[3] = CColorConverter_ByteToFloat(Src[0]);
 }
 
 /* line 521 */
-__attribute__((naked))
 void ATI4CompsConverterABGR_Convert4f4ubInverse(const ATI4CompsConverterABGR * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 521 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 524 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 528 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_Convert3f4ubInverse(const ATI4CompsConverterARGB * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 528 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* Dest */
-        "movl 0x10(%ebp), %edx\n" /* Src */
-        /* { scope 1 */
-        "movzbl 2(%edx), %eax\n" /* line 539 */
-        "cvtsi2ssl %eax, %xmm2\n" /* g */
-        "movzbl 1(%edx), %eax\n" /* line 540 */
-        "cvtsi2ssl %eax, %xmm3\n" /* b */
-        "movzbl 3(%edx), %eax\n" /* line 542 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "mulss %xmm1, %xmm2\n" /* line 543 */
-        "movss %xmm2, 4(%ecx)\n"
-        "mulss %xmm1, %xmm3\n" /* line 544 */
-        "movss %xmm3, 8(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 545 */
-        "retl\n"
-    );
+    (void)_this;
+
+    Dest[0] = CColorConverter_ByteToFloat(Src[3]);
+    Dest[1] = CColorConverter_ByteToFloat(Src[2]);
+    Dest[2] = CColorConverter_ByteToFloat(Src[1]);
 }
 
 /* line 548 */
-__attribute__((naked))
 void ATI4CompsConverterABGR_Convert3f4ubInverse(const ATI4CompsConverterABGR * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 548 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 551 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 799 */
-__attribute__((naked))
 void ATI4CompsConverterABGR_ArrayConvert4f4ub(const ATI4CompsConverterABGR * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 799 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 802 */
-        "retl\n"
-    );
+    (void)_this;
+    (void)pRawDst;
+    (void)pSrc;
+    (void)NumVertices;
 }
 
 /* line 76 */
-__attribute__((naked))
 void StdConverterABGR_Convert(const StdConverterABGR * _this, const void * pDst, const void * pSrc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 76 */
-        "movl %esp, %ebp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 83 | pSrc */
-        "movl (%eax), %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* pDst */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 94 */
-        "retl\n"
-    );
+    (void)_this;
+
+    memcpy((void *)pDst, pSrc, sizeof(UINT32));
 }
 
 /* line 99 */
@@ -883,481 +775,207 @@ void ATI4CompsConverterARGB_ArrayConvert4f4ubG3(const ATI4CompsConverterARGB * _
 }
 
 /* line 769 */
-__attribute__((naked))
 void ATI4CompsConverterARGB_ArrayConvert4f4ub(const ATI4CompsConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 769 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, -0x1c(%ebp)\n" /* this */
-        "movl 0xc(%ebp), %edi\n" /* pRawDst */
-        "movl 0x10(%ebp), %esi\n" /* pSrc */
-        "movl 0x14(%ebp), %ebx\n" /* NumVertices */
-        /* { scope 1 */
-        "calll MacFeatures_IsAltiVecAvailable\n" /* line 775 */
-        "testb %al, %al\n" /* line 784 */
-        "je .Lfdec2_0000deeb\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 796 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfdec2_0000deeb:\n"
-        "movl %ebx, 0x14(%ebp)\n" /* line 790 | NumVertices */
-        "movl %esi, 0x10(%ebp)\n" /* pSrc */
-        "movl %edi, 0xc(%ebp)\n" /* pRawDst */
-        "movl -0x1c(%ebp), %eax\n" /* this */
-        "movl %eax, 8(%ebp)\n" /* this */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 796 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp ATI4CompsConverterARGB_ArrayConvert4f4ubG3\n" /* line 790 */
-    );
+    if (!MacFeatures_IsAltiVecAvailable()) {
+        ATI4CompsConverterARGB_ArrayConvert4f4ubG3(_this, pRawDst, pSrc, NumVertices);
+    }
 }
 
 /* line 395 */
-__attribute__((naked))
 void StdConverterARGB_ArrayConvert4f4ub(const StdConverterARGB * _this, const void * pRawDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 395 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, -0x1c(%ebp)\n" /* this */
-        "movl 0xc(%ebp), %edi\n" /* pRawDst */
-        "movl 0x10(%ebp), %esi\n" /* pSrc */
-        "movl 0x14(%ebp), %ebx\n" /* NumVertices */
-        /* { scope 1 */
-        "calll MacFeatures_IsAltiVecAvailable\n" /* line 401 */
-        "testb %al, %al\n" /* line 410 */
-        "je .Lfdf06_0000df2f\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 422 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfdf06_0000df2f:\n"
-        "movl %ebx, 0x14(%ebp)\n" /* line 416 | NumVertices */
-        "movl %esi, 0x10(%ebp)\n" /* pSrc */
-        "movl %edi, 0xc(%ebp)\n" /* pRawDst */
-        "movl -0x1c(%ebp), %eax\n" /* this */
-        "movl %eax, 8(%ebp)\n" /* this */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 422 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp StdConverterARGB_ArrayConvert4f4ubG3\n" /* line 416 */
-    );
+    if (!MacFeatures_IsAltiVecAvailable()) {
+        StdConverterARGB_ArrayConvert4f4ubG3(_this, pRawDst, pSrc, NumVertices);
+    }
 }
 
 /* line 25 */
-__attribute__((naked))
 const CColorConverter * CColorConverter_GetColorConverter(Format SrcFormat)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 25 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* SrcFormat */
-        "calll MacDisplay_GetCardType\n" /* line 178 */
-        "subl $1, %eax\n" /* line 30 */
-        "je .Lfdf4a_0000df75\n"
-        ".Lfdf4a_0000df5e:\n"
-        "movl $sStdConverterARGB, %edx\n" /* line 46 */
-        "testl %ebx, %ebx\n" /* SrcFormat */
-        "movl $sStdConverterABGR, %eax\n"
-        "cmovnel %eax, %edx\n"
-        "movl %edx, %eax\n" /* line 54 */
-        "addl $4, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfdf4a_0000df75:\n"
-        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 32 */
-        "cmpb $0, 0x800(%eax)\n"
-        "je .Lfdf4a_0000df5e\n"
-        "movl $sATI4CompsConverterARGB, %edx\n" /* line 34 */
-        "testl %ebx, %ebx\n" /* SrcFormat */
-        "movl $sATI4CompsConverterABGR, %eax\n"
-        "cmovnel %eax, %edx\n"
-        "movl %edx, %eax\n" /* line 54 */
-        "addl $4, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const unsigned char *openGlState;
+
+    openGlState = (const unsigned char *)imp___ZN7COpenGL7sOpenGLE;
+    if (MacDisplay_GetCardType() == 2 && openGlState[0x800] != 0) {
+        return (const CColorConverter *)(SrcFormat ? sATI4CompsConverterABGR : sATI4CompsConverterARGB);
+    }
+
+    return (const CColorConverter *)(SrcFormat ? sStdConverterABGR : sStdConverterARGB);
 }
 
 /* line 839 */
-static __attribute__((naked))
-void __static_initialization_and_destruction_0(void)
+static void __static_initialization_and_destruction_0(int __initialize_p, int __priority)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 839 */
-        "movl %esp, %ebp\n"
-        "cmpl $0xffff, %edx\n" /* line 19 */
-        "je .Lfdf9a_0000dfa7\n"
-        ".Lfdf9a_0000dfa5:\n"
-        "popl %ebp\n" /* line 839 */
-        "retl\n"
-        ".Lfdf9a_0000dfa7:\n"
-        "cmpl $1, %eax\n" /* line 19 */
-        "je .Lfdf9a_0000dfce\n"
-        "testl %eax, %eax\n" /* line 22 */
-        "jne .Lfdf9a_0000dfa5\n"
-        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
-        "addl $8, %eax\n"
-        "movl %eax, sATI4CompsConverterABGR\n"
-        "movl %eax, sATI4CompsConverterARGB\n"
-        "movl %eax, sStdConverterABGR\n"
-        "movl %eax, sStdConverterARGB\n"
-        "popl %ebp\n" /* line 839 */
-        "retl\n"
-        ".Lfdf9a_0000dfce:\n"
-        "movl $vtbl_StdConverterARGB, sStdConverterARGB\n" /* line 81 */
-        "movl $vtbl_StdConverterABGR, sStdConverterABGR\n" /* line 98 */
-        "movl $vtbl_ATI4CompsConverterARGB, sATI4CompsConverterARGB\n" /* line 47 */
-        "movl $vtbl_ATI4CompsConverterABGR, sATI4CompsConverterABGR\n" /* line 64 */
-        "popl %ebp\n" /* line 839 */
-        "retl\n"
-    );
+    if (__priority != 0xffff) {
+        return;
+    }
+
+    if (__initialize_p == 0) {
+        void **baseVTable;
+
+        baseVTable = CColorConverter_GetBaseVTable();
+        CColorConverter_SetVTable(sATI4CompsConverterABGR, baseVTable);
+        CColorConverter_SetVTable(sATI4CompsConverterARGB, baseVTable);
+        CColorConverter_SetVTable(sStdConverterABGR, baseVTable);
+        CColorConverter_SetVTable(sStdConverterARGB, baseVTable);
+        return;
+    }
+
+    if (__initialize_p == 1) {
+        CColorConverter_SetVTable(sStdConverterARGB, vtbl_StdConverterARGB);
+        CColorConverter_SetVTable(sStdConverterABGR, vtbl_StdConverterABGR);
+        CColorConverter_SetVTable(sATI4CompsConverterARGB, vtbl_ATI4CompsConverterARGB);
+        CColorConverter_SetVTable(sATI4CompsConverterABGR, vtbl_ATI4CompsConverterABGR);
+    }
 }
 
 /* line 841 */
-static __attribute__((naked))
-void GLOBAL__D__ZN15CColorConverter17GetColorConverterENS_6FormatE(void) /* global destructors keyed to CColorConverter_GetColorConverter */
+static void GLOBAL__D__ZN15CColorConverter17GetColorConverterENS_6FormatE(void) /* global destructors keyed to CColorConverter_GetColorConverter */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 841 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(0, 0xffff);
 }
 
 /* line 840 */
-static __attribute__((naked))
-void GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE(void) /* global constructors keyed to CColorConverter_GetColorConverter */
+static void GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE(void) /* global constructors keyed to CColorConverter_GetColorConverter */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 840 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    __static_initialization_and_destruction_0(1, 0xffff);
 }
 
 /* line 32 */
-__attribute__((naked))
 void CColorConverter_Convert4ub4f(const CColorConverter * _this, const void * Dest, const float *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 32 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 33 */
-__attribute__((naked))
 void CColorConverter_Convert4f4ubInverse(const CColorConverter * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 33 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 34 */
-__attribute__((naked))
 void CColorConverter_Convert3f4ubInverse(const CColorConverter * _this, float *Dest, const UINT8 *Src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 34 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)Dest;
+    (void)Src;
 }
 
 /* line 35 */
-__attribute__((naked))
 void CColorConverter_ArrayConvert4f4ub(const CColorConverter * _this, const void * pDst, const float * pSrc, UINT32 NumVertices)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)pDst;
+    (void)pSrc;
+    (void)NumVertices;
 }
 
 /* line 36 */
-__attribute__((naked))
 ConverterType CColorConverter_GetType(const CColorConverter * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 36 */
-        "movl %esp, %ebp\n"
-        "movl $4, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return UNKNOWN_CONVERTER;
 }
 
 /* line 38 */
-__attribute__((naked))
-void ZN15CColorConverterD1Ev(void) /* CColorConverter_~CColorConverter */
+void ZN15CColorConverterD1Ev(CColorConverter * _this) /* CColorConverter_~CColorConverter */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 38 */
-        "movl %esp, %ebp\n"
-        "movl imp___ZTV15CColorConverter, %edx\n"
-        "addl $8, %edx\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CColorConverter_SetVTable(_this, CColorConverter_GetBaseVTable());
 }
 
 /* line 38 */
-__attribute__((naked))
-void ZN15CColorConverterD0Ev(void) /* CColorConverter_~CColorConverter */
+void ZN15CColorConverterD0Ev(CColorConverter * _this) /* CColorConverter_~CColorConverter */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 38 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl imp___ZTV15CColorConverter, %eax\n"
-        "addl $8, %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN15CColorConverterD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 /* line 55 */
-__attribute__((naked))
 ConverterType ATI4CompsConverterARGB_GetType(const ATI4CompsConverterARGB * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 55 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return ATI_4_COMPS_CONVERTER_ARGB;
 }
 
 /* line 72 */
-__attribute__((naked))
 ConverterType ATI4CompsConverterABGR_GetType(const ATI4CompsConverterABGR * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 72 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return ATI_4_COMPS_CONVERTER_ABGR;
 }
 
 /* line 89 */
-__attribute__((naked))
 ConverterType StdConverterARGB_GetType(const StdConverterARGB * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 89 */
-        "movl %esp, %ebp\n"
-        "movl $2, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return STD_CONVERTER_ARGB;
 }
 
 /* line 106 */
-__attribute__((naked))
 ConverterType StdConverterABGR_GetType(const StdConverterABGR * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 106 */
-        "movl %esp, %ebp\n"
-        "movl $3, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    return STD_CONVERTER_ABGR;
 }
 
 /* line 82 */
-__attribute__((naked))
-void ZN16StdConverterARGBD1Ev(void) /* StdConverterARGB_~StdConverterARGB */
+void ZN16StdConverterARGBD1Ev(StdConverterARGB * _this) /* StdConverterARGB_~StdConverterARGB */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 82 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl $vtbl_StdConverterARGB, (%edx)\n"
-        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
-        "addl $8, %eax\n"
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 82 */
-        "retl\n"
-    );
+    CColorConverter_SetVTable(_this, vtbl_StdConverterARGB);
+    CColorConverter_SetVTable(_this, CColorConverter_GetBaseVTable());
 }
 
 /* line 82 */
-__attribute__((naked))
-void ZN16StdConverterARGBD0Ev(void) /* StdConverterARGB_~StdConverterARGB */
+void ZN16StdConverterARGBD0Ev(StdConverterARGB * _this) /* StdConverterARGB_~StdConverterARGB */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 82 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_StdConverterARGB, (%eax)\n"
-        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
-        "addl $8, %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 82 | this */
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN16StdConverterARGBD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 /* line 99 */
-__attribute__((naked))
-void ZN16StdConverterABGRD1Ev(void) /* StdConverterABGR_~StdConverterABGR */
+void ZN16StdConverterABGRD1Ev(StdConverterABGR * _this) /* StdConverterABGR_~StdConverterABGR */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl $vtbl_StdConverterABGR, (%edx)\n"
-        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
-        "addl $8, %eax\n"
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 99 */
-        "retl\n"
-    );
+    CColorConverter_SetVTable(_this, vtbl_StdConverterABGR);
+    CColorConverter_SetVTable(_this, CColorConverter_GetBaseVTable());
 }
 
 /* line 99 */
-__attribute__((naked))
-void ZN16StdConverterABGRD0Ev(void) /* StdConverterABGR_~StdConverterABGR */
+void ZN16StdConverterABGRD0Ev(StdConverterABGR * _this) /* StdConverterABGR_~StdConverterABGR */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_StdConverterABGR, (%eax)\n"
-        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
-        "addl $8, %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 99 | this */
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN16StdConverterABGRD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 /* line 48 */
-__attribute__((naked))
-void ZN22ATI4CompsConverterARGBD1Ev(void) /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
+void ZN22ATI4CompsConverterARGBD1Ev(ATI4CompsConverterARGB * _this) /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 48 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl $vtbl_ATI4CompsConverterARGB, (%edx)\n"
-        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
-        "addl $8, %eax\n"
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 48 */
-        "retl\n"
-    );
+    CColorConverter_SetVTable(_this, vtbl_ATI4CompsConverterARGB);
+    CColorConverter_SetVTable(_this, CColorConverter_GetBaseVTable());
 }
 
 /* line 48 */
-__attribute__((naked))
-void ZN22ATI4CompsConverterARGBD0Ev(void) /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
+void ZN22ATI4CompsConverterARGBD0Ev(ATI4CompsConverterARGB * _this) /* ATI4CompsConverterARGB_~ATI4CompsConverterARGB */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 48 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_ATI4CompsConverterARGB, (%eax)\n"
-        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
-        "addl $8, %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 48 | this */
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN22ATI4CompsConverterARGBD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 /* line 65 */
-__attribute__((naked))
-void ZN22ATI4CompsConverterABGRD1Ev(void) /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
+void ZN22ATI4CompsConverterABGRD1Ev(ATI4CompsConverterABGR * _this) /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 65 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl $vtbl_ATI4CompsConverterABGR, (%edx)\n"
-        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
-        "addl $8, %eax\n"
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 65 */
-        "retl\n"
-    );
+    CColorConverter_SetVTable(_this, vtbl_ATI4CompsConverterABGR);
+    CColorConverter_SetVTable(_this, CColorConverter_GetBaseVTable());
 }
 
 /* line 65 */
-__attribute__((naked))
-void ZN22ATI4CompsConverterABGRD0Ev(void) /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
+void ZN22ATI4CompsConverterABGRD0Ev(ATI4CompsConverterABGR * _this) /* ATI4CompsConverterABGR_~ATI4CompsConverterABGR */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 65 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $vtbl_ATI4CompsConverterABGR, (%eax)\n"
-        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
-        "addl $8, %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl %eax, 8(%ebp)\n" /* line 65 | this */
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    ZN22ATI4CompsConverterABGRD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 
