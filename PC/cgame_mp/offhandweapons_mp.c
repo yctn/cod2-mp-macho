@@ -9,7 +9,7 @@ extern const dvar_t *Dvar_RegisterFloat(const char *name, float defaultValue, fl
 extern int BG_GetFirstAvailableOffhand(void *ps, int weaponType);
 extern int BG_GetFirstEquippedOffhand(void *ps, int weaponType);
 extern float CG_FadeHudMenu(void *hud, int val, int time);
-extern void UI_DrawText(const char *text, int maxChars, void *font, float x, float y, float horzAlign, float vertAlign, float scale, float *color, int textStyle);
+extern void UI_DrawText(const char *text, int maxChars, void *font, float x, float y, int horzAlign, int vertAlign, float scale, const float *color, int textStyle);
 extern const char *UI_SafeTranslateString(const char *str);
 extern void CG_PlayEntitySoundAlias(int entNum, int soundAlias);
 extern void CG_PlaySoundAlias(int entNum, float *origin, int soundAlias);
@@ -21,7 +21,7 @@ extern int BG_GetNumWeapons(void);
 extern int BG_ClipForWeapon(int weaponIndex);
 extern void *Com_GetClientDObj(int clientNum, int lod);
 extern void CG_MenuShowNotify(int type);
-extern void UI_DrawHandlePic(float x, float y, float w, float h, float horzAlign, float vertAlign, float *color, MaterialHandle material);
+extern float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const float *color, MaterialHandle material);
 extern float floorf(float x);
 extern float cosf(float x);
 extern char *va(const char *fmt, ...);
