@@ -40,6 +40,7 @@ extern char *va(const char *format, ...);
 extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 extern void Dvar_AddCommands(void);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
 
 void Dvar_SetInAutoExec(int inAutoExec);
 Bool Dvar_IsSystemActive(void);
@@ -133,6 +134,8 @@ typedef void (__attribute__((regparm(2))) *DvarUpdateResetValueRegparmFn)(
     const dvar_t *dvar, DvarValue value);
 typedef const char *(__attribute__((regparm(3))) *DvarDomainToStringRegparmFn)(
     int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount);
+typedef DvarValue (__attribute__((regparm(3))) *DvarStringToValueRegparmFn)(
+    int type, uint32_t domainLo, uint32_t domainHi, const char *string);
 
 static const dvar_t *Dvar_RegisterVariantReg(const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain)
 {
@@ -167,6 +170,21 @@ static const char *Dvar_DomainToString_InternalReg(int type, DvarLimits domain, 
     bits.domain = domain;
     return ((DvarDomainToStringRegparmFn)Dvar_DomainToString_Internal)(
         type, bits.raw.lo, bits.raw.hi, outBuffer, outBufferLen, outLineCount);
+}
+
+static DvarValue Dvar_StringToValueReg(int type, DvarLimits domain, const char *string)
+{
+    union {
+        DvarLimits domain;
+        struct {
+            uint32_t lo;
+            uint32_t hi;
+        } raw;
+    } bits;
+
+    bits.domain = domain;
+    return ((DvarStringToValueRegparmFn)Dvar_StringToValue)(
+        type, bits.raw.lo, bits.raw.hi, string);
 }
 
 /* line 45 */
@@ -4462,487 +4480,93 @@ void Dvar_SetFromString(const dvar_t *dvar, const char *string)
 }
 
 /* line 2130 */
-__attribute__((naked))
 void Dvar_SetString(const dvar_t *dvar, const char *value)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2130 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        /* { scope 1: domain */
-        "movl 8(%ebp), %eax\n" /* line 2036 | dvar */
-        "cmpb $7, 6(%eax)\n"
-        "je .Lf53ff8_00054124\n"
-        "addl $0x14, %eax\n" /* line 2043 */
-        "movl %eax, -0x41c(%ebp)\n" /* domain */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 8(%ebp), %edx\n" /* line 402 | dvar */
-        "movl 0x14(%edx), %esi\n" /* len */
-        "testl %esi, %esi\n" /* len */
-        "jg .Lf53ff8_000540a9\n"
-        ".Lf53ff8_00054028:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 408 | value */
-        "movzbl (%eax), %ecx\n"
-        "testb %cl, %cl\n"
-        "jne .Lf53ff8_00054076\n"
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf53ff8_00054034:\n"
-        "cmpl %ebx, %esi\n" /* line 414 | stringIndex, len */
-        "jg .Lf53ff8_0005405f\n"
-        ".Lf53ff8_00054038:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 0xc(%ebp), %edi\n" /* value */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %esi\n" /* len */
-        "movl -0x41c(%ebp), %edx\n" /* line 418 | domain */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lf53ff8_000540e4\n"
-        ".Lf53ff8_0005405a:\n"
-        "movl $0xfffffac7, %ebx\n" /* stringIndex */
-        /* } scope */
-        /* } scope */
-        ".Lf53ff8_0005405f:\n"
-        "movl %ebx, %edx\n" /* line 2043 | stringIndex */
-        "xorl %ecx, %ecx\n" /* line 2051 */
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 2133 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: domain */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf53ff8_00054076:\n"
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "ja .Lf53ff8_0005405a\n"
-        "movl 0xc(%ebp), %edi\n" /* value */
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf53ff8_00054082:\n"
-        "leal (%ebx, %ebx, 4), %edx\n" /* line 412 | stringIndex */
-        "movsbl %cl, %eax\n"
-        "leal -0x30(%eax, %edx, 2), %ebx\n" /* stringIndex */
-        "movzbl 1(%edi), %ecx\n" /* line 408 */
-        "testb %cl, %cl\n"
-        "je .Lf53ff8_00054158\n"
-        "addl $1, %edi\n"
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "jbe .Lf53ff8_00054082\n"
-        "movl $0xfffffac7, %ebx\n" /* line 418 | stringIndex */
-        "jmp .Lf53ff8_0005405f\n"
-        ".Lf53ff8_000540a9:\n"
-        "xorl %ebx, %ebx\n" /* line 402 | stringIndex */
-        "movl -0x41c(%ebp), %edx\n" /* domain */
-        "jmp .Lf53ff8_000540c6\n"
-        ".Lf53ff8_000540b3:\n"
-        "addl $1, %ebx\n" /* stringIndex */
-        "movl -0x41c(%ebp), %edx\n" /* domain */
-        "movl (%edx), %esi\n" /* len */
-        "cmpl %esi, %ebx\n" /* len, stringIndex */
-        "jge .Lf53ff8_00054028\n"
-        ".Lf53ff8_000540c6:\n"
-        "movl 4(%edx), %eax\n" /* line 404 */
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf53ff8_000540b3\n"
-        "jmp .Lf53ff8_0005405f\n"
-        ".Lf53ff8_000540e4:\n"
-        "xorl %ebx, %ebx\n" /* line 418 | stringIndex */
-        ".Lf53ff8_000540e6:\n"
-        "movl %esi, 8(%esp)\n" /* line 420 | len */
-        "movl -0x41c(%ebp), %edx\n" /* domain */
-        "movl 4(%edx), %eax\n"
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, (%esp)\n"
-        "calll strnicmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf53ff8_0005405f\n"
-        "addl $1, %ebx\n" /* line 418 | stringIndex */
-        "movl -0x41c(%ebp), %edx\n" /* domain */
-        "cmpl (%edx), %ebx\n" /* stringIndex */
-        "jl .Lf53ff8_000540e6\n"
-        "movl $0xfffffac7, %ebx\n" /* stringIndex */
-        "jmp .Lf53ff8_0005405f\n"
-        /* } scope */
-        /* } scope */
-        ".Lf53ff8_00054124:\n"
-        "movl $0x400, 8(%esp)\n" /* line 2038 */
-        "movl 0xc(%ebp), %edx\n" /* value */
-        "movl %edx, 4(%esp)\n"
-        "leal -0x418(%ebp), %ebx\n" /* stringCopy, stringIndex */
-        "movl %ebx, (%esp)\n" /* stringIndex */
-        "calll I_strncpyz\n"
-        "movl %ebx, %edx\n" /* line 2039 | stringIndex */
-        "xorl %ecx, %ecx\n" /* line 2051 */
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 2133 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: domain */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf53ff8_00054158:\n"
-        "testl %ebx, %ebx\n" /* line 414 | stringIndex */
-        "js .Lf53ff8_00054038\n"
-        "jmp .Lf53ff8_00054034\n"
-    );
+    DvarValue newValue;
+    char stringCopy[1024];
+
+    if (dvar->type == DVAR_TYPE_STRING) {
+        I_strncpyz(stringCopy, value, sizeof(stringCopy));
+        newValue.string = stringCopy;
+    } else {
+        /* The original non-string path reuses enum-style lookup against the dvar domain. */
+        newValue = Dvar_StringToValueReg(DVAR_TYPE_ENUM, dvar->domain, value);
+    }
+
+    Dvar_SetVariantReg(dvar, newValue, DVAR_SOURCE_INTERNAL);
 }
 
 /* line 2059 */
-__attribute__((naked))
 void Dvar_SetColorFromSource(const dvar_t *dvar, float r, float g, float b, float a, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2059 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xe0, %esp\n"
-        "xorl %ebx, %ebx\n"
-        "movl 8(%ebp), %esi\n" /* dvar */
-        "movss 0xc(%ebp), %xmm1\n" /* r */
-        "movss 0x10(%ebp), %xmm3\n" /* g */
-        /* { scope 1 */
-        "cmpb $8, 6(%esi)\n" /* line 2068 | dvar */
-        "je .Lf54166_000541e4\n"
-        "cvtss2sd 0x18(%ebp), %xmm0\n" /* line 2078 | a */
-        "movsd %xmm0, 0x24(%esp)\n"
-        "cvtss2sd 0x14(%ebp), %xmm0\n" /* b */
-        "movsd %xmm0, 0x1c(%esp)\n"
-        "cvtss2sd %xmm3, %xmm3\n"
-        "movsd %xmm3, 0x14(%esp)\n"
-        "cvtss2sd %xmm1, %xmm1\n"
-        "movsd %xmm1, 0xc(%esp)\n"
-        "movl $str_00219544, 8(%esp)\n" /* "%g %g %g %g" */
-        "movl $0x80, 4(%esp)\n"
-        "leal -0x88(%ebp), %ebx\n" /* string, newValue */
-        "movl %ebx, (%esp)\n" /* newValue */
-        "calll Com_sprintf\n"
-        "movl 0x1c(%ebp), %ecx\n" /* line 2086 | source */
-        "movl %ebx, %edx\n" /* newValue */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0xe0, %esp\n" /* line 2091 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf54166_000541e4:\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "pxor %xmm2, %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_00054399\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543a9\n"
-        ".Lf54166_00054215:\n"
-        "movaps %xmm2, %xmm0\n"
-        ".Lf54166_00054218:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "movss %xmm3, -0xb8(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x8c(%ebp)\n"
-        "cvttss2si -0x8c(%ebp), %eax\n"
-        "movb %al, %bl\n"
-        "movss -0xb8(%ebp), %xmm3\n" /* line 45 */
-        "movaps %xmm3, %xmm0\n"
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0xa8(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_00054404\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        ".Lf54166_0005427e:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543f4\n"
-        "movaps %xmm2, %xmm0\n"
-        ".Lf54166_0005428a:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x90(%ebp)\n"
-        "cvttss2si -0x90(%ebp), %eax\n"
-        "movb %al, %bh\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 45 | b */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0xa8(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543e7\n"
-        "movl $0x3f800000, 0x14(%ebp)\n" /* b */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        ".Lf54166_000542e1:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543d5\n"
-        "movaps %xmm2, %xmm0\n"
-        ".Lf54166_000542ed:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x94(%ebp)\n"
-        "cvttss2si -0x94(%ebp), %eax\n"
-        "movzbl %al, %eax\n"
-        "shll $0x10, %eax\n"
-        "andl $0xff00ffff, %ebx\n"
-        "orl %eax, %ebx\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 45 | a */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0xa8(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543c8\n"
-        "movl $0x3f800000, 0x18(%ebp)\n" /* a */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        ".Lf54166_00054350:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf54166_000543b9\n"
-        "movaps %xmm2, %xmm0\n"
-        ".Lf54166_00054358:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x98(%ebp)\n"
-        "cvttss2si -0x98(%ebp), %eax\n"
-        "shll $0x18, %eax\n"
-        "andl $0x00FFFFFF, %ebx\n"
-        "orl %eax, %ebx\n"
-        "movl 0x1c(%ebp), %ecx\n" /* line 2086 | source */
-        "movl %ebx, %edx\n" /* newValue */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0xe0, %esp\n" /* line 2091 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf54166_00054399:\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf54166_00054215\n"
-        ".Lf54166_000543a9:\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf54166_00054218\n"
-        ".Lf54166_000543b9:\n"
-        "movss 0x18(%ebp), %xmm0\n" /* a */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf54166_00054358\n"
-        ".Lf54166_000543c8:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss 0x18(%ebp), %xmm0\n" /* a */
-        "jmp .Lf54166_00054350\n"
-        ".Lf54166_000543d5:\n"
-        "movss 0x14(%ebp), %xmm0\n" /* b */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf54166_000542ed\n"
-        ".Lf54166_000543e7:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss 0x14(%ebp), %xmm0\n" /* b */
-        "jmp .Lf54166_000542e1\n"
-        ".Lf54166_000543f4:\n"
-        "movaps %xmm3, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf54166_0005428a\n"
-        ".Lf54166_00054404:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf54166_0005427e\n"
-    );
+    DvarValue newValue;
+    DvarLimits domain;
+    char string[128];
+
+    Com_sprintf(string, sizeof(string), "%g %g %g %g", r, g, b, a);
+
+    if (dvar->type == DVAR_TYPE_COLOR) {
+        memset(&domain, 0, sizeof(domain));
+        newValue = Dvar_StringToValueReg(DVAR_TYPE_COLOR, domain, string);
+    } else {
+        newValue.string = string;
+    }
+
+    Dvar_SetVariantReg(dvar, newValue, source);
 }
 
 /* line 2136 */
-__attribute__((naked))
 void Dvar_SetColor(const dvar_t *dvar, float r, float g, float b, float a)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2136 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $0, 0x14(%esp)\n" /* line 2138 */
-        "movl 0x18(%ebp), %eax\n" /* a */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* b */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* g */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* r */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetColorFromSource\n"
-        "leave\n" /* line 2139 */
-        "retl\n"
-    );
+    Dvar_SetColorFromSource(dvar, r, g, b, a, DVAR_SOURCE_INTERNAL);
 }
 
 /* line 1896 */
-__attribute__((naked))
 void Dvar_SetFloatFromSource(const dvar_t *dvar, float value, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1896 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x50, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dvar */
-        "movss 0xc(%ebp), %xmm0\n" /* value */
-        /* { scope 1 */
-        "cmpb $1, 6(%esi)\n" /* line 1905 | dvar */
-        "je .Lf54448_00054496\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 1911 */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movl $str_00217c20, 8(%esp)\n" /* "%g" */
-        "movl $0x20, 4(%esp)\n"
-        "leal -0x28(%ebp), %ebx\n" /* string */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl %ebx, %edx\n" /* line 1912 */
-        "movl 0x10(%ebp), %ecx\n" /* line 1919 | source */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x50, %esp\n" /* line 1924 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf54448_00054496:\n"
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 1907 */
-        "movl -0x2c(%ebp), %edx\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1919 | source */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x50, %esp\n" /* line 1924 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue newValue;
+    char string[32];
+
+    if (dvar->type == DVAR_TYPE_FLOAT) {
+        newValue.value = value;
+    } else {
+        Com_sprintf(string, sizeof(string), "%g", value);
+        newValue.string = string;
+    }
+
+    Dvar_SetVariantReg(dvar, newValue, source);
 }
 
 /* line 1865 */
-__attribute__((naked))
 void Dvar_SetIntFromSource(const dvar_t *dvar, int value, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1865 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dvar */
-        /* { scope 1 */
-        "movzbl 6(%esi), %eax\n" /* line 1874 | dvar */
-        "subb $5, %al\n"
-        "cmpb $1, %al\n"
-        "jbe .Lf544b0_000544fa\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1880 | value */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_0021785c, 8(%esp)\n" /* "%i" */
-        "movl $0x20, 4(%esp)\n"
-        "leal -0x28(%ebp), %ebx\n" /* string */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl %ebx, %edx\n" /* line 1881 */
-        "movl 0x10(%ebp), %ecx\n" /* line 1888 | source */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 1893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf544b0_000544fa:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1876 | value */
-        "movl 0x10(%ebp), %ecx\n" /* line 1888 | source */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 1893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DvarValue newValue;
+    char string[32];
+
+    if (dvar->type == DVAR_TYPE_INT || dvar->type == DVAR_TYPE_ENUM) {
+        newValue.integer = value;
+    } else {
+        Com_sprintf(string, sizeof(string), "%i", value);
+        newValue.string = string;
+    }
+
+    Dvar_SetVariantReg(dvar, newValue, source);
 }
 
 /* line 1840 */
-__attribute__((naked))
 void Dvar_SetBoolFromSource(const dvar_t *dvar, int value, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1840 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "xorl %edx, %edx\n"
-        "movl 8(%ebp), %ebx\n" /* dvar */
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl 0x10(%ebp), %esi\n" /* source */
-        /* { scope 1 */
-        "cmpb $0, 6(%ebx)\n" /* line 1848 | dvar */
-        "jne .Lf5450e_00054532\n"
-        "movb %al, %dl\n" /* line 1849 */
-        "movl %esi, %ecx\n" /* line 1857 | source */
-        "movl %ebx, %eax\n" /* dvar */
-        /* } scope */
-        "popl %ebx\n" /* line 1862 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_SetVariant\n" /* line 1857 */
-        ".Lf5450e_00054532:\n"
-        "movl $str_002162ac, %edx\n" /* line 1851 */
-        "testb %al, %al\n"
-        "movl $str_0021952c, %eax\n" /* "0" */
-        "cmovel %eax, %edx\n"
-        "movl %esi, %ecx\n" /* line 1857 | source */
-        "movl %ebx, %eax\n" /* dvar */
-        /* } scope */
-        "popl %ebx\n" /* line 1862 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_SetVariant\n" /* line 1857 */
-    );
+    DvarValue newValue;
+    int enabled;
+
+    enabled = (byte)value != 0;
+    if (dvar->type == DVAR_TYPE_BOOL) {
+        newValue.enabled = enabled;
+    } else {
+        newValue.string = enabled ? "1" : "0";
+    }
+
+    Dvar_SetVariantReg(dvar, newValue, source);
 }
 
 /* line 1698 */
@@ -6243,350 +5867,43 @@ void Dvar_SetVec4ByName(const char *dvarName, float x, float y, float z, float w
 }
 
 /* line 2253 */
-__attribute__((naked))
 void Dvar_SetStringByName(const char *dvarName, const char *value)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2253 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dvarName */
-        /* { scope 1: domain */
-        /* { scope 2 */
-        "testl %edi, %edi\n" /* line 68 */
-        "je .Lf55cd8_00055e44\n"
-        ".Lf55cd8_00055cef:\n"
-        "movzbl (%edi), %eax\n" /* line 74 */
-        "testb %al, %al\n"
-        "jne .Lf55cd8_00055d6a\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf55cd8_00055cf8:\n"
-        "movl dvarHashTable(, %eax, 4), %esi\n" /* line 1054 | var */
-        "testl %esi, %esi\n" /* var */
-        "je .Lf55cd8_00055d20\n"
-        ".Lf55cd8_00055d03:\n"
-        "movl (%esi), %eax\n" /* line 1056 | var */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* len */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf55cd8_00055d99\n"
-        "movl 0x20(%esi), %esi\n" /* line 1054 | var */
-        "testl %esi, %esi\n" /* var */
-        "jne .Lf55cd8_00055d03\n"
-        /* } scope */
-        /* { scope 1: domain */
-        ".Lf55cd8_00055d20:\n"
-        "movl $0, -0x418(%ebp)\n" /* line 1803 | dvarDomain */
-        "movl $0, -0x414(%ebp)\n"
-        "movl -0x418(%ebp), %eax\n" /* line 1804 | dvarDomain */
-        "movl -0x414(%ebp), %edx\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, (%esp)\n"
-        "movl $0x4000, %ecx\n"
-        "movl $7, %edx\n"
-        "movl %edi, %eax\n" /* len */
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 2262 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: domain */
-        /* { scope 2 */
-        ".Lf55cd8_00055d6a:\n"
-        "xorl %esi, %esi\n" /* line 74 | hash */
-        "movl $0x77, %ebx\n"
-        ".Lf55cd8_00055d71:\n"
-        "movsbl %al, %eax\n" /* line 76 */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "imull %ebx, %eax\n" /* line 77 */
-        "addl %eax, %esi\n" /* hash */
-        "movzbl -0x76(%edi, %ebx), %eax\n" /* line 74 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf55cd8_00055d71\n"
-        "movl %esi, %eax\n" /* hash */
-        "andl $0xff, %eax\n"
-        "jmp .Lf55cd8_00055cf8\n"
-        /* } scope */
-        /* } scope */
-        ".Lf55cd8_00055d99:\n"
-        "testl %esi, %esi\n" /* line 2258 | var */
-        "je .Lf55cd8_00055d20\n"
-        /* { scope 1: domain */
-        "cmpb $7, 6(%esi)\n" /* line 2036 | var */
-        "je .Lf55cd8_00055ecd\n"
-        "leal 0x14(%esi), %edx\n" /* line 2043 | var */
-        "movl %edx, -0x420(%ebp)\n" /* domain */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0x14(%esi), %eax\n" /* line 402 | hash */
-        "movl %eax, -0x41c(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jg .Lf55cd8_00055e8c\n"
-        ".Lf55cd8_00055dc1:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 408 | value */
-        "movzbl (%eax), %ecx\n"
-        "testb %cl, %cl\n"
-        "jne .Lf55cd8_00055e5d\n"
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf55cd8_00055dd1:\n"
-        "cmpl %ebx, -0x41c(%ebp)\n" /* line 414 | stringIndex */
-        "jg .Lf55cd8_00055e2e\n"
-        ".Lf55cd8_00055dd9:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 0xc(%ebp), %edi\n" /* value, len */
-        "repne scasb %es:(%edi), %al\n" /* len */
-        "notl %ecx\n"
-        "leal -1(%ecx), %edi\n" /* len */
-        "movl -0x420(%ebp), %edx\n" /* line 418 | domain */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf55cd8_00055e29\n"
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf55cd8_00055df9:\n"
-        "movl %edi, 8(%esp)\n" /* line 420 | len */
-        "movl -0x420(%ebp), %edx\n" /* domain */
-        "movl 4(%edx), %eax\n"
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, (%esp)\n"
-        "calll strnicmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf55cd8_00055e2e\n"
-        "addl $1, %ebx\n" /* line 418 | stringIndex */
-        "movl -0x420(%ebp), %edx\n" /* domain */
-        "cmpl (%edx), %ebx\n" /* stringIndex */
-        "jl .Lf55cd8_00055df9\n"
-        ".Lf55cd8_00055e29:\n"
-        "movl $0xfffffac7, %ebx\n" /* stringIndex */
-        /* } scope */
-        /* } scope */
-        ".Lf55cd8_00055e2e:\n"
-        "movl %ebx, %edx\n" /* line 2043 | stringIndex */
-        ".Lf55cd8_00055e30:\n"
-        "xorl %ecx, %ecx\n" /* line 2051 */
-        "movl %esi, %eax\n" /* var */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 2262 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: domain */
-        /* { scope 2 */
-        ".Lf55cd8_00055e44:\n"
-        "movl $str_00219550, 4(%esp)\n" /* line 70 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf55cd8_00055cef\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1: domain */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf55cd8_00055e5d:\n"
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "ja .Lf55cd8_00055e29\n"
-        "movl 0xc(%ebp), %edi\n" /* value, len */
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf55cd8_00055e69:\n"
-        "leal (%ebx, %ebx, 4), %edx\n" /* line 412 | stringIndex */
-        "movsbl %cl, %eax\n"
-        "leal -0x30(%eax, %edx, 2), %ebx\n" /* stringIndex */
-        "movzbl 1(%edi), %ecx\n" /* line 408 | len */
-        "testb %cl, %cl\n"
-        "je .Lf55cd8_00055ef1\n"
-        "addl $1, %edi\n" /* len */
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "jbe .Lf55cd8_00055e69\n"
-        "movl $0xfffffac7, %ebx\n" /* line 418 | stringIndex */
-        "jmp .Lf55cd8_00055e2e\n"
-        ".Lf55cd8_00055e8c:\n"
-        "xorl %ebx, %ebx\n" /* line 402 | stringIndex */
-        "jmp .Lf55cd8_00055ea9\n"
-        ".Lf55cd8_00055e90:\n"
-        "addl $1, %ebx\n" /* stringIndex */
-        "movl -0x420(%ebp), %edx\n" /* domain */
-        "movl (%edx), %edx\n"
-        "movl %edx, -0x41c(%ebp)\n"
-        "cmpl %edx, %ebx\n" /* stringIndex */
-        "jge .Lf55cd8_00055dc1\n"
-        ".Lf55cd8_00055ea9:\n"
-        "movl -0x420(%ebp), %edx\n" /* line 404 | domain */
-        "movl 4(%edx), %eax\n"
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf55cd8_00055e90\n"
-        "jmp .Lf55cd8_00055e2e\n"
-        /* } scope */
-        /* } scope */
-        ".Lf55cd8_00055ecd:\n"
-        "movl $0x400, 8(%esp)\n" /* line 2038 */
-        "movl 0xc(%ebp), %eax\n" /* value */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x418(%ebp), %ebx\n" /* dvarDomain, stringIndex */
-        "movl %ebx, (%esp)\n" /* stringIndex */
-        "calll I_strncpyz\n"
-        "movl %ebx, %edx\n" /* line 2039 | stringIndex */
-        "jmp .Lf55cd8_00055e30\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf55cd8_00055ef1:\n"
-        "testl %ebx, %ebx\n" /* line 414 | stringIndex */
-        "js .Lf55cd8_00055dd9\n"
-        "jmp .Lf55cd8_00055dd1\n"
-    );
+    const dvar_t *var;
+
+    var = Dvar_FindVar(dvarName);
+    if (!var) {
+        Dvar_RegisterString(dvarName, value, 0x4000);
+        return;
+    }
+
+    Dvar_SetString(var, value);
 }
 
 /* line 2265 */
-__attribute__((naked))
 void Dvar_SetColorByName(const char *dvarName, int r, int g, int b, int a)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2265 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dvarName */
-        "movzbl 0xc(%ebp), %eax\n" /* r */
-        "movb %al, -0x29(%ebp)\n" /* r */
-        "movzbl 0x10(%ebp), %eax\n" /* g */
-        "movb %al, -0x2a(%ebp)\n" /* g */
-        "movzbl 0x14(%ebp), %eax\n" /* b */
-        "movb %al, -0x2b(%ebp)\n" /* b */
-        "movzbl 0x18(%ebp), %eax\n" /* a */
-        "movb %al, -0x2c(%ebp)\n" /* a */
-        /* { scope 1 */
-        /* { scope 2 */
-        "testl %edi, %edi\n" /* line 68 */
-        "je .Lf55efe_0005604e\n"
-        ".Lf55efe_00055f2e:\n"
-        "movzbl (%edi), %eax\n" /* line 74 */
-        "testb %al, %al\n"
-        "jne .Lf55efe_00055fc7\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf55efe_00055f3b:\n"
-        "movl dvarHashTable(, %eax, 4), %ebx\n" /* line 1054 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf55efe_00055f63\n"
-        ".Lf55efe_00055f46:\n"
-        "movl (%ebx), %eax\n" /* line 1056 | var */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf55efe_00055ff6\n"
-        "movl 0x20(%ebx), %ebx\n" /* line 1054 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf55efe_00055f46\n"
-        /* } scope */
-        ".Lf55efe_00055f63:\n"
-        "movzbl -0x2c(%ebp), %eax\n" /* line 2273 | a */
-        "movl %eax, 0x10(%esp)\n"
-        "movzbl -0x2b(%ebp), %eax\n" /* b */
-        "movl %eax, 0xc(%esp)\n"
-        "movzbl -0x2a(%ebp), %eax\n" /* g */
-        "movl %eax, 8(%esp)\n"
-        "movzbl -0x29(%ebp), %eax\n" /* r */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219544, (%esp)\n" /* "%g %g %g %g" */
-        "calll va\n"
-        /* { scope 1 */
-        "movl $0, -0x20(%ebp)\n" /* line 1803 | dvarDomain */
-        "movl $0, -0x1c(%ebp)\n"
-        "movl -0x20(%ebp), %edx\n" /* line 1804 | dvarDomain */
-        "movl -0x1c(%ebp), %ecx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "movl $0x4000, %ecx\n"
-        "movl $7, %edx\n"
-        "movl %edi, %eax\n"
-        "calll Dvar_RegisterVariant\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 2274 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf55efe_00055fc7:\n"
-        "xorl %esi, %esi\n" /* line 74 | hash */
-        "movl $0x77, %ebx\n"
-        ".Lf55efe_00055fce:\n"
-        "movsbl %al, %eax\n" /* line 76 */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "imull %ebx, %eax\n" /* line 77 */
-        "addl %eax, %esi\n" /* hash */
-        "movzbl -0x76(%edi, %ebx), %eax\n" /* line 74 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf55efe_00055fce\n"
-        "movl %esi, %eax\n" /* hash */
-        "andl $0xff, %eax\n"
-        "jmp .Lf55efe_00055f3b\n"
-        /* } scope */
-        /* } scope */
-        ".Lf55efe_00055ff6:\n"
-        "testl %ebx, %ebx\n" /* line 2270 | var */
-        "je .Lf55efe_00055f63\n"
-        "movl $0, 0x14(%esp)\n" /* line 2138 */
-        "movzbl -0x2c(%ebp), %eax\n" /* a */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movzbl -0x2b(%ebp), %eax\n" /* b */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movzbl -0x2a(%ebp), %eax\n" /* g */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movzbl -0x29(%ebp), %eax\n" /* r */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* var */
-        "calll Dvar_SetColorFromSource\n"
-        "addl $0x4c, %esp\n" /* line 2274 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf55efe_0005604e:\n"
-        "movl $str_00219550, 4(%esp)\n" /* line 70 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf55efe_00055f2e\n"
-    );
+    const dvar_t *var;
+    byte red;
+    byte green;
+    byte blue;
+    byte alpha;
+    char string[128];
+
+    red = (byte)r;
+    green = (byte)g;
+    blue = (byte)b;
+    alpha = (byte)a;
+
+    var = Dvar_FindVar(dvarName);
+    if (!var) {
+        Com_sprintf(string, sizeof(string), "%g %g %g %g",
+            (double)red, (double)green, (double)blue, (double)alpha);
+        Dvar_RegisterString(dvarName, string, 0x4000);
+        return;
+    }
+
+    Dvar_SetColorFromSource(var, (float)red, (float)green, (float)blue, (float)alpha, DVAR_SOURCE_INTERNAL);
 }
 
 /* line 2277 */
