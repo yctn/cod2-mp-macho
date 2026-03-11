@@ -43,6 +43,15 @@ static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, 
 static void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount);
 void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex);
 
+static qboolean R_DpvsShouldFallbackAllCells(int cameraCellIndex)
+{
+    if (cameraCellIndex < 0)
+        return 0;
+    if (!(*(const dvar_t **)imp_r_drawWorld)->current.integer)
+        return 0;
+    return *(int *)((byte *)&dpvsGlob + 44) == 0;
+}
+
 /* line 1145 */
 void R_DrawModel(int entIndex)
 {
@@ -5425,6 +5434,11 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "popl %edx\n"
         "popl %ecx\n"
         "popl %eax\n"
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll R_DpvsShouldFallbackAllCells\n"
+        "testl %eax, %eax\n"
+        "jne .Lff2c88_000f3a18\n"
 
         /* } scope */
         /* { scope 2: entityCount */

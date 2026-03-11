@@ -164,10 +164,15 @@ void IN_Frame(void)
                    SE_CHAR events manually for keys that Field_CharEvent needs */
                 if (ev.type == SDL_KEYDOWN) {
                     int ch = 0;
+                    int ctrlHeld = (ev.key.keysym.mod & KMOD_CTRL) != 0;
                     switch (ev.key.keysym.sym) {
                     case SDLK_BACKSPACE: ch = 8; break;   /* ctrl-H */
                     case SDLK_RETURN:    ch = 13; break;   /* enter */
                     case SDLK_KP_ENTER:  ch = 13; break;
+                    case SDLK_v:
+                        if (ctrlHeld)
+                            ch = 0x16; /* ctrl-V paste */
+                        break;
                     default: break;
                     }
                     if (ch) {

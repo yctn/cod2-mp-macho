@@ -428,6 +428,30 @@ void Com_StartupVariable(const char *match)
     }
 }
 
+static qboolean Com_HasStartupCommandsOtherThanSet(void)
+{
+    extern void Cmd_TokenizeString(const char *text);
+    extern const char *Cmd_Argv(int arg);
+    int lineIndex;
+
+    for (lineIndex = 0; lineIndex < com_numConsoleLines; lineIndex++) {
+        const char *cmd;
+
+        if (!com_consoleLines[lineIndex] || com_consoleLines[lineIndex][0] == '\0')
+            continue;
+
+        Cmd_TokenizeString(com_consoleLines[lineIndex]);
+        cmd = Cmd_Argv(0);
+        if (!cmd || cmd[0] == '\0')
+            continue;
+        if (stricmp(cmd, "set") == 0 || stricmp(cmd, "seta") == 0)
+            continue;
+        return 1;
+    }
+
+    return 0;
+}
+
 /* line 1347 */
 void Info_Print(const char *s)
 {
@@ -2183,7 +2207,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         /* Intro cinematic (non-dedicated only) */
         dedicated_val = com_dedicated->current.integer;
         if (!dedicated_val) {
-            if (!com_introPlayed->current.enabled) {
+            if (!com_introPlayed->current.enabled && !Com_HasStartupCommandsOtherThanSet()) {
                 Cbuf_AddText("cinematic atvi\n");
                 Dvar_SetString(nextmap, "cinematic IW_logo; set nextmap cinematic cod_intro");
                 Dvar_SetBool(com_introPlayed, 1);

@@ -66,6 +66,9 @@ extern void MSG_Init(msg_t *msg, byte *data, int length);
 extern qboolean NET_GetPacket(netadr_t *adr, msg_t *msg);
 extern void *Z_MallocInternal(int size);
 extern void Z_FreeInternal(void *ptr);
+extern int SDL_HasClipboardText(void);
+extern char *SDL_GetClipboardText(void);
+extern void SDL_free(void *ptr);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void Cbuf_ExecuteText(int exec_when, const char *text);
 extern void WinSleep(int msec);
@@ -164,7 +167,25 @@ void Sys_Print(const char *msg)
 
 char *Sys_GetClipboardData(void)
 {
-    return "";
+    char *text;
+    char *copy;
+    size_t len;
+
+    if (!SDL_HasClipboardText())
+        return 0;
+
+    text = SDL_GetClipboardText();
+    if (!text || !text[0]) {
+        if (text)
+            SDL_free(text);
+        return 0;
+    }
+
+    len = strlen(text);
+    copy = (char *)Z_MallocInternal((int)len + 1);
+    memcpy(copy, text, len + 1);
+    SDL_free(text);
+    return copy;
 }
 
 static void Sys_QueEventInternal(int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr)

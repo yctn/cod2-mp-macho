@@ -55,6 +55,7 @@ extern int CG_DrawActiveFrame(int serverTime, int needRender, int side, int size
 extern float UI_GetBlurRadius(void);
 extern void UI_Refresh(void);
 extern int UI_IsFullscreen(void);
+extern int UI_GetActiveMenu(void);
 extern void UI_DrawConnectScreen(void);
 extern void UI_SetActiveMenu(int menu);
 extern void UI_UpdateTime(int time);
@@ -282,6 +283,12 @@ static void SCR_UpdateFrame(void)
     }
 
     UI_UpdateTime(CLS_CLIENT_TIME(cls));
+
+    /* Close the startup main menu once a connection is in progress so the
+       connect screen / live game frame stays in front. */
+    if (connstate >= 3 && connstate <= 8 && UI_IsFullscreen() && UI_GetActiveMenu() == 1) {
+        UI_SetActiveMenu(0);
+    }
 
     if (UI_IsFullscreen()) {
         /* Fullscreen UI path */
