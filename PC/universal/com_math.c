@@ -52,6 +52,7 @@ void MatrixTransposeTransformVector(const float *in1, const float (*in2)[3], flo
 void MatrixTransformVector43(const float *in1, const float (*in2)[3], float *out);
 void QuatMultiply(const float *in1, const float *in2, float *out);
 void QuatToAxis(const vec_t *quat, vec3_t *axis);
+void ConvertQuatToMat(const DObjAnimMat *mat, float axis[3][3]);
 float RotationToYaw(const vec_t *rot);
 void InfinitePerspectiveMatrix(float (*mtx)[4], float fov_x, float fov_y, float zNear);
 void MatrixForViewer(float (*mtx)[4], const vec_t *origin, vec3_t *axis);
@@ -431,6 +432,31 @@ void QuatToAxis(const vec_t *quat, vec3_t *axis) {
     axis[1][0] = xy - zw;
     axis[1][1] = 1.0f - (xx + zz);
     axis[1][2] = xw + yz;
+    axis[2][0] = xz + yw;
+    axis[2][1] = yz - xw;
+    axis[2][2] = 1.0f - (xx + yy);
+}
+
+void ConvertQuatToMat(const DObjAnimMat *mat, float axis[3][3]) {
+    float sx = mat->transWeight * mat->quat[0];
+    float sy = mat->transWeight * mat->quat[1];
+    float sz = mat->transWeight * mat->quat[2];
+    float xx = sx * mat->quat[0];
+    float xy = sx * mat->quat[1];
+    float xz = sx * mat->quat[2];
+    float xw = sx * mat->quat[3];
+    float yy = sy * mat->quat[1];
+    float yz = sy * mat->quat[2];
+    float yw = sy * mat->quat[3];
+    float zz = sz * mat->quat[2];
+    float zw = sz * mat->quat[3];
+
+    axis[0][0] = 1.0f - (yy + zz);
+    axis[0][1] = xy + zw;
+    axis[0][2] = xz - yw;
+    axis[1][0] = xy - zw;
+    axis[1][1] = 1.0f - (xx + zz);
+    axis[1][2] = yz + xw;
     axis[2][0] = xz + yw;
     axis[2][1] = yz - xw;
     axis[2][2] = 1.0f - (xx + yy);

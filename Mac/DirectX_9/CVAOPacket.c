@@ -65,10 +65,11 @@ typedef struct {
     bool (*isFixedFunction)(const CVAOPacket *);
 } CVAOPacketVTable;
 
-extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
-extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
-extern CVAOPacket CVAOPacket_sGenericPacket[1]; /* 0x0 */
-extern VAOSet CVAOPacket_sAllPackets; /* 0x0 */
+extern unsigned char COpenGL_sOpenGLE_storage[] __asm__("__ZN7COpenGL7sOpenGLE");
+extern VAOStatus CVAOPacket_sVAOStatus __asm__("__ZN10CVAOPacket10sVAOStatusE"); /* 0x0 */
+extern UINT32 CVAOPacket_sCurrentPacket __asm__("__ZN10CVAOPacket14sCurrentPacketE"); /* 0x0 */
+extern unsigned char CVAOPacket_sGenericPacket_storage[] __asm__("__ZN10CVAOPacket14sGenericPacketE"); /* 0x0 */
+extern unsigned char CVAOPacket_sAllPackets_storage[] __asm__("__ZN10CVAOPacket11sAllPacketsE"); /* 0x0 */
 
 extern void *vtbl_CVAOPacket[];
 
@@ -81,7 +82,7 @@ unsigned int COpenGL_SetVAO(const COpenGL * _this, const COpenGLVAO *VAO, int Is
 
 static CVAOPacketImpl *CVAOPacket_GetGenericPacket(UINT32 index)
 {
-    return (CVAOPacketImpl *)((char *)CVAOPacket_sGenericPacket + index * sizeof(CVAOPacketImpl));
+    return (CVAOPacketImpl *)(CVAOPacket_sGenericPacket_storage + index * sizeof(CVAOPacketImpl));
 }
 
 static CVAOPacketRbTreeNode *CVAOPacket_GetTreeNode(CVAOPacketRbTreeNodeBase *node)
@@ -163,7 +164,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 
     CVAOPacket_sVAOStatus = bIsCached ? USING_CACHED_VAO : USING_VIRGIN_VAO;
     isFixedFunction = CVAOPacket_GetVTable(_this)->isFixedFunction(_this);
-    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
                    (const COpenGLVAO *)_this,
                    isFixedFunction,
                    0);
@@ -172,7 +173,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
 {
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    IsFixedFunction,
                    ForceValidation);
@@ -185,7 +186,7 @@ void CVAOPacket_InitializeGenericVAO(void)
     CVAOPacketImpl *genericPacket;
     int i;
 
-    allPackets = (CVAOPacketRbTree *)&CVAOPacket_sAllPackets;
+    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
     genericPacket = CVAOPacket_GetGenericPacket(0);
 
     allPackets->_M_node_count = 0;
@@ -218,7 +219,7 @@ void CVAOPacket_InitializeGenericVAO(void)
 
     COpenGLVAO_CreateNewBinding((const COpenGLVAO *)genericPacket);
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)imp__ZN7COpenGL7sOpenGLE,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    1,
                    1);
@@ -656,18 +657,18 @@ static void __static_initialization_and_destruction_0(int __initialize_p, int __
     }
 
     if (__initialize_p == 1) {
-        allPackets = (CVAOPacketRbTree *)&CVAOPacket_sAllPackets;
+        allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
         allPackets->_M_node_count = 0;
         allPackets->_M_header._M_color = 0;
         allPackets->_M_header._M_parent = NULL;
         allPackets->_M_header._M_left = &allPackets->_M_header;
         allPackets->_M_header._M_right = &allPackets->_M_header;
-        CVAOPacket_CVAOPacket(&CVAOPacket_sGenericPacket[0]);
+        CVAOPacket_CVAOPacket((const CVAOPacket *)CVAOPacket_sGenericPacket_storage);
         return;
     }
 
     if (__initialize_p == 0) {
-        ZN10CVAOPacketD2Ev(&CVAOPacket_sGenericPacket[0]);
+        ZN10CVAOPacketD2Ev((const CVAOPacket *)CVAOPacket_sGenericPacket_storage);
         CVAOPacket_Shutdown();
     }
 }
