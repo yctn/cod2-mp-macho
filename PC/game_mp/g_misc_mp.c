@@ -36,6 +36,14 @@ extern void MatrixTransformVector(const vec_t *in1, const vec_t *in2, vec_t *out
 extern void MatrixTransformVector43(const vec_t *in, const vec_t *mat, vec_t *out);
 extern int G_LocationalTrace(trace_t *results, const vec_t *start, const vec_t *end, int passEntityNum, int contentmask, unsigned char *priorityMap);
 extern unsigned char bulletPriorityMap[19];
+extern float AngleNormalize360Accurate(float angle);
+extern int G_GetWeaponIndexForName(const char *name);
+extern void Scr_Error(const char *msg);
+extern const char *va(const char *fmt, ...);
+extern qboolean IsItemRegistered(unsigned int item);
+extern SoundAlias G_SoundAliasIndex(const char *name);
+extern void G_DObjUpdate(gentity_t *ent);
+extern void G_SetAngle(gentity_t *ent, const vec_t *angles);
 
 extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
@@ -47,7 +55,19 @@ enum {
     GMISC_EV_STANCE_FORCE_CROUCH = 0x8d,
     GMISC_EV_STANCE_FORCE_PRONE = 0x8e,
     GMISC_ENTITYNUM_NONE = 0x3ff,
-    GMISC_EF_FIRING = 0x40
+    GMISC_EF_FIRING = 0x40,
+    GMISC_PMF_PRONE = 0x1,
+    GMISC_PMF_DUCKED = 0x2,
+    GMISC_EF_TURRET_PRONE = 0x100,
+    GMISC_EF_TURRET_DUCK = 0x200,
+    GMISC_EF_TURRET_ACTIVE = 0x300,
+    GMISC_ENT_HANDLER_TURRET_INIT = 13,
+    GMISC_ENT_HANDLER_TURRET = 14,
+    GMISC_ET_TURRET = 9,
+    GMISC_CONTENTS_SOLID = 0x1,
+    GMISC_CONTENTS_NONCOLLIDING = 0x4,
+    GMISC_CONTENTS_DONOTENTER = 0x200000,
+    GMISC_TURRET_TRACE_MASK = 0x811
 };
 
 /* `pitchCap` is the generated name for the reference field `triggerDown`. */
@@ -377,150 +397,66 @@ void G_FreeTurret(gentity_t *self)
 }
 
 /* line 756 */
-__attribute__((naked))
 void turret_think_init(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 756 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* self */
-        /* { scope 1 */
-        "movl 0x15c(%edi), %eax\n" /* line 759 | self */
-        "movl %eax, -0xe8(%ebp)\n" /* pTurretInfo */
-        "movb $0xe, 0x166(%edi)\n" /* line 769 | self */
-        "movl imp_level, %eax\n" /* line 770 */
-        "movl 0x1ec(%eax), %eax\n"
-        "addl $0x32, %eax\n"
-        "movl %eax, 0x190(%edi)\n" /* self */
-        "movl imp_scr_const, %esi\n" /* line 773 | weaponMtx */
-        "movzwl 0x9e(%esi), %eax\n" /* weaponMtx */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* self */
-        "calll G_DObjGetLocalTagMatrix\n"
-        "movl %eax, %ebx\n" /* i */
-        "testl %eax, %eax\n" /* line 774 */
-        "je .Lf1ba01a_001ba246\n"
-        "movzwl 0xa4(%esi), %eax\n" /* line 777 | weaponMtx */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* self */
-        "calll G_DObjGetLocalTagMatrix\n"
-        "movl %eax, %esi\n" /* weaponMtx */
-        "testl %eax, %eax\n" /* line 778 */
-        "je .Lf1ba01a_001ba246\n"
-        "leal -0xcc(%ebp), %edx\n" /* line 781 | baseMtx */
-        "movl %edx, 4(%esp)\n"
-        "leal 0x144(%edi), %eax\n" /* self */
-        "movl %eax, (%esp)\n"
-        "calll AnglesToAxis\n"
-        "leal 0x138(%edi), %edx\n" /* self */
-        /* { scope 2 */
-        "movl 0x138(%edi), %eax\n" /* line 199 */
-        "movl %eax, -0xa8(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0xa4(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0xa0(%ebp)\n"
-        /* } scope */
-        "leal 0x10(%ebx), %eax\n" /* line 784 | i, a */
-        "movl %eax, -0xec(%ebp)\n" /* a */
-        "leal 0x10(%esi), %eax\n" /* weaponMtx, a */
-        /* { scope 2 */
-        "movss 0x10(%esi), %xmm0\n" /* line 248 */
-        "subss 0x10(%ebx), %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n" /* dir */
-        "leal 0x14(%ebx), %edx\n" /* line 249 */
-        "movl %edx, -0xe4(%ebp)\n"
-        "movss 4(%eax), %xmm0\n"
-        "subss 0x14(%ebx), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "leal 0x18(%ebx), %edx\n" /* line 250 */
-        "movl %edx, -0xe0(%ebp)\n"
-        "movss 8(%eax), %xmm0\n"
-        "subss 0x18(%ebx), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        /* } scope */
-        "leal -0x24(%ebp), %eax\n" /* line 785 | start */
-        "movl %eax, 8(%esp)\n"
-        "leal -0xcc(%ebp), %edx\n" /* baseMtx */
-        "movl %edx, 4(%esp)\n"
-        "movl -0xec(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVector43\n"
-        "movl imp_bulletPriorityMap, %edx\n"
-        "movl %edx, -0xdc(%ebp)\n"
-        "xorl %ebx, %ebx\n" /* i */
-        "leal -0x30(%ebp), %esi\n" /* end, weaponMtx */
-        "jmp .Lf1ba01a_001ba155\n"
-        ".Lf1ba01a_001ba149:\n"
-        "addl $1, %ebx\n" /* line 787 | i */
-        "cmpl $0x1f, %ebx\n" /* i */
-        "je .Lf1ba01a_001ba246\n"
-        ".Lf1ba01a_001ba155:\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 789 | i */
-        "mulss lit4_002ed9a8, %xmm0\n" /* -3.0f */
-        "movss %xmm0, -0x3c(%ebp)\n" /* angles */
-        "movl $0, -0x38(%ebp)\n" /* line 790 */
-        "movl $0, -0x34(%ebp)\n" /* line 791 */
-        "leal -0x9c(%ebp), %eax\n" /* line 793 | mtx */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %edx\n" /* angles */
-        "movl %edx, (%esp)\n"
-        "calll AnglesToAxis\n"
-        "leal -0x54(%ebp), %eax\n" /* line 794 | transDir */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x9c(%ebp), %edx\n" /* mtx */
-        "movl %edx, 4(%esp)\n"
-        "leal -0x48(%ebp), %eax\n" /* dir */
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movl -0xec(%ebp), %edx\n" /* line 240 */
-        "movss (%edx), %xmm0\n"
-        "addss -0x54(%ebp), %xmm0\n" /* transDir */
-        "movss %xmm0, -0x54(%ebp)\n" /* transDir */
-        "movl -0xe4(%ebp), %eax\n" /* line 241 */
-        "movss (%eax), %xmm0\n"
-        "addss -0x50(%ebp), %xmm0\n"
-        "movss %xmm0, -0x50(%ebp)\n"
-        "movl -0xe0(%ebp), %edx\n" /* line 242 */
-        "movss (%edx), %xmm0\n"
-        "addss -0x4c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n"
-        "movl %esi, 8(%esp)\n" /* line 797 | weaponMtx */
-        "leal -0xcc(%ebp), %eax\n" /* baseMtx */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x54(%ebp), %edx\n" /* transDir */
-        "movl %edx, (%esp)\n"
-        "calll MatrixTransformVector43\n"
-        "movl -0xdc(%ebp), %eax\n" /* line 799 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl $0x811, 0x10(%esp)\n"
-        "movl (%edi), %eax\n" /* self */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* weaponMtx */
-        "leal -0x24(%ebp), %edx\n" /* start */
-        "movl %edx, 4(%esp)\n"
-        "leal -0x78(%ebp), %eax\n" /* trace */
-        "movl %eax, (%esp)\n"
-        "calll G_LocationalTrace\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 800 | 1.0f */
-        "ucomiss -0x78(%ebp), %xmm0\n" /* trace */
-        "jbe .Lf1ba01a_001ba149\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 802 | angles */
-        "movl -0xe8(%ebp), %edx\n" /* pTurretInfo */
-        "movl %eax, 0x1c(%edx)\n"
-        /* } scope */
-        ".Lf1ba01a_001ba246:\n"
-        "addl $0x10c, %esp\n" /* line 806 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float baseMtx[4][3];
+    float mtx[3][3];
+    vec3_t dir;
+    vec3_t start;
+    vec3_t end;
+    vec3_t transDir;
+    vec3_t angles;
+    trace_t trace;
+    DObjAnimMat_s *aimMtx;
+    DObjAnimMat_s *weaponMtx;
+    turretInfo_s *info;
+    int i;
+
+    info = self->pTurretInfo;
+    self->handler = GMISC_ENT_HANDLER_TURRET;
+    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+
+    aimMtx = G_DObjGetLocalTagMatrix(self, ((scr_const_t *)imp_scr_const)->tag_aim);
+    if (!aimMtx) {
+        return;
+    }
+
+    weaponMtx = G_DObjGetLocalTagMatrix(self, ((scr_const_t *)imp_scr_const)->tag_butt);
+    if (!weaponMtx) {
+        return;
+    }
+
+    AnglesToAxis(self->r.currentAngles, (vec_t *)baseMtx);
+    baseMtx[3][0] = self->r.currentOrigin[0];
+    baseMtx[3][1] = self->r.currentOrigin[1];
+    baseMtx[3][2] = self->r.currentOrigin[2];
+
+    dir[0] = weaponMtx->trans[0] - aimMtx->trans[0];
+    dir[1] = weaponMtx->trans[1] - aimMtx->trans[1];
+    dir[2] = weaponMtx->trans[2] - aimMtx->trans[2];
+
+    MatrixTransformVector43(aimMtx->trans, (vec_t *)baseMtx, start);
+
+    for (i = 0; i <= 30; ++i) {
+        angles[0] = -3.0f * (float)i;
+        angles[1] = 0.0f;
+        angles[2] = 0.0f;
+
+        AnglesToAxis(angles, (vec_t *)mtx);
+        MatrixTransformVector(dir, (vec_t *)mtx, transDir);
+
+        transDir[0] += aimMtx->trans[0];
+        transDir[1] += aimMtx->trans[1];
+        transDir[2] += aimMtx->trans[2];
+
+        MatrixTransformVector43(transDir, (vec_t *)baseMtx, end);
+        G_LocationalTrace(&trace, start, end, self->s.number, GMISC_TURRET_TRACE_MASK, bulletPriorityMap);
+
+        if (trace.fraction < 1.0f) {
+            info->dropPitch = angles[0];
+            return;
+        }
+    }
 }
 
 /* line 878 */
@@ -546,183 +482,74 @@ qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
 }
 
 /* line 896 */
-__attribute__((naked))
 void turret_use(gentity_t *self, gentity_t *owner, gentity_t *activator)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 896 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0xc(%ebp), %edx\n" /* owner */
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 903 | self */
-        "movl 0x15c(%eax), %esi\n" /* pTurretInfo */
-        "movl 0x158(%edx), %edi\n" /* line 911 | ps */
-        "movb $1, 0x162(%edx)\n" /* line 913 */
-        "movb $1, 0x162(%eax)\n" /* line 915 */
-        "movl (%edx), %eax\n" /* line 916 */
-        "movl 8(%ebp), %ecx\n" /* self */
-        "movl %eax, 0x150(%ecx)\n"
-        "movl $1, 0x590(%edi)\n" /* line 918 | ps */
-        "movl (%ecx), %eax\n" /* line 919 */
-        "movl %eax, 0x594(%edi)\n" /* ps */
-        "orl $0x800, 4(%esi)\n" /* line 921 | pTurretInfo */
-        "leal 0x2c(%esi), %ebx\n" /* line 924 | pTurretInfo, to */
-        "leal 0x138(%edx), %ecx\n" /* from */
-        /* { scope 2 */
-        "movl 0x138(%edx), %eax\n" /* line 199 */
-        "movl %eax, 0x2c(%esi)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "movl 8(%ebp), %ecx\n" /* line 927 | self */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 0x74(%edx)\n"
-        "movl (%edx), %eax\n" /* line 929 */
-        "movl %eax, 0x74(%ecx)\n"
-        "movl 0xc(%edi), %eax\n" /* line 932 | ps */
-        "testb $1, %al\n"
-        "je .Lf1ba3de_001ba62d\n"
-        "movl $2, 0x24(%esi)\n" /* line 933 | pTurretInfo */
-        "movl 0x20(%esi), %eax\n" /* line 940 | pTurretInfo */
-        "cmpl $2, %eax\n"
-        "je .Lf1ba3de_001ba644\n"
-        ".Lf1ba3de_001ba474:\n"
-        "subl $1, %eax\n" /* line 945 */
-        "je .Lf1ba3de_001ba65b\n"
-        "orl $0x300, 0xa0(%edi)\n" /* line 951 | ps */
-        ".Lf1ba3de_001ba487:\n"
-        "movl 8(%ebp), %edx\n" /* line 953 | self */
-        "movl 0x144(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xe8(%edi), %eax\n" /* ps */
-        "movl %eax, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movl 8(%ebp), %ecx\n" /* self */
-        "movss %xmm0, 0x68(%ecx)\n"
-        "movss 0x14(%esi), %xmm2\n" /* line 954 | pTurretInfo */
-        "movss 0xc(%esi), %xmm3\n" /* pTurretInfo */
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm4, %xmm4\n"
-        "movaps %xmm2, %xmm5\n"
-        "cmpnltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm5\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm5, %xmm1\n"
-        /* { scope 2 */
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm3, %xmm5\n"
-        "cmpnltss %xmm4, %xmm0\n"
-        "andps %xmm0, %xmm5\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm5, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x68(%ecx)\n" /* line 954 */
-        "movl 0x148(%ecx), %eax\n" /* line 956 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xec(%edi), %eax\n" /* ps */
-        "movl %eax, (%esp)\n"
-        "movss %xmm4, -0x28(%ebp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movl 8(%ebp), %eax\n" /* self */
-        "movss %xmm0, 0x6c(%eax)\n"
-        "movss 0x18(%esi), %xmm2\n" /* line 957 | pTurretInfo */
-        "movss 0x10(%esi), %xmm3\n" /* pTurretInfo */
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "movss -0x28(%ebp), %xmm4\n"
-        "movaps %xmm2, %xmm5\n"
-        "cmpnltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm5\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm5, %xmm1\n"
-        /* { scope 2 */
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm1, %xmm5\n"
-        "cmpltss %xmm4, %xmm0\n"
-        "andps %xmm0, %xmm5\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm5, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x6c(%eax)\n" /* line 957 */
-        "movss %xmm4, 0x70(%eax)\n" /* line 959 */
-        "movl 0xc(%esi), %eax\n" /* line 961 | pTurretInfo */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x14(%esi), %eax\n" /* pTurretInfo */
-        "movl %eax, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, 0x114(%edi)\n" /* ps */
-        "movl 8(%ebp), %eax\n" /* line 962 | self */
-        "movss 0x144(%eax), %xmm0\n"
-        "addss 0x14(%esi), %xmm0\n" /* pTurretInfo */
-        "movss %xmm0, 0x10c(%edi)\n" /* ps */
-        "subss 0x114(%edi), %xmm0\n" /* line 963 | ps */
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360Accurate\n"
-        "fstps 0x10c(%edi)\n" /* ps */
-        "movl 0x10(%esi), %eax\n" /* line 965 | pTurretInfo */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x18(%esi), %eax\n" /* pTurretInfo */
-        "movl %eax, (%esp)\n"
-        "calll AngleSubtract\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, 0x118(%edi)\n" /* ps */
-        "movl 8(%ebp), %edx\n" /* line 966 | self */
-        "movss 0x148(%edx), %xmm0\n"
-        "addss 0x18(%esi), %xmm0\n" /* pTurretInfo */
-        "movss %xmm0, 0x110(%edi)\n" /* ps */
-        "subss 0x118(%edi), %xmm0\n" /* line 967 | ps */
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360Accurate\n"
-        "fstps 0x110(%edi)\n" /* ps */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 968 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1ba3de_001ba62d:\n"
-        "testb $2, %al\n" /* line 935 */
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0x24(%esi)\n" /* pTurretInfo */
-        "movl 0x20(%esi), %eax\n" /* line 940 | pTurretInfo */
-        "cmpl $2, %eax\n"
-        "jne .Lf1ba3de_001ba474\n"
-        ".Lf1ba3de_001ba644:\n"
-        "movl 0xa0(%edi), %eax\n" /* line 943 | ps */
-        "orb $1, %ah\n"
-        "andb $0xfd, %ah\n"
-        "movl %eax, 0xa0(%edi)\n" /* ps */
-        "jmp .Lf1ba3de_001ba487\n"
-        ".Lf1ba3de_001ba65b:\n"
-        "movl 0xa0(%edi), %eax\n" /* line 948 | ps */
-        "orb $2, %ah\n"
-        "andb $0xfe, %ah\n"
-        "movl %eax, 0xa0(%edi)\n" /* ps */
-        "jmp .Lf1ba3de_001ba487\n"
-    );
+    playerState_t *ps;
+    turretInfo_s *info;
+    float pitch;
+    float yaw;
+
+    (void)activator;
+
+    info = self->pTurretInfo;
+    ps = &owner->client->ps;
+
+    owner->active = 1;
+    self->active = 1;
+    self->r.ownerNum = owner->s.number;
+
+    ps->viewlocked = 1;
+    ps->viewlocked_entNum = self->s.number;
+
+    info->flags |= 0x800u;
+
+    info->userOrigin[0] = owner->r.currentOrigin[0];
+    info->userOrigin[1] = owner->r.currentOrigin[1];
+    info->userOrigin[2] = owner->r.currentOrigin[2];
+
+    owner->s.otherEntityNum = self->s.number;
+    self->s.otherEntityNum = owner->s.number;
+
+    if (ps->pm_flags & GMISC_PMF_PRONE) {
+        info->prevStance = GMISC_TURRET_STANCE_PRONE;
+    } else {
+        info->prevStance = (ps->pm_flags & GMISC_PMF_DUCKED) ? GMISC_TURRET_STANCE_CROUCH : 0;
+    }
+
+    if (info->stance == GMISC_TURRET_STANCE_PRONE) {
+        ps->eFlags |= GMISC_EF_TURRET_PRONE;
+        ps->eFlags &= ~GMISC_EF_TURRET_DUCK;
+    } else if (info->stance == GMISC_TURRET_STANCE_CROUCH) {
+        ps->eFlags |= GMISC_EF_TURRET_DUCK;
+        ps->eFlags &= ~GMISC_EF_TURRET_PRONE;
+    } else {
+        ps->eFlags |= GMISC_EF_TURRET_ACTIVE;
+    }
+
+    pitch = AngleSubtract(ps->viewangles[0], self->r.currentAngles[0]);
+    if (pitch < info->arcmin[0]) {
+        pitch = info->arcmin[0];
+    } else if (pitch > info->arcmax[0]) {
+        pitch = info->arcmax[0];
+    }
+    self->s.angles2[0] = pitch;
+
+    yaw = AngleSubtract(ps->viewangles[1], self->r.currentAngles[1]);
+    if (yaw < info->arcmin[1]) {
+        yaw = info->arcmin[1];
+    } else if (yaw > info->arcmax[1]) {
+        yaw = info->arcmax[1];
+    }
+    self->s.angles2[1] = yaw;
+    self->s.angles2[2] = 0.0f;
+
+    ps->viewAngleClampRange[0] = AngleSubtract(info->arcmax[0], info->arcmin[0]) * 0.5f;
+    ps->viewAngleClampBase[0] = self->r.currentAngles[0] + info->arcmax[0];
+    ps->viewAngleClampBase[0] = AngleNormalize360Accurate(ps->viewAngleClampBase[0] - ps->viewAngleClampRange[0]);
+
+    ps->viewAngleClampRange[1] = AngleSubtract(info->arcmax[1], info->arcmin[1]) * 0.5f;
+    ps->viewAngleClampBase[1] = self->r.currentAngles[1] + info->arcmax[1];
+    ps->viewAngleClampBase[1] = AngleNormalize360Accurate(ps->viewAngleClampBase[1] - ps->viewAngleClampRange[1]);
 }
 
 /* line 971 */
