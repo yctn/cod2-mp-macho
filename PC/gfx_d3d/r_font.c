@@ -19,6 +19,18 @@ extern refimport_t ri; /* imp_ri */
 
 static int registeredFontCount; /* registeredFontCount */
 static Font * registeredFont[16]; /* registeredFont */
+static Glyph nullGlyph; /* nullGlyph */
+
+static FontHandle R_ResolveFont(FontHandle font)
+{
+    if (font) {
+        return font;
+    }
+    if (registeredFontCount > 0) {
+        return registeredFont[0];
+    }
+    return 0;
+}
 
 const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter);
 FontHandle R_RegisterFont(const char *fontName, int imageTrack);
@@ -37,6 +49,11 @@ int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, fl
 /* line 17 */
 const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter)
 {
+    font = R_ResolveFont(font);
+    if (!font) {
+        return &nullGlyph;
+    }
+
     Glyph *glyphs = *(Glyph **)((byte *)font + 0x10);
     int numGlyphs, top, bot, mid;
 
@@ -150,6 +167,7 @@ int R_ShutdownFonts(void)
 /* line 152 */
 float R_NormalizedTextScale(FontHandle font, float scale)
 {
+    font = R_ResolveFont(font);
     if (!font)
         return scale;
     return 48.0f * scale / (float)*(int *)((byte *)font + 4);
@@ -158,6 +176,7 @@ float R_NormalizedTextScale(FontHandle font, float scale)
 /* line 202 */
 int R_TextHeight(FontHandle font)
 {
+    font = R_ResolveFont(font);
     if (!font)
         return 0;
     return *(int *)((byte *)font + 4);
@@ -166,7 +185,12 @@ int R_TextHeight(FontHandle font)
 /* line 209 */
 int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
+    font = R_ResolveFont(font);
+    if (!text || !font) {
+        return 0;
+    }
     R_AddCmdDrawTextWithCursor(text, maxChars, font, x, y, xScale, yScale, color, style, -1, 0);
+    return 0;
 }
 
 /* line 218 */
@@ -561,6 +585,11 @@ int R_TextWidth(const char *text, int maxChars, FontHandle font)
     unsigned int letter;
     const Glyph *glyph;
 
+    font = R_ResolveFont(font);
+    if (!text || !font) {
+        return 0;
+    }
+
     if (maxChars > 0) {
         /* use provided maxChars */
     } else {
@@ -605,6 +634,7 @@ int R_ConsoleTextWidth(const short int *string, int maxChars, FontHandle font)
     float iconHeight;
     MaterialHandle iconMaterial;
 
+    font = R_ResolveFont(font);
     if (!string) {
         return 0;
     }
@@ -644,12 +674,13 @@ int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, fl
     float iconX;
     int textWidth;
 
+    font = R_ResolveFont(font);
     curColor[0] = color[0];
     curColor[1] = color[1];
     curColor[2] = color[2];
     curColor[3] = color[3];
 
-    if (!string) {
+    if (!string || !font) {
         return 0;
     }
 

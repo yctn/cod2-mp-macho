@@ -2334,6 +2334,8 @@ void CL_UpdateDebugData(void)
 /* line 4991 */
 int CL_TextWidth(const char *text, int maxChars, FontHandle font)
 {
+    if (!text || !font)
+        return 0;
     return ((int (*)(const char *, int, FontHandle))*(int *)((char *)&re + 276))(text, maxChars, font);
 }
 
@@ -2352,6 +2354,8 @@ float CL_NormalizedTextScale(FontHandle font, float scale)
 /* line 5019 */
 void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
+    if (!text || !font)
+        return;
     ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)((char *)&re + 284))(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
@@ -2411,6 +2415,8 @@ void CL_DrawText(const char *text, int maxChars, FontHandle font, float x, float
 /* line 5033 */
 void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor)
 {
+    if (!text || !font)
+        return;
     cursor = (signed char)cursor;
     ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)((char *)&re + 300))(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
 }

@@ -269,6 +269,10 @@ static float CG_GetHeight(const hudelem_t *elem, float fontHeight) {
 /* line 522 */
 static void CG_DrawHudElemString(const char *text, const hudelem_t *elem, cg_hudelem_t *cghe)
 {
+    if (!text || !text[0] || !cghe->font) {
+        return;
+    }
+
     float negHeight = -(cghe->height - cghe->fontHeight);
 
     /* Compute move lerp factor for Y position */
@@ -323,32 +327,38 @@ static void CG_DrawHudElemString(const char *text, const hudelem_t *elem, cg_hud
 static void CG_GetHudElemInfo(const hudelem_t *elem, cg_hudelem_t *cghe, char *hudElemString)
 {
     const char *strResult;
+    int fontIndex;
 
     /* Font setup based on elem->font (offset 0x14) */
+    cghe->font = 0;
+    cghe->fontHeight = 0.0f;
+
     switch (elem->font) {
         case 0:
             cghe->fontScale = 0.25f * elem->fontScale;
-            UI_GetFontHandle(0, cghe->fontScale);
+            fontIndex = 0;
             break;
         case 1:
             cghe->fontScale = 0.5f * elem->fontScale;
-            UI_GetFontHandle(4, cghe->fontScale);
+            fontIndex = 4;
             break;
         case 2:
             cghe->fontScale = 0.3333333f * elem->fontScale;
-            UI_GetFontHandle(5, cghe->fontScale);
+            fontIndex = 5;
             break;
         default:
-            cghe->hudElemLabel[0] = 0;
-            goto skip_font_setup;
+            cghe->fontScale = 0.25f * elem->fontScale;
+            fontIndex = 0;
+            break;
     }
-    /* Common font setup for cases 0-2 */
-    cghe->font = UI_GetFontHandle(
-        elem->font == 0 ? 0 : (elem->font == 1 ? 4 : 5),
-        cghe->fontScale);
-    cghe->fontHeight = (float)UI_TextHeight(cghe->font, cghe->fontScale);
+    cghe->font = UI_GetFontHandle(fontIndex, cghe->fontScale);
+    if (!cghe->font && fontIndex != 0) {
+        cghe->font = UI_GetFontHandle(0, cghe->fontScale);
+    }
+    if (cghe->font) {
+        cghe->fontHeight = (float)UI_TextHeight(cghe->font, cghe->fontScale);
+    }
 
-skip_font_setup:
     cghe->hudElemLabel[0] = 0;
 
     /* Handle label */
