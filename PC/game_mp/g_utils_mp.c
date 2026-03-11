@@ -190,7 +190,7 @@ unsigned char G_CalcTagParentAxis(gentity_t *ent, vec3_t *parentAxis);
 unsigned char G_SetFixedLink(gentity_t *ent, int eAngles);
 unsigned char G_CalcTagAxis(gentity_t *ent, qboolean bAnglesOnly);
 unsigned char G_EntUnlink(gentity_t *ent);
-static qboolean G_EntLinkToInternal(gentity_t *parent);
+static qboolean G_EntLinkToInternal(gentity_t *ent, gentity_t *parent, unsigned int tagName);
 qboolean G_EntLinkToWithOffset(gentity_t *ent, gentity_t *parent, unsigned int tagName, const vec_t *originOffset, const vec_t *anglesOffset);
 qboolean G_EntLinkTo(gentity_t *ent, gentity_t *parent, unsigned int tagName);
 unsigned char G_GeneralLink(gentity_t *ent);
@@ -762,185 +762,74 @@ unsigned char G_EntUnlink(gentity_t *ent)
 }
 
 /* line 458 */
-static qboolean G_EntLinkToInternal(gentity_t *parent)
+static qboolean G_EntLinkToInternal(gentity_t *ent, gentity_t *parent, unsigned int tagName)
 {
-    /* NOTE: uses register calling convention in binary:
-     * eax=ent, edx=parent, ecx=tagName
-     * We replicate with standard C args and let compiler handle it */
-    /* This function is only called internally; the binary passes
-     * ent in eax, parent in edx, tagName in ecx.
-     * We restructure to take parent as the stack arg and ent/tagName
-     * are passed by callers via registers. In C we flatten this. */
-    return 0; /* placeholder - implemented as naked below */
-}
+    gentity_t *checkEnt;
+    tagInfo_s *tagInfo;
+    int index;
 
-/* line 458 - keep as naked due to register calling convention */
-__attribute__((naked))
-static qboolean __G_EntLinkToInternal(gentity_t *parent)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %esi\n" /* ent */
-        "movl %edx, -0x20(%ebp)\n"
-        "movl %ecx, %edi\n" /* tagName */
-        "movl %eax, (%esp)\n"
-        "calll G_EntUnlink\n"
-        "testl %edi, %edi\n" /* tagName */
-        "jne .Llink_has_tag\n"
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* index */
-        ".Llink_check_cycle:\n"
-        "cmpl -0x20(%ebp), %esi\n" /* ent == parent? */
-        "je .Llink_fail\n"
-        "movl -0x20(%ebp), %ecx\n"
-        "movl 0x208(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Llink_alloc\n"
-        ".Llink_walk:\n"
-        "movl (%eax), %eax\n"
-        "cmpl %eax, %esi\n" /* ent == walk? */
-        "je .Llink_fail\n"
-        "movl 0x208(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Llink_walk\n"
-        ".Llink_alloc:\n"
-        "movl $0x10, 4(%esp)\n"
-        "movl $0x70, (%esp)\n"
-        "calll MT_Alloc\n"
-        "movl %eax, %ebx\n"
-        "movl -0x20(%ebp), %ecx\n"
-        "movl %ecx, (%eax)\n"
-        "movw $0, 8(%eax)\n"
-        "movl %edi, 4(%esp)\n"
-        "leal 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_SetString\n"
-        "movl -0x20(%ebp), %edx\n"
-        "movl 0x20c(%edx), %eax\n"
-        "movl %eax, 4(%ebx)\n"
-        "movl -0x1c(%ebp), %ecx\n"
-        "movl %ecx, 0xc(%ebx)\n"
-        "leal 0x10(%ebx), %edi\n"
-        "cld\n"
-        "xorl %eax, %eax\n"
-        "movl $0xc, %ecx\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl -0x20(%ebp), %edx\n"
-        "movl %esi, 0x20c(%edx)\n"
-        "movl %ebx, 0x208(%esi)\n"
-        "leal 0x40(%ebx), %edi\n"
-        "movb $0xc, %cl\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movb $1, %al\n"
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Llink_has_tag:\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_DObjExists\n"
-        "testl %eax, %eax\n"
-        "jne .Llink_get_bone\n"
-        ".Llink_fail:\n"
-        "xorl %eax, %eax\n"
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Llink_get_bone:\n"
-        "movl %edi, 4(%esp)\n"
-        "movl -0x20(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll SV_DObjGetBoneIndex\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jns .Llink_check_cycle\n"
-        "xorl %eax, %eax\n"
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    G_EntUnlink(ent);
+
+    if (tagName) {
+        if (!SV_DObjExists(parent)) {
+            return 0;
+        }
+
+        index = SV_DObjGetBoneIndex(parent, tagName);
+        if (index < 0) {
+            return 0;
+        }
+    } else {
+        index = -1;
+    }
+
+    for (checkEnt = parent; ; checkEnt = TAGINFO_PARENT(ENT_TAGINFO(checkEnt))) {
+        if (checkEnt == ent) {
+            return 0;
+        }
+
+        if (!ENT_TAGINFO(checkEnt)) {
+            break;
+        }
+    }
+
+    tagInfo = (tagInfo_s *)MT_Alloc(sizeof(*tagInfo), 0x10);
+    tagInfo->parent = parent;
+    tagInfo->name = 0;
+    Scr_SetString(&tagInfo->name, tagName);
+    tagInfo->next = ENT_TAGCHILDREN(parent);
+    tagInfo->index = index;
+    memset(tagInfo->axis, 0, sizeof(tagInfo->axis));
+    ENT_TAGCHILDREN(parent) = ent;
+    ENT_TAGINFO(ent) = (byte *)tagInfo;
+    memset(tagInfo->parentInvAxis, 0, sizeof(tagInfo->parentInvAxis));
+    return 1;
 }
 
 /* line 532 */
-__attribute__((naked))
 qboolean G_EntLinkToWithOffset(gentity_t *ent, gentity_t *parent, unsigned int tagName, const vec_t *originOffset, const vec_t *anglesOffset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ent */
-        "movl 0xc(%ebp), %edx\n" /* parent */
-        "movl 0x10(%ebp), %ecx\n" /* tagName */
-        "movl 0x14(%ebp), %esi\n" /* originOffset */
-        "movl %ebx, %eax\n"
-        "calll __G_EntLinkToInternal\n"
-        "testl %eax, %eax\n"
-        "je .Llinkoff_done\n"
-        "movl 0x208(%ebx), %ebx\n" /* tagInfo */
-        "leal 0x10(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* anglesOffset */
-        "movl %eax, (%esp)\n"
-        "calll AnglesToAxis\n"
-        "leal 0x34(%ebx), %edx\n"
-        "movl (%esi), %eax\n"
-        "movl %eax, 0x34(%ebx)\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl $1, %eax\n"
-        ".Llinkoff_done:\n"
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    tagInfo_s *tagInfo;
+
+    if (!G_EntLinkToInternal(ent, parent, tagName)) {
+        return 0;
+    }
+
+    tagInfo = (tagInfo_s *)ENT_TAGINFO(ent);
+    AnglesToAxis(anglesOffset, (vec_t *)tagInfo->axis);
+    VectorCopy(originOffset, tagInfo->axis[3]);
+    return 1;
 }
 
 /* line 516 */
-__attribute__((naked))
 qboolean G_EntLinkTo(gentity_t *ent, gentity_t *parent, unsigned int tagName)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ent */
-        "movl 0xc(%ebp), %edx\n" /* parent */
-        "movl 0x10(%ebp), %ecx\n" /* tagName */
-        "movl %ebx, %eax\n"
-        "calll __G_EntLinkToInternal\n"
-        "testl %eax, %eax\n"
-        "je .Llink_done\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll G_CalcTagAxis\n"
-        "movl $1, %eax\n"
-        ".Llink_done:\n"
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!G_EntLinkToInternal(ent, parent, tagName)) {
+        return 0;
+    }
+
+    G_CalcTagAxis(ent, 0);
+    return 1;
 }
 
 /* line 803 */
