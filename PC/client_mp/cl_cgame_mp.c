@@ -545,7 +545,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
         if (!token || *token == '\0')
             continue;
 
-        Dvar_SetInt(*(void **)*(void **)imp_com_expectedHunkUsage, atoi(token));
+        Dvar_SetInt(*(void **)imp_com_expectedHunkUsage, atoi(token));
         Z_FreeInternal(buf);
         return;
     }
@@ -553,7 +553,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
     Z_FreeInternal(buf);
 
 set_default:
-    Dvar_SetInt(*(void **)*(void **)imp_com_expectedHunkUsage, 0);
+    Dvar_SetInt(*(void **)imp_com_expectedHunkUsage, 0);
 }
 
 /* line 522 */

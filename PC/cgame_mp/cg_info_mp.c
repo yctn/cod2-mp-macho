@@ -24,6 +24,8 @@ extern void *UI_GetFontHandle(int fontEnum, float scale);
 extern int UI_TextWidth(const char *text, int maxChars, void *font, float scale);
 extern const char *UI_SafeTranslateString(const char *ref);
 extern void UI_DrawText(const char *text, int maxChars, void *font, float x, float y, int horzAlign, int vertAlign, float scale, const float *color, int style);
+extern float UI_DrawLoadBar(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);
+extern float UI_FillRect(float x, float y, float width, float height, int horzAlign, int vertAlign, const vec_t *color);
 
 /* External globals */
 extern char **cg_glob;           /* imp_cg — pointer to cg_t base */
@@ -80,7 +82,10 @@ void CG_DrawInformation(qboolean serverLoading)
     int textWidth;
     int ms;
     int phase;
+    int expectedHunk;
     float x;
+    vec4_t barBg = { 0.08f, 0.08f, 0.08f, 0.75f };
+    vec4_t barFill = { 1.0f, 1.0f, 1.0f, 0.9f };
 
     /* line 50 */
     if (!serverLoading)
@@ -156,56 +161,44 @@ void CG_DrawInformation(qboolean serverLoading)
     /* line 91 */
     UI_DrawMapLevelshot();
 
-    /* line 95-96 */
-    if (Dvar_GetInt("com_expectedhunkusage") <= 0)
+    font = UI_GetFontHandle(0, 0.5f);
+
+    if (*string)
     {
-        /* line 107 */
-        if (!serverLoading)
-            return;
-
-        if (*loadingMessage == '\0')
-            return;
-
-        /* line 111 */
-        font = UI_GetFontHandle(0, 0.5f);
-
-        /* line 113 */
-        ms = Sys_Milliseconds();
-
-        /* line 115 — dot animation: divide by 750, take mod 4 */
-        phase = (ms / 750) & 3;
-
-        switch (phase)
-        {
-            case 0: dots = "";    break;
-            case 1: dots = ".";   break;
-            case 2: dots = "..";  break;
-            case 3: dots = "..."; break;
-        }
-
-        /* line 131 */
-        translated = UI_SafeTranslateString("CGAME_WAITINGFORSERVERLOAD");
-
-        /* line 132 */
-        textWidth = UI_TextWidth(translated, 0, font, 0.5f);
-
-        /* line 133 */
+        textWidth = UI_TextWidth(string, 0x7fffffff, font, 0.5f);
         x = (640.0f - (float)textWidth) * 0.5f;
-
-        /* line 136 */
-        UI_DrawText(
-            va("%s%s", translated, dots),  /* text */
-            0x7fffffff,                     /* maxChars */
-            font,                           /* font */
-            x,                              /* x — centered */
-            439.0f,                         /* y */
-            0,                              /* horzAlign */
-            0,                              /* vertAlign */
-            0.5f,                           /* scale */
-            scrPlace,                       /* color */
-            3                               /* style */
-        );
+        UI_DrawText(string, 0x7fffffff, font, x, 404.0f, 0, 0, 0.5f, scrPlace, 3);
     }
 
-    /* line 137 */
+    expectedHunk = Dvar_GetInt("com_expectedhunkusage");
+    if (expectedHunk > 0)
+    {
+        UI_FillRect(179.0f, 430.0f, 282.0f, 12.0f, 0, 0, barBg);
+        UI_DrawLoadBar(180.0f, 431.0f, 280.0f, 10.0f, 0, 0, barFill, 0);
+    }
+
+    if (!serverLoading)
+        return;
+
+    if (*loadingMessage == '\0')
+        return;
+
+    /* line 113 */
+    ms = Sys_Milliseconds();
+
+    /* line 115 — dot animation: divide by 750, take mod 4 */
+    phase = (ms / 750) & 3;
+
+    switch (phase)
+    {
+        case 0: dots = "";    break;
+        case 1: dots = ".";   break;
+        case 2: dots = "..";  break;
+        default: dots = "..."; break;
+    }
+
+    translated = UI_SafeTranslateString("CGAME_WAITINGFORSERVERLOAD");
+    textWidth = UI_TextWidth(translated, 0x7fffffff, font, 0.5f);
+    x = (640.0f - (float)textWidth) * 0.5f;
+    UI_DrawText(va("%s%s", translated, dots), 0x7fffffff, font, x, 452.0f, 0, 0, 0.5f, scrPlace, 3);
 }

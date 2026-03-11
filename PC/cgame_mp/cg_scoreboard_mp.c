@@ -13,7 +13,15 @@ extern const char * Dvar_GetString(const char *dvarName);
 extern void Dvar_GetUnpackedColorByName(const char *dvarName, vec_t *color);
 
 extern int lastLeadTeam; /* lastLeadTeam */
-static const listColumnInfo_t columnInfo[6]; /* columnInfo */
+/* The decompiler dropped the original scoreboard column table. */
+static const listColumnInfo_t columnInfo[6] = {
+    {LCT_NAME, 0.46f, "", 0},
+    {LCT_STATUS_ICON, 0.05f, "", 0},
+    {LCT_TALKING_ICON, 0.05f, "", 0},
+    {LCT_SCORE, 0.15f, str_002b6804, 2},
+    {LCT_DEATHS, 0.15f, str_002b6814, 2},
+    {LCT_PING, 0.14f, str_002b6824, 2},
+}; /* columnInfo */
 
 qboolean CG_ScoreboardDisplayed(void);
 float CG_ScrollScoreboardUp(void);
@@ -211,7 +219,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "addss -0x50(%ebp), %xmm0\n" /* x */
         "movss %xmm0, -0x50(%ebp)\n" /* x */
         "addl $0x10, %edi\n"
-        "cmpl $commandsList, %edi\n" /* line 1025 */
+        "cmpl $columnInfo+96, %edi\n" /* line 1025 */
         "je .Lf1c2fda_001c31a6\n"
         ".Lf1c2fda_001c3119:\n"
         "movl (%edi), %eax\n" /* line 1027 */
@@ -702,7 +710,7 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "addss -0x38(%ebp), %xmm0\n" /* x */
         "movss %xmm0, -0x38(%ebp)\n" /* x */
         "addl $0x10, %ebx\n" /* playersString */
-        "cmpl $commandsList, %ebx\n" /* line 932 | playersString */
+        "cmpl $columnInfo+96, %ebx\n" /* line 932 | playersString */
         "je .Lf1c3550_001c3730\n"
         ".Lf1c3550_001c385e:\n"
         "movl (%ebx), %eax\n" /* line 934 | playersString */
@@ -890,7 +898,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "addss -0x180(%ebp), %xmm0\n" /* x */
         "movss %xmm0, -0x180(%ebp)\n" /* x */
         "addl $0x10, %ebx\n" /* textStart */
-        "cmpl $commandsList+8, %ebx\n" /* line 754 | textStart */
+        "cmpl $columnInfo+104, %ebx\n" /* line 754 | textStart */
         "je .Lf1c399e_001c3bd3\n"
         ".Lf1c399e_001c3b50:\n"
         "movl (%ebx), %eax\n" /* line 756 | textStart */
@@ -2194,4 +2202,3 @@ qboolean CG_DrawScoreboard(void)
         "jmp .Lf1c48ac_001c4fa4\n"
     );
 }
-
