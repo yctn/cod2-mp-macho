@@ -2601,87 +2601,60 @@ void CL_KeyMove(usercmd_t *cmd)
 }
 
 /* line 1322 */
-__attribute__((naked))
 usercmd_t CL_CreateCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1322 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n"
-        "movl imp_cl, %eax\n" /* line 199 */
-        "movl (%eax), %ebx\n"
-        "movss 0x861c(%ebx), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "calll CL_AdjustAngles\n" /* line 1330 */
-        "cld\n" /* line 1332 */
-        "movl $7, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %esi, %edi\n" /* cmd */
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl %esi, (%esp)\n" /* line 1334 | cmd */
-        "calll CL_CmdButtons\n"
-        "movl %esi, (%esp)\n" /* line 1337 | cmd */
-        "calll CL_KeyMove\n"
-        "movl %esi, (%esp)\n" /* line 1340 | cmd */
-        "calll CL_MouseMove\n"
-        "movss 0x861c(%ebx), %xmm1\n" /* line 1348 */
-        "movaps %xmm1, %xmm0\n"
-        "subss -0x1c(%ebp), %xmm0\n"
-        "ucomiss lit4_002ed5f8, %xmm0\n" /* 90.0f */
-        "jbe .Lf187d76_00187e6a\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 1350 */
-        "addss lit4_002ed5f8, %xmm0\n" /* 90.0f */
-        "movss %xmm0, 0x861c(%ebx)\n"
-        ".Lf187d76_00187df1:\n"
-        "movl imp_cl, %eax\n" /* line 1305 */
-        "movl (%eax), %ecx\n"
-        "movl 0x85f8(%ecx), %eax\n"
-        "movb %al, 8(%esi)\n"
-        "movl 0x85fc(%ecx), %eax\n" /* line 1306 */
-        "movb %al, 9(%esi)\n"
-        "movl 0x26f0(%ecx), %edx\n" /* line 1310 */
-        "movl 0x20(%ecx), %eax\n"
-        "movl %edx, %ebx\n"
-        "subl %eax, %ebx\n"
-        "addl $0x1388, %eax\n"
-        "cmpl $0x1389, %ebx\n"
-        "cmovgel %eax, %edx\n"
-        "movl %edx, (%esi)\n"
-        "movl %esi, %edx\n"
-        "movss lit4_002ed644, %xmm1\n" /* 182.04444885253906f */
-        "leal 0xc(%esi), %ebx\n"
-        ".Lf187d76_00187e34:\n"
-        "movss 0x861c(%ecx), %xmm0\n" /* line 1313 */
-        "addss 0x8610(%ecx), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "andl $0xffff, %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "addl $4, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl %edx, %ebx\n" /* line 1312 */
-        "jne .Lf187d76_00187e34\n"
-        "movl %esi, %eax\n" /* line 1361 | cmd */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl $4\n"
-        ".Lf187d76_00187e6a:\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 1352 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed5f8, %xmm0\n" /* 90.0f */
-        "jbe .Lf187d76_00187df1\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 1354 */
-        "subss lit4_002ed5f8, %xmm0\n" /* 90.0f */
-        "movss %xmm0, 0x861c(%ebx)\n"
-        "jmp .Lf187d76_00187df1\n"
-    );
+    clientActive_t *cl;
+    usercmd_t cmd;
+    float oldPitch;
+    float pitchDelta;
+    int currentCmdTime;
+    int i;
+
+    cl = *(clientActive_t **)imp_cl;
+    oldPitch = cl->viewangles[0];
+
+    CL_AdjustAngles();
+
+    cmd.serverTime = 0;
+    cmd.buttons = 0;
+    cmd.weapon = 0;
+    cmd.offHandIndex = 0;
+    cmd.angles[0] = 0;
+    cmd.angles[1] = 0;
+    cmd.angles[2] = 0;
+    cmd.forwardmove = 0;
+    cmd.rightmove = 0;
+
+    CL_CmdButtons(&cmd);
+    CL_KeyMove(&cmd);
+    CL_MouseMove(&cmd);
+
+    pitchDelta = cl->viewangles[0] - oldPitch;
+    if (pitchDelta > 90.0f)
+    {
+        cl->viewangles[0] = oldPitch + 90.0f;
+    }
+    else if (-pitchDelta > 90.0f)
+    {
+        cl->viewangles[0] = oldPitch - 90.0f;
+    }
+
+    cmd.weapon = (byte)cl->cgameUserCmdValue;
+    cmd.offHandIndex = (byte)cl->cgameUserHoldableValue;
+
+    currentCmdTime = *(int *)((byte *)cl + 0x26f0);
+    if (currentCmdTime > cl->serverTime + 5000)
+    {
+        currentCmdTime = cl->serverTime + 5000;
+    }
+    cmd.serverTime = currentCmdTime;
+
+    for (i = 0; i < 3; ++i)
+    {
+        cmd.angles[i] = ((int)((cl->viewangles[i] + cl->cgameKickAngles[i]) * 182.04444885253906f)) & 0xffff;
+    }
+
+    return cmd;
 }
 
 /* line 1671 */

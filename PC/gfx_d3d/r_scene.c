@@ -232,7 +232,6 @@ void R_DefaultVertexFrames(int vertCount, GfxWorldVertex *verts)
 }
 
 /* line 731 */
-__attribute__((naked))
 void qsortDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount)
 {
     if (drawSurfCount > 1)
