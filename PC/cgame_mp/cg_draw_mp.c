@@ -22,6 +22,7 @@ extern byte *cgs_ptr; /* imp_cgs */
 extern char **cg_glob; /* imp_cg */
 extern float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);
 extern void CG_DrawStringExt(float x, float y, const char *string, const vec_t *setColor, qboolean forceColor, qboolean shadow, float charHeight, qboolean adjust);
+extern void CL_LookupColor(int c, vec_t *color);
 extern const char *va(const char *fmt, ...);
 extern unsigned int Scr_GetNumScriptVars(void);
 extern unsigned int Scr_GetNumScriptThreads(void);
@@ -1425,209 +1426,97 @@ unsigned int CG_DrawActive(void)
 }
 
 /* line 549 */
-static __attribute__((naked))
 unsigned int CG_DrawChatMessages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 549 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg_chatHeight, %eax\n" /* line 566 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, -0x44(%ebp)\n" /* chatHeight */
-        "testl %eax, %eax\n" /* line 567 */
-        "je .Lf1ccb08_001ccdd9\n"
-        "movl imp_cg_hudChatPosition, %eax\n" /* line 570 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "cvttss2si (%eax), %edx\n"
-        "movl %edx, -0x30(%ebp)\n" /* hudChatX */
-        "cvttss2si 4(%eax), %eax\n" /* line 571 */
-        "movl %eax, -0x34(%ebp)\n" /* hudChatY */
-        "movl imp_cgs, %eax\n" /* line 573 */
-        "movl (%eax), %ebx\n"
-        "movl 0xba18(%ebx), %ecx\n"
-        "cmpl 0xba14(%ebx), %ecx\n"
-        "je .Lf1ccb08_001ccdd9\n"
-        "movl imp_cg, %eax\n" /* line 575 */
-        "movl (%eax), %edi\n" /* msg */
-        "movl %ecx, %eax\n"
-        "cltd\n"
-        "idivl -0x44(%ebp)\n" /* chatHeight */
-        "movl 0x25bb0(%edi), %eax\n" /* msg */
-        "subl 0xb9f4(%ebx, %edx, 4), %eax\n"
-        "movl imp_cg_chatTime, %edx\n"
-        "movl (%edx), %edx\n"
-        "cmpl 8(%edx), %eax\n"
-        "jg .Lf1ccb08_001ccde1\n"
-        ".Lf1ccb08_001ccb83:\n"
-        "movl $0x3e555555, 4(%esp)\n" /* line 578 */
-        "movl $0, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, -0x38(%ebp)\n" /* font */
-        "movl 0xba14(%ebx), %esi\n" /* line 579 | i */
-        "subl $1, %esi\n" /* i */
-        "cmpl 0xba18(%ebx), %esi\n" /* i */
-        "jl .Lf1ccb08_001ccdd9\n"
-        "movl %edi, -0x48(%ebp)\n" /* msg */
-        "jmp .Lf1ccb08_001ccd75\n"
-        ".Lf1ccb08_001ccbb7:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 582 | 1.0f */
-        "movss %xmm0, -0x3c(%ebp)\n" /* alphapercent */
-        "movss lit4_002ed944, %xmm0\n" /* 0.6000000238418579f */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        ".Lf1ccb08_001ccbd1:\n"
-        "movl %ecx, %eax\n" /* line 591 */
-        "shll $4, %eax\n"
-        "movl %ecx, %edx\n"
-        "shll $8, %edx\n"
-        "addl %edx, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal 0xb170(%eax, %ebx), %eax\n"
-        "movl %eax, %edi\n" /* line 593 | msg */
-        "addl $0xc, %edi\n" /* msg */
-        "je .Lf1ccb08_001ccbf7\n"
-        "cmpb $0x5e, 0xc(%eax)\n"
-        "je .Lf1ccb08_001ccdef\n"
-        ".Lf1ccb08_001ccbf7:\n"
-        "movl $0x3f800000, -0x28(%ebp)\n" /* line 191 | color */
-        "movl $0x3f800000, -0x24(%ebp)\n" /* line 192 */
-        "movl $0x3f800000, -0x20(%ebp)\n" /* line 193 */
-        ".Lf1ccb08_001ccc0c:\n"
-        "movss -0x28(%ebp), %xmm0\n" /* line 272 | color */
-        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss %xmm0, -0x28(%ebp)\n" /* color */
-        "movss -0x24(%ebp), %xmm0\n" /* line 273 */
-        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss %xmm0, -0x24(%ebp)\n"
-        "movss -0x20(%ebp), %xmm0\n" /* line 274 */
-        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 600 */
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "movl imp_cgs, %eax\n" /* line 603 */
-        "movl (%eax), %ebx\n"
-        "movl 0xba14(%ebx), %eax\n"
-        "subl %esi, %eax\n" /* i */
-        "leal (%eax, %eax, 4), %eax\n"
-        "addl %eax, %eax\n"
-        "movl -0x34(%ebp), %edx\n" /* hudChatY */
-        "subl %eax, %edx\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n" /* y */
-        "movl $0x3e555555, 0xc(%esp)\n" /* line 604 */
-        "movl -0x38(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* msg */
-        "calll UI_TextWidth\n"
-        "movl 0xba28(%ebx), %edx\n" /* line 606 */
-        "movl %edx, 0x1c(%esp)\n"
-        "leal -0x28(%ebp), %edx\n" /* color */
-        "movl %edx, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl $0x41200000, 0xc(%esp)\n"
-        "addl $0x18, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x40(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        "movss -0x3c(%ebp), %xmm0\n" /* line 608 | alphapercent */
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "movl 0xba14(%ebx), %eax\n" /* line 611 */
-        "subl %esi, %eax\n" /* i */
-        "leal (%eax, %eax, 4), %eax\n"
-        "addl %eax, %eax\n"
-        "movl -0x34(%ebp), %edx\n" /* hudChatY */
-        "subl %eax, %edx\n"
-        "movl %edx, %eax\n"
-        "addl $9, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movl $0x3f800000, -0x28(%ebp)\n" /* line 191 | color */
-        "movl $0x3f800000, -0x24(%ebp)\n" /* line 192 */
-        "movl $0x3f800000, -0x20(%ebp)\n" /* line 193 */
-        "movl $3, 0x24(%esp)\n" /* line 614 */
-        "leal -0x28(%ebp), %eax\n" /* color */
-        "movl %eax, 0x20(%esp)\n"
-        "movl $0x3e555555, 0x1c(%esp)\n"
-        "movl $1, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "cvtsi2ssl -0x30(%ebp), %xmm0\n" /* hudChatX */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl -0x38(%ebp), %edx\n" /* font */
-        "movl %edx, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* msg */
-        "calll UI_DrawText\n"
-        ".Lf1ccb08_001ccd63:\n"
-        "subl $1, %esi\n" /* line 579 | i */
-        "movl imp_cgs, %eax\n"
-        "movl (%eax), %ebx\n"
-        "cmpl 0xba18(%ebx), %esi\n" /* i */
-        "jl .Lf1ccb08_001ccdd9\n"
-        ".Lf1ccb08_001ccd75:\n"
-        "movl %esi, %eax\n" /* line 581 | i */
-        "cltd\n"
-        "idivl -0x44(%ebp)\n" /* chatHeight */
-        "movl %edx, %ecx\n"
-        "movl imp_cg_chatTime, %eax\n"
-        "movl (%eax), %eax\n"
-        "cvtsi2ssl 8(%eax), %xmm1\n"
-        "movl -0x48(%ebp), %edx\n"
-        "movl 0x25bb0(%edx), %eax\n"
-        "subl 0xb9f4(%ebx, %ecx, 4), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "ucomiss lit4_002ed734, %xmm1\n" /* line 582 | 200.0f */
-        "ja .Lf1ccb08_001ccbb7\n"
-        "divss lit4_002ed734, %xmm1\n" /* line 586 | 200.0f */
-        "movss %xmm1, -0x3c(%ebp)\n" /* alphapercent */
-        "pxor %xmm0, %xmm0\n" /* line 587 */
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf1ccb08_001ccd63\n"
-        "movaps %xmm1, %xmm0\n" /* line 588 */
-        "mulss lit4_002ed944, %xmm0\n" /* 0.6000000238418579f */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "jmp .Lf1ccb08_001ccbd1\n"
-        /* } scope */
-        ".Lf1ccb08_001ccdd9:\n"
-        "addl $0x6c, %esp\n" /* line 617 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1ccb08_001ccde1:\n"
-        "leal 1(%ecx), %eax\n" /* line 576 */
-        "movl %eax, 0xba18(%ebx)\n"
-        "jmp .Lf1ccb08_001ccb83\n"
-        ".Lf1ccb08_001ccdef:\n"
-        "movzbl 1(%edi), %eax\n" /* line 593 | msg */
-        "testb %al, %al\n"
-        "je .Lf1ccb08_001ccbf7\n"
-        "cmpb $0x5e, %al\n"
-        "je .Lf1ccb08_001ccbf7\n"
-        "cmpb $0x2f, %al\n"
-        "jle .Lf1ccb08_001ccbf7\n"
-        "cmpb $0x39, %al\n"
-        "jg .Lf1ccb08_001ccbf7\n"
-        "leal -0x28(%ebp), %edx\n" /* line 594 | color */
-        "movl %edx, 4(%esp)\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_LookupColor\n"
-        "jmp .Lf1ccb08_001ccc0c\n"
-    );
+    cg_t *cg;
+    cgs_t *cgs;
+    FontHandle font;
+    const char *msg;
+    vec4_t color;
+    float alphaPercent;
+    float backgroundAlpha;
+    float y;
+    float timeRemaining;
+    int chatHeight;
+    int hudChatX;
+    int hudChatY;
+    int chatTime;
+    int index;
+    int i;
+    int textWidth;
+
+    chatHeight = (*(const dvar_t **)imp_cg_chatHeight)->current.integer;
+    if (!chatHeight)
+    {
+        return 0;
+    }
+
+    hudChatX = (int)(*(const dvar_t **)imp_cg_hudChatPosition)->current.vector[0];
+    hudChatY = (int)(*(const dvar_t **)imp_cg_hudChatPosition)->current.vector[1];
+    cgs = *(cgs_t **)imp_cgs;
+    if (cgs->teamLastChatPos == cgs->teamChatPos)
+    {
+        return 0;
+    }
+
+    cg = *(cg_t **)imp_cg;
+    index = cgs->teamLastChatPos % chatHeight;
+    chatTime = (*(const dvar_t **)imp_cg_chatTime)->current.integer;
+    if (cg->time - cgs->teamChatMsgTimes[index] > chatTime)
+    {
+        ++cgs->teamLastChatPos;
+    }
+
+    font = UI_GetFontHandle(0, 1.0f / 3.0f);
+    for (i = cgs->teamChatPos - 1; i >= cgs->teamLastChatPos; --i)
+    {
+        index = i % chatHeight;
+        timeRemaining = (float)chatTime - (float)(cg->time - cgs->teamChatMsgTimes[index]);
+        if (timeRemaining > 200.0f)
+        {
+            alphaPercent = 1.0f;
+            backgroundAlpha = 0.60000002f;
+        }
+        else
+        {
+            alphaPercent = timeRemaining / 200.0f;
+            if (alphaPercent <= 0.0f)
+            {
+                continue;
+            }
+
+            backgroundAlpha = alphaPercent * 0.60000002f;
+        }
+
+        msg = cgs->teamChatMsgs[index];
+        if (msg[0] == '^' && msg[1] && msg[1] != '^' && msg[1] >= '0' && msg[1] <= '9')
+        {
+            CL_LookupColor((unsigned char)msg[1], color);
+        }
+        else
+        {
+            color[0] = 1.0f;
+            color[1] = 1.0f;
+            color[2] = 1.0f;
+        }
+
+        color[0] *= 0.25f;
+        color[1] *= 0.25f;
+        color[2] *= 0.25f;
+        color[3] = backgroundAlpha;
+
+        y = (float)(hudChatY - (cgs->teamChatPos - i) * 10);
+        textWidth = UI_TextWidth(msg, 0, font, 1.0f / 3.0f);
+        UI_DrawHandlePic(0.0f, y, (float)(textWidth + 24), 10.0f, 1, 1, color, cgs->media.whiteMaterial);
+
+        color[0] = 1.0f;
+        color[1] = 1.0f;
+        color[2] = 1.0f;
+        color[3] = alphaPercent;
+        UI_DrawText(msg, 0x7fffffff, font, (float)hudChatX, y + 9.0f, 1, 1, 1.0f / 3.0f, color, 3);
+    }
+
+    return 0;
 }
 
 /* line 1110 */
