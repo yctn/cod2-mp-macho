@@ -340,7 +340,6 @@ void FindMatches(const char *s)
 static
 void PrintMatches(const char *s)
 {
-{
     int shortestLen;
 
     for (shortestLen = 0; shortestMatch[shortestLen]; ++shortestLen) {
