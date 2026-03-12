@@ -3,19 +3,34 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 enum {
     UNZ_OK = 0,
+    UNZ_ERRNO = -1,
     UNZ_END_OF_LIST_OF_FILE = -100,
     UNZ_PARAMERROR = -102,
+    UNZ_BADZIPFILE = -103,
+    UNZ_INTERNALERROR = -104,
+    UNZ_BUFSIZE = 0x4000,
+    UNZ_LOCAL_HEADER_SIZE = 0x1e,
     UNZ_SIZECENTRALDIRITEM = 0x2e
 };
 
+enum {
+    Z_DEFLATED = 8,
+    Z_SYNC_FLUSH = 2
+};
+
 extern FILE *FS_FileOpen(const char *filename, const char *mode);
+extern size_t FS_FileRead(void *ptr, size_t size, size_t nitems, FILE *stream);
 extern int FS_FileClose(FILE *stream);
+extern int FS_FileSeek(FILE *file, long int offset, int whence);
+extern int inflate(z_streamp strm, int flush);
 extern int inflateEnd(z_streamp strm);
+extern int inflateInit2_(z_streamp strm, int windowBits, const char *version, int stream_size);
 
 unzFile unzReOpen(const char *path, unzFile file);
 int unzGetGlobalInfo(unzFile file, unz_global_info *pglobal_info);
@@ -40,6 +55,106 @@ int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *szFileN
 unzFile unzOpen(const char *path);
 int unzClose(unzFile file);
 int unzOpenCurrentFile(unzFile file);
+
+static int unzlocal_ReadShort(FILE *file, uLong *value)
+{
+    unsigned short raw;
+
+    if (FS_FileRead(&raw, sizeof(raw), 1, file) != 1)
+        return UNZ_BADZIPFILE;
+
+    *value = raw;
+    return UNZ_OK;
+}
+
+static int unzlocal_ReadLong(FILE *file, uLong *value)
+{
+    uLong raw;
+
+    if (FS_FileRead(&raw, sizeof(raw), 1, file) != 1)
+        return UNZ_BADZIPFILE;
+
+    *value = raw;
+    return UNZ_OK;
+}
+
+static int unzlocal_CheckCurrentFileCoherencyHeader(
+    unz_s *s,
+    uInt *sizeVar,
+    uLong *offsetLocalExtrafield,
+    uInt *sizeLocalExtrafield)
+{
+    uLong value;
+    uLong flags;
+    uLong sizeFilename;
+    uLong sizeExtraField;
+    int err;
+
+    *sizeVar = 0;
+    *offsetLocalExtrafield = 0;
+    *sizeLocalExtrafield = 0;
+
+    if (FS_FileSeek(
+            s->file,
+            s->cur_file_info_internal.offset_curfile + s->byte_before_the_zipfile,
+            SEEK_SET) != 0) {
+        return UNZ_BADZIPFILE;
+    }
+
+    err = unzlocal_ReadLong(s->file, &value);
+    if (err != UNZ_OK || value != 0x04034b50)
+        return UNZ_BADZIPFILE;
+
+    if (unzlocal_ReadShort(s->file, &value) != UNZ_OK)
+        return UNZ_BADZIPFILE;
+
+    if (unzlocal_ReadShort(s->file, &flags) != UNZ_OK)
+        return UNZ_BADZIPFILE;
+
+    err = unzlocal_ReadShort(s->file, &value);
+    if (err != UNZ_OK || value != s->cur_file_info.compression_method)
+        return UNZ_BADZIPFILE;
+
+    if (value != 0 && value != Z_DEFLATED)
+        return UNZ_BADZIPFILE;
+
+    if (unzlocal_ReadLong(s->file, &value) != UNZ_OK)
+        return UNZ_BADZIPFILE;
+
+    err = unzlocal_ReadLong(s->file, &value);
+    if (err != UNZ_OK)
+        return UNZ_BADZIPFILE;
+    if (value != s->cur_file_info.crc && (flags & 8) == 0)
+        return UNZ_BADZIPFILE;
+
+    err = unzlocal_ReadLong(s->file, &value);
+    if (err != UNZ_OK)
+        return UNZ_BADZIPFILE;
+    if (value != s->cur_file_info.compressed_size && (flags & 8) == 0)
+        return UNZ_BADZIPFILE;
+
+    err = unzlocal_ReadLong(s->file, &value);
+    if (err != UNZ_OK)
+        return UNZ_BADZIPFILE;
+    if (value != s->cur_file_info.uncompressed_size && (flags & 8) == 0)
+        return UNZ_BADZIPFILE;
+
+    err = unzlocal_ReadShort(s->file, &sizeFilename);
+    if (err != UNZ_OK || sizeFilename != s->cur_file_info.size_filename)
+        return UNZ_BADZIPFILE;
+
+    *sizeVar += (uInt)sizeFilename;
+
+    if (unzlocal_ReadShort(s->file, &sizeExtraField) != UNZ_OK)
+        return UNZ_BADZIPFILE;
+
+    *offsetLocalExtrafield = s->cur_file_info_internal.offset_curfile
+        + UNZ_LOCAL_HEADER_SIZE
+        + sizeFilename;
+    *sizeLocalExtrafield = (uInt)sizeExtraField;
+    *sizeVar += (uInt)sizeExtraField;
+    return UNZ_OK;
+}
 
 /* line 326 */
 unzFile unzReOpen(const char *path, unzFile file)
@@ -66,183 +181,117 @@ unzFile unzReOpen(const char *path, unzFile file)
 /* line 472 */
 int unzGetGlobalInfo(unzFile file, unz_global_info *pglobal_info)
 {
-    if (!file)
-        return -102;
-    *(int *)pglobal_info = *(int *)((char *)file + 4);
-    *(int *)((char *)pglobal_info + 4) = *(int *)((char *)file + 8);
-    return 0;
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    *pglobal_info = s->gi;
+    return UNZ_OK;
 }
 
 /* line 757 */
 int unzGetCurrentFileInfoPosition(unzFile file, long unsigned int *pos)
 {
-    if (!file)
-        return -102;
-    *pos = *(long unsigned int *)((char *)file + 0x14);
-    return 0;
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    *pos = s->pos_in_central_dir;
+    return UNZ_OK;
 }
 
 /* line 1043 */
-__attribute__((naked))
 int unzReadCurrentFile(unzFile file, voidp buf, unsigned int len)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1043 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* file */
-        /* { scope 1 */
-        "testl %eax, %eax\n" /* line 1052 */
-        "jne .Lf279f4_00027a13\n"
-        ".Lf279f4_00027a04:\n"
-        "movl $0xffffff9a, %edi\n" /* line 1057 | err */
-        /* } scope */
-        ".Lf279f4_00027a09:\n"
-        "movl %edi, %eax\n" /* line 1168 | err */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf279f4_00027a13:\n"
-        "movl 0x7c(%eax), %esi\n" /* line 1055 | pfile_in_zip_read_info */
-        "testl %esi, %esi\n" /* line 1057 | pfile_in_zip_read_info */
-        "je .Lf279f4_00027a04\n"
-        "movl (%esi), %edi\n" /* line 1061 | pfile_in_zip_read_info, err */
-        "testl %edi, %edi\n" /* err */
-        "je .Lf279f4_00027b70\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 1063 | len */
-        "testl %ebx, %ebx\n"
-        "je .Lf279f4_00027b61\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1066 | buf */
-        "movl %eax, 0x10(%esi)\n" /* pfile_in_zip_read_info */
-        "movl 0x10(%ebp), %edx\n" /* line 1068 | len */
-        "movl %edx, 0x14(%esi)\n" /* pfile_in_zip_read_info */
-        "movl 0x54(%esi), %eax\n" /* line 1070 | pfile_in_zip_read_info */
-        "cmpl %eax, %edx\n"
-        "jbe .Lf279f4_00027a45\n"
-        "movl %eax, 0x14(%esi)\n" /* line 1072 | pfile_in_zip_read_info */
-        ".Lf279f4_00027a45:\n"
-        "xorl %edi, %edi\n" /* err */
-        "movl $0, -0x1c(%ebp)\n" /* iRead */
-        ".Lf279f4_00027a4e:\n"
-        "movl 0x14(%esi), %eax\n" /* line 1074 | pfile_in_zip_read_info */
-        "testl %eax, %eax\n"
-        "je .Lf279f4_00027af3\n"
-        "movl 8(%esi), %ecx\n" /* line 1076 | pfile_in_zip_read_info */
-        "testl %ecx, %ecx\n"
-        "jne .Lf279f4_00027a6b\n"
-        "movl 0x50(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "testl %eax, %eax\n"
-        "jne .Lf279f4_00027afe\n"
-        ".Lf279f4_00027a6b:\n"
-        "movl 0x5c(%esi), %edx\n" /* line 1100 | pfile_in_zip_read_info */
-        "testl %edx, %edx\n"
-        "jne .Lf279f4_00027aba\n"
-        /* { scope 2 */
-        "movl 0x14(%esi), %ebx\n" /* line 1103 | pfile_in_zip_read_info, uDoCopy */
-        "movl %ebx, %edx\n" /* uDoCopy */
-        "movl 8(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "cmpl %eax, %ebx\n" /* uDoCopy */
-        "cmovael %eax, %ebx\n" /* uDoCopy */
-        "testl %ebx, %ebx\n" /* line 1109 | uDoCopy */
-        "je .Lf279f4_00027a9f\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf279f4_00027a85:\n"
-        "movl 0x10(%esi), %eax\n" /* line 1111 | pfile_in_zip_read_info */
-        "movl 4(%esi), %edx\n" /* pfile_in_zip_read_info */
-        "movzbl (%edx, %ecx), %edx\n"
-        "movb %dl, (%eax, %ecx)\n"
-        "addl $1, %ecx\n" /* line 1109 */
-        "cmpl %ecx, %ebx\n" /* uDoCopy */
-        "jne .Lf279f4_00027a85\n"
-        "movl 0x14(%esi), %edx\n" /* pfile_in_zip_read_info */
-        "movl 8(%esi), %eax\n" /* pfile_in_zip_read_info */
-        ".Lf279f4_00027a9f:\n"
-        "subl %ebx, 0x54(%esi)\n" /* line 1118 | uDoCopy, pfile_in_zip_read_info */
-        "subl %ebx, %eax\n" /* line 1119 | uDoCopy */
-        "movl %eax, 8(%esi)\n" /* pfile_in_zip_read_info */
-        "subl %ebx, %edx\n" /* line 1120 | uDoCopy */
-        "movl %edx, 0x14(%esi)\n" /* pfile_in_zip_read_info */
-        "addl %ebx, 0x10(%esi)\n" /* line 1121 | uDoCopy, pfile_in_zip_read_info */
-        "addl %ebx, 4(%esi)\n" /* line 1122 | uDoCopy, pfile_in_zip_read_info */
-        "addl %ebx, 0x18(%esi)\n" /* line 1123 | uDoCopy, pfile_in_zip_read_info */
-        "addl %ebx, -0x1c(%ebp)\n" /* line 1124 | uDoCopy, iRead */
-        "jmp .Lf279f4_00027a4e\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf279f4_00027aba:\n"
-        "movl 0x18(%esi), %ebx\n" /* line 1133 | pfile_in_zip_read_info, uTotalOutBefore */
-        "movl $2, 4(%esp)\n" /* line 1142 */
-        "leal 4(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "movl %eax, (%esp)\n"
-        "calll inflate\n"
-        "movl %eax, %edi\n" /* err */
-        "movl 0x18(%esi), %eax\n" /* line 1145 | pfile_in_zip_read_info */
-        "subl %ebx, %eax\n" /* uTotalOutBefore */
-        "subl %eax, 0x54(%esi)\n" /* line 1154 | pfile_in_zip_read_info */
-        "addl %eax, -0x1c(%ebp)\n" /* line 1156 | iRead */
-        "cmpl $1, %edi\n" /* line 1158 | err */
-        "je .Lf279f4_00027b68\n"
-        "testl %edi, %edi\n" /* line 1160 | err */
-        "je .Lf279f4_00027a4e\n"
-        "jmp .Lf279f4_00027a09\n"
-        /* } scope */
-        ".Lf279f4_00027af3:\n"
-        "testl %edi, %edi\n" /* line 1166 | err */
-        "cmovel -0x1c(%ebp), %edi\n" /* iRead, err */
-        "jmp .Lf279f4_00027a09\n"
-        /* { scope 2 */
-        ".Lf279f4_00027afe:\n"
-        "movl $0x4000, %ebx\n" /* line 1080 | uReadThis */
-        "cmpl $0x3fff, %eax\n"
-        "cmovbel %eax, %ebx\n" /* uReadThis */
-        "movl $0, 8(%esp)\n" /* line 1084 */
-        "movl 0x3c(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "addl 0x60(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x58(%esi), %eax\n" /* pfile_in_zip_read_info */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "jne .Lf279f4_00027b7a\n"
-        "movl 0x58(%esi), %eax\n" /* line 1088 | pfile_in_zip_read_info */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* uReadThis */
-        "movl (%esi), %eax\n" /* pfile_in_zip_read_info */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "subl $1, %eax\n"
-        "jne .Lf279f4_00027b7a\n"
-        "addl %ebx, 0x3c(%esi)\n" /* line 1091 | uReadThis, pfile_in_zip_read_info */
-        "subl %ebx, 0x50(%esi)\n" /* line 1093 | uReadThis, pfile_in_zip_read_info */
-        "movl (%esi), %eax\n" /* line 1096 | pfile_in_zip_read_info */
-        "movl %eax, 4(%esi)\n" /* pfile_in_zip_read_info */
-        "movl %ebx, 8(%esi)\n" /* line 1097 | uReadThis, pfile_in_zip_read_info */
-        "jmp .Lf279f4_00027a6b\n"
-        /* } scope */
-        ".Lf279f4_00027b61:\n"
-        "xorl %edi, %edi\n" /* line 1063 | err */
-        "jmp .Lf279f4_00027a09\n"
-        /* { scope 2 */
-        ".Lf279f4_00027b68:\n"
-        "movl -0x1c(%ebp), %edi\n" /* line 1159 | iRead, err */
-        "jmp .Lf279f4_00027a09\n"
-        /* } scope */
-        ".Lf279f4_00027b70:\n"
-        "movl $0xffffff9c, %edi\n" /* line 1061 | err */
-        "jmp .Lf279f4_00027a09\n"
-        /* { scope 2 */
-        ".Lf279f4_00027b7a:\n"
-        "movl $0xffffffff, %edi\n" /* line 1088 | err */
-        "jmp .Lf279f4_00027a09\n"
-    );
+    int err;
+    unsigned int readCount;
+    unz_s *s;
+    file_in_zip_read_info_s *readInfo;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    readInfo = s->pfile_in_zip_read;
+    if (readInfo == NULL)
+        return UNZ_PARAMERROR;
+
+    if (readInfo->read_buffer == NULL)
+        return UNZ_END_OF_LIST_OF_FILE;
+
+    if (len == 0)
+        return 0;
+
+    readInfo->stream.next_out = (Bytef *)buf;
+    readInfo->stream.avail_out = len;
+    if (len > readInfo->rest_read_uncompressed)
+        readInfo->stream.avail_out = readInfo->rest_read_uncompressed;
+
+    err = UNZ_OK;
+    readCount = 0;
+
+    while (readInfo->stream.avail_out > 0) {
+        if (readInfo->stream.avail_in == 0 && readInfo->rest_read_compressed > 0) {
+            unsigned int readThis = UNZ_BUFSIZE;
+
+            if (readInfo->rest_read_compressed < readThis)
+                readThis = readInfo->rest_read_compressed;
+
+            if (FS_FileSeek(
+                    readInfo->file,
+                    readInfo->pos_in_zipfile + readInfo->byte_before_the_zipfile,
+                    SEEK_SET) != 0) {
+                return UNZ_ERRNO;
+            }
+
+            if (FS_FileRead(readInfo->read_buffer, readThis, 1, readInfo->file) != 1)
+                return UNZ_ERRNO;
+
+            readInfo->pos_in_zipfile += readThis;
+            readInfo->rest_read_compressed -= readThis;
+            readInfo->stream.next_in = (Bytef *)readInfo->read_buffer;
+            readInfo->stream.avail_in = readThis;
+        }
+
+        if (readInfo->compression_method == 0) {
+            unsigned int copyCount = readInfo->stream.avail_out;
+
+            if (copyCount > readInfo->stream.avail_in)
+                copyCount = readInfo->stream.avail_in;
+
+            if (copyCount > 0)
+                memcpy(readInfo->stream.next_out, readInfo->stream.next_in, copyCount);
+
+            readInfo->rest_read_uncompressed -= copyCount;
+            readInfo->stream.avail_in -= copyCount;
+            readInfo->stream.avail_out -= copyCount;
+            readInfo->stream.next_out += copyCount;
+            readInfo->stream.next_in += copyCount;
+            readInfo->stream.total_out += copyCount;
+            readCount += copyCount;
+            continue;
+        }
+
+        {
+            uLong totalOutBefore = readInfo->stream.total_out;
+
+            err = inflate(&readInfo->stream, Z_SYNC_FLUSH);
+            readInfo->rest_read_uncompressed -= readInfo->stream.total_out - totalOutBefore;
+            readCount += readInfo->stream.total_out - totalOutBefore;
+
+            if (err == 1)
+                return readCount;
+            if (err == UNZ_OK)
+                continue;
+            return err;
+        }
+    }
+
+    return err == UNZ_OK ? (int)readCount : err;
 }
 
 /* line 1174 */
@@ -1201,301 +1250,63 @@ int unzClose(unzFile file)
 }
 
 /* line 941 */
-__attribute__((naked))
 int unzOpenCurrentFile(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 941 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* file */
-        /* { scope 1: size_extra_field */
-        "testl %ebx, %ebx\n" /* line 952 | file */
-        "jne .Lf288f2_0002890f\n"
-        ".Lf288f2_00028902:\n"
-        "movl $0xffffff9a, %eax\n" /* line 955 */
-        /* } scope */
-        ".Lf288f2_00028907:\n"
-        "addl $0x3c, %esp\n" /* line 1030 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: size_extra_field */
-        ".Lf288f2_0002890f:\n"
-        "movl 0x18(%ebx), %eax\n" /* line 955 | file */
-        "testl %eax, %eax\n"
-        "je .Lf288f2_00028902\n"
-        "movl 0x7c(%ebx), %esi\n" /* line 958 | file, size_filename */
-        "testl %esi, %esi\n" /* size_filename */
-        "je .Lf288f2_0002894e\n"
-        "movl (%esi), %eax\n" /* line 1297 | size_filename */
-        "movl %eax, (%esp)\n"
-        "calll free\n"
-        "movl $0, (%esi)\n" /* line 1298 | size_filename */
-        "movl 0x40(%esi), %eax\n" /* line 1299 | size_filename */
-        "testl %eax, %eax\n"
-        "jne .Lf288f2_00028c25\n"
-        ".Lf288f2_00028938:\n"
-        "movl $0, 0x40(%esi)\n" /* line 1302 | size_filename */
-        "movl %esi, (%esp)\n" /* line 1303 | size_filename */
-        "calll free\n"
-        "movl $0, 0x7c(%ebx)\n" /* line 1305 | file */
-        /* { scope 2: v */
-        ".Lf288f2_0002894e:\n"
-        "movl $0, 8(%esp)\n" /* line 868 */
-        "movl 0x78(%ebx), %eax\n"
-        "addl 0xc(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "movl %eax, %esi\n" /* size_filename */
-        "testl %eax, %eax\n"
-        "je .Lf288f2_00028977\n"
-        /* } scope */
-        ".Lf288f2_00028970:\n"
-        "movl $0xffffff99, %eax\n" /* line 1029 */
-        "jmp .Lf288f2_00028907\n"
-        /* { scope 2: v */
-        /* { scope 3 */
-        ".Lf288f2_00028977:\n"
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        "movl $0xffffff99, %edi\n" /* line 876 | err */
-        "cmpl $0x4034b50, -0x1c(%ebp)\n" /* v */
-        "cmovel %esi, %edi\n" /* size_filename, err */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %esi\n" /* line 124 | v */
-        /* } scope */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movswl %ax, %edx\n"
-        /* } scope */
-        "testl %edi, %edi\n" /* line 890 | err */
-        "jne .Lf288f2_00028a26\n"
-        "cmpl 0x34(%ebx), %edx\n"
-        "je .Lf288f2_00028c0f\n"
-        ".Lf288f2_00028a21:\n"
-        "movl $0xffffff99, %edi\n" /* line 893 | err */
-        /* { scope 3 */
-        ".Lf288f2_00028a26:\n"
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 902 | err */
-        "jne .Lf288f2_00028a89\n"
-        "cmpl 0x3c(%ebx), %eax\n"
-        "je .Lf288f2_00028c3c\n"
-        "testl $8, %esi\n" /* size_filename */
-        "jne .Lf288f2_00028c3c\n"
-        "movl $0xffffff99, %edi\n" /* err */
-        /* { scope 3 */
-        ".Lf288f2_00028a89:\n"
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 908 | err */
-        "jne .Lf288f2_00028acb\n"
-        "cmpl 0x40(%ebx), %eax\n"
-        "je .Lf288f2_00028c43\n"
-        "testl $8, %esi\n" /* size_filename */
-        "jne .Lf288f2_00028c43\n"
-        "movl $0xffffff99, %edi\n" /* err */
-        /* { scope 3 */
-        ".Lf288f2_00028acb:\n"
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 914 | err */
-        "jne .Lf288f2_00028b0a\n"
-        "cmpl 0x44(%ebx), %eax\n"
-        "je .Lf288f2_00028c35\n"
-        "andl $8, %esi\n" /* size_filename */
-        "jne .Lf288f2_00028c35\n"
-        "movl $0xffffff99, %edi\n" /* err */
-        /* { scope 3 */
-        ".Lf288f2_00028b0a:\n"
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %esi\n" /* line 124 | v */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 921 | err */
-        "jne .Lf288f2_00028b3e\n"
-        "cmpl 0x48(%ebx), %esi\n" /* size_filename */
-        "movl $0xffffff99, %eax\n"
-        "cmovnel %eax, %edi\n" /* err */
-        /* { scope 3 */
-        ".Lf288f2_00028b3e:\n"
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movl %eax, -0x2c(%ebp)\n" /* size_extra_field */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 929 | size_filename */
-        "addl 0x78(%ebx), %eax\n"
-        "addl $0x1e, %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* offset_local_extrafield */
-        "addl -0x2c(%ebp), %esi\n" /* line 932 | size_extra_field, size_filename */
-        "movl %esi, -0x34(%ebp)\n" /* size_filename, iSizeVar */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 961 | err */
-        "jne .Lf288f2_00028970\n"
-        "movl $0x64, (%esp)\n" /* line 965 */
-        "calll malloc\n"
-        "movl %eax, %esi\n" /* size_filename */
-        "testl %eax, %eax\n" /* line 966 */
-        "je .Lf288f2_00028c9e\n"
-        "movl $0x4000, (%esp)\n" /* line 969 */
-        "calll malloc\n"
-        "movl %eax, (%esi)\n" /* size_filename */
-        "movl -0x30(%ebp), %eax\n" /* line 970 | offset_local_extrafield */
-        "movl %eax, 0x44(%esi)\n" /* size_filename */
-        "movl -0x2c(%ebp), %eax\n" /* line 971 | size_extra_field */
-        "movl %eax, 0x48(%esi)\n" /* size_filename */
-        "movl $0, 0x4c(%esi)\n" /* line 972 | size_filename */
-        "movl (%esi), %eax\n" /* line 974 | size_filename */
-        "testl %eax, %eax\n"
-        "je .Lf288f2_00028c96\n"
-        "movl $0, 0x40(%esi)\n" /* line 980 | size_filename */
-        "movl 0x34(%ebx), %eax\n" /* line 982 | file */
-        "movl %eax, 0x5c(%esi)\n" /* line 992 | size_filename */
-        "movl (%ebx), %edx\n" /* line 993 | file */
-        "movl %edx, 0x58(%esi)\n" /* size_filename */
-        "movl 0xc(%ebx), %edx\n" /* line 994 | file */
-        "movl %edx, 0x60(%esi)\n" /* size_filename */
-        "movl $0, 0x18(%esi)\n" /* line 996 | size_filename */
-        "testl %eax, %eax\n" /* line 998 */
-        "jne .Lf288f2_00028c4a\n"
-        ".Lf288f2_00028be3:\n"
-        "movl 0x40(%ebx), %eax\n" /* line 1016 | file */
-        "movl %eax, 0x50(%esi)\n" /* size_filename */
-        "movl 0x44(%ebx), %eax\n" /* line 1018 | file */
-        "movl %eax, 0x54(%esi)\n" /* size_filename */
-        "movl 0x78(%ebx), %eax\n" /* line 1023 | file */
-        "addl %eax, -0x34(%ebp)\n" /* iSizeVar */
-        "movl -0x34(%ebp), %eax\n" /* iSizeVar */
-        "addl $0x1e, %eax\n"
-        "movl %eax, 0x3c(%esi)\n" /* size_filename */
-        "movl $0, 8(%esi)\n" /* line 1025 | size_filename */
-        "movl %esi, 0x7c(%ebx)\n" /* line 1028 | size_filename, file */
-        "xorl %eax, %eax\n"
-        "jmp .Lf288f2_00028907\n"
-        /* { scope 2: v */
-        ".Lf288f2_00028c0f:\n"
-        "testw %ax, %ax\n" /* line 893 */
-        "je .Lf288f2_00028c1e\n"
-        "cmpw $8, %ax\n"
-        "jne .Lf288f2_00028a21\n"
-        ".Lf288f2_00028c1e:\n"
-        "xorl %edi, %edi\n" /* err */
-        "jmp .Lf288f2_00028a26\n"
-        /* } scope */
-        ".Lf288f2_00028c25:\n"
-        "leal 4(%esi), %eax\n" /* line 1300 | size_filename */
-        "movl %eax, (%esp)\n"
-        "calll inflateEnd\n"
-        "jmp .Lf288f2_00028938\n"
-        /* { scope 2: v */
-        ".Lf288f2_00028c35:\n"
-        "xorl %edi, %edi\n" /* line 914 | err */
-        "jmp .Lf288f2_00028b0a\n"
-        ".Lf288f2_00028c3c:\n"
-        "xorl %edi, %edi\n" /* line 902 | err */
-        "jmp .Lf288f2_00028a89\n"
-        ".Lf288f2_00028c43:\n"
-        "xorl %edi, %edi\n" /* line 908 | err */
-        "jmp .Lf288f2_00028acb\n"
-        /* } scope */
-        ".Lf288f2_00028c4a:\n"
-        "movl $0, 0x24(%esi)\n" /* line 1000 | size_filename */
-        "movl $0, 0x28(%esi)\n" /* line 1001 | size_filename */
-        "movl $0, 0x2c(%esi)\n" /* line 1002 | size_filename */
-        "movl $0x38, 0xc(%esp)\n" /* line 1004 */
-        "movl $str_00215d44, 8(%esp)\n" /* "1.1.4" */
-        "movl $0xfffffff1, 4(%esp)\n"
-        "leal 4(%esi), %eax\n" /* size_filename */
-        "movl %eax, (%esp)\n"
-        "calll inflateInit2_\n"
-        "testl %eax, %eax\n" /* line 1005 */
-        "jne .Lf288f2_00028be3\n"
-        "movl $1, 0x40(%esi)\n" /* line 1006 | size_filename */
-        "jmp .Lf288f2_00028be3\n"
-        ".Lf288f2_00028c96:\n"
-        "movl %esi, (%esp)\n" /* line 976 | size_filename */
-        "calll free\n"
-        ".Lf288f2_00028c9e:\n"
-        "movl $0xffffff98, %eax\n"
-        "jmp .Lf288f2_00028907\n"
-    );
+    int err;
+    uInt sizeVar;
+    uLong offsetLocalExtrafield;
+    uInt sizeLocalExtrafield;
+    unz_s *s;
+    file_in_zip_read_info_s *readInfo;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    if (!s->current_file_ok)
+        return UNZ_PARAMERROR;
+
+    if (s->pfile_in_zip_read != NULL)
+        unzCloseCurrentFile(file);
+
+    err = unzlocal_CheckCurrentFileCoherencyHeader(
+        s,
+        &sizeVar,
+        &offsetLocalExtrafield,
+        &sizeLocalExtrafield);
+    if (err != UNZ_OK)
+        return err;
+
+    readInfo = (file_in_zip_read_info_s *)malloc(sizeof(*readInfo));
+    if (readInfo == NULL)
+        return UNZ_INTERNALERROR;
+
+    memset(readInfo, 0, sizeof(*readInfo));
+    readInfo->read_buffer = (char *)malloc(UNZ_BUFSIZE);
+    readInfo->offset_local_extrafield = offsetLocalExtrafield;
+    readInfo->size_local_extrafield = sizeLocalExtrafield;
+
+    if (readInfo->read_buffer == NULL) {
+        free(readInfo);
+        return UNZ_INTERNALERROR;
+    }
+
+    readInfo->compression_method = s->cur_file_info.compression_method;
+    readInfo->file = s->file;
+    readInfo->byte_before_the_zipfile = s->byte_before_the_zipfile;
+    readInfo->stream.total_out = 0;
+
+    if (readInfo->compression_method != 0) {
+        if (inflateInit2_(&readInfo->stream, -15, str_00215d44, sizeof(readInfo->stream)) == UNZ_OK)
+            readInfo->stream_initialised = 1;
+    }
+
+    readInfo->rest_read_compressed = s->cur_file_info.compressed_size;
+    readInfo->rest_read_uncompressed = s->cur_file_info.uncompressed_size;
+    readInfo->pos_in_zipfile =
+        s->cur_file_info_internal.offset_curfile + UNZ_LOCAL_HEADER_SIZE + sizeVar;
+    readInfo->stream.avail_in = 0;
+
+    s->pfile_in_zip_read = readInfo;
+    return UNZ_OK;
 }
