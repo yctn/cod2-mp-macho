@@ -2113,13 +2113,8 @@ unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius
     smallestSize = newShake.size;
     for (i = 0; i < 4; ++i)
     {
-        if (newShake.size > cg->cameraShake[i].size)
-        {
-            replaceIndex = i;
-            smallestSize = cg->cameraShake[i].size;
-        }
-
-        if (replaceIndex >= 0 && cg->cameraShake[i].size < smallestSize)
+        if (newShake.size > cg->cameraShake[i].size
+            && (replaceIndex < 0 || cg->cameraShake[i].size < smallestSize))
         {
             replaceIndex = i;
             smallestSize = cg->cameraShake[i].size;
