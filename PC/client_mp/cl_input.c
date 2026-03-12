@@ -19,6 +19,11 @@ extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
 extern int atoi(const char *nptr);
 extern const char *Cmd_Argv(int arg);
 extern void Com_Printf(const char *fmt, ...);
+extern void Cmd_AddCommand(const char *cmd, void (*func)(void));
+extern void Cmd_RemoveCommand(const char *cmd);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern unsigned int frame_msec; /* 0x0 */
@@ -34,6 +39,12 @@ void CL_WritePacketDbg(const char *fmt, int serverId) {
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */
 extern kbutton_t *kb; /* kb */
+
+typedef struct
+{
+    const char *name;
+    void (*handler)(void);
+} inputCommandDef_t;
 
 void IN_MLookDown(void);
 void IN_CenterView(void);
@@ -118,6 +129,78 @@ void CL_AdjustAngles(void);
 void CL_KeyMove(usercmd_t *cmd);
 usercmd_t CL_CreateCmd(void);
 void CL_SendCmdInternal(void);
+
+static const inputCommandDef_t s_inputCommands[] = {
+    {"centerview", IN_CenterView},
+    {"+moveup", IN_UpDown},
+    {"-moveup", IN_UpUp},
+    {"+movedown", IN_DownDown},
+    {"-movedown", IN_DownUp},
+    {"+left", IN_LeftDown},
+    {"-left", IN_LeftUp},
+    {"+right", IN_RightDown},
+    {"-right", IN_RightUp},
+    {"+forward", IN_ForwardDown},
+    {"-forward", IN_ForwardUp},
+    {"+back", IN_BackDown},
+    {"-back", IN_BackUp},
+    {"+lookup", IN_LookupDown},
+    {"-lookup", IN_LookupUp},
+    {"+lookdown", IN_LookdownDown},
+    {"-lookdown", IN_LookdownUp},
+    {"+strafe", IN_StrafeDown},
+    {"-strafe", IN_StrafeUp},
+    {"+moveleft", IN_MoveleftDown},
+    {"-moveleft", IN_MoveleftUp},
+    {"+moveright", IN_MoverightDown},
+    {"-moveright", IN_MoverightUp},
+    {"+speed", IN_SpeedDown},
+    {"-speed", IN_SpeedUp},
+    {"+attack", IN_Attack_Down},
+    {"-attack", IN_Attack_Up},
+    {"+melee", IN_Melee_Down},
+    {"-melee", IN_Melee_Up},
+    {"+holdbreath", IN_Breath_Down},
+    {"-holdbreath", IN_Breath_Up},
+    {"+melee_breath", IN_MeleeBreath_Down},
+    {"-melee_breath", IN_MeleeBreath_Up},
+    {"+frag", IN_Frag_Down},
+    {"-frag", IN_Frag_Up},
+    {"+smoke", IN_Smoke_Down},
+    {"-smoke", IN_Smoke_Up},
+    {"+binoculars", IN_Binoculars_Down},
+    {"-binoculars", IN_Binoculars_Up},
+    {"+breath_binoculars", IN_BreathBinoculars_Down},
+    {"-breath_binoculars", IN_BreathBinoculars_Up},
+    {"+activate", IN_Activate_Down},
+    {"-activate", IN_Activate_Up},
+    {"+reload", IN_Reload_Down},
+    {"-reload", IN_Reload_Up},
+    {"+usereload", IN_UseReload_Down},
+    {"-usereload", IN_UseReload_Up},
+    {"+leanleft", IN_LeanLeft_Down},
+    {"-leanleft", IN_LeanLeft_Up},
+    {"+leanright", IN_LeanRight_Down},
+    {"-leanright", IN_LeanRight_Up},
+    {"+prone", IN_Prone_Down},
+    {"-prone", IN_Prone_Up},
+    {"+stance", IN_Stance_Down},
+    {"-stance", IN_Stance_Up},
+    {"+mlook", IN_MLookDown},
+    {"-mlook", IN_MLookUp},
+    {"toggleads", IN_ToggleADS},
+    {"leaveads", IN_LeaveADS},
+    {"lowerstance", IN_LowerStance},
+    {"raisestance", IN_RaiseStance},
+    {"togglecrouch", IN_ToggleCrouch},
+    {"toggleprone", IN_ToggleProne},
+    {"goprone", IN_GoProne},
+    {"gocrouch", IN_GoCrouch},
+    {"+gostand", IN_GoStandDown},
+    {"-gostand", IN_GoStandUp},
+    {"+talk", IN_TalkDown},
+    {"-talk", IN_TalkUp},
+};
 void CL_Input(void);
 void CL_SendCmd(void);
 
