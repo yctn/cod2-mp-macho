@@ -31,6 +31,9 @@ enum {
     DVAR_TYPE_COLOR = 8,
     DVAR_TYPE_COUNT = 9
 };
+enum {
+    DVAR_INVALID_ENUM_INDEX = -1337
+};
 static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
 extern const char * dvarOnOffStrings[2]; /* dvarOnOffStrings */
 static Bool isDvarSystemActive; /* isDvarSystemActive */
@@ -55,6 +58,7 @@ extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void *Z_MallocInternal(int size);
 extern void Z_FreeInternal(void *ptr);
 extern int stricmp(const char *s1, const char *s2);
+extern int strnicmp(const char *s1, const char *s2, int n);
 extern int atoi(const char *string);
 extern double atof(const char *string);
 extern int strcmp(const char *s1, const char *s2);
@@ -79,7 +83,9 @@ void Dvar_AddFlags(const dvar_t *dvar, int flags);
 void Dvar_ResetScriptInfo(void);
 const char * Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexString);
 static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, byte color[4]);
-static DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string);
+static DvarValue Dvar_StringToValue_impl(int type, DvarLimits domain, const char *string);
+static DvarValue __attribute__((regparm(3))) Dvar_StringToValue(
+    int type, uint32_t domainLo, uint32_t domainHi, const char *string);
 void Dvar_GetUnpackedColor(const dvar_t *dvar, long unsigned int (*expandedColor)[16]);
 static void __attribute__((regparm(2))) Dvar_SetLatchedValue(const dvar_t *dvar, DvarValue value);
 void Dvar_Shutdown(void);
@@ -93,7 +99,10 @@ int Dvar_GetInt(const char *dvarName);
 Bool Dvar_GetBool(const char *dvarName);
 const dvar_t * Dvar_FindVar(const char *dvarName);
 void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable);
-static const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int *outLineCount);
+static const char *Dvar_DomainToString_Internal_impl(
+    int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount);
+static const char * __attribute__((regparm(3))) Dvar_DomainToString_Internal(
+    int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount);
 const char * Dvar_DomainToString_GetLines(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount);
 void Dvar_PrintDomain(int type, DvarLimits domain);
 static void __attribute__((regparm(1))) Dvar_PerformUnregistration(dvar_t *dvar);
@@ -104,7 +113,8 @@ void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value);
 static void Dvar_SetVariant(DvarValue value, DvarSetSource source);
 void Dvar_SetCheatState(void);
 void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource);
-static void Dvar_SetFromStringFromSource(DvarSetSource source);
+static void __attribute__((regparm(3))) Dvar_SetFromStringFromSource(
+    const dvar_t *dvar, const char *string, DvarSetSource source);
 void Dvar_SetFromString(const dvar_t *dvar, const char *string);
 void Dvar_SetString(const dvar_t *dvar, const char *value);
 void Dvar_SetColorFromSource(const dvar_t *dvar, float r, float g, float b, float a, DvarSetSource source);
@@ -170,7 +180,7 @@ static void Dvar_SetVariantReg(const dvar_t *dvar, DvarValue value, DvarSetSourc
 
 static void Dvar_SetFromStringFromSourceReg(const dvar_t *dvar, const char *string, DvarSetSource source)
 {
-    ((DvarSetFromStringFromSourceRegparmFn)Dvar_SetFromStringFromSource)(dvar, string, source);
+    Dvar_SetFromStringFromSource(dvar, string, source);
 }
 
 static void Dvar_UpdateResetValueReg(const dvar_t *dvar, DvarValue value)
@@ -185,32 +195,12 @@ static void Dvar_PerformUnregistrationReg(dvar_t *dvar)
 
 static const char *Dvar_DomainToString_InternalReg(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount)
 {
-    union {
-        DvarLimits domain;
-        struct {
-            uint32_t lo;
-            uint32_t hi;
-        } raw;
-    } bits;
-
-    bits.domain = domain;
-    return ((DvarDomainToStringRegparmFn)Dvar_DomainToString_Internal)(
-        type, bits.raw.lo, bits.raw.hi, outBuffer, outBufferLen, outLineCount);
+    return Dvar_DomainToString_Internal_impl(type, domain, outBuffer, outBufferLen, outLineCount);
 }
 
 static DvarValue Dvar_StringToValueReg(int type, DvarLimits domain, const char *string)
 {
-    union {
-        DvarLimits domain;
-        struct {
-            uint32_t lo;
-            uint32_t hi;
-        } raw;
-    } bits;
-
-    bits.domain = domain;
-    return ((DvarStringToValueRegparmFn)Dvar_StringToValue)(
-        type, bits.raw.lo, bits.raw.hi, string);
+    return Dvar_StringToValue_impl(type, domain, string);
 }
 
 static unsigned int Dvar_GenerateHashValue(const char *name)
@@ -343,6 +333,176 @@ static Bool Dvar_VectorEqual(const vec_t *a, const vec_t *b, int count)
     }
 
     return 1;
+}
+
+static DvarLimits Dvar_UnpackLimits(uint32_t lo, uint32_t hi)
+{
+    union {
+        DvarLimits domain;
+        struct {
+            uint32_t lo;
+            uint32_t hi;
+        } raw;
+    } bits;
+
+    bits.raw.lo = lo;
+    bits.raw.hi = hi;
+    return bits.domain;
+}
+
+static vec_t *Dvar_AllocTempVector(int components)
+{
+    vec_t *vector;
+    int i;
+    int index;
+
+    index = dvarVectorIndex;
+    if (index + components > 12) {
+        index = 0;
+    }
+
+    dvarVectorIndex = index + components;
+    vector = &dvarVectorPool[index];
+    for (i = 0; i < components; ++i) {
+        vector[i] = 0.0f;
+    }
+
+    return vector;
+}
+
+static int Dvar_StringToEnumIndex(DvarLimits domain, const char *string)
+{
+    int i;
+    int index;
+    int len;
+
+    if (domain.enumeration.stringCount > 0) {
+        for (i = 0; i < domain.enumeration.stringCount; ++i) {
+            if (!stricmp(string, domain.enumeration.strings[i])) {
+                return i;
+            }
+        }
+    }
+
+    if (!string[0]) {
+        index = 0;
+    } else {
+        index = 0;
+        for (i = 0; string[i]; ++i) {
+            if (string[i] < '0' || string[i] > '9') {
+                index = DVAR_INVALID_ENUM_INDEX;
+                break;
+            }
+
+            index = index * 10 + (string[i] - '0');
+        }
+    }
+
+    if (index >= 0 && index < domain.enumeration.stringCount) {
+        return index;
+    }
+
+    len = 0;
+    while (string[len]) {
+        ++len;
+    }
+
+    for (i = 0; i < domain.enumeration.stringCount; ++i) {
+        if (!strnicmp(string, domain.enumeration.strings[i], len)) {
+            return i;
+        }
+    }
+
+    return DVAR_INVALID_ENUM_INDEX;
+}
+
+static Bool Dvar_IsMinFloatDomain(float value)
+{
+    return value == -3.4028234663852886e+38f;
+}
+
+static Bool Dvar_IsMaxFloatDomain(float value)
+{
+    return value == 3.4028234663852886e+38f;
+}
+
+static void Dvar_AdvanceCursor(char **cursor, const char *end, int written)
+{
+    if (written < 0) {
+        return;
+    }
+
+    *cursor += written;
+    if (*cursor > end) {
+        *cursor = (char *)end;
+    }
+}
+
+static int Dvar_DescribeIntDomain(char *outBuffer, int outBufferLen, int min, int max)
+{
+    if (min == (-2147483647 - 1)) {
+        if (max == 2147483647) {
+            return snprintf(outBuffer, outBufferLen, "Domain is any integer");
+        }
+
+        return snprintf(outBuffer, outBufferLen, "Domain is any integer %i or smaller", max);
+    }
+
+    if (max == 2147483647) {
+        return snprintf(outBuffer, outBufferLen, "Domain is any integer %i or bigger", min);
+    }
+
+    return snprintf(outBuffer, outBufferLen, "Domain is any integer from %i to %i", min, max);
+}
+
+static int Dvar_DescribeFloatDomain(char *outBuffer, int outBufferLen, float min, float max)
+{
+    if (Dvar_IsMinFloatDomain(min)) {
+        if (Dvar_IsMaxFloatDomain(max)) {
+            return snprintf(outBuffer, outBufferLen, "Domain is any number");
+        }
+
+        return snprintf(outBuffer, outBufferLen, "Domain is any number %g or smaller", max);
+    }
+
+    if (Dvar_IsMaxFloatDomain(max)) {
+        return snprintf(outBuffer, outBufferLen, "Domain is any number %g or bigger", min);
+    }
+
+    return snprintf(outBuffer, outBufferLen, "Domain is any number from %g to %g", min, max);
+}
+
+static int Dvar_DescribeVectorDomain(char *outBuffer, int outBufferLen, int components, float min, float max)
+{
+    if (Dvar_IsMinFloatDomain(min)) {
+        if (Dvar_IsMaxFloatDomain(max)) {
+            return snprintf(outBuffer, outBufferLen, "Domain is any %iD vector", components);
+        }
+
+        return snprintf(
+            outBuffer,
+            outBufferLen,
+            "Domain is any %iD vector with components %g or smaller",
+            components,
+            max);
+    }
+
+    if (Dvar_IsMaxFloatDomain(max)) {
+        return snprintf(
+            outBuffer,
+            outBufferLen,
+            "Domain is any %iD vector with components %g or bigger",
+            components,
+            min);
+    }
+
+    return snprintf(
+        outBuffer,
+        outBufferLen,
+        "Domain is any %iD vector with components from %g to %g",
+        components,
+        min,
+        max);
 }
 
 /* line 45 */
@@ -564,272 +724,55 @@ static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, b
 }
 
 /* line 441 */
-static __attribute__((naked))
-DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
+static DvarValue Dvar_StringToValue_impl(int type, DvarLimits domain, const char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 441 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %edx, -0x40(%ebp)\n"
-        "movl %ecx, -0x3c(%ebp)\n"
-        /* { scope 1 */
-        "movzbl %al, %eax\n" /* line 447 | type */
-        "cmpl $8, %eax\n" /* type */
-        "ja .Lf51a2e_00051a4c\n"
-        "jmpl *.Ljt_51a2e_0(, %eax, 4)\n"
-        ".Lf51a2e_00051a4c:\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 488 | value */
-        "movl -0x1c(%ebp), %eax\n" /* value, type */
-        /* } scope */
-        ".Lf51a2e_00051a56:\n"
-        "addl $0x5c, %esp\n" /* line 493 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf51a2e_00051a5e:\n"
-        "movl 8(%ebp), %eax\n" /* line 336 | string */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "testl %eax, %eax\n" /* line 450 | type */
-        "setne -0x1c(%ebp)\n" /* value */
-        "movl -0x1c(%ebp), %eax\n" /* value, type */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051a74:\n"
-        "leal -0x1c(%ebp), %edx\n" /* line 482 | value */
-        "movl 8(%ebp), %eax\n" /* string, type */
-        "calll Dvar_StringToColor\n"
-        "movl -0x1c(%ebp), %eax\n" /* value, type */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051a84:\n"
-        "movl 8(%ebp), %eax\n" /* line 478 | string, type */
-        "movl %eax, -0x1c(%ebp)\n" /* type, value */
-        "jmp .Lf51a2e_00051a56\n"
-        /* { scope 2 */
-        ".Lf51a2e_00051a8c:\n"
-        "movl -0x40(%ebp), %edx\n" /* line 402 */
-        "movl %edx, -0x2c(%ebp)\n"
-        "testl %edx, %edx\n"
-        "jg .Lf51a2e_00051cd0\n"
-        ".Lf51a2e_00051a9a:\n"
-        "movl 8(%ebp), %eax\n" /* line 408 | string */
-        "movzbl (%eax), %ecx\n"
-        "testb %cl, %cl\n"
-        "je .Lf51a2e_00051c73\n"
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "ja .Lf51a2e_00051ad4\n"
-        "movl 8(%ebp), %esi\n" /* string, len */
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf51a2e_00051ab4:\n"
-        "leal (%ebx, %ebx, 4), %edx\n" /* line 412 | stringIndex */
-        "movsbl %cl, %eax\n"
-        "leal -0x30(%eax, %edx, 2), %ebx\n" /* stringIndex */
-        "movzbl 1(%esi), %ecx\n" /* line 408 | len */
-        "testb %cl, %cl\n"
-        "je .Lf51a2e_00051cfc\n"
-        "addl $1, %esi\n" /* len */
-        "leal -0x30(%ecx), %eax\n" /* line 410 */
-        "cmpb $9, %al\n"
-        "jbe .Lf51a2e_00051ab4\n"
-        ".Lf51a2e_00051ad4:\n"
-        "movl $0xfffffac7, %ebx\n" /* line 418 | stringIndex */
-        /* } scope */
-        ".Lf51a2e_00051ad9:\n"
-        "movl %ebx, -0x1c(%ebp)\n" /* line 462 | stringIndex, value */
-        "movl %ebx, %eax\n" /* stringIndex, type */
-        /* } scope */
-        ".Lf51a2e_00051ade:\n"
-        "addl $0x5c, %esp\n" /* line 493 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf51a2e_00051ae6:\n"
-        "movl 8(%ebp), %edx\n" /* line 343 | string */
-        "movl %edx, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, -0x1c(%ebp)\n" /* line 454 | type, value */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051af9:\n"
-        "movl dvarVectorIndex, %ecx\n" /* line 110 */
-        "leal 4(%ecx), %eax\n"
-        "cmpl $0xc, %eax\n"
-        "jg .Lf51a2e_00051c62\n"
-        ".Lf51a2e_00051b0b:\n"
-        "leal (, %ecx, 4), %edx\n" /* line 112 */
-        "leal dvarVectorPool(%edx), %ebx\n"
-        "leal 4(%ecx), %eax\n" /* line 113 */
-        "movl %eax, dvarVectorIndex\n"
-        /* { scope 2 */
-        "xorl %eax, %eax\n" /* line 438 */
-        "movl %eax, dvarVectorPool(%edx)\n"
-        "leal 4(%ebx), %esi\n" /* line 439 | stringIndex, len */
-        "movl %eax, 4(%ebx)\n" /* stringIndex */
-        "leal 8(%ebx), %ecx\n" /* line 440 | stringIndex */
-        "movl %eax, 8(%ebx)\n" /* stringIndex */
-        "leal 0xc(%ebx), %edx\n" /* line 441 | stringIndex */
-        "movl %eax, 0xc(%ebx)\n" /* type, stringIndex */
-        /* } scope */
-        "movl %edx, 0x14(%esp)\n" /* line 388 */
-        "movl %ecx, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* v */
-        "movl $str_00219544, 4(%esp)\n" /* "%g %g %g %g" */
-        "movl 8(%ebp), %eax\n" /* string */
-        "movl %eax, (%esp)\n"
-        "calll sscanf\n"
-        "movl %ebx, -0x1c(%ebp)\n" /* line 470 | stringIndex, value */
-        "movl %ebx, %eax\n" /* stringIndex, type */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051b67:\n"
-        "movl dvarVectorIndex, %ecx\n" /* line 110 */
-        "leal 3(%ecx), %eax\n"
-        "cmpl $0xc, %eax\n"
-        "jg .Lf51a2e_00051c51\n"
-        ".Lf51a2e_00051b79:\n"
-        "leal (, %ecx, 4), %edx\n" /* line 112 */
-        "leal dvarVectorPool(%edx), %ebx\n"
-        "addl $3, %ecx\n" /* line 113 */
-        "movl %ecx, dvarVectorIndex\n"
-        /* { scope 2 */
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, dvarVectorPool(%edx)\n"
-        "leal 4(%ebx), %ecx\n" /* line 184 */
-        "movl %eax, 4(%ebx)\n"
-        "leal 8(%ebx), %edx\n" /* line 185 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "movl %edx, 0x10(%esp)\n" /* line 375 */
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* v */
-        "movl $str_00219538, 4(%esp)\n" /* "%g %g %g" */
-        "movl 8(%ebp), %edx\n" /* string */
-        "movl %edx, (%esp)\n"
-        "calll sscanf\n"
-        "movl %ebx, -0x1c(%ebp)\n" /* line 466 | stringIndex, value */
-        "movl %ebx, %eax\n" /* stringIndex, type */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051bcc:\n"
-        "movl dvarVectorIndex, %ecx\n" /* line 110 */
-        "leal 2(%ecx), %eax\n"
-        "cmpl $0xc, %eax\n"
-        "jg .Lf51a2e_00051c43\n"
-        ".Lf51a2e_00051bda:\n"
-        "leal (, %ecx, 4), %edx\n" /* line 112 */
-        "leal dvarVectorPool(%edx), %ebx\n"
-        "addl $2, %ecx\n" /* line 113 */
-        "movl %ecx, dvarVectorIndex\n"
-        /* { scope 2 */
-        "xorl %eax, %eax\n" /* line 23 */
-        "movl %eax, dvarVectorPool(%edx)\n"
-        "leal 4(%ebx), %edx\n" /* line 24 */
-        "movl %eax, 4(%ebx)\n"
-        /* } scope */
-        "movl %edx, 0xc(%esp)\n" /* line 362 */
-        "movl %ebx, 8(%esp)\n" /* v */
-        "movl $str_00219530, 4(%esp)\n" /* "%g %g" */
-        "movl 8(%ebp), %eax\n" /* string */
-        "movl %eax, (%esp)\n"
-        "calll sscanf\n"
-        "movl %ebx, -0x1c(%ebp)\n" /* line 462 | stringIndex, value */
-        "movl %ebx, %eax\n" /* stringIndex, type */
-        "jmp .Lf51a2e_00051ade\n"
-        ".Lf51a2e_00051c23:\n"
-        "movl 8(%ebp), %eax\n" /* line 350 | string */
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x38(%ebp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm0\n" /* line 458 */
-        "movss %xmm0, -0x1c(%ebp)\n" /* value */
-        "movl -0x1c(%ebp), %eax\n" /* value, type */
-        "jmp .Lf51a2e_00051a56\n"
-        ".Lf51a2e_00051c43:\n"
-        "xorl %ecx, %ecx\n" /* line 111 */
-        "movl $0, dvarVectorIndex\n"
-        "jmp .Lf51a2e_00051bda\n"
-        ".Lf51a2e_00051c51:\n"
-        "xorl %ecx, %ecx\n"
-        "movl $0, dvarVectorIndex\n"
-        "jmp .Lf51a2e_00051b79\n"
-        ".Lf51a2e_00051c62:\n"
-        "xorl %ecx, %ecx\n"
-        "movl $0, dvarVectorIndex\n"
-        "jmp .Lf51a2e_00051b0b\n"
-        /* { scope 2 */
-        ".Lf51a2e_00051c73:\n"
-        "xorl %ebx, %ebx\n" /* line 408 | stringIndex */
-        ".Lf51a2e_00051c75:\n"
-        "cmpl %ebx, -0x2c(%ebp)\n" /* line 414 | stringIndex */
-        "jg .Lf51a2e_00051ad9\n"
-        ".Lf51a2e_00051c7e:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n" /* type */
-        "movl 8(%ebp), %edi\n" /* string */
-        "repne scasb %es:(%edi), %al\n" /* type */
-        "notl %ecx\n"
-        "leal -1(%ecx), %esi\n" /* len */
-        "movl -0x2c(%ebp), %edi\n" /* line 418 */
-        "testl %edi, %edi\n"
-        "jle .Lf51a2e_00051ad4\n"
-        "movl -0x3c(%ebp), %edi\n" /* line 420 */
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf51a2e_00051ca0:\n"
-        "movl %esi, 8(%esp)\n" /* len */
-        "movl (%edi, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* string */
-        "movl %edx, (%esp)\n"
-        "calll strnicmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf51a2e_00051ad9\n"
-        "addl $1, %ebx\n" /* line 418 | stringIndex */
-        "cmpl %ebx, -0x2c(%ebp)\n" /* stringIndex */
-        "jne .Lf51a2e_00051ca0\n"
-        "movl $0xfffffac7, %ebx\n" /* stringIndex */
-        "jmp .Lf51a2e_00051ad9\n"
-        ".Lf51a2e_00051cd0:\n"
-        "movl -0x3c(%ebp), %esi\n" /* line 404 | len */
-        "xorl %ebx, %ebx\n" /* stringIndex */
-        ".Lf51a2e_00051cd5:\n"
-        "movl (%esi, %ebx, 4), %eax\n" /* len */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* string */
-        "movl %edx, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf51a2e_00051ad9\n"
-        "addl $1, %ebx\n" /* line 402 | stringIndex */
-        "cmpl %ebx, -0x2c(%ebp)\n" /* stringIndex */
-        "jne .Lf51a2e_00051cd5\n"
-        "jmp .Lf51a2e_00051a9a\n"
-        ".Lf51a2e_00051cfc:\n"
-        "testl %ebx, %ebx\n" /* line 414 | stringIndex */
-        "js .Lf51a2e_00051c7e\n"
-        "jmp .Lf51a2e_00051c75\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_51a2e_0:\n"
-        ".long .Lf51a2e_00051a5e\n"
-        ".long .Lf51a2e_00051c23\n"
-        ".long .Lf51a2e_00051bcc\n"
-        ".long .Lf51a2e_00051b67\n"
-        ".long .Lf51a2e_00051af9\n"
-        ".long .Lf51a2e_00051ae6\n"
-        ".long .Lf51a2e_00051a8c\n"
-        ".long .Lf51a2e_00051a84\n"
-        ".long .Lf51a2e_00051a74\n"
-        ".text\n"
-    );
+    DvarValue value;
+
+    value.integer = 0;
+
+    switch (type) {
+    case DVAR_TYPE_BOOL:
+        value.enabled = atoi(string) != 0;
+        break;
+    case DVAR_TYPE_FLOAT:
+        value.value = (float)atof(string);
+        break;
+    case DVAR_TYPE_VEC2:
+        value.vector = Dvar_AllocTempVector(2);
+        sscanf(string, "%g %g", &value.vector[0], &value.vector[1]);
+        break;
+    case DVAR_TYPE_VEC3:
+        value.vector = Dvar_AllocTempVector(3);
+        sscanf(string, "%g %g %g", &value.vector[0], &value.vector[1], &value.vector[2]);
+        break;
+    case DVAR_TYPE_VEC4:
+        value.vector = Dvar_AllocTempVector(4);
+        sscanf(string, "%g %g %g %g", &value.vector[0], &value.vector[1], &value.vector[2], &value.vector[3]);
+        break;
+    case DVAR_TYPE_INT:
+        value.integer = atoi(string);
+        break;
+    case DVAR_TYPE_ENUM:
+        value.integer = Dvar_StringToEnumIndex(domain, string);
+        break;
+    case DVAR_TYPE_STRING:
+        value.string = string;
+        break;
+    case DVAR_TYPE_COLOR:
+        Dvar_StringToColor(string, value.color);
+        break;
+    default:
+        value.integer = 0;
+        break;
+    }
+
+    return value;
+}
+
+static DvarValue __attribute__((regparm(3))) Dvar_StringToValue(
+    int type, uint32_t domainLo, uint32_t domainHi, const char *string)
+{
+    return Dvar_StringToValue_impl(type, Dvar_UnpackLimits(domainLo, domainHi), string);
 }
 
 /* line 1249 */
@@ -1133,390 +1076,82 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
 }
 
 /* line 716 */
-static __attribute__((naked))
-const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int *outLineCount)
+static const char *Dvar_DomainToString_Internal_impl(
+    int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 716 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %edx, %ebx\n" /* outBufferLen, domain */
-        "movl %ecx, %esi\n"
-        "movl 8(%ebp), %edi\n" /* outBuffer */
-        "movl 0xc(%ebp), %edx\n" /* outBufferLen */
-        /* { scope 1 */
-        "leal (%edx, %edi), %ecx\n" /* line 724 */
-        "movl %ecx, -0x1c(%ebp)\n" /* outBufferEnd */
-        "movl 0x10(%ebp), %ecx\n" /* line 726 | outLineCount */
-        "testl %ecx, %ecx\n"
-        "je .Lf528da_00052903\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 727 | outLineCount */
-        "movl $0, (%ecx)\n"
-        ".Lf528da_00052903:\n"
-        "movzbl %al, %eax\n" /* line 729 */
-        "cmpl $8, %eax\n"
-        "ja .Lf528da_00052912\n"
-        "jmpl *.Ljt_528da_0(, %eax, 4)\n"
-        ".Lf528da_00052912:\n"
-        "movb $0, (%edi)\n" /* line 809 | outBuffer */
-        ".Lf528da_00052915:\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 812 | outBufferEnd */
-        "movb $0, -1(%ecx)\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 815 | outBuffer */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf528da_00052926:\n"
-        "movl $str_0021957c, 8(%esp)\n" /* line 732 */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_0005293c:\n"
-        "movl $str_0021979c, 8(%esp)\n" /* line 803 */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052952:\n"
-        "movl $str_0021975c, 8(%esp)\n" /* line 782 */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052968:\n"
-        "movl $str_00219770, 8(%esp)\n" /* line 786 */
-        "movl -0x1c(%ebp), %eax\n" /* outBufferEnd */
-        "subl %edi, %eax\n" /* outBuffer */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "testl %eax, %eax\n" /* line 787 */
-        "js .Lf528da_00052915\n"
-        "addl %eax, %edi\n" /* line 789 | outBuffer */
-        "movl %ebx, -0x20(%ebp)\n" /* line 790 | stringIndex */
-        "testl %ebx, %ebx\n" /* stringIndex */
-        "jle .Lf528da_00052915\n"
-        "movl 0x10(%ebp), %eax\n" /* line 792 | outLineCount */
-        "testl %eax, %eax\n"
-        "jne .Lf528da_00052e3a\n"
-        "xorl %ebx, %ebx\n" /* line 812 | stringIndex */
-        ".Lf528da_0005299b:\n"
-        "movl (%esi, %ebx, 4), %eax\n" /* line 792 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* stringIndex */
-        "movl $str_00219790, 8(%esp)\n" /* "
-  %2i: %s" */
-        "movl -0x1c(%ebp), %eax\n" /* outBufferEnd */
-        "subl %edi, %eax\n" /* outBuffer */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "testl %eax, %eax\n" /* line 793 */
-        "js .Lf528da_00052915\n"
-        "addl %eax, %edi\n" /* line 797 | outBuffer */
-        "addl $1, %ebx\n" /* line 790 | stringIndex */
-        "cmpl %ebx, -0x20(%ebp)\n" /* stringIndex */
-        "jne .Lf528da_0005299b\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_000529d6:\n"
-        "cmpl $0x80000000, %ebx\n" /* line 736 | stringIndex */
-        "je .Lf528da_00052cbb\n"
-        "cmpl $0x7fffffff, %esi\n" /* line 738 */
-        "je .Lf528da_00052e04\n"
-        "movl %esi, 0x10(%esp)\n" /* line 739 */
-        "movl %ebx, 0xc(%esp)\n" /* stringIndex */
-        "movl $str_00219590, 8(%esp)\n" /* "Domain is any integer from %i to %i" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052a0f:\n"
-        "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "ucomiss lit4_002ed680, %xmm2\n" /* -3.4028234663852886e+38f */
-        "jp .Lf528da_00052c70\n"
-        "jne .Lf528da_00052c70\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 708 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052a47\n"
-        "je .Lf528da_00052d28\n"
-        ".Lf528da_00052a47:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 709 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $4, 0xc(%esp)\n"
-        "movl $str_00219708, 8(%esp)\n" /* "Domain is any %iD vector with components %g or smaller" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052a72:\n"
-        "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "ucomiss lit4_002ed680, %xmm2\n" /* -3.4028234663852886e+38f */
-        "jp .Lf528da_00052c21\n"
-        "jne .Lf528da_00052c21\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 708 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052aaa\n"
-        "je .Lf528da_00052d74\n"
-        ".Lf528da_00052aaa:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 709 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $3, 0xc(%esp)\n"
-        "movl $str_00219708, 8(%esp)\n" /* "Domain is any %iD vector with components %g or smaller" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052ad5:\n"
-        "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "ucomiss lit4_002ed680, %xmm2\n" /* -3.4028234663852886e+38f */
-        "jp .Lf528da_00052bd2\n"
-        "jne .Lf528da_00052bd2\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 708 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052b0d\n"
-        "je .Lf528da_00052dc0\n"
-        ".Lf528da_00052b0d:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 709 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $2, 0xc(%esp)\n"
-        "movl $str_00219708, 8(%esp)\n" /* "Domain is any %iD vector with components %g or smaller" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052b38:\n"
-        "movl %ebx, -0x2c(%ebp)\n" /* line 753 | stringIndex */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed680, %xmm1\n" /* -3.4028234663852886e+38f */
-        "jp .Lf528da_00052b8b\n"
-        "jne .Lf528da_00052b8b\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 762 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss lit4_002ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052b68\n"
-        "je .Lf528da_00052ce4\n"
-        ".Lf528da_00052b68:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 763 */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movl $str_0021965c, 8(%esp)\n" /* "Domain is any number %g or smaller" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052b8b:\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 755 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "ucomiss lit4_002ed684, %xmm2\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052ba5\n"
-        "je .Lf528da_00052de1\n"
-        ".Lf528da_00052ba5:\n"
-        "cvtss2sd %xmm1, %xmm1\n" /* line 756 */
-        "movsd %xmm1, 0x14(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movl $str_00219614, 8(%esp)\n" /* "Domain is any number from %g to %g" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052bd2:\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 701 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "ucomiss lit4_002ed684, %xmm2\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052bec\n"
-        "je .Lf528da_00052d95\n"
-        ".Lf528da_00052bec:\n"
-        "cvtss2sd %xmm1, %xmm1\n" /* line 702 */
-        "movsd %xmm1, 0x18(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $2, 0xc(%esp)\n"
-        "movl $str_00219698, 8(%esp)\n" /* "Domain is any %iD vector with components from %g to %g" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052c21:\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 701 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "ucomiss lit4_002ed684, %xmm2\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052c3b\n"
-        "je .Lf528da_00052d49\n"
-        ".Lf528da_00052c3b:\n"
-        "cvtss2sd %xmm1, %xmm1\n" /* line 702 */
-        "movsd %xmm1, 0x18(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $3, 0xc(%esp)\n"
-        "movl $str_00219698, 8(%esp)\n" /* "Domain is any %iD vector with components from %g to %g" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052c70:\n"
-        "movl %esi, -0x2c(%ebp)\n" /* line 701 */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "ucomiss lit4_002ed684, %xmm2\n" /* 3.4028234663852886e+38f */
-        "jp .Lf528da_00052c86\n"
-        "je .Lf528da_00052cfd\n"
-        ".Lf528da_00052c86:\n"
-        "cvtss2sd %xmm1, %xmm1\n" /* line 702 */
-        "movsd %xmm1, 0x18(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $4, 0xc(%esp)\n"
-        "movl $str_00219698, 8(%esp)\n" /* "Domain is any %iD vector with components from %g to %g" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052cbb:\n"
-        "cmpl $0x7fffffff, %esi\n" /* line 745 */
-        "je .Lf528da_00052e21\n"
-        "movl %esi, 0xc(%esp)\n" /* line 746 */
-        "movl $str_002195d8, 8(%esp)\n" /* "Domain is any integer %i or smaller" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052ce4:\n"
-        "movl $str_00219680, 8(%esp)\n" /* line 765 */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052cfd:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 704 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $4, 0xc(%esp)\n"
-        "movl $str_002196d0, 8(%esp)\n" /* "Domain is any %iD vector with components %g or bigger" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052d28:\n"
-        "movl $4, 0xc(%esp)\n" /* line 711 */
-        "movl $str_00219740, 8(%esp)\n" /* "Domain is any %iD vector" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052d49:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 704 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $3, 0xc(%esp)\n"
-        "movl $str_002196d0, 8(%esp)\n" /* "Domain is any %iD vector with components %g or bigger" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052d74:\n"
-        "movl $3, 0xc(%esp)\n" /* line 711 */
-        "movl $str_00219740, 8(%esp)\n" /* "Domain is any %iD vector" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052d95:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 704 */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "movl $2, 0xc(%esp)\n"
-        "movl $str_002196d0, 8(%esp)\n" /* "Domain is any %iD vector with components %g or bigger" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052dc0:\n"
-        "movl $2, 0xc(%esp)\n" /* line 711 */
-        "movl $str_00219740, 8(%esp)\n" /* "Domain is any %iD vector" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052de1:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 758 */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movl $str_00219638, 8(%esp)\n" /* "Domain is any number %g or bigger" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052e04:\n"
-        "movl %ebx, 0xc(%esp)\n" /* line 741 | stringIndex */
-        "movl $str_002195b4, 8(%esp)\n" /* "Domain is any integer %i or bigger" */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052e21:\n"
-        "movl $str_002195fc, 8(%esp)\n" /* line 748 */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "jmp .Lf528da_00052915\n"
-        ".Lf528da_00052e3a:\n"
-        "xorl %ebx, %ebx\n" /* line 792 | stringIndex */
-        ".Lf528da_00052e3c:\n"
-        "movl (%esi, %ebx, 4), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* stringIndex */
-        "movl $str_00219790, 8(%esp)\n" /* "
-  %2i: %s" */
-        "movl -0x1c(%ebp), %eax\n" /* outBufferEnd */
-        "subl %edi, %eax\n" /* outBuffer */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* outBuffer */
-        "calll snprintf\n"
-        "testl %eax, %eax\n" /* line 793 */
-        "js .Lf528da_00052915\n"
-        "movl 0x10(%ebp), %edx\n" /* line 796 | outLineCount */
-        "addl $1, (%edx)\n"
-        "addl %eax, %edi\n" /* line 797 | outBuffer */
-        "addl $1, %ebx\n" /* line 790 | stringIndex */
-        "cmpl -0x20(%ebp), %ebx\n" /* stringIndex */
-        "jne .Lf528da_00052e3c\n"
-        "jmp .Lf528da_00052915\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_528da_0:\n"
-        ".long .Lf528da_00052926\n"
-        ".long .Lf528da_00052b38\n"
-        ".long .Lf528da_00052ad5\n"
-        ".long .Lf528da_00052a72\n"
-        ".long .Lf528da_00052a0f\n"
-        ".long .Lf528da_000529d6\n"
-        ".long .Lf528da_00052968\n"
-        ".long .Lf528da_00052952\n"
-        ".long .Lf528da_0005293c\n"
-        ".text\n"
-    );
+    char *cursor;
+    char *outBufferEnd;
+    int i;
+    int len;
+
+    if (outLineCount) {
+        *outLineCount = 0;
+    }
+
+    if (outBufferLen <= 0) {
+        return outBuffer;
+    }
+
+    cursor = outBuffer;
+    outBufferEnd = outBuffer + outBufferLen;
+
+    switch (type) {
+    case DVAR_TYPE_BOOL:
+        snprintf(outBuffer, outBufferLen, "Domain is 0 or 1");
+        break;
+    case DVAR_TYPE_FLOAT:
+        Dvar_DescribeFloatDomain(outBuffer, outBufferLen, domain.value.min, domain.value.max);
+        break;
+    case DVAR_TYPE_VEC2:
+        Dvar_DescribeVectorDomain(outBuffer, outBufferLen, 2, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_VEC3:
+        Dvar_DescribeVectorDomain(outBuffer, outBufferLen, 3, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_VEC4:
+        Dvar_DescribeVectorDomain(outBuffer, outBufferLen, 4, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_INT:
+        Dvar_DescribeIntDomain(outBuffer, outBufferLen, domain.integer.min, domain.integer.max);
+        break;
+    case DVAR_TYPE_ENUM:
+        len = snprintf(cursor, outBufferLen, "Domain is one of the following:");
+        Dvar_AdvanceCursor(&cursor, outBufferEnd, len);
+        for (i = 0; i < domain.enumeration.stringCount; ++i) {
+            len = snprintf(cursor, cursor < outBufferEnd ? (int)(outBufferEnd - cursor) : 0, "\n  %2i: %s", i, domain.enumeration.strings[i]);
+            if (len < 0) {
+                break;
+            }
+            if (outLineCount) {
+                ++*outLineCount;
+            }
+            Dvar_AdvanceCursor(&cursor, outBufferEnd, len);
+        }
+        break;
+    case DVAR_TYPE_STRING:
+        snprintf(outBuffer, outBufferLen, "Domain is any text");
+        break;
+    case DVAR_TYPE_COLOR:
+        snprintf(outBuffer, outBufferLen, "Domain is any 4-component color, in RGBA format");
+        break;
+    default:
+        outBuffer[0] = '\0';
+        break;
+    }
+
+    outBufferEnd[-1] = '\0';
+    return outBuffer;
+}
+
+static const char * __attribute__((regparm(3))) Dvar_DomainToString_Internal(
+    int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount)
+{
+    return Dvar_DomainToString_Internal_impl(
+        type,
+        Dvar_UnpackLimits(domainLo, domainHi),
+        outBuffer,
+        outBufferLen,
+        outLineCount);
 }
 
 /* line 824 */
@@ -2690,84 +2325,31 @@ void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource)
 }
 
 /* line 2142 */
-static __attribute__((naked))
-void Dvar_SetFromStringFromSource(DvarSetSource source)
+static void __attribute__((regparm(3))) Dvar_SetFromStringFromSource(
+    const dvar_t *dvar, const char *string, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2142 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x82c, %esp\n"
-        "movl %eax, %esi\n" /* dvar */
-        "movl %ecx, -0x81c(%ebp)\n"
-        /* { scope 1: domainBuffer */
-        "movl $0x400, 8(%esp)\n" /* line 2151 */
-        "movl %edx, 4(%esp)\n" /* string */
-        "leal -0x418(%ebp), %edi\n" /* buf */
-        "movl %edi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl 0x14(%esi), %ecx\n" /* line 2152 | dvar */
-        "movl 0x18(%esi), %ebx\n" /* dvar */
-        "movzbl 6(%esi), %eax\n" /* dvar */
-        "movl %edi, (%esp)\n"
-        "movl %ecx, %edx\n" /* string */
-        "movl %ebx, %ecx\n"
-        "calll Dvar_StringToValue\n"
-        "cmpb $6, 6(%esi)\n" /* line 2153 | dvar */
-        "je .Lf53f0c_00053f70\n"
-        ".Lf53f0c_00053f56:\n"
-        "movl -0x81c(%ebp), %ecx\n" /* line 2160 */
-        "movl %eax, %edx\n" /* string */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x82c, %esp\n" /* line 2165 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: domainBuffer */
-        ".Lf53f0c_00053f70:\n"
-        "cmpl $0xfffffac7, %eax\n" /* line 2153 */
-        "jne .Lf53f0c_00053f56\n"
-        "movl (%esi), %eax\n" /* line 2155 | dvar */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $str_002197e4, (%esp)\n" /* "'%s' is not a valid value for dvar '%s'
-" */
-        "calll Com_Printf\n"
-        "movl 0x14(%esi), %ecx\n" /* line 2156 | dvar */
-        "movl 0x18(%esi), %ebx\n" /* dvar */
-        /* { scope 2 */
-        "movzbl 6(%esi), %eax\n" /* line 820 */
-        "movl $0, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x818(%ebp), %edx\n" /* domainBuffer */
-        "movl %edx, (%esp)\n"
-        "movl %ecx, %edx\n"
-        "movl %ebx, %ecx\n"
-        "calll Dvar_DomainToString_Internal\n"
-        "movl %eax, 4(%esp)\n" /* line 834 */
-        "movl $str_002182fc, (%esp)\n" /* "  %s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "movl 0x10(%esi), %eax\n" /* line 2157 | dvar */
-        "movl -0x81c(%ebp), %ecx\n" /* line 2160 */
-        "movl %eax, %edx\n" /* string */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        /* } scope */
-        "addl $0x82c, %esp\n" /* line 2165 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char buf[0x400];
+    char domainBuffer[0x400];
+    DvarValue value;
+
+    I_strncpyz(buf, string, sizeof(buf));
+    value = Dvar_StringToValue_impl(dvar->type, dvar->domain, buf);
+
+    if (dvar->type == DVAR_TYPE_ENUM && value.integer == DVAR_INVALID_ENUM_INDEX) {
+        Com_Printf("'%s' is not a valid value for dvar '%s'\n", buf, dvar->name);
+        Com_Printf(
+            "  %s\n",
+            Dvar_DomainToString_Internal_impl(
+                dvar->type,
+                dvar->domain,
+                domainBuffer,
+                sizeof(domainBuffer),
+                NULL));
+        Dvar_SetVariantReg(dvar, dvar->reset, source);
+        return;
+    }
+
+    Dvar_SetVariantReg(dvar, value, source);
 }
 
 /* line 2168 */
