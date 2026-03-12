@@ -19,6 +19,14 @@ extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
 extern const dvar_t *cl_maxpackets; /* 0x0 */
 extern const dvar_t *cl_freelook; /* 0x0 */
 extern const dvar_t *cl_showSend; /* 0x0 */
+extern const dvar_t *cl_sensitivity; /* 0x0 */
+extern const dvar_t *cl_mouseAccel; /* 0x0 */
+extern const dvar_t *cl_showMouseRate; /* 0x0 */
+extern const dvar_t *m_pitch; /* 0x0 */
+extern const dvar_t *m_yaw; /* 0x0 */
+extern const dvar_t *m_forward; /* 0x0 */
+extern const dvar_t *m_side; /* 0x0 */
+extern const dvar_t *m_filter; /* 0x0 */
 extern int atoi(const char *nptr);
 extern const char *Cmd_Argv(int arg);
 extern void Com_Printf(const char *fmt, ...);
@@ -37,6 +45,7 @@ extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern Bool PM_IsBinocularsADS(const playerState_t *ps);
 extern const signed char ClampChar(const int i);
+extern float sqrtf(float x);
 extern qboolean Sys_IsLANAddress(int addr0, int addr1, int addr2);
 extern struct clientStatic_t cls; /* 0x0 */
 extern int com_frameTime; /* 0x0 */
@@ -264,6 +273,29 @@ static float CL_KeyState(kbutton_t *key)
 static int CL_KeyMoveValue(kbutton_t *key)
 {
     return (int)(CL_KeyState(key) * 127.0f);
+}
+
+static float CL_ClampMouseAxisDelta(float delta, float maxSpeed)
+{
+    float maxDelta;
+
+    if (maxSpeed == 0.0f)
+    {
+        return delta;
+    }
+
+    maxDelta = (float)frame_msec * maxSpeed * 0.0010000000474974513f;
+    if (delta > maxDelta)
+    {
+        return maxDelta;
+    }
+
+    if (delta < -maxDelta)
+    {
+        return -maxDelta;
+    }
+
+    return delta;
 }
 
 /* line 102 */
@@ -1296,279 +1328,94 @@ void CL_CmdButtons(usercmd_t *cmd)
 }
 
 /* line 1168 */
-__attribute__((naked))
 void CL_MouseMove(usercmd_t *cmd)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1168 */
-        "movl %esp, %ebp\n"
-        "subl $0x58, %esp\n"
-        /* { scope 1 */
-        "movl imp_m_filter, %eax\n" /* line 1177 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf186ef6_00186f76\n"
-        "movl imp_cl, %ecx\n" /* line 1179 */
-        "movl (%ecx), %edx\n"
-        "movl 0x85d8(%edx), %eax\n"
-        "addl 0x85dc(%edx), %eax\n"
-        "cvtsi2ssl %eax, %xmm4\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "mulss %xmm0, %xmm4\n"
-        "movl 0x85e0(%edx), %eax\n" /* line 1180 */
-        "addl 0x85e4(%edx), %eax\n"
-        "cvtsi2ssl %eax, %xmm3\n"
-        "mulss %xmm0, %xmm3\n"
-        "movl %edx, %eax\n"
-        ".Lf186ef6_00186f43:\n"
-        "movl 0x85e8(%eax), %edx\n" /* line 1187 */
-        "xorl $1, %edx\n"
-        "movl %edx, 0x85e8(%eax)\n"
-        "movl $0, 0x85d8(%eax, %edx, 4)\n" /* line 1188 */
-        "movl $0, 0x85e0(%eax, %edx, 4)\n" /* line 1189 */
-        "movl imp_frame_msec, %eax\n" /* line 1191 */
-        "movl (%eax), %edx\n"
-        "cmpl $0, %edx\n"
-        "jne .Lf186ef6_00186f98\n"
-        /* } scope */
-        ".Lf186ef6_00186f74:\n"
-        "leave\n" /* line 1251 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf186ef6_00186f76:\n"
-        "movl imp_cl, %ecx\n" /* line 1184 */
-        "movl (%ecx), %eax\n"
-        "movl 0x85e8(%eax), %edx\n"
-        "cvtsi2ssl 0x85d8(%eax, %edx, 4), %xmm4\n"
-        "cvtsi2ssl 0x85e0(%eax, %edx, 4), %xmm3\n" /* line 1185 */
-        "jmp .Lf186ef6_00186f43\n"
-        ".Lf186ef6_00186f98:\n"
-        "movaps %xmm4, %xmm0\n" /* line 81 */
-        "mulss %xmm4, %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss %xmm3, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "sqrtss %xmm0, %xmm1\n"
-        "jl .Lf186ef6_0018722e\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf186ef6_00186fb8:\n"
-        "divss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movl imp_cl_sensitivity, %eax\n" /* line 1195 */
-        "movl (%eax), %edx\n"
-        "movl imp_cl_mouseAccel, %eax\n"
-        "movl (%eax), %eax\n"
-        "movaps %xmm1, %xmm2\n"
-        "mulss 8(%eax), %xmm2\n"
-        "addss 8(%edx), %xmm2\n"
-        "movl (%ecx), %eax\n" /* line 1198 */
-        "mulss 0x8604(%eax), %xmm2\n"
-        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1199 | 0.0f */
-        "jp .Lf186ef6_00186fef\n"
-        "je .Lf186ef6_00187004\n"
-        ".Lf186ef6_00186fef:\n"
-        "movl imp_cl_showMouseRate, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf186ef6_001871ba\n"
-        "movl (%ecx), %edx\n"
-        "jmp .Lf186ef6_00187006\n"
-        ".Lf186ef6_00187004:\n"
-        "movl %eax, %edx\n"
-        ".Lf186ef6_00187006:\n"
-        "cmpw $0, 0x40(%edx)\n" /* line 1203 */
-        "js .Lf186ef6_00186f74\n"
-        "testl $0x300, 0xd4(%edx)\n" /* line 1206 */
-        "je .Lf186ef6_001871aa\n"
-        "movaps %xmm4, %xmm0\n" /* line 1208 */
-        "mulss lit4_002ed6c0, %xmm0\n" /* 2.5f */
-        "addss %xmm3, %xmm3\n" /* line 1209 */
-        ".Lf186ef6_00187030:\n"
-        "pxor %xmm4, %xmm4\n" /* line 1217 */
-        "ucomiss %xmm4, %xmm0\n"
-        "jne .Lf186ef6_00187046\n"
-        "jp .Lf186ef6_00187046\n"
-        "ucomiss %xmm4, %xmm3\n"
-        "jp .Lf186ef6_00187046\n"
-        "je .Lf186ef6_00186f74\n"
-        ".Lf186ef6_00187046:\n"
-        "movl kb, %eax\n" /* line 1221 */
-        "cmpb $0, 0xb0(%eax)\n"
-        "jne .Lf186ef6_00187244\n"
-        "movl imp_m_yaw, %eax\n" /* line 1227 */
-        "movl (%eax), %eax\n"
-        "movaps %xmm0, %xmm2\n"
-        "mulss 8(%eax), %xmm2\n"
-        "movss 0x860c(%edx), %xmm1\n" /* line 1228 */
-        "ucomiss %xmm4, %xmm1\n"
-        "jp .Lf186ef6_00187076\n"
-        "je .Lf186ef6_001870d2\n"
-        ".Lf186ef6_00187076:\n"
-        "movl imp_frame_msec, %eax\n" /* line 1230 */
-        "movl (%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "js .Lf186ef6_0018727a\n"
-        "cvtsi2ssl %ecx, %xmm0\n"
-        ".Lf186ef6_00187089:\n"
-        "mulss %xmm1, %xmm0\n"
-        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "movaps %xmm2, %xmm1\n" /* line 45 */
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm2, %xmm5\n"
-        "cmpltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm5\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm5, %xmm1\n"
-        "movaps %xmm1, %xmm2\n"
-        "xorps g_color_table+544, %xmm0\n" /* line 1231 */
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "movaps %xmm2, %xmm5\n"
-        "cmpltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm5\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm5, %xmm1\n"
-        "movaps %xmm1, %xmm2\n"
-        ".Lf186ef6_001870d2:\n"
-        "movss 0x8620(%edx), %xmm0\n" /* line 1233 */
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x8620(%edx)\n"
-        ".Lf186ef6_001870e6:\n"
-        "movl kb, %edx\n" /* line 1236 */
-        "cmpb $0, 0x114(%edx)\n"
-        "jne .Lf186ef6_00187106\n"
-        "movl imp_cl_freelook, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf186ef6_00187205\n"
-        ".Lf186ef6_00187106:\n"
-        "cmpb $0, 0xb0(%edx)\n"
-        "jne .Lf186ef6_00187205\n"
-        /* { scope 2 */
-        "movl imp_m_pitch, %eax\n" /* line 1238 */
-        "movl (%eax), %eax\n"
-        "movaps %xmm3, %xmm2\n" /* delta */
-        "mulss 8(%eax), %xmm2\n" /* delta */
-        "movl imp_cl, %eax\n" /* line 1240 */
-        "movl (%eax), %ecx\n"
-        "movss 0x8608(%ecx), %xmm1\n"
-        "pxor %xmm4, %xmm4\n"
-        "ucomiss %xmm4, %xmm1\n"
-        "jp .Lf186ef6_0018713c\n"
-        "je .Lf186ef6_00187198\n"
-        ".Lf186ef6_0018713c:\n"
-        "movl imp_frame_msec, %eax\n" /* line 1242 */
-        "movl (%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "js .Lf186ef6_00187290\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf186ef6_0018714f:\n"
-        "mulss %xmm1, %xmm0\n"
-        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "movaps %xmm2, %xmm1\n" /* line 45 */
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm2, %xmm3\n"
-        "cmpltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm3\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm3, %xmm1\n"
-        "movaps %xmm1, %xmm2\n"
-        "xorps g_color_table+544, %xmm0\n" /* line 1243 */
-        "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "movaps %xmm2, %xmm5\n"
-        "cmpltss %xmm4, %xmm1\n"
-        "andps %xmm1, %xmm5\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm5, %xmm1\n"
-        "movaps %xmm1, %xmm2\n"
-        ".Lf186ef6_00187198:\n"
-        "addss 0x861c(%ecx), %xmm2\n" /* line 1245 */
-        "movss %xmm2, 0x861c(%ecx)\n"
-        /* } scope */
-        /* } scope */
-        "leave\n" /* line 1251 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf186ef6_001871aa:\n"
-        "movaps %xmm4, %xmm0\n" /* line 1213 */
-        "mulss %xmm2, %xmm0\n"
-        "mulss %xmm2, %xmm3\n" /* line 1214 */
-        "jmp .Lf186ef6_00187030\n"
-        ".Lf186ef6_001871ba:\n"
-        "cvtss2sd %xmm2, %xmm1\n" /* line 1200 */
-        "movsd %xmm1, 0xc(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_002af7cc, (%esp)\n" /* "%f : %f
-" */
-        "movss %xmm2, -0x18(%ebp)\n"
-        "movss %xmm3, -0x28(%ebp)\n"
-        "movss %xmm4, -0x38(%ebp)\n"
-        "calll Com_Printf\n"
-        "movl imp_cl, %ecx\n"
-        "movss -0x38(%ebp), %xmm4\n"
-        "movss -0x28(%ebp), %xmm3\n"
-        "movss -0x18(%ebp), %xmm2\n"
-        "movl (%ecx), %edx\n"
-        "jmp .Lf186ef6_00187006\n"
-        ".Lf186ef6_00187205:\n"
-        "movl 8(%ebp), %eax\n" /* line 1249 | cmd */
-        "movsbl 0x18(%eax), %edx\n"
-        "movl imp_m_forward, %eax\n"
-        "movl (%eax), %eax\n"
-        "mulss 8(%eax), %xmm3\n"
-        "cvttss2si %xmm3, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll ClampChar\n"
-        "movl 8(%ebp), %edx\n" /* cmd */
-        "movb %al, 0x18(%edx)\n"
-        /* } scope */
-        "leave\n" /* line 1251 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf186ef6_0018722e:\n"
-        "movl %edx, %eax\n" /* line 81 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf186ef6_00186fb8\n"
-        ".Lf186ef6_00187244:\n"
-        "movl 8(%ebp), %eax\n" /* line 1223 | cmd */
-        "movsbl 0x19(%eax), %edx\n"
-        "movl imp_m_side, %eax\n"
-        "movl (%eax), %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "addl %eax, %edx\n"
-        "movl %edx, (%esp)\n"
-        "movss %xmm3, -0x28(%ebp)\n"
-        "calll ClampChar\n"
-        "movl 8(%ebp), %edx\n" /* cmd */
-        "movb %al, 0x19(%edx)\n"
-        "movss -0x28(%ebp), %xmm3\n"
-        "jmp .Lf186ef6_001870e6\n"
-        ".Lf186ef6_0018727a:\n"
-        "movl %ecx, %eax\n" /* line 1230 */
-        "shrl $1, %eax\n"
-        "andl $1, %ecx\n"
-        "orl %ecx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf186ef6_00187089\n"
-        /* { scope 2 */
-        ".Lf186ef6_00187290:\n"
-        "movl %edx, %eax\n" /* line 1242 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf186ef6_0018714f\n"
-    );
+    clientActive_t *cl;
+    float mx;
+    float my;
+    float rate;
+    float sensitivity;
+    float yawDelta;
+    float pitchDelta;
+    int index;
+
+#define KB_AT(offset) ((kbutton_t *)((byte *)kb + (offset)))
+
+    cl = *(clientActive_t **)imp_cl;
+    if (m_filter->current.enabled)
+    {
+        mx = (float)(cl->mouseDx[0] + cl->mouseDx[1]) * 0.5f;
+        my = (float)(cl->mouseDy[0] + cl->mouseDy[1]) * 0.5f;
+    }
+    else
+    {
+        index = cl->mouseIndex;
+        mx = (float)cl->mouseDx[index];
+        my = (float)cl->mouseDy[index];
+    }
+
+    index = cl->mouseIndex ^ 1;
+    cl->mouseIndex = index;
+    cl->mouseDx[index] = 0;
+    cl->mouseDy[index] = 0;
+
+    if (frame_msec == 0)
+    {
+        return;
+    }
+
+    rate = sqrtf(mx * mx + my * my) / (float)frame_msec;
+    sensitivity = (rate * cl_mouseAccel->current.value + cl_sensitivity->current.value) * cl->cgameSensitivity;
+
+    if (rate != 0.0f && cl_showMouseRate->current.enabled)
+    {
+        Com_Printf((const char *)str_002af7cc, rate, sensitivity);
+    }
+
+    if ((short)cl->snap.ps.pm_flags < 0)
+    {
+        return;
+    }
+
+    if (cl->snap.ps.eFlags & 0x300)
+    {
+        mx *= 2.5f;
+        my *= 2.0f;
+    }
+    else
+    {
+        mx *= sensitivity;
+        my *= sensitivity;
+    }
+
+    if (mx == 0.0f && my == 0.0f)
+    {
+        return;
+    }
+
+    if (KB_AT(0xa0)->active)
+    {
+        cmd->rightmove = ClampChar((int)cmd->rightmove + (int)(mx * m_side->current.value));
+    }
+    else
+    {
+        yawDelta = mx * m_yaw->current.value;
+        yawDelta = CL_ClampMouseAxisDelta(yawDelta, cl->cgameMaxYawSpeed);
+        cl->viewangles[1] -= yawDelta;
+    }
+
+    if ((KB_AT(0x104)->active || cl_freelook->current.enabled) && !KB_AT(0xa0)->active)
+    {
+        pitchDelta = my * m_pitch->current.value;
+        pitchDelta = CL_ClampMouseAxisDelta(pitchDelta, cl->cgameMaxPitchSpeed);
+        cl->viewangles[0] += pitchDelta;
+    }
+    else
+    {
+        cmd->forwardmove = ClampChar((int)cmd->forwardmove - (int)(my * m_forward->current.value));
+    }
+
+#undef KB_AT
 }
 
 /* line 308 */
