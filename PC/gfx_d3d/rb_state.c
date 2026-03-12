@@ -53,11 +53,30 @@ typedef struct {
 extern void MatrixInverse44(const float *mat, float *dst);
 extern void MatrixIdentity44(float (*out)[4]);
 extern void MatrixSet44(float (*out)[4], const vec_t *origin, vec3_t *axis, vec_t scale);
+extern void MacOpenGLUtils_GetSubPixelOffset(float *xOffset, float *yOffset);
 extern void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 
 enum {
     RB_STENCIL_OP_DECODE_COUNT = 6,
     RB_STENCIL_FUNC_DECODE_COUNT = 2,
+    RB_STATE0_SRC_BLEND_RGB_MASK = 0x0000000f,
+    RB_STATE0_DST_BLEND_RGB_MASK = 0x000000f0,
+    RB_STATE0_BLEND_OP_RGB_MASK = 0x00000700,
+    RB_STATE0_BLEND_OP_MASKS = 0x07000700,
+    RB_STATE0_ALPHA_TEST_DISABLE = 0x00000800,
+    RB_STATE0_ALPHA_TEST_FUNC_MASK = 0x00003000,
+    RB_STATE0_ALPHA_TEST_MASK = 0x00000f00,
+    RB_STATE0_CULL_MASK = 0x0000c000,
+    RB_STATE0_SRC_BLEND_ALPHA_MASK = 0x000f0000,
+    RB_STATE0_DST_BLEND_ALPHA_MASK = 0x00f00000,
+    RB_STATE0_BLEND_OP_ALPHA_MASK = 0x07000000,
+    RB_STATE0_COLOR_WRITE_RGB = 0x08000000,
+    RB_STATE0_COLOR_WRITE_ALPHA = 0x10000000,
+    RB_STATE0_FOG_ENABLE = 0x20000000,
+    RB_STATE0_NORMALIZE_NORMALS = 0x40000000,
+    RB_STATE0_WIREFRAME = 0x80000000u,
+    RB_STATE0_RGB_BLEND_BITS = 0x000007ff,
+    RB_STATE0_ALPHA_BLEND_BITS = 0x07ff0000,
     RB_STATE1_DEPTH_WRITE = 0x00000001,
     RB_STATE1_DEPTH_TEST_DISABLE = 0x00000002,
     RB_STATE1_DEPTH_FUNC_MASK = 0x0000000c,
@@ -265,6 +284,12 @@ static Bool RB_SupportsSlopeScaleDepthBias(void)
 {
     /* This capability flag is still only recovered as a raw DxGlobals offset. */
     return *(const byte *)((const byte *)imp_dx + 0x2d7a) != 0;
+}
+
+static Bool RB_SupportsAlphaToCoverage(void)
+{
+    /* This capability flag is still only recovered as a raw DxGlobals offset. */
+    return *(const byte *)((const byte *)imp_dx + 0x2d7e) != 0;
 }
 
 static int RB_NextPowerOfTwo(int value)
@@ -1065,472 +1090,135 @@ void RB_ClearAllStreamSources(void)
 }
 
 /* line 455 */
-__attribute__((naked))
 void RB_ChangeState_0(int stateBits0)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 455 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* stateBits0 */
-        /* { scope 1 */
-        "movl dxState+8200, %eax\n" /* line 470 */
-        "xorl %edi, %eax\n" /* stateBits0 */
-        "movl %eax, -0x24(%ebp)\n" /* changedBits */
-        "jne .Lfcf2d0_000cf2fb\n"
-        "movl %edi, %eax\n" /* line 472 | stateBits0 */
-        "xorl dxState+8192, %eax\n"
-        "testl $0x7000700, %eax\n"
-        "je .Lfcf2d0_000cf65a\n"
-        ".Lfcf2d0_000cf2fb:\n"
-        "testl $0x800, -0x24(%ebp)\n" /* line 481 | changedBits */
-        "jne .Lfcf2d0_000cf87c\n"
-        "movl %edi, %ebx\n" /* stateBits0, disableSeparateAlphaBlend */
-        "shrl $0xb, %ebx\n" /* disableSeparateAlphaBlend */
-        "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        ".Lfcf2d0_000cf310:\n"
-        "testl %ebx, %ebx\n" /* line 483 | disableSeparateAlphaBlend */
-        "jne .Lfcf2d0_000cf784\n"
-        "testl $0x3000, -0x24(%ebp)\n" /* line 491 | changedBits */
-        "je .Lfcf2d0_000cf3bd\n"
-        ".Lfcf2d0_000cf325:\n"
-        "movl %edi, %eax\n" /* line 493 | stateBits0 */
-        "andl $0x3000, %eax\n"
-        "cmpl $__mh_execute_header, %eax\n"
-        "je .Lfcf2d0_000cf8ba\n"
-        "cmpl $0x2000, %eax\n" /* line 498 */
-        "je .Lfcf2d0_000cf8c8\n"
-        "movl $7, %esi\n" /* function */
-        "movb $0x80, -0x1d(%ebp)\n" /* ref */
-        ".Lfcf2d0_000cf34b:\n"
-        "movl imp_dx, %ebx\n" /* line 509 | disableSeparateAlphaBlend */
-        "movl 8(%ebx), %eax\n" /* disableSeparateAlphaBlend */
-        "movl (%eax), %edx\n"
-        "movl %esi, 8(%esp)\n" /* function */
-        "movl $0x19, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfcf2d0_000cf34b\n"
-        "movzbl -0x1d(%ebp), %ecx\n" /* line 510 | ref */
-        "cmpb %cl, dxState+8520\n"
-        "je .Lfcf2d0_000cf3bd\n"
-        "movzbl %cl, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl %ebx, %esi\n" /* disableSeparateAlphaBlend, function */
-        "movl %eax, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl %edx, %ecx\n"
-        "jmp .Lfcf2d0_000cf393\n"
-        ".Lfcf2d0_000cf390:\n"
-        "movl -0x1c(%ebp), %ecx\n"
-        ".Lfcf2d0_000cf393:\n"
-        "movl 8(%esi), %eax\n" /* line 512 | function */
-        "movl (%eax), %edx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl $0x18, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %eax\n" /* disableSeparateAlphaBlend */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf390\n"
-        "movzbl -0x1d(%ebp), %eax\n" /* line 513 | ref */
-        "movb %al, dxState+8520\n"
-        ".Lfcf2d0_000cf3bd:\n"
-        "testl $0x18000000, -0x24(%ebp)\n" /* line 517 | changedBits */
-        "jne .Lfcf2d0_000cf662\n"
-        "testl $0x20000000, -0x24(%ebp)\n" /* line 525 | changedBits */
-        "jne .Lfcf2d0_000cf6bf\n"
-        ".Lfcf2d0_000cf3d7:\n"
-        "testw $0xc000, -0x24(%ebp)\n" /* line 529 | changedBits */
-        "jne .Lfcf2d0_000cf6ff\n"
-        ".Lfcf2d0_000cf3e3:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 535 | changedBits */
-        "testl %eax, %eax\n"
-        "js .Lfcf2d0_000cf747\n"
-        ".Lfcf2d0_000cf3ee:\n"
-        "testl $0x700, %edi\n" /* line 538 | stateBits0 */
-        "sete %bl\n" /* disableSeparateAlphaBlend */
-        "testl $0x700, dxState+8192\n" /* line 540 */
-        "sete %al\n"
-        "cmpb %al, %bl\n" /* disableSeparateAlphaBlend */
-        "je .Lfcf2d0_000cf43c\n"
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf40e:\n"
-        "movl imp_dx, %ecx\n" /* line 541 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
-        "xorb $1, %dl\n"
-        "movzbl %dl, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x1b, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf40e\n"
-        ".Lfcf2d0_000cf43c:\n"
-        "testb %bl, %bl\n" /* line 543 | disableSeparateAlphaBlend */
-        "je .Lfcf2d0_000cf7a9\n"
-        "andl $0xfffff800, %edi\n" /* line 545 | stateBits0 */
-        "movl dxState+8200, %eax\n" /* line 546 */
-        "andl $0x7ff, %eax\n"
-        "orl %eax, %edi\n" /* stateBits0 */
-        "andl $0xfffff800, -0x24(%ebp)\n" /* line 547 | changedBits */
-        ".Lfcf2d0_000cf45d:\n"
-        "cmpb $0, -0x24(%ebp)\n" /* line 555 | changedBits */
-        "je .Lfcf2d0_000cf4e2\n"
-        "testb $0xf, -0x24(%ebp)\n" /* line 557 | changedBits */
-        "je .Lfcf2d0_000cf4a1\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "andl $0xf, %eax\n"
-        "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf47b:\n"
-        "movl imp_dx, %ecx\n" /* line 561 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0x13, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf47b\n"
-        ".Lfcf2d0_000cf4a1:\n"
-        "testb $0xf0, -0x24(%ebp)\n" /* line 564 | changedBits */
-        "je .Lfcf2d0_000cf4e2\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "sarl $4, %eax\n"
-        "andl $0xf, %eax\n"
-        "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf4bc:\n"
-        "movl imp_dx, %edx\n" /* line 568 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0x14, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %ecx\n" /* function */
-        "testl %ecx, %ecx\n"
-        "jne .Lfcf2d0_000cf4bc\n"
-        ".Lfcf2d0_000cf4e2:\n"
-        "testl $0x7000000, %edi\n" /* line 572 | stateBits0 */
-        "sete %bl\n" /* disableSeparateAlphaBlend */
-        "testl $0x7000000, dxState+8192\n" /* line 574 */
-        "sete %al\n"
-        "cmpb %al, %bl\n" /* disableSeparateAlphaBlend */
-        "je .Lfcf2d0_000cf530\n"
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf502:\n"
-        "movl imp_dx, %ecx\n" /* line 575 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
-        "xorb $1, %dl\n"
-        "movzbl %dl, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0xce, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl (%esi), %edx\n" /* function */
-        "testl %edx, %edx\n"
-        "jne .Lfcf2d0_000cf502\n"
-        ".Lfcf2d0_000cf530:\n"
-        "testb %bl, %bl\n" /* line 577 | disableSeparateAlphaBlend */
-        "je .Lfcf2d0_000cf7f6\n"
-        "andl $0xf800ffff, %edi\n" /* line 579 | stateBits0 */
-        "movl dxState+8200, %eax\n" /* line 580 */
-        "andl $0x7ff0000, %eax\n"
-        "orl %eax, %edi\n" /* stateBits0 */
-        "andl $0xf800ffff, -0x24(%ebp)\n" /* line 581 | changedBits */
-        ".Lfcf2d0_000cf551:\n"
-        "testl $0x00FF0000, -0x24(%ebp)\n" /* line 589 | changedBits */
-        "je .Lfcf2d0_000cf5e6\n"
-        "testl $0xf0000, -0x24(%ebp)\n" /* line 591 | changedBits */
-        "je .Lfcf2d0_000cf5a2\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "sarl $0x10, %eax\n"
-        "andl $0xf, %eax\n"
-        "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf57c:\n"
-        "movl imp_dx, %ecx\n" /* line 595 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0xcf, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf57c\n"
-        ".Lfcf2d0_000cf5a2:\n"
-        "testl $0x00F00000, -0x24(%ebp)\n" /* line 598 | changedBits */
-        "je .Lfcf2d0_000cf5e6\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "sarl $0x14, %eax\n"
-        "andl $0xf, %eax\n"
-        "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf5c0:\n"
-        "movl imp_dx, %edx\n" /* line 602 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0xd0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf5c0\n"
-        ".Lfcf2d0_000cf5e6:\n"
-        "testl $0x40000000, -0x24(%ebp)\n" /* line 607 | changedBits */
-        "jne .Lfcf2d0_000cf843\n"
-        ".Lfcf2d0_000cf5f3:\n"
-        "movl imp_dx, %edx\n" /* line 615 */
-        "cmpb $0, 0x2d7e(%edx)\n"
-        "je .Lfcf2d0_000cf654\n"
-        "movl imp_r_aaAlpha, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfcf2d0_000cf654\n"
-        "testl $0xf00, -0x24(%ebp)\n" /* line 617 | changedBits */
-        "je .Lfcf2d0_000cf654\n"
-        /* { scope 2 */
-        "testl $0xf00, %edi\n" /* line 444 */
-        "je .Lfcf2d0_000cf8d6\n"
-        "xorl %ebx, %ebx\n" /* aaAlphaFormat */
-        "jmp .Lfcf2d0_000cf62f\n"
-        ".Lfcf2d0_000cf629:\n"
-        "movl imp_dx, %edx\n"
-        ".Lfcf2d0_000cf62f:\n"
-        "movl 8(%edx), %eax\n" /* line 450 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* aaAlphaFormat */
-        "movl $0xb5, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf629\n"
-        /* } scope */
-        ".Lfcf2d0_000cf654:\n"
-        "movl %edi, dxState+8200\n" /* line 622 | stateBits0 */
-        /* } scope */
-        ".Lfcf2d0_000cf65a:\n"
-        "addl $0x2c, %esp\n" /* line 623 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcf2d0_000cf662:\n"
-        "movl %edi, %eax\n" /* line 519 | stateBits0 */
-        "andl $0x8000000, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %ebx, %ebx\n" /* disableSeparateAlphaBlend */
-        "notl %ebx\n" /* disableSeparateAlphaBlend */
-        "andl $7, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl %edi, %eax\n" /* line 520 | stateBits0 */
-        "andl $0x10000000, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %eax, %eax\n"
-        "notl %eax\n"
-        "andl $8, %eax\n"
-        "orl %eax, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf68c:\n"
-        "movl imp_dx, %edx\n" /* line 521 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0xa8, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %ecx\n" /* function */
-        "testl %ecx, %ecx\n"
-        "jne .Lfcf2d0_000cf68c\n"
-        "testl $0x20000000, -0x24(%ebp)\n" /* line 525 | changedBits */
-        "je .Lfcf2d0_000cf3d7\n"
-        ".Lfcf2d0_000cf6bf:\n"
-        "movl %edi, %ebx\n" /* stateBits0, disableSeparateAlphaBlend */
-        "shrl $0x1d, %ebx\n" /* disableSeparateAlphaBlend */
-        "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf6cd:\n"
-        "movl imp_dx, %ecx\n" /* line 526 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0x1c, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %edx\n" /* function */
-        "testl %edx, %edx\n"
-        "jne .Lfcf2d0_000cf6cd\n"
-        "testw $0xc000, -0x24(%ebp)\n" /* line 529 | changedBits */
-        "je .Lfcf2d0_000cf3e3\n"
-        ".Lfcf2d0_000cf6ff:\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "andl $0xc000, %eax\n"
-        "sarl $0xe, %eax\n"
-        "movl s_cullTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf716:\n"
-        "movl imp_dx, %edx\n" /* line 532 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0x16, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf716\n"
-        "movl -0x24(%ebp), %eax\n" /* line 535 | changedBits */
-        "testl %eax, %eax\n"
-        "jns .Lfcf2d0_000cf3ee\n"
-        ".Lfcf2d0_000cf747:\n"
-        "testl %edi, %edi\n" /* line 622 | stateBits0 */
-        "js .Lfcf2d0_000cf8eb\n"
-        "movl imp_dx, %esi\n" /* function */
-        "movl imp_alwaysfails, %ebx\n" /* disableSeparateAlphaBlend */
-        ".Lfcf2d0_000cf75b:\n"
-        "movl 8(%esi), %eax\n" /* line 536 | function */
-        "movl (%eax), %edx\n"
-        "movl $3, 8(%esp)\n"
-        "movl $8, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %eax\n" /* disableSeparateAlphaBlend */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf75b\n"
-        "jmp .Lfcf2d0_000cf3ee\n"
-        ".Lfcf2d0_000cf784:\n"
-        "movl dxState+8200, %eax\n" /* line 486 */
-        "andl $0x3000, %eax\n"
-        "orl %eax, %edi\n" /* stateBits0 */
-        "andl $0xffffcfff, -0x24(%ebp)\n" /* line 487 | changedBits */
-        "testl $0x3000, -0x24(%ebp)\n" /* line 491 | changedBits */
-        "je .Lfcf2d0_000cf3bd\n"
-        "jmp .Lfcf2d0_000cf325\n"
-        ".Lfcf2d0_000cf7a9:\n"
-        "testl $0x700, -0x24(%ebp)\n" /* line 550 | changedBits */
-        "je .Lfcf2d0_000cf45d\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "sarl $8, %eax\n"
-        "andl $7, %eax\n"
-        "movl s_blendOpTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf7cb:\n"
-        "movl imp_dx, %edx\n" /* line 552 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0xab, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf7cb\n"
-        "jmp .Lfcf2d0_000cf45d\n"
-        ".Lfcf2d0_000cf7f6:\n"
-        "testl $0x7000000, -0x24(%ebp)\n" /* line 584 | changedBits */
-        "je .Lfcf2d0_000cf551\n"
-        "movl %edi, %eax\n" /* stateBits0 */
-        "sarl $0x18, %eax\n"
-        "andl $7, %eax\n"
-        "movl s_blendOpTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf818:\n"
-        "movl imp_dx, %edx\n" /* line 586 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0xd1, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf818\n"
-        "jmp .Lfcf2d0_000cf551\n"
-        ".Lfcf2d0_000cf843:\n"
-        "movl %edi, %ebx\n" /* line 607 | stateBits0, disableSeparateAlphaBlend */
-        "shrl $0x1e, %ebx\n" /* disableSeparateAlphaBlend */
-        "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf851:\n"
-        "movl imp_dx, %ecx\n" /* line 610 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
-        "movl $0x8f, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf851\n"
-        "jmp .Lfcf2d0_000cf5f3\n"
-        ".Lfcf2d0_000cf87c:\n"
-        "movl %edi, %ebx\n" /* line 481 | stateBits0, disableSeparateAlphaBlend */
-        "shrl $0xb, %ebx\n" /* disableSeparateAlphaBlend */
-        "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl imp_alwaysfails, %esi\n" /* function */
-        ".Lfcf2d0_000cf88a:\n"
-        "movl imp_dx, %edx\n" /* line 482 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
-        "xorl $1, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0xf, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl (%esi), %ecx\n" /* function */
-        "testl %ecx, %ecx\n"
-        "jne .Lfcf2d0_000cf88a\n"
-        "jmp .Lfcf2d0_000cf310\n"
-        ".Lfcf2d0_000cf8ba:\n"
-        "movl $5, %esi\n" /* line 493 | function */
-        "movb $0, -0x1d(%ebp)\n" /* ref */
-        "jmp .Lfcf2d0_000cf34b\n"
-        ".Lfcf2d0_000cf8c8:\n"
-        "movl $2, %esi\n" /* line 498 | function */
-        "movb $0x80, -0x1d(%ebp)\n" /* ref */
-        "jmp .Lfcf2d0_000cf34b\n"
-        /* { scope 2 */
-        ".Lfcf2d0_000cf8d6:\n"
-        "movl $0x41415353, %ebx\n" /* line 446 | aaAlphaFormat */
-        "cmpl $2, %eax\n"
-        "movl $0x434f5441, %eax\n"
-        "cmovnel %eax, %ebx\n" /* aaAlphaFormat */
-        "jmp .Lfcf2d0_000cf62f\n"
-        /* } scope */
-        ".Lfcf2d0_000cf8eb:\n"
-        "movl imp_dx, %eax\n" /* line 536 */
-        "movl 8(%eax), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $2, 8(%esp)\n"
-        "movl $8, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcf2d0_000cf8eb\n"
-        "jmp .Lfcf2d0_000cf3ee\n"
-    );
+    unsigned int changedBits;
+
+    changedBits = stateBits0 ^ dxState.activeStateBits[0];
+    if (!changedBits && (((unsigned int)(stateBits0 ^ dxState.refStateBits[0]) & RB_STATE0_BLEND_OP_MASKS) == 0)) {
+        return;
+    }
+
+    if (changedBits & RB_STATE0_ALPHA_TEST_DISABLE) {
+        RB_SetRenderStateDx7(D3DRS_ALPHATESTENABLE, (((unsigned int)stateBits0 >> 11) & 1) ^ 1);
+    }
+
+    if (stateBits0 & RB_STATE0_ALPHA_TEST_DISABLE) {
+        stateBits0 = (stateBits0 & ~RB_STATE0_ALPHA_TEST_FUNC_MASK) | (dxState.activeStateBits[0] & RB_STATE0_ALPHA_TEST_FUNC_MASK);
+        changedBits &= ~RB_STATE0_ALPHA_TEST_FUNC_MASK;
+    } else if (changedBits & RB_STATE0_ALPHA_TEST_FUNC_MASK) {
+        DWORD alphaFunc;
+        byte alphaRef;
+
+        switch (stateBits0 & RB_STATE0_ALPHA_TEST_FUNC_MASK) {
+        case 0x1000:
+            alphaFunc = 5;
+            alphaRef = 0;
+            break;
+        case 0x2000:
+            alphaFunc = 2;
+            alphaRef = 0x80;
+            break;
+        default:
+            alphaFunc = 7;
+            alphaRef = 0x80;
+            break;
+        }
+
+        RB_SetRenderStateDx7(D3DRS_ALPHAFUNC, alphaFunc);
+        if (dxState.alphaRef != alphaRef) {
+            dxState.alphaRef = alphaRef;
+            RB_SetRenderStateDx7(D3DRS_ALPHAREF, alphaRef);
+        }
+    }
+
+    if (changedBits & (RB_STATE0_COLOR_WRITE_RGB | RB_STATE0_COLOR_WRITE_ALPHA)) {
+        DWORD colorWriteMask;
+
+        colorWriteMask = (stateBits0 & RB_STATE0_COLOR_WRITE_RGB) ? 7 : 0;
+        if (stateBits0 & RB_STATE0_COLOR_WRITE_ALPHA) {
+            colorWriteMask |= 8;
+        }
+
+        RB_SetRenderStateDx7(D3DRS_COLORWRITEENABLE, colorWriteMask);
+    }
+
+    if (changedBits & RB_STATE0_FOG_ENABLE) {
+        RB_SetRenderStateDx7(D3DRS_FOGENABLE, ((unsigned int)stateBits0 >> 29) & 1);
+    }
+
+    if (changedBits & RB_STATE0_CULL_MASK) {
+        RB_SetRenderStateDx7(D3DRS_CULLMODE, s_cullTable[((unsigned int)stateBits0 >> 14) & 3]);
+    }
+
+    if (changedBits & RB_STATE0_WIREFRAME) {
+        RB_SetRenderStateDx7(D3DRS_FILLMODE, (stateBits0 & RB_STATE0_WIREFRAME) ? 2 : 3);
+    }
+
+    if ((stateBits0 & RB_STATE0_BLEND_OP_RGB_MASK) == 0) {
+        if ((dxState.refStateBits[0] & RB_STATE0_BLEND_OP_RGB_MASK) != 0) {
+            RB_SetRenderStateDx7(D3DRS_ALPHABLENDENABLE, 0);
+        }
+
+        stateBits0 = (stateBits0 & ~RB_STATE0_RGB_BLEND_BITS) | (dxState.activeStateBits[0] & RB_STATE0_RGB_BLEND_BITS);
+        changedBits &= ~RB_STATE0_RGB_BLEND_BITS;
+    } else {
+        if ((dxState.refStateBits[0] & RB_STATE0_BLEND_OP_RGB_MASK) == 0) {
+            RB_SetRenderStateDx7(D3DRS_ALPHABLENDENABLE, 1);
+        }
+
+        if (changedBits & RB_STATE0_BLEND_OP_RGB_MASK) {
+            RB_SetRenderStateDx7(D3DRS_BLENDOP, s_blendOpTable[((unsigned int)stateBits0 >> 8) & 7]);
+        }
+    }
+
+    if (changedBits & RB_STATE0_SRC_BLEND_RGB_MASK) {
+        RB_SetRenderStateDx7(D3DRS_SRCBLEND, s_blendTable[stateBits0 & RB_STATE0_SRC_BLEND_RGB_MASK]);
+    }
+
+    if (changedBits & RB_STATE0_DST_BLEND_RGB_MASK) {
+        RB_SetRenderStateDx7(D3DRS_DESTBLEND, s_blendTable[((unsigned int)stateBits0 >> 4) & 0xf]);
+    }
+
+    if ((stateBits0 & RB_STATE0_BLEND_OP_ALPHA_MASK) == 0) {
+        if ((dxState.refStateBits[0] & RB_STATE0_BLEND_OP_ALPHA_MASK) != 0) {
+            RB_SetRenderStateDx7(D3DRS_SEPARATEALPHABLENDENABLE, 0);
+        }
+
+        stateBits0 = (stateBits0 & ~RB_STATE0_ALPHA_BLEND_BITS) | (dxState.activeStateBits[0] & RB_STATE0_ALPHA_BLEND_BITS);
+        changedBits &= ~RB_STATE0_ALPHA_BLEND_BITS;
+    } else {
+        if ((dxState.refStateBits[0] & RB_STATE0_BLEND_OP_ALPHA_MASK) == 0) {
+            RB_SetRenderStateDx7(D3DRS_SEPARATEALPHABLENDENABLE, 1);
+        }
+
+        if (changedBits & RB_STATE0_BLEND_OP_ALPHA_MASK) {
+            RB_SetRenderStateDx7(D3DRS_BLENDOPALPHA, s_blendOpTable[((unsigned int)stateBits0 >> 24) & 7]);
+        }
+    }
+
+    if (changedBits & RB_STATE0_SRC_BLEND_ALPHA_MASK) {
+        RB_SetRenderStateDx7(D3DRS_SRCBLENDALPHA, s_blendTable[((unsigned int)stateBits0 >> 16) & 0xf]);
+    }
+
+    if (changedBits & RB_STATE0_DST_BLEND_ALPHA_MASK) {
+        RB_SetRenderStateDx7(D3DRS_DESTBLENDALPHA, s_blendTable[((unsigned int)stateBits0 >> 20) & 0xf]);
+    }
+
+    if (changedBits & RB_STATE0_NORMALIZE_NORMALS) {
+        RB_SetRenderStateDx7(D3DRS_NORMALIZENORMALS, ((unsigned int)stateBits0 >> 30) & 1);
+    }
+
+    if (RB_SupportsAlphaToCoverage()) {
+        const dvar_t *aaAlpha;
+
+        aaAlpha = *(const dvar_t **)imp_r_aaAlpha;
+        if (aaAlpha->current.integer != 0 && (changedBits & RB_STATE0_ALPHA_TEST_MASK)) {
+            RB_SetAlphaAntiAliasingState(stateBits0);
+        }
+    }
+
+    dxState.activeStateBits[0] = stateBits0;
 }
 
 /* line 1242 */
