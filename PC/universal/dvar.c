@@ -32,6 +32,13 @@ enum {
     DVAR_TYPE_COUNT = 9
 };
 enum {
+    DVAR_FLAG_WRITEPROTECTED = 0x10,
+    DVAR_FLAG_LATCH = 0x20,
+    DVAR_FLAG_READONLY = 0x40,
+    DVAR_FLAG_CHEAT = 0x80,
+    DVAR_FLAG_EXTERNAL = 0x4000,
+    DVAR_MAX_COUNT = 0x500,
+    CON_CHANNEL_LOGFILEONLY = 4,
     DVAR_INVALID_ENUM_INDEX = -1337
 };
 static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
@@ -46,6 +53,7 @@ extern int ___maskrune(int ch, unsigned int mask);
 extern int ___tolower(int c);
 extern void Com_BeginParseSession(const char *filename);
 extern void Com_EndParseSession(void);
+extern void Com_PrintMessage(int channel, const char *msg);
 extern const char *Com_Parse(const char **data_p);
 extern const char *Com_ParseOnLine(const char **data_p);
 extern char *CopyStringInternal(const char *in);
@@ -108,9 +116,15 @@ void Dvar_PrintDomain(int type, DvarLimits domain);
 static void __attribute__((regparm(1))) Dvar_PerformUnregistration(dvar_t *dvar);
 void Dvar_UnregisterSystem(int sysFlag);
 static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value);
-static void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain);
+static Bool Dvar_ValueInDomain(int type, DvarValue value, DvarLimits domain);
+static DvarValue Dvar_ClampValueToDomain(int type, DvarValue value, DvarValue resetValue, DvarLimits domain);
+static Bool Dvar_CanChangeValue(const dvar_t *dvar, DvarSetSource source);
+static void Dvar_UpdateValue(dvar_t *dvar, DvarValue value);
+static void __attribute__((regparm(3))) Dvar_MakeExplicitType(
+    dvar_t *dvar, const char *dvarName, int type, unsigned short flags, DvarValue resetValue, DvarLimits domain);
 void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value);
-static void Dvar_SetVariant(DvarValue value, DvarSetSource source);
+static void __attribute__((regparm(3))) Dvar_SetVariant(
+    const dvar_t *dvar, DvarValue value, DvarSetSource source);
 void Dvar_SetCheatState(void);
 void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource);
 static void __attribute__((regparm(3))) Dvar_SetFromStringFromSource(
@@ -335,6 +349,19 @@ static Bool Dvar_VectorEqual(const vec_t *a, const vec_t *b, int count)
     return 1;
 }
 
+static Bool Dvar_VectorInDomain(const vec_t *vector, int components, float min, float max)
+{
+    int i;
+
+    for (i = 0; i < components; ++i) {
+        if (vector[i] < min || vector[i] > max) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 static DvarLimits Dvar_UnpackLimits(uint32_t lo, uint32_t hi)
 {
     union {
@@ -503,6 +530,164 @@ static int Dvar_DescribeVectorDomain(char *outBuffer, int outBufferLen, int comp
         components,
         min,
         max);
+}
+
+static Bool Dvar_ValueInDomain(int type, DvarValue value, DvarLimits domain)
+{
+    switch (type) {
+    case DVAR_TYPE_BOOL:
+        return 1;
+    case DVAR_TYPE_FLOAT:
+        return domain.value.min <= value.value && value.value <= domain.value.max;
+    case DVAR_TYPE_VEC2:
+        return Dvar_VectorInDomain(value.vector, 2, domain.vector.min, domain.vector.max);
+    case DVAR_TYPE_VEC3:
+        return Dvar_VectorInDomain(value.vector, 3, domain.vector.min, domain.vector.max);
+    case DVAR_TYPE_VEC4:
+        return Dvar_VectorInDomain(value.vector, 4, domain.vector.min, domain.vector.max);
+    case DVAR_TYPE_INT:
+        return domain.integer.min <= value.integer && value.integer <= domain.integer.max;
+    case DVAR_TYPE_ENUM:
+        return value.integer >= 0 &&
+            (value.integer < domain.enumeration.stringCount || !value.integer);
+    case DVAR_TYPE_STRING:
+    case DVAR_TYPE_COLOR:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static DvarValue Dvar_ClampValueToDomain(int type, DvarValue value, DvarValue resetValue, DvarLimits domain)
+{
+    switch (type) {
+    case DVAR_TYPE_BOOL:
+        value.enabled = value.enabled != 0;
+        break;
+    case DVAR_TYPE_FLOAT:
+        if (value.value < domain.value.min) {
+            value.value = domain.value.min;
+        } else if (value.value > domain.value.max) {
+            value.value = domain.value.max;
+        }
+        break;
+    case DVAR_TYPE_VEC2:
+        Dvar_ClampVectorToDomain(value.vector, 2, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_VEC3:
+        Dvar_ClampVectorToDomain(value.vector, 3, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_VEC4:
+        Dvar_ClampVectorToDomain(value.vector, 4, domain.vector.min, domain.vector.max);
+        break;
+    case DVAR_TYPE_INT:
+        if (value.integer < domain.integer.min) {
+            value.integer = domain.integer.min;
+        } else if (value.integer > domain.integer.max) {
+            value.integer = domain.integer.max;
+        }
+        break;
+    case DVAR_TYPE_ENUM:
+        if (value.integer < 0 || value.integer >= domain.enumeration.stringCount) {
+            value.integer = resetValue.integer;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return value;
+}
+
+static Bool Dvar_CanChangeValue(const dvar_t *dvar, DvarSetSource source)
+{
+    if (dvar->flags & DVAR_FLAG_READONLY) {
+        Com_Printf("%s is read only.\n", dvar->name);
+        return 0;
+    }
+
+    if (dvar->flags & DVAR_FLAG_WRITEPROTECTED) {
+        Com_Printf("%s is write protected.\n", dvar->name);
+        return 0;
+    }
+
+    if (source == DVAR_SOURCE_EXTERNAL &&
+        (dvar->flags & DVAR_FLAG_CHEAT) &&
+        dvar_cheats &&
+        !dvar_cheats->current.enabled) {
+        Com_Printf("%s is cheat protected.\n", dvar->name);
+        return 0;
+    }
+
+    return 1;
+}
+
+static void Dvar_UpdateValue(dvar_t *dvar, DvarValue value)
+{
+    const char *oldCurrentString;
+    const char *oldLatchedString;
+    const char *oldResetString;
+    Bool freeOldCurrentString;
+
+    switch (dvar->type) {
+    case DVAR_TYPE_VEC2:
+        dvar->current.vector[0] = value.vector[0];
+        dvar->current.vector[1] = value.vector[1];
+        dvar->latched.vector[0] = value.vector[0];
+        dvar->latched.vector[1] = value.vector[1];
+        return;
+    case DVAR_TYPE_VEC3:
+        dvar->current.vector[0] = value.vector[0];
+        dvar->current.vector[1] = value.vector[1];
+        dvar->current.vector[2] = value.vector[2];
+        dvar->latched.vector[0] = value.vector[0];
+        dvar->latched.vector[1] = value.vector[1];
+        dvar->latched.vector[2] = value.vector[2];
+        return;
+    case DVAR_TYPE_VEC4:
+        dvar->current.vector[0] = value.vector[0];
+        dvar->current.vector[1] = value.vector[1];
+        dvar->current.vector[2] = value.vector[2];
+        dvar->current.vector[3] = value.vector[3];
+        dvar->latched.vector[0] = value.vector[0];
+        dvar->latched.vector[1] = value.vector[1];
+        dvar->latched.vector[2] = value.vector[2];
+        dvar->latched.vector[3] = value.vector[3];
+        return;
+    case DVAR_TYPE_STRING:
+        if (value.string == dvar->current.string) {
+            return;
+        }
+
+        oldCurrentString = dvar->current.string;
+        oldLatchedString = dvar->latched.string;
+        oldResetString = dvar->reset.string;
+        freeOldCurrentString =
+            oldCurrentString &&
+            oldCurrentString != oldLatchedString &&
+            oldCurrentString != oldResetString &&
+            !Dvar_IsStaticValueString(oldCurrentString);
+
+        dvar->current.string =
+            Dvar_RebuildStringValue(value.string, dvar->latched.string, dvar->reset.string);
+
+        if (oldLatchedString != dvar->current.string &&
+            oldLatchedString != oldResetString &&
+            !Dvar_IsStaticValueString(oldLatchedString)) {
+            Z_FreeInternal((void *)oldLatchedString);
+        }
+
+        dvar->latched.string = dvar->current.string;
+
+        if (freeOldCurrentString) {
+            Z_FreeInternal((void *)oldCurrentString);
+        }
+        return;
+    default:
+        dvar->current = value;
+        dvar->latched = value;
+        return;
+    }
 }
 
 /* line 45 */
@@ -1261,538 +1446,66 @@ static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar
 }
 
 /* line 1452 */
-static __attribute__((naked))
-void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
+static void __attribute__((regparm(3))) Dvar_MakeExplicitType(
+    dvar_t *dvar, const char *dvarName, int type, unsigned short flags, DvarValue resetValue, DvarLimits domain)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1452 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, %esi\n" /* flags, dvar */
-        "movl %ecx, %edi\n" /* type */
-        "movzwl 8(%ebp), %eax\n" /* flags */
-        /* { scope 1 */
-        "movb %cl, 6(%esi)\n" /* line 1458 | dvar */
-        "movl 0x10(%ebp), %edx\n" /* line 1459 | domain, dvarName */
-        "movl 0x14(%ebp), %ecx\n"
-        "movl %edx, 0x14(%esi)\n" /* dvarName, dvar */
-        "movl %ecx, 0x18(%esi)\n" /* dvar */
-        "movl %eax, -0x1c(%ebp)\n" /* line 1461 */
-        "testb $0x40, %al\n"
-        "jne .Lf5332a_00053370\n"
-        "testb %al, %al\n"
-        "jns .Lf5332a_00053547\n"
-        "movl dvar_cheats, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf5332a_00053547\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf5332a_00053547\n"
-        ".Lf5332a_00053370:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 1463 | resetValue, castValue */
-        ".Lf5332a_00053373:\n"
-        "cmpb $7, 6(%esi)\n" /* line 1471 | dvar */
-        "je .Lf5332a_000533b0\n"
-        "movl 8(%esi), %eax\n" /* line 191 */
-        "cmpl 0xc(%esi), %eax\n"
-        "je .Lf5332a_000533a9\n"
-        "cmpl 0x10(%esi), %eax\n"
-        "je .Lf5332a_000533a9\n"
-        "movzbl (%eax), %edx\n" /* line 179 */
-        "testb %dl, %dl\n"
-        "je .Lf5332a_000533a9\n"
-        "cmpb $0, 1(%eax)\n" /* line 181 */
-        "jne .Lf5332a_00053571\n"
-        "cmpb $0x2f, %dl\n"
-        "jle .Lf5332a_00053571\n"
-        "cmpb $0x39, %dl\n"
-        "jg .Lf5332a_00053571\n"
-        ".Lf5332a_000533a9:\n"
-        "movl $0, 8(%esi)\n" /* line 193 */
-        ".Lf5332a_000533b0:\n"
-        "movl 0xc(%esi), %eax\n" /* line 199 */
-        "cmpl 8(%esi), %eax\n"
-        "je .Lf5332a_000533c8\n"
-        "cmpl 0x10(%esi), %eax\n"
-        "je .Lf5332a_000533c8\n"
-        "movzbl (%eax), %edx\n" /* line 179 */
-        "testb %dl, %dl\n"
-        "jne .Lf5332a_0005351c\n"
-        ".Lf5332a_000533c8:\n"
-        "movl $0, 0xc(%esi)\n" /* line 201 */
-        "movl 0x10(%esi), %eax\n" /* line 207 */
-        "cmpl 8(%esi), %eax\n"
-        "je .Lf5332a_000533e6\n"
-        "testl %eax, %eax\n"
-        "je .Lf5332a_000533e6\n"
-        "movzbl (%eax), %edx\n" /* line 179 */
-        "testb %dl, %dl\n"
-        "jne .Lf5332a_0005346a\n"
-        ".Lf5332a_000533e6:\n"
-        "movl $0, 0x10(%esi)\n" /* line 209 */
-        "movzbl 6(%esi), %edx\n" /* line 1475 | dvar */
-        "leal -2(%edx), %eax\n"
-        "cmpb $2, %al\n"
-        "jbe .Lf5332a_000534aa\n"
-        ".Lf5332a_000533fc:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1477 | resetValue */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_UpdateResetValue\n"
-        "movzbl 6(%esi), %eax\n" /* line 1418 */
-        "cmpb $3, %al\n"
-        "je .Lf5332a_000534e5\n"
-        ".Lf5332a_00053412:\n"
-        "jbe .Lf5332a_0005343b\n"
-        "cmpb $4, %al\n"
-        "je .Lf5332a_00053670\n"
-        "cmpb $7, %al\n"
-        "je .Lf5332a_000535c7\n"
-        ".Lf5332a_00053424:\n"
-        "movl %ebx, 8(%esi)\n" /* line 1445 */
-        ".Lf5332a_00053427:\n"
-        "movl %ebx, 0xc(%esi)\n" /* line 1446 */
-        "movl -0x1c(%ebp), %eax\n" /* line 1480 */
-        "orl %eax, dvar_modifiedFlags\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1481 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5332a_0005343b:\n"
-        "cmpb $2, %al\n" /* line 1418 */
-        "jne .Lf5332a_00053424\n"
-        "movl 8(%esi), %edx\n" /* line 1430 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 37 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 38 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1431 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 37 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 38 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 1480 */
-        "orl %eax, dvar_modifiedFlags\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1481 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5332a_0005346a:\n"
-        "cmpb $0, 1(%eax)\n" /* line 181 */
-        "je .Lf5332a_000535b0\n"
-        ".Lf5332a_00053474:\n"
-        "cmpl dvarOnOffStrings, %eax\n" /* line 183 */
-        "je .Lf5332a_000533e6\n"
-        "cmpl dvarOnOffStrings+4, %eax\n"
-        "je .Lf5332a_000533e6\n"
-        "movl %eax, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        "movl $0, 0x10(%esi)\n" /* line 209 */
-        "movzbl 6(%esi), %edx\n" /* line 1475 | dvar */
-        "leal -2(%edx), %eax\n"
-        "cmpb $2, %al\n"
-        "ja .Lf5332a_000533fc\n"
-        ".Lf5332a_000534aa:\n"
-        "movzbl %dl, %eax\n" /* line 125 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Z_MallocInternal\n"
-        "movl %eax, 8(%esi)\n"
-        "movzbl 6(%esi), %edx\n" /* line 126 */
-        "shll $2, %edx\n"
-        "addl %edx, %eax\n"
-        "movl %eax, 0xc(%esi)\n"
-        "addl %edx, %eax\n" /* line 127 */
-        "movl %eax, 0x10(%esi)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1477 | resetValue */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_UpdateResetValue\n"
-        "movzbl 6(%esi), %eax\n" /* line 1418 */
-        "cmpb $3, %al\n"
-        "jne .Lf5332a_00053412\n"
-        ".Lf5332a_000534e5:\n"
-        "movl 8(%esi), %edx\n" /* line 1435 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1436 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 1480 */
-        "orl %eax, dvar_modifiedFlags\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1481 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5332a_0005351c:\n"
-        "cmpb $0, 1(%eax)\n" /* line 181 */
-        "je .Lf5332a_0005359d\n"
-        ".Lf5332a_00053522:\n"
-        "cmpl dvarOnOffStrings, %eax\n" /* line 183 */
-        "je .Lf5332a_000533c8\n"
-        "cmpl dvarOnOffStrings+4, %eax\n"
-        "je .Lf5332a_000533c8\n"
-        "movl %eax, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        "jmp .Lf5332a_000533c8\n"
-        ".Lf5332a_00053547:\n"
-        "movl 8(%esi), %ebx\n" /* line 1467 | dvar, castValue */
-        "movl 0x14(%esi), %edx\n" /* dvar, dvarName */
-        "movl 0x18(%esi), %ecx\n" /* dvar */
-        "movzbl 6(%esi), %eax\n" /* dvar */
-        "movl %ebx, (%esp)\n" /* castValue */
-        "calll Dvar_StringToValue\n"
-        "movl %eax, %ebx\n" /* castValue */
-        "movl %eax, %edx\n" /* line 1468 | value */
-        /* { scope 2 */
-        "movl %edi, %ecx\n" /* line 587 */
-        "movzbl %cl, %eax\n"
-        "cmpl $6, %eax\n"
-        "jbe .Lf5332a_00053596\n"
-        /* } scope */
-        ".Lf5332a_0005356a:\n"
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        ".Lf5332a_00053571:\n"
-        "cmpl dvarOnOffStrings, %eax\n" /* line 183 */
-        "je .Lf5332a_000533a9\n"
-        "cmpl dvarOnOffStrings+4, %eax\n"
-        "je .Lf5332a_000533a9\n"
-        "movl %eax, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        "jmp .Lf5332a_000533a9\n"
-        /* { scope 2 */
-        ".Lf5332a_00053596:\n"
-        "jmpl *.Ljt_5332a_0(, %eax, 4)\n" /* line 587 */
-        /* } scope */
-        ".Lf5332a_0005359d:\n"
-        "cmpb $0x2f, %dl\n" /* line 181 */
-        "jle .Lf5332a_00053522\n"
-        "cmpb $0x39, %dl\n"
-        "jle .Lf5332a_000533c8\n"
-        "jmp .Lf5332a_00053522\n"
-        ".Lf5332a_000535b0:\n"
-        "cmpb $0x2f, %dl\n"
-        "jle .Lf5332a_00053474\n"
-        "cmpb $0x39, %dl\n"
-        "jle .Lf5332a_000533e6\n"
-        "jmp .Lf5332a_00053474\n"
-        ".Lf5332a_000535c7:\n"
-        "movl 8(%esi), %eax\n" /* line 1421 */
-        "cmpl %eax, %ebx\n"
-        "je .Lf5332a_00053427\n"
-        "cmpl 0xc(%esi), %eax\n" /* line 191 */
-        "je .Lf5332a_0005360b\n"
-        "cmpl 0x10(%esi), %eax\n"
-        "je .Lf5332a_0005360b\n"
-        "movzbl (%eax), %edx\n" /* line 179 */
-        "testb %dl, %dl\n"
-        "je .Lf5332a_0005360b\n"
-        "cmpb $0, 1(%eax)\n" /* line 181 */
-        "jne .Lf5332a_000535f3\n"
-        "cmpb $0x2f, %dl\n"
-        "jle .Lf5332a_000535f3\n"
-        "cmpb $0x39, %dl\n"
-        "jle .Lf5332a_0005360b\n"
-        ".Lf5332a_000535f3:\n"
-        "cmpl dvarOnOffStrings, %eax\n" /* line 183 */
-        "je .Lf5332a_0005360b\n"
-        "cmpl dvarOnOffStrings+4, %eax\n"
-        "je .Lf5332a_0005360b\n"
-        "movl %eax, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        ".Lf5332a_0005360b:\n"
-        "movl $0, 8(%esi)\n" /* line 193 */
-        "movl 0xc(%esi), %edi\n" /* line 215 */
-        "testl %edi, %edi\n"
-        "je .Lf5332a_00053635\n"
-        "cmpl %edi, %ebx\n"
-        "je .Lf5332a_000537af\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf5332a_000537af\n"
-        ".Lf5332a_00053635:\n"
-        "movl 0x10(%esi), %edi\n" /* line 217 */
-        "testl %edi, %edi\n"
-        "je .Lf5332a_00053658\n"
-        "cmpl %edi, %ebx\n"
-        "je .Lf5332a_000537af\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf5332a_000537af\n"
-        ".Lf5332a_00053658:\n"
-        "movzbl (%ebx), %edx\n" /* line 155 */
-        "testb %dl, %dl\n"
-        "jne .Lf5332a_00053810\n"
-        "movl $str_002157b8, %eax\n"
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "jmp .Lf5332a_00053427\n"
-        ".Lf5332a_00053670:\n"
-        "movl 8(%esi), %edx\n" /* line 1440 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 456 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1441 | to */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 456 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 1480 */
-        "orl %eax, dvar_modifiedFlags\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1481 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf5332a_000536b3:\n"
-        "movss 0x14(%ebp), %xmm2\n" /* line 613 | max */
-        "movss 0x10(%ebp), %xmm1\n" /* domain, min */
-        "movl $1, %ecx\n"
-        "leal 4(%ebx), %eax\n"
-        /* { scope 3 */
-        ".Lf5332a_000536c5:\n"
-        "movss -4(%eax), %xmm0\n" /* line 562 */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf5332a_000537ca\n"
-        "movss %xmm1, -4(%eax)\n" /* line 563 */
-        ".Lf5332a_000536d8:\n"
-        "addl $1, %ecx\n" /* line 565 */
-        "addl $4, %eax\n"
-        "cmpl $4, %ecx\n" /* line 560 */
-        "jne .Lf5332a_000536c5\n"
-        /* } scope */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_000536ea:\n"
-        "movss 0x14(%ebp), %xmm2\n" /* line 617 | max */
-        "movss 0x10(%ebp), %xmm1\n" /* domain, min */
-        "movl $1, %ecx\n"
-        "leal 4(%ebx), %eax\n"
-        /* { scope 3 */
-        ".Lf5332a_000536fc:\n"
-        "movss -4(%eax), %xmm0\n" /* line 562 */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf5332a_000537b7\n"
-        "movss %xmm1, -4(%eax)\n" /* line 563 */
-        ".Lf5332a_0005370f:\n"
-        "addl $1, %ecx\n" /* line 565 */
-        "addl $4, %eax\n"
-        "cmpl $5, %ecx\n" /* line 560 */
-        "jne .Lf5332a_000536fc\n"
-        /* } scope */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_00053721:\n"
-        "movl %ebx, -0x2c(%ebp)\n" /* line 602 */
-        "movss -0x2c(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "ucomiss 0x10(%ebp), %xmm1\n" /* domain */
-        "jae .Lf5332a_000537e9\n"
-        "jp .Lf5332a_000537e9\n"
-        "movl 0x10(%ebp), %edx\n" /* line 603 | domain */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_00053746:\n"
-        "cmpl 0x10(%ebp), %ebx\n" /* line 595 | domain */
-        "jge .Lf5332a_000537fd\n"
-        "movl 0x10(%ebp), %edx\n" /* line 596 | domain */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_00053759:\n"
-        "testb %bl, %bl\n" /* line 590 */
-        "setne %dl\n"
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_00053765:\n"
-        "testl %ebx, %ebx\n" /* line 625 */
-        "js .Lf5332a_00053772\n"
-        "cmpl 0x10(%ebp), %ebx\n" /* domain */
-        "jl .Lf5332a_0005356a\n"
-        ".Lf5332a_00053772:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 627 | resetValue */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_0005377c:\n"
-        "movss 0x14(%ebp), %xmm2\n" /* line 609 | max */
-        "movss 0x10(%ebp), %xmm1\n" /* domain, min */
-        "movl $1, %ecx\n"
-        "leal 4(%ebx), %eax\n"
-        /* { scope 3 */
-        ".Lf5332a_0005378e:\n"
-        "movss -4(%eax), %xmm0\n" /* line 562 */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf5332a_000537dd\n"
-        "movss %xmm1, -4(%eax)\n" /* line 563 */
-        ".Lf5332a_0005379d:\n"
-        "addl $1, %ecx\n" /* line 565 */
-        "addl $4, %eax\n"
-        "cmpl $3, %ecx\n" /* line 560 */
-        "jne .Lf5332a_0005378e\n"
-        /* } scope */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        ".Lf5332a_000537af:\n"
-        "movl %edi, 8(%esi)\n" /* line 218 */
-        "jmp .Lf5332a_00053427\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf5332a_000537b7:\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 564 */
-        "jbe .Lf5332a_0005370f\n"
-        "movss %xmm2, -4(%eax)\n" /* line 565 */
-        "jmp .Lf5332a_0005370f\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lf5332a_000537ca:\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 564 */
-        "jbe .Lf5332a_000536d8\n"
-        "movss %xmm2, -4(%eax)\n" /* line 565 */
-        "jmp .Lf5332a_000536d8\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lf5332a_000537dd:\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 564 */
-        "jbe .Lf5332a_0005379d\n"
-        "movss %xmm2, -4(%eax)\n" /* line 565 */
-        "jmp .Lf5332a_0005379d\n"
-        /* } scope */
-        ".Lf5332a_000537e9:\n"
-        "ucomiss 0x14(%ebp), %xmm0\n" /* line 604 */
-        "jbe .Lf5332a_0005356a\n"
-        "movl 0x14(%ebp), %edx\n" /* line 605 */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        /* { scope 2 */
-        ".Lf5332a_000537fd:\n"
-        "cmpl 0x14(%ebp), %ebx\n" /* line 597 */
-        "jle .Lf5332a_0005356a\n"
-        "movl 0x14(%ebp), %edx\n" /* line 598 */
-        /* } scope */
-        "movl %edx, %ebx\n" /* line 1468 | value, castValue */
-        "jmp .Lf5332a_00053373\n"
-        ".Lf5332a_00053810:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movzbl 1(%ebx), %eax\n" /* line 160 */
-        "testb %al, %al\n"
-        "jne .Lf5332a_00053852\n"
-        "leal -0x30(%edx), %eax\n" /* line 162 */
-        "cmpb $9, %al\n"
-        "ja .Lf5332a_00053842\n"
-        "movsbl %dl, %eax\n" /* line 163 */
-        "leal __ZZN16CStringEdPackage9ParseLineEPKchE5C.208+1024(%eax, %eax), %eax\n"
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "jmp .Lf5332a_00053427\n"
-        ".Lf5332a_00053842:\n"
-        "movl %ebx, (%esp)\n" /* line 173 */
-        "calll CopyStringInternal\n"
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "jmp .Lf5332a_00053427\n"
-        ".Lf5332a_00053852:\n"
-        "cmpb $0x6f, %dl\n" /* line 165 */
-        "jne .Lf5332a_00053842\n"
-        "cmpl $3, %ecx\n" /* line 167 */
-        "je .Lf5332a_00053878\n"
-        "cmpl $2, %ecx\n" /* line 169 */
-        "jne .Lf5332a_00053842\n"
-        "cmpb $0x6e, %al\n"
-        "jne .Lf5332a_00053842\n"
-        "cmpb $0, 2(%ebx)\n"
-        "jne .Lf5332a_00053842\n"
-        "movl dvarOnOffStrings+4, %eax\n" /* line 170 */
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "jmp .Lf5332a_00053427\n"
-        ".Lf5332a_00053878:\n"
-        "cmpb $0x66, %al\n" /* line 167 */
-        "jne .Lf5332a_00053842\n"
-        "cmpb $0x66, 2(%ebx)\n"
-        "jne .Lf5332a_00053842\n"
-        "cmpb $0, 3(%ebx)\n"
-        "jne .Lf5332a_00053842\n"
-        "movl dvarOnOffStrings, %eax\n" /* line 168 */
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "jmp .Lf5332a_00053427\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_5332a_0:\n"
-        ".long .Lf5332a_00053759\n"
-        ".long .Lf5332a_00053721\n"
-        ".long .Lf5332a_0005377c\n"
-        ".long .Lf5332a_000536b3\n"
-        ".long .Lf5332a_000536ea\n"
-        ".long .Lf5332a_00053746\n"
-        ".long .Lf5332a_00053765\n"
-        ".text\n"
-    );
+    DvarValue castValue;
+    const char *oldCurrentString;
+    const char *oldLatchedString;
+    const char *oldResetString;
+    const char *tempString;
+    vec_t *vectorStorage;
+    int components;
+
+    dvar->type = (byte)type;
+    dvar->domain = domain;
+
+    if ((flags & DVAR_FLAG_READONLY) ||
+        ((flags & DVAR_FLAG_CHEAT) && dvar_cheats && !dvar_cheats->current.enabled)) {
+        castValue = resetValue;
+    } else {
+        castValue = Dvar_StringToValue_impl(dvar->type, dvar->domain, dvar->current.string);
+        castValue = Dvar_ClampValueToDomain(type, castValue, resetValue, domain);
+    }
+
+    tempString = NULL;
+    if (dvar->type == DVAR_TYPE_STRING && castValue.string) {
+        tempString = CopyStringInternal(castValue.string);
+        castValue.string = tempString;
+    }
+
+    oldCurrentString = dvar->current.string;
+    oldLatchedString = dvar->latched.string;
+    oldResetString = dvar->reset.string;
+
+    if (dvar->type != DVAR_TYPE_STRING) {
+        Dvar_FreeOwnedString(oldCurrentString, oldLatchedString, oldResetString);
+        dvar->current.string = NULL;
+    }
+
+    Dvar_FreeOwnedString(oldLatchedString, oldCurrentString, oldResetString);
+    dvar->latched.string = NULL;
+
+    Dvar_FreeOwnedString(oldResetString, oldCurrentString, oldLatchedString);
+    dvar->reset.string = NULL;
+
+    if (dvar->type >= DVAR_TYPE_VEC2 && dvar->type <= DVAR_TYPE_VEC4) {
+        components = dvar->type;
+        vectorStorage = (vec_t *)Z_MallocInternal(components * 3 * sizeof(vec_t));
+        dvar->current.vector = vectorStorage;
+        dvar->latched.vector = vectorStorage + components;
+        dvar->reset.vector = vectorStorage + components * 2;
+    }
+
+    Dvar_UpdateResetValue(dvar, resetValue);
+    Dvar_UpdateValue(dvar, castValue);
+    dvar_modifiedFlags |= flags;
+
+    if (tempString) {
+        Z_FreeInternal((void *)tempString);
+    }
+
+    (void)dvarName;
 }
 
 /* line 1406 */
@@ -1802,508 +1515,60 @@ void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value)
 }
 
 /* line 925 */
-static __attribute__((naked))
-void Dvar_SetVariant(DvarValue value, DvarSetSource source)
+static void __attribute__((regparm(3))) Dvar_SetVariant(
+    const dvar_t *dvarConst, DvarValue value, DvarSetSource source)
 {
-    __asm__ __volatile__ (
-        ".Lf538a6_000538a6:\n"
-        "pushl %ebp\n" /* line 925 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        "movl %eax, %esi\n" /* dvar */
-        "movl %edx, -0x430(%ebp)\n"
-        "movl %ecx, -0x420(%ebp)\n"
-        "calll Dvar_ValueToString\n" /* line 931 */
-        "movl %eax, 8(%esp)\n"
-        "movl (%esi), %eax\n" /* dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002197cc, (%esp)\n" /* "      dvar set %s %s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $4, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        "movl 0x14(%esi), %ecx\n" /* line 948 | dvar */
-        "movl 0x18(%esi), %ebx\n" /* dvar */
-        "movzbl 6(%esi), %eax\n" /* dvar */
-        "movl %eax, -0x41c(%ebp)\n"
-        "movzbl -0x41c(%ebp), %eax\n" /* line 648 */
-        "cmpl $8, %eax\n"
-        "ja .Lf538a6_00053940\n"
-        /* Replaced jump table with explicit comparisons */
-        "cmpl $0, %eax\n"
-        "je .Lf538a6_00053a0e\n" /* bool: always valid */
-        "cmpl $1, %eax\n"
-        "je .Lf538a6_dv_float\n" /* float */
-        "cmpl $2, %eax\n"
-        "je .Lf538a6_dv_vec2\n" /* vec2 */
-        "cmpl $3, %eax\n"
-        "je .Lf538a6_dv_vec3\n" /* vec3 */
-        "cmpl $4, %eax\n"
-        "je .Lf538a6_dv_vec4\n" /* vec4 */
-        "cmpl $5, %eax\n"
-        "je .Lf538a6_dv_int\n" /* int */
-        "cmpl $6, %eax\n"
-        "je .Lf538a6_dv_enum\n" /* enum */
-        "cmpl $8, %eax\n"
-        "je .Lf538a6_00053a0e\n" /* color: always valid */
-        "jmp .Lf538a6_00053a0e\n" /* string/default: always valid */
-        ".Lf538a6_dv_float:\n"
-        "movss -0x430(%ebp), %xmm0\n" /* line 663 */
-        "movl %ecx, -0x42c(%ebp)\n"
-        "movss -0x42c(%ebp), %xmm1\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf538a6_00053940\n"
-        "movl %ebx, -0x42c(%ebp)\n" /* line 665 */
-        "movss -0x42c(%ebp), %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf538a6_00053a0e\n"
-        ".Lf538a6_00053940:\n"
-        "movl (%esi), %ebx\n" /* line 950 | dvar */
-        "movl -0x430(%ebp), %edx\n"
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_ValueToString\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002197e4, (%esp)\n" /* "'%s' is not a valid value for dvar '%s'
-" */
-        "calll Com_Printf\n"
-        "movl 0x14(%esi), %ecx\n" /* line 951 | dvar */
-        "movl 0x18(%esi), %ebx\n" /* dvar */
-        /* { scope 1 */
-        "movzbl 6(%esi), %eax\n" /* line 820 */
-        "movl $0, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %edx\n" /* domainBuffer */
-        "movl %edx, (%esp)\n"
-        "movl %ecx, %edx\n"
-        "movl %ebx, %ecx\n"
-        "calll Dvar_DomainToString_Internal\n"
-        "movl %eax, 4(%esp)\n" /* line 834 */
-        "movl $str_002182fc, (%esp)\n" /* "  %s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "cmpb $6, 6(%esi)\n" /* line 952 | dvar */
-        "je .Lf538a6_00053bcd\n"
-        ".Lf538a6_000539a9:\n"
-        "addl $0x43c, %esp\n" /* line 1041 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf538a6_dv_vec2:\n" /* vec2 validation */
-        "movl %ebx, -0x42c(%ebp)\n" /* line 673 */
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm2\n" /* max */
-        "movl %ecx, -0x42c(%ebp)\n"
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm1\n" /* min */
-        "movl $1, %eax\n"
-        /* { scope 1 */
-        ".Lf538a6_000539db:\n"
-        "movl -0x430(%ebp), %edx\n" /* line 576 */
-        "movss -4(%edx, %eax, 4), %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf538a6_00053bf6\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 578 */
-        "ja .Lf538a6_00053bf6\n"
-        "addl $1, %eax\n"
-        "cmpl $3, %eax\n" /* line 574 */
-        "jne .Lf538a6_000539db\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf538a6_00053a01:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf538a6_00053a06:\n"
-        "testb %al, %al\n" /* line 948 */
-        "je .Lf538a6_00053940\n"
-        ".Lf538a6_00053a0e:\n"
-        "movl -0x420(%ebp), %eax\n" /* line 960 */
-        "subl $1, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf538a6_00053a79\n"
-        ".Lf538a6_00053a1c:\n"
-        "movl 8(%esi), %ebx\n" /* line 999 | dvar */
-        "movl -0x430(%ebp), %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl -0x41c(%ebp), %eax\n"
-        "calll Dvar_ValuesEqual\n"
-        "testb %al, %al\n"
-        "jne .Lf538a6_00053bbf\n"
-        "movzwl 4(%esi), %eax\n" /* line 1006 | dvar */
-        "orl %eax, dvar_modifiedFlags\n"
-        "movzbl 6(%esi), %eax\n" /* line 1008 | dvar */
-        "cmpb $3, %al\n"
-        "je .Lf538a6_00053d72\n"
-        "ja .Lf538a6_00053bfd\n"
-        "cmpb $2, %al\n"
-        "je .Lf538a6_00053d49\n"
-        ".Lf538a6_00053a5e:\n"
-        "movl -0x430(%ebp), %eax\n" /* line 1036 */
-        "movl %eax, 8(%esi)\n" /* dvar */
-        "movl %eax, 0xc(%esi)\n" /* line 1037 | dvar */
-        "movb $1, 7(%esi)\n" /* line 1040 | dvar */
-        ".Lf538a6_00053a6e:\n"
-        "addl $0x43c, %esp\n" /* line 1041 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf538a6_00053a79:\n"
-        "movzwl 4(%esi), %edx\n" /* line 962 | dvar */
-        "testb $0x40, %dl\n"
-        "jne .Lf538a6_00053da7\n"
-        "testb $0x10, %dl\n" /* line 968 */
-        "jne .Lf538a6_00053dbe\n"
-        "cmpl $1, -0x420(%ebp)\n" /* line 974 */
-        "je .Lf538a6_00053cda\n"
-        ".Lf538a6_00053a9c:\n"
-        "andb $0x20, %dl\n" /* line 980 */
-        "je .Lf538a6_00053a1c\n"
-        "movl -0x430(%ebp), %edx\n" /* line 982 */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetLatchedValue\n"
-        "movl 8(%esi), %ebx\n" /* line 983 | dvar */
-        "movl 0xc(%esi), %edx\n" /* dvar */
-        "movzbl 6(%esi), %eax\n" /* dvar */
-        "movl %ebx, %ecx\n"
-        "calll Dvar_ValuesEqual\n"
-        "testb %al, %al\n"
-        "jne .Lf538a6_000539a9\n"
-        "movl (%esi), %eax\n" /* line 984 | dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219854, (%esp)\n" /* "%s will be changed upon restarting.
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf538a6_000539a9\n"
-        ".Lf538a6_dv_enum:\n" /* enum validation */
-        "movl -0x430(%ebp), %eax\n" /* line 670 */
-        "testl %eax, %eax\n"
-        "js .Lf538a6_00053be8\n"
-        "cmpl %ecx, -0x430(%ebp)\n"
-        "jge .Lf538a6_00053be8\n"
-        ".Lf538a6_00053afc:\n"
-        "movl $1, %eax\n"
-        "jmp .Lf538a6_00053a06\n"
-        ".Lf538a6_dv_vec3:\n" /* vec3 validation */
-        "movl %ebx, -0x42c(%ebp)\n" /* line 676 */
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm2\n" /* max */
-        "movl %ecx, -0x42c(%ebp)\n"
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm1\n" /* min */
-        "movl $1, %eax\n"
-        /* { scope 1 */
-        ".Lf538a6_00053b2d:\n"
-        "movl -0x430(%ebp), %edx\n" /* line 576 */
-        "movss -4(%edx, %eax, 4), %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf538a6_00053bf6\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 578 */
-        "ja .Lf538a6_00053bf6\n"
-        "addl $1, %eax\n"
-        "cmpl $4, %eax\n" /* line 574 */
-        "jne .Lf538a6_00053b2d\n"
-        "jmp .Lf538a6_00053a01\n"
-        /* } scope */
-        ".Lf538a6_dv_int:\n" /* int validation */
-        "cmpl %ecx, -0x430(%ebp)\n" /* line 656 */
-        "jl .Lf538a6_00053940\n"
-        "cmpl %ebx, -0x430(%ebp)\n" /* line 658 */
-        "jg .Lf538a6_00053940\n"
-        "jmp .Lf538a6_00053a0e\n"
-        ".Lf538a6_dv_vec4:\n" /* vec4 validation */
-        "movl %ebx, -0x42c(%ebp)\n" /* line 679 */
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm2\n" /* max */
-        "movl %ecx, -0x42c(%ebp)\n"
-        "movss -0x42c(%ebp), %xmm0\n"
-        "movaps %xmm0, %xmm1\n" /* min */
-        "movl $1, %eax\n"
-        /* { scope 1 */
-        ".Lf538a6_00053b9c:\n"
-        "movl -0x430(%ebp), %edx\n" /* line 576 */
-        "movss -4(%edx, %eax, 4), %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf538a6_00053bf6\n"
-        "ucomiss %xmm2, %xmm0\n" /* line 578 */
-        "ja .Lf538a6_00053bf6\n"
-        "addl $1, %eax\n"
-        "cmpl $5, %eax\n" /* line 574 */
-        "jne .Lf538a6_00053b9c\n"
-        "jmp .Lf538a6_00053a01\n"
-        /* } scope */
-        ".Lf538a6_00053bbf:\n"
-        "movl %ebx, %edx\n" /* line 1001 */
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetLatchedValue\n"
-        "jmp .Lf538a6_000539a9\n"
-        ".Lf538a6_00053bcd:\n"
-        "movl 0x10(%esi), %edx\n" /* line 955 | dvar */
-        "movl -0x420(%ebp), %ecx\n"
-        "movl %esi, %eax\n" /* dvar */
-        "calll Dvar_SetVariant\n"
-        "addl $0x43c, %esp\n" /* line 1041 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf538a6_00053be8:\n"
-        "movl -0x430(%ebp), %edi\n" /* line 670 */
-        "testl %edi, %edi\n"
-        "je .Lf538a6_00053afc\n"
-        /* { scope 1 */
-        ".Lf538a6_00053bf6:\n"
-        "xorl %eax, %eax\n" /* line 574 */
-        "jmp .Lf538a6_00053a06\n"
-        /* } scope */
-        ".Lf538a6_00053bfd:\n"
-        "cmpb $4, %al\n" /* line 1008 */
-        "je .Lf538a6_00053d08\n"
-        "cmpb $7, %al\n"
-        "jne .Lf538a6_00053a5e\n"
-        "movl 8(%esi), %eax\n" /* line 191 */
-        "cmpl 0xc(%esi), %eax\n"
-        "je .Lf538a6_00053c49\n"
-        "cmpl 0x10(%esi), %eax\n"
-        "je .Lf538a6_00053c49\n"
-        "movzbl (%eax), %edx\n" /* line 179 */
-        "testb %dl, %dl\n"
-        "je .Lf538a6_00053c49\n"
-        "cmpb $0, 1(%eax)\n" /* line 181 */
-        "jne .Lf538a6_00053c31\n"
-        "cmpb $0x2f, %dl\n"
-        "jle .Lf538a6_00053c31\n"
-        "cmpb $0x39, %dl\n"
-        "jle .Lf538a6_00053c49\n"
-        ".Lf538a6_00053c31:\n"
-        "cmpl dvarOnOffStrings, %eax\n" /* line 183 */
-        "je .Lf538a6_00053c49\n"
-        "cmpl dvarOnOffStrings+4, %eax\n"
-        "je .Lf538a6_00053c49\n"
-        "movl %eax, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        ".Lf538a6_00053c49:\n"
-        "movl $0, 8(%esi)\n" /* line 193 */
-        "movl 0xc(%esi), %ecx\n" /* line 215 */
-        "movl %ecx, -0x424(%ebp)\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf538a6_00053dd5\n"
-        "cmpl %ecx, -0x430(%ebp)\n"
-        "je .Lf538a6_00053c83\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x430(%ebp), %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf538a6_00053dd5\n"
-        ".Lf538a6_00053c83:\n"
-        "movl -0x424(%ebp), %edi\n" /* line 216 */
-        "movl %edi, 8(%esi)\n"
-        "movl %edi, %ebx\n"
-        ".Lf538a6_00053c8e:\n"
-        "cmpl 8(%esi), %ebx\n" /* line 199 */
-        "je .Lf538a6_00053ccb\n"
-        "cmpl 0x10(%esi), %ebx\n"
-        "je .Lf538a6_00053ccb\n"
-        "movzbl (%ebx), %eax\n" /* line 179 */
-        "testb %al, %al\n"
-        "je .Lf538a6_00053ccb\n"
-        "cmpb $0, 1(%ebx)\n" /* line 181 */
-        "jne .Lf538a6_00053cad\n"
-        "cmpb $0x2f, %al\n"
-        "jle .Lf538a6_00053cad\n"
-        "cmpb $0x39, %al\n"
-        "jle .Lf538a6_00053ccb\n"
-        ".Lf538a6_00053cad:\n"
-        "movl -0x424(%ebp), %edi\n" /* line 183 */
-        "cmpl dvarOnOffStrings, %edi\n"
-        "je .Lf538a6_00053ccb\n"
-        "cmpl dvarOnOffStrings+4, %edi\n"
-        "je .Lf538a6_00053ccb\n"
-        "movl %edi, (%esp)\n" /* line 185 */
-        "calll Z_FreeInternal\n"
-        ".Lf538a6_00053ccb:\n"
-        "movl 8(%esi), %eax\n" /* line 1016 | dvar */
-        "movl %eax, 0xc(%esi)\n" /* dvar */
-        "movb $1, 7(%esi)\n" /* line 1040 | dvar */
-        "jmp .Lf538a6_00053a6e\n"
-        ".Lf538a6_00053cda:\n"
-        "testb %dl, %dl\n" /* line 974 */
-        "jns .Lf538a6_00053a9c\n"
-        "movl dvar_cheats, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf538a6_00053a9c\n"
-        "movl (%esi), %eax\n" /* line 976 | dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021983c, (%esp)\n" /* "%s is cheat protected.
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf538a6_000539a9\n"
-        ".Lf538a6_00053d08:\n"
-        "movl 8(%esi), %edx\n" /* line 1030 | dvar, to */
-        /* { scope 1 */
-        "movl -0x430(%ebp), %edi\n" /* line 456 */
-        "movl (%edi), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 4(%edi), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%edi), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%edi), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1031 | dvar, to */
-        /* { scope 1 */
-        "movl (%edi), %eax\n" /* line 456 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%edi), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%edi), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%edi), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movb $1, 7(%esi)\n" /* line 1040 | dvar */
-        "jmp .Lf538a6_00053a6e\n"
-        ".Lf538a6_00053d49:\n"
-        "movl 8(%esi), %edx\n" /* line 1020 | dvar, to */
-        /* { scope 1 */
-        "movl -0x430(%ebp), %ecx\n" /* line 37 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 38 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1021 | dvar, to */
-        /* { scope 1 */
-        "movl (%ecx), %eax\n" /* line 37 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 38 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        "movb $1, 7(%esi)\n" /* line 1040 | dvar */
-        "jmp .Lf538a6_00053a6e\n"
-        ".Lf538a6_00053d72:\n"
-        "movl 8(%esi), %edx\n" /* line 1025 | dvar, to */
-        /* { scope 1 */
-        "movl -0x430(%ebp), %ebx\n" /* line 199 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 0xc(%esi), %edx\n" /* line 1026 | dvar, to */
-        /* { scope 1 */
-        "movl (%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movb $1, 7(%esi)\n" /* line 1040 | dvar */
-        "jmp .Lf538a6_00053a6e\n"
-        ".Lf538a6_00053da7:\n"
-        "movl (%esi), %eax\n" /* line 964 | dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219810, (%esp)\n" /* "%s is read only.
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf538a6_000539a9\n"
-        ".Lf538a6_00053dbe:\n"
-        "movl (%esi), %eax\n" /* line 970 | dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219824, (%esp)\n" /* "%s is write protected.
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf538a6_000539a9\n"
-        ".Lf538a6_00053dd5:\n"
-        "movl 0x10(%esi), %ebx\n" /* line 217 */
-        "testl %ebx, %ebx\n"
-        "je .Lf538a6_00053e08\n"
-        "cmpl %ebx, -0x430(%ebp)\n"
-        "je .Lf538a6_00053dfa\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl -0x430(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf538a6_00053e08\n"
-        ".Lf538a6_00053dfa:\n"
-        "movl %ebx, 8(%esi)\n" /* line 218 */
-        "movl -0x424(%ebp), %ebx\n"
-        "jmp .Lf538a6_00053c8e\n"
-        ".Lf538a6_00053e08:\n"
-        "movl -0x430(%ebp), %ecx\n" /* line 155 */
-        "movzbl (%ecx), %edx\n"
-        "testb %dl, %dl\n"
-        "jne .Lf538a6_00053e28\n"
-        "movl $str_002157b8, %eax\n"
-        ".Lf538a6_00053e1a:\n"
-        "movl %eax, 8(%esi)\n" /* line 220 */
-        "movl -0x424(%ebp), %ebx\n"
-        "jmp .Lf538a6_00053c8e\n"
-        ".Lf538a6_00053e28:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl -0x430(%ebp), %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl -0x430(%ebp), %ebx\n" /* line 160 */
-        "movzbl 1(%ebx), %eax\n"
-        "testb %al, %al\n"
-        "jne .Lf538a6_00053e77\n"
-        "leal -0x30(%edx), %eax\n" /* line 162 */
-        "cmpb $9, %al\n"
-        "ja .Lf538a6_00053e5e\n"
-        "movsbl %dl, %eax\n" /* line 163 */
-        "leal __ZZN16CStringEdPackage9ParseLineEPKchE5C.208+1024(%eax, %eax), %eax\n"
-        "jmp .Lf538a6_00053e1a\n"
-        ".Lf538a6_00053e5e:\n"
-        "movl -0x430(%ebp), %edx\n" /* line 173 */
-        "movl %edx, (%esp)\n"
-        "calll CopyStringInternal\n"
-        "movl 0xc(%esi), %ecx\n"
-        "movl %ecx, -0x424(%ebp)\n"
-        "jmp .Lf538a6_00053e1a\n"
-        ".Lf538a6_00053e77:\n"
-        "cmpb $0x6f, %dl\n" /* line 165 */
-        "jne .Lf538a6_00053e5e\n"
-        "cmpl $3, %ecx\n" /* line 167 */
-        "je .Lf538a6_00053ea0\n"
-        "cmpl $2, %ecx\n" /* line 169 */
-        "jne .Lf538a6_00053e5e\n"
-        "cmpb $0x6e, %al\n"
-        "jne .Lf538a6_00053e5e\n"
-        "movl -0x430(%ebp), %eax\n"
-        "cmpb $0, 2(%eax)\n"
-        "jne .Lf538a6_00053e5e\n"
-        "movl dvarOnOffStrings+4, %eax\n" /* line 170 */
-        "jmp .Lf538a6_00053e1a\n"
-        ".Lf538a6_00053ea0:\n"
-        "cmpb $0x66, %al\n" /* line 167 */
-        "jne .Lf538a6_00053e5e\n"
-        "movl -0x430(%ebp), %edi\n"
-        "cmpb $0x66, 2(%edi)\n"
-        "jne .Lf538a6_00053e5e\n"
-        "cmpb $0, 3(%edi)\n"
-        "jne .Lf538a6_00053e5e\n"
-        "movl dvarOnOffStrings, %eax\n" /* line 168 */
-        "jmp .Lf538a6_00053e1a\n"
-    );
+    dvar_t *dvar;
+    char domainBuffer[0x400];
+
+    dvar = (dvar_t *)dvarConst;
+    if (!dvar || !dvar->name || !dvar->name[0]) {
+        return;
+    }
+
+    Com_PrintMessage(
+        CON_CHANNEL_LOGFILEONLY,
+        va("      dvar set %s %s\n", dvar->name, Dvar_ValueToString_impl(dvar, value)));
+
+    if (!Dvar_ValueInDomain(dvar->type, value, dvar->domain)) {
+        Com_Printf("'%s' is not a valid value for dvar '%s'\n", Dvar_ValueToString_impl(dvar, value), dvar->name);
+        Com_Printf(
+            "  %s\n",
+            Dvar_DomainToString_Internal_impl(
+                dvar->type,
+                dvar->domain,
+                domainBuffer,
+                sizeof(domainBuffer),
+                NULL));
+
+        if (dvar->type == DVAR_TYPE_ENUM) {
+            Dvar_SetVariant(dvar, dvar->reset, source);
+        }
+        return;
+    }
+
+    if (source == DVAR_SOURCE_EXTERNAL || source == DVAR_SOURCE_SCRIPT) {
+        if (!Dvar_CanChangeValue(dvar, source)) {
+            return;
+        }
+
+        if (dvar->flags & DVAR_FLAG_LATCH) {
+            Dvar_SetLatchedValue(dvar, value);
+            if (!Dvar_ValuesEqual(dvar->type, dvar->latched, dvar->current)) {
+                Com_Printf("%s will be changed upon restarting.\n", dvar->name);
+            }
+            return;
+        }
+    }
+
+    if (Dvar_ValuesEqual(dvar->type, dvar->current, value)) {
+        Dvar_SetLatchedValue(dvar, dvar->current);
+        return;
+    }
+
+    dvar_modifiedFlags |= dvar->flags;
+    Dvar_UpdateValue(dvar, value);
+    dvar->modified = 1;
 }
 
 /* line 2350 */
