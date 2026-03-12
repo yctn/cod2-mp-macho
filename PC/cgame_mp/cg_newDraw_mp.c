@@ -44,6 +44,23 @@ extern const char *CL_GetConfigString(int index);
 extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
 extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
+extern void Controls_GetConfig(void);
+extern int GetKeyBindingLocalizedString(const char *command, char *keys);
+extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
+extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
+extern const char *UI_SafeTranslateString(const char *ref);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float fontScale);
+extern int UI_TextHeight(FontHandle font, float fontScale);
+extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
+extern float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);
+extern const char *SEH_StringEd_GetString(const char *pszReference);
+extern void Com_Error(errorParm_t code, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern void I_strncat(char *dest, int maxlen, const char *src);
+extern qboolean CG_ScoreboardDisplayed(void);
+extern float CG_ScrollScoreboardUp(void);
+extern float CG_ScrollScoreboardDown(void);
 
 void CG_AntiBurnInHUD_RegisterDvars(void);
 Bool CG_AreHudMenusHidden(void);
@@ -171,67 +188,25 @@ void CG_ApplySplitScreenCompassScale(float *x, float *y, float *w, float *h)
 }
 
 /* line 1373 */
-static __attribute__((naked))
 const char * CG_GetUseString(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1373 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x110, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 1380 */
-        "movl (%eax), %eax\n"
-        "movl 0x2bdf4(%eax), %eax\n"
-        "addl $0x4fe, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n" /* line 1382 */
-        "jne .Lf18856c_001885a3\n"
-        ".Lf18856c_00188597:\n"
-        "xorl %eax, %eax\n" /* line 1392 */
-        /* } scope */
-        "addl $0x110, %esp\n" /* line 1393 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18856c_001885a3:\n"
-        "cmpb $0, (%eax)\n" /* line 1382 */
-        "je .Lf18856c_00188597\n"
-        "leal -0x108(%ebp), %esi\n" /* line 1385 | binding */
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002ac020, (%esp)\n" /* "+activate" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n"
-        "je .Lf18856c_001885f0\n"
-        ".Lf18856c_001885c2:\n"
-        "movl $0, 8(%esp)\n" /* line 1388 */
-        "movl $str_002afa6c, 4(%esp)\n" /* "Hint String" */
-        "movl %ebx, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %esi, 4(%esp)\n" /* line 1390 */
-        "movl %eax, (%esp)\n"
-        "calll UI_ReplaceConversionString\n"
-        /* } scope */
-        "addl $0x110, %esp\n" /* line 1393 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18856c_001885f0:\n"
-        "movl $str_002afa64, (%esp)\n" /* line 1386 */
-        "calll UI_SafeTranslateString\n"
-        "movl $0x100, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "jmp .Lf18856c_001885c2\n"
-    );
+    byte *cg;
+    const char *hintString;
+    char binding[0x100];
+
+    cg = (byte *)*(void **)imp_cg;
+    hintString = CL_GetConfigString(*(int *)(cg + 0x2bdf4) + 0x4fe);
+    if (!hintString || !*hintString)
+    {
+        return 0;
+    }
+
+    if (!GetKeyBindingLocalizedString(str_002ac020, binding))
+    {
+        I_strncpyz(binding, UI_SafeTranslateString(str_002afa64), sizeof(binding));
+    }
+
+    return UI_ReplaceConversionString(SEH_LocalizeTextMessage(hintString, str_002afa6c, 0), binding);
 }
 
 /* line 1408 */
@@ -608,205 +583,97 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
 }
 
 /* line 1570 */
-static __attribute__((naked))
 void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1570 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x150, %esp\n"
-        "movl 8(%ebp), %esi\n" /* rect */
-        /* { scope 1 */
-        "movl imp_cg_drawMantleHint, %eax\n" /* line 1583 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf188cb0_00188cdb\n"
-        "movl imp_cg, %eax\n" /* line 1588 */
-        "movl (%eax), %eax\n"
-        "testb $8, 0x2618c(%eax)\n"
-        "jne .Lf188cb0_00188ce5\n"
-        /* } scope */
-        ".Lf188cb0_00188cdb:\n"
-        "addl $0x150, %esp\n" /* line 1609 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188cb0_00188ce5:\n"
-        "calll Controls_GetConfig\n" /* line 1591 */
-        "leal -0x108(%ebp), %ebx\n" /* line 1593 | binding */
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002ac148, (%esp)\n" /* "+gostand" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n"
-        "je .Lf188cb0_00188e53\n"
-        ".Lf188cb0_00188d08:\n"
-        "movl $str_002afac4, (%esp)\n" /* line 1596 */
-        "calll UI_SafeTranslateString\n"
-        "movl %ebx, 4(%esp)\n" /* line 1597 */
-        "movl %eax, (%esp)\n"
-        "calll UI_ReplaceConversionString\n"
-        "movl %eax, %ebx\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 1599 | fontscale */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x10c(%ebp)\n" /* length */
-        "movss 0x10(%ebp), %xmm0\n" /* line 1600 | fontscale */
-        "movss %xmm0, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* font */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextHeight\n"
-        "movss -0x10c(%ebp), %xmm1\n" /* line 1602 | length */
-        "addss 8(%esi), %xmm1\n" /* rect */
-        "mulss lit4_002ed63c, %xmm1\n" /* -0.5f */
-        "addss (%esi), %xmm1\n" /* rect */
-        "movl 0x14(%ebp), %edx\n" /* line 1604 | textStyle */
-        "movl %edx, 0x24(%esp)\n"
-        "movl $color, 0x20(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* fontscale */
-        "movss %xmm0, 0x1c(%esp)\n"
-        "movl 0x14(%esi), %edx\n" /* rect */
-        "movl %edx, 0x18(%esp)\n"
-        "movl 0x10(%esi), %edx\n" /* rect */
-        "movl %edx, 0x14(%esp)\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "addss 4(%esi), %xmm0\n" /* rect */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "movss %xmm1, -0x128(%ebp)\n"
-        "calll UI_DrawText\n"
-        "movss 0xc(%esi), %xmm0\n" /* line 1607 | rect */
-        "movl imp_cgs, %eax\n" /* line 1608 */
-        "movl (%eax), %eax\n"
-        "movl 0xbc78(%eax), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $color, 0x18(%esp)\n"
-        "movl 0x14(%esi), %eax\n" /* rect */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%esi), %eax\n" /* rect */
-        "movl %eax, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl 8(%esi), %eax\n" /* rect */
-        "movl %eax, 8(%esp)\n"
-        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
-        "addss 4(%esi), %xmm0\n" /* rect */
-        "movss %xmm0, 4(%esp)\n"
-        "movss -0x128(%ebp), %xmm1\n"
-        "addss -0x10c(%ebp), %xmm1\n" /* length */
-        "movss %xmm1, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        /* } scope */
-        "addl $0x150, %esp\n" /* line 1609 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188cb0_00188e53:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1594 */
-        "movl $str_002abf84, (%esp)\n" /* "+moveup" */
-        "calll GetKeyBindingLocalizedString\n"
-        "jmp .Lf188cb0_00188d08\n"
-    );
+    byte *cg;
+    byte *cgs;
+    char binding[0x100];
+    const char *text;
+    float length;
+    float x;
+
+    if (!*(byte *)((byte *)*(void **)imp_cg_drawMantleHint + 8))
+    {
+        return;
+    }
+
+    cg = (byte *)*(void **)imp_cg;
+    if (!(*(byte *)(cg + 0x2618c) & 8))
+    {
+        return;
+    }
+
+    Controls_GetConfig();
+    if (!GetKeyBindingLocalizedString(str_002ac148, binding))
+    {
+        GetKeyBindingLocalizedString(str_002abf84, binding);
+    }
+
+    text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afac4), binding);
+    length = (float)UI_TextWidth(text, 0, font, fontscale);
+    x = rect->x - 0.5f * (rect->w + length);
+
+    UI_DrawText(
+        text,
+        0x7fffffff,
+        font,
+        x,
+        rect->y + (float)UI_TextHeight(font, fontscale) * 0.5f,
+        rect->horzAlign,
+        rect->vertAlign,
+        fontscale,
+        color,
+        textStyle);
+
+    cgs = (byte *)*(void **)imp_cgs;
+    UI_DrawHandlePic(
+        x + length,
+        rect->y - rect->h * 0.5f,
+        rect->w,
+        rect->h,
+        rect->horzAlign,
+        rect->vertAlign,
+        color,
+        *(MaterialHandle *)(cgs + 0xbc78));
 }
 
 /* line 1615 */
-__attribute__((naked))
 const char * CG_GetTranslatedLocationString(int iLocation)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1615 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 1621 | iLocation */
-        "addl $0x2e, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, %ebx\n" /* p */
-        "testl %eax, %eax\n" /* line 1622 */
-        "je .Lf188e68_00188e9a\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf188e68_00188e9a\n"
-        "movl %ebx, (%esp)\n" /* line 1625 | p */
-        "calll SEH_StringEd_GetString\n"
-        "testl %eax, %eax\n" /* line 1626 */
-        "je .Lf188e68_00188eab\n"
-        /* } scope */
-        ".Lf188e68_00188e94:\n"
-        "addl $0x14, %esp\n" /* line 1646 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188e68_00188e9a:\n"
-        "movl $str_002afad4, %ebx\n" /* line 1622 | p */
-        "movl %ebx, (%esp)\n" /* line 1625 | p */
-        "calll SEH_StringEd_GetString\n"
-        "testl %eax, %eax\n" /* line 1626 */
-        "jne .Lf188e68_00188e94\n"
-        ".Lf188e68_00188eab:\n"
-        "movl imp_loc_warnings, %eax\n" /* line 1628 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf188e68_00188f65\n"
-        "movl imp_loc_warningsAsErrors, %eax\n" /* line 1630 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf188e68_00188f53\n"
-        "movl %ebx, 8(%esp)\n" /* line 1631 | p */
-        "movl $str_002afae4, 4(%esp)\n" /* "Could not translate map location string "%s"" */
-        "movl $6, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf188e68_00188ee5:\n"
-        "movl $0x4e55315e, szErrorString\n" /* line 1635 */
-        "movl $0x41434f4c, szErrorString+4\n"
-        "movl $0x455a494c, szErrorString+8\n"
-        "movl $0x375e2844, szErrorString+12\n"
-        "movb $0, szErrorString+16\n"
-        "movl %ebx, 8(%esp)\n" /* line 1636 | p */
-        "movl $0x400, 4(%esp)\n"
-        "movl $szErrorString, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $str_00216b78, 8(%esp)\n" /* line 1637 */
-        "movl $0x400, 4(%esp)\n"
-        "movl $szErrorString, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $szErrorString, %eax\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1646 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188e68_00188f53:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1633 | p */
-        "movl $str_002afb14, (%esp)\n" /* "^3WARNING: Could not translate map location string "%s"
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf188e68_00188ee5\n"
-        ".Lf188e68_00188f65:\n"
-        "movl $0x400, 8(%esp)\n" /* line 1640 */
-        "movl %ebx, 4(%esp)\n" /* p */
-        "movl $szErrorString, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $szErrorString, %eax\n"
-        "jmp .Lf188e68_00188e94\n"
-    );
+    const char *p;
+    const char *localized;
+
+    p = CL_GetConfigString(iLocation + 0x2e);
+    if (!p || !*p)
+    {
+        p = str_002afad4;
+    }
+
+    localized = SEH_StringEd_GetString(p);
+    if (localized)
+    {
+        return localized;
+    }
+
+    if (*(byte *)((byte *)*(void **)imp_loc_warnings + 8))
+    {
+        if (*(byte *)((byte *)*(void **)imp_loc_warningsAsErrors + 8))
+        {
+            Com_Error(ERR_LOCALIZATION, str_002afae4, p);
+        }
+        else
+        {
+            Com_Printf(str_002afb14, p);
+        }
+
+        I_strncpyz(szErrorString, "^1UNLOCALIZED(^7", sizeof(szErrorString));
+        I_strncat(szErrorString, sizeof(szErrorString), p);
+        I_strncat(szErrorString, sizeof(szErrorString), str_00216b78);
+        return szErrorString;
+    }
+
+    I_strncpyz(szErrorString, p, sizeof(szErrorString));
+    return szErrorString;
 }
 
 /* line 1665 */
@@ -898,43 +765,26 @@ const char * CG_GameTypeString(void)
 }
 
 /* line 1926 */
-__attribute__((naked))
 int CG_KeyInterceptEvent(int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1926 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1928 | down */
-        "testl %eax, %eax\n"
-        "jne .Lf1890c4_001890d5\n"
-        ".Lf1890c4_001890d1:\n"
-        "xorl %eax, %eax\n" /* line 1941 */
-        "leave\n" /* line 1946 */
-        "retl\n"
-        ".Lf1890c4_001890d5:\n"
-        "calll CG_ScoreboardDisplayed\n" /* line 1931 */
-        "testl %eax, %eax\n"
-        "je .Lf1890c4_001890d1\n"
-        "cmpl $0xce, 8(%ebp)\n" /* line 1933 | key */
-        "je .Lf1890c4_0018910e\n"
-        "cmpl $0xa4, 8(%ebp)\n" /* key */
-        "je .Lf1890c4_0018910e\n"
-        "cmpl $0xcd, 8(%ebp)\n" /* line 1938 | key */
-        "je .Lf1890c4_00189102\n"
-        "cmpl $0xa3, 8(%ebp)\n" /* key */
-        "jne .Lf1890c4_001890d1\n"
-        ".Lf1890c4_00189102:\n"
-        "calll CG_ScrollScoreboardDown\n" /* line 1940 */
-        "movl $1, %eax\n"
-        "leave\n" /* line 1946 */
-        "retl\n"
-        ".Lf1890c4_0018910e:\n"
-        "calll CG_ScrollScoreboardUp\n" /* line 1935 */
-        "movl $1, %eax\n"
-        "leave\n" /* line 1946 */
-        "retl\n"
-    );
+    if (!down || !CG_ScoreboardDisplayed())
+    {
+        return 0;
+    }
+
+    if (key == 0xce || key == 0xa4)
+    {
+        CG_ScrollScoreboardUp();
+        return 1;
+    }
+
+    if (key == 0xcd || key == 0xa3)
+    {
+        CG_ScrollScoreboardDown();
+        return 1;
+    }
+
+    return 0;
 }
 
 /* line 938 */

@@ -42,6 +42,9 @@ extern void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t 
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 extern centity_t **cg_entities_glob; /* imp_cg_entities */
 extern void CG_PlayerSprites(centity_t *cent);
+extern qboolean CL_PickMaterial(const vec_t *org, const vec_t *dir, char *pszName, char *pszSurfaceFlags, char *pszContents, int iMaxChars);
+extern int CG_DrawSmallDevStringColor(float x, float y, const char *s, const vec_t *color, int align);
+extern int __mh_execute_header;
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -1170,69 +1173,25 @@ unsigned int CG_DrawSoundOverlay(void)
 }
 
 /* line 2715 */
-static __attribute__((naked))
 unsigned int CG_DrawMaterial(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2715 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x207c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 2723 */
-        "movl (%eax), %edx\n"
-        "movl $__mh_execute_header, 0x14(%esp)\n"
-        "leal -0x2058(%ebp), %eax\n" /* szContents */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x1058(%ebp), %edi\n" /* szSurfaceFlags */
-        "movl %edi, 0xc(%esp)\n"
-        "leal -0x58(%ebp), %esi\n" /* szName */
-        "movl %esi, 8(%esp)\n"
-        "leal 0x28594(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "addl $0x28588, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll CL_PickMaterial\n"
-        "testl %eax, %eax\n"
-        "je .Lf1cc3ce_001cc4b5\n"
-        "movl $5, 0x10(%esp)\n" /* line 2727 */
-        "movl imp_colorWhite, %ebx\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n"
-        "movl $0x43700000, 4(%esp)\n"
-        "movl $0x41000000, %esi\n"
-        "movl %esi, (%esp)\n"
-        "calll CG_DrawSmallDevStringColor\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss lit4_002ed6e8, %xmm1\n" /* 240.0f */
-        "movl $5, 0x10(%esp)\n" /* line 2728 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "movss %xmm1, -0x2068(%ebp)\n"
-        "calll CG_DrawSmallDevStringColor\n"
-        "movl $5, 0x10(%esp)\n" /* line 2729 */
-        "movl %ebx, 0xc(%esp)\n"
-        "leal -0x2058(%ebp), %edx\n" /* szContents */
-        "movl %edx, 8(%esp)\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x2068(%ebp), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll CG_DrawSmallDevStringColor\n"
-        /* } scope */
-        ".Lf1cc3ce_001cc4b5:\n"
-        "addl $0x207c, %esp\n" /* line 2731 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cg;
+    char szName[0x58];
+    char szSurfaceFlags[0x1000];
+    char szContents[0x1000];
+    float y;
+
+    cg = (byte *)*cg_glob;
+    if (!CL_PickMaterial((const vec_t *)(cg + 0x28588), (const vec_t *)(cg + 0x28594), szName, szSurfaceFlags, szContents, (int)&__mh_execute_header))
+    {
+        return 0;
+    }
+
+    y = 240.0f;
+    y += (float)CG_DrawSmallDevStringColor(8.0f, y, szName, colorWhite, 5);
+    y += (float)CG_DrawSmallDevStringColor(8.0f, y, szSurfaceFlags, colorWhite, 5);
+    CG_DrawSmallDevStringColor(8.0f, y, szContents, colorWhite, 5);
+    return 0;
 }
 
 /* line 2896 */
