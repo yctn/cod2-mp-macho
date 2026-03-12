@@ -22,6 +22,7 @@ extern r_global_permanent_t rgp;       /* imp_rgp */
 extern r_globals_t rg;                /* imp_rg */
 extern refimport_t ri;                /* imp_ri */
 extern const dvar_t **r_dlightLimit;   /* imp_r_dlightLimit */
+extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compar)(const void *, const void *));
 /* g_dxCaps was imp_r_rendererInUse */
 extern const float *colorWhite;        /* imp_colorWhite */
 /* fx_sort and com_statmon accessed via imp_fx_sort, imp_com_statmon */
@@ -43,6 +44,7 @@ void R_AddCmdClearScreen(int whichToClear, const vec_t *color, float depth, int 
 extern double tan(double);
 
 static int R_CompareDumpSceneEntities(const void *e0, const void *e1);
+static int R_CompareDrawSurfs(const void *drawSurf0, const void *drawSurf1);
 void R_UpdateGfxEntityBounds(GfxEntity *ent);
 void R_SkinGfxEntity(GfxEntity *ent);
 void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *material, int *lmapIndex);
@@ -142,6 +144,26 @@ void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *ma
     }
 }
 
+static int R_CompareDrawSurfs(const void *drawSurf0, const void *drawSurf1)
+{
+    const GfxDrawSurf *surf0;
+    const GfxDrawSurf *surf1;
+
+    surf0 = (const GfxDrawSurf *)drawSurf0;
+    surf1 = (const GfxDrawSurf *)drawSurf1;
+    if (surf0->sort < surf1->sort)
+    {
+        return -1;
+    }
+
+    if (surf0->sort > surf1->sort)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
 /* line 1374 */
 void R_ClearScene(void)
 {
@@ -213,205 +235,10 @@ void R_DefaultVertexFrames(int vertCount, GfxWorldVertex *verts)
 __attribute__((naked))
 void qsortDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 731 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x13c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* drawSurfs */
-        "movl 0xc(%ebp), %eax\n" /* drawSurfCount */
-        /* { scope 1 */
-        "cmpl $1, %eax\n" /* line 746 */
-        "jle .Lfc58a6_000c5b2b\n"
-        "leal -8(%edx, %eax, 8), %eax\n" /* line 751 */
-        "movl %eax, -0x120(%ebp)\n" /* hiEnd */
-        "movl %edx, %edi\n" /* loEnd */
-        "movl $0, -0x114(%ebp)\n" /* stackPos */
-        ".Lfc58a6_000c58d7:\n"
-        "subl %edi, %eax\n" /* line 758 | loEnd */
-        "sarl $3, %eax\n"
-        "shrl $3, %eax\n"
-        "addl $1, %eax\n"
-        "cmpl $8, %eax\n" /* line 761 */
-        "jg .Lfc58a6_000c5992\n"
-        ".Lfc58a6_000c58eb:\n"
-        "cmpl -0x120(%ebp), %edi\n" /* line 717 | hiEnd */
-        "jae .Lfc58a6_000c5955\n"
-        "leal 8(%edi), %ecx\n"
-        "movl %ecx, -0x10c(%ebp)\n"
-        "movl %ecx, %eax\n"
-        "jmp .Lfc58a6_000c5935\n"
-        ".Lfc58a6_000c5900:\n"
-        "movl %edi, %esi\n" /* line 720 */
-        ".Lfc58a6_000c5902:\n"
-        "movl (%esi), %ecx\n" /* line 706 */
-        "movl 4(%esi), %ebx\n"
-        "movl -0x120(%ebp), %edx\n" /* line 707 | hiEnd */
-        "movl (%edx), %eax\n"
-        "movl 4(%edx), %edx\n"
-        "movl %eax, (%esi)\n"
-        "movl %edx, 4(%esi)\n"
-        "movl -0x120(%ebp), %eax\n" /* line 708 | hiEnd */
-        "movl %ecx, (%eax)\n"
-        "movl %ebx, 4(%eax)\n"
-        "subl $8, %eax\n" /* line 726 */
-        "movl %eax, -0x120(%ebp)\n" /* hiEnd */
-        "cmpl %eax, %edi\n" /* line 717 */
-        "jae .Lfc58a6_000c5955\n"
-        "movl -0x10c(%ebp), %eax\n"
-        ".Lfc58a6_000c5935:\n"
-        "cmpl %eax, -0x120(%ebp)\n" /* line 720 | hiEnd */
-        "jb .Lfc58a6_000c5900\n"
-        "movl %eax, %edx\n"
-        "movl %edi, %esi\n"
-        ".Lfc58a6_000c5941:\n"
-        "movl (%edx), %eax\n" /* line 722 */
-        "cmpl (%esi), %eax\n"
-        "cmoval %edx, %esi\n"
-        "addl $8, %edx\n" /* line 720 */
-        "cmpl %edx, -0x120(%ebp)\n" /* hiEnd */
-        "jae .Lfc58a6_000c5941\n"
-        "jmp .Lfc58a6_000c5902\n"
-        ".Lfc58a6_000c5955:\n"
-        "subl $1, -0x114(%ebp)\n" /* line 846 | stackPos */
-        "js .Lfc58a6_000c5b2b\n"
-        "movl -0x114(%ebp), %eax\n" /* line 848 | stackPos */
-        "movl -0x90(%ebp, %eax, 4), %edi\n" /* loEnd */
-        "movl -0x108(%ebp, %eax, 4), %edx\n" /* line 849 */
-        "movl %edx, -0x120(%ebp)\n" /* hiEnd */
-        "movl %edx, %eax\n"
-        "subl %edi, %eax\n" /* line 758 | loEnd */
-        "sarl $3, %eax\n"
-        "shrl $3, %eax\n"
-        "addl $1, %eax\n"
-        "cmpl $8, %eax\n" /* line 761 */
-        "jle .Lfc58a6_000c58eb\n"
-        ".Lfc58a6_000c5992:\n"
-        "sarl $1, %eax\n" /* line 776 */
-        "leal (%edi, %eax, 8), %esi\n" /* loEnd, mid */
-        "movl (%esi), %ecx\n" /* line 706 */
-        "movl 4(%esi), %ebx\n"
-        "movl (%edi), %eax\n" /* line 707 */
-        "movl 4(%edi), %edx\n"
-        "movl %eax, (%esi)\n"
-        "movl %edx, 4(%esi)\n"
-        "movl %ecx, (%edi)\n" /* line 708 */
-        "movl %ebx, 4(%edi)\n"
-        "movl -0x120(%ebp), %edx\n" /* line 786 | hiEnd */
-        "addl $8, %edx\n"
-        "movl %edx, -0x118(%ebp)\n" /* hiWalk */
-        "leal 8(%edi), %ecx\n" /* loEnd */
-        "movl %ecx, -0x110(%ebp)\n"
-        "movl %edi, -0x11c(%ebp)\n" /* loEnd, loWalk */
-        "addl $8, -0x11c(%ebp)\n" /* line 792 | loWalk */
-        "movl -0x11c(%ebp), %eax\n" /* line 790 | loWalk */
-        "cmpl %eax, -0x120(%ebp)\n" /* hiEnd */
-        "jae .Lfc58a6_000c5a5d\n"
-        ".Lfc58a6_000c59de:\n"
-        "movl -0x118(%ebp), %esi\n" /* hiWalk, mid */
-        "subl $8, %esi\n" /* mid */
-        "movl %esi, %edx\n" /* mid */
-        "jmp .Lfc58a6_000c59ee\n"
-        ".Lfc58a6_000c59eb:\n"
-        "subl $8, %esi\n" /* mid */
-        ".Lfc58a6_000c59ee:\n"
-        "movl %esi, -0x118(%ebp)\n" /* line 797 | mid, hiWalk */
-        "cmpl %esi, %edi\n" /* line 795 | mid, loEnd */
-        "jae .Lfc58a6_000c5a01\n"
-        "movl (%edx), %eax\n"
-        "subl $8, %edx\n"
-        "cmpl (%edi), %eax\n" /* loEnd */
-        "jae .Lfc58a6_000c59eb\n"
-        ".Lfc58a6_000c5a01:\n"
-        "cmpl %esi, -0x11c(%ebp)\n" /* line 800 | mid, loWalk */
-        "ja .Lfc58a6_000c5a6e\n"
-        "movl -0x110(%ebp), %edx\n" /* line 706 */
-        "movl (%edx), %eax\n"
-        "movl 4(%edx), %edx\n"
-        "movl %eax, -0x140(%ebp)\n"
-        "movl %edx, -0x13c(%ebp)\n"
-        "movl (%esi), %eax\n" /* line 707 */
-        "movl 4(%esi), %edx\n"
-        "movl -0x11c(%ebp), %ecx\n" /* loWalk */
-        "movl %eax, (%ecx)\n"
-        "movl %edx, 4(%ecx)\n"
-        "movl -0x140(%ebp), %eax\n" /* line 708 */
-        "movl -0x13c(%ebp), %edx\n"
-        "movl %eax, (%esi)\n"
-        "movl %edx, 4(%esi)\n"
-        ".Lfc58a6_000c5a41:\n"
-        "addl $8, -0x110(%ebp)\n" /* line 786 */
-        "addl $8, -0x11c(%ebp)\n" /* line 792 | loWalk */
-        "movl -0x11c(%ebp), %eax\n" /* line 790 | loWalk */
-        "cmpl %eax, -0x120(%ebp)\n" /* hiEnd */
-        "jb .Lfc58a6_000c59de\n"
-        ".Lfc58a6_000c5a5d:\n"
-        "movl -0x110(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "cmpl (%edi), %eax\n" /* loEnd */
-        "jbe .Lfc58a6_000c5a41\n"
-        "jmp .Lfc58a6_000c59de\n"
-        ".Lfc58a6_000c5a6e:\n"
-        "movl (%edi), %ecx\n" /* line 706 */
-        "movl 4(%edi), %ebx\n"
-        "movl (%esi), %eax\n" /* line 707 */
-        "movl 4(%esi), %edx\n"
-        "movl %eax, (%edi)\n"
-        "movl %edx, 4(%edi)\n"
-        "movl %ecx, (%esi)\n" /* line 708 */
-        "movl %ebx, 4(%esi)\n"
-        "movl %esi, %edx\n" /* line 811 | mid */
-        "subl %edi, %edx\n" /* loEnd */
-        "subl $8, %edx\n"
-        "sarl $3, %edx\n"
-        "movl -0x120(%ebp), %eax\n" /* hiEnd */
-        "subl -0x11c(%ebp), %eax\n" /* loWalk */
-        "sarl $3, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jl .Lfc58a6_000c5ae2\n"
-        "leal -8(%esi), %eax\n" /* line 813 | mid */
-        "cmpl %eax, %edi\n" /* loEnd */
-        "jae .Lfc58a6_000c5ac3\n"
-        "movl -0x114(%ebp), %edx\n" /* line 815 | stackPos */
-        "movl %edi, -0x90(%ebp, %edx, 4)\n" /* loEnd */
-        "movl %eax, -0x108(%ebp, %edx, 4)\n" /* line 816 */
-        "addl $1, %edx\n" /* line 817 */
-        "movl %edx, -0x114(%ebp)\n" /* stackPos */
-        ".Lfc58a6_000c5ac3:\n"
-        "movl -0x11c(%ebp), %ecx\n" /* line 820 | loWalk */
-        "cmpl %ecx, -0x120(%ebp)\n" /* hiEnd */
-        "jbe .Lfc58a6_000c5955\n"
-        "movl %ecx, %edi\n" /* loEnd */
-        "movl -0x120(%ebp), %eax\n" /* hiEnd */
-        "jmp .Lfc58a6_000c58d7\n"
-        ".Lfc58a6_000c5ae2:\n"
-        "movl -0x11c(%ebp), %eax\n" /* line 828 | loWalk */
-        "cmpl %eax, -0x120(%ebp)\n" /* hiEnd */
-        "jbe .Lfc58a6_000c5b13\n"
-        "movl -0x114(%ebp), %edx\n" /* line 830 | stackPos */
-        "movl %eax, -0x90(%ebp, %edx, 4)\n"
-        "movl -0x120(%ebp), %ecx\n" /* line 831 | hiEnd */
-        "movl %ecx, -0x108(%ebp, %edx, 4)\n"
-        "addl $1, %edx\n" /* line 832 */
-        "movl %edx, -0x114(%ebp)\n" /* stackPos */
-        ".Lfc58a6_000c5b13:\n"
-        "subl $8, %esi\n" /* line 835 | mid */
-        "movl %esi, -0x120(%ebp)\n" /* mid, hiEnd */
-        "cmpl %esi, %edi\n" /* mid, loEnd */
-        "jae .Lfc58a6_000c5955\n"
-        "movl %esi, %eax\n" /* mid */
-        "jmp .Lfc58a6_000c58d7\n"
-        /* } scope */
-        ".Lfc58a6_000c5b2b:\n"
-        "addl $0x13c, %esp\n" /* line 852 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (drawSurfCount > 1)
+    {
+        qsort(drawSurfs, (unsigned int)drawSurfCount, sizeof(*drawSurfs), R_CompareDrawSurfs);
+    }
 }
 
 /* line 905 */
