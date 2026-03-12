@@ -25,6 +25,9 @@ extern void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
 extern void RB_ExecuteRenderCommands(const void *data);
 extern void RB_EndFrame(void);
 extern void R_LockSkinnedCache(int lock);
+extern void R_InitDebugEntry(DebugGlobals *debugGlobalsEntry);
+extern void RB_CreateDynamicBuffers(void);
+extern struct r_globals_t rg; /* imp_rg */
 
 extern unsigned char s_backEndData[]; /* s_backEndData */
 extern GfxCmdArray *s_cmdList; /* s_cmdList */
@@ -570,77 +573,44 @@ void R_SkinGfxEntityDelayed(GfxEntity *ent)
 }
 
 /* line 135 */
-__attribute__((naked))
 void R_InitBackendData(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 135 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $s_backEndData + 2399512, (%esp)\n" /* line 140 */
-        "calll R_InitDebugEntry\n"
-        "calll RB_CreateDynamicBuffers\n" /* line 143 */
-        "movl frontEndDataOut, %eax\n" /* line 146 */
-        "testl %eax, %eax\n"
-        "je .Lfc8308_000c834d\n"
-        "addl $0x219d0c, %eax\n" /* line 656 */
-        "movl $0, 0x30000(%eax)\n" /* line 657 */
-        "movl $0, 0x30004(%eax)\n" /* line 658 */
-        "movl $0, 0x30008(%eax)\n" /* line 659 */
-        "leave\n" /* line 150 */
-        "retl\n"
-        ".Lfc8308_000c834d:\n"
-        "movl $s_backEndData, frontEndDataOut\n" /* line 1067 */
-        "movl imp_rg, %eax\n" /* line 1070 */
-        "movl 0x1c(%eax), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, 0x1c(%eax)\n"
-        "movl %edx, s_backEndData\n" /* line 1074 */
-        "calll R_UnlockSkinnedCache\n" /* line 1081 */
-        "movl imp_dx, %edx\n" /* line 1084 */
-        "movl 0x2dcc(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "andl $0x80000001, %eax\n"
-        "js .Lfc8308_000c843b\n"
-        ".Lfc8308_000c838a:\n"
-        "movl %eax, 0x2dcc(%edx)\n"
-        "leal (%eax, %eax, 2), %eax\n" /* line 1085 */
-        "leal 0x2d90(%edx, %eax, 4), %eax\n"
-        "movl frontEndDataOut, %edx\n"
-        "movl %eax, 0x217c78(%edx)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1093 */
-        "movl 0x217c78(%eax), %eax\n"
-        "movl $0, (%eax)\n"
-        "movl frontEndDataOut, %edx\n" /* line 1095 */
-        "leal 0x219d0c(%edx), %eax\n"
-        "movl %eax, s_cmdList\n"
-        "movl $0, 4(%edx)\n" /* line 1120 */
-        "movl frontEndDataOut, %eax\n" /* line 1121 */
-        "movl $0, 0x80008(%eax)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1122 */
-        "movl $0, 0xa000c(%eax)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1123 */
-        "movl $0, 0x187c70(%eax)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1124 */
-        "movl $0, 0x18fc74(%eax)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1130 */
-        "movl $0, 0x217c7c(%eax)\n"
-        "movl frontEndDataOut, %eax\n" /* line 1132 */
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl $0, 0x34(%eax)\n" /* line 1134 */
-        "movl $0, 0x1c(%eax)\n" /* line 1135 */
-        "movl $0, 4(%eax)\n" /* line 1136 */
-        "leave\n" /* line 150 */
-        "retl\n"
-        ".Lfc8308_000c843b:\n"
-        "subl $1, %eax\n" /* line 1084 */
-        "orl $0xfffffffe, %eax\n"
-        "addl $1, %eax\n"
-        "jmp .Lfc8308_000c838a\n"
-    );
+    DxGlobals *dx;
+    GfxBackEndData *data;
+
+    R_InitDebugEntry(&((GfxBackEndData *)s_backEndData)->debugGlobals);
+    RB_CreateDynamicBuffers();
+
+    if (frontEndDataOut != NULL) {
+        frontEndDataOut->commands.usedTotal = 0;
+        frontEndDataOut->commands.usedCritical = 0;
+        frontEndDataOut->commands.lastCmd = NULL;
+        return;
+    }
+
+    data = (GfxBackEndData *)s_backEndData;
+    frontEndDataOut = data;
+    data->frameCount = ++rg.frameCountInternal;
+
+    R_UnlockSkinnedCache();
+
+    dx = (DxGlobals *)imp_dx;
+    dx->dynamicBufferFrame = (dx->dynamicBufferFrame + 1) & 1;
+    data->skinnedCacheVb = &dx->skinnedCacheVbPool[dx->dynamicBufferFrame];
+    data->skinnedCacheVb->used = 0;
+
+    s_cmdList = &data->commands;
+    R_ResetCmdListState();
+
+    data->drawSurfCount = 0;
+    data->surfPos = 0;
+    data->entityCount = 0;
+    data->polyCount = 0;
+    data->polyVertCount = 0;
+    data->viewParmCount = 0;
+    data->debugGlobals.vertCount = 0;
+    data->debugGlobals.stringCount = 0;
+    data->debugGlobals.lineCount = 0;
 }
 
 /* line 1771 */

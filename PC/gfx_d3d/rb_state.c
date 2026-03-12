@@ -34,6 +34,8 @@ typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
 typedef HRESULT (*SetRenderStateFn)(void *device, DWORD state, DWORD value);
 typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
 typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
+typedef HRESULT (*SetTextureStageStateFn)(void *device, DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
+typedef HRESULT (*SetTransformFn)(void *device, D3DTRANSFORMSTATETYPE state, const D3DMATRIX *matrix);
 typedef HRESULT (*SetVertexDeclarationFn)(void *device, IDirect3DVertexDeclaration9 *vertexDecl);
 
 typedef struct {
@@ -41,6 +43,9 @@ typedef struct {
     int offset;
     int stride;
 } DxTrackedStreamState;
+
+extern void MatrixInverse44(const float *mat, float *dst);
+extern void MatrixIdentity44(float (*out)[4]);
 
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
@@ -80,6 +85,26 @@ void RB_SetProjectionMatrix(const D3DMATRIX *matrix);
 void RB_UpdateViewport(void);
 void RB_SetInitialState(void);
 void RB_SetWorldMatrixForEntity(const GfxEntity *re);
+
+static void RB_SetTextureStageStateDx7(int samplerIndex, D3DTEXTURESTAGESTATETYPE state, DWORD value)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetTextureStageStateFn)VTABLE(device)[0x10c / 4])(device, samplerIndex, state, value);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static void RB_SetTransformDx7(D3DTRANSFORMSTATETYPE state, const D3DMATRIX *matrix)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetTransformFn)VTABLE(device)[0xb0 / 4])(device, state, matrix);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
 
 /* line 1805 */
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib)
@@ -335,192 +360,37 @@ void RB_SetSamplerConstantDx7(unsigned int color)
 }
 
 /* line 861 */
-__attribute__((naked))
 void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 861 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* samplerIndex */
-        "movzbl 0xc(%ebp), %eax\n" /* genTexCoords */
-        "movb %al, -0x59(%ebp)\n" /* genTexCoords */
-        /* { scope 1 */
-        "cmpb $1, %al\n" /* line 867 */
-        "je .Lfcd4ca_000cd577\n"
-        "jae .Lfcd4ca_000cd55d\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd4f3:\n"
-        "movl 8(%edi), %eax\n" /* line 870 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* samplerIndex */
-        "movl $0xb, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd4f3\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd523:\n"
-        "movl 8(%edi), %eax\n" /* line 871 */
-        "movl (%eax), %edx\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0x18, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd523\n"
-        "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 895 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd4ca_000cd55d:\n"
-        "cmpb $2, %al\n" /* line 867 */
-        "je .Lfcd4ca_000cd647\n"
-        "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 895 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd4ca_000cd577:\n"
-        "leal -0x58(%ebp), %edx\n" /* line 876 | transform */
-        "movl %edx, 4(%esp)\n"
-        "movl imp_backEnd, %eax\n"
-        "movl 0x3c8(%eax), %eax\n"
-        "addl $0x48, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MatrixInverse44\n"
-        "xorl %eax, %eax\n" /* line 877 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl %eax, -0x24(%ebp)\n" /* line 878 */
-        "movl %eax, -0x20(%ebp)\n" /* line 879 */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd5ab:\n"
-        "movl 8(%edi), %eax\n" /* line 880 */
-        "movl (%eax), %edx\n"
-        "movl $0x20000, 0xc(%esp)\n"
-        "movl $0xb, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd5ab\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd5df:\n"
-        "movl 8(%edi), %eax\n" /* line 881 */
-        "movl (%eax), %edx\n"
-        "movl $3, 0xc(%esp)\n"
-        "movl $0x18, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd5df\n"
-        "leal 0x10(%ebx), %esi\n" /* samplerIndex */
-        "movl imp_alwaysfails, %edi\n"
-        ".Lfcd4ca_000cd610:\n"
-        "movl imp_dx, %ecx\n" /* line 882 */
-        "movl 8(%ecx), %eax\n"
-        "movl (%eax), %edx\n"
-        "leal -0x58(%ebp), %ecx\n" /* transform */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%edi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfcd4ca_000cd610\n"
-        "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 895 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd4ca_000cd647:\n"
-        "leal -0x58(%ebp), %eax\n" /* line 886 | transform */
-        "movl %eax, (%esp)\n"
-        "calll MatrixIdentity44\n"
-        "movl imp_backEnd, %eax\n" /* line 887 */
-        "movl 0x4dc(%eax), %eax\n"
-        "xorl $0x80000000, %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd671:\n"
-        "movl 8(%edi), %eax\n" /* line 888 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* samplerIndex */
-        "movl $0xb, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfcd4ca_000cd671\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd4ca_000cd6a1:\n"
-        "movl 8(%edi), %eax\n" /* line 889 */
-        "movl (%eax), %edx\n"
-        "movl $3, 0xc(%esp)\n"
-        "movl $0x18, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd6a1\n"
-        "leal 0x10(%ebx), %esi\n" /* samplerIndex */
-        "movl imp_alwaysfails, %edi\n"
-        ".Lfcd4ca_000cd6d2:\n"
-        "movl imp_dx, %edx\n" /* line 890 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "leal -0x58(%ebp), %ecx\n" /* transform */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd4ca_000cd6d2\n"
-        "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 895 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    D3DMATRIX transform;
+
+    switch ((byte)genTexCoords) {
+    case 0:
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXCOORDINDEX, samplerIndex);
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+        break;
+    case 1:
+        /* The backEnd view-parms layout is still partially raw here. */
+        MatrixInverse44((const float *)((const byte *)imp_backEnd + 0x410), (float *)&transform);
+        transform._41 = 0.0f;
+        transform._42 = 0.0f;
+        transform._43 = 0.0f;
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXCOORDINDEX, 0x20000);
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3);
+        RB_SetTransformDx7(D3DTS_TEXTURE0 + samplerIndex, &transform);
+        break;
+    case 2:
+        MatrixIdentity44(transform.m);
+        transform._32 = -*(const float *)((const byte *)imp_backEnd + 0x4dc);
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXCOORDINDEX, samplerIndex);
+        RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3);
+        RB_SetTransformDx7(D3DTS_TEXTURE0 + samplerIndex, &transform);
+        break;
+    default:
+        break;
+    }
+
+    dxState.genTexCoords[samplerIndex] = (byte)genTexCoords;
 }
 
 /* line 1059 */
