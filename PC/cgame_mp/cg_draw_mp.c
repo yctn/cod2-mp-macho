@@ -34,6 +34,14 @@ extern FontHandle UI_GetFontHandle(int fontEnum, float scale);
 extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
+extern int BG_GetViewmodelWeaponIndex(void *ps);
+extern void *BG_GetWeaponDef(int weapIndex);
+extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
+extern qboolean CG_ScoreboardDisplayed(void);
+extern void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t mode);
+extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
+extern centity_t **cg_entities_glob; /* imp_cg_entities */
+extern void CG_PlayerSprites(centity_t *cent);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -295,201 +303,89 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
 }
 
 /* line 1132 */
-__attribute__((naked))
 Bool CG_GetWeapReticleZoom(float *pfZoom)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1132 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* pfZoom */
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 1138 */
-        "movl (%eax), %ebx\n"
-        "leal 0x25bc4(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_GetViewmodelWeaponIndex\n"
-        "movl %eax, (%esp)\n" /* line 1139 */
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %edx\n"
-        "movss 0x25ca0(%ebx), %xmm1\n" /* line 1141 */
-        "pxor %xmm2, %xmm2\n" /* line 1143 */
-        "movss %xmm2, (%esi)\n" /* pfZoom */
-        "movl 0x274(%eax), %eax\n" /* line 1148 */
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1cb53e_001cb58d\n"
-        "movl 0x278(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1cb53e_001cb5ef\n"
-        ".Lf1cb53e_001cb58d:\n"
-        "ucomiss %xmm2, %xmm1\n" /* line 1152 */
-        "jp .Lf1cb53e_001cb594\n"
-        "je .Lf1cb53e_001cb5ef\n"
-        ".Lf1cb53e_001cb594:\n"
-        "movl 0x28494(%ebx), %ecx\n" /* line 1156 */
-        "testl %ecx, %ecx\n"
-        "je .Lf1cb53e_001cb5f8\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* line 1158 | 1.0f */
-        "movaps %xmm3, %xmm0\n"
-        "subss 0x26c(%edx), %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm1, (%esi)\n" /* pfZoom */
-        "ucomiss %xmm2, %xmm1\n" /* line 1159 */
-        "jbe .Lf1cb53e_001cb5cd\n"
-        "divss 0x26c(%edx), %xmm0\n" /* line 1160 */
-        "movss %xmm0, (%esi)\n" /* pfZoom */
-        ".Lf1cb53e_001cb5cd:\n"
-        "ucomiss lit4_002ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
-        "jp .Lf1cb53e_001cb5d8\n"
-        "jbe .Lf1cb53e_001cb5ef\n"
-        ".Lf1cb53e_001cb5d8:\n"
-        "ucomiss %xmm3, %xmm0\n" /* line 1173 */
-        "jbe .Lf1cb53e_001cb5e3\n"
-        "movl $0x3f800000, (%esi)\n" /* line 1174 | pfZoom */
-        ".Lf1cb53e_001cb5e3:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1177 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb53e_001cb5ef:\n"
-        "xorl %eax, %eax\n" /* line 1174 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1177 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb53e_001cb5f8:\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* line 1164 | 1.0f */
-        "movaps %xmm3, %xmm0\n"
-        "subss 0x270(%edx), %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm1, (%esi)\n" /* pfZoom */
-        "ucomiss %xmm2, %xmm1\n" /* line 1165 */
-        "jbe .Lf1cb53e_001cb5cd\n"
-        "divss 0x270(%edx), %xmm0\n" /* line 1166 */
-        "movss %xmm0, (%esi)\n" /* pfZoom */
-        "jmp .Lf1cb53e_001cb5cd\n"
-    );
+    byte *cg;
+    byte *weaponDef;
+    float zoom;
+
+    cg = (byte *)*cg_glob;
+    weaponDef = (byte *)BG_GetWeaponDef(BG_GetViewmodelWeaponIndex(cg + 0x25bc4));
+    zoom = *(float *)(cg + 0x25ca0);
+    *pfZoom = 0.0f;
+
+    if (!*(char *)(*(int *)(weaponDef + 0x274)) && !*(int *)(weaponDef + 0x278))
+    {
+        return 0;
+    }
+
+    if (zoom == 0.0f)
+    {
+        return 0;
+    }
+
+    if (*(int *)(cg + 0x28494))
+    {
+        *pfZoom = zoom - (1.0f - *(float *)(weaponDef + 0x26c));
+        if (*pfZoom > 0.0f)
+        {
+            *pfZoom /= *(float *)(weaponDef + 0x26c);
+        }
+    }
+    else
+    {
+        *pfZoom = zoom - (1.0f - *(float *)(weaponDef + 0x270));
+        if (*pfZoom > 0.0f)
+        {
+            *pfZoom /= *(float *)(weaponDef + 0x270);
+        }
+    }
+
+    if (*pfZoom <= 0.01f)
+    {
+        return 0;
+    }
+
+    if (*pfZoom > 1.0f)
+    {
+        *pfZoom = 1.0f;
+    }
+
+    return 1;
 }
 
 /* line 1186 */
-__attribute__((naked))
 unsigned int CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerTop, float innerBottom, const vec_t *color, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1186 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x60, %esp\n"
-        "movl 0x18(%ebp), %esi\n" /* color */
-        "movl 0x1c(%ebp), %ebx\n" /* material */
-        /* { scope 1 */
-        "movl imp_cls, %eax\n" /* line 1188 */
-        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n" /* screenWidth */
-        "cvtsi2ssl 0x2a0a68(%eax), %xmm1\n" /* line 1189 */
-        "movss %xmm1, -0xc(%ebp)\n" /* screenHeight */
-        "pxor %xmm1, %xmm1\n" /* line 1192 */
-        "movss 8(%ebp), %xmm2\n" /* innerLeft */
-        "ucomiss %xmm1, %xmm2\n"
-        "jbe .Lf1cb62a_001cb6bc\n"
-        "movl %ebx, 0x24(%esp)\n" /* line 1193 | material */
-        "movl %esi, 0x20(%esp)\n" /* color */
-        "movl $0x3f800000, 0x1c(%esp)\n"
-        "movss %xmm1, 0x18(%esp)\n"
-        "movss %xmm1, 0x14(%esp)\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss -0xc(%ebp), %xmm2\n" /* screenHeight */
-        "movss %xmm2, 0xc(%esp)\n"
-        "movss 8(%ebp), %xmm2\n" /* innerLeft */
-        "movss %xmm2, 8(%esp)\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss %xmm1, (%esp)\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll CL_DrawStretchPicPhysical\n"
-        "movss -0x38(%ebp), %xmm1\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        ".Lf1cb62a_001cb6bc:\n"
-        "ucomiss 0xc(%ebp), %xmm0\n" /* line 1196 | innerRight */
-        "ja .Lf1cb62a_001cb790\n"
-        ".Lf1cb62a_001cb6c6:\n"
-        "movss 0x10(%ebp), %xmm2\n" /* line 1200 | innerTop */
-        "ucomiss %xmm1, %xmm2\n"
-        "jbe .Lf1cb62a_001cb727\n"
-        "movl %ebx, 0x24(%esp)\n" /* line 1201 | material */
-        "movl %esi, 0x20(%esp)\n" /* color */
-        "movss %xmm1, 0x1c(%esp)\n"
-        "movl $0x3f800000, 0x18(%esp)\n"
-        "movss %xmm1, 0x14(%esp)\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss %xmm2, 0xc(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* innerRight */
-        "subss 8(%ebp), %xmm0\n" /* innerLeft */
-        "movss %xmm0, 8(%esp)\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss 8(%ebp), %xmm0\n" /* innerLeft */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll CL_DrawStretchPicPhysical\n"
-        "movss -0x38(%ebp), %xmm1\n"
-        ".Lf1cb62a_001cb727:\n"
-        "movss -0xc(%ebp), %xmm2\n" /* line 1204 | screenHeight */
-        "ucomiss 0x14(%ebp), %xmm2\n" /* innerBottom */
-        "jbe .Lf1cb62a_001cb789\n"
-        "movl %ebx, 0x24(%esp)\n" /* line 1205 | material */
-        "movl %esi, 0x20(%esp)\n" /* color */
-        "movss %xmm1, 0x1c(%esp)\n"
-        "movl $0x3f800000, 0x18(%esp)\n"
-        "movss %xmm1, 0x14(%esp)\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "subss 0x14(%ebp), %xmm2\n" /* innerBottom */
-        "movss %xmm2, 0xc(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* innerRight */
-        "subss 8(%ebp), %xmm0\n" /* innerLeft */
-        "movss %xmm0, 8(%esp)\n"
-        "movss 0x14(%ebp), %xmm1\n" /* innerBottom */
-        "movss %xmm1, 4(%esp)\n"
-        "movss 8(%ebp), %xmm2\n" /* innerLeft */
-        "movss %xmm2, (%esp)\n"
-        "calll CL_DrawStretchPicPhysical\n"
-        /* } scope */
-        ".Lf1cb62a_001cb789:\n"
-        "addl $0x60, %esp\n" /* line 1206 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb62a_001cb790:\n"
-        "movl %ebx, 0x24(%esp)\n" /* line 1197 | material */
-        "movl %esi, 0x20(%esp)\n" /* color */
-        "movl $0x3f800000, 0x1c(%esp)\n"
-        "movss %xmm1, 0x18(%esp)\n"
-        "movss %xmm1, 0x14(%esp)\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss -0xc(%ebp), %xmm2\n" /* screenHeight */
-        "movss %xmm2, 0xc(%esp)\n"
-        "subss 0xc(%ebp), %xmm0\n" /* innerRight */
-        "movss %xmm0, 8(%esp)\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* innerRight */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll CL_DrawStretchPicPhysical\n"
-        "movss -0x38(%ebp), %xmm1\n"
-        "jmp .Lf1cb62a_001cb6c6\n"
-    );
+    byte *cls;
+    float screenWidth;
+    float screenHeight;
+
+    cls = (byte *)imp_cls;
+    screenWidth = (float)*(int *)(cls + 0x2a0a64);
+    screenHeight = (float)*(int *)(cls + 0x2a0a68);
+
+    if (innerLeft > 0.0f)
+    {
+        CL_DrawStretchPicPhysical(0.0f, 0.0f, innerLeft, screenHeight, 0.0f, 0.0f, 0.0f, 1.0f, color, material);
+    }
+
+    if (screenWidth > innerRight)
+    {
+        CL_DrawStretchPicPhysical(innerRight, 0.0f, screenWidth - innerRight, screenHeight, 0.0f, 0.0f, 0.0f, 1.0f, color, material);
+    }
+
+    if (innerTop > 0.0f)
+    {
+        CL_DrawStretchPicPhysical(innerLeft, 0.0f, innerRight - innerLeft, innerTop, 0.0f, 0.0f, 1.0f, 0.0f, color, material);
+    }
+
+    if (screenHeight > innerBottom)
+    {
+        CL_DrawStretchPicPhysical(innerLeft, innerBottom, innerRight - innerLeft, screenHeight - innerBottom, 0.0f, 0.0f, 1.0f, 0.0f, color, material);
+    }
+
+    return 0;
 }
 
 /* line 1782 */
@@ -1658,63 +1554,25 @@ qboolean CG_DrawFollow(void)
 }
 
 /* line 3257 */
-__attribute__((naked))
 unsigned int CG_DrawPlayerSprites(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3257 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %ecx\n" /* line 3263 */
-        "movl (%ecx), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "movl 0x26b4(%eax), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jle .Lf1cc976_001cc9f9\n"
-        "xorl %esi, %esi\n" /* entityIndex */
-        "movl imp_cg_entities, %edi\n"
-        "movl %ecx, -0x1c(%ebp)\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lf1cc976_001cc9b9\n"
-        ".Lf1cc976_001cc9a3:\n"
-        "addl $1, %esi\n" /* entityIndex */
-        "addl $0xf0, %ebx\n"
-        "movl (%ecx), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "cmpl %esi, 0x26b4(%eax)\n" /* entityIndex */
-        "jle .Lf1cc976_001cc9f9\n"
-        ".Lf1cc976_001cc9b9:\n"
-        "movl 0x26bc(%ebx, %eax), %edx\n" /* line 3266 */
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "shll $2, %eax\n"
-        "addl (%edi), %eax\n"
-        "cmpl $1, 0xf4(%eax)\n" /* line 3270 */
-        "jne .Lf1cc976_001cc9a3\n"
-        "movl %eax, (%esp)\n" /* line 3273 */
-        "calll CG_PlayerSprites\n"
-        "movl -0x1c(%ebp), %ecx\n"
-        "addl $1, %esi\n" /* line 3263 | entityIndex */
-        "addl $0xf0, %ebx\n"
-        "movl (%ecx), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "cmpl %esi, 0x26b4(%eax)\n" /* entityIndex */
-        "jg .Lf1cc976_001cc9b9\n"
-        /* } scope */
-        ".Lf1cc976_001cc9f9:\n"
-        "addl $0x2c, %esp\n" /* line 3275 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cg;
+    snapshot_t *snap;
+    int entityIndex;
+    centity_t *cent;
+
+    cg = (byte *)*cg_glob;
+    snap = *(snapshot_t **)(cg + 0x24);
+    for (entityIndex = 0; entityIndex < snap->numEntities; ++entityIndex)
+    {
+        cent = &(*cg_entities_glob)[snap->entities[entityIndex].number];
+        if (cent->currentState.eType == 1)
+        {
+            CG_PlayerSprites(cent);
+        }
+    }
+
+    return 0;
 }
 
 /* line 3404 */
@@ -2525,43 +2383,27 @@ float CG_DrawFPS(float y)
 }
 
 /* line 2610 */
-__attribute__((naked))
 unsigned int CG_DrawBoldGameMessages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2610 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll CG_ScoreboardDisplayed\n" /* line 2619 */
-        "testl %eax, %eax\n"
-        "jne .Lf1cd736_001cd76c\n"
-        "movl $0x3f800000, %eax\n"
-        ".Lf1cd736_001cd74a:\n"
-        "movl $3, 0xc(%esp)\n" /* line 2634 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0xffffffc4, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Con_DrawBoldMessages\n"
-        /* } scope */
-        ".Lf1cd736_001cd76a:\n"
-        "leave\n" /* line 2635 */
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1cd736_001cd76c:\n"
-        "movl $0x64, 8(%esp)\n" /* line 2623 */
-        "movl $0x64, 4(%esp)\n"
-        "movl imp_cg, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x2b538(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_FadeColor\n"
-        "testl %eax, %eax\n" /* line 2624 */
-        "je .Lf1cd736_001cd76a\n"
-        "movl 0xc(%eax), %eax\n" /* line 2627 */
-        "jmp .Lf1cd736_001cd74a\n"
-    );
+    byte *cg;
+    float *fadeColor;
+    float alpha;
+
+    alpha = 1.0f;
+    if (CG_ScoreboardDisplayed())
+    {
+        cg = (byte *)*cg_glob;
+        fadeColor = CG_FadeColor(*(int *)(cg + 0x2b538), 100, 100);
+        if (!fadeColor)
+        {
+            return 0;
+        }
+
+        alpha = fadeColor[3];
+    }
+
+    Con_DrawBoldMessages(0, -60, alpha, 3);
+    return 0;
 }
 
 /* line 1323 */
