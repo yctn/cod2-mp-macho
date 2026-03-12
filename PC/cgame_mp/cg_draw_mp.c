@@ -63,6 +63,9 @@ extern int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info
 extern const char *Dvar_GetString(const char *dvarName);
 extern int Dvar_GetInt(const char *dvarName);
 extern Bool Dvar_GetBool(const char *dvarName);
+extern float Vec3Distance(const vec_t *v1, const vec_t *v2);
+extern float crandom(void);
+extern double sin(double);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -91,6 +94,30 @@ unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius
 static float CG_DrawWeapReticle(void);
 unsigned int CG_DrawCrosshair(void);
 unsigned int CG_Draw2D(void);
+
+static qboolean CG_UpdateCameraShakeStrength(cg_t *cg, cameraShake_t *shake)
+{
+    float elapsed;
+    float distanceScale;
+    float rumbleScale;
+
+    elapsed = (float)(cg->time - shake->time);
+    if (elapsed < 0.0f || elapsed >= shake->length)
+    {
+        return 0;
+    }
+
+    distanceScale = 1.0f - Vec3Distance(shake->src, cg->refdef.vieworg) / shake->radius;
+    rumbleScale = (1.0f - elapsed / shake->length) * shake->scale;
+    if (rumbleScale <= 0.0f)
+    {
+        return 0;
+    }
+
+    shake->size = distanceScale < 0.0f ? distanceScale / rumbleScale : distanceScale * rumbleScale;
+    shake->rumbleScale = rumbleScale;
+    return 1;
+}
 
 /* line 133 */
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team)
@@ -1038,204 +1065,58 @@ unsigned int CG_DrawMaterial(void)
 }
 
 /* line 2896 */
-__attribute__((naked))
 unsigned int CG_ShakeCamera(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2896 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %edx\n" /* line 2904 */
-        "movl (%edx), %eax\n"
-        "cvtsi2ssl 0x25bb0(%eax), %xmm0\n"
-        "divss lit4_002ed804, %xmm0\n" /* 600.0f */
-        "movss %xmm0, -0x20(%ebp)\n" /* sx */
-        "pxor %xmm1, %xmm1\n"
-        "movss %xmm1, -0x1c(%ebp)\n" /* bx */
-        "movaps %xmm1, %xmm4\n"
-        "movaps %xmm1, %xmm3\n"
-        "xorl %edi, %edi\n" /* i */
-        "movl $0, -0x4c(%ebp)\n"
-        "movl $0x2c500, %esi\n"
-        "movl %edx, %eax\n"
-        "movl (%eax), %ecx\n" /* line 2907 */
-        "leal (%ecx, %esi), %edx\n"
-        "leal 0xc(%edx), %ebx\n" /* shake */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0x25bb0(%ecx), %eax\n" /* line 2816 */
-        "subl 0xc(%edx), %eax\n" /* line 2817 */
-        "js .Lf1cc4c0_001cc525\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "ucomiss 8(%ebx), %xmm1\n"
-        "jb .Lf1cc4c0_001cc55a\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1cc4c0_001cc525:\n"
-        "addl $1, %edi\n" /* line 2905 | i */
-        "addl $0x24, %esi\n"
-        "addl $0x24, -0x4c(%ebp)\n"
-        "cmpl $4, %edi\n" /* i */
-        "je .Lf1cc4c0_001cc627\n"
-        ".Lf1cc4c0_001cc538:\n"
-        "movl imp_cg, %eax\n"
-        "movl (%eax), %ecx\n" /* line 2907 */
-        "leal (%ecx, %esi), %edx\n"
-        "leal 0xc(%edx), %ebx\n" /* shake */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0x25bb0(%ecx), %eax\n" /* line 2816 */
-        "subl 0xc(%edx), %eax\n" /* line 2817 */
-        "js .Lf1cc4c0_001cc525\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "ucomiss 8(%ebx), %xmm1\n"
-        "jae .Lf1cc4c0_001cc525\n"
-        ".Lf1cc4c0_001cc55a:\n"
-        "leal 0x28588(%ecx), %eax\n" /* line 2824 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "movss %xmm1, -0x68(%ebp)\n"
-        "movss %xmm3, -0x88(%ebp)\n"
-        "calll Vec3Distance\n"
-        "fstps -0x8c(%ebp)\n"
-        "movss -0x8c(%ebp), %xmm0\n"
-        "divss 0xc(%ebx), %xmm0\n" /* line 2826 */
-        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movss -0x68(%ebp), %xmm1\n" /* line 2829 */
-        "divss 8(%ebx), %xmm1\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "subss %xmm1, %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "mulss 4(%ebx), %xmm1\n"
-        "pxor %xmm4, %xmm4\n" /* line 2831 */
-        "ucomiss %xmm1, %xmm4\n"
-        "movss -0x88(%ebp), %xmm3\n"
-        "jae .Lf1cc4c0_001cc525\n"
-        "ucomiss %xmm4, %xmm0\n" /* line 2834 */
-        "jb .Lf1cc4c0_001cc7b8\n"
-        "mulss %xmm1, %xmm0\n" /* line 2835 */
-        ".Lf1cc4c0_001cc5de:\n"
-        "movss %xmm0, 0x1c(%ebx)\n" /* line 2839 */
-        "movss %xmm1, 0x20(%ebx)\n" /* line 2840 */
-        /* } scope */
-        /* } scope */
-        "movl -0x4c(%ebp), %eax\n" /* line 2910 */
-        "movl imp_cg, %edx\n"
-        "addl (%edx), %eax\n"
-        "movss 0x2c528(%eax), %xmm0\n"
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lf1cc4c0_001cc525\n"
-        "movss 0x2c52c(%eax), %xmm1\n" /* line 2913 */
-        "movss %xmm1, -0x1c(%ebp)\n" /* bx */
-        "movaps %xmm0, %xmm3\n"
-        "addl $1, %edi\n" /* line 2905 | i */
-        "addl $0x24, %esi\n"
-        "addl $0x24, -0x4c(%ebp)\n"
-        "cmpl $4, %edi\n" /* i */
-        "jne .Lf1cc4c0_001cc538\n"
-        ".Lf1cc4c0_001cc627:\n"
-        "movl imp_cg, %eax\n" /* line 2918 */
-        "movl (%eax), %ebx\n" /* shake */
-        "movss 0x2c5a0(%ebx), %xmm2\n" /* shake */
-        "ucomiss %xmm3, %xmm2\n"
-        "jbe .Lf1cc4c0_001cc780\n"
-        "movss %xmm2, -0x1c(%ebp)\n" /* bx */
-        "ucomiss %xmm2, %xmm4\n" /* line 2924 */
-        "jae .Lf1cc4c0_001cc78c\n"
-        ".Lf1cc4c0_001cc64d:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 2930 | 1.0f */
-        "minss %xmm2, %xmm0\n"
-        "movaps %xmm0, %xmm2\n"
-        "cvtss2sd -0x20(%ebp), %xmm0\n" /* line 2934 | sx */
-        "movsd %xmm0, -0x28(%ebp)\n"
-        "mulsd lit8_00307d78, %xmm0\n" /* 25.132741228718345 */
-        "cvtss2sd 0x2c59c(%ebx), %xmm1\n" /* shake */
-        "addsd %xmm1, %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm2, -0x78(%ebp)\n"
-        "calll sin\n"
-        "fstpl -0x38(%ebp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n" /* bx */
-        "mulss lit4_002ed6c8, %xmm0\n" /* 18.0f */
-        "movss -0x78(%ebp), %xmm2\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss 0x285c8(%ebx), %xmm0\n" /* shake */
-        "movss %xmm0, 0x285c8(%ebx)\n" /* shake */
-        "movl imp_cg, %eax\n" /* line 2938 */
-        "movl (%eax), %ebx\n" /* shake */
-        "movsd -0x28(%ebp), %xmm0\n"
-        "mulsd lit8_00307d80, %xmm0\n" /* 47.12388980384689 */
-        "cvtss2sd 0x2c59c(%ebx), %xmm1\n" /* shake */
-        "addsd %xmm1, %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm2, -0x78(%ebp)\n"
-        "calll sin\n"
-        "fstpl -0x40(%ebp)\n"
-        "cvtsd2ss -0x40(%ebp), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n" /* bx */
-        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
-        "movss -0x78(%ebp), %xmm2\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss 0x285cc(%ebx), %xmm0\n" /* shake */
-        "movss %xmm0, 0x285cc(%ebx)\n" /* shake */
-        "movsd -0x28(%ebp), %xmm0\n" /* line 2942 */
-        "mulsd lit8_00307d88, %xmm0\n" /* 37.69911184307752 */
-        "movsd %xmm0, -0x28(%ebp)\n"
-        "cvtss2sd 0x2c59c(%ebx), %xmm0\n" /* shake */
-        "addsd -0x28(%ebp), %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm2, -0x78(%ebp)\n"
-        "calll sin\n"
-        "fstpl -0x48(%ebp)\n"
-        "cvtsd2ss -0x48(%ebp), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n" /* bx */
-        "movss %xmm0, -0x1c(%ebp)\n" /* bx */
-        "mulss lit4_002ed6b4, %xmm0\n" /* 10.0f */
-        "movss -0x78(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm2\n"
-        "addss 0x285d0(%ebx), %xmm2\n" /* shake */
-        "movss %xmm2, 0x285d0(%ebx)\n" /* shake */
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 2944 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cc4c0_001cc780:\n"
-        "movaps %xmm3, %xmm2\n" /* line 2918 */
-        "ucomiss %xmm2, %xmm4\n" /* line 2924 */
-        "jb .Lf1cc4c0_001cc64d\n"
-        ".Lf1cc4c0_001cc78c:\n"
-        "calll crandom\n" /* line 2926 */
-        "fstps -0x2c(%ebp)\n"
-        "cvtss2sd -0x2c(%ebp), %xmm0\n"
-        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, 0x2c59c(%ebx)\n" /* shake */
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 2944 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf1cc4c0_001cc7b8:\n"
-        "divss %xmm1, %xmm0\n" /* line 2837 */
-        "jmp .Lf1cc4c0_001cc5de\n"
-    );
+    cg_t *cg;
+    cameraShake_t *shake;
+    float sx;
+    float bestSize;
+    float bestRumble;
+    float phase;
+    int i;
+
+    cg = *(cg_t **)imp_cg;
+    sx = (float)cg->time / 600.0f;
+    bestSize = 0.0f;
+    bestRumble = 0.0f;
+
+    for (i = 0; i < 4; ++i)
+    {
+        shake = &cg->cameraShake[i];
+        if (!CG_UpdateCameraShakeStrength(cg, shake))
+        {
+            continue;
+        }
+
+        if (shake->size > bestSize)
+        {
+            bestSize = shake->size;
+            bestRumble = shake->rumbleScale;
+        }
+    }
+
+    if (cg->rumbleScale > bestSize)
+    {
+        bestSize = cg->rumbleScale;
+        bestRumble = cg->rumbleScale;
+    }
+
+    if (bestSize <= 0.0f)
+    {
+        cg->cameraShakePhase = crandom() * 3.14159265358979323846f;
+        return 0;
+    }
+
+    if (bestSize > 1.0f)
+    {
+        bestSize = 1.0f;
+    }
+
+    phase = cg->cameraShakePhase;
+    cg->kickAngles[0] += (float)sin((double)(sx * 25.132741228718345f + phase)) * bestRumble * 18.0f * bestSize;
+    cg->kickAngles[1] += (float)sin((double)(sx * 47.12388980384689f + phase)) * bestRumble * 16.0f * bestSize;
+    cg->kickAngles[2] += (float)sin((double)(sx * 37.69911184307752f + phase)) * bestRumble * 10.0f * bestSize;
+    return 0;
 }
 
 /* line 3216 */
@@ -2196,177 +2077,61 @@ unsigned int CG_DrawSpectatorMessage(void)
 }
 
 /* line 2845 */
-__attribute__((naked))
 unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2845 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 0x10(%ebp), %ecx\n" /* src */
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 2856 | p */
-        "movl %eax, -0x38(%ebp)\n"
-        "cvtsi2ssl 0xc(%ebp), %xmm0\n" /* line 2857 | duration */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movl imp_cg, %esi\n" /* line 2858 */
-        "movl (%esi), %ebx\n" /* i */
-        "movl 0x25bb0(%ebx), %edx\n" /* i */
-        "movl %edx, -0x3c(%ebp)\n" /* shake */
-        "movl (%ecx), %eax\n" /* line 199 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 2860 | radius */
-        "movl %eax, -0x30(%ebp)\n"
-        /* { scope 2 */
-        "movl 0x25bb0(%ebx), %eax\n" /* line 2816 */
-        "subl %edx, %eax\n" /* line 2817 */
-        "js .Lf1cdba2_001cdd7d\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf1cdba2_001cdcc0\n"
-        ".Lf1cdba2_001cdc01:\n"
-        "movl (%esi), %edi\n"
-        /* } scope */
-        ".Lf1cdba2_001cdc03:\n"
-        "movl 0x25bb0(%edi), %esi\n" /* line 2867 */
-        "cvtsi2ssl %esi, %xmm1\n"
-        "movl %edi, %edx\n"
-        "xorl %ebx, %ebx\n" /* i */
-        "leal 0x2c500(%edi), %ecx\n"
-        ".Lf1cdba2_001cdc17:\n"
-        "movl 0x2c50c(%edx), %eax\n"
-        "cmpl %esi, %eax\n"
-        "jg .Lf1cdba2_001cdd3f\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss 0x2c514(%edx), %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf1cdba2_001cdd3f\n"
-        "addl $1, %ebx\n" /* line 2865 | i */
-        "addl $0x24, %ecx\n"
-        "addl $0x24, %edx\n"
-        "cmpl $4, %ebx\n" /* i */
-        "jne .Lf1cdba2_001cdc17\n"
-        "movss -0x20(%ebp), %xmm1\n" /* line 2874 */
-        "movl %edi, %eax\n"
-        "movl $4, %ecx\n"
-        "xorl %edx, %edx\n"
-        ".Lf1cdba2_001cdc56:\n"
-        "movss 0x2c528(%eax), %xmm0\n" /* line 2880 */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf1cdba2_001cdc68\n"
-        "movl %edx, %ecx\n"
-        "movaps %xmm0, %xmm1\n"
-        ".Lf1cdba2_001cdc68:\n"
-        "addl $1, %edx\n" /* line 2878 */
-        "addl $0x24, %eax\n"
-        "cmpl $4, %edx\n"
-        "jne .Lf1cdba2_001cdc56\n"
-        "cmpl $4, %ecx\n" /* line 2887 */
-        "je .Lf1cdba2_001cdcb8\n"
-        "leal (%ecx, %ecx, 8), %edx\n" /* line 2892 */
-        "leal 0x2c500(%edi, %edx, 4), %edx\n"
-        "movl -0x3c(%ebp), %eax\n" /* shake */
-        "movl %eax, 0xc(%edx)\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 0x10(%edx)\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, 0x1c(%edx)\n"
-        "movl -0x28(%ebp), %eax\n"
-        "movl %eax, 0x20(%edx)\n"
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0x24(%edx)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 0x28(%edx)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x2c(%edx)\n"
-        /* } scope */
-        ".Lf1cdba2_001cdcb8:\n"
-        "addl $0x6c, %esp\n" /* line 2893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1cdba2_001cdcc0:\n"
-        "leal 0x28588(%ebx), %eax\n" /* line 2824 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "movss %xmm2, -0x58(%ebp)\n"
-        "calll Vec3Distance\n"
-        "fstps -0x5c(%ebp)\n"
-        "movss -0x5c(%ebp), %xmm0\n"
-        "divss -0x30(%ebp), %xmm0\n" /* line 2826 */
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movaps %xmm1, %xmm3\n"
-        "subss %xmm0, %xmm3\n"
-        "movaps %xmm3, %xmm0\n"
-        "movss -0x58(%ebp), %xmm2\n" /* line 2829 */
-        "divss -0x34(%ebp), %xmm2\n"
-        "subss %xmm2, %xmm1\n"
-        "mulss -0x38(%ebp), %xmm1\n"
-        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 2831 | 0.0f */
-        "jp .Lf1cdba2_001cdd1b\n"
-        "jbe .Lf1cdba2_001cdc01\n"
-        ".Lf1cdba2_001cdd1b:\n"
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 2834 | 0.0f */
-        "jb .Lf1cdba2_001cdd84\n"
-        "mulss %xmm1, %xmm0\n" /* line 2835 */
-        ".Lf1cdba2_001cdd28:\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* line 2839 */
-        "movss %xmm1, -0x1c(%ebp)\n" /* line 2840 */
-        "movl imp_cg, %esi\n"
-        "movl (%esi), %edi\n"
-        "jmp .Lf1cdba2_001cdc03\n"
-        /* } scope */
-        ".Lf1cdba2_001cdd3f:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 2869 | shake */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 0x10(%ecx)\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, 0x14(%ecx)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, 0x18(%ecx)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, 0x1c(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n"
-        "movl %eax, 0x20(%ecx)\n"
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0x24(%ecx)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 0x28(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x2c(%ecx)\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 2893 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1cdba2_001cdd7d:\n"
-        "movl %ebx, %edi\n" /* i */
-        "jmp .Lf1cdba2_001cdc03\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1cdba2_001cdd84:\n"
-        "divss %xmm1, %xmm0\n" /* line 2837 */
-        "jmp .Lf1cdba2_001cdd28\n"
-    );
+    cg_t *cg;
+    cameraShake_t newShake;
+    int now;
+    int i;
+    int replaceIndex;
+    float smallestSize;
+
+    cg = *(cg_t **)imp_cg;
+    now = cg->time;
+
+    newShake.time = now;
+    newShake.scale = p;
+    newShake.length = (float)duration;
+    newShake.radius = radius;
+    newShake.src[0] = src[0];
+    newShake.src[1] = src[1];
+    newShake.src[2] = src[2];
+    newShake.size = 0.0f;
+    newShake.rumbleScale = 0.0f;
+    CG_UpdateCameraShakeStrength(cg, &newShake);
+
+    for (i = 0; i < 4; ++i)
+    {
+        if (cg->cameraShake[i].time > now || (float)now >= (float)cg->cameraShake[i].time + cg->cameraShake[i].length)
+        {
+            cg->cameraShake[i] = newShake;
+            return 0;
+        }
+    }
+
+    replaceIndex = -1;
+    smallestSize = newShake.size;
+    for (i = 0; i < 4; ++i)
+    {
+        if (newShake.size > cg->cameraShake[i].size)
+        {
+            replaceIndex = i;
+            smallestSize = cg->cameraShake[i].size;
+        }
+
+        if (replaceIndex >= 0 && cg->cameraShake[i].size < smallestSize)
+        {
+            replaceIndex = i;
+            smallestSize = cg->cameraShake[i].size;
+        }
+    }
+
+    if (replaceIndex >= 0)
+    {
+        cg->cameraShake[replaceIndex] = newShake;
+    }
+
+    return 0;
 }
 
 /* line 1266 */
