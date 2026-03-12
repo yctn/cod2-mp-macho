@@ -33,6 +33,8 @@ extern const GfxViewportBehavior s_viewportBehaviorForRenderTarget[]; /* rodata.
 
 typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
 typedef HRESULT (*SetRenderStateFn)(void *device, DWORD state, DWORD value);
+typedef HRESULT (*SetRenderTargetFn)(void *device, DWORD index, IDirect3DSurface9 *surface);
+typedef HRESULT (*SetDepthStencilSurfaceFn)(void *device, IDirect3DSurface9 *surface);
 typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
 typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
 typedef HRESULT (*SetTextureFn)(void *device, DWORD samplerIndex, IDirect3DBaseTexture9 *texture);
@@ -137,6 +139,26 @@ static void RB_SetMaterialDx7(const D3DMATERIAL9 *material)
 
     device = *(void **)((byte *)imp_dx + 8);
     ((SetMaterialFn)VTABLE(device)[0xc4 / 4])(device, material);
+}
+
+static void RB_SetRenderTargetSurfaceDx7(IDirect3DSurface9 *surface)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetRenderTargetFn)VTABLE(device)[0x94 / 4])(device, 0, surface);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static void RB_SetDepthStencilSurfaceDx7(IDirect3DSurface9 *surface)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetDepthStencilSurfaceFn)VTABLE(device)[0x9c / 4])(device, surface);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 static void RB_SetTextureDx7(int samplerIndex, IDirect3DBaseTexture9 *texture)
