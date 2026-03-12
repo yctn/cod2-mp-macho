@@ -657,274 +657,100 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
 }
 
 /* line 1406 */
-__attribute__((naked))
 void Key_Unbind_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1406 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 1410 */
-        "cmpl $2, %eax\n"
-        "je .Lf1404be_001404dc\n"
-        "movl $str_002a6ef8, (%esp)\n" /* line 1412 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "leave\n" /* line 1424 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1404be_001404dc:\n"
-        "movl $1, (%esp)\n" /* line 1416 */
-        "calll Cmd_Argv\n"
-        "calll Key_StringToKeynum\n"
-        "cmpl $-1, %eax\n" /* line 1417 */
-        "je .Lf1404be_00140519\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 1353 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl keys, %edx\n"
-        "leal 8(%edx, %eax, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ReplaceStringInternal\n"
-        "movl imp_dvar_modifiedFlags, %eax\n" /* line 1357 */
-        "orl $1, (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 1424 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1404be_00140519:\n"
-        "movl $1, (%esp)\n" /* line 1419 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a6f24, (%esp)\n" /* ""%s" isn't a valid key
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "leave\n" /* line 1424 */
-        "retl\n"
-    );
+    int keynum;
+    const char *keyName;
+
+    if (Cmd_Argc() != 2) {
+        Com_Printf("unbind <key> : remove commands from a key\n");
+        return;
+    }
+
+    keyName = Cmd_Argv(1);
+    keynum = Key_StringToKeynum(keyName);
+    if (keynum == -1) {
+        Com_Printf("\"%s\" isn't a valid key\n", keyName);
+        return;
+    }
+
+    Key_SetBinding(keynum, "");
 }
 
 /* line 1432 */
-__attribute__((naked))
 void Key_Unbindall_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1432 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %ebx, %ebx\n"
-        "xorl %esi, %esi\n"
-        "movl imp_dvar_modifiedFlags, %edi\n"
-        /* { scope 1 */
-        ".Lf140538_0014054b:\n"
-        "movl %esi, %eax\n" /* line 1437 */
-        "addl keys, %eax\n"
-        "movl 8(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf140538_00140575\n"
-        "cmpl $-1, %ebx\n" /* line 1347 */
-        "je .Lf140538_00140575\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 1353 */
-        "addl $8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ReplaceStringInternal\n"
-        "orl $1, (%edi)\n" /* line 1357 */
-        ".Lf140538_00140575:\n"
-        "addl $1, %ebx\n" /* line 1436 | i */
-        "addl $0xc, %esi\n"
-        "cmpl $0x100, %ebx\n" /* i */
-        "jne .Lf140538_0014054b\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1439 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int keynum;
+
+    for (keynum = 0; keynum < 256; ++keynum) {
+        if (keys[keynum].binding != NULL) {
+            Key_SetBinding(keynum, "");
+        }
+    }
 }
 
 /* line 1447 */
-__attribute__((naked))
 void Key_Bind_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1447 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 1453 */
-        "movl %eax, %esi\n" /* c */
-        "cmpl $1, %eax\n" /* line 1455 */
-        "jle .Lf14058c_001406b0\n"
-        "movl $1, (%esp)\n" /* line 1460 */
-        "calll Cmd_Argv\n"
-        "calll Key_StringToKeynum\n"
-        "cmpl $-1, %eax\n" /* line 1461 */
-        "je .Lf14058c_00140689\n"
-        "movl %eax, (%esp)\n" /* line 1468 */
-        "calll ___tolower\n"
-        "movl %eax, -0x41c(%ebp)\n"
-        "cmpl $2, %esi\n" /* line 1470 | c */
-        "je .Lf14058c_0014078a\n"
-        "movb $0, -0x418(%ebp)\n" /* line 1480 | cmd */
-        "jle .Lf14058c_00140648\n" /* line 1481 */
-        "leal -1(%esi), %edx\n" /* c */
-        "movl %edx, -0x420(%ebp)\n"
-        "movl $2, %ebx\n" /* i */
-        "cmpl $3, %esi\n" /* c */
-        "jne .Lf14058c_00140716\n"
-        ".Lf14058c_001405f9:\n"
-        "movl %ebx, (%esp)\n" /* line 1486 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* cmd */
-        "movl %eax, (%esp)\n"
-        "calll I_strncat\n"
-        "cmpl -0x420(%ebp), %ebx\n" /* line 1489 | i */
-        "je .Lf14058c_00140641\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 1490 */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %edx\n" /* cmd */
-        "movl %edx, (%esp)\n"
-        "calll I_strncat\n"
-        ".Lf14058c_00140641:\n"
-        "addl $1, %ebx\n" /* line 1481 | i */
-        "cmpl %ebx, %esi\n" /* i, c */
-        "jne .Lf14058c_001405f9\n"
-        ".Lf14058c_00140648:\n"
-        "cmpl $-1, -0x41c(%ebp)\n" /* line 1347 */
-        "je .Lf14058c_0014067e\n"
-        "leal -0x418(%ebp), %eax\n" /* line 1353 | cmd */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x41c(%ebp), %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "movl keys, %edx\n"
-        "leal 8(%edx, %eax, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ReplaceStringInternal\n"
-        "movl imp_dvar_modifiedFlags, %eax\n" /* line 1357 */
-        "orl $1, (%eax)\n"
-        /* } scope */
-        ".Lf14058c_0014067e:\n"
-        "addl $0x42c, %esp\n" /* line 1494 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14058c_00140689:\n"
-        "movl $1, (%esp)\n" /* line 1463 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a6f24, (%esp)\n" /* ""%s" isn't a valid key
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 1494 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14058c_001406b0:\n"
-        "movl $str_002a6f3c, (%esp)\n" /* line 1457 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 1494 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14058c_001406c7:\n"
-        "movl $str_00222120, 8(%esp)\n" /* line 1488 */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %edx\n" /* cmd */
-        "movl %edx, (%esp)\n"
-        "calll I_strncat\n"
-        ".Lf14058c_001406e5:\n"
-        "cmpl -0x420(%ebp), %ebx\n" /* line 1489 | i */
-        "je .Lf14058c_0014070b\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 1490 */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* cmd */
-        "movl %eax, (%esp)\n"
-        "calll I_strncat\n"
-        ".Lf14058c_0014070b:\n"
-        "addl $1, %ebx\n" /* line 1481 | i */
-        "cmpl %ebx, %esi\n" /* i, c */
-        "je .Lf14058c_00140648\n"
-        ".Lf14058c_00140716:\n"
-        "movl %ebx, (%esp)\n" /* line 1483 | i */
-        "calll Cmd_Argv\n"
-        "movl $0x20, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll strchr\n"
-        "testl %eax, %eax\n"
-        "je .Lf14058c_001407c5\n"
-        "movl $str_00222120, 8(%esp)\n" /* line 1485 */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* cmd */
-        "movl %eax, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $1, %edi\n"
-        ".Lf14058c_00140759:\n"
-        "movl %ebx, (%esp)\n" /* line 1486 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %edx\n" /* cmd */
-        "movl %edx, (%esp)\n"
-        "calll I_strncat\n"
-        "movl %edi, %eax\n" /* line 1487 */
-        "testb %al, %al\n"
-        "je .Lf14058c_001406e5\n"
-        "jmp .Lf14058c_001406c7\n"
-        ".Lf14058c_0014078a:\n"
-        "leal (%eax, %eax, 2), %edx\n" /* line 1472 */
-        "movl keys, %eax\n"
-        "movl 8(%eax, %edx, 4), %ebx\n" /* i */
-        "testl %ebx, %ebx\n" /* i */
-        "je .Lf14058c_001407c9\n"
-        "movl $1, (%esp)\n" /* line 1473 */
-        "calll Cmd_Argv\n"
-        "movl %ebx, 8(%esp)\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a6f70, (%esp)\n" /* ""%s" = "%s"
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 1494 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14058c_001407c5:\n"
-        "xorl %edi, %edi\n" /* line 1357 */
-        "jmp .Lf14058c_00140759\n"
-        ".Lf14058c_001407c9:\n"
-        "movl $1, (%esp)\n" /* line 1475 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a6f80, (%esp)\n" /* ""%s" is not bound
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf14058c_0014067e\n"
-    );
+    int argc;
+    int keynum;
+    int argIndex;
+    char cmd[1024];
+    const char *binding;
+
+    argc = Cmd_Argc();
+    if (argc <= 1) {
+        Com_Printf("bind <key> [command] : attach a command to a key\n");
+        return;
+    }
+
+    keynum = Key_StringToKeynum(Cmd_Argv(1));
+    if (keynum == -1) {
+        Com_Printf("\"%s\" isn't a valid key\n", Cmd_Argv(1));
+        return;
+    }
+
+    keynum = tolower((unsigned char)keynum);
+    if (argc == 2) {
+        binding = Key_GetBinding(keynum);
+        if (binding != NULL) {
+            Com_Printf("\"%s\" = \"%s\"\n", Cmd_Argv(1), binding);
+        } else {
+            Com_Printf("\"%s\" is not bound\n", Cmd_Argv(1));
+        }
+        return;
+    }
+
+    cmd[0] = '\0';
+    for (argIndex = 2; argIndex < argc; ++argIndex) {
+        const char *arg;
+        const char *scan;
+
+        arg = Cmd_Argv(argIndex);
+        scan = arg;
+
+        if (argc != 3) {
+            while (*scan && *scan != ' ') {
+                ++scan;
+            }
+
+            if (*scan == ' ') {
+                I_strncat(cmd, sizeof(cmd), "\"");
+            }
+        }
+
+        I_strncat(cmd, sizeof(cmd), arg);
+
+        if (argc != 3 && *scan == ' ') {
+            I_strncat(cmd, sizeof(cmd), "\"");
+        }
+
+        if (argIndex != argc - 1) {
+            I_strncat(cmd, sizeof(cmd), " ");
+        }
+    }
+
+    Key_SetBinding(keynum, cmd);
 }
 
 /* line 633 */

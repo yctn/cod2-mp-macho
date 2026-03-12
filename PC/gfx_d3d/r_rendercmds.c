@@ -739,51 +739,28 @@ void R_EndFrame(void)
 }
 
 /* line 1506 */
-__attribute__((naked))
 void R_AddCmdDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechniqueType techType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1506 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x13, %eax\n"
-        "jg .Lfc863e_000c8672\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc863e_000c866f:\n"
-        "popl %ebx\n" /* line 1509 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc863e_000c8672:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x14(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x17, (%edx)\n" /* line 964 */
-        "movw $0x14, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1496 */
-        "je .Lfc863e_000c866f\n"
-        "movl $0, 4(%edx)\n" /* line 1499 */
-        "movl 8(%ebp), %edx\n" /* line 1500 | drawSurfs */
-        "movl %edx, 8(%eax)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1501 | drawSurfCount */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 1502 | techType */
-        "movl %edx, 0x10(%eax)\n"
-        "popl %ebx\n" /* line 1509 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdDrawSurfs *cmd;
+    int usedBytes;
+    int availBytes;
+
+    usedBytes = s_cmdList->usedTotal;
+    availBytes = 0x30000 - usedBytes + s_cmdList->usedCritical - 0x2000;
+    if (availBytes <= 0x13) {
+        s_cmdList->lastCmd = NULL;
+        return;
+    }
+
+    cmd = (GfxCmdDrawSurfs *)((byte *)s_cmdList + usedBytes);
+    s_cmdList->usedTotal = usedBytes + 0x14;
+    s_cmdList->lastCmd = &cmd->header;
+    cmd->header.id = 0x17;
+    cmd->header.byteCount = 0x14;
+    cmd->order = GFX_DRAW_SURFS_ITER_FORWARD;
+    cmd->drawSurfs = drawSurfs;
+    cmd->drawSurfCount = drawSurfCount;
+    cmd->techType = techType;
 }
 
 /* line 991 */

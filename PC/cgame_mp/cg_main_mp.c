@@ -20,12 +20,17 @@ extern void SND_PlayAmbientAlias(const snd_alias_t *pAlias, int fadetime, snd_al
 extern int SND_PlaySoundAliasAsMaster(const snd_alias_t *pAlias, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
 extern int SND_PlaySoundAlias(const snd_alias_t *pAlias, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
 extern snd_alias_t *Com_PickSoundAliasFromList(snd_alias_list_t *aliasList);
+extern MenuList * UI_LoadMenus(const char *menuFile, int imageTrack);
+extern void UI_AddMenuList(displayContextDef_t *dc, MenuList *menuList);
+extern int CL_GetLocalClientActiveCount(void);
+extern menuDef_t * Menus_FindByName(displayContextDef_t *dc, const char *p);
 extern int Com_ClientDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
 extern int CG_WeaponDObjHandle(int weaponNum);
 extern int Com_SafeClientDObjFree(int handle);
 extern void XAnimFreeTree(struct XAnimTree_s *tree, void *Free);
 extern int BG_GetNumWeapons(void);
 extern void AxisCopy(vec3_t *in, vec3_t *out);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void *memcpy(void *dest, const void *src, unsigned int n);
 extern void *memset(void *s, int c, unsigned int n);
 extern void CL_TrackStatistics(trStatistics_t *pStats);
@@ -805,158 +810,65 @@ Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
     );
 }
 
+static void CG_LocalizeHudElemString(const char *message, const char *messageType, char *hudElemString)
+{
+    const char *localizedString;
+    int searchPos;
+    int stringLen;
+
+    localizedString = SEH_LocalizeTextMessage(message, messageType, 0);
+    for (stringLen = 0; localizedString[stringLen]; ++stringLen) {
+    }
+
+    if (stringLen >= 0x100) {
+        return;
+    }
+
+    memcpy(hudElemString, localizedString, stringLen);
+    hudElemString[stringLen] = '\0';
+
+    searchPos = 0;
+    while (CG_ReplaceDirective(&searchPos, &stringLen, hudElemString)) {
+    }
+}
+
 /* line 1376 */
-__attribute__((naked))
 void CG_TranslateHudElemMessage(const char *message, const char *messageType, char *hudElemString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1376 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* hudElemString */
-        /* { scope 1 */
-        "movl $0, 8(%esp)\n" /* line 1385 */
-        "movl 0xc(%ebp), %eax\n" /* messageType */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %eax, %edx\n"
-        "cld\n" /* line 1386 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* stringLen */
-        "cmpl $0x100, %ecx\n" /* line 1388 */
-        "jle .Lf144666_001446b2\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1404 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf144666_001446b2:\n"
-        "movl %eax, 8(%esp)\n" /* line 1396 */
-        "movl %edx, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* hudElemString */
-        "calll memcpy\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1397 | stringLen */
-        "movb $0, (%esi, %eax)\n" /* hudElemString */
-        "movl $0, -0x1c(%ebp)\n" /* line 1399 | searchPos */
-        "leal -0x20(%ebp), %ebx\n" /* stringLen */
-        "leal -0x1c(%ebp), %edi\n" /* searchPos */
-        ".Lf144666_001446d6:\n"
-        "movl %esi, %ecx\n" /* line 1401 | hudElemString */
-        "movl %ebx, %edx\n"
-        "movl %edi, %eax\n"
-        "calll CG_ReplaceDirective\n"
-        "testb %al, %al\n"
-        "jne .Lf144666_001446d6\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1404 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CG_LocalizeHudElemString(message, messageType, hudElemString);
 }
 
 /* line 1529 */
-static __attribute__((naked))
+static
 void CG_LoadHudMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1529 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $7, 4(%esp)\n" /* line 1540 */
-        "movl $str_002a79d0, (%esp)\n" /* "ui_mp/hud.txt" */
-        "calll UI_LoadMenus\n"
-        "movl %eax, 4(%esp)\n" /* line 1541 */
-        "movl $cgDC, (%esp)\n"
-        "calll UI_AddMenuList\n"
-        "calll CL_GetLocalClientActiveCount\n" /* line 1543 */
-        "subl $1, %eax\n"
-        "je .Lf1446ee_0014475f\n"
-        "movl $str_002a79e8, 4(%esp)\n" /* line 1546 */
-        "movl $cgDC, (%esp)\n"
-        "calll Menus_FindByName\n"
-        "movl %eax, %ecx\n"
-        ".Lf1446ee_00144738:\n"
-        "testl %ecx, %ecx\n" /* line 1547 */
-        "je .Lf1446ee_0014475d\n"
-        "movl cgs, %edx\n" /* line 1550 */
-        "movl 8(%ecx), %eax\n"
-        "movl %eax, 0xc208(%edx)\n"
-        "movl 0xc(%ecx), %eax\n" /* line 1551 */
-        "movl %eax, 0xc20c(%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 1552 */
-        "movl %eax, 0xc210(%edx)\n"
-        /* } scope */
-        ".Lf1446ee_0014475d:\n"
-        "leave\n" /* line 1554 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1446ee_0014475f:\n"
-        "movl $str_002a79e0, 4(%esp)\n" /* line 1544 */
-        "movl $cgDC, (%esp)\n"
-        "calll Menus_FindByName\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf1446ee_00144738\n"
-    );
+    MenuList *menuList;
+    menuDef_t *menu;
+
+    menuList = UI_LoadMenus("ui_mp/hud.txt", 7);
+    UI_AddMenuList(&cgDC, menuList);
+
+    if (CL_GetLocalClientActiveCount() == 1) {
+        menu = Menus_FindByName(&cgDC, "Compass");
+    } else {
+        menu = Menus_FindByName(&cgDC, "Compass_mp");
+    }
+
+    if (menu != NULL) {
+        /* menuDef_t/window layout is still partially suspect; keep the recovered rect offsets local here. */
+        *(float *)((byte *)cgs + 0xc208) = *(float *)((byte *)menu + 8);
+        *(float *)((byte *)cgs + 0xc20c) = *(float *)((byte *)menu + 12);
+        *(float *)((byte *)cgs + 0xc210) = *(float *)((byte *)menu + 4);
+    }
 }
 
 /* line 1563 */
-__attribute__((naked))
 void CG_InitVote(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1563 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl $0xf, (%esp)\n" /* line 1565 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, cgsArray+24712\n"
-        "movl cgs, %ebx\n" /* line 1566 */
-        "movl $0x11, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x608c(%ebx)\n"
-        "movl $0x12, (%esp)\n" /* line 1567 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x6090(%ebx)\n"
-        "movl $0x10, (%esp)\n" /* line 1568 */
-        "calll CL_GetConfigString\n"
-        "movl $0, 8(%esp)\n"
-        "movl $str_002a79f4, 4(%esp)\n" /* "vote string" */
-        "movl %eax, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl $0x100, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "addl $0x6094, %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strncpyz\n"
-        "addl $0x14, %esp\n" /* line 1569 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    *(int *)((byte *)cgs + 0x6088) = atoi(CL_GetConfigString(0xf));
+    *(int *)((byte *)cgs + 0x608c) = atoi(CL_GetConfigString(0x11));
+    *(int *)((byte *)cgs + 0x6090) = atoi(CL_GetConfigString(0x12));
+    I_strncpyz((char *)cgs + 0x6094, SEH_LocalizeTextMessage(CL_GetConfigString(0x10), "vote string", 0), 0x100);
 }
 
 /* line 1578 */
@@ -1361,28 +1273,11 @@ int CG_PlaySoundAliasByName(int entitynum, const vec_t *origin, const char *alia
 /* line 1407 */
 void CG_SafeTranslateHudElemString(int index, char *hudElemString)
 {
-    const char *localizedString;
-    int searchPos;
-    int stringLen;
-
     if (index == 0) {
         return;
     }
 
-    localizedString = SEH_LocalizeTextMessage(CL_GetConfigString(index + 0x51e), "hudelem string", 0);
-    for (stringLen = 0; localizedString[stringLen]; ++stringLen) {
-    }
-
-    if (stringLen >= 0x100) {
-        return;
-    }
-
-    memcpy(hudElemString, localizedString, stringLen);
-    hudElemString[stringLen] = '\0';
-
-    searchPos = 0;
-    while (CG_ReplaceDirective(&searchPos, &stringLen, hudElemString)) {
-    }
+    CG_LocalizeHudElemString(CL_GetConfigString(index + 0x51e), "hudelem string", hudElemString);
 }
 
 /* line 1083 */
