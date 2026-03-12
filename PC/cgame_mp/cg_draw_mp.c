@@ -385,7 +385,9 @@ unsigned int CG_DrawCrosshairNames(void)
         return 0;
     }
 
-    VectorCopy(cg->refdef.vieworg, start);
+    start[0] = cg->refdef.vieworg[0];
+    start[1] = cg->refdef.vieworg[1];
+    start[2] = cg->refdef.vieworg[2];
     end[0] = start[0] + cg->refdef.viewaxis[0][0] * 8192.0f;
     end[1] = start[1] + cg->refdef.viewaxis[0][1] * 8192.0f;
     end[2] = start[2] + cg->refdef.viewaxis[0][2] * 8192.0f;
