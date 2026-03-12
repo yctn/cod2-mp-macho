@@ -913,228 +913,88 @@ void R_AddCmdDrawStretchRaw(int x, int y, int w, int h, int cols, int rows, cons
 }
 
 /* line 1219 */
-__attribute__((naked))
 void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1219 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* text */
-        "movl 0x30(%ebp), %eax\n" /* cursor */
-        "movl %eax, -0x20(%ebp)\n"
-        /* { scope 1 */
-        "cmpb $0, (%esi)\n" /* line 1227 | text */
-        "jne .Lfc8a6c_000c8a8e\n"
-        "movl 0x2c(%ebp), %ebx\n" /* cursorPos */
-        "testl %ebx, %ebx\n"
-        "js .Lfc8a6c_000c8b66\n"
-        ".Lfc8a6c_000c8a8e:\n"
-        "cld\n" /* line 1230 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %esi, %edi\n" /* text */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* len */
-        "leal 0x30(%ecx), %ebx\n" /* line 1236 */
-        "andl $0xfffffffc, %ebx\n"
-        /* { scope 2 */
-        "movl s_cmdList, %edi\n" /* line 950 */
-        "movl 0x30000(%edi), %ecx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ecx, %eax\n"
-        "addl 0x30004(%edi), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl %eax, %ebx\n"
-        "jg .Lfc8a6c_000c8b6e\n"
-        "leal (%edi, %ecx), %edx\n" /* line 960 */
-        "leal (%ebx, %ecx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%edi)\n"
-        "movl %edx, 0x30008(%edi)\n" /* line 963 */
-        "movw $0x15, (%edx)\n" /* line 964 */
-        "movw %bx, 2(%edx)\n" /* line 965 */
-        "movl %edx, %edi\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1240 */
-        "je .Lfc8a6c_000c8b66\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 1243 | x */
-        "movss %xmm0, 4(%edx)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 1244 | y */
-        "movss %xmm0, 8(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1245 | font */
-        "movl %eax, 0xc(%edx)\n"
-        "movss 0x1c(%ebp), %xmm0\n" /* line 1246 | xScale */
-        "movss %xmm0, 0x10(%edx)\n"
-        "movss 0x20(%ebp), %xmm0\n" /* line 1247 | yScale */
-        "movss %xmm0, 0x14(%edx)\n"
-        "leal 0x18(%edx), %eax\n" /* line 1248 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x24(%ebp), %eax\n" /* color */
-        "movl %eax, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "movl 0x28(%ebp), %edx\n" /* line 1249 | style */
-        "movl %edx, 0x1c(%edi)\n"
-        "movl 0x2c(%ebp), %eax\n" /* line 1250 | cursorPos */
-        "movl %eax, 0x20(%edi)\n"
-        "movzbl -0x20(%ebp), %edx\n" /* line 1251 */
-        "movb %dl, 0x24(%edi)\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1252 | maxChars */
-        "movl %eax, 0x28(%edi)\n"
-        "leal 0x2c(%edi), %eax\n" /* line 1255 */
-        "movl -0x1c(%ebp), %edx\n" /* len */
-        "movl %edx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1258 | len */
-        "movb $0, 0x2c(%eax, %edi)\n"
-        /* } scope */
-        ".Lfc8a6c_000c8b66:\n"
-        "addl $0x2c, %esp\n" /* line 1259 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfc8a6c_000c8b6e:\n"
-        "movl $0, 0x30008(%edi)\n" /* line 956 */
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1259 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int byteCount;
+    int len;
+    int textIndex;
+    char *cmdText;
+    GfxCmdDrawText *cmd;
+
+    if (*text == '\0' && cursorPos < 0) {
+        return;
+    }
+
+    len = 0;
+    while (text[len] != '\0') {
+        ++len;
+    }
+
+    byteCount = (len + 0x31) & ~3;
+    cmd = (GfxCmdDrawText *)R_AllocCmd(byteCount, 0, 0x15);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->x = x;
+    cmd->y = y;
+    cmd->font = font;
+    cmd->xScale = xScale;
+    cmd->yScale = yScale;
+    R_ConvertColorToBytes(color, cmd->color.array);
+    cmd->style = style;
+    cmd->cursorPos = cursorPos;
+    cmd->cursor = (char)cursor;
+    cmd->maxChars = maxChars;
+
+    cmdText = (char *)((byte *)cmd + 0x2c);
+    for (textIndex = 0; textIndex < len; ++textIndex) {
+        cmdText[textIndex] = text[textIndex];
+    }
+    cmdText[len] = '\0';
 }
 
 /* line 1262 */
-__attribute__((naked))
 void R_AddCmdDrawTextInSpace(const char *text, FontHandle font, const vec_t *org, const vec_t *xPixelStep, const vec_t *yPixelStep, const vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1262 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* text */
-        /* { scope 1 */
-        "cmpb $0, (%esi)\n" /* line 1269 | text */
-        "jne .Lfc8b80_000c8b99\n"
-        /* } scope */
-        ".Lfc8b80_000c8b91:\n"
-        "addl $0x2c, %esp\n" /* line 1296 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8b80_000c8b99:\n"
-        "cld\n" /* line 1272 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %esi, %edi\n" /* text */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* len */
-        "leal 0x33(%ecx), %ebx\n" /* line 1278 */
-        "andl $0xfffffffc, %ebx\n"
-        /* { scope 2 */
-        "movl s_cmdList, %edi\n" /* line 950 */
-        "movl 0x30000(%edi), %ecx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ecx, %eax\n"
-        "addl 0x30004(%edi), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl %eax, %ebx\n"
-        "jle .Lfc8b80_000c8be7\n"
-        "movl $0, 0x30008(%edi)\n" /* line 956 */
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1296 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfc8b80_000c8be7:\n"
-        "leal (%edi, %ecx), %edx\n" /* line 960 */
-        "leal (%ebx, %ecx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%edi)\n"
-        "movl %edx, 0x30008(%edi)\n" /* line 963 */
-        "movw $0x16, (%edx)\n" /* line 964 */
-        "movw %bx, 2(%edx)\n" /* line 965 */
-        "movl %edx, %ebx\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1282 */
-        "je .Lfc8b80_000c8b91\n"
-        "leal 4(%edx), %edx\n" /* line 1285 | to */
-        /* { scope 2 */
-        "movl 0x10(%ebp), %ecx\n" /* line 199 | org */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 4(%ebx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 1286 | font */
-        "movl %eax, 0x10(%ebx)\n"
-        "leal 0x14(%ebx), %edx\n" /* line 1287 | to */
-        /* { scope 2 */
-        "movl 0x14(%ebp), %ecx\n" /* line 199 | xPixelStep */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 0x14(%ebx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0x20(%ebx), %edx\n" /* line 1288 | to */
-        /* { scope 2 */
-        "movl 0x18(%ebp), %ecx\n" /* line 199 | yPixelStep */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 0x20(%ebx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0x2c(%ebx), %eax\n" /* line 1289 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* color */
-        "movl %eax, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "leal 0x30(%ebx), %eax\n" /* line 1292 */
-        "movl -0x1c(%ebp), %edx\n" /* len */
-        "movl %edx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 1295 | len */
-        "movb $0, 0x30(%ecx, %ebx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1296 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int byteCount;
+    int len;
+    int textIndex;
+    char *cmdText;
+    GfxCmdDrawTextInSpace *cmd;
+
+    if (*text == '\0') {
+        return;
+    }
+
+    len = 0;
+    while (text[len] != '\0') {
+        ++len;
+    }
+
+    byteCount = (len + 0x34) & ~3;
+    cmd = (GfxCmdDrawTextInSpace *)R_AllocCmd(byteCount, 0, 0x16);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->org[0] = org[0];
+    cmd->org[1] = org[1];
+    cmd->org[2] = org[2];
+    cmd->font = font;
+    cmd->xPixelStep[0] = xPixelStep[0];
+    cmd->xPixelStep[1] = xPixelStep[1];
+    cmd->xPixelStep[2] = xPixelStep[2];
+    cmd->yPixelStep[0] = yPixelStep[0];
+    cmd->yPixelStep[1] = yPixelStep[1];
+    cmd->yPixelStep[2] = yPixelStep[2];
+    R_ConvertColorToBytes(color, cmd->color.array);
+
+    cmdText = (char *)((byte *)cmd + 0x30);
+    for (textIndex = 0; textIndex < len; ++textIndex) {
+        cmdText[textIndex] = text[textIndex];
+    }
+    cmdText[len] = '\0';
 }
 
 /* line 1299 */
@@ -1221,113 +1081,38 @@ void R_AddCmdSetMaterialColor(const vec_t *color)
 }
 
 /* line 1367 */
-__attribute__((naked))
 void R_AddCmdLightProperties(int lightIndex, const GfxLight *light)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1367 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $8, %esp\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ebx\n" /* line 950 */
-        "movl 0x30000(%ebx), %esi\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %esi, %eax\n"
-        "cmpl $0x4b, %eax\n"
-        "jg .Lfc8f2e_000c9035\n"
-        "movl $0, 0x30008(%ebx)\n" /* line 956 */
-        "movl $0, -0x10(%ebp)\n"
-        "movl -0x10(%ebp), %edx\n"
-        /* } scope */
-        ".Lfc8f2e_000c8f67:\n"
-        "movl 8(%ebp), %eax\n" /* line 1378 | lightIndex */
-        "movl %eax, 4(%edx)\n"
-        "movl %edx, %ecx\n" /* line 1379 | from, to */
-        "addl $8, %ecx\n" /* to */
-        "movl 0xc(%ebp), %edx\n" /* light, from */
-        "addl $4, %edx\n" /* from */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %ebx\n" /* line 456 | light */
-        "movl 4(%ebx), %eax\n"
-        "movl -0x10(%ebp), %esi\n"
-        "movl %eax, 8(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 1380 | light */
-        "movl 0x1c(%eax), %ebx\n" /* z */
-        "movl 0x18(%eax), %edx\n" /* y */
-        "movl %esi, %ecx\n" /* v */
-        "addl $0x28, %ecx\n" /* v */
-        /* { scope 1 */
-        "movl 0x14(%eax), %eax\n" /* line 447 */
-        "movl -0x10(%ebp), %esi\n"
-        "movl %eax, 0x28(%esi)\n"
-        "movl %edx, 4(%ecx)\n" /* line 448 */
-        "movl %ebx, 8(%ecx)\n" /* line 449 */
-        "movl $0x3f800000, %esi\n" /* line 450 */
-        "movl %esi, 0xc(%ecx)\n"
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 1381 | light */
-        "movl 0x28(%eax), %edi\n" /* z */
-        "movl 0x24(%eax), %ebx\n" /* y */
-        "movl -0x10(%ebp), %edx\n" /* v */
-        "addl $0x18, %edx\n" /* v */
-        /* { scope 1 */
-        "movss 0x20(%eax), %xmm0\n" /* line 447 */
-        "movl -0x10(%ebp), %eax\n"
-        "movss %xmm0, 0x18(%eax)\n"
-        "movl %ebx, 4(%edx)\n" /* line 448 */
-        "movl %edi, 8(%edx)\n" /* line 449 */
-        "movl %esi, 0xc(%edx)\n" /* line 450 */
-        /* } scope */
-        "movl %eax, %edx\n" /* line 1382 | result */
-        "addl $0x38, %edx\n" /* result */
-        "movl imp_r_specularColorScale, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n" /* scale */
-        /* { scope 1 */
-        "movaps %xmm1, %xmm0\n" /* line 519 */
-        "movl -0x10(%ebp), %ebx\n"
-        "mulss 0x28(%ebx), %xmm0\n"
-        "movss %xmm0, 0x38(%ebx)\n"
-        "movaps %xmm1, %xmm0\n" /* line 520 */
-        "mulss 4(%ecx), %xmm0\n"
-        "movss %xmm0, 4(%edx)\n"
-        "movaps %xmm1, %xmm0\n" /* line 521 */
-        "mulss 8(%ecx), %xmm0\n"
-        "movss %xmm0, 8(%edx)\n"
-        "mulss 0xc(%ecx), %xmm1\n" /* line 522 */
-        "movss %xmm1, 0xc(%edx)\n"
-        /* } scope */
-        "movl 0xc(%ebp), %esi\n" /* line 1383 | light */
-        "movl (%esi), %eax\n"
-        "movl %eax, 0x48(%ebx)\n" /* y */
-        "addl $8, %esp\n" /* line 1384 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8f2e_000c9035:\n"
-        "leal (%ebx, %esi), %edx\n" /* line 960 */
-        "leal 0x4c(%esi), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ebx)\n"
-        "addl $0x4c, 0x30004(%ebx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ebx)\n" /* line 963 */
-        "movw $5, (%edx)\n" /* line 964 */
-        "movw $0x4c, 2(%edx)\n" /* line 965 */
-        "movl %edx, -0x10(%ebp)\n"
-        "jmp .Lfc8f2e_000c8f67\n"
-    );
+    float scale;
+    GfxCmdSetLightProperties *cmd;
+
+    cmd = (GfxCmdSetLightProperties *)R_AllocCriticalCmd(0x4c, 5);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->lightIndex = lightIndex;
+    cmd->position[0] = light->position[0];
+    cmd->position[1] = light->position[1];
+    cmd->position[2] = light->position[2];
+    cmd->position[3] = light->position[3];
+
+    cmd->ambient[0] = light->u.dir.ambientColor[0];
+    cmd->ambient[1] = light->u.dir.ambientColor[1];
+    cmd->ambient[2] = light->u.dir.ambientColor[2];
+    cmd->ambient[3] = 1.0f;
+
+    cmd->color[0] = light->color[0];
+    cmd->color[1] = light->color[1];
+    cmd->color[2] = light->color[2];
+    cmd->color[3] = 1.0f;
+
+    scale = (*(const dvar_t **)imp_r_specularColorScale)->current.value;
+    cmd->specular[0] = cmd->color[0] * scale;
+    cmd->specular[1] = cmd->color[1] * scale;
+    cmd->specular[2] = cmd->color[2] * scale;
+    cmd->specular[3] = scale;
+    cmd->lightDef = light->def;
 }
 
 /* line 1452 */
