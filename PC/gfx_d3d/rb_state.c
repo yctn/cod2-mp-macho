@@ -2531,119 +2531,21 @@ void RB_ChangeState_0(int stateBits0)
 }
 
 /* line 1242 */
-__attribute__((naked))
 void RB_SetProjectionMatrix(const D3DMATRIX *matrix)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1242 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* matrix */
-        "movl imp_backEnd, %ebx\n" /* line 1249 */
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %esi\n"
-        "shll $4, %esi\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %esi, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl $0x4e0, %eax\n"
-        "movl (%ecx), %edx\n"
-        "movl %edx, 0x340(%ebx, %eax)\n"
-        "movl 4(%ecx), %edx\n"
-        "movl %edx, 0x344(%ebx, %eax)\n"
-        "movl 8(%ecx), %edx\n"
-        "movl %edx, 0x348(%ebx, %eax)\n"
-        "movl 0xc(%ecx), %edx\n"
-        "movl %edx, 0x34c(%ebx, %eax)\n"
-        "movl 0x10(%ecx), %edx\n"
-        "movl %edx, 0x350(%ebx, %eax)\n"
-        "movl 0x14(%ecx), %edx\n"
-        "movl %edx, 0x354(%ebx, %eax)\n"
-        "movl 0x18(%ecx), %edx\n"
-        "movl %edx, 0x358(%ebx, %eax)\n"
-        "movl 0x1c(%ecx), %edx\n"
-        "movl %edx, 0x35c(%ebx, %eax)\n"
-        "movl 0x20(%ecx), %edx\n"
-        "movl %edx, 0x360(%ebx, %eax)\n"
-        "movl 0x24(%ecx), %edx\n"
-        "movl %edx, 0x364(%ebx, %eax)\n"
-        "movl 0x28(%ecx), %edx\n"
-        "movl %edx, 0x368(%ebx, %eax)\n"
-        "movl 0x2c(%ecx), %edx\n"
-        "movl %edx, 0x36c(%ebx, %eax)\n"
-        "movl 0x30(%ecx), %edx\n"
-        "movl %edx, 0x370(%ebx, %eax)\n"
-        "movl 0x34(%ecx), %edx\n"
-        "movl %edx, 0x374(%ebx, %eax)\n"
-        "movl 0x38(%ecx), %edx\n"
-        "movl %edx, 0x378(%ebx, %eax)\n"
-        "movl 0x3c(%ecx), %edx\n"
-        "movl %edx, 0x37c(%ebx, %eax)\n"
-        "movl 0x2e80(%ebx), %edx\n" /* line 1206 */
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %ebx), %edx\n"
-        "movb $1, 0x440(%edx)\n" /* line 1208 */
-        "movb $0, 0x441(%edx)\n" /* line 1209 */
-        "movb $0, 0x442(%edx)\n" /* line 1210 */
-        "movb $0, 0x443(%edx)\n" /* line 1211 */
-        "movb $0, 0x770(%edx)\n" /* line 1213 */
-        "movb $0, 0x771(%edx)\n" /* line 1214 */
-        "movb $0, 0x772(%edx)\n" /* line 1215 */
-        "movb $0, 0x773(%edx)\n" /* line 1216 */
-        "movb $0, 0x880(%edx)\n" /* line 1218 */
-        "movb $0, 0x881(%edx)\n" /* line 1219 */
-        "movb $0, 0x882(%edx)\n" /* line 1220 */
-        "movb $0, 0x883(%edx)\n" /* line 1221 */
-        "movb $0, 0xdd0(%edx)\n" /* line 1224 */
-        "movb $0, 0xdd1(%edx)\n" /* line 1225 */
-        "movb $0, 0xdd2(%edx)\n" /* line 1226 */
-        "movb $0, 0xdd3(%edx)\n" /* line 1227 */
-        "movb $0, 0x990(%edx)\n" /* line 1230 */
-        "movb $0, 0x991(%edx)\n" /* line 1231 */
-        "movb $0, 0x992(%edx)\n" /* line 1232 */
-        "movb $0, 0x993(%edx)\n" /* line 1233 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 1236 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfcf91e_000cfaaa\n"
-        "addl $0x1c, %esp\n" /* line 1251 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcf91e_000cfaaa:\n"
-        "leal 0x340(%edx), %ebx\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcf91e_000cfabc:\n"
-        "movl 8(%edi), %eax\n" /* line 1237 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcf91e_000cfabc\n"
-        "addl $0x1c, %esp\n" /* line 1251 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    RB_SetPrimaryCodeMatrix(&activeMatrices->projection, matrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->viewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->shadowLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(D3DTS_PROJECTION, &activeMatrices->projection.matrix[0]);
+    }
 }
 
 /* line 1630 */
