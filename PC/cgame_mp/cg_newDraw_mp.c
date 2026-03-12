@@ -801,193 +801,114 @@ int CG_KeyInterceptEvent(int key, qboolean down)
 }
 
 /* line 938 */
-static __attribute__((naked))
 void CG_PulseLowHealthOverlay(float healthRatio)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 938 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movss 8(%ebp), %xmm1\n" /* healthRatio */
-        /* { scope 1 */
-        "movl imp_cg, %ecx\n" /* line 942 */
-        "movl (%ecx), %edx\n"
-        "movss 0x2be28(%edx), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf18911a_0018914f\n"
-        "movl hud_healthOverlay_pulseStart, %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf18911a_0018925a\n"
-        "movl (%ecx), %edx\n"
-        ".Lf18911a_0018914f:\n"
-        "movss %xmm1, 0x2be28(%edx)\n" /* line 947 */
-        "movl 0x2be14(%edx), %eax\n" /* line 949 */
-        "addl 0x2be18(%edx), %eax\n"
-        "cmpl 0x25bb0(%edx), %eax\n"
-        "jg .Lf18911a_0018923c\n"
-        "movl hud_healthOverlay_pulseStart, %eax\n" /* line 952 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf18911a_00189241\n"
-        "cmpb $0, 0x2be20(%edx)\n"
-        "je .Lf18911a_0018923c\n"
-        ".Lf18911a_0018918f:\n"
-        "movl (%ecx), %esi\n" /* line 957 */
-        "movl 0x25bb0(%esi), %eax\n"
-        "movl %eax, 0x2be14(%esi)\n"
-        "movl 0x2be10(%esi), %eax\n" /* line 958 */
-        "movl %eax, 0x2be0c(%esi)\n"
-        "movl 0x2be2c(%esi), %edi\n" /* line 960 */
-        "cmpl $3, %edi\n"
-        "ja .Lf18911a_00189277\n"
-        "movl 0x2be1c(%esi), %eax\n" /* line 962 */
-        "cmpl $1, %eax\n"
-        "je .Lf18911a_001892a9\n"
-        "cmpl $2, %eax\n"
-        "je .Lf18911a_00189320\n"
-        "testl %eax, %eax\n"
-        "jne .Lf18911a_0018923c\n"
-        "movss pulseMags(, %edi, 4), %xmm0\n" /* line 965 */
-        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
-        "movaps %xmm0, %xmm1\n"
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm3, %xmm3\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm3, %xmm1\n"
-        "andps %xmm1, %xmm4\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm4, %xmm1\n"
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm3, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        "movss %xmm0, 0x2be10(%esi)\n" /* line 965 */
-        "movl hud_healthOverlay_phaseOne_pulseDuration, %eax\n" /* line 966 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be18(%esi)\n"
-        "movl $1, 0x2be1c(%esi)\n" /* line 967 */
-        /* } scope */
-        ".Lf18911a_0018923c:\n"
-        "popl %ebx\n" /* line 1000 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18911a_00189241:\n"
-        "cmpb $0, 0x2be20(%edx)\n" /* line 954 */
-        "jne .Lf18911a_0018918f\n"
-        "movb $1, 0x2be20(%edx)\n" /* line 955 */
-        "jmp .Lf18911a_0018918f\n"
-        ".Lf18911a_0018925a:\n"
-        "movl 0x25bb0(%edx), %eax\n" /* line 944 */
-        "movl %eax, 0x2be24(%edx)\n"
-        "movl $0, 0x2be2c(%edx)\n" /* line 945 */
-        "movl (%ecx), %edx\n"
-        "jmp .Lf18911a_0018914f\n"
-        ".Lf18911a_00189277:\n"
-        "movb $0, 0x2be20(%esi)\n" /* line 994 */
-        "movl hud_healthOverlay_phaseEnd_toAlpha, %eax\n" /* line 995 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be10(%esi)\n"
-        "movl hud_healthOverlay_phaseEnd_pulseDuration, %eax\n" /* line 996 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be18(%esi)\n"
-        "movl $0, 0x2be1c(%esi)\n" /* line 997 */
-        /* } scope */
-        "popl %ebx\n" /* line 1000 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18911a_001892a9:\n"
-        "movss pulseMags(, %edi, 4), %xmm0\n" /* line 970 */
-        "movl hud_healthOverlay_phaseTwo_toAlphaMultiplier, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
-        "movaps %xmm0, %xmm1\n"
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm3, %xmm3\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm3, %xmm1\n"
-        "andps %xmm1, %xmm4\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm4, %xmm1\n"
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm3, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        "movss %xmm0, 0x2be10(%esi)\n" /* line 970 */
-        "movl hud_healthOverlay_phaseTwo_pulseDuration, %eax\n" /* line 971 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be18(%esi)\n"
-        "movl $2, 0x2be1c(%esi)\n" /* line 972 */
-        /* } scope */
-        "popl %ebx\n" /* line 1000 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18911a_00189320:\n"
-        "movss pulseMags(, %edi, 4), %xmm0\n" /* line 975 */
-        "movl hud_healthOverlay_phaseThree_toAlphaMultiplier, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
-        "movaps %xmm0, %xmm1\n"
-        "subss %xmm2, %xmm1\n"
-        "pxor %xmm3, %xmm3\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm3, %xmm1\n"
-        "andps %xmm1, %xmm4\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm4, %xmm1\n"
-        "movaps %xmm3, %xmm2\n"
-        "subss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm3, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        "movss %xmm0, 0x2be10(%esi)\n" /* line 975 */
-        "movl hud_healthOverlay_phaseThree_pulseDuration, %ebx\n" /* line 976 */
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, 0x2be18(%esi)\n"
-        "movl $0, 0x2be1c(%esi)\n" /* line 977 */
-        "movl 0x2be24(%esi), %ecx\n" /* line 983 */
-        "movl hud_healthOverlay_regenPauseTime, %eax\n"
-        "addl 8(%eax), %ecx\n"
-        "movl hud_healthOverlay_phaseOne_pulseDuration, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl hud_healthOverlay_phaseTwo_pulseDuration, %edx\n"
-        "addl 8(%edx), %eax\n"
-        "addl 8(%ebx), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "subl %eax, %ecx\n"
-        "cmpl %ecx, 0x25bb0(%esi)\n"
-        "jl .Lf18911a_0018923c\n"
-        "leal 1(%edi), %eax\n" /* line 984 */
-        "movl %eax, 0x2be2c(%esi)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1000 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    cg_t *cg;
+    float targetAlpha;
+    int pulseIndex;
+    int phaseThreeDuration;
+    int nextPulseThresholdTime;
+
+    cg = *(cg_t **)imp_cg;
+
+    if (cg->healthOverlayOldHealth > healthRatio && hud_healthOverlay_pulseStart->current.value > healthRatio)
+    {
+        cg->healthOverlayLastHitTime = cg->time;
+        cg->healthOverlayPulseIndex = 0;
+    }
+
+    cg->healthOverlayOldHealth = healthRatio;
+    if (cg->healthOverlayPulseTime + cg->healthOverlayPulseDuration > cg->time)
+    {
+        return;
+    }
+
+    if (hud_healthOverlay_pulseStart->current.value > healthRatio)
+    {
+        if (!cg->healthOverlayHurt)
+        {
+            cg->healthOverlayHurt = 1;
+        }
+    }
+    else if (!cg->healthOverlayHurt)
+    {
+        return;
+    }
+
+    cg->healthOverlayPulseTime = cg->time;
+    cg->healthOverlayFromAlpha = cg->healthOverlayToAlpha;
+    pulseIndex = cg->healthOverlayPulseIndex;
+    if (pulseIndex > 3)
+    {
+        cg->healthOverlayHurt = 0;
+        cg->healthOverlayToAlpha = hud_healthOverlay_phaseEnd_toAlpha->current.value;
+        cg->healthOverlayPulseDuration = hud_healthOverlay_phaseEnd_pulseDuration->current.integer;
+        cg->healthOverlayPulsePhase = 0;
+        return;
+    }
+
+    if (cg->healthOverlayPulsePhase == 0)
+    {
+        targetAlpha = pulseMags[pulseIndex];
+        if (targetAlpha < 0.0f)
+        {
+            targetAlpha = 0.0f;
+        }
+        else if (targetAlpha > 1.0f)
+        {
+            targetAlpha = 1.0f;
+        }
+
+        cg->healthOverlayToAlpha = targetAlpha;
+        cg->healthOverlayPulseDuration = hud_healthOverlay_phaseOne_pulseDuration->current.integer;
+        cg->healthOverlayPulsePhase = 1;
+        return;
+    }
+
+    if (cg->healthOverlayPulsePhase == 1)
+    {
+        targetAlpha = pulseMags[pulseIndex] * hud_healthOverlay_phaseTwo_toAlphaMultiplier->current.value;
+        if (targetAlpha < 0.0f)
+        {
+            targetAlpha = 0.0f;
+        }
+        else if (targetAlpha > 1.0f)
+        {
+            targetAlpha = 1.0f;
+        }
+
+        cg->healthOverlayToAlpha = targetAlpha;
+        cg->healthOverlayPulseDuration = hud_healthOverlay_phaseTwo_pulseDuration->current.integer;
+        cg->healthOverlayPulsePhase = 2;
+        return;
+    }
+
+    if (cg->healthOverlayPulsePhase != 2)
+    {
+        return;
+    }
+
+    targetAlpha = pulseMags[pulseIndex] * hud_healthOverlay_phaseThree_toAlphaMultiplier->current.value;
+    if (targetAlpha < 0.0f)
+    {
+        targetAlpha = 0.0f;
+    }
+    else if (targetAlpha > 1.0f)
+    {
+        targetAlpha = 1.0f;
+    }
+
+    cg->healthOverlayToAlpha = targetAlpha;
+    phaseThreeDuration = hud_healthOverlay_phaseThree_pulseDuration->current.integer;
+    cg->healthOverlayPulseDuration = phaseThreeDuration;
+    cg->healthOverlayPulsePhase = 0;
+
+    nextPulseThresholdTime = cg->healthOverlayLastHitTime + hud_healthOverlay_regenPauseTime->current.integer;
+    nextPulseThresholdTime -= (hud_healthOverlay_phaseOne_pulseDuration->current.integer + hud_healthOverlay_phaseTwo_pulseDuration->current.integer + phaseThreeDuration) * 3;
+    if (cg->time >= nextPulseThresholdTime)
+    {
+        cg->healthOverlayPulseIndex = pulseIndex + 1;
+    }
 }
 
 /* line 2012 */
