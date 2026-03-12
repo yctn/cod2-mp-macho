@@ -28,6 +28,18 @@ extern const DxTextureOpDecode s_textureOpTable[]; /* rodata.c */
 extern const DWORD s_textureArgTable[]; /* rodata.c */
 extern const GfxViewportBehavior s_viewportBehaviorForRenderTarget[]; /* rodata.c */
 
+#define VTABLE(obj) (*(void ***)((void *)(obj)))
+
+typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
+typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
+typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
+
+typedef struct {
+    IDirect3DVertexBuffer9 *vb;
+    int offset;
+    int stride;
+} DxTrackedStreamState;
+
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
 void RB_DecideDefaultSamplerState(void);
@@ -68,89 +80,39 @@ void RB_SetInitialState(void);
 void RB_SetWorldMatrixForEntity(const GfxEntity *re);
 
 /* line 1805 */
-__attribute__((naked))
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1805 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* ib */
-        "movl dxState+8396, %eax\n" /* line 1809 */
-        "movl %eax, dxState+8412\n"
-        "movl %edi, dxState+8396\n" /* line 1810 | ib */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfcd0f0_000cd118:\n"
-        "movl 8(%esi), %eax\n" /* line 1811 */
-        "movl (%eax), %edx\n"
-        "movl %edi, 4(%esp)\n" /* ib */
-        "movl %eax, (%esp)\n"
-        "calll *0x1a0(%edx)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd0f0_000cd118\n"
-        "movl $0, dxState+8412\n" /* line 1812 */
-        "addl $0x1c, %esp\n" /* line 1813 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *device;
+
+    dxState.indexBufferDeselecting = dxState.indexBuffer;
+    dxState.indexBuffer = ib;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetIndicesFn)VTABLE(device)[0x1a0 / 4])(device, ib);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+
+    dxState.indexBufferDeselecting = NULL;
 }
 
 /* line 1816 */
-__attribute__((naked))
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1816 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* streamIndex */
-        "movl $dxState+8400, %eax\n" /* line 1820 */
-        "leal (%ebx, %ebx, 2), %edx\n" /* streamIndex */
-        "shll $2, %edx\n"
-        "movl dxState+8400(%edx), %ecx\n"
-        "movl %ecx, dxState+8416\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 1821 | vb */
-        "movl %ecx, dxState+8400(%edx)\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1822 | vertexOffset */
-        "movl %ecx, 4(%edx, %eax)\n"
-        "movl 0x14(%ebp), %ecx\n" /* line 1823 | vertexStride */
-        "movl %ecx, 8(%edx, %eax)\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd142_000cd188:\n"
-        "movl 8(%edi), %eax\n" /* line 1824 */
-        "movl (%eax), %edx\n"
-        "movl 0x14(%ebp), %ecx\n" /* vertexStride */
-        "movl %ecx, 0x10(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* vertexOffset */
-        "movl %ecx, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %ecx\n" /* vb */
-        "movl %ecx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* streamIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x190(%edx)\n"
-        "movl (%esi), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfcd142_000cd188\n"
-        "movl $0, dxState+8416\n" /* line 1825 */
-        "addl $0x2c, %esp\n" /* line 1826 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DxTrackedStreamState *streamState;
+    void *device;
+
+    streamState = (DxTrackedStreamState *)((byte *)&dxState + 8400 + streamIndex * sizeof(*streamState));
+    dxState.vertexBufferDeselecting = streamState->vb;
+    streamState->vb = vb;
+    streamState->offset = vertexOffset;
+    streamState->stride = vertexStride;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetStreamSourceFn)VTABLE(device)[0x190 / 4])(device, streamIndex, vb, vertexOffset, vertexStride);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+
+    dxState.vertexBufferDeselecting = NULL;
 }
 
 /* line 899 */
@@ -161,69 +123,41 @@ void RB_DecideDefaultSamplerState(void)
 }
 
 /* line 907 */
-__attribute__((naked))
 void RB_SetAnisotropy(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 907 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl imp_r_anisotropy, %eax\n" /* line 912 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl imp_dx, %edx\n"
-        "movl %eax, 0x2d6c(%edx)\n"
-        "movl 0x2d70(%edx), %ecx\n" /* line 913 */
-        "cmpl %ecx, %eax\n"
-        "jle .Lfcd1ea_000cd218\n"
-        "movl %ecx, 0x2d6c(%edx)\n" /* line 914 */
-        ".Lfcd1ea_000cd218:\n"
-        "cmpl $1, 0x2d6c(%edx)\n" /* line 915 */
-        "jle .Lfcd1ea_000cd284\n"
-        ".Lfcd1ea_000cd221:\n"
-        "movl 0x2d6c(%edx), %ebx\n" /* line 918 | anisotropy */
-        "movl $1, %eax\n" /* line 154 */
-        "cmpl %ebx, %eax\n"
-        "cmovnsl %eax, %ebx\n"
-        "movl imp_vidConfig, %eax\n" /* line 919 */
-        "movl 0x1c(%eax), %esi\n" /* samplerIndex */
-        "testl %esi, %esi\n" /* samplerIndex */
-        "jle .Lfcd1ea_000cd27d\n"
-        "xorl %esi, %esi\n" /* samplerIndex */
-        "jmp .Lfcd1ea_000cd247\n"
-        ".Lfcd1ea_000cd241:\n"
-        "movl imp_dx, %edx\n"
-        ".Lfcd1ea_000cd247:\n"
-        "movl 8(%edx), %eax\n" /* line 920 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* anisotropy */
-        "movl $0xa, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* samplerIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfcd1ea_000cd241\n"
-        "addl $1, %esi\n" /* line 919 | samplerIndex */
-        "movl imp_vidConfig, %eax\n"
-        "cmpl 0x1c(%eax), %esi\n" /* samplerIndex */
-        "jl .Lfcd1ea_000cd241\n"
-        /* } scope */
-        ".Lfcd1ea_000cd27d:\n"
-        "addl $0x10, %esp\n" /* line 921 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd1ea_000cd284:\n"
-        "movl $0, 0x2d6c(%edx)\n" /* line 916 */
-        "jmp .Lfcd1ea_000cd221\n"
-    );
+    const dvar_t *anisotropyDvar;
+    DxGlobals *dx;
+    void *device;
+    int anisotropy;
+    int samplerCount;
+    int samplerIndex;
+
+    anisotropyDvar = *(const dvar_t **)imp_r_anisotropy;
+    dx = (DxGlobals *)imp_dx;
+    dx->anisotropy = anisotropyDvar->current.integer;
+    if (dx->anisotropy > dx->maxAnisotropy) {
+        dx->anisotropy = dx->maxAnisotropy;
+    }
+    if (dx->anisotropy <= 1) {
+        dx->anisotropy = 0;
+    }
+
+    anisotropy = dx->anisotropy;
+    if (anisotropy < 1) {
+        anisotropy = 1;
+    }
+
+    samplerCount = *(int *)((byte *)imp_vidConfig + 0x1c);
+    if (samplerCount <= 0) {
+        return;
+    }
+
+    device = *(void **)((byte *)imp_dx + 8);
+    for (samplerIndex = 0; samplerIndex < samplerCount; ++samplerIndex) {
+        do {
+            ((SetSamplerStateFn)VTABLE(device)[0x114 / 4])(device, samplerIndex, 0xa, anisotropy);
+        } while (*(volatile int *)imp_alwaysfails != 0);
+    }
 }
 
 /* line 438 */
@@ -3629,4 +3563,3 @@ void RB_SetWorldMatrixForEntity(const GfxEntity *re)
         "retl\n"
     );
 }
-

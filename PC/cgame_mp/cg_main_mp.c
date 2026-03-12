@@ -10,6 +10,17 @@
  */
 
 extern struct XModel * CL_RegisterModel(const char *name);
+extern snd_alias_t *CL_PickSoundAlias(const char *aliasname);
+extern const char *CL_GetConfigString(int index);
+extern int atoi(const char *nptr);
+extern const char *Info_ValueForKey(const char *s, const char *key);
+extern void SND_PlayAmbientAlias(const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system);
+extern int Com_ClientDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
+extern int CG_WeaponDObjHandle(int weaponNum);
+extern int Com_SafeClientDObjFree(int handle);
+extern void XAnimFreeTree(struct XAnimTree_s *tree, void *Free);
+extern int BG_GetNumWeapons(void);
+extern void *memset(void *s, int c, unsigned int n);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void * Hunk_AllocInternal(int size);
 extern void CL_ConsolePrint(int channel, const char *msg, int duration, int width);
@@ -618,50 +629,16 @@ void CG_RegisterGraphics(const char *mapname)
 }
 
 /* line 1043 */
-__attribute__((naked))
 void CG_StartAmbient(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1043 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $3, (%esp)\n" /* line 1053 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, %ebx\n"
-        "movl $str_002a67e4, 4(%esp)\n" /* line 1055 */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n" /* line 1056 */
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %esi\n" /* pAlias */
-        "movl $str_002a79b8, 4(%esp)\n" /* line 1058 */
-        "movl %ebx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n" /* line 1059 */
-        "calll atoi\n"
-        "movl cg, %edx\n"
-        "movl 0x25bb0(%edx), %edx\n"
-        "subl %edx, %eax\n" /* line 1060 */
-        "js .Lf1443fa_00144456\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1443fa_00144458\n"
-        ".Lf1443fa_00144456:\n"
-        "xorl %eax, %eax\n"
-        ".Lf1443fa_00144458:\n"
-        "movl $1, 8(%esp)\n" /* line 1063 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* pAlias */
-        "calll SND_PlayAmbientAlias\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1064 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *infoString;
+    int fadeTime;
+
+    infoString = CL_GetConfigString(3);
+    SND_PlayAmbientAlias(
+        CL_PickSoundAlias(Info_ValueForKey(infoString, str_002a67e4)),
+        ((fadeTime = atoi(Info_ValueForKey(infoString, str_002a79b8))) - cg->time < 0 || cg->time == 0) ? 0 : fadeTime - cg->time,
+        1);
 }
 
 /* line 1120 */
@@ -974,123 +951,46 @@ static struct XModel * CG_GetXModel(const char *modelName)
 }
 
 /* line 1590 */
-static __attribute__((naked))
-void CG_CreateDObj(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle, clientInfo_t *ci)
+static void CG_CreateDObj(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle, clientInfo_t *ci)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1590 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $8, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dobjModels */
-        "movl 0x10(%ebp), %eax\n" /* tree */
-        "movl %eax, -0x10(%ebp)\n" /* tree */
-        "movl 0x14(%ebp), %eax\n" /* handle */
-        "movl %eax, -0x14(%ebp)\n" /* handle */
-        "movl 0x18(%ebp), %esi\n" /* ci */
-        "movl 0xc(%ebp), %ebx\n" /* numModels */
-        "movl 0x4a8(%esi), %edx\n" /* line 1595 | ci */
-        "testl %edx, %edx\n"
-        "je .Lf144820_0014488f\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 1600 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl cg_weapons, %edx\n"
-        "movl 0xbc(%edx, %eax, 4), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf144820_001448b7\n"
-        "movzwl %bx, %eax\n" /* line 1603 | numModels */
-        "leal (%eax, %eax, 2), %eax\n"
-        "leal (%edi, %eax, 4), %edx\n" /* dobjModels */
-        "movl %ecx, (%edx)\n"
-        "movl 0x3f4(%esi), %eax\n" /* line 1604 | ci */
-        "testl %eax, %eax\n"
-        "je .Lf144820_001448ad\n"
-        "movl cg_weaponleftbone, %eax\n"
-        "movl 8(%eax), %eax\n"
-        ".Lf144820_0014487f:\n"
-        "movl %eax, 4(%edx)\n"
-        "movl $0, 8(%edx)\n" /* line 1605 */
-        "addl $1, %ebx\n" /* line 1608 | numModels */
-        "movl -0x14(%ebp), %eax\n" /* handle */
-        ".Lf144820_0014488f:\n"
-        "movl %eax, 0x14(%ebp)\n" /* line 1612 | handle */
-        "movl -0x10(%ebp), %eax\n" /* tree */
-        "movl %eax, 0x10(%ebp)\n" /* tree */
-        "movzwl %bx, %eax\n" /* numModels */
-        "movl %eax, 0xc(%ebp)\n" /* numModels */
-        "movl %edi, 8(%ebp)\n" /* dobjModels */
-        "addl $8, %esp\n" /* line 1613 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp Com_ClientDObjCreate\n" /* line 1612 */
-        ".Lf144820_001448ad:\n"
-        "movl cg_weaponrightbone, %eax\n" /* line 1604 */
-        "movl 8(%eax), %eax\n"
-        "jmp .Lf144820_0014487f\n"
-        ".Lf144820_001448b7:\n"
-        "movl -0x14(%ebp), %eax\n" /* handle */
-        "jmp .Lf144820_0014488f\n"
-    );
+    int weaponNum;
+    struct XModel *weaponModel;
+
+    weaponNum = ci->iDObjWeapon;
+    if (weaponNum) {
+        /* weaponInfo_t is still partially inaccurate here; 0xbc is the weapon world model slot. */
+        weaponModel = *(struct XModel **)((byte *)&cg_weapons[weaponNum] + 0xbc);
+        if (weaponModel) {
+            dobjModels[numModels].model = weaponModel;
+            dobjModels[numModels].boneName = ci->leftHandGun ? cg_weaponleftbone->current.string : cg_weaponrightbone->current.string;
+            dobjModels[numModels].ignoreCollision = 0;
+            ++numModels;
+        }
+    }
+
+    Com_ClientDObjCreate(dobjModels, numModels, tree, handle);
 }
 
 /* line 1949 */
-__attribute__((naked))
 void CG_FreeWeapons(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1949 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl $1, %ebx\n"
-        "movl $0x1b4, %esi\n"
-        "movl cg_weapons, %edi\n"
-        "jmp .Lf1448bc_00144916\n"
-        /* { scope 1 */
-        ".Lf1448bc_001448d7:\n"
-        "movl %ebx, (%esp)\n" /* line 1955 | i */
-        "calll CG_WeaponDObjHandle\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_SafeClientDObjFree\n"
-        "movl 0xa4(%edi, %esi), %eax\n" /* line 1956 */
-        "testl %eax, %eax\n"
-        "je .Lf1448bc_0014490d\n"
-        "movl $0, 4(%esp)\n" /* line 1958 */
-        "movl %eax, (%esp)\n"
-        "calll XAnimFreeTree\n"
-        "movl $0, 0xa4(%esi, %edi)\n" /* line 1959 */
-        ".Lf1448bc_0014490d:\n"
-        "addl $1, %ebx\n" /* line 1953 | i */
-        "addl $0x1b4, %esi\n"
-        ".Lf1448bc_00144916:\n"
-        "calll BG_GetNumWeapons\n"
-        "cmpl %eax, %ebx\n" /* i */
-        "jle .Lf1448bc_001448d7\n"
-        "movl $0x2400, 8(%esp)\n" /* line 1963 */
-        "movl $0, 4(%esp)\n"
-        "movl cg_items, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0xda00, 8(%esp)\n" /* line 1964 */
-        "movl $0, 4(%esp)\n"
-        "movl cg_weapons, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1965 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    int weaponCount;
+    byte *weaponInfo;
+
+    weaponCount = BG_GetNumWeapons();
+    weaponInfo = (byte *)cg_weapons + 0x1b4;
+
+    for (i = 1; i <= weaponCount; ++i, weaponInfo += 0x1b4) {
+        Com_SafeClientDObjFree(CG_WeaponDObjHandle(i));
+        if (*(struct XAnimTree_s **)(weaponInfo + 0xa4)) {
+            XAnimFreeTree(*(struct XAnimTree_s **)(weaponInfo + 0xa4), 0);
+            *(struct XAnimTree_s **)(weaponInfo + 0xa4) = NULL;
+        }
+    }
+
+    memset((void *)cg_items, 0, 0x2400);
+    memset((void *)cg_weapons, 0, 0xda00);
 }
 
 /* line 1975 */
@@ -3746,4 +3646,3 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "jmp .Lf145828_001474d2\n"
     );
 }
-

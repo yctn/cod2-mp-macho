@@ -13,6 +13,13 @@ extern GfxBackEndData *frontEndDataOut; /* 0x0 */
 extern byte g_dummyBuf[]; /* g_dummyBuf */
 extern void R_ShutdownDebugEntry(void *entry);
 extern void R_UnlockSkinnedCache(void);
+extern void R_UpdateGfxEntityBounds(GfxEntity *ent);
+extern void R_SkinGfxEntity(GfxEntity *ent);
+extern void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers);
+extern void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context);
+extern void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd);
+extern void FX_UpdateScheduledEffectsBolt(void);
+extern void FX_UpdateScheduledEffectsNonBolt(void);
 
 extern unsigned char s_backEndData[]; /* s_backEndData */
 extern GfxCmdArray *s_cmdList; /* s_cmdList */
@@ -79,68 +86,35 @@ void R_ShutdownBackendData(void)
 }
 
 /* line 253 */
-static __attribute__((naked)) __attribute__((regparm(3)))
+static __attribute__((regparm(3)))
 void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 253 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "cmpl $7, %eax\n" /* line 255 | type */
-        "ja .Lfc7d30_000c7d4e\n"
-        "jmpl *.Ljt_c7d30_0(, %eax, 4)\n"
-        ".Lfc7d30_000c7d42:\n"
-        "movl %ecx, 4(%esp)\n" /* line 271 | context */
-        "movl %edx, (%esp)\n" /* data */
-        "calll R_SkinXModelCmd\n"
-        ".Lfc7d30_000c7d4e:\n"
-        "leave\n" /* line 298 */
-        "retl\n"
-        ".Lfc7d30_000c7d50:\n"
-        "movl (%edx), %eax\n" /* line 258 | data, type */
-        "movl %eax, (%esp)\n" /* type */
-        "calll R_UpdateGfxEntityBounds\n"
-        "leave\n" /* line 298 */
-        "retl\n"
-        ".Lfc7d30_000c7d5c:\n"
-        "leal (%ecx, %ecx, 4), %eax\n" /* line 276 | context, type */
-        "shll $0xd, %eax\n" /* type */
-        "addl $g_skinBuffers, %eax\n" /* type */
-        "movl %eax, 4(%esp)\n" /* type */
-        "movl %edx, (%esp)\n" /* data */
-        "calll R_SkinStaticModelCachedCmd\n"
-        "leave\n" /* line 298 */
-        "retl\n"
-        ".Lfc7d30_000c7d75:\n"
-        "leave\n"
-        "jmp FX_UpdateScheduledEffectsBolt\n" /* line 281 */
-        ".Lfc7d30_000c7d7b:\n"
-        "leave\n" /* line 298 */
-        "jmp FX_UpdateScheduledEffectsNonBolt\n" /* line 288 */
-        ".Lfc7d30_000c7d81:\n"
-        "movl %edx, (%esp)\n" /* line 266 | data */
-        "calll R_SkinRigidXModelCmd\n"
-        "leave\n" /* line 298 */
-        "retl\n"
-        ".Lfc7d30_000c7d8b:\n"
-        "movl (%edx), %eax\n" /* line 262 | data, type */
-        "movl %eax, (%esp)\n" /* type */
-        "calll R_SkinGfxEntity\n"
-        "leave\n" /* line 298 */
-        "retl\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_c7d30_0:\n"
-        ".long .Lfc7d30_000c7d50\n"
-        ".long .Lfc7d30_000c7d8b\n"
-        ".long .Lfc7d30_000c7d81\n"
-        ".long .Lfc7d30_000c7d7b\n"
-        ".long .Lfc7d30_000c7d75\n"
-        ".long .Lfc7d30_000c7d5c\n"
-        ".long .Lfc7d30_000c7d42\n"
-        ".long .Lfc7d30_000c7d42\n"
-        ".text\n"
-    );
+    switch (type) {
+    case 0:
+        R_UpdateGfxEntityBounds(*(GfxEntity **)data);
+        break;
+    case 1:
+        R_SkinGfxEntity(*(GfxEntity **)data);
+        break;
+    case 2:
+        R_SkinRigidXModelCmd((SkinRigidXModelCmd *)data);
+        break;
+    case 3:
+        FX_UpdateScheduledEffectsNonBolt();
+        break;
+    case 4:
+        FX_UpdateScheduledEffectsBolt();
+        break;
+    case 5:
+        R_SkinStaticModelCachedCmd((SkinStaticModelCachedCmd *)data, ((SkinBuffers *)g_skinBuffers) + isRenderThread);
+        break;
+    case 6:
+    case 7:
+        R_SkinXModelCmd((SkinXModelCmd *)data, isRenderThread);
+        break;
+    default:
+        break;
+    }
 }
 
 /* line 512 */
@@ -194,44 +168,28 @@ void R_AddCmdTouchAllImages(void)
 }
 
 /* line 889 */
-__attribute__((naked))
 void R_AbortRenderCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 889 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_rg, %eax\n" /* line 894 */
-        "cmpb $0, (%eax)\n"
-        "jne .Lfc7e86_000c7e9d\n"
-        ".Lfc7e86_000c7e97:\n"
-        "addl $0x14, %esp\n" /* line 923 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc7e86_000c7e9d:\n"
-        "calll R_UnlockSkinnedCache\n" /* line 903 */
-        "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* offset into GfxBackEndData */
-        "movl $0, 0x30000(%eax)\n" /* line 657 */
-        "movl $0, 0x30004(%eax)\n" /* line 658 */
-        "movl $0, 0x30008(%eax)\n" /* line 659 */
-        "movl imp_dx, %ebx\n" /* line 830 */
-        "movl 0x2dd4(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfc7e86_000c7e97\n"
-        "movl %eax, 4(%esp)\n" /* line 832 */
-        "movl 0x2dd0(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0x28(%eax)\n"
-        "movl $0, 0x2dd4(%ebx)\n" /* line 833 */
-        "addl $0x14, %esp\n" /* line 923 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DxGlobals *dx;
+    refimport_t *ri;
+
+    if (!*(byte *)imp_rg) {
+        return;
+    }
+
+    R_UnlockSkinnedCache();
+    frontEndDataOut->commands.usedTotal = 0;
+    frontEndDataOut->commands.usedCritical = 0;
+    frontEndDataOut->commands.lastCmd = NULL;
+
+    dx = (DxGlobals *)imp_dx;
+    if (!dx->tempSkinPos) {
+        return;
+    }
+
+    ri = (refimport_t *)imp_ri;
+    ri->Z_VirtualDecommitInternal(dx->tempSkinBuf, dx->tempSkinPos);
+    dx->tempSkinPos = 0;
 }
 
 /* line 1739 */

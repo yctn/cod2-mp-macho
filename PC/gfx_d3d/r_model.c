@@ -38,6 +38,10 @@ extern Bool R_ValidXModelName(const char *name);
 extern refimport_t ri; /* imp_ri */
 extern const int boxVerts[24][3]; /* boxVerts */
 
+#define VTABLE(obj) (*(void ***)((void *)(obj)))
+
+typedef HRESULT (*BufferUnlockFn)(void *buffer);
+
 static void * Hunk_AllocXModelPrecache(int size);
 static void * Hunk_AllocXModelPrecacheColl(int size);
 struct XModel * R_RegisterModel(const char *name);
@@ -114,41 +118,24 @@ qboolean R_GetIgnorePrecacheErrors(void)
 }
 
 /* line 587 */
-__attribute__((naked))
 void R_UnlockSkinnedCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 587 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl imp_dx, %eax\n" /* line 591 */
-        "movl 0x2dc0(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfd0120_000d0165\n"
-        "movl $0, 0x2dc0(%eax)\n" /* line 593 */
-        "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
-        "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
-        "movl 8(%eax), %ebx\n" /* vb */
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfd0120_000d0157:\n"
-        "movl (%ebx), %eax\n" /* line 599 | vb */
-        "movl %ebx, (%esp)\n" /* vb */
-        "calll *0x30(%eax)\n"
-        "movl (%esi), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfd0120_000d0157\n"
-        /* } scope */
-        ".Lfd0120_000d0165:\n"
-        "addl $0x10, %esp\n" /* line 602 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    DxGlobals *dx;
+    GfxBackEndData *frontEndData;
+    IDirect3DVertexBuffer9 *vb;
+
+    dx = (DxGlobals *)imp_dx;
+    if (!dx->skinnedCacheLockAddr) {
+        return;
+    }
+
+    dx->skinnedCacheLockAddr = NULL;
+    frontEndData = *(GfxBackEndData **)imp_frontEndDataOut;
+    vb = (IDirect3DVertexBuffer9 *)frontEndData->skinnedCacheVb->buffer;
+
+    do {
+        ((BufferUnlockFn)VTABLE(vb)[0x30 / 4])((void *)vb);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 2246 */
