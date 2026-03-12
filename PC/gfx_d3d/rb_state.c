@@ -34,6 +34,7 @@ typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
 typedef HRESULT (*SetRenderStateFn)(void *device, DWORD state, DWORD value);
 typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
 typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
+typedef HRESULT (*SetVertexDeclarationFn)(void *device, IDirect3DVertexDeclaration9 *vertexDecl);
 
 typedef struct {
     IDirect3DVertexBuffer9 *vb;
@@ -46,7 +47,7 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 void RB_DecideDefaultSamplerState(void);
 void RB_SetAnisotropy(void);
 void RB_SetAlphaAntiAliasingState(int stateBits0);
-static void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits);
+static __attribute__((regparm(3))) void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits);
 void RB_ChangeAlphaStageState(int stageIndex, int texStageBits);
 void RB_ChangeColorStageState(int stageIndex, int texStageBits);
 void RB_SetSamplerConstantDx7(unsigned int color);
@@ -182,8 +183,8 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
 }
 
 /* line 781 */
-static __attribute__((naked))
-void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
+static __attribute__((naked, regparm(3)))
+void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 781 */
@@ -306,78 +307,31 @@ void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
 }
 
 /* line 837 */
-__attribute__((naked))
 void RB_ChangeAlphaStageState(int stageIndex, int texStageBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 837 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* stageIndex */
-        "movl 0xc(%ebp), %ecx\n" /* texStageBits */
-        /* { scope 1 */
-        "movl $dxState+8308, 8(%ebp)\n" /* line 847 | stageIndex */
-        "movl $texStageEnums, %edx\n"
-        /* } scope */
-        "popl %ebp\n" /* line 848 */
-        /* { scope 1 */
-        "jmp RB_ChangeTextureStageState\n" /* line 847 */
-    );
+    RB_ChangeTextureStageState(stageIndex, &texStageEnums, texStageBits, dxState.activeAlphaStageBits);
 }
 
 /* line 823 */
-__attribute__((naked))
 void RB_ChangeColorStageState(int stageIndex, int texStageBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 823 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* stageIndex */
-        "movl 0xc(%ebp), %ecx\n" /* texStageBits */
-        /* { scope 1 */
-        "movl $dxState+8276, 8(%ebp)\n" /* line 833 | stageIndex */
-        "movl $texStageEnums, %edx\n"
-        /* } scope */
-        "popl %ebp\n" /* line 834 */
-        /* { scope 1 */
-        "jmp RB_ChangeTextureStageState\n" /* line 833 */
-    );
+    RB_ChangeTextureStageState(stageIndex, &texStageEnums, texStageBits, dxState.activeColorStageBits);
 }
 
 /* line 851 */
-__attribute__((naked))
 void RB_SetSamplerConstantDx7(unsigned int color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 851 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* color */
-        "cmpl %ebx, dxState+8524\n" /* line 853 | color */
-        "je .Lfcd47c_000cd4c2\n"
-        "movl %ebx, dxState+8524\n" /* line 855 | color */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcd47c_000cd4a2:\n"
-        "movl 8(%edi), %eax\n" /* line 856 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* color */
-        "movl $0x3c, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd47c_000cd4a2\n"
-        ".Lfcd47c_000cd4c2:\n"
-        "addl $0x1c, %esp\n" /* line 858 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *device;
+
+    if (color == dxState.textureFactor) {
+        return;
+    }
+
+    dxState.textureFactor = color;
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, 0x3c, color);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 861 */
@@ -1496,38 +1450,21 @@ void RB_SetViewport(const GfxViewport *viewport)
 }
 
 /* line 1770 */
-__attribute__((naked))
 void RB_ReleaseVertexDecl(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1770 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl dxState+8512, %eax\n" /* line 272 */
-        "testl %eax, %eax\n"
-        "je .Lfce47c_000ce4c7\n"
-        ".Lfce47c_000ce48b:\n"
-        "movl imp_dx, %eax\n" /* line 275 */
-        "movl 8(%eax), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x164(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce47c_000ce48b\n"
-        "movl $0, dxState+8516\n" /* line 276 */
-        "movl $0, dxState+8512\n" /* line 277 */
-        "leave\n" /* line 1774 */
-        "retl\n"
-        ".Lfce47c_000ce4c7:\n"
-        "movl dxState+8516, %eax\n" /* line 272 */
-        "testl %eax, %eax\n"
-        "jne .Lfce47c_000ce48b\n"
-        "leave\n" /* line 1774 */
-        "retl\n"
-    );
+    void *device;
+
+    if (dxState.vertexDecl == NULL && dxState.fvf == 0) {
+        return;
+    }
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetVertexDeclarationFn)VTABLE(device)[0x164 / 4])(device, NULL);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+
+    dxState.fvf = 0;
+    dxState.vertexDecl = NULL;
 }
 
 /* line 626 */
@@ -2547,53 +2484,25 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
 }
 
 /* line 1829 */
-__attribute__((naked))
 void RB_ClearAllStreamSources(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1829 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl dxState+8400, %eax\n" /* line 220 */
-        "testl %eax, %eax\n"
-        "je .Lfcf232_000cf2b7\n"
-        ".Lfcf232_000cf243:\n"
-        "movl %eax, dxState+8416\n" /* line 1820 */
-        "movl $0, dxState+8400\n" /* line 1821 */
-        "movl $0, dxState+8404\n" /* line 1822 */
-        "movl $0, dxState+8408\n" /* line 1823 */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfcf232_000cf272:\n"
-        "movl 8(%esi), %eax\n" /* line 1824 */
-        "movl (%eax), %edx\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x190(%edx)\n"
-        "movl (%ebx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfcf232_000cf272\n"
-        "movl $0, dxState+8416\n" /* line 1825 */
-        ".Lfcf232_000cf2b0:\n"
-        "addl $0x20, %esp\n" /* line 1835 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcf232_000cf2b7:\n"
-        "movl dxState+8404, %esi\n" /* line 220 */
-        "testl %esi, %esi\n"
-        "jne .Lfcf232_000cf243\n"
-        "movl dxState+8408, %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfcf232_000cf2b0\n"
-        "jmp .Lfcf232_000cf243\n"
-    );
+    void *device;
+
+    if (dxState.streams[0].vb == NULL && dxState.streams[0].offset == 0 && dxState.streams[0].stride == 0) {
+        return;
+    }
+
+    dxState.vertexBufferDeselecting = dxState.streams[0].vb;
+    dxState.streams[0].vb = NULL;
+    dxState.streams[0].offset = 0;
+    dxState.streams[0].stride = 0;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetStreamSourceFn)VTABLE(device)[0x190 / 4])(device, 0, NULL, 0, 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+
+    dxState.vertexBufferDeselecting = NULL;
 }
 
 /* line 455 */
