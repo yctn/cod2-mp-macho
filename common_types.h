@@ -15086,7 +15086,7 @@ struct DxGlobals {
     D3DDISPLAYMODE displayModes[256];
     const char * resolutionNameTable[257];
     const char * refreshRateNameTable[257];
-    char modeText[5120];
+    char modeText[4096];
     int gpuSync;
     D3DMULTISAMPLE_TYPE multiSampleType;
     DWORD multiSampleQuality;
