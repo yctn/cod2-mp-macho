@@ -450,7 +450,7 @@ void RB_ChangedWorldMatrix(float worldScale)
     RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
 
     if (RB_UsingDx7Renderer()) {
-        RB_SetTransformDx7(D3DTS_WORLD, &activeMatrices->world.matrix[0]);
+        RB_SetTransformDx7(0x100, &activeMatrices->world.matrix[0]);
     }
 }
 
