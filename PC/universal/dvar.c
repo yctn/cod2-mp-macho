@@ -43,15 +43,21 @@ extern void Com_BeginParseSession(const char *filename);
 extern void Com_EndParseSession(void);
 extern const char *Com_Parse(const char **data_p);
 extern const char *Com_ParseOnLine(const char **data_p);
+extern char *CopyStringInternal(const char *in);
 extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 extern void Com_SkipRestOfLine(const char **data);
 extern void Dvar_AddCommands(void);
 extern int I_stricmp(const char *s1, const char *s2);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void *Z_MallocInternal(int size);
+extern void Z_FreeInternal(void *ptr);
 extern int stricmp(const char *s1, const char *s2);
 extern int atoi(const char *string);
 extern double atof(const char *string);
+extern int strcmp(const char *s1, const char *s2);
+extern int sscanf(const char *str, const char *format, ...);
+extern float floorf(float x);
 
 void Dvar_SetInAutoExec(int inAutoExec);
 Bool Dvar_IsSystemActive(void);
@@ -70,7 +76,7 @@ void Dvar_SetModified(const dvar_t *dvar);
 void Dvar_AddFlags(const dvar_t *dvar, int flags);
 void Dvar_ResetScriptInfo(void);
 const char * Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexString);
-static void Dvar_StringToColor(void);
+static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, byte color[4]);
 static DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string);
 void Dvar_GetUnpackedColor(const dvar_t *dvar, long unsigned int (*expandedColor)[16]);
 static void Dvar_SetLatchedValue(void);
@@ -88,9 +94,9 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable);
 static const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int *outLineCount);
 const char * Dvar_DomainToString_GetLines(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount);
 void Dvar_PrintDomain(int type, DvarLimits domain);
-static void Dvar_PerformUnregistration(void);
+static void __attribute__((regparm(1))) Dvar_PerformUnregistration(dvar_t *dvar);
 void Dvar_UnregisterSystem(int sysFlag);
-static void Dvar_UpdateResetValue(void);
+static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value);
 static void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain);
 void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value);
 static void Dvar_SetVariant(DvarValue value, DvarSetSource source);
@@ -167,12 +173,12 @@ static void Dvar_SetFromStringFromSourceReg(const dvar_t *dvar, const char *stri
 
 static void Dvar_UpdateResetValueReg(const dvar_t *dvar, DvarValue value)
 {
-    ((DvarUpdateResetValueRegparmFn)Dvar_UpdateResetValue)(dvar, value);
+    Dvar_UpdateResetValue(dvar, value);
 }
 
 static void Dvar_PerformUnregistrationReg(dvar_t *dvar)
 {
-    ((DvarPerformUnregistrationRegparmFn)Dvar_PerformUnregistration)(dvar);
+    Dvar_PerformUnregistration(dvar);
 }
 
 static const char *Dvar_DomainToString_InternalReg(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount)
@@ -234,6 +240,73 @@ static void Dvar_ClampVectorToDomain(vec_t *vector, int components, float min, f
             vector[i] = max;
         }
     }
+}
+
+static byte Dvar_FloatToColorComponent(float value)
+{
+    if (!(value < 1.0f)) {
+        value = 1.0f;
+    } else if (value < 0.0f) {
+        value = 0.0f;
+    }
+
+    return (byte)(int)floorf(value * 255.0f + 0.5f);
+}
+
+static Bool Dvar_StringEqualsRef(const char *value, const char *reference)
+{
+    if (!value || !reference) {
+        return value == reference;
+    }
+
+    return value == reference || strcmp(value, reference) == 0;
+}
+
+static Bool Dvar_IsStaticValueString(const char *value)
+{
+    if (!value || !*value) {
+        return 1;
+    }
+
+    if (!value[1] && value[0] >= '0' && value[0] <= '9') {
+        return 1;
+    }
+
+    return value == dvarOnOffStrings[0] || value == dvarOnOffStrings[1];
+}
+
+static const char *Dvar_CanonicalizeValueString(const char *value)
+{
+    if (!value || !*value) {
+        return "";
+    }
+
+    if (!value[1] && value[0] >= '0' && value[0] <= '9') {
+        return dvarDigitStrings[value[0] - '0'];
+    }
+
+    if (value[0] == 'o') {
+        if (!strcmp(value, "on")) {
+            return dvarOnOffStrings[1];
+        }
+        if (!strcmp(value, "off")) {
+            return dvarOnOffStrings[0];
+        }
+    }
+
+    return CopyStringInternal(value);
+}
+
+static const char *Dvar_RebuildResetString(const dvar_t *dvar, const char *value)
+{
+    if (Dvar_StringEqualsRef(value, dvar->current.string)) {
+        return dvar->current.string;
+    }
+    if (Dvar_StringEqualsRef(value, dvar->latched.string)) {
+        return dvar->latched.string;
+    }
+
+    return Dvar_CanonicalizeValueString(value);
 }
 
 /* line 45 */
