@@ -1359,174 +1359,72 @@ void RB_InitImages(void)
 }
 
 /* line 1662 */
-__attribute__((naked))
 void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1662 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* newTargetId */
-        "movl dxState+8344, %eax\n" /* line 1664 */
-        "cmpl %esi, %eax\n" /* newTargetId */
-        "je .Lfcefdc_000cf20c\n"
-        "cmpl $4, %esi\n" /* line 1685 | newTargetId */
-        "je .Lfcefdc_000cf19f\n"
-        ".Lfcefdc_000ceffe:\n"
-        "xorl %edx, %edx\n"
-        ".Lfcefdc_000cf000:\n"
-        "movl imp_g_InhibitCopy, %eax\n"
-        "movb %dl, (%eax)\n"
-        "movl %esi, dxState+8344\n" /* line 1687 | newTargetId */
-        "movl imp_dx, %ebx\n" /* line 1688 */
-        "leal (%esi, %esi, 4), %eax\n" /* newTargetId */
-        "movl 0x2c30(%ebx, %eax, 4), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "testl %eax, %eax\n"
-        "je .Lfcefdc_000cf05a\n"
-        /* { scope 1 */
-        "movl imp_vidConfig, %eax\n" /* line 1024 */
-        "movl 0x1c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lfcefdc_000cf05a\n"
-        "xorl %edi, %edi\n" /* samplerIndex */
-        "movl $dxState, %ebx\n"
-        "movl %eax, -0x20(%ebp)\n"
-        ".Lfcefdc_000cf03a:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1025 */
-        "cmpl 0x20f4(%ebx), %edx\n"
-        "je .Lfcefdc_000cf1cf\n"
-        ".Lfcefdc_000cf049:\n"
-        "addl $1, %edi\n" /* line 1024 | samplerIndex */
-        "addl $4, %ebx\n"
-        "cmpl 0x1c(%eax), %edi\n" /* samplerIndex */
-        "jl .Lfcefdc_000cf03a\n"
-        ".Lfcefdc_000cf054:\n"
-        "movl imp_dx, %ebx\n"
-        /* } scope */
-        ".Lfcefdc_000cf05a:\n"
-        "movl 8(%ebx), %edx\n" /* line 1694 */
-        "movl (%edx), %ecx\n"
-        "leal (%esi, %esi, 4), %eax\n" /* newTargetId */
-        "leal (%ebx, %eax, 4), %ebx\n"
-        "movl 0x2c34(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0x94(%ecx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %edi\n" /* samplerIndex */
-        "testl %edi, %edi\n" /* samplerIndex */
-        "jne .Lfcefdc_000cf054\n"
-        "movl 0x2c34(%ebx), %eax\n" /* line 1695 */
-        "movl %eax, dxState+8360\n"
-        "testl %esi, %esi\n" /* line 1698 | newTargetId */
-        "je .Lfcefdc_000cf1ef\n"
-        "cmpl $4, %esi\n" /* line 1703 | newTargetId */
-        "je .Lfcefdc_000cf1b2\n"
-        "cmpl $8, %esi\n" /* line 1708 | newTargetId */
-        "je .Lfcefdc_000cf1b2\n"
-        "cmpl $3, %esi\n" /* line 1713 | newTargetId */
-        "je .Lfcefdc_000cf214\n"
-        "cmpl $9, %esi\n" /* line 1718 | newTargetId */
-        "je .Lfcefdc_000cf1b2\n"
-        "cmpl $0xb, %esi\n" /* newTargetId */
-        "je .Lfcefdc_000cf1b2\n"
-        "cmpl $0xc, %esi\n" /* newTargetId */
-        "je .Lfcefdc_000cf1b2\n"
-        ".Lfcefdc_000cf0d4:\n"
-        "cmpl $4, %esi\n" /* line 1728 | newTargetId */
-        "movl imp_g_RenderToShadowCookie, %eax\n"
-        "sete (%eax)\n"
-        "movl dxState+8344, %eax\n" /* line 1731 */
-        "movl s_viewportBehaviorForRenderTarget(, %eax, 4), %eax\n"
-        "movl %eax, dxState+8356\n"
-        "movl imp_dx, %ebx\n" /* line 1732 */
-        "leal (%esi, %esi, 4), %eax\n" /* newTargetId */
-        "leal (, %eax, 4), %esi\n" /* newTargetId */
-        "leal (%esi, %ebx), %edx\n" /* newTargetId */
-        "movl 0x2c3c(%edx), %ecx\n"
-        "movl %ecx, dxState+8348\n"
-        "movl 0x2c40(%edx), %eax\n" /* line 1733 */
-        "movl %eax, dxState+8352\n"
-        "movl $0, dxState+8368\n" /* line 1738 */
-        "movl $0, dxState+8372\n" /* line 1739 */
-        "movl %ecx, dxState+8376\n" /* line 1740 */
-        "movl %eax, dxState+8380\n" /* line 1741 */
-        "movl $0, dxState+8384\n" /* line 1742 */
-        "movl $0x3f800000, dxState+8388\n" /* line 1743 */
-        "movl dxState+8364, %eax\n" /* line 1746 */
-        "cmpl 0x2c38(%edx), %eax\n"
-        "je .Lfcefdc_000cf193\n"
-        "movl %esi, %edi\n" /* newTargetId, samplerIndex */
-        "movl %ebx, %esi\n" /* newTargetId */
-        "jmp .Lfcefdc_000cf162\n"
-        ".Lfcefdc_000cf160:\n"
-        "movl %esi, %ebx\n" /* newTargetId */
-        ".Lfcefdc_000cf162:\n"
-        "movl 8(%ebx), %eax\n" /* line 1748 */
-        "movl (%eax), %ecx\n"
-        "leal (%edi, %ebx), %ebx\n" /* samplerIndex */
-        "movl 0x2c38(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x9c(%ecx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfcefdc_000cf160\n"
-        "movl 0x2c38(%ebx), %eax\n" /* line 1749 */
-        "movl %eax, dxState+8364\n"
-        ".Lfcefdc_000cf193:\n"
-        "addl $0x2c, %esp\n" /* line 1753 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp RB_UpdateViewportConstants\n" /* line 1752 */
-        ".Lfcefdc_000cf19f:\n"
-        "cmpl $3, %eax\n" /* line 1685 */
-        "jne .Lfcefdc_000ceffe\n"
-        "movl $1, %edx\n"
-        "jmp .Lfcefdc_000cf000\n"
-        ".Lfcefdc_000cf1b2:\n"
-        "movl $0x409, (%esp)\n" /* line 1720 */
-        "calll glDrawBuffer\n"
-        "movl $0x409, (%esp)\n" /* line 1721 */
-        "calll glReadBuffer\n"
-        "jmp .Lfcefdc_000cf0d4\n"
-        /* { scope 1 */
-        ".Lfcefdc_000cf1cf:\n"
-        "movl $0, 8(%esp)\n" /* line 1026 */
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* samplerIndex */
-        "calll RB_SetSampler\n"
-        "movl -0x20(%ebp), %eax\n"
-        "jmp .Lfcefdc_000cf049\n"
-        /* } scope */
-        ".Lfcefdc_000cf1ef:\n"
-        "movl $0x405, (%esp)\n" /* line 1700 */
-        "calll glDrawBuffer\n"
-        "movl $0x405, (%esp)\n" /* line 1701 */
-        "calll glReadBuffer\n"
-        "jmp .Lfcefdc_000cf0d4\n"
-        ".Lfcefdc_000cf20c:\n"
-        "addl $0x2c, %esp\n" /* line 1753 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcefdc_000cf214:\n"
-        "movl $0x40a, (%esp)\n" /* line 1715 */
-        "calll glDrawBuffer\n"
-        "movl $0x40a, (%esp)\n" /* line 1716 */
-        "calll glReadBuffer\n"
-        "jmp .Lfcefdc_000cf0d4\n"
-    );
+    DxGlobals *dx;
+    const vidConfig_t *vidConfig;
+    GfxRenderTarget *renderTarget;
+    int samplerIndex;
+
+    if (dxState.renderTargetId == newTargetId) {
+        return;
+    }
+
+    *(byte *)imp_g_InhibitCopy = (newTargetId == R_RENDERTARGET_SHADOWCOOKIE && dxState.renderTargetId == R_RENDERTARGET_DYNAMICSHADOWS);
+    dxState.renderTargetId = newTargetId;
+
+    dx = (DxGlobals *)imp_dx;
+    renderTarget = &dx->renderTargets[newTargetId];
+    if (renderTarget->image != NULL) {
+        vidConfig = (const vidConfig_t *)imp_vidConfig;
+        for (samplerIndex = 0; samplerIndex < vidConfig->maxTextureMaps; ++samplerIndex) {
+            if (dxState.samplerImage[samplerIndex] == renderTarget->image) {
+                RB_SetSampler(samplerIndex, 0, NULL);
+            }
+        }
+    }
+
+    RB_SetRenderTargetSurfaceDx7(renderTarget->colorSurface);
+    dxState.renderTargetSurface = renderTarget->colorSurface;
+
+    switch (newTargetId) {
+    case R_RENDERTARGET_FRAME_BUFFER:
+        glDrawBuffer(0x405);
+        glReadBuffer(0x405);
+        break;
+    case R_RENDERTARGET_DYNAMICSHADOWS:
+        glDrawBuffer(0x40A);
+        glReadBuffer(0x40A);
+        break;
+    case R_RENDERTARGET_SHADOWCOOKIE:
+    case R_RENDERTARGET_BLURRED_SCREEN:
+    case R_RENDERTARGET_GLOW_0:
+    case R_RENDERTARGET_PINGPONG_0:
+    case R_RENDERTARGET_PINGPONG_1:
+        glDrawBuffer(0x409);
+        glReadBuffer(0x409);
+        break;
+    default:
+        break;
+    }
+
+    *(byte *)imp_g_RenderToShadowCookie = (newTargetId == R_RENDERTARGET_SHADOWCOOKIE);
+    dxState.viewportBehavior = s_viewportBehaviorForRenderTarget[newTargetId];
+    dxState.renderTargetWidth = renderTarget->width;
+    dxState.renderTargetHeight = renderTarget->height;
+    dxState.viewport.X = 0;
+    dxState.viewport.Y = 0;
+    dxState.viewport.Width = renderTarget->width;
+    dxState.viewport.Height = renderTarget->height;
+    dxState.viewport.MinZ = 0.0f;
+    dxState.viewport.MaxZ = 1.0f;
+
+    if (dxState.depthStencilSurface != renderTarget->depthStencilSurface) {
+        RB_SetDepthStencilSurfaceDx7(renderTarget->depthStencilSurface);
+        dxState.depthStencilSurface = renderTarget->depthStencilSurface;
+    }
+
+    RB_UpdateViewportConstants();
 }
 
 /* line 1829 */
