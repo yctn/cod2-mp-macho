@@ -44,7 +44,7 @@ static int __attribute__((regparm(3))) unzlocal_GetCurrentFileInfoInternal(
     unz_file_info_internal *pfile_info_internal,
     char *szFileName,
     uLong fileNameBufferSize,
-    double *extraField,
+    void *extraField,
     uLong extraFieldBufferSize,
     char *szComment,
     uLong commentBufferSize);
@@ -396,489 +396,143 @@ int unzCloseCurrentFile(unzFile file)
     return UNZ_OK;
 }
 
-/* line 522 */
-static __attribute__((naked, regparm(3)))
-int unzlocal_GetCurrentFileInfoInternal(unzFile file, unz_file_info *pfile_info, unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, double *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
+/* line 522 — replaced naked+regparm(3) asm with clean C (naked unsupported on x86 gcc 4.0.4) */
+static int __attribute__((regparm(3)))
+unzlocal_GetCurrentFileInfoInternal(unzFile file, unz_file_info *pfile_info, unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, void *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 522 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl %eax, %ebx\n" /* file */
-        "movl %edx, %edi\n" /* pfile_info */
-        "movl %ecx, -0x94(%ebp)\n"
-        /* { scope 1: v, uSizeRead */
-        "testl %eax, %eax\n" /* line 540 */
-        "je .Lf27c08_0002810e\n"
-        "movl $0, 8(%esp)\n" /* line 543 */
-        "movl 0x14(%eax), %eax\n"
-        "addl 0xc(%ebx), %eax\n" /* file */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "movl %eax, %esi\n"
-        "testl %eax, %eax\n"
-        "je .Lf27c08_000280ca\n"
-        "movl $0xffffffff, -0x90(%ebp)\n" /* err */
-        /* { scope 2 */
-        ".Lf27c08_00027c56:\n"
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* v */
-        "movl %edx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %ecx\n" /* line 124 | v */
-        "movl %ecx, -0x34(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %edx\n" /* line 124 | v */
-        "movl %edx, -0x38(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movl %eax, -0x3c(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* v */
-        "movl %edx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %ecx\n" /* line 124 | v */
-        "movl %ecx, -0x40(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 166 | v */
-        "movl %edx, -0x44(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "shrl $0x10, %edx\n" /* line 493 */
-        "movl %edx, %ecx\n" /* line 494 */
-        "andl $0x1f, %ecx\n"
-        "movl %ecx, -0x48(%ebp)\n"
-        "movl %edx, %eax\n" /* line 495 */
-        "andl $0x1e0, %eax\n"
-        "shrl $5, %eax\n"
-        "subl $1, %eax\n"
-        "movl %eax, -0x8c(%ebp)\n"
-        "shrl $9, %edx\n" /* line 496 */
-        "addl $0x7bc, %edx\n"
-        "movl %edx, -0x88(%ebp)\n"
-        "movl -0x44(%ebp), %eax\n" /* line 498 */
-        "andl $0xf800, %eax\n"
-        "shrl $0xb, %eax\n"
-        "movl %eax, -0x84(%ebp)\n"
-        "movl -0x44(%ebp), %edx\n" /* line 499 */
-        "andl $0x7e0, %edx\n"
-        "shrl $5, %edx\n"
-        "movl %edx, -0x80(%ebp)\n"
-        "movl -0x44(%ebp), %eax\n" /* line 500 */
-        "andl $0x1f, %eax\n"
-        "addl %eax, %eax\n"
-        "movl %eax, -0x7c(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        "movl %eax, -0x4c(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* v */
-        "movl %edx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 166 | v */
-        "movl %ecx, -0x50(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 166 | v */
-        "movl %edx, -0x54(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movw %ax, -0x76(%ebp)\n"
-        "movswl %ax, %edx\n"
-        "movl %edx, -0x58(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movw %ax, -0x74(%ebp)\n"
-        "movswl %ax, %edx\n"
-        "movl %edx, -0x5c(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movw %ax, -0x72(%ebp)\n"
-        "movswl %ax, %edx\n"
-        "movl %edx, -0x60(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movl %eax, -0x64(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 120 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* v */
-        "movl %edx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %ecx\n" /* line 124 | v */
-        "movl %ecx, -0x68(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 166 | v */
-        "movl %edx, -0x6c(%ebp)\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ecx\n" /* v */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        "movl %eax, -0x30(%ebp)\n"
-        /* } scope */
-        "movl -0x58(%ebp), %esi\n" /* line 601 */
-        "movl -0x90(%ebp), %eax\n" /* line 602 | err */
-        "testl %eax, %eax\n"
-        "je .Lf27c08_00028031\n"
-        ".Lf27c08_00027f23:\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 639 */
-        "addl %esi, %eax\n" /* uSizeRead */
-        ".Lf27c08_00027f28:\n"
-        "movl -0x90(%ebp), %ecx\n" /* line 642 | err */
-        "testl %ecx, %ecx\n"
-        "jne .Lf27c08_00028020\n"
-        "movl 0x18(%ebp), %edx\n" /* szComment */
-        "testl %edx, %edx\n"
-        "je .Lf27c08_00027f83\n"
-        /* { scope 2 */
-        "movl 0x1c(%ebp), %edx\n" /* line 645 | commentBufferSize */
-        "cmpl %edx, -0x60(%ebp)\n"
-        "jae .Lf27c08_00027f4f\n"
-        "movl 0x18(%ebp), %ecx\n" /* line 647 | szComment */
-        "movl -0x60(%ebp), %edx\n"
-        "movb $0, (%ecx, %edx)\n"
-        ".Lf27c08_00027f4f:\n"
-        "movl %edx, %esi\n" /* uSizeRead */
-        "testl %eax, %eax\n" /* line 653 */
-        "jne .Lf27c08_0002816f\n"
-        ".Lf27c08_00027f59:\n"
-        "movl $0, -0x90(%ebp)\n" /* line 654 | err */
-        ".Lf27c08_00027f63:\n"
-        "cmpw $0, -0x72(%ebp)\n" /* line 658 */
-        "je .Lf27c08_00027f75\n"
-        "movl 0x1c(%ebp), %eax\n" /* commentBufferSize */
-        "testl %eax, %eax\n"
-        "jne .Lf27c08_0002813a\n"
-        /* } scope */
-        ".Lf27c08_00027f75:\n"
-        "movl -0x90(%ebp), %eax\n" /* line 666 | err */
-        "testl %eax, %eax\n"
-        "jne .Lf27c08_00028020\n"
-        ".Lf27c08_00027f83:\n"
-        "testl %edi, %edi\n" /* pfile_info */
-        "je .Lf27c08_0002800b\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 667 */
-        "movl %eax, 0x34(%edi)\n" /* pfile_info */
-        "movl -0x68(%ebp), %edx\n"
-        "movl %edx, 0x30(%edi)\n" /* pfile_info */
-        "movl -0x64(%ebp), %ecx\n"
-        "movl %ecx, 0x2c(%edi)\n" /* pfile_info */
-        "movl -0x60(%ebp), %eax\n"
-        "movl %eax, 0x28(%edi)\n" /* pfile_info */
-        "movl -0x5c(%ebp), %edx\n"
-        "movl %edx, 0x24(%edi)\n" /* pfile_info */
-        "movl -0x58(%ebp), %ecx\n"
-        "movl %ecx, 0x20(%edi)\n" /* pfile_info */
-        "movl -0x54(%ebp), %eax\n"
-        "movl %eax, 0x1c(%edi)\n" /* pfile_info */
-        "movl -0x50(%ebp), %edx\n"
-        "movl %edx, 0x18(%edi)\n" /* pfile_info */
-        "movl -0x4c(%ebp), %ecx\n"
-        "movl %ecx, 0x14(%edi)\n" /* pfile_info */
-        "movl -0x7c(%ebp), %eax\n"
-        "movl %eax, 0x38(%edi)\n" /* pfile_info */
-        "movl -0x80(%ebp), %edx\n"
-        "movl %edx, 0x3c(%edi)\n" /* pfile_info */
-        "movl -0x84(%ebp), %ecx\n"
-        "movl %ecx, 0x40(%edi)\n" /* pfile_info */
-        "movl -0x88(%ebp), %eax\n"
-        "movl %eax, 0x4c(%edi)\n" /* pfile_info */
-        "movl -0x8c(%ebp), %edx\n"
-        "movl %edx, 0x48(%edi)\n" /* pfile_info */
-        "movl -0x48(%ebp), %ecx\n"
-        "movl %ecx, 0x44(%edi)\n" /* pfile_info */
-        "movl -0x44(%ebp), %eax\n"
-        "movl %eax, 0x10(%edi)\n" /* pfile_info */
-        "movl -0x40(%ebp), %edx\n"
-        "movl %edx, 0xc(%edi)\n" /* pfile_info */
-        "movl -0x3c(%ebp), %ecx\n"
-        "movl %ecx, 8(%edi)\n" /* pfile_info */
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 4(%edi)\n" /* pfile_info */
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, (%edi)\n" /* pfile_info */
-        ".Lf27c08_0002800b:\n"
-        "movl -0x94(%ebp), %eax\n" /* line 669 */
-        "testl %eax, %eax\n"
-        "je .Lf27c08_00028020\n"
-        "movl -0x30(%ebp), %eax\n" /* line 670 */
-        "movl -0x94(%ebp), %ecx\n"
-        "movl %eax, (%ecx)\n"
-        /* } scope */
-        ".Lf27c08_00028020:\n"
-        "movl -0x90(%ebp), %eax\n" /* line 673 | err */
-        "addl $0x9c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: v, uSizeRead */
-        ".Lf27c08_00028031:\n"
-        "movl 8(%ebp), %eax\n" /* line 602 | szFileName */
-        "testl %eax, %eax\n"
-        "je .Lf27c08_00028076\n"
-        /* { scope 2 */
-        "movl 0xc(%ebp), %edx\n" /* line 605 | fileNameBufferSize */
-        "cmpl %edx, %esi\n" /* uSizeRead */
-        "jb .Lf27c08_00028129\n"
-        "movl %edx, %esi\n" /* uSizeRead */
-        ".Lf27c08_00028045:\n"
-        "cmpw $0, -0x76(%ebp)\n" /* line 613 */
-        "je .Lf27c08_00028057\n"
-        "movl 0xc(%ebp), %eax\n" /* fileNameBufferSize */
-        "testl %eax, %eax\n"
-        "jne .Lf27c08_00028219\n"
-        ".Lf27c08_00028057:\n"
-        "movl $0, -0x90(%ebp)\n" /* line 614 | err */
-        ".Lf27c08_00028061:\n"
-        "movl -0x58(%ebp), %ecx\n" /* line 616 */
-        "subl %esi, %ecx\n" /* uSizeRead */
-        "movl %ecx, %esi\n" /* uSizeRead */
-        /* } scope */
-        "movl -0x90(%ebp), %eax\n" /* line 620 | err */
-        "testl %eax, %eax\n"
-        "jne .Lf27c08_00027f23\n"
-        ".Lf27c08_00028076:\n"
-        "movl 0x10(%ebp), %eax\n" /* extraField */
-        "testl %eax, %eax\n"
-        "je .Lf27c08_00027f23\n"
-        /* { scope 2 */
-        "movl 0x14(%ebp), %eax\n" /* line 623 | extraFieldBufferSize */
-        "cmpl %eax, -0x5c(%ebp)\n"
-        "jae .Lf27c08_0002819c\n"
-        "movl -0x5c(%ebp), %edx\n"
-        "movl %edx, -0x70(%ebp)\n" /* uSizeRead */
-        "movl $0, -0x2c(%ebp)\n"
-        ".Lf27c08_0002809a:\n"
-        "testl %esi, %esi\n" /* line 628 | uSizeRead */
-        "jne .Lf27c08_000281ad\n"
-        ".Lf27c08_000280a2:\n"
-        "movl $0, -0x90(%ebp)\n" /* line 629 | err */
-        "xorl %esi, %esi\n" /* uSizeRead */
-        ".Lf27c08_000280ae:\n"
-        "cmpw $0, -0x74(%ebp)\n" /* line 633 */
-        "je .Lf27c08_000280c0\n"
-        "movl 0x14(%ebp), %eax\n" /* extraFieldBufferSize */
-        "testl %eax, %eax\n"
-        "jne .Lf27c08_000281da\n"
-        ".Lf27c08_000280c0:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 636 */
-        "addl %esi, %eax\n" /* uSizeRead */
-        "jmp .Lf27c08_00027f28\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf27c08_000280ca:\n"
-        "movl (%ebx), %eax\n" /* line 162 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        "movl $0xffffff99, -0x90(%ebp)\n" /* line 551 | err */
-        "cmpl $0x2014b50, -0x1c(%ebp)\n" /* v */
-        "cmovnel -0x90(%ebp), %esi\n" /* err */
-        "movl %esi, -0x90(%ebp)\n" /* err */
-        "jmp .Lf27c08_00027c56\n"
-        ".Lf27c08_0002810e:\n"
-        "movl $0xffffff9a, -0x90(%ebp)\n" /* line 540 | err */
-        /* } scope */
-        "movl -0x90(%ebp), %eax\n" /* line 673 | err */
-        "addl $0x9c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: v, uSizeRead */
-        /* { scope 2 */
-        ".Lf27c08_00028129:\n"
-        "movl 8(%ebp), %ecx\n" /* line 607 | szFileName */
-        "movl -0x58(%ebp), %eax\n"
-        "movb $0, (%ecx, %eax)\n"
-        "movl %eax, %esi\n" /* uSizeRead */
-        "jmp .Lf27c08_00028045\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf27c08_0002813a:\n"
-        "movl (%ebx), %eax\n" /* line 659 | file */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* uSizeRead */
-        "movl 0x18(%ebp), %ecx\n" /* szComment */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "subl $1, %eax\n"
-        "je .Lf27c08_00027f75\n"
-        "movl $0xffffffff, -0x90(%ebp)\n" /* err */
-        "jmp .Lf27c08_00028020\n"
-        ".Lf27c08_0002816f:\n"
-        "movl $1, 8(%esp)\n" /* line 654 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "je .Lf27c08_00027f59\n"
-        "movl $0xffffffff, -0x90(%ebp)\n" /* err */
-        "jmp .Lf27c08_00027f63\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf27c08_0002819c:\n"
-        "movl -0x5c(%ebp), %ecx\n" /* line 623 */
-        "subl 0x14(%ebp), %ecx\n" /* extraFieldBufferSize */
-        "movl %ecx, -0x2c(%ebp)\n"
-        "movl %eax, -0x70(%ebp)\n" /* uSizeRead */
-        "jmp .Lf27c08_0002809a\n"
-        ".Lf27c08_000281ad:\n"
-        "movl $1, 8(%esp)\n" /* line 629 */
-        "movl %esi, 4(%esp)\n" /* uSizeRead */
-        "movl (%ebx), %eax\n" /* file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "je .Lf27c08_000280a2\n"
-        "movl $0xffffffff, -0x90(%ebp)\n" /* err */
-        "jmp .Lf27c08_000280ae\n"
-        ".Lf27c08_000281da:\n"
-        "movl (%ebx), %eax\n" /* line 634 | file */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl -0x70(%ebp), %edx\n" /* uSizeRead */
-        "movl %edx, 4(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* extraField */
-        "movl %ecx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "subl $1, %eax\n"
-        "movl $0xffffffff, %eax\n"
-        "cmovel -0x90(%ebp), %eax\n" /* err */
-        "movl %eax, -0x90(%ebp)\n" /* err */
-        "movl -0x2c(%ebp), %eax\n" /* line 636 */
-        "addl %esi, %eax\n" /* uSizeRead */
-        "jmp .Lf27c08_00027f28\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf27c08_00028219:\n"
-        "movl (%ebx), %eax\n" /* line 614 | file */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* uSizeRead */
-        "movl 8(%ebp), %edx\n" /* szFileName */
-        "movl %edx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "subl $1, %eax\n"
-        "je .Lf27c08_00028057\n"
-        "movl $0xffffffff, -0x90(%ebp)\n" /* err */
-        "jmp .Lf27c08_00028061\n"
-    );
+    unz_s *s;
+    unz_file_info file_info;
+    unz_file_info_internal file_info_internal;
+    int err = UNZ_OK;
+    uLong uMagic;
+    long lSeek = 0;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+
+    if (FS_FileSeek(s->file, s->pos_in_central_dir + s->byte_before_the_zipfile, 0) != 0)
+        err = UNZ_ERRNO;
+
+    /* check the magic */
+    if (err == UNZ_OK) {
+        if (unzlocal_ReadLong(s->file, &uMagic) != UNZ_OK)
+            err = UNZ_ERRNO;
+        else if (uMagic != 0x02014b50)
+            err = UNZ_BADZIPFILE;
+    }
+
+    if (unzlocal_ReadShort(s->file, &file_info.version) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.version_needed) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.flag) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.compression_method) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadLong(s->file, &file_info.dosDate) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    {
+        uLong uDate = file_info.dosDate >> 16;
+        file_info.tmu_date.tm_mday = uDate & 0x1f;
+        file_info.tmu_date.tm_mon = ((uDate & 0x1e0) >> 5) - 1;
+        file_info.tmu_date.tm_year = (uDate >> 9) + 1980;
+        file_info.tmu_date.tm_hour = (file_info.dosDate & 0xf800) >> 11;
+        file_info.tmu_date.tm_min = (file_info.dosDate & 0x7e0) >> 5;
+        file_info.tmu_date.tm_sec = (file_info.dosDate & 0x1f) * 2;
+    }
+
+    if (unzlocal_ReadLong(s->file, &file_info.crc) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadLong(s->file, &file_info.compressed_size) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadLong(s->file, &file_info.uncompressed_size) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.size_filename) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.size_file_extra) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.size_file_comment) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.disk_num_start) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadShort(s->file, &file_info.internal_fa) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadLong(s->file, &file_info.external_fa) != UNZ_OK)
+        err = UNZ_ERRNO;
+    if (unzlocal_ReadLong(s->file, &file_info_internal.offset_curfile) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    lSeek += file_info.size_filename;
+
+    if ((err == UNZ_OK) && (szFileName != NULL)) {
+        uLong uSizeRead;
+        if (file_info.size_filename < fileNameBufferSize) {
+            *(szFileName + file_info.size_filename) = '\0';
+            uSizeRead = file_info.size_filename;
+        } else {
+            uSizeRead = fileNameBufferSize;
+        }
+
+        if ((file_info.size_filename > 0) && (fileNameBufferSize > 0))
+            if (FS_FileRead(szFileName, uSizeRead, 1, s->file) != 1)
+                err = UNZ_ERRNO;
+        lSeek -= uSizeRead;
+    }
+
+    if ((err == UNZ_OK) && (extraField != NULL)) {
+        uLong uSizeRead;
+        if (file_info.size_file_extra < extraFieldBufferSize)
+            uSizeRead = file_info.size_file_extra;
+        else
+            uSizeRead = extraFieldBufferSize;
+
+        if (lSeek != 0) {
+            if (FS_FileSeek(s->file, lSeek, 1) == 0)
+                lSeek = 0;
+            else
+                err = UNZ_ERRNO;
+        }
+        if ((file_info.size_file_extra > 0) && (extraFieldBufferSize > 0))
+            if (FS_FileRead(extraField, uSizeRead, 1, s->file) != 1)
+                err = UNZ_ERRNO;
+        lSeek += file_info.size_file_extra - uSizeRead;
+    } else {
+        lSeek += file_info.size_file_extra;
+    }
+
+    if ((err == UNZ_OK) && (szComment != NULL)) {
+        uLong uSizeRead;
+        if (file_info.size_file_comment < commentBufferSize) {
+            *(szComment + file_info.size_file_comment) = '\0';
+            uSizeRead = file_info.size_file_comment;
+        } else {
+            uSizeRead = commentBufferSize;
+        }
+
+        if (lSeek != 0) {
+            if (FS_FileSeek(s->file, lSeek, 1) == 0)
+                lSeek = 0;
+            else
+                err = UNZ_ERRNO;
+        }
+        if ((file_info.size_file_comment > 0) && (commentBufferSize > 0))
+            if (FS_FileRead(szComment, uSizeRead, 1, s->file) != 1)
+                err = UNZ_ERRNO;
+        lSeek += file_info.size_file_comment - uSizeRead;
+    } else {
+        lSeek += file_info.size_file_comment;
+    }
+
+    if ((err == UNZ_OK) && (pfile_info != NULL))
+        *pfile_info = file_info;
+
+    if ((err == UNZ_OK) && (pfile_info_internal != NULL))
+        *pfile_info_internal = file_info_internal;
+
+    return err;
 }
 
 /* line 773 */
