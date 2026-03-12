@@ -204,6 +204,15 @@ static const inputCommandDef_t s_inputCommands[] = {
 void CL_Input(void);
 void CL_SendCmd(void);
 
+static qboolean CL_ConsumeButtonPress(kbutton_t *button)
+{
+    qboolean pressed;
+
+    pressed = button->active || button->wasPressed;
+    button->wasPressed = 0;
+    return pressed;
+}
+
 /* line 102 */
 void IN_MLookDown(void)
 {
@@ -1241,140 +1250,87 @@ void CL_ShutdownInput(void)
 }
 
 /* line 1259 */
-__attribute__((naked))
 void CL_CmdButtons(usercmd_t *cmd)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1259 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* cmd */
-        "leal 4(%ecx), %esi\n" /* line 1263 | cmdButtons */
-        /* { scope 1 */
-        "movl kb, %edx\n" /* line 1061 */
-        "leal 0x118(%edx), %eax\n"
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186d6c\n"
-        "orl $1, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186d6c:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        /* } scope */
-        "leal 0x12c(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186d84\n"
-        "orl $0x8000, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186d84:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x140(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186d9c\n"
-        "orl $0x10000, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186d9c:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x154(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186db4\n"
-        "orl $0x20000, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186db4:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x168(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186dcc\n"
-        "orl $0x4000, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186dcc:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x17c(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186de1\n"
-        "orl $4, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186de1:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x190(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186df6\n"
-        "orl $8, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186df6:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x1a4(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e0b\n"
-        "orl $0x10, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186e0b:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x1b8(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e20\n"
-        "orl $0x20, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186e20:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x1cc(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e35\n"
-        "orl $0x40, 4(%ecx)\n" /* line 1063 */
-        ".Lf186d4a_00186e35:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x1e0(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e4c\n"
-        "orl $0x80, (%esi)\n" /* line 1063 */
-        ".Lf186d4a_00186e4c:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x1f4(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e63\n"
-        "orl $0x100, (%esi)\n" /* line 1063 */
-        ".Lf186d4a_00186e63:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0x208(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e7a\n"
-        "orl $0x200, (%esi)\n" /* line 1063 */
-        ".Lf186d4a_00186e7a:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "leal 0xc8(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "je .Lf186d4a_00186e91\n"
-        "orl $0x400, (%esi)\n" /* line 1063 */
-        ".Lf186d4a_00186e91:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "movl imp_cl, %ebx\n" /* line 1278 */
-        "movl (%ebx), %eax\n"
-        "cmpl $0, 4(%eax)\n"
-        "je .Lf186d4a_00186eb0\n"
-        "movl cl_bypassMouseInput, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf186d4a_00186eeb\n"
-        "movl (%ebx), %eax\n"
-        ".Lf186d4a_00186eb0:\n"
-        "movl 0x38(%eax), %eax\n" /* line 1285 */
-        "subl $2, %eax\n"
-        "cmpl $2, %eax\n"
-        "ja .Lf186d4a_00186ecc\n"
-        "leal 0xf0(%edx), %eax\n" /* line 1061 */
-        "cmpw $0, 0x10(%eax)\n"
-        "jne .Lf186d4a_00186ee3\n"
-        ".Lf186d4a_00186ec8:\n"
-        "movb $0, 0x11(%eax)\n" /* line 1066 */
-        ".Lf186d4a_00186ecc:\n"
-        "movl (%ebx), %eax\n" /* line 1288 */
-        "movl 0x8600(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf186d4a_00186edf\n"
-        "orl $0x800, 4(%ecx)\n" /* line 1289 */
-        ".Lf186d4a_00186edf:\n"
-        "popl %ebx\n" /* line 1292 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf186d4a_00186ee3:\n"
-        "orl $0x400, (%esi)\n" /* line 1063 */
-        "jmp .Lf186d4a_00186ec8\n"
-        ".Lf186d4a_00186eeb:\n"
-        "orl $0x40000, 4(%ecx)\n" /* line 1283 */
-        "movl (%ebx), %eax\n"
-        "jmp .Lf186d4a_00186eb0\n"
-    );
+    clientActive_t *cl;
+
+#define KB_AT(offset) ((kbutton_t *)((byte *)kb + (offset)))
+
+    cl = *(clientActive_t **)imp_cl;
+
+    if (CL_ConsumeButtonPress(KB_AT(0x118)))
+    {
+        cmd->buttons |= 0x1;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x12c)))
+    {
+        cmd->buttons |= 0x8000;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x140)))
+    {
+        cmd->buttons |= 0x10000;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x154)))
+    {
+        cmd->buttons |= 0x20000;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x168)))
+    {
+        cmd->buttons |= 0x4000;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x17c)))
+    {
+        cmd->buttons |= 0x4;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x190)))
+    {
+        cmd->buttons |= 0x8;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x1a4)))
+    {
+        cmd->buttons |= 0x10;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x1b8)))
+    {
+        cmd->buttons |= 0x20;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x1cc)))
+    {
+        cmd->buttons |= 0x40;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x1e0)))
+    {
+        cmd->buttons |= 0x80;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x1f4)))
+    {
+        cmd->buttons |= 0x100;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0x208)))
+    {
+        cmd->buttons |= 0x200;
+    }
+    if (CL_ConsumeButtonPress(KB_AT(0xc8)))
+    {
+        cmd->buttons |= 0x400;
+    }
+
+    if (cl->keyCatchers && !cl_bypassMouseInput->current.enabled)
+    {
+        cmd->buttons |= 0x40000;
+    }
+
+    if ((unsigned)(cl->snap.ps.pm_type - 2) <= 2 && CL_ConsumeButtonPress(KB_AT(0xf0)))
+    {
+        cmd->buttons |= 0x400;
+    }
+
+    if (cl->cgameInShellshock)
+    {
+        cmd->buttons |= 0x800;
+    }
+
+#undef KB_AT
 }
 
 /* line 1168 */
