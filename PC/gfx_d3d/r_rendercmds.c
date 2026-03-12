@@ -22,6 +22,9 @@ extern void FX_UpdateScheduledEffectsBolt(void);
 extern void FX_UpdateScheduledEffectsNonBolt(void);
 extern const float AngleNormalize360(const float angle);
 extern void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
+extern void RB_ExecuteRenderCommands(const void *data);
+extern void RB_EndFrame(void);
+extern void R_LockSkinnedCache(int lock);
 
 extern unsigned char s_backEndData[]; /* s_backEndData */
 extern GfxCmdArray *s_cmdList; /* s_cmdList */
@@ -1174,58 +1177,26 @@ void R_AddCmdSetViewport(int x, int y, int width, int height)
 }
 
 /* line 1838 */
-__attribute__((naked))
 void R_EndDebugFrame(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1838 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_rg, %eax\n" /* line 1841 */
-        "cmpb $0, (%eax)\n"
-        "je .Lfc9240_000c92e2\n"
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $3, %eax\n"
-        "jg .Lfc9240_000c92e8\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        ".Lfc9240_000c9277:\n"
-        "movl frontEndDataOut, %eax\n" /* line 1848 */
-        "movl %eax, (%esp)\n"
-        "calll RB_ExecuteRenderCommands\n"
-        "calll RB_EndFrame\n" /* line 1849 */
-        "movl s_debugFrameGlob, %eax\n" /* line 1851 */
-        "movl %eax, s_cmdList\n"
-        "movl s_debugFrameGlob+4, %eax\n" /* line 1852 */
-        "movl %eax, frontEndDataOut\n"
-        "cmpb $0, s_debugFrameGlob+8\n" /* line 1855 */
-        "jne .Lfc9240_000c9311\n"
-        ".Lfc9240_000c92ce:\n"
-        "movl $0, s_debugFrameGlob\n" /* line 1862 */
-        "movl $0, s_debugFrameGlob+4\n" /* line 1863 */
-        ".Lfc9240_000c92e2:\n"
-        "addl $0x14, %esp\n" /* line 1864 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc9240_000c92e8:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 4(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $4, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0, (%edx)\n" /* line 964 */
-        "movw $4, 2(%edx)\n" /* line 965 */
-        "jmp .Lfc9240_000c9277\n"
-        ".Lfc9240_000c9311:\n"
-        "movb $0, s_debugFrameGlob+8\n" /* line 1857 */
-        "movl $1, (%esp)\n" /* line 1858 */
-        "calll R_LockSkinnedCache\n"
-        "jmp .Lfc9240_000c92ce\n"
-    );
+    if (*(byte *)imp_rg == 0) {
+        return;
+    }
+
+    R_AllocCriticalCmd(4, 0);
+
+    RB_ExecuteRenderCommands(frontEndDataOut);
+    RB_EndFrame();
+
+    s_cmdList = s_debugFrameGlob.restoreCmdList;
+    frontEndDataOut = s_debugFrameGlob.restoreFrontEndDataOut;
+    if (s_debugFrameGlob.restoreSkinnedCache) {
+        s_debugFrameGlob.restoreSkinnedCache = 0;
+        R_LockSkinnedCache(1);
+    }
+
+    s_debugFrameGlob.restoreCmdList = NULL;
+    s_debugFrameGlob.restoreFrontEndDataOut = NULL;
 }
 
 /* line 1867 */
