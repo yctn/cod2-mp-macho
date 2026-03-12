@@ -703,7 +703,8 @@ CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, 
     cgs = *(cgs_t **)imp_cgs;
     if (cgs->teamScores[team] == -9999)
     {
-        Com_sprintf(scoreText, sizeof(scoreText), "%s", "-");
+        scoreText[0] = '-';
+        scoreText[1] = '\0';
     }
     else
     {

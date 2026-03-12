@@ -59,6 +59,10 @@ extern void CG_PlayerSprites(centity_t *cent);
 extern qboolean CL_PickMaterial(const vec_t *org, const vec_t *dir, char *pszName, char *pszSurfaceFlags, char *pszContents, int iMaxChars);
 extern int CG_DrawSmallDevStringColor(float x, float y, const char *s, const vec_t *color, int align);
 extern int __mh_execute_header;
+extern int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info, int maxcount, int *cpu);
+extern const char *Dvar_GetString(const char *dvarName);
+extern int Dvar_GetInt(const char *dvarName);
+extern Bool Dvar_GetBool(const char *dvarName);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -947,119 +951,68 @@ unsigned int CG_CheckTimedMenus(void)
 }
 
 /* line 2507 */
-static __attribute__((naked))
-unsigned int CG_DrawSoundOverlay(void)
+static unsigned int CG_DrawSoundOverlay(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2507 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x55c, %esp\n"
-        /* { scope 1 */
-        "leal -0x1c(%ebp), %eax\n" /* line 2526 | cpu */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0x40, 8(%esp)\n"
-        "leal -0x51c(%ebp), %eax\n" /* info */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_cg_drawSoundOverlay, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_GetSoundOverlay\n"
-        "movl %eax, -0x530(%ebp)\n" /* count */
-        "testl %eax, %eax\n" /* line 2527 */
-        "jle .Lf1cc1f0_001cc3c1\n"
-        "movl $str_00219b04, (%esp)\n" /* line 2545 */
-        "calll Dvar_GetString\n"
-        "movl %eax, %edi\n" /* provider */
-        "movl $str_002189d4, (%esp)\n" /* line 2547 */
-        "calll Dvar_GetInt\n"
-        "movl %eax, %esi\n" /* bits */
-        "movl $str_002189cc, (%esp)\n" /* line 2548 */
-        "calll Dvar_GetInt\n"
-        "movl %eax, %ebx\n" /* khz */
-        "movl $str_002189e0, (%esp)\n" /* line 2549 */
-        "calll Dvar_GetBool\n"
-        "cmpb $1, %al\n" /* line 2552 */
-        "sbbl %eax, %eax\n"
-        "addl $2, %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %ebx, 0x10(%esp)\n" /* khz */
-        "movl %esi, 0xc(%esp)\n" /* bits */
-        "movl %edi, 8(%esp)\n" /* provider */
-        "movl -0x1c(%ebp), %eax\n" /* cpu */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b7084, (%esp)\n" /* "CPU: ^3%%%i ^73D provider: ^3%s ^7bits: ^3%i ^7kHz: ^3%i ^7c" */
-        "calll va\n"
-        "movl $0, 0x1c(%esp)\n" /* line 2556 */
-        "movl $0x41200000, %ebx\n" /* khz */
-        "movl %ebx, 0x18(%esp)\n" /* khz */
-        "movl $1, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl imp_colorWhite, %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x42a40000, 4(%esp)\n"
-        "movl $0x40000000, (%esp)\n"
-        "calll CG_DrawStringExt\n"
-        "movss lit4_002eda1c, %xmm0\n" /* 92.0f */
-        "movss %xmm0, -0x52c(%ebp)\n" /* y */
-        "xorl %edi, %edi\n" /* provider */
-        "leal -0x51c(%ebp), %esi\n" /* info, bits */
-        "jmp .Lf1cc1f0_001cc3a0\n"
-        ".Lf1cc1f0_001cc2f5:\n"
-        "cvtss2sd 0x10(%esi), %xmm0\n" /* line 2567 | bits */
-        "movsd %xmm0, 0x20(%esp)\n"
-        "movl 0xc(%esi), %eax\n" /* bits */
-        "movl %eax, 0x1c(%esp)\n"
-        "cvtss2sd 8(%esi), %xmm0\n" /* bits */
-        "movsd %xmm0, 0x14(%esp)\n"
-        "cvtss2sd 4(%esi), %xmm0\n" /* bits */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* provider */
-        "movl $str_002b70cc, (%esp)\n" /* "%2i %-50s vol^3%04.2f ^7rvol^3%04.2f ^7dist^3%5i ^7pit^3%04." */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        ".Lf1cc1f0_001cc333:\n"
-        "movl $0, 0x1c(%esp)\n" /* line 2570 */
-        "movl $0x41200000, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl imp_colorWhite, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movss -0x52c(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 4(%esp)\n"
-        "movl $0x40000000, (%esp)\n"
-        "calll CG_DrawStringExt\n"
-        "movss lit4_002ed6b4, %xmm0\n" /* line 2571 | 10.0f */
-        "addss -0x52c(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, -0x52c(%ebp)\n" /* y */
-        "addl $1, %edi\n" /* line 2559 | provider */
-        "addl $0x14, %esi\n" /* bits */
-        "cmpl %edi, -0x530(%ebp)\n" /* provider, count */
-        "je .Lf1cc1f0_001cc3c1\n"
-        ".Lf1cc1f0_001cc3a0:\n"
-        "movl (%esi), %edx\n" /* line 2561 | bits */
-        "testl %edx, %edx\n"
-        "jne .Lf1cc1f0_001cc2f5\n"
-        "movl %edi, 4(%esp)\n" /* line 2563 | provider */
-        "movl $str_002afbe0, (%esp)\n" /* "%2i" */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1cc1f0_001cc333\n"
-        /* } scope */
-        ".Lf1cc1f0_001cc3c1:\n"
-        "addl $0x55c, %esp\n" /* line 2573 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    snd_overlay_info_t info[64];
+    const char *provider;
+    const char *line;
+    int cpu;
+    int count;
+    int bits;
+    int khz;
+    int channels;
+    int i;
+    float y;
+
+    count = SND_GetSoundOverlay(
+        (snd_overlay_type_t)(*(const dvar_t **)imp_cg_drawSoundOverlay)->current.integer,
+        info,
+        (int)(sizeof(info) / sizeof(info[0])),
+        &cpu);
+    if (count <= 0)
+    {
+        return 0;
+    }
+
+    provider = Dvar_GetString("mss_3d_provider");
+    bits = Dvar_GetInt("snd_bits");
+    khz = Dvar_GetInt("snd_khz");
+    channels = Dvar_GetBool("snd_stereo") ? 2 : 1;
+
+    CG_DrawStringExt(
+        2.0f,
+        82.0f,
+        va("CPU: ^3%%%i ^73D provider: ^3%s ^7bits: ^3%i ^7kHz: ^3%i ^7chan: ^3%i", cpu, provider, bits, khz, channels),
+        colorWhite,
+        0,
+        1,
+        10.0f,
+        0);
+
+    y = 92.0f;
+    for (i = 0; i < count; ++i)
+    {
+        if (info[i].pszSampleName)
+        {
+            line = va(
+                "%2i %-50s vol^3%04.2f ^7rvol^3%04.2f ^7dist^3%5i ^7pit^3%04.2f",
+                i,
+                info[i].pszSampleName,
+                info[i].fBaseVolume,
+                info[i].fCurVolume,
+                info[i].dist,
+                info[i].fPitch);
+        }
+        else
+        {
+            line = va("%2i", i);
+        }
+
+        CG_DrawStringExt(2.0f, y, line, colorWhite, 0, 1, 10.0f, 0);
+        y += 10.0f;
+    }
+
+    return 0;
 }
 
 /* line 2715 */
