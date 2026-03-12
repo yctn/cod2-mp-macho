@@ -31,6 +31,7 @@ extern const GfxViewportBehavior s_viewportBehaviorForRenderTarget[]; /* rodata.
 #define VTABLE(obj) (*(void ***)((void *)(obj)))
 
 typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
+typedef HRESULT (*SetRenderStateFn)(void *device, DWORD state, DWORD value);
 typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
 typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
 
@@ -161,45 +162,23 @@ void RB_SetAnisotropy(void)
 }
 
 /* line 438 */
-__attribute__((naked))
 void RB_SetAlphaAntiAliasingState(int stateBits0)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 438 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "testl $0xf00, 8(%ebp)\n" /* line 444 | stateBits0 */
-        "je .Lfcd290_000cd2d2\n"
-        "xorl %ebx, %ebx\n" /* aaAlphaFormat */
-        ".Lfcd290_000cd2a2:\n"
-        "movl imp_dx, %eax\n" /* line 450 */
-        "movl 8(%eax), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* aaAlphaFormat */
-        "movl $0xb5, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd290_000cd2a2\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 451 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd290_000cd2d2:\n"
-        "movl imp_r_aaAlpha, %eax\n" /* line 446 */
-        "movl (%eax), %eax\n"
-        "movl $0x41415353, %ebx\n" /* aaAlphaFormat */
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x434f5441, %eax\n"
-        "cmovnel %eax, %ebx\n" /* aaAlphaFormat */
-        "jmp .Lfcd290_000cd2a2\n"
-    );
+    void *device;
+    DWORD aaAlphaFormat;
+
+    if (stateBits0 & 0xf00) {
+        aaAlphaFormat = 0;
+    } else if ((*(const dvar_t **)imp_r_aaAlpha)->current.integer == 2) {
+        aaAlphaFormat = 0x41415353; /* 'SSAA' */
+    } else {
+        aaAlphaFormat = 0x434f5441; /* 'ATOC' */
+    }
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, 0xb5, aaAlphaFormat);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 781 */
@@ -1404,38 +1383,22 @@ void RB_InitSceneViewport(void)
 }
 
 /* line 1480 */
-__attribute__((naked))
 Bool RB_GetViewport(GfxViewport *outViewport)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1480 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* outViewport */
-        "cmpl $1, dxState+8356\n" /* line 1487 */
-        "je .Lfce328_000ce367\n"
-        "movl imp_backEnd, %edx\n" /* line 1507 */
-        "movl 0x3e0(%edx), %eax\n"
-        "movl %eax, (%ecx)\n"
-        "movl 0x3e4(%edx), %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x3e8(%edx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "movl 0x3ec(%edx), %eax\n"
-        "movl %eax, 0xc(%ecx)\n"
-        "movl $1, %eax\n" /* line 1511 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfce328_000ce367:\n"
-        "movl $0, (%ecx)\n" /* line 1489 */
-        "movl $0, 4(%ecx)\n" /* line 1490 */
-        "movl dxState+8348, %eax\n" /* line 1491 */
-        "movl %eax, 8(%ecx)\n"
-        "movl dxState+8352, %eax\n" /* line 1492 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl $1, %eax\n" /* line 1511 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (dxState.viewportIsNull) {
+        outViewport->x = 0;
+        outViewport->y = 0;
+        outViewport->width = dxState.renderTargetWidth;
+        outViewport->height = dxState.renderTargetHeight;
+    } else {
+        byte *backEnd = (byte *)imp_backEnd;
+        outViewport->x = *(int *)(backEnd + 0x3e0);
+        outViewport->y = *(int *)(backEnd + 0x3e4);
+        outViewport->width = *(int *)(backEnd + 0x3e8);
+        outViewport->height = *(int *)(backEnd + 0x3ec);
+    }
+
+    return 1;
 }
 
 /* line 1597 */

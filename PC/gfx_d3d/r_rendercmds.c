@@ -79,6 +79,30 @@ static void R_ResetCmdListState(void)
     s_cmdList->lastCmd = NULL;
 }
 
+static GfxCmdCall *R_AllocDelayedCall(short id, int *marker)
+{
+    int used;
+    GfxCmdCall *cmd;
+
+    used = s_cmdList->usedTotal;
+    if (marker) {
+        *marker = used;
+    }
+
+    cmd = (GfxCmdCall *)((char *)s_cmdList + used);
+    if (0x30000 - used > 7) {
+        s_cmdList->usedTotal = used + 8;
+        s_cmdList->usedCritical += 8;
+        s_cmdList->lastCmd = &cmd->header;
+        cmd->header.id = id;
+        cmd->header.byteCount = 8;
+    } else {
+        s_cmdList->lastCmd = NULL;
+    }
+
+    return cmd;
+}
+
 /* line 158 */
 void R_ShutdownBackendData(void)
 {
@@ -763,49 +787,14 @@ void R_AddCmdDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechni
 }
 
 /* line 991 */
-__attribute__((naked))
 int R_BeginDelayedDrawing(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 991 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 998 */
-        "movl 0x30000(%ecx), %ebx\n" /* marker */
-        /* { scope 2 */
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc86b2_000c86e6\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "movl $0, 4(%eax)\n" /* line 1003 */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1010 | marker */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfc86b2_000c86e6:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $8, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $1, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n"
-        /* } scope */
-        "movl $0, 4(%eax)\n" /* line 1003 */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1010 | marker */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int marker;
+    GfxCmdCall *cmd;
+
+    cmd = R_AllocDelayedCall(1, &marker);
+    cmd->subCmd = NULL;
+    return marker;
 }
 
 /* line 1013 */
@@ -828,46 +817,12 @@ void R_EndDelayedDrawing(int marker)
 }
 
 /* line 1037 */
-__attribute__((naked))
 void R_IssueDelayedDrawing(int marker)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1037 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc8780_000c87b5\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %edx, %edx\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1053 | marker */
-        "leal 8(%ecx, %eax), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1054 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8780_000c87b5:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $8, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $2, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1053 | marker */
-        "leal 8(%ecx, %eax), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1054 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdCall *cmd;
+
+    cmd = R_AllocDelayedCall(2, NULL);
+    cmd->subCmd = (char *)s_cmdList + marker + 8;
 }
 
 /* line 1153 */

@@ -3,9 +3,16 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <ctype.h>
 
 extern void ReplaceStringInternal(char **dest, const char *src);
 extern void Cmd_AddCommand(const char *name, void (*func)(void));
+extern int Cmd_Argc(void);
+extern char *Cmd_Argv(int arg);
+extern void I_strncat(char *dest, int maxlen, const char *src);
+extern int I_strnicmp(const char *s0, const char *s1, int n);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void Com_Printf(const char *fmt, ...);
 
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
@@ -286,203 +293,91 @@ void Key_SetOverstrikeMode(qboolean state)
 }
 
 /* line 711 */
-static __attribute__((naked))
 void FindMatches(const char *s)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 711 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl completionString, %ebx\n" /* line 715 */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* i */
-        "repne scasb %es:(%edi), %al\n" /* i */
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* s */
-        "movl %eax, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf13fd72_0013fdd7\n"
-        "movl matchCount, %eax\n" /* line 719 */
-        "addl $1, %eax\n"
-        "movl %eax, matchCount\n"
-        "subl $1, %eax\n" /* line 720 */
-        "je .Lf13fd72_0013fe12\n"
-        "movl 8(%ebp), %eax\n" /* line 729 | s */
-        "cmpb $0, (%eax)\n"
-        "jne .Lf13fd72_0013fddf\n"
-        "xorl %edi, %edi\n" /* i */
-        ".Lf13fd72_0013fdc5:\n"
-        "movl $1, %eax\n" /* line 731 */
-        ".Lf13fd72_0013fdca:\n"
-        "movb %al, hasExactMatch\n"
-        "movb $0, shortestMatch(%edi)\n" /* line 732 | i */
-        /* } scope */
-        ".Lf13fd72_0013fdd7:\n"
-        "addl $0x1c, %esp\n" /* line 733 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13fd72_0013fddf:\n"
-        "movl %eax, %esi\n" /* line 729 */
-        "xorl %edi, %edi\n" /* i */
-        ".Lf13fd72_0013fde3:\n"
-        "movsbl shortestMatch(%edi), %eax\n" /* i */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "movl %eax, %ebx\n"
-        "movsbl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "cmpl %eax, %ebx\n"
-        "jne .Lf13fd72_0013fe36\n"
-        "addl $1, %edi\n" /* line 730 | i */
-        "movl 8(%ebp), %esi\n" /* s */
-        "addl %edi, %esi\n" /* i */
-        "cmpb $0, (%esi)\n" /* line 729 */
-        "jne .Lf13fd72_0013fde3\n"
-        "jmp .Lf13fd72_0013fdc5\n"
-        ".Lf13fd72_0013fe12:\n"
-        "movl $0x400, 8(%esp)\n" /* line 722 */
-        "movl 8(%ebp), %edi\n" /* s, i */
-        "movl %edi, 4(%esp)\n" /* i */
-        "movl $shortestMatch, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movb $1, hasExactMatch\n" /* line 723 */
-        "jmp .Lf13fd72_0013fdd7\n"
-        ".Lf13fd72_0013fe36:\n"
-        "cmpb $0, (%esi)\n" /* line 731 */
-        "je .Lf13fd72_0013fdc5\n"
-        "cmpb $0, hasExactMatch\n"
-        "jne .Lf13fd72_0013fe48\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf13fd72_0013fdca\n"
-        ".Lf13fd72_0013fe48:\n"
-        "cmpb $0, shortestMatch(%edi)\n" /* i */
-        "je .Lf13fd72_0013fdc5\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf13fd72_0013fdca\n"
-    );
+    int i;
+    int completionLen;
+
+    for (completionLen = 0; completionString[completionLen]; ++completionLen) {
+    }
+
+    if (I_strnicmp(s, completionString, completionLen) != 0) {
+        return;
+    }
+
+    if (++matchCount == 1) {
+        I_strncpyz(shortestMatch, s, sizeof(shortestMatch));
+        hasExactMatch = 1;
+        return;
+    }
+
+    if (!*s) {
+        hasExactMatch = 1;
+        shortestMatch[0] = '\0';
+        return;
+    }
+
+    for (i = 0; ; ++i) {
+        if (tolower((unsigned char)shortestMatch[i]) != tolower((unsigned char)s[i])) {
+            break;
+        }
+        if (!s[i]) {
+            hasExactMatch = 1;
+            shortestMatch[i] = '\0';
+            return;
+        }
+    }
+
+    if (!s[i] || (hasExactMatch && !shortestMatch[i])) {
+        hasExactMatch = 1;
+    } else {
+        hasExactMatch = 0;
+    }
+    shortestMatch[i] = '\0';
 }
 
 /* line 742 */
-static __attribute__((naked))
+static
 void PrintMatches(const char *s)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 742 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* s */
-        "movl $shortestMatch, %edi\n" /* line 744 */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl $shortestMatch, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* s */
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf13fe5c_0013fea3\n"
-        "movl %ebx, 4(%esp)\n" /* line 745 | s */
-        "movl $str_00217190, (%esp)\n" /* "    %s
-" */
-        "calll Com_Printf\n"
-        ".Lf13fe5c_0013fea3:\n"
-        "addl $0x10, %esp\n" /* line 746 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+{
+    int shortestLen;
+
+    for (shortestLen = 0; shortestMatch[shortestLen]; ++shortestLen) {
+    }
+
+    if (I_strnicmp(s, shortestMatch, shortestLen) == 0) {
+        Com_Printf("    %s\n", s);
+    }
 }
 
 /* line 749 */
-static __attribute__((naked))
+static
 void keyConcatArgs(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 749 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl $1, %esi\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 754 */
-        "cmpl %eax, %esi\n" /* i */
-        "jge .Lf13feaa_0013ff52\n"
-        ".Lf13feaa_0013fec4:\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 756 */
-        "movl $0x100, 4(%esp)\n"
-        "movl $g_consoleField+24, (%esp)\n"
-        "calll I_strncat\n"
-        "movl %esi, (%esp)\n" /* line 757 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* arg */
-        "movzbl (%eax), %eax\n" /* line 758 */
-        "testb %al, %al\n"
-        "je .Lf13feaa_0013ff1d\n"
-        "jmp .Lf13feaa_0013fefd\n"
-        ".Lf13feaa_0013fef3:\n"
-        "addl $1, %ebx\n" /* line 765 | arg */
-        "movzbl (%ebx), %eax\n" /* line 758 | arg */
-        "testb %al, %al\n"
-        "je .Lf13feaa_0013ff1d\n"
-        ".Lf13feaa_0013fefd:\n"
-        "cmpb $0x20, %al\n" /* line 760 */
-        "jne .Lf13feaa_0013fef3\n"
-        "movl $str_00222120, 8(%esp)\n" /* line 762 */
-        "movl $0x100, 4(%esp)\n"
-        "movl $g_consoleField+24, (%esp)\n"
-        "calll I_strncat\n"
-        ".Lf13feaa_0013ff1d:\n"
-        "movl %esi, (%esp)\n" /* line 767 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl $g_consoleField+24, (%esp)\n"
-        "calll I_strncat\n"
-        "cmpb $0x20, (%ebx)\n" /* line 768 | arg */
-        "je .Lf13feaa_0013ff59\n"
-        "addl $1, %esi\n" /* line 754 | i */
-        ".Lf13feaa_0013ff45:\n"
-        "calll Cmd_Argc\n"
-        "cmpl %eax, %esi\n" /* i */
-        "jl .Lf13feaa_0013fec4\n"
-        /* } scope */
-        ".Lf13feaa_0013ff52:\n"
-        "addl $0x10, %esp\n" /* line 773 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13feaa_0013ff59:\n"
-        "movl $str_00222120, 8(%esp)\n" /* line 770 */
-        "movl $0x100, 4(%esp)\n"
-        "movl $g_consoleField+24, (%esp)\n"
-        "calll I_strncat\n"
-        "addl $1, %esi\n" /* line 754 | i */
-        "jmp .Lf13feaa_0013ff45\n"
-    );
+    int i;
+
+    for (i = 1; i < Cmd_Argc(); ++i) {
+        const char *arg;
+        const char *scan;
+
+        I_strncat(g_consoleField.buffer, 0x100, " ");
+        arg = Cmd_Argv(i);
+        scan = arg;
+        while (*scan && *scan != ' ') {
+            ++scan;
+        }
+
+        if (*scan == ' ') {
+            I_strncat(g_consoleField.buffer, 0x100, "\"");
+        }
+
+        I_strncat(g_consoleField.buffer, 0x100, arg);
+
+        if (*scan == ' ') {
+            I_strncat(g_consoleField.buffer, 0x100, "\"");
+        }
+    }
 }
 
 /* line 1193 */

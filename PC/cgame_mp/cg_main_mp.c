@@ -21,6 +21,14 @@ extern int Com_SafeClientDObjFree(int handle);
 extern void XAnimFreeTree(struct XAnimTree_s *tree, void *Free);
 extern int BG_GetNumWeapons(void);
 extern void *memset(void *s, int c, unsigned int n);
+extern void CL_TrackStatistics(trStatistics_t *pStats);
+extern void SND_FadeAllSounds(float volume, int fadetime);
+extern void Mantle_ShutdownAnims(void);
+extern void CG_FreeClientDObjInfo(void);
+extern void CG_FreeEntityDObjInfo(void);
+extern void CL_FreeWeaponInfoMemory(void);
+extern void FX_FreeSystem(void);
+extern unsigned int Scr_ShutdownGameStrings(void);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void * Hunk_AllocInternal(int size);
 extern void CL_ConsolePrint(int channel, const char *msg, int duration, int width);
@@ -994,77 +1002,46 @@ void CG_FreeWeapons(void)
 }
 
 /* line 1975 */
-__attribute__((naked))
 void CG_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1975 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl $0, (%esp)\n" /* line 1980 */
-        "calll CL_TrackStatistics\n"
-        "movl $0, 4(%esp)\n" /* line 1982 */
-        "movl $0x3f800000, (%esp)\n"
-        "calll SND_FadeAllSounds\n"
-        "movb $0, g_ambientStarted\n" /* line 1984 */
-        "movb $0, g_mapLoaded\n" /* line 1985 */
-        "calll Mantle_ShutdownAnims\n" /* line 1987 */
-        "calll CG_FreeWeapons\n" /* line 1989 */
-        "calll CG_FreeClientDObjInfo\n" /* line 1991 */
-        "calll CG_FreeEntityDObjInfo\n" /* line 1992 */
-        "calll CL_FreeWeaponInfoMemory\n" /* line 1993 */
-        "calll FX_FreeSystem\n" /* line 1999 */
-        "xorl %esi, %esi\n"
-        "movl cg, %ebx\n"
-        ".Lf144962_001449bf:\n"
-        "movl 0xe0db8(%ebx), %eax\n" /* line 1650 */
-        "testl %eax, %eax\n"
-        "je .Lf144962_001449e3\n"
-        "movl $0, 4(%esp)\n" /* line 1652 */
-        "movl %eax, (%esp)\n"
-        "calll XAnimFreeTree\n"
-        "movl $0, 0xe0db8(%ebx)\n" /* line 1653 */
-        ".Lf144962_001449e3:\n"
-        "addl $1, %esi\n" /* line 1648 */
-        "addl $0x4b8, %ebx\n"
-        "cmpl $0x40, %esi\n"
-        "jne .Lf144962_001449bf\n"
-        "xorw %si, %si\n"
-        "movl cgs, %edi\n"
-        "movl %edi, %ebx\n"
-        ".Lf144962_001449fc:\n"
-        "movl 0xc6b8(%ebx), %eax\n" /* line 1660 */
-        "testl %eax, %eax\n"
-        "je .Lf144962_00144a20\n"
-        "movl $0, 4(%esp)\n" /* line 1662 */
-        "movl %eax, (%esp)\n"
-        "calll XAnimFreeTree\n"
-        "movl $0, 0xc6b8(%ebx)\n" /* line 1663 */
-        ".Lf144962_00144a20:\n"
-        "addl $1, %esi\n" /* line 1658 */
-        "addl $0x4b8, %ebx\n"
-        "cmpl $8, %esi\n"
-        "jne .Lf144962_001449fc\n"
-        "movl 0x5ea0(%edi), %edx\n" /* line 2003 */
-        "testl %edx, %edx\n"
-        "jne .Lf144962_00144a3d\n"
-        "calll Scr_ShutdownGameStrings\n" /* line 2004 */
-        ".Lf144962_00144a3d:\n"
-        "movl $0xf399c, 8(%esp)\n" /* line 2006 */
-        "movl $0, 4(%esp)\n"
-        "movl cg, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "addl $0x1c, %esp\n" /* line 2012 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cgBase;
+    byte *cgsBase;
+    int i;
+
+    CL_TrackStatistics(0);
+    SND_FadeAllSounds(1.0f, 0);
+    g_ambientStarted = 0;
+    g_mapLoaded = 0;
+    Mantle_ShutdownAnims();
+    CG_FreeWeapons();
+    CG_FreeClientDObjInfo();
+    CG_FreeEntityDObjInfo();
+    CL_FreeWeaponInfoMemory();
+    FX_FreeSystem();
+
+    cgBase = (byte *)cg;
+    for (i = 0; i < 64; ++i, cgBase += 0x4b8) {
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgBase + 0xe0db8);
+        if (tree) {
+            XAnimFreeTree(tree, 0);
+            *(struct XAnimTree_s **)(cgBase + 0xe0db8) = NULL;
+        }
+    }
+
+    cgsBase = (byte *)cgs;
+    for (i = 0; i < 8; ++i, cgsBase += 0x4b8) {
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgsBase + 0xc6b8);
+        if (tree) {
+            XAnimFreeTree(tree, 0);
+            *(struct XAnimTree_s **)(cgsBase + 0xc6b8) = NULL;
+        }
+    }
+
+    if (*(int *)((byte *)cgs + 0x5ea0) == 0) {
+        Scr_ShutdownGameStrings();
+    }
+
+    memset((void *)cg, 0, 0xf399c);
 }
 
 /* line 2022 */
