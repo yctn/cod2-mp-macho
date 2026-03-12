@@ -156,6 +156,65 @@ static int unzlocal_CheckCurrentFileCoherencyHeader(
     return UNZ_OK;
 }
 
+static uLong unzlocal_SearchCentralDir(FILE *file)
+{
+    unsigned char *buffer;
+    uLong fileSize;
+    uLong backRead;
+    uLong maxBack;
+    uLong posFound;
+
+    if (FS_FileSeek(file, 0, SEEK_END) != 0)
+        return 0;
+
+    fileSize = (uLong)ftell(file);
+    maxBack = 0xffff;
+    if (maxBack > fileSize)
+        maxBack = fileSize;
+
+    buffer = (unsigned char *)malloc(0x404);
+    if (buffer == NULL)
+        return 0;
+
+    posFound = 0;
+    backRead = 4;
+    while (backRead < maxBack) {
+        uLong readPos;
+        uLong readSize;
+        int i;
+
+        if (backRead + 0x400 > maxBack)
+            backRead = maxBack;
+        else
+            backRead += 0x400;
+
+        readPos = fileSize - backRead;
+        readSize = 0x404;
+        if (readSize > fileSize - readPos)
+            readSize = fileSize - readPos;
+
+        if (FS_FileSeek(file, readPos, SEEK_SET) != 0)
+            break;
+
+        if (FS_FileRead(buffer, 1, readSize, file) != readSize)
+            break;
+
+        for (i = (int)readSize - 4; i >= 0; --i) {
+            if (buffer[i] == 0x50 && buffer[i + 1] == 0x4b &&
+                buffer[i + 2] == 0x05 && buffer[i + 3] == 0x06) {
+                posFound = readPos + (uLong)i;
+                break;
+            }
+        }
+
+        if (posFound != 0)
+            break;
+    }
+
+    free(buffer);
+    return posFound;
+}
+
 /* line 326 */
 unzFile unzReOpen(const char *path, unzFile file)
 {
@@ -925,311 +984,80 @@ int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *szFileN
 }
 
 /* line 352 */
-__attribute__((naked))
 unzFile unzOpen(const char *path)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 352 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xec, %esp\n"
-        /* { scope 1: uBackRead, v */
-        "movl $str_00215b98, 4(%esp)\n" /* line 373 */
-        "movl 8(%ebp), %eax\n" /* path */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileOpen\n"
-        "movl %eax, %esi\n" /* fin */
-        "testl %eax, %eax\n" /* line 374 */
-        "je .Lf2840c_00028821\n"
-        /* { scope 2: uReadPos */
-        "movl $2, 8(%esp)\n" /* line 279 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "je .Lf2840c_000285fc\n"
-        /* } scope */
-        ".Lf2840c_00028455:\n"
-        "movl $0xffffffff, -0xcc(%ebp)\n" /* line 378 | err */
-        "movl $0, -0xd0(%ebp)\n" /* central_pos */
-        "xorl %eax, %eax\n"
-        ".Lf2840c_0002846b:\n"
-        "movl $0, 8(%esp)\n" /* line 381 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* fin */
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "movl $0xffffffff, %eax\n"
-        "cmovel -0xcc(%ebp), %eax\n" /* err */
-        "movl %eax, -0xcc(%ebp)\n" /* err */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 162 */
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %ebx\n" /* v */
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 120 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movw %ax, -0xbe(%ebp)\n"
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 120 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %edi\n" /* line 124 | v */
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 120 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movl %eax, -0xb0(%ebp)\n"
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 120 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        /* } scope */
-        "movswl -0x1c(%ebp), %eax\n" /* line 404 | v */
-        "cmpl %eax, -0xb0(%ebp)\n"
-        "je .Lf2840c_00028734\n"
-        ".Lf2840c_00028549:\n"
-        "movl $0xffffff99, -0xcc(%ebp)\n" /* err */
-        /* { scope 2: uReadPos */
-        ".Lf2840c_00028553:\n"
-        "movl %esi, 0xc(%esp)\n" /* line 162 */
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        "movl %eax, -0xb8(%ebp)\n"
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 162 */
-        "movl $1, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 166 | v */
-        "movl %eax, -0xbc(%ebp)\n"
-        /* } scope */
-        /* { scope 2: uReadPos */
-        "movl %esi, 0xc(%esp)\n" /* line 120 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileRead\n"
-        "movswl -0x1c(%ebp), %eax\n" /* line 124 | v */
-        "movl %eax, -0xb4(%ebp)\n"
-        /* } scope */
-        "movl -0xb8(%ebp), %edi\n" /* line 422 */
-        "addl -0xbc(%ebp), %edi\n"
-        "cmpl -0xd0(%ebp), %edi\n" /* central_pos */
-        "ja .Lf2840c_000285e5\n"
-        "movl -0xcc(%ebp), %ecx\n" /* line 426 | err */
-        "testl %ecx, %ecx\n"
-        "je .Lf2840c_00028750\n"
-        ".Lf2840c_000285e5:\n"
-        "movl %esi, (%esp)\n" /* line 428 | fin */
-        "calll FS_FileClose\n"
-        "xorl %ebx, %ebx\n" /* uReadSize */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 443 | file */
-        "addl $0xec, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: uBackRead, v */
-        /* { scope 2: uReadPos */
-        ".Lf2840c_000285fc:\n"
-        "movl %esi, (%esp)\n" /* line 283 */
-        "calll ftell\n"
-        "movl %eax, -0xac(%ebp)\n"
-        "cmpl $0xfffe, %eax\n" /* line 285 */
-        "movl $0xffff, %eax\n"
-        "cmovbel -0xac(%ebp), %eax\n"
-        "movl %eax, -0xc8(%ebp)\n" /* uBackRead */
-        "movl $0x404, (%esp)\n" /* line 288 */
-        "calll malloc\n"
-        "movl %eax, -0xd4(%ebp)\n"
-        "testl %eax, %eax\n" /* line 289 */
-        "je .Lf2840c_00028455\n"
-        "cmpl $4, -0xc8(%ebp)\n" /* line 293 | uBackRead */
-        "jbe .Lf2840c_000286fd\n"
-        "movl $4, %edi\n"
-        /* { scope 3 */
-        ".Lf2840c_0002864d:\n"
-        "addl $0x400, %edi\n" /* line 297 */
-        "cmpl %edi, -0xc8(%ebp)\n" /* uBackRead */
-        "cmovbl -0xc8(%ebp), %edi\n" /* uBackRead */
-        "movl -0xac(%ebp), %eax\n" /* line 301 */
-        "subl %edi, %eax\n"
-        "movl %eax, -0xc4(%ebp)\n" /* uReadPos */
-        "movl -0xac(%ebp), %ebx\n" /* line 304 | uReadSize */
-        "subl %eax, %ebx\n" /* uReadSize */
-        "cmpl $0x405, %ebx\n" /* uReadSize */
-        "movl $0x404, %eax\n"
-        "cmovael %eax, %ebx\n" /* uReadSize */
-        "movl $0, 8(%esp)\n" /* line 305 */
-        "movl -0xc4(%ebp), %eax\n" /* uReadPos */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FS_FileSeek\n"
-        "testl %eax, %eax\n"
-        "jne .Lf2840c_000286fd\n"
-        "movl %esi, 0xc(%esp)\n" /* line 308 */
-        "movl $1, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* uReadSize */
-        "movl -0xd4(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FileRead\n"
-        "subl $1, %eax\n"
-        "jne .Lf2840c_000286fd\n"
-        "leal -3(%ebx), %ecx\n" /* line 311 | uReadSize */
-        "movl -0xd4(%ebp), %edx\n" /* line 352 */
-        "addl %ecx, %edx\n"
-        "subl $1, %ecx\n" /* line 311 */
-        "leal 1(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf2840c_000286f1\n"
-        ".Lf2840c_000286da:\n"
-        "cmpb $0x50, -1(%edx)\n" /* line 312 */
-        "je .Lf2840c_00028830\n"
-        ".Lf2840c_000286e4:\n"
-        "subl $1, %edx\n" /* line 319 */
-        "subl $1, %ecx\n" /* line 311 */
-        "leal 1(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lf2840c_000286da\n"
-        /* } scope */
-        ".Lf2840c_000286f1:\n"
-        "cmpl %edi, -0xc8(%ebp)\n" /* line 293 | uBackRead */
-        "ja .Lf2840c_0002864d\n"
-        ".Lf2840c_000286fd:\n"
-        "movl $0, -0xd0(%ebp)\n" /* central_pos */
-        ".Lf2840c_00028707:\n"
-        "movl -0xd4(%ebp), %eax\n" /* line 322 */
-        "movl %eax, (%esp)\n"
-        "calll free\n"
-        /* } scope */
-        "movl -0xd0(%ebp), %ebx\n" /* line 378 | central_pos, uReadSize */
-        "testl %ebx, %ebx\n" /* uReadSize */
-        "jne .Lf2840c_00028864\n"
-        "movl $0xffffffff, -0xcc(%ebp)\n" /* err */
-        "xorl %eax, %eax\n"
-        "jmp .Lf2840c_0002846b\n"
-        ".Lf2840c_00028734:\n"
-        "testw %di, %di\n" /* line 404 */
-        "jne .Lf2840c_00028549\n"
-        "cmpw $0, -0xbe(%ebp)\n"
-        "je .Lf2840c_00028553\n"
-        "jmp .Lf2840c_00028549\n"
-        ".Lf2840c_00028750:\n"
-        "movl $0x80, (%esp)\n" /* line 439 */
-        "calll malloc\n"
-        "movl %eax, %ebx\n" /* uReadSize */
-        "movl $0, -0x20(%ebp)\n" /* line 440 */
-        "movl -0xd0(%ebp), %eax\n" /* central_pos */
-        "movl %eax, -0x80(%ebp)\n"
-        "subl %edi, %eax\n"
-        "movl %eax, -0x90(%ebp)\n"
-        "movl %esi, -0x9c(%ebp)\n" /* fin, us */
-        "movl -0xbc(%ebp), %eax\n"
-        "movl %eax, -0x78(%ebp)\n"
-        "movl -0xb8(%ebp), %eax\n"
-        "movl %eax, -0x7c(%ebp)\n"
-        "movl -0xb4(%ebp), %eax\n"
-        "movl %eax, -0x94(%ebp)\n"
-        "movl -0xb0(%ebp), %eax\n"
-        "movl %eax, -0x98(%ebp)\n"
-        "leal -0x9c(%ebp), %eax\n" /* us */
-        "movl $0x80, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* uReadSize */
-        "calll memcpy\n"
-        /* { scope 2: uReadPos */
-        /* { scope 3 */
-        "movl 0x24(%ebx), %eax\n" /* line 714 | file */
-        "movl %eax, 0x14(%ebx)\n" /* file */
-        "movl $0, 0x10(%ebx)\n" /* line 715 | file */
-        "leal 0x78(%ebx), %ecx\n" /* line 718 | file */
-        "leal 0x28(%ebx), %edx\n" /* file */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl %ebx, %eax\n" /* file */
-        "calll unzlocal_GetCurrentFileInfoInternal\n"
-        "testl %eax, %eax\n" /* line 719 */
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0x18(%ebx)\n" /* file */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 443 | file */
-        "addl $0xec, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: uBackRead, v */
-        /* { scope 2: uReadPos */
-        /* { scope 3 */
-        ".Lf2840c_00028821:\n"
-        "xorl %ebx, %ebx\n" /* line 442 | file */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 443 | file */
-        "addl $0xec, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: uBackRead, v */
-        /* { scope 2: uReadPos */
-        /* { scope 3 */
-        ".Lf2840c_00028830:\n"
-        "cmpb $0x4b, (%edx)\n" /* line 312 */
-        "jne .Lf2840c_000286e4\n"
-        "cmpb $5, 1(%edx)\n"
-        "jne .Lf2840c_000286e4\n"
-        "cmpb $6, 2(%edx)\n"
-        "jne .Lf2840c_000286e4\n"
-        "addl -0xc4(%ebp), %ecx\n" /* line 319 | uReadPos */
-        "movl %ecx, -0xd0(%ebp)\n" /* central_pos */
-        "je .Lf2840c_000286f1\n"
-        "jmp .Lf2840c_00028707\n"
-        /* } scope */
-        /* } scope */
-        ".Lf2840c_00028864:\n"
-        "movl -0xd0(%ebp), %eax\n" /* line 378 | central_pos */
-        "movl $0, -0xcc(%ebp)\n" /* err */
-        "jmp .Lf2840c_0002846b\n"
-    );
+    int err;
+    uLong centralPos;
+    uLong ignored;
+    uLong numberDisk;
+    uLong numberDiskWithCd;
+    uLong numberEntryCd;
+    unz_s us;
+    unz_s *s;
+
+    memset(&us, 0, sizeof(us));
+    us.file = FS_FileOpen(path, "rb");
+    if (us.file == NULL)
+        return NULL;
+
+    err = UNZ_OK;
+    centralPos = unzlocal_SearchCentralDir(us.file);
+    if (centralPos == 0)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && FS_FileSeek(us.file, centralPos, SEEK_SET) != 0)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadLong(us.file, &ignored) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadShort(us.file, &numberDisk) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadShort(us.file, &numberDiskWithCd) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadShort(us.file, &us.gi.number_entry) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadShort(us.file, &numberEntryCd) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK &&
+        (numberEntryCd != us.gi.number_entry || numberDiskWithCd != 0 || numberDisk != 0)) {
+        err = UNZ_BADZIPFILE;
+    }
+
+    if (err == UNZ_OK && unzlocal_ReadLong(us.file, &us.size_central_dir) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadLong(us.file, &us.offset_central_dir) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && unzlocal_ReadShort(us.file, &us.gi.size_comment) != UNZ_OK)
+        err = UNZ_ERRNO;
+
+    if (err == UNZ_OK && centralPos < us.offset_central_dir + us.size_central_dir)
+        err = UNZ_BADZIPFILE;
+
+    if (err != UNZ_OK) {
+        FS_FileClose(us.file);
+        return NULL;
+    }
+
+    us.byte_before_the_zipfile = centralPos - (us.offset_central_dir + us.size_central_dir);
+    us.central_pos = centralPos;
+    us.pfile_in_zip_read = NULL;
+
+    s = (unz_s *)malloc(sizeof(*s));
+    if (s == NULL) {
+        FS_FileClose(us.file);
+        return NULL;
+    }
+
+    *s = us;
+    unzGoToFirstFile((unzFile)s);
+    return (unzFile)s;
 }
 
 /* line 451 */
