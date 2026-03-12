@@ -12,14 +12,21 @@
 extern struct XModel * CL_RegisterModel(const char *name);
 extern snd_alias_t *CL_PickSoundAlias(const char *aliasname);
 extern const char *CL_GetConfigString(int index);
+extern void CL_SubtitlePrint(const char *pszText, int iDuration, int iLineWidth);
 extern int atoi(const char *nptr);
 extern const char *Info_ValueForKey(const char *s, const char *key);
+extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
 extern void SND_PlayAmbientAlias(const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system);
+extern int SND_PlaySoundAliasAsMaster(const snd_alias_t *pAlias, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
+extern int SND_PlaySoundAlias(const snd_alias_t *pAlias, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
+extern snd_alias_t *Com_PickSoundAliasFromList(snd_alias_list_t *aliasList);
 extern int Com_ClientDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
 extern int CG_WeaponDObjHandle(int weaponNum);
 extern int Com_SafeClientDObjFree(int handle);
 extern void XAnimFreeTree(struct XAnimTree_s *tree, void *Free);
 extern int BG_GetNumWeapons(void);
+extern void AxisCopy(vec3_t *in, vec3_t *out);
+extern void *memcpy(void *dest, const void *src, unsigned int n);
 extern void *memset(void *s, int c, unsigned int n);
 extern void CL_TrackStatistics(trStatistics_t *pStats);
 extern void SND_FadeAllSounds(float volume, int fadetime);
@@ -226,7 +233,7 @@ void CG_Shutdown(void);
 void * Hunk_AllocXAnimPrecache(int size);
 void * Hunk_AllocXAnimClient(int size);
 int CG_PlaySoundAliasAsMasterByName(int entitynum, const vec_t *origin, const char *aliasname);
-void CG_GetDObjOrientation(int dobjHandle, vec3_t *axis_out);
+void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient);
 void CG_PlaySmokeGrenadesAtTime(int gametime);
 int CG_PlaySoundAlias(int entitynum, const vec_t *origin, snd_alias_list_t *aliasList);
 int CG_PlaySoundAliasByName(int entitynum, const vec_t *origin, const char *aliasname);
@@ -1056,156 +1063,91 @@ void * Hunk_AllocXAnimClient(int size)
     return Hunk_AllocInternal(size);
 }
 
+static void CG_PrintAliasSubtitle(const snd_alias_t *pAlias, int msec)
+{
+    int minMsec;
+    int subtitleWidth;
+
+    if (msec == 0 || pAlias == NULL || pAlias->pszSubtitle == NULL) {
+        return;
+    }
+
+    if (*(const float *)((const byte *)cgs + 0x5e94) > 1.3333334f) {
+        subtitleWidth = cg_subtitleWidthWidescreen->current.integer;
+    } else {
+        subtitleWidth = cg_subtitleWidthStandard->current.integer;
+    }
+
+    minMsec = (int)(cg_subtitleMinTime->current.value * 1000.0f + 0.5f);
+    if (minMsec < msec) {
+        minMsec = msec;
+    }
+
+    CL_SubtitlePrint(pAlias->pszSubtitle, minMsec, subtitleWidth);
+}
+
+static int CG_PlayPickedAlias(const snd_alias_t *pAlias, int entitynum, const vec_t *origin, qboolean master)
+{
+    int msec;
+
+    if (pAlias == NULL) {
+        return 0;
+    }
+
+    if (master) {
+        msec = SND_PlaySoundAliasAsMaster(pAlias, entitynum, origin, 0, SASYS_CGAME);
+    } else {
+        msec = SND_PlaySoundAlias(pAlias, entitynum, origin, 0, SASYS_CGAME);
+    }
+
+    CG_PrintAliasSubtitle(pAlias, msec);
+    return msec;
+}
+
+static int CG_LocalSoundEntityNum(void)
+{
+    const byte *localSoundState;
+
+    localSoundState = (const byte *)&cgArray + 36;
+    return *(const int *)(localSoundState + 0xd8);
+}
+
+static const vec_t *CG_LocalSoundOrigin(void)
+{
+    const byte *localSoundState;
+
+    localSoundState = (const byte *)&cgArray + 36;
+    return (const vec_t *)(localSoundState + 0x20);
+}
+
 /* line 1271 */
-__attribute__((naked))
 int CG_PlaySoundAliasAsMasterByName(int entitynum, const vec_t *origin, const char *aliasname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1271 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %eax\n" /* line 1279 | aliasname */
-        "movl %eax, (%esp)\n"
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %ebx\n" /* pAlias */
-        "testl %eax, %eax\n" /* line 1281 */
-        "je .Lf144a88_00144b4c\n"
-        "movl $1, 0x10(%esp)\n" /* line 1283 */
-        "movl $0, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* entitynum */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* pAlias */
-        "calll SND_PlaySoundAliasAsMaster\n"
-        "movl %eax, %esi\n" /* msec */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf144a88_00144b38\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf144a88_00144b38\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf144a88_00144b42\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf144a88_00144af7:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf144a88_00144b38:\n"
-        "movl %esi, %eax\n" /* line 1287 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf144a88_00144b42:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf144a88_00144af7\n"
-        /* } scope */
-        ".Lf144a88_00144b4c:\n"
-        "xorl %esi, %esi\n" /* line 1281 | msec */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 1287 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return CG_PlayPickedAlias(CL_PickSoundAlias(aliasname), entitynum, origin, 1);
 }
 
 /* line 688 */
-__attribute__((naked))
-void CG_GetDObjOrientation(int dobjHandle, vec3_t *axis_out)
+void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 688 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* dobjHandle */
-        "movl 0xc(%ebp), %esi\n" /* axis_out */
-        "cmpl $0x3ff, %edx\n" /* line 692 */
-        "jbe .Lf144b58_00144bad\n"
-        "leal -0x400(%edx), %eax\n" /* line 699 */
-        "cmpl $0x7f, %eax\n"
-        "jbe .Lf144b58_00144b7a\n"
-        "popl %ebx\n" /* line 708 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf144b58_00144b7a:\n"
-        "leal 0x24(%esi), %edx\n" /* line 701 | axis_out, to */
-        /* { scope 1 */
-        "movl cgArray+180412, %eax\n" /* line 199 */
-        "movl %eax, 0x24(%esi)\n"
-        "movl cgArray+180416, %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl cgArray+180420, %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl %esi, 0xc(%ebp)\n" /* line 702 | axis_out */
-        "movl cg, %eax\n"
-        "addl $0x2c0c8, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* dobjHandle */
-        "popl %ebx\n" /* line 708 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp AxisCopy\n" /* line 702 */
-        /* { scope 1 */
-        ".Lf144b58_00144bad:\n"
-        "movl %edx, %eax\n" /* line 694 | cent */
-        "shll $4, %eax\n" /* cent */
-        "addl %edx, %eax\n" /* cent */
-        "leal (%edx, %eax, 8), %eax\n" /* cent */
-        "movl cg_entities, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n" /* cent */
-        "leal 0x24(%esi), %ebx\n" /* line 696 | axis_out, to */
-        "leal 0x1ec(%eax), %ecx\n" /* from */
-        /* { scope 2 */
-        "movl 0x1ec(%eax), %edx\n" /* line 199 */
-        "movl %edx, 0x24(%esi)\n"
-        "movl 4(%ecx), %edx\n" /* line 200 */
-        "movl %edx, 4(%ebx)\n"
-        "movl 8(%ecx), %edx\n" /* line 201 */
-        "movl %edx, 8(%ebx)\n"
-        /* } scope */
-        "movl %esi, 0xc(%ebp)\n" /* line 697 | axis_out */
-        "addl $0x1f8, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* dobjHandle */
-        /* } scope */
-        "popl %ebx\n" /* line 708 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp AnglesToAxis\n" /* line 697 */
-    );
+    const byte *cent;
+
+    if ((unsigned int)dobjHandle <= 0x3ff) {
+        cent = (const byte *)cg_entities + dobjHandle * 548;
+        orient->origin[0] = *(const float *)(cent + 0x1ec);
+        orient->origin[1] = *(const float *)(cent + 0x1f0);
+        orient->origin[2] = *(const float *)(cent + 0x1f4);
+        AnglesToAxis((const vec_t *)(cent + 0x1f8), orient->axis);
+        return;
+    }
+
+    if ((unsigned int)(dobjHandle - 0x400) > 0x7f) {
+        return;
+    }
+
+    orient->origin[0] = *(const float *)((const byte *)&cgArray + 180412);
+    orient->origin[1] = *(const float *)((const byte *)&cgArray + 180416);
+    orient->origin[2] = *(const float *)((const byte *)&cgArray + 180420);
+    AxisCopy((vec3_t *)((byte *)cg + 0x2c0c8), orient->axis);
 }
 
 /* line 1461 */
@@ -1405,506 +1347,63 @@ void CG_PlaySmokeGrenadesAtTime(int gametime)
 }
 
 /* line 1223 */
-__attribute__((naked))
 int CG_PlaySoundAlias(int entitynum, const vec_t *origin, snd_alias_list_t *aliasList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1223 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %eax\n" /* line 1231 | aliasList */
-        "movl %eax, (%esp)\n"
-        "calll Com_PickSoundAliasFromList\n"
-        "movl %eax, %ebx\n" /* pAlias */
-        "testl %eax, %eax\n" /* line 1233 */
-        "je .Lf144e3e_00144f02\n"
-        "movl $1, 0x10(%esp)\n" /* line 1235 */
-        "movl $0, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* entitynum */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* pAlias */
-        "calll SND_PlaySoundAlias\n"
-        "movl %eax, %esi\n" /* msec */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf144e3e_00144eee\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf144e3e_00144eee\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf144e3e_00144ef8\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf144e3e_00144ead:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf144e3e_00144eee:\n"
-        "movl %esi, %eax\n" /* line 1239 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf144e3e_00144ef8:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf144e3e_00144ead\n"
-        /* } scope */
-        ".Lf144e3e_00144f02:\n"
-        "xorl %esi, %esi\n" /* line 1233 | msec */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 1239 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return CG_PlayPickedAlias(Com_PickSoundAliasFromList(aliasList), entitynum, origin, 0);
 }
 
 /* line 1247 */
-__attribute__((naked))
 int CG_PlaySoundAliasByName(int entitynum, const vec_t *origin, const char *aliasname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1247 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %eax\n" /* line 1255 | aliasname */
-        "movl %eax, (%esp)\n"
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %ebx\n" /* pAlias */
-        "testl %eax, %eax\n" /* line 1257 */
-        "je .Lf144f0e_00144fd2\n"
-        "movl $1, 0x10(%esp)\n" /* line 1259 */
-        "movl $0, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* entitynum */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* pAlias */
-        "calll SND_PlaySoundAlias\n"
-        "movl %eax, %esi\n" /* msec */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf144f0e_00144fbe\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf144f0e_00144fbe\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf144f0e_00144fc8\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf144f0e_00144f7d:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf144f0e_00144fbe:\n"
-        "movl %esi, %eax\n" /* line 1263 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf144f0e_00144fc8:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf144f0e_00144f7d\n"
-        /* } scope */
-        ".Lf144f0e_00144fd2:\n"
-        "xorl %esi, %esi\n" /* line 1257 | msec */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 1263 | msec */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return CG_PlayPickedAlias(CL_PickSoundAlias(aliasname), entitynum, origin, 0);
 }
 
 /* line 1407 */
-__attribute__((naked))
 void CG_SafeTranslateHudElemString(int index, char *hudElemString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1407 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* index */
-        "movl 0xc(%ebp), %esi\n" /* hudElemString */
-        "testl %eax, %eax\n" /* line 1411 */
-        "jne .Lf144fde_00144ff9\n"
-        ".Lf144fde_00144ff1:\n"
-        "addl $0x2c, %esp\n" /* line 1415 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf144fde_00144ff9:\n"
-        "addl $0x51e, %eax\n" /* line 1414 | message */
-        "movl %eax, (%esp)\n" /* message */
-        "calll CL_GetConfigString\n"
-        /* { scope 1: searchPos, stringLen */
-        /* { scope 2 */
-        "movl $0, 8(%esp)\n" /* line 1385 */
-        "movl $str_002a7ad8, 4(%esp)\n" /* "hudelem string" */
-        "movl %eax, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %eax, %edx\n"
-        "cld\n" /* line 1386 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* stringLen */
-        "cmpl $0x100, %ecx\n" /* line 1388 */
-        "jg .Lf144fde_00144ff1\n"
-        "movl %eax, 8(%esp)\n" /* line 1396 */
-        "movl %edx, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1397 | stringLen */
-        "movb $0, (%esi, %eax)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 1399 | searchPos */
-        "leal -0x20(%ebp), %ebx\n" /* stringLen */
-        "leal -0x1c(%ebp), %edi\n" /* searchPos */
-        ".Lf144fde_00145060:\n"
-        "movl %esi, %ecx\n" /* line 1401 */
-        "movl %ebx, %edx\n"
-        "movl %edi, %eax\n"
-        "calll CG_ReplaceDirective\n"
-        "testb %al, %al\n"
-        "jne .Lf144fde_00145060\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1415 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *localizedString;
+    int searchPos;
+    int stringLen;
+
+    if (index == 0) {
+        return;
+    }
+
+    localizedString = SEH_LocalizeTextMessage(CL_GetConfigString(index + 0x51e), "hudelem string", 0);
+    for (stringLen = 0; localizedString[stringLen]; ++stringLen) {
+    }
+
+    if (stringLen >= 0x100) {
+        return;
+    }
+
+    memcpy(hudElemString, localizedString, stringLen);
+    hudElemString[stringLen] = '\0';
+
+    searchPos = 0;
+    while (CG_ReplaceDirective(&searchPos, &stringLen, hudElemString)) {
+    }
 }
 
 /* line 1083 */
-__attribute__((naked))
 int CG_PlayClientSoundAliasByName(const char *aliasname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1083 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl cgArray+36, %eax\n" /* line 1085 */
-        "movl 0xd8(%eax), %edi\n"
-        "leal 0x20(%eax), %esi\n" /* valGE */
-        "movl 8(%ebp), %eax\n" /* line 1255 | aliasname */
-        "movl %eax, (%esp)\n"
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %ebx\n" /* charWidth */
-        "testl %eax, %eax\n" /* line 1257 */
-        "je .Lf145078_00145144\n"
-        "movl $1, 0x10(%esp)\n" /* line 1259 */
-        "movl $0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* valGE */
-        "movl %edi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "movl %eax, %esi\n" /* valGE */
-        /* { scope 1 */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf145078_00145130\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf145078_00145130\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf145078_0014513a\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf145078_001450ef:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        /* { scope 3 */
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        /* } scope */
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145078_00145130:\n"
-        "movl %esi, %eax\n" /* line 1086 | valGE */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf145078_0014513a:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf145078_001450ef\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145078_00145144:\n"
-        "xorl %esi, %esi\n" /* line 1257 | valGE */
-        "movl %esi, %eax\n" /* line 1086 | valGE */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return CG_PlayPickedAlias(CL_PickSoundAlias(aliasname), CG_LocalSoundEntityNum(), CG_LocalSoundOrigin(), 0);
 }
 
 /* line 1072 */
-__attribute__((naked))
 int CG_PlayClientSoundAlias(snd_alias_list_t *aliasList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1072 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl cgArray+36, %eax\n" /* line 1074 */
-        "movl 0xd8(%eax), %edi\n"
-        "leal 0x20(%eax), %esi\n" /* valGE */
-        "movl 8(%ebp), %eax\n" /* line 1231 | aliasList */
-        "movl %eax, (%esp)\n"
-        "calll Com_PickSoundAliasFromList\n"
-        "movl %eax, %ebx\n" /* charWidth */
-        "testl %eax, %eax\n" /* line 1233 */
-        "je .Lf145150_0014521c\n"
-        "movl $1, 0x10(%esp)\n" /* line 1235 */
-        "movl $0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* valGE */
-        "movl %edi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "movl %eax, %esi\n" /* valGE */
-        /* { scope 1 */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf145150_00145208\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf145150_00145208\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf145150_00145212\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf145150_001451c7:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        /* { scope 3 */
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        /* } scope */
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145150_00145208:\n"
-        "movl %esi, %eax\n" /* line 1075 | valGE */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf145150_00145212:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf145150_001451c7\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145150_0014521c:\n"
-        "xorl %esi, %esi\n" /* line 1233 | valGE */
-        "movl %esi, %eax\n" /* line 1075 | valGE */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return CG_PlayPickedAlias(Com_PickSoundAliasFromList(aliasList), CG_LocalSoundEntityNum(), CG_LocalSoundOrigin(), 0);
 }
 
 /* line 1094 */
-__attribute__((naked))
 int CG_PlayEntitySoundAlias(int entitynum, snd_alias_list_t *aliasList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1094 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* entitynum */
-        "movl %esi, %eax\n" /* entitynum, aliasList */
-        "shll $4, %eax\n" /* aliasList */
-        "addl %esi, %eax\n" /* entitynum, aliasList */
-        "leal (%esi, %eax, 8), %eax\n" /* entitynum, aliasList */
-        "movl cg_entities, %edx\n"
-        "leal 0x108(%edx, %eax, 4), %edi\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1231 | aliasList */
-        "movl %eax, (%esp)\n"
-        "calll Com_PickSoundAliasFromList\n"
-        "movl %eax, %ebx\n" /* charWidth */
-        "testl %eax, %eax\n" /* line 1233 */
-        "je .Lf145228_00145300\n"
-        "movl $1, 0x10(%esp)\n" /* line 1235 */
-        "movl $0, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* entitynum */
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "movl %eax, %esi\n" /* entitynum */
-        /* { scope 1 */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1212 */
-        "je .Lf145228_001452ec\n"
-        "movl 4(%ebx), %edi\n" /* line 1214 | charWidth */
-        "testl %edi, %edi\n"
-        "je .Lf145228_001452ec\n"
-        "movl cgs, %eax\n" /* line 1217 */
-        "movss 0x5e94(%eax), %xmm0\n"
-        "ucomiss lit4_002ed814, %xmm0\n" /* 1.3333333730697632f */
-        "jbe .Lf145228_001452f6\n"
-        "movl cg_subtitleWidthWidescreen, %eax\n"
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        ".Lf145228_001452ab:\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "movl cg_subtitleMinTime, %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        /* { scope 3 */
-        "cmpl %esi, %eax\n" /* line 154 */
-        "cmovsl %esi, %eax\n"
-        /* } scope */
-        "movl %ebx, 8(%esp)\n" /* line 1219 | charWidth */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll CL_SubtitlePrint\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145228_001452ec:\n"
-        "movl %esi, %eax\n" /* line 1099 | entitynum */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf145228_001452f6:\n"
-        "movl cg_subtitleWidthStandard, %eax\n" /* line 1217 */
-        "movl 8(%eax), %ebx\n" /* charWidth */
-        "jmp .Lf145228_001452ab\n"
-        /* } scope */
-        /* } scope */
-        ".Lf145228_00145300:\n"
-        "xorl %esi, %esi\n" /* line 1233 | entitynum */
-        "movl %esi, %eax\n" /* line 1099 | entitynum */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const vec_t *origin;
+
+    origin = (const vec_t *)((const byte *)cg_entities + entitynum * 548 + 0x108);
+    return CG_PlayPickedAlias(Com_PickSoundAliasFromList(aliasList), entitynum, origin, 0);
 }
 
 /* line 792 */

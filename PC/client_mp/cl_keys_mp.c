@@ -10,9 +10,13 @@ extern void Cmd_AddCommand(const char *name, void (*func)(void));
 extern int Cmd_Argc(void);
 extern char *Cmd_Argv(int arg);
 extern void I_strncat(char *dest, int maxlen, const char *src);
+extern int I_stricmp(const char *s0, const char *s1);
 extern int I_strnicmp(const char *s0, const char *s1, int n);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void Com_Printf(const char *fmt, ...);
+extern int SEH_GetCurrentLanguage(void);
+extern void CL_SwitchToLocalClient(int localClientNum);
+extern void Z_FreeInternal(void *ptr);
 
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
@@ -39,7 +43,7 @@ void Key_SetOverstrikeMode(qboolean state);
 static void FindMatches(const char *s);
 static void PrintMatches(const char *s);
 static void keyConcatArgs(void);
-static int Key_StringToKeynum(void);
+static __attribute__((regparm(1))) int Key_StringToKeynum(const char *str);
 char * Key_KeynumToString(int keynum, qboolean translate);
 void Key_SetBinding(int keynum, const char *binding);
 char * Key_GetBinding(int keynum);
@@ -379,242 +383,93 @@ void keyConcatArgs(void)
     }
 }
 
-/* line 1193 */
-static __attribute__((naked))
-int Key_StringToKeynum(void)
+static int Key_HexCharValue(char ch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1193 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl %eax, %ebx\n" /* str */
-        "testl %eax, %eax\n" /* line 1197 */
-        "jne .Lf13ff7a_0013ff94\n"
-        ".Lf13ff7a_0013ff88:\n"
-        "movl $0xffffffff, %eax\n" /* line 1243 */
-        ".Lf13ff7a_0013ff8d:\n"
-        "addl $0x10, %esp\n" /* line 1250 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf13ff7a_0013ff94:\n"
-        "movzbl (%eax), %eax\n" /* line 1197 */
-        "testb %al, %al\n"
-        "je .Lf13ff7a_0013ff88\n"
-        "movzbl 1(%ebx), %edx\n" /* line 1201 | str */
-        "testb %dl, %dl\n"
-        "jne .Lf13ff7a_0013ffa8\n"
-        "movsbl %al, %eax\n" /* line 1203 */
-        "jmp .Lf13ff7a_0013ff8d\n"
-        ".Lf13ff7a_0013ffa8:\n"
-        "cmpb $0x30, %al\n" /* line 1207 */
-        "jne .Lf13ff7a_0013ffb1\n"
-        "cmpb $0x78, %dl\n"
-        "je .Lf13ff7a_0013ffdf\n"
-        ".Lf13ff7a_0013ffb1:\n"
-        "movl keynames, %eax\n" /* line 1243 */
-        "testl %eax, %eax\n"
-        "je .Lf13ff7a_0013ff88\n"
-        "movl $keynames, %edi\n" /* n1 */
-        ".Lf13ff7a_0013ffbf:\n"
-        "movl %eax, 4(%esp)\n" /* line 1245 */
-        "movl %ebx, (%esp)\n" /* str */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf13ff7a_0013ffda\n"
-        "addl $8, %edi\n" /* line 1243 | n1 */
-        "movl (%edi), %eax\n" /* n1 */
-        "testl %eax, %eax\n"
-        "jne .Lf13ff7a_0013ffbf\n"
-        "jmp .Lf13ff7a_0013ff88\n"
-        ".Lf13ff7a_0013ffda:\n"
-        "movl 4(%edi), %eax\n" /* line 1246 | n1 */
-        "jmp .Lf13ff7a_0013ff8d\n"
-        ".Lf13ff7a_0013ffdf:\n"
-        "cld\n" /* line 1207 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* str */
-        "repne scasb %es:(%edi), %al\n"
-        "cmpl $-6, %ecx\n"
-        "jne .Lf13ff7a_0013ffb1\n"
-        /* { scope 1 */
-        "movsbl 2(%ebx), %edi\n" /* line 1211 | str, n1 */
-        "movl %edi, (%esp)\n" /* line 1212 | n1 */
-        "calll I_isdigit\n"
-        "testb %al, %al\n"
-        "je .Lf13ff7a_00140031\n"
-        "subl $0x30, %edi\n" /* n1 */
-        "shll $4, %edi\n" /* n1 */
-        ".Lf13ff7a_00140006:\n"
-        "movsbl 3(%ebx), %ebx\n" /* line 1225 | str */
-        "movl %ebx, (%esp)\n" /* line 1226 | str */
-        "calll I_isdigit\n"
-        "testb %al, %al\n"
-        "je .Lf13ff7a_00140020\n"
-        "leal -0x30(%ebx), %eax\n" /* line 1228 | str */
-        "addl %edi, %eax\n" /* line 1239 | n1 */
-        "jmp .Lf13ff7a_0013ff8d\n"
-        ".Lf13ff7a_00140020:\n"
-        "leal -0x61(%ebx), %eax\n" /* line 1230 | str */
-        "cmpl $5, %eax\n"
-        "jbe .Lf13ff7a_0014003d\n"
-        "xorl %eax, %eax\n"
-        "addl %edi, %eax\n" /* line 1239 | n1 */
-        "jmp .Lf13ff7a_0013ff8d\n"
-        ".Lf13ff7a_00140031:\n"
-        "leal -0x61(%edi), %eax\n" /* line 1216 | n1 */
-        "cmpl $5, %eax\n"
-        "jbe .Lf13ff7a_00140047\n"
-        "xorl %edi, %edi\n" /* n1 */
-        "jmp .Lf13ff7a_00140006\n"
-        ".Lf13ff7a_0014003d:\n"
-        "leal -0x57(%ebx), %eax\n" /* line 1232 | str */
-        "addl %edi, %eax\n" /* line 1239 | n1 */
-        "jmp .Lf13ff7a_0013ff8d\n"
-        ".Lf13ff7a_00140047:\n"
-        "subl $0x57, %edi\n" /* line 1216 | n1 */
-        "shll $4, %edi\n" /* n1 */
-        "jmp .Lf13ff7a_00140006\n"
-    );
+    if (isdigit((unsigned char)ch)) {
+        return ch - '0';
+    }
+
+    if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    }
+
+    return -1;
+}
+
+/* line 1193 */
+static __attribute__((regparm(1)))
+int Key_StringToKeynum(const char *str)
+{
+    keyname_t *name;
+    int highNibble;
+    int lowNibble;
+
+    if (str == NULL || *str == '\0') {
+        return -1;
+    }
+
+    if (str[1] == '\0') {
+        return (signed char)str[0];
+    }
+
+    if (str[0] == '0' && str[1] == 'x' && str[4] == '\0') {
+        highNibble = Key_HexCharValue(str[2]);
+        lowNibble = Key_HexCharValue(str[3]);
+        if (highNibble >= 0 && lowNibble >= 0) {
+            return (highNibble << 4) + lowNibble;
+        }
+    }
+
+    for (name = keynames; name->name; ++name) {
+        if (I_stricmp(str, name->name) == 0) {
+            return name->keynum;
+        }
+    }
+
+    return -1;
 }
 
 /* line 1268 */
-__attribute__((naked))
 char * Key_KeynumToString(int keynum, qboolean translate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1268 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* keynum */
-        "movl 0xc(%ebp), %esi\n" /* translate */
-        /* { scope 1 */
-        "cmpl $-1, %ebx\n" /* line 1275 | keynum */
-        "je .Lf140050_0014015f\n"
-        "cmpl $0xff, %ebx\n" /* line 1278 | keynum */
-        "ja .Lf140050_001400d5\n"
-        "testl %esi, %esi\n" /* line 1282 | translate */
-        "jne .Lf140050_001400ee\n"
-        ".Lf140050_00140073:\n"
-        "leal -0x21(%ebx), %eax\n" /* line 1286 | keynum */
-        "cmpl $0x5d, %eax\n"
-        "jbe .Lf140050_001400af\n"
-        ".Lf140050_0014007b:\n"
-        "testl %esi, %esi\n" /* line 1300 | translate */
-        "je .Lf140050_001400e7\n"
-        "movl $keynames_localized, %eax\n"
-        ".Lf140050_00140084:\n"
-        "movl (%eax), %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "je .Lf140050_00140117\n"
-        "cmpl 4(%eax), %ebx\n" /* line 1322 | keynum */
-        "je .Lf140050_001400a6\n"
-        "leal 8(%eax), %edx\n"
-        ".Lf140050_00140096:\n"
-        "movl (%edx), %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "je .Lf140050_00140117\n"
-        "movl 4(%edx), %eax\n" /* line 1322 */
-        "addl $8, %edx\n"
-        "cmpl %eax, %ebx\n" /* keynum */
-        "jne .Lf140050_00140096\n"
-        /* } scope */
-        ".Lf140050_001400a6:\n"
-        "movl %ecx, %eax\n" /* line 1337 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf140050_001400af:\n"
-        "cmpl $0x22, %ebx\n" /* line 1286 | keynum */
-        "je .Lf140050_0014007b\n"
-        "movl %ebx, (%esp)\n" /* line 1288 | keynum */
-        "calll ___toupper\n"
-        "movb %al, tinystr\n"
-        "movb $0, tinystr+1\n" /* line 1289 */
-        "cmpl $0x3b, %ebx\n" /* line 1290 | keynum */
-        "je .Lf140050_001400e3\n"
-        ".Lf140050_001400ce:\n"
-        "movl $tinystr, %ecx\n" /* line 1336 */
-        "jmp .Lf140050_001400a6\n"
-        ".Lf140050_001400d5:\n"
-        "movl $str_002a6ec0, %ecx\n" /* line 1278 */
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1337 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf140050_001400e3:\n"
-        "testl %esi, %esi\n" /* line 1290 | translate */
-        "jne .Lf140050_001400ce\n"
-        ".Lf140050_001400e7:\n"
-        "movl $keynames, %eax\n" /* line 1300 */
-        "jmp .Lf140050_00140084\n"
-        ".Lf140050_001400ee:\n"
-        "calll SEH_GetCurrentLanguage\n" /* line 1282 */
-        "subl $1, %eax\n"
-        "jne .Lf140050_00140073\n"
-        "cmpl $0x2f, %ebx\n" /* keynum */
-        "jle .Lf140050_00140073\n"
-        "cmpl $0x39, %ebx\n" /* keynum */
-        "jg .Lf140050_00140073\n"
-        "movl virtualKeyConvert+224(, %ebx, 4), %ecx\n" /* line 1283 */
-        "jmp .Lf140050_001400a6\n"
-        ".Lf140050_00140117:\n"
-        "movl %ebx, %edx\n" /* line 1327 | keynum */
-        "sarl $4, %edx\n"
-        "movl %ebx, %eax\n" /* line 1328 | keynum */
-        "andl $0xf, %eax\n"
-        "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, tinystr+1\n" /* line 1331 */
-        "cmpl $9, %edx\n" /* line 1332 */
-        "jle .Lf140050_00140171\n"
-        "addb $0x57, %dl\n"
-        ".Lf140050_00140137:\n"
-        "movb %dl, tinystr+2\n"
-        "cmpl $9, %eax\n" /* line 1333 */
-        "jle .Lf140050_0014016d\n"
-        "addb $0x57, %al\n"
-        ".Lf140050_00140144:\n"
-        "movb %al, tinystr+3\n"
-        "movb $0, tinystr+4\n" /* line 1334 */
-        "movl $tinystr, %ecx\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1337 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf140050_0014015f:\n"
-        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1337 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf140050_0014016d:\n"
-        "addb $0x30, %al\n" /* line 1333 */
-        "jmp .Lf140050_00140144\n"
-        ".Lf140050_00140171:\n"
-        "addb $0x30, %dl\n" /* line 1332 */
-        "jmp .Lf140050_00140137\n"
-    );
+    keyname_t *name;
+    int upperNibble;
+    int lowerNibble;
+
+    if (keynum == -1) {
+        return "<KEY NOT FOUND>";
+    }
+
+    if ((unsigned int)keynum > 0xff) {
+        return "<OUT OF RANGE>";
+    }
+
+    if (translate && SEH_GetCurrentLanguage() == 1 && keynum >= '0' && keynum <= '9') {
+        return frenchNumberKeysMap[keynum - '0'];
+    }
+
+    if ((unsigned int)(keynum - 0x21) <= 0x5d && keynum != '"' && (translate || keynum != ';')) {
+        tinystr[0] = toupper((unsigned char)keynum);
+        tinystr[1] = '\0';
+        return tinystr;
+    }
+
+    name = translate ? keynames_localized : keynames;
+    while (name->name) {
+        if (name->keynum == keynum) {
+            return name->name;
+        }
+        ++name;
+    }
+
+    upperNibble = (keynum >> 4) & 0xf;
+    lowerNibble = keynum & 0xf;
+    tinystr[0] = '0';
+    tinystr[1] = 'x';
+    tinystr[2] = upperNibble > 9 ? (char)(upperNibble + 'a' - 10) : (char)(upperNibble + '0');
+    tinystr[3] = lowerNibble > 9 ? (char)(lowerNibble + 'a' - 10) : (char)(lowerNibble + '0');
+    tinystr[4] = '\0';
+    return tinystr;
 }
 
 /* line 1345 */
@@ -644,35 +499,18 @@ void CL_InitKeyCommands(void)
 }
 
 /* line 2046 */
-__attribute__((naked))
 void Key_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2046 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl $0, (%esp)\n" /* line 2053 */
-        "calll CL_SwitchToLocalClient\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf140224_00140239:\n"
-        "movl keys, %eax\n" /* line 2056 */
-        "movl 8(%eax, %ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf140224_0014025b\n"
-        "movl %eax, (%esp)\n" /* line 2058 */
-        "calll Z_FreeInternal\n"
-        "movl keys, %eax\n" /* line 2059 */
-        "movl $0, 8(%eax, %ebx)\n"
-        ".Lf140224_0014025b:\n"
-        "addl $0xc, %ebx\n"
-        "cmpl $0xc00, %ebx\n" /* line 2054 */
-        "jne .Lf140224_00140239\n"
-        "addl $0x14, %esp\n" /* line 2063 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int keyIndex;
+
+    CL_SwitchToLocalClient(0);
+
+    for (keyIndex = 0; keyIndex < 256; ++keyIndex) {
+        if (keys[keyIndex].binding != NULL) {
+            Z_FreeInternal(keys[keyIndex].binding);
+            keys[keyIndex].binding = NULL;
+        }
+    }
 }
 
 /* line 384 */
