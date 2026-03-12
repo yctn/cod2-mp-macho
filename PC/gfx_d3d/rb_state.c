@@ -53,6 +53,22 @@ typedef struct {
 extern void MatrixInverse44(const float *mat, float *dst);
 extern void MatrixIdentity44(float (*out)[4]);
 extern void MatrixSet44(float (*out)[4], const vec_t *origin, vec3_t *axis, vec_t scale);
+extern void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
+
+enum {
+    RB_STENCIL_OP_DECODE_COUNT = 6,
+    RB_STENCIL_FUNC_DECODE_COUNT = 2,
+    RB_STATE1_DEPTH_WRITE = 0x00000001,
+    RB_STATE1_DEPTH_TEST_DISABLE = 0x00000002,
+    RB_STATE1_DEPTH_FUNC_MASK = 0x0000000c,
+    RB_STATE1_POLYGON_OFFSET_MASK = 0x00000030,
+    RB_STATE1_STENCIL_ENABLE = 0x00000040,
+    RB_STATE1_STENCIL_TWO_SIDED = 0x00000080,
+    RB_STATE1_STENCIL_DISABLED_MASK = 0x0000007f,
+    RB_STATE1_FRONT_STENCIL_MASK = 0x000fffff,
+    RB_STATE1_STENCIL_OP_MASK = 0x1ff1ff00,
+    RB_STATE1_STENCIL_FUNC_MASK = 0xe00e0000
+};
 
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
@@ -181,6 +197,17 @@ static void RB_SetSamplerStateDx7(int samplerIndex, DWORD samplerState, DWORD va
     } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
+static void RB_SetRenderStateFloatDx7(DWORD state, float value)
+{
+    union {
+        float value;
+        DWORD bits;
+    } packedValue;
+
+    packedValue.value = value;
+    RB_SetRenderStateDx7(state, packedValue.bits);
+}
+
 static GfxCodeMatrices *RB_GetActiveCodeMatrices(void)
 {
     return &backEnd.codeMatrixStack[backEnd.codeMatrixStackLevel];
@@ -232,6 +259,28 @@ static void RB_FinalizeWorldMatrixChange(GfxCodeMatrices *activeMatrices, float 
 static Bool RB_UsingDx7Renderer(void)
 {
     return (*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2;
+}
+
+static Bool RB_SupportsSlopeScaleDepthBias(void)
+{
+    /* This capability flag is still only recovered as a raw DxGlobals offset. */
+    return *(const byte *)((const byte *)imp_dx + 0x2d7a) != 0;
+}
+
+static int RB_NextPowerOfTwo(int value)
+{
+    int powerOfTwo;
+
+    if (value <= 1) {
+        return 1;
+    }
+
+    powerOfTwo = 1;
+    while (powerOfTwo < value) {
+        powerOfTwo <<= 1;
+    }
+
+    return powerOfTwo;
 }
 
 static void RB_GetSamplerFilterModes(byte samplerState, DWORD *minFilter, DWORD *magFilter)
@@ -353,127 +402,52 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
 }
 
 /* line 781 */
-static __attribute__((naked, regparm(3)))
+static __attribute__((regparm(3)))
 void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 781 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, %edi\n" /* stageIndex */
-        "movl %edx, %ebx\n" /* texStageEnums */
-        "movl %ecx, -0x34(%ebp)\n"
-        /* { scope 1 */
-        "leal (, %eax, 4), %eax\n" /* line 790 */
-        "movl 8(%ebp), %edx\n" /* activeTexStageBits */
-        "addl %edx, %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "xorl (%eax), %ecx\n"
-        "movl %ecx, -0x2c(%ebp)\n" /* changedBits */
-        "movl -0x34(%ebp), %eax\n" /* line 793 */
-        "andl $0x1f, %eax\n"
-        "leal s_textureOpTable(, %eax, 8), %eax\n"
-        "movl %eax, -0x28(%ebp)\n" /* texOp */
-        "andb $0x1f, %cl\n" /* line 794 */
-        "jne .Lfcd2ec_000cd3df\n"
-        ".Lfcd2ec_000cd329:\n"
-        "movl %ebx, %esi\n" /* line 795 | texArg */
-        "movl $0xa, -0x20(%ebp)\n" /* argShift */
-        "movl $0x7c00, -0x1c(%ebp)\n" /* argMask */
-        "movl $0, -0x24(%ebp)\n" /* argIndex */
-        ".Lfcd2ec_000cd340:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 804 | argMask */
-        "testl %edx, -0x2c(%ebp)\n" /* changedBits */
-        "je .Lfcd2ec_000cd3b6\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 806 | texOp */
-        "movl 4(%ecx), %eax\n"
-        "movzbl -0x24(%ebp), %ecx\n" /* argIndex */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lfcd2ec_000cd416\n"
-        "movl -0x34(%ebp), %edx\n" /* line 808 */
-        "movzbl -0x20(%ebp), %ecx\n" /* argShift */
-        "sarl %cl, %edx\n"
-        "movl %edx, %eax\n" /* line 765 */
-        "andl $7, %eax\n"
-        "movl s_textureArgTable(, %eax, 4), %ebx\n"
-        "movl %ebx, %eax\n" /* line 767 */
-        "orl $0x10, %eax\n"
-        "testb $8, %dl\n"
-        "cmovnel %eax, %ebx\n"
-        "movl %ebx, %eax\n" /* line 769 */
-        "orl $0x20, %eax\n"
-        "andb $0x10, %dl\n"
-        "cmovnel %eax, %ebx\n"
-        ".Lfcd2ec_000cd387:\n"
-        "movl imp_dx, %edx\n" /* line 809 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %ebx, 0xc(%esp)\n" /* texArg */
-        "movl 4(%esi), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* stageIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0x10c(%ecx)\n"
-        "movl imp_alwaysfails, %ecx\n"
-        "movl (%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd2ec_000cd387\n"
-        ".Lfcd2ec_000cd3b6:\n"
-        "addl $1, -0x24(%ebp)\n" /* line 802 | argIndex */
-        "addl $5, -0x20(%ebp)\n" /* argShift */
-        "shll $5, -0x1c(%ebp)\n" /* argMask */
-        "addl $4, %esi\n"
-        "cmpl $3, -0x24(%ebp)\n" /* argIndex */
-        "jne .Lfcd2ec_000cd340\n"
-        ".Lfcd2ec_000cd3cf:\n"
-        "movl -0x34(%ebp), %esi\n" /* line 819 */
-        "movl -0x30(%ebp), %ecx\n"
-        "movl %esi, (%ecx)\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 820 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcd2ec_000cd3df:\n"
-        "movl imp_dx, %ecx\n" /* line 795 */
-        "movl 8(%ecx), %edx\n"
-        "movl (%edx), %ecx\n"
-        "movl -0x28(%ebp), %esi\n" /* texOp */
-        "movl (%esi), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl (%ebx), %eax\n" /* texArg */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* stageIndex */
-        "movl %edx, (%esp)\n"
-        "calll *0x10c(%ecx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd2ec_000cd3df\n"
-        "jmp .Lfcd2ec_000cd329\n"
-        ".Lfcd2ec_000cd416:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 813 | argMask */
-        "notl %eax\n"
-        "andl %eax, -0x34(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 814 | argMask */
-        "movl -0x30(%ebp), %edx\n"
-        "andl (%edx), %eax\n"
-        "orl %eax, -0x34(%ebp)\n"
-        "addl $1, -0x24(%ebp)\n" /* line 802 | argIndex */
-        "addl $5, -0x20(%ebp)\n" /* argShift */
-        "shll $5, -0x1c(%ebp)\n" /* argMask */
-        "addl $4, %esi\n"
-        "cmpl $3, -0x24(%ebp)\n" /* argIndex */
-        "jne .Lfcd2ec_000cd340\n"
-        "jmp .Lfcd2ec_000cd3cf\n"
-    );
+    int *activeTexStageState;
+    int changedBits;
+    const DxTextureOpDecode *texOp;
+    int argIndex;
+    int argShift;
+    int argMask;
+
+    activeTexStageState = &activeTexStageBits[stageIndex];
+    changedBits = texStageBits ^ *activeTexStageState;
+    texOp = &s_textureOpTable[texStageBits & 0x1f];
+
+    if (changedBits & 0x1f) {
+        RB_SetTextureStageStateDx7(stageIndex, texStageEnums->op, texOp->enumerant);
+    }
+
+    argShift = 10;
+    argMask = 0x7c00;
+    for (argIndex = 0; argIndex < 3; ++argIndex) {
+        if (changedBits & argMask) {
+            if (texOp->usedArgs & (1 << argIndex)) {
+                unsigned int argStateBits;
+                DWORD texArg;
+
+                argStateBits = (unsigned int)texStageBits >> argShift;
+                texArg = s_textureArgTable[argStateBits & 7];
+                if (argStateBits & 8) {
+                    texArg |= 0x10;
+                }
+                if (argStateBits & 0x10) {
+                    texArg |= 0x20;
+                }
+
+                RB_SetTextureStageStateDx7(stageIndex, texStageEnums->arg[argIndex], texArg);
+            } else {
+                texStageBits = (texStageBits & ~argMask) | (*activeTexStageState & argMask);
+            }
+        }
+
+        argShift += 5;
+        argMask <<= 5;
+    }
+
+    *activeTexStageState = texStageBits;
 }
 
 /* line 837 */
@@ -732,318 +706,116 @@ void RB_ReleaseVertexDecl(void)
 }
 
 /* line 626 */
-__attribute__((naked))
 void RB_ChangeState_1(int stateBits1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 626 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 640 | stateBits1 */
-        "xorl dxState+8204, %eax\n"
-        "movl %eax, -0x2c(%ebp)\n" /* changedBits */
-        "je .Lfce4d2_000ce710\n"
-        "testb $1, %al\n" /* line 650 */
-        "jne .Lfce4d2_000ce756\n"
-        "testb $2, -0x2c(%ebp)\n" /* line 653 | changedBits */
-        "jne .Lfce4d2_000ce718\n"
-        ".Lfce4d2_000ce4ff:\n"
-        "movl 8(%ebp), %ebx\n" /* stateBits1, function */
-        "shrl $1, %ebx\n" /* function */
-        "andl $1, %ebx\n" /* function */
-        ".Lfce4d2_000ce507:\n"
-        "testl %ebx, %ebx\n" /* line 655 | function */
-        "je .Lfce4d2_000ce51a\n"
-        "movl dxState+8204, %eax\n" /* line 658 */
-        "andl $0xc, %eax\n"
-        "orl %eax, 8(%ebp)\n" /* stateBits1 */
-        "andl $0xfffffff3, -0x2c(%ebp)\n" /* line 659 | changedBits */
-        ".Lfce4d2_000ce51a:\n"
-        "testb $0xc, -0x2c(%ebp)\n" /* line 663 | changedBits */
-        "je .Lfce4d2_000ce565\n"
-        "movl 8(%ebp), %eax\n" /* line 665 | stateBits1 */
-        "andl $0xc, %eax\n"
-        "cmpl $4, %eax\n"
-        "je .Lfce4d2_000ce8ac\n"
-        "xorl %ebx, %ebx\n" /* line 669 | function */
-        "cmpl $8, %eax\n"
-        "setne %bl\n" /* function */
-        "leal 3(%ebx, %ebx, 4), %ebx\n" /* function */
-        ".Lfce4d2_000ce53b:\n"
-        "movl imp_dx, %eax\n" /* line 678 */
-        "movl 8(%eax), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* function */
-        "movl $0x17, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce53b\n"
-        ".Lfce4d2_000ce565:\n"
-        "testb $0x30, -0x2c(%ebp)\n" /* line 681 | changedBits */
-        "je .Lfce4d2_000ce625\n"
-        "movl 8(%ebp), %eax\n" /* line 683 | stateBits1 */
-        "andl $0x30, %eax\n"
-        "sarl $4, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "movl imp_r_polygonOffsetBias, %eax\n"
-        "movl (%eax), %eax\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "mulss lit4_002ed854, %xmm0\n" /* 1.52587890625e-05f */
-        "movss %xmm0, -0x20(%ebp)\n" /* bias */
-        "movl imp_dx, %edx\n" /* line 684 */
-        "cmpb $0, 0x2d7a(%edx)\n"
-        "je .Lfce4d2_000ce7cd\n"
-        "movl imp_r_polygonOffsetScale, %eax\n" /* line 686 */
-        "movl (%eax), %eax\n"
-        "mulss 8(%eax), %xmm1\n"
-        "movss %xmm1, -0x1c(%ebp)\n" /* scale */
-        "leal -0x1c(%ebp), %edi\n" /* scale */
-        "movl imp_alwaysfails, %esi\n"
-        "movl %edx, %ebx\n" /* function */
-        "jmp .Lfce4d2_000ce5cb\n"
-        ".Lfce4d2_000ce5c9:\n"
-        "movl %ebx, %edx\n" /* line 687 | function */
-        ".Lfce4d2_000ce5cb:\n"
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl (%edi), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0xaf, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce5c9\n"
-        "movl imp_dx, %edx\n"
-        ".Lfce4d2_000ce5f3:\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 691 | bias, function */
-        "jmp .Lfce4d2_000ce5fe\n"
-        ".Lfce4d2_000ce5f8:\n"
-        "movl imp_dx, %edx\n"
-        ".Lfce4d2_000ce5fe:\n"
-        "movl 8(%edx), %edx\n" /* line 693 */
-        "movl (%edx), %ecx\n"
-        "movl (%ebx), %eax\n" /* function */
-        "movl %eax, 8(%esp)\n"
-        "movl $0xc3, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce5f8\n"
-        ".Lfce4d2_000ce625:\n"
-        "testb $0x40, 8(%ebp)\n" /* line 696 | stateBits1 */
-        "je .Lfce4d2_000ce7b3\n"
-        "testb $0x40, -0x2c(%ebp)\n" /* line 698 | changedBits */
-        "jne .Lfce4d2_000ce877\n"
-        ".Lfce4d2_000ce639:\n"
-        "cmpb $0, 8(%ebp)\n" /* line 709 | stateBits1 */
-        "jns .Lfce4d2_000ce794\n"
-        "cmpb $0, -0x2c(%ebp)\n" /* line 712 | changedBits */
-        "js .Lfce4d2_000ce842\n"
-        ".Lfce4d2_000ce64d:\n"
-        "testl $0x1ff1ff00, -0x2c(%ebp)\n" /* line 730 | changedBits */
-        "je .Lfce4d2_000ce6aa\n"
-        "movl $s_stencilOpDecode, %edi\n"
-        ".Lfce4d2_000ce65b:\n"
-        "movl (%edi), %ecx\n" /* line 734 */
-        "movl -0x2c(%ebp), %eax\n" /* line 735 | changedBits */
-        "sarl %cl, %eax\n"
-        "testb $7, %al\n"
-        "je .Lfce4d2_000ce69f\n"
-        "movl 8(%ebp), %eax\n" /* line 737 | stateBits1 */
-        "sarl %cl, %eax\n"
-        "andl $7, %eax\n"
-        "movl s_stencilOpTable(, %eax, 4), %esi\n"
-        "movl 4(%edi), %ebx\n" /* function */
-        ".Lfce4d2_000ce678:\n"
-        "movl imp_dx, %edx\n" /* line 738 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %esi, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* function */
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfce4d2_000ce678\n"
-        ".Lfce4d2_000ce69f:\n"
-        "addl $8, %edi\n"
-        "cmpl $s_stencilOpDecode+48, %edi\n" /* line 732 */
-        "jne .Lfce4d2_000ce65b\n"
-        ".Lfce4d2_000ce6aa:\n"
-        "testl $0xe00e0000, -0x2c(%ebp)\n" /* line 743 | changedBits */
-        "je .Lfce4d2_000ce708\n"
-        "movl $s_stencilFuncDecode, %edi\n"
-        ".Lfce4d2_000ce6b8:\n"
-        "movl (%edi), %ecx\n" /* line 747 */
-        "movl -0x2c(%ebp), %eax\n" /* line 748 | changedBits */
-        "sarl %cl, %eax\n"
-        "testb $7, %al\n"
-        "je .Lfce4d2_000ce6fc\n"
-        "movl 8(%ebp), %eax\n" /* line 750 | stateBits1 */
-        "sarl %cl, %eax\n"
-        "andl $7, %eax\n"
-        "movl s_stencilFuncTable(, %eax, 4), %esi\n"
-        "movl 4(%edi), %ebx\n" /* function */
-        ".Lfce4d2_000ce6d5:\n"
-        "movl imp_dx, %edx\n" /* line 751 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %esi, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* function */
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce6d5\n"
-        ".Lfce4d2_000ce6fc:\n"
-        "addl $8, %edi\n"
-        "movl $s_stencilFuncDecode+16, %edx\n" /* line 745 */
-        "cmpl %edi, %edx\n"
-        "jne .Lfce4d2_000ce6b8\n"
-        ".Lfce4d2_000ce708:\n"
-        "movl 8(%ebp), %eax\n" /* line 756 | stateBits1 */
-        "movl %eax, dxState+8204\n"
-        /* } scope */
-        ".Lfce4d2_000ce710:\n"
-        "addl $0x3c, %esp\n" /* line 757 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfce4d2_000ce718:\n"
-        "movl 8(%ebp), %ebx\n" /* line 653 | stateBits1, function */
-        "shrl $1, %ebx\n" /* function */
-        "andl $1, %ebx\n" /* function */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfce4d2_000ce72c:\n"
-        "movl 8(%edi), %eax\n" /* line 654 */
-        "movl (%eax), %ecx\n"
-        "movl %ebx, %edx\n" /* function */
-        "xorl $1, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $7, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%ecx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce72c\n"
-        "jmp .Lfce4d2_000ce507\n"
-        ".Lfce4d2_000ce756:\n"
-        "movl 8(%ebp), %ebx\n" /* line 650 | stateBits1, function */
-        "andl $1, %ebx\n" /* function */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfce4d2_000ce768:\n"
-        "movl 8(%edi), %eax\n" /* line 651 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n" /* function */
-        "movl $0xe, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%esi), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfce4d2_000ce768\n"
-        "testb $2, -0x2c(%ebp)\n" /* line 653 | changedBits */
-        "je .Lfce4d2_000ce4ff\n"
-        "jmp .Lfce4d2_000ce718\n"
-        ".Lfce4d2_000ce794:\n"
-        "cmpb $0, -0x2c(%ebp)\n" /* line 717 | changedBits */
-        "js .Lfce4d2_000ce80d\n"
-        ".Lfce4d2_000ce79a:\n"
-        "movl dxState+8204, %eax\n" /* line 719 */
-        "andl $0xfff00000, %eax\n"
-        "orl %eax, 8(%ebp)\n" /* stateBits1 */
-        "andl $0xfffff, -0x2c(%ebp)\n" /* line 720 | changedBits */
-        "jmp .Lfce4d2_000ce64d\n"
-        ".Lfce4d2_000ce7b3:\n"
-        "testb $0x40, -0x2c(%ebp)\n" /* line 703 | changedBits */
-        "jne .Lfce4d2_000ce7db\n"
-        ".Lfce4d2_000ce7b9:\n"
-        "movl dxState+8204, %eax\n" /* line 705 */
-        "andl $0xffffff80, %eax\n"
-        "orl %eax, 8(%ebp)\n" /* stateBits1 */
-        "andl $0x7f, -0x2c(%ebp)\n" /* line 706 | changedBits */
-        "jmp .Lfce4d2_000ce639\n"
-        ".Lfce4d2_000ce7cd:\n"
-        "addss %xmm0, %xmm0\n" /* line 691 */
-        "movss %xmm0, -0x20(%ebp)\n" /* bias */
-        "jmp .Lfce4d2_000ce5f3\n"
-        ".Lfce4d2_000ce7db:\n"
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n" /* function */
-        ".Lfce4d2_000ce7e7:\n"
-        "movl 8(%esi), %eax\n" /* line 704 */
-        "movl (%eax), %edx\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x34, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce7e7\n"
-        "jmp .Lfce4d2_000ce7b9\n"
-        ".Lfce4d2_000ce80d:\n"
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n" /* function */
-        ".Lfce4d2_000ce819:\n"
-        "movl 8(%esi), %eax\n" /* line 718 */
-        "movl (%eax), %edx\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0xb9, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %ecx\n" /* function */
-        "testl %ecx, %ecx\n"
-        "jne .Lfce4d2_000ce819\n"
-        "jmp .Lfce4d2_000ce79a\n"
-        ".Lfce4d2_000ce842:\n"
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n" /* function */
-        ".Lfce4d2_000ce84e:\n"
-        "movl 8(%esi), %eax\n" /* line 713 */
-        "movl (%eax), %edx\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0xb9, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %edi\n" /* function */
-        "testl %edi, %edi\n"
-        "jne .Lfce4d2_000ce84e\n"
-        "jmp .Lfce4d2_000ce64d\n"
-        ".Lfce4d2_000ce877:\n"
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n" /* function */
-        ".Lfce4d2_000ce883:\n"
-        "movl 8(%esi), %eax\n" /* line 699 */
-        "movl (%eax), %edx\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0x34, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %eax\n" /* function */
-        "testl %eax, %eax\n"
-        "jne .Lfce4d2_000ce883\n"
-        "jmp .Lfce4d2_000ce639\n"
-        ".Lfce4d2_000ce8ac:\n"
-        "movl $4, %ebx\n" /* line 665 | function */
-        "jmp .Lfce4d2_000ce53b\n"
-    );
+    unsigned int changedBits;
+    int decodeIndex;
+
+    changedBits = stateBits1 ^ dxState.activeStateBits[1];
+    if (!changedBits) {
+        return;
+    }
+
+    if (changedBits & RB_STATE1_DEPTH_WRITE) {
+        RB_SetRenderStateDx7(D3DRS_ZWRITEENABLE, stateBits1 & RB_STATE1_DEPTH_WRITE);
+    }
+
+    if (changedBits & RB_STATE1_DEPTH_TEST_DISABLE) {
+        RB_SetRenderStateDx7(D3DRS_ZENABLE, (((unsigned int)stateBits1 >> 1) & 1) ^ 1);
+    }
+
+    if (stateBits1 & RB_STATE1_DEPTH_TEST_DISABLE) {
+        stateBits1 = (stateBits1 & ~RB_STATE1_DEPTH_FUNC_MASK) | (dxState.activeStateBits[1] & RB_STATE1_DEPTH_FUNC_MASK);
+        changedBits &= ~RB_STATE1_DEPTH_FUNC_MASK;
+    }
+
+    if (changedBits & RB_STATE1_DEPTH_FUNC_MASK) {
+        DWORD depthFunc;
+
+        switch (stateBits1 & RB_STATE1_DEPTH_FUNC_MASK) {
+        case 0x4:
+            depthFunc = 4;
+            break;
+        case 0x8:
+            depthFunc = 3;
+            break;
+        default:
+            depthFunc = 8;
+            break;
+        }
+
+        RB_SetRenderStateDx7(D3DRS_ZFUNC, depthFunc);
+    }
+
+    if (changedBits & RB_STATE1_POLYGON_OFFSET_MASK) {
+        const dvar_t *polygonOffsetBias;
+        float offsetUnits;
+        float depthBias;
+
+        polygonOffsetBias = *(const dvar_t **)imp_r_polygonOffsetBias;
+        offsetUnits = (float)((stateBits1 & RB_STATE1_POLYGON_OFFSET_MASK) >> 4);
+        depthBias = offsetUnits * polygonOffsetBias->current.value * 1.52587890625e-05f;
+        if (RB_SupportsSlopeScaleDepthBias()) {
+            const dvar_t *polygonOffsetScale;
+
+            polygonOffsetScale = *(const dvar_t **)imp_r_polygonOffsetScale;
+            RB_SetRenderStateFloatDx7(D3DRS_SLOPESCALEDEPTHBIAS, offsetUnits * polygonOffsetScale->current.value);
+        } else {
+            depthBias *= 2.0f;
+        }
+
+        RB_SetRenderStateFloatDx7(D3DRS_DEPTHBIAS, depthBias);
+    }
+
+    if (stateBits1 & RB_STATE1_STENCIL_ENABLE) {
+        if (changedBits & RB_STATE1_STENCIL_ENABLE) {
+            RB_SetRenderStateDx7(D3DRS_STENCILENABLE, 1);
+        }
+    } else {
+        if (changedBits & RB_STATE1_STENCIL_ENABLE) {
+            RB_SetRenderStateDx7(D3DRS_STENCILENABLE, 0);
+        }
+
+        stateBits1 = (stateBits1 & RB_STATE1_STENCIL_DISABLED_MASK) | (dxState.activeStateBits[1] & ~RB_STATE1_STENCIL_DISABLED_MASK);
+        changedBits &= RB_STATE1_STENCIL_DISABLED_MASK;
+    }
+
+    if (stateBits1 & RB_STATE1_STENCIL_TWO_SIDED) {
+        if (changedBits & RB_STATE1_STENCIL_TWO_SIDED) {
+            RB_SetRenderStateDx7(D3DRS_TWOSIDEDSTENCILMODE, 1);
+        }
+    } else {
+        if (changedBits & RB_STATE1_STENCIL_TWO_SIDED) {
+            RB_SetRenderStateDx7(D3DRS_TWOSIDEDSTENCILMODE, 0);
+        }
+
+        stateBits1 = (stateBits1 & RB_STATE1_FRONT_STENCIL_MASK) | (dxState.activeStateBits[1] & ~RB_STATE1_FRONT_STENCIL_MASK);
+        changedBits &= RB_STATE1_FRONT_STENCIL_MASK;
+    }
+
+    if (changedBits & RB_STATE1_STENCIL_OP_MASK) {
+        for (decodeIndex = 0; decodeIndex < RB_STENCIL_OP_DECODE_COUNT; ++decodeIndex) {
+            const DxStencilDecode *decode;
+
+            decode = &s_stencilOpDecode[decodeIndex];
+            if (((changedBits >> decode->shift) & 7) != 0) {
+                RB_SetRenderStateDx7(decode->renderState, s_stencilOpTable[((unsigned int)stateBits1 >> decode->shift) & 7]);
+            }
+        }
+    }
+
+    if (changedBits & RB_STATE1_STENCIL_FUNC_MASK) {
+        for (decodeIndex = 0; decodeIndex < RB_STENCIL_FUNC_DECODE_COUNT; ++decodeIndex) {
+            const DxStencilDecode *decode;
+
+            decode = &s_stencilFuncDecode[decodeIndex];
+            if (((changedBits >> decode->shift) & 7) != 0) {
+                RB_SetRenderStateDx7(decode->renderState, s_stencilFuncTable[((unsigned int)stateBits1 >> decode->shift) & 7]);
+            }
+        }
+    }
+
+    dxState.activeStateBits[1] = stateBits1;
 }
 
 /* line 941 */
@@ -1142,210 +914,53 @@ void RB_UnbindImage(const GfxImage *image)
 }
 
 /* line 1514 */
-__attribute__((naked))
 void RB_UpdateViewportConstants(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1514 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x90, %esp\n"
-        /* { scope 1 */
-        "movl imp_backEnd, %eax\n" /* line 1524 */
-        "movb $0, 0x4bd(%eax)\n"
-        "movb $1, 0x4bc(%eax)\n" /* line 1525 */
-        "movl dxState+8348, %ebx\n" /* line 1529 */
-        "cvtsi2ssl %ebx, %xmm2\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movaps %xmm0, %xmm6\n"
-        "divss %xmm2, %xmm6\n"
-        "movl dxState+8352, %esi\n" /* line 1530 */
-        "cvtsi2ssl %esi, %xmm1\n"
-        "movaps %xmm0, %xmm4\n"
-        "divss %xmm1, %xmm4\n"
-        "cmpl $1, dxState+8356\n" /* line 1487 */
-        "je .Lfcecd4_000cef37\n"
-        "movl 0x3ec(%eax), %esi\n" /* line 1507 */
-        "movl 0x3e8(%eax), %ebx\n"
-        "cvtsi2ssl %esi, %xmm1\n"
-        "cvtsi2ssl %ebx, %xmm2\n"
-        "cvtsi2ssl 0x3e4(%eax), %xmm3\n"
-        "cvtsi2ssl 0x3e0(%eax), %xmm5\n"
-        ".Lfcecd4_000ced4d:\n"
-        "movaps %xmm6, %xmm0\n" /* line 86 */
-        "mulss %xmm2, %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss -0x24(%ebp), %xmm7\n"
-        "mulss %xmm0, %xmm7\n"
-        "movss %xmm7, -0x24(%ebp)\n"
-        "movaps %xmm4, %xmm7\n" /* line 87 */
-        "mulss %xmm1, %xmm7\n"
-        "mulss %xmm7, %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "mulss %xmm6, %xmm5\n" /* line 100 */
-        "movss -0x24(%ebp), %xmm0\n"
-        "addss %xmm5, %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "mulss %xmm4, %xmm3\n" /* line 101 */
-        "movss -0x28(%ebp), %xmm7\n"
-        "addss %xmm3, %xmm7\n"
-        "movss %xmm7, -0x20(%ebp)\n"
-        "leal -0x10(%ebp), %eax\n" /* line 1556 | yOffset */
-        "movl %eax, 4(%esp)\n"
-        "leal -0xc(%ebp), %eax\n" /* xOffset */
-        "movl %eax, (%esp)\n"
-        "movss %xmm1, -0x48(%ebp)\n"
-        "movss %xmm2, -0x58(%ebp)\n"
-        "movss %xmm4, -0x68(%ebp)\n"
-        "movss %xmm6, -0x78(%ebp)\n"
-        "calll MacOpenGLUtils_GetSubPixelOffset\n"
-        "movss -0x78(%ebp), %xmm6\n" /* line 1558 */
-        "movaps %xmm6, %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n" /* xOffset */
-        "addss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "movss -0x68(%ebp), %xmm4\n" /* line 1559 */
-        "movaps %xmm4, %xmm0\n"
-        "mulss -0x10(%ebp), %xmm0\n" /* yOffset */
-        "addss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        /* { scope 2 */
-        "cmpl $1, %ebx\n" /* line 144 */
-        "movss -0x48(%ebp), %xmm1\n"
-        "movss -0x58(%ebp), %xmm2\n"
-        "ja .Lfcecd4_000ceeef\n"
-        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
-        /* } scope */
-        /* { scope 2 */
-        ".Lfcecd4_000cee12:\n"
-        "cmpl $1, %esi\n"
-        "ja .Lfcecd4_000cef15\n"
-        ".Lfcecd4_000cee1b:\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
-        /* } scope */
-        ".Lfcecd4_000cee23:\n"
-        "movaps %xmm2, %xmm0\n" /* line 1571 */
-        "divss %xmm5, %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* horizontalScale */
-        "movaps %xmm1, %xmm7\n" /* line 1572 */
-        "divss %xmm3, %xmm7\n"
-        "movss %xmm7, -0x2c(%ebp)\n" /* verticalScale */
-        "movss %xmm4, 0x10(%esp)\n" /* line 1583 */
-        "movss %xmm6, 0xc(%esp)\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "subss %xmm0, %xmm1\n"
-        "divss %xmm3, %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "subss %xmm0, %xmm2\n"
-        "divss %xmm5, %xmm2\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl $0xab, (%esp)\n"
-        "calll RB_SetCodeConstant\n"
-        "movl $0x3f800000, 0x10(%esp)\n" /* line 1587 */
-        "xorl %ebx, %ebx\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        "mulss -0x2c(%ebp), %xmm0\n" /* verticalScale */
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x24(%ebp), %xmm7\n"
-        "mulss -0x30(%ebp), %xmm7\n" /* horizontalScale */
-        "movss %xmm7, 4(%esp)\n"
-        "movl $0xae, (%esp)\n"
-        "calll RB_SetCodeConstant\n"
-        "movl %ebx, 0x10(%esp)\n" /* line 1588 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movss -0x20(%ebp), %xmm0\n"
-        "mulss -0x2c(%ebp), %xmm0\n" /* verticalScale */
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x1c(%ebp), %xmm7\n"
-        "mulss -0x30(%ebp), %xmm7\n" /* horizontalScale */
-        "movss %xmm7, 4(%esp)\n"
-        "movl $0xaf, (%esp)\n"
-        "calll RB_SetCodeConstant\n"
-        /* } scope */
-        "addl $0x90, %esp\n" /* line 1594 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfcecd4_000ceeef:\n"
-        "movl $1, %edx\n" /* line 144 */
-        "movl $0x20, %eax\n"
-        ".Lfcecd4_000ceef9:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, %ebx\n"
-        "jbe .Lfcecd4_000cef6f\n"
-        "subl $1, %eax\n"
-        "jne .Lfcecd4_000ceef9\n"
-        "testl %edx, %edx\n"
-        "js .Lfcecd4_000cef43\n"
-        ".Lfcecd4_000cef08:\n"
-        "cvtsi2ssl %edx, %xmm5\n"
-        /* } scope */
-        /* { scope 2 */
-        "cmpl $1, %esi\n"
-        "jbe .Lfcecd4_000cee1b\n"
-        ".Lfcecd4_000cef15:\n"
-        "movl $1, %edx\n"
-        "movl $0x20, %eax\n"
-        ".Lfcecd4_000cef1f:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, %esi\n"
-        "jbe .Lfcecd4_000cef82\n"
-        "subl $1, %eax\n"
-        "jne .Lfcecd4_000cef1f\n"
-        "testl %edx, %edx\n"
-        "js .Lfcecd4_000cef59\n"
-        ".Lfcecd4_000cef2e:\n"
-        "cvtsi2ssl %edx, %xmm3\n"
-        "jmp .Lfcecd4_000cee23\n"
-        /* } scope */
-        ".Lfcecd4_000cef37:\n"
-        "pxor %xmm3, %xmm3\n" /* line 1487 */
-        "movaps %xmm3, %xmm5\n"
-        "jmp .Lfcecd4_000ced4d\n"
-        /* { scope 2 */
-        ".Lfcecd4_000cef43:\n"
-        "movl %edx, %eax\n" /* line 144 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm5\n"
-        "addss %xmm5, %xmm5\n"
-        "jmp .Lfcecd4_000cee12\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfcecd4_000cef59:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm3\n"
-        "addss %xmm3, %xmm3\n"
-        "jmp .Lfcecd4_000cee23\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfcecd4_000cef6f:\n"
-        "testl %edx, %edx\n"
-        "jns .Lfcecd4_000cef08\n"
-        "shrl $1, %edx\n"
-        "cvtsi2ssl %edx, %xmm5\n"
-        "addss %xmm5, %xmm5\n"
-        "jmp .Lfcecd4_000cee12\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfcecd4_000cef82:\n"
-        "testl %edx, %edx\n"
-        "jns .Lfcecd4_000cef2e\n"
-        "shrl $1, %edx\n"
-        "cvtsi2ssl %edx, %xmm3\n"
-        "addss %xmm3, %xmm3\n"
-        "jmp .Lfcecd4_000cee23\n"
-    );
+    GfxViewport viewport;
+    float invRenderTargetWidth;
+    float invRenderTargetHeight;
+    float halfViewportWidth;
+    float halfViewportHeight;
+    float viewportCenterX;
+    float viewportCenterY;
+    float horizontalScale;
+    float verticalScale;
+    float xOffset;
+    float yOffset;
+    int potWidth;
+    int potHeight;
+
+    backEnd.projection2D = 0;
+    backEnd.viewportIsDirty = 1;
+
+    invRenderTargetWidth = 1.0f / dxState.renderTargetWidth;
+    invRenderTargetHeight = 1.0f / dxState.renderTargetHeight;
+    if (dxState.viewportBehavior == GFX_USE_VIEWPORT_FULL) {
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = dxState.renderTargetWidth;
+        viewport.height = dxState.renderTargetHeight;
+    } else {
+        viewport = backEnd.sceneViewport;
+    }
+
+    halfViewportWidth = 0.5f * viewport.width * invRenderTargetWidth;
+    halfViewportHeight = 0.5f * viewport.height * invRenderTargetHeight;
+    viewportCenterX = viewport.x * invRenderTargetWidth + halfViewportWidth;
+    viewportCenterY = viewport.y * invRenderTargetHeight + halfViewportHeight;
+
+    MacOpenGLUtils_GetSubPixelOffset(&xOffset, &yOffset);
+    viewportCenterX += invRenderTargetWidth * xOffset;
+    viewportCenterY += invRenderTargetHeight * yOffset;
+
+    potWidth = RB_NextPowerOfTwo(viewport.width);
+    potHeight = RB_NextPowerOfTwo(viewport.height);
+    horizontalScale = (float)viewport.width / potWidth;
+    verticalScale = (float)viewport.height / potHeight;
+
+    RB_SetCodeConstant(0xab, ((float)viewport.width - 0.5f) / potWidth, ((float)viewport.height - 0.5f) / potHeight, invRenderTargetWidth, invRenderTargetHeight);
+    RB_SetCodeConstant(0xae, halfViewportWidth * horizontalScale, halfViewportHeight * verticalScale, 0.0f, 1.0f);
+    RB_SetCodeConstant(0xaf, viewportCenterX * horizontalScale, viewportCenterY * verticalScale, 0.0f, 0.0f);
 }
 
 /* line 1787 */
