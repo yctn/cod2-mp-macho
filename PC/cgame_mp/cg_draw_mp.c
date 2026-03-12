@@ -28,6 +28,7 @@ extern unsigned int Scr_GetNumScriptThreads(void);
 extern unsigned int Scr_GetStringUsage(void);
 extern int Sys_Milliseconds(void);
 extern int CL_GetCurrentCmdNumber(void);
+extern int CL_GetKeyCatchers(void);
 extern qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
 extern Bool CL_IsRenderingSplitScreen(void);
 extern const char *UI_SafeTranslateString(const char *ref);
