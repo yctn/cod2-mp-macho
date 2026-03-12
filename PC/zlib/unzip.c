@@ -3,6 +3,19 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
+#include <string.h>
+
+enum {
+    UNZ_OK = 0,
+    UNZ_END_OF_LIST_OF_FILE = -100,
+    UNZ_PARAMERROR = -102,
+    UNZ_SIZECENTRALDIRITEM = 0x2e
+};
+
+extern FILE *FS_FileOpen(const char *filename, const char *mode);
+extern int FS_FileClose(FILE *stream);
+extern int inflateEnd(z_streamp strm);
 
 unzFile unzReOpen(const char *path, unzFile file);
 int unzGetGlobalInfo(unzFile file, unz_global_info *pglobal_info);
@@ -10,7 +23,16 @@ int unzGetCurrentFileInfoPosition(unzFile file, long unsigned int *pos);
 int unzReadCurrentFile(unzFile file, voidp buf, unsigned int len);
 long int unztell(unzFile file);
 int unzCloseCurrentFile(unzFile file);
-static int unzlocal_GetCurrentFileInfoInternal(unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, double *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize);
+static int __attribute__((regparm(3))) unzlocal_GetCurrentFileInfoInternal(
+    unzFile file,
+    unz_file_info *pfile_info,
+    unz_file_info_internal *pfile_info_internal,
+    char *szFileName,
+    uLong fileNameBufferSize,
+    double *extraField,
+    uLong extraFieldBufferSize,
+    char *szComment,
+    uLong commentBufferSize);
 int unzSetCurrentFileInfoPosition(unzFile file, long unsigned int pos);
 int unzGoToNextFile(unzFile file);
 int unzGoToFirstFile(unzFile file);
@@ -20,50 +42,25 @@ int unzClose(unzFile file);
 int unzOpenCurrentFile(unzFile file);
 
 /* line 326 */
-__attribute__((naked))
 unzFile unzReOpen(const char *path, unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 326 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $str_00215b98, 4(%esp)\n" /* line 331 */
-        "movl 8(%ebp), %eax\n" /* path */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileOpen\n"
-        "movl %eax, %esi\n" /* fin */
-        "testl %eax, %eax\n" /* line 332 */
-        "je .Lf27950_000279a8\n"
-        "movl $0x80, (%esp)\n" /* line 335 */
-        "calll malloc\n"
-        "movl %eax, %ebx\n"
-        "movl $0x80, 8(%esp)\n" /* line 336 */
-        "movl 0xc(%ebp), %eax\n" /* file */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll Com_Memcpy\n"
-        "movl %esi, (%ebx)\n" /* line 338 | fin */
-        "movl $0, 0x7c(%ebx)\n" /* line 339 */
-        "movl %ebx, %eax\n" /* line 340 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 341 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf27950_000279a8:\n"
-        "xorl %eax, %eax\n" /* line 332 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 341 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    FILE *fin;
+    unz_s *reopened;
+
+    fin = FS_FileOpen(path, "rb");
+    if (fin == NULL)
+        return NULL;
+
+    reopened = (unz_s *)malloc(sizeof(*reopened));
+    if (reopened == NULL) {
+        FS_FileClose(fin);
+        return NULL;
+    }
+
+    memcpy(reopened, (const unz_s *)file, sizeof(*reopened));
+    reopened->file = fin;
+    reopened->pfile_in_zip_read = NULL;
+    return (unzFile)reopened;
 }
 
 /* line 472 */
@@ -249,91 +246,51 @@ int unzReadCurrentFile(unzFile file, voidp buf, unsigned int len)
 }
 
 /* line 1174 */
-__attribute__((naked))
 long int unztell(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1174 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* file */
-        /* { scope 1 */
-        "testl %eax, %eax\n" /* line 1179 */
-        "jne .Lf27b84_00027b95\n"
-        ".Lf27b84_00027b8e:\n"
-        "movl $0xffffff9a, %eax\n" /* line 1187 */
-        /* } scope */
-        "popl %ebp\n" /* line 1188 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf27b84_00027b95:\n"
-        "movl 0x7c(%eax), %eax\n" /* line 1182 */
-        "testl %eax, %eax\n" /* line 1184 */
-        "je .Lf27b84_00027b8e\n"
-        "movl 0x18(%eax), %eax\n" /* line 1187 */
-        /* } scope */
-        "popl %ebp\n" /* line 1188 */
-        "retl\n"
-    );
+    unz_s *s;
+    file_in_zip_read_info_s *readInfo;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    readInfo = s->pfile_in_zip_read;
+    if (readInfo == NULL)
+        return UNZ_PARAMERROR;
+
+    return readInfo->stream.total_out;
 }
 
 /* line 1274 */
-__attribute__((naked))
 int unzCloseCurrentFile(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1274 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* file */
-        /* { scope 1 */
-        "testl %esi, %esi\n" /* line 1281 | file */
-        "jne .Lf27ba2_00027bbd\n"
-        ".Lf27ba2_00027bb1:\n"
-        "movl $0xffffff9a, %eax\n" /* line 1286 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1308 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf27ba2_00027bbd:\n"
-        "movl 0x7c(%esi), %ebx\n" /* line 1284 | file, pfile_in_zip_read_info */
-        "testl %ebx, %ebx\n" /* line 1286 | pfile_in_zip_read_info */
-        "je .Lf27ba2_00027bb1\n"
-        "movl (%ebx), %eax\n" /* line 1297 | pfile_in_zip_read_info */
-        "movl %eax, (%esp)\n"
-        "calll free\n"
-        "movl $0, (%ebx)\n" /* line 1298 | pfile_in_zip_read_info */
-        "movl 0x40(%ebx), %ecx\n" /* line 1299 | pfile_in_zip_read_info */
-        "testl %ecx, %ecx\n"
-        "jne .Lf27ba2_00027bfa\n"
-        ".Lf27ba2_00027bdb:\n"
-        "movl $0, 0x40(%ebx)\n" /* line 1302 | pfile_in_zip_read_info */
-        "movl %ebx, (%esp)\n" /* line 1303 | pfile_in_zip_read_info */
-        "calll free\n"
-        "movl $0, 0x7c(%esi)\n" /* line 1305 | file */
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1308 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf27ba2_00027bfa:\n"
-        "leal 4(%ebx), %eax\n" /* line 1300 | pfile_in_zip_read_info */
-        "movl %eax, (%esp)\n"
-        "calll inflateEnd\n"
-        "jmp .Lf27ba2_00027bdb\n"
-    );
+    unz_s *s;
+    file_in_zip_read_info_s *readInfo;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    readInfo = s->pfile_in_zip_read;
+    if (readInfo == NULL)
+        return UNZ_PARAMERROR;
+
+    free(readInfo->read_buffer);
+    readInfo->read_buffer = NULL;
+
+    if (readInfo->stream_initialised)
+        inflateEnd(&readInfo->stream);
+
+    readInfo->stream_initialised = 0;
+    free(readInfo);
+    s->pfile_in_zip_read = NULL;
+    return UNZ_OK;
 }
 
 /* line 522 */
-static __attribute__((naked))
-int unzlocal_GetCurrentFileInfoInternal(unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, double *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
+static __attribute__((naked, regparm(3)))
+int unzlocal_GetCurrentFileInfoInternal(unzFile file, unz_file_info *pfile_info, unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, double *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 522 */
@@ -817,197 +774,105 @@ int unzlocal_GetCurrentFileInfoInternal(unz_file_info_internal *pfile_info_inter
 }
 
 /* line 773 */
-__attribute__((naked))
 int unzSetCurrentFileInfoPosition(unzFile file, long unsigned int pos)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 773 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* file */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 778 | file */
-        "je .Lf2824e_000282b1\n"
-        "movl 0xc(%ebp), %eax\n" /* line 782 | pos */
-        "movl %eax, 0x14(%ebx)\n" /* file */
-        "leal 0x78(%ebx), %ecx\n" /* line 785 | file */
-        "leal 0x28(%ebx), %edx\n" /* file */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl %ebx, %eax\n" /* file */
-        "calll unzlocal_GetCurrentFileInfoInternal\n"
-        "testl %eax, %eax\n" /* line 786 */
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0x18(%ebx)\n" /* file */
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 788 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf2824e_000282b1:\n"
-        "movl $0xffffff9a, %eax\n" /* line 778 */
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 788 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int err;
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    s->pos_in_central_dir = pos;
+    err = unzlocal_GetCurrentFileInfoInternal(
+        file,
+        &s->cur_file_info,
+        &s->cur_file_info_internal,
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0);
+    s->current_file_ok = (err == UNZ_OK);
+    return UNZ_OK;
 }
 
 /* line 729 */
-__attribute__((naked))
 int unzGoToNextFile(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 729 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* file */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 735 | file */
-        "jne .Lf282bc_000282d7\n"
-        "movl $0xffffff9a, %edx\n"
-        /* } scope */
-        ".Lf282bc_000282cf:\n"
-        "movl %edx, %eax\n" /* line 751 */
-        "addl $0x24, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf282bc_000282d7:\n"
-        "movl 0x18(%ebx), %edx\n" /* line 738 | file */
-        "testl %edx, %edx\n"
-        "jne .Lf282bc_000282eb\n"
-        ".Lf282bc_000282de:\n"
-        "movl $0xffffff9c, %edx\n" /* line 740 */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 751 */
-        "addl $0x24, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf282bc_000282eb:\n"
-        "movl 0x10(%ebx), %edx\n" /* line 740 | file */
-        "addl $1, %edx\n"
-        "cmpl 4(%ebx), %edx\n" /* file */
-        "je .Lf282bc_000282de\n"
-        "movl 0x48(%ebx), %eax\n" /* line 744 | file */
-        "addl 0x4c(%ebx), %eax\n" /* file */
-        "addl 0x50(%ebx), %eax\n" /* file */
-        "addl 0x14(%ebx), %eax\n" /* file */
-        "addl $0x2e, %eax\n"
-        "movl %eax, 0x14(%ebx)\n" /* file */
-        "movl %edx, 0x10(%ebx)\n" /* line 745 | file */
-        "leal 0x78(%ebx), %ecx\n" /* line 748 | file */
-        "leal 0x28(%ebx), %edx\n" /* file */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl %ebx, %eax\n" /* file */
-        "calll unzlocal_GetCurrentFileInfoInternal\n"
-        "movl %eax, %edx\n"
-        "xorl %eax, %eax\n" /* line 749 */
-        "testl %edx, %edx\n"
-        "sete %al\n"
-        "movl %eax, 0x18(%ebx)\n" /* file */
-        "jmp .Lf282bc_000282cf\n"
-    );
+    int err;
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    if (!s->current_file_ok)
+        return UNZ_END_OF_LIST_OF_FILE;
+
+    if (s->num_file + 1 == s->gi.number_entry)
+        return UNZ_END_OF_LIST_OF_FILE;
+
+    s->pos_in_central_dir += UNZ_SIZECENTRALDIRITEM
+        + s->cur_file_info.size_filename
+        + s->cur_file_info.size_file_extra
+        + s->cur_file_info.size_file_comment;
+    s->num_file++;
+
+    err = unzlocal_GetCurrentFileInfoInternal(
+        file,
+        &s->cur_file_info,
+        &s->cur_file_info_internal,
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0);
+    s->current_file_ok = (err == UNZ_OK);
+    return err;
 }
 
 /* line 706 */
-__attribute__((naked))
 int unzGoToFirstFile(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 706 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* file */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 711 | file */
-        "je .Lf28358_000283c3\n"
-        "movl 0x24(%ebx), %eax\n" /* line 714 | file */
-        "movl %eax, 0x14(%ebx)\n" /* file */
-        "movl $0, 0x10(%ebx)\n" /* line 715 | file */
-        "leal 0x78(%ebx), %ecx\n" /* line 718 | file */
-        "leal 0x28(%ebx), %edx\n" /* file */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl %ebx, %eax\n" /* file */
-        "calll unzlocal_GetCurrentFileInfoInternal\n"
-        "movl %eax, %edx\n"
-        "xorl %eax, %eax\n" /* line 719 */
-        "testl %edx, %edx\n"
-        "sete %al\n"
-        "movl %eax, 0x18(%ebx)\n" /* file */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 721 */
-        "addl $0x24, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf28358_000283c3:\n"
-        "movl $0xffffff9a, %edx\n" /* line 711 */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 721 */
-        "addl $0x24, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int err;
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    s->pos_in_central_dir = s->offset_central_dir;
+    s->num_file = 0;
+    err = unzlocal_GetCurrentFileInfoInternal(
+        file,
+        &s->cur_file_info,
+        &s->cur_file_info_internal,
+        NULL,
+        0,
+        NULL,
+        0,
+        NULL,
+        0);
+    s->current_file_ok = (err == UNZ_OK);
+    return err;
 }
 
 /* line 686 */
-__attribute__((naked))
 int unzGetCurrentFileInfo(unzFile file, unz_file_info *pfile_info, char *szFileName, uLong fileNameBufferSize, double *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 686 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* file */
-        "movl 0xc(%ebp), %edx\n" /* pfile_info */
-        "movl 0x10(%ebp), %ecx\n" /* szFileName, szComment */
-        "movl %ecx, 8(%ebp)\n" /* szComment, file */
-        "movl 0x14(%ebp), %edi\n" /* fileNameBufferSize */
-        "movl 0x18(%ebp), %esi\n" /* extraField */
-        "movl 0x1c(%ebp), %ebx\n" /* extraFieldBufferSize */
-        "movl 0x24(%ebp), %ecx\n" /* line 699 | commentBufferSize */
-        "movl %ecx, 0x1c(%ebp)\n" /* extraFieldBufferSize */
-        "movl 0x20(%ebp), %ecx\n" /* szComment */
-        "movl %ecx, 0x18(%ebp)\n" /* extraField */
-        "movl %ebx, 0x14(%ebp)\n" /* extraFieldBufferSize, fileNameBufferSize */
-        "movl %esi, 0x10(%ebp)\n" /* extraField, szFileName */
-        "movl %edi, 0xc(%ebp)\n" /* fileNameBufferSize, pfile_info */
-        "xorl %ecx, %ecx\n"
-        "popl %ebx\n" /* line 700 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp unzlocal_GetCurrentFileInfoInternal\n" /* line 699 */
-    );
+    return unzlocal_GetCurrentFileInfoInternal(
+        file,
+        pfile_info,
+        NULL,
+        szFileName,
+        fileNameBufferSize,
+        extraField,
+        extraFieldBufferSize,
+        szComment,
+        commentBufferSize);
 }
 
 /* line 352 */
@@ -1319,58 +1184,20 @@ unzFile unzOpen(const char *path)
 }
 
 /* line 451 */
-__attribute__((naked))
 int unzClose(unzFile file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 451 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* file */
-        "testl %esi, %esi\n" /* line 455 | file */
-        "je .Lf2887a_000288e5\n"
-        "movl 0x7c(%esi), %ebx\n" /* line 459 | file */
-        "testl %ebx, %ebx\n"
-        "je .Lf2887a_000288bd\n"
-        "movl (%ebx), %eax\n" /* line 1297 */
-        "movl %eax, (%esp)\n"
-        "calll free\n"
-        "movl $0, (%ebx)\n" /* line 1298 */
-        "movl 0x40(%ebx), %eax\n" /* line 1299 */
-        "testl %eax, %eax\n"
-        "jne .Lf2887a_000288d8\n"
-        ".Lf2887a_000288a7:\n"
-        "movl $0, 0x40(%ebx)\n" /* line 1302 */
-        "movl %ebx, (%esp)\n" /* line 1303 */
-        "calll free\n"
-        "movl $0, 0x7c(%esi)\n" /* line 1305 | file */
-        ".Lf2887a_000288bd:\n"
-        "movl (%esi), %eax\n" /* line 462 | file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileClose\n"
-        "movl %esi, (%esp)\n" /* line 463 | file */
-        "calll free\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 465 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2887a_000288d8:\n"
-        "leal 4(%ebx), %eax\n" /* line 1300 */
-        "movl %eax, (%esp)\n"
-        "calll inflateEnd\n"
-        "jmp .Lf2887a_000288a7\n"
-        ".Lf2887a_000288e5:\n"
-        "movl $0xffffff9a, %eax\n" /* line 455 */
-        "addl $0x10, %esp\n" /* line 465 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unz_s *s;
+
+    if (file == NULL)
+        return UNZ_PARAMERROR;
+
+    s = (unz_s *)file;
+    if (s->pfile_in_zip_read != NULL)
+        unzCloseCurrentFile(file);
+
+    FS_FileClose(s->file);
+    free(s);
+    return UNZ_OK;
 }
 
 /* line 941 */
@@ -1672,4 +1499,3 @@ int unzOpenCurrentFile(unzFile file)
         "jmp .Lf288f2_00028907\n"
     );
 }
-
