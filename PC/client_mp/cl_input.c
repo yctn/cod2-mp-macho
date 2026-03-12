@@ -16,6 +16,8 @@ extern const dvar_t *cl_talking; /* 0x0 */
 extern const dvar_t *cl_bypassMouseInput; /* 0x0 */
 extern const dvar_t *cl_analog_attack_threshold; /* 0x0 */
 extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
+extern const dvar_t *cl_maxpackets; /* 0x0 */
+extern const dvar_t *cl_showSend; /* 0x0 */
 extern int atoi(const char *nptr);
 extern const char *Cmd_Argv(int arg);
 extern void Com_Printf(const char *fmt, ...);
@@ -26,6 +28,8 @@ extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min
 extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
+extern qboolean Sys_IsLANAddress(int addr0, int addr1, int addr2);
+extern struct clientStatic_t cls; /* 0x0 */
 extern unsigned int frame_msec; /* 0x0 */
 
 __asm__(".Lclwp_fmt: .asciz \"[CL_WritePacket] serverId=%d\\n\"\n");
@@ -2614,139 +2618,60 @@ usercmd_t CL_CreateCmd(void)
 }
 
 /* line 1671 */
-__attribute__((naked))
 void CL_SendCmdInternal(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1671 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl imp_clc, %eax\n" /* line 1376 */
-        "movl (%eax), %esi\n"
-        "cmpl $6, (%esi)\n"
-        "jg .Lf187e9a_00187f81\n"
-        ".Lf187e9a_00187eb2:\n"
-        "movl 0x407a0(%esi), %eax\n" /* line 1405 */
-        "testl %eax, %eax\n"
-        "jne .Lf187e9a_00187f5a\n"
-        "movl (%esi), %edx\n"
-        "cmpl $1, %edx\n"
-        "je .Lf187e9a_00187f5a\n"
-        "cmpl $2, %edx\n"
-        "je .Lf187e9a_00187f5a\n"
-        "movzbl 0x40148(%esi), %ecx\n" /* line 1412 */
-        "testb %cl, %cl\n"
-        "jne .Lf187e9a_00187f47\n"
-        ".Lf187e9a_00187edf:\n"
-        "leal -7(%edx), %eax\n" /* line 1421 */
-        "cmpl $1, %eax\n"
-        "jbe .Lf187e9a_00187f00\n"
-        "testb %cl, %cl\n"
-        "jne .Lf187e9a_00187f00\n"
-        "movl imp_cls, %eax\n"
-        "movl 0x118(%eax), %eax\n"
-        "subl 0xc(%esi), %eax\n"
-        "cmpl $0x3e7, %eax\n"
-        "jle .Lf187e9a_00187f5a\n"
-        ".Lf187e9a_00187f00:\n"
-        "cmpl $2, 0x407d8(%esi)\n" /* line 1430 */
-        "je .Lf187e9a_00187f3c\n"
-        "movl 0x407d8(%esi), %ecx\n" /* line 1436 */
-        "movl %ecx, -0x14(%ebp)\n"
-        "movl 0x407dc(%esi), %edx\n"
-        "movl %edx, -0x10(%ebp)\n"
-        "movl 0x407e0(%esi), %eax\n"
-        "movl %eax, -0xc(%ebp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll Sys_IsLANAddress\n"
-        "testl %eax, %eax\n"
-        "je .Lf187e9a_00187fea\n"
-        ".Lf187e9a_00187f3c:\n"
-        "leal -8(%ebp), %esp\n" /* line 1685 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp CL_WritePacket\n" /* line 1684 */
-        ".Lf187e9a_00187f47:\n"
-        "movl imp_cls, %eax\n" /* line 1412 */
-        "movl 0x118(%eax), %eax\n"
-        "subl 0xc(%esi), %eax\n"
-        "cmpl $0x31, %eax\n"
-        "jg .Lf187e9a_00187edf\n"
-        ".Lf187e9a_00187f5a:\n"
-        "movl imp_cl_showSend, %eax\n" /* line 1678 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf187e9a_00187f6e\n"
-        "leal -8(%ebp), %esp\n" /* line 1685 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf187e9a_00187f6e:\n"
-        "movl $str_002af7d8, (%esp)\n" /* line 1679 */
-        "calll Com_Printf\n"
-        "leal -8(%ebp), %esp\n" /* line 1685 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf187e9a_00187f81:\n"
-        "movl imp_cl, %eax\n" /* line 1382 */
-        "movl (%eax), %eax\n"
-        "movl 0x4945c(%eax), %ebx\n"
-        "addl $1, %ebx\n"
-        "movl %ebx, 0x4945c(%eax)\n"
-        "andl $0x7f, %ebx\n" /* line 1384 */
-        "leal (, %ebx, 4), %edx\n"
-        "shll $5, %ebx\n"
-        "subl %edx, %ebx\n"
-        "leal 0x48650(%ebx, %eax), %ebx\n"
-        "leal -0x38(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_CreateCmd\n"
-        "subl $4, %esp\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 0xc(%ebx)\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, 0x10(%ebx)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, 0x14(%ebx)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, 0x18(%ebx)\n"
-        "movl -0x28(%ebp), %eax\n"
-        "movl %eax, 0x1c(%ebx)\n"
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0x20(%ebx)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 0x24(%ebx)\n"
-        "jmp .Lf187e9a_00187eb2\n"
-        ".Lf187e9a_00187fea:\n"
-        "movl imp_clc, %eax\n" /* line 1443 */
-        "movl (%eax), %eax\n"
-        "movl 0x407c8(%eax), %eax\n"
-        "subl $1, %eax\n"
-        "andl $0x1f, %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $2, %eax\n"
-        "movl imp_cl, %edx\n"
-        "addl (%edx), %eax\n"
-        "movl imp_cls, %edx\n"
-        "movl 0x118(%edx), %ecx\n"
-        "subl 0x49468(%eax), %ecx\n"
-        "movl imp_cl_maxpackets, %eax\n"
-        "movl (%eax), %ebx\n"
-        "movl $0x3e8, %eax\n"
-        "cltd\n"
-        "idivl 8(%ebx)\n"
-        "cmpl %eax, %ecx\n"
-        "jge .Lf187e9a_00187f3c\n"
-        "jmp .Lf187e9a_00187f5a\n"
-    );
+    clientConnection_t *clc;
+    clientActive_t *cl;
+    outPacket_t *outPacket;
+    const int *serverAddrWords;
+    int connectElapsed;
+
+    clc = *(clientConnection_t **)imp_clc;
+    if (clc->state > CA_LOADING)
+    {
+        cl = *(clientActive_t **)imp_cl;
+        ++cl->cmdNumber;
+        cl->cmds[cl->cmdNumber & 127] = CL_CreateCmd();
+    }
+
+    if (clc->demoplaying || clc->state == CA_CINEMATIC || clc->state == CA_LOGO)
+    {
+        goto not_ready;
+    }
+
+    connectElapsed = cls.realtime - clc->connectTime;
+    if (clc->demowaiting)
+    {
+        if (connectElapsed <= 49)
+        {
+            goto not_ready;
+        }
+    }
+    else if ((unsigned int)(clc->state - CA_PRIMED) > 1 && connectElapsed <= 999)
+    {
+        goto not_ready;
+    }
+
+    serverAddrWords = (const int *)&clc->serverAddress;
+    if (clc->serverAddress.type == NA_LOOPBACK || Sys_IsLANAddress(serverAddrWords[0], serverAddrWords[1], serverAddrWords[2]))
+    {
+        CL_WritePacket();
+        return;
+    }
+
+    cl = *(clientActive_t **)imp_cl;
+    outPacket = &cl->outPackets[(clc->netchan.outgoingSequence - 1) & 31];
+    if (cls.realtime - outPacket->p_realtime >= 1000 / cl_maxpackets->current.integer)
+    {
+        CL_WritePacket();
+        return;
+    }
+
+not_ready:
+    if (cl_showSend->current.enabled)
+    {
+        Com_Printf((const char *)str_002af7d8);
+    }
 }
 
 /* line 1713 */
