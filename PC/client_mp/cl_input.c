@@ -17,6 +17,7 @@ extern const dvar_t *cl_bypassMouseInput; /* 0x0 */
 extern const dvar_t *cl_analog_attack_threshold; /* 0x0 */
 extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
 extern const dvar_t *cl_maxpackets; /* 0x0 */
+extern const dvar_t *cl_freelook; /* 0x0 */
 extern const dvar_t *cl_showSend; /* 0x0 */
 extern int atoi(const char *nptr);
 extern const char *Cmd_Argv(int arg);
@@ -36,6 +37,7 @@ extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern qboolean Sys_IsLANAddress(int addr0, int addr1, int addr2);
 extern struct clientStatic_t cls; /* 0x0 */
+extern int com_frameTime; /* 0x0 */
 extern unsigned int frame_msec; /* 0x0 */
 
 __asm__(".Lclwp_fmt: .asciz \"[CL_WritePacket] serverId=%d\\n\"\n");
@@ -221,6 +223,40 @@ static qboolean CL_ConsumeButtonPress(kbutton_t *button)
     pressed = button->active || button->wasPressed;
     button->wasPressed = 0;
     return pressed;
+}
+
+static float CL_KeyState(kbutton_t *key)
+{
+    unsigned int msec;
+
+    msec = key->msec;
+    key->msec = 0;
+
+    if (key->active)
+    {
+        if (key->downtime)
+        {
+            msec += com_frameTime - key->downtime;
+        }
+        else
+        {
+            msec += com_frameTime;
+        }
+
+        key->downtime = com_frameTime;
+    }
+
+    if ((int)msec <= 0)
+    {
+        return 0.0f;
+    }
+
+    if (msec >= frame_msec)
+    {
+        return 1.0f;
+    }
+
+    return (float)msec / (float)frame_msec;
 }
 
 /* line 102 */
@@ -1579,353 +1615,35 @@ void IN_MLookUp(void)
 }
 
 /* line 879 */
-__attribute__((naked))
 void CL_AdjustAngles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 879 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        /* { scope 1 */
-        "movl kb, %esi\n" /* line 883 */
-        "cmpb $0, 0xc4(%esi)\n"
-        "je .Lf187424_00187671\n"
-        "movl imp_cls, %eax\n" /* line 884 */
-        "cvtsi2ssl 0x114(%eax), %xmm2\n"
-        "mulss lit4_002ed658, %xmm2\n" /* 0.0010000000474974513f */
-        "movl cl_anglespeedkey, %eax\n"
-        "mulss 8(%eax), %xmm2\n"
-        ".Lf187424_0018745f:\n"
-        "cmpb $0, 0xb0(%esi)\n" /* line 888 */
-        "jne .Lf187424_0018754c\n"
-        "movl imp_cl, %eax\n" /* line 890 */
-        "movl (%eax), %edi\n"
-        "movss 0x8620(%edi), %xmm1\n"
-        "movl cl_yawspeed, %eax\n"
-        "movaps %xmm2, %xmm4\n"
-        "mulss 8(%eax), %xmm4\n"
-        "leal 0x14(%esi), %edx\n" /* key */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0xc(%edx), %ecx\n" /* line 229 */
-        "movl $0, 0xc(%edx)\n" /* line 230 */
-        "cmpb $0, 0x10(%edx)\n" /* line 232 */
-        "jne .Lf187424_001876c7\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf187424_001874cd\n"
-        ".Lf187424_001874a7:\n"
-        "movl imp_frame_msec, %eax\n" /* line 255 */
-        "movl (%eax), %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jae .Lf187424_00187741\n"
-        "cvtsi2ssl %ecx, %xmm3\n" /* line 258 */
-        "testl %edx, %edx\n"
-        "js .Lf187424_001877a9\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf187424_001874c6:\n"
-        "divss %xmm0, %xmm3\n"
-        "movaps %xmm3, %xmm0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf187424_001874cd:\n"
-        "mulss %xmm4, %xmm0\n" /* line 890 */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x8620(%edi)\n"
-        "movl imp_cl, %edi\n" /* line 891 */
-        "movl (%edi), %ebx\n"
-        "movss 0x8620(%ebx), %xmm1\n"
-        "movl cl_yawspeed, %eax\n"
-        "movaps %xmm2, %xmm4\n"
-        "mulss 8(%eax), %xmm4\n"
-        /* { scope 2 */
-        "movl 0xc(%esi), %ecx\n" /* line 229 */
-        "movl $0, 0xc(%esi)\n" /* line 230 */
-        "cmpb $0, 0x10(%esi)\n" /* line 232 */
-        "jne .Lf187424_00187698\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf187424_0018753c\n"
-        ".Lf187424_00187516:\n"
-        "movl imp_frame_msec, %eax\n" /* line 255 */
-        "movl (%eax), %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jae .Lf187424_0018774e\n"
-        "cvtsi2ssl %ecx, %xmm3\n" /* line 258 */
-        "testl %edx, %edx\n"
-        "js .Lf187424_001877bf\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf187424_00187535:\n"
-        "divss %xmm0, %xmm3\n"
-        "movaps %xmm3, %xmm0\n"
-        /* } scope */
-        ".Lf187424_0018753c:\n"
-        "mulss %xmm4, %xmm0\n" /* line 891 */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x8620(%ebx)\n"
-        ".Lf187424_0018754c:\n"
-        "movl imp_cl, %ebx\n" /* line 894 */
-        "movl (%ebx), %edi\n"
-        "movss 0x861c(%edi), %xmm1\n"
-        "movl cl_pitchspeed, %eax\n"
-        "movaps %xmm2, %xmm4\n"
-        "mulss 8(%eax), %xmm4\n"
-        "leal 0x50(%esi), %edx\n" /* key */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0xc(%edx), %ecx\n" /* line 229 */
-        "movl $0, 0xc(%edx)\n" /* line 230 */
-        "cmpb $0, 0x10(%edx)\n" /* line 232 */
-        "je .Lf187424_001875a0\n"
-        "movl 8(%edx), %ebx\n" /* line 235 */
-        "testl %ebx, %ebx\n"
-        "je .Lf187424_001876fc\n"
-        "movl imp_com_frameTime, %eax\n" /* line 241 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "subl %ebx, %eax\n"
-        "addl %eax, %ecx\n"
-        "movl imp_com_frameTime, %ebx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        ".Lf187424_001875a0:\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf187424_001875ce\n"
-        "movl imp_frame_msec, %eax\n" /* line 255 */
-        "movl (%eax), %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jae .Lf187424_0018768b\n"
-        "cvtsi2ssl %ecx, %xmm3\n" /* line 258 */
-        "testl %edx, %edx\n"
-        "js .Lf187424_00187793\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf187424_001875c7:\n"
-        "divss %xmm0, %xmm3\n"
-        "movaps %xmm3, %xmm0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf187424_001875ce:\n"
-        "mulss %xmm4, %xmm0\n" /* line 894 */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x861c(%edi)\n"
-        "movl imp_cl, %eax\n" /* line 895 */
-        "movl (%eax), %edi\n"
-        "movss 0x861c(%edi), %xmm1\n"
-        "movl cl_pitchspeed, %eax\n"
-        "movaps %xmm2, %xmm3\n"
-        "mulss 8(%eax), %xmm3\n"
-        "leal 0x64(%esi), %edx\n" /* key */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0xc(%edx), %ecx\n" /* line 229 */
-        "movl $0, 0xc(%edx)\n" /* line 230 */
-        "cmpb $0, 0x10(%edx)\n" /* line 232 */
-        "je .Lf187424_0018762b\n"
-        "movl 8(%edx), %ebx\n" /* line 235 */
-        "testl %ebx, %ebx\n"
-        "je .Lf187424_0018770f\n"
-        "movl imp_com_frameTime, %esi\n" /* line 241 */
-        "movl (%esi), %eax\n"
-        "subl %ebx, %eax\n"
-        "addl %eax, %ecx\n"
-        "movl %esi, %ebx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        ".Lf187424_0018762b:\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf187424_00187659\n"
-        "movl imp_frame_msec, %eax\n" /* line 255 */
-        "movl (%eax), %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jae .Lf187424_00187721\n"
-        "cvtsi2ssl %ecx, %xmm2\n" /* line 258 */
-        "testl %edx, %edx\n"
-        "js .Lf187424_0018777d\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf187424_00187652:\n"
-        "divss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf187424_00187659:\n"
-        "mulss %xmm3, %xmm0\n" /* line 895 */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x861c(%edi)\n"
-        /* } scope */
-        "addl $4, %esp\n" /* line 896 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf187424_00187671:\n"
-        "movl imp_cls, %eax\n" /* line 886 */
-        "cvtsi2ssl 0x114(%eax), %xmm2\n"
-        "mulss lit4_002ed658, %xmm2\n" /* 0.0010000000474974513f */
-        "jmp .Lf187424_0018745f\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_0018768b:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
-        "jmp .Lf187424_001875ce\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf187424_00187698:\n"
-        "movl 8(%esi), %edx\n" /* line 235 */
-        "testl %edx, %edx\n"
-        "je .Lf187424_0018776a\n"
-        "movl imp_com_frameTime, %edi\n" /* line 241 */
-        "movl (%edi), %eax\n"
-        "subl %edx, %eax\n"
-        "addl %eax, %ecx\n"
-        "movl %edi, %edx\n"
-        "movl (%edx), %eax\n" /* line 243 */
-        "movl %eax, 8(%esi)\n"
-        ".Lf187424_001876b6:\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jg .Lf187424_00187516\n"
-        "jmp .Lf187424_0018753c\n"
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_001876c7:\n"
-        "movl 8(%edx), %ebx\n" /* line 235 */
-        "testl %ebx, %ebx\n"
-        "je .Lf187424_0018775b\n"
-        "movl imp_com_frameTime, %eax\n" /* line 241 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "subl %ebx, %eax\n"
-        "addl %eax, %ecx\n"
-        "movl imp_com_frameTime, %ebx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        ".Lf187424_001876eb:\n"
-        "pxor %xmm0, %xmm0\n" /* line 253 */
-        "testl %ecx, %ecx\n"
-        "jg .Lf187424_001874a7\n"
-        "jmp .Lf187424_001874cd\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_001876fc:\n"
-        "movl imp_com_frameTime, %eax\n" /* line 237 */
-        "movl (%eax), %ecx\n"
-        "movl %eax, %ebx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        "jmp .Lf187424_001875a0\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_0018770f:\n"
-        "movl imp_com_frameTime, %ebx\n" /* line 237 */
-        "movl (%ebx), %ecx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        "jmp .Lf187424_0018762b\n"
-        ".Lf187424_00187721:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
-        /* } scope */
-        /* } scope */
-        "mulss %xmm3, %xmm0\n" /* line 895 */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x861c(%edi)\n"
-        /* } scope */
-        "addl $4, %esp\n" /* line 896 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_00187741:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
-        "jmp .Lf187424_001874cd\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf187424_0018774e:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "jmp .Lf187424_0018753c\n"
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_0018775b:\n"
-        "movl imp_com_frameTime, %ebx\n" /* line 237 */
-        "movl (%ebx), %ecx\n"
-        "movl (%ebx), %eax\n" /* line 243 */
-        "movl %eax, 8(%edx)\n"
-        "jmp .Lf187424_001876eb\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf187424_0018776a:\n"
-        "movl imp_com_frameTime, %eax\n" /* line 237 */
-        "movl (%eax), %ecx\n"
-        "movl %eax, %edx\n"
-        "movl (%edx), %eax\n" /* line 243 */
-        "movl %eax, 8(%esi)\n"
-        "jmp .Lf187424_001876b6\n"
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_0018777d:\n"
-        "movl %edx, %eax\n" /* line 258 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf187424_00187652\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_00187793:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf187424_001875c7\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf187424_001877a9:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf187424_001874c6\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf187424_001877bf:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf187424_00187535\n"
-    );
+    clientActive_t *cl;
+    float speed;
+
+#define KB_AT(offset) ((kbutton_t *)((byte *)kb + (offset)))
+
+    speed = (float)cls.frametime * 0.0010000000474974513f;
+    if (KB_AT(0xb4)->active)
+    {
+        speed *= cl_anglespeedkey->current.value;
+    }
+
+    if (!KB_AT(0xa0)->active)
+    {
+        cl = *(clientActive_t **)imp_cl;
+        cl->viewangles[1] -= CL_KeyState(KB_AT(0x14)) * speed * cl_yawspeed->current.value;
+
+        cl = *(clientActive_t **)imp_cl;
+        cl->viewangles[1] += CL_KeyState(KB_AT(0x00)) * speed * cl_yawspeed->current.value;
+    }
+
+    cl = *(clientActive_t **)imp_cl;
+    cl->viewangles[0] -= CL_KeyState(KB_AT(0x50)) * speed * cl_pitchspeed->current.value;
+
+    cl = *(clientActive_t **)imp_cl;
+    cl->viewangles[0] += CL_KeyState(KB_AT(0x64)) * speed * cl_pitchspeed->current.value;
+
+#undef KB_AT
 }
 
 /* line 925 */
