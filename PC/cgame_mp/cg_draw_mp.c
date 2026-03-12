@@ -40,6 +40,7 @@ extern int UI_TextHeight(FontHandle font, float fontScale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 extern void CG_TranslateHudElemMessage(const char *message, const char *messageType, char *hudElemString);
+extern void CG_TraceCapsule(trace_t *result, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int skipNumber, int mask);
 extern int BG_GetViewmodelWeaponIndex(void *ps);
 extern void *BG_GetWeaponDef(int weapIndex);
 extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
@@ -49,6 +50,7 @@ extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 extern void Controls_GetConfig(void);
 extern int GetKeyBindingLocalizedString(const char *command, char *keys);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern char *I_CleanStr(char *string);
 extern unsigned int SEH_ReadCharFromString(const char **ppsText, qboolean *pbIsTrailingPunctuation);
 extern centity_t **cg_entities_glob; /* imp_cg_entities */
 extern void CG_PlayerSprites(centity_t *cent);
@@ -353,199 +355,122 @@ unsigned int CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerT
 }
 
 /* line 1782 */
-static __attribute__((naked))
 unsigned int CG_DrawCrosshairNames(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1782 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg_drawCrosshairNames, %eax\n" /* line 1798 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1cb7ec_001cb816\n"
-        "movl imp_cg, %eax\n" /* line 1800 */
-        "movl (%eax), %ebx\n"
-        "movl 0x25bc0(%ebx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf1cb7ec_001cb821\n"
-        /* } scope */
-        ".Lf1cb7ec_001cb816:\n"
-        "addl $0x9c, %esp\n" /* line 1877 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb7ec_001cb821:\n"
-        "leal 0x28588(%ebx), %edx\n" /* line 1801 */
-        "movl 0x28588(%ebx), %eax\n" /* line 199 */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movss 8(%edx), %xmm2\n" /* line 201 */
-        "movss %xmm2, -0x1c(%ebp)\n"
-        "leal 0x28594(%ebx), %eax\n"
-        "movss lit4_002eda0c, %xmm1\n" /* line 288 | 8192.0f */
-        "movss 0x28594(%ebx), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "addss -0x24(%ebp), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "movss 4(%eax), %xmm0\n" /* line 289 */
-        "mulss %xmm1, %xmm0\n"
-        "addss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "mulss 8(%eax), %xmm1\n" /* line 290 */
-        "addss %xmm1, %xmm2\n"
-        "movss %xmm2, -0x28(%ebp)\n"
-        "movl $0x2000001, 0x18(%esp)\n" /* line 1762 */
-        "movl 0x24(%ebx), %eax\n"
-        "movl 0xd8(%eax), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl imp_vec3_origin, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x64(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_TraceCapsule\n"
-        "movl -0x48(%ebp), %eax\n" /* line 1764 */
-        "cmpw $0x3f, %ax\n"
-        "jbe .Lf1cb7ec_001cba5d\n"
-        ".Lf1cb7ec_001cb8cd:\n"
-        "movl $0x64, 8(%esp)\n" /* line 1807 */
-        "movl $0x96, 4(%esp)\n"
-        "movl 0x2bdd0(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_FadeColor\n"
-        "movl %eax, %edi\n" /* baseColor */
-        "testl %eax, %eax\n" /* line 1809 */
-        "je .Lf1cb7ec_001cb816\n"
-        "movl 0x2bdcc(%ebx), %esi\n" /* line 1812 | s */
-        "cmpl $0x40, %esi\n" /* s */
-        "jg .Lf1cb7ec_001cb816\n"
-        "movl 0x24(%ebx), %eax\n" /* line 1815 */
-        "movl 0xd8(%eax), %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "leal (%ebx, %eax, 8), %eax\n"
-        "movl 0xe0914(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1cb7ec_001cb816\n"
-        "movl 0xe0940(%eax), %ecx\n" /* line 1817 */
-        "testl %ecx, %ecx\n" /* line 1818 */
-        "je .Lf1cb7ec_001cb816\n"
-        "leal (%esi, %esi, 4), %edx\n" /* line 1821 | s */
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%esi, %eax, 2), %eax\n" /* s */
-        "shll $3, %eax\n"
-        "leal (%eax, %ebx), %edx\n"
-        "movl 0xe0914(%edx), %esi\n" /* s */
-        "testl %esi, %esi\n" /* s */
-        "je .Lf1cb7ec_001cb816\n"
-        "cmpl $3, %ecx\n" /* line 1825 */
-        "je .Lf1cb7ec_001cb96b\n"
-        "cmpl 0xe0940(%edx), %ecx\n" /* line 1828 */
-        "jne .Lf1cb7ec_001cb816\n"
-        ".Lf1cb7ec_001cb96b:\n"
-        "leal 0xe0920(%eax, %ebx), %eax\n" /* line 1834 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00216058, (%esp)\n" /* "%s" */
-        "calll va\n"
-        "movl %eax, %esi\n" /* s */
-        "testl %eax, %eax\n" /* line 1835 */
-        "je .Lf1cb7ec_001cb816\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf1cb7ec_001cb816\n"
-        "movl %eax, (%esp)\n" /* line 1837 */
-        "calll I_CleanStr\n"
-        "movl imp_cg_drawCrosshairNamesPosX, %eax\n" /* line 1839 */
-        "movl (%eax), %eax\n"
-        "cvtsi2ssl 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x70(%ebp)\n" /* x */
-        "movl imp_cg_drawCrosshairNamesPosY, %eax\n" /* line 1840 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "addl $0x10, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x6c(%ebp)\n" /* y */
-        "movl 0x2bdcc(%ebx), %eax\n" /* line 1842 */
-        "cmpl 0x2bddc(%ebx), %eax\n"
-        "je .Lf1cb7ec_001cba77\n"
-        "movl $0x3f800000, %eax\n" /* line 191 */
-        "movl %eax, -0x40(%ebp)\n" /* actualColor */
-        "movl %eax, -0x3c(%ebp)\n" /* line 192 */
-        "movl %eax, -0x38(%ebp)\n" /* line 193 */
-        ".Lf1cb7ec_001cb9e4:\n"
-        "movss lit4_002ed944, %xmm0\n" /* line 1867 | 0.6000000238418579f */
-        "mulss 0xc(%edi), %xmm0\n" /* baseColor */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movl $0x3eaaaaab, %ebx\n" /* line 1875 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl $3, 0x24(%esp)\n" /* line 1876 */
-        "leal -0x40(%ebp), %edx\n" /* actualColor */
-        "movl %edx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss -0x6c(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x70(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* s */
-        "calll UI_DrawText\n"
-        "jmp .Lf1cb7ec_001cb816\n"
-        ".Lf1cb7ec_001cba5d:\n"
-        "movzwl %ax, %eax\n" /* line 1768 */
-        "movl %eax, 0x2bdcc(%ebx)\n"
-        "movl 0x25bb0(%ebx), %eax\n" /* line 1769 */
-        "movl %eax, 0x2bdd0(%ebx)\n"
-        "jmp .Lf1cb7ec_001cb8cd\n"
-        ".Lf1cb7ec_001cba77:\n"
-        "cvtsi2ssl 0x2bde0(%ebx), %xmm1\n" /* line 1844 */
-        "divss lit4_002ed798, %xmm1\n" /* 100.0f */
-        "movss lit4_002ed5d0, %xmm2\n" /* line 1846 | 1.0f */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lf1cb7ec_001cbad8\n"
-        "movaps %xmm2, %xmm1\n"
-        ".Lf1cb7ec_001cba97:\n"
-        "movl $0, -0x38(%ebp)\n" /* line 1851 */
-        "ucomiss lit4_002ed5d8, %xmm1\n" /* line 1852 | 0.5f */
-        "jbe .Lf1cb7ec_001cbac3\n"
-        "movaps %xmm2, %xmm0\n" /* line 1854 */
-        "subss %xmm1, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n" /* actualColor */
-        "movl $0x3f800000, -0x3c(%ebp)\n" /* line 1855 */
-        "jmp .Lf1cb7ec_001cb9e4\n"
-        ".Lf1cb7ec_001cbac3:\n"
-        "movl $0x3f800000, -0x40(%ebp)\n" /* line 1859 | actualColor */
-        "addss %xmm1, %xmm1\n" /* line 1860 */
-        "movss %xmm1, -0x3c(%ebp)\n"
-        "jmp .Lf1cb7ec_001cb9e4\n"
-        ".Lf1cb7ec_001cbad8:\n"
-        "pxor %xmm0, %xmm0\n" /* line 1848 */
-        "maxss %xmm1, %xmm0\n"
-        "movaps %xmm0, %xmm1\n"
-        "jmp .Lf1cb7ec_001cba97\n"
-    );
+    cg_t *cg;
+    trace_t trace;
+    vec3_t start;
+    vec3_t end;
+    vec3_t traceMins = {0.0f, 0.0f, 0.0f};
+    vec3_t traceMaxs = {0.0f, 0.0f, 0.0f};
+    float *baseColor;
+    clientInfo_t *localClientInfo;
+    clientInfo_t *targetClientInfo;
+    char *name;
+    FontHandle font;
+    vec4_t actualColor;
+    float healthFrac;
+    int targetClientNum;
+    int x;
+    int y;
+
+    if (!(*(const dvar_t **)imp_cg_drawCrosshairNames)->current.enabled)
+    {
+        return 0;
+    }
+
+    cg = *(cg_t **)imp_cg;
+    if (cg->renderingThirdPerson)
+    {
+        return 0;
+    }
+
+    VectorCopy(cg->refdef.vieworg, start);
+    end[0] = start[0] + cg->refdef.viewaxis[0][0] * 8192.0f;
+    end[1] = start[1] + cg->refdef.viewaxis[0][1] * 8192.0f;
+    end[2] = start[2] + cg->refdef.viewaxis[0][2] * 8192.0f;
+    CG_TraceCapsule(&trace, start, traceMins, traceMaxs, end, cg->snap->ps.clientNum, 0x2000001);
+
+    if (trace.entityNum <= 63)
+    {
+        cg->crosshairClientNum = trace.entityNum;
+        cg->crosshairClientTime = cg->time;
+    }
+
+    baseColor = CG_FadeColor(cg->crosshairClientTime, 150, 100);
+    if (!baseColor)
+    {
+        return 0;
+    }
+
+    targetClientNum = cg->crosshairClientNum;
+    if (targetClientNum < 0 || targetClientNum > 64)
+    {
+        return 0;
+    }
+
+    localClientInfo = (clientInfo_t *)((byte *)cg + 0xe0914 + cg->snap->ps.clientNum * sizeof(clientInfo_t));
+    if (!localClientInfo->infoValid || !localClientInfo->team)
+    {
+        return 0;
+    }
+
+    targetClientInfo = (clientInfo_t *)((byte *)cg + 0xe0914 + targetClientNum * sizeof(clientInfo_t));
+    if (!targetClientInfo->infoValid)
+    {
+        return 0;
+    }
+
+    if (localClientInfo->team != 3 && localClientInfo->team != targetClientInfo->team)
+    {
+        return 0;
+    }
+
+    name = va(str_00216058, targetClientInfo->name);
+    if (!name || !name[0])
+    {
+        return 0;
+    }
+    I_CleanStr(name);
+
+    x = (*(const dvar_t **)imp_cg_drawCrosshairNamesPosX)->current.integer;
+    y = (*(const dvar_t **)imp_cg_drawCrosshairNamesPosY)->current.integer + 16;
+
+    if (cg->crosshairClientNum != cg->identifyClientNum)
+    {
+        actualColor[0] = 1.0f;
+        actualColor[1] = 1.0f;
+        actualColor[2] = 1.0f;
+    }
+    else
+    {
+        healthFrac = (float)cg->identifyClientHealth / 100.0f;
+        if (healthFrac < 0.0f)
+        {
+            healthFrac = 0.0f;
+        }
+        else if (healthFrac > 1.0f)
+        {
+            healthFrac = 1.0f;
+        }
+
+        actualColor[2] = 0.0f;
+        if (healthFrac > 0.5f)
+        {
+            actualColor[0] = (1.0f - healthFrac) * 2.0f;
+            actualColor[1] = 1.0f;
+        }
+        else
+        {
+            actualColor[0] = 1.0f;
+            actualColor[1] = healthFrac * 2.0f;
+        }
+    }
+
+    actualColor[3] = baseColor[3] * 0.60000002f;
+    font = UI_GetFontHandle(0, 1.0f / 3.0f);
+    UI_DrawText(name, 0x7fffffff, font, (float)x, (float)y, 0, 0, 1.0f / 3.0f, actualColor, 3);
+    return 0;
 }
 
 /* line 2410 */

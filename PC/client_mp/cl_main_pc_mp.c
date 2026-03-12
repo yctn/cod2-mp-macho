@@ -11,12 +11,14 @@
 extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
 static Bool s_playerMute[64]; /* s_playerMute */
 extern int NET_CompareAdrSigned(const int *a, const int *b);
+extern qboolean NET_CompareAdr(netadr_t a, netadr_t b);
 extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compar)(const void *, const void *));
 extern int atoi(const char *nptr);
 extern const char *Info_ValueForKey(const char *s, const char *key);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern const char *va(const char *format, ...);
 extern void Cbuf_ExecuteText(int exec_when, const char *text);
+extern void Com_PumpMessageLoop(void);
 
 static int rconGlob; /* rconGlob */
 
@@ -79,207 +81,73 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
 }
 
 /* line 94 */
-__attribute__((naked))
 int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 94 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        /* { scope 1 */
-        "calll Com_PumpMessageLoop\n" /* line 101 */
-        "movl $0, -0x4c(%ebp)\n"
-        "movl imp_cls, %eax\n"
-        "movl %eax, -0x54(%ebp)\n"
-        "addl $0x13c, %eax\n"
-        "movl %eax, -0x68(%ebp)\n"
-        "jmp .Lf15f92e_0015f974\n"
-        ".Lf15f92e_0015f955:\n"
-        "addl $1, -0x4c(%ebp)\n" /* line 103 */
-        "addl $0x88, -0x68(%ebp)\n"
-        "addl $0x88, -0x54(%ebp)\n"
-        "cmpl $0x80, -0x4c(%ebp)\n"
-        "je .Lf15f92e_0015f9fc\n"
-        ".Lf15f92e_0015f974:\n"
-        "movl -0x54(%ebp), %edx\n" /* line 105 */
-        "movl 0x13c(%edx), %edi\n" /* i */
-        "movl %edi, -0x48(%ebp)\n" /* i */
-        "movl 0x140(%edx), %esi\n" /* high */
-        "movl %esi, -0x44(%ebp)\n" /* high */
-        "movl 0x144(%edx), %ebx\n"
-        "movl %ebx, -0x40(%ebp)\n"
-        "movl 8(%ebp), %ecx\n" /* from */
-        "movl %ecx, -0x3c(%ebp)\n"
-        "movl 0xc(%ebp), %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl 0x10(%ebp), %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movl %edi, 0xc(%esp)\n" /* i */
-        "movl %esi, 0x10(%esp)\n" /* high */
-        "movl %ebx, 0x14(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_CompareAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf15f92e_0015f955\n"
-        "movl 0x18(%ebp), %eax\n" /* line 107 | ping */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %edx\n" /* info */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x68(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_SetServerInfo\n"
-        "addl $1, -0x4c(%ebp)\n" /* line 103 */
-        "addl $0x88, -0x68(%ebp)\n"
-        "addl $0x88, -0x54(%ebp)\n"
-        "cmpl $0x80, -0x4c(%ebp)\n"
-        "jne .Lf15f92e_0015f974\n"
-        ".Lf15f92e_0015f9fc:\n"
-        "movl imp_cls, %ecx\n" /* line 112 */
-        "movl 0x4540(%ecx), %esi\n" /* high */
-        "testl %esi, %esi\n" /* line 113 | high */
-        "jg .Lf15f92e_0015fac4\n"
-        ".Lf15f92e_0015fa10:\n"
-        "movl $0, -0x50(%ebp)\n"
-        "leal 0x29c648(%ecx), %eax\n"
-        "movl %eax, -0x58(%ebp)\n"
-        "movl %eax, -0x64(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf15f92e_0015fa45\n"
-        ".Lf15f92e_0015fa27:\n"
-        "addl $1, -0x50(%ebp)\n" /* line 145 */
-        "addl $0x88, -0x64(%ebp)\n"
-        "addl $0x88, -0x58(%ebp)\n"
-        "cmpl $0x80, -0x50(%ebp)\n"
-        "je .Lf15f92e_0015fabc\n"
-        ".Lf15f92e_0015fa42:\n"
-        "movl -0x58(%ebp), %edx\n"
-        ".Lf15f92e_0015fa45:\n"
-        "movl (%edx), %edi\n" /* line 147 | i */
-        "movl %edi, -0x30(%ebp)\n" /* i */
-        "movl 4(%edx), %esi\n" /* high */
-        "movl %esi, -0x2c(%ebp)\n" /* high */
-        "movl 8(%edx), %ebx\n"
-        "movl %ebx, -0x28(%ebp)\n"
-        "movl 8(%ebp), %ecx\n" /* from */
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl 0xc(%ebp), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl 0x10(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %edi, 0xc(%esp)\n" /* i */
-        "movl %esi, 0x10(%esp)\n" /* high */
-        "movl %ebx, 0x14(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_CompareAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf15f92e_0015fa27\n"
-        "movl 0x18(%ebp), %eax\n" /* line 149 | ping */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %edx\n" /* info */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_SetServerInfo\n"
-        "addl $1, -0x50(%ebp)\n" /* line 145 */
-        "addl $0x88, -0x64(%ebp)\n"
-        "addl $0x88, -0x58(%ebp)\n"
-        "cmpl $0x80, -0x50(%ebp)\n"
-        "jne .Lf15f92e_0015fa42\n"
-        /* } scope */
-        ".Lf15f92e_0015fabc:\n"
-        "addl $0x7c, %esp\n" /* line 153 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15f92e_0015fac4:\n"
-        "movl $0, -0x5c(%ebp)\n" /* line 113 | low */
-        "jmp .Lf15f92e_0015fae0\n"
-        ".Lf15f92e_0015facd:\n"
-        "jle .Lf15f92e_0015fb27\n" /* line 124 */
-        "addl $1, %ebx\n" /* line 126 */
-        "movl %ebx, -0x5c(%ebp)\n" /* low */
-        "cmpl %esi, -0x5c(%ebp)\n" /* line 113 | high, low */
-        "jge .Lf15f92e_0015fb1c\n"
-        ".Lf15f92e_0015fada:\n"
-        "movl imp_cls, %ecx\n"
-        ".Lf15f92e_0015fae0:\n"
-        "movl -0x5c(%ebp), %edx\n" /* line 115 | low */
-        "addl %esi, %edx\n" /* high */
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "leal (%eax, %edx), %ebx\n"
-        "sarl $1, %ebx\n"
-        "movl %ebx, %edi\n" /* i */
-        "movl %ebx, %eax\n" /* line 116 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %ebx, 8), %eax\n"
-        "leal 4(%eax, %ecx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 8(%ebp), %edx\n" /* from */
-        "movl %edx, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "cmpl $0, %eax\n" /* line 118 */
-        "jge .Lf15f92e_0015facd\n"
-        "movl %ebx, %esi\n" /* line 136 | high */
-        "cmpl %esi, -0x5c(%ebp)\n" /* line 113 | high, low */
-        "jl .Lf15f92e_0015fada\n"
-        ".Lf15f92e_0015fb1c:\n"
-        "movl imp_cls, %ecx\n"
-        "jmp .Lf15f92e_0015fa10\n"
-        ".Lf15f92e_0015fb27:\n"
-        "subl $1, %edi\n" /* line 130 | i */
-        "js .Lf15f92e_0015fb54\n"
-        "movl %edi, %eax\n" /* i */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edi, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "addl $4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 8(%ebp), %eax\n" /* from */
-        "movl %eax, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "testl %eax, %eax\n"
-        "je .Lf15f92e_0015fb27\n"
-        ".Lf15f92e_0015fb54:\n"
-        "leal 1(%edi), %esi\n" /* line 134 | i, high */
-        "movl imp_cls, %edx\n"
-        "movl %edx, -0x60(%ebp)\n"
-        "movl %esi, %eax\n" /* high */
-        "shll $7, %eax\n"
-        "leal (%eax, %esi, 8), %eax\n"
-        "leal 0x4544(%eax, %edx), %edi\n" /* i */
-        "movl %edi, %ebx\n" /* i */
-        ".Lf15f92e_0015fb71:\n"
-        "movl 0x18(%ebp), %eax\n" /* line 138 | ping */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %edx\n" /* info */
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_SetServerInfo\n"
-        "addl $1, %esi\n" /* line 139 | high */
-        "addl $0x88, %ebx\n"
-        "addl $0x88, %edi\n" /* i */
-        "movl -0x60(%ebp), %eax\n" /* line 136 */
-        "cmpl 0x4540(%eax), %esi\n" /* high */
-        "jge .Lf15f92e_0015fb1c\n"
-        "movl %edi, 4(%esp)\n" /* i */
-        "leal 8(%ebp), %edx\n" /* from */
-        "movl %edx, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "testl %eax, %eax\n"
-        "je .Lf15f92e_0015fb71\n"
-        "jmp .Lf15f92e_0015fb1c\n"
-    );
+    clientStatic_t *cls;
+    int i;
+    int low;
+    int high;
+    int mid;
+    int compare;
+
+    Com_PumpMessageLoop();
+    cls = (clientStatic_t *)imp_cls;
+
+    for (i = 0; i < 128; ++i)
+    {
+        if (NET_CompareAdr(from, cls->localServers[i].adr))
+        {
+            CL_SetServerInfo(&cls->localServers[i], info, ping);
+        }
+    }
+
+    high = cls->numglobalservers;
+    if (high > 0)
+    {
+        low = 0;
+        while (low < high)
+        {
+            mid = (low + high) / 2;
+            compare = NET_CompareAdrSigned((const int *)&from, (const int *)&cls->globalServers[mid].adr);
+            if (compare < 0)
+            {
+                high = mid;
+                continue;
+            }
+
+            if (compare > 0)
+            {
+                low = mid + 1;
+                continue;
+            }
+
+            while (mid > 0 && NET_CompareAdrSigned((const int *)&from, (const int *)&cls->globalServers[mid - 1].adr) == 0)
+            {
+                --mid;
+            }
+
+            for (i = mid; i < cls->numglobalservers; ++i)
+            {
+                if (NET_CompareAdrSigned((const int *)&from, (const int *)&cls->globalServers[i].adr) != 0)
+                {
+                    break;
+                }
+
+                CL_SetServerInfo(&cls->globalServers[i], info, ping);
+            }
+            break;
+        }
+    }
+
+    for (i = 0; i < 128; ++i)
+    {
+        if (NET_CompareAdr(from, cls->favoriteServers[i].adr))
+        {
+            CL_SetServerInfo(&cls->favoriteServers[i], info, ping);
+        }
+    }
+
+    return 0;
 }
 
 /* line 192 */
