@@ -29,9 +29,13 @@ extern unsigned int Scr_GetStringUsage(void);
 extern int Sys_Milliseconds(void);
 extern int CL_GetCurrentCmdNumber(void);
 extern qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
+extern Bool CL_IsRenderingSplitScreen(void);
 extern const char *UI_SafeTranslateString(const char *ref);
+extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
+extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
 extern FontHandle UI_GetFontHandle(int fontEnum, float scale);
 extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale);
+extern int UI_TextHeight(FontHandle font, float fontScale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 extern void CG_TranslateHudElemMessage(const char *message, const char *messageType, char *hudElemString);
@@ -41,6 +45,8 @@ extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float 
 extern qboolean CG_ScoreboardDisplayed(void);
 extern void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t mode);
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
+extern void Controls_GetConfig(void);
+extern int GetKeyBindingLocalizedString(const char *command, char *keys);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern unsigned int SEH_ReadCharFromString(const char **ppsText, qboolean *pbIsTrailingPunctuation);
 extern centity_t **cg_entities_glob; /* imp_cg_entities */
@@ -1350,120 +1356,48 @@ unsigned int CG_ShakeCamera(void)
 }
 
 /* line 3216 */
-static __attribute__((naked))
 qboolean CG_DrawFollow(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3216 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 3225 */
-        "movl (%eax), %ebx\n" /* font */
-        "movl 0x24(%ebx), %eax\n" /* font */
-        "testb $0x40, 0x1a(%eax)\n"
-        "je .Lf1cc7c2_001cc952\n"
-        "movl 0x2cd14(%ebx), %ecx\n" /* line 3229 | font */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1cc7c2_001cc952\n"
-        "movl 0xd8(%eax), %eax\n" /* line 3232 */
-        "leal (%eax, %eax, 4), %ecx\n"
-        "movl %ecx, %edx\n"
-        "shll $4, %edx\n"
-        "subl %ecx, %edx\n"
-        "leal (%eax, %edx, 2), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "movl 0xe0914(%eax, %ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1cc7c2_001cc95c\n"
-        "movl $str_0022292c, -0x1c(%ebp)\n" /* clientName */
-        ".Lf1cc7c2_001cc81d:\n"
-        "movl $0, 8(%esp)\n" /* line 3237 */
-        "movl $str_002b710c, 4(%esp)\n" /* "spectator follow string" */
-        "movl $str_002b7124, (%esp)\n" /* "CGAME_FOLLOWING" */
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %eax, %esi\n" /* followingString */
-        "calll CL_IsRenderingSplitScreen\n" /* line 3240 */
-        "testb %al, %al\n"
-        "je .Lf1cc7c2_001cc96b\n"
-        "movl $0x3f000000, %edi\n" /* scale */
-        ".Lf1cc7c2_001cc84d:\n"
-        "movl $0x3eaaaaab, 4(%esp)\n" /* line 3243 */
-        "movl $0, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, %ebx\n" /* font */
-        "movl %edi, 0xc(%esp)\n" /* line 3245 | scale */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* followingString */
-        "calll UI_TextWidth\n"
-        "movl $3, 0x24(%esp)\n" /* line 3247 */
-        "movl imp_colorWhite, %edx\n"
-        "movl %edx, 0x20(%esp)\n"
-        "movl %edi, 0x1c(%esp)\n" /* scale */
-        "movl $1, 0x18(%esp)\n"
-        "movl $7, 0x14(%esp)\n"
-        "movl $0x42200000, 0x10(%esp)\n"
-        "negl %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* font */
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* followingString */
-        "calll UI_DrawText\n"
-        "movl %edi, 0xc(%esp)\n" /* line 3249 | scale */
-        "movl %ebx, 8(%esp)\n" /* font */
-        "movl $0, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* clientName */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "movl $3, 0x24(%esp)\n" /* line 3251 */
-        "movl imp_colorWhite, %edx\n"
-        "movl %edx, 0x20(%esp)\n"
-        "movl %edi, 0x1c(%esp)\n" /* scale */
-        "movl $1, 0x18(%esp)\n"
-        "movl $7, 0x14(%esp)\n"
-        "movl $0x42820000, 0x10(%esp)\n"
-        "negl %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* font */
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* clientName */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawText\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 3254 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cc7c2_001cc952:\n"
-        "xorl %eax, %eax\n" /* line 3253 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 3254 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cc7c2_001cc95c:\n"
-        "leal 0xe0920(%eax, %ebx), %ebx\n" /* line 3233 | font */
-        "movl %ebx, -0x1c(%ebp)\n" /* font, clientName */
-        "jmp .Lf1cc7c2_001cc81d\n"
-        ".Lf1cc7c2_001cc96b:\n"
-        "movl $0x3eaaaaab, %edi\n" /* line 3240 | scale */
-        "jmp .Lf1cc7c2_001cc84d\n"
-    );
+    cg_t *cg;
+    clientInfo_t *clientInfo;
+    const char *clientName;
+    const char *followingString;
+    FontHandle font;
+    float scale;
+    int textWidth;
+
+    cg = *(cg_t **)imp_cg;
+    if (!(cg->snap->ps.pm_flags & 0x400000))
+    {
+        return 0;
+    }
+
+    if (*(int *)((byte *)cg + 0x2cd14))
+    {
+        return 0;
+    }
+
+    clientInfo = &((clientInfo_t *)((byte *)cg + 0xe0914))[cg->snap->ps.clientNum];
+    if (clientInfo->infoValid)
+    {
+        clientName = clientInfo->name;
+    }
+    else
+    {
+        clientName = str_0022292c;
+    }
+
+    followingString = SEH_LocalizeTextMessage(str_002b7124, str_002b710c, 0);
+    scale = CL_IsRenderingSplitScreen() ? 0.5f : (1.0f / 3.0f);
+    font = UI_GetFontHandle(0, 1.0f / 3.0f);
+
+    textWidth = UI_TextWidth(followingString, 0, font, scale);
+    UI_DrawText(followingString, 0x7fffffff, font, (float)(-textWidth) * 0.5f, 40.0f, 7, 1, scale, colorWhite, 3);
+
+    textWidth = UI_TextWidth(clientName, 0, font, scale);
+    UI_DrawText(clientName, 0x7fffffff, font, (float)(-textWidth) * 0.5f, 65.0f, 7, 1, scale, colorWhite, 3);
+
+    return 1;
 }
 
 /* line 3257 */
@@ -2435,168 +2369,101 @@ unsigned int CG_DrawTurretCrossHair(void)
 }
 
 /* line 3066 */
-static __attribute__((naked))
 unsigned int CG_DrawSpectatorMessage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3066 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x27c, %esp\n"
-        /* { scope 1: binding */
-        "movl imp_cg_descriptiveText, %eax\n" /* line 3093 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1cd924_001cd948\n"
-        /* } scope */
-        ".Lf1cd924_001cd93d:\n"
-        "addl $0x27c, %esp\n" /* line 3213 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: binding */
-        ".Lf1cd924_001cd948:\n"
-        "calll CL_GetKeyCatchers\n" /* line 3097 */
-        "testb $8, %al\n"
-        "jne .Lf1cd924_001cd93d\n"
-        "movl imp_cg, %eax\n" /* line 3102 */
-        "movl (%eax), %esi\n" /* i */
-        "movl 0x24(%esi), %eax\n" /* i */
-        "testl $0x3000000, 0x18(%eax)\n"
-        "je .Lf1cd924_001cd93d\n"
-        "calll Controls_GetConfig\n" /* line 3105 */
-        "movl $0x3e555555, %ebx\n" /* line 3119 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, -0x250(%ebp)\n" /* font */
-        "movl %ebx, 4(%esp)\n" /* line 3177 */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextHeight\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x24c(%ebp)\n" /* lineHeight */
-        "mulss lit4_002ed628, %xmm0\n" /* line 3179 | -2.0f */
-        "addss lit4_002eda2c, %xmm0\n" /* 436.0f */
-        "movss %xmm0, -0x258(%ebp)\n" /* y */
-        "movl 0x24(%esi), %eax\n" /* line 3183 | i */
-        "testb $1, 0x1b(%eax)\n"
-        "jne .Lf1cd924_001cdb16\n"
-        "movl $0, -0x254(%ebp)\n" /* lineNum */
-        ".Lf1cd924_001cd9cb:\n"
-        "movl imp_cg, %eax\n" /* line 3194 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "testb $2, 0x1b(%eax)\n"
-        "jne .Lf1cd924_001cdad7\n"
-        ".Lf1cd924_001cd9df:\n"
-        "movl -0x254(%ebp), %eax\n" /* line 3203 | lineNum */
-        "testl %eax, %eax\n"
-        "jle .Lf1cd924_001cd93d\n"
-        "xorl %esi, %esi\n" /* i */
-        "leal -0x140(%ebp), %edi\n" /* binding */
-        "jmp .Lf1cd924_001cda93\n"
-        ".Lf1cd924_001cd9fa:\n"
-        "movl -0x40(%ebp, %ebx), %eax\n" /* line 3208 */
-        "movl %eax, (%esp)\n"
-        "calll UI_SafeTranslateString\n"
-        "movl %edi, 4(%esp)\n" /* line 3209 */
-        "movl %eax, (%esp)\n"
-        "calll UI_ReplaceConversionString\n"
-        "movl $3, 0x24(%esp)\n" /* line 3210 */
-        "movl imp_colorWhite, %edx\n"
-        "movl %edx, 0x20(%esp)\n"
-        "movl $0x3e555555, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss -0x258(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movl $0x43700000, 0xc(%esp)\n"
-        "movl -0x250(%ebp), %edx\n" /* font */
-        "movl %edx, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawText\n"
-        "movss -0x258(%ebp), %xmm0\n" /* line 3211 | y */
-        "addss -0x24c(%ebp), %xmm0\n" /* lineHeight */
-        "movss %xmm0, -0x258(%ebp)\n" /* y */
-        "addl $1, %esi\n" /* line 3203 | i */
-        "cmpl %esi, -0x254(%ebp)\n" /* i, lineNum */
-        "je .Lf1cd924_001cd93d\n"
-        ".Lf1cd924_001cda93:\n"
-        "movl %edi, 4(%esp)\n" /* line 3205 */
-        "leal (, %esi, 4), %ebx\n"
-        "movl -0x2c(%ebp, %ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n" /* line 3206 */
-        "jne .Lf1cd924_001cd9fa\n"
-        "movl $str_002a79c4, (%esp)\n" /* line 3207 */
-        "calll UI_SafeTranslateString\n"
-        "movl $0x100, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "jmp .Lf1cd924_001cd9fa\n"
-        /* { scope 2 */
-        ".Lf1cd924_001cdad7:\n"
-        "leal -0x240(%ebp), %ebx\n" /* line 3051 | binding */
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002ac0cc, (%esp)\n" /* "+melee" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n" /* line 3052 */
-        "je .Lf1cd924_001cdb5c\n"
-        "movl $str_002ac0cc, %edx\n" /* "+melee" */
-        /* } scope */
-        ".Lf1cd924_001cdaf6:\n"
-        "movl -0x254(%ebp), %eax\n" /* line 3196 | lineNum */
-        "movl %edx, -0x2c(%ebp, %eax, 4)\n"
-        "movl $str_002b726c, -0x40(%ebp, %eax, 4)\n" /* line 3197 */
-        "addl $1, %eax\n" /* line 3198 */
-        "movl %eax, -0x254(%ebp)\n" /* lineNum */
-        "jmp .Lf1cd924_001cd9df\n"
-        ".Lf1cd924_001cdb16:\n"
-        "movl $str_002abfd8, -0x2c(%ebp)\n" /* line 3185 | commands */
-        "movl $str_002b7230, -0x40(%ebp)\n" /* line 3186 | messages */
-        /* { scope 2 */
-        "leal -0x240(%ebp), %ebx\n" /* line 3051 | binding */
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002ac154, (%esp)\n" /* "toggleads" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n" /* line 3052 */
-        "je .Lf1cd924_001cdb80\n"
-        "movl $str_002ac154, %edx\n" /* "toggleads" */
-        /* } scope */
-        ".Lf1cd924_001cdb43:\n"
-        "movl %edx, -0x28(%ebp)\n" /* line 3189 */
-        "movl $str_002b724c, -0x3c(%ebp)\n" /* line 3190 */
-        "movl $2, -0x254(%ebp)\n" /* lineNum */
-        "jmp .Lf1cd924_001cd9cb\n"
-        /* { scope 2 */
-        ".Lf1cd924_001cdb5c:\n"
-        "movl %ebx, 4(%esp)\n" /* line 3054 */
-        "movl $str_002ac0e0, (%esp)\n" /* "+melee_breath" */
-        "calll GetKeyBindingLocalizedString\n"
-        "movl $str_002ac0cc, %edx\n" /* line 3055 */
-        "testl %eax, %eax\n"
-        "movl $str_002ac0e0, %eax\n" /* "+melee_breath" */
-        "cmovnel %eax, %edx\n"
-        "jmp .Lf1cd924_001cdaf6\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1cd924_001cdb80:\n"
-        "movl %ebx, 4(%esp)\n" /* line 3054 */
-        "movl $str_002abf50, (%esp)\n" /* "+speed" */
-        "calll GetKeyBindingLocalizedString\n"
-        "movl $str_002ac154, %edx\n" /* line 3055 */
-        "testl %eax, %eax\n"
-        "movl $str_002abf50, %eax\n" /* "+speed" */
-        "cmovnel %eax, %edx\n"
-        "jmp .Lf1cd924_001cdb43\n"
-    );
+    cg_t *cg;
+    FontHandle font;
+    char binding[256];
+    const char *commands[2];
+    const char *messages[2];
+    const char *command;
+    const char *text;
+    int lineNum;
+    int i;
+    float fontScale;
+    float lineHeight;
+    float y;
+
+    if (!(*(const dvar_t **)imp_cg_descriptiveText)->current.enabled)
+    {
+        return 0;
+    }
+
+    if (CL_GetKeyCatchers() & 8)
+    {
+        return 0;
+    }
+
+    cg = *(cg_t **)imp_cg;
+    if (!(cg->snap->ps.pm_flags & 0x3000000))
+    {
+        return 0;
+    }
+
+    Controls_GetConfig();
+    fontScale = 0.20833333f;
+    font = UI_GetFontHandle(0, fontScale);
+    lineHeight = (float)UI_TextHeight(font, fontScale);
+    y = 436.0f - lineHeight * 2.0f;
+    lineNum = 0;
+
+    if (cg->snap->ps.pm_flags & 0x1000000)
+    {
+        commands[lineNum] = str_002abfd8;
+        messages[lineNum] = str_002b7230;
+        ++lineNum;
+
+        if (GetKeyBindingLocalizedString(str_002ac154, binding))
+        {
+            command = str_002ac154;
+        }
+        else if (GetKeyBindingLocalizedString(str_002abf50, binding))
+        {
+            command = str_002abf50;
+        }
+        else
+        {
+            command = str_002ac154;
+        }
+
+        commands[lineNum] = command;
+        messages[lineNum] = str_002b724c;
+        ++lineNum;
+    }
+
+    if (cg->snap->ps.pm_flags & 0x2000000)
+    {
+        if (GetKeyBindingLocalizedString(str_002ac0cc, binding))
+        {
+            command = str_002ac0cc;
+        }
+        else if (GetKeyBindingLocalizedString(str_002ac0e0, binding))
+        {
+            command = str_002ac0e0;
+        }
+        else
+        {
+            command = str_002ac0cc;
+        }
+
+        commands[lineNum] = command;
+        messages[lineNum] = str_002b726c;
+        ++lineNum;
+    }
+
+    for (i = 0; i < lineNum; ++i)
+    {
+        if (!GetKeyBindingLocalizedString(commands[i], binding))
+        {
+            I_strncpyz(binding, UI_SafeTranslateString(str_002a79c4), sizeof(binding));
+        }
+
+        text = UI_ReplaceConversionString(UI_SafeTranslateString(messages[i]), binding);
+        UI_DrawText(text, 0x7fffffff, font, 240.0f, y, 0, 0, fontScale, colorWhite, 3);
+        y += lineHeight;
+    }
+
+    return 0;
 }
 
 /* line 2845 */
