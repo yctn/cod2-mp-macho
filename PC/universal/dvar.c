@@ -664,250 +664,38 @@ void Dvar_ResetScriptInfo(void)
 }
 
 /* line 260 */
-__attribute__((naked))
 const char * Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 260 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* dvar */
-        /* { scope 1 */
-        "movl 0x14(%ebx), %esi\n" /* line 273 | dvar */
-        "testl %esi, %esi\n"
-        "jne .Lf51768_00051788\n"
-        ".Lf51768_0005177b:\n"
-        "movl $str_002157b8, %eax\n" /* line 286 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 287 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf51768_00051788:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 0xc(%ebp), %edi\n" /* indexString */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "testl %ecx, %ecx\n" /* line 277 */
-        "jle .Lf51768_000517c2\n"
-        "xorl %edx, %edx\n"
-        "movl __DefaultRuneLocale, %edi\n"
-        ".Lf51768_000517a6:\n"
-        "movl 0xc(%ebp), %esi\n" /* line 279 | indexString */
-        "movsbl (%esi, %edx), %eax\n" /* _c */
-        /* { scope 2 */
-        "cmpl $0xff, %eax\n" /* line 231 */
-        "ja .Lf51768_0005177b\n"
-        "testb $4, 0x35(%edi, %eax, 4)\n"
-        "je .Lf51768_0005177b\n"
-        /* } scope */
-        "addl $1, %edx\n" /* line 277 */
-        "cmpl %edx, %ecx\n"
-        "jne .Lf51768_000517a6\n"
-        ".Lf51768_000517c2:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 283 | indexString */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl 0x18(%ebx), %edx\n" /* line 286 | dvar */
-        "movl (%edx, %eax, 4), %eax\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 287 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+
+    if (!dvar->domain.enumeration.stringCount) {
+        return "";
+    }
+
+    for (i = 0; indexString[i]; ++i) {
+        if (indexString[i] < '0' || indexString[i] > '9') {
+            return "";
+        }
+    }
+
+    return dvar->domain.enumeration.strings[atoi(indexString)];
 }
 
 /* line 428 */
-static __attribute__((naked))
-void Dvar_StringToColor(void)
+static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, byte color[4])
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 428 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x50, %esp\n"
-        "movl %edx, %ebx\n" /* color */
-        /* { scope 1 */
-        "pxor %xmm2, %xmm2\n" /* line 438 */
-        "movss %xmm2, -0x18(%ebp)\n" /* colorVec */
-        "movss %xmm2, -0x14(%ebp)\n" /* line 439 */
-        "movss %xmm2, -0x10(%ebp)\n" /* line 440 */
-        "movss %xmm2, -0xc(%ebp)\n" /* line 441 */
-        "leal -0x18(%ebp), %ecx\n" /* line 433 | colorVec */
-        "leal -0xc(%ebp), %edx\n"
-        "movl %edx, 0x14(%esp)\n"
-        "leal -0x10(%ebp), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "leal -0x14(%ebp), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl $str_00219544, 4(%esp)\n" /* "%g %g %g %g" */
-        "movl %eax, (%esp)\n" /* string */
-        "movss %xmm2, -0x38(%ebp)\n"
-        "calll sscanf\n"
-        "movss -0x18(%ebp), %xmm1\n" /* line 434 | colorVec */
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0x38(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_00051a21\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 2 */
-        ".Lf517dc_0005185d:\n"
-        "pxor %xmm2, %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_00051a11\n"
-        "movaps %xmm2, %xmm0\n"
-        /* } scope */
-        ".Lf517dc_0005186d:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0x38(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n" /* string */
-        "movb %al, (%ebx)\n" /* string, color */
-        "leal 1(%ebx), %esi\n" /* line 435 | color */
-        "movss -0x14(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0x38(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_00051a05\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 2 */
-        ".Lf517dc_000518bf:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_000519f5\n"
-        "movaps %xmm2, %xmm0\n"
-        /* } scope */
-        ".Lf517dc_000518cb:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0x38(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x20(%ebp)\n"
-        "cvttss2si -0x20(%ebp), %eax\n" /* string */
-        "movb %al, (%esi)\n" /* string */
-        "leal 2(%ebx), %esi\n" /* line 436 | color */
-        "movss -0x10(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0x38(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_000519e9\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 2 */
-        ".Lf517dc_0005191d:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_000519d9\n"
-        "movaps %xmm2, %xmm0\n"
-        /* } scope */
-        ".Lf517dc_00051929:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm2, -0x38(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x24(%ebp)\n"
-        "cvttss2si -0x24(%ebp), %eax\n" /* string */
-        "movb %al, (%esi)\n" /* string */
-        "addl $3, %ebx\n" /* line 437 | color */
-        "movss -0xc(%ebp), %xmm1\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss -0x38(%ebp), %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_000519d0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 2 */
-        ".Lf517dc_00051977:\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf517dc_000519a2\n"
-        "movaps %xmm2, %xmm0\n"
-        /* } scope */
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x28(%ebp)\n"
-        "cvttss2si -0x28(%ebp), %eax\n" /* string */
-        "movb %al, (%ebx)\n" /* string, color */
-        /* } scope */
-        "addl $0x50, %esp\n" /* line 438 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf517dc_000519a2:\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        /* } scope */
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x28(%ebp)\n"
-        "cvttss2si -0x28(%ebp), %eax\n" /* string */
-        "movb %al, (%ebx)\n" /* string, color */
-        /* } scope */
-        "addl $0x50, %esp\n" /* line 438 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf517dc_000519d0:\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "jmp .Lf517dc_00051977\n"
-        /* { scope 2 */
-        ".Lf517dc_000519d9:\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf517dc_00051929\n"
-        /* } scope */
-        ".Lf517dc_000519e9:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "jmp .Lf517dc_0005191d\n"
-        /* { scope 2 */
-        ".Lf517dc_000519f5:\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf517dc_000518cb\n"
-        /* } scope */
-        ".Lf517dc_00051a05:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "jmp .Lf517dc_000518bf\n"
-        /* { scope 2 */
-        ".Lf517dc_00051a11:\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lf517dc_0005186d\n"
-        /* } scope */
-        ".Lf517dc_00051a21:\n"
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "jmp .Lf517dc_0005185d\n"
-    );
+    float colorVec[4];
+
+    colorVec[0] = 0.0f;
+    colorVec[1] = 0.0f;
+    colorVec[2] = 0.0f;
+    colorVec[3] = 0.0f;
+    sscanf(string, "%g %g %g %g", &colorVec[0], &colorVec[1], &colorVec[2], &colorVec[3]);
+
+    color[0] = Dvar_FloatToColorComponent(colorVec[0]);
+    color[1] = Dvar_FloatToColorComponent(colorVec[1]);
+    color[2] = Dvar_FloatToColorComponent(colorVec[2]);
+    color[3] = Dvar_FloatToColorComponent(colorVec[3]);
 }
 
 /* line 441 */
