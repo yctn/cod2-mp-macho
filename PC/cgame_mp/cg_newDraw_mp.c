@@ -43,13 +43,21 @@ extern const char *va(const char *fmt, ...);
 extern int CL_GetKeyCatchers(void);
 extern Bool CL_GetDisplayHUDWithKeycatchUI(void);
 extern const char *CL_GetConfigString(int index);
+extern void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int vertAlign, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
 extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
 extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 extern void Controls_GetConfig(void);
+extern int BG_GetNumWeapons(void);
 extern int GetKeyBindingLocalizedString(const char *command, char *keys);
 extern int BG_GetViewmodelWeaponIndex(void *ps);
 extern void *BG_GetWeaponDef(int weapIndex);
+extern int BG_AmmoForWeapon(int weapon);
+extern int BG_GetTotalAmmoReserve(const playerState_t *ps, int weaponIndex);
+extern int BG_GetAmmoTypeMax(int iAmmoIndex);
+extern qboolean BG_WeaponIsClipOnly(int weapon);
+extern int BG_ClipForWeapon(int weapon);
+extern int BG_GetAmmoClipSize(int iClipIndex);
 extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
 extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
 extern const char *UI_SafeTranslateString(const char *ref);
@@ -1086,327 +1094,138 @@ float CG_FadeHudMenu(const dvar_t *fadeDvar, int displayStartTime, int duration)
 }
 
 /* line 168 */
-__attribute__((naked))
 Bool CG_CheckPlayerForLowAmmo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 168 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %edi\n" /* line 176 */
-        "movl (%edi), %ebx\n" /* ammoIndex */
-        "leal 0x25bc4(%ebx), %eax\n" /* ammoIndex */
-        "movl %eax, -0x1c(%ebp)\n" /* ps */
-        "movl 0x2be50(%ebx), %esi\n" /* line 159 */
-        "testl %esi, %esi\n"
-        "js .Lf1896be_00189788\n"
-        "calll BG_GetNumWeapons\n"
-        "cmpl %eax, %esi\n"
-        "jl .Lf1896be_00189762\n"
-        ".Lf1896be_001896ef:\n"
-        "movl (%edi), %eax\n"
-        ".Lf1896be_001896f1:\n"
-        "movl 0x25c98(%eax), %esi\n" /* line 161 */
-        ".Lf1896be_001896f7:\n"
-        "testl %esi, %esi\n" /* line 179 | curAmmo */
-        "jne .Lf1896be_00189705\n"
-        ".Lf1896be_001896fb:\n"
-        "xorl %eax, %eax\n" /* line 191 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 194 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1896be_00189705:\n"
-        "movl %esi, (%esp)\n" /* line 181 | curAmmo */
-        "calll BG_AmmoForWeapon\n"
-        "movl %eax, %ebx\n" /* ammoIndex */
-        "movl %esi, 4(%esp)\n" /* line 183 | curAmmo */
-        "movl -0x1c(%ebp), %eax\n" /* ps */
-        "movl %eax, (%esp)\n"
-        "calll BG_GetTotalAmmoReserve\n"
-        "movl %eax, %esi\n" /* curAmmo */
-        "cmpl $0x3e8, %eax\n" /* line 184 */
-        "movl $0x3e7, %eax\n"
-        "cmovgel %eax, %esi\n" /* curAmmo */
-        "movl %ebx, (%esp)\n" /* line 187 | ammoIndex */
-        "calll BG_GetAmmoTypeMax\n"
-        "cmpl $0x3e7, %eax\n" /* line 188 */
-        "jle .Lf1896be_0018978f\n"
-        "movss lit4_002ed94c, %xmm1\n" /* 999.0f */
-        ".Lf1896be_00189744:\n"
-        "cvtsi2ssl %esi, %xmm0\n" /* line 191 | curAmmo */
-        "mulss lit4_002ed724, %xmm1\n" /* 0.20000000298023224f */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf1896be_001896fb\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 194 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1896be_00189762:\n"
-        "movl 0x2be50(%ebx), %esi\n" /* line 159 */
-        "movl %esi, %eax\n"
-        "sarl $5, %eax\n"
-        "movl %esi, %ecx\n"
-        "andl $0x1f, %ecx\n"
-        "movl 0x26108(%ebx, %eax, 4), %eax\n"
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "jne .Lf1896be_001896f7\n"
-        "jmp .Lf1896be_001896ef\n"
-        ".Lf1896be_00189788:\n"
-        "movl %ebx, %eax\n"
-        "jmp .Lf1896be_001896f1\n"
-        ".Lf1896be_0018978f:\n"
-        "testl %eax, %eax\n" /* line 191 */
-        "js .Lf1896be_001896fb\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "jmp .Lf1896be_00189744\n"
-    );
+    cg_t *cg;
+    playerState_t *ps;
+    int weaponIndex;
+    int ammoIndex;
+    int currentAmmo;
+    int maxAmmo;
+
+    cg = *(cg_t **)imp_cg;
+    ps = &cg->predictedPlayerState;
+    weaponIndex = cg->weaponSelect;
+
+    if (weaponIndex < 0
+        || weaponIndex >= BG_GetNumWeapons()
+        || !(ps->weapons[weaponIndex >> 5] & (1 << (weaponIndex & 0x1f))))
+    {
+        weaponIndex = ps->weapon;
+    }
+
+    if (!weaponIndex)
+    {
+        return 0;
+    }
+
+    ammoIndex = BG_AmmoForWeapon(weaponIndex);
+    currentAmmo = BG_GetTotalAmmoReserve(ps, weaponIndex);
+    if (currentAmmo >= 1000)
+    {
+        currentAmmo = 999;
+    }
+
+    maxAmmo = BG_GetAmmoTypeMax(ammoIndex);
+    if (maxAmmo < 0)
+    {
+        return 0;
+    }
+    if (maxAmmo > 999)
+    {
+        maxAmmo = 999;
+    }
+
+    return currentAmmo <= (int)(0.2f * (float)maxAmmo);
 }
 
 /* line 200 */
-__attribute__((naked))
 Bool CG_CheckPlayerForLowClip(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 200 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %edi\n" /* line 207 */
-        "movl (%edi), %ebx\n" /* curClipVal */
-        "leal 0x25bc4(%ebx), %eax\n" /* curClipVal */
-        "movl %eax, -0x1c(%ebp)\n" /* ps */
-        "movl 0x2be50(%ebx), %esi\n" /* line 159 */
-        "testl %esi, %esi\n"
-        "js .Lf18979e_0018987c\n"
-        "calll BG_GetNumWeapons\n"
-        "cmpl %eax, %esi\n"
-        "jl .Lf18979e_00189856\n"
-        ".Lf18979e_001897d3:\n"
-        "movl (%edi), %eax\n"
-        ".Lf18979e_001897d5:\n"
-        "movl 0x25c98(%eax), %esi\n" /* line 161 */
-        ".Lf18979e_001897db:\n"
-        "testl %esi, %esi\n" /* line 211 | weapIndex */
-        "jne .Lf18979e_001897e9\n"
-        ".Lf18979e_001897df:\n"
-        "xorl %eax, %eax\n" /* line 226 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 230 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18979e_001897e9:\n"
-        "movl %esi, (%esp)\n" /* line 213 | weapIndex */
-        "calll BG_WeaponIsClipOnly\n"
-        "testl %eax, %eax\n"
-        "jne .Lf18979e_001897df\n"
-        "movl %esi, (%esp)\n" /* line 216 | weapIndex */
-        "calll BG_ClipForWeapon\n"
-        "movl -0x1c(%ebp), %edx\n" /* ps */
-        "movl 0x344(%edx, %eax, 4), %ebx\n" /* curClipVal */
-        "testl %ebx, %ebx\n" /* line 217 | curClipVal */
-        "js .Lf18979e_001897df\n"
-        "cmpl $0x3e8, %ebx\n" /* line 219 | curClipVal */
-        "movl $0x3e7, %eax\n"
-        "cmovgel %eax, %ebx\n" /* curClipVal */
-        "movl %esi, (%esp)\n" /* line 222 | weapIndex */
-        "calll BG_ClipForWeapon\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_GetAmmoClipSize\n"
-        "cmpl $0x3e7, %eax\n" /* line 223 */
-        "jle .Lf18979e_00189883\n"
-        "movss lit4_002ed94c, %xmm1\n" /* 999.0f */
-        ".Lf18979e_00189838:\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 226 | curClipVal */
-        "mulss lit4_002ed8ec, %xmm1\n" /* 0.33000001311302185f */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf18979e_001897df\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 230 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18979e_00189856:\n"
-        "movl 0x2be50(%ebx), %esi\n" /* line 159 */
-        "movl %esi, %eax\n"
-        "sarl $5, %eax\n"
-        "movl %esi, %ecx\n"
-        "andl $0x1f, %ecx\n"
-        "movl 0x26108(%ebx, %eax, 4), %eax\n"
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "jne .Lf18979e_001897db\n"
-        "jmp .Lf18979e_001897d3\n"
-        ".Lf18979e_0018987c:\n"
-        "movl %ebx, %eax\n"
-        "jmp .Lf18979e_001897d5\n"
-        ".Lf18979e_00189883:\n"
-        "testl %eax, %eax\n" /* line 226 */
-        "jle .Lf18979e_001897df\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "jmp .Lf18979e_00189838\n"
-    );
+    cg_t *cg;
+    playerState_t *ps;
+    int weaponIndex;
+    int clipIndex;
+    int currentClip;
+    int clipSize;
+
+    cg = *(cg_t **)imp_cg;
+    ps = &cg->predictedPlayerState;
+    weaponIndex = cg->weaponSelect;
+
+    if (weaponIndex < 0
+        || weaponIndex >= BG_GetNumWeapons()
+        || !(ps->weapons[weaponIndex >> 5] & (1 << (weaponIndex & 0x1f))))
+    {
+        weaponIndex = ps->weapon;
+    }
+
+    if (!weaponIndex || BG_WeaponIsClipOnly(weaponIndex))
+    {
+        return 0;
+    }
+
+    clipIndex = BG_ClipForWeapon(weaponIndex);
+    currentClip = ps->ammoclip[clipIndex];
+    if (currentClip < 0)
+    {
+        return 0;
+    }
+    if (currentClip >= 1000)
+    {
+        currentClip = 999;
+    }
+
+    clipSize = BG_GetAmmoClipSize(clipIndex);
+    if (clipSize <= 0)
+    {
+        return 0;
+    }
+    if (clipSize > 999)
+    {
+        clipSize = 999;
+    }
+
+    return currentClip <= (int)(0.330000013f * (float)clipSize);
 }
 
 /* line 1148 */
-__attribute__((naked))
 void CG_DrawPlayerCompassBack(const rectDef_t *rect, MaterialHandle material, vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1148 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* rect */
-        "movl 0x10(%ebp), %eax\n" /* line 1153 | color */
-        "addl $0xc, %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl hud_fade_compass, %esi\n"
-        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "mulss 8(%esi), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x28(%ebp)\n"
-        "cvttss2si -0x28(%ebp), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* duration */
-        "movl imp_cg, %eax\n" /* line 1153 */
-        "movl (%eax), %ebx\n"
-        "movl 0x2c5c0(%ebx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* displayStartTime */
-        /* { scope 1 */
-        /* { scope 2 */
-        "calll CL_GetKeyCatchers\n" /* line 101 */
-        "testb $8, %al\n"
-        "jne .Lf189892_001899e6\n"
-        ".Lf189892_001898f4:\n"
-        "movl 0x2bdc8(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf189892_0018992f\n"
-        ".Lf189892_001898fe:\n"
-        "movl $1, %eax\n"
-        ".Lf189892_00189903:\n"
-        "testl %eax, %eax\n" /* line 113 */
-        "jne .Lf189892_00189912\n"
-        "movl hud_enable, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf189892_00189933\n"
-        ".Lf189892_00189912:\n"
-        "pxor %xmm0, %xmm0\n" /* line 126 */
-        "movaps %xmm0, %xmm1\n"
-        /* } scope */
-        /* } scope */
-        ".Lf189892_00189919:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1153 */
-        "movss %xmm0, (%eax)\n"
-        "ucomiss %xmm1, %xmm0\n" /* line 1154 */
-        "jp .Lf189892_00189951\n"
-        "jne .Lf189892_00189951\n"
-        "addl $0x4c, %esp\n" /* line 1159 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf189892_0018992f:\n"
-        "xorl %eax, %eax\n" /* line 101 */
-        "jmp .Lf189892_00189903\n"
-        ".Lf189892_00189933:\n"
-        "pxor %xmm1, %xmm1\n" /* line 119 */
-        "ucomiss 8(%esi), %xmm1\n"
-        "jne .Lf189892_001899f8\n"
-        "jp .Lf189892_001899f8\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "jmp .Lf189892_00189919\n"
-        /* } scope */
-        /* } scope */
-        ".Lf189892_00189951:\n"
-        "movss 0xc(%edi), %xmm3\n" /* line 1115 */
-        "movl imp_cg_hudCompassSize, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1158 | material */
-        "movl %eax, 0x2c(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* color */
-        "movl %eax, 0x28(%esp)\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "movss %xmm2, 0x24(%esp)\n"
-        "movss %xmm2, 0x20(%esp)\n"
-        "movl $0, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* rect */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edi), %eax\n" /* rect */
-        "movl %eax, 0x10(%esp)\n"
-        "movaps %xmm3, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss 8(%edi), %xmm0\n" /* rect */
-        "movss %xmm0, 8(%esp)\n"
-        "subss %xmm2, %xmm1\n"
-        "mulss %xmm1, %xmm3\n"
-        "movss 4(%edi), %xmm0\n" /* rect */
-        "subss %xmm3, %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl (%edi), %eax\n" /* rect */
-        "movl %eax, (%esp)\n"
-        "calll CL_DrawStretchPic\n"
-        "addl $0x4c, %esp\n" /* line 1159 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf189892_001899e6:\n"
-        "calll CL_GetDisplayHUDWithKeycatchUI\n" /* line 101 */
-        "testb %al, %al\n"
-        "je .Lf189892_001898fe\n"
-        "jmp .Lf189892_001898f4\n"
-        ".Lf189892_001899f8:\n"
-        "movl $0x2bc, 8(%esp)\n" /* line 122 */
-        "movl -0x20(%ebp), %eax\n" /* duration */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* displayStartTime */
-        "movl %eax, (%esp)\n"
-        "calll CG_FadeColor\n"
-        "testl %eax, %eax\n" /* line 123 */
-        "je .Lf189892_00189912\n"
-        "movss 0xc(%eax), %xmm0\n" /* line 126 */
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf189892_00189919\n"
-    );
+    cg_t *cg;
+    const dvar_t *compassSizeDvar;
+    int duration;
+    int displayStartTime;
+    float alpha;
+    float sizeScale;
+    float height;
+
+    cg = *(cg_t **)imp_cg;
+    compassSizeDvar = *(const dvar_t **)imp_cg_hudCompassSize;
+    duration = (int)(1000.0f * hud_fade_compass->current.value + 0.5f);
+    displayStartTime = *(int *)((byte *)cg + 0x2c5c0);
+    alpha = CG_FadeHudMenu(hud_fade_compass, displayStartTime, duration);
+    color[3] = alpha;
+    if (alpha == 0.0f)
+    {
+        return;
+    }
+
+    sizeScale = compassSizeDvar->current.value;
+    height = rect->h;
+    CL_DrawStretchPic(
+        rect->x,
+        rect->y - height * (sizeScale - 1.0f),
+        rect->w * sizeScale,
+        height * sizeScale,
+        rect->horzAlign,
+        rect->vertAlign,
+        0.0f,
+        0.0f,
+        1.0f,
+        1.0f,
+        color,
+        material);
 }
 
 /* line 559 */
