@@ -37,6 +37,8 @@ static const dvar_t *hud_healthOverlay_phaseThree_pulseDuration; /* hud_healthOv
 static const dvar_t *hud_healthOverlay_phaseEnd_toAlpha; /* hud_healthOverlay_phaseEnd_toAlpha */
 static const dvar_t *hud_healthOverlay_phaseEnd_pulseDuration; /* hud_healthOverlay_phaseEnd_pulseDuration */
 
+typedef void (*MemoryFileArchiveProc)(MemoryFile *memFile, int size, void *data);
+
 extern const char *va(const char *fmt, ...);
 extern int CL_GetKeyCatchers(void);
 extern Bool CL_GetDisplayHUDWithKeycatchUI(void);
@@ -46,6 +48,8 @@ extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min
 extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 extern void Controls_GetConfig(void);
 extern int GetKeyBindingLocalizedString(const char *command, char *keys);
+extern int BG_GetViewmodelWeaponIndex(void *ps);
+extern void *BG_GetWeaponDef(int weapIndex);
 extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
 extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
 extern const char *UI_SafeTranslateString(const char *ref);
@@ -61,6 +65,7 @@ extern void I_strncat(char *dest, int maxlen, const char *src);
 extern qboolean CG_ScoreboardDisplayed(void);
 extern float CG_ScrollScoreboardUp(void);
 extern float CG_ScrollScoreboardDown(void);
+extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 
 void CG_AntiBurnInHUD_RegisterDvars(void);
 Bool CG_AreHudMenusHidden(void);
@@ -978,237 +983,106 @@ void CG_PulseLowHealthOverlay(float healthRatio)
 }
 
 /* line 2012 */
-__attribute__((naked))
 void CG_ArchiveState(MemoryFile *memFile)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2012 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* memFile */
-        "movl imp_cg, %eax\n" /* line 167 */
-        "movl (%eax), %esi\n"
-        "leal 0x2c5c4(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2c5c8(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2c5cc(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2c5c0(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2c5d0(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2bdc8(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "leal 0x2a9fc(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "addl $0x2adfc, %esi\n"
-        "movl %esi, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0x10(%ebx)\n"
-        "addl $0x10, %esp\n" /* line 2023 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    MemoryFileArchiveProc archiveProc;
+    byte *cg;
+
+    archiveProc = (MemoryFileArchiveProc)memFile->archiveProc;
+    cg = (byte *)*(void **)imp_cg;
+
+    archiveProc(memFile, 4, cg + 0x2c5c4);
+    archiveProc(memFile, 4, cg + 0x2c5c8);
+    archiveProc(memFile, 4, cg + 0x2c5cc);
+    archiveProc(memFile, 4, cg + 0x2c5c0);
+    archiveProc(memFile, 4, cg + 0x2c5d0);
+    archiveProc(memFile, 4, cg + 0x2bdc8);
+    archiveProc(memFile, 0x400, cg + 0x2a9fc);
+    archiveProc(memFile, 0x100, cg + 0x2adfc);
 }
 
 /* line 1525 */
-static __attribute__((naked))
 void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1525 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x144, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg_drawBreathHint, %eax\n" /* line 1534 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1894ae_001894d8\n"
-        "movl imp_cg, %eax\n" /* line 1537 */
-        "movl (%eax), %ebx\n" /* ps */
-        "addl $0x25bc4, %ebx\n" /* ps */
-        "testb $0x40, 0xd(%ebx)\n" /* line 1539 | ps */
-        "je .Lf1894ae_001894e1\n"
-        /* } scope */
-        ".Lf1894ae_001894d8:\n"
-        "addl $0x144, %esp\n" /* line 1564 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1894ae_001894e1:\n"
-        "movl %ebx, (%esp)\n" /* line 1542 | ps */
-        "calll BG_GetViewmodelWeaponIndex\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_GetWeaponDef\n"
-        "movl 0x278(%eax), %ecx\n" /* line 1544 */
-        "testl %ecx, %ecx\n"
-        "je .Lf1894ae_001894d8\n"
-        "cmpl $9, 0x7c(%eax)\n"
-        "je .Lf1894ae_001894d8\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 1547 | 1.0f */
-        "ucomiss 0xdc(%ebx), %xmm0\n" /* ps */
-        "jne .Lf1894ae_001894d8\n"
-        "jp .Lf1894ae_001894d8\n"
-        "calll Controls_GetConfig\n" /* line 1550 */
-        "leal -0x108(%ebp), %ebx\n" /* line 1552 | binding, ps */
-        "movl %ebx, 4(%esp)\n" /* ps */
-        "movl $str_002ac0d4, (%esp)\n" /* "+holdbreath" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n"
-        "je .Lf1894ae_00189612\n"
-        ".Lf1894ae_00189537:\n"
-        "movl $str_002afb60, (%esp)\n" /* line 1558 */
-        "calll UI_SafeTranslateString\n"
-        "movl %ebx, 4(%esp)\n" /* line 1559 | ps */
-        "movl %eax, (%esp)\n"
-        "calll UI_ReplaceConversionString\n"
-        "movl %eax, %ebx\n" /* ps */
-        "movl 8(%ebp), %eax\n" /* line 1561 | rect */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, -0x10c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm1\n" /* fontscale */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* ps */
-        "calll UI_TextWidth\n"
-        "movl 0x14(%ebp), %edx\n" /* line 1563 | textStyle */
-        "movl %edx, 0x24(%esp)\n"
-        "movl $color, 0x20(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* fontscale */
-        "movss %xmm0, 0x1c(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* rect */
-        "movl 0x14(%ecx), %edx\n"
-        "movl %edx, 0x18(%esp)\n"
-        "movl 0x10(%ecx), %edx\n"
-        "movl %edx, 0x14(%esp)\n"
-        "movl 4(%ecx), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 428 */
-        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x110(%ebp)\n"
-        "cvttss2si -0x110(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x10c(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll UI_DrawText\n"
-        "jmp .Lf1894ae_001894d8\n"
-        ".Lf1894ae_00189612:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1554 | ps */
-        "movl $str_002ac0e0, (%esp)\n" /* "+melee_breath" */
-        "calll GetKeyBindingLocalizedString\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1894ae_00189537\n"
-        "movl %ebx, 4(%esp)\n" /* line 1555 | ps */
-        "movl $str_002ac0b8, (%esp)\n" /* "+breath_binoculars" */
-        "calll GetKeyBindingLocalizedString\n"
-        "jmp .Lf1894ae_00189537\n"
-    );
+    cg_t *cg;
+    playerState_t *ps;
+    byte *weaponDef;
+    char binding[264];
+    const char *text;
+    int textWidth;
+    int textOffset;
+
+    if (!*(byte *)((byte *)*(void **)imp_cg_drawBreathHint + 8))
+    {
+        return;
+    }
+
+    cg = *(cg_t **)imp_cg;
+    ps = &cg->predictedPlayerState;
+    if (ps->pm_flags & 0x40)
+    {
+        return;
+    }
+
+    weaponDef = (byte *)BG_GetWeaponDef(BG_GetViewmodelWeaponIndex(ps));
+    if (!*(int *)(weaponDef + 0x278) || *(int *)(weaponDef + 0x7c) == 9)
+    {
+        return;
+    }
+
+    if (ps->holdBreathScale != 1.0f)
+    {
+        return;
+    }
+
+    Controls_GetConfig();
+    if (!GetKeyBindingLocalizedString(str_002ac0d4, binding))
+    {
+        if (!GetKeyBindingLocalizedString(str_002ac0e0, binding))
+        {
+            GetKeyBindingLocalizedString(str_002ac0b8, binding);
+        }
+    }
+
+    text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afb60), binding);
+    textWidth = UI_TextWidth(text, 0, font, fontscale);
+    textOffset = (int)(textWidth * 0.5f + 0.5f);
+
+    UI_DrawText(
+        text,
+        0x7fffffff,
+        font,
+        rect->x - (float)textOffset,
+        rect->y,
+        rect->horzAlign,
+        rect->vertAlign,
+        fontscale,
+        color,
+        textStyle);
 }
 
 /* line 108 */
-__attribute__((naked))
 float CG_FadeHudMenu(const dvar_t *fadeDvar, int displayStartTime, int duration)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 108 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll CL_GetKeyCatchers\n" /* line 101 */
-        "testb $8, %al\n"
-        "jne .Lf189640_0018968f\n"
-        ".Lf189640_0018964f:\n"
-        "movl imp_cg, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x2bdc8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf189640_0018968b\n"
-        ".Lf189640_00189660:\n"
-        "movl $1, %eax\n"
-        ".Lf189640_00189665:\n"
-        "testl %eax, %eax\n" /* line 113 */
-        "jne .Lf189640_00189687\n"
-        "movl hud_enable, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf189640_00189687\n"
-        "pxor %xmm0, %xmm0\n" /* line 119 */
-        "movl 8(%ebp), %eax\n" /* fadeDvar */
-        "ucomiss 8(%eax), %xmm0\n"
-        "jne .Lf189640_0018969a\n"
-        "jp .Lf189640_0018969a\n"
-        "fld1\n"
-        /* } scope */
-        "leave\n" /* line 127 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf189640_00189687:\n"
-        "fldz\n" /* line 126 */
-        /* } scope */
-        "leave\n" /* line 127 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf189640_0018968b:\n"
-        "xorl %eax, %eax\n" /* line 101 */
-        "jmp .Lf189640_00189665\n"
-        ".Lf189640_0018968f:\n"
-        "calll CL_GetDisplayHUDWithKeycatchUI\n"
-        "testb %al, %al\n"
-        "je .Lf189640_00189660\n"
-        "jmp .Lf189640_0018964f\n"
-        ".Lf189640_0018969a:\n"
-        "movl $0x2bc, 8(%esp)\n" /* line 122 */
-        "movl 0x10(%ebp), %eax\n" /* duration */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* displayStartTime */
-        "movl %eax, (%esp)\n"
-        "calll CG_FadeColor\n"
-        "testl %eax, %eax\n" /* line 123 */
-        "je .Lf189640_00189687\n"
-        "flds 0xc(%eax)\n" /* line 126 */
-        /* } scope */
-        "leave\n" /* line 127 */
-        "retl\n"
-    );
+    float *fadeColor;
+
+    if (CG_AreHudMenusHidden() || !hud_enable->current.enabled)
+    {
+        return 0.0f;
+    }
+
+    if (fadeDvar->current.value == 0.0f)
+    {
+        return 1.0f;
+    }
+
+    fadeColor = CG_FadeColor(displayStartTime, duration, 700);
+    if (!fadeColor)
+    {
+        return 0.0f;
+    }
+
+    return fadeColor[3];
 }
 
 /* line 168 */

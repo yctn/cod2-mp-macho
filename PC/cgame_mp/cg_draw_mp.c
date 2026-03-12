@@ -34,12 +34,15 @@ extern FontHandle UI_GetFontHandle(int fontEnum, float scale);
 extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
+extern void CG_TranslateHudElemMessage(const char *message, const char *messageType, char *hudElemString);
 extern int BG_GetViewmodelWeaponIndex(void *ps);
 extern void *BG_GetWeaponDef(int weapIndex);
 extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
 extern qboolean CG_ScoreboardDisplayed(void);
 extern void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t mode);
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern unsigned int SEH_ReadCharFromString(const char **ppsText, qboolean *pbIsTrailingPunctuation);
 extern centity_t **cg_entities_glob; /* imp_cg_entities */
 extern void CG_PlayerSprites(centity_t *cent);
 extern qboolean CL_PickMaterial(const vec_t *org, const vec_t *dir, char *pszName, char *pszSurfaceFlags, char *pszContents, int iMaxChars);
@@ -186,123 +189,74 @@ unsigned int CG_DrawDisconnect(void)
 }
 
 /* line 971 */
-__attribute__((naked))
 unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priority)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 971 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x12c, %esp\n"
-        "movl 0x10(%ebp), %edi\n" /* priority */
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 982 */
-        "movl (%eax), %esi\n" /* neednewline */
-        "movl 0x2b990(%esi), %eax\n" /* neednewline */
-        "testl %eax, %eax\n"
-        "je .Lf1cb3de_001cb40a\n"
-        "cmpl 0x2bd9c(%esi), %edi\n" /* neednewline, priority */
-        "jl .Lf1cb3de_001cb4fa\n"
-        ".Lf1cb3de_001cb40a:\n"
-        "leal -0x11c(%ebp), %ebx\n" /* line 985 | hudElemString, count */
-        "movl %ebx, 8(%esp)\n" /* count */
-        "movl $str_002b700c, 4(%esp)\n" /* "Center Print" */
-        "movl 8(%ebp), %eax\n" /* str */
-        "movl %eax, (%esp)\n"
-        "calll CG_TranslateHudElemMessage\n"
-        "movl $0x100, 8(%esp)\n" /* line 986 */
-        "movl %ebx, 4(%esp)\n" /* count */
-        "leal 0x2b998(%esi), %ebx\n" /* neednewline, count */
-        "movl %ebx, (%esp)\n" /* count */
-        "calll I_strncpyz\n"
-        "movl %edi, 0x2bd9c(%esi)\n" /* line 987 | priority, neednewline */
-        "movl %ebx, -0x1c(%ebp)\n" /* line 991 | count, s */
-        "xorl %esi, %esi\n" /* neednewline */
-        "xorl %ebx, %ebx\n" /* count */
-        "leal -0x1c(%ebp), %edi\n" /* s, priority */
-        ".Lf1cb3de_001cb451:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 992 | s */
-        "cmpb $0, (%eax)\n"
-        "je .Lf1cb3de_001cb497\n"
-        ".Lf1cb3de_001cb459:\n"
-        "movl $0, 4(%esp)\n" /* line 994 */
-        "movl %edi, (%esp)\n" /* priority */
-        "calll SEH_ReadCharFromString\n"
-        "cmpl $0xa, %eax\n" /* line 996 */
-        "je .Lf1cb3de_001cb48b\n"
-        "addl $1, %ebx\n" /* line 1003 | count */
-        "cmpl $0x4a, %ebx\n" /* line 1004 | count */
-        "jle .Lf1cb3de_001cb505\n"
-        "movl $1, %esi\n" /* neednewline */
-        ".Lf1cb3de_001cb47f:\n"
-        "cmpl $0x20, %eax\n" /* line 1007 */
-        "jne .Lf1cb3de_001cb451\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1009 | s */
-        "movb $0xa, -1(%eax)\n"
-        ".Lf1cb3de_001cb48b:\n"
-        "xorl %esi, %esi\n" /* neednewline */
-        "xorl %ebx, %ebx\n" /* count */
-        "movl -0x1c(%ebp), %eax\n" /* line 992 | s */
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1cb3de_001cb459\n"
-        ".Lf1cb3de_001cb497:\n"
-        "movl imp_cg, %ecx\n" /* line 1015 */
-        "movl (%ecx), %eax\n"
-        "movl 0x25bb0(%eax), %edx\n"
-        "addl $0x7d0, %edx\n"
-        "movl %edx, 0x2b990(%eax)\n"
-        "cvttss2si 0xc(%ebp), %edx\n" /* line 1016 | charWidth */
-        "movl %edx, 0x2b994(%eax)\n"
-        "movl $1, 0x2bd98(%eax)\n" /* line 1019 */
-        "addl $0x2b998, %eax\n" /* line 1020 */
-        "movl %eax, -0x1c(%ebp)\n" /* s */
-        "leal -0x1c(%ebp), %ebx\n" /* s, count */
-        "movl %ecx, %esi\n" /* neednewline */
-        ".Lf1cb3de_001cb4d3:\n"
-        "cmpb $0, (%eax)\n" /* line 1021 */
-        "je .Lf1cb3de_001cb4fa\n"
-        ".Lf1cb3de_001cb4d8:\n"
-        "movl $0, 4(%esp)\n" /* line 1023 */
-        "movl %ebx, (%esp)\n" /* count */
-        "calll SEH_ReadCharFromString\n"
-        "cmpl $0xa, %eax\n" /* line 1025 */
-        "je .Lf1cb3de_001cb512\n"
-        "cmpl $0x5c, %eax\n" /* line 1029 */
-        "je .Lf1cb3de_001cb520\n"
-        "movl -0x1c(%ebp), %eax\n" /* s */
-        "cmpb $0, (%eax)\n" /* line 1021 */
-        "jne .Lf1cb3de_001cb4d8\n"
-        /* } scope */
-        ".Lf1cb3de_001cb4fa:\n"
-        "addl $0x12c, %esp\n" /* line 1035 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb3de_001cb505:\n"
-        "testl %esi, %esi\n" /* line 1007 | neednewline */
-        "je .Lf1cb3de_001cb451\n"
-        "jmp .Lf1cb3de_001cb47f\n"
-        ".Lf1cb3de_001cb512:\n"
-        "movl (%esi), %eax\n" /* line 1027 | neednewline */
-        "addl $1, 0x2bd98(%eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* s */
-        "jmp .Lf1cb3de_001cb4d3\n"
-        ".Lf1cb3de_001cb520:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1029 | s */
-        "cmpb $0x6e, (%eax)\n"
-        "jne .Lf1cb3de_001cb4d3\n"
-        "movl (%esi), %eax\n" /* line 1031 | neednewline */
-        "addl $1, 0x2bd98(%eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1032 | s */
-        "addl $1, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* s */
-        "jmp .Lf1cb3de_001cb4d3\n"
-    );
+    cg_t *cg;
+    char hudElemString[256];
+    const char *s;
+    qboolean needNewline;
+    int count;
+    unsigned int letter;
+
+    cg = *(cg_t **)imp_cg;
+    if (cg->centerPrintTime && priority < cg->centerPrintPriority)
+    {
+        return 0;
+    }
+
+    CG_TranslateHudElemMessage(str, str_002b700c, hudElemString);
+    I_strncpyz(cg->centerPrint, hudElemString, 0x100);
+    cg->centerPrintPriority = priority;
+
+    s = cg->centerPrint;
+    needNewline = 0;
+    count = 0;
+    while (*s)
+    {
+        letter = SEH_ReadCharFromString(&s, 0);
+        if (letter == '\n')
+        {
+            needNewline = 0;
+            count = 0;
+            continue;
+        }
+
+        ++count;
+        if (count > 0x4a)
+        {
+            needNewline = 1;
+        }
+
+        if (needNewline && letter == ' ')
+        {
+            ((char *)s)[-1] = '\n';
+            needNewline = 0;
+            count = 0;
+        }
+    }
+
+    cg->centerPrintTime = cg->time + 0x7d0;
+    cg->centerPrintCharWidth = (int)charWidth;
+    cg->centerPrintLines = 1;
+
+    s = cg->centerPrint;
+    while (*s)
+    {
+        letter = SEH_ReadCharFromString(&s, 0);
+        if (letter == '\n')
+        {
+            ++cg->centerPrintLines;
+            continue;
+        }
+
+        if (letter == '\\' && *s == 'n')
+        {
+            ++cg->centerPrintLines;
+            ++s;
+        }
+    }
+
+    return 0;
 }
 
 /* line 1132 */
