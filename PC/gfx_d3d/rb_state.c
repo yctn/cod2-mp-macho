@@ -998,258 +998,64 @@ void RB_ChangeState_1(int stateBits1)
 }
 
 /* line 941 */
-__attribute__((naked))
 void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 941 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* image */
-        "movzbl 0xc(%ebp), %eax\n" /* samplerState */
-        "movb %al, -0x38(%ebp)\n" /* samplerState */
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 954 | samplerIndex */
-        "cmpl %ebx, dxState+8436(, %edx, 4)\n" /* address */
-        "je .Lfce8b6_000ce917\n"
-        "testl %ebx, %ebx\n" /* line 957 | address */
-        "je .Lfce8b6_000ceb57\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000ce8e9:\n"
-        "movl 8(%edi), %eax\n" /* line 961 */
-        "movl (%eax), %ecx\n"
-        "movl 4(%ebx), %edx\n" /* address */
-        "movl %edx, 8(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* samplerIndex */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x104(%ecx)\n"
-        "movl (%esi), %eax\n" /* magFilter */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000ce8e9\n"
-        ".Lfce8b6_000ce90b:\n"
-        "movl $dxState+8432, %eax\n" /* line 967 */
-        "movl 8(%ebp), %edx\n" /* samplerIndex */
-        "movl %ebx, 4(%eax, %edx, 4)\n" /* address */
-        ".Lfce8b6_000ce917:\n"
-        "testl %ebx, %ebx\n" /* line 970 | address */
-        "je .Lfce8b6_000cea4c\n"
-        "testb $0xf, -0x38(%ebp)\n" /* line 972 | samplerState */
-        "je .Lfce8b6_000cea54\n"
-        ".Lfce8b6_000ce929:\n"
-        "movl 8(%ebp), %eax\n" /* line 974 | samplerIndex */
-        "movzbl dxState+8420(%eax), %edx\n"
-        "movzbl -0x38(%ebp), %ecx\n" /* line 975 | samplerState */
-        "xorb %dl, %cl\n"
-        "movb %cl, -0x1d(%ebp)\n" /* diffSamplerState */
-        "je .Lfce8b6_000cea4c\n"
-        "movzbl %cl, %eax\n" /* line 977 */
-        "movl %eax, -0x28(%ebp)\n"
-        "testb $3, %al\n"
-        "je .Lfce8b6_000ce9f0\n"
-        "movzbl -0x38(%ebp), %eax\n" /* line 929 | samplerState */
-        "andl $3, %eax\n"
-        "movl s_filterTable(, %eax, 4), %ebx\n"
-        "cmpl $3, %ebx\n" /* line 932 */
-        "je .Lfce8b6_000ceba6\n"
-        "movl %ebx, %esi\n"
-        ".Lfce8b6_000ce969:\n"
-        "movl %edx, %eax\n" /* line 929 */
-        "andl $3, %eax\n"
-        "movl s_filterTable(, %eax, 4), %edx\n"
-        "cmpl $3, %edx\n" /* line 932 */
-        "je .Lfce8b6_000ceb8b\n"
-        "movl %edx, -0x1c(%ebp)\n" /* magFilterPrev */
-        ".Lfce8b6_000ce981:\n"
-        "cmpl %ebx, %edx\n" /* line 981 | address */
-        "je .Lfce8b6_000ce9b8\n"
-        "movl imp_alwaysfails, %edi\n"
-        ".Lfce8b6_000ce98b:\n"
-        "movl imp_dx, %edx\n" /* line 982 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* address */
-        "movl $6, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000ce98b\n"
-        ".Lfce8b6_000ce9b8:\n"
-        "cmpl %esi, -0x1c(%ebp)\n" /* line 983 | magFilter, magFilterPrev */
-        "je .Lfce8b6_000ce9f0\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %ebx\n" /* address */
-        ".Lfce8b6_000ce9c9:\n"
-        "movl 8(%edi), %eax\n" /* line 984 */
-        "movl (%eax), %edx\n"
-        "movl %esi, 0xc(%esp)\n" /* magFilter */
-        "movl $5, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%ebx), %eax\n" /* address */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000ce9c9\n"
-        ".Lfce8b6_000ce9f0:\n"
-        "testb $0xc, -0x28(%ebp)\n" /* line 987 */
-        "je .Lfce8b6_000cea36\n"
-        "movzbl -0x38(%ebp), %eax\n" /* line 989 | samplerState */
-        "andl $0xc, %eax\n"
-        "movl s_filterTable(%eax), %ebx\n" /* address */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000cea0f:\n"
-        "movl 8(%edi), %eax\n" /* line 991 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* address */
-        "movl $7, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%esi), %eax\n" /* magFilter */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000cea0f\n"
-        ".Lfce8b6_000cea36:\n"
-        "testb $0x70, -0x28(%ebp)\n" /* line 994 */
-        "jne .Lfce8b6_000cea68\n"
-        ".Lfce8b6_000cea3c:\n"
-        "movl $dxState+8416, %eax\n" /* line 1013 */
-        "movzbl -0x38(%ebp), %edx\n" /* samplerState */
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movb %dl, 4(%ecx, %eax)\n"
-        /* } scope */
-        ".Lfce8b6_000cea4c:\n"
-        "addl $0x3c, %esp\n" /* line 1017 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfce8b6_000cea54:\n"
-        "movl imp_backEnd, %eax\n" /* line 973 */
-        "movzbl 0x4be(%eax), %ecx\n"
-        "orb %cl, -0x38(%ebp)\n" /* samplerState */
-        "jmp .Lfce8b6_000ce929\n"
-        ".Lfce8b6_000cea68:\n"
-        "movzbl -0x1d(%ebp), %eax\n" /* line 996 | diffSamplerState */
-        "movl %eax, -0x24(%ebp)\n"
-        "testb $0x10, %al\n"
-        "je .Lfce8b6_000ceab8\n"
-        "movzbl -0x38(%ebp), %eax\n" /* line 998 | samplerState */
-        "andl $0x10, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %ebx, %ebx\n" /* address */
-        "andl $0xfffffffe, %ebx\n" /* address */
-        "addl $3, %ebx\n" /* address */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000cea91:\n"
-        "movl 8(%edi), %eax\n" /* line 999 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* address */
-        "movl $1, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%esi), %eax\n" /* magFilter */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000cea91\n"
-        ".Lfce8b6_000ceab8:\n"
-        "testb $0x20, -0x24(%ebp)\n" /* line 1001 */
-        "je .Lfce8b6_000ceb03\n"
-        "movzbl -0x38(%ebp), %eax\n" /* line 1003 | samplerState */
-        "andl $0x20, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %ebx, %ebx\n" /* address */
-        "andl $0xfffffffe, %ebx\n" /* address */
-        "addl $3, %ebx\n" /* address */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000ceadc:\n"
-        "movl 8(%edi), %eax\n" /* line 1004 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* address */
-        "movl $2, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%esi), %eax\n" /* magFilter */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000ceadc\n"
-        ".Lfce8b6_000ceb03:\n"
-        "testb $0x40, -0x24(%ebp)\n" /* line 1006 */
-        "je .Lfce8b6_000cea3c\n"
-        "movzbl -0x38(%ebp), %eax\n" /* line 1008 | samplerState */
-        "andl $0x40, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %ebx, %ebx\n" /* address */
-        "andl $0xfffffffe, %ebx\n" /* address */
-        "addl $3, %ebx\n" /* address */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000ceb2b:\n"
-        "movl 8(%edi), %eax\n" /* line 1009 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 0xc(%esp)\n" /* address */
-        "movl $3, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x114(%edx)\n"
-        "movl (%esi), %ecx\n" /* magFilter */
-        "testl %ecx, %ecx\n"
-        "jne .Lfce8b6_000ceb2b\n"
-        "jmp .Lfce8b6_000cea3c\n"
-        ".Lfce8b6_000ceb57:\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* magFilter */
-        ".Lfce8b6_000ceb63:\n"
-        "movl 8(%edi), %eax\n" /* line 965 */
-        "movl (%eax), %edx\n"
-        "movl $0, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* samplerIndex */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x104(%edx)\n"
-        "movl (%esi), %eax\n" /* magFilter */
-        "testl %eax, %eax\n"
-        "jne .Lfce8b6_000ceb63\n"
-        "jmp .Lfce8b6_000ce90b\n"
-        ".Lfce8b6_000ceb8b:\n"
-        "movl imp_dx, %eax\n" /* line 935 */
-        "movl 0x2d6c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfce8b6_000cebce\n"
-        "movl $2, -0x1c(%ebp)\n" /* magFilterPrev */
-        "jmp .Lfce8b6_000ce981\n"
-        ".Lfce8b6_000ceba6:\n"
-        "movl imp_dx, %eax\n"
-        "movl 0x2d6c(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfce8b6_000cebbf\n"
-        "movl $2, %esi\n"
-        "jmp .Lfce8b6_000ce969\n"
-        ".Lfce8b6_000cebbf:\n"
-        "movl $2, %ebx\n"
-        "movl $2, %esi\n"
-        "jmp .Lfce8b6_000ce969\n"
-        ".Lfce8b6_000cebce:\n"
-        "movl $2, %edx\n"
-        "movl $2, -0x1c(%ebp)\n" /* magFilterPrev */
-        "jmp .Lfce8b6_000ce981\n"
-    );
+    byte desiredSamplerState;
+    byte currentSamplerState;
+    byte diffSamplerState;
+    DWORD minFilter;
+    DWORD magFilter;
+    DWORD prevMinFilter;
+    DWORD prevMagFilter;
+
+    desiredSamplerState = (byte)samplerState;
+    if (dxState.samplerImage[samplerIndex] != image) {
+        RB_SetTextureDx7(samplerIndex, image ? image->texture.basemap : NULL);
+        dxState.samplerImage[samplerIndex] = image;
+    }
+
+    if (image == NULL) {
+        return;
+    }
+
+    if ((desiredSamplerState & 0xf) == 0) {
+        desiredSamplerState |= (byte)backEnd.defaultSamplerState;
+    }
+
+    currentSamplerState = dxState.samplerState[samplerIndex];
+    diffSamplerState = desiredSamplerState ^ currentSamplerState;
+    if (!diffSamplerState) {
+        return;
+    }
+
+    if (diffSamplerState & 3) {
+        RB_GetSamplerFilterModes(desiredSamplerState, &minFilter, &magFilter);
+        RB_GetSamplerFilterModes(currentSamplerState, &prevMinFilter, &prevMagFilter);
+        if (minFilter != prevMinFilter) {
+            RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_MINFILTER, minFilter);
+        }
+        if (magFilter != prevMagFilter) {
+            RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_MAGFILTER, magFilter);
+        }
+    }
+
+    if (diffSamplerState & 0xc) {
+        RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_MIPFILTER, s_filterTable[desiredSamplerState & 0xc]);
+    }
+
+    if (diffSamplerState & 0x10) {
+        RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_ADDRESSU, (desiredSamplerState & 0x10) ? D3DTADDRESS_CLAMP : D3DTADDRESS_WRAP);
+    }
+
+    if (diffSamplerState & 0x20) {
+        RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_ADDRESSV, (desiredSamplerState & 0x20) ? D3DTADDRESS_CLAMP : D3DTADDRESS_WRAP);
+    }
+
+    if (diffSamplerState & 0x40) {
+        RB_SetSamplerStateDx7(samplerIndex, D3DSAMP_ADDRESSW, (desiredSamplerState & 0x40) ? D3DTADDRESS_CLAMP : D3DTADDRESS_WRAP);
+    }
+
+    dxState.samplerState[samplerIndex] = desiredSamplerState;
 }
 
 /* line 1777 */
@@ -1494,37 +1300,13 @@ void RB_UpdateViewportConstants(void)
 }
 
 /* line 1787 */
-__attribute__((naked))
 void RB_InitImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1787 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %ebx, %ebx\n"
-        "movl $dxState, %esi\n"
-        "movl imp_rgp, %edi\n"
-        ".Lfcef96_000cefac:\n"
-        "movl 0x1008(%edi), %eax\n" /* line 1783 */
-        "movl %eax, 8(%esp)\n"
-        "movzbl 0x20e4(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll RB_SetSampler\n"
-        "addl $1, %ebx\n" /* line 1782 */
-        "addl $1, %esi\n"
-        "cmpl $0x10, %ebx\n"
-        "jne .Lfcef96_000cefac\n"
-        "addl $0x1c, %esp\n" /* line 1790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int samplerIndex;
+
+    for (samplerIndex = 0; samplerIndex < 16; ++samplerIndex) {
+        RB_SetSampler(samplerIndex, dxState.samplerState[samplerIndex], *(GfxImage **)((byte *)imp_rgp + 0x1008));
+    }
 }
 
 /* line 1662 */
