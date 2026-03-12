@@ -43,6 +43,7 @@ extern void CG_TranslateHudElemMessage(const char *message, const char *messageT
 extern void CG_TraceCapsule(trace_t *result, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int skipNumber, int mask);
 extern int BG_GetViewmodelWeaponIndex(void *ps);
 extern void *BG_GetWeaponDef(int weapIndex);
+extern void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int vertAlign, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
 extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material);
 extern qboolean CG_ScoreboardDisplayed(void);
 extern void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t mode);
@@ -2182,118 +2183,76 @@ unsigned int CG_DrawBoldGameMessages(void)
 }
 
 /* line 1323 */
-__attribute__((naked))
 unsigned int CG_DrawTurretCrossHair(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1323 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x50, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg_drawTurretCrosshair, %eax\n" /* line 1341 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1cd79a_001cd8de\n"
-        "movl imp_cg_paused, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1cd79a_001cd8de\n"
-        "movl imp_cg, %eax\n" /* line 1348 */
-        "movl (%eax), %esi\n"
-        "movl 0x26158(%esi), %edx\n"
-        "movl imp_cg_entities, %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl 0x1b8(%ecx, %eax, 4), %ebx\n" /* weapIndex */
-        "testl %ebx, %ebx\n" /* line 1349 | weapIndex */
-        "je .Lf1cd79a_001cd8de\n"
-        "movl %ebx, (%esp)\n" /* line 1352 | weapIndex */
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %ecx\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 1355 | weapIndex */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ebx, %eax, 4), %eax\n" /* weapIndex */
-        "movl imp_cg_weapons, %edx\n"
-        "movl (%edx), %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* weapIndex */
-        "movl 0x178(%ebx), %eax\n" /* line 1356 | weapIndex */
-        "testl %eax, %eax\n"
-        "je .Lf1cd79a_001cd8de\n"
-        "movl imp_cg_crosshairAlpha, %eax\n" /* line 1359 */
-        "movl (%eax), %edx\n"
-        "movss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
-        "ucomiss 8(%edx), %xmm0\n"
-        "ja .Lf1cd79a_001cd8de\n"
-        "movl 0x25bd0(%esi), %eax\n" /* line 1311 */
-        "testl $0x100000, %eax\n"
-        "je .Lf1cd79a_001cd8e5\n"
-        "movl $0x3e800000, %eax\n" /* line 191 */
-        "movl %eax, -0x18(%ebp)\n" /* reticleColor */
-        "movl $0x3f800000, -0x14(%ebp)\n" /* line 192 */
-        "movl %eax, -0x10(%ebp)\n" /* line 193 */
-        ".Lf1cd79a_001cd85a:\n"
-        "movl 8(%edx), %eax\n" /* line 1319 */
-        "movl %eax, -0xc(%ebp)\n"
-        "cvtsi2ssl 0x120(%ecx), %xmm1\n" /* line 1363 */
-        "movss %xmm1, -0x28(%ebp)\n" /* line 1364 */
-        "calll CL_IsRenderingSplitScreen\n"
-        "testb %al, %al\n"
-        "movss -0x28(%ebp), %xmm1\n"
-        "je .Lf1cd79a_001cd87f\n"
-        "addss %xmm1, %xmm1\n" /* line 1365 */
-        ".Lf1cd79a_001cd87f:\n"
-        "movaps %xmm1, %xmm0\n" /* line 1368 */
-        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
-        "movl 0x178(%ebx), %eax\n" /* line 1375 | weapIndex */
-        "movl %eax, 0x2c(%esp)\n"
-        "leal -0x18(%ebp), %eax\n" /* reticleColor */
-        "movl %eax, 0x28(%esp)\n"
-        "movl $0x3f800000, %eax\n"
-        "movl %eax, 0x24(%esp)\n"
-        "movl %eax, 0x20(%esp)\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl $2, 0x14(%esp)\n"
-        "movl $2, 0x10(%esp)\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss %xmm0, (%esp)\n"
-        "calll CL_DrawStretchPic\n"
-        /* } scope */
-        ".Lf1cd79a_001cd8de:\n"
-        "addl $0x50, %esp\n" /* line 1376 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cd79a_001cd8e5:\n"
-        "testl $0x200000, %eax\n" /* line 1313 */
-        "je .Lf1cd79a_001cd910\n"
-        "movl imp_cg_crosshairEnemyColor, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1cd79a_001cd910\n"
-        "movl $0x3f800000, -0x18(%ebp)\n" /* line 191 | reticleColor */
-        "movl $0x3e800000, %eax\n" /* line 192 */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, -0x10(%ebp)\n" /* line 193 */
-        "jmp .Lf1cd79a_001cd85a\n"
-        ".Lf1cd79a_001cd910:\n"
-        "movl $0x3f800000, %eax\n" /* line 191 */
-        "movl %eax, -0x18(%ebp)\n" /* reticleColor */
-        "movl %eax, -0x14(%ebp)\n" /* line 192 */
-        "movl %eax, -0x10(%ebp)\n" /* line 193 */
-        "jmp .Lf1cd79a_001cd85a\n"
-    );
+    cg_t *cg;
+    WeaponDef *weaponDef;
+    weaponInfo_t *weaponInfo;
+    vec4_t reticleColor;
+    float reticleSize;
+    float reticleOffset;
+    float alpha;
+    int weapIndex;
+
+    if (!(*(const dvar_t **)imp_cg_drawTurretCrosshair)->current.enabled)
+    {
+        return 0;
+    }
+
+    if ((*(const dvar_t **)imp_cg_paused)->current.integer)
+    {
+        return 0;
+    }
+
+    cg = *(cg_t **)imp_cg;
+    weapIndex = (*cg_entities_glob)[cg->predictedPlayerState.viewlocked_entNum].currentState.weapon;
+    if (!weapIndex)
+    {
+        return 0;
+    }
+
+    weaponDef = (WeaponDef *)BG_GetWeaponDef(weapIndex);
+    weaponInfo = &(*(weaponInfo_t **)imp_cg_weapons)[weapIndex];
+    if (!weaponInfo->hReticleCenter)
+    {
+        return 0;
+    }
+
+    alpha = (*(const dvar_t **)imp_cg_crosshairAlpha)->current.value;
+    if (alpha < 0.0099999998f)
+    {
+        return 0;
+    }
+
+    if (cg->predictedPlayerState.eFlags & 0x100000)
+    {
+        reticleColor[0] = 0.25f;
+        reticleColor[1] = 1.0f;
+        reticleColor[2] = 0.25f;
+    }
+    else if ((cg->predictedPlayerState.eFlags & 0x200000) && (*(const dvar_t **)imp_cg_crosshairEnemyColor)->current.enabled)
+    {
+        reticleColor[0] = 1.0f;
+        reticleColor[1] = 0.25f;
+        reticleColor[2] = 0.25f;
+    }
+    else
+    {
+        reticleColor[0] = 1.0f;
+        reticleColor[1] = 1.0f;
+        reticleColor[2] = 1.0f;
+    }
+
+    reticleColor[3] = alpha;
+    reticleSize = (float)weaponDef->iReticleCenterSize;
+    if (CL_IsRenderingSplitScreen())
+    {
+        reticleSize *= 2.0f;
+    }
+
+    reticleOffset = reticleSize * -0.5f;
+    CL_DrawStretchPic(reticleOffset, reticleOffset, reticleSize, reticleSize, 2, 2, 0.0f, 0.0f, 1.0f, 1.0f, reticleColor, weaponInfo->hReticleCenter);
+    return 0;
 }
 
 /* line 3066 */
