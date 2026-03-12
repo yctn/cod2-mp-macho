@@ -35,8 +35,10 @@ typedef HRESULT (*SetIndicesFn)(void *device, IDirect3DIndexBuffer9 *ib);
 typedef HRESULT (*SetRenderStateFn)(void *device, DWORD state, DWORD value);
 typedef HRESULT (*SetStreamSourceFn)(void *device, UINT streamIndex, IDirect3DVertexBuffer9 *vb, UINT vertexOffset, UINT vertexStride);
 typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD samplerState, DWORD value);
+typedef HRESULT (*SetTextureFn)(void *device, DWORD samplerIndex, IDirect3DBaseTexture9 *texture);
 typedef HRESULT (*SetTextureStageStateFn)(void *device, DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
 typedef HRESULT (*SetTransformFn)(void *device, D3DTRANSFORMSTATETYPE state, const D3DMATRIX *matrix);
+typedef HRESULT (*SetViewportFn)(void *device, const D3DVIEWPORT9 *viewport);
 typedef HRESULT (*SetVertexDeclarationFn)(void *device, IDirect3DVertexDeclaration9 *vertexDecl);
 
 typedef struct {
@@ -107,6 +109,36 @@ static void RB_SetTransformDx7(D3DTRANSFORMSTATETYPE state, const D3DMATRIX *mat
     } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
+static void RB_SetViewportDx7(const D3DVIEWPORT9 *viewport)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetViewportFn)VTABLE(device)[0xbc / 4])(device, viewport);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static void RB_SetTextureDx7(int samplerIndex, IDirect3DBaseTexture9 *texture)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetTextureFn)VTABLE(device)[0x104 / 4])(device, samplerIndex, texture);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static void RB_SetSamplerStateDx7(int samplerIndex, DWORD samplerState, DWORD value)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetSamplerStateFn)VTABLE(device)[0x114 / 4])(device, samplerIndex, samplerState, value);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
 static GfxCodeMatrices *RB_GetActiveCodeMatrices(void)
 {
     return &backEnd.codeMatrixStack[backEnd.codeMatrixStackLevel];
@@ -137,6 +169,23 @@ static void RB_SetPrimaryCodeMatrix(GfxCodeMatrix *matrix, const D3DMATRIX *src)
 static Bool RB_UsingDx7Renderer(void)
 {
     return (*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2;
+}
+
+static void RB_GetSamplerFilterModes(byte samplerState, DWORD *minFilter, DWORD *magFilter)
+{
+    DxGlobals *dx;
+
+    dx = (DxGlobals *)imp_dx;
+    *minFilter = s_filterTable[samplerState & 3];
+    *magFilter = *minFilter;
+    if (*minFilter == D3DTEXF_ANISOTROPIC) {
+        if (dx->anisotropy > 0) {
+            *magFilter = D3DTEXF_LINEAR;
+        } else {
+            *minFilter = D3DTEXF_LINEAR;
+            *magFilter = D3DTEXF_LINEAR;
+        }
+    }
 }
 
 /* line 1805 */
@@ -586,97 +635,33 @@ Bool RB_GetViewport(GfxViewport *outViewport)
 }
 
 /* line 1597 */
-__attribute__((naked))
 void RB_SetDepthRange(float nearValue, float farValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1597 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movss 8(%ebp), %xmm0\n" /* nearValue */
-        "movss 0xc(%ebp), %xmm1\n" /* farValue */
-        "ucomiss dxState+8384, %xmm0\n" /* line 1601 */
-        "jne .Lfce38c_000ce3b4\n"
-        "jp .Lfce38c_000ce3b4\n"
-        "ucomiss dxState+8388, %xmm1\n"
-        "jp .Lfce38c_000ce3b4\n"
-        "je .Lfce38c_000ce3ec\n"
-        ".Lfce38c_000ce3b4:\n"
-        "movss %xmm0, dxState+8384\n" /* line 1604 */
-        "movss %xmm1, dxState+8388\n" /* line 1605 */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfce38c_000ce3d0:\n"
-        "movl 8(%esi), %eax\n" /* line 1606 */
-        "movl (%eax), %edx\n"
-        "movl $dxState+8368, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xbc(%edx)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce38c_000ce3d0\n"
-        ".Lfce38c_000ce3ec:\n"
-        "addl $0x10, %esp\n" /* line 1607 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (nearValue == dxState.viewport.MinZ && farValue == dxState.viewport.MaxZ) {
+        return;
+    }
+
+    dxState.viewport.MinZ = nearValue;
+    dxState.viewport.MaxZ = farValue;
+    RB_SetViewportDx7(&dxState.viewport);
 }
 
 /* line 1610 */
-__attribute__((naked))
 void RB_SetViewport(const GfxViewport *viewport)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1610 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %edx\n" /* viewport */
-        "movl (%edx), %ecx\n" /* line 1619 */
-        "cmpl dxState+8368, %ecx\n"
-        "je .Lfce3f4_000ce456\n"
-        ".Lfce3f4_000ce409:\n"
-        "movl %ecx, dxState+8368\n" /* line 1621 */
-        "movl 4(%edx), %eax\n" /* line 1622 */
-        "movl %eax, dxState+8372\n"
-        "movl 8(%edx), %eax\n" /* line 1623 */
-        "movl %eax, dxState+8376\n"
-        "movl 0xc(%edx), %eax\n" /* line 1624 */
-        "movl %eax, dxState+8380\n"
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfce3f4_000ce433:\n"
-        "movl 8(%esi), %eax\n" /* line 1625 */
-        "movl (%eax), %edx\n"
-        "movl $dxState+8368, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xbc(%edx)\n"
-        "movl (%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfce3f4_000ce433\n"
-        ".Lfce3f4_000ce44f:\n"
-        "addl $0x10, %esp\n" /* line 1627 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfce3f4_000ce456:\n"
-        "movl 4(%edx), %eax\n" /* line 1619 */
-        "cmpl dxState+8372, %eax\n"
-        "jne .Lfce3f4_000ce409\n"
-        "movl 8(%edx), %eax\n"
-        "cmpl dxState+8376, %eax\n"
-        "jne .Lfce3f4_000ce409\n"
-        "movl 0xc(%edx), %eax\n"
-        "cmpl dxState+8380, %eax\n"
-        "jne .Lfce3f4_000ce409\n"
-        "jmp .Lfce3f4_000ce44f\n"
-    );
+    if ((DWORD)viewport->x == dxState.viewport.X &&
+        (DWORD)viewport->y == dxState.viewport.Y &&
+        (DWORD)viewport->width == dxState.viewport.Width &&
+        (DWORD)viewport->height == dxState.viewport.Height)
+    {
+        return;
+    }
+
+    dxState.viewport.X = viewport->x;
+    dxState.viewport.Y = viewport->y;
+    dxState.viewport.Width = viewport->width;
+    dxState.viewport.Height = viewport->height;
+    RB_SetViewportDx7(&dxState.viewport);
 }
 
 /* line 1770 */
@@ -2223,65 +2208,22 @@ void RB_SetProjectionMatrix(const D3DMATRIX *matrix)
 }
 
 /* line 1630 */
-__attribute__((naked))
 void RB_UpdateViewport(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1630 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl imp_backEnd, %eax\n" /* line 1635 */
-        "movb $0, 0x4bc(%eax)\n"
-        "cmpl $1, dxState+8356\n" /* line 1487 */
-        "je .Lfcfae4_000cfb6e\n"
-        "movl 0x3ec(%eax), %ebx\n" /* line 1507 */
-        "movl 0x3e8(%eax), %edx\n"
-        "movl 0x3e0(%eax), %ecx\n"
-        "movl 0x3e4(%eax), %eax\n"
-        "movb $0, dxState+8392\n" /* line 1641 */
-        "cmpl %ecx, dxState+8368\n" /* line 1619 */
-        "je .Lfcfae4_000cfb8d\n"
-        ".Lfcfae4_000cfb28:\n"
-        "movl %ecx, dxState+8368\n" /* line 1621 */
-        "movl %eax, dxState+8372\n" /* line 1622 */
-        "movl %edx, dxState+8376\n" /* line 1623 */
-        "movl %ebx, dxState+8380\n" /* line 1624 */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfcfae4_000cfb4b:\n"
-        "movl 8(%esi), %eax\n" /* line 1625 */
-        "movl (%eax), %edx\n"
-        "movl $dxState+8368, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xbc(%edx)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcfae4_000cfb4b\n"
-        ".Lfcfae4_000cfb67:\n"
-        "addl $0x10, %esp\n" /* line 1649 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcfae4_000cfb6e:\n"
-        "movl dxState+8348, %edx\n" /* line 1491 */
-        "movl dxState+8352, %ebx\n" /* line 1492 */
-        "xorl %ecx, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movb $0, dxState+8392\n" /* line 1641 */
-        "cmpl %ecx, dxState+8368\n" /* line 1619 */
-        "jne .Lfcfae4_000cfb28\n"
-        ".Lfcfae4_000cfb8d:\n"
-        "cmpl %eax, dxState+8372\n"
-        "jne .Lfcfae4_000cfb28\n"
-        "cmpl dxState+8376, %edx\n"
-        "jne .Lfcfae4_000cfb28\n"
-        "cmpl dxState+8380, %ebx\n"
-        "jne .Lfcfae4_000cfb28\n"
-        "jmp .Lfcfae4_000cfb67\n"
-    );
+    GfxViewport viewport;
+
+    backEnd.viewportIsDirty = 0;
+    if (dxState.viewportBehavior == GFX_USE_VIEWPORT_FULL) {
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = dxState.renderTargetWidth;
+        viewport.height = dxState.renderTargetHeight;
+    } else {
+        viewport = backEnd.sceneViewport;
+    }
+
+    dxState.viewportIsNull = 0;
+    RB_SetViewport(&viewport);
 }
 
 /* line 345 */
