@@ -14,6 +14,7 @@ extern int I_stricmp(const char *s0, const char *s1);
 extern int I_strnicmp(const char *s0, const char *s1, int n);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void Com_Printf(const char *fmt, ...);
+extern void FS_Printf(fileHandle_t f, const char *fmt, ...);
 extern int SEH_GetCurrentLanguage(void);
 extern void CL_SwitchToLocalClient(int localClientNum);
 extern void Z_FreeInternal(void *ptr);
@@ -1931,265 +1932,48 @@ void Console_Key(int key)
 }
 
 /* line 1504 */
-__attribute__((naked))
 void Key_WriteBindings(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1504 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl $str_002162f4, 4(%esp)\n" /* line 1509 */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "xorl %esi, %esi\n" /* i */
-        "xorl %edi, %edi\n"
-        ".Lf141724_00141744:\n"
-        "movl keys, %eax\n" /* line 1513 */
-        "movl 8(%eax, %edi), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf141724_001417fd\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf141724_001417fd\n"
-        /* { scope 2 */
-        "cmpl $-1, %esi\n" /* line 1275 */
-        "je .Lf141724_001418bd\n"
-        "cmpl $0xff, %esi\n" /* line 1278 */
-        "jbe .Lf141724_00141817\n"
-        "movl $str_002a6ec0, %ecx\n" /* "<OUT OF RANGE>" */
-        /* } scope */
-        ".Lf141724_00141778:\n"
-        "movl %ecx, 8(%esp)\n" /* line 1515 */
-        "movl $str_002a6fd0, 4(%esp)\n" /* "bind %s "" */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "movl keys, %eax\n" /* line 1516 */
-        "movl 8(%eax, %edi), %edx\n"
-        "movzbl (%edx), %eax\n"
-        "testb %al, %al\n"
-        "je .Lf141724_001417ea\n"
-        "movl %edx, %ebx\n"
-        "jmp .Lf141724_001417c8\n"
-        ".Lf141724_001417a3:\n"
-        "movsbl %al, %eax\n" /* line 1521 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002a6fe0, 4(%esp)\n" /* "%c" */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "movzbl 1(%ebx), %eax\n" /* line 1516 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "je .Lf141724_001417ea\n"
-        ".Lf141724_001417c8:\n"
-        "cmpb $0x22, %al\n" /* line 1518 */
-        "jne .Lf141724_001417a3\n"
-        "movl $str_002a6fdc, 4(%esp)\n" /* line 1519 */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "movzbl 1(%ebx), %eax\n" /* line 1516 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf141724_001417c8\n"
-        ".Lf141724_001417ea:\n"
-        "movl $str_002a6fe4, 4(%esp)\n" /* line 1523 */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        ".Lf141724_001417fd:\n"
-        "addl $1, %esi\n" /* line 1511 | i */
-        "addl $0xc, %edi\n"
-        "cmpl $0x100, %esi\n" /* i */
-        "jne .Lf141724_00141744\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1527 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf141724_00141817:\n"
-        "leal -0x21(%esi), %eax\n" /* line 1286 */
-        "cmpl $0x5d, %eax\n"
-        "ja .Lf141724_00141848\n"
-        "cmpl $0x22, %esi\n"
-        "je .Lf141724_00141848\n"
-        "movl %esi, (%esp)\n" /* line 1288 */
-        "calll ___toupper\n"
-        "movb %al, tinystr\n"
-        "movb $0, tinystr+1\n" /* line 1289 */
-        "cmpl $0x3b, %esi\n" /* line 1290 */
-        "je .Lf141724_00141848\n"
-        "movl $tinystr, %ecx\n" /* line 1334 */
-        "jmp .Lf141724_00141778\n"
-        ".Lf141724_00141848:\n"
-        "movl keynames, %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "je .Lf141724_00141879\n"
-        "cmpl %esi, keynames+4\n" /* line 1322 */
-        "je .Lf141724_00141778\n"
-        "movl $keynames+8, %edx\n" /* line 1504 */
-        "jmp .Lf141724_00141873\n"
-        ".Lf141724_00141865:\n"
-        "movl 4(%edx), %eax\n" /* line 1322 */
-        "addl $8, %edx\n"
-        "cmpl %esi, %eax\n"
-        "je .Lf141724_00141778\n"
-        ".Lf141724_00141873:\n"
-        "movl (%edx), %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf141724_00141865\n"
-        ".Lf141724_00141879:\n"
-        "movl %esi, %eax\n" /* line 1327 */
-        "sarl $4, %eax\n"
-        "movl %esi, %edx\n" /* line 1328 */
-        "andl $0xf, %edx\n"
-        "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, tinystr+1\n" /* line 1331 */
-        "cmpl $9, %eax\n" /* line 1332 */
-        "jle .Lf141724_001418cc\n"
-        "addb $0x57, %al\n"
-        ".Lf141724_00141898:\n"
-        "movb %al, tinystr+2\n"
-        "cmpl $9, %edx\n" /* line 1333 */
-        "jle .Lf141724_001418c7\n"
-        "leal 0x57(%edx), %eax\n"
-        ".Lf141724_001418a6:\n"
-        "movb %al, tinystr+3\n"
-        "movb $0, tinystr+4\n" /* line 1334 */
-        "movl $tinystr, %ecx\n"
-        "jmp .Lf141724_00141778\n"
-        ".Lf141724_001418bd:\n"
-        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
-        "jmp .Lf141724_00141778\n"
-        ".Lf141724_001418c7:\n"
-        "leal 0x30(%edx), %eax\n" /* line 1333 */
-        "jmp .Lf141724_001418a6\n"
-        ".Lf141724_001418cc:\n"
-        "addb $0x30, %al\n" /* line 1332 */
-        "jmp .Lf141724_00141898\n"
-    );
+    int keynum;
+
+    FS_Printf(f, "unbindall\n");
+
+    for (keynum = 0; keynum < 256; ++keynum) {
+        const char *binding;
+        const char *scan;
+
+        binding = keys[keynum].binding;
+        if (binding == NULL || *binding == '\0') {
+            continue;
+        }
+
+        FS_Printf(f, "bind %s \"", Key_KeynumToString(keynum, 0));
+        for (scan = binding; *scan; ++scan) {
+            if (*scan == '"') {
+                FS_Printf(f, "\\\"");
+            } else {
+                FS_Printf(f, "%c", *scan);
+            }
+        }
+        FS_Printf(f, "\"\n");
+    }
 }
 
 /* line 1592 */
-__attribute__((naked))
 void Key_Bindlist_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1592 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %esi, %esi\n"
-        "xorl %edi, %edi\n"
-        "jmp .Lf1418d0_0014190a\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1418d0_001418df:\n"
-        "movl $str_002a6ec0, %ecx\n" /* line 1278 */
-        /* } scope */
-        ".Lf1418d0_001418e4:\n"
-        "movl %ebx, 8(%esp)\n" /* line 1600 */
-        "movl %ecx, 4(%esp)\n"
-        "movl $str_00219570, (%esp)\n" /* "%s "%s"
-" */
-        "calll Com_Printf\n"
-        ".Lf1418d0_001418f8:\n"
-        "addl $1, %esi\n" /* line 1596 | i */
-        "addl $0xc, %edi\n"
-        "cmpl $0x100, %esi\n" /* i */
-        "je .Lf1418d0_001419e3\n"
-        ".Lf1418d0_0014190a:\n"
-        "movl keys, %eax\n" /* line 1598 */
-        "movl 8(%eax, %edi), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf1418d0_001418f8\n"
-        "cmpb $0, (%ebx)\n"
-        "je .Lf1418d0_001418f8\n"
-        /* { scope 2 */
-        "cmpl $-1, %esi\n" /* line 1275 */
-        "je .Lf1418d0_001419d0\n"
-        "cmpl $0xff, %esi\n" /* line 1278 */
-        "ja .Lf1418d0_001418df\n"
-        "leal -0x21(%esi), %eax\n" /* line 1286 */
-        "cmpl $0x5d, %eax\n"
-        "ja .Lf1418d0_0014195b\n"
-        "cmpl $0x22, %esi\n"
-        "je .Lf1418d0_0014195b\n"
-        "movl %esi, (%esp)\n" /* line 1288 */
-        "calll ___toupper\n"
-        "movb %al, tinystr\n"
-        "movb $0, tinystr+1\n" /* line 1289 */
-        "cmpl $0x3b, %esi\n" /* line 1290 */
-        "je .Lf1418d0_0014195b\n"
-        "movl $tinystr, %ecx\n" /* line 1334 */
-        "jmp .Lf1418d0_001418e4\n"
-        ".Lf1418d0_0014195b:\n"
-        "movl keynames, %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "je .Lf1418d0_0014198c\n"
-        "cmpl %esi, keynames+4\n" /* line 1322 */
-        "je .Lf1418d0_001418e4\n"
-        "movl $keynames+8, %edx\n" /* line 1592 */
-        "jmp .Lf1418d0_00141986\n"
-        ".Lf1418d0_00141978:\n"
-        "movl 4(%edx), %eax\n" /* line 1322 */
-        "addl $8, %edx\n"
-        "cmpl %esi, %eax\n"
-        "je .Lf1418d0_001418e4\n"
-        ".Lf1418d0_00141986:\n"
-        "movl (%edx), %ecx\n" /* line 1320 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1418d0_00141978\n"
-        ".Lf1418d0_0014198c:\n"
-        "movl %esi, %eax\n" /* line 1327 */
-        "sarl $4, %eax\n"
-        "movl %esi, %edx\n" /* line 1328 */
-        "andl $0xf, %edx\n"
-        "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, tinystr+1\n" /* line 1331 */
-        "cmpl $9, %eax\n" /* line 1332 */
-        "jle .Lf1418d0_001419df\n"
-        "addb $0x57, %al\n"
-        ".Lf1418d0_001419ab:\n"
-        "movb %al, tinystr+2\n"
-        "cmpl $9, %edx\n" /* line 1333 */
-        "jle .Lf1418d0_001419da\n"
-        "leal 0x57(%edx), %eax\n"
-        ".Lf1418d0_001419b9:\n"
-        "movb %al, tinystr+3\n"
-        "movb $0, tinystr+4\n" /* line 1334 */
-        "movl $tinystr, %ecx\n"
-        "jmp .Lf1418d0_001418e4\n"
-        ".Lf1418d0_001419d0:\n"
-        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
-        "jmp .Lf1418d0_001418e4\n"
-        ".Lf1418d0_001419da:\n"
-        "leal 0x30(%edx), %eax\n" /* line 1333 */
-        "jmp .Lf1418d0_001419b9\n"
-        ".Lf1418d0_001419df:\n"
-        "addb $0x30, %al\n" /* line 1332 */
-        "jmp .Lf1418d0_001419ab\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1418d0_001419e3:\n"
-        "addl $0x1c, %esp\n" /* line 1603 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int keynum;
+
+    for (keynum = 0; keynum < 256; ++keynum) {
+        const char *binding;
+
+        binding = keys[keynum].binding;
+        if (binding == NULL || *binding == '\0') {
+            continue;
+        }
+
+        Com_Printf("%s \"%s\"\n", Key_KeynumToString(keynum, 0), binding);
+    }
 }
 
 /* line 1628 */

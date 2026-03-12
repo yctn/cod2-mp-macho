@@ -20,6 +20,8 @@ extern void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context);
 extern void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd);
 extern void FX_UpdateScheduledEffectsBolt(void);
 extern void FX_UpdateScheduledEffectsNonBolt(void);
+extern const float AngleNormalize360(const float angle);
+extern void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
 
 extern unsigned char s_backEndData[]; /* s_backEndData */
 extern GfxCmdArray *s_cmdList; /* s_cmdList */
@@ -100,6 +102,48 @@ static GfxCmdCall *R_AllocDelayedCall(short id, int *marker)
         s_cmdList->lastCmd = NULL;
     }
 
+    return cmd;
+}
+
+static void *R_AllocCmd(int byteCount, int criticalByteCount, unsigned short id)
+{
+    int usedBytes;
+    int availBytes;
+    GfxCmdHeader *cmd;
+
+    usedBytes = s_cmdList->usedTotal;
+    availBytes = 0x30000 - usedBytes + s_cmdList->usedCritical - 0x2000;
+    if (availBytes <= byteCount - 1) {
+        s_cmdList->lastCmd = NULL;
+        return NULL;
+    }
+
+    cmd = (GfxCmdHeader *)((byte *)s_cmdList + usedBytes);
+    s_cmdList->usedTotal = usedBytes + byteCount;
+    s_cmdList->usedCritical += criticalByteCount;
+    s_cmdList->lastCmd = cmd;
+    cmd->id = id;
+    cmd->byteCount = byteCount;
+    return cmd;
+}
+
+static void *R_AllocCriticalCmd(int byteCount, unsigned short id)
+{
+    int usedBytes;
+    GfxCmdHeader *cmd;
+
+    usedBytes = s_cmdList->usedTotal;
+    if (0x30000 - usedBytes <= byteCount - 1) {
+        s_cmdList->lastCmd = NULL;
+        return NULL;
+    }
+
+    cmd = (GfxCmdHeader *)((byte *)s_cmdList + usedBytes);
+    s_cmdList->usedTotal = usedBytes + byteCount;
+    s_cmdList->usedCritical += byteCount;
+    s_cmdList->lastCmd = cmd;
+    cmd->id = id;
+    cmd->byteCount = byteCount;
     return cmd;
 }
 
@@ -803,237 +847,69 @@ void R_IssueDelayedDrawing(int marker)
 }
 
 /* line 1153 */
-int g_addcmd_count = 0; /* diagnostic */
-static int g_addcmd_diag = 0;
-void diag_addcmd_hex(unsigned int xi, unsigned int yi) {
-    (void)g_addcmd_diag;
-    (void)xi;
-    (void)yi;
-}
-__attribute__((naked))
 void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1153 */
-        "movl %esp, %ebp\n"
-        "incl g_addcmd_count\n"
-        /* DIAGNOSTIC: dump x,y,retaddr */
-        "pushal\n"
-        "pushl 4(%ebp)\n"
-        "pushl 0xc(%ebp)\n"
-        "pushl 8(%ebp)\n"
-        "calll diag_addcmd\n"
-        "addl $12, %esp\n"
-        "popal\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %edi\n" /* x */
-        "movss 0xc(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, -0x10(%ebp)\n" /* y */
-        "movss 0x10(%ebp), %xmm0\n" /* w */
-        "movss %xmm0, -0x14(%ebp)\n" /* w */
-        "movss 0x14(%ebp), %xmm0\n" /* h */
-        "movss %xmm0, -0x18(%ebp)\n" /* h */
-        "movss 0x18(%ebp), %xmm0\n" /* s0 */
-        "movss %xmm0, -0x1c(%ebp)\n" /* s0 */
-        "movss 0x1c(%ebp), %xmm0\n" /* t0 */
-        "movss %xmm0, -0x20(%ebp)\n" /* t0 */
-        "movss 0x20(%ebp), %xmm0\n" /* s1 */
-        "movss %xmm0, -0x24(%ebp)\n" /* s1 */
-        "movss 0x24(%ebp), %xmm0\n" /* t1 */
-        "movss %xmm0, -0x28(%ebp)\n" /* t1 */
-        "movl 0x28(%ebp), %eax\n" /* color */
-        "movl %eax, -0x2c(%ebp)\n" /* color */
-        "movl 0x2c(%ebp), %esi\n" /* material */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x2b, %eax\n"
-        "jg .Lfc87e6_000c8876\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc87e6_000c886e:\n"
-        "addl $0x20, %esp\n" /* line 1172 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc87e6_000c8876:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x2c(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xf, (%edx)\n" /* line 964 */
-        "movw $0x2c, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1159 */
-        "je .Lfc87e6_000c886e\n"
-        "movl %esi, 4(%edx)\n" /* line 1162 | material */
-        "movl %edi, 8(%edx)\n" /* line 1163 | x */
-        "movss -0x10(%ebp), %xmm0\n" /* line 1164 | y */
-        "movss %xmm0, 0xc(%edx)\n"
-        "movss -0x14(%ebp), %xmm0\n" /* line 1165 | w */
-        "movss %xmm0, 0x10(%edx)\n"
-        "movss -0x18(%ebp), %xmm0\n" /* line 1166 | h */
-        "movss %xmm0, 0x14(%edx)\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 1167 | s0 */
-        "movss %xmm0, 0x18(%edx)\n"
-        "movss -0x20(%ebp), %xmm0\n" /* line 1168 | t0 */
-        "movss %xmm0, 0x1c(%edx)\n"
-        "movss -0x24(%ebp), %xmm0\n" /* line 1169 | s1 */
-        "movss %xmm0, 0x20(%edx)\n"
-        "movss -0x28(%ebp), %xmm0\n" /* line 1170 | t1 */
-        "movss %xmm0, 0x24(%edx)\n"
-        "addl $0x28, %eax\n" /* line 1171 */
-        "movl %eax, 0xc(%ebp)\n" /* y */
-        "movl -0x2c(%ebp), %eax\n" /* color */
-        "movl %eax, 8(%ebp)\n" /* x */
-        "addl $0x20, %esp\n" /* line 1172 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp R_ConvertColorToBytes\n" /* line 1171 */
-    );
+    GfxCmdStretchPic *cmd;
+
+    cmd = (GfxCmdStretchPic *)R_AllocCmd(0x2c, 0, 0xf);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->material = material;
+    cmd->x = x;
+    cmd->y = y;
+    cmd->w = w;
+    cmd->h = h;
+    cmd->s0 = s0;
+    cmd->t0 = t0;
+    cmd->s1 = s1;
+    cmd->t1 = t1;
+    R_ConvertColorToBytes(color, cmd->color.array);
 }
 
 /* line 1175 */
-__attribute__((naked))
 void R_AddCmdDrawStretchPicRotate(float x, float y, float w, float h, float s0, float t0, float s1, float t1, float angle, const vec_t *color, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1175 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x2f, %eax\n"
-        "jg .Lfc88fe_000c8938\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc88fe_000c8932:\n"
-        "addl $0x14, %esp\n" /* line 1195 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc88fe_000c8938:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x30(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x10, (%edx)\n" /* line 964 */
-        "movw $0x30, 2(%edx)\n" /* line 965 */
-        "movl %edx, %ebx\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1181 */
-        "je .Lfc88fe_000c8932\n"
-        "movl 0x30(%ebp), %eax\n" /* line 1184 | material */
-        "movl %eax, 4(%edx)\n"
-        "movss 8(%ebp), %xmm0\n" /* line 1185 | x */
-        "movss %xmm0, 8(%edx)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* line 1186 | y */
-        "movss %xmm0, 0xc(%edx)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 1187 | w */
-        "movss %xmm0, 0x10(%edx)\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 1188 | h */
-        "movss %xmm0, 0x14(%edx)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 1189 | s0 */
-        "movss %xmm0, 0x18(%edx)\n"
-        "movss 0x1c(%ebp), %xmm0\n" /* line 1190 | t0 */
-        "movss %xmm0, 0x1c(%edx)\n"
-        "movss 0x20(%ebp), %xmm0\n" /* line 1191 | s1 */
-        "movss %xmm0, 0x20(%edx)\n"
-        "movss 0x24(%ebp), %xmm0\n" /* line 1192 | t1 */
-        "movss %xmm0, 0x24(%edx)\n"
-        "leal 0x28(%edx), %eax\n" /* line 1193 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x2c(%ebp), %eax\n" /* color */
-        "movl %eax, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "movss 0x28(%ebp), %xmm0\n" /* line 1194 | angle */
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps 0x2c(%ebx)\n"
-        "addl $0x14, %esp\n" /* line 1195 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdStretchPicRotate *cmd;
+
+    cmd = (GfxCmdStretchPicRotate *)R_AllocCmd(0x30, 0, 0x10);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->material = material;
+    cmd->x = x;
+    cmd->y = y;
+    cmd->w = w;
+    cmd->h = h;
+    cmd->s0 = s0;
+    cmd->t0 = t0;
+    cmd->s1 = s1;
+    cmd->t1 = t1;
+    R_ConvertColorToBytes(color, cmd->color.array);
+    cmd->rotation = AngleNormalize360(angle);
 }
 
 /* line 1198 */
-__attribute__((naked))
 void R_AddCmdDrawStretchRaw(int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1198 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x27, %eax\n"
-        "jg .Lfc89dc_000c8a10\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc89dc_000c8a0d:\n"
-        "popl %ebx\n" /* line 1216 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc89dc_000c8a10:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x28(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x11, (%edx)\n" /* line 964 */
-        "movw $0x28, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1204 */
-        "je .Lfc89dc_000c8a0d\n"
-        "movl 8(%ebp), %edx\n" /* line 1207 | x */
-        "movl %edx, 4(%eax)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1208 | y */
-        "movl %edx, 8(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 1209 | w */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 0x14(%ebp), %edx\n" /* line 1210 | h */
-        "movl %edx, 0x10(%eax)\n"
-        "movl 0x18(%ebp), %edx\n" /* line 1211 | cols */
-        "movl %edx, 0x14(%eax)\n"
-        "movl 0x1c(%ebp), %edx\n" /* line 1212 | rows */
-        "movl %edx, 0x18(%eax)\n"
-        "movl 0x20(%ebp), %edx\n" /* line 1213 | data */
-        "movl %edx, 0x1c(%eax)\n"
-        "movl 0x24(%ebp), %edx\n" /* line 1214 | client */
-        "movl %edx, 0x20(%eax)\n"
-        "movl 0x28(%ebp), %edx\n" /* line 1215 | dirty */
-        "movl %edx, 0x24(%eax)\n"
-        "popl %ebx\n" /* line 1216 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdStretchRaw *cmd;
+
+    cmd = (GfxCmdStretchRaw *)R_AllocCmd(0x28, 0, 0x11);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->x = x;
+    cmd->y = y;
+    cmd->w = w;
+    cmd->h = h;
+    cmd->cols = cols;
+    cmd->rows = rows;
+    cmd->data = data;
+    cmd->client = client;
+    cmd->dirty = dirty;
 }
 
 /* line 1219 */
@@ -1262,285 +1138,86 @@ void R_AddCmdDrawTextInSpace(const char *text, FontHandle font, const vec_t *org
 }
 
 /* line 1299 */
-__attribute__((naked))
 void R_AddCmdDrawQuadPic(vec2_t *verts, const vec_t *color, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1299 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $8, %esp\n"
-        "movl 8(%ebp), %edi\n" /* verts */
-        "movl 0xc(%ebp), %eax\n" /* color */
-        "movl %eax, -0x10(%ebp)\n" /* color */
-        "movl 0x10(%ebp), %eax\n" /* material */
-        "movl %eax, -0x14(%ebp)\n" /* material */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x2b, %eax\n"
-        "jg .Lfc8c8c_000c8cd9\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        /* } scope */
-        ".Lfc8c8c_000c8cd1:\n"
-        "addl $8, %esp\n" /* line 1313 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfc8c8c_000c8cd9:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x2c(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x12, (%edx)\n" /* line 964 */
-        "movw $0x2c, 2(%edx)\n" /* line 965 */
-        "movl %edx, %esi\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1306 */
-        "je .Lfc8c8c_000c8cd1\n"
-        "movl -0x14(%ebp), %eax\n" /* line 1309 | material */
-        "movl %eax, 4(%edx)\n"
-        "xorl %ebx, %ebx\n" /* cornerIndex */
-        ".Lfc8c8c_000c8d04:\n"
-        "leal (, %ebx, 8), %eax\n" /* line 1311 */
-        "leal (%esi, %eax), %ecx\n"
-        "addl %edi, %eax\n" /* line 1299 | verts */
-        "movl (%eax), %edx\n" /* line 37 */
-        "movl %edx, 8(%ecx)\n"
-        "movl 4(%eax), %eax\n" /* line 38 */
-        "movl %eax, 0xc(%ecx)\n"
-        "addl $1, %ebx\n" /* line 1310 | cornerIndex */
-        "cmpl $4, %ebx\n" /* cornerIndex */
-        "jne .Lfc8c8c_000c8d04\n"
-        "leal 0x28(%esi), %eax\n" /* line 1312 */
-        "movl %eax, 0xc(%ebp)\n" /* color */
-        "movl -0x10(%ebp), %eax\n" /* color */
-        "movl %eax, 8(%ebp)\n" /* verts */
-        /* } scope */
-        "addl $8, %esp\n" /* line 1313 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp R_ConvertColorToBytes\n" /* line 1312 */
-    );
+    int cornerIndex;
+    GfxCmdDrawQuadPic *cmd;
+
+    cmd = (GfxCmdDrawQuadPic *)R_AllocCmd(0x2c, 0, 0x12);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->material = material;
+    for (cornerIndex = 0; cornerIndex < 4; ++cornerIndex) {
+        cmd->verts[cornerIndex][0] = verts[cornerIndex][0];
+        cmd->verts[cornerIndex][1] = verts[cornerIndex][1];
+    }
+    R_ConvertColorToBytes(color, cmd->color.array);
 }
 
 /* line 1316 */
-__attribute__((naked))
 void R_AddCmdDrawSprite(MaterialHandle material, const byte *rgbaColor, const vec_t *pos, float radius, float minScreenRadius, int renderFxFlags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1316 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 0x10(%ebp), %esi\n" /* pos */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x23, %eax\n"
-        "jg .Lfc8d3c_000c8d75\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc8d3c_000c8d71:\n"
-        "popl %ebx\n" /* line 1331 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8d3c_000c8d75:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x24(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x13, (%edx)\n" /* line 964 */
-        "movw $0x24, 2(%edx)\n" /* line 965 */
-        "movl %edx, %ecx\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1322 */
-        "je .Lfc8d3c_000c8d71\n"
-        "movl 8(%ebp), %eax\n" /* line 1325 | material */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 606 | rgbaColor */
-        "movl (%edx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "leal 0xc(%ecx), %edx\n" /* line 1327 | to */
-        /* { scope 1 */
-        "movl (%esi), %eax\n" /* line 199 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 4(%esi), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movss 0x14(%ebp), %xmm0\n" /* line 1328 | radius */
-        "movss %xmm0, 0x18(%ecx)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 1329 | minScreenRadius */
-        "movss %xmm0, 0x1c(%ecx)\n"
-        "movl 0x1c(%ebp), %eax\n" /* line 1330 | renderFxFlags */
-        "movl %eax, 0x20(%ecx)\n"
-        "popl %ebx\n" /* line 1331 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdDrawSprite *cmd;
+
+    cmd = (GfxCmdDrawSprite *)R_AllocCmd(0x24, 0, 0x13);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->material = material;
+    cmd->rgbaColor.array[0] = rgbaColor[0];
+    cmd->rgbaColor.array[1] = rgbaColor[1];
+    cmd->rgbaColor.array[2] = rgbaColor[2];
+    cmd->rgbaColor.array[3] = rgbaColor[3];
+    cmd->pos[0] = pos[0];
+    cmd->pos[1] = pos[1];
+    cmd->pos[2] = pos[2];
+    cmd->radius = radius;
+    cmd->minScreenRadius = minScreenRadius;
+    cmd->renderFxFlags = renderFxFlags;
 }
 
 /* line 1334 */
-__attribute__((naked))
 void R_AddCmdDrawFullScreenColoredQuad(float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1334 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %edi\n" /* s0 */
-        "movss 0xc(%ebp), %xmm0\n" /* t0 */
-        "movss %xmm0, -0x10(%ebp)\n" /* t0 */
-        "movss 0x10(%ebp), %xmm0\n" /* s1 */
-        "movss %xmm0, -0x14(%ebp)\n" /* s1 */
-        "movss 0x14(%ebp), %xmm0\n" /* t1 */
-        "movss %xmm0, -0x18(%ebp)\n" /* t1 */
-        "movl 0x18(%ebp), %eax\n" /* color */
-        "movl %eax, -0x1c(%ebp)\n" /* color */
-        "movl 0x1c(%ebp), %esi\n" /* material */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0x1b, %eax\n"
-        "jg .Lfc8dd8_000c8e40\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc8dd8_000c8e38:\n"
-        "addl $0x10, %esp\n" /* line 1349 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8dd8_000c8e40:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x1c(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x14, (%edx)\n" /* line 964 */
-        "movw $0x1c, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1340 */
-        "je .Lfc8dd8_000c8e38\n"
-        "movl %esi, 4(%edx)\n" /* line 1343 | material */
-        "movl %edi, 8(%edx)\n" /* line 1344 | s0 */
-        "movss -0x10(%ebp), %xmm0\n" /* line 1345 | t0 */
-        "movss %xmm0, 0xc(%edx)\n"
-        "movss -0x14(%ebp), %xmm0\n" /* line 1346 | s1 */
-        "movss %xmm0, 0x10(%edx)\n"
-        "movss -0x18(%ebp), %xmm0\n" /* line 1347 | t1 */
-        "movss %xmm0, 0x14(%edx)\n"
-        "addl $0x18, %eax\n" /* line 1348 */
-        "movl %eax, 0xc(%ebp)\n" /* t0 */
-        "movl -0x1c(%ebp), %eax\n" /* color */
-        "movl %eax, 8(%ebp)\n" /* s0 */
-        "addl $0x10, %esp\n" /* line 1349 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp R_ConvertColorToBytes\n" /* line 1348 */
-    );
+    GfxCmdDrawFullScreenColoredQuad *cmd;
+
+    cmd = (GfxCmdDrawFullScreenColoredQuad *)R_AllocCmd(0x1c, 0, 0x14);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->material = material;
+    cmd->s0 = s0;
+    cmd->t0 = t0;
+    cmd->s1 = s1;
+    cmd->t1 = t1;
+    R_ConvertColorToBytes(color, cmd->color.array);
 }
 
 /* line 1352 */
-__attribute__((naked))
 void R_AddCmdSetMaterialColor(const vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1352 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* color */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $0x13, %eax\n"
-        "jg .Lfc8ea0_000c8eee\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %ecx, %ecx\n"
-        /* } scope */
-        "testl %esi, %esi\n" /* line 1360 | color */
-        "je .Lfc8ea0_000c8f18\n"
-        ".Lfc8ea0_000c8ed0:\n"
-        "leal 4(%ecx), %edx\n" /* line 1361 | to */
-        /* { scope 1 */
-        "movl (%esi), %eax\n" /* line 456 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 4(%esi), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%esi), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1364 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8ea0_000c8eee:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x14(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $0x14, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $4, (%edx)\n" /* line 964 */
-        "movw $0x14, 2(%edx)\n" /* line 965 */
-        "movl %edx, %ecx\n"
-        /* } scope */
-        "testl %esi, %esi\n" /* line 1360 | color */
-        "jne .Lfc8ea0_000c8ed0\n"
-        ".Lfc8ea0_000c8f18:\n"
-        "leal 4(%ecx), %edx\n" /* line 1363 | v */
-        /* { scope 1 */
-        "xorl %eax, %eax\n" /* line 438 */
-        "movl %eax, 4(%ecx)\n"
-        "movl %eax, 4(%edx)\n" /* line 439 */
-        "movl %eax, 8(%edx)\n" /* line 440 */
-        "movl %eax, 0xc(%edx)\n" /* line 441 */
-        /* } scope */
-        "popl %ebx\n" /* line 1364 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdSetMaterialColor *cmd;
+
+    cmd = (GfxCmdSetMaterialColor *)R_AllocCriticalCmd(0x14, 4);
+    if (cmd == NULL) {
+        return;
+    }
+
+    if (color != NULL) {
+        cmd->color[0] = color[0];
+        cmd->color[1] = color[1];
+        cmd->color[2] = color[2];
+        cmd->color[3] = color[3];
+    } else {
+        cmd->color[0] = 0.0f;
+        cmd->color[1] = 0.0f;
+        cmd->color[2] = 0.0f;
+        cmd->color[3] = 0.0f;
+    }
 }
 
 /* line 1367 */
@@ -1654,202 +1331,61 @@ void R_AddCmdLightProperties(int lightIndex, const GfxLight *light)
 }
 
 /* line 1452 */
-__attribute__((naked))
 void R_AddCmdSetRenderTarget(GfxRenderTargetId renderTargetId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1452 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc9062_000c9093\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %edx, %edx\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1459 | renderTargetId */
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1460 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc9062_000c9093:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $8, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xe, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1459 | renderTargetId */
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1460 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdSetRenderTarget *cmd;
+
+    cmd = (GfxCmdSetRenderTarget *)R_AllocCriticalCmd(8, 0xe);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->renderTargetId = renderTargetId;
 }
 
 /* line 1518 */
-__attribute__((naked))
 void R_AddCmdDrawSun(int viewIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1518 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc90c0_000c90fc\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %edx, %edx\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1527 | viewIndex */
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1528 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc90c0_000c90fc:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x18, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1527 | viewIndex */
-        "movl %eax, 4(%edx)\n"
-        "popl %ebx\n" /* line 1528 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdDrawSunPostEffects *cmd;
+
+    cmd = (GfxCmdDrawSunPostEffects *)R_AllocCmd(8, 0, 0x18);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->viewIndex = viewIndex;
 }
 
 /* line 1604 */
-__attribute__((naked))
 void R_AddCmdBeginView(int viewCount, const GfxSceneDef *sceneDef, const GfxViewParms *viewParms, const GfxLodParms *lodParms)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1604 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %esi\n" /* sceneDef */
-        "movl 0x14(%ebp), %edi\n" /* lodParms */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $0x2f, %eax\n"
-        "jg .Lfc9122_000c9197\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %edx, %edx\n"
-        /* } scope */
-        ".Lfc9122_000c9152:\n"
-        "movl 8(%ebp), %eax\n" /* line 1613 | viewCount */
-        "movl %eax, 0x2c(%edx)\n"
-        "movl (%esi), %eax\n" /* line 1614 | sceneDef */
-        "movl %eax, 4(%edx)\n"
-        "movl 4(%esi), %eax\n" /* sceneDef */
-        "movl %eax, 8(%edx)\n"
-        "movl 8(%esi), %eax\n" /* sceneDef */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0xc(%esi), %eax\n" /* sceneDef */
-        "movl %eax, 0x10(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1615 | viewParms */
-        "movl %eax, 0x14(%edx)\n"
-        "movl (%edi), %eax\n" /* line 1616 | lodParms */
-        "movl %eax, 0x18(%edx)\n"
-        "movl 4(%edi), %eax\n" /* lodParms */
-        "movl %eax, 0x1c(%edx)\n"
-        "movl 8(%edi), %eax\n" /* lodParms */
-        "movl %eax, 0x20(%edx)\n"
-        "movl 0xc(%edi), %eax\n" /* lodParms */
-        "movl %eax, 0x24(%edx)\n"
-        "movl 0x10(%edi), %eax\n" /* lodParms */
-        "movl %eax, 0x28(%edx)\n"
-        "popl %ebx\n" /* line 1617 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc9122_000c9197:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x30(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $0x30, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xc, (%edx)\n" /* line 964 */
-        "movw $0x30, 2(%edx)\n" /* line 965 */
-        "jmp .Lfc9122_000c9152\n"
-    );
+    GfxCmdBeginView *cmd;
+
+    cmd = (GfxCmdBeginView *)R_AllocCriticalCmd(0x30, 0xc);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->sceneDef = *sceneDef;
+    cmd->viewParms = viewParms;
+    cmd->lodParms = *lodParms;
+    cmd->viewCount = viewCount;
 }
 
 /* line 1620 */
-__attribute__((naked))
 void R_AddCmdSetViewport(int x, int y, int width, int height)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1620 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $0x13, %eax\n"
-        "jg .Lfc91be_000c9201\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %edx, %edx\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1631 | x */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1632 | y */
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1633 | width */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1634 | height */
-        "movl %eax, 0x10(%edx)\n"
-        "popl %ebx\n" /* line 1635 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc91be_000c9201:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x14(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $0x14, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xd, (%edx)\n" /* line 964 */
-        "movw $0x14, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 1631 | x */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1632 | y */
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1633 | width */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1634 | height */
-        "movl %eax, 0x10(%edx)\n"
-        "popl %ebx\n" /* line 1635 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdSetViewport *cmd;
+
+    cmd = (GfxCmdSetViewport *)R_AllocCriticalCmd(0x14, 0xd);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->viewport.x = x;
+    cmd->viewport.y = y;
+    cmd->viewport.width = width;
+    cmd->viewport.height = height;
 }
 
 /* line 1838 */
@@ -1908,265 +1444,79 @@ void R_EndDebugFrame(void)
 }
 
 /* line 1867 */
-__attribute__((naked))
 void R_AddCmdApplyEarlyPostEffects(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1867 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $3, %eax\n"
-        "jg .Lfc9326_000c935a\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        "popl %ebx\n" /* line 1873 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc9326_000c935a:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 4(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x19, (%edx)\n" /* line 964 */
-        "movw $4, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "popl %ebx\n" /* line 1873 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (R_AllocCmd(4, 0, 0x19) == NULL) {
+        return;
+    }
 }
 
 /* line 1876 */
-__attribute__((naked))
 void R_AddCmdApplyLatePostEffects(float blurRadius)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1876 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc937a_000c93ae\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc937a_000c93ab:\n"
-        "popl %ebx\n" /* line 1886 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc937a_000c93ae:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x1a, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1882 */
-        "je .Lfc937a_000c93ab\n"
-        "movss 8(%ebp), %xmm0\n" /* line 1885 | blurRadius */
-        "movss %xmm0, 4(%edx)\n"
-        "popl %ebx\n" /* line 1886 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdApplyLatePostEffects *cmd;
+
+    cmd = (GfxCmdApplyLatePostEffects *)R_AllocCmd(8, 0, 0x1a);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->blurRadius = blurRadius;
 }
 
 /* line 1889 */
-__attribute__((naked))
 void R_AddCmdDrawSunPostEffects(int viewIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1889 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $7, %eax\n"
-        "jg .Lfc93dc_000c9410\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        ".Lfc93dc_000c940d:\n"
-        "popl %ebx\n" /* line 1901 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc93dc_000c9410:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 8(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x1b, (%edx)\n" /* line 964 */
-        "movw $8, 2(%edx)\n" /* line 965 */
-        "movl %edx, %eax\n" /* line 966 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1897 */
-        "je .Lfc93dc_000c940d\n"
-        "movl 8(%ebp), %edx\n" /* line 1900 | viewIndex */
-        "movl %edx, 4(%eax)\n"
-        "popl %ebx\n" /* line 1901 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdDrawSunPostEffects *cmd;
+
+    cmd = (GfxCmdDrawSunPostEffects *)R_AllocCmd(8, 0, 0x1b);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->viewIndex = viewIndex;
 }
 
 /* line 1913 */
-__attribute__((naked))
 void R_AddCmdClearScreen(int whichToClear, const vec_t *color, float depth, int stencil)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1913 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %esi\n" /* color */
-        "movzbl 0x14(%ebp), %edi\n" /* stencil */
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $0x1b, %eax\n"
-        "jg .Lfc943c_000c949d\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        "xorl %ecx, %ecx\n"
-        /* } scope */
-        ".Lfc943c_000c946d:\n"
-        "movl 8(%ebp), %eax\n" /* line 1926 | whichToClear */
-        "movb %al, 4(%ecx)\n"
-        "movl %edi, %eax\n" /* line 1928 | stencil */
-        "movb %al, 5(%ecx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1929 | depth */
-        "movl %eax, 8(%ecx)\n"
-        "leal 0xc(%ecx), %edx\n" /* line 1930 | to */
-        /* { scope 1 */
-        "movl (%esi), %eax\n" /* line 456 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 4(%esi), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%esi), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1931 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc943c_000c949d:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0x1c(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $0x1c, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xb, (%edx)\n" /* line 964 */
-        "movw $0x1c, 2(%edx)\n" /* line 965 */
-        "movl %edx, %ecx\n"
-        "jmp .Lfc943c_000c946d\n"
-    );
+    GfxCmdClearScreen *cmd;
+
+    cmd = (GfxCmdClearScreen *)R_AllocCriticalCmd(0x1c, 0xb);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->whichToClear = (byte)whichToClear;
+    cmd->stencil = (byte)stencil;
+    cmd->depth = depth;
+    cmd->color[0] = color[0];
+    cmd->color[1] = color[1];
+    cmd->color[2] = color[2];
+    cmd->color[3] = color[3];
 }
 
 /* line 1934 */
-__attribute__((naked))
 void R_AddCmdSaveScreen(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1934 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "cmpl $3, %eax\n"
-        "jg .Lfc94c6_000c94ef\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        "popl %ebx\n" /* line 1941 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc94c6_000c94ef:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 4(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "addl $4, 0x30004(%ecx)\n" /* line 962 */
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0xa, (%edx)\n" /* line 964 */
-        "movw $4, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "popl %ebx\n" /* line 1941 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (R_AllocCriticalCmd(4, 0xa) == NULL) {
+        return;
+    }
 }
 
 /* line 1944 */
-__attribute__((naked))
 void R_AddCmdBlendSavedScreen(int fadeMsec)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1944 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* fadeMsec */
-        "testl %esi, %esi\n" /* line 1948 | fadeMsec */
-        "jle .Lfc9516_000c9569\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $0xb, %eax\n"
-        "jle .Lfc9516_000c956d\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 0xc(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x1d, (%edx)\n" /* line 964 */
-        "movw $0xc, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 1953 */
-        "je .Lfc9516_000c9569\n"
-        "movl %esi, 4(%edx)\n" /* line 1956 | fadeMsec */
-        ".Lfc9516_000c9569:\n"
-        "popl %ebx\n" /* line 1957 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc9516_000c956d:\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        "popl %ebx\n" /* line 1957 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCmdBlendSavedScreen *cmd;
+
+    if (fadeMsec <= 0) {
+        return;
+    }
+
+    cmd = (GfxCmdBlendSavedScreen *)R_AllocCmd(0xc, 0, 0x1d);
+    if (cmd == NULL) {
+        return;
+    }
+
+    cmd->fadeMsec = fadeMsec;
 }
