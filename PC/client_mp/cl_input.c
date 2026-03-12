@@ -16,8 +16,12 @@ extern const dvar_t *cl_talking; /* 0x0 */
 extern const dvar_t *cl_bypassMouseInput; /* 0x0 */
 extern const dvar_t *cl_analog_attack_threshold; /* 0x0 */
 extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
+extern int atoi(const char *nptr);
+extern const char *Cmd_Argv(int arg);
+extern void Com_Printf(const char *fmt, ...);
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
+extern unsigned int frame_msec; /* 0x0 */
 
 __asm__(".Lclwp_fmt: .asciz \"[CL_WritePacket] serverId=%d\\n\"\n");
 static int cl_wp_dbg_count = 0;
@@ -131,169 +135,117 @@ void IN_CenterView(void)
 }
 
 /* line 116 */
-__attribute__((naked))
 void IN_KeyDown(kbutton_t *b)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 116 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* b */
-        /* { scope 1 */
-        "movl $1, (%esp)\n" /* line 121 */
-        "calll Cmd_Argv\n"
-        "cmpb $0, (%eax)\n" /* line 122 */
-        "jne .Lf1854c8_0018552f\n"
-        "movl $0xffffffff, %eax\n"
-        ".Lf1854c8_001854e8:\n"
-        "movl (%ebx), %edx\n" /* line 131 | b */
-        "cmpl %edx, %eax\n"
-        "je .Lf1854c8_00185520\n"
-        "movl 4(%ebx), %ecx\n" /* b */
-        "cmpl %ecx, %eax\n"
-        "je .Lf1854c8_00185520\n"
-        "testl %edx, %edx\n" /* line 136 */
-        "jne .Lf1854c8_00185526\n"
-        "movl %eax, (%ebx)\n" /* line 138 | b */
-        ".Lf1854c8_001854fb:\n"
-        "cmpb $0, 0x10(%ebx)\n" /* line 150 | b */
-        "jne .Lf1854c8_00185520\n"
-        "movl $2, (%esp)\n" /* line 156 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n" /* line 157 */
-        "calll atoi\n"
-        "movl %eax, 8(%ebx)\n" /* b */
-        "movb $1, 0x10(%ebx)\n" /* line 159 | b */
-        "movb $1, 0x11(%ebx)\n" /* line 160 | b */
-        /* } scope */
-        ".Lf1854c8_00185520:\n"
-        "addl $0x14, %esp\n" /* line 161 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1854c8_00185526:\n"
-        "testl %ecx, %ecx\n" /* line 140 */
-        "jne .Lf1854c8_00185539\n"
-        "movl %eax, 4(%ebx)\n" /* line 142 | b */
-        "jmp .Lf1854c8_001854fb\n"
-        ".Lf1854c8_0018552f:\n"
-        "movl %eax, (%esp)\n" /* line 124 */
-        "calll atoi\n"
-        "jmp .Lf1854c8_001854e8\n"
-        ".Lf1854c8_00185539:\n"
-        "movl $str_002af610, 8(%ebp)\n" /* line 146 | b */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 161 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Com_Printf\n" /* line 146 */
-    );
+    const char *keyText;
+    int key;
+
+    keyText = Cmd_Argv(1);
+    key = keyText[0] ? atoi(keyText) : -1;
+
+    if (key == b->down[0] || key == b->down[1])
+    {
+        return;
+    }
+
+    if (!b->down[0])
+    {
+        b->down[0] = key;
+    }
+    else if (!b->down[1])
+    {
+        b->down[1] = key;
+    }
+    else
+    {
+        Com_Printf(str_002af610);
+        return;
+    }
+
+    if (b->active)
+    {
+        return;
+    }
+
+    b->downtime = atoi(Cmd_Argv(2));
+    b->active = 1;
+    b->wasPressed = 1;
 }
 
 /* line 164 */
-__attribute__((naked))
 void IN_KeyUp(kbutton_t *b)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 164 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* b */
-        /* { scope 1 */
-        "movl $1, (%esp)\n" /* line 170 */
-        "calll Cmd_Argv\n"
-        "cmpb $0, (%eax)\n" /* line 171 */
-        "jne .Lf18554a_0018557c\n"
-        "movl $0, 4(%ebx)\n" /* line 178 | b */
-        "movl $0, (%ebx)\n" /* b */
-        "movb $0, 0x10(%ebx)\n" /* line 179 | b */
-        /* } scope */
-        ".Lf18554a_00185576:\n"
-        "addl $0x14, %esp\n" /* line 215 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18554a_0018557c:\n"
-        "movl %eax, (%esp)\n" /* line 173 */
-        "calll atoi\n"
-        "cmpl (%ebx), %eax\n" /* line 183 | b */
-        "je .Lf18554a_001855cf\n"
-        "cmpl 4(%ebx), %eax\n" /* line 187 | b */
-        "jne .Lf18554a_00185576\n"
-        "movl $0, 4(%ebx)\n" /* line 189 | b */
-        ".Lf18554a_00185594:\n"
-        "movl (%ebx), %edx\n" /* line 195 | b */
-        "testl %edx, %edx\n"
-        "jne .Lf18554a_00185576\n"
-        "movl 4(%ebx), %eax\n" /* b */
-        "testl %eax, %eax\n"
-        "jne .Lf18554a_00185576\n"
-        "movb $0, 0x10(%ebx)\n" /* line 200 | b */
-        "movl $2, (%esp)\n" /* line 203 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n" /* line 204 */
-        "calll atoi\n"
-        "testl %eax, %eax\n" /* line 205 */
-        "jne .Lf18554a_001855d7\n"
-        "movl imp_frame_msec, %eax\n" /* line 211 */
-        "movl (%eax), %eax\n"
-        "shrl $1, %eax\n"
-        "addl %eax, 0xc(%ebx)\n" /* b */
-        "movb $0, 0x10(%ebx)\n" /* line 214 | b */
-        "jmp .Lf18554a_00185576\n"
-        ".Lf18554a_001855cf:\n"
-        "movl $0, (%ebx)\n" /* line 185 | b */
-        "jmp .Lf18554a_00185594\n"
-        ".Lf18554a_001855d7:\n"
-        "subl 8(%ebx), %eax\n" /* line 207 | b */
-        "addl %eax, 0xc(%ebx)\n" /* b */
-        "movb $0, 0x10(%ebx)\n" /* line 214 | b */
-        "jmp .Lf18554a_00185576\n"
-    );
+    const char *keyText;
+    int key;
+    int uptime;
+
+    keyText = Cmd_Argv(1);
+    if (!keyText[0])
+    {
+        b->down[0] = 0;
+        b->down[1] = 0;
+        b->active = 0;
+        return;
+    }
+
+    key = atoi(keyText);
+    if (key == b->down[0])
+    {
+        b->down[0] = 0;
+    }
+    else if (key == b->down[1])
+    {
+        b->down[1] = 0;
+    }
+    else
+    {
+        return;
+    }
+
+    if (b->down[0] || b->down[1])
+    {
+        return;
+    }
+
+    b->active = 0;
+    uptime = atoi(Cmd_Argv(2));
+    if (uptime)
+    {
+        b->msec += uptime - b->downtime;
+    }
+    else
+    {
+        b->msec += frame_msec / 2;
+    }
+
+    b->active = 0;
 }
 
 /* line 278 */
-__attribute__((naked))
 void IN_UpDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 278 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 280 */
-        "addl $0xf0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "movl kb, %edx\n" /* line 283 */
-        "cmpb $0, 0x204(%edx)\n"
-        "jne .Lf1855e6_0018562a\n"
-        "cmpb $0, 0xec(%edx)\n"
-        "jne .Lf1855e6_0018562a\n"
-        "movl imp_legacyHacks, %eax\n" /* line 290 */
-        "movl (%eax), %eax\n"
-        "cmpl $1, 8(%eax)\n"
-        "jle .Lf1855e6_0018562c\n"
-        "movl $1, 8(%eax)\n" /* line 291 */
-        ".Lf1855e6_0018562a:\n"
-        "leave\n" /* line 297 */
-        "retl\n"
-        ".Lf1855e6_0018562c:\n"
-        "je .Lf1855e6_0018563e\n" /* line 292 */
-        "leal 0xc8(%edx), %eax\n" /* line 295 */
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "leave\n" /* line 297 */
-        "retl\n"
-        ".Lf1855e6_0018563e:\n"
-        "movl $0, 8(%eax)\n" /* line 293 */
-        "leave\n" /* line 297 */
-        "retl\n"
-    );
+    int *stance;
+
+    IN_KeyDown((kbutton_t *)((byte *)kb + 0xf0));
+    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    {
+        return;
+    }
+
+    stance = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    if (*stance > 1)
+    {
+        *stance = 1;
+        return;
+    }
+
+    if (*stance == 1)
+    {
+        *stance = 0;
+        return;
+    }
+
+    IN_KeyDown((kbutton_t *)((byte *)kb + 0xc8));
 }
 
 /* line 300 */
@@ -581,35 +533,23 @@ void IN_LeanRight_Up(void)
 }
 
 /* line 616 */
-__attribute__((naked))
 void IN_Stance_Down(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 616 */
-        "movl %esp, %ebp\n"
-        "movl kb, %eax\n" /* line 618 */
-        "cmpb $0, 0x204(%eax)\n"
-        "jne .Lf185b48_00185ba0\n"
-        "cmpb $0, 0xec(%eax)\n"
-        "jne .Lf185b48_00185ba0\n"
-        "movl imp_cl, %eax\n" /* line 621 */
-        "movl (%eax), %edx\n"
-        "movb $1, 0x85ec(%edx)\n"
-        "movl imp_legacyHacks, %ecx\n" /* line 622 */
-        "movl (%ecx), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x85f0(%edx)\n"
-        "movl imp_com_frameTime, %eax\n" /* line 623 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0x85f4(%edx)\n"
-        "cmpl $1, 0x85f0(%edx)\n" /* line 625 */
-        "je .Lf185b48_00185ba0\n"
-        "movl (%ecx), %eax\n" /* line 626 */
-        "movl $1, 8(%eax)\n"
-        ".Lf185b48_00185ba0:\n"
-        "popl %ebp\n" /* line 627 */
-        "retl\n"
-    );
+    byte *cl;
+
+    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    {
+        return;
+    }
+
+    cl = (byte *)*(void **)imp_cl;
+    *(byte *)(cl + 0x85ec) = 1;
+    *(int *)(cl + 0x85f0) = *(int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    *(int *)(cl + 0x85f4) = *(int *)imp_com_frameTime;
+    if (*(int *)(cl + 0x85f0) != 1)
+    {
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 1;
+    }
 }
 
 /* line 630 */
@@ -702,39 +642,24 @@ void IN_GoCrouch(void)
 }
 
 /* line 776 */
-__attribute__((naked))
 void IN_GoStandDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 776 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 778 */
-        "addl $0xf0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "movl imp_legacyHacks, %eax\n" /* line 781 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf185d4c_00185d93\n"
-        "movl kb, %edx\n" /* line 788 */
-        "cmpb $0, 0x204(%edx)\n"
-        "jne .Lf185d4c_00185d91\n"
-        "cmpb $0, 0xec(%edx)\n"
-        "jne .Lf185d4c_00185d91\n"
-        "movl $0, 8(%eax)\n" /* line 796 */
-        ".Lf185d4c_00185d91:\n"
-        "leave\n" /* line 798 */
-        "retl\n"
-        ".Lf185d4c_00185d93:\n"
-        "movl kb, %eax\n" /* line 783 */
-        "addl $0xc8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "leave\n" /* line 798 */
-        "retl\n"
-    );
+    int *stance;
+
+    IN_KeyDown((kbutton_t *)((byte *)kb + 0xf0));
+    stance = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    if (!*stance)
+    {
+        IN_KeyDown((kbutton_t *)((byte *)kb + 0xc8));
+        return;
+    }
+
+    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    {
+        return;
+    }
+
+    *stance = 0;
 }
 
 /* line 801 */
@@ -3194,4 +3119,3 @@ void CL_SendCmd(void)
         return;
     CL_SendCmdInternal();
 }
-

@@ -17,6 +17,23 @@ static int fps_index; /* fps_index */
 static vec4_t colorWhiteFaded; /* colorWhiteFaded */
 static vec4_t colorGreenFaded; /* colorGreenFaded */
 static vec4_t colorRedFaded; /* colorRedFaded */
+extern const vec_t *colorWhite; /* imp_colorWhite */
+extern byte *cgs_ptr; /* imp_cgs */
+extern char **cg_glob; /* imp_cg */
+extern float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);
+extern void CG_DrawStringExt(float x, float y, const char *string, const vec_t *setColor, qboolean forceColor, qboolean shadow, float charHeight, qboolean adjust);
+extern const char *va(const char *fmt, ...);
+extern unsigned int Scr_GetNumScriptVars(void);
+extern unsigned int Scr_GetNumScriptThreads(void);
+extern unsigned int Scr_GetStringUsage(void);
+extern int Sys_Milliseconds(void);
+extern int CL_GetCurrentCmdNumber(void);
+extern qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
+extern const char *UI_SafeTranslateString(const char *ref);
+extern FontHandle UI_GetFontHandle(int fontEnum, float scale);
+extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale);
+extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
+extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -47,158 +64,55 @@ unsigned int CG_DrawCrosshair(void);
 unsigned int CG_Draw2D(void);
 
 /* line 133 */
-__attribute__((naked))
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 133 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        "movl 0x1c(%ebp), %edx\n" /* team */
-        /* { scope 1 */
-        "movl 0x18(%ebp), %eax\n" /* line 137 | alpha */
-        "movl %eax, -0xc(%ebp)\n"
-        "cmpl $1, %edx\n" /* line 138 */
-        "je .Lf1cb014_001cb098\n"
-        "cmpl $2, %edx\n" /* line 144 */
-        "je .Lf1cb014_001cb02f\n"
-        /* } scope */
-        "leave\n" /* line 155 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb014_001cb02f:\n"
-        "xorl %eax, %eax\n" /* line 146 */
-        "movl %eax, -0x18(%ebp)\n" /* color */
-        "movl %eax, -0x14(%ebp)\n" /* line 147 */
-        "movl $0x3f800000, -0x10(%ebp)\n" /* line 148 */
-        ".Lf1cb014_001cb03e:\n"
-        "movl imp_cgs, %eax\n" /* line 154 */
-        "movl (%eax), %eax\n"
-        "movl 0xba28(%eax), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "leal -0x18(%ebp), %eax\n" /* color */
-        "movl %eax, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movss 0x14(%ebp), %xmm0\n" /* h */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* w */
-        "movss %xmm0, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 4(%esp)\n"
-        "movss 8(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        /* } scope */
-        "leave\n" /* line 155 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb014_001cb098:\n"
-        "movl $0x3f800000, -0x18(%ebp)\n" /* line 140 | color */
-        "xorl %eax, %eax\n" /* line 141 */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, -0x10(%ebp)\n" /* line 142 */
-        "jmp .Lf1cb014_001cb03e\n"
-    );
+    vec4_t color;
+    byte *cgs;
+
+    color[3] = alpha;
+    if (team == 1)
+    {
+        color[0] = 1.0f;
+        color[1] = 0.0f;
+        color[2] = 0.0f;
+    }
+    else if (team == 2)
+    {
+        color[0] = 0.0f;
+        color[1] = 0.0f;
+        color[2] = 1.0f;
+    }
+    else
+    {
+        return 0;
+    }
+
+    cgs = *(byte **)cgs_ptr;
+    UI_DrawHandlePic(x, y, w, h, 0, 0, color, *(MaterialHandle *)(cgs + 0xba28));
+    return 0;
 }
 
 /* line 241 */
-static __attribute__((naked))
 unsigned int CG_DrawScriptUsage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 241 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "calll Scr_GetNumScriptVars\n" /* line 243 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b6fbc, (%esp)\n" /* "num vars:    %d" */
-        "calll va\n"
-        "movl $1, 0x1c(%esp)\n"
-        "movl $0x41800000, %edi\n"
-        "movl %edi, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl imp_colorWhite, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x42a00000, 4(%esp)\n"
-        "movl $0x43f00000, %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll CG_DrawStringExt\n"
-        "calll Scr_GetNumScriptThreads\n" /* line 244 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b6fcc, (%esp)\n" /* "num threads: %d" */
-        "calll va\n"
-        "movl $1, 0x1c(%esp)\n"
-        "movl %edi, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x42c00000, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CG_DrawStringExt\n"
-        "calll Scr_GetStringUsage\n" /* line 245 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002b6fdc, (%esp)\n" /* "string usage: %d" */
-        "calll va\n"
-        "movl $1, 0x1c(%esp)\n"
-        "movl %edi, 0x18(%esp)\n"
-        "movl $1, 0x14(%esp)\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x42e00000, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CG_DrawStringExt\n"
-        "addl $0x2c, %esp\n" /* line 246 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CG_DrawStringExt(480.0f, 80.0f, va(str_002b6fbc, Scr_GetNumScriptVars()), colorWhite, 1, 1, 16.0f, 1);
+    CG_DrawStringExt(480.0f, 96.0f, va(str_002b6fcc, Scr_GetNumScriptThreads()), colorWhite, 1, 1, 16.0f, 1);
+    CG_DrawStringExt(480.0f, 112.0f, va(str_002b6fdc, Scr_GetStringUsage()), colorWhite, 1, 1, 16.0f, 1);
+    return 0;
 }
 
 /* line 262 */
-__attribute__((naked))
 unsigned int CG_CalculateFPS(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 262 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        /* { scope 1 */
-        "calll Sys_Milliseconds\n" /* line 269 */
-        "movl %eax, %ecx\n" /* line 270 */
-        "subl previous, %ecx\n"
-        "movl %eax, previous\n" /* line 271 */
-        "movl fps_index, %eax\n" /* line 273 */
-        "movl %eax, %edx\n"
-        "andl $0x8000001f, %edx\n"
-        "js .Lf1cb1a6_001cb1de\n"
-        "movl %ecx, fps_previousTimes(, %edx, 4)\n"
-        "addl $1, %eax\n" /* line 274 */
-        "movl %eax, fps_index\n"
-        /* } scope */
-        "leave\n" /* line 275 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb1a6_001cb1de:\n"
-        "subl $1, %edx\n" /* line 273 */
-        "orl $0xffffffe0, %edx\n"
-        "addl $1, %edx\n"
-        "movl %ecx, fps_previousTimes(, %edx, 4)\n"
-        "addl $1, %eax\n" /* line 274 */
-        "movl %eax, fps_index\n"
-        /* } scope */
-        "leave\n" /* line 275 */
-        "retl\n"
-    );
+    int now;
+    int index;
+
+    now = Sys_Milliseconds();
+    fps_previousTimes[fps_index & 31] = now - previous;
+    previous = now;
+    index = fps_index + 1;
+    fps_index = index;
+    return 0;
 }
 
 /* line 639 */
@@ -230,105 +144,34 @@ unsigned int CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 }
 
 /* line 679 */
-static __attribute__((naked))
 unsigned int CG_DrawDisconnect(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 679 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        /* { scope 1 */
-        "movl $0x3f800000, %eax\n" /* line 687 */
-        "movl %eax, -0x28(%ebp)\n" /* color */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "calll CL_GetCurrentCmdNumber\n" /* line 690 */
-        "leal -0x44(%ebp), %edx\n" /* line 691 | cmd */
-        "movl %edx, 4(%esp)\n"
-        "subl $0x7f, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetUserCmd\n"
-        "movl -0x44(%ebp), %edx\n" /* line 692 | cmd */
-        "movl imp_cg, %eax\n"
-        "movl (%eax), %edi\n"
-        "movl 0x24(%edi), %eax\n"
-        "cmpl 0xc(%eax), %edx\n"
-        "jle .Lf1cb280_001cb2cb\n"
-        "cmpl 0x25bb0(%edi), %edx\n"
-        "jle .Lf1cb280_001cb2d3\n"
-        /* } scope */
-        ".Lf1cb280_001cb2cb:\n"
-        "addl $0x7c, %esp\n" /* line 711 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cb280_001cb2d3:\n"
-        "movl $str_002b6ff0, (%esp)\n" /* line 696 */
-        "calll UI_SafeTranslateString\n"
-        "movl %eax, -0x4c(%ebp)\n" /* s */
-        "movl $0x3f000000, %ebx\n" /* line 697 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, %esi\n" /* font */
-        "movl %ebx, 0xc(%esp)\n" /* line 698 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* s */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "movl $3, 0x24(%esp)\n" /* line 701 */
-        "leal -0x28(%ebp), %edx\n" /* color */
-        "movl %edx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x42c80000, 0x10(%esp)\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "movl $0x280, %edx\n"
-        "subl %eax, %edx\n"
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* font */
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* s */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawText\n"
-        "testb $2, 0x25bb1(%edi)\n" /* line 704 */
-        "jne .Lf1cb280_001cb2cb\n"
-        "movl $7, 4(%esp)\n" /* line 710 */
-        "movl $str_002a89c8, (%esp)\n" /* "net_disconnect" */
-        "calll CL_RegisterMaterial\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0x42400000, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x43d00000, 4(%esp)\n"
-        "movl $0x43940000, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 711 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    usercmd_t cmd;
+    char *cg;
+    byte *snap;
+    const char *text;
+    FontHandle font;
+    int textWidth;
+    vec4_t color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    CL_GetUserCmd(CL_GetCurrentCmdNumber() - 127, &cmd);
+    cg = *cg_glob;
+    snap = *(byte **)(cg + 0x24);
+    if (cmd.serverTime <= *(int *)(snap + 0xc) || cmd.serverTime > *(int *)(cg + 0x25bb0))
+    {
+        return 0;
+    }
+
+    text = UI_SafeTranslateString(str_002b6ff0);
+    font = UI_GetFontHandle(0, 0.5f);
+    textWidth = UI_TextWidth(text, 0, font, 0.5f);
+    UI_DrawText(text, 0x7fffffff, font, (float)((640 - textWidth) / 2), 100.0f, 0, 0, 0.5f, color, 3);
+    if (!(*(byte *)(cg + 0x25bb1) & 2))
+    {
+        UI_DrawHandlePic(296.0f, 416.0f, 48.0f, 48.0f, 0, 0, 0, CL_RegisterMaterial(str_002a89c8, 7));
+    }
+
+    return 0;
 }
 
 /* line 971 */
