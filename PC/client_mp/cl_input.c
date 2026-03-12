@@ -26,6 +26,12 @@ extern void Cmd_RemoveCommand(const char *cmd);
 extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
 extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
+extern void MSG_Init(msg_t *buf, byte *data, int length);
+extern void MSG_WriteString(msg_t *msg, const char *s);
+extern void MSG_WriteShort(msg_t *msg, int c);
+extern void MSG_WriteByte(msg_t *msg, int c);
+extern void MSG_WriteData(msg_t *buf, const void *data, int length);
+extern void NET_OutOfBandVoiceData(netsrc_t sock, netadr_t adr, byte *format, int len);
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern qboolean Sys_IsLANAddress(int addr0, int addr1, int addr2);
@@ -800,130 +806,39 @@ void CL_MouseEvent(const int dx, const int dy)
 }
 
 /* line 1461 */
-__attribute__((naked))
 void CL_WriteVoicePacket(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1461 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x406c, %esp\n"
-        /* { scope 1 */
-        "movl imp_clc, %eax\n" /* line 1468 */
-        "movl (%eax), %ebx\n"
-        "movl 0x407a0(%ebx), %esi\n"
-        "testl %esi, %esi\n"
-        "jne .Lf185e60_00185e89\n"
-        "movl (%ebx), %eax\n"
-        "cmpl $8, %eax\n"
-        "je .Lf185e60_00185e94\n"
-        "cmpl $6, %eax\n"
-        "je .Lf185e60_00185e94\n"
-        /* } scope */
-        ".Lf185e60_00185e89:\n"
-        "addl $0x406c, %esp\n" /* line 1507 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf185e60_00185e94:\n"
-        "movl $0x4000, 8(%esp)\n" /* line 1473 */
-        "leal -0x403c(%ebp), %eax\n" /* data */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_Init\n"
-        "movl $str_002a9440, 4(%esp)\n" /* line 1475 */
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteString\n"
-        "movl 4(%ebx), %eax\n" /* line 1478 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteShort\n"
-        "movl imp_cl, %esi\n" /* line 1481 */
-        "movl (%esi), %ebx\n"
-        "movzbl 0x179c0c(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteByte\n"
-        "movl %ebx, %eax\n" /* line 1489 */
-        "movl 0x179c0c(%ebx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jg .Lf185e60_00185f5d\n"
-        "movl imp_cl_showSend, %eax\n" /* line 1499 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf185e60_00185fca\n"
-        ".Lf185e60_00185f11:\n"
-        "movl imp_clc, %eax\n" /* line 1506 */
-        "movl (%eax), %edx\n"
-        "movl 0x14(%edx), %esi\n"
-        "movl %esi, -0x24(%ebp)\n"
-        "movl 0x18(%edx), %ebx\n"
-        "movl %ebx, -0x20(%ebp)\n"
-        "movl 0x1c(%edx), %ecx\n"
-        "movl %ecx, -0x1c(%ebp)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "movl 0x407cc(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll NET_OutOfBandVoiceData\n"
-        /* } scope */
-        "addl $0x406c, %esp\n" /* line 1507 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf185e60_00185f5d:\n"
-        "xorl %edi, %edi\n" /* line 1489 | voicePacket */
-        "movl %esi, -0x404c(%ebp)\n"
-        "xorl %esi, %esi\n"
-        ".Lf185e60_00185f67:\n"
-        "movl 0x1791e4(%esi, %eax), %eax\n" /* line 1494 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteByte\n"
-        "movl -0x404c(%ebp), %eax\n" /* line 1495 */
-        "movl (%eax), %ebx\n"
-        "movl 0x1791e4(%esi, %ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x1791e8(%esi, %ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteData\n"
-        "addl $1, %edi\n" /* line 1489 | voicePacket */
-        "addl $0x104, %esi\n"
-        "movl %ebx, %eax\n"
-        "cmpl 0x179c0c(%ebx), %edi\n" /* voicePacket */
-        "jl .Lf185e60_00185f67\n"
-        "movl imp_cl_showSend, %eax\n" /* line 1499 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf185e60_00185f11\n"
-        ".Lf185e60_00185fca:\n"
-        "movl -0x30(%ebp), %eax\n" /* line 1501 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002af630, (%esp)\n" /* "voice: %i
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf185e60_00185f11\n"
-    );
+    clientConnection_t *clc;
+    clientActive_t *cl;
+    msg_t msg;
+    byte data[0x4000];
+    int voicePacket;
+
+    clc = *(clientConnection_t **)imp_clc;
+    if (clc->demoplaying || (clc->state != CA_ACTIVE && clc->state != CA_LOADING))
+    {
+        return;
+    }
+
+    MSG_Init(&msg, data, sizeof(data));
+    MSG_WriteString(&msg, (const char *)str_002a9440);
+    MSG_WriteShort(&msg, clc->qport);
+
+    cl = *(clientActive_t **)imp_cl;
+    MSG_WriteByte(&msg, cl->voicePacketCount);
+
+    for (voicePacket = 0; voicePacket < cl->voicePacketCount; ++voicePacket)
+    {
+        MSG_WriteByte(&msg, cl->voicePackets[voicePacket].dataSize);
+        MSG_WriteData(&msg, cl->voicePackets[voicePacket].data, cl->voicePackets[voicePacket].dataSize);
+    }
+
+    if (cl_showSend->current.enabled)
+    {
+        Com_Printf((const char *)str_002af630, msg.cursize);
+    }
+
+    NET_OutOfBandVoiceData(clc->netchan.sock, clc->serverAddress, msg.data, msg.cursize);
 }
 
 /* line 1533 */
