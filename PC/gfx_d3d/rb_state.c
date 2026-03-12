@@ -12,6 +12,7 @@
  */
 
 extern struct DxState dxState; /* 0x0 */
+extern r_backEndGlobals_t backEnd; /* imp_backEnd */
 static const DxTextureStageEnums texStageEnums; /* texStageEnums */
 static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
 static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
@@ -104,6 +105,38 @@ static void RB_SetTransformDx7(D3DTRANSFORMSTATETYPE state, const D3DMATRIX *mat
     do {
         ((SetTransformFn)VTABLE(device)[0xb0 / 4])(device, state, matrix);
     } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static GfxCodeMatrices *RB_GetActiveCodeMatrices(void)
+{
+    return &backEnd.codeMatrixStack[backEnd.codeMatrixStackLevel];
+}
+
+static void RB_InvalidateCodeMatrix(GfxCodeMatrix *matrix)
+{
+    matrix->valid[0] = 0;
+    matrix->valid[1] = 0;
+    matrix->valid[2] = 0;
+    matrix->valid[3] = 0;
+}
+
+static void RB_ValidatePrimaryCodeMatrix(GfxCodeMatrix *matrix)
+{
+    matrix->valid[0] = 1;
+    matrix->valid[1] = 0;
+    matrix->valid[2] = 0;
+    matrix->valid[3] = 0;
+}
+
+static void RB_SetPrimaryCodeMatrix(GfxCodeMatrix *matrix, const D3DMATRIX *src)
+{
+    matrix->matrix[0] = *src;
+    RB_ValidatePrimaryCodeMatrix(matrix);
+}
+
+static Bool RB_UsingDx7Renderer(void)
+{
+    return (*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2;
 }
 
 /* line 1805 */
@@ -370,8 +403,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
         break;
     case 1:
-        /* The backEnd view-parms layout is still partially raw here. */
-        MatrixInverse44((const float *)((const byte *)imp_backEnd + 0x410), (float *)&transform);
+        MatrixInverse44((const float *)&backEnd.viewParms->viewMatrix, (float *)&transform);
         transform._41 = 0.0f;
         transform._42 = 0.0f;
         transform._43 = 0.0f;
@@ -381,7 +413,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         break;
     case 2:
         MatrixIdentity44(transform.m);
-        transform._32 = -*(const float *)((const byte *)imp_backEnd + 0x4dc);
+        transform._32 = -backEnd.viewParms->depthHackNearClip;
         RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXCOORDINDEX, samplerIndex);
         RB_SetTextureStageStateDx7(samplerIndex, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT3);
         RB_SetTransformDx7(D3DTS_TEXTURE0 + samplerIndex, &transform);
@@ -396,431 +428,85 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
 /* line 1059 */
 D3DMATRIX * RB_GetActiveWorldMatrix(void)
 {
-    byte *base = (byte *)imp_backEnd;
-    int index = *(int *)(base + 0x2e80);
-    return (D3DMATRIX *)(base + 0x4f0 + index * 3552);
+    return &RB_GetActiveCodeMatrices()->world.matrix[0];
 }
 
 /* line 1065 */
-__attribute__((naked))
 void RB_ChangedWorldMatrix(float worldScale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1065 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl imp_backEnd, %ebx\n" /* line 1071 */
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %ebx), %edx\n"
-        "movl 8(%ebp), %eax\n" /* line 1072 | worldScale */
-        "movl %eax, (%edx)\n"
-        "movb $1, 0x110(%edx)\n" /* line 1074 */
-        "movb $0, 0x111(%edx)\n" /* line 1075 */
-        "movb $0, 0x112(%edx)\n" /* line 1076 */
-        "movb $0, 0x113(%edx)\n" /* line 1077 */
-        "movb $0, 0x550(%edx)\n" /* line 1079 */
-        "movb $0, 0x551(%edx)\n" /* line 1080 */
-        "movb $0, 0x552(%edx)\n" /* line 1081 */
-        "movb $0, 0x553(%edx)\n" /* line 1082 */
-        "movb $0, 0x880(%edx)\n" /* line 1084 */
-        "movb $0, 0x881(%edx)\n" /* line 1085 */
-        "movb $0, 0x882(%edx)\n" /* line 1086 */
-        "movb $0, 0x883(%edx)\n" /* line 1087 */
-        "movb $0, 0xdd0(%edx)\n" /* line 1090 */
-        "movb $0, 0xdd1(%edx)\n" /* line 1091 */
-        "movb $0, 0xdd2(%edx)\n" /* line 1092 */
-        "movb $0, 0xdd3(%edx)\n" /* line 1093 */
-        "movb $0, 0x220(%edx)\n" /* line 1096 */
-        "movb $0, 0x221(%edx)\n" /* line 1097 */
-        "movb $0, 0x222(%edx)\n" /* line 1098 */
-        "movb $0, 0x223(%edx)\n" /* line 1099 */
-        "movb $0, 0x660(%edx)\n" /* line 1101 */
-        "movb $0, 0x661(%edx)\n" /* line 1102 */
-        "movb $0, 0x662(%edx)\n" /* line 1103 */
-        "movb $0, 0x663(%edx)\n" /* line 1104 */
-        "movb $0, 0x990(%edx)\n" /* line 1106 */
-        "movb $0, 0x991(%edx)\n" /* line 1107 */
-        "movb $0, 0x992(%edx)\n" /* line 1108 */
-        "movb $0, 0x993(%edx)\n" /* line 1109 */
-        "movb $0, 0xaa0(%edx)\n" /* line 1111 */
-        "movb $0, 0xaa1(%edx)\n" /* line 1112 */
-        "movb $0, 0xaa2(%edx)\n" /* line 1113 */
-        "movb $0, 0xaa3(%edx)\n" /* line 1114 */
-        "movb $0, 0xbb0(%edx)\n" /* line 1116 */
-        "movb $0, 0xbb1(%edx)\n" /* line 1117 */
-        "movb $0, 0xbb2(%edx)\n" /* line 1118 */
-        "movb $0, 0xbb3(%edx)\n" /* line 1119 */
-        "movb $0, 0xcc0(%edx)\n" /* line 1121 */
-        "movb $0, 0xcc1(%edx)\n" /* line 1122 */
-        "movb $0, 0xcc2(%edx)\n" /* line 1123 */
-        "movb $0, 0xcc3(%edx)\n" /* line 1124 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 1127 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfcd736_000cd895\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1130 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcd736_000cd895:\n"
-        "leal 0x10(%edx), %ebx\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        /* { scope 1 */
-        ".Lfcd736_000cd8a4:\n"
-        "movl 8(%edi), %eax\n" /* line 1128 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd736_000cd8a4\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1130 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    activeMatrices->worldScale = worldScale;
+    RB_ValidatePrimaryCodeMatrix(&activeMatrices->world);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorld);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->shadowLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->lightGridLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldOutdoorLookup);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(D3DTS_WORLD, &activeMatrices->world.matrix[0]);
+    }
 }
 
 /* line 1133 */
-__attribute__((naked))
 void RB_SetViewMatrix(const D3DMATRIX *matrix)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1133 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* matrix */
-        /* { scope 1 */
-        "movl imp_backEnd, %ebx\n" /* line 1139 */
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %ebx), %eax\n"
-        "movl (%esi), %edx\n" /* line 1141 | matrix */
-        "movl %edx, 0x230(%eax)\n"
-        "movl 4(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x234(%eax)\n"
-        "movl 8(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x238(%eax)\n"
-        "movl 0xc(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x23c(%eax)\n"
-        "movl 0x10(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x240(%eax)\n"
-        "movl 0x14(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x244(%eax)\n"
-        "movl 0x18(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x248(%eax)\n"
-        "movl 0x1c(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x24c(%eax)\n"
-        "movl 0x20(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x250(%eax)\n"
-        "movl 0x24(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x254(%eax)\n"
-        "movl 0x28(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x258(%eax)\n"
-        "movl 0x2c(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x25c(%eax)\n"
-        "movl 0x30(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x260(%eax)\n"
-        "movl 0x34(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x264(%eax)\n"
-        "movl 0x38(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x268(%eax)\n"
-        "movl 0x3c(%esi), %edx\n" /* matrix */
-        "movl %edx, 0x26c(%eax)\n"
-        "movb $1, 0x330(%eax)\n" /* line 1142 */
-        "movb $0, 0x331(%eax)\n" /* line 1143 */
-        "movb $0, 0x332(%eax)\n" /* line 1144 */
-        "movb $0, 0x333(%eax)\n" /* line 1145 */
-        "movb $0, 0x550(%eax)\n" /* line 1147 */
-        "movb $0, 0x551(%eax)\n" /* line 1148 */
-        "movb $0, 0x552(%eax)\n" /* line 1149 */
-        "movb $0, 0x553(%eax)\n" /* line 1150 */
-        "movb $0, 0x770(%eax)\n" /* line 1152 */
-        "movb $0, 0x771(%eax)\n" /* line 1153 */
-        "movb $0, 0x772(%eax)\n" /* line 1154 */
-        "movb $0, 0x773(%eax)\n" /* line 1155 */
-        "movb $0, 0x880(%eax)\n" /* line 1157 */
-        "movb $0, 0x881(%eax)\n" /* line 1158 */
-        "movb $0, 0x882(%eax)\n" /* line 1159 */
-        "movb $0, 0x883(%eax)\n" /* line 1160 */
-        "movb $0, 0xdd0(%eax)\n" /* line 1163 */
-        "movb $0, 0xdd1(%eax)\n" /* line 1164 */
-        "movb $0, 0xdd2(%eax)\n" /* line 1165 */
-        "movb $0, 0xdd3(%eax)\n" /* line 1166 */
-        "movb $0, 0x660(%eax)\n" /* line 1169 */
-        "movb $0, 0x661(%eax)\n" /* line 1170 */
-        "movb $0, 0x662(%eax)\n" /* line 1171 */
-        "movb $0, 0x663(%eax)\n" /* line 1172 */
-        "movb $0, 0x990(%eax)\n" /* line 1174 */
-        "movb $0, 0x991(%eax)\n" /* line 1175 */
-        "movb $0, 0x992(%eax)\n" /* line 1176 */
-        "movb $0, 0x993(%eax)\n" /* line 1177 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 1180 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfcd8cc_000cda64\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1183 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcd8cc_000cda64:\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        /* { scope 1 */
-        ".Lfcd8cc_000cda70:\n"
-        "movl 8(%edi), %eax\n" /* line 1181 */
-        "movl (%eax), %edx\n"
-        "movl %esi, 8(%esp)\n" /* matrix */
-        "movl $2, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcd8cc_000cda70\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1183 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    RB_SetPrimaryCodeMatrix(&activeMatrices->view, matrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->viewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(D3DTS_VIEW, matrix);
+    }
 }
 
 /* line 1187 */
-__attribute__((naked))
 void RB_SetViewMatrixForWDx7(float w)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1187 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        /* { scope 1 */
-        "movl imp_backEnd, %eax\n" /* line 1191 */
-        "movl 0x3c8(%eax), %eax\n"
-        "movl 0x48(%eax), %edx\n"
-        "movl %edx, -0x58(%ebp)\n" /* transform */
-        "movl 0x4c(%eax), %edx\n"
-        "movl %edx, -0x54(%ebp)\n"
-        "movl 0x50(%eax), %edx\n"
-        "movl %edx, -0x50(%ebp)\n"
-        "movl 0x54(%eax), %edx\n"
-        "movl %edx, -0x4c(%ebp)\n"
-        "movl 0x58(%eax), %edx\n"
-        "movl %edx, -0x48(%ebp)\n"
-        "movl 0x5c(%eax), %edx\n"
-        "movl %edx, -0x44(%ebp)\n"
-        "movl 0x60(%eax), %edx\n"
-        "movl %edx, -0x40(%ebp)\n"
-        "movl 0x64(%eax), %edx\n"
-        "movl %edx, -0x3c(%ebp)\n"
-        "movl 0x68(%eax), %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl 0x6c(%eax), %edx\n"
-        "movl %edx, -0x34(%ebp)\n"
-        "movl 0x70(%eax), %edx\n"
-        "movl %edx, -0x30(%ebp)\n"
-        "movl 0x74(%eax), %edx\n"
-        "movl %edx, -0x2c(%ebp)\n"
-        "movl 0x78(%eax), %edx\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movl 0x7c(%eax), %edx\n"
-        "movl %edx, -0x24(%ebp)\n"
-        "movl 0x80(%eax), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* line 1196 | w */
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal -0x58(%ebp), %edi\n" /* transform */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfcda98_000cdb1e:\n"
-        "movl 8(%esi), %eax\n" /* line 1197 */
-        "movl (%eax), %edx\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfcda98_000cdb1e\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1198 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    D3DMATRIX transform;
+
+    transform = backEnd.viewParms->viewMatrix;
+    transform._44 = w;
+    RB_SetTransformDx7(D3DTS_VIEW, &transform);
 }
 
 /* line 1254 */
-__attribute__((naked))
 void RB_SetDepthHackNearClip(float nearClip)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1254 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* nearClip */
-        "movl imp_backEnd, %esi\n" /* line 1259 */
-        "movl 0x2e80(%esi), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "xorl $0x80000000, %ebx\n" /* nearClip */
-        "movl %ebx, 0x858(%eax, %esi)\n" /* nearClip */
-        "movl 0x2e80(%esi), %edx\n" /* line 1206 */
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %esi), %edx\n"
-        "movb $1, 0x440(%edx)\n" /* line 1208 */
-        "movb $0, 0x441(%edx)\n" /* line 1209 */
-        "movb $0, 0x442(%edx)\n" /* line 1210 */
-        "movb $0, 0x443(%edx)\n" /* line 1211 */
-        "movb $0, 0x770(%edx)\n" /* line 1213 */
-        "movb $0, 0x771(%edx)\n" /* line 1214 */
-        "movb $0, 0x772(%edx)\n" /* line 1215 */
-        "movb $0, 0x773(%edx)\n" /* line 1216 */
-        "movb $0, 0x880(%edx)\n" /* line 1218 */
-        "movb $0, 0x881(%edx)\n" /* line 1219 */
-        "movb $0, 0x882(%edx)\n" /* line 1220 */
-        "movb $0, 0x883(%edx)\n" /* line 1221 */
-        "movb $0, 0xdd0(%edx)\n" /* line 1224 */
-        "movb $0, 0xdd1(%edx)\n" /* line 1225 */
-        "movb $0, 0xdd2(%edx)\n" /* line 1226 */
-        "movb $0, 0xdd3(%edx)\n" /* line 1227 */
-        "movb $0, 0x990(%edx)\n" /* line 1230 */
-        "movb $0, 0x991(%edx)\n" /* line 1231 */
-        "movb $0, 0x992(%edx)\n" /* line 1232 */
-        "movb $0, 0x993(%edx)\n" /* line 1233 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 1236 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfcdb46_000cdc3b\n"
-        "addl $0x1c, %esp\n" /* line 1261 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcdb46_000cdc3b:\n"
-        "leal 0x340(%edx), %ebx\n" /* nearClip */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lfcdb46_000cdc4d:\n"
-        "movl 8(%edi), %eax\n" /* line 1237 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%esi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfcdb46_000cdc4d\n"
-        "addl $0x1c, %esp\n" /* line 1261 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    activeMatrices->projection.matrix[0]._43 = -nearClip;
+    RB_ValidatePrimaryCodeMatrix(&activeMatrices->projection);
+    RB_InvalidateCodeMatrix(&activeMatrices->viewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->shadowLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(D3DTS_PROJECTION, &activeMatrices->projection.matrix[0]);
+    }
 }
 
 /* line 1264 */
-__attribute__((naked))
 void RB_SetShadowLookupMatrix(const D3DMATRIX *matrix)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1264 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* matrix */
-        "movl imp_backEnd, %eax\n" /* line 1266 */
-        "movl (%edx), %ecx\n"
-        "movl %ecx, 0x36e48(%eax)\n"
-        "movl 4(%edx), %ecx\n"
-        "movl %ecx, 0x36e4c(%eax)\n"
-        "movl 8(%edx), %ecx\n"
-        "movl %ecx, 0x36e50(%eax)\n"
-        "movl 0xc(%edx), %ecx\n"
-        "movl %ecx, 0x36e54(%eax)\n"
-        "movl 0x10(%edx), %ecx\n"
-        "movl %ecx, 0x36e58(%eax)\n"
-        "movl 0x14(%edx), %ecx\n"
-        "movl %ecx, 0x36e5c(%eax)\n"
-        "movl 0x18(%edx), %ecx\n"
-        "movl %ecx, 0x36e60(%eax)\n"
-        "movl 0x1c(%edx), %ecx\n"
-        "movl %ecx, 0x36e64(%eax)\n"
-        "movl 0x20(%edx), %ecx\n"
-        "movl %ecx, 0x36e68(%eax)\n"
-        "movl 0x24(%edx), %ecx\n"
-        "movl %ecx, 0x36e6c(%eax)\n"
-        "movl 0x28(%edx), %ecx\n"
-        "movl %ecx, 0x36e70(%eax)\n"
-        "movl 0x2c(%edx), %ecx\n"
-        "movl %ecx, 0x36e74(%eax)\n"
-        "movl 0x30(%edx), %ecx\n"
-        "movl %ecx, 0x36e78(%eax)\n"
-        "movl 0x34(%edx), %ecx\n"
-        "movl %ecx, 0x36e7c(%eax)\n"
-        "movl 0x38(%edx), %ecx\n"
-        "movl %ecx, 0x36e80(%eax)\n"
-        "movl 0x3c(%edx), %edx\n"
-        "movl %edx, 0x36e84(%eax)\n"
-        "movb $0, 0xf80(%eax)\n" /* line 1270 */
-        "movb $0, 0xf81(%eax)\n" /* line 1271 */
-        "movb $0, 0xf82(%eax)\n" /* line 1272 */
-        "movb $0, 0xf83(%eax)\n" /* line 1273 */
-        "popl %ebp\n" /* line 1274 */
-        "retl\n"
-    );
+    backEnd.shadowLookupMatrix = *matrix;
+    RB_InvalidateCodeMatrix(&RB_GetActiveCodeMatrices()->shadowLookupMatrix);
 }
 
 /* line 1369 */
