@@ -510,377 +510,51 @@ void RB_SetShadowLookupMatrix(const D3DMATRIX *matrix)
 }
 
 /* line 1369 */
-__attribute__((naked))
 void RB_SetMatricesForView(const GfxViewParms *viewParms)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1369 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* viewParms */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl imp_backEnd, %ebx\n" /* line 1360 */
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %ebx), %eax\n"
-        "movl 0x48(%esi), %edx\n" /* line 1362 */
-        "movl %edx, 0x230(%eax)\n"
-        "movl 0x4c(%esi), %edx\n"
-        "movl %edx, 0x234(%eax)\n"
-        "movl 0x50(%esi), %edx\n"
-        "movl %edx, 0x238(%eax)\n"
-        "movl 0x54(%esi), %edx\n"
-        "movl %edx, 0x23c(%eax)\n"
-        "movl 0x58(%esi), %edx\n"
-        "movl %edx, 0x240(%eax)\n"
-        "movl 0x5c(%esi), %edx\n"
-        "movl %edx, 0x244(%eax)\n"
-        "movl 0x60(%esi), %edx\n"
-        "movl %edx, 0x248(%eax)\n"
-        "movl 0x64(%esi), %edx\n"
-        "movl %edx, 0x24c(%eax)\n"
-        "movl 0x68(%esi), %edx\n"
-        "movl %edx, 0x250(%eax)\n"
-        "movl 0x6c(%esi), %edx\n"
-        "movl %edx, 0x254(%eax)\n"
-        "movl 0x70(%esi), %edx\n"
-        "movl %edx, 0x258(%eax)\n"
-        "movl 0x74(%esi), %edx\n"
-        "movl %edx, 0x25c(%eax)\n"
-        "movl 0x78(%esi), %edx\n"
-        "movl %edx, 0x260(%eax)\n"
-        "movl 0x7c(%esi), %edx\n"
-        "movl %edx, 0x264(%eax)\n"
-        "movl 0x80(%esi), %edx\n"
-        "movl %edx, 0x268(%eax)\n"
-        "movl 0x84(%esi), %edx\n"
-        "movl %edx, 0x26c(%eax)\n"
-        "movl 0x88(%esi), %edx\n" /* line 1363 */
-        "movl %edx, 0x340(%eax)\n"
-        "movl 0x8c(%esi), %edx\n"
-        "movl %edx, 0x344(%eax)\n"
-        "movl 0x90(%esi), %edx\n"
-        "movl %edx, 0x348(%eax)\n"
-        "movl 0x94(%esi), %edx\n"
-        "movl %edx, 0x34c(%eax)\n"
-        "movl 0x98(%esi), %edx\n"
-        "movl %edx, 0x350(%eax)\n"
-        "movl 0x9c(%esi), %edx\n"
-        "movl %edx, 0x354(%eax)\n"
-        "movl 0xa0(%esi), %edx\n"
-        "movl %edx, 0x358(%eax)\n"
-        "movl 0xa4(%esi), %edx\n"
-        "movl %edx, 0x35c(%eax)\n"
-        "movl 0xa8(%esi), %edx\n"
-        "movl %edx, 0x360(%eax)\n"
-        "movl 0xac(%esi), %edx\n"
-        "movl %edx, 0x364(%eax)\n"
-        "movl 0xb0(%esi), %edx\n"
-        "movl %edx, 0x368(%eax)\n"
-        "movl 0xb4(%esi), %edx\n"
-        "movl %edx, 0x36c(%eax)\n"
-        "movl 0xb8(%esi), %edx\n"
-        "movl %edx, 0x370(%eax)\n"
-        "movl 0xbc(%esi), %edx\n"
-        "movl %edx, 0x374(%eax)\n"
-        "movl 0xc0(%esi), %edx\n"
-        "movl %edx, 0x378(%eax)\n"
-        "movl 0xc4(%esi), %edx\n"
-        "movl %edx, 0x37c(%eax)\n"
-        "movl 0xc8(%esi), %edx\n" /* line 1364 */
-        "movl %edx, 0x670(%eax)\n"
-        "movl 0xcc(%esi), %edx\n"
-        "movl %edx, 0x674(%eax)\n"
-        "movl 0xd0(%esi), %edx\n"
-        "movl %edx, 0x678(%eax)\n"
-        "movl 0xd4(%esi), %edx\n"
-        "movl %edx, 0x67c(%eax)\n"
-        "movl 0xd8(%esi), %edx\n"
-        "movl %edx, 0x680(%eax)\n"
-        "movl 0xdc(%esi), %edx\n"
-        "movl %edx, 0x684(%eax)\n"
-        "movl 0xe0(%esi), %edx\n"
-        "movl %edx, 0x688(%eax)\n"
-        "movl 0xe4(%esi), %edx\n"
-        "movl %edx, 0x68c(%eax)\n"
-        "movl 0xe8(%esi), %edx\n"
-        "movl %edx, 0x690(%eax)\n"
-        "movl 0xec(%esi), %edx\n"
-        "movl %edx, 0x694(%eax)\n"
-        "movl 0xf0(%esi), %edx\n"
-        "movl %edx, 0x698(%eax)\n"
-        "movl 0xf4(%esi), %edx\n"
-        "movl %edx, 0x69c(%eax)\n"
-        "movl 0xf8(%esi), %edx\n"
-        "movl %edx, 0x6a0(%eax)\n"
-        "movl 0xfc(%esi), %edx\n"
-        "movl %edx, 0x6a4(%eax)\n"
-        "movl 0x100(%esi), %edx\n"
-        "movl %edx, 0x6a8(%eax)\n"
-        "movl 0x104(%esi), %edx\n"
-        "movl %edx, 0x6ac(%eax)\n"
-        "movl 0x108(%esi), %edx\n" /* line 1365 */
-        "movl %edx, 0x6b0(%eax)\n"
-        "movl 0x10c(%esi), %edx\n"
-        "movl %edx, 0x6b4(%eax)\n"
-        "movl 0x110(%esi), %edx\n"
-        "movl %edx, 0x6b8(%eax)\n"
-        "movl 0x114(%esi), %edx\n"
-        "movl %edx, 0x6bc(%eax)\n"
-        "movl 0x118(%esi), %edx\n"
-        "movl %edx, 0x6c0(%eax)\n"
-        "movl 0x11c(%esi), %edx\n"
-        "movl %edx, 0x6c4(%eax)\n"
-        "movl 0x120(%esi), %edx\n"
-        "movl %edx, 0x6c8(%eax)\n"
-        "movl 0x124(%esi), %edx\n"
-        "movl %edx, 0x6cc(%eax)\n"
-        "movl 0x128(%esi), %edx\n"
-        "movl %edx, 0x6d0(%eax)\n"
-        "movl 0x12c(%esi), %edx\n"
-        "movl %edx, 0x6d4(%eax)\n"
-        "movl 0x130(%esi), %edx\n"
-        "movl %edx, 0x6d8(%eax)\n"
-        "movl 0x134(%esi), %edx\n"
-        "movl %edx, 0x6dc(%eax)\n"
-        "movl 0x138(%esi), %edx\n"
-        "movl %edx, 0x6e0(%eax)\n"
-        "movl 0x13c(%esi), %edx\n"
-        "movl %edx, 0x6e4(%eax)\n"
-        "movl 0x140(%esi), %edx\n"
-        "movl %edx, 0x6e8(%eax)\n"
-        "movl 0x144(%esi), %edx\n"
-        "movl %edx, 0x6ec(%eax)\n"
-        /* } scope */
-        "movl 0x2e80(%ebx), %edx\n" /* line 1386 */
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4e0(%eax, %ebx), %eax\n"
-        "movb $1, 0x330(%eax)\n" /* line 1388 */
-        "movb $0, 0x331(%eax)\n" /* line 1389 */
-        "movb $0, 0x332(%eax)\n" /* line 1390 */
-        "movb $0, 0x333(%eax)\n" /* line 1391 */
-        "movb $1, 0x440(%eax)\n" /* line 1393 */
-        "movb $0, 0x441(%eax)\n" /* line 1394 */
-        "movb $0, 0x442(%eax)\n" /* line 1395 */
-        "movb $0, 0x443(%eax)\n" /* line 1396 */
-        "movb $0, 0x550(%eax)\n" /* line 1398 */
-        "movb $0, 0x551(%eax)\n" /* line 1399 */
-        "movb $0, 0x552(%eax)\n" /* line 1400 */
-        "movb $0, 0x553(%eax)\n" /* line 1401 */
-        "movb $1, 0x770(%eax)\n" /* line 1403 */
-        "movb $1, 0x771(%eax)\n" /* line 1404 */
-        "movb $0, 0x772(%eax)\n" /* line 1405 */
-        "movb $0, 0x773(%eax)\n" /* line 1406 */
-        "movb $0, 0x880(%eax)\n" /* line 1408 */
-        "movb $0, 0x881(%eax)\n" /* line 1409 */
-        "movb $0, 0x882(%eax)\n" /* line 1410 */
-        "movb $0, 0x883(%eax)\n" /* line 1411 */
-        "movb $0, 0xdd0(%eax)\n" /* line 1414 */
-        "movb $0, 0xdd1(%eax)\n" /* line 1415 */
-        "movb $0, 0xdd2(%eax)\n" /* line 1416 */
-        "movb $0, 0xdd3(%eax)\n" /* line 1417 */
-        "movb $0, 0x990(%eax)\n" /* line 1420 */
-        "movb $0, 0x991(%eax)\n" /* line 1421 */
-        "movb $0, 0x992(%eax)\n" /* line 1422 */
-        "movb $0, 0x993(%eax)\n" /* line 1423 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 1426 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfcdd2e_000ce12b\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1432 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfcdd2e_000ce12b:\n"
-        "leal 0x48(%esi), %ebx\n" /* viewParms */
-        "movl imp_alwaysfails, %edi\n"
-        /* { scope 1 */
-        ".Lfcdd2e_000ce134:\n"
-        "movl imp_dx, %edx\n" /* line 1428 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfcdd2e_000ce134\n"
-        "leal 0x88(%esi), %ebx\n" /* viewParms */
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n" /* viewParms */
-        ".Lfcdd2e_000ce16c:\n"
-        "movl 8(%edi), %eax\n" /* line 1429 */
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xb0(%edx)\n"
-        "movl (%esi), %eax\n" /* viewParms */
-        "testl %eax, %eax\n"
-        "jne .Lfcdd2e_000ce16c\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1432 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    RB_SetPrimaryCodeMatrix(&activeMatrices->view, &viewParms->viewMatrix);
+    RB_SetPrimaryCodeMatrix(&activeMatrices->projection, &viewParms->projectionMatrix);
+    activeMatrices->viewProjection.matrix[0] = viewParms->viewProjectionMatrix;
+    activeMatrices->viewProjection.matrix[1] = viewParms->inverseViewProjectionMatrix;
+    activeMatrices->viewProjection.valid[0] = 1;
+    activeMatrices->viewProjection.valid[1] = 1;
+    activeMatrices->viewProjection.valid[2] = 0;
+    activeMatrices->viewProjection.valid[3] = 0;
+    RB_InvalidateCodeMatrix(&activeMatrices->worldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(D3DTS_VIEW, &viewParms->viewMatrix);
+        RB_SetTransformDx7(D3DTS_PROJECTION, &viewParms->projectionMatrix);
+    }
 }
 
 /* line 1435 */
-__attribute__((naked))
 void RB_PushMatrixStack(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1435 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_backEnd, %ebx\n" /* line 1439 */
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %ebx, %eax\n"
-        "leal 0x12c0(%eax), %edx\n"
-        "addl $0x4e0, %eax\n"
-        "movl $0xde0, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "addl $1, 0x2e80(%ebx)\n" /* line 1440 */
-        "addl $0x14, %esp\n" /* line 1441 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    backEnd.codeMatrixStack[backEnd.codeMatrixStackLevel + 1] = *RB_GetActiveCodeMatrices();
+    backEnd.codeMatrixStackLevel += 1;
 }
 
 /* line 1444 */
-__attribute__((naked))
 void RB_PopMatrixStack(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1444 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl imp_backEnd, %edi\n" /* line 1448 */
-        "subl $1, 0x2e80(%edi)\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1451 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfce1e6_000ce211\n"
-        "addl $0x2c, %esp\n" /* line 1458 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfce1e6_000ce211:\n"
-        "movl %edi, -0x1c(%ebp)\n"
-        "jmp .Lfce1e6_000ce219\n"
-        ".Lfce1e6_000ce216:\n"
-        "movl -0x1c(%ebp), %edi\n"
-        ".Lfce1e6_000ce219:\n"
-        "movl imp_dx, %eax\n" /* line 1453 */
-        "movl 8(%eax), %ebx\n"
-        "movl (%ebx), %esi\n"
-        "movl 0x2e80(%edi), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4f0(%eax, %edi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0xb0(%esi)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce1e6_000ce216\n"
-        "movl imp_backEnd, %edi\n"
-        ".Lfce1e6_000ce267:\n"
-        "movl imp_dx, %eax\n" /* line 1454 */
-        "movl 8(%eax), %ebx\n"
-        "movl (%ebx), %esi\n"
-        "movl 0x2e80(%edi), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x710(%eax, %edi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0xb0(%esi)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce1e6_000ce267\n"
-        "movl imp_backEnd, %edi\n"
-        ".Lfce1e6_000ce2b5:\n"
-        "movl imp_dx, %eax\n" /* line 1455 */
-        "movl 8(%eax), %ebx\n"
-        "movl (%ebx), %esi\n"
-        "movl 0x2e80(%edi), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x820(%eax, %edi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll *0xb0(%esi)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfce1e6_000ce2b5\n"
-        "addl $0x2c, %esp\n" /* line 1458 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCodeMatrices *activeMatrices;
+
+    backEnd.codeMatrixStackLevel -= 1;
+    if (!RB_UsingDx7Renderer()) {
+        return;
+    }
+
+    activeMatrices = RB_GetActiveCodeMatrices();
+    RB_SetTransformDx7(0x100, &activeMatrices->world.matrix[0]);
+    RB_SetTransformDx7(D3DTS_VIEW, &activeMatrices->view.matrix[0]);
+    RB_SetTransformDx7(D3DTS_PROJECTION, &activeMatrices->projection.matrix[0]);
 }
 
 /* line 1472 */
