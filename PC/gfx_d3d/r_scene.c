@@ -35,6 +35,12 @@ int XSurfaceGetNumTris(XSurface *xsurf);
 int XSurfaceGetNumVerts(XSurface *xsurf);
 const char *XModelGetName(void *model);
 const char *DObjGetModel(void *dobj, int lod);
+void MatrixForViewer(float (*mtx)[4], const vec_t *origin, vec3_t *axis);
+void InfinitePerspectiveMatrix(float (*mtx)[4], float fov_x, float fov_y, float zNear);
+void MatrixMultiply44(const float (*in1)[4], const float (*in2)[4], float (*out)[4]);
+void MatrixInverse44(const float *mat, float *dst);
+void R_AddCmdClearScreen(int whichToClear, const vec_t *color, float depth, int stencil);
+extern double tan(double);
 
 static int R_CompareDumpSceneEntities(const void *e0, const void *e1);
 void R_UpdateGfxEntityBounds(GfxEntity *ent);
@@ -48,9 +54,9 @@ void R_AddXModelSurfaces(int entIndex);
 void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex);
 void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCount, const GfxWorldVertex *verts);
 void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex);
-static void R_SetViewParmsForScene(void);
+static void __attribute__((regparm(2))) R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms);
 void R_SetLodOrigin(const refdef_t *refdef);
-static void R_AddClearCommandsForFrameBuffer(void);
+static void __attribute__((regparm(1))) R_AddClearCommandsForFrameBuffer(int dynamicShadowType);
 void R_RenderScene(const refdef_t *refdef);
 int R_AddStaticModelToScene(int smodelIndex);
 GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, const struct centity_s *cent);
@@ -737,305 +743,101 @@ void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
 }
 
 /* line 1410 */
-static __attribute__((naked))
-void R_SetViewParmsForScene(void)
+static void __attribute__((regparm(2)))
+R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1410 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %esi\n" /* refdef */
-        "movl %edx, %edi\n" /* viewParms */
-        /* { scope 1 */
-        "movl $0x14c, 8(%esp)\n" /* line 1415 */
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memset\n"
-        "movl (%esi), %eax\n" /* line 1416 | refdef */
-        "movl %eax, 0x30(%edi)\n" /* viewParms */
-        "movl 4(%esi), %eax\n" /* line 1417 | refdef */
-        "movl %eax, 0x34(%edi)\n" /* viewParms */
-        "movl 8(%esi), %eax\n" /* line 1418 | refdef */
-        "movl %eax, 0x38(%edi)\n" /* viewParms */
-        "movl 0xc(%esi), %eax\n" /* line 1419 | refdef */
-        "movl %eax, 0x3c(%edi)\n" /* viewParms */
-        "movl $0, 0x40(%edi)\n" /* line 1420 | viewParms */
-        "movl $0x3f800000, 0x44(%edi)\n" /* line 1421 | viewParms */
-        "leal 0x18(%esi), %edx\n" /* line 1423 | refdef, from */
-        /* { scope 2 */
-        "movl 0x18(%esi), %eax\n" /* line 199 */
-        "movl %eax, (%edi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edi)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edi)\n"
-        /* } scope */
-        "leal 0xc(%edi), %ebx\n" /* line 1424 | viewParms, to */
-        "leal 0x24(%esi), %edx\n" /* refdef, from */
-        /* { scope 2 */
-        "movl 0x24(%esi), %eax\n" /* line 199 */
-        "movl %eax, 0xc(%edi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "leal 0x18(%edi), %ecx\n" /* line 1425 | viewParms, to */
-        "leal 0x30(%esi), %edx\n" /* refdef, from */
-        /* { scope 2 */
-        "movl 0x30(%esi), %eax\n" /* line 199 */
-        "movl %eax, 0x18(%edi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x24(%edi), %ecx\n" /* line 1426 | viewParms, to */
-        "leal 0x3c(%esi), %edx\n" /* refdef, from */
-        /* { scope 2 */
-        "movl 0x3c(%esi), %eax\n" /* line 199 */
-        "movl %eax, 0x24(%edi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x48(%edi), %eax\n" /* line 1427 | viewParms */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %ebx, 8(%esp)\n" /* to */
-        "movl %edi, 4(%esp)\n" /* viewParms */
-        "movl %eax, (%esp)\n"
-        "calll MatrixForViewer\n"
-        "movss 0x4c(%esi), %xmm2\n" /* line 1429 | refdef */
-        "pxor %xmm0, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lfc607a_000c6177\n"
-        "movl imp_r_znear, %eax\n" /* line 589 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm2\n"
-        "movss lit4_002ed738, %xmm1\n" /* line 45 | 0.009999999776482582f */
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "pxor %xmm4, %xmm4\n"
-        "movaps %xmm2, %xmm3\n"
-        "cmpltss %xmm4, %xmm0\n"
-        "andps %xmm0, %xmm3\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm3, %xmm0\n"
-        "movaps %xmm0, %xmm2\n"
-        ".Lfc607a_000c6177:\n"
-        "leal 0x88(%edi), %eax\n" /* line 595 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss %xmm2, 0xc(%esp)\n"
-        "movl 0x14(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll InfinitePerspectiveMatrix\n"
-        "movl imp_r_znear_depthhack, %eax\n" /* line 597 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x148(%edi)\n"
-        "leal 0xc8(%edi), %ebx\n" /* line 603 */
-        "movl %ebx, 8(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MatrixMultiply44\n"
-        "leal 0x108(%edi), %eax\n" /* line 604 */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll MatrixInverse44\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1433 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float zNear;
+
+    memset(viewParms, 0, sizeof(*viewParms));
+
+    viewParms->viewport.X = refdef->x;
+    viewParms->viewport.Y = refdef->y;
+    viewParms->viewport.Width = refdef->width;
+    viewParms->viewport.Height = refdef->height;
+    viewParms->viewport.MinZ = 0.0f;
+    viewParms->viewport.MaxZ = 1.0f;
+
+    memcpy(viewParms->origin, refdef->vieworg, sizeof(viewParms->origin));
+    memcpy(viewParms->axis, refdef->viewaxis, sizeof(viewParms->axis));
+
+    MatrixForViewer((float (*)[4])&viewParms->viewMatrix, viewParms->origin, viewParms->axis);
+
+    zNear = refdef->zNear;
+    if (!(zNear > 0.0f)) {
+        zNear = (*(const dvar_t **)imp_r_znear)->current.value;
+        if (zNear < 0.01f) {
+            zNear = 0.01f;
+        }
+    }
+
+    InfinitePerspectiveMatrix((float (*)[4])&viewParms->projectionMatrix, refdef->fov_x, refdef->fov_y, zNear);
+    viewParms->depthHackNearClip = (*(const dvar_t **)imp_r_znear_depthhack)->current.value;
+
+    MatrixMultiply44(
+        (const float (*)[4])&viewParms->viewMatrix,
+        (const float (*)[4])&viewParms->projectionMatrix,
+        (float (*)[4])&viewParms->viewProjectionMatrix);
+    MatrixInverse44((const float *)&viewParms->viewProjectionMatrix, (float *)&viewParms->inverseViewProjectionMatrix);
 }
 
 /* line 1447 */
-__attribute__((naked))
 void R_SetLodOrigin(const refdef_t *refdef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1447 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* refdef */
-        "movl imp_r_lockPvs, %ebx\n" /* line 1453 */
-        "movl (%ebx), %eax\n"
-        "cmpb $0, 7(%eax)\n"
-        "jne .Lfc61e6_000c6302\n"
-        ".Lfc61e6_000c6203:\n"
-        "cmpb $0, 8(%eax)\n" /* line 1459 */
-        "je .Lfc61e6_000c6267\n"
-        "movl imp_rg, %ebx\n" /* line 199 */
-        "movl lockPvsViewParms, %eax\n"
-        "movl %eax, 0x317c(%ebx)\n"
-        "movl lockPvsViewParms+4, %eax\n" /* line 200 */
-        "movl %eax, 0x3180(%ebx)\n"
-        "movl lockPvsViewParms+8, %eax\n" /* line 201 */
-        "movl %eax, 0x3184(%ebx)\n"
-        ".Lfc61e6_000c6230:\n"
-        "movl imp_r_lodScale, %eax\n" /* line 1464 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x3188(%ebx)\n"
-        "movl imp_r_lodBias, %eax\n" /* line 1465 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x318c(%ebx)\n"
-        "movss 0x10(%esi), %xmm0\n" /* line 1466 | refdef */
-        "ucomiss lit4_002ed7d8, %xmm0\n" /* 80.0f */
-        "jp .Lfc61e6_000c628d\n"
-        "jne .Lfc61e6_000c628d\n"
-        "addl $0x20, %esp\n" /* line 1473 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc61e6_000c6267:\n"
-        "leal 0x18(%esi), %edx\n" /* line 1462 | refdef, from */
-        /* { scope 1 */
-        "movl imp_rg, %ebx\n" /* line 199 */
-        "movl 0x18(%esi), %eax\n"
-        "movl %eax, 0x317c(%ebx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 0x3180(%ebx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 0x3184(%ebx)\n"
-        "jmp .Lfc61e6_000c6230\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lfc61e6_000c628d:\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* line 1468 | 0.5f, invFovScale */
-        "cvtss2sd %xmm0, %xmm0\n" /* invFovScale */
-        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295, invFovScale */
-        "movsd %xmm0, (%esp)\n" /* invFovScale */
-        "calll tan\n"
-        "fstpl -0x10(%ebp)\n"
-        "movl $0x4ae74487, (%esp)\n"
-        "movl $0x3fe65718, 4(%esp)\n"
-        "calll tan\n"
-        "fstpl -0x18(%ebp)\n"
-        "movsd -0x10(%ebp), %xmm0\n" /* invFovScale */
-        "divsd -0x18(%ebp), %xmm0\n" /* invFovScale */
-        "movsd %xmm0, -0x10(%ebp)\n" /* invFovScale */
-        "cvtsd2ss %xmm0, %xmm0\n" /* invFovScale */
-        "movaps %xmm0, %xmm1\n" /* line 1470 */
-        "mulss 0x3188(%ebx), %xmm1\n"
-        "movss %xmm1, 0x3188(%ebx)\n"
-        "mulss 0x318c(%ebx), %xmm0\n" /* line 1471 */
-        "movss %xmm0, 0x318c(%ebx)\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1473 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc61e6_000c6302:\n"
-        "movl %eax, (%esp)\n" /* line 1455 */
-        "movl imp_ri, %eax\n"
-        "calll *0x88(%eax)\n"
-        "movl $lockPvsViewParms, %edx\n" /* line 1456 */
-        "movl %esi, %eax\n" /* refdef */
-        "calll R_SetViewParmsForScene\n"
-        "movl (%ebx), %eax\n"
-        "jmp .Lfc61e6_000c6203\n"
-    );
+    const dvar_t *lockPvs;
+    float invFovScale;
+
+    lockPvs = *(const dvar_t **)imp_r_lockPvs;
+    if (lockPvs->modified) {
+        ri.Dvar_ClearModified(lockPvs);
+        R_SetViewParmsForScene(refdef, &lockPvsViewParms);
+    }
+
+    if (lockPvs->current.enabled) {
+        memcpy(rg.lodParms.origin, lockPvsViewParms.origin, sizeof(rg.lodParms.origin));
+    } else {
+        memcpy(rg.lodParms.origin, refdef->vieworg, sizeof(rg.lodParms.origin));
+    }
+
+    rg.lodParms.scale = (*(const dvar_t **)imp_r_lodScale)->current.value;
+    rg.lodParms.bias = (*(const dvar_t **)imp_r_lodBias)->current.value;
+
+    if (refdef->fov_x != 80.0f) {
+        invFovScale =
+            (float)(tan((double)(refdef->fov_x * 0.5f) * 0.017453292519943295) / tan(0.69813170079773179));
+        rg.lodParms.scale *= invFovScale;
+        rg.lodParms.bias *= invFovScale;
+    }
 }
 
 /* line 1030 */
-static __attribute__((naked))
-void R_AddClearCommandsForFrameBuffer(void)
+static void __attribute__((regparm(1)))
+R_AddClearCommandsForFrameBuffer(int dynamicShadowType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1030 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl %eax, %edx\n" /* dynamicShadowType */
-        /* { scope 1 */
-        "movl imp_dx, %eax\n" /* line 1038 */
-        "movl 0x2c28(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfc6324_000c6344\n"
-        "subl $1, %edx\n" /* dynamicShadowType */
-        "je .Lfc6324_000c6431\n"
-        ".Lfc6324_000c6344:\n"
-        "movl $7, %ecx\n"
-        ".Lfc6324_000c6349:\n"
-        "movl imp_rg, %edx\n" /* line 1009 */
-        "cmpb $0, 0x14c8(%edx)\n"
-        "je .Lfc6324_000c63c4\n"
-        "movzbl 0x14ba(%edx), %eax\n" /* line 741 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x18(%ebp)\n" /* clearColor */
-        "movzbl 0x14b9(%edx), %eax\n" /* line 742 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n"
-        "movzbl 0x14b8(%edx), %eax\n" /* line 743 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "movl $0x3f800000, -0xc(%ebp)\n" /* line 1012 */
-        "movl $0, 0xc(%esp)\n" /* line 1045 */
-        "movl $0x3f800000, 8(%esp)\n"
-        "leal -0x18(%ebp), %eax\n" /* clearColor */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll R_AddCmdClearScreen\n"
-        /* } scope */
-        "leave\n" /* line 1046 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc6324_000c63c4:\n"
-        "movl imp_r_clearColor, %eax\n" /* line 1025 */
-        "movl (%eax), %eax\n"
-        "leal 8(%eax), %edx\n" /* from */
-        /* { scope 2 */
-        "movzbl 8(%eax), %eax\n" /* line 705 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x18(%ebp)\n" /* clearColor */
-        "movzbl 1(%edx), %eax\n" /* line 706 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n"
-        "movzbl 2(%edx), %eax\n" /* line 707 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        /* } scope */
-        "movl $0x3f800000, -0xc(%ebp)\n" /* line 1026 */
-        "movl $0, 0xc(%esp)\n" /* line 1045 */
-        "movl $0x3f800000, 8(%esp)\n"
-        "leal -0x18(%ebp), %eax\n" /* clearColor */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll R_AddCmdClearScreen\n"
-        /* } scope */
-        "leave\n" /* line 1046 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc6324_000c6431:\n"
-        "movl $1, %ecx\n" /* line 1038 */
-        "jmp .Lfc6324_000c6349\n"
-    );
+    int whichToClear;
+    vec4_t clearColor;
+    const float inv255 = 0.003921568859368563f;
+
+    whichToClear = 7;
+    if (*(int *)((byte *)imp_dx + 0x2c28) != 0 && dynamicShadowType == 1) {
+        whichToClear = 1;
+    }
+
+    if (*((byte *)&rg + 0x14c8) != 0) {
+        const byte *sceneColor = (const byte *)&rg + 0x14b8;
+
+        clearColor[0] = sceneColor[2] * inv255;
+        clearColor[1] = sceneColor[1] * inv255;
+        clearColor[2] = sceneColor[0] * inv255;
+    } else {
+        const byte *dvarColor = (*(const dvar_t **)imp_r_clearColor)->current.color;
+
+        clearColor[0] = dvarColor[0] * inv255;
+        clearColor[1] = dvarColor[1] * inv255;
+        clearColor[2] = dvarColor[2] * inv255;
+    }
+
+    clearColor[3] = 1.0f;
+    R_AddCmdClearScreen(whichToClear, clearColor, 1.0f, 0);
 }
 
 /* diagnostic for R_RenderScene */

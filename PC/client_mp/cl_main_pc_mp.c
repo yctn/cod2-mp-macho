@@ -12,6 +12,11 @@ extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
 static Bool s_playerMute[64]; /* s_playerMute */
 extern int NET_CompareAdrSigned(const int *a, const int *b);
 extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compar)(const void *, const void *));
+extern int atoi(const char *nptr);
+extern const char *Info_ValueForKey(const char *s, const char *key);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern const char *va(const char *format, ...);
+extern void Cbuf_ExecuteText(int exec_when, const char *text);
 
 static int rconGlob; /* rconGlob */
 
@@ -42,147 +47,35 @@ static int CL_CompareAdrSigned(const int *a, const int *b)
 }
 
 /* line 156 */
-__attribute__((naked))
 int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 156 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* server */
-        "movl 0xc(%ebp), %esi\n" /* info */
-        "testl %ebx, %ebx\n" /* line 158 | server */
-        "je .Lf15f6ea_0015f927\n"
-        "testl %esi, %esi\n" /* line 160 | info */
-        "je .Lf15f6ea_0015f920\n"
-        "movl $str_002a8a54, 4(%esp)\n" /* line 162 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0xd(%ebx)\n" /* server */
-        "movl $str_002aa89c, 4(%esp)\n" /* line 163 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl $0x20, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x20(%ebx), %eax\n" /* server */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $str_002a7124, 4(%esp)\n" /* line 164 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl $0x20, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x40(%ebx), %eax\n" /* server */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $str_002a70dc, 4(%esp)\n" /* line 165 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0xe(%ebx)\n" /* server */
-        "movl $str_002aa890, 4(%esp)\n" /* line 166 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl $0x18, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x60(%ebx), %eax\n" /* server */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $str_002aa884, 4(%esp)\n" /* line 167 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl $0x10, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x78(%ebx), %eax\n" /* server */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $str_002ab8c0, 4(%esp)\n" /* line 168 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0xc(%ebx)\n" /* server */
-        "movl $str_002ab8c8, 4(%esp)\n" /* line 169 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movw %ax, 0x1a(%ebx)\n" /* server */
-        "movl $str_002ab8d0, 4(%esp)\n" /* line 170 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movw %ax, 0x1c(%ebx)\n" /* server */
-        "movl $str_002a718c, 4(%esp)\n" /* line 171 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x10(%ebx)\n" /* server */
-        "movl $str_002ab4e0, 4(%esp)\n" /* line 172 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x15(%ebx)\n" /* server */
-        "movl $str_002a9af0, 4(%esp)\n" /* line 173 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x11(%ebx)\n" /* server */
-        "movl $str_002aa870, 4(%esp)\n" /* line 174 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x12(%ebx)\n" /* server */
-        "movl $str_002aa87c, 4(%esp)\n" /* line 175 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x13(%ebx)\n" /* server */
-        "movl $str_002aa880, 4(%esp)\n" /* line 176 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x14(%ebx)\n" /* server */
-        "movl $str_002aa878, 4(%esp)\n" /* line 177 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x16(%ebx)\n" /* server */
-        "movl $str_002a9cf4, 4(%esp)\n" /* line 178 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x17(%ebx)\n" /* server */
-        "movl $str_0021ec00, 4(%esp)\n" /* line 180 */
-        "movl %esi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movb %al, 0x18(%ebx)\n" /* server */
-        ".Lf15f6ea_0015f920:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 183 | ping */
-        "movw %ax, 0x1e(%ebx)\n" /* server */
-        ".Lf15f6ea_0015f927:\n"
-        "addl $0x10, %esp\n" /* line 185 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (server == NULL) {
+        return 0;
+    }
+
+    if (info != NULL) {
+        server->clients = (byte)atoi(Info_ValueForKey(info, "clients"));
+        I_strncpyz(server->hostName, Info_ValueForKey(info, "hostname"), 0x20);
+        I_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), 0x20);
+        server->maxClients = (byte)atoi(Info_ValueForKey(info, "sv_maxclients"));
+        I_strncpyz(server->game, Info_ValueForKey(info, "game"), 0x18);
+        I_strncpyz(server->gameType, Info_ValueForKey(info, "gametype"), 0x10);
+        server->netType = (byte)atoi(Info_ValueForKey(info, "nettype"));
+        server->minPing = (short)atoi(Info_ValueForKey(info, "minping"));
+        server->maxPing = (short)atoi(Info_ValueForKey(info, "maxping"));
+        server->allowAnonymous = (byte)atoi(Info_ValueForKey(info, "sv_allowAnonymous"));
+        server->consoleDisabled = (char)atoi(Info_ValueForKey(info, "con_disabled"));
+        server->bPassword = (byte)atoi(Info_ValueForKey(info, "pswrd"));
+        server->pure = (byte)atoi(Info_ValueForKey(info, "pure"));
+        server->friendlyfire = (char)atoi(Info_ValueForKey(info, "ff"));
+        server->killcam = (char)atoi(Info_ValueForKey(info, "kc"));
+        server->hardware = (byte)atoi(Info_ValueForKey(info, "hw"));
+        server->mod = (byte)atoi(Info_ValueForKey(info, "mod"));
+        server->voice = (byte)atoi(Info_ValueForKey(info, "voice"));
+    }
+
+    server->ping = (short)ping;
+    return 0;
 }
 
 /* line 94 */
@@ -1323,40 +1216,19 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 int CL_ResetPlayerMuting(int clientIndex)
 {
     s_playerMute[clientIndex] = 0;
+    return 0;
 }
 
 /* line 1335 */
-__attribute__((naked))
 int CL_MutePlayer(int clientIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1335 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* clientIndex */
-        "cmpb $0, s_playerMute(%edx)\n" /* line 1338 */
-        "sete %al\n"
-        "movb %al, s_playerMute(%edx)\n"
-        "testb %al, %al\n" /* line 1339 */
-        "je .Lf16094c_0016098b\n"
-        "movl %edx, 4(%esp)\n" /* line 1340 */
-        "movl $str_002abb98, (%esp)\n" /* "muteplayer %i" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "leave\n" /* line 1343 */
-        "retl\n"
-        ".Lf16094c_0016098b:\n"
-        "movl %edx, 4(%esp)\n" /* line 1342 */
-        "movl $str_002abba8, (%esp)\n" /* "unmuteplayer %i" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "leave\n" /* line 1343 */
-        "retl\n"
-    );
+    s_playerMute[clientIndex] = !s_playerMute[clientIndex];
+    if (s_playerMute[clientIndex]) {
+        Cbuf_ExecuteText(2, va("muteplayer %i", clientIndex));
+    } else {
+        Cbuf_ExecuteText(2, va("unmuteplayer %i", clientIndex));
+    }
+    return 0;
 }
 
 /* line 1346 */
@@ -1369,6 +1241,7 @@ Bool CL_IsPlayerMuted(int clientIndex)
 int CL_ClearMutedList(void)
 {
     memset(s_playerMute, 0, 0x40);
+    return 0;
 }
 
 /* line 622 */

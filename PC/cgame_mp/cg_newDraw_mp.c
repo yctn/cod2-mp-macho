@@ -38,6 +38,12 @@ static const dvar_t *hud_healthOverlay_phaseEnd_toAlpha; /* hud_healthOverlay_ph
 static const dvar_t *hud_healthOverlay_phaseEnd_pulseDuration; /* hud_healthOverlay_phaseEnd_pulseDuration */
 
 extern const char *va(const char *fmt, ...);
+extern int CL_GetKeyCatchers(void);
+extern Bool CL_GetDisplayHUDWithKeycatchUI(void);
+extern const char *CL_GetConfigString(int index);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 
 void CG_AntiBurnInHUD_RegisterDvars(void);
 Bool CG_AreHudMenusHidden(void);
@@ -65,257 +71,64 @@ static void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, f
 void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAlign, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle);
 
 /* line 59 */
-__attribute__((naked))
 void CG_AntiBurnInHUD_RegisterDvars(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 59 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 61 */
-        "movl $0x3f800000, %edi\n"
-        "movl %edi, 0xc(%esp)\n"
-        "xorl %ebx, %ebx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3dcccccd, 4(%esp)\n"
-        "movl $str_002af7dc, (%esp)\n" /* "hud_fadeout_speed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fadeout_speed\n"
-        "movl $0x1001, 8(%esp)\n" /* line 64 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a9028, (%esp)\n" /* "hud_enable" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, hud_enable\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 68 */
-        "movl $0x41f00000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002af7f0, (%esp)\n" /* "hud_fade_ammodisplay" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fade_ammodisplay\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 69 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x40000000, 4(%esp)\n"
-        "movl $str_002af808, (%esp)\n" /* "hud_fade_healthbar" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fade_healthbar\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 70 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002af81c, (%esp)\n" /* "hud_fade_compass" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fade_compass\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 71 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3fd9999a, 4(%esp)\n"
-        "movl $str_002af830, (%esp)\n" /* "hud_fade_stance" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fade_stance\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 72 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002af840, (%esp)\n" /* "hud_fade_offhand" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_fade_offhand\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 74 */
-        "movl $0x3f8ccccd, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $str_002af854, (%esp)\n" /* "hud_health_startpulse_injured" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_health_startpulse_injured\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 75 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3ea8f5c3, 4(%esp)\n"
-        "movl $str_002af874, (%esp)\n" /* "hud_health_startpulse_critical" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_health_startpulse_critical\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 76 */
-        "movl $0x40400000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0x3dcccccd, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $str_002af894, (%esp)\n" /* "hud_health_pulserate_injured" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_health_pulserate_injured\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 77 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0x3dcccccd, 8(%esp)\n"
-        "movl $0x3f000000, 4(%esp)\n"
-        "movl $str_002af8b4, (%esp)\n" /* "hud_health_pulserate_critical" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_health_pulserate_critical\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 79 */
-        "movl $0x186a0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3e8, 4(%esp)\n"
-        "movl $str_002af8d4, (%esp)\n" /* "hud_deathQuoteFadeTime" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_deathQuoteFadeTime\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 81 */
-        "movl $0x2710, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1388, 4(%esp)\n"
-        "movl $str_002af8ec, (%esp)\n" /* "hud_healthOverlay_regenPauseTime" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_healthOverlay_regenPauseTime\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 82 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3eb33333, 4(%esp)\n"
-        "movl $str_002af910, (%esp)\n" /* "hud_healthOverlay_pulseStart" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_healthOverlay_pulseStart\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 83 */
-        "movl $0x3e8, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x96, 4(%esp)\n"
-        "movl $str_002af930, (%esp)\n" /* "hud_healthOverlay_phaseOne_pulseDuration" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_healthOverlay_phaseOne_pulseDuration\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 85 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3f333333, 4(%esp)\n"
-        "movl $str_002af95c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_toAlphaMultiplier" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_healthOverlay_phaseTwo_toAlphaMultiplier\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 86 */
-        "movl $0x3e8, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x140, 4(%esp)\n"
-        "movl $str_002af98c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_pulseDuration" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_healthOverlay_phaseTwo_pulseDuration\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 88 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3f19999a, 4(%esp)\n"
-        "movl $str_002af9b8, (%esp)\n" /* "hud_healthOverlay_phaseThree_toAlphaMultiplier" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_healthOverlay_phaseThree_toAlphaMultiplier\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 89 */
-        "movl $0x3e8, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x190, 4(%esp)\n"
-        "movl $str_002af9e8, (%esp)\n" /* "hud_healthOverlay_phaseThree_pulseDuration" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_healthOverlay_phaseThree_pulseDuration\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 91 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002afa14, (%esp)\n" /* "hud_healthOverlay_phaseEnd_toAlpha" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, hud_healthOverlay_phaseEnd_toAlpha\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 92 */
-        "movl $0x3e8, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x2bc, 4(%esp)\n"
-        "movl $str_002afa38, (%esp)\n" /* "hud_healthOverlay_phaseEnd_pulseDuration" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, hud_healthOverlay_phaseEnd_pulseDuration\n"
-        "addl $0x2c, %esp\n" /* line 93 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    hud_fadeout_speed = Dvar_RegisterFloat("hud_fadeout_speed", 0.1f, 0.0f, 1.0f, 0x1001);
+    hud_enable = Dvar_RegisterBool_mac("hud_enable", 1, 0x1001);
+
+    hud_fade_ammodisplay = Dvar_RegisterFloat("hud_fade_ammodisplay", 0.0f, 0.0f, 30.0f, 0x1001);
+    hud_fade_healthbar = Dvar_RegisterFloat("hud_fade_healthbar", 2.0f, 0.0f, 30.0f, 0x1001);
+    hud_fade_compass = Dvar_RegisterFloat("hud_fade_compass", 0.0f, 0.0f, 30.0f, 0x1001);
+    hud_fade_stance = Dvar_RegisterFloat("hud_fade_stance", 1.7f, 0.0f, 30.0f, 0x1001);
+    hud_fade_offhand = Dvar_RegisterFloat("hud_fade_offhand", 0.0f, 0.0f, 30.0f, 0x1001);
+
+    hud_health_startpulse_injured = Dvar_RegisterFloat("hud_health_startpulse_injured", 1.0f, 0.0f, 1.1f, 0x1001);
+    hud_health_startpulse_critical = Dvar_RegisterFloat("hud_health_startpulse_critical", 0.33f, 0.0f, 1.1f, 0x1001);
+    hud_health_pulserate_injured = Dvar_RegisterFloat("hud_health_pulserate_injured", 1.0f, 0.1f, 3.0f, 0x1001);
+    hud_health_pulserate_critical = Dvar_RegisterFloat("hud_health_pulserate_critical", 0.5f, 0.1f, 3.0f, 0x1001);
+
+    hud_deathQuoteFadeTime = Dvar_RegisterInt("hud_deathQuoteFadeTime", 1000, 0, 100000, 0x1001);
+
+    hud_healthOverlay_regenPauseTime = Dvar_RegisterInt("hud_healthOverlay_regenPauseTime", 5000, 0, 10000, 0x1080);
+    hud_healthOverlay_pulseStart = Dvar_RegisterFloat("hud_healthOverlay_pulseStart", 0.35f, 0.0f, 1.0f, 0x1080);
+    hud_healthOverlay_phaseOne_pulseDuration = Dvar_RegisterInt("hud_healthOverlay_phaseOne_pulseDuration", 150, 0, 1000, 0x1080);
+    hud_healthOverlay_phaseTwo_toAlphaMultiplier = Dvar_RegisterFloat("hud_healthOverlay_phaseTwo_toAlphaMultiplier", 0.7f, 0.0f, 1.0f, 0x1080);
+    hud_healthOverlay_phaseTwo_pulseDuration = Dvar_RegisterInt("hud_healthOverlay_phaseTwo_pulseDuration", 320, 0, 1000, 0x1080);
+    hud_healthOverlay_phaseThree_toAlphaMultiplier = Dvar_RegisterFloat("hud_healthOverlay_phaseThree_toAlphaMultiplier", 0.6f, 0.0f, 1.0f, 0x1080);
+    hud_healthOverlay_phaseThree_pulseDuration = Dvar_RegisterInt("hud_healthOverlay_phaseThree_pulseDuration", 400, 0, 1000, 0x1080);
+    hud_healthOverlay_phaseEnd_toAlpha = Dvar_RegisterFloat("hud_healthOverlay_phaseEnd_toAlpha", 0.0f, 0.0f, 1.0f, 0x1080);
+    hud_healthOverlay_phaseEnd_pulseDuration = Dvar_RegisterInt("hud_healthOverlay_phaseEnd_pulseDuration", 700, 0, 1000, 0x1080);
 }
 
 /* line 99 */
-__attribute__((naked))
 Bool CG_AreHudMenusHidden(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll CL_GetKeyCatchers\n" /* line 101 */
-        "testb $8, %al\n"
-        "jne .Lf188414_0018843f\n"
-        ".Lf188414_00188423:\n"
-        "movl imp_cg, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x2bdc8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf188414_0018843b\n"
-        "movl $1, %eax\n"
-        ".Lf188414_00188439:\n"
-        "leave\n" /* line 102 */
-        "retl\n"
-        ".Lf188414_0018843b:\n"
-        "xorl %eax, %eax\n" /* line 101 */
-        "leave\n" /* line 102 */
-        "retl\n"
-        ".Lf188414_0018843f:\n"
-        "calll CL_GetDisplayHUDWithKeycatchUI\n" /* line 101 */
-        "testb %al, %al\n"
-        "jne .Lf188414_00188423\n"
-        "movl $1, %eax\n"
-        "jmp .Lf188414_00188439\n"
-    );
+    if ((CL_GetKeyCatchers() & 8) && !CL_GetDisplayHUDWithKeycatchUI()) {
+        return 1;
+    }
+
+    return ((cg_t *)*(cg_t **)imp_cg)->drawHud == 0;
 }
 
 /* line 741 */
-__attribute__((naked))
 float CG_CalcPlayerHealth(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 741 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 743 | ps */
-        "movl (%eax), %eax\n" /* ps */
-        "movl 0x24(%eax), %eax\n" /* ps */
-        "addl $0xc, %eax\n" /* ps */
-        "movl 0x12c(%eax), %edx\n" /* line 746 */
-        "testl %edx, %edx\n"
-        "je .Lf188450_001884ae\n"
-        "movl 0x134(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf188450_001884ae\n"
-        "cmpl $6, 4(%eax)\n"
-        "je .Lf188450_001884ae\n"
-        "cvtsi2ssl %edx, %xmm1\n" /* line 748 */
-        "cvtsi2ssl %ecx, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 749 | 0.0f */
-        "jb .Lf188450_001884ac\n"
-        ".Lf188450_00188492:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 751 | 1.0f */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf188450_001884b2\n"
-        "movaps %xmm0, %xmm1\n"
-        /* } scope */
-        "movss %xmm1, -4(%ebp)\n" /* line 757 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188450_001884ac:\n"
-        "jp .Lf188450_00188492\n" /* line 749 */
-        ".Lf188450_001884ae:\n"
-        "pxor %xmm1, %xmm1\n" /* line 751 */
-        /* } scope */
-        ".Lf188450_001884b2:\n"
-        "movss %xmm1, -4(%ebp)\n" /* line 757 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    playerState_t *ps;
+    float healthRatio;
+
+    ps = &((cg_t *)*(cg_t **)imp_cg)->nextSnap->ps;
+    if (ps->stats[0] == 0 || ps->stats[2] == 0 || ps->pm_type == 6) {
+        return 0.0f;
+    }
+
+    healthRatio = (float)ps->stats[0] / (float)ps->stats[2];
+    if (healthRatio < 0.0f) {
+        return 0.0f;
+    }
+    if (healthRatio > 1.0f) {
+        return 1.0f;
+    }
+    return healthRatio;
 }
 
 /* line 1002 */
@@ -331,59 +144,30 @@ void CG_ResetLowHealthOverlay(void)
 }
 
 /* line 1036 */
-__attribute__((naked))
 qboolean CG_ServerMaterialName(int index, char *materialName, int maxLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1036 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* index */
-        /* { scope 1 */
-        "leal -1(%edx), %eax\n" /* line 1040 */
-        "cmpl $0x7e, %eax\n"
-        "jbe .Lf188506_00188520\n"
-        ".Lf188506_00188518:\n"
-        "xorl %eax, %eax\n" /* line 1048 */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1049 */
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188506_00188520:\n"
-        "leal 0x61e(%edx), %eax\n" /* line 1042 */
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, %edx\n"
-        "cmpb $0, (%eax)\n" /* line 1043 */
-        "je .Lf188506_00188518\n"
-        "cld\n" /* line 1045 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "cmpl 0x10(%ebp), %ecx\n" /* maxLen */
-        "jae .Lf188506_00188518\n"
-        "movl %edx, 4(%esp)\n" /* line 1047 */
-        "movl 0xc(%ebp), %eax\n" /* materialName */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1049 */
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *configString;
+
+    if ((unsigned int)(index - 1) > 0x7e) {
+        return 0;
+    }
+
+    configString = CL_GetConfigString(index + 0x61e);
+    if (configString[0] == '\0') {
+        return 0;
+    }
+    if ((int)strlen(configString) >= maxLen) {
+        return 0;
+    }
+
+    strcpy(materialName, configString);
+    return 1;
 }
 
 /* line 1079 */
 void CG_ApplySplitScreenCompassScale(float *x, float *y, float *w, float *h)
 {
+    /* Split-screen compass scaling is unused on PC. */
 }
 
 /* line 1373 */
@@ -5028,4 +4812,3 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".text\n"
     );
 }
-
