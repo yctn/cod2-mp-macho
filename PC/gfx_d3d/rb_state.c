@@ -38,6 +38,7 @@ typedef HRESULT (*SetSamplerStateFn)(void *device, DWORD samplerIndex, DWORD sam
 typedef HRESULT (*SetTextureFn)(void *device, DWORD samplerIndex, IDirect3DBaseTexture9 *texture);
 typedef HRESULT (*SetTextureStageStateFn)(void *device, DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
 typedef HRESULT (*SetTransformFn)(void *device, D3DTRANSFORMSTATETYPE state, const D3DMATRIX *matrix);
+typedef HRESULT (*SetMaterialFn)(void *device, const D3DMATERIAL9 *material);
 typedef HRESULT (*SetViewportFn)(void *device, const D3DVIEWPORT9 *viewport);
 typedef HRESULT (*SetVertexDeclarationFn)(void *device, IDirect3DVertexDeclaration9 *vertexDecl);
 
@@ -49,6 +50,7 @@ typedef struct {
 
 extern void MatrixInverse44(const float *mat, float *dst);
 extern void MatrixIdentity44(float (*out)[4]);
+extern void MatrixSet44(float (*out)[4], const vec_t *origin, vec3_t *axis, vec_t scale);
 
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
@@ -99,6 +101,16 @@ static void RB_SetTextureStageStateDx7(int samplerIndex, D3DTEXTURESTAGESTATETYP
     } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
+static void RB_SetRenderStateDx7(DWORD state, DWORD value)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    do {
+        ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, state, value);
+    } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
 static void RB_SetTransformDx7(D3DTRANSFORMSTATETYPE state, const D3DMATRIX *matrix)
 {
     void *device;
@@ -117,6 +129,14 @@ static void RB_SetViewportDx7(const D3DVIEWPORT9 *viewport)
     do {
         ((SetViewportFn)VTABLE(device)[0xbc / 4])(device, viewport);
     } while (*(volatile int *)imp_alwaysfails != 0);
+}
+
+static void RB_SetMaterialDx7(const D3DMATERIAL9 *material)
+{
+    void *device;
+
+    device = *(void **)((byte *)imp_dx + 8);
+    ((SetMaterialFn)VTABLE(device)[0xc4 / 4])(device, material);
 }
 
 static void RB_SetTextureDx7(int samplerIndex, IDirect3DBaseTexture9 *texture)
@@ -144,6 +164,8 @@ static GfxCodeMatrices *RB_GetActiveCodeMatrices(void)
     return &backEnd.codeMatrixStack[backEnd.codeMatrixStackLevel];
 }
 
+static Bool RB_UsingDx7Renderer(void);
+
 static void RB_InvalidateCodeMatrix(GfxCodeMatrix *matrix)
 {
     matrix->valid[0] = 0;
@@ -164,6 +186,25 @@ static void RB_SetPrimaryCodeMatrix(GfxCodeMatrix *matrix, const D3DMATRIX *src)
 {
     matrix->matrix[0] = *src;
     RB_ValidatePrimaryCodeMatrix(matrix);
+}
+
+static void RB_FinalizeWorldMatrixChange(GfxCodeMatrices *activeMatrices, float worldScale)
+{
+    activeMatrices->worldScale = worldScale;
+    RB_ValidatePrimaryCodeMatrix(&activeMatrices->world);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorld);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldView);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
+    RB_InvalidateCodeMatrix(&activeMatrices->shadowLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->lightGridLookupMatrix);
+    RB_InvalidateCodeMatrix(&activeMatrices->worldOutdoorLookup);
+    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
+
+    if (RB_UsingDx7Renderer()) {
+        RB_SetTransformDx7(0x100, &activeMatrices->world.matrix[0]);
+    }
 }
 
 static Bool RB_UsingDx7Renderer(void)
@@ -486,21 +527,7 @@ void RB_ChangedWorldMatrix(float worldScale)
     GfxCodeMatrices *activeMatrices;
 
     activeMatrices = RB_GetActiveCodeMatrices();
-    activeMatrices->worldScale = worldScale;
-    RB_ValidatePrimaryCodeMatrix(&activeMatrices->world);
-    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorld);
-    RB_InvalidateCodeMatrix(&activeMatrices->worldView);
-    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldView);
-    RB_InvalidateCodeMatrix(&activeMatrices->worldViewProjection);
-    RB_InvalidateCodeMatrix(&activeMatrices->normalizedWorldViewProjection);
-    RB_InvalidateCodeMatrix(&activeMatrices->shadowLookupMatrix);
-    RB_InvalidateCodeMatrix(&activeMatrices->lightGridLookupMatrix);
-    RB_InvalidateCodeMatrix(&activeMatrices->worldOutdoorLookup);
-    RB_InvalidateCodeMatrix(&activeMatrices->OGLworldViewProjection);
-
-    if (RB_UsingDx7Renderer()) {
-        RB_SetTransformDx7(0x100, &activeMatrices->world.matrix[0]);
-    }
+    RB_FinalizeWorldMatrixChange(activeMatrices, worldScale);
 }
 
 /* line 1133 */
