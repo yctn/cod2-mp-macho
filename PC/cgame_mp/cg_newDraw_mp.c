@@ -62,6 +62,7 @@ extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context,
 extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
 extern const char *UI_SafeTranslateString(const char *ref);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
 extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float fontScale);
 extern int UI_TextHeight(FontHandle font, float fontScale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float scale, const vec_t *color, int style);
@@ -85,7 +86,7 @@ static const char * CG_GetUseString(void);
 static void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle);
 static void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle);
 const char * CG_GetTranslatedLocationString(int iLocation);
-static void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textStyle);
+static void __attribute__((regparm(3), sseregparm)) CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle);
 const char * CG_GetKillerText(void);
 const char * CG_GameTypeString(void);
 int CG_KeyInterceptEvent(int key, qboolean down);
@@ -690,76 +691,37 @@ const char * CG_GetTranslatedLocationString(int iLocation)
 }
 
 /* line 1665 */
-static __attribute__((naked))
-void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textStyle)
+static void __attribute__((regparm(3), sseregparm))
+CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1665 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %edx, %ebx\n" /* textStyle, rect */
-        "movl %ecx, %esi\n" /* font */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        /* { scope 1 */
-        "movl imp_cgs, %edx\n" /* line 1670 */
-        "movl (%edx), %edx\n"
-        "movl 0x63b8(%edx, %eax, 4), %eax\n"
-        "cmpl $0xffffd8f1, %eax\n"
-        "je .Lf188f88_0018905c\n"
-        "movl %eax, 0xc(%esp)\n" /* line 1676 */
-        "movl $str_0021785c, 8(%esp)\n" /* "%i" */
-        "movl $0x10, 4(%esp)\n"
-        "leal -0x28(%ebp), %edi\n" /* num */
-        "movl %edi, (%esp)\n"
-        "calll Com_sprintf\n"
-        ".Lf188f88_00188fd3:\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 1678 */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* font */
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "movl 0x10(%ebp), %edx\n" /* line 1679 | textStyle */
-        "movl %edx, 0x24(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* color */
-        "movl %edx, 0x20(%esp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, 0x1c(%esp)\n"
-        "movl 0x14(%ebx), %edx\n" /* rect */
-        "movl %edx, 0x18(%esp)\n"
-        "movl 0x10(%ebx), %edx\n" /* rect */
-        "movl %edx, 0x14(%esp)\n"
-        "movss 4(%ebx), %xmm0\n" /* rect */
-        "addss 0xc(%ebx), %xmm0\n" /* rect */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss (%ebx), %xmm0\n" /* rect */
-        "addss 8(%ebx), %xmm0\n" /* rect */
-        "cvtsi2ssl %eax, %xmm1\n"
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* font */
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll UI_DrawText\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1680 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf188f88_0018905c:\n"
-        "movl $str_00222900, 8(%esp)\n" /* line 1672 */
-        "movl $0x10, 4(%esp)\n"
-        "leal -0x28(%ebp), %edi\n" /* num */
-        "movl %edi, (%esp)\n"
-        "calll Com_sprintf\n"
-        "jmp .Lf188f88_00188fd3\n"
-    );
+    cgs_t *cgs;
+    char scoreText[16];
+    int textWidth;
+
+    (void)material;
+
+    cgs = *(cgs_t **)imp_cgs;
+    if (cgs->teamScores[team] == -9999)
+    {
+        Com_sprintf(scoreText, sizeof(scoreText), "%s", "-");
+    }
+    else
+    {
+        Com_sprintf(scoreText, sizeof(scoreText), "%i", cgs->teamScores[team]);
+    }
+
+    textWidth = UI_TextWidth(scoreText, 0, font, scale);
+    UI_DrawText(
+        scoreText,
+        0x7fffffff,
+        font,
+        rect->x + rect->w - (float)textWidth,
+        rect->y + rect->h,
+        rect->horzAlign,
+        rect->vertAlign,
+        scale,
+        color,
+        textStyle);
 }
 
 /* line 1722 */
