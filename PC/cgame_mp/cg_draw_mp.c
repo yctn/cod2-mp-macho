@@ -63,9 +63,11 @@ extern int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info
 extern const char *Dvar_GetString(const char *dvarName);
 extern int Dvar_GetInt(const char *dvarName);
 extern Bool Dvar_GetBool(const char *dvarName);
+extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
 extern float Vec3Distance(const vec_t *v1, const vec_t *v2);
 extern float crandom(void);
 extern double sin(double);
+extern double tan(double);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -85,7 +87,7 @@ static qboolean CG_DrawFollow(void);
 unsigned int CG_DrawPlayerSprites(void);
 unsigned int CG_DrawActive(void);
 static unsigned int CG_DrawChatMessages(void);
-static unsigned int CG_CalcCrosshairPosition(void);
+static void __attribute__((regparm(2))) CG_CalcCrosshairPosition(float *x, float *y);
 static float CG_DrawFPS(float y);
 unsigned int CG_DrawBoldGameMessages(void);
 unsigned int CG_DrawTurretCrossHair(void);
@@ -1354,119 +1356,43 @@ unsigned int CG_DrawChatMessages(void)
 }
 
 /* line 1110 */
-static __attribute__((naked))
-unsigned int CG_CalcCrosshairPosition(void)
+static void __attribute__((regparm(2))) CG_CalcCrosshairPosition(float *x, float *y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1110 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl %eax, %esi\n" /* x */
-        "movl %edx, %edi\n" /* y */
-        /* { scope 1 */
-        "movl imp_cg, %eax\n" /* line 1116 */
-        "movl (%eax), %ebx\n"
-        "movl 0x285d0(%ebx), %ecx\n" /* z */
-        "movl 0x2c094(%ebx), %edx\n" /* y */
-        /* { scope 2 */
-        "movl 0x2c090(%ebx), %eax\n" /* line 191 */
-        "movl %eax, -0x24(%ebp)\n" /* gunAng */
-        "movl %edx, -0x20(%ebp)\n" /* line 192 */
-        "movl %ecx, -0x1c(%ebp)\n" /* line 193 */
-        /* } scope */
-        "movl $0, 0xc(%esp)\n" /* line 1117 */
-        "movl $0, 8(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* gunDir */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* gunAng */
-        "movl %eax, (%esp)\n"
-        "calll AngleVectors\n"
-        "leal 0x28594(%ebx), %eax\n" /* line 1119 | a */
-        /* { scope 2 */
-        "movss -0x30(%ebp), %xmm1\n" /* line 304 | gunDir */
-        "movss -0x2c(%ebp), %xmm3\n"
-        "movss -0x28(%ebp), %xmm4\n"
-        "movaps %xmm1, %xmm2\n"
-        "mulss 0x28594(%ebx), %xmm2\n"
-        "movaps %xmm3, %xmm0\n"
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movaps %xmm4, %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        /* } scope */
-        "pxor %xmm5, %xmm5\n" /* line 1120 */
-        "ucomiss %xmm2, %xmm5\n"
-        "jae .Lf1cce2a_001ccfc0\n"
-        "movss 0x28580(%ebx), %xmm0\n"
-        "ucomiss %xmm0, %xmm5\n"
-        "jae .Lf1cce2a_001ccfc0\n"
-        "ucomiss 0x28584(%ebx), %xmm5\n"
-        "jae .Lf1cce2a_001ccfc0\n"
-        "leal 0x285a0(%ebx), %eax\n" /* line 1124 */
-        "mulss 0x285a0(%ebx), %xmm1\n" /* line 1127 */
-        "mulss 4(%eax), %xmm3\n"
-        "addss %xmm3, %xmm1\n"
-        "mulss 8(%eax), %xmm4\n"
-        "addss %xmm4, %xmm1\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm1, -0x58(%ebp)\n"
-        "movss %xmm2, -0x68(%ebp)\n"
-        "calll tan\n"
-        "fstpl -0x40(%ebp)\n"
-        "cvtsd2ss -0x40(%ebp), %xmm0\n"
-        "movss -0x68(%ebp), %xmm2\n"
-        "mulss %xmm2, %xmm0\n"
-        "movss -0x58(%ebp), %xmm1\n"
-        "divss %xmm0, %xmm1\n"
-        "mulss lit4_002eda20, %xmm1\n" /* -320.0f */
-        "movss %xmm1, (%esi)\n" /* x */
-        "leal 0x285ac(%ebx), %eax\n" /* line 1128 */
-        "movss 0x285ac(%ebx), %xmm1\n"
-        "mulss -0x30(%ebp), %xmm1\n" /* gunDir */
-        "movss 4(%eax), %xmm0\n"
-        "mulss -0x2c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss -0x28(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "cvtss2sd 0x28584(%ebx), %xmm0\n"
-        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm1, -0x58(%ebp)\n"
-        "calll tan\n"
-        "fstpl -0x48(%ebp)\n"
-        "cvtsd2ss -0x48(%ebp), %xmm0\n"
-        "movss -0x68(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm2\n"
-        "movss -0x58(%ebp), %xmm1\n"
-        "divss %xmm2, %xmm1\n"
-        "mulss lit4_002eda24, %xmm1\n" /* -240.0f */
-        "movss %xmm1, (%edi)\n" /* y */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 1129 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1cce2a_001ccfc0:\n"
-        "movl $0, (%esi)\n" /* line 1122 | x */
-        "movl $0, (%edi)\n" /* line 1123 | y */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 1129 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    cg_t *cg;
+    vec3_t gunAng;
+    vec3_t gunDir;
+    float forward;
+    float horiz;
+    float vert;
+
+    cg = *(cg_t **)imp_cg;
+    gunAng[0] = cg->gunPitch;
+    gunAng[1] = cg->gunYaw;
+    gunAng[2] = cg->refdefViewAngles[2];
+    AngleVectors(gunAng, gunDir, NULL, NULL);
+
+    forward =
+        gunDir[0] * cg->refdef.viewaxis[0][0] +
+        gunDir[1] * cg->refdef.viewaxis[0][1] +
+        gunDir[2] * cg->refdef.viewaxis[0][2];
+    if (forward <= 0.0f || cg->refdef.fov_x <= 0.0f || cg->refdef.fov_y <= 0.0f)
+    {
+        *x = 0.0f;
+        *y = 0.0f;
+        return;
+    }
+
+    horiz =
+        gunDir[0] * cg->refdef.viewaxis[1][0] +
+        gunDir[1] * cg->refdef.viewaxis[1][1] +
+        gunDir[2] * cg->refdef.viewaxis[1][2];
+    *x = horiz / (forward * (float)tan((double)cg->refdef.fov_x * 0.008726646259971648)) * -320.0f;
+
+    vert =
+        gunDir[0] * cg->refdef.viewaxis[2][0] +
+        gunDir[1] * cg->refdef.viewaxis[2][1] +
+        gunDir[2] * cg->refdef.viewaxis[2][2];
+    *y = vert / (forward * (float)tan((double)cg->refdef.fov_y * 0.008726646259971648)) * -240.0f;
 }
 
 /* line 286 */
