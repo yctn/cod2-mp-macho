@@ -51,9 +51,9 @@ static int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs);
 int R_CellForPoint(const vec_t *origin);
 static vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut);
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
-static void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel);
+static __attribute__((regparm(3))) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes);
-static void R_AddWorldSurfaceWithCull(int stackLevel);
+static __attribute__((regparm(3))) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 static void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel);
 static int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count);
 static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount);
@@ -735,8 +735,8 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
 }
 
 /* line 1582 */
-static __attribute__((naked))
-void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
+static __attribute__((naked)) __attribute__((regparm(3)))
+void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1582 */
@@ -953,104 +953,34 @@ DP4 oPos.z," */
 }
 
 /* line 600 */
-__attribute__((naked))
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 600 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %esi\n" /* line 611 | sidePlaneCount */
-        "testl %esi, %esi\n"
-        "jle .Lfef77e_000ef89a\n"
-        "movl 0x14(%ebp), %ecx\n" /* frustumPlanes */
-        "movl 0xc(%ebp), %esi\n" /* sidePlanes */
-        "xorl %edi, %edi\n" /* planeIndex */
-        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
-        ".Lfef77e_000ef79f:\n"
-        "movl %ecx, %edx\n"
-        "xorl %ebx, %ebx\n" /* term */
-        "movl 8(%ebp), %eax\n" /* viewProjMtx */
-        ".Lfef77e_000ef7a6:\n"
-        "movss (%esi), %xmm1\n" /* line 619 */
-        "mulss (%eax), %xmm1\n"
-        "movss 4(%esi), %xmm0\n"
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%esi), %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0xc(%esi), %xmm0\n"
-        "mulss 0xc(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%edx)\n"
-        "addl $1, %ebx\n" /* line 616 | term */
-        "addl $0x10, %eax\n"
-        "addl $4, %edx\n"
-        "cmpl $4, %ebx\n" /* term */
-        "jne .Lfef77e_000ef7a6\n"
-        "movss (%ecx), %xmm0\n" /* line 324 */
-        "movss 4(%ecx), %xmm1\n"
-        "movss 8(%ecx), %xmm2\n"
-        "mulss %xmm0, %xmm0\n" /* line 81 */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm2\n"
-        "addss %xmm2, %xmm0\n"
-        "sqrtss %xmm0, %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "divss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss (%ecx), %xmm1\n" /* line 519 */
-        "movss %xmm1, (%ecx)\n"
-        "movaps %xmm0, %xmm1\n" /* line 520 */
-        "mulss 4(%ecx), %xmm1\n"
-        "movss %xmm1, 4(%ecx)\n"
-        "movaps %xmm0, %xmm1\n" /* line 521 */
-        "mulss 8(%ecx), %xmm1\n"
-        "movss %xmm1, 8(%ecx)\n"
-        "mulss 0xc(%ecx), %xmm0\n" /* line 522 */
-        "movss %xmm0, 0xc(%ecx)\n"
-        "movl $0xc, %eax\n" /* line 19 */
-        "movl (%ecx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "movl $0, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x10(%ecx)\n"
-        "movl $0x10, %eax\n" /* line 20 */
-        "movl 4(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "movl $4, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x11(%ecx)\n"
-        "movl $0x14, %eax\n" /* line 21 */
-        "movl 8(%ecx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "movl $8, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x12(%ecx)\n"
-        "movb $0xff, 0x13(%ecx)\n" /* line 626 */
-        "addl $1, %edi\n" /* line 611 | planeIndex */
-        "addl $0x14, %ecx\n"
-        "addl $0x10, %esi\n"
-        "cmpl %edi, 0x10(%ebp)\n" /* planeIndex, sidePlaneCount */
-        "jne .Lfef77e_000ef79f\n"
-        /* } scope */
-        ".Lfef77e_000ef89a:\n"
-        "popl %ebx\n" /* line 628 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int planeIndex, term;
+    const float *mtx = (const float *)viewProjMtx;
+    for (planeIndex = 0; planeIndex < sidePlaneCount; planeIndex++) {
+        const float *side = (const float *)&sidePlanes[planeIndex];
+        float *fp = frustumPlanes[planeIndex].coeffs;
+        /* Transform side plane into clip space: fp[term] = dot4(side, mtx_row[term]) */
+        for (term = 0; term < 4; term++)
+            fp[term] = side[0]*mtx[term*4+0] + side[1]*mtx[term*4+1]
+                     + side[2]*mtx[term*4+2] + side[3]*mtx[term*4+3];
+        /* Normalize xyz */
+        float invLen = 1.0f / __builtin_sqrtf(fp[0]*fp[0] + fp[1]*fp[1] + fp[2]*fp[2]);
+        fp[0] *= invLen;
+        fp[1] *= invLen;
+        fp[2] *= invLen;
+        fp[3] *= invLen;
+        /* Sign bits encode which corner of an AABB to use for near/far plane test */
+        frustumPlanes[planeIndex].side[0] = (fp[0] > 0.0f) ? 0x0C : 0x00;
+        frustumPlanes[planeIndex].side[1] = (fp[1] > 0.0f) ? 0x10 : 0x04;
+        frustumPlanes[planeIndex].side[2] = (fp[2] > 0.0f) ? 0x14 : 0x08;
+        frustumPlanes[planeIndex].u.frontal = 0xFF;
+    }
 }
 
 /* line 1068 */
-static __attribute__((naked))
-void R_AddWorldSurfaceWithCull(int stackLevel)
+static __attribute__((naked)) __attribute__((regparm(3)))
+void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1068 */
