@@ -42,6 +42,7 @@ extern void R_SkinSceneEnt(void *sceneEnt, void *ent);
 extern void R_AddXModelSurfaces(int entIndex);
 extern r_globals_t rg;
 extern r_global_permanent_t rgp;
+extern void R_Error(int level, const char *fmt, ...);
 void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
@@ -348,62 +349,34 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
 }
 
 /* line 925 */
-__attribute__((naked))
 int R_CellForPoint(const vec_t *origin)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 925 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* origin */
-        /* { scope 1 */
-        "movl imp_rgp, %esi\n" /* line 931 */
-        "movl 0x109c(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfeefe2_000ef057\n"
-        ".Lfeefe2_000eeffd:\n"
-        "movl 0x109c(%esi), %eax\n" /* line 934 */
-        "movl 0xc(%eax), %edx\n"
-        "pxor %xmm2, %xmm2\n"
-        ".Lfeefe2_000ef00a:\n"
-        "cmpl $-1, (%edx)\n" /* line 935 */
-        "jne .Lfeefe2_000ef048\n"
-        ".Lfeefe2_000ef00f:\n"
-        "movl 0xc(%edx), %eax\n" /* line 937 */
-        "movss (%ebx), %xmm1\n" /* line 939 | origin */
-        "mulss (%eax), %xmm1\n"
-        "movss 4(%ebx), %xmm0\n" /* origin */
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%ebx), %xmm0\n" /* origin */
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "subss 0xc(%eax), %xmm1\n"
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfeefe2_000ef052\n"
-        "movl 0x10(%edx), %edx\n" /* line 940 */
-        "cmpl $-1, (%edx)\n" /* line 935 */
-        "je .Lfeefe2_000ef00f\n"
-        ".Lfeefe2_000ef048:\n"
-        "movl 8(%edx), %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 946 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfeefe2_000ef052:\n"
-        "movl 0x14(%edx), %edx\n" /* line 942 */
-        "jmp .Lfeefe2_000ef00a\n"
-        ".Lfeefe2_000ef057:\n"
-        "movl $str_002259d0, 4(%esp)\n" /* line 932 */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfeefe2_000eeffd\n"
-    );
+    byte *world;
+    byte *node;
+    float *plane;
+    float dot;
+
+    world = *(byte **)((byte *)imp_rgp + 0x109c);
+    if (!world) {
+        R_Error(1, str_002259d0);
+        world = *(byte **)((byte *)imp_rgp + 0x109c);
+    }
+
+    node = *(byte **)(world + 0xc);
+    for (;;) {
+        /* Leaf node: return cell index */
+        if (*(int *)node != -1)
+            return *(int *)(node + 8);
+
+        /* Internal node: test against split plane */
+        plane = *(float **)(node + 0xc);
+        dot = origin[0] * plane[0] + origin[1] * plane[1] + origin[2] * plane[2] - plane[3];
+
+        if (dot > 0.0f)
+            node = *(byte **)(node + 0x10); /* front child */
+        else
+            node = *(byte **)(node + 0x14); /* back child */
+    }
 }
 
 /* line 990 */

@@ -538,29 +538,12 @@ void RB_SetEntityHwLightsDx7(void)
 }
 
 /* line 1785 */
-__attribute__((naked))
 void RB_CreateDynamicBuffers(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1785 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl imp_ri, %esi\n" /* line 1799 */
-        "movl $0x200000, (%esp)\n"
-        "calll *0xc(%esi)\n"
-        "movl imp_tess, %ebx\n"
-        "movl %eax, 0x5a7b0(%ebx)\n"
-        "movl $0x200000, (%esp)\n" /* line 1800 */
-        "calll *0xc(%esi)\n"
-        "movl %eax, 0x5a7b4(%ebx)\n"
-        "addl $0x10, %esp\n" /* line 1802 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    byte *t = (byte *)imp_tess;
+    *(void **)(t + 0x5a7b0) = hunkAlloc(0x200000);
+    *(void **)(t + 0x5a7b4) = hunkAlloc(0x200000);
 }
 
 /* line 1500 */

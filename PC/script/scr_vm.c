@@ -18,6 +18,10 @@ extern jmp_buf g_script_error[33]; /* 0x0 */
 extern int g_script_error_level; /* 0x0 */
 extern unsigned char scrVmGlob[]; /* scrVmGlob - BSS */
 
+extern void FreeValue(unsigned int value);
+extern void Var_Shutdown(void);
+extern void SL_Shutdown(void);
+
 void Scr_ClearErrorMessage(void);
 void Scr_Settings(int developer, int developer_script, int abort_on_error);
 void Scr_Shutdown(void);
@@ -107,41 +111,22 @@ void Scr_Settings(int developer, int developer_script, int abort_on_error)
 }
 
 /* line 192 */
-__attribute__((naked))
 void Scr_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 192 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_scrVarPub, %ebx\n" /* line 194 */
-        "cmpb $0, 0x38(%ebx)\n"
-        "je .Lf81662_000816ad\n"
-        "movb $0, 0x38(%ebx)\n" /* line 196 */
-        "movl 0x34(%ebx), %eax\n" /* line 153 */
-        "testl %eax, %eax\n"
-        "jne .Lf81662_0008168f\n"
-        "calll Var_Shutdown\n" /* line 199 */
-        "addl $0x14, %esp\n" /* line 201 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp SL_Shutdown\n" /* line 200 */
-        ".Lf81662_0008168f:\n"
-        "movl %eax, (%esp)\n" /* line 155 */
-        "calll FreeValue\n"
-        "movl $0, 0x34(%ebx)\n" /* line 156 */
-        "calll Var_Shutdown\n" /* line 199 */
-        "addl $0x14, %esp\n" /* line 201 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp SL_Shutdown\n" /* line 200 */
-        ".Lf81662_000816ad:\n"
-        "addl $0x14, %esp\n" /* line 201 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *base = (byte *)imp_scrVarPub;
+    unsigned int val;
+
+    if (!base[0x38])
+        return;
+
+    base[0x38] = 0;
+    val = *(unsigned int *)(base + 0x34);
+    if (val) {
+        FreeValue(val);
+        *(unsigned int *)(base + 0x34) = 0;
+    }
+    Var_Shutdown();
+    SL_Shutdown();
 }
 
 /* line 204 */

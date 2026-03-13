@@ -160,6 +160,13 @@ static void (*const rb_tessTable[8])(const surfaceType_t *) = {
 extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
 extern void RB_TouchAllImages(void);
 extern int ColorIndex(int c);
+extern void RB_EndSurface(void);
+extern void RB_DrawSun(const void *sunData);
+extern void RB_SetShadowLookupMatrix(const void *matrix);
+extern void RB_UpdateViewportConstants(void);
+extern void RB_SetRenderTarget(int renderTargetId);
+extern void RB_DrawSunPostEffects(const void *sunData);
+extern float floorf(float x);
 
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
@@ -182,7 +189,7 @@ static void RB_StretchRawCmd(GfxRenderCommandExecState *execState);
 static void RB_DrawSunCmd(GfxRenderCommandExecState *execState);
 void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stencil);
 static void RB_ClearScreenCmd(GfxRenderCommandExecState *execState);
-static void RB_UpdateColorInternal(void);
+static void RB_UpdateColorInternal(const vec_t *floatColor, byte *color);
 void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis);
 void RB_AdaptiveGpuSyncWait(void);
 void RB_AdaptiveGpuSyncTarget(void);
@@ -507,29 +514,17 @@ void RB_LookupColor(int c, byte *color)
 }
 
 /* line 587 */
-static __attribute__((naked))
-void RB_CallCmd(GfxRenderCommandExecState *execState)
+static void RB_CallCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 587 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ecx), %ebx\n" /* line 593 | cmd */
-        "movl 4(%ecx), %edx\n" /* line 594 */
-        "movzwl 2(%ebx), %eax\n" /* cmd */
-        "addl %ebx, %eax\n" /* cmd */
-        "movl %eax, 8(%ecx, %edx, 4)\n"
-        "addl $1, %edx\n" /* line 595 */
-        "movl %edx, 4(%ecx)\n"
-        "movl 4(%ebx), %eax\n" /* line 596 | cmd */
-        "movl %eax, (%ecx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 597 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+    int idx = *(int *)((byte *)execState + 4);
+
+    /* Save return address (cmd + size) onto the call stack */
+    *(void **)((byte *)execState + 8 + idx * 4) = cmd + *(unsigned short *)(cmd + 2);
+    *(int *)((byte *)execState + 4) = idx + 1;
+
+    /* Jump to the call target */
+    *(void **)execState = *(void **)(cmd + 4);
 }
 
 /* line 1339 */
@@ -770,28 +765,12 @@ void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1246 */
-static __attribute__((naked))
-void RB_DrawSunCmd(GfxRenderCommandExecState *execState)
+static void RB_DrawSunCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1246 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        "movl (%ebx), %eax\n" /* line 1252 | execState */
-        "movl 4(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawSun\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        "addl $0x14, %esp\n" /* line 1255 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+    RB_DrawSun(*(void **)(cmd + 4));
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 1366 */
@@ -976,110 +955,28 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
 }
 
 /* line 1417 */
-static __attribute__((naked))
-void RB_ClearScreenCmd(GfxRenderCommandExecState *execState)
+static void RB_ClearScreenCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1417 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ebx), %edx\n" /* line 1421 | execState */
-        "movzbl 5(%edx), %eax\n" /* line 1423 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0xc(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movzbl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_ClearScreen\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1426 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+    RB_ClearScreen(cmd[4], (const vec_t *)(cmd + 12), *(float *)(cmd + 8), cmd[5]);
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2888 */
-static __attribute__((naked))
-void RB_UpdateColorInternal(void)
+static void RB_UpdateColorInternal(const vec_t *floatColor, byte *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2888 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl %eax, %ebx\n" /* floatColor */
-        "movl %edx, %esi\n" /* color */
-        "movss (%eax), %xmm0\n" /* line 428 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0xc(%ebp)\n"
-        "cvttss2si -0xc(%ebp), %eax\n"
-        "movb %al, (%esi)\n"
-        "movss 4(%ebx), %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x10(%ebp)\n"
-        "cvttss2si -0x10(%ebp), %eax\n"
-        "movb %al, 1(%esi)\n"
-        "movss 8(%ebx), %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvttss2si -0x14(%ebp), %eax\n"
-        "movb %al, 2(%esi)\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "mulss 0xc(%ebx), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x18(%ebp)\n"
-        "cvttss2si -0x18(%ebp), %eax\n"
-        "movb %al, 3(%esi)\n"
-        "addl $0x20, %esp\n" /* line 2894 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    color[0] = (byte)(int)floorf(floatColor[0] * 255.0f + 0.5f);
+    color[1] = (byte)(int)floorf(floatColor[1] * 255.0f + 0.5f);
+    color[2] = (byte)(int)floorf(floatColor[2] * 255.0f + 0.5f);
+    color[3] = (byte)(int)floorf(floatColor[3] * 255.0f + 0.5f);
 }
 
 /* line 2897 */
-__attribute__((naked))
 void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2897 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* color_allies */
-        "movl 0xc(%ebp), %ebx\n" /* color_axis */
-        "movl $backEnd+1220, %edx\n" /* line 2899 */
-        "calll RB_UpdateColorInternal\n"
-        "movl $backEnd+1216, %edx\n" /* line 2900 */
-        "movl %ebx, %eax\n" /* color_axis */
-        "addl $4, %esp\n" /* line 2901 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp RB_UpdateColorInternal\n" /* line 2900 */
-    );
+    RB_UpdateColorInternal(color_allies, (byte *)((char *)&backEnd + 1220));
+    RB_UpdateColorInternal(color_axis, (byte *)((char *)&backEnd + 1216));
 }
 
 /* line 3220 */
@@ -1527,47 +1424,22 @@ void RB_Set3D(void)
 }
 
 /* line 2463 */
-static __attribute__((naked))
-void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
+static void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2463 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* execState */
-        /* { scope 1 */
-        "movl (%esi), %ebx\n" /* line 2467 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd576a_000d5787\n"
-        "movl tess+370656, %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfd576a_000d578c\n"
-        ".Lfd576a_000d5787:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd576a_000d578c:\n"
-        "leal 4(%ebx), %edx\n" /* line 2469 | cmd */
-        /* { scope 2 */
-        "movl 4(%ebx), %eax\n" /* line 456 */
-        "movl %eax, backEnd+432\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, backEnd+436\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, backEnd+440\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, backEnd+444\n"
-        /* } scope */
-        "movl (%esi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 2472 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    /* Copy vec4 material color from cmd+4 to backEnd+432 */
+    *(int *)((char *)&backEnd + 432) = *(int *)(cmd + 4);
+    *(int *)((char *)&backEnd + 436) = *(int *)(cmd + 8);
+    *(int *)((char *)&backEnd + 440) = *(int *)(cmd + 12);
+    *(int *)((char *)&backEnd + 444) = *(int *)(cmd + 16);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2475 */
@@ -1811,59 +1683,34 @@ void RB_SetStencilRefValueCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1258 */
-static __attribute__((naked))
-void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
+static void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1258 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* execState */
-        /* { scope 1 */
-        "movl tess+370640, %ecx\n" /* line 261 */
-        "testl %ecx, %ecx\n"
-        "jne .Lfd5a5e_000d5a7d\n"
-        "movl tess+370656, %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lfd5a5e_000d5a82\n"
-        ".Lfd5a5e_000d5a7d:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd5a5e_000d5a82:\n"
-        "movl (%esi), %ebx\n" /* line 1266 | execState, cmd */
-        "leal 4(%ebx), %eax\n" /* line 1267 | cmd */
-        "movl %eax, (%esp)\n"
-        "calll RB_SetShadowLookupMatrix\n"
-        "movl imp_dx, %eax\n" /* line 1269 */
-        "cvtsi2ssl 0x2c8c(%eax), %xmm0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* line 1274 | 1.0f */
-        "divss %xmm0, %xmm1\n"
-        /* { scope 2 */
-        "movss %xmm0, backEnd+704\n" /* line 447 */
-        "movss %xmm0, backEnd+708\n" /* line 448 */
-        "movss %xmm1, backEnd+712\n" /* line 449 */
-        "movss %xmm1, backEnd+716\n" /* line 450 */
-        /* } scope */
-        "movl 0x44(%ebx), %edx\n" /* line 1275 | cmd */
-        /* { scope 2 */
-        "xorl %eax, %eax\n" /* line 447 */
-        "movl %eax, backEnd+720\n"
-        "movl %eax, backEnd+724\n" /* line 448 */
-        "movl %eax, backEnd+728\n" /* line 449 */
-        "movl %edx, backEnd+732\n" /* line 450 */
-        /* } scope */
-        "movl (%esi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1278 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+    float shadowMapSize, invSize;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    RB_SetShadowLookupMatrix(cmd + 4);
+
+    shadowMapSize = (float)*(int *)((byte *)imp_dx + 0x2c8c);
+    invSize = 1.0f / shadowMapSize;
+
+    /* Shadow map size constants */
+    *(float *)((char *)&backEnd + 704) = shadowMapSize;
+    *(float *)((char *)&backEnd + 708) = shadowMapSize;
+    *(float *)((char *)&backEnd + 712) = invSize;
+    *(float *)((char *)&backEnd + 716) = invSize;
+
+    /* Shadow intensity */
+    *(int *)((char *)&backEnd + 720) = 0;
+    *(int *)((char *)&backEnd + 724) = 0;
+    *(int *)((char *)&backEnd + 728) = 0;
+    *(int *)((char *)&backEnd + 732) = *(int *)(cmd + 0x44);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2761 */
@@ -2106,84 +1953,39 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2807 */
-static __attribute__((naked))
-void RB_SetViewportCmd(GfxRenderCommandExecState *execState)
+static void RB_SetViewportCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2807 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* execState */
-        /* { scope 1 */
-        "movl (%esi), %ebx\n" /* line 2811 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd5e92_000d5eae\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd5e92_000d5eb3\n"
-        ".Lfd5e92_000d5eae:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd5e92_000d5eb3:\n"
-        "movl 4(%ebx), %eax\n" /* line 2820 | cmd */
-        "movl %eax, backEnd+992\n"
-        "movl 8(%ebx), %eax\n" /* cmd */
-        "movl %eax, backEnd+996\n"
-        "movl 0xc(%ebx), %eax\n" /* cmd */
-        "movl %eax, backEnd+1000\n"
-        "movl 0x10(%ebx), %eax\n" /* cmd */
-        "movl %eax, backEnd+1004\n"
-        "movb $1, backEnd+1212\n" /* line 2821 */
-        "calll RB_UpdateViewportConstants\n" /* line 2822 */
-        "movl (%esi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 2825 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    /* Copy viewport rect from cmd to backEnd */
+    *(int *)((char *)&backEnd + 992) = *(int *)(cmd + 4);
+    *(int *)((char *)&backEnd + 996) = *(int *)(cmd + 8);
+    *(int *)((char *)&backEnd + 1000) = *(int *)(cmd + 12);
+    *(int *)((char *)&backEnd + 1004) = *(int *)(cmd + 16);
+    *(byte *)((char *)&backEnd + 1212) = 1;
+    RB_UpdateViewportConstants();
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2501 */
-static __attribute__((naked))
-void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
+static void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2501 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* execState */
-        /* { scope 1 */
-        "movl (%esi), %ebx\n" /* line 2505 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd5eee_000d5f0d\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd5eee_000d5f12\n"
-        ".Lfd5eee_000d5f0d:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd5eee_000d5f12:\n"
-        "movl 4(%ebx), %eax\n" /* line 2508 | cmd */
-        "movl %eax, (%esp)\n"
-        "calll RB_SetRenderTarget\n"
-        "movl (%esi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2511 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    RB_SetRenderTarget(*(int *)(cmd + 4));
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 936 */
@@ -2758,41 +2560,18 @@ void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1991 */
-static __attribute__((naked))
-void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState)
+static void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1991 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* execState */
-        /* { scope 1 */
-        "movl (%esi), %ebx\n" /* line 1995 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd6630_000d664f\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd6630_000d6654\n"
-        ".Lfd6630_000d664f:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd6630_000d6654:\n"
-        "movl 4(%ebx), %eax\n" /* line 1998 | cmd */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawSunPostEffects\n"
-        "movl (%esi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2001 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    RB_DrawSunPostEffects(*(void **)(cmd + 4));
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 197 */
@@ -6560,49 +6339,21 @@ void RB_DrawFullScreenColoredQuad(const Material *material, float s0, float t0, 
 }
 
 /* line 748 */
-static __attribute__((naked))
-void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState)
+static void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 748 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ebx), %edx\n" /* line 752 | execState */
-        "movl $0xa, 0x28(%esp)\n" /* line 473 */
-        "movl 0x18(%edx), %eax\n"
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl imp_dxState, %eax\n"
-        "cvtsi2ssl 0x20a0(%eax), %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "cvtsi2ssl 0x209c(%eax), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x34, %esp\n" /* line 757 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+    float w = (float)*(int *)((byte *)imp_dxState + 0x209c);
+    float h = (float)*(int *)((byte *)imp_dxState + 0x20a0);
+
+    RB_DrawStretchPic(
+        *(const Material **)(cmd + 4),
+        0.0f, 0.0f, w, h,
+        *(float *)(cmd + 8), *(float *)(cmd + 12),
+        *(float *)(cmd + 16), *(float *)(cmd + 20),
+        *(D3DCOLOR *)(cmd + 24), 0xa);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2074 */
