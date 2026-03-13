@@ -75,6 +75,7 @@ extern const dvar_t *name; /* 0x0 */
 extern const dvar_t *cl_voice; /* 0x0 */
 extern clientActive_t clients[1]; /* 0x0 */
 extern clientConnection_t clientConnections[1]; /* 0x0 */
+extern void Com_ClientDObjClearAllSkel(void);
 extern Bool g_waitingForServer; /* 0x0 */
 extern ping_t cl_pinglist[16]; /* 0x0 */
 extern unsigned int frame_msec; /* 0x0 */
@@ -239,56 +240,23 @@ void CL_AddReliableCommand(const char *cmd)
 }
 
 /* line 700 */
-__attribute__((naked))
 void CL_StopRecord_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 700 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        /* { scope 1 */
-        "movl clientConnections+264092, %eax\n" /* line 704 */
-        "testl %eax, %eax\n"
-        "jne .Lf147862_00147886\n"
-        "movl $str_002a8a78, (%esp)\n" /* line 706 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 718 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147862_00147886:\n"
-        "movl $0xffffffff, -0xc(%ebp)\n" /* line 711 | len */
-        "movl clientConnections+264112, %eax\n" /* line 712 */
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0xc(%ebp), %esi\n" /* len */
-        "movl %esi, (%esp)\n"
-        "calll FS_Write\n"
-        "movl clc, %ebx\n" /* line 713 */
-        "movl 0x407b0(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FS_Write\n"
-        "movl 0x407b0(%ebx), %eax\n" /* line 714 */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl $0, 0x407b0(%ebx)\n" /* line 715 */
-        "movl $0, 0x4079c(%ebx)\n" /* line 716 */
-        "movl $str_002a8a90, (%esp)\n" /* line 717 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 718 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cc = (byte *)&clientConnections[0];
+    int len;
+
+    if (!*(int *)(cc + 0x4079c)) {
+        Com_Printf(str_002a8a78);
+        return;
+    }
+
+    len = -1;
+    FS_Write(&len, 4, *(int *)(cc + 0x407b0));
+    FS_Write(&len, 4, *(int *)(cc + 0x407b0));
+    FS_FCloseFile(*(int *)(cc + 0x407b0));
+    *(int *)(cc + 0x407b0) = 0;
+    *(int *)(cc + 0x4079c) = 0;
+    Com_Printf(str_002a8a90);
 }
 
 /* line 1161 */
@@ -335,46 +303,30 @@ void CL_ResetSkeletonCache(int localClientNum)
 }
 
 /* line 1343 */
-__attribute__((naked))
 void CL_ClearState(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1343 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movzbl clients+9, %ebx\n" /* line 1353 | cgameInitialized */
-        "movzbl clients+10, %esi\n" /* line 1354 | cgameInitCalled */
-        "movl clients+4, %edi\n" /* line 1355 | keyCatchers */
-        "movzbl clients+8, %eax\n" /* line 1356 */
-        "movb %al, -0x1a(%ebp)\n" /* displayHUDWithKeycatchUI */
-        "movzbl clients, %edx\n" /* line 1357 */
-        "movb %dl, -0x19(%ebp)\n" /* active */
-        "movl $0x179c14, 8(%esp)\n" /* line 1359 */
-        "movl $0, 4(%esp)\n"
-        "movl $clients, (%esp)\n"
-        "calll memset\n"
-        "movl cl, %eax\n" /* line 1361 */
-        "movb %bl, 9(%eax)\n" /* cgameInitialized */
-        "movl %esi, %edx\n" /* line 1362 | cgameInitCalled */
-        "movb %dl, 0xa(%eax)\n"
-        "movl %edi, 4(%eax)\n" /* line 1363 | keyCatchers */
-        "movzbl -0x1a(%ebp), %edx\n" /* line 1364 | displayHUDWithKeycatchUI */
-        "movb %dl, 8(%eax)\n"
-        "movzbl -0x19(%ebp), %edx\n" /* line 1365 | active */
-        "movb %dl, (%eax)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1368 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Com_ClientDObjClearAllSkel\n" /* line 1367 */
-    );
+    byte *cl = (byte *)&clients[0];
+    byte cgameInitialized, cgameInitCalled, displayHUD, active;
+    int keyCatchers;
+
+    /* Save fields that survive the clear */
+    cgameInitialized = cl[9];
+    cgameInitCalled = cl[10];
+    keyCatchers = *(int *)(cl + 4);
+    displayHUD = cl[8];
+    active = cl[0];
+
+    memset(&clients[0], 0, 0x179c14);
+
+    /* Restore preserved fields */
+    cl = (byte *)&clients[0];
+    cl[9] = cgameInitialized;
+    cl[10] = cgameInitCalled;
+    *(int *)(cl + 4) = keyCatchers;
+    cl[8] = displayHUD;
+    cl[0] = active;
+
+    Com_ClientDObjClearAllSkel();
 }
 
 /* line 1669 */

@@ -153,76 +153,26 @@ qboolean FS_LanguageHasAssets(int iLanguage)
 }
 
 /* line 459 */
-__attribute__((naked))
+extern int ___tolower(int c);
 long int FS_HashFileName(const char *fname, int hashSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 459 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* fname */
-        /* { scope 1 */
-        "movzbl (%edi), %eax\n" /* line 467 | fname */
-        "testb %al, %al\n"
-        "jne .Lf32e54_00032e83\n"
-        "xorl %esi, %esi\n"
-        "xorl %eax, %eax\n"
-        "xorl %edx, %edx\n"
-        "xorl %eax, %esi\n" /* line 481 */
-        "xorl %esi, %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* hashSize */
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        /* } scope */
-        "movl %edx, %eax\n" /* line 484 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf32e54_00032e83:\n"
-        "xorl %esi, %esi\n" /* line 467 */
-        "movl $0x77, %ebx\n"
-        ".Lf32e54_00032e8a:\n"
-        "movsbl %al, %eax\n" /* line 469 */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "movl %eax, %edx\n"
-        "cmpl $0x2e, %eax\n" /* line 470 */
-        "je .Lf32e54_00032eb8\n"
-        "cmpl $0x5c, %eax\n" /* line 473 */
-        "movl $0x2f, %eax\n"
-        "cmovel %eax, %edx\n"
-        "imull %ebx, %edx\n" /* line 478 */
-        "addl %edx, %esi\n"
-        "movzbl -0x76(%edi, %ebx), %eax\n" /* line 467 | fname */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf32e54_00032e8a\n"
-        ".Lf32e54_00032eb8:\n"
-        "movl %esi, %eax\n"
-        "sarl $0xa, %eax\n"
-        "movl %esi, %edx\n"
-        "sarl $0x14, %edx\n"
-        "xorl %eax, %esi\n" /* line 481 */
-        "xorl %esi, %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* hashSize */
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        /* } scope */
-        "movl %edx, %eax\n" /* line 484 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash, i, letter;
+
+    hash = 0;
+    i = 119;
+    while (*fname) {
+        letter = ___tolower((signed char)*fname);
+        if (letter == '.')
+            break;
+        if (letter == '\\')
+            letter = '/';
+        hash += letter * i;
+        i++;
+        fname++;
+    }
+
+    hash ^= (hash >> 10);
+    return ((hash >> 20) ^ hash) & (hashSize - 1);
 }
 
 /* line 497 */
