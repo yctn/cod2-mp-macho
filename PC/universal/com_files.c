@@ -307,79 +307,31 @@ float FS_Remove(const char *osPath)
 }
 
 /* line 1089 */
-__attribute__((naked))
+extern Bool I_islower(int c);
 qboolean FS_FilenameCompare(const char *s1, const char *s2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1089 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* s2 */
-        "jmp .Lf3305c_00033081\n"
-        /* { scope 1 */
-        ".Lf3305c_0003306a:\n"
-        "cmpl $0x3a, %esi\n" /* line 1107 | c1 */
-        "je .Lf3305c_000330b8\n"
-        "cmpl $0x5c, %ebx\n" /* line 1111 | c2 */
-        "je .Lf3305c_000330c2\n"
-        ".Lf3305c_00033074:\n"
-        "cmpl $0x3a, %ebx\n" /* c2 */
-        "je .Lf3305c_000330c2\n"
-        "cmpl %ebx, %esi\n" /* line 1116 | c2, c1 */
-        "jne .Lf3305c_000330cb\n"
-        ".Lf3305c_0003307d:\n"
-        "testl %esi, %esi\n" /* line 1093 | c1 */
-        "je .Lf3305c_000330d8\n"
-        ".Lf3305c_00033081:\n"
-        "movl 8(%ebp), %eax\n" /* line 1095 | s1 */
-        "movsbl (%eax), %esi\n" /* c1 */
-        "addl $1, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* s1 */
-        "movsbl (%edi), %ebx\n" /* line 1096 | s2, c2 */
-        "addl $1, %edi\n" /* s2 */
-        "movl %esi, (%esp)\n" /* line 1098 | c1 */
-        "calll I_islower\n"
-        "leal -0x20(%esi), %edx\n" /* line 1100 | c1 */
-        "testb %al, %al\n"
-        "cmovnel %edx, %esi\n" /* c1 */
-        "movl %ebx, (%esp)\n" /* line 1102 | c2 */
-        "calll I_islower\n"
-        "leal -0x20(%ebx), %edx\n" /* line 1104 | c2 */
-        "testb %al, %al\n"
-        "cmovnel %edx, %ebx\n" /* c2 */
-        "cmpl $0x5c, %esi\n" /* line 1107 | c1 */
-        "jne .Lf3305c_0003306a\n"
-        ".Lf3305c_000330b8:\n"
-        "movl $0x2f, %esi\n" /* c1 */
-        "cmpl $0x5c, %ebx\n" /* line 1111 | c2 */
-        "jne .Lf3305c_00033074\n"
-        ".Lf3305c_000330c2:\n"
-        "movl $0x2f, %ebx\n" /* c2 */
-        "cmpl %ebx, %esi\n" /* line 1116 | c2, c1 */
-        "je .Lf3305c_0003307d\n"
-        ".Lf3305c_000330cb:\n"
-        "movl $0xffffffff, %eax\n" /* line 1093 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1123 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf3305c_000330d8:\n"
-        "xorl %eax, %eax\n" /* line 1093 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1123 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int c1, c2;
+
+    do {
+        c1 = (signed char)*s1++;
+        c2 = (signed char)*s2++;
+
+        if (I_islower(c1))
+            c1 -= 0x20;
+        if (I_islower(c2))
+            c2 -= 0x20;
+
+        /* Normalize path separators */
+        if (c1 == '\\' || c1 == ':')
+            c1 = '/';
+        if (c2 == '\\' || c2 == ':')
+            c2 = '/';
+
+        if (c1 != c2)
+            return -1;
+    } while (c1);
+
+    return 0;
 }
 
 /* line 1224 */
@@ -611,79 +563,32 @@ int FS_filelength(fileHandle_t f)
 }
 
 /* line 884 */
-__attribute__((naked))
+extern void FS_FileClose(int handle);
+extern void Sys_EndStreamedFile(fileHandle_t h);
+extern void unzCloseCurrentFile(void *file);
+extern void unzClose(void *file);
+extern void Com_Memset(void *dest, int val, int count);
 float FS_FCloseFile(fileHandle_t h)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 884 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* h */
-        "leal (%esi, %esi, 8), %eax\n" /* line 892 | h */
-        "shll $3, %eax\n"
-        "subl %esi, %eax\n" /* h */
-        "leal (, %eax, 4), %ebx\n"
-        "movl fsh+24(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf334f2_00033594\n"
-        ".Lf334f2_00033516:\n"
-        "movl fsh+20(%ebx), %eax\n" /* line 898 */
-        "testl %eax, %eax\n"
-        "je .Lf334f2_0003355d\n"
-        "movl fsh(%ebx), %eax\n" /* line 900 */
-        "movl %eax, (%esp)\n"
-        "calll unzCloseCurrentFile\n"
-        "movl fsh+4(%ebx), %ecx\n" /* line 902 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf334f2_000335a1\n"
-        ".Lf334f2_00033538:\n"
-        "movl $0x11c, 8(%esp)\n" /* line 921 */
-        "movl $0, 4(%esp)\n"
-        "leal fsh(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memset\n"
-        "addl $0x10, %esp\n" /* line 923 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf334f2_0003355d:\n"
-        "testl %esi, %esi\n" /* line 912 | h */
-        "je .Lf334f2_00033538\n"
-        "movl fsh(%ebx), %eax\n" /* line 917 */
-        "movl %eax, (%esp)\n"
-        "calll FS_FileClose\n"
-        "movl $0x11c, 8(%esp)\n" /* line 921 */
-        "movl $0, 4(%esp)\n"
-        "leal fsh(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memset\n"
-        "addl $0x10, %esp\n" /* line 923 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf334f2_00033594:\n"
-        "movl %esi, (%esp)\n" /* line 894 | h */
-        "calll Sys_EndStreamedFile\n"
-        "jmp .Lf334f2_00033516\n"
-        ".Lf334f2_000335a1:\n"
-        "movl fsh(%ebx), %eax\n" /* line 904 */
-        "movl %eax, (%esp)\n"
-        "calll unzClose\n"
-        "movl $0x11c, 8(%esp)\n" /* line 921 */
-        "movl $0, 4(%esp)\n"
-        "leal fsh(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memset\n"
-        "addl $0x10, %esp\n" /* line 923 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *entry = (byte *)fsh + h * 284;
+
+    /* End streaming if active */
+    if (*(int *)(entry + 24))
+        Sys_EndStreamedFile(h);
+
+    if (*(int *)(entry + 20)) {
+        /* Zip file entry */
+        unzCloseCurrentFile(*(void **)entry);
+        if (*(int *)(entry + 4)) {
+            /* Owned zip handle - close the entire zip */
+            unzClose(*(void **)entry);
+        }
+    } else if (h) {
+        /* Regular file */
+        FS_FileClose(*(int *)entry);
+    }
+
+    Com_Memset(entry, 0, 0x11c);
 }
 
 /* line 3494 */

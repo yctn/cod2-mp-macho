@@ -330,153 +330,53 @@ void CL_ClearState(void)
 }
 
 /* line 1669 */
-__attribute__((naked))
+extern int Cmd_Argc(void);
+extern char *Cmd_Argv(int arg);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void I_strncat(char *dest, int maxlen, const char *src);
+extern int putenv(const char *string);
+extern char *getenv(const char *name);
 void CL_Setenv_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1669 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x41c, %esp\n"
-        /* { scope 1: buffer */
-        "calll Cmd_Argc\n" /* line 1671 */
-        "movl %eax, %edi\n" /* argc */
-        "cmpl $2, %eax\n" /* line 1673 */
-        "jg .Lf147a76_00147a9f\n"
-        "je .Lf147a76_00147b30\n" /* line 1692 */
-        /* } scope */
-        ".Lf147a76_00147a94:\n"
-        "addl $0x41c, %esp\n" /* line 1713 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: buffer */
-        /* { scope 2 */
-        ".Lf147a76_00147a9f:\n"
-        "movl $1, (%esp)\n" /* line 1678 */
-        "calll Cmd_Argv\n"
-        "movl $0x400, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x418(%ebp), %esi\n" /* buffer */
-        "movl %esi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $str_00222904, 8(%esp)\n" /* line 1679 */
-        "movl $0x400, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $2, %ebx\n" /* i */
-        ".Lf147a76_00147ae2:\n"
-        "movl %ebx, (%esp)\n" /* line 1683 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 1684 */
-        "movl $0x400, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncat\n"
-        "addl $1, %ebx\n" /* line 1681 | i */
-        "cmpl %ebx, %edi\n" /* i, argc */
-        "jne .Lf147a76_00147ae2\n"
-        "movl %esi, (%esp)\n" /* line 1688 */
-        "calll putenv\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x41c, %esp\n" /* line 1713 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: buffer */
-        /* { scope 2 */
-        ".Lf147a76_00147b30:\n"
-        "movl $1, (%esp)\n" /* line 1697 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll getenv\n"
-        "movl %eax, %ebx\n" /* env */
-        "testl %eax, %eax\n" /* line 1704 */
-        "je .Lf147a76_00147b75\n"
-        "movl $1, (%esp)\n" /* line 1706 */
-        "calll Cmd_Argv\n"
-        "movl %ebx, 8(%esp)\n" /* env */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a8aa0, (%esp)\n" /* "%s=%s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x41c, %esp\n" /* line 1713 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: buffer */
-        /* { scope 2 */
-        ".Lf147a76_00147b75:\n"
-        "movl $1, (%esp)\n" /* line 1710 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a8aa8, (%esp)\n" /* "%s undefined
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf147a76_00147a94\n"
-    );
+    char buffer[1024];
+    int argc, i;
+    const char *env;
+
+    argc = Cmd_Argc();
+
+    if (argc > 2) {
+        /* Set environment variable: "setenv VAR value1 value2 ..." */
+        I_strncpyz(buffer, Cmd_Argv(1), 0x400);
+        I_strncat(buffer, 0x400, str_00222904); /* "=" */
+        for (i = 2; i < argc; i++) {
+            I_strncat(buffer, 0x400, Cmd_Argv(i));
+            I_strncat(buffer, 0x400, str_00217914); /* " " */
+        }
+        putenv(buffer);
+    } else if (argc == 2) {
+        /* Print environment variable */
+        env = getenv(Cmd_Argv(1));
+        if (env)
+            Com_Printf(str_002a8aa0, Cmd_Argv(1), env);
+        else
+            Com_Printf(str_002a8aa8, Cmd_Argv(1));
+    }
 }
 
 /* line 1744 */
-__attribute__((naked))
+extern void Cbuf_AddText(const char *text);
+extern const char *va(const char *fmt, ...);
 void CL_Reconnect_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1744 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x10, %esp\n"
-        "cmpb $0, cls+8\n" /* line 1746 */
-        "je .Lf147b96_00147bce\n"
-        "movl $cls+8, %esi\n"
-        "movl $str_002a8ab8, %edi\n" /* "localhost" */
-        "movl $0xa, %ecx\n"
-        "cld\n"
-        "repe cmpsb %es:(%edi), (%esi)\n"
-        "movl $0, %eax\n"
-        "je .Lf147b96_00147bca\n"
-        "movzbl -1(%esi), %eax\n"
-        "movzbl -1(%edi), %ecx\n"
-        "subl %ecx, %eax\n"
-        ".Lf147b96_00147bca:\n"
-        "testl %eax, %eax\n"
-        "jne .Lf147b96_00147be1\n"
-        ".Lf147b96_00147bce:\n"
-        "movl $str_002a8ac4, (%esp)\n" /* line 1748 */
-        "calll Com_Printf\n"
-        "addl $0x10, %esp\n" /* line 1752 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf147b96_00147be1:\n"
-        "movl $cls+8, 4(%esp)\n" /* line 1751 */
-        "movl $str_002a8ae4, (%esp)\n" /* "connect %s
-" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Cbuf_AddText\n"
-        "addl $0x10, %esp\n" /* line 1752 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *server = (char *)&cls + 8;
+
+    /* Don't reconnect to empty or localhost */
+    if (!*server || !memcmp(server, str_002a8ab8, 10)) {
+        Com_Printf(str_002a8ac4);
+        return;
+    }
+
+    Cbuf_AddText(va(str_002a8ae4, server));
 }
 
 /* line 1946 */
@@ -625,82 +525,52 @@ void CL_SetupForNewServerMap(const char *pszMapName, const char *pszGametype)
 }
 
 /* line 2894 */
-__attribute__((naked))
+extern void CL_WriteVoicePacket(void);
 void CL_VoiceTransmit(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2894 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "movl cl, %ecx\n" /* line 2896 */
-        "movl 0x179c0c(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lf147eba_00147f01\n"
-        "movl clients+9968, %eax\n" /* line 2899 */
-        "subl 0x179c10(%ecx), %eax\n"
-        "cmpl $0xc7, %eax\n"
-        "jg .Lf147eba_00147ee1\n"
-        "cmpl $9, %edx\n"
-        "jle .Lf147eba_00147f01\n"
-        ".Lf147eba_00147ee1:\n"
-        "calll CL_WriteVoicePacket\n" /* line 2903 */
-        "movl cl, %eax\n" /* line 2905 */
-        "movl $0, 0x179c0c(%eax)\n"
-        "movl 0x26f0(%eax), %edx\n" /* line 2906 */
-        "movl %edx, 0x179c10(%eax)\n"
-        ".Lf147eba_00147f01:\n"
-        "leave\n" /* line 2907 */
-        "retl\n"
-    );
+    byte *cl = *(byte **)imp_cl;
+    int voiceLen = *(int *)(cl + 0x179c0c);
+
+    if (voiceLen <= 0)
+        return;
+
+    /* Send if enough time passed or enough data buffered */
+    if (*(int *)((byte *)&clients[0] + 9968) - *(int *)(cl + 0x179c10) > 199 || voiceLen > 9) {
+        CL_WriteVoicePacket();
+        cl = *(byte **)imp_cl;
+        *(int *)(cl + 0x179c0c) = 0;
+        *(int *)(cl + 0x179c10) = *(int *)(cl + 0x26f0);
+    }
 }
 
 /* line 2927 */
-__attribute__((naked))
+extern int Dvar_GetInt(const char *name);
+extern Bool IsTalking(void);
 Bool Voice_SendVoiceData(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2927 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl imp_sv_voice, %eax\n" /* line 2929 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf147f04_00147f22\n"
-        "movl cl_voice, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf147f04_00147f26\n"
-        ".Lf147f04_00147f22:\n"
-        "xorl %eax, %eax\n" /* line 2934 */
-        "leave\n" /* line 2939 */
-        "retl\n"
-        ".Lf147f04_00147f26:\n"
-        "movl $str_002a8c54, (%esp)\n" /* line 2929 */
-        "calll Dvar_GetInt\n"
-        "cmpl $0x1387, %eax\n"
-        "jle .Lf147f04_00147f22\n"
-        "movl clc, %eax\n" /* line 2932 */
-        "cmpl $8, (%eax)\n"
-        "jne .Lf147f04_00147f22\n"
-        "movl imp_cl_talking, %eax\n" /* line 2934 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf147f04_00147f57\n"
-        ".Lf147f04_00147f50:\n"
-        "movl $1, %eax\n"
-        ".Lf147f04_00147f55:\n"
-        "leave\n" /* line 2939 */
-        "retl\n"
-        ".Lf147f04_00147f57:\n"
-        "calll IsTalking\n" /* line 2934 */
-        "testb %al, %al\n"
-        "jne .Lf147f04_00147f50\n"
-        "movl cl, %eax\n"
-        "movl 0x179c0c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf147f04_00147f22\n"
-        "movl $1, %eax\n"
-        "jmp .Lf147f04_00147f55\n"
-    );
+    /* Check sv_voice and cl_voice dvars */
+    if (!(*(const dvar_t **)imp_sv_voice)->current.enabled)
+        return 0;
+    if (!cl_voice->current.enabled)
+        return 0;
+
+    /* Check voice rate limit */
+    if (Dvar_GetInt(str_002a8c54) <= 0x1387)
+        return 0;
+
+    /* Must be fully connected */
+    if (**(int **)imp_clc != 8)
+        return 0;
+
+    /* Check if actively talking or have buffered data */
+    if ((*(const dvar_t **)imp_cl_talking)->current.enabled)
+        return 1;
+    if (IsTalking())
+        return 1;
+    if (*(int *)(*(byte **)imp_cl + 0x179c0c))
+        return 1;
+
+    return 0;
 }
 
 /* line 4979 */
@@ -794,31 +664,22 @@ void CL_RefPrintf(int print_level, const char *fmt)
 }
 
 /* line 3206 */
-__attribute__((naked))
+extern void StatMon_Reset(void);
+extern refexport_t re;
 void CL_ShutdownRef(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3206 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl re+328, %eax\n" /* line 3208 */
-        "testl %eax, %eax\n"
-        "je .Lf14804c_0014805d\n"
-        "calll *%eax\n" /* line 3209 */
-        ".Lf14804c_0014805d:\n"
-        "movl re, %eax\n" /* line 3211 */
-        "testl %eax, %eax\n"
-        "je .Lf14804c_0014808b\n"
-        "movl $1, (%esp)\n" /* line 3213 */
-        "calll *%eax\n"
-        "movl $0x160, 8(%esp)\n" /* line 3219 */
-        "movl $0, 4(%esp)\n"
-        "movl $re, (%esp)\n"
-        "calll memset\n"
-        ".Lf14804c_0014808b:\n"
-        "leave\n" /* line 3228 */
-        "jmp StatMon_Reset\n" /* line 3223 */
-    );
+    void (*shutdownInput)(void) = *(void (**)(void))((char *)&re + 328);
+    void (*shutdown)(int) = *(void (**)(int))&re;
+
+    if (shutdownInput)
+        shutdownInput();
+
+    if (shutdown) {
+        shutdown(1);
+        memset(&re, 0, 0x160);
+    }
+
+    StatMon_Reset();
 }
 
 /* line 3236 */
@@ -1799,67 +1660,30 @@ void CL_InitOnceForAllClients(void)
 }
 
 /* line 4937 */
-__attribute__((naked))
+extern void Z_FreeInternal(void *ptr);
 void CL_ShutdownDebugData(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4937 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "subl $0x14, %esp\n"
-        "movl cls+0x2a0aa8, %eax\n" /* line 4939 */
-        "testl %eax, %eax\n"
-        "je .Lf149428_0014944a\n"
-        "movl %eax, (%esp)\n" /* line 4941 */
-        "calll Z_FreeInternal\n"
-        "movl $0, cls+0x2a0aa8\n" /* line 4942 */
-        ".Lf149428_0014944a:\n"
-        "movl cls+0x2a0aac, %eax\n" /* line 4944 */
-        "testl %eax, %eax\n"
-        "je .Lf149428_00149465\n"
-        "movl %eax, (%esp)\n" /* line 4946 */
-        "calll Z_FreeInternal\n"
-        "movl $0, cls+0x2a0aac\n" /* line 4947 */
-        ".Lf149428_00149465:\n"
-        "movl cls+0x2a0ab0, %eax\n" /* line 4949 */
-        "testl %eax, %eax\n"
-        "je .Lf149428_00149480\n"
-        "movl %eax, (%esp)\n" /* line 4951 */
-        "calll Z_FreeInternal\n"
-        "movl $0, cls+0x2a0ab0\n" /* line 4952 */
-        ".Lf149428_00149480:\n"
-        "movl cls+0x2a0a98, %eax\n" /* line 4954 */
-        "testl %eax, %eax\n"
-        "je .Lf149428_0014949b\n"
-        "movl %eax, (%esp)\n" /* line 4956 */
-        "calll Z_FreeInternal\n"
-        "movl $0, cls+0x2a0a98\n" /* line 4957 */
-        ".Lf149428_0014949b:\n"
-        "movl cls+0x2a0a9c, %eax\n" /* line 4959 */
-        "testl %eax, %eax\n"
-        "je .Lf149428_001494b6\n"
-        "movl %eax, (%esp)\n" /* line 4961 */
-        "calll Z_FreeInternal\n"
-        "movl $0, cls+0x2a0a9c\n" /* line 4962 */
-        ".Lf149428_001494b6:\n"
-        "movl $cls+0x2a0a90, %edi\n" /* line 4965 */
-        "cld\n"
-        "movl $9, %ecx\n"
-        "xorl %eax, %eax\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl re+264, %ecx\n" /* line 4967 */
-        "testl %ecx, %ecx\n"
-        "je .Lf149428_001494d6\n"
-        "addl $0x14, %esp\n" /* line 4969 */
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 4968 */
-        ".Lf149428_001494d6:\n"
-        "addl $0x14, %esp\n" /* line 4969 */
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *c = (byte *)&cls;
+    int i;
+    void (*shutdownDebug)(void);
+
+    /* Free debug data allocations */
+    static const int offsets[] = { 0x2a0aa8, 0x2a0aac, 0x2a0ab0, 0x2a0a98, 0x2a0a9c };
+    for (i = 0; i < 5; i++) {
+        void **ptr = (void **)(c + offsets[i]);
+        if (*ptr) {
+            Z_FreeInternal(*ptr);
+            *ptr = 0;
+        }
+    }
+
+    /* Zero the debug state block (9 ints at offset 0x2a0a90) */
+    memset(c + 0x2a0a90, 0, 36);
+
+    /* Call renderer debug shutdown if available */
+    shutdownDebug = *(void (**)(void))((char *)&re + 264);
+    if (shutdownDebug)
+        shutdownDebug();
 }
 
 /* line 4449 */
@@ -1962,47 +1786,22 @@ void CL_ShowIP_f(void)
 }
 
 /* line 4715 */
-__attribute__((naked))
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 const char * CL_GetServerIPAddress(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4715 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "cmpl $4, clientConnections\n" /* line 4719 */
-        "jg .Lf1495ea_0014961c\n"
-        "movl $0x80, 8(%esp)\n" /* line 4721 */
-        "movl $0, 4(%esp)\n"
-        "movl $szServerIPAddress, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        "movl $szServerIPAddress, %eax\n" /* line 4728 */
-        "leave\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1495ea_0014961c:\n"
-        "movzwl clientConnections+28, %eax\n" /* line 4722 */
-        "rolw $8, %ax\n" /* line 925 */
-        "cwtl\n" /* line 4725 */
-        "movl %eax, 0x1c(%esp)\n"
-        "movzbl clientConnections+27, %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movzbl clientConnections+26, %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movzbl clientConnections+25, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movzbl clientConnections+24, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
-        "movl $0x80, 4(%esp)\n"
-        "movl $szServerIPAddress, (%esp)\n"
-        "calll Com_sprintf\n"
-        /* } scope */
-        "movl $szServerIPAddress, %eax\n" /* line 4728 */
-        "leave\n"
-        "retl\n"
-    );
+    byte *cc = (byte *)&clientConnections[0];
+
+    if (*(int *)cc <= 4) {
+        memset(szServerIPAddress, 0, 128);
+    } else {
+        /* Format IP:port from connection address */
+        unsigned short port = *(unsigned short *)(cc + 28);
+        port = (port >> 8) | (port << 8); /* byte swap */
+        Com_sprintf(szServerIPAddress, 128, str_002a91dc,
+            cc[24], cc[25], cc[26], cc[27], (int)(short)port);
+    }
+
+    return szServerIPAddress;
 }
 
 /* line 4844 */
