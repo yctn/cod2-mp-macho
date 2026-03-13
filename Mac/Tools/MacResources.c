@@ -45,116 +45,38 @@ CFStringRef MacResources_GetNeeds32BitError(void);
 CFStringRef MacResources_GetCantRunFromDiscError(void);
 
 /* line 64 */
-__attribute__((naked))
 bool MacResources_GetGameString(CFStringRef inKeyRef, unsigned char *outString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 64 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* inKeyRef */
-        /* { scope 1 */
-        "calll CFBundleGetMainBundle\n" /* line 32 */
-        "movl $0x32e6b4, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CFBundleCopyLocalizedString\n"
-        "movl %eax, %esi\n"
-        "testl %eax, %eax\n" /* line 69 */
-        "je .Lf9fac_0000a011\n"
-        "movl $0, 0xc(%esp)\n" /* line 71 */
-        "movl $0x100, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* outString */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* stringRef */
-        "calll CFStringGetPascalString\n"
-        "movl %eax, %ebx\n" /* inKeyRef */
-        "movl %esi, (%esp)\n" /* line 76 | stringRef */
-        "calll CFRelease\n"
-        "xorl %eax, %eax\n"
-        "testb %bl, %bl\n" /* inKeyRef */
-        "setne %al\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 80 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf9fac_0000a011:\n"
-        "xorl %eax, %eax\n" /* line 69 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 80 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int bundle = CFBundleGetMainBundle();
+    int stringRef = CFBundleCopyLocalizedString(bundle, inKeyRef, inKeyRef, 0x32e6b4);
+    if (!stringRef)
+        return 0;
+
+    int result = CFStringGetPascalString(stringRef, outString, 0x100, 0);
+    CFRelease(stringRef);
+    return result != 0;
 }
 
 /* line 85 */
-__attribute__((naked))
 CFStringRef MacResources_GetProductFamily(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 85 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl sResult, %eax\n" /* line 89 */
-        "testl %eax, %eax\n"
-        "je .Lfa01a_0000a030\n"
-        "movl sResult, %eax\n"
-        /* } scope */
-        "leave\n" /* line 95 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa01a_0000a030:\n"
-        "calll CFBundleGetMainBundle\n" /* line 32 */
-        "movl $0x32e6b4, 0xc(%esp)\n"
-        "movl $0x32e6c4, 8(%esp)\n"
-        "movl $0x32e6c4, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CFBundleCopyLocalizedString\n"
-        "movl %eax, sResult\n" /* line 91 */
-        /* } scope */
-        "leave\n" /* line 95 */
-        "retl\n"
-    );
+    if (sResult)
+        return sResult;
+
+    int bundle = CFBundleGetMainBundle();
+    sResult = CFBundleCopyLocalizedString(bundle, 0x32e6c4, 0x32e6c4, 0x32e6b4);
+    return sResult;
 }
 
 /* line 145 */
-__attribute__((naked))
 CFStringRef MacResources_GetDiscName(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 145 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl sResult, %eax\n" /* line 149 */
-        "testl %eax, %eax\n"
-        "je .Lfa05e_0000a074\n"
-        "movl sResult, %eax\n"
-        /* } scope */
-        "leave\n" /* line 155 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa05e_0000a074:\n"
-        "calll CFBundleGetMainBundle\n" /* line 32 */
-        "movl $0x32e6b4, 0xc(%esp)\n"
-        "movl $0x32e704, 8(%esp)\n"
-        "movl $0x32e704, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CFBundleCopyLocalizedString\n"
-        "movl %eax, sResult\n" /* line 151 */
-        /* } scope */
-        "leave\n" /* line 155 */
-        "retl\n"
-    );
+    if (sResult)
+        return sResult;
+
+    int bundle = CFBundleGetMainBundle();
+    sResult = CFBundleCopyLocalizedString(bundle, 0x32e704, 0x32e704, 0x32e6b4);
+    return sResult;
 }
 
 /* line 266 */
@@ -258,34 +180,14 @@ CFStringRef MacResources_GetNeedsNewerOSError(void)
 }
 
 /* line 305 */
-__attribute__((naked))
 CFStringRef MacResources_GetNoQuickTimeError(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 305 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl sResult, %eax\n" /* line 309 */
-        "testl %eax, %eax\n"
-        "je .Lfa1f8_0000a20e\n"
-        "movl sResult, %eax\n"
-        /* } scope */
-        "leave\n" /* line 315 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa1f8_0000a20e:\n"
-        "calll CFBundleGetMainBundle\n" /* line 165 */
-        "movl $0, 0xc(%esp)\n"
-        "movl $0x32e744, 8(%esp)\n"
-        "movl $0x32e744, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CFBundleCopyLocalizedString\n"
-        "movl %eax, sResult\n" /* line 311 */
-        /* } scope */
-        "leave\n" /* line 315 */
-        "retl\n"
-    );
+    if (sResult)
+        return sResult;
+
+    int bundle = CFBundleGetMainBundle();
+    sResult = CFBundleCopyLocalizedString(bundle, 0x32e744, 0x32e744, 0);
+    return sResult;
 }
 
 /* line 320 */

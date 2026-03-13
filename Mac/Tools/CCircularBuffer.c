@@ -12,175 +12,128 @@ void ZN15CCircularBufferD1Ev(void); /* CCircularBuffer_~CCircularBuffer */
 void CCircularBuffer_Alloc(const CCircularBuffer * _this, UInt32 inBufferSize);
 void CCircularBuffer_Write(const CCircularBuffer * _this, const void *inBuffer, UInt32 *ioSize);
 
+/*
+ * CCircularBuffer layout:
+ *   offset 0x00: void *buffer
+ *   offset 0x04: UInt32 bufferSize
+ *   offset 0x08: UInt32 readOffset
+ *   offset 0x0c: UInt32 lastReadSize
+ *   offset 0x10: UInt32 writeOffset
+ */
+
 /* line 14 */
-__attribute__((naked))
-void CCircularBuffer_CCircularBuffer(const CCircularBuffer * _this)
+void CCircularBuffer_CCircularBuffer(CCircularBuffer *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 14 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, (%eax)\n" /* line 19 */
-        "movl $0, 4(%eax)\n"
-        "movl $0, 8(%eax)\n"
-        "movl $0, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "popl %ebp\n" /* line 21 */
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    ((int *)p)[0] = 0;
+    ((int *)p)[1] = 0;
+    ((int *)p)[2] = 0;
+    ((int *)p)[3] = 0;
+    ((int *)p)[4] = 0;
 }
 
 /* line 75 */
-__attribute__((naked))
-void CCircularBuffer_Reset(const CCircularBuffer * _this)
+void CCircularBuffer_Reset(CCircularBuffer *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, 8(%eax)\n" /* line 77 */
-        "movl $0, 0xc(%eax)\n" /* line 78 */
-        "movl $0, 0x10(%eax)\n" /* line 79 */
-        "popl %ebp\n" /* line 80 */
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    ((int *)p)[2] = 0;
+    ((int *)p)[3] = 0;
+    ((int *)p)[4] = 0;
 }
 
 /* line 152 */
-__attribute__((naked))
-UInt32 CCircularBuffer_ReadPtrSize(const CCircularBuffer * _this)
+UInt32 CCircularBuffer_ReadPtrSize(const CCircularBuffer *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 152 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "movl 8(%ebx), %edx\n" /* line 154 | this, readPosition */
-        "addl 0xc(%ebx), %edx\n" /* this, readPosition */
-        "movl 4(%ebx), %eax\n" /* line 155 | this */
-        "cmpl %eax, %edx\n"
-        "movl $0, %ecx\n"
-        "cmovael %ecx, %edx\n"
-        "movl 0x10(%ebx), %ecx\n" /* line 160 | this */
-        "cmpl %ecx, %edx\n"
-        "cmovbel %ecx, %eax\n" /* endPosition */
-        "subl %edx, %eax\n" /* endPosition */
-        /* } scope */
-        "popl %ebx\n" /* line 162 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    UInt32 bufferSize = ((const int *)p)[1];
+    UInt32 readOffset = ((const int *)p)[2];
+    UInt32 lastReadSize = ((const int *)p)[3];
+    UInt32 writeOffset = ((const int *)p)[4];
+
+    UInt32 readPosition = readOffset + lastReadSize;
+    if (readPosition >= bufferSize)
+        readPosition = 0;
+
+    UInt32 endPosition;
+    if (readPosition <= writeOffset)
+        endPosition = writeOffset;
+    else
+        endPosition = bufferSize;
+
+    return endPosition - readPosition;
 }
 
 /* line 120 */
-__attribute__((naked))
-void * CCircularBuffer_ReadPtr(const CCircularBuffer * _this, UInt32 *ioSize)
+void *CCircularBuffer_ReadPtr(CCircularBuffer *_this, UInt32 *ioSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 120 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* ioSize */
-        /* { scope 1 */
-        "movl 8(%ecx), %eax\n" /* line 204 */
-        "addl 0xc(%ecx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "cmpl 4(%ecx), %eax\n" /* line 205 */
-        "jb .Lf1f6e76_001f6e97\n"
-        "xorl %eax, %eax\n" /* line 207 */
-        "movl $0, 8(%ecx)\n"
-        ".Lf1f6e76_001f6e97:\n"
-        "movl $0, 0xc(%ecx)\n" /* line 209 */
-        "movl 0x10(%ecx), %edx\n" /* line 129 | endPosition */
-        "cmpl %edx, %eax\n" /* endPosition */
-        "jbe .Lf1f6e76_001f6ea8\n"
-        "movl 4(%ecx), %edx\n" /* endPosition */
-        ".Lf1f6e76_001f6ea8:\n"
-        "subl %eax, %edx\n" /* line 130 | size */
-        "movl %edx, %eax\n" /* size */
-        "cmpl (%ebx), %edx\n" /* line 131 | ioSize */
-        "jae .Lf1f6e76_001f6ec1\n"
-        "movl %edx, (%ebx)\n" /* line 133 | ioSize */
-        ".Lf1f6e76_001f6eb2:\n"
-        "testl %eax, %eax\n" /* line 136 */
-        "je .Lf1f6e76_001f6ebe\n"
-        "movl %eax, 0xc(%ecx)\n" /* line 140 */
-        "movl (%ecx), %eax\n" /* line 141 */
-        "addl 8(%ecx), %eax\n"
-        /* } scope */
-        ".Lf1f6e76_001f6ebe:\n"
-        "popl %ebx\n" /* line 147 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f6e76_001f6ec1:\n"
-        "movl (%ebx), %eax\n" /* ioSize */
-        "jmp .Lf1f6e76_001f6eb2\n"
-    );
+    char *p = (char *)_this;
+    void *buffer = *(void **)p;
+    UInt32 bufferSize = ((int *)p)[1];
+    UInt32 readOffset = ((int *)p)[2];
+    UInt32 lastReadSize = ((int *)p)[3];
+    UInt32 writeOffset = ((int *)p)[4];
+
+    readOffset = readOffset + lastReadSize;
+    ((int *)p)[2] = readOffset;
+    if (readOffset >= bufferSize)
+    {
+        readOffset = 0;
+        ((int *)p)[2] = 0;
+    }
+    ((int *)p)[3] = 0;
+
+    UInt32 endPosition;
+    if (readOffset <= writeOffset)
+        endPosition = writeOffset;
+    else
+        endPosition = bufferSize;
+
+    UInt32 size = endPosition - readOffset;
+    UInt32 requested = *ioSize;
+    if (size < requested)
+        *ioSize = size;
+    else
+        size = requested;
+
+    if (size == 0)
+        return 0;
+
+    ((int *)p)[3] = size;
+    return (char *)buffer + readOffset;
 }
 
-/* line 38 */
-__attribute__((naked))
-void ZN15CCircularBufferD1Ev(void) /* CCircularBuffer_~CCircularBuffer */
+/* line 38 - ~CCircularBuffer */
+void ZN15CCircularBufferD1Ev(CCircularBuffer *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 38 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl (%ebx), %eax\n" /* line 60 | this */
-        "testl %eax, %eax\n"
-        "je .Lf1f6ec6_001f6f00\n"
-        "movl %eax, (%esp)\n" /* line 62 */
-        "calll free\n"
-        "movl $0, (%ebx)\n" /* line 64 | this */
-        "movl $0, 4(%ebx)\n" /* line 65 | this */
-        "movl $0, 8(%ebx)\n" /* line 66 | this */
-        "movl $0, 0xc(%ebx)\n" /* line 67 | this */
-        "movl $0, 0x10(%ebx)\n" /* line 68 | this */
-        ".Lf1f6ec6_001f6f00:\n"
-        "addl $0x14, %esp\n" /* line 41 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    void *buffer = *(void **)p;
+    if (buffer)
+    {
+        free(buffer);
+        ((int *)p)[0] = 0;
+        ((int *)p)[1] = 0;
+        ((int *)p)[2] = 0;
+        ((int *)p)[3] = 0;
+        ((int *)p)[4] = 0;
+    }
 }
 
 /* line 47 */
-__attribute__((naked))
-void CCircularBuffer_Alloc(const CCircularBuffer * _this, UInt32 inBufferSize)
+void CCircularBuffer_Alloc(CCircularBuffer *_this, UInt32 inBufferSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 47 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* inBufferSize */
-        "movl (%ebx), %eax\n" /* line 60 | this */
-        "testl %eax, %eax\n"
-        "je .Lf1f6f06_001f6f44\n"
-        "movl %eax, (%esp)\n" /* line 62 */
-        "calll free\n"
-        "movl $0, (%ebx)\n" /* line 64 | this */
-        "movl $0, 4(%ebx)\n" /* line 65 | this */
-        "movl $0, 8(%ebx)\n" /* line 66 | this */
-        "movl $0, 0xc(%ebx)\n" /* line 67 | this */
-        "movl $0, 0x10(%ebx)\n" /* line 68 | this */
-        ".Lf1f6f06_001f6f44:\n"
-        "movl %esi, (%esp)\n" /* line 51 | inBufferSize */
-        "calll malloc\n"
-        "movl %eax, (%ebx)\n" /* this */
-        "movl %esi, 4(%ebx)\n" /* line 52 | inBufferSize, this */
-        "addl $0x10, %esp\n" /* line 53 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    void *buffer = *(void **)p;
+    if (buffer)
+    {
+        free(buffer);
+        ((int *)p)[0] = 0;
+        ((int *)p)[1] = 0;
+        ((int *)p)[2] = 0;
+        ((int *)p)[3] = 0;
+        ((int *)p)[4] = 0;
+    }
+    ((int *)p)[0] = (int)malloc(inBufferSize);
+    ((int *)p)[1] = inBufferSize;
 }
 
 /* overload skip: CCircularBuffer_CCircularBuffer (0x1f6f58) */
@@ -315,4 +268,3 @@ void CCircularBuffer_Write(const CCircularBuffer * _this, const void *inBuffer, 
         "jmp .Lf1f6f9c_001f7016\n"
     );
 }
-

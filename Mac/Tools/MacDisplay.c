@@ -37,6 +37,31 @@ static CGDisplayFadeReservationToken sFadeToken; /* 0x3348ec */
 static struct CRectList sRectList; /* 0x334780 */
 static MacRect sMainRect; /* 0x334908 */
 
+/* Carbon types for clean C replacements */
+typedef struct { short top; short left; short bottom; short right; } Rect;
+typedef struct { short v; short h; } RGBColor;
+
+/* C++ operator new[] / delete[] / delete */
+void *__Znam(unsigned int size);
+void __ZdaPv(void *ptr);
+void __ZdlPv(void *ptr);
+
+/* External function declarations for clean C replacements */
+int MacTools_CenterRect(void *ioRect, const void *inBounds);
+int MacTools_GetDictionaryValue(int dict, int key);
+int MacResources_GetProductFamily(void);
+
+/*
+ * Display info accessor helper.
+ * sDisplayList is a std::vector<CDisplayInfo> (12-byte vector header in BSS).
+ * Each CDisplayInfo entry is 100 (0x64) bytes.
+ * First 4 bytes of sDisplayList = pointer to data array.
+ */
+static inline char *MacDisplay_CurrentDisplayInfo(void)
+{
+    return *(char **)&sDisplayList + sDisplayIndex * 100;
+}
+
 Boolean MacDisplay_IsFullscreen(void);
 Boolean MacDisplay_InWindowMode(void);
 WindowRef MacDisplay_GetMainWindow(void);
@@ -74,7 +99,7 @@ short unsigned int MacDisplay_GlobalToLocal(Point *ioPoint);
 int MacDisplay_GetNumModes(void);
 short unsigned int UserPaneDrawProc(ControlRef theControl);
 static ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt);
-void ZN16OpaqueContextRefD1Ev(void); /* OpaqueContextRef_~OpaqueContextRef */
+void ZN16OpaqueContextRefD1Ev(char *this_ptr); /* OpaqueContextRef_~OpaqueContextRef */
 short unsigned int MacDisplay_ReleaseContext(ContextRef *ioContextRef);
 short unsigned int MacDisplay_ReleaseDisplay(void);
 static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer);
@@ -101,73 +126,32 @@ void ZNSt6vectorI8CResInfoSaIS0_EEaSERKS2_(void); /* std_vector<CResInfo, std_al
 void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void); /* std_vector<CDisplayInfo, std_allocator<CDisplayInfo> >__M_insert_aux */
 
 /* line 440 */
-__attribute__((naked))
 Boolean MacDisplay_IsFullscreen(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 440 */
-        "movl %esp, %ebp\n"
-        "cmpb $0, sInWindowMode\n" /* line 442 */
-        "jne .Lf435c_00004376\n"
-        "xorl %eax, %eax\n" /* line 448 */
-        "cmpl $0, sScreenContext\n"
-        "setne %al\n"
-        "popl %ebp\n" /* line 450 */
-        "retl\n"
-        ".Lf435c_00004376:\n"
-        "xorl %eax, %eax\n" /* line 442 */
-        "popl %ebp\n" /* line 450 */
-        "retl\n"
-    );
+    if (sInWindowMode)
+        return 0;
+    return sScreenContext != 0;
 }
 
 /* line 455 */
-__attribute__((naked))
 Boolean MacDisplay_InWindowMode(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 455 */
-        "movl %esp, %ebp\n"
-        "movzbl sInWindowMode, %eax\n"
-        "popl %ebp\n" /* line 458 */
-        "retl\n"
-    );
+    return sInWindowMode;
 }
 
 /* line 463 */
-__attribute__((naked))
 WindowRef MacDisplay_GetMainWindow(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 463 */
-        "movl %esp, %ebp\n"
-        "movl sMainWindow, %eax\n"
-        "popl %ebp\n" /* line 466 */
-        "retl\n"
-    );
+    return sMainWindow;
 }
 
 /* line 471 */
-__attribute__((naked))
 CGrafPtr MacDisplay_GetMainPort(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 471 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl sScreenContext, %eax\n" /* line 473 */
-        "testl %eax, %eax\n"
-        "je .Lf4390_000043a4\n"
-        "movl 4(%eax), %eax\n" /* line 476 */
-        "leave\n" /* line 482 */
-        "retl\n"
-        ".Lf4390_000043a4:\n"
-        "movl sMainWindow, %eax\n" /* line 480 */
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPort\n"
-        "leave\n" /* line 482 */
-        "retl\n"
-    );
+    if (sScreenContext)
+        return *(CGrafPtr *)((char *)sScreenContext + 4);
+
+    return GetWindowPort(sMainWindow);
 }
 
 /* line 495 */
