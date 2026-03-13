@@ -544,45 +544,15 @@ void MSG_WriteByte(msg_t *msg, int c)
 }
 
 /* line 1003 */
-__attribute__((naked))
 void MSG_WriteData(msg_t *buf, const void *data, int length)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1003 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* buf */
-        "movl 0x10(%ebp), %edx\n" /* length */
-        /* { scope 1 */
-        "movl 0xc(%ebx), %eax\n" /* line 1007 | buf */
-        "leal (%eax, %edx), %esi\n" /* newsize */
-        "cmpl 8(%ebx), %esi\n" /* line 1008 | buf, newsize */
-        "jle .Lf171e9c_00171ec2\n"
-        "movl $1, (%ebx)\n" /* line 1015 | buf */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1016 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171e9c_00171ec2:\n"
-        "addl 4(%ebx), %eax\n" /* line 1010 | buf */
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* data */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl %esi, 0xc(%ebx)\n" /* line 1011 | newsize, buf */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1016 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int newsize = buf->cursize + length;
+    if (newsize > buf->maxsize) {
+        buf->overflowed = 1;
+        return;
+    }
+    memcpy(buf->data + buf->cursize, data, length);
+    buf->cursize = newsize;
 }
 
 /* line 1133 */
@@ -628,49 +598,16 @@ int MSG_ReadLong(msg_t *msg)
 }
 
 /* line 1289 */
-__attribute__((naked))
 void MSG_ReadData(msg_t *msg, void *data, int len)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1289 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* msg */
-        "movl 0xc(%ebp), %ecx\n" /* data */
-        "movl 0x10(%ebp), %edx\n" /* len */
-        /* { scope 1 */
-        "movl 0x10(%ebx), %eax\n" /* line 1293 | msg */
-        "leal (%eax, %edx), %esi\n" /* newcount */
-        "cmpl 0xc(%ebx), %esi\n" /* line 1294 | msg, newcount */
-        "jg .Lf171f6e_00171fa7\n"
-        "addl 4(%ebx), %eax\n" /* line 1296 | msg */
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memcpy\n"
-        "movl %esi, 0x10(%ebx)\n" /* line 1297 | newcount, msg */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1303 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171f6e_00171fa7:\n"
-        "movl $1, (%ebx)\n" /* line 1301 | msg */
-        "movl %edx, 8(%esp)\n" /* line 1302 */
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1303 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int newcount = msg->readcount + len;
+    if (newcount > msg->cursize) {
+        msg->overflowed = 1;
+        memset(data, 0xff, len);
+        return;
+    }
+    memcpy(data, msg->data + msg->readcount, len);
+    msg->readcount = newcount;
 }
 
 /* line 1424 */
@@ -1039,136 +976,52 @@ char * MSG_ReadStringLine(msg_t *msg)
 }
 
 /* line 1019 */
-__attribute__((naked))
 void MSG_WriteShort(msg_t *msg, int c)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1019 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        /* { scope 1 */
-        "movl 0xc(%edx), %ebx\n" /* line 1023 */
-        "leal 2(%ebx), %ecx\n"
-        "cmpl 8(%edx), %ecx\n" /* line 1024 */
-        "jg .Lf1722ca_001722ee\n"
-        "movl 4(%edx), %eax\n" /* line 1026 */
-        "movl 0xc(%ebp), %esi\n" /* c */
-        "movw %si, (%eax, %ebx)\n"
-        "movl %ecx, 0xc(%edx)\n" /* line 1027 */
-        /* } scope */
-        "popl %ebx\n" /* line 1032 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1722ca_001722ee:\n"
-        "movl $1, (%edx)\n" /* line 1031 */
-        /* } scope */
-        "popl %ebx\n" /* line 1032 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int cursize = msg->cursize;
+    int newsize = cursize + 2;
+    if (newsize > msg->maxsize) {
+        msg->overflowed = 1;
+        return;
+    }
+    *(short *)(msg->data + cursize) = (short)c;
+    msg->cursize = newsize;
 }
 
 /* line 1035 */
-__attribute__((naked))
 void MSG_WriteLong(msg_t *msg, int c)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1035 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        /* { scope 1 */
-        "movl 0xc(%edx), %ebx\n" /* line 1039 */
-        "leal 4(%ebx), %ecx\n"
-        "cmpl 8(%edx), %ecx\n" /* line 1040 */
-        "jg .Lf1722fa_0017231d\n"
-        "movl 4(%edx), %eax\n" /* line 1042 */
-        "movl 0xc(%ebp), %esi\n" /* c */
-        "movl %esi, (%eax, %ebx)\n"
-        "movl %ecx, 0xc(%edx)\n" /* line 1043 */
-        /* } scope */
-        "popl %ebx\n" /* line 1048 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1722fa_0017231d:\n"
-        "movl $1, (%edx)\n" /* line 1047 */
-        /* } scope */
-        "popl %ebx\n" /* line 1048 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int cursize = msg->cursize;
+    int newsize = cursize + 4;
+    if (newsize > msg->maxsize) {
+        msg->overflowed = 1;
+        return;
+    }
+    *(int *)(msg->data + cursize) = c;
+    msg->cursize = newsize;
 }
 
 /* line 769 */
-__attribute__((naked))
+extern void Huff_Init(void *huff);
+extern void Huff_addRef(void *huff, byte ch);
 void MSG_Init(msg_t *buf, byte *data, int length)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 769 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl msgInit, %eax\n" /* line 771 */
-        "testl %eax, %eax\n"
-        "je .Lf17232a_00172360\n"
-        ".Lf17232a_0017233c:\n"
-        "cld\n" /* line 775 */
-        "movl $6, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 8(%ebp), %edi\n" /* buf */
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl 0xc(%ebp), %eax\n" /* line 776 | data */
-        "movl 8(%ebp), %edx\n" /* buf */
-        "movl %eax, 4(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 777 | length */
-        "movl %eax, 8(%edx)\n"
-        "addl $0x2c, %esp\n" /* line 778 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17232a_00172360:\n"
-        "movl $1, msgInit\n" /* line 3100 */
-        "movl $msgHuff, (%esp)\n" /* line 3050 */
-        "calll Huff_Init\n"
-        "movl $0, -0x1c(%ebp)\n"
-        "movl $msg_hData, %esi\n"
-        "jmp .Lf17232a_00172394\n"
-        ".Lf17232a_00172384:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 3051 */
-        "addl $4, %esi\n"
-        "cmpl $0x100, -0x1c(%ebp)\n"
-        "je .Lf17232a_0017233c\n"
-        ".Lf17232a_00172394:\n"
-        "movl (%esi), %edi\n" /* line 3053 */
-        "testl %edi, %edi\n"
-        "jle .Lf17232a_00172384\n"
-        "movzbl -0x1c(%ebp), %ebx\n"
-        "xorl %edi, %edi\n"
-        ".Lf17232a_001723a0:\n"
-        "movl %ebx, 4(%esp)\n" /* line 3055 */
-        "movl $msgHuff, (%esp)\n"
-        "calll Huff_addRef\n"
-        "movl %ebx, 4(%esp)\n" /* line 3056 */
-        "movl $msgHuff+28700, (%esp)\n"
-        "calll Huff_addRef\n"
-        "addl $1, %edi\n" /* line 3053 */
-        "cmpl (%esi), %edi\n"
-        "jl .Lf17232a_001723a0\n"
-        "jmp .Lf17232a_00172384\n"
-    );
+    int i, j;
+
+    if (!msgInit) {
+        msgInit = 1;
+        Huff_Init(&msgHuff);
+        for (i = 0; i < 256; i++) {
+            for (j = 0; j < msg_hData[i]; j++) {
+                Huff_addRef(&msgHuff, (byte)i);
+                Huff_addRef((byte *)&msgHuff + 28700, (byte)i);
+            }
+        }
+    }
+
+    memset(buf, 0, sizeof(msg_t));
+    buf->data = data;
+    buf->maxsize = length;
 }
 
 /* line 1067 */

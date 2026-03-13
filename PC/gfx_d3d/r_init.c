@@ -4,6 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 #include <stdio.h>
+#include <stdarg.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -28,6 +29,12 @@ extern void R_InitLightDefs(void);
 extern void R_ClearFogs(void);
 extern void R_InitDebug(void);
 extern void R_EndDrawGroupLoop(int section, int viewIndex);
+extern Bool Sys_IsMainThread(void);
+extern void R_SyncRenderThread(void);
+extern void RB_SetGammaRamp(const void *gammaTable);
+extern int vsnprintf(char *, unsigned int, const char *, va_list);
+extern double pow(double, double);
+extern float floorf(float);
 extern void R_EndDrawGroupSection(int section);
 extern void R_IssueDrawGroups(void);
 
@@ -47,7 +54,7 @@ static void R_EndView(int viewIndex);
 static void R_DoneRenderingViews(void);
 static void R_TrackStatistics(trStatistics_t *stats);
 refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp);
-void R_Error(errorParm_t errorLevel, const char *msg);
+void R_Error(errorParm_t errorLevel, const char *msg, ...);
 void R_GammaCorrect(byte *buffer, int bufSize);
 static void R_InitSystems(void);
 void R_FatalLockError(HRESULT hr);
@@ -685,139 +692,52 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
 }
 
 /* line 2463 */
-__attribute__((naked))
-void R_Error(errorParm_t errorLevel, const char *msg)
+void R_Error(errorParm_t errorLevel, const char *msg, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2463 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x424, %esp\n"
-        /* { scope 1 */
-        "calll Sys_IsMainThread\n" /* line 2468 */
-        "testb %al, %al\n"
-        "jne .Lfcb458_000cb4d7\n"
-        ".Lfcb458_000cb46b:\n"
-        "cmpb $0, dx+11581\n" /* line 2471 */
-        "je .Lfcb458_000cb48b\n"
-        "movl dx+8, %eax\n" /* line 2473 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xa8(%edx)\n"
-        "movb $0, dx+11581\n" /* line 2474 */
-        ".Lfcb458_000cb48b:\n"
-        "leal 0x10(%ebp), %eax\n" /* line 2477 */
-        "movl %eax, -0xc(%ebp)\n" /* vargs */
-        "movl %eax, 0xc(%esp)\n" /* line 2478 */
-        "movl 0xc(%ebp), %eax\n" /* msg */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x3ff, 4(%esp)\n"
-        "leal -0x40c(%ebp), %ebx\n" /* text */
-        "movl %ebx, (%esp)\n"
-        "calll vsnprintf\n"
-        "movb $0, -0xd(%ebp)\n" /* line 2479 */
-        "movl %ebx, 8(%esp)\n" /* line 2482 */
-        "movl $str_00216058, 4(%esp)\n" /* "%s" */
-        "movl 8(%ebp), %eax\n" /* errorLevel */
-        "movl %eax, (%esp)\n"
-        "calll *ri+4\n"
-        /* } scope */
-        "addl $0x424, %esp\n" /* line 2483 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcb458_000cb4d7:\n"
-        "calll R_SyncRenderThread\n" /* line 2469 */
-        "jmp .Lfcb458_000cb46b\n"
-    );
+    char text[1024];
+    va_list vargs;
+
+    if (Sys_IsMainThread())
+        R_SyncRenderThread();
+
+    /* End scene if in progress */
+    if (*(byte *)((char *)&dx + 11581)) {
+        void *dev = *(void **)((char *)&dx + 8);
+        void **vt = *(void ***)dev;
+        ((int (*)(void *))vt[0xa8 / 4])(dev);
+        *(byte *)((char *)&dx + 11581) = 0;
+    }
+
+    va_start(vargs, msg);
+    vsnprintf(text, 0x3ff, msg, vargs);
+    va_end(vargs);
+    text[1023] = '\0';
+
+    ((void (*)(int, const char *, ...))*(void **)((char *)&ri + 4))(errorLevel, str_00216058, text);
 }
 
 /* line 802 */
-__attribute__((naked))
 void R_GammaCorrect(byte *buffer, int bufSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 802 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x23c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* buffer */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl imp_r_gamma, %eax\n" /* line 768 */
-        "movl (%eax), %eax\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movaps %xmm1, %xmm0\n"
-        "divss 8(%eax), %xmm0\n"
-        "xorl %ebx, %ebx\n"
-        "cvtss2sd %xmm0, %xmm2\n"
-        "movsd %xmm2, -0x220(%ebp)\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jp .Lfcb4e0_000cb56d\n"
-        "jne .Lfcb4e0_000cb56d\n"
-        ".Lfcb4e0_000cb51b:\n"
-        "movl %ebx, %eax\n" /* line 772 */
-        "shll $8, %eax\n"
-        "addl %ebx, %eax\n"
-        "movw %ax, -0x218(%ebp, %ebx, 2)\n" /* line 784 */
-        "addl $1, %ebx\n"
-        "cmpl $0x100, %ebx\n" /* line 770 */
-        "jne .Lfcb4e0_000cb51b\n"
-        /* } scope */
-        ".Lfcb4e0_000cb535:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 814 | bufSize */
-        "testl %eax, %eax\n"
-        "jle .Lfcb4e0_000cb562\n"
-        /* { scope 2 */
-        "xorl %ebx, %ebx\n" /* line 770 */
-        "movl $0x7f807f81, %esi\n"
-        ".Lfcb4e0_000cb543:\n"
-        "leal (%ebx, %edi), %ecx\n" /* line 802 */
-        /* } scope */
-        "movzbl (%ecx), %eax\n" /* line 823 */
-        "movzwl -0x218(%ebp, %eax, 2), %edx\n"
-        "movl %edx, %eax\n"
-        "imull %esi\n"
-        "shrl $7, %edx\n"
-        "movb %dl, (%ecx)\n"
-        "addl $1, %ebx\n" /* line 814 | tableIndex */
-        "cmpl %ebx, 0xc(%ebp)\n" /* tableIndex, bufSize */
-        "jne .Lfcb4e0_000cb543\n"
-        /* } scope */
-        ".Lfcb4e0_000cb562:\n"
-        "addl $0x23c, %esp\n" /* line 825 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfcb4e0_000cb56d:\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
-        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "movsd -0x220(%ebp), %xmm1\n"
-        "movsd %xmm1, 8(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "calll pow\n"
-        "fstpl -0x228(%ebp)\n"
-        "cvtsd2ss -0x228(%ebp), %xmm0\n"
-        "mulss lit4_002ed84c, %xmm0\n" /* 65535.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x22c(%ebp)\n"
-        "cvttss2si -0x22c(%ebp), %eax\n"
-        "movw %ax, -0x218(%ebp, %ebx, 2)\n" /* line 784 */
-        "addl $1, %ebx\n"
-        "cmpl $0x100, %ebx\n" /* line 770 */
-        "jne .Lfcb4e0_000cb56d\n"
-        "jmp .Lfcb4e0_000cb535\n"
-    );
+    unsigned short gammaTable[256];
+    float invGamma;
+    int i;
+
+    invGamma = 1.0f / *(float *)(*(int *)imp_r_gamma + 8);
+
+    if (invGamma == 1.0f) {
+        /* Identity gamma: table[i] = i | (i << 8) */
+        for (i = 0; i < 256; i++)
+            gammaTable[i] = (unsigned short)(i + (i << 8));
+    } else {
+        /* Compute gamma-corrected table */
+        for (i = 0; i < 256; i++)
+            gammaTable[i] = (unsigned short)(int)floorf((float)pow((double)(i / 255.0f), (double)invGamma) * 65535.0f + 0.5f);
+    }
+
+    /* Apply gamma table to buffer (16-bit table value / 257 → 8-bit) */
+    for (i = 0; i < bufSize; i++)
+        buffer[i] = (byte)(gammaTable[buffer[i]] / 257);
 }
 
 /* line 830 */
@@ -930,72 +850,26 @@ void R_Shutdown(qboolean destroyWindow)
 }
 
 /* line 789 */
-__attribute__((naked))
 void R_SetColorMappings(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 789 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x234, %esp\n"
-        /* { scope 1 */
-        "cmpb $0, vidConfig+40\n" /* line 793 */
-        "je .Lfcb780_000cb7e7\n"
-        /* { scope 2 */
-        "movl imp_r_gamma, %eax\n" /* line 768 */
-        "movl (%eax), %eax\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movaps %xmm1, %xmm0\n"
-        "divss 8(%eax), %xmm0\n"
-        "xorl %ebx, %ebx\n"
-        "cvtss2sd %xmm0, %xmm2\n"
-        "movsd %xmm2, -0x210(%ebp)\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jp .Lfcb780_000cb7f0\n"
-        "jne .Lfcb780_000cb7f0\n"
-        ".Lfcb780_000cb7bf:\n"
-        "movl %ebx, %eax\n" /* line 772 */
-        "shll $8, %eax\n"
-        "addl %ebx, %eax\n"
-        "movw %ax, -0x208(%ebp, %ebx, 2)\n" /* line 784 */
-        "addl $1, %ebx\n"
-        "cmpl $0x100, %ebx\n" /* line 770 */
-        "jne .Lfcb780_000cb7bf\n"
-        /* } scope */
-        ".Lfcb780_000cb7d9:\n"
-        "leal -0x208(%ebp), %eax\n" /* line 798 | gammaRamp */
-        "movl %eax, (%esp)\n"
-        "calll RB_SetGammaRamp\n"
-        /* } scope */
-        ".Lfcb780_000cb7e7:\n"
-        "addl $0x234, %esp\n" /* line 799 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfcb780_000cb7f0:\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
-        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "movsd -0x210(%ebp), %xmm1\n"
-        "movsd %xmm1, 8(%esp)\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "calll pow\n"
-        "fstpl -0x218(%ebp)\n"
-        "cvtsd2ss -0x218(%ebp), %xmm0\n"
-        "mulss lit4_002ed84c, %xmm0\n" /* 65535.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x21c(%ebp)\n"
-        "cvttss2si -0x21c(%ebp), %eax\n"
-        "movw %ax, -0x208(%ebp, %ebx, 2)\n" /* line 784 */
-        "addl $1, %ebx\n"
-        "cmpl $0x100, %ebx\n" /* line 770 */
-        "jne .Lfcb780_000cb7f0\n"
-        "jmp .Lfcb780_000cb7d9\n"
-    );
+    unsigned short gammaRamp[256];
+    float invGamma;
+    int i;
+
+    if (!*(byte *)((char *)&vidConfig + 40))
+        return;
+
+    invGamma = 1.0f / *(float *)(*(int *)imp_r_gamma + 8);
+
+    if (invGamma == 1.0f) {
+        for (i = 0; i < 256; i++)
+            gammaRamp[i] = (unsigned short)(i + (i << 8));
+    } else {
+        for (i = 0; i < 256; i++)
+            gammaRamp[i] = (unsigned short)(int)floorf((float)pow((double)(i / 255.0f), (double)invGamma) * 65535.0f + 0.5f);
+    }
+
+    RB_SetGammaRamp(gammaRamp);
 }
 
 /* line 871 */

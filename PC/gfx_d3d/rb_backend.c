@@ -300,45 +300,26 @@ static void RB_ReturnCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1750 */
-__attribute__((naked))
 void RB_SetGammaRamp(const GfxGammaRamp *gammaTable)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1750 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x610, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* gammaTable */
-        "leal -0x608(%ebp), %esi\n" /* d3dGammaRamp */
-        "movl %esi, %edx\n"
-        "leal -0x408(%ebp), %ebx\n"
-        /* { scope 1 */
-        ".Lfd49d0_000d49ec:\n"
-        "movzwl (%ecx), %eax\n" /* line 1761 */
-        "movw %ax, (%edx)\n"
-        "movw %ax, 0x200(%edx)\n" /* line 1762 */
-        "movw %ax, 0x400(%edx)\n" /* line 1763 */
-        "addl $2, %ecx\n"
-        "addl $2, %edx\n"
-        "cmpl %ebx, %edx\n" /* line 1759 */
-        "jne .Lfd49d0_000d49ec\n"
-        "movl imp_dx, %eax\n" /* line 1771 */
-        "movl 8(%eax), %edx\n"
-        "movl (%edx), %ecx\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl 0x2d44(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0x54(%ecx)\n"
-        /* } scope */
-        "addl $0x610, %esp\n" /* line 1773 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned short d3dGammaRamp[256 * 3]; /* R, G, B channels */
+    int i;
+    byte *dx;
+    void *dev;
+    void **vt;
+
+    /* Copy grayscale gamma ramp to all three D3D channels */
+    for (i = 0; i < 256; i++) {
+        d3dGammaRamp[i] = gammaTable->entries[i];
+        d3dGammaRamp[i + 256] = gammaTable->entries[i];
+        d3dGammaRamp[i + 512] = gammaTable->entries[i];
+    }
+
+    /* IDirect3DDevice9::SetGammaRamp(swapChain, flags=0, &ramp) */
+    dx = (byte *)imp_dx;
+    dev = *(void **)(dx + 8);
+    vt = *(void ***)dev;
+    ((void (*)(void *, int, int, void *))vt[0x54 / 4])(dev, *(int *)(dx + 0x2d44), 0, d3dGammaRamp);
 }
 
 /* line 2430 */
