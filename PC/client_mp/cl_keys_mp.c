@@ -18,6 +18,7 @@ extern void FS_Printf(fileHandle_t f, const char *fmt, ...);
 extern int SEH_GetCurrentLanguage(void);
 extern void CL_SwitchToLocalClient(int localClientNum);
 extern void Z_FreeInternal(void *ptr);
+extern void UI_KeyEvent(int key, int down);
 
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
@@ -919,56 +920,34 @@ void Field_CharEvent(field_t *edit, int ch)
 }
 
 /* line 1982 */
-__attribute__((naked))
 void CL_CharEvent(int key)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1982 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* key */
-        "cmpl $0x60, %edx\n" /* line 1990 */
-        "je .Lf14097a_001409b0\n"
-        "cmpl $0x7e, %edx\n"
-        "je .Lf14097a_001409b0\n"
-        "movl imp_cl, %eax\n" /* line 1994 */
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "testb $1, %al\n"
-        "jne .Lf14097a_001409b2\n"
-        "testb $8, %al\n" /* line 1998 */
-        "jne .Lf14097a_001409c4\n"
-        "testb $0x10, %al\n" /* line 2002 */
-        "jne .Lf14097a_001409d9\n"
-        "movl imp_clc, %eax\n" /* line 2006 */
-        "movl (%eax), %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf14097a_001409b2\n"
-        ".Lf14097a_001409b0:\n"
-        "leave\n" /* line 2010 */
-        "retl\n"
-        ".Lf14097a_001409b2:\n"
-        "movl %edx, 4(%esp)\n" /* line 2008 */
-        "movl $g_consoleField, (%esp)\n"
-        "calll Field_CharEvent\n"
-        "leave\n" /* line 2010 */
-        "retl\n"
-        ".Lf14097a_001409c4:\n"
-        "movl $1, 4(%esp)\n" /* line 2000 */
-        "orb $4, %dh\n"
-        "movl %edx, (%esp)\n"
-        "calll UI_KeyEvent\n"
-        "leave\n" /* line 2010 */
-        "retl\n"
-        ".Lf14097a_001409d9:\n"
-        "movl %edx, 4(%esp)\n" /* line 2004 */
-        "movl chatField, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Field_CharEvent\n"
-        "leave\n" /* line 2010 */
-        "retl\n"
-    );
+    int keyCatchers;
+
+    /* Ignore console toggle keys */
+    if (key == '`' || key == '~')
+        return;
+
+    keyCatchers = *(int *)(*(byte **)imp_cl + 4);
+
+    if (keyCatchers & 1) {
+        Field_CharEvent(&g_consoleField, key);
+        return;
+    }
+    if (keyCatchers & 8) {
+        UI_KeyEvent(key | 0x400, 1);
+        return;
+    }
+    if (keyCatchers & 0x10) {
+        Field_CharEvent((field_t *)chatField, key);
+        return;
+    }
+
+    /* If not connected, send to console */
+    if (!**(int **)imp_clc) {
+        Field_CharEvent(&g_consoleField, key);
+        return;
+    }
 }
 
 /* line 566 */

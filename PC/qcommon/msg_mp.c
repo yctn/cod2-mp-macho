@@ -146,81 +146,27 @@ void MSG_BeginReading(msg_t *msg)
 }
 
 /* line 804 */
-__attribute__((naked))
 void MSG_WriteBits(msg_t *msg, int value, int bits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 804 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $8, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* msg */
-        "movl 0xc(%ebp), %esi\n" /* value */
-        /* { scope 1 */
-        "movl 8(%ebx), %eax\n" /* line 810 | msg */
-        "subl 0xc(%ebx), %eax\n" /* msg */
-        "cmpl $3, %eax\n"
-        "jg .Lf171b58_00171b80\n"
-        "movl $1, (%ebx)\n" /* line 812 | msg */
-        /* } scope */
-        ".Lf171b58_00171b78:\n"
-        "addl $8, %esp\n" /* line 832 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171b58_00171b80:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 816 | bits */
-        "testl %eax, %eax\n"
-        "je .Lf171b58_00171b78\n"
-        "xorl %edi, %edi\n" /* line 813 */
-        "movl 0x14(%ebx), %eax\n" /* msg */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf171b58_00171bcb\n"
-        ".Lf171b58_00171b93:\n"
-        "sarl $3, -0x14(%ebp)\n" /* line 828 */
-        "movl 4(%ebx), %edx\n" /* msg */
-        "addl %edx, -0x14(%ebp)\n"
-        "movl $1, %eax\n"
-        "movzbl -0x10(%ebp), %ecx\n" /* bit */
-        "shll %cl, %eax\n"
-        "movl -0x14(%ebp), %edx\n"
-        "orb %al, (%edx)\n"
-        "movl 0x14(%ebx), %ecx\n" /* msg */
-        "movl %ecx, -0x14(%ebp)\n"
-        "movl %ecx, %eax\n"
-        ".Lf171b58_00171bb5:\n"
-        "addl $1, %eax\n" /* line 829 */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, 0x14(%ebx)\n" /* msg */
-        "sarl $1, %esi\n" /* line 830 | value */
-        "addl $1, %edi\n"
-        "cmpl %edi, 0x10(%ebp)\n" /* line 816 | bits */
-        "je .Lf171b58_00171b78\n"
-        "movl -0x14(%ebp), %edx\n"
-        ".Lf171b58_00171bcb:\n"
-        "andl $7, %edx\n" /* line 820 */
-        "movl %edx, -0x10(%ebp)\n" /* bit */
-        "jne .Lf171b58_00171bf1\n"
-        "movl 0xc(%ebx), %edx\n" /* line 822 | msg */
-        "leal (, %edx, 8), %ecx\n"
-        "movl %ecx, 0x14(%ebx)\n" /* msg */
-        "movl 4(%ebx), %eax\n" /* line 823 | msg */
-        "movb $0, (%eax, %edx)\n"
-        "addl $1, 0xc(%ebx)\n" /* line 824 | msg */
-        "movl 0x14(%ebx), %eax\n" /* msg */
-        "movl %eax, -0x14(%ebp)\n"
-        ".Lf171b58_00171bf1:\n"
-        "testl $1, %esi\n" /* line 827 | value */
-        "jne .Lf171b58_00171b93\n"
-        "movl -0x14(%ebp), %eax\n"
-        "jmp .Lf171b58_00171bb5\n"
-    );
+    int i, bit;
+
+    if (msg->maxsize - msg->cursize <= 3) {
+        msg->overflowed = 1;
+        return;
+    }
+
+    for (i = 0; i < bits; i++) {
+        bit = msg->bit & 7;
+        if (bit == 0) {
+            msg->bit = msg->cursize * 8;
+            msg->data[msg->cursize] = 0;
+            msg->cursize++;
+        }
+        if (value & 1)
+            msg->data[msg->bit >> 3] |= (1 << bit);
+        msg->bit++;
+        value >>= 1;
+    }
 }
 
 /* line 835 */
@@ -241,294 +187,100 @@ void MSG_WriteBit0(msg_t *msg)
 }
 
 /* line 856 */
-__attribute__((naked))
 void MSG_WriteBit1(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 856 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edi\n" /* msg */
-        /* { scope 1 */
-        "movl 0xc(%edi), %ebx\n" /* line 860 | msg */
-        "cmpl 8(%edi), %ebx\n" /* msg */
-        "jl .Lf171c44_00171c60\n"
-        "movl $1, (%edi)\n" /* line 862 | msg */
-        /* } scope */
-        "popl %ebx\n" /* line 876 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171c44_00171c60:\n"
-        "movl 0x14(%edi), %edx\n" /* line 866 | msg */
-        "movl %edx, %esi\n" /* line 867 | bit */
-        "andl $7, %esi\n" /* bit */
-        "je .Lf171c44_00171c84\n"
-        "sarl $3, %edx\n" /* line 874 */
-        "addl 4(%edi), %edx\n" /* msg */
-        "movl $1, %eax\n"
-        "movl %esi, %ecx\n" /* bit */
-        "shll %cl, %eax\n"
-        "orb %al, (%edx)\n"
-        "addl $1, 0x14(%edi)\n" /* line 875 | msg */
-        /* } scope */
-        ".Lf171c44_00171c7f:\n"
-        "popl %ebx\n" /* line 876 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171c44_00171c84:\n"
-        "leal (, %ebx, 8), %edx\n" /* line 869 */
-        "movl %edx, 0x14(%edi)\n" /* msg */
-        "movl 4(%edi), %eax\n" /* line 870 | msg */
-        "movb $0, (%eax, %ebx)\n"
-        "addl $1, 0xc(%edi)\n" /* line 871 | msg */
-        "movl 0x14(%edi), %edx\n" /* msg */
-        "sarl $3, %edx\n" /* line 874 */
-        "addl 4(%edi), %edx\n" /* msg */
-        "movl $1, %eax\n"
-        "movl %esi, %ecx\n" /* bit */
-        "shll %cl, %eax\n"
-        "orb %al, (%edx)\n"
-        "addl $1, 0x14(%edi)\n" /* line 875 | msg */
-        "jmp .Lf171c44_00171c7f\n"
-    );
+    int bit;
+
+    if (msg->cursize >= msg->maxsize) {
+        msg->overflowed = 1;
+        return;
+    }
+
+    bit = msg->bit & 7;
+    if (bit == 0) {
+        msg->bit = msg->cursize * 8;
+        msg->data[msg->cursize] = 0;
+        msg->cursize++;
+    }
+    msg->data[msg->bit >> 3] |= (1 << bit);
+    msg->bit++;
 }
 
 /* line 879 */
-__attribute__((naked))
 int MSG_ReadBits(msg_t *msg, int bits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 879 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $8, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* msg */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 888 | bits */
-        "testl %edx, %edx\n"
-        "jg .Lf171cb4_00171cd9\n"
-        "movl $0, -0x10(%ebp)\n" /* value */
-        /* } scope */
-        ".Lf171cb4_00171cce:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 907 | value */
-        "addl $8, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171cb4_00171cd9:\n"
-        "movl $0, -0x10(%ebp)\n" /* line 888 | value */
-        "xorl %esi, %esi\n" /* i */
-        "movl 0x14(%ebx), %eax\n" /* msg */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, %edi\n" /* bit */
-        "jmp .Lf171cb4_00171d31\n"
-        ".Lf171cb4_00171cec:\n"
-        "leal (, %eax, 8), %edx\n" /* line 898 */
-        "movl %edx, -0x14(%ebp)\n"
-        "movl %edx, 0x14(%ebx)\n" /* msg */
-        "addl $1, %eax\n" /* line 899 */
-        "movl %eax, 0x10(%ebx)\n" /* msg */
-        ".Lf171cb4_00171cff:\n"
-        "movl -0x14(%ebp), %edx\n" /* line 902 */
-        "sarl $3, %edx\n"
-        "movl 4(%ebx), %eax\n" /* msg */
-        "movzbl (%eax, %edx), %eax\n"
-        "movl %edi, %ecx\n" /* bit */
-        "sarl %cl, %eax\n"
-        "andl $1, %eax\n"
-        "movl %esi, %ecx\n" /* i */
-        "shll %cl, %eax\n"
-        "orl %eax, -0x10(%ebp)\n" /* value */
-        "movl -0x14(%ebp), %eax\n" /* line 903 */
-        "addl $1, %eax\n"
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, 0x14(%ebx)\n" /* msg */
-        "addl $1, %esi\n" /* line 888 | i */
-        "cmpl %esi, 0xc(%ebp)\n" /* i, bits */
-        "je .Lf171cb4_00171cce\n"
-        "movl -0x14(%ebp), %edi\n" /* bit */
-        ".Lf171cb4_00171d31:\n"
-        "andl $7, %edi\n" /* line 891 | bit */
-        "jne .Lf171cb4_00171cff\n"
-        "movl 0x10(%ebx), %eax\n" /* line 893 | msg */
-        "cmpl 0xc(%ebx), %eax\n" /* msg */
-        "jl .Lf171cb4_00171cec\n"
-        "movl $1, (%ebx)\n" /* line 895 | msg */
-        "movl $0xffffffff, -0x10(%ebp)\n" /* value */
-        "jmp .Lf171cb4_00171cce\n"
-    );
+    int value, i, bit;
+
+    if (bits <= 0)
+        return 0;
+
+    value = 0;
+    for (i = 0; i < bits; i++) {
+        bit = msg->bit & 7;
+        if (bit == 0) {
+            if (msg->readcount >= msg->cursize) {
+                msg->overflowed = 1;
+                return -1;
+            }
+            msg->bit = msg->readcount * 8;
+            msg->readcount++;
+        }
+        value |= ((msg->data[msg->bit >> 3] >> (msg->bit & 7)) & 1) << i;
+        msg->bit++;
+    }
+    return value;
 }
 
 /* line 910 */
-__attribute__((naked))
 int MSG_ReadBit(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 910 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* msg */
-        /* { scope 1 */
-        "movl 0x14(%ebx), %edi\n" /* line 915 | msg */
-        "movl %edi, %esi\n" /* line 916 | bit */
-        "andl $7, %esi\n" /* bit */
-        "jne .Lf171d4e_00171d79\n"
-        "movl 0x10(%ebx), %eax\n" /* line 918 | msg */
-        "cmpl 0xc(%ebx), %eax\n" /* msg */
-        "jge .Lf171d4e_00171d99\n"
-        "leal (, %eax, 8), %edi\n" /* line 923 */
-        "movl %edi, 0x14(%ebx)\n" /* msg */
-        "addl $1, %eax\n" /* line 924 */
-        "movl %eax, 0x10(%ebx)\n" /* msg */
-        ".Lf171d4e_00171d79:\n"
-        "movl %edi, %eax\n" /* line 927 */
-        "sarl $3, %eax\n"
-        "movl 4(%ebx), %edx\n" /* msg */
-        "movzbl (%edx, %eax), %edx\n"
-        "movl %esi, %ecx\n" /* bit */
-        "sarl %cl, %edx\n"
-        "andl $1, %edx\n"
-        "leal 1(%edi), %eax\n" /* line 928 */
-        "movl %eax, 0x14(%ebx)\n" /* msg */
-        /* } scope */
-        ".Lf171d4e_00171d92:\n"
-        "movl %edx, %eax\n" /* line 930 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171d4e_00171d99:\n"
-        "movl $1, (%ebx)\n" /* line 920 | msg */
-        "movl $0xffffffff, %edx\n"
-        "jmp .Lf171d4e_00171d92\n"
-    );
+    int bit, value;
+
+    bit = msg->bit & 7;
+    if (bit == 0) {
+        if (msg->readcount >= msg->cursize) {
+            msg->overflowed = 1;
+            return -1;
+        }
+        msg->bit = msg->readcount * 8;
+        msg->readcount++;
+    }
+    value = (msg->data[msg->bit >> 3] >> (msg->bit & 7)) & 1;
+    msg->bit++;
+    return value;
 }
 
 /* line 942 */
-__attribute__((naked))
+extern void Huff_offsetTransmit(void *huff, int ch, byte *fout, int *offset);
+extern void Huff_offsetReceive(void *node, int *ch, byte *fin, int *offset);
 int MSG_WriteBitsCompress(byte *from, byte *to, int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 942 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* size */
-        /* { scope 1 */
-        "movl $0, -0x1c(%ebp)\n" /* line 951 | bit */
-        "testl %eax, %eax\n" /* line 952 */
-        "jne .Lf171da6_00171dce\n"
-        "movl -0x1c(%ebp), %eax\n" /* bit */
-        "addl $7, %eax\n"
-        "sarl $3, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 956 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171da6_00171dce:\n"
-        "movl 8(%ebp), %ebx\n" /* line 952 | from */
-        "leal -0x1c(%ebp), %edi\n" /* bit */
-        "leal (%ebx, %eax), %esi\n"
-        ".Lf171da6_00171dd7:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 953 */
-        "movl 0xc(%ebp), %eax\n" /* to */
-        "movl %eax, 8(%esp)\n"
-        "movzbl (%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $msgHuff, (%esp)\n"
-        "calll Huff_offsetTransmit\n"
-        "addl $1, %ebx\n" /* line 952 */
-        "cmpl %esi, %ebx\n"
-        "jne .Lf171da6_00171dd7\n"
-        "movl -0x1c(%ebp), %eax\n" /* bit */
-        "addl $7, %eax\n"
-        "sarl $3, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 956 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int bit = 0;
+    int i;
+
+    for (i = 0; i < size; i++)
+        Huff_offsetTransmit(&msgHuff, from[i], to, &bit);
+
+    return (bit + 7) >> 3;
 }
 
 /* line 959 */
-__attribute__((naked))
 int MSG_ReadBitsCompress(byte *from, byte *to, int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 959 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 0x10(%ebp), %esi\n" /* line 971 | size, bits */
-        "shll $3, %esi\n" /* bits */
-        "movl $0, -0x20(%ebp)\n" /* line 974 | bit */
-        "testl %esi, %esi\n" /* bits */
-        "jg .Lf171e0e_00171e32\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 981 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171e0e_00171e32:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 974 | to, data */
-        "leal -0x1c(%ebp), %edi\n" /* get */
-        ".Lf171e0e_00171e38:\n"
-        "leal -0x20(%ebp), %eax\n" /* line 976 | bit */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* from */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl msgHuff+28708, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Huff_offsetReceive\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 977 | get */
-        "movb %al, (%ebx)\n" /* data */
-        "addl $1, %ebx\n" /* line 974 | data */
-        "cmpl -0x20(%ebp), %esi\n" /* bit, bits */
-        "jg .Lf171e0e_00171e38\n"
-        "movl %ebx, %eax\n" /* data */
-        "subl 0xc(%ebp), %eax\n" /* to */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 981 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int bits = size * 8;
+    int bit = 0;
+    int get;
+    byte *data = to;
+
+    if (bits <= 0)
+        return 0;
+
+    do {
+        Huff_offsetReceive(*(void **)((byte *)&msgHuff + 28708), &get, from, &bit);
+        *data++ = (byte)get;
+    } while (bits > bit);
+
+    return (int)(data - to);
 }
 
 /* line 990 */
