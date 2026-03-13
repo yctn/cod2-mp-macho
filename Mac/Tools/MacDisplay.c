@@ -100,7 +100,7 @@ int MacDisplay_GetNumModes(void);
 short unsigned int UserPaneDrawProc(ControlRef theControl);
 static ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt);
 void ZN16OpaqueContextRefD1Ev(char *this_ptr); /* OpaqueContextRef_~OpaqueContextRef */
-short unsigned int MacDisplay_ReleaseContext(ContextRef *ioContextRef);
+short unsigned int MacDisplay_ReleaseContext(int *ioContextRef);
 short unsigned int MacDisplay_ReleaseDisplay(void);
 static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer);
 short unsigned int MacDisplay_GetCurrentMode(int *outWidth, int *outHeight, int *outDepth, int *outRefreshRate);
@@ -232,113 +232,45 @@ GDHandle MacDisplay_GetDeviceHandle(void)
 }
 
 /* line 529 */
-__attribute__((naked))
 Boolean MacDisplay_IsWindowMode(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 529 */
-        "movl %esp, %ebp\n"
-        "cmpb $0, sInitialized\n" /* line 531 */
-        "je .Lf4474_00004489\n"
-        "movzbl sInWindowMode, %eax\n" /* line 533 */
-        "popl %ebp\n" /* line 541 */
-        "retl\n"
-        ".Lf4474_00004489:\n"
-        "movl $1, %eax\n" /* line 531 */
-        "popl %ebp\n" /* line 541 */
-        "retl\n"
-    );
+    if (!sInitialized)
+        return 1;
+    return sInWindowMode;
 }
 
 /* line 609 */
-__attribute__((naked))
 Boolean MacDisplay_PointInWindow(struct Point inPoint)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 609 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "leal -0x10(%ebp), %ebx\n" /* line 614 | bounds */
-        "movl %ebx, 4(%esp)\n"
-        "movl sMainWindow, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPortBounds\n"
-        "movl %ebx, 4(%esp)\n" /* line 616 */
-        "movl 8(%ebp), %eax\n" /* inPoint */
-        "movl %eax, (%esp)\n"
-        "calll PtInRect\n"
-        "movzbl %al, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 617 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Rect bounds;
+    GetWindowPortBounds(sMainWindow, &bounds);
+    return PtInRect(inPoint, &bounds) != 0;
 }
 
 /* line 623 */
-__attribute__((naked))
 short unsigned int MacDisplay_CenterRectInDisplay(MacRect *ioRect)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 623 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "calll MacDisplay_GetDeviceHandle\n" /* line 625 */
-        "movl (%eax), %eax\n" /* line 628 */
-        "movl 0x26(%eax), %edx\n"
-        "movl 0x22(%eax), %eax\n"
-        "movl %eax, -0x10(%ebp)\n" /* gdRect */
-        "movl %edx, -0xc(%ebp)\n"
-        "leal -0x10(%ebp), %eax\n" /* line 629 | gdRect */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* ioRect */
-        "movl %eax, (%esp)\n"
-        "calll MacTools_CenterRect\n"
-        /* } scope */
-        "leave\n" /* line 630 */
-        "retl\n"
-    );
+    GDHandle device = MacDisplay_GetDeviceHandle();
+    Rect gdRect;
+    char *devData = *(char **)device;
+    *(int *)&gdRect = *(int *)(devData + 0x22);
+    *((int *)&gdRect + 1) = *(int *)(devData + 0x26);
+
+    MacTools_CenterRect(ioRect, &gdRect);
 }
 
 /* line 638 */
-__attribute__((naked))
 static short unsigned int MacDisplay_FadeIn_orig(float inInterval)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 638 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "cmpb $0, sInWindowMode\n" /* line 640 */
-        "jne .Lf44f2_0000450b\n"
-        "movl sFadeToken, %edx\n" /* line 644 */
-        "testl %edx, %edx\n"
-        "jne .Lf44f2_0000450d\n"
-        ".Lf44f2_0000450b:\n"
-        "leave\n" /* line 652 */
-        "retl\n"
-        ".Lf44f2_0000450d:\n"
-        "movl $0, 0x1c(%esp)\n" /* line 646 */
-        "xorl %eax, %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movss 8(%ebp), %xmm0\n" /* inInterval */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CGDisplayFade\n"
-        "movl sFadeToken, %eax\n" /* line 648 */
-        "movl %eax, (%esp)\n"
-        "calll CGReleaseDisplayFadeReservation\n"
-        "movl $0, sFadeToken\n" /* line 649 */
-        "leave\n" /* line 652 */
-        "retl\n"
-    );
+    if (sInWindowMode)
+        return 0;
+
+    if (!sFadeToken)
+        return 0;
+
+    CGDisplayFade(sFadeToken, inInterval, 0.0f, 1.0f, 0.0f, 0.0f, 0);
+    CGReleaseDisplayFadeReservation(sFadeToken);
+    sFadeToken = 0;
 }
 
 /* line 658 */
@@ -396,102 +328,47 @@ static short unsigned int MacDisplay_FadeOut_orig(float inInterval)
 }
 
 /* line 685 */
-__attribute__((naked))
 short unsigned int MacDisplay_GetCurrentDimensions(int *outWidth, int *outHeight)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 685 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* outHeight */
-        "movl sMainWindow, %edx\n" /* line 687 */
-        "testl %edx, %edx\n"
-        "je .Lf45f6_00004649\n"
-        /* { scope 1 */
-        "leal -0x10(%ebp), %eax\n" /* line 690 | bounds */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll GetWindowPortBounds\n"
-        "movswl -0xa(%ebp), %edx\n" /* line 692 */
-        "movl $0x280, %eax\n" /* line 695 */
-        "cmpl $0x27f, %edx\n"
-        "cmovgl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* outWidth */
-        "movl %eax, (%edx)\n"
-        "movswl -0xc(%ebp), %eax\n" /* line 698 */
-        "movl %eax, (%ebx)\n" /* outHeight */
-        "cmpl $0x1df, %eax\n" /* line 699 */
-        "jg .Lf45f6_00004643\n"
-        "movl $0x1e0, (%ebx)\n" /* line 701 | outHeight */
-        /* } scope */
-        ".Lf45f6_00004643:\n"
-        "addl $0x24, %esp\n" /* line 709 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf45f6_00004649:\n"
-        "movl sDisplayID, %eax\n" /* line 706 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayPixelsWide\n"
-        "movl 8(%ebp), %edx\n" /* outWidth */
-        "movl %eax, (%edx)\n"
-        "movl sDisplayID, %eax\n" /* line 707 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayPixelsHigh\n"
-        "movl %eax, (%ebx)\n" /* outHeight */
-        "addl $0x24, %esp\n" /* line 709 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (sMainWindow)
+    {
+        Rect bounds;
+        GetWindowPortBounds(sMainWindow, &bounds);
+
+        int width = (short)bounds.right;
+        if (width <= 639)
+            width = 640;
+        *outWidth = width;
+
+        int height = (short)bounds.bottom;
+        *outHeight = height;
+        if (height <= 479)
+            *outHeight = 480;
+        return 0;
+    }
+
+    *outWidth = CGDisplayPixelsWide(sDisplayID);
+    *outHeight = CGDisplayPixelsHigh(sDisplayID);
 }
 
 /* line 714 */
-__attribute__((naked))
 int MacDisplay_GetCurrentDepth(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 714 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl sDisplayDepth, %eax\n" /* line 719 */
-        "testl %eax, %eax\n"
-        "je .Lf4670_00004686\n"
-        "movl sDisplayDepth, %eax\n"
-        "leave\n" /* line 725 */
-        "retl\n"
-        ".Lf4670_00004686:\n"
-        "movl sDisplayID, %eax\n" /* line 721 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayBitsPerPixel\n"
-        "movl %eax, sDisplayDepth\n"
-        "leave\n" /* line 725 */
-        "retl\n"
-    );
+    if (sDisplayDepth)
+        return sDisplayDepth;
+
+    sDisplayDepth = CGDisplayBitsPerPixel(sDisplayID);
+    return sDisplayDepth;
 }
 
 /* line 1417 */
-__attribute__((naked))
 static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1417 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "cmpb $0, sEnableSwap\n" /* line 1419 */
-        "jne .Lf469a_000046ab\n"
-        "leave\n" /* line 1435 */
-        "retl\n"
-        ".Lf469a_000046ab:\n"
-        "movl 8(%ebp), %edx\n" /* line 1432 | inContextRef */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll aglSwapBuffers\n"
-        "addl $1, sSwapCount\n" /* line 1434 */
-        "leave\n" /* line 1435 */
-        "retl\n"
-    );
+    if (!sEnableSwap)
+        return 0;
+
+    aglSwapBuffers(*(void **)inContextRef);
+    sSwapCount++;
 }
 
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
@@ -509,53 +386,25 @@ short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
 }
 
 /* line 1747 */
-__attribute__((naked))
 short unsigned int MacDisplay_StopCapture(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1747 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        /* { scope 1 */
-        "movl sCaptureMovie, %ecx\n" /* line 1749 */
-        "testl %ecx, %ecx\n"
-        "je .Lf46c2_00004769\n"
-        "movl sCaptureMedia, %eax\n" /* line 1756 | error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll EndMediaEdits\n"
-        "testw %ax, %ax\n" /* line 1757 */
-        "jne .Lf46c2_00004750\n"
-        "movl sCaptureMedia, %eax\n" /* line 1766 */
-        "movl %eax, (%esp)\n"
-        "calll GetMediaDuration\n"
-        "movl $0x10000, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl sCaptureTrack, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll InsertMediaIntoTrack\n"
-        "testw %ax, %ax\n" /* line 1767 */
-        "jne .Lf46c2_00004750\n"
-        "movw $0xffff, -0xa(%ebp)\n" /* line 1776 | resID */
-        "movl $sCaptureName, 0xc(%esp)\n" /* line 1777 */
-        "leal -0xa(%ebp), %eax\n" /* resID */
-        "movl %eax, 8(%esp)\n"
-        "movswl sCaptureRefNum, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl sCaptureMovie, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll AddMovieResource\n"
-        ".Lf46c2_00004750:\n"
-        "movswl sCaptureRefNum, %eax\n" /* line 1780 */
-        "movl %eax, (%esp)\n"
-        "calll CloseMovieFile\n"
-        "movl $0, sCaptureMovie\n" /* line 1781 */
-        /* } scope */
-        ".Lf46c2_00004769:\n"
-        "leave\n" /* line 1782 */
-        "retl\n"
-    );
+    if (!sCaptureMovie)
+        return 0;
+
+    OSErr error = EndMediaEdits(sCaptureMedia);
+    if (error == 0)
+    {
+        TimeValue duration = GetMediaDuration(sCaptureMedia);
+        error = InsertMediaIntoTrack(sCaptureTrack, 0, 0, duration, 0x10000);
+        if (error == 0)
+        {
+            short resID = -1;
+            AddMovieResource(sCaptureMovie, (short)sCaptureRefNum, &resID, sCaptureName);
+        }
+    }
+
+    CloseMovieFile((short)sCaptureRefNum);
+    sCaptureMovie = 0;
 }
 
 /* line 2622 */
@@ -731,552 +580,195 @@ OSStatus MacDisplay_SetupDisplay(int inWidth, int inHeight)
 }
 
 /* line 2857 */
-static __attribute__((naked))
-Boolean BuilderCallback(WindowRef theWindow, UInt32 theCommandID)
+static Boolean BuilderCallback(WindowRef theWindow, UInt32 theCommandID)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2857 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 2923 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 842 */
-__attribute__((naked))
 short unsigned int MacDisplay_GetNthMode(int inIndex, int *outWidth, int *outHeight, int *outDepth, int *outRefreshRate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 842 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* inIndex */
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "shll $4, %edx\n"
-        "addl 0x14(%eax), %edx\n"
-        "movl 0xc(%edx), %esi\n" /* line 847 */
-        "movl 8(%edx), %ebx\n"
-        "movl 4(%edx), %ecx\n"
-        "movl (%edx), %edx\n" /* line 849 */
-        "movl 0xc(%ebp), %eax\n" /* outWidth */
-        "movl %edx, (%eax)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 850 | outHeight */
-        "movl %ecx, (%eax)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 851 | outDepth */
-        "movl %ebx, (%eax)\n"
-        "movl 0x18(%ebp), %eax\n" /* line 852 | outRefreshRate */
-        "movl %esi, (%eax)\n"
-        "popl %ebx\n" /* line 853 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    /* offset 0x14 = pointer to modes array; each mode entry is 16 bytes */
+    char *mode = (char *)(*(int *)(di + 0x14)) + inIndex * 16;
+    *outWidth = *(int *)(mode + 0);
+    *outHeight = *(int *)(mode + 4);
+    *outDepth = *(int *)(mode + 8);
+    *outRefreshRate = *(int *)(mode + 12);
 }
 
 /* line 885 */
-__attribute__((naked))
 int MacDisplay_GetCardType(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 885 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x2c(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 889 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(int *)(di + 0x2c);
 }
 
 /* line 894 */
-__attribute__((naked))
 const char * MacDisplay_GetGLVendor(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 894 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x30(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 898 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(const char **)(di + 0x30);
 }
 
 /* line 903 */
-__attribute__((naked))
 const char * MacDisplay_GetGLRenderer(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 903 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x34(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 907 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(const char **)(di + 0x34);
 }
 
 /* line 912 */
-__attribute__((naked))
 const char * MacDisplay_GetGLExtensions(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 912 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x38(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 916 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(const char **)(di + 0x38);
 }
 
 /* line 922 */
-__attribute__((naked))
 Boolean MacDisplay_IsGLExtensionSupported(const char *inExtension)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 922 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x38(%eax), %eax\n" /* line 147 */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* inExtension */
-        "movl %eax, (%esp)\n"
-        "calll gluCheckExtension\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 926 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return gluCheckExtension(inExtension, *(const char **)(di + 0x38));
 }
 
 /* line 933 */
-__attribute__((naked))
 short unsigned int MacDisplay_GetVideoMemoryInfo(long int *outVideoMemory, long int *outTextureMemory)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 933 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x3c(%eax), %ecx\n" /* line 937 */
-        "movl 8(%ebp), %edx\n" /* outVideoMemory */
-        "movl %ecx, (%edx)\n"
-        "movl 0x40(%eax), %edx\n" /* line 938 */
-        "movl 0xc(%ebp), %eax\n" /* outTextureMemory */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 939 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    *outVideoMemory = *(long *)(di + 0x3c);
+    *outTextureMemory = *(long *)(di + 0x40);
 }
 
 /* line 944 */
-__attribute__((naked))
 long int MacDisplay_GetMaxTextureUnits(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 944 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x44(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 948 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(long *)(di + 0x44);
 }
 
 /* line 953 */
-__attribute__((naked))
 long int MacDisplay_GetMaxTextureImageUnits(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 953 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x48(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 957 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(long *)(di + 0x48);
 }
 
 /* line 967 */
-__attribute__((naked))
 short unsigned int MacDisplay_GetAntiAliasingMultiSampleInfo(int *outMaxSampleBuffers, int *outMaxSamples, Boolean *outDoesSuperSampling, Boolean *outDoesMultiSampling, Boolean *outDoesAlphaSampling)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 967 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x58(%eax), %ecx\n" /* line 971 */
-        "movl 8(%ebp), %edx\n" /* outMaxSampleBuffers */
-        "movl %ecx, (%edx)\n"
-        "movl 0x5c(%eax), %ecx\n" /* line 972 */
-        "movl 0xc(%ebp), %edx\n" /* outMaxSamples */
-        "movl %ecx, (%edx)\n"
-        "movzbl 0x60(%eax), %ecx\n" /* line 973 */
-        "movl 0x10(%ebp), %edx\n" /* outDoesSuperSampling */
-        "movb %cl, (%edx)\n"
-        "movzbl 0x61(%eax), %ecx\n" /* line 974 */
-        "movl 0x14(%ebp), %edx\n" /* outDoesMultiSampling */
-        "movb %cl, (%edx)\n"
-        "movzbl 0x62(%eax), %edx\n" /* line 975 */
-        "movl 0x18(%ebp), %eax\n" /* outDoesAlphaSampling */
-        "movb %dl, (%eax)\n"
-        "popl %ebp\n" /* line 976 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    *outMaxSampleBuffers = *(int *)(di + 0x58);
+    *outMaxSamples = *(int *)(di + 0x5c);
+    *outDoesSuperSampling = *(unsigned char *)(di + 0x60);
+    *outDoesMultiSampling = *(unsigned char *)(di + 0x61);
+    *outDoesAlphaSampling = *(unsigned char *)(di + 0x62);
 }
 
 /* line 981 */
-__attribute__((naked))
 UInt32 MacDisplay_GetPCPixelShaderVersion(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 981 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movl 0x4c(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 985 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(UInt32 *)(di + 0x4c);
 }
 
 /* line 990 */
-__attribute__((naked))
 Boolean MacDisplay_GetSupportsSeparateBlendFunc(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 990 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movzbl 0x51(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 994 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(unsigned char *)(di + 0x51);
 }
 
 /* line 999 */
-__attribute__((naked))
 Boolean MacDisplay_GetSupportsAnisotropicFiltering(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 999 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "movzbl 0x52(%eax), %eax\n" /* line 495 */
-        "popl %ebp\n" /* line 1003 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(unsigned char *)(di + 0x52);
 }
 
 /* line 1008 */
-__attribute__((naked))
 float MacDisplay_GetMaxSupportedAnisotropy(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1008 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %eax\n" /* line 495 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 654 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl sDisplayList, %eax\n"
-        "flds 0x54(%eax)\n" /* line 495 */
-        "popl %ebp\n" /* line 1012 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    return *(float *)(di + 0x54);
 }
 
 /* line 1519 */
-__attribute__((naked))
 short unsigned int MacDisplay_SetGammaRamp(const _D3DGAMMARAMP *inRamp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1519 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "cmpb $0, sInWindowMode\n" /* line 1521 */
-        "jne .Lf4b52_00004c54\n"
-        "movl sSystemGammaRed, %eax\n" /* line 1523 */
-        "testl %eax, %eax\n"
-        "je .Lf4b52_00004c5c\n"
-        ".Lf4b52_00004b75:\n"
-        "movl $0x400, (%esp)\n" /* line 129 */
-        "calll __Znam\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl $0x400, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, %edi\n"
-        "movl $0x400, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, %esi\n"
-        "movl 8(%ebp), %ecx\n" /* inRamp */
-        "movl $1, %ebx\n"
-        "movss 0x2ed5c4, %xmm1\n" /* 0.00390625f */
-        ".Lf4b52_00004bb0:\n"
-        "leal (, %ebx, 4), %edx\n" /* line 1519 */
-        "movzwl (%ecx), %eax\n" /* line 1540 */
-        "movzbl %ah, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movss %xmm0, -4(%eax, %edx)\n"
-        "movzbl 0x201(%ecx), %eax\n" /* line 1541 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%edi, %edx)\n"
-        "movzbl 0x401(%ecx), %eax\n" /* line 1542 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%esi, %edx)\n"
-        "addl $1, %ebx\n"
-        "addl $2, %ecx\n"
-        "cmpl $0x101, %ebx\n" /* line 1538 */
-        "jne .Lf4b52_00004bb0\n"
-        "movl %esi, 0x10(%esp)\n" /* line 1545 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl sDisplayID, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CGSetDisplayTransferByTable\n"
-        "testl %esi, %esi\n" /* line 134 */
-        "je .Lf4b52_00004c36\n"
-        "movl %esi, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf4b52_00004c36:\n"
-        "testl %edi, %edi\n"
-        "je .Lf4b52_00004c42\n"
-        "movl %edi, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf4b52_00004c42:\n"
-        "movl -0x2c(%ebp), %esi\n"
-        "testl %esi, %esi\n"
-        "je .Lf4b52_00004c54\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf4b52_00004c54:\n"
-        "addl $0x4c, %esp\n" /* line 1547 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf4b52_00004c5c:\n"
-        "movl $0x400, (%esp)\n" /* line 1525 */
-        "calll __Znam\n"
-        "movl %eax, sSystemGammaRed\n"
-        "movl $0x400, (%esp)\n" /* line 1526 */
-        "calll __Znam\n"
-        "movl %eax, sSystemGammaGreen\n"
-        "movl $0x400, (%esp)\n" /* line 1527 */
-        "calll __Znam\n"
-        "movl %eax, sSystemGammaBlue\n"
-        "leal -0x1c(%ebp), %edx\n" /* line 1530 | count */
-        "movl %edx, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl sSystemGammaGreen, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl sSystemGammaRed, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl sDisplayID, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CGGetDisplayTransferByTable\n"
-        "jmp .Lf4b52_00004b75\n"
-        "movl %eax, %ebx\n"
-        /* } scope */
-        ".Lf4b52_00004cc8:\n"
-        "testl %edi, %edi\n" /* line 134 */
-        "je .Lf4b52_00004cd4\n"
-        "movl %edi, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf4b52_00004cd4:\n"
-        "movl -0x2c(%ebp), %edi\n"
-        "testl %edi, %edi\n"
-        "je .Lf4b52_00004ce6\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf4b52_00004ce6:\n"
-        "movl %ebx, (%esp)\n"
-        "calll __Unwind_Resume\n"
-        "movl %eax, %ebx\n"
-        "jmp .Lf4b52_00004cd4\n"
-        "movl %eax, %ebx\n"
-        "testl %esi, %esi\n"
-        "je .Lf4b52_00004cc8\n"
-        "movl %esi, (%esp)\n"
-        "calll __ZdaPv\n"
-        "jmp .Lf4b52_00004cc8\n"
-    );
+    if (sInWindowMode)
+        return 0;
+
+    if (!sSystemGammaRed)
+    {
+        sSystemGammaRed = (int)__Znam(0x400);
+        sSystemGammaGreen = (int)__Znam(0x400);
+        sSystemGammaBlue = (int)__Znam(0x400);
+        int count;
+        CGGetDisplayTransferByTable(sDisplayID, 0x100,
+            sSystemGammaRed, sSystemGammaGreen, sSystemGammaBlue, &count);
+    }
+
+    float *redTable = (float *)__Znam(0x400);
+    float *greenTable = (float *)__Znam(0x400);
+    float *blueTable = (float *)__Znam(0x400);
+
+    /*
+     * _D3DGAMMARAMP: unsigned short red[256] at +0x000,
+     *                unsigned short green[256] at +0x200,
+     *                unsigned short blue[256] at +0x400.
+     * Convert high byte of each 16-bit value to 0.0-1.0 float.
+     */
+    const unsigned short *red = (const unsigned short *)inRamp;
+    const unsigned short *green = (const unsigned short *)((char *)inRamp + 0x200);
+    const unsigned short *blue = (const unsigned short *)((char *)inRamp + 0x400);
+
+    for (int i = 0; i < 256; i++)
+    {
+        redTable[i] = (float)(red[i] >> 8) * 0.00390625f;
+        greenTable[i] = (float)(green[i] >> 8) * 0.00390625f;
+        blueTable[i] = (float)(blue[i] >> 8) * 0.00390625f;
+    }
+
+    CGSetDisplayTransferByTable(sDisplayID, 0x100, redTable, greenTable, blueTable);
+
+    if (blueTable) __ZdaPv(blueTable);
+    if (greenTable) __ZdaPv(greenTable);
+    if (redTable) __ZdaPv(redTable);
 }
 
 /* line 577 */
-__attribute__((naked))
 short unsigned int MacDisplay_LocalToGlobal(Point *ioPoint)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 577 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ioPoint */
-        "cmpb $0, sInitialized\n" /* line 531 */
-        "je .Lf4d02_00004d3c\n"
-        "cmpb $0, sInWindowMode\n" /* line 579 */
-        "jne .Lf4d02_00004d3c\n"
-        "movl sScreenContext, %eax\n" /* line 473 */
-        "testl %eax, %eax\n"
-        "je .Lf4d02_00004d5b\n"
-        "movl 4(%eax), %eax\n" /* line 476 */
-        ".Lf4d02_00004d2a:\n"
-        "movl %ebx, 4(%esp)\n" /* line 585 | ioPoint */
-        "movl %eax, (%esp)\n"
-        "calll QDLocalToGlobalPoint\n"
-        "addl $0x14, %esp\n" /* line 587 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf4d02_00004d3c:\n"
-        "movl sMainWindow, %eax\n" /* line 581 */
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPort\n"
-        "movl %ebx, 4(%esp)\n" /* ioPoint */
-        "movl %eax, (%esp)\n"
-        "calll QDLocalToGlobalPoint\n"
-        "addl $0x14, %esp\n" /* line 587 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf4d02_00004d5b:\n"
-        "movl sMainWindow, %eax\n" /* line 480 */
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPort\n"
-        "jmp .Lf4d02_00004d2a\n"
-    );
+    int port;
+
+    if (sInitialized && !sInWindowMode && sScreenContext)
+        port = *(int *)((char *)sScreenContext + 4);
+    else
+        port = GetWindowPort(sMainWindow);
+
+    QDLocalToGlobalPoint(port, ioPoint);
 }
 
 /* line 593 */
-__attribute__((naked))
 short unsigned int MacDisplay_GlobalToLocal(Point *ioPoint)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 593 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ioPoint */
-        "cmpb $0, sInitialized\n" /* line 531 */
-        "je .Lf4d6a_00004da4\n"
-        "cmpb $0, sInWindowMode\n" /* line 595 */
-        "jne .Lf4d6a_00004da4\n"
-        "movl sScreenContext, %eax\n" /* line 473 */
-        "testl %eax, %eax\n"
-        "je .Lf4d6a_00004dc3\n"
-        "movl 4(%eax), %eax\n" /* line 476 */
-        ".Lf4d6a_00004d92:\n"
-        "movl %ebx, 4(%esp)\n" /* line 601 | ioPoint */
-        "movl %eax, (%esp)\n"
-        "calll QDGlobalToLocalPoint\n"
-        "addl $0x14, %esp\n" /* line 603 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf4d6a_00004da4:\n"
-        "movl sMainWindow, %eax\n" /* line 597 */
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPort\n"
-        "movl %ebx, 4(%esp)\n" /* ioPoint */
-        "movl %eax, (%esp)\n"
-        "calll QDGlobalToLocalPoint\n"
-        "addl $0x14, %esp\n" /* line 603 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf4d6a_00004dc3:\n"
-        "movl sMainWindow, %eax\n" /* line 480 */
-        "movl %eax, (%esp)\n"
-        "calll GetWindowPort\n"
-        "jmp .Lf4d6a_00004d92\n"
-    );
+    int port;
+
+    if (sInitialized && !sInWindowMode && sScreenContext)
+        port = *(int *)((char *)sScreenContext + 4);
+    else
+        port = GetWindowPort(sMainWindow);
+
+    QDGlobalToLocalPoint(port, ioPoint);
 }
 
 /* line 828 */
-__attribute__((naked))
 int MacDisplay_GetNumModes(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 828 */
-        "movl %esp, %ebp\n"
-        "movl sDisplayIndex, %edx\n" /* line 495 */
-        "leal (%edx, %edx, 4), %edx\n" /* line 654 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "shll $2, %edx\n"
-        "addl sDisplayList, %edx\n"
-        "movl 0x18(%edx), %eax\n" /* line 361 */
-        "subl 0x14(%edx), %eax\n" /* line 403 */
-        "sarl $4, %eax\n"
-        "popl %ebp\n" /* line 832 */
-        "retl\n"
-    );
+    char *di = MacDisplay_CurrentDisplayInfo();
+    /* (end_ptr - start_ptr) / 16 = number of mode entries */
+    return (*(int *)(di + 0x18) - *(int *)(di + 0x14)) >> 4;
 }
 
 /* line 2671 */
@@ -1808,164 +1300,85 @@ ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt)
 }
 
 /* line 1897 */
-__attribute__((naked))
-void ZN16OpaqueContextRefD1Ev(void) /* OpaqueContextRef_~OpaqueContextRef */
+void ZN16OpaqueContextRefD1Ev(char *this_ptr) /* OpaqueContextRef_~OpaqueContextRef */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1897 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl (%ebx), %eax\n" /* line 1899 | this */
-        "testl %eax, %eax\n"
-        "je .Lf560e_00005661\n"
-        /* glFinish removed - crashes in Mesa/gallium during context teardown */
-        "testb $1, sSwapCount\n" /* line 1923 */
-        "jne .Lf560e_00005667\n"
-        ".Lf560e_0000562c:\n"
-        "movl $0, (%esp)\n" /* line 1903 */
-        "calll aglSetCurrentContext\n"
-        "movl 4(%ebx), %eax\n" /* line 1905 | this */
-        "testl %eax, %eax\n"
-        "je .Lf560e_00005651\n"
-        "movl $0, 4(%esp)\n" /* line 1907 */
-        "movl (%ebx), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll aglSetDrawable\n"
-        ".Lf560e_00005651:\n"
-        "movl (%ebx), %eax\n" /* line 1910 | this */
-        "movl %eax, (%esp)\n"
-        "calll aglDestroyContext\n"
-        "movl $0, (%ebx)\n" /* line 1912 | this */
-        ".Lf560e_00005661:\n"
-        "addl $0x14, %esp\n" /* line 1914 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf560e_00005667:\n"
-        "cmpb $0, 0xc(%ebx)\n" /* line 1923 | this */
-        "je .Lf560e_0000562c\n"
-        "cmpb $0, sEnableSwap\n" /* line 1419 */
-        "je .Lf560e_0000562c\n"
-        "movl (%ebx), %eax\n" /* line 1432 */
-        "movl %eax, (%esp)\n"
-        "calll aglSwapBuffers\n"
-        "addl $1, sSwapCount\n" /* line 1434 */
-        "jmp .Lf560e_0000562c\n"
-    );
+    int ctx = *(int *)this_ptr;
+    if (!ctx)
+        return;
+
+    /* If swap count is odd and context has swap flag, do a final swap */
+    if ((sSwapCount & 1) && *(char *)(this_ptr + 0xc) && sEnableSwap)
+    {
+        aglSwapBuffers(ctx);
+        sSwapCount++;
+    }
+
+    aglSetCurrentContext(0);
+
+    if (*(int *)(this_ptr + 4))
+        aglSetDrawable(ctx, 0);
+
+    aglDestroyContext(ctx);
+    *(int *)this_ptr = 0;
 }
 
 /* line 1385 */
-__attribute__((naked))
-short unsigned int MacDisplay_ReleaseContext(ContextRef *ioContextRef)
+short unsigned int MacDisplay_ReleaseContext(int *ioContextRef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1385 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* ioContextRef */
-        "movl (%esi), %ebx\n" /* line 1389 | ioContextRef */
-        "xorl %eax, %eax\n" /* line 1391 */
-        "cmpl sScreenContext, %ebx\n"
-        "cmovnel sScreenContext, %eax\n"
-        "movl %eax, sScreenContext\n"
-        "testl %ebx, %ebx\n" /* line 1394 */
-        "je .Lf568a_000056bf\n"
-        "movl %ebx, (%esp)\n"
-        "calll ZN16OpaqueContextRefD1Ev\n"
-        "movl %ebx, (%esp)\n"
-        "calll __ZdlPv\n"
-        ".Lf568a_000056bf:\n"
-        "movl $0, (%esi)\n" /* line 1395 | ioContextRef */
-        "addl $0x10, %esp\n" /* line 1396 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int ctx = *ioContextRef;
+
+    /* Clear sScreenContext if it matches the one being released */
+    if (ctx == sScreenContext)
+        sScreenContext = 0;
+
+    if (ctx)
+    {
+        ZN16OpaqueContextRefD1Ev((char *)ctx);
+        __ZdlPv((void *)ctx);
+    }
+    *ioContextRef = 0;
 }
 
 /* line 405 */
-__attribute__((naked))
 short unsigned int MacDisplay_ReleaseDisplay(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 405 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "cmpb $0, sInitialized\n" /* line 407 */
-        "jne .Lf56cc_000056e2\n"
-        /* } scope */
-        ".Lf56cc_000056dc:\n"
-        "addl $0x24, %esp\n" /* line 435 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf56cc_000056e2:\n"
-        "calll MacDisplay_StopCapture\n" /* line 413 */
-        "cmpb $0, sInWindowMode\n" /* line 1498 */
-        "jne .Lf56cc_0000577a\n"
-        "movl sSystemGammaRed, %edx\n" /* line 1500 */
-        "testl %edx, %edx\n"
-        "je .Lf56cc_0000577a\n"
-        "movl sSystemGammaBlue, %eax\n" /* line 1502 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl sSystemGammaGreen, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl sDisplayID, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CGSetDisplayTransferByTable\n"
-        "movl sSystemGammaRed, %eax\n" /* line 1504 */
-        "testl %eax, %eax\n"
-        "je .Lf56cc_0000573a\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf56cc_0000573a:\n"
-        "movl sSystemGammaGreen, %eax\n" /* line 1505 */
-        "testl %eax, %eax\n"
-        "je .Lf56cc_0000574b\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf56cc_0000574b:\n"
-        "movl sSystemGammaBlue, %eax\n" /* line 1506 */
-        "testl %eax, %eax\n"
-        "je .Lf56cc_0000575c\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf56cc_0000575c:\n"
-        "movl $0, sSystemGammaRed\n" /* line 1508 */
-        "movl $0, sSystemGammaGreen\n" /* line 1509 */
-        "movl $0, sSystemGammaBlue\n" /* line 1510 */
-        ".Lf56cc_0000577a:\n"
-        "movzbl sInWindowMode, %ebx\n" /* line 419 | wasInWindowMode */
-        "movb $0, sInWindowMode\n" /* line 420 */
-        "movl sMainWindow, %eax\n" /* line 423 */
-        "testl %eax, %eax\n"
-        "je .Lf56cc_000057a3\n"
-        "movl %eax, (%esp)\n" /* line 425 */
-        "calll DisposeWindow\n"
-        "movl $0, sMainWindow\n" /* line 426 */
-        ".Lf56cc_000057a3:\n"
-        "testb %bl, %bl\n" /* line 430 | wasInWindowMode */
-        "jne .Lf56cc_000056dc\n"
-        "calll ShowMenuBar\n" /* line 432 */
-        "movl $0, 4(%esp)\n" /* line 433 */
-        "movl $0, (%esp)\n"
-        "calll SetSystemUIMode\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 435 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!sInitialized)
+        return 0;
+
+    MacDisplay_StopCapture();
+
+    /* Restore system gamma if in fullscreen mode */
+    if (!sInWindowMode && sSystemGammaRed)
+    {
+        CGSetDisplayTransferByTable(sDisplayID, 0x100,
+            sSystemGammaRed, sSystemGammaGreen, sSystemGammaBlue);
+
+        if (sSystemGammaRed)
+            __ZdaPv((void *)sSystemGammaRed);
+        if (sSystemGammaGreen)
+            __ZdaPv((void *)sSystemGammaGreen);
+        if (sSystemGammaBlue)
+            __ZdaPv((void *)sSystemGammaBlue);
+
+        sSystemGammaRed = 0;
+        sSystemGammaGreen = 0;
+        sSystemGammaBlue = 0;
+    }
+
+    int wasInWindowMode = sInWindowMode;
+    sInWindowMode = 0;
+
+    if (sMainWindow)
+    {
+        DisposeWindow(sMainWindow);
+        sMainWindow = 0;
+    }
+
+    if (!wasInWindowMode)
+    {
+        ShowMenuBar();
+        SetSystemUIMode(0, 0);
+    }
 }
 
 /* line 1101 */
@@ -2657,102 +2070,45 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
 }
 
 /* line 758 */
-__attribute__((naked))
 short unsigned int MacDisplay_GetCurrentMode(int *outWidth, int *outHeight, int *outDepth, int *outRefreshRate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 758 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* outHeight */
-        "movl sMainWindow, %edx\n" /* line 687 */
-        "testl %edx, %edx\n"
-        "je .Lf6178_00006263\n"
-        /* { scope 1 */
-        "leal -0x10(%ebp), %eax\n" /* line 690 | bounds */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll GetWindowPortBounds\n"
-        "movswl -0xa(%ebp), %edx\n" /* line 692 */
-        "movl $0x280, %eax\n" /* line 695 */
-        "cmpl $0x27f, %edx\n"
-        "cmovgl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* outWidth */
-        "movl %eax, (%edx)\n"
-        "movswl -0xc(%ebp), %eax\n" /* line 698 */
-        "movl %eax, (%ebx)\n"
-        "cmpl $0x1df, %eax\n" /* line 699 */
-        "jle .Lf6178_000061f3\n"
-        /* } scope */
-        ".Lf6178_000061c3:\n"
-        "movl sDisplayDepth, %ebx\n" /* line 719 */
-        "testl %ebx, %ebx\n"
-        "je .Lf6178_00006203\n"
-        ".Lf6178_000061cd:\n"
-        "movl sDisplayDepth, %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* line 762 | outDepth */
-        "movl %edx, (%eax)\n"
-        "movl sDisplayRefreshRate, %ecx\n" /* line 735 */
-        "testl %ecx, %ecx\n"
-        "je .Lf6178_00006226\n"
-        ".Lf6178_000061e2:\n"
-        "movl sDisplayRefreshRate, %edx\n"
-        "movl 0x14(%ebp), %eax\n" /* line 764 | outRefreshRate */
-        "movl %edx, (%eax)\n"
-        "addl $0x24, %esp\n" /* line 765 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf6178_000061f3:\n"
-        "movl $0x1e0, (%ebx)\n" /* line 701 */
-        /* } scope */
-        "movl sDisplayDepth, %ebx\n" /* line 719 */
-        "testl %ebx, %ebx\n"
-        "jne .Lf6178_000061cd\n"
-        ".Lf6178_00006203:\n"
-        "movl sDisplayID, %eax\n" /* line 721 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayBitsPerPixel\n"
-        "movl %eax, sDisplayDepth\n"
-        "movl %eax, %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* line 762 | outDepth */
-        "movl %edx, (%eax)\n"
-        "movl sDisplayRefreshRate, %ecx\n" /* line 735 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf6178_000061e2\n"
-        ".Lf6178_00006226:\n"
-        "movl sDisplayID, %eax\n" /* line 737 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayCurrentMode\n"
-        "testl %eax, %eax\n" /* line 738 */
-        "je .Lf6178_000061e2\n"
-        "movl $0x32e624, 4(%esp)\n" /* line 740 */
-        "movl %eax, (%esp)\n"
-        "calll MacTools_GetDictionaryValue\n"
-        "cmpl $-1, %eax\n" /* line 743 */
-        "cmovel sDisplayRefreshRate, %eax\n"
-        "movl %eax, sDisplayRefreshRate\n"
-        "movl %eax, %edx\n"
-        "movl 0x14(%ebp), %eax\n" /* line 764 | outRefreshRate */
-        "movl %edx, (%eax)\n"
-        "addl $0x24, %esp\n" /* line 765 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf6178_00006263:\n"
-        "movl sDisplayID, %eax\n" /* line 706 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayPixelsWide\n"
-        "movl 8(%ebp), %edx\n" /* outWidth */
-        "movl %eax, (%edx)\n"
-        "movl sDisplayID, %eax\n" /* line 707 */
-        "movl %eax, (%esp)\n"
-        "calll CGDisplayPixelsHigh\n"
-        "movl %eax, (%ebx)\n"
-        "jmp .Lf6178_000061c3\n"
-    );
+    if (sMainWindow)
+    {
+        Rect bounds;
+        GetWindowPortBounds(sMainWindow, &bounds);
+
+        int width = (short)bounds.right;
+        if (width <= 639)
+            width = 640;
+        *outWidth = width;
+
+        int height = (short)bounds.bottom;
+        *outHeight = height;
+        if (height <= 479)
+            *outHeight = 480;
+    }
+    else
+    {
+        *outWidth = CGDisplayPixelsWide(sDisplayID);
+        *outHeight = CGDisplayPixelsHigh(sDisplayID);
+    }
+
+    if (!sDisplayDepth)
+        sDisplayDepth = CGDisplayBitsPerPixel(sDisplayID);
+    *outDepth = sDisplayDepth;
+
+    if (!sDisplayRefreshRate)
+    {
+        int modeDict = CGDisplayCurrentMode(sDisplayID);
+        if (modeDict)
+        {
+            int rate = MacTools_GetDictionaryValue(modeDict, 0x32e624); /* kRefreshRateKey */
+            if (rate == -1)
+                rate = sDisplayRefreshRate;
+            sDisplayRefreshRate = rate;
+        }
+    }
+    *outRefreshRate = sDisplayRefreshRate;
 }
 
 /* line 774 */

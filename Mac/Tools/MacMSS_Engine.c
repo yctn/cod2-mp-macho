@@ -10,6 +10,27 @@
 
 static char *sDeviceName; /* 0xceb480 */
 
+/*
+ * CSoundEngine layout (deduced from ASM):
+ *   offset 0x3c: AUGraph graph
+ *   offset 0x44: AudioUnit mixerUnit
+ *   offset 0x50: long int mixerCount
+ *   offset 0x54: CSoundObject** sampleBuses
+ *   offset 0x58: char deviceName[...]
+ *   offset 0x184: vector<CSoundObject*> soundObjects
+ *   offset 0x190: Boolean distanceScalingRequired
+ *   offset 0x194: Float32 defaultReferenceDistance
+ *   offset 0x198: Float32 defaultMaxDistance
+ *   offset 0x1a8: long int roomType
+ *   offset 0x1ac: float rolloffFactor
+ *   offset 0x1b0: float distanceFactor
+ *   offset 0x1b4: float listenerX
+ *   offset 0x1b8: float listenerY
+ *   offset 0x1bc: float listenerZ (negated)
+ *   offset 0x1c0: float faceVector[3]
+ *   offset 0x1cc: float upVector[3]
+ */
+
 long int CSoundEngine_mixer_count(const CSoundEngine * _this);
 long int CSoundEngine_get_cpu_percent(const CSoundEngine * _this);
 long int CSoundEngine_mixer_count_3D(const CSoundEngine * _this);
@@ -41,10 +62,10 @@ CSoundObject * CSoundEngine_NewSampleSound(const CSoundEngine * _this);
 J_DCT_METHOD CSoundEngine_Execute(const CSoundEngine * _this, J_DCT_METHOD *inArg);
 J_DCT_METHOD CSoundEngine_RemoveSoundObject(const CSoundEngine * _this, CSoundObject *inSound);
 J_DCT_METHOD CSoundEngine_set_digital_master_room_type(const CSoundEngine * _this, long int room_type);
-void ZN12CSoundEngineD0Ev(void); /* CSoundEngine_~CSoundEngine */
+void ZN12CSoundEngineD0Ev(CSoundEngine *_this); /* CSoundEngine_~CSoundEngine */
 J_DCT_METHOD CSoundEngine_AddSoundObject(const CSoundEngine * _this, CSoundObject *inSound);
 void ZN12CSoundEngineD2Ev(void); /* CSoundEngine_~CSoundEngine */
-void ZN12CSoundEngineD1Ev(void); /* CSoundEngine_~CSoundEngine */
+void ZN12CSoundEngineD1Ev(CSoundEngine *_this); /* CSoundEngine_~CSoundEngine */
 UInt32 CSoundEngine_GetPreferredChannelCount(const CSoundEngine * _this);
 J_DCT_METHOD CSoundEngine_CSoundEngine(const CSoundEngine * _this, UInt32 inBusCount, int inHighQuality);
 void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
@@ -52,433 +73,192 @@ void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS
 void ZNSt6vectorIP12CSoundObjectSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_(void); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >__M_insert_aux */
 
 /* line 339 */
-__attribute__((naked))
 long int CSoundEngine_mixer_count(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 339 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x50(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 342 */
-        "retl\n"
-    );
+    return *(long int *)((char *)_this + 0x50);
 }
 
 /* line 347 */
-__attribute__((naked))
 long int CSoundEngine_get_cpu_percent(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 347 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "leal -0xc(%ebp), %eax\n" /* line 353 | cpuLoad, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* this, error */
-        "movl 0x3c(%eax), %eax\n" /* error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll AUGraphGetCPULoad\n"
-        "testl %eax, %eax\n" /* line 354 */
-        "jne .Lf115e10_00115e46\n"
-        "movss 0x2ed798, %xmm0\n" /* line 356 | 100.0f */
-        "mulss -0xc(%ebp), %xmm0\n" /* cpuLoad */
-        "cvttss2si %xmm0, %eax\n"
-        "testl %eax, %eax\n" /* line 359 */
-        "jle .Lf115e10_00115e46\n"
-        /* } scope */
-        "leave\n" /* line 365 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf115e10_00115e46:\n"
-        "movl $1, %eax\n" /* line 359 */
-        /* } scope */
-        "leave\n" /* line 365 */
-        "retl\n"
-    );
+    float cpuLoad;
+    OSStatus error = AUGraphGetCPULoad(*(void **)((char *)_this + 0x3c), &cpuLoad);
+    if (error != 0)
+        return 1;
+
+    int percent = (int)(cpuLoad * 100.0f);
+    if (percent <= 0)
+        return 1;
+
+    return percent;
 }
 
 /* line 370 */
-__attribute__((naked))
 long int CSoundEngine_mixer_count_3D(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 370 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x50(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 374 */
-        "retl\n"
-    );
+    return *(long int *)((char *)_this + 0x50);
 }
 
 /* line 441 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_3D_room_type(const CSoundEngine * _this, long int room_type)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 441 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* line 444 | room_type */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, 0x1a8(%eax)\n"
-        "popl %ebp\n" /* line 445 */
-        "retl\n"
-    );
+    *(long int *)((char *)_this + 0x1a8) = room_type;
 }
 
 /* line 387 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_digital_master_reverb_levels(const CSoundEngine * _this, float dry_level, float wet_level)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 387 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 390 */
-        "retl\n"
-    );
+    /* empty */
 }
 
 /* line 395 */
-__attribute__((naked))
 long int CSoundEngine_minimum_sample_buffer_size(const CSoundEngine * _this, long int playback_rate, long int format)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 395 */
-        "movl %esp, %ebp\n"
-        "movl $0x800, %eax\n" /* line 400 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0x800;
 }
 
 /* line 405 */
-__attribute__((naked))
 long int CSoundEngine_size_processed_digital_audio(const CSoundEngine * _this, long unsigned int dest_rate, long unsigned int dest_format, const AILMIXINFO *src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 405 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 409 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 415 */
-__attribute__((naked))
 long int CSoundEngine_process_digital_audio(const CSoundEngine * _this, J_DCT_METHOD *dest_buffer, long int dest_buffer_size, long unsigned int dest_rate, long unsigned int dest_format, const AILMIXINFO *src)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 415 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 419 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 424 */
-__attribute__((naked))
 char * CSoundEngine_device_name(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 424 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl sDeviceName, %eax\n" /* line 428 */
-        "testl %eax, %eax\n"
-        "je .Lf115e8c_00115ea2\n"
-        "movl sDeviceName, %eax\n"
-        /* } scope */
-        "leave\n" /* line 434 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf115e8c_00115ea2:\n"
-        "movl 8(%ebp), %eax\n" /* line 430 | this */
-        "addl $0x58, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strdup\n"
-        "movl %eax, sDeviceName\n"
-        /* } scope */
-        "leave\n" /* line 434 */
-        "retl\n"
-    );
+    if (sDeviceName)
+        return sDeviceName;
+
+    sDeviceName = strdup((const char *)_this + 0x58);
+    return sDeviceName;
 }
 
 /* line 458 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_3D_rolloff_factor(const CSoundEngine * _this, float factor)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 458 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* line 461 | factor */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, 0x1ac(%eax)\n"
-        "popl %ebp\n" /* line 462 */
-        "retl\n"
-    );
+    *(float *)((char *)_this + 0x1ac) = factor;
 }
 
 /* line 467 */
-__attribute__((naked))
 float CSoundEngine_get_3D_distance_factor(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 467 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "flds 0x1b0(%eax)\n"
-        "popl %ebp\n" /* line 470 */
-        "retl\n"
-    );
+    return *(float *)((char *)_this + 0x1b0);
 }
 
 /* line 475 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_3D_distance_factor(const CSoundEngine * _this, float factor)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 475 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* line 478 | factor */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, 0x1b0(%eax)\n"
-        "popl %ebp\n" /* line 479 */
-        "retl\n"
-    );
+    *(float *)((char *)_this + 0x1b0) = factor;
 }
 
 /* line 484 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_3D_position(const CSoundEngine * _this, float X, float Y, float Z)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 484 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0x14(%ebp), %edx\n" /* Z */
-        "movl 0xc(%ebp), %eax\n" /* line 488 | X */
-        "movl %eax, 0x1b4(%ecx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 489 | Y */
-        "movl %eax, 0x1b8(%ecx)\n"
-        "xorl $0x80000000, %edx\n" /* line 490 */
-        "movl %edx, 0x1bc(%ecx)\n"
-        "popl %ebp\n" /* line 493 */
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    *(float *)(p + 0x1b4) = X;
+    *(float *)(p + 0x1b8) = Y;
+    /* Negate Z by flipping sign bit */
+    unsigned int zi = *(unsigned int *)&Z;
+    zi ^= 0x80000000;
+    *(unsigned int *)(p + 0x1bc) = zi;
 }
 
 /* line 498 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_get_3D_position(const CSoundEngine * _this, float *X, float *Y, float *Z)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 498 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x1b4(%edx), %ecx\n" /* line 502 */
-        "movl 0xc(%ebp), %eax\n" /* X */
-        "movl %ecx, (%eax)\n"
-        "movl 0x1b8(%edx), %ecx\n" /* line 503 */
-        "movl 0x10(%ebp), %eax\n" /* Y */
-        "movl %ecx, (%eax)\n"
-        "movl 0x1bc(%edx), %eax\n" /* line 504 */
-        "xorl $0x80000000, %eax\n"
-        "movl 0x14(%ebp), %edx\n" /* Z */
-        "movl %eax, (%edx)\n"
-        "popl %ebp\n" /* line 505 */
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    *X = *(float *)(p + 0x1b4);
+    *Y = *(float *)(p + 0x1b8);
+    /* Negate Z by flipping sign bit */
+    unsigned int zi = *(unsigned int *)(p + 0x1bc);
+    zi ^= 0x80000000;
+    *(unsigned int *)Z = zi;
 }
 
 /* line 528 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_NewStreamSound(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 528 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl $0xf0, (%esp)\n" /* line 530 */
-        "calll __Znwm\n"
-        "movl %eax, %esi\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll CStreamSound_CStreamSound\n"
-        "movl %esi, %eax\n" /* line 531 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %ebx\n"
-        "movl %esi, (%esp)\n" /* line 530 */
-        "calll __ZdlPv\n"
-        "movl %ebx, (%esp)\n"
-        "calll __Unwind_Resume\n"
-    );
+    void *sound = __Znwm(0xf0);
+    CStreamSound_CStreamSound(sound, _this);
+    return (CSoundObject *)sound;
 }
 
 /* line 537 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_GetSampleSound(const CSoundEngine * _this, HSAMPLE inSample)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 537 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* inSample */
-        "popl %ebp\n" /* line 546 */
-        "retl\n"
-    );
+    return (CSoundObject *)inSample;
 }
 
 /* line 552 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_GetSampleSound3D(const CSoundEngine * _this, J_DCT_METHOD *in3DSample)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 552 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* in3DSample */
-        "popl %ebp\n" /* line 561 */
-        "retl\n"
-    );
+    return (CSoundObject *)in3DSample;
 }
 
 /* line 567 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_GetStreamSound(const CSoundEngine * _this, HSTREAM inStream)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 567 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* inStream */
-        "popl %ebp\n" /* line 582 */
-        "retl\n"
-    );
+    return (CSoundObject *)inStream;
 }
 
 /* line 587 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_UpdateAllSounds(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 587 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 598 */
-        "jmp CStreamSound_UpdateAllStreams\n" /* line 589 */
-    );
+    CStreamSound_UpdateAllStreams();
 }
 
 /* line 603 */
-__attribute__((naked))
 AudioUnit CSoundEngine_GetMixerUnit(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 603 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x44(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 606 */
-        "retl\n"
-    );
+    return *(AudioUnit *)((char *)_this + 0x44);
 }
 
 /* line 611 */
-__attribute__((naked))
 Boolean CSoundEngine_IsDistanceScalingRequired(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 611 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movzbl 0x190(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 614 */
-        "retl\n"
-    );
+    return *(unsigned char *)((char *)_this + 0x190);
 }
 
 /* line 619 */
-__attribute__((naked))
 Float32 CSoundEngine_GetDefaultReferenceDistance(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 619 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movss 0x194(%eax), %xmm0\n"
-        "divss 0x1b0(%eax), %xmm0\n"
-        "movss %xmm0, -4(%ebp)\n" /* line 622 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    float refDist = *(float *)(p + 0x194);
+    float distFactor = *(float *)(p + 0x1b0);
+    return refDist / distFactor;
 }
 
 /* line 627 */
-__attribute__((naked))
 Float32 CSoundEngine_GetDefaultMaxDistance(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 627 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movss 0x198(%eax), %xmm0\n"
-        "divss 0x1b0(%eax), %xmm0\n"
-        "movss %xmm0, -4(%ebp)\n" /* line 630 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    float maxDist = *(float *)(p + 0x198);
+    float distFactor = *(float *)(p + 0x1b0);
+    return maxDist / distFactor;
 }
 
 /* line 645 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_GetListenerFaceVector(const CSoundEngine * _this, D3DXVECTOR3 *outFace)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 645 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* outFace */
-        "movl 0x1c0(%edx), %eax\n" /* line 647 */
-        "movl %eax, (%ecx)\n"
-        "movl 0x1c4(%edx), %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x1c8(%edx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "popl %ebp\n" /* line 648 */
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    *(float *)((char *)outFace + 0) = *(float *)(p + 0x1c0);
+    *(float *)((char *)outFace + 4) = *(float *)(p + 0x1c4);
+    *(float *)((char *)outFace + 8) = *(float *)(p + 0x1c8);
 }
 
 /* line 654 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_GetListenerUpVector(const CSoundEngine * _this, D3DXVECTOR3 *outUp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 654 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* outUp */
-        "movl 0x1cc(%edx), %eax\n" /* line 656 */
-        "movl %eax, (%ecx)\n"
-        "movl 0x1d0(%edx), %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x1d4(%edx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "popl %ebp\n" /* line 657 */
-        "retl\n"
-    );
+    const char *p = (const char *)_this;
+    *(float *)((char *)outUp + 0) = *(float *)(p + 0x1cc);
+    *(float *)((char *)outUp + 4) = *(float *)(p + 0x1d0);
+    *(float *)((char *)outUp + 8) = *(float *)(p + 0x1d4);
 }
 
 /* line 797 */
@@ -588,37 +368,15 @@ CSoundObject * CSoundEngine_GetAvailableSampleBus(const CSoundEngine * _this, UI
 }
 
 /* line 520 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_NewSampleSound3D(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 520 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 4(%esp)\n" /* line 522 */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll CSoundEngine_GetAvailableSampleBus\n"
-        "leave\n" /* line 523 */
-        "retl\n"
-    );
+    return (CSoundObject *)CSoundEngine_GetAvailableSampleBus(_this, 1);
 }
 
 /* line 512 */
-__attribute__((naked))
 CSoundObject * CSoundEngine_NewSampleSound(const CSoundEngine * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 512 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 4(%esp)\n" /* line 514 */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll CSoundEngine_GetAvailableSampleBus\n"
-        "leave\n" /* line 515 */
-        "retl\n"
-    );
+    return (CSoundObject *)CSoundEngine_GetAvailableSampleBus(_this, 0);
 }
 
 /* line 842 */
@@ -692,239 +450,42 @@ J_DCT_METHOD CSoundEngine_Execute(const CSoundEngine * _this, J_DCT_METHOD *inAr
 }
 
 /* line 676 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_RemoveSoundObject(const CSoundEngine * _this, CSoundObject *inSound)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 676 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* inSound */
-        /* { scope 1 */
-        "movl %ebx, 4(%esp)\n" /* line 678 | this */
-        "leal -0x20(%ebp), %eax\n" /* lock */
-        "movl %eax, (%esp)\n"
-        "calll StThreadLock_StThreadLock\n"
-        "leal 0x184(%ebx), %edi\n" /* line 680 | this */
-        "movl 0x184(%ebx), %edx\n" /* line 334 */
-        "movl %edx, %eax\n" /* line 680 */
-        "movl 0x188(%ebx), %ecx\n" /* line 352 */
-        "cmpl %ecx, %edx\n" /* line 680 */
-        "je .Lf116210_00116263\n"
-        "cmpl (%edx), %esi\n" /* line 682 | inSound */
-        "je .Lf116210_00116257\n"
-        "movl %ecx, %edx\n" /* line 603 */
-        ".Lf116210_0011624c:\n"
-        "addl $4, %eax\n" /* line 623 */
-        "cmpl %edx, %eax\n" /* line 680 */
-        "je .Lf116210_00116263\n"
-        "cmpl (%eax), %esi\n" /* line 682 | inSound */
-        "jne .Lf116210_0011624c\n"
-        ".Lf116210_00116257:\n"
-        "movl %eax, 4(%esp)\n" /* line 684 */
-        "movl %edi, (%esp)\n"
-        "calll ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE\n"
-        ".Lf116210_00116263:\n"
-        "leal -0x20(%ebp), %eax\n" /* line 687 | lock */
-        "movl %eax, (%esp)\n"
-        "calll ZN12StThreadLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 688 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    StThreadLock lock;
+
+    StThreadLock_StThreadLock(&lock, _this);
+
+    /* Search vector at offset 0x184 for inSound and erase it */
+    CSoundObject **begin = *(CSoundObject ***)(p + 0x184);
+    CSoundObject **end = *(CSoundObject ***)(p + 0x188);
+
+    for (CSoundObject **it = begin; it != end; it++)
+    {
+        if (*it == inSound)
+        {
+            /* Erase element from vector */
+            ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(
+                (void *)(p + 0x184), it);
+            break;
+        }
+    }
+
+    ZN12StThreadLockD1Ev(&lock);
 }
 
 /* line 379 */
-__attribute__((naked))
 J_DCT_METHOD CSoundEngine_set_digital_master_room_type(const CSoundEngine * _this, long int room_type)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 379 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* line 444 | room_type */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, 0x1a8(%eax)\n"
-        "popl %ebp\n" /* line 382 */
-        "retl\n"
-    );
+    *(long int *)((char *)_this + 0x1a8) = room_type;
 }
 
 /* line 303 */
-__attribute__((naked))
-void ZN12CSoundEngineD0Ev(void) /* CSoundEngine_~CSoundEngine */
+void ZN12CSoundEngineD0Ev(CSoundEngine *_this) /* CSoundEngine_~CSoundEngine (D0 - deleting destructor) */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 303 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332328, (%eax)\n"
-        /* { scope 1 */
-        "movl %eax, 4(%esp)\n" /* line 306 */
-        "leal -0x20(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "leal 0x184(%eax), %edx\n"
-        "movl %edx, -0x2c(%ebp)\n"
-        "calll StThreadLock_StThreadLock\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 352 */
-        "movl 4(%ecx), %eax\n"
-        "movl 8(%ebp), %ecx\n" /* line 334 | this */
-        "movl 0x184(%ecx), %edx\n"
-        "movl %eax, 8(%esp)\n" /* line 749 */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_\n"
-        "movl 8(%ebp), %edx\n" /* line 308 | this */
-        "movl %edx, (%esp)\n"
-        "calll CThread_Stop\n"
-        "movl %ebx, (%esp)\n"
-        "calll ZN12StThreadLockD1Ev\n"
-        /* } scope */
-        "movl 8(%ebp), %ecx\n" /* line 311 | this */
-        "movl 0x54(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf116288_00116300\n"
-        /* { scope 1 */
-        "movl 0x50(%ecx), %ebx\n" /* line 313 */
-        "testl %ebx, %ebx\n"
-        "jne .Lf116288_0011636f\n"
-        /* } scope */
-        ".Lf116288_001162f8:\n"
-        "movl %eax, (%esp)\n" /* line 324 */
-        "calll __ZdaPv\n"
-        ".Lf116288_00116300:\n"
-        "movl 8(%ebp), %edx\n" /* line 327 | this */
-        "movl 0x3c(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf116288_00116320\n"
-        "movl %eax, (%esp)\n" /* line 329 */
-        "calll AUGraphStop\n"
-        "movl 8(%ebp), %ecx\n" /* line 330 | this */
-        "movl 0x3c(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll DisposeAUGraph\n"
-        ".Lf116288_00116320:\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 273 */
-        "movl 4(%ecx), %edx\n" /* __last */
-        "movl (%ecx), %ecx\n"
-        "movl %ecx, %eax\n"
-        /* { scope 1 */
-        "cmpl %ecx, %edx\n" /* line 173 */
-        "je .Lf116288_00116335\n"
-        ".Lf116288_0011632e:\n"
-        "addl $4, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jne .Lf116288_0011632e\n"
-        /* } scope */
-        ".Lf116288_00116335:\n"
-        "testl %ecx, %ecx\n" /* line 122 */
-        "je .Lf116288_00116341\n"
-        /* { scope 1 */
-        "movl %ecx, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        /* } scope */
-        ".Lf116288_00116341:\n"
-        "movl 8(%ebp), %eax\n" /* line 332 | this */
-        "addl $0x158, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl %ecx, (%esp)\n"
-        "calll ZN7CThreadD2Ev\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll __ZdlPv\n"
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf116288_0011636f:\n"
-        "xorl %esi, %esi\n" /* line 313 | i */
-        /* } scope */
-        ".Lf116288_00116371:\n"
-        "leal (, %esi, 4), %edi\n" /* line 311 */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl (%eax, %edi), %ebx\n" /* line 315 | theSample */
-        "testl %ebx, %ebx\n" /* line 316 | theSample */
-        "je .Lf116288_0011639f\n"
-        "movl %ebx, (%esp)\n" /* line 318 | theSample */
-        "calll CSoundObject_Release\n"
-        "movl (%ebx), %eax\n" /* line 319 | theSample */
-        "movl %ebx, (%esp)\n" /* theSample */
-        "calll *4(%eax)\n"
-        "movl 8(%ebp), %edx\n" /* line 320 | this */
-        "movl 0x54(%edx), %eax\n"
-        "movl $0, (%eax, %edi)\n"
-        "movl 0x54(%edx), %eax\n"
-        /* } scope */
-        ".Lf116288_0011639f:\n"
-        "addl $1, %esi\n" /* line 313 | i */
-        "movl 8(%ebp), %ecx\n" /* this */
-        "cmpl 0x50(%ecx), %esi\n" /* i */
-        "jb .Lf116288_00116371\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 324 */
-        "je .Lf116288_00116300\n"
-        "jmp .Lf116288_001162f8\n"
-        "movl %eax, %esi\n" /* i */
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 308 */
-        "calll ZN12StThreadLockD1Ev\n"
-        /* } scope */
-        ".Lf116288_001163c1:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 273 */
-        "movl 4(%eax), %edx\n" /* __last */
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0x184(%ecx), %eax\n"
-        /* { scope 1 */
-        "cmpl %eax, %edx\n" /* line 173 */
-        "je .Lf116288_001163db\n"
-        ".Lf116288_001163d4:\n"
-        "addl $4, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jne .Lf116288_001163d4\n"
-        /* } scope */
-        ".Lf116288_001163db:\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 109 */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n" /* line 122 */
-        "je .Lf116288_001163ec\n"
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        /* } scope */
-        ".Lf116288_001163ec:\n"
-        "movl 8(%ebp), %eax\n" /* line 332 | this */
-        "addl $0x158, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "jmp .Lf116288_00116404\n"
-        "movl %eax, %esi\n" /* i */
-        "jmp .Lf116288_001163c1\n"
-        "movl %eax, %esi\n" /* i */
-        ".Lf116288_00116404:\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl %edx, (%esp)\n"
-        "calll ZN7CThreadD2Ev\n"
-        "movl %esi, (%esp)\n" /* i */
-        "calll __Unwind_Resume\n"
-    );
+    ZN12CSoundEngineD1Ev(_this);
+    __ZdlPv(_this);
 }
 
 /* line 665 */
@@ -1148,170 +709,60 @@ void ZN12CSoundEngineD2Ev(void) /* CSoundEngine_~CSoundEngine */
 }
 
 /* line 303 */
-__attribute__((naked))
-void ZN12CSoundEngineD1Ev(void) /* CSoundEngine_~CSoundEngine */
+/* CSoundEngine::~CSoundEngine (D1 - complete destructor) */
+void ZN12CSoundEngineD1Ev(CSoundEngine *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 303 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332328, (%eax)\n"
-        /* { scope 1 */
-        "movl %eax, 4(%esp)\n" /* line 306 */
-        "leal -0x20(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "leal 0x184(%eax), %edx\n"
-        "movl %edx, -0x2c(%ebp)\n"
-        "calll StThreadLock_StThreadLock\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 352 */
-        "movl 4(%ecx), %eax\n"
-        "movl 8(%ebp), %ecx\n" /* line 334 | this */
-        "movl 0x184(%ecx), %edx\n"
-        "movl %eax, 8(%esp)\n" /* line 749 */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_\n"
-        "movl 8(%ebp), %edx\n" /* line 308 | this */
-        "movl %edx, (%esp)\n"
-        "calll CThread_Stop\n"
-        "movl %ebx, (%esp)\n"
-        "calll ZN12StThreadLockD1Ev\n"
-        /* } scope */
-        "movl 8(%ebp), %ecx\n" /* line 311 | this */
-        "movl 0x54(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf11660c_00116684\n"
-        /* { scope 1 */
-        "movl 0x50(%ecx), %edi\n" /* line 313 */
-        "testl %edi, %edi\n"
-        "jne .Lf11660c_001166e8\n"
-        /* } scope */
-        ".Lf11660c_0011667c:\n"
-        "movl %eax, (%esp)\n" /* line 324 */
-        "calll __ZdaPv\n"
-        ".Lf11660c_00116684:\n"
-        "movl 8(%ebp), %edx\n" /* line 327 | this */
-        "movl 0x3c(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf11660c_001166a4\n"
-        "movl %eax, (%esp)\n" /* line 329 */
-        "calll AUGraphStop\n"
-        "movl 8(%ebp), %ecx\n" /* line 330 | this */
-        "movl 0x3c(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll DisposeAUGraph\n"
-        ".Lf11660c_001166a4:\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 273 */
-        "movl 4(%ecx), %edx\n" /* __last */
-        "movl (%ecx), %ecx\n"
-        "movl %ecx, %eax\n"
-        /* { scope 1 */
-        "cmpl %ecx, %edx\n" /* line 173 */
-        "je .Lf11660c_001166b9\n"
-        ".Lf11660c_001166b2:\n"
-        "addl $4, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jne .Lf11660c_001166b2\n"
-        /* } scope */
-        ".Lf11660c_001166b9:\n"
-        "testl %ecx, %ecx\n" /* line 122 */
-        "je .Lf11660c_001166c5\n"
-        /* { scope 1 */
-        "movl %ecx, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        /* } scope */
-        ".Lf11660c_001166c5:\n"
-        "movl 8(%ebp), %eax\n" /* line 332 | this */
-        "addl $0x158, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl %ecx, (%esp)\n"
-        "calll ZN7CThreadD2Ev\n"
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf11660c_001166e8:\n"
-        "xorl %esi, %esi\n" /* line 313 | i */
-        /* } scope */
-        ".Lf11660c_001166ea:\n"
-        "leal (, %esi, 4), %edi\n" /* line 311 */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl (%eax, %edi), %ebx\n" /* line 315 | theSample */
-        "testl %ebx, %ebx\n" /* line 316 | theSample */
-        "je .Lf11660c_00116718\n"
-        "movl %ebx, (%esp)\n" /* line 318 | theSample */
-        "calll CSoundObject_Release\n"
-        "movl (%ebx), %eax\n" /* line 319 | theSample */
-        "movl %ebx, (%esp)\n" /* theSample */
-        "calll *4(%eax)\n"
-        "movl 8(%ebp), %edx\n" /* line 320 | this */
-        "movl 0x54(%edx), %eax\n"
-        "movl $0, (%eax, %edi)\n"
-        "movl 0x54(%edx), %eax\n"
-        /* } scope */
-        ".Lf11660c_00116718:\n"
-        "addl $1, %esi\n" /* line 313 | i */
-        "movl 8(%ebp), %ecx\n" /* this */
-        "cmpl 0x50(%ecx), %esi\n" /* i */
-        "jb .Lf11660c_001166ea\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 324 */
-        "je .Lf11660c_00116684\n"
-        "jmp .Lf11660c_0011667c\n"
-        "movl %eax, %esi\n" /* i */
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 308 */
-        "calll ZN12StThreadLockD1Ev\n"
-        /* } scope */
-        ".Lf11660c_0011673a:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 273 */
-        "movl 4(%eax), %edx\n" /* __last */
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0x184(%ecx), %eax\n"
-        /* { scope 1 */
-        "cmpl %eax, %edx\n" /* line 173 */
-        "je .Lf11660c_00116754\n"
-        ".Lf11660c_0011674d:\n"
-        "addl $4, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jne .Lf11660c_0011674d\n"
-        /* } scope */
-        ".Lf11660c_00116754:\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 109 */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n" /* line 122 */
-        "je .Lf11660c_00116765\n"
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        /* } scope */
-        ".Lf11660c_00116765:\n"
-        "movl 8(%ebp), %eax\n" /* line 332 | this */
-        "addl $0x158, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "jmp .Lf11660c_0011677d\n"
-        "movl %eax, %esi\n" /* i */
-        "jmp .Lf11660c_0011673a\n"
-        "movl %eax, %esi\n" /* i */
-        ".Lf11660c_0011677d:\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl %edx, (%esp)\n"
-        "calll ZN7CThreadD2Ev\n"
-        "movl %esi, (%esp)\n" /* i */
-        "calll __Unwind_Resume\n"
-    );
+    char *p = (char *)_this;
+
+    *(int *)p = 0x332328; /* vtable */
+
+    /* Lock and clear sound objects vector */
+    StThreadLock lock;
+    StThreadLock_StThreadLock(&lock, _this);
+
+    CSoundObject **begin = *(CSoundObject ***)(p + 0x184);
+    CSoundObject **end = *(CSoundObject ***)(p + 0x188);
+    ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_(
+        (void *)(p + 0x184), begin, end);
+
+    CThread_Stop(_this);
+    ZN12StThreadLockD1Ev(&lock);
+
+    /* Release all sample bus sounds */
+    CSoundObject **samples = *(CSoundObject ***)(p + 0x54);
+    if (samples)
+    {
+        unsigned int count = *(unsigned int *)(p + 0x50);
+        for (unsigned int i = 0; i < count; i++)
+        {
+            CSoundObject *theSample = samples[i];
+            if (theSample)
+            {
+                CSoundObject_Release(theSample);
+                /* vtable call: destructor at offset 4 */
+                (*(void (**)(void *))(*((int **)theSample) + 1))(theSample);
+                samples[i] = NULL;
+            }
+        }
+        __ZdaPv(samples);
+    }
+
+    /* Stop and dispose audio graph */
+    void *graph = *(void **)(p + 0x3c);
+    if (graph)
+    {
+        AUGraphStop(graph);
+        DisposeAUGraph(*(void **)(p + 0x3c));
+    }
+
+    /* Free sound objects vector storage */
+    CSoundObject **vecData = *(CSoundObject ***)(p + 0x184);
+    if (vecData)
+        __ZdlPv(vecData);
+
+    /* Destroy mutex and thread base */
+    ZN6CMutexD1Ev((void *)(p + 0x158));
+    ZN7CThreadD2Ev(_this);
 }
 
 /* line 709 */
@@ -2265,4 +1716,3 @@ void ZNSt6vectorIP12CSoundObjectSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_it
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
-

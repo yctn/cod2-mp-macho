@@ -4,260 +4,184 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern AIL_file_open_callback CSoundObject_sOpenCallback; /* 0x0 */
-extern AIL_file_close_callback CSoundObject_sCloseCallback; /* 0x0 */
-extern AIL_file_seek_callback CSoundObject_sSeekCallback; /* 0x0 */
-extern AIL_file_read_callback CSoundObject_sReadCallback; /* 0x0 */
+/* External functions needed by C implementations */
+void StMutexLock_StMutexLock(char *lock, void *mutex);
+void ZN11StMutexLockD1Ev(char *lock);
+void ZN6CMutexD1Ev(void *mutex);
+void CMutex_CMutex(void *mutex);
+void __ZdlPv(void *ptr);
+float CSoundEngine_GetDefaultMaxDistance(const CSoundEngine *inEngine);
+float CSoundEngine_GetDefaultReferenceDistance(const CSoundEngine *inEngine);
+void free(void *ptr);
 
-void ZN12CSoundObjectD2Ev(void); /* CSoundObject_~CSoundObject */
-void ZN12CSoundObjectD1Ev(void); /* CSoundObject_~CSoundObject */
-void ZN12CSoundObjectD0Ev(void); /* CSoundObject_~CSoundObject */
-void CSoundObject_Release(const CSoundObject * _this);
-Boolean CSoundObject_IsAvailable(const CSoundObject * _this);
-UInt32 CSoundObject_GetSoundType(const CSoundObject * _this);
-Boolean CSoundObject_Is3DSound(const CSoundObject * _this);
-void CSoundObject_TheadIdle(const CSoundObject * _this);
-void CSoundObject_set_sample_address(const CSoundObject * _this, const void *start, long unsigned int len);
+/* CSoundObject vtable address (hardcoded from original binary) */
+#define CSOUNDOBJECT_VTABLE_PTR ((void *)0x332548)
+
+/* Static callback globals (defined in data.S with mangled names) */
+extern AIL_file_open_callback __ZN12CSoundObject13sOpenCallbackE  __asm__("__ZN12CSoundObject13sOpenCallbackE");
+extern AIL_file_close_callback __ZN12CSoundObject14sCloseCallbackE __asm__("__ZN12CSoundObject14sCloseCallbackE");
+extern AIL_file_seek_callback __ZN12CSoundObject13sSeekCallbackE  __asm__("__ZN12CSoundObject13sSeekCallbackE");
+extern AIL_file_read_callback __ZN12CSoundObject13sReadCallbackE  __asm__("__ZN12CSoundObject13sReadCallbackE");
+
+void ZN12CSoundObjectD2Ev(char *_this); /* CSoundObject_~CSoundObject */
+void ZN12CSoundObjectD1Ev(char *_this); /* CSoundObject_~CSoundObject */
+void ZN12CSoundObjectD0Ev(char *_this); /* CSoundObject_~CSoundObject */
+void CSoundObject_Release(char *_this);
+Boolean CSoundObject_IsAvailable(char *_this);
+UInt32 CSoundObject_GetSoundType(char *_this);
+Boolean CSoundObject_Is3DSound(char *_this);
+void CSoundObject_TheadIdle(char *_this);
+void CSoundObject_set_sample_address(char *_this, const void *start, long unsigned int len);
 void CSoundObject_set_sample_type(const CSoundObject * _this, long int format, long unsigned int flags);
 void CSoundObject_set_sample_volume(const CSoundObject * _this, float volume);
-void CSoundObject_stop_sample(const CSoundObject * _this);
-void CSoundObject_resume_sample(const CSoundObject * _this);
-void CSoundObject_end_sample(const CSoundObject * _this);
+void CSoundObject_stop_sample(char *_this);
+void CSoundObject_resume_sample(char *_this);
+void CSoundObject_end_sample(char *_this);
 void CSoundObject_set_sample_adpcm_block_size(const CSoundObject * _this, long unsigned int blocksize);
-float CSoundObject_get_sample_volume(const CSoundObject * _this);
-void CSoundObject_get_sample_volume_levels(const CSoundObject * _this, float *left_level, float *right_level);
+float CSoundObject_get_sample_volume(char *_this);
+void CSoundObject_get_sample_volume_levels(char *_this, float *left_level, float *right_level);
 void CSoundObject_set_sample_volume_levels(const CSoundObject * _this, float left_level, float right_level);
-void CSoundObject_get_sample_volume_pan(const CSoundObject * _this, float *volume, float *pan);
-void CSoundObject_set_sample_reverb_levels(const CSoundObject * _this, float dry_level, float wet_level);
-long unsigned int CSoundObject_get_sample_position(const CSoundObject * _this);
-void CSoundObject_set_sample_position(const CSoundObject * _this, long unsigned int position);
-long int CSoundObject_get_sample_playback_rate(const CSoundObject * _this);
+void CSoundObject_get_sample_volume_pan(char *_this, float *volume, float *pan);
+void CSoundObject_set_sample_reverb_levels(char *_this, float dry_level, float wet_level);
+long unsigned int CSoundObject_get_sample_position(char *_this);
+void CSoundObject_set_sample_position(char *_this, long unsigned int position);
+long int CSoundObject_get_sample_playback_rate(char *_this);
 void CSoundObject_set_sample_playback_rate(const CSoundObject * _this, long int playback_rate);
-void CSoundObject_set_sample_loop_count(const CSoundObject * _this, long unsigned int loops);
-long unsigned int CSoundObject_get_sample_status(const CSoundObject * _this);
-long unsigned int CSoundObject_get_sample_length(const CSoundObject * _this);
+void CSoundObject_set_sample_loop_count(char *_this, long unsigned int loops);
+long unsigned int CSoundObject_get_sample_status(char *_this);
+long unsigned int CSoundObject_get_sample_length(char *_this);
 long int CSoundObject_sample_buffer_ready(const CSoundObject * _this);
 void CSoundObject_load_sample_buffer(const CSoundObject * _this, long unsigned int buff_num, const void *buffer, long unsigned int len);
 void CSoundObject_set_3D_position(const CSoundObject * _this, float X, float Y, float Z);
-void CSoundObject_get_3D_position(const CSoundObject * _this, float *X, float *Y, float *Z);
+void CSoundObject_get_3D_position(char *_this, float *X, float *Y, float *Z);
 void CSoundObject_set_3D_sample_distances(const CSoundObject * _this, float max_dist, float min_dist);
-void CSoundObject_set_3D_sample_effects_level(const CSoundObject * _this, float effects_level);
-bool CSoundObject_open_stream(const CSoundObject * _this, const char *filename);
-void CSoundObject_close_stream(const CSoundObject * _this);
-void CSoundObject_get_stream_info(const CSoundObject * _this, long int *datarate, long int *sndtype, long int *length, long int *memory);
+void CSoundObject_set_3D_sample_effects_level(char *_this, float effects_level);
+bool CSoundObject_open_stream(char *_this, const char *filename);
+void CSoundObject_close_stream(char *_this);
+void CSoundObject_get_stream_info(char *_this, long int *datarate, long int *sndtype, long int *length, long int *memory);
 void CSoundObject_set_file_callbacks(AIL_file_open_callback opencb, AIL_file_close_callback closecb, AIL_file_seek_callback seekcb, AIL_file_read_callback readcb);
 void CSoundObject_FormatToDescription(long int mssPlaybackRate, long int mssFormat, AudioStreamBasicDescription *outDescription);
 bool CSoundObject_IsEqualDescriptions(const AudioStreamBasicDescription *inDesc1, const AudioStreamBasicDescription *inDesc2);
-Boolean CSoundObject_SampleBuffersEmpty(const CSoundObject * _this);
-void CSoundObject_ChangedVolume(const CSoundObject * _this);
-void CSoundObject_ChangedFormat(const CSoundObject * _this);
-void CSoundObject_Changed3DPosition(const CSoundObject * _this);
-void CSoundObject_Changed3DDistances(const CSoundObject * _this);
+Boolean CSoundObject_SampleBuffersEmpty(char *_this);
+void CSoundObject_ChangedVolume(char *_this);
+void CSoundObject_ChangedFormat(char *_this);
+void CSoundObject_Changed3DPosition(char *_this);
+void CSoundObject_Changed3DDistances(char *_this);
 long unsigned int CSoundObject_file_open_callback(const char *Filename, long unsigned int *FileHandle);
 void CSoundObject_file_close_callback(long unsigned int FileHandle);
 long int CSoundObject_file_seek_callback(long unsigned int FileHandle, long int Offset, long unsigned int Type);
 long unsigned int CSoundObject_file_read_callback(long unsigned int FileHandle, void *Buffer, long unsigned int Bytes);
-void CSoundObject_CSoundObject(const CSoundObject * _this, CSoundEngine *inEngine, UInt32 inBusIndex);
+void CSoundObject_CSoundObject(char *_this, CSoundEngine *inEngine, UInt32 inBusIndex);
 void CSoundObject_get_sample_ms_position(const CSoundObject * _this, long int *total_milliseconds, long int *current_milliseconds);
-void CSoundObject_set_sample_ms_position(const CSoundObject * _this, long int milliseconds);
+void CSoundObject_set_sample_ms_position(char *_this, long int milliseconds);
 void CSoundObject_init_sample(const CSoundObject * _this);
 long int CSoundObject_set_sample_info(const CSoundObject * _this, const AILSOUNDINFO *info);
 
-/* line 70 */
-__attribute__((naked))
-void ZN12CSoundObjectD2Ev(void) /* CSoundObject_~CSoundObject */
+/* ---- Destructors ---- */
+
+/* ~CSoundObject() - base destructor (D2) */
+void ZN12CSoundObjectD2Ev(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332548, (%eax)\n"
-        "addl $0x20, %eax\n" /* line 72 */
-        "movl %eax, 8(%ebp)\n" /* this */
-        "popl %ebp\n"
-        "jmp ZN6CMutexD1Ev\n"
-    );
+    *(int *)(_this) = (int)CSOUNDOBJECT_VTABLE_PTR;
+    ZN6CMutexD1Ev(_this + 0x20);
 }
 
-/* line 70 */
-__attribute__((naked))
-void ZN12CSoundObjectD1Ev(void) /* CSoundObject_~CSoundObject */
+/* ~CSoundObject() - complete destructor (D1) */
+void ZN12CSoundObjectD1Ev(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332548, (%eax)\n"
-        "addl $0x20, %eax\n" /* line 72 */
-        "movl %eax, 8(%ebp)\n" /* this */
-        "popl %ebp\n"
-        "jmp ZN6CMutexD1Ev\n"
-    );
+    *(int *)(_this) = (int)CSOUNDOBJECT_VTABLE_PTR;
+    ZN6CMutexD1Ev(_this + 0x20);
 }
 
-/* line 70 */
-__attribute__((naked))
-void ZN12CSoundObjectD0Ev(void) /* CSoundObject_~CSoundObject */
+/* ~CSoundObject() - deleting destructor (D0) */
+void ZN12CSoundObjectD0Ev(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x332548, (%ebx)\n" /* this */
-        "leal 0x20(%ebx), %eax\n" /* line 72 | this */
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdlPv\n"
-    );
+    *(int *)(_this) = (int)CSOUNDOBJECT_VTABLE_PTR;
+    ZN6CMutexD1Ev(_this + 0x20);
+    __ZdlPv(_this);
 }
 
-/* line 77 */
-__attribute__((naked))
-void CSoundObject_Release(const CSoundObject * _this)
+/* ---- CSoundObject_Release ---- */
+
+void CSoundObject_Release(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl (%edi), %eax\n" /* line 79 | this */
-        "movl %edi, (%esp)\n" /* this */
-        "calll *0xc(%eax)\n"
-        "movl (%edi), %eax\n" /* line 80 | this */
-        "movl %edi, (%esp)\n" /* this */
-        "calll *0x2c(%eax)\n"
-        "movl %edi, %ebx\n" /* this */
-        "movl $4, %esi\n"
-        ".Lf13e678_0013e69b:\n"
-        "movl 0x4c(%ebx), %eax\n" /* line 84 */
-        "testl %eax, %eax\n"
-        "je .Lf13e678_0013e6b1\n"
-        "movl %eax, (%esp)\n" /* line 86 */
-        "calll free\n"
-        "movl $0, 0x4c(%ebx)\n" /* line 87 */
-        ".Lf13e678_0013e6b1:\n"
-        "addl $4, %ebx\n"
-        "subl $1, %esi\n" /* line 82 */
-        "jne .Lf13e678_0013e69b\n"
-        "movl $0, 0x5c(%edi)\n" /* line 90 | this */
-        "movb $1, 0xc(%edi)\n" /* line 92 | this */
-        "addl $0x1c, %esp\n" /* line 93 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int (**vtable)(char *);
+    int i;
+    char *p;
+
+    /* Call virtual function at vtable offset 0xc (vtable[3]) */
+    vtable = *(int (***)(char *))_this;
+    ((void (*)(char *))vtable[3])(_this);
+
+    /* Call virtual function at vtable offset 0x2c (vtable[11]) */
+    vtable = *(int (***)(char *))_this;
+    ((void (*)(char *))vtable[11])(_this);
+
+    /* Free 4 sample buffers at offsets 0x4c, 0x50, 0x54, 0x58 */
+    p = _this;
+    for (i = 0; i < 4; i++) {
+        void *buf = *(void **)(p + 0x4c);
+        if (buf != 0) {
+            free(buf);
+            *(void **)(p + 0x4c) = 0;
+        }
+        p += 4;
+    }
+
+    *(int *)(_this + 0x5c) = 0;
+    *(unsigned char *)(_this + 0xc) = 1;
 }
 
-/* line 106 */
-__attribute__((naked))
-Boolean CSoundObject_IsAvailable(const CSoundObject * _this)
+/* ---- Simple Accessors ---- */
+
+Boolean CSoundObject_IsAvailable(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 106 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movzbl 0xc(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 109 */
-        "retl\n"
-    );
+    return *(unsigned char *)(_this + 0xc);
 }
 
-/* line 114 */
-__attribute__((naked))
-UInt32 CSoundObject_GetSoundType(const CSoundObject * _this)
+UInt32 CSoundObject_GetSoundType(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 114 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x10(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 117 */
-        "retl\n"
-    );
+    return *(int *)(_this + 0x10);
 }
 
-/* line 122 */
-__attribute__((naked))
-Boolean CSoundObject_Is3DSound(const CSoundObject * _this)
+Boolean CSoundObject_Is3DSound(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 122 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "cmpl $1, 0x10(%eax)\n"
-        "sete %al\n" /* this */
-        "movzbl %al, %eax\n" /* this */
-        "popl %ebp\n" /* line 125 */
-        "retl\n"
-    );
+    return *(int *)(_this + 0x10) == 1;
 }
 
-/* line 130 */
-__attribute__((naked))
-void CSoundObject_TheadIdle(const CSoundObject * _this)
+/* ---- No-op / Stub Functions ---- */
+
+void CSoundObject_TheadIdle(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 130 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 133 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 274 */
-__attribute__((naked))
-void CSoundObject_set_sample_address(const CSoundObject * _this, const void *start, long unsigned int len)
+/* ---- set_sample_address ---- */
+
+void CSoundObject_set_sample_address(char *_this, const void *start, unsigned long len)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 274 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x10(%ebp), %edi\n" /* len */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 276 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xc(%ebp), %eax\n" /* line 278 | start */
-        "movl %eax, 0x84(%ebx)\n" /* this */
-        "movl %edi, 0x94(%ebx)\n" /* line 279 | len, this */
-        "movl %ebx, %eax\n" /* this */
-        "movl $3, %edx\n"
-        ".Lf13e6fe_0013e735:\n"
-        "movl $0, 0x88(%eax)\n" /* line 283 */
-        "movl $0, 0x98(%eax)\n" /* line 284 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 281 */
-        "jne .Lf13e6fe_0013e735\n"
-        "movl $0, 0xac(%ebx)\n" /* line 287 | this */
-        "movl %edi, 0xb0(%ebx)\n" /* line 288 | len, this */
-        "movb $0, 0x14(%ebx)\n" /* line 290 | this */
-        "movl %esi, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 291 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+    char *p;
+    int i;
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    *(const void **)(_this + 0x84) = start;
+    *(unsigned long *)(_this + 0x94) = len;
+
+    /* Clear 3 buffer slots: offsets 0x88+i*4 and 0x98+i*4 */
+    p = _this;
+    for (i = 0; i < 3; i++) {
+        *(int *)(p + 0x88) = 0;
+        *(int *)(p + 0x98) = 0;
+        p += 4;
+    }
+
+    *(int *)(_this + 0xac) = 0;
+    *(unsigned long *)(_this + 0xb0) = len;
+    *(unsigned char *)(_this + 0x14) = 0;
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
 /* line 310 */
@@ -360,113 +284,52 @@ void CSoundObject_set_sample_volume(const CSoundObject * _this, float volume)
     );
 }
 
-/* line 206 */
-__attribute__((naked))
-void CSoundObject_stop_sample(const CSoundObject * _this)
+/* ---- stop_sample ---- */
+
+void CSoundObject_stop_sample(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 206 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 210 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "cmpl $4, 0x60(%ebx)\n" /* line 212 | this */
-        "jne .Lf13e856_0013e880\n"
-        "movl $8, 0x60(%ebx)\n" /* line 214 | this */
-        ".Lf13e856_0013e880:\n"
-        "movl %esi, (%esp)\n" /* line 215 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 216 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    if (*(int *)(_this + 0x60) == 4) {
+        *(int *)(_this + 0x60) = 8;
+    }
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 221 */
-__attribute__((naked))
-void CSoundObject_resume_sample(const CSoundObject * _this)
+/* ---- resume_sample ---- */
+
+void CSoundObject_resume_sample(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 221 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 226 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0x60(%ebx), %eax\n" /* line 228 | this */
-        "cmpl $2, %eax\n"
-        "je .Lf13e890_0013e8c9\n"
-        "cmpl $8, %eax\n"
-        "je .Lf13e890_0013e8c9\n"
-        "movl %esi, (%esp)\n" /* line 231 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 232 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13e890_0013e8c9:\n"
-        "movl $4, 0x60(%ebx)\n" /* line 230 | this */
-        "movl %esi, (%esp)\n" /* line 231 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 232 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+    int status;
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    status = *(int *)(_this + 0x60);
+    if (status == 2 || status == 8) {
+        *(int *)(_this + 0x60) = 4;
+    }
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 237 */
-__attribute__((naked))
-void CSoundObject_end_sample(const CSoundObject * _this)
+/* ---- end_sample ---- */
+
+void CSoundObject_end_sample(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 237 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 241 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "cmpl $4, 0x60(%ebx)\n" /* line 243 | this */
-        "jne .Lf13e8e0_0013e914\n"
-        "movl $2, 0x60(%ebx)\n" /* line 245 | this */
-        "movl $0, 0xac(%ebx)\n" /* line 247 | this */
-        ".Lf13e8e0_0013e914:\n"
-        "movl %esi, (%esp)\n" /* line 248 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 249 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    if (*(int *)(_this + 0x60) == 4) {
+        *(int *)(_this + 0x60) = 2;
+        *(int *)(_this + 0xac) = 0;
+    }
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
 /* line 296 */
@@ -513,48 +376,24 @@ void CSoundObject_set_sample_adpcm_block_size(const CSoundObject * _this, long u
     );
 }
 
-/* line 360 */
-__attribute__((naked))
-float CSoundObject_get_sample_volume(const CSoundObject * _this)
+/* ---- get_sample_volume ---- */
+
+float CSoundObject_get_sample_volume(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 360 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "flds 0x64(%eax)\n"
-        "popl %ebp\n" /* line 365 */
-        "retl\n"
-    );
+    return *(float *)(_this + 0x64);
 }
 
-/* line 385 */
-__attribute__((naked))
-void CSoundObject_get_sample_volume_levels(const CSoundObject * _this, float *left_level, float *right_level)
+/* ---- get_sample_volume_levels ---- */
+
+void CSoundObject_get_sample_volume_levels(char *_this, float *left_level, float *right_level)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 385 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* left_level */
-        "movl 0x10(%ebp), %ebx\n" /* right_level */
-        "movl 0x68(%eax), %edx\n" /* line 389 */
-        "movl %edx, (%ecx)\n"
-        "movl 0x6c(%eax), %edx\n" /* line 390 */
-        "movl %edx, (%ebx)\n" /* right_level */
-        "testb $2, 0xa8(%eax)\n" /* line 392 */
-        "jne .Lf13e98a_0013e9c6\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 394 | 0.5f */
-        "movss (%ecx), %xmm1\n"
-        "mulss %xmm0, %xmm1\n"
-        "movss %xmm1, (%ecx)\n"
-        "mulss (%ebx), %xmm0\n" /* line 395 | right_level */
-        "movss %xmm0, (%ebx)\n" /* right_level */
-        ".Lf13e98a_0013e9c6:\n"
-        "popl %ebx\n" /* line 397 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    *left_level = *(float *)(_this + 0x68);
+    *right_level = *(float *)(_this + 0x6c);
+
+    if (!(*(int *)(_this + 0xa8) & 2)) {
+        *left_level *= 0.5f;
+        *right_level *= 0.5f;
+    }
 }
 
 /* line 402 */
@@ -635,172 +474,78 @@ void CSoundObject_set_sample_volume_levels(const CSoundObject * _this, float lef
     );
 }
 
-/* line 445 */
-__attribute__((naked))
-void CSoundObject_get_sample_volume_pan(const CSoundObject * _this, float *volume, float *pan)
+/* ---- get_sample_volume_pan ---- */
+
+void CSoundObject_get_sample_volume_pan(char *_this, float *volume, float *pan)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 445 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* volume */
-        "movl 0x10(%ebp), %ecx\n" /* pan */
-        "testl %edx, %edx\n" /* line 449 */
-        "je .Lf13ea92_0013eaa8\n"
-        "movl 0x64(%ebx), %eax\n" /* line 451 | this */
-        "movl %eax, (%edx)\n"
-        ".Lf13ea92_0013eaa8:\n"
-        "testl %ecx, %ecx\n" /* line 454 */
-        "je .Lf13ea92_0013eab1\n"
-        "movl 0x70(%ebx), %eax\n" /* line 456 | this */
-        "movl %eax, (%ecx)\n"
-        ".Lf13ea92_0013eab1:\n"
-        "popl %ebx\n" /* line 458 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (volume != 0) {
+        *(int *)volume = *(int *)(_this + 0x64);
+    }
+    if (pan != 0) {
+        *(int *)pan = *(int *)(_this + 0x70);
+    }
 }
 
-/* line 463 */
-__attribute__((naked))
-void CSoundObject_set_sample_reverb_levels(const CSoundObject * _this, float dry_level, float wet_level)
+/* ---- set_sample_reverb_levels ---- */
+
+void CSoundObject_set_sample_reverb_levels(char *_this, float dry_level, float wet_level)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 463 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 465 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xc(%ebp), %eax\n" /* line 467 | dry_level */
-        "movl %eax, 0x74(%ebx)\n" /* this */
-        "movl 0x10(%ebp), %eax\n" /* line 468 | wet_level */
-        "movl %eax, 0x78(%ebx)\n" /* this */
-        "movl %esi, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 469 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    *(float *)(_this + 0x74) = dry_level;
+    *(float *)(_this + 0x78) = wet_level;
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 474 */
-__attribute__((naked))
-long unsigned int CSoundObject_get_sample_position(const CSoundObject * _this)
+/* ---- get_sample_position ---- */
+
+unsigned long CSoundObject_get_sample_position(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 474 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 476 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xac(%esi), %esi\n" /* line 478 | this */
-        "movl %ebx, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "movl %esi, %eax\n" /* line 479 | this */
-        "addl $0x20, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+    unsigned long pos;
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+    pos = *(unsigned long *)(_this + 0xac);
+    ZN11StMutexLockD1Ev(lock);
+
+    return pos;
 }
 
-/* line 484 */
-__attribute__((naked))
-void CSoundObject_set_sample_position(const CSoundObject * _this, long unsigned int position)
+/* ---- set_sample_position ---- */
+
+void CSoundObject_set_sample_position(char *_this, unsigned long position)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 484 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* position */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 486 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %edi\n" /* lock */
-        "movl %edi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl %ebx, 0xac(%esi)\n" /* line 488 | position, this */
-        "movl 0xa8(%esi), %eax\n" /* line 490 | this */
-        "testb $1, %al\n"
-        "je .Lf13eb20_0013eb6a\n"
-        "andl $0xfffffffe, %ebx\n" /* line 492 | position */
-        "movl %ebx, 0xac(%esi)\n" /* position, this */
-        "movl %edi, (%esp)\n" /* line 503 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 504 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13eb20_0013eb6a:\n"
-        "testb $8, %al\n" /* line 494 */
-        "jne .Lf13eb20_0013eb84\n"
-        "movl %ebx, 0xac(%esi)\n" /* line 502 | position, this */
-        "movl %edi, (%esp)\n" /* line 503 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 504 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13eb20_0013eb84:\n"
-        "leal 3(%ebx), %eax\n" /* line 498 | position */
-        "andl $0xfffffffc, %eax\n"
-        "movl %eax, 0xac(%esi)\n" /* this */
-        "movl %edi, (%esp)\n" /* line 503 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 504 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+    int flags;
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    *(unsigned long *)(_this + 0xac) = position;
+    flags = *(int *)(_this + 0xa8);
+
+    if (flags & 1) {
+        /* Align to even boundary */
+        position &= ~1u;
+        *(unsigned long *)(_this + 0xac) = position;
+    } else if (flags & 8) {
+        /* Align to 4-byte boundary (round up) */
+        position = (position + 3) & ~3u;
+        *(unsigned long *)(_this + 0xac) = position;
+    } else {
+        *(unsigned long *)(_this + 0xac) = position;
+    }
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 535 */
-__attribute__((naked))
-long int CSoundObject_get_sample_playback_rate(const CSoundObject * _this)
+/* ---- get_sample_playback_rate ---- */
+
+long CSoundObject_get_sample_playback_rate(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 535 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x7c(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 540 */
-        "retl\n"
-    );
+    return *(long *)(_this + 0x7c);
 }
 
 /* line 545 */
@@ -847,78 +592,36 @@ void CSoundObject_set_sample_playback_rate(const CSoundObject * _this, long int 
     );
 }
 
-/* line 559 */
-__attribute__((naked))
-void CSoundObject_set_sample_loop_count(const CSoundObject * _this, long unsigned int loops)
+/* ---- set_sample_loop_count ---- */
+
+void CSoundObject_set_sample_loop_count(char *_this, unsigned long loops)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 559 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 569 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xc(%ebp), %eax\n" /* line 571 | loops */
-        "movl %eax, 0x80(%esi)\n" /* this */
-        "movl %ebx, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 572 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+    *(unsigned long *)(_this + 0x80) = loops;
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 577 */
-__attribute__((naked))
-long unsigned int CSoundObject_get_sample_status(const CSoundObject * _this)
+/* ---- get_sample_status ---- */
+
+unsigned long CSoundObject_get_sample_status(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 577 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 579 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0x60(%esi), %esi\n" /* line 581 | this */
-        "movl %ebx, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "movl %esi, %eax\n" /* line 582 | this */
-        "addl $0x20, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+    unsigned long status;
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+    status = *(unsigned long *)(_this + 0x60);
+    ZN11StMutexLockD1Ev(lock);
+
+    return status;
 }
 
-/* line 587 */
-__attribute__((naked))
-long unsigned int CSoundObject_get_sample_length(const CSoundObject * _this)
+/* ---- get_sample_length ---- */
+
+unsigned long CSoundObject_get_sample_length(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 587 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xb0(%eax), %eax\n" /* this */
-        "popl %ebp\n" /* line 592 */
-        "retl\n"
-    );
+    return *(unsigned long *)(_this + 0xb0);
 }
 
 /* line 597 */
@@ -1133,42 +836,20 @@ void CSoundObject_set_3D_position(const CSoundObject * _this, float X, float Y, 
     );
 }
 
-/* line 672 */
-__attribute__((naked))
-void CSoundObject_get_3D_position(const CSoundObject * _this, float *X, float *Y, float *Z)
+/* ---- get_3D_position ---- */
+
+void CSoundObject_get_3D_position(char *_this, float *X, float *Y, float *Z)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 672 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%ebx), %eax\n" /* line 674 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xb4(%ebx), %edx\n" /* line 676 | this */
-        "movl 0xc(%ebp), %eax\n" /* X */
-        "movl %edx, (%eax)\n"
-        "movl 0xb8(%ebx), %edx\n" /* line 677 | this */
-        "movl 0x10(%ebp), %eax\n" /* Y */
-        "movl %edx, (%eax)\n"
-        "movl 0xbc(%ebx), %eax\n" /* line 678 | this */
-        "xorl $0x80000000, %eax\n"
-        "movl 0x14(%ebp), %edx\n" /* Z */
-        "movl %eax, (%edx)\n"
-        "movl %esi, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 679 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    *(int *)X = *(int *)(_this + 0xb4);
+    *(int *)Y = *(int *)(_this + 0xb8);
+    /* Z is negated: XOR the sign bit */
+    *(int *)Z = *(int *)(_this + 0xbc) ^ 0x80000000;
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
 /* line 684 */
@@ -1223,117 +904,59 @@ void CSoundObject_set_3D_sample_distances(const CSoundObject * _this, float max_
     );
 }
 
-/* line 699 */
-__attribute__((naked))
-void CSoundObject_set_3D_sample_effects_level(const CSoundObject * _this, float effects_level)
+/* ---- set_3D_sample_effects_level ---- */
+
+void CSoundObject_set_3D_sample_effects_level(char *_this, float effects_level)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 699 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 701 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x10(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl 0xc(%ebp), %eax\n" /* line 703 | effects_level */
-        "movl %eax, 0x78(%esi)\n" /* this */
-        "movl %ebx, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 704 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char lock[16];
+
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+    *(float *)(_this + 0x78) = effects_level;
+    ZN11StMutexLockD1Ev(lock);
 }
 
-/* line 711 */
-__attribute__((naked))
-bool CSoundObject_open_stream(const CSoundObject * _this, const char *filename)
+/* ---- open_stream (stub, returns 0) ---- */
+
+bool CSoundObject_open_stream(char *_this, const char *filename)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 711 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 715 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)_this;
+    (void)filename;
+    return 0;
 }
 
-/* line 720 */
-__attribute__((naked))
-void CSoundObject_close_stream(const CSoundObject * _this)
+/* ---- close_stream (stub, no-op) ---- */
+
+void CSoundObject_close_stream(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 720 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 723 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 728 */
-__attribute__((naked))
-void CSoundObject_get_stream_info(const CSoundObject * _this, long int *datarate, long int *sndtype, long int *length, long int *memory)
+/* ---- get_stream_info ---- */
+
+void CSoundObject_get_stream_info(char *_this, long *datarate, long *sndtype, long *length, long *memory)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 728 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %eax\n" /* datarate */
-        "movl 0x10(%ebp), %edx\n" /* sndtype */
-        "movl 0x14(%ebp), %ecx\n" /* length */
-        "movl 0x18(%ebp), %ebx\n" /* memory */
-        "testl %eax, %eax\n" /* line 730 */
-        "je .Lf13ef30_0013ef4b\n"
-        "movl $0, (%eax)\n" /* line 733 */
-        ".Lf13ef30_0013ef4b:\n"
-        "testl %edx, %edx\n" /* line 736 */
-        "je .Lf13ef30_0013ef5a\n"
-        "movl 8(%ebp), %esi\n" /* line 738 | this */
-        "movl 0xa8(%esi), %eax\n"
-        "movl %eax, (%edx)\n"
-        ".Lf13ef30_0013ef5a:\n"
-        "testl %ecx, %ecx\n" /* line 741 */
-        "je .Lf13ef30_0013ef64\n"
-        "movl $0, (%ecx)\n" /* line 744 */
-        ".Lf13ef30_0013ef64:\n"
-        "testl %ebx, %ebx\n" /* line 747 | memory */
-        "je .Lf13ef30_0013ef6e\n"
-        "movl $0, (%ebx)\n" /* line 750 | memory */
-        ".Lf13ef30_0013ef6e:\n"
-        "popl %ebx\n" /* line 752 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (datarate != 0) {
+        *datarate = 0;
+    }
+    if (sndtype != 0) {
+        *sndtype = *(long *)(_this + 0xa8);
+    }
+    if (length != 0) {
+        *length = 0;
+    }
+    if (memory != 0) {
+        *memory = 0;
+    }
 }
 
-/* line 761 */
-__attribute__((naked))
+/* ---- set_file_callbacks (static function, no this pointer) ---- */
+
 void CSoundObject_set_file_callbacks(AIL_file_open_callback opencb, AIL_file_close_callback closecb, AIL_file_seek_callback seekcb, AIL_file_read_callback readcb)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 761 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 765 | opencb */
-        "movl %eax, __ZN12CSoundObject13sOpenCallbackE\n"
-        "movl 0xc(%ebp), %eax\n" /* line 766 | closecb */
-        "movl %eax, __ZN12CSoundObject14sCloseCallbackE\n"
-        "movl 0x10(%ebp), %eax\n" /* line 767 | seekcb */
-        "movl %eax, __ZN12CSoundObject13sSeekCallbackE\n"
-        "movl 0x14(%ebp), %eax\n" /* line 768 | readcb */
-        "movl %eax, __ZN12CSoundObject13sReadCallbackE\n"
-        "popl %ebp\n" /* line 769 */
-        "retl\n"
-    );
+    __ZN12CSoundObject13sOpenCallbackE = opencb;
+    __ZN12CSoundObject14sCloseCallbackE = closecb;
+    __ZN12CSoundObject13sSeekCallbackE = seekcb;
+    __ZN12CSoundObject13sReadCallbackE = readcb;
 }
 
 /* line 807 */
@@ -1584,247 +1207,145 @@ bool CSoundObject_IsEqualDescriptions(const AudioStreamBasicDescription *inDesc1
     );
 }
 
-/* line 1017 */
-__attribute__((naked))
-Boolean CSoundObject_SampleBuffersEmpty(const CSoundObject * _this)
+/* ---- SampleBuffersEmpty ---- */
+
+Boolean CSoundObject_SampleBuffersEmpty(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1017 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $4, %edx\n"
-        ".Lf13f208_0013f213:\n"
-        "movl 0x84(%eax), %ecx\n" /* line 1021 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf13f208_0013f22c\n"
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 1019 */
-        "jne .Lf13f208_0013f213\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n" /* line 1028 */
-        "retl\n"
-        ".Lf13f208_0013f22c:\n"
-        "xorl %eax, %eax\n" /* line 1021 */
-        "popl %ebp\n" /* line 1028 */
-        "retl\n"
-    );
+    char *p = _this;
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (*(int *)(p + 0x84) != 0) {
+            return 0;
+        }
+        p += 4;
+    }
+    return 1;
 }
 
-/* line 1059 */
-__attribute__((naked))
-void CSoundObject_ChangedVolume(const CSoundObject * _this)
+/* ---- No-op / Stub Functions ---- */
+
+void CSoundObject_ChangedVolume(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1059 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1062 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 1067 */
-__attribute__((naked))
-void CSoundObject_ChangedFormat(const CSoundObject * _this)
+void CSoundObject_ChangedFormat(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1067 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1070 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 1075 */
-__attribute__((naked))
-void CSoundObject_Changed3DPosition(const CSoundObject * _this)
+void CSoundObject_Changed3DPosition(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1075 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1078 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 1083 */
-__attribute__((naked))
-void CSoundObject_Changed3DDistances(const CSoundObject * _this)
+void CSoundObject_Changed3DDistances(char *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1083 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1086 */
-        "retl\n"
-    );
+    (void)_this;
 }
 
-/* line 1091 */
-__attribute__((naked))
-long unsigned int CSoundObject_file_open_callback(const char *Filename, long unsigned int *FileHandle)
+/* ---- file_open_callback (static) ---- */
+
+unsigned long CSoundObject_file_open_callback(const char *Filename, unsigned long *FileHandle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1091 */
-        "movl %esp, %ebp\n"
-        "movl __ZN12CSoundObject13sOpenCallbackE, %ecx\n" /* line 1093 */
-        "testl %ecx, %ecx\n"
-        "je .Lf13f248_0013f258\n"
-        "popl %ebp\n" /* line 1101 */
-        "jmpl *%ecx\n" /* line 1095 */
-        ".Lf13f248_0013f258:\n"
-        "xorl %eax, %eax\n" /* line 1101 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (__ZN12CSoundObject13sOpenCallbackE != 0) {
+        return __ZN12CSoundObject13sOpenCallbackE(Filename, FileHandle);
+    }
+    return 0;
 }
 
-/* line 1106 */
-__attribute__((naked))
-void CSoundObject_file_close_callback(long unsigned int FileHandle)
+/* ---- file_close_callback (static) ---- */
+
+void CSoundObject_file_close_callback(unsigned long FileHandle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1106 */
-        "movl %esp, %ebp\n"
-        "movl __ZN12CSoundObject14sCloseCallbackE, %ecx\n" /* line 1108 */
-        "testl %ecx, %ecx\n"
-        "je .Lf13f25c_0013f26c\n"
-        "popl %ebp\n" /* line 1112 */
-        "jmpl *%ecx\n" /* line 1110 */
-        ".Lf13f25c_0013f26c:\n"
-        "popl %ebp\n" /* line 1112 */
-        "retl\n"
-    );
+    if (__ZN12CSoundObject14sCloseCallbackE != 0) {
+        __ZN12CSoundObject14sCloseCallbackE(FileHandle);
+    }
 }
 
-/* line 1117 */
-__attribute__((naked))
-long int CSoundObject_file_seek_callback(long unsigned int FileHandle, long int Offset, long unsigned int Type)
+/* ---- file_seek_callback (static) ---- */
+
+long CSoundObject_file_seek_callback(unsigned long FileHandle, long Offset, unsigned long Type)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1117 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl __ZN12CSoundObject13sSeekCallbackE, %ecx\n" /* line 1119 */
-        "testl %ecx, %ecx\n"
-        "je .Lf13f26e_0013f280\n"
-        "popl %ebx\n" /* line 1127 */
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 1121 */
-        ".Lf13f26e_0013f280:\n"
-        "xorl %eax, %eax\n" /* line 1127 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (__ZN12CSoundObject13sSeekCallbackE != 0) {
+        return __ZN12CSoundObject13sSeekCallbackE(FileHandle, Offset, Type);
+    }
+    return 0;
 }
 
-/* line 1132 */
-__attribute__((naked))
-long unsigned int CSoundObject_file_read_callback(long unsigned int FileHandle, void *Buffer, long unsigned int Bytes)
+/* ---- file_read_callback (static) ---- */
+
+unsigned long CSoundObject_file_read_callback(unsigned long FileHandle, void *Buffer, unsigned long Bytes)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1132 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl __ZN12CSoundObject13sReadCallbackE, %ecx\n" /* line 1134 */
-        "testl %ecx, %ecx\n"
-        "je .Lf13f286_0013f298\n"
-        "popl %ebx\n" /* line 1142 */
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 1136 */
-        ".Lf13f286_0013f298:\n"
-        "xorl %eax, %eax\n" /* line 1142 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (__ZN12CSoundObject13sReadCallbackE != 0) {
+        return __ZN12CSoundObject13sReadCallbackE(FileHandle, Buffer, Bytes);
+    }
+    return 0;
 }
 
-/* line 25 */
-__attribute__((naked))
-void CSoundObject_CSoundObject(const CSoundObject * _this, CSoundEngine *inEngine, UInt32 inBusIndex)
+/* ---- CSoundObject_CSoundObject (constructor) ---- */
+
+void CSoundObject_CSoundObject(char *_this, CSoundEngine *inEngine, UInt32 inBusIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 25 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* inEngine */
-        "movl $0x332548, (%ebx)\n" /* line 54 | this */
-        "movl %esi, 4(%ebx)\n" /* inEngine, this */
-        "movl 0x10(%ebp), %eax\n" /* inBusIndex */
-        "movl %eax, 8(%ebx)\n" /* this */
-        "movb $1, 0xc(%ebx)\n" /* this */
-        "movl $0, 0x10(%ebx)\n" /* this */
-        "movb $0, 0x14(%ebx)\n" /* this */
-        "movl $0, 0x18(%ebx)\n" /* this */
-        "movl $1, 0x1c(%ebx)\n" /* this */
-        "leal 0x20(%ebx), %edi\n" /* this */
-        "movl %edi, (%esp)\n"
-        "calll CMutex_CMutex\n"
-        "movl $0, 0x5c(%ebx)\n" /* this */
-        "movl $2, 0x60(%ebx)\n" /* this */
-        "movl $0x3f800000, %eax\n"
-        "movl %eax, 0x64(%ebx)\n" /* this */
-        "movl %eax, 0x68(%ebx)\n" /* this */
-        "movl %eax, 0x6c(%ebx)\n" /* this */
-        "movl $0x3f000000, 0x70(%ebx)\n" /* this */
-        "movl %eax, 0x74(%ebx)\n" /* this */
-        "xorl %eax, %eax\n"
-        "movl %eax, 0x78(%ebx)\n" /* this */
-        "movl $0x2b11, 0x7c(%ebx)\n" /* this */
-        "movl $1, 0x80(%ebx)\n" /* this */
-        "movl $0, 0xa4(%ebx)\n" /* this */
-        "movl $0, 0xa8(%ebx)\n" /* this */
-        "movl $0, 0xac(%ebx)\n" /* this */
-        "movl $0, 0xb0(%ebx)\n" /* this */
-        "leal 0xb4(%ebx), %edx\n" /* this */
-        /* { scope 1 */
-        "movl %eax, 0xb4(%ebx)\n" /* line 305 | this */
-        "movl %eax, 4(%edx)\n" /* line 306 */
-        "movl %eax, 8(%edx)\n" /* line 307 */
-        /* } scope */
-        "leal 0xc0(%ebx), %edx\n" /* line 54 | this */
-        /* { scope 1 */
-        "movl %eax, 0xc0(%ebx)\n" /* line 305 | this */
-        "movl %eax, 4(%edx)\n" /* line 306 */
-        "movl %eax, 8(%edx)\n" /* line 307 */
-        /* } scope */
-        "leal 0xcc(%ebx), %edx\n" /* line 54 | this */
-        /* { scope 1 */
-        "movl %eax, 0xcc(%ebx)\n" /* line 305 | this */
-        "movl %eax, 4(%edx)\n" /* line 306 */
-        "movl %eax, 8(%edx)\n" /* line 307 */
-        /* } scope */
-        "movl %esi, (%esp)\n" /* line 54 | inEngine */
-        "calll CSoundEngine_GetDefaultMaxDistance\n"
-        "fstps 0xd8(%ebx)\n" /* this */
-        "movl %esi, (%esp)\n" /* inEngine */
-        "calll CSoundEngine_GetDefaultReferenceDistance\n"
-        "fstps 0xdc(%ebx)\n" /* this */
-        "movl %ebx, %eax\n" /* this */
-        "movl $4, %edx\n" /* this */
-        ".Lf13f29e_0013f3a1:\n"
-        "movl $0, 0x4c(%eax)\n" /* line 58 */
-        "movl $0, 0x84(%eax)\n" /* line 59 */
-        "movl $0, 0x94(%eax)\n" /* line 60 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 56 */
-        "jne .Lf13f29e_0013f3a1\n"
-        "addl $0x1c, %esp\n" /* line 66 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %ebx\n" /* this */
-        "movl %edi, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl %ebx, (%esp)\n" /* this */
-        "calll __Unwind_Resume\n"
-    );
+    int i;
+    char *p;
+    float one_f = 1.0f;       /* 0x3f800000 */
+    float half_f = 0.5f;      /* 0x3f000000 */
+
+    *(int *)(_this + 0) = (int)CSOUNDOBJECT_VTABLE_PTR;
+    *(CSoundEngine **)(_this + 4) = inEngine;
+    *(UInt32 *)(_this + 8) = inBusIndex;
+    *(unsigned char *)(_this + 0xc) = 1;
+    *(int *)(_this + 0x10) = 0;
+    *(unsigned char *)(_this + 0x14) = 0;
+    *(int *)(_this + 0x18) = 0;
+    *(int *)(_this + 0x1c) = 1;
+
+    CMutex_CMutex(_this + 0x20);
+
+    *(int *)(_this + 0x5c) = 0;
+    *(int *)(_this + 0x60) = 2;
+    *(float *)(_this + 0x64) = one_f;
+    *(float *)(_this + 0x68) = one_f;
+    *(float *)(_this + 0x6c) = one_f;
+    *(float *)(_this + 0x70) = half_f;
+    *(float *)(_this + 0x74) = one_f;
+    *(float *)(_this + 0x78) = 0.0f;
+    *(int *)(_this + 0x7c) = 0x2b11;  /* 11025 */
+    *(int *)(_this + 0x80) = 1;
+    *(int *)(_this + 0xa4) = 0;
+    *(int *)(_this + 0xa8) = 0;
+    *(int *)(_this + 0xac) = 0;
+    *(int *)(_this + 0xb0) = 0;
+
+    /* Initialize 3D position vector at 0xb4 (3 floats) */
+    *(int *)(_this + 0xb4) = 0;
+    *(int *)(_this + 0xb8) = 0;
+    *(int *)(_this + 0xbc) = 0;
+
+    /* Initialize velocity vector at 0xc0 (3 floats) */
+    *(int *)(_this + 0xc0) = 0;
+    *(int *)(_this + 0xc4) = 0;
+    *(int *)(_this + 0xc8) = 0;
+
+    /* Initialize orientation vector at 0xcc (3 floats) */
+    *(int *)(_this + 0xcc) = 0;
+    *(int *)(_this + 0xd0) = 0;
+    *(int *)(_this + 0xd4) = 0;
+
+    /* Get default distances from engine */
+    *(float *)(_this + 0xd8) = CSoundEngine_GetDefaultMaxDistance(inEngine);
+    *(float *)(_this + 0xdc) = CSoundEngine_GetDefaultReferenceDistance(inEngine);
+
+    /* Initialize 4 buffer slots */
+    p = _this;
+    for (i = 0; i < 4; i++) {
+        *(int *)(p + 0x4c) = 0;
+        *(int *)(p + 0x84) = 0;
+        *(int *)(p + 0x94) = 0;
+        p += 4;
+    }
 }
 
 /* overload skip: CSoundObject_CSoundObject (0x13f3de) */
@@ -1955,113 +1476,45 @@ void CSoundObject_get_sample_ms_position(const CSoundObject * _this, long int *t
     );
 }
 
-/* line 527 */
-__attribute__((naked))
-void CSoundObject_set_sample_ms_position(const CSoundObject * _this, long int milliseconds)
+/* ---- set_sample_ms_position ---- */
+
+void CSoundObject_set_sample_ms_position(char *_this, long milliseconds)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 527 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* milliseconds */
-        "testl %edx, %edx\n" /* line 1053 */
-        "js .Lf13f664_0013f75b\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf13f664_0013f67f:\n"
-        "movaps %xmm0, %xmm1\n"
-        "divss 0x2ed5c8, %xmm1\n" /* 1000.0f */
-        "cvtsi2ssl 0x7c(%edi), %xmm0\n" /* this */
-        "mulss %xmm0, %xmm1\n"
-        "movl 0x1c(%edi), %edx\n" /* this */
-        "testl %edx, %edx\n"
-        "js .Lf13f664_0013f745\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf13f664_0013f6a2:\n"
-        "mulss %xmm0, %xmm1\n"
-        "fnstcw -0x2a(%ebp)\n"
-        "movzwl -0x2a(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x2c(%ebp)\n"
-        "movss %xmm1, -0x3c(%ebp)\n"
-        "flds -0x3c(%ebp)\n"
-        "fldcw -0x2c(%ebp)\n"
-        "fistpll -0x38(%ebp)\n"
-        "fldcw -0x2a(%ebp)\n"
-        "movl -0x38(%ebp), %ebx\n"
-        /* { scope 1 */
-        "leal 0x20(%edi), %eax\n" /* line 486 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* lock */
-        "movl %eax, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl %ebx, %eax\n" /* line 488 */
-        "movl %ebx, 0xac(%edi)\n"
-        "movl 0xa8(%edi), %edx\n" /* line 490 */
-        "testb $1, %dl\n"
-        "je .Lf13f664_0013f708\n"
-        "andl $0xfffffffe, %eax\n" /* line 492 */
-        "movl %eax, 0xac(%edi)\n"
-        "leal -0x20(%ebp), %eax\n" /* line 503 | lock */
-        "movl %eax, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 530 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13f664_0013f708:\n"
-        "andb $8, %dl\n" /* line 494 */
-        "jne .Lf13f664_0013f726\n"
-        "movl %ebx, 0xac(%edi)\n" /* line 502 */
-        "leal -0x20(%ebp), %eax\n" /* line 503 | lock */
-        "movl %eax, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 530 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf13f664_0013f726:\n"
-        "addl $3, %eax\n" /* line 498 */
-        "andl $0xfffffffc, %eax\n"
-        "movl %eax, 0xac(%edi)\n"
-        "leal -0x20(%ebp), %eax\n" /* line 503 | lock */
-        "movl %eax, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 530 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf13f664_0013f745:\n"
-        "movl %edx, %eax\n" /* line 1053 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf13f664_0013f6a2\n"
-        ".Lf13f664_0013f75b:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf13f664_0013f67f\n"
-    );
+    char lock[16];
+    float ms_f;
+    float rate_f;
+    float channels_f;
+    float result;
+    unsigned long position;
+    int flags;
+
+    /* Convert milliseconds (possibly unsigned-large) to float */
+    ms_f = (float)(unsigned long)milliseconds;
+
+    /* position = (ms / 1000.0) * playback_rate * channels_or_bps */
+    rate_f = (float)(*(int *)(_this + 0x7c));
+    channels_f = (float)(unsigned long)(*(int *)(_this + 0x1c));
+
+    result = (ms_f / 1000.0f) * rate_f * channels_f;
+
+    /* Convert float to unsigned long (truncate toward zero) */
+    position = (unsigned long)result;
+
+    /* Inline set_sample_position logic with mutex */
+    StMutexLock_StMutexLock(lock, _this + 0x20);
+
+    *(unsigned long *)(_this + 0xac) = position;
+    flags = *(int *)(_this + 0xa8);
+
+    if (flags & 1) {
+        position &= ~1u;
+        *(unsigned long *)(_this + 0xac) = position;
+    } else if (flags & 8) {
+        position = (position + 3) & ~3u;
+        *(unsigned long *)(_this + 0xac) = position;
+    }
+
+    ZN11StMutexLockD1Ev(lock);
 }
 
 /* line 167 */
@@ -2354,4 +1807,3 @@ long int CSoundObject_set_sample_info(const CSoundObject * _this, const AILSOUND
         "jmp .Lf13f8f8_0013fa92\n"
     );
 }
-

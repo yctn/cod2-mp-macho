@@ -1,51 +1,50 @@
 /* ASM dump from: MacResources.cp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/Mac/Tools/MacResources.cp */
+/* Original source: Mac/Tools/MacResources.cp, Mac/Tools/WinCursor.cp */
 
 #include "common_types.h"
 #include "imports.h"
 
-extern CFStringRef sResult; /* 0x334b00 */
-static CFStringRef sResult_00334b04; /* 0x334b04 */
+extern int sResult; /* cached CFStringRef for MacResources_Get* */
+extern int sSavedWinCursor;
+extern int sCurrentCursor; /* WinCursor* */
 static CFStringRef sResult_00334b04; /* 0x334b04 */
 static CFStringRef sResult_00334b08; /* 0x334b08 */
-static CFStringRef sResult_00334b08; /* 0x334b08 */
-static CFStringRef sResult_00334b0c; /* 0x334b0c */
 static CFStringRef sResult_00334b0c; /* 0x334b0c */
 static CFStringRef sResult_00334b10; /* 0x334b10 */
-static CFStringRef sResult_00334b10; /* 0x334b10 */
-static SInt32 sResult_00308060; /* 0x308060 */
 static SInt32 sResult_00308060; /* 0x308060 */
 static CFStringRef sResult_00334b18; /* 0x334b18 */
-static CFStringRef sResult_00334b18; /* 0x334b18 */
-static CFStringRef sResult_00334b18; /* 0x334b18 */
-static CFStringRef sResult_00334b1c; /* 0x334b1c */
 static CFStringRef sResult_00334b1c; /* 0x334b1c */
 static CFStringRef sResult_00334b20; /* 0x334b20 */
-static CFStringRef sResult_00334b20; /* 0x334b20 */
-static CFStringRef sResult_00334b20; /* 0x334b20 */
-static CFStringRef sResult_00334b24; /* 0x334b24 */
-static CFStringRef sResult_00334b24; /* 0x334b24 */
 static CFStringRef sResult_00334b24; /* 0x334b24 */
 static CFStringRef sResult_00334b28; /* 0x334b28 */
-static CFStringRef sResult_00334b28; /* 0x334b28 */
-static CFStringRef sResult_00334b28; /* 0x334b28 */
-static CFStringRef sResult_00334b2c; /* 0x334b2c */
-static CFStringRef sResult_00334b2c; /* 0x334b2c */
 static CFStringRef sResult_00334b2c; /* 0x334b2c */
 
-bool MacResources_GetGameString(CFStringRef inKeyRef, unsigned char *outString);
-CFStringRef MacResources_GetProductFamily(void);
-CFStringRef MacResources_GetDiscName(void);
+static int MacResources_GetLocalizedString(int keyAddr, int tableAddr);
+int MacResources_GetGameString(int inKeyRef, unsigned char *outString);
+int MacResources_GetProductFamily(void);
+int MacResources_GetDiscName(void);
 SInt32 MacResources_GetLanguageCode(void);
 CFStringRef MacResources_GetNeedsNewerOSError(void);
-CFStringRef MacResources_GetNoQuickTimeError(void);
+int MacResources_GetNoQuickTimeError(void);
 CFStringRef MacResources_GetMissingDataFolderError(void);
 CFStringRef MacResources_GetInsertDiscError(void);
 CFStringRef MacResources_GetNeeds32BitError(void);
 CFStringRef MacResources_GetCantRunFromDiscError(void);
+void SwitchToWinCursor(void);
+void SwitchToMacCursor(void);
+void game_dprintf(const char *inFormat);
+void CursorTimerProc(void);
+
+/* MacResources helper: get localized string from main bundle */
+static int MacResources_GetLocalizedString(int keyAddr, int tableAddr)
+{
+    int bundle = CFBundleGetMainBundle();
+    return CFBundleCopyLocalizedString(bundle, keyAddr, keyAddr, tableAddr);
+}
 
 /* line 64 */
-bool MacResources_GetGameString(CFStringRef inKeyRef, unsigned char *outString)
+int MacResources_GetGameString(int inKeyRef, unsigned char *outString)
 {
     int bundle = CFBundleGetMainBundle();
     int stringRef = CFBundleCopyLocalizedString(bundle, inKeyRef, inKeyRef, 0x32e6b4);
@@ -58,7 +57,7 @@ bool MacResources_GetGameString(CFStringRef inKeyRef, unsigned char *outString)
 }
 
 /* line 85 */
-CFStringRef MacResources_GetProductFamily(void)
+int MacResources_GetProductFamily(void)
 {
     if (sResult)
         return sResult;
@@ -69,7 +68,7 @@ CFStringRef MacResources_GetProductFamily(void)
 }
 
 /* line 145 */
-CFStringRef MacResources_GetDiscName(void)
+int MacResources_GetDiscName(void)
 {
     if (sResult)
         return sResult;
@@ -180,7 +179,7 @@ CFStringRef MacResources_GetNeedsNewerOSError(void)
 }
 
 /* line 305 */
-CFStringRef MacResources_GetNoQuickTimeError(void)
+int MacResources_GetNoQuickTimeError(void)
 {
     if (sResult)
         return sResult;
@@ -466,3 +465,61 @@ CFStringRef MacResources_GetCantRunFromDiscError(void)
     );
 }
 
+void SwitchToWinCursor(void)
+{
+    int saveWinCursor = sSavedWinCursor;
+    sSavedWinCursor = 0;
+    SetWinCursor(saveWinCursor);
+}
+
+void SwitchToMacCursor(void)
+{
+    if (sSavedWinCursor)
+        return;
+
+    sSavedWinCursor = SetWinCursor(-1);
+}
+
+/* game_dprintf is a no-op stub */
+void game_dprintf(const char *inFormat)
+{
+}
+
+void CursorTimerProc(void)
+{
+    char *cursor = (char *)sCurrentCursor;
+    if (!cursor || !sSavedWinCursor)
+        return;
+
+    /* Check if animated cursor with more than 1 frame, or needs update */
+    int numFrames = *(int *)(cursor + 0xc);
+    if (numFrames <= 1 && !*(unsigned char *)(cursor + 0x40))
+        return;
+
+    int now = TickCount();
+    if (now < *(unsigned int *)(cursor + 0x3c))
+        return;
+
+    int frameIndex = *(int *)(cursor + 0x38) + 1;
+    if (frameIndex >= *(int *)(cursor + 0x10))
+    {
+        frameIndex = 0;
+        *(int *)(cursor + 0x38) = 0;
+    }
+    else
+    {
+        *(int *)(cursor + 0x38) = frameIndex;
+    }
+
+    /* Set next tick time */
+    int *delayTable = *(int **)(cursor + 0x30);
+    *(int *)(cursor + 0x3c) = now + delayTable[frameIndex];
+
+    /* Set cursor to the right pixmap */
+    int *frameIdxTable = *(int **)(cursor + 0x34);
+    int pixIdx = frameIdxTable[frameIndex];
+    int *pixmapTable = *(int **)(cursor + 0x2c);
+    QDSetNamedPixMapCursor(pixmapTable[pixIdx]);
+
+    *(unsigned char *)(cursor + 0x40) = 0;
+}

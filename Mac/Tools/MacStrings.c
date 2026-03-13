@@ -4,58 +4,21 @@
 #include "common_types.h"
 #include "imports.h"
 
-void MacStrings_GetCString(const HFSUniStr255 *inUniStr, char *outCString, int inMaxString);
 void MacStrings_CopyAndClean(const char *inSrcString, char *inDstString, int inDstSize);
 
 /* line 33 */
-__attribute__((naked))
 void MacStrings_GetCString(const HFSUniStr255 *inUniStr, char *outCString, int inMaxString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 33 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* inUniStr */
-        "movl 0xc(%ebp), %esi\n" /* outCString */
-        "movl 0x10(%ebp), %edi\n" /* inMaxString */
-        /* { scope 1 */
-        "movb $0, (%esi)\n" /* line 35 | outCString */
-        "movzwl (%edx), %eax\n" /* line 37 */
-        "movl %eax, 8(%esp)\n"
-        "addl $2, %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll CFStringCreateWithCharacters\n"
-        "movl %eax, %ebx\n" /* stringRef */
-        "testl %eax, %eax\n" /* line 38 */
-        "je .Lfa5dc_0000a63b\n"
-        "movl $0, 0xc(%esp)\n" /* line 40 */
-        "movswl %di, %eax\n" /* inMaxString */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* outCString */
-        "movl %ebx, (%esp)\n" /* stringRef */
-        "calll CFStringGetCString\n"
-        "movl %ebx, 8(%ebp)\n" /* line 42 | stringRef, inUniStr */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 44 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp CFRelease\n" /* line 42 */
-        /* } scope */
-        ".Lfa5dc_0000a63b:\n"
-        "addl $0x1c, %esp\n" /* line 44 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CFStringRef stringRef;
+
+    *outCString = '\0';
+
+    stringRef = CFStringCreateWithCharacters(NULL, (const UniChar *)inUniStr + 1, *(const UInt16 *)inUniStr);
+    if (!stringRef)
+        return;
+
+    CFStringGetCString(stringRef, outCString, (short)inMaxString, 0);
+    CFRelease(stringRef);
 }
 
 /* line 163 */

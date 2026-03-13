@@ -4,18 +4,39 @@
 #include "common_types.h"
 #include "imports.h"
 
-void CSampleSound_CSampleSound(const CSampleSound * _this, CSoundEngine *inEngine, UInt32 inBusIndex);
+/*
+ * CSampleSound layout (deduced from ASM, inherits CSoundObject):
+ *   offset 0x00: vtable pointer
+ *   offset 0x04: CSoundEngine *engine
+ *   offset 0x08: UInt32 busIndex
+ *   offset 0x64: float masterVolume
+ *   offset 0x68: float leftLevel
+ *   offset 0x6c: float rightLevel
+ *   offset 0xe0: int scheduledSlices[10] (initialized to -1)
+ *   offset 0x108: int field_108
+ *   offset 0x10c: byte field_10c
+ *   offset 0x10d: byte field_10d
+ *   offset 0x10e: byte field_10e
+ *   offset 0x10f: byte formatChanged
+ *   offset 0x110: byte positionChanged
+ *   offset 0x111: byte isMuted
+ *   offset 0x114: int field_114
+ *   offset 0x118: int field_118
+ *   offset 0x11c: byte field_11c
+ */
+
+void CSampleSound_CSampleSound(CSampleSound *_this, CSoundEngine *inEngine, UInt32 inBusIndex);
 void CSampleSound_TheadIdle(const CSampleSound * _this);
 void CSampleSound_stop_sample(const CSampleSound * _this);
 void CSampleSound_end_sample(const CSampleSound * _this);
 bool CSampleSound_open_stream(const CSampleSound * _this, const char *filename);
 void CSampleSound_close_stream(const CSampleSound * _this);
-void CSampleSound_ChangedFormat(const CSampleSound * _this);
-void CSampleSound_Changed3DPosition(const CSampleSound * _this);
+void CSampleSound_ChangedFormat(CSampleSound *_this);
+void CSampleSound_Changed3DPosition(CSampleSound *_this);
 OSStatus CSampleSound_DoConvert(const CSampleSound * _this, UInt32 *ioNumberDataPackets, AudioBufferList *ioData);
-OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription * *outDataPacketDescription, void *inUserData);
+OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription **outDataPacketDescription, void *inUserData);
 void CSampleSound_UpdateStreamFormat(const CSampleSound * _this);
-void CSampleSound_ChangedVolume(const CSampleSound * _this);
+void CSampleSound_ChangedVolume(CSampleSound *_this);
 void CSampleSound_Update3DValues(const CSampleSound * _this);
 OSStatus CSampleSound_DoRender(const CSampleSound * _this, AudioUnitRenderActionFlags *ioActionFlags, UInt32 inNumberFrames, AudioBufferList *ioData);
 OSStatus CSampleSound_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData);
@@ -30,48 +51,28 @@ OSStatus CSampleSound_DoPreRender(const CSampleSound * _this);
 OSStatus CSampleSound_DoPostRender(const CSampleSound * _this);
 
 /* line 23 */
-__attribute__((naked))
-void CSampleSound_CSampleSound(const CSampleSound * _this, CSoundEngine *inEngine, UInt32 inBusIndex)
+void CSampleSound_CSampleSound(CSampleSound *_this, CSoundEngine *inEngine, UInt32 inBusIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 23 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x10(%ebp), %eax\n" /* line 37 | inBusIndex */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* inEngine */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* this */
-        "calll CSoundObject_CSoundObject\n"
-        "movl $0x3322c8, (%ebx)\n" /* this */
-        "movl $0, 0x108(%ebx)\n" /* this */
-        "movb $0, 0x10c(%ebx)\n" /* this */
-        "movb $0, 0x10d(%ebx)\n" /* this */
-        "movb $0, 0x10e(%ebx)\n" /* this */
-        "movb $1, 0x10f(%ebx)\n" /* this */
-        "movb $0, 0x110(%ebx)\n" /* this */
-        "movb $0, 0x111(%ebx)\n" /* this */
-        "movl $0, 0x114(%ebx)\n" /* this */
-        "movl $0, 0x118(%ebx)\n" /* this */
-        "movb $0, 0x11c(%ebx)\n" /* this */
-        "leal 0xe0(%ebx), %eax\n" /* line 39 | this */
-        "movl $0xffffffff, 0xe0(%ebx)\n" /* this */
-        "movl $0xffffffff, 4(%eax)\n"
-        "movl $0xffffffff, 8(%eax)\n"
-        "movl $0xffffffff, 0xc(%eax)\n"
-        "movl $0xffffffff, 0x10(%eax)\n"
-        "movl $0xffffffff, 0x14(%eax)\n"
-        "movl $0xffffffff, 0x18(%eax)\n"
-        "movl $0xffffffff, 0x1c(%eax)\n"
-        "movl $0xffffffff, 0x20(%eax)\n"
-        "movl $0xffffffff, 0x24(%eax)\n"
-        "addl $0x14, %esp\n" /* line 40 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+
+    CSoundObject_CSoundObject(_this, inEngine, inBusIndex);
+
+    *(int *)(p + 0x00) = 0x3322c8; /* vtable */
+    *(int *)(p + 0x108) = 0;
+    *(char *)(p + 0x10c) = 0;
+    *(char *)(p + 0x10d) = 0;
+    *(char *)(p + 0x10e) = 0;
+    *(char *)(p + 0x10f) = 1; /* formatChanged = true */
+    *(char *)(p + 0x110) = 0;
+    *(char *)(p + 0x111) = 0;
+    *(int *)(p + 0x114) = 0;
+    *(int *)(p + 0x118) = 0;
+    *(char *)(p + 0x11c) = 0;
+
+    /* Initialize 10 scheduled slice entries to -1 */
+    int *slices = (int *)(p + 0xe0);
+    for (int i = 0; i < 10; i++)
+        slices[i] = -1;
 }
 
 /* line 146 */
@@ -488,31 +489,15 @@ void CSampleSound_close_stream(const CSampleSound * _this)
 }
 
 /* line 469 */
-__attribute__((naked))
-void CSampleSound_ChangedFormat(const CSampleSound * _this)
+void CSampleSound_ChangedFormat(CSampleSound *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 469 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 471 | this */
-        "movb $1, 0x10f(%eax)\n"
-        "popl %ebp\n" /* line 472 */
-        "retl\n"
-    );
+    *(char *)((char *)_this + 0x10f) = 1;
 }
 
 /* line 477 */
-__attribute__((naked))
-void CSampleSound_Changed3DPosition(const CSampleSound * _this)
+void CSampleSound_Changed3DPosition(CSampleSound *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 477 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 479 | this */
-        "movb $1, 0x110(%eax)\n"
-        "popl %ebp\n" /* line 480 */
-        "retl\n"
-    );
+    *(char *)((char *)_this + 0x110) = 1;
 }
 
 /* line 926 */
@@ -659,36 +644,12 @@ OSStatus CSampleSound_DoConvert(const CSampleSound * _this, UInt32 *ioNumberData
 }
 
 /* line 755 */
-__attribute__((naked))
-OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription * *outDataPacketDescription, void *inUserData)
+OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription **outDataPacketDescription, void *inUserData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 755 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x18(%ebp), %eax\n" /* inUserData */
-        /* { scope 1 */
-        "testl %eax, %eax\n" /* line 761 */
-        "je .Lf114a7e_00114ab0\n"
-        "movl 0x10(%ebp), %edx\n" /* line 763 | ioData */
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* ioNumberDataPackets */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CSampleSound_DoConvert\n"
-        /* } scope */
-        "leave\n" /* line 771 */
-        "retl\n"
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 766 */
-        "calll ___cxa_begin_catch\n"
-        "calll ___cxa_end_catch\n"
-        ".Lf114a7e_00114ab0:\n"
-        "movl $0xffffffce, %eax\n"
-        /* } scope */
-        "leave\n" /* line 771 */
-        "retl\n"
-    );
+    if (!inUserData)
+        return -50; /* 0xffffffce = paramErr */
+
+    return CSampleSound_DoConvert(inUserData, ioNumberDataPackets, ioData);
 }
 
 /* line 525 */
@@ -838,72 +799,36 @@ void CSampleSound_UpdateStreamFormat(const CSampleSound * _this)
 }
 
 /* line 431 */
-__attribute__((naked))
-void CSampleSound_ChangedVolume(const CSampleSound * _this)
+void CSampleSound_ChangedVolume(CSampleSound *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 431 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1 */
-        "movss 0x68(%esi), %xmm0\n" /* line 433 | this, realVolume */
-        "addss 0x6c(%esi), %xmm0\n" /* this, realVolume */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f, realVolume */
-        "mulss 0x64(%esi), %xmm0\n" /* this, realVolume */
-        "movss 0x2ed5d0, %xmm1\n" /* line 435 | 1.0f */
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf114cb2_00114d5a\n"
-        "movaps %xmm1, %xmm0\n"
-        /* { scope 2 */
-        ".Lf114cb2_00114ce4:\n"
-        "movss %xmm0, (%esp)\n" /* line 446 */
-        "calll log10f\n"
-        "fstps -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* db */
-        "mulss 0x2ed694, %xmm1\n" /* 20.0f, db */
-        "movss 0x2ed8ac, %xmm0\n" /* line 447 | -120.0f */
-        "maxss %xmm1, %xmm0\n"
-        "movl 8(%esi), %ebx\n" /* line 1060 | this */
-        "movl 4(%esi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "movss %xmm0, -0x18(%ebp)\n"
-        "calll CSoundEngine_GetMixerUnit\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss -0x18(%ebp), %xmm1\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetParameter\n"
-        "movb $0, 0x111(%esi)\n" /* line 455 | this */
-        /* } scope */
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 464 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf114cb2_00114d5a:\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 439 | 0.0f */
-        "jp .Lf114cb2_00114d65\n"
-        "jb .Lf114cb2_00114d72\n"
-        ".Lf114cb2_00114d65:\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 444 | 0.0f */
-        "ja .Lf114cb2_00114ce4\n"
-        ".Lf114cb2_00114d72:\n"
-        "movb $1, 0x111(%esi)\n" /* line 462 | this */
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 464 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+
+    float leftLevel = *(float *)(p + 0x68);
+    float rightLevel = *(float *)(p + 0x6c);
+    float masterVolume = *(float *)(p + 0x64);
+
+    float realVolume = (leftLevel + rightLevel) * 0.5f * masterVolume;
+
+    if (realVolume > 1.0f)
+        realVolume = 1.0f;
+
+    if (realVolume <= 0.0f)
+    {
+        *(char *)(p + 0x111) = 1; /* muted */
+        return;
+    }
+
+    float db = log10f(realVolume) * 20.0f;
+    if (db < -120.0f)
+        db = -120.0f;
+
+    UInt32 busIndex = *(UInt32 *)(p + 0x08);
+    CSoundEngine *engine = *(CSoundEngine **)(p + 0x04);
+    AudioUnit mixerUnit = CSoundEngine_GetMixerUnit(engine);
+
+    AudioUnitSetParameter(mixerUnit, 3 /* kStereoMixerParam_Volume */, 1 /* kAudioUnitScope_Input */, busIndex, db, 0);
+
+    *(char *)(p + 0x111) = 0; /* not muted */
 }
 
 /* line 597 */
@@ -1247,38 +1172,12 @@ OSStatus CSampleSound_DoRender(const CSampleSound * _this, AudioUnitRenderAction
 }
 
 /* line 691 */
-__attribute__((naked))
 OSStatus CSampleSound_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 691 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* inRefCon */
-        /* { scope 1 */
-        "testl %eax, %eax\n" /* line 697 */
-        "je .Lf11512e_00115167\n"
-        "movl 0x1c(%ebp), %edx\n" /* line 699 | ioData */
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %edx\n" /* inNumberFrames */
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* ioActionFlags */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CSampleSound_DoRender\n"
-        /* } scope */
-        "leave\n" /* line 707 */
-        "retl\n"
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 702 */
-        "calll ___cxa_begin_catch\n"
-        "calll ___cxa_end_catch\n"
-        ".Lf11512e_00115167:\n"
-        "movl $0xffffffce, %eax\n"
-        /* } scope */
-        "leave\n" /* line 707 */
-        "retl\n"
-    );
+    if (!inRefCon)
+        return -50; /* paramErr */
+
+    return CSampleSound_DoRender(inRefCon, ioActionFlags, inNumberFrames, ioData);
 }
 
 /* line 223 */

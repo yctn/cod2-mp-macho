@@ -8,10 +8,10 @@
  *   #include "Mac/Tools/MacExceptions.h"
  */
 
-void CAudioRecorder_CAudioRecorder(const CAudioRecorder * _this, Float64 inSampleRate, UInt32 inNumChannels, UInt32 inBitsPerChannel);
-Boolean CAudioRecorder_Start(const CAudioRecorder * _this);
-void CAudioRecorder_Stop(const CAudioRecorder * _this);
-void CAudioRecorder_Mute(const CAudioRecorder * _this, int inMute);
+void CAudioRecorder_CAudioRecorder(CAudioRecorder * _this, Float64 inSampleRate, UInt32 inNumChannels, UInt32 inBitsPerChannel);
+Boolean CAudioRecorder_Start(CAudioRecorder * _this);
+void CAudioRecorder_Stop(CAudioRecorder * _this);
+void CAudioRecorder_Mute(CAudioRecorder * _this, int inMute);
 Float32 CAudioRecorder_GetRecordLevel(const CAudioRecorder * _this);
 void CAudioRecorder_SetRecordLevel(const CAudioRecorder * _this, Float32 inLevel);
 void * CAudioRecorder_GetBuffer(const CAudioRecorder * _this, UInt32 *outSize);
@@ -19,150 +19,74 @@ OSStatus CAudioRecorder_DoRender(const CAudioRecorder * _this, const AudioTimeSt
 OSStatus CAudioRecorder_DoConvert(const CAudioRecorder * _this, UInt32 *ioDataSize, void * *outData);
 OSStatus CAudioRecorder_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData);
 void CAudioRecorder_Shutdown(const CAudioRecorder * _this);
-Boolean CAudioRecorder_Initialize(const CAudioRecorder * _this);
-void ZN14CAudioRecorderD1Ev(void); /* CAudioRecorder_~CAudioRecorder */
+Boolean CAudioRecorder_Initialize(CAudioRecorder * _this);
+void ZN14CAudioRecorderD1Ev(CAudioRecorder *_this); /* CAudioRecorder_~CAudioRecorder */
 void ZN14CAudioRecorderD2Ev(void); /* CAudioRecorder_~CAudioRecorder */
 OSStatus CAudioRecorder_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioDataSize, void * *outData, void *inUserData);
 
 /* line 29 */
-__attribute__((naked))
-void CAudioRecorder_CAudioRecorder(const CAudioRecorder * _this, Float64 inSampleRate, UInt32 inNumChannels, UInt32 inBitsPerChannel)
+void CAudioRecorder_CAudioRecorder(CAudioRecorder *_this, Float64 inSampleRate, UInt32 inNumChannels, UInt32 inBitsPerChannel)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 29 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movsd 0xc(%ebp), %xmm0\n" /* line 49 | inSampleRate */
-        "movsd %xmm0, (%ebx)\n" /* this */
-        "movl 0x14(%ebp), %eax\n" /* inNumChannels */
-        "movl %eax, 8(%ebx)\n" /* this */
-        "movl 0x18(%ebp), %eax\n" /* inBitsPerChannel */
-        "movl %eax, 0xc(%ebx)\n" /* this */
-        "movl $0, 0x10(%ebx)\n" /* this */
-        "movl $0, 0x14(%ebx)\n" /* this */
-        "movb $0, 0x18(%ebx)\n" /* this */
-        "movb $0, 0x19(%ebx)\n" /* this */
-        "movl $0, 0x1c(%ebx)\n" /* this */
-        "leal 0x20(%ebx), %esi\n" /* this */
-        "movl %esi, (%esp)\n"
-        "calll CMutex_CMutex\n"
-        "movl $0, 0x4c(%ebx)\n" /* this */
-        "movl $0, 0x50(%ebx)\n" /* this */
-        "movl $0, 0x54(%ebx)\n" /* this */
-        "movl $0, 0x58(%ebx)\n" /* this */
-        "movl $0, 0x5c(%ebx)\n" /* this */
-        "leal 0x60(%ebx), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll CCircularBuffer_CCircularBuffer\n"
-        "movb $0, 0x74(%ebx)\n" /* this */
-        "addl $0x10, %esp\n" /* line 58 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %ebx\n" /* this */
-        "movl %esi, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl %ebx, (%esp)\n" /* this */
-        "calll __Unwind_Resume\n"
-    );
+    char *p = (char *)_this;
+
+    *(Float64 *)(p + 0x00) = inSampleRate;
+    *(UInt32 *)(p + 0x08) = inNumChannels;
+    *(UInt32 *)(p + 0x0c) = inBitsPerChannel;
+    *(int *)(p + 0x10) = 0;
+    *(int *)(p + 0x14) = 0;
+    *(char *)(p + 0x18) = 0;
+    *(char *)(p + 0x19) = 0;
+    *(int *)(p + 0x1c) = 0;
+
+    CMutex_CMutex((void *)(p + 0x20));
+
+    *(int *)(p + 0x4c) = 0;
+    *(int *)(p + 0x50) = 0;
+    *(int *)(p + 0x54) = 0;
+    *(int *)(p + 0x58) = 0;
+    *(int *)(p + 0x5c) = 0;
+
+    CCircularBuffer_CCircularBuffer((CCircularBuffer *)(p + 0x60));
+
+    *(char *)(p + 0x74) = 0;
 }
 
 /* line 279 */
-__attribute__((naked))
-Boolean CAudioRecorder_Start(const CAudioRecorder * _this)
+Boolean CAudioRecorder_Start(CAudioRecorder *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 279 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "cmpb $0, 0x18(%ebx)\n" /* line 283 | this */
-        "je .Lf1f628c_001f62a6\n"
-        /* { scope 1 */
-        ".Lf1f628c_001f629c:\n"
-        "movzbl 0x18(%ebx), %eax\n" /* line 289 | this */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 294 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1f628c_001f62a6:\n"
-        "movl 0x14(%ebx), %eax\n" /* line 285 | this, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll AudioOutputUnitStart\n"
-        "testl %eax, %eax\n" /* line 287 */
-        "jne .Lf1f628c_001f629c\n"
-        "movb $1, 0x18(%ebx)\n" /* line 289 | this */
-        "movzbl 0x18(%ebx), %eax\n" /* this */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 294 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+
+    if (*(char *)(p + 0x18)) /* already running */
+        return *(unsigned char *)(p + 0x18);
+
+    OSStatus error = AudioOutputUnitStart(*(AudioUnit *)(p + 0x14));
+    if (error == 0)
+        *(char *)(p + 0x18) = 1;
+
+    return *(unsigned char *)(p + 0x18);
 }
 
 /* line 299 */
-__attribute__((naked))
-void CAudioRecorder_Stop(const CAudioRecorder * _this)
+void CAudioRecorder_Stop(CAudioRecorder *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 299 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "cmpb $0, 0x18(%ebx)\n" /* line 303 | this */
-        "je .Lf1f62c4_001f62e3\n"
-        "movl 0x14(%ebx), %eax\n" /* line 305 | this */
-        "movl %eax, (%esp)\n"
-        "calll AudioOutputUnitStop\n"
-        "movb $0, 0x18(%ebx)\n" /* line 306 | this */
-        ".Lf1f62c4_001f62e3:\n"
-        "addl $0x14, %esp\n" /* line 308 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+
+    if (!*(char *)(p + 0x18))
+        return;
+
+    AudioOutputUnitStop(*(AudioUnit *)(p + 0x14));
+    *(char *)(p + 0x18) = 0;
 }
 
 /* line 314 */
-__attribute__((naked))
-void CAudioRecorder_Mute(const CAudioRecorder * _this, int inMute)
+void CAudioRecorder_Mute(CAudioRecorder *_this, int inMute)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 314 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %edi\n" /* inMute */
-        /* { scope 1 */
-        "leal 0x20(%esi), %eax\n" /* line 316 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %ebx\n" /* lock */
-        "movl %ebx, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl %edi, %eax\n" /* line 319 */
-        "movb %al, 0x19(%esi)\n" /* this */
-        "movl %ebx, (%esp)\n"
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 328 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    StMutexLock lock;
+
+    StMutexLock_StMutexLock(&lock, (CMutex *)(p + 0x20));
+    *(char *)(p + 0x19) = (char)inMute;
+    ZN11StMutexLockD1Ev(&lock);
 }
 
 /* line 333 */
@@ -537,36 +461,12 @@ OSStatus CAudioRecorder_DoConvert(const CAudioRecorder * _this, UInt32 *ioDataSi
 }
 
 /* line 550 */
-__attribute__((naked))
 OSStatus CAudioRecorder_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 550 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* inRefCon */
-        /* { scope 1 */
-        "testl %eax, %eax\n" /* line 556 */
-        "je .Lf1f669c_001f66ce\n"
-        "movl 0x18(%ebp), %edx\n" /* line 558 | inNumberFrames */
-        "movl %edx, 8(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* inTimeStamp */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CAudioRecorder_DoRender\n"
-        /* } scope */
-        "leave\n" /* line 566 */
-        "retl\n"
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 561 */
-        "calll ___cxa_begin_catch\n"
-        "calll ___cxa_end_catch\n"
-        ".Lf1f669c_001f66ce:\n"
-        "movl $0xffffffce, %eax\n"
-        /* } scope */
-        "leave\n" /* line 566 */
-        "retl\n"
-    );
+    if (!inRefCon)
+        return -50; /* paramErr */
+
+    return CAudioRecorder_DoRender(inRefCon, inTimeStamp, inNumberFrames);
 }
 
 /* line 233 */
@@ -690,315 +590,143 @@ void CAudioRecorder_Shutdown(const CAudioRecorder * _this)
 }
 
 /* line 70 */
-__attribute__((naked))
-Boolean CAudioRecorder_Initialize(const CAudioRecorder * _this)
+Boolean CAudioRecorder_Initialize(CAudioRecorder *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xbc, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        /* { scope 1 */
-        "movl $0, -0x34(%ebp)\n" /* line 78 */
-        "movl $0, -0x30(%ebp)\n" /* line 79 */
-        "movl $0x61756f75, -0x40(%ebp)\n" /* line 80 | desc */
-        "movl $0x6168616c, -0x3c(%ebp)\n" /* line 81 */
-        "movl $0x6170706c, -0x38(%ebp)\n" /* line 82 */
-        "leal -0x40(%ebp), %eax\n" /* line 84 | desc */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll FindNextComponent\n"
-        "movl %eax, %edx\n" /* theComponent */
-        "testl %eax, %eax\n" /* line 43 */
-        "je .Lf1f6832_001f6c8a\n"
-        "leal 0x14(%edi), %eax\n" /* line 87 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll OpenAComponent\n"
-        "movswl %ax, %ebx\n" /* error */
-        "testw %ax, %ax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $1, -0x20(%ebp)\n" /* line 92 | enableIO */
-        "movl $4, 0x14(%esp)\n" /* line 93 */
-        "leal -0x20(%ebp), %esi\n" /* enableIO */
-        "movl %esi, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0x7d3, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $0, -0x20(%ebp)\n" /* line 98 | enableIO */
-        "movl $4, 0x14(%esp)\n" /* line 99 */
-        "movl %esi, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $2, 8(%esp)\n"
-        "movl $0x7d3, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $4, -0x24(%ebp)\n" /* line 104 | size */
-        "leal 0x10(%edi), %esi\n" /* line 106 | this */
-        "movl %esi, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* size */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x64496e20, (%esp)\n"
-        "calll AudioHardwareGetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $4, 0x14(%esp)\n" /* line 109 */
-        "movl %esi, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x7d0, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $4, -0x24(%ebp)\n" /* line 114 | size */
-        "leal 0x1c(%edi), %eax\n" /* line 115 | this */
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* size */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0x766f6c6d, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl 0x10(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioDeviceGetProperty\n"
-        "testl %eax, %eax\n" /* line 116 */
-        "jne .Lf1f6832_001f6c56\n"
-        ".Lf1f6832_001f69c3:\n"
-        "movl $CAudioRecorder_RenderCallbackProc, -0x2c(%ebp)\n" /* line 124 | callbackInfo */
-        "movl %edi, -0x28(%ebp)\n" /* line 125 | this */
-        "movl $8, 0x14(%esp)\n" /* line 127 */
-        "leal -0x2c(%ebp), %eax\n" /* callbackInfo */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x7d5, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl 0x14(%edi), %eax\n" /* line 132 | this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitInitialize\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $0x28, -0x24(%ebp)\n" /* line 138 | size */
-        "leal -0x24(%ebp), %eax\n" /* line 140 | size */
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x68(%ebp), %esi\n" /* sourceFormat */
-        "movl %esi, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $8, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitGetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl 0xc(%edi), %ecx\n" /* line 146 | this */
-        "xorl %eax, %eax\n"
-        "cmpl $0x10, %ecx\n"
-        "sete %al\n"
-        "leal 8(, %eax, 4), %eax\n"
-        "movl %ecx, %edx\n" /* line 151 | bytesPerPacket */
-        "shrl $3, %edx\n" /* bytesPerPacket */
-        "imull 8(%edi), %edx\n" /* this, bytesPerPacket */
-        "movl $0x6c70636d, -0x88(%ebp)\n" /* line 155 */
-        "movl %eax, -0x84(%ebp)\n" /* line 156 */
-        "movl %edx, -0x80(%ebp)\n" /* line 157 */
-        "movl $1, -0x7c(%ebp)\n" /* line 158 */
-        "movl %edx, -0x78(%ebp)\n" /* line 159 */
-        "movl 8(%edi), %eax\n" /* line 160 | this */
-        "movl %eax, -0x74(%ebp)\n"
-        "movl %ecx, -0x70(%ebp)\n" /* line 161 */
-        "movsd -0x68(%ebp), %xmm0\n" /* line 166 | sourceFormat */
-        "movsd %xmm0, -0x90(%ebp)\n" /* destFormat */
-        "movl $0x28, 0x14(%esp)\n" /* line 168 */
-        "leal -0x90(%ebp), %eax\n" /* destFormat */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl $2, 8(%esp)\n"
-        "movl $8, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitSetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $0x28, -0x24(%ebp)\n" /* line 173 | size */
-        "leal -0x24(%ebp), %eax\n" /* line 174 | size */
-        "movl %eax, 0x14(%esp)\n"
-        "movl %esi, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl $2, 8(%esp)\n"
-        "movl $8, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitGetProperty\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movsd (%edi), %xmm0\n" /* line 180 | this */
-        "movsd %xmm0, -0x90(%ebp)\n" /* destFormat */
-        "leal 0x4c(%edi), %eax\n" /* line 182 | this */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x90(%ebp), %eax\n" /* destFormat */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll AudioConverterNew\n"
-        "movl %eax, %ebx\n" /* error */
-        "testl %eax, %eax\n" /* line 30 */
-        "jne .Lf1f6832_001f6c62\n"
-        "movl $4, -0x24(%ebp)\n" /* line 189 | size */
-        "leal -0x24(%ebp), %eax\n" /* line 190 | size */
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* framesPerSlice */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0xe, 4(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll AudioUnitGetProperty\n"
-        "movl $0x200, %edx\n" /* line 193 */
-        "testl %eax, %eax\n"
-        "cmovel -0x1c(%ebp), %edx\n" /* framesPerSlice */
-        "movl %edx, -0x1c(%ebp)\n" /* framesPerSlice */
-        "fnstcw -0x9a(%ebp)\n" /* line 199 */
-        "movzwl -0x9a(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x9c(%ebp)\n"
-        "fldl -0x90(%ebp)\n" /* destFormat */
-        "fldcw -0x9c(%ebp)\n"
-        "fistpll -0xa8(%ebp)\n"
-        "fldcw -0x9a(%ebp)\n"
-        "movl -0xa8(%ebp), %eax\n"
-        "imull -0x78(%ebp), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, 0x54(%edi)\n" /* this */
-        "movl %eax, (%esp)\n" /* line 200 */
-        "calll malloc\n"
-        "movl %eax, 0x50(%edi)\n" /* this */
-        "movl -0x50(%ebp), %eax\n" /* line 205 */
-        "imull -0x1c(%ebp), %eax\n" /* framesPerSlice */
-        "movl %eax, 0x5c(%edi)\n" /* this */
-        "movl %eax, (%esp)\n" /* line 206 */
-        "calll malloc\n"
-        "movl %eax, 0x58(%edi)\n" /* this */
-        "fnstcw -0x9a(%ebp)\n" /* line 211 */
-        "movzwl -0x9a(%ebp), %eax\n"
-        "movb $0xc, %ah\n"
-        "movw %ax, -0x9c(%ebp)\n"
-        "fldl -0x68(%ebp)\n" /* sourceFormat */
-        "fldcw -0x9c(%ebp)\n"
-        "fistpll -0xa8(%ebp)\n"
-        "fldcw -0x9a(%ebp)\n"
-        "movl -0xa8(%ebp), %eax\n"
-        "imull -0x50(%ebp), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x60(%edi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll CCircularBuffer_Alloc\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf1f6832_001f6c4b:\n"
-        "addl $0xbc, %esp\n" /* line 228 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1f6832_001f6c56:\n"
-        "movl $0x3f800000, 0x1c(%edi)\n" /* line 118 | this */
-        "jmp .Lf1f6832_001f69c3\n"
-        ".Lf1f6832_001f6c62:\n"
-        "movl $4, (%esp)\n" /* line 21 */
-        "calll ___cxa_allocate_exception\n"
-        "movl %ebx, (%eax)\n"
-        ".Lf1f6832_001f6c70:\n"
-        "movl $0, 8(%esp)\n"
-        "movl __ZTIl, %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll ___cxa_throw\n"
-        ".Lf1f6832_001f6c8a:\n"
-        "movl $4, (%esp)\n"
-        "calll ___cxa_allocate_exception\n"
-        "movl $0xffffffce, (%eax)\n"
-        "jmp .Lf1f6832_001f6c70\n"
-        /* } scope */
-        "movl %eax, (%esp)\n" /* line 222 */
-        "calll ___cxa_begin_catch\n"
-        "movl %edi, (%esp)\n" /* line 224 | this */
-        "calll CAudioRecorder_Shutdown\n"
-        "calll ___cxa_end_catch\n" /* line 222 */
-        "xorl %eax, %eax\n"
-        "jmp .Lf1f6832_001f6c4b\n"
-        "movl %eax, %ebx\n" /* error */
-        "calll ___cxa_end_catch\n"
-        "movl %ebx, (%esp)\n" /* error */
-        "calll __Unwind_Resume\n"
-    );
+    char *p = (char *)_this;
+    ComponentDescription desc;
+    Component theComponent;
+    OSStatus error;
+    UInt32 enableIO;
+    UInt32 size;
+    AudioStreamBasicDescription sourceFormat, destFormat;
+    AURenderCallbackStruct callbackInfo;
+    UInt32 framesPerSlice;
+
+    /* Find audio output unit component */
+    desc.componentType = 'auou';
+    desc.componentSubType = 'ahal';
+    desc.componentManufacturer = 'appl';
+    desc.componentFlags = 0;
+    desc.componentFlagsMask = 0;
+
+    theComponent = FindNextComponent(NULL, &desc);
+    if (!theComponent)
+        return 0; /* throws paramErr in original, caught and returns false */
+
+    error = OpenAComponent(theComponent, (AudioUnit *)(p + 0x14));
+    if (error != 0) return 0;
+
+    /* Enable IO on input scope (element 1) */
+    enableIO = 1;
+    error = AudioUnitSetProperty(*(AudioUnit *)(p + 0x14), 0x7d3 /* kAudioOutputUnitProperty_EnableIO */,
+        1 /* kAudioUnitScope_Input */, 1, &enableIO, 4);
+    if (error != 0) return 0;
+
+    /* Disable IO on output scope (element 0) */
+    enableIO = 0;
+    error = AudioUnitSetProperty(*(AudioUnit *)(p + 0x14), 0x7d3,
+        2 /* kAudioUnitScope_Output */, 0, &enableIO, 4);
+    if (error != 0) return 0;
+
+    /* Get default input device */
+    size = 4;
+    error = AudioHardwareGetProperty(0x64496e20 /* kAudioHardwarePropertyDefaultInputDevice */,
+        &size, (int *)(p + 0x10));
+    if (error != 0) return 0;
+
+    /* Set current device */
+    error = AudioUnitSetProperty(*(AudioUnit *)(p + 0x14), 0x7d0 /* kAudioOutputUnitProperty_CurrentDevice */,
+        0, 0, (int *)(p + 0x10), 4);
+    if (error != 0) return 0;
+
+    /* Get device input volume */
+    size = 4;
+    error = AudioDeviceGetProperty(*(int *)(p + 0x10), 0, 1, 0x766f6c6d /* 'volm' */,
+        &size, (float *)(p + 0x1c));
+    if (error != 0)
+        *(float *)(p + 0x1c) = 1.0f;
+
+    /* Set render callback */
+    callbackInfo.inputProc = CAudioRecorder_RenderCallbackProc;
+    callbackInfo.inputProcRefCon = _this;
+    error = AudioUnitSetProperty(*(AudioUnit *)(p + 0x14), 0x7d5 /* kAudioOutputUnitProperty_SetInputCallback */,
+        0, 0, &callbackInfo, 8);
+    if (error != 0) return 0;
+
+    /* Initialize the audio unit */
+    error = AudioUnitInitialize(*(AudioUnit *)(p + 0x14));
+    if (error != 0) return 0;
+
+    /* Get source format from input scope */
+    size = sizeof(AudioStreamBasicDescription);
+    error = AudioUnitGetProperty(*(AudioUnit *)(p + 0x14), 8 /* kAudioUnitProperty_StreamFormat */,
+        1, 1, &sourceFormat, &size);
+    if (error != 0) return 0;
+
+    /* Build destination format (linear PCM) */
+    UInt32 bitsPerChannel = *(UInt32 *)(p + 0x0c);
+    UInt32 numChannels = *(UInt32 *)(p + 0x08);
+    UInt32 bytesPerPacket = (bitsPerChannel / 8) * numChannels;
+    UInt32 formatFlags = (bitsPerChannel == 16) ? 12 : 8;
+
+    memset(&destFormat, 0, sizeof(destFormat));
+    destFormat.mFormatID = 'lpcm';
+    destFormat.mFormatFlags = formatFlags;
+    destFormat.mBytesPerPacket = bytesPerPacket;
+    destFormat.mFramesPerPacket = 1;
+    destFormat.mBytesPerFrame = bytesPerPacket;
+    destFormat.mChannelsPerFrame = numChannels;
+    destFormat.mBitsPerChannel = bitsPerChannel;
+    destFormat.mSampleRate = sourceFormat.mSampleRate;
+
+    /* Set output format */
+    error = AudioUnitSetProperty(*(AudioUnit *)(p + 0x14), 8,
+        2, 1, &destFormat, sizeof(destFormat));
+    if (error != 0) return 0;
+
+    /* Re-read actual output format */
+    size = sizeof(AudioStreamBasicDescription);
+    error = AudioUnitGetProperty(*(AudioUnit *)(p + 0x14), 8,
+        2, 1, &sourceFormat, &size);
+    if (error != 0) return 0;
+
+    /* Create audio converter */
+    destFormat.mSampleRate = *(Float64 *)(p + 0x00);
+    error = AudioConverterNew(&sourceFormat, &destFormat, (AudioConverterRef *)(p + 0x4c));
+    if (error != 0) return 0;
+
+    /* Get frames per slice */
+    size = 4;
+    error = AudioUnitGetProperty(*(AudioUnit *)(p + 0x14), 0xe /* kAudioUnitProperty_MaximumFramesPerSlice */,
+        0, 0, &framesPerSlice, &size);
+    if (error != 0)
+        framesPerSlice = 512;
+
+    /* Allocate conversion buffer: sampleRate * bytesPerFrame * 3 */
+    int bufSize = (int)destFormat.mSampleRate * destFormat.mBytesPerFrame * 3;
+    *(int *)(p + 0x54) = bufSize;
+    *(void **)(p + 0x50) = malloc(bufSize);
+
+    /* Allocate render buffer */
+    int renderBufSize = sourceFormat.mBytesPerFrame * framesPerSlice;
+    *(int *)(p + 0x5c) = renderBufSize;
+    *(void **)(p + 0x58) = malloc(renderBufSize);
+
+    /* Allocate circular buffer: sourceSampleRate * sourceBytesPerFrame * 3 */
+    int circBufSize = (int)sourceFormat.mSampleRate * sourceFormat.mBytesPerFrame * 3;
+    CCircularBuffer_Alloc((CCircularBuffer *)(p + 0x60), circBufSize);
+
+    return 1;
 }
 
 /* line 62 */
-__attribute__((naked))
-void ZN14CAudioRecorderD1Ev(void) /* CAudioRecorder_~CAudioRecorder */
+void ZN14CAudioRecorderD1Ev(CAudioRecorder *_this) /* CAudioRecorder_~CAudioRecorder */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 62 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* line 64 | this */
-        "calll CAudioRecorder_Shutdown\n"
-        "leal 0x60(%ebx), %eax\n" /* line 65 | this */
-        "movl %eax, (%esp)\n"
-        "calll ZN15CCircularBufferD1Ev\n"
-        "leal 0x20(%ebx), %eax\n" /* this */
-        "movl %eax, 8(%ebp)\n" /* this */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp ZN6CMutexD1Ev\n"
-        "movl %eax, %esi\n"
-        "leal 0x60(%ebx), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll ZN15CCircularBufferD1Ev\n"
-        ".Lf1f6cc6_001f6d02:\n"
-        "leal 0x20(%ebx), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll ZN6CMutexD1Ev\n"
-        "movl %esi, (%esp)\n"
-        "calll __Unwind_Resume\n"
-        "movl %eax, %esi\n"
-        "jmp .Lf1f6cc6_001f6d02\n"
-    );
+    char *p = (char *)_this;
+
+    CAudioRecorder_Shutdown(_this);
+    ZN15CCircularBufferD1Ev((CCircularBuffer *)(p + 0x60));
+    ZN6CMutexD1Ev((void *)(p + 0x20));
 }
 
 /* line 62 */
@@ -1040,78 +768,25 @@ void ZN14CAudioRecorderD2Ev(void) /* CAudioRecorder_~CAudioRecorder */
 }
 
 /* line 575 */
-__attribute__((naked))
-OSStatus CAudioRecorder_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioDataSize, void * *outData, void *inUserData)
+OSStatus CAudioRecorder_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioDataSize, void **outData, void *inUserData)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 575 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* ioDataSize */
-        "movl 0x14(%ebp), %ebx\n" /* inUserData */
-        /* { scope 1: lock */
-        "testl %ebx, %ebx\n" /* line 581 | inUserData */
-        "je .Lf1f6d6e_001f6df4\n"
-        /* { scope 2 */
-        "leal 0x20(%ebx), %eax\n" /* line 529 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %esi\n" /* lock */
-        "movl %esi, (%esp)\n"
-        "calll StMutexLock_StMutexLock\n"
-        "movl %edi, 4(%esp)\n" /* line 531 */
-        "leal 0x60(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CCircularBuffer_ReadPtr\n"
-        "movl %eax, %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* outData */
-        "movl %edx, (%eax)\n"
-        "cmpb $0, 0x19(%ebx)\n" /* line 533 */
-        "jne .Lf1f6d6e_001f6dc1\n"
-        ".Lf1f6d6e_001f6daf:\n"
-        "movl %esi, (%esp)\n" /* line 538 */
-        "calll ZN11StMutexLockD1Ev\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 591 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: lock */
-        /* { scope 2 */
-        ".Lf1f6d6e_001f6dc1:\n"
-        "testl %edx, %edx\n" /* line 533 */
-        "je .Lf1f6d6e_001f6daf\n"
-        "movl (%edi), %eax\n" /* line 535 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memset\n"
-        "jmp .Lf1f6d6e_001f6daf\n"
-        "movl %eax, %ebx\n"
-        "movl %esi, (%esp)\n" /* line 538 */
-        "calll ZN11StMutexLockD1Ev\n"
-        /* } scope */
-        ".Lf1f6d6e_001f6de7:\n"
-        "movl %ebx, (%esp)\n" /* line 586 | inUserData */
-        "calll ___cxa_begin_catch\n"
-        "calll ___cxa_end_catch\n"
-        ".Lf1f6d6e_001f6df4:\n"
-        "movl $0xffffffce, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 591 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %ebx\n" /* inUserData */
-        "jmp .Lf1f6d6e_001f6de7\n"
-    );
+    if (!inUserData)
+        return -50; /* paramErr */
+
+    StMutexLock lock;
+    char *p = (char *)inUserData;
+
+    StMutexLock_StMutexLock(&lock, (CMutex *)(p + 0x20));
+
+    void *readPtr = CCircularBuffer_ReadPtr((CCircularBuffer *)(p + 0x60), ioDataSize);
+    *outData = readPtr;
+
+    if (*(char *)(p + 0x19) && readPtr) /* isMuted */
+    {
+        memset(readPtr, 0, *ioDataSize);
+    }
+
+    ZN11StMutexLockD1Ev(&lock);
+    return 0;
 }
 

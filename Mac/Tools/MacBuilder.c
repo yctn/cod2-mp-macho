@@ -8,57 +8,53 @@
  *   #include "Mac/Tools/MacTools.h"
  */
 
+/* Carbon types not in common_types.h */
+typedef struct { short top; short left; short bottom; short right; } Rect;
+
 static ControlKeyFilterUPP sControlKeyFilterUPP; /* 0x334708 */
 static ControlEditTextValidationUPP sControlValidationUPP; /* 0x334704 */
 static MacBuilderProcPtr sBuilderProcPtr; /* 0x334700 */
 
+void StPortState_StPortState(StPortState *_this, WindowRef inWindow);
+void ZN11StPortStateD1Ev(StPortState *_this);
 ControlPartCode UserPaneHitTestProc(ControlRef theControl, struct Point theWherePt);
 WindowRef MacBuilder_BuildWindow(CFStringRef inName, CFStringRef inNibName, int inStandardHandler, MacBuilderProcPtr inBuilderProc);
 UInt32 MacBuilder_RunModalWindow(WindowRef inWindow);
-inflate_blocks_statef MacBuilder_ReleaseWindow(WindowRef inWindow);
+void MacBuilder_ReleaseWindow(WindowRef inWindow);
 ControlRef MacBuilder_GetControlRef(WindowRef inWindow, SInt32 inID);
 static inflate_blocks_statef ValidationProc(ControlRef inControlRef);
 static OSStatus HandleStandardEvents(EventRef inEvent, inflate_blocks_statef *inUserData);
 static ControlKeyFilterResult KeyFilterProc(ControlRef inControlRef, SInt16 *ioCharCode, EventModifiers *ioModifiers);
 inflate_blocks_statef MacBuilder_SetTextObjectFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize);
-inflate_blocks_statef MacBuilder_GetControlText(WindowRef inWindow, SInt32 inID, int inBufferSize, char *outText);
-inflate_blocks_statef MacBuilder_SetControlText(WindowRef inWindow, SInt32 inID, const char *inText);
-inflate_blocks_statef MacBuilder_SetControlVisible(WindowRef inWindow, SInt32 inID, int inVisible);
-inflate_blocks_statef MacBuilder_SetControlEnabled(WindowRef inWindow, SInt32 inID, int inEnabled);
-inflate_blocks_statef MacBuilder_SetControlFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize);
-inflate_blocks_statef MacBuilder_SetControlFocus(WindowRef inWindow, SInt32 inID);
-inflate_blocks_statef MacBuilder_SetupUserPaneControl(WindowRef inWindow, SInt32 inID, ControlUserPaneDrawProcPtr inDrawProc, ControlUserPaneTrackingProcPtr inTrackingProc);
+void MacBuilder_GetControlText(WindowRef inWindow, SInt32 inID, int inBufferSize, char *outText);
+void MacBuilder_SetControlText(WindowRef inWindow, SInt32 inID, const char *inText);
+void MacBuilder_SetControlVisible(WindowRef inWindow, SInt32 inID, int inVisible);
+void MacBuilder_SetControlEnabled(WindowRef inWindow, SInt32 inID, int inEnabled);
+void MacBuilder_SetControlFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize);
+void MacBuilder_SetControlFocus(WindowRef inWindow, SInt32 inID);
+void MacBuilder_SetupUserPaneControl(WindowRef inWindow, SInt32 inID, ControlUserPaneDrawProcPtr inDrawProc, ControlUserPaneTrackingProcPtr inTrackingProc);
 inflate_blocks_statef MacBuilder_SetEditTextHook(WindowRef inWindow, SInt32 inID, MacBuilderEditHookPtr inHookProc, int inCharLimit);
 TXNObject MacBuilder_GetTextObject(WindowRef inWindow, SInt32 inID);
 
+/* StPortState constructor */
+void StPortState_StPortState(StPortState *_this, WindowRef inWindow)
+{
+    GetPort(_this);
+    SetPortWindowPort(inWindow);
+}
+
+/* StPortState::~StPortState */
+void ZN11StPortStateD1Ev(StPortState *_this)
+{
+    SetPort(*(void **)_this);
+}
+
 /* line 143 */
-__attribute__((naked))
 ControlPartCode UserPaneHitTestProc(ControlRef theControl, struct Point theWherePt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 143 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "leal -0x10(%ebp), %ebx\n" /* line 146 | bounds */
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* theControl */
-        "movl %eax, (%esp)\n"
-        "calll GetControlBounds\n"
-        "movl %ebx, 4(%esp)\n" /* line 148 */
-        "movl 0xc(%ebp), %eax\n" /* theWherePt */
-        "movl %eax, (%esp)\n"
-        "calll PtInRect\n"
-        "testb %al, %al\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 156 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Rect bounds;
+    GetControlBounds(theControl, &bounds);
+    return PtInRect(theWherePt, &bounds) != 0;
 }
 
 /* line 167 */
@@ -168,75 +164,35 @@ WindowRef MacBuilder_BuildWindow(CFStringRef inName, CFStringRef inNibName, int 
 }
 
 /* line 221 */
-__attribute__((naked))
 UInt32 MacBuilder_RunModalWindow(WindowRef inWindow)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 221 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* inWindow */
-        "calll InitCursor\n" /* line 223 */
-        "movl %ebx, (%esp)\n" /* line 224 | inWindow */
-        "calll ShowWindow\n"
-        "movl %ebx, (%esp)\n" /* line 225 | inWindow */
-        "calll RunAppModalLoopForWindow\n"
-        "movl %ebx, (%esp)\n" /* line 226 | inWindow */
-        "calll HideWindow\n"
-        "movl %ebx, 8(%ebp)\n" /* line 228 | inWindow */
-        "addl $0x14, %esp\n" /* line 229 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp GetWRefCon\n" /* line 228 */
-    );
+    InitCursor();
+    ShowWindow(inWindow);
+    RunAppModalLoopForWindow(inWindow);
+    HideWindow(inWindow);
+    return GetWRefCon(inWindow);
 }
 
 /* line 235 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_ReleaseWindow(WindowRef inWindow)
+void MacBuilder_ReleaseWindow(WindowRef inWindow)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 235 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 237 | inWindow */
-        "movl %eax, (%esp)\n"
-        "calll DisposeWindow\n"
-        "movl $0, sBuilderProcPtr\n" /* line 239 */
-        "leave\n" /* line 240 */
-        "retl\n"
-    );
+    DisposeWindow(inWindow);
+    sBuilderProcPtr = 0;
 }
 
 /* line 249 */
-__attribute__((naked))
 ControlRef MacBuilder_GetControlRef(WindowRef inWindow, SInt32 inID)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 249 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "movl $0x4974656d, -0x14(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl $0, -0xc(%ebp)\n" /* line 255 | theControl */
-        "leal -0xc(%ebp), %eax\n" /* line 256 | theControl */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x14(%ebp), %eax\n" /* controlID */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* inWindow */
-        "movl %eax, (%esp)\n"
-        "calll GetControlByID\n"
-        "movl %eax, %edx\n" /* error */
-        "xorl %eax, %eax\n" /* line 259 */
-        "testl %edx, %edx\n"
-        "cmovel -0xc(%ebp), %eax\n" /* theControl */
-        /* } scope */
-        "leave\n" /* line 263 */
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        return NULL;
+    return theControl;
 }
 
 /* line 655 */
@@ -701,403 +657,168 @@ inflate_blocks_statef MacBuilder_SetTextObjectFontStyle(WindowRef inWindow, SInt
 }
 
 /* line 305 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_GetControlText(WindowRef inWindow, SInt32 inID, int inBufferSize, char *outText)
+void MacBuilder_GetControlText(WindowRef inWindow, SInt32 inID, int inBufferSize, char *outText)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 305 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0x14(%ebp), %ebx\n" /* outText */
-        "movl 0x10(%ebp), %edi\n" /* inBufferSize */
-        "movb $0, (%ebx)\n" /* line 307 | outText */
-        /* { scope 1 */
-        "movl $0x4974656d, -0x24(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 255 | theControl */
-        "leal -0x1c(%ebp), %esi\n" /* line 256 | theControl */
-        "movl %esi, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* controlID, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %edx, %edx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0x1c(%ebp), %edx\n" /* theControl */
-        "movl %edx, -0x1c(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 310 */
-        "je .Lf3de4_00003e68\n"
-        /* { scope 1 */
-        "movl %esi, 0x14(%esp)\n" /* line 313 */
-        "movl %ebx, 0x10(%esp)\n" /* outText */
-        "movswl %di, %eax\n" /* inBufferSize */
-        "subl $1, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0x74657874, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll GetControlData\n"
-        "testw %ax, %ax\n" /* line 314 */
-        "jne .Lf3de4_00003e68\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 316 | theControl */
-        "movb $0, (%ebx, %eax)\n" /* outText */
-        /* } scope */
-        ".Lf3de4_00003e68:\n"
-        "addl $0x3c, %esp\n" /* line 319 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    *outText = '\0';
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    Size actualSize;
+    error = GetControlData(theControl, 0, 0x74657874 /* 'text' */, (short)inBufferSize - 1, outText, &actualSize);
+    if (error == 0)
+        outText[actualSize] = '\0';
 }
 
 /* line 327 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetControlText(WindowRef inWindow, SInt32 inID, const char *inText)
+void MacBuilder_SetControlText(WindowRef inWindow, SInt32 inID, const char *inText)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 327 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* inText */
-        /* { scope 1 */
-        "movl $0x4974656d, -0x14(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl $0, -0xc(%ebp)\n" /* line 255 | theControl */
-        "leal -0xc(%ebp), %eax\n" /* line 256 | theControl, error */
-        "movl %eax, 8(%esp)\n" /* error */
-        "leal -0x14(%ebp), %eax\n" /* controlID, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %edx, %edx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0xc(%ebp), %edx\n" /* theControl */
-        "movl %edx, -0xc(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 330 */
-        "je .Lf3e70_00003ee8\n"
-        "movl %ebx, 0x10(%esp)\n" /* line 332 | inText */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* inText */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "movl $0x74657874, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll SetControlData\n"
-        ".Lf3e70_00003ee8:\n"
-        "addl $0x30, %esp\n" /* line 334 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    SetControlData(theControl, 0, 0x74657874 /* 'text' */, strlen(inText), inText);
 }
 
 /* line 357 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetControlVisible(WindowRef inWindow, SInt32 inID, int inVisible)
+void MacBuilder_SetControlVisible(WindowRef inWindow, SInt32 inID, int inVisible)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 357 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movzbl 0x10(%ebp), %ebx\n" /* inVisible */
-        /* { scope 1: controlID, theControl */
-        /* { scope 2 */
-        "movl $0x4974656d, -0x14(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl $0, -0xc(%ebp)\n" /* line 255 | theControl */
-        "leal -0xc(%ebp), %eax\n" /* line 256 | theControl, error */
-        "movl %eax, 8(%esp)\n" /* error */
-        "leal -0x14(%ebp), %eax\n" /* controlID, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %edx, %edx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0xc(%ebp), %edx\n" /* theControl */
-        "movl %edx, -0xc(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 360 */
-        "je .Lf3ef0_00003f43\n"
-        "testb %bl, %bl\n" /* line 362 | inVisible */
-        "jne .Lf3ef0_00003f49\n"
-        "movl %edx, (%esp)\n" /* line 368 */
-        "calll HideControl\n"
-        /* } scope */
-        ".Lf3ef0_00003f43:\n"
-        "addl $0x24, %esp\n" /* line 371 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: controlID, theControl */
-        ".Lf3ef0_00003f49:\n"
-        "movl %edx, (%esp)\n" /* line 364 */
-        "calll ShowControl\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 371 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    if (inVisible)
+        ShowControl(theControl);
+    else
+        HideControl(theControl);
 }
 
 /* line 379 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetControlEnabled(WindowRef inWindow, SInt32 inID, int inEnabled)
+void MacBuilder_SetControlEnabled(WindowRef inWindow, SInt32 inID, int inEnabled)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 379 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movzbl 0x10(%ebp), %ebx\n" /* inEnabled */
-        /* { scope 1: controlID, theControl */
-        /* { scope 2 */
-        "movl $0x4974656d, -0x14(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl $0, -0xc(%ebp)\n" /* line 255 | theControl */
-        "leal -0xc(%ebp), %eax\n" /* line 256 | theControl, error */
-        "movl %eax, 8(%esp)\n" /* error */
-        "leal -0x14(%ebp), %eax\n" /* controlID, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %edx, %edx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0xc(%ebp), %edx\n" /* theControl */
-        "movl %edx, -0xc(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 382 */
-        "je .Lf3f58_00003fab\n"
-        "testb %bl, %bl\n" /* line 384 | inEnabled */
-        "jne .Lf3f58_00003fb1\n"
-        "movl %edx, (%esp)\n" /* line 390 */
-        "calll DisableControl\n"
-        /* } scope */
-        ".Lf3f58_00003fab:\n"
-        "addl $0x24, %esp\n" /* line 393 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: controlID, theControl */
-        ".Lf3f58_00003fb1:\n"
-        "movl %edx, (%esp)\n" /* line 386 */
-        "calll EnableControl\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 393 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    if (inEnabled)
+        EnableControl(theControl);
+    else
+        DisableControl(theControl);
 }
 
 /* line 402 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetControlFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize)
+void MacBuilder_SetControlFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 402 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* inFontFamilyID */
-        "movl 0x14(%ebp), %edi\n" /* inFontSize */
-        /* { scope 1 */
-        "movl $0x4974656d, -0x34(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 255 | theControl */
-        "leal -0x1c(%ebp), %eax\n" /* line 256 | theControl, error */
-        "movl %eax, 8(%esp)\n" /* error */
-        "leal -0x34(%ebp), %ebx\n" /* controlID */
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %edx, %edx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0x1c(%ebp), %edx\n" /* theControl */
-        "movl %edx, -0x1c(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 405 */
-        "je .Lf3fc0_00004025\n"
-        /* { scope 1 */
-        "movw $5, -0x34(%ebp)\n" /* line 408 | controlID */
-        "movw %si, -0x32(%ebp)\n" /* line 409 */
-        "movw %di, -0x30(%ebp)\n" /* line 410 */
-        "movl %ebx, 4(%esp)\n" /* line 412 */
-        "movl %edx, (%esp)\n"
-        "calll SetControlFontStyle\n"
-        /* } scope */
-        ".Lf3fc0_00004025:\n"
-        "addl $0x3c, %esp\n" /* line 414 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    ControlFontStyleRec fontStyle;
+    fontStyle.flags = 5;
+    fontStyle.font = (short)inFontFamilyID;
+    fontStyle.size = (short)inFontSize;
+    SetControlFontStyle(theControl, &fontStyle);
 }
 
 /* line 421 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetControlFocus(WindowRef inWindow, SInt32 inID)
+void MacBuilder_SetControlFocus(WindowRef inWindow, SInt32 inID)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 421 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* inWindow */
-        /* { scope 1: controlID, theControl */
-        /* { scope 2 */
-        "movl $0x4974656d, -0x24(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 255 | theControl */
-        "leal -0x1c(%ebp), %eax\n" /* line 256 | theControl, error */
-        "movl %eax, 8(%esp)\n" /* error */
-        "leal -0x24(%ebp), %esi\n" /* controlID */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll GetControlByID\n"
-        "xorl %ebx, %ebx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0x1c(%ebp), %ebx\n" /* theControl */
-        "movl %ebx, -0x1c(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %ebx, %ebx\n" /* line 424 */
-        "je .Lf402e_000040a8\n"
-        /* { scope 2 */
-        "movl %esi, 4(%esp)\n" /* line 427 */
-        "movl %ebx, (%esp)\n"
-        "calll GetControlKind\n"
-        "testl %eax, %eax\n" /* line 428 */
-        "jne .Lf402e_000040a8\n"
-        "movl -0x20(%ebp), %eax\n" /* line 432 */
-        "cmpl $0x65747874, %eax\n"
-        "je .Lf402e_00004094\n"
-        "cmpl $0x65757478, %eax\n"
-        "jne .Lf402e_000040a8\n"
-        ".Lf402e_00004094:\n"
-        "movl $5, 8(%esp)\n" /* line 439 */
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* inWindow */
-        "calll SetKeyboardFocus\n"
-        /* } scope */
-        /* } scope */
-        ".Lf402e_000040a8:\n"
-        "addl $0x2c, %esp\n" /* line 443 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    ControlKind kind;
+    if (GetControlKind(theControl, &kind) != 0)
+        return;
+
+    if (kind.kind == 0x65747874 /* 'etxt' */ || kind.kind == 0x65757478 /* 'eutx' */)
+    {
+        SetKeyboardFocus(inWindow, theControl, 5);
+    }
 }
 
 /* line 522 */
-__attribute__((naked))
-inflate_blocks_statef MacBuilder_SetupUserPaneControl(WindowRef inWindow, SInt32 inID, ControlUserPaneDrawProcPtr inDrawProc, ControlUserPaneTrackingProcPtr inTrackingProc)
+void MacBuilder_SetupUserPaneControl(WindowRef inWindow, SInt32 inID, ControlUserPaneDrawProcPtr inDrawProc, ControlUserPaneTrackingProcPtr inTrackingProc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 522 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 0x14(%ebp), %edi\n" /* inTrackingProc */
-        /* { scope 1: testUPP, trackingUPP */
-        "movl $0x4974656d, -0x2c(%ebp)\n" /* line 252 | controlID */
-        "movl 0xc(%ebp), %eax\n" /* line 253 | inID */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 255 | theControl */
-        "leal -0x1c(%ebp), %esi\n" /* line 256 | theControl */
-        "movl %esi, 8(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n" /* controlID, error */
-        "movl %eax, 4(%esp)\n" /* error */
-        "movl 8(%ebp), %eax\n" /* inWindow, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll GetControlByID\n"
-        "xorl %ebx, %ebx\n" /* line 259 */
-        "testl %eax, %eax\n"
-        "cmovel -0x1c(%ebp), %ebx\n" /* theControl */
-        "movl %ebx, -0x1c(%ebp)\n" /* theControl */
-        /* } scope */
-        "testl %ebx, %ebx\n" /* line 525 */
-        "je .Lf40b2_0000419c\n"
-        /* { scope 1: testUPP, trackingUPP */
-        "movl 0x10(%ebp), %eax\n" /* line 527 | inDrawProc */
-        "movl %eax, (%esp)\n"
-        "calll NewControlUserPaneDrawUPP\n"
-        "movl %eax, -0x1c(%ebp)\n" /* theControl */
-        "movl %esi, 0x10(%esp)\n" /* line 528 */
-        "movl $4, 0xc(%esp)\n"
-        "movl $0x64726177, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll SetControlData\n"
-        "testl %edi, %edi\n" /* line 530 | inTrackingProc */
-        "je .Lf40b2_0000419c\n"
-        /* { scope 2 */
-        "movl $UserPaneHitTestProc, (%esp)\n" /* line 532 */
-        "calll NewControlUserPaneHitTestUPP\n"
-        "movl %eax, -0x20(%ebp)\n" /* testUPP */
-        "leal -0x20(%ebp), %eax\n" /* line 533 | testUPP */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $4, 0xc(%esp)\n"
-        "movl $0x68697474, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll SetControlData\n"
-        "movl %edi, (%esp)\n" /* line 535 | inTrackingProc */
-        "calll NewControlUserPaneTrackingUPP\n"
-        "movl %eax, -0x24(%ebp)\n" /* trackingUPP */
-        "leal -0x24(%ebp), %eax\n" /* line 536 | trackingUPP */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $4, 0xc(%esp)\n"
-        "movl $0x7472616b, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll SetControlData\n"
-        /* } scope */
-        /* } scope */
-        ".Lf40b2_0000419c:\n"
-        "addl $0x4c, %esp\n" /* line 539 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ControlID controlID;
+    ControlRef theControl = NULL;
+
+    controlID.signature = 0x4974656d; /* 'Item' */
+    controlID.id = inID;
+
+    OSStatus error = GetControlByID(inWindow, &controlID, &theControl);
+    if (error != 0)
+        theControl = NULL;
+
+    if (!theControl)
+        return;
+
+    ControlUserPaneDrawUPP drawUPP = NewControlUserPaneDrawUPP(inDrawProc);
+    SetControlData(theControl, 0, 0x64726177 /* 'draw' */, 4, &drawUPP);
+
+    if (!inTrackingProc)
+        return;
+
+    ControlUserPaneHitTestUPP testUPP = NewControlUserPaneHitTestUPP(UserPaneHitTestProc);
+    SetControlData(theControl, 0, 0x68697474 /* 'hitt' */, 4, &testUPP);
+
+    ControlUserPaneTrackingUPP trackingUPP = NewControlUserPaneTrackingUPP(inTrackingProc);
+    SetControlData(theControl, 0, 0x7472616b /* 'trak' */, 4, &trackingUPP);
 }
 
 /* line 673 */

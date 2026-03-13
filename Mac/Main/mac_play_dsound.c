@@ -13,53 +13,18 @@ void DSound_Shutdown(void);
 void DSound_Frame(void);
 void DSound_SampleFrame(sample_t *sample);
 
-/* line 27 */
-__attribute__((naked))
+/* line 27 — C replacement from snd_mac.c */
 int DSound_UpdateSample(sample_t *sample, char *data, unsigned int data_len)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 27 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* data_len */
-        /* { scope 1 */
-        "cmpb $0, dsoundplay_initialized\n" /* line 29 */
-        "je .Lf1f6054_001f609a\n"
-        "testl %ebx, %ebx\n" /* line 32 | data_len */
-        "jne .Lf1f6054_001f6073\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 43 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1f6054_001f6073:\n"
-        "movl %ebx, -0xc(%ebp)\n" /* line 38 | data_len, size */
-        "leal -0xc(%ebp), %eax\n" /* line 39 | size */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* data */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* sample */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CCircularBuffer_Write\n"
-        "movl %ebx, %eax\n" /* line 42 | data_len */
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 43 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1f6054_001f609a:\n"
-        "movl $0xffffffff, %eax\n" /* line 29 */
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 43 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!dsoundplay_initialized)
+        return -1;
+
+    if (!data_len)
+        return 0;
+
+    unsigned int size = data_len;
+    CCircularBuffer_Write(sample->mssBuffer, data, &size);
+    return data_len;
 }
 
 /* line 47 */
@@ -129,47 +94,24 @@ sample_t * DSound_NewSample(void)
     );
 }
 
-/* line 77 */
-__attribute__((naked))
+/* line 77 — C replacement from snd_mac.c */
 int DSound_Init(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 84 */
-        "cmpb $0, dsoundplay_initialized\n"
-        "movzbl dsoundplay_initialized, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movb %al, dsoundplay_initialized\n"
-        "movl $1, %eax\n" /* line 87 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!dsoundplay_initialized)
+        dsoundplay_initialized = 1;
+    return 1;
 }
 
-/* line 91 */
-__attribute__((naked))
+/* line 91 — C replacement from snd_mac.c */
 void DSound_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 91 */
-        "movl %esp, %ebp\n"
-        "movb $0, dsoundplay_initialized\n" /* line 98 */
-        "popl %ebp\n" /* line 99 */
-        "retl\n"
-    );
+    dsoundplay_initialized = 0;
 }
 
-/* line 103 */
-__attribute__((naked))
+/* line 103 — C replacement from snd_mac.c */
 void DSound_Frame(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 103 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 106 */
-        "retl\n"
-    );
+    /* empty */
 }
 
 /* line 110 */
@@ -222,4 +164,3 @@ void DSound_SampleFrame(sample_t *sample)
         "jmp .Lf1f618e_001f61a7\n"
     );
 }
-

@@ -4,6 +4,10 @@
 #include "common_types.h"
 #include "imports.h"
 
+#include <string.h>
+
+#define noErr 0
+
 static SInt16 sAppFolderVRefNum; /* 0x334a0c */
 static SInt32 sAppFolderDirID; /* 0x334a08 */
 static FSRef sAppBundleRef; /* 0x334a20 */
@@ -19,6 +23,33 @@ OSStatus MacFolders_GetDataFolderItemPath(const char *inItem, char *outPath, int
 OSStatus MacFolders_GetDataFolderItemRef(const char *inItem, FSRef *outRef);
 SInt16 MacFolders_GetApplicationVRefNum(void);
 unsigned char MacFolders_GetApplicationRef(FSRef *outRef);
+
+extern void MacFiles_CleanPath(const char *inPath, char *outPath, int inForHFS);
+
+/*
+ * Inline helper: ensure sAppFolderVRefNum and sAppFolderDirID are initialized.
+ * Corresponds to the repeated "EnsureAppFolderInitialized" pattern at line 32-46.
+ */
+static void EnsureAppFolderInitialized(void)
+{
+    ProcessSerialNumber psn;
+    FSCatalogInfo info;
+
+    if (sAppFolderDirID != 0)
+        return;
+
+    if (GetCurrentProcess(&psn) != noErr)
+        return;
+
+    if (GetProcessBundleLocation(&psn, &sAppBundleRef) != noErr)
+        return;
+
+    if (FSGetCatalogInfo(&sAppBundleRef, 0xC, &info, NULL, NULL, NULL) != noErr)
+        return;
+
+    sAppFolderVRefNum = info.volume;
+    sAppFolderDirID = info.parentDirID;
+}
 
 /* line 185 */
 __attribute__((naked))
@@ -177,35 +208,16 @@ OSStatus MacFolders_GetApplicationFolderItemPath(const char *inItem, char *outPa
 }
 
 /* line 153 */
-__attribute__((naked))
 OSStatus MacFolders_GetApplicationFolderItemRef(const char *inItem, FSRef *outRef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 153 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 156 */
-        "leal -0x408(%ebp), %ebx\n" /* path */
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* inItem, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll MacFolders_GetApplicationFolderItemPath\n"
-        "testl %eax, %eax\n" /* line 157 */
-        "jne .Lf9122_00009164\n"
-        "movl $0, 8(%esp)\n" /* line 159 */
-        "movl 0xc(%ebp), %eax\n" /* outRef */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FSPathMakeRef\n"
-        /* } scope */
-        ".Lf9122_00009164:\n"
-        "addl $0x414, %esp\n" /* line 163 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char path[0x400];
+    OSStatus error;
+
+    error = MacFolders_GetApplicationFolderItemPath(inItem, path, 0x400);
+    if (error != noErr)
+        return error;
+
+    return FSPathMakeRef((const UInt8 *)path, outRef, NULL);
 }
 
 /* line 215 */
@@ -503,247 +515,69 @@ OSStatus MacFolders_GetDataFolderPath(char *outPath, int inMaxPath)
 }
 
 /* line 311 */
-__attribute__((naked))
 OSStatus MacFolders_GetDataFolderItemPath(const char *inItem, char *outPath, int inMaxPath)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 311 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x150, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* outPath */
-        /* { scope 1: spec, ref */
-        /* { scope 2 */
-        "movl sAppFolderDirID, %eax\n" /* line 32 */
-        "testl %eax, %eax\n"
-        "je .Lf963c_00009697\n"
-        ".Lf963c_00009653:\n"
-        "movzwl sAppFolderVRefNum, %eax\n" /* line 291 */
-        "movw %ax, -0x56(%ebp)\n" /* spec */
-        "calll MacFolders_GetDataFolderID\n" /* line 292 */
-        "movl %eax, -0x54(%ebp)\n"
-        "movb $0, -0x50(%ebp)\n" /* line 293 */
-        "leal -0xa6(%ebp), %edi\n" /* line 296 | ref */
-        "movl %edi, 4(%esp)\n"
-        "leal -0x56(%ebp), %eax\n" /* spec */
-        "movl %eax, (%esp)\n"
-        "calll FSpMakeFSRef\n"
-        "movswl %ax, %edx\n"
-        "testw %ax, %ax\n" /* line 297 */
-        "je .Lf963c_00009716\n"
-        /* } scope */
-        /* } scope */
-        ".Lf963c_0000968b:\n"
-        "movl %edx, %eax\n" /* line 325 */
-        "addl $0x150, %esp\n"
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: spec, ref */
-        /* { scope 2 */
-        ".Lf963c_00009697:\n"
-        "leal -0x10(%ebp), %edi\n" /* line 35 */
-        "movl %edi, (%esp)\n"
-        "calll GetCurrentProcess\n"
-        "testw %ax, %ax\n" /* line 36 */
-        "jne .Lf963c_00009653\n"
-        "movl $sAppBundleRef, 4(%esp)\n" /* line 38 */
-        "movl %edi, (%esp)\n"
-        "calll GetProcessBundleLocation\n"
-        "testl %eax, %eax\n" /* line 39 */
-        "jne .Lf963c_00009653\n"
-        "movl $0, 0x14(%esp)\n" /* line 42 */
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "leal -0x136(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0xc, 4(%esp)\n"
-        "movl $sAppBundleRef, (%esp)\n"
-        "calll FSGetCatalogInfo\n"
-        "testw %ax, %ax\n" /* line 43 */
-        "jne .Lf963c_00009653\n"
-        "movl -0x134(%ebp), %eax\n" /* line 45 */
-        "movw %ax, sAppFolderVRefNum\n"
-        "movl -0x132(%ebp), %eax\n" /* line 46 */
-        "movl %eax, sAppFolderDirID\n"
-        "jmp .Lf963c_00009653\n"
-        ".Lf963c_00009716:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 299 | inMaxPath */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FSRefMakePath\n"
-        "movl %eax, %edx\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 314 */
-        "jne .Lf963c_0000968b\n"
-        "movl 8(%ebp), %edx\n" /* line 316 | inItem */
-        "movzbl (%edx), %eax\n"
-        "cmpb $0x2f, %al\n"
-        "je .Lf963c_00009788\n"
-        "cmpb $0x5c, %al\n"
-        "je .Lf963c_00009783\n"
-        "cld\n" /* line 318 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* outPath */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "movw $0x2f, -1(%ecx, %ebx)\n"
-        "movl 8(%ebp), %eax\n" /* inItem */
-        ".Lf963c_00009759:\n"
-        "movl %eax, 4(%esp)\n" /* line 320 */
-        "movl %ebx, (%esp)\n" /* outPath */
-        "calll strcat\n"
-        "movl $0, 4(%esp)\n" /* line 321 */
-        "movl %ebx, (%esp)\n" /* outPath */
-        "calll MacFiles_CleanPath\n"
-        "xorl %edx, %edx\n"
-        /* } scope */
-        "movl %edx, %eax\n" /* line 325 */
-        "addl $0x150, %esp\n"
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf963c_00009783:\n"
-        "movl 8(%ebp), %eax\n" /* inItem */
-        "jmp .Lf963c_00009759\n"
-        ".Lf963c_00009788:\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf963c_00009759\n"
-    );
+    FSSpec spec;
+    FSRef ref;
+    OSStatus error;
+
+    EnsureAppFolderInitialized();
+
+    /* Build FSSpec from app folder vRefNum + data folder dir ID */
+    spec.vRefNum = sAppFolderVRefNum;
+    spec.parID = MacFolders_GetDataFolderID();
+    spec.name[0] = 0;
+
+    /* Convert FSSpec -> FSRef */
+    error = FSpMakeFSRef(&spec, &ref);
+    if (error != noErr)
+        return error;
+
+    /* Convert FSRef -> POSIX path */
+    error = FSRefMakePath(&ref, (UInt8 *)outPath, inMaxPath);
+    if (error != noErr)
+        return error;
+
+    /* Append inItem with '/' separator if needed */
+    if (inItem[0] != '/' && inItem[0] != '\\') {
+        size_t len = strlen(outPath);
+        outPath[len] = '/';
+        outPath[len + 1] = '\0';
+    }
+
+    strcat(outPath, inItem);
+    MacFiles_CleanPath(outPath, outPath, 0);
+
+    return noErr;
 }
 
 /* line 332 */
-__attribute__((naked))
 OSStatus MacFolders_GetDataFolderItemRef(const char *inItem, FSRef *outRef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 332 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 335 */
-        "leal -0x408(%ebp), %ebx\n" /* path */
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* inItem, error */
-        "movl %eax, (%esp)\n" /* error */
-        "calll MacFolders_GetDataFolderItemPath\n"
-        "testl %eax, %eax\n" /* line 336 */
-        "jne .Lf978c_000097ce\n"
-        "movl $0, 8(%esp)\n" /* line 338 */
-        "movl 0xc(%ebp), %eax\n" /* outRef */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FSPathMakeRef\n"
-        /* } scope */
-        ".Lf978c_000097ce:\n"
-        "addl $0x414, %esp\n" /* line 342 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char path[0x400];
+    OSStatus error;
+
+    error = MacFolders_GetDataFolderItemPath(inItem, path, 0x400);
+    if (error != noErr)
+        return error;
+
+    return FSPathMakeRef((const UInt8 *)path, outRef, NULL);
 }
 
 /* line 58 */
-__attribute__((naked))
 SInt16 MacFolders_GetApplicationVRefNum(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 58 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0xc4, %esp\n"
-        "movl sAppFolderDirID, %edx\n" /* line 32 */
-        "testl %edx, %edx\n"
-        "je .Lf97d8_000097fc\n"
-        ".Lf97d8_000097ec:\n"
-        "movswl sAppFolderVRefNum, %eax\n" /* line 46 */
-        "addl $0xc4, %esp\n" /* line 63 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf97d8_000097fc:\n"
-        "leal -0x10(%ebp), %ebx\n" /* line 35 */
-        "movl %ebx, (%esp)\n"
-        "calll GetCurrentProcess\n"
-        "testw %ax, %ax\n" /* line 36 */
-        "jne .Lf97d8_000097ec\n"
-        "movl $sAppBundleRef, 4(%esp)\n" /* line 38 */
-        "movl %ebx, (%esp)\n"
-        "calll GetProcessBundleLocation\n"
-        "testl %eax, %eax\n" /* line 39 */
-        "jne .Lf97d8_000097ec\n"
-        "movl $0, 0x14(%esp)\n" /* line 42 */
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "leal -0xa0(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0xc, 4(%esp)\n"
-        "movl $sAppBundleRef, (%esp)\n"
-        "calll FSGetCatalogInfo\n"
-        "testw %ax, %ax\n" /* line 43 */
-        "jne .Lf97d8_000097ec\n"
-        "movzwl -0x9e(%ebp), %eax\n" /* line 45 */
-        "movw %ax, sAppFolderVRefNum\n"
-        "movl -0x9c(%ebp), %eax\n" /* line 46 */
-        "movl %eax, sAppFolderDirID\n"
-        "jmp .Lf97d8_000097ec\n"
-    );
+    EnsureAppFolderInitialized();
+
+    return sAppFolderVRefNum;
 }
 
 /* line 69 */
-__attribute__((naked))
 unsigned char MacFolders_GetApplicationRef(FSRef *outRef)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 69 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0xc4, %esp\n"
-        "movl sAppFolderDirID, %ecx\n" /* line 32 */
-        "testl %ecx, %ecx\n"
-        "je .Lf9878_000098b0\n"
-        ".Lf9878_0000988c:\n"
-        "movl $0x50, 8(%esp)\n" /* line 73 */
-        "movl $sAppBundleRef, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* outRef */
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "addl $0xc4, %esp\n" /* line 74 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf9878_000098b0:\n"
-        "leal -0x10(%ebp), %ebx\n" /* line 35 */
-        "movl %ebx, (%esp)\n"
-        "calll GetCurrentProcess\n"
-        "testw %ax, %ax\n" /* line 36 */
-        "jne .Lf9878_0000988c\n"
-        "movl $sAppBundleRef, 4(%esp)\n" /* line 38 */
-        "movl %ebx, (%esp)\n"
-        "calll GetProcessBundleLocation\n"
-        "testl %eax, %eax\n" /* line 39 */
-        "jne .Lf9878_0000988c\n"
-        "movl $0, 0x14(%esp)\n" /* line 42 */
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "leal -0xa0(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0xc, 4(%esp)\n"
-        "movl $sAppBundleRef, (%esp)\n"
-        "calll FSGetCatalogInfo\n"
-        "testw %ax, %ax\n" /* line 43 */
-        "jne .Lf9878_0000988c\n"
-        "movzwl -0x9e(%ebp), %eax\n" /* line 45 */
-        "movw %ax, sAppFolderVRefNum\n"
-        "movl -0x9c(%ebp), %eax\n" /* line 46 */
-        "movl %eax, sAppFolderDirID\n"
-        "jmp .Lf9878_0000988c\n"
-    );
-}
+    EnsureAppFolderInitialized();
 
+    memcpy(outRef, &sAppBundleRef, sizeof(FSRef));
+
+    return 0;
+}

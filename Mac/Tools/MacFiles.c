@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <unistd.h>
 
 void MacFiles_CleanPath(const char *inPath, char *outPath, int inForHFS);
 static void RemoveDirectoryContents(void);
@@ -10,52 +11,26 @@ OSStatus MacFiles_RemoveDirectoryA(const char *inPath);
 int MacFiles_access(const char *inPath, int inMode);
 
 /* line 183 */
-__attribute__((naked))
 void MacFiles_CleanPath(const char *inPath, char *outPath, int inForHFS)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 183 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* inPath */
-        "movl 0xc(%ebp), %ebx\n" /* outPath */
-        "movzbl 0x10(%ebp), %eax\n" /* inForHFS */
-        "movzbl (%ecx), %edx\n" /* line 185 */
-        "testb %dl, %dl\n"
-        "je .Lf8ce0_00008d14\n"
-        "testb %al, %al\n" /* line 205 */
-        "jne .Lf8ce0_00008d1a\n"
-        /* { scope 1 */
-        ".Lf8ce0_00008cf9:\n"
-        "cmpb $0x5c, %dl\n" /* line 189 */
-        "movl $0x2f, %eax\n"
-        "cmovel %eax, %edx\n"
-        "movb %dl, (%ebx)\n" /* line 201 | outPath */
-        "addl $1, %ebx\n" /* outPath */
-        /* } scope */
-        "movzbl 1(%ecx), %edx\n" /* line 185 */
-        "addl $1, %ecx\n"
-        "testb %dl, %dl\n"
-        "jne .Lf8ce0_00008cf9\n"
-        ".Lf8ce0_00008d14:\n"
-        "movb $0, (%ebx)\n" /* line 204 | outPath */
-        "popl %ebx\n" /* line 205 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf8ce0_00008d1a:\n"
-        "cmpb $0x5c, %dl\n" /* line 189 */
-        "movl $0x3a, %eax\n"
-        "cmovel %eax, %edx\n"
-        "movb %dl, (%ebx)\n" /* line 201 | outPath */
-        "addl $1, %ebx\n" /* outPath */
-        /* } scope */
-        "movzbl 1(%ecx), %edx\n" /* line 185 */
-        "addl $1, %ecx\n"
-        "testb %dl, %dl\n"
-        "jne .Lf8ce0_00008d1a\n"
-        "jmp .Lf8ce0_00008d14\n"
-    );
+    const char *src;
+    char *dst;
+    char c;
+
+    src = inPath;
+    dst = outPath;
+
+    c = *src;
+    while (c != '\0') {
+        if (c == '\\') {
+            c = inForHFS ? ':' : '/';
+        }
+        *dst = c;
+        dst++;
+        src++;
+        c = *src;
+    }
+    *dst = '\0';
 }
 
 /* overload skip: MacFiles_CleanPath (0x8d38) */
@@ -237,65 +212,28 @@ OSStatus MacFiles_RemoveDirectoryA(const char *inPath)
 }
 
 /* line 75 */
-__attribute__((naked))
 int MacFiles_access(const char *inPath, int inMode)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x410, %esp\n"
-        "movl 8(%ebp), %eax\n" /* inPath */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movzbl (%eax), %edx\n" /* line 185 */
-        "testb %dl, %dl\n"
-        "je .Lf8f1c_00008f72\n"
-        "movl %eax, %ecx\n"
-        "leal -0x408(%ebp), %esi\n" /* tempPath */
-        "movl %esi, %ebx\n" /* outPath */
-        /* { scope 3 */
-        ".Lf8f1c_00008f3b:\n"
-        "cmpb $0x5c, %dl\n" /* line 189 */
-        "movl $0x2f, %eax\n"
-        "cmovel %eax, %edx\n"
-        "movb %dl, (%ebx)\n" /* line 201 | outPath */
-        "addl $1, %ebx\n" /* outPath */
-        /* } scope */
-        "movzbl 1(%ecx), %edx\n" /* line 185 */
-        "addl $1, %ecx\n"
-        "testb %dl, %dl\n"
-        "jne .Lf8f1c_00008f3b\n"
-        "movb $0, (%ebx)\n" /* line 204 | outPath */
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 80 | inMode */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll access\n"
-        /* } scope */
-        "addl $0x410, %esp\n" /* line 81 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf8f1c_00008f72:\n"
-        "leal -0x408(%ebp), %esi\n" /* line 185 | tempPath */
-        "movl %esi, %ebx\n" /* outPath */
-        "movb $0, (%ebx)\n" /* line 204 | outPath */
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 80 | inMode */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll access\n"
-        /* } scope */
-        "addl $0x410, %esp\n" /* line 81 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char tempPath[1024];
+    const char *src;
+    char *dst;
+    char c;
+
+    src = inPath;
+    dst = tempPath;
+
+    c = *src;
+    while (c != '\0') {
+        if (c == '\\') {
+            c = '/';
+        }
+        *dst = c;
+        dst++;
+        src++;
+        c = *src;
+    }
+    *dst = '\0';
+
+    return access(tempPath, inMode);
 }
 
