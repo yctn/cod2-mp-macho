@@ -2404,52 +2404,19 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
 }
 
 /* line 2018 */
-__attribute__((naked))
 void Key_ClearStates(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2018 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl anykeydown, %eax\n" /* line 2022 */
-        "movl $0, (%eax)\n"
-        "xorl %esi, %esi\n" /* i */
-        "xorl %ebx, %ebx\n"
-        "jmp .Lf141fe4_0014201f\n"
-        ".Lf141fe4_00141ffd:\n"
-        "movl $0, (%ebx, %eax)\n" /* line 2035 */
-        "movl keys, %eax\n" /* line 2036 */
-        "movl $0, 4(%ebx, %eax)\n"
-        "addl $1, %esi\n" /* line 2024 | i */
-        "addl $0xc, %ebx\n"
-        "cmpl $0x100, %esi\n" /* i */
-        "je .Lf141fe4_0014206a\n"
-        ".Lf141fe4_0014201f:\n"
-        "movl keys, %eax\n" /* line 2026 */
-        "movl (%ebx, %eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf141fe4_00141ffd\n"
-        "movl $0, 8(%esp)\n" /* line 2031 */
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* i */
-        "calll CL_KeyEvent\n"
-        "movl keys, %eax\n"
-        "movl $0, (%ebx, %eax)\n" /* line 2035 */
-        "movl keys, %eax\n" /* line 2036 */
-        "movl $0, 4(%ebx, %eax)\n"
-        "addl $1, %esi\n" /* line 2024 | i */
-        "addl $0xc, %ebx\n"
-        "cmpl $0x100, %esi\n" /* i */
-        "jne .Lf141fe4_0014201f\n"
-        /* } scope */
-        ".Lf141fe4_0014206a:\n"
-        "addl $0x10, %esp\n" /* line 2038 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    byte *k;
+
+    *(int *)anykeydown = 0;
+
+    for (i = 0; i < 256; i++) {
+        k = (byte *)keys + i * 12;
+        if (*(int *)k) {
+            CL_KeyEvent(i, 0, 0);
+        }
+        *(int *)k = 0;       /* down */
+        *(int *)(k + 4) = 0; /* repeats */
+    }
 }

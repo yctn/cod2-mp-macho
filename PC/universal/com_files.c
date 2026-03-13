@@ -276,65 +276,28 @@ FILE * FS_FileForHandle(fileHandle_t f)
 }
 
 /* line 708 */
-__attribute__((naked))
+extern char *strstr(const char *, const char *);
+extern void Sys_Mkdir(const char *path);
+extern void Com_Printf(const char *fmt, ...);
 qboolean FS_CreatePath(char *OSPath)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 708 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* OSPath */
-        /* { scope 1 */
-        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
-        "movl %ebx, (%esp)\n" /* OSPath */
-        "calll strstr\n"
-        "testl %eax, %eax\n"
-        "je .Lf32fc6_00033001\n"
-        ".Lf32fc6_00032fe5:\n"
-        "movl %ebx, 4(%esp)\n" /* line 717 | OSPath */
-        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
-" */
-        "calll Com_Printf\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf32fc6_00032ffa:\n"
-        "addl $0x10, %esp\n" /* line 735 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf32fc6_00033001:\n"
-        "movl $str_00215bf8, 4(%esp)\n" /* line 715 */
-        "movl %ebx, (%esp)\n" /* OSPath */
-        "calll strstr\n"
-        "testl %eax, %eax\n"
-        "jne .Lf32fc6_00032fe5\n"
-        "leal 1(%ebx), %edx\n" /* line 721 | OSPath */
-        "movzbl 1(%ebx), %eax\n" /* OSPath */
-        "testb %al, %al\n"
-        "je .Lf32fc6_00033043\n"
-        "movl %edx, %esi\n"
-        "jmp .Lf32fc6_0003302f\n"
-        ".Lf32fc6_00033024:\n"
-        "movzbl 1(%esi), %eax\n"
-        "addl $1, %esi\n"
-        "testb %al, %al\n"
-        "je .Lf32fc6_00033043\n"
-        ".Lf32fc6_0003302f:\n"
-        "cmpb $0x2f, %al\n" /* line 723 */
-        "jne .Lf32fc6_00033024\n"
-        "movb $0, (%esi)\n" /* line 726 */
-        "movl %ebx, (%esp)\n" /* line 727 | OSPath */
-        "calll Sys_Mkdir\n"
-        "movb $0x2f, (%esi)\n" /* line 728 */
-        "jmp .Lf32fc6_00033024\n"
-        ".Lf32fc6_00033043:\n"
-        "xorl %eax, %eax\n" /* line 721 */
-        "jmp .Lf32fc6_00032ffa\n"
-    );
+    char *ofs;
+
+    /* Refuse relative paths */
+    if (strstr(OSPath, str_00216ca0) || strstr(OSPath, str_00215bf8)) {
+        Com_Printf(str_00216ca4, OSPath);
+        return 1;
+    }
+
+    /* Create directories along the path */
+    for (ofs = OSPath + 1; *ofs; ofs++) {
+        if (*ofs == '/') {
+            *ofs = '\0';
+            Sys_Mkdir(OSPath);
+            *ofs = '/';
+        }
+    }
+    return 0;
 }
 
 /* line 796 */
@@ -420,54 +383,25 @@ qboolean FS_FilenameCompare(const char *s1, const char *s2)
 }
 
 /* line 1224 */
-__attribute__((naked))
+extern int stricmp(const char *, const char *);
+extern int I_stricmp(const char *, const char *);
 qboolean FS_PureIgnoresExtension(const char *extension)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1224 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* extension */
-        "leal 1(%ebx), %eax\n" /* line 1227 | extension */
-        "cmpb $0x2e, (%ebx)\n" /* extension */
-        "cmovel %eax, %ebx\n" /* extension */
-        "movl $str_00216cd4, 4(%esp)\n" /* line 1229 */
-        "movl %ebx, (%esp)\n" /* extension */
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf330e4_00033116\n"
-        ".Lf330e4_0003310b:\n"
-        "movl $1, %eax\n" /* line 1241 */
-        ".Lf330e4_00033110:\n"
-        "addl $0x14, %esp\n" /* line 1245 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf330e4_00033116:\n"
-        "movl $str_00216cd8, 4(%esp)\n" /* line 1231 */
-        "movl %ebx, (%esp)\n" /* extension */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf330e4_0003310b\n"
-        "movl $str_00216ce0, 4(%esp)\n" /* line 1235 */
-        "movl %ebx, (%esp)\n" /* extension */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf330e4_0003310b\n"
-        "movl $str_00216ce4, 4(%esp)\n" /* line 1237 */
-        "movl %ebx, (%esp)\n" /* extension */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf330e4_0003310b\n"
-        "movl $str_00216ce8, 4(%esp)\n" /* line 1241 */
-        "movl %ebx, (%esp)\n" /* extension */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf330e4_0003310b\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf330e4_00033110\n"
-    );
+    /* Skip leading dot */
+    if (*extension == '.')
+        extension++;
+
+    if (!stricmp(extension, str_00216cd4))
+        return 1;
+    if (!I_stricmp(extension, str_00216cd8))
+        return 1;
+    if (!I_stricmp(extension, str_00216ce0))
+        return 1;
+    if (!I_stricmp(extension, str_00216ce4))
+        return 1;
+    if (!I_stricmp(extension, str_00216ce8))
+        return 1;
+    return 0;
 }
 
 /* line 2167 */
@@ -477,115 +411,37 @@ float FS_ResetFiles(void)
 }
 
 /* line 2900 */
-__attribute__((naked))
 float FS_ConvertPath(char *s)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2900 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* s */
-        "movzbl (%edx), %eax\n" /* line 2902 */
-        "testb %al, %al\n"
-        "je .Lf3317a_000331aa\n"
-        "jmp .Lf3317a_00033198\n"
-        ".Lf3317a_00033189:\n"
-        "cmpb $0x3a, %al\n" /* line 2904 */
-        "je .Lf3317a_0003319c\n"
-        "movzbl 1(%edx), %eax\n" /* line 2902 */
-        "addl $1, %edx\n"
-        "testb %al, %al\n"
-        "je .Lf3317a_000331aa\n"
-        ".Lf3317a_00033198:\n"
-        "cmpb $0x5c, %al\n" /* line 2904 */
-        "jne .Lf3317a_00033189\n"
-        ".Lf3317a_0003319c:\n"
-        "movb $0x2f, (%edx)\n" /* line 2906 */
-        "movzbl 1(%edx), %eax\n" /* line 2902 */
-        "addl $1, %edx\n"
-        "testb %al, %al\n"
-        "jne .Lf3317a_00033198\n"
-        ".Lf3317a_000331aa:\n"
-        "popl %ebp\n" /* line 2910 */
-        "retl\n"
-    );
+    while (*s) {
+        if (*s == '\\' || *s == ':')
+            *s = '/';
+        s++;
+    }
 }
 
 /* line 3447 */
-__attribute__((naked))
 float FS_ShutdownServerIwdNames(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3447 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl fs_numServerIwds, %eax\n" /* line 3451 */
-        "testl %eax, %eax\n"
-        "jle .Lf331ae_000331e8\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl $fs_serverIwdNames, %ebx\n"
-        ".Lf331ae_000331c6:\n"
-        "movl (%ebx), %eax\n" /* line 3453 */
-        "testl %eax, %eax\n"
-        "je .Lf331ae_000331d4\n"
-        "movl %eax, (%esp)\n" /* line 3455 */
-        "calll Z_FreeInternal\n"
-        ".Lf331ae_000331d4:\n"
-        "movl $0, (%ebx)\n" /* line 3457 */
-        "addl $1, %esi\n" /* line 3451 | i */
-        "addl $4, %ebx\n"
-        "cmpl fs_numServerIwds, %esi\n" /* i */
-        "jl .Lf331ae_000331c6\n"
-        ".Lf331ae_000331e8:\n"
-        "movl $0, fs_numServerIwds\n" /* line 3459 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 3460 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    for (i = 0; i < fs_numServerIwds; i++) {
+        if (fs_serverIwdNames[i])
+            Z_FreeInternal(fs_serverIwdNames[i]);
+        fs_serverIwdNames[i] = 0;
+    }
+    fs_numServerIwds = 0;
 }
 
 /* line 3469 */
-__attribute__((naked))
 float FS_ShutdownServerReferencedIwds(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3469 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl fs_numServerReferencedIwds, %eax\n" /* line 3473 */
-        "testl %eax, %eax\n"
-        "jle .Lf331fa_00033234\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl $fs_serverReferencedIwdNames, %ebx\n"
-        ".Lf331fa_00033212:\n"
-        "movl (%ebx), %eax\n" /* line 3475 */
-        "testl %eax, %eax\n"
-        "je .Lf331fa_00033220\n"
-        "movl %eax, (%esp)\n" /* line 3477 */
-        "calll Z_FreeInternal\n"
-        ".Lf331fa_00033220:\n"
-        "movl $0, (%ebx)\n" /* line 3479 */
-        "addl $1, %esi\n" /* line 3473 | i */
-        "addl $4, %ebx\n"
-        "cmpl fs_numServerReferencedIwds, %esi\n" /* i */
-        "jl .Lf331fa_00033212\n"
-        ".Lf331fa_00033234:\n"
-        "movl $0, fs_numServerReferencedIwds\n" /* line 3481 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 3482 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    for (i = 0; i < fs_numServerReferencedIwds; i++) {
+        if (fs_serverReferencedIwdNames[i])
+            Z_FreeInternal(fs_serverReferencedIwdNames[i]);
+        fs_serverReferencedIwdNames[i] = 0;
+    }
+    fs_numServerReferencedIwds = 0;
 }
 
 /* line 3544 */
@@ -734,55 +590,24 @@ float FS_FreeFileList(const char **list, int allocTrackType)
 }
 
 /* line 572 */
-__attribute__((naked))
+extern void FS_FileSeek(void *stream, int offset, int origin);
 int FS_filelength(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 572 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* f */
-        /* { scope 1 */
-        "leal (%edx, %edx, 8), %eax\n" /* line 586 */
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $2, %eax\n"
-        "movl fsh+20(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf33476_000334a8\n"
-        "movl fsh(%eax), %eax\n" /* line 589 */
-        "movl 0x44(%eax), %eax\n"
-        /* } scope */
-        ".Lf33476_000334a0:\n"
-        "addl $0x1c, %esp\n" /* line 602 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf33476_000334a8:\n"
-        "movl fsh(%eax), %ebx\n" /* line 544 */
-        "movl %ebx, (%esp)\n" /* line 595 | h */
-        "calll ftell\n"
-        "movl %eax, %edi\n"
-        "movl $2, 8(%esp)\n" /* line 596 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* h */
-        "calll FS_FileSeek\n"
-        "movl %ebx, (%esp)\n" /* line 597 | h */
-        "calll ftell\n"
-        "movl %eax, %esi\n"
-        "movl $0, 8(%esp)\n" /* line 598 */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* h */
-        "calll FS_FileSeek\n"
-        "movl %esi, %eax\n"
-        "jmp .Lf33476_000334a0\n"
-    );
+    byte *entry = (byte *)fsh + f * 284;
+    void *h;
+    int pos, end;
+
+    /* If zipfile, return stored size */
+    if (*(int *)(entry + 20))
+        return *(int *)(*(byte **)entry + 0x44);
+
+    /* Otherwise seek to end and back */
+    h = *(void **)entry;
+    pos = ftell(h);
+    FS_FileSeek(h, 0, 2);
+    end = ftell(h);
+    FS_FileSeek(h, pos, 0);
+    return end;
 }
 
 /* line 884 */
@@ -1495,38 +1320,19 @@ float FS_BuildOSPath(const char *base, const char *game, const char *qpath, char
 }
 
 /* line 814 */
-__attribute__((naked))
+extern int FS_FileOpen(const char *path, const char *mode);
+extern void FS_FileClose(int handle);
 qboolean FS_FileExists(const char *file)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 814 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x114, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* file */
-        /* { scope 1 */
-        "movl fs_homepath, %eax\n" /* line 697 */
-        "movl 8(%eax), %eax\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x108(%ebp), %ebx\n" /* testpath */
-        "movl %ebx, (%esp)\n"
-        "movl $fs_gamedir, %edx\n"
-        "calll FS_BuildOSPath_Internal\n"
-        "movl $str_00215b98, 4(%esp)\n" /* line 825 */
-        "movl %ebx, (%esp)\n"
-        "calll FS_FileOpen\n"
-        "testl %eax, %eax\n" /* line 826 */
-        "je .Lf33d28_00033d79\n"
-        "movl %eax, (%esp)\n" /* line 828 */
-        "calll FS_FileClose\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf33d28_00033d79:\n"
-        "addl $0x114, %esp\n" /* line 832 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char testpath[256];
+    int handle;
+
+    FS_BuildOSPath(fs_homepath->current.string, fs_gamedir, file, testpath);
+    handle = FS_FileOpen(testpath, str_00215b98);
+    if (!handle)
+        return 0;
+    FS_FileClose(handle);
+    return 1;
 }
 
 /* line 1709 */

@@ -492,168 +492,75 @@ void CL_ReferencedIWDList_f(void)
 }
 
 /* line 1970 */
-__attribute__((naked))
 void CL_Configstrings_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1970 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "cmpl $8, clientConnections\n" /* line 1975 */
-        "je .Lf147c40_00147c64\n"
-        "movl $str_002a8b24, (%esp)\n" /* line 1977 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf147c40_00147c5d:\n"
-        "addl $0x10, %esp\n" /* line 1990 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147c40_00147c64:\n"
-        "xorl %ebx, %ebx\n" /* line 1978 | i */
-        "movl cl, %esi\n"
-        "jmp .Lf147c40_00147c79\n"
-        ".Lf147c40_00147c6e:\n"
-        "addl $1, %ebx\n" /* line 1981 | i */
-        "cmpl $0x800, %ebx\n" /* i */
-        "je .Lf147c40_00147c5d\n"
-        ".Lf147c40_00147c79:\n"
-        "movl 0x270c(%esi, %ebx, 4), %eax\n" /* line 1983 */
-        "testl %eax, %eax\n" /* line 1984 */
-        "je .Lf147c40_00147c6e\n"
-        "leal 0x470c(%esi, %eax), %eax\n" /* line 1988 */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* i */
-        "movl $str_002a8b40, (%esp)\n" /* "%4i: %s
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf147c40_00147c6e\n"
-    );
+    int i;
+    byte *cl;
+    int offset;
+
+    if (*(int *)&clientConnections[0] != 8) {
+        Com_Printf(str_002a8b24);
+        return;
+    }
+
+    cl = *(byte **)imp_cl;
+    for (i = 0; i < 0x800; i++) {
+        offset = *(int *)(cl + 0x270c + i * 4);
+        if (offset)
+            Com_Printf(str_002a8b40, i, cl + 0x470c + offset);
+    }
 }
 
 /* line 1998 */
-__attribute__((naked))
+extern const char *Dvar_InfoString(int bit);
+extern void Info_Print(const char *s);
 void CL_Clientinfo_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1998 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $str_002a8b4c, (%esp)\n" /* line 2000 */
-        "calll Com_Printf\n"
-        "movl clc, %eax\n" /* line 2001 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a8b74, (%esp)\n" /* "state: %i
-" */
-        "calll Com_Printf\n"
-        "movl $cls+8, 4(%esp)\n" /* line 2002 */
-        "movl $str_002a74a0, (%esp)\n" /* "Server: %s
-" */
-        "calll Com_Printf\n"
-        "movl $str_002a8b80, (%esp)\n" /* line 2003 */
-        "calll Com_Printf\n"
-        "movl $2, (%esp)\n" /* line 2004 */
-        "calll Dvar_InfoString\n"
-        "movl %eax, (%esp)\n"
-        "calll Info_Print\n"
-        "movl $str_002a8b98, (%esp)\n" /* line 2005 */
-        "calll Com_Printf\n"
-        "leave\n" /* line 2006 */
-        "retl\n"
-    );
+    Com_Printf(str_002a8b4c);
+    Com_Printf(str_002a8b74, **(int **)imp_clc);
+    Com_Printf(str_002a74a0, (char *)&cls + 8);
+    Com_Printf(str_002a8b80);
+    Info_Print(Dvar_InfoString(2));
+    Com_Printf(str_002a8b98);
 }
 
 /* line 2413 */
-__attribute__((naked))
+extern int MSG_ReadByte(msg_t *msg);
+extern void MSG_ReadData(msg_t *msg, void *data, int len);
+extern Bool CL_IsPlayerMuted(int clientNum);
+extern void Voice_IncomingVoiceData(int talker, const byte *data, int dataLen);
 void CL_VoicePacket(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2413 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x12c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* msg */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 2419 | msg */
-        "calll MSG_ReadByte\n"
-        "movl %eax, %ebx\n" /* numPackets */
-        "cmpl $0x28, %eax\n" /* line 2421 */
-        "ja .Lf147d0e_00147d30\n"
-        "testl %eax, %eax\n" /* line 2424 */
-        "jg .Lf147d0e_00147d3b\n"
-        /* } scope */
-        ".Lf147d0e_00147d30:\n"
-        "addl $0x12c, %esp\n" /* line 2460 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147d0e_00147d3b:\n"
-        "xorl %edi, %edi\n" /* line 2421 | packet */
-        "jmp .Lf147d0e_00147d46\n"
-        ".Lf147d0e_00147d3f:\n"
-        "addl $1, %edi\n" /* line 2424 | packet */
-        "cmpl %edi, %ebx\n" /* packet, numPackets */
-        "je .Lf147d0e_00147d30\n"
-        ".Lf147d0e_00147d46:\n"
-        "movl %esi, (%esp)\n" /* line 2427 | msg */
-        "calll MSG_ReadByte\n"
-        "movb %al, -0x11d(%ebp)\n" /* voicePacket */
-        "movl %esi, (%esp)\n" /* line 2428 | msg */
-        "calll MSG_ReadByte\n"
-        "movl %eax, %edx\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal -1(%eax), %eax\n" /* line 2429 */
-        "cmpl $0xff, %eax\n"
-        "ja .Lf147d0e_00147dcb\n"
-        "movl %edx, 8(%esp)\n" /* line 2435 */
-        "leal -0x11c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* msg */
-        "calll MSG_ReadData\n"
-        "movzbl -0x11d(%ebp), %eax\n" /* line 2437 | voicePacket */
-        "cmpb $0x3f, %al\n"
-        "ja .Lf147d0e_00147de0\n"
-        "movzbl %al, %eax\n" /* line 2443 */
-        "movl %eax, (%esp)\n"
-        "calll CL_IsPlayerMuted\n"
-        "testb %al, %al\n"
-        "jne .Lf147d0e_00147d3f\n"
-        "movl cl_voice, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf147d0e_00147d3f\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 2444 */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x11c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movzbl -0x11d(%ebp), %eax\n" /* voicePacket */
-        "movl %eax, (%esp)\n"
-        "calll Voice_IncomingVoiceData\n"
-        "jmp .Lf147d0e_00147d3f\n"
-        ".Lf147d0e_00147dcb:\n"
-        "movl %edx, 4(%esp)\n" /* line 2431 */
-        "movl $str_002a8bc0, (%esp)\n" /* "Invalid server voice packet of %i bytes
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf147d0e_00147d30\n"
-        ".Lf147d0e_00147de0:\n"
-        "movzbl %al, %eax\n" /* line 2439 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a8bec, (%esp)\n" /* "Invalid voice packet - talker was %i
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf147d0e_00147d30\n"
-    );
+    byte voiceData[256];
+    int numPackets, packet, talker, dataLen;
+
+    numPackets = MSG_ReadByte(msg);
+    if (numPackets > 40 || numPackets <= 0)
+        return;
+
+    for (packet = 0; packet < numPackets; packet++) {
+        talker = MSG_ReadByte(msg);
+        dataLen = MSG_ReadByte(msg);
+
+        if (dataLen < 1 || dataLen > 256) {
+            Com_Printf(str_002a8bc0, dataLen);
+            return;
+        }
+
+        MSG_ReadData(msg, voiceData, dataLen);
+
+        if (talker > 63) {
+            Com_Printf(str_002a8bec, talker);
+            return;
+        }
+
+        if (CL_IsPlayerMuted(talker))
+            continue;
+        if (!cl_voice->current.enabled)
+            continue;
+
+        Voice_IncomingVoiceData(talker, voiceData, dataLen);
+    }
 }
 
 /* line 2463 */
@@ -2451,52 +2358,25 @@ FontHandle CL_RegisterFont(const char *fontName, int imageTrack)
 }
 
 /* line 676 */
-__attribute__((naked))
 void CL_WriteDemoMessage(msg_t *msg, int headerBytes)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 676 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* headerBytes */
-        /* { scope 1 */
-        "movl clientConnections+131384, %eax\n" /* line 682 */
-        "movl %eax, -0x1c(%ebp)\n" /* swlen */
-        "movl clientConnections+264112, %eax\n" /* line 683 */
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* swlen */
-        "movl %eax, (%esp)\n"
-        "calll FS_Write\n"
-        "movl 8(%ebp), %eax\n" /* line 686 | msg */
-        "movl 0xc(%eax), %ebx\n"
-        "subl %edi, %ebx\n" /* headerBytes */
-        "movl %ebx, -0x1c(%ebp)\n" /* line 687 | swlen */
-        "movl clc, %esi\n" /* line 688 */
-        "movl 0x407b0(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $4, 4(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* swlen */
-        "movl %eax, (%esp)\n"
-        "calll FS_Write\n"
-        "movl 0x407b0(%esi), %eax\n" /* line 689 */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* msg */
-        "addl 4(%eax), %edi\n" /* headerBytes */
-        "movl %edi, (%esp)\n" /* headerBytes */
-        "calll FS_Write\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 690 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cc = (byte *)&clientConnections[0];
+    int swlen;
+    int len;
+    int demofile;
+
+    /* Write sequence number */
+    swlen = *(int *)(cc + 131384);
+    FS_Write(&swlen, 4, *(int *)(cc + 0x407b0));
+
+    /* Write message length minus header */
+    len = msg->cursize - headerBytes;
+    swlen = len;
+    demofile = *(int *)(cc + 0x407b0);
+    FS_Write(&swlen, 4, demofile);
+
+    /* Write message data after header */
+    FS_Write(msg->data + headerBytes, len, demofile);
 }
 
 /* line 730 */
