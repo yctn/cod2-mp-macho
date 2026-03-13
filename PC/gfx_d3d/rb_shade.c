@@ -17,6 +17,12 @@ extern const vec4_t debugShaderConsts[]; /* rodata.c */
 extern const GfxStateOverride overrideEnableRenormalize; /* rodata.c */
 extern const DWORD s_fvfForVertDeclType[]; /* rodata.c */
 
+extern void R_FatalLockError(HRESULT hr);
+extern void Com_Memcpy(void *dest, const void *src, int count);
+extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
+extern void RB_UpdateViewport(void);
+extern int RB_SetIteratorFog(void);
+
 static inline char *RB_TessBase(void)
 {
     return (char *)imp_tess;
@@ -54,110 +60,61 @@ void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, i
 }
 
 /* line 132 */
-__attribute__((naked))
 int RB_SetIndexData(const r_index_t *indices, int indexCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 132 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edi\n" /* line 146 | indexCount, indexDataSize */
-        "addl %edi, %edi\n" /* indexDataSize */
-        "movl imp_dx, %esi\n" /* line 149 | lockFlags */
-        "movl 0x2d8c(%esi), %edx\n" /* lockFlags */
-        "movl %edi, %eax\n" /* indexDataSize */
-        "addl (%edx), %eax\n"
-        "cmpl 4(%edx), %eax\n"
-        "setg %al\n"
-        "testb %al, %al\n" /* line 150 */
-        "je .Lff6e6a_000f6e9e\n"
-        "movl $0, (%edx)\n" /* line 151 */
-        "movl 0x2d8c(%esi), %edx\n" /* lockFlags */
-        ".Lff6e6a_000f6e9e:\n"
-        "movl (%edx), %ecx\n" /* line 153 */
-        "testl %ecx, %ecx\n"
-        "jne .Lff6e6a_000f6eb0\n"
-        "leal 0x2d80(%esi), %edx\n" /* line 155 | lockFlags */
-        "movl %edx, 0x2d8c(%esi)\n" /* lockFlags */
-        ".Lff6e6a_000f6eb0:\n"
-        "movl (%edx), %ecx\n" /* line 164 */
-        "movl %ecx, %ebx\n" /* dxIb */
-        "shrl $1, %ebx\n" /* dxIb */
-        "movl %ebx, -0x2c(%ebp)\n" /* dxIb, baseIndex */
-        "movl 8(%edx), %ebx\n" /* line 1011 | dxIb */
-        "testb %al, %al\n" /* line 170 */
-        "jne .Lff6e6a_000f6efc\n"
-        "movl 0x2c20(%esi), %edx\n" /* lockFlags */
-        "testl %edx, %edx\n"
-        "je .Lff6e6a_000f6ef8\n"
-        ".Lff6e6a_000f6eca:\n"
-        "movl $__mh_execute_header, %esi\n" /* lockFlags */
-        "leal -0x1c(%ebp), %eax\n" /* line 180 | bufferData */
-        "movl (%ebx), %edx\n" /* dxIb */
-        "movl %esi, 0x10(%esp)\n" /* lockFlags */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* indexDataSize */
-        "movl %ecx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* dxIb */
-        "calll *0x2c(%edx)\n"
-        "testl %eax, %eax\n" /* line 182 */
-        "jns .Lff6e6a_000f6f20\n"
-        ".Lff6e6a_000f6eee:\n"
-        "movl %eax, (%esp)\n" /* line 183 */
-        "calll R_FatalLockError\n"
-        "jmp .Lff6e6a_000f6f20\n"
-        ".Lff6e6a_000f6ef8:\n"
-        "testl %ecx, %ecx\n" /* line 170 */
-        "jne .Lff6e6a_000f6eca\n"
-        ".Lff6e6a_000f6efc:\n"
-        "movl $0x2000, %esi\n" /* lockFlags */
-        "leal -0x1c(%ebp), %eax\n" /* line 180 | bufferData */
-        "movl (%ebx), %edx\n" /* dxIb */
-        "movl %esi, 0x10(%esp)\n" /* lockFlags */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* indexDataSize */
-        "movl %ecx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* dxIb */
-        "calll *0x2c(%edx)\n"
-        "testl %eax, %eax\n" /* line 182 */
-        "js .Lff6e6a_000f6eee\n"
-        ".Lff6e6a_000f6f20:\n"
-        "movl %edi, 8(%esp)\n" /* line 192 | indexDataSize */
-        "movl 8(%ebp), %eax\n" /* indices */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* bufferData */
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        "movl imp_alwaysfails, %esi\n" /* lockFlags */
-        ".Lff6e6a_000f6f3c:\n"
-        "movl (%ebx), %eax\n" /* line 197 | dxIb */
-        "movl %ebx, (%esp)\n" /* dxIb */
-        "calll *0x30(%eax)\n"
-        "movl (%esi), %eax\n" /* lockFlags */
-        "testl %eax, %eax\n"
-        "jne .Lff6e6a_000f6f3c\n"
-        "movl imp_dxState, %eax\n" /* line 212 */
-        "cmpl 0x20cc(%eax), %ebx\n" /* dxIb */
-        "je .Lff6e6a_000f6f5f\n"
-        "movl %ebx, (%esp)\n" /* line 213 | dxIb */
-        "calll RB_ChangeIndices\n"
-        ".Lff6e6a_000f6f5f:\n"
-        "movl imp_dx, %eax\n" /* line 201 */
-        "movl 0x2d8c(%eax), %eax\n"
-        "addl %edi, (%eax)\n" /* indexDataSize */
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 206 | baseIndex */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *dx = (char *)imp_dx;
+    int indexDataSize = indexCount * 2;  /* r_index_t = 2 bytes */
+    char **pLockSlot = (char **)(dx + 0x2d8c);
+    char *lockState = *pLockSlot;
+    int overflow;
+    int byteOffset;
+    int baseIndex;
+    IDirect3DIndexBuffer9 *ib;
+    DWORD lockFlags;
+    void *bufferData;
+    HRESULT hr;
+
+    /* Check if new data fits; overflow means we need to wrap to beginning */
+    overflow = (*(int *)lockState + indexDataSize) > *(int *)(lockState + 4);
+    if (overflow)
+        *(int *)lockState = 0;
+
+    /* If offset is at beginning, switch to the primary (non-overflow) lock slot */
+    if (*(int *)lockState == 0) {
+        lockState = dx + 0x2d80;
+        *pLockSlot = lockState;
+    }
+
+    byteOffset = *(int *)lockState;
+    baseIndex = byteOffset >> 1;  /* byte offset -> index number */
+    ib = *(IDirect3DIndexBuffer9 **)(lockState + 8);
+
+    /* D3DLOCK_NOOVERWRITE (0) when safe to append; D3DLOCK_DISCARD (0x2000) to reset */
+    if (!overflow && (*(int *)(dx + 0x2c20) != 0 || byteOffset != 0))
+        lockFlags = 0;       /* D3DLOCK_NOOVERWRITE */
+    else
+        lockFlags = 0x2000;  /* D3DLOCK_DISCARD */
+
+    /* Lock the index buffer via COM vtable slot 11 = IDirect3DIndexBuffer9::Lock */
+    hr = ((HRESULT (*)(IDirect3DIndexBuffer9*, UINT, UINT, void**, DWORD))
+          (*(void***)(ib))[11])(ib, (UINT)byteOffset, (UINT)indexDataSize, &bufferData, lockFlags);
+    if (hr < 0)
+        R_FatalLockError(hr);
+
+    Com_Memcpy(bufferData, indices, indexDataSize);
+
+    /* Unlock via COM vtable slot 12 = IDirect3DIndexBuffer9::Unlock */
+    do {
+        ((HRESULT (*)(IDirect3DIndexBuffer9*))(*(void***)(ib))[12])(ib);
+    } while (*(int *)imp_alwaysfails);
+
+    if (ib != *(IDirect3DIndexBuffer9 **)(((char *)imp_dxState) + 0x20cc))
+        RB_ChangeIndices(ib);
+
+    /* Advance the write position in the current lock slot */
+    *(int *)*pLockSlot += indexDataSize;
+
+    return baseIndex;
 }
 
 /* line 522 */
@@ -3766,81 +3723,46 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
 }
 
 /* line 1556 */
-__attribute__((naked))
 void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args)
 {
+    char *backEnd = (char *)imp_backEnd;
+    char *tess = RB_TessBase();
+    MaterialTechniqueType techType;
+    const GfxStateOverride *stateOverride;
+
+    /* Update viewport if pending (clears the pending flag) */
+    if (*(byte *)(backEnd + 0x4bc) != 0)
+        RB_UpdateViewport();
+
+    techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);
+
+    /* techType in [6..17]: set up per-pixel lighting constants */
+    if ((unsigned)(techType - 6) <= 11) {
+        RB_SetupLighting();
+        techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);  /* re-read; SetupLighting may change it */
+    }
+
+    /* techType in [3..26]: set up fog iterator */
+    if ((unsigned)(techType - 3) <= 0x17)
+        RB_SetIteratorFog();
+
+    /* Re-read techType after potential modifications by the above calls */
+    techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);
+
+    /* On DX7, techType in [9..14] (skinned/lit models) need normal renormalization */
+    stateOverride = NULL;
+    if (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2 && (unsigned)(techType - 9) <= 5)
+        stateOverride = &overrideEnableRenormalize;
+
+    /* RB_DrawSingleTechnique uses a non-standard register calling convention:
+     * eax = techType (from tess), edx = vertDeclType, ecx = args, stack = stateOverride */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1556 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xc, %esp\n"
-        "movl 8(%ebp), %edi\n" /* vertDeclType */
-        "movl 0xc(%ebp), %esi\n" /* args */
-        /* { scope 1 */
-        "movl imp_backEnd, %eax\n" /* line 1562 */
-        "cmpb $0, 0x4bc(%eax)\n"
-        "jne .Lff9d2a_000f9dd9\n"
-        ".Lff9d2a_000f9d4b:\n"
-        "movl imp_tess, %ebx\n" /* line 1567 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "leal -6(%edx), %eax\n"
-        "cmpl $0xb, %eax\n"
-        "jbe .Lff9d2a_000f9dcc\n"
-        ".Lff9d2a_000f9d5f:\n"
-        "leal -3(%edx), %eax\n" /* line 1569 */
-        "cmpl $0x17, %eax\n"
-        "jbe .Lff9d2a_000f9dc5\n"
-        ".Lff9d2a_000f9d67:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lff9d2a_000f9d94\n"
-        ".Lff9d2a_000f9d74:\n"
-        "xorl %edx, %edx\n" /* line 1577 */
-        "movl imp_tess, %eax\n" /* line 1582 */
-        "movl 0x5a7c0(%eax), %eax\n"
-        "movl %edx, 8(%ebp)\n" /* vertDeclType */
-        "movl %esi, %ecx\n" /* args */
-        "movl %edi, %edx\n" /* vertDeclType */
-        /* } scope */
-        "addl $0xc, %esp\n" /* line 1584 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp RB_DrawSingleTechnique\n" /* line 1582 */
-        ".Lff9d2a_000f9d94:\n"
-        "movl 0x5a7c0(%ebx), %eax\n" /* line 1577 */
-        "subl $9, %eax\n"
-        "cmpl $5, %eax\n"
-        "ja .Lff9d2a_000f9d74\n"
-        "movl $overrideEnableRenormalize, %edx\n"
-        "movl imp_tess, %eax\n" /* line 1582 */
-        "movl 0x5a7c0(%eax), %eax\n"
-        "movl %edx, 8(%ebp)\n" /* vertDeclType */
-        "movl %esi, %ecx\n" /* args */
-        "movl %edi, %edx\n" /* vertDeclType */
-        /* } scope */
-        "addl $0xc, %esp\n" /* line 1584 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp RB_DrawSingleTechnique\n" /* line 1582 */
-        ".Lff9d2a_000f9dc5:\n"
-        "calll RB_SetIteratorFog\n" /* line 1570 */
-        "jmp .Lff9d2a_000f9d67\n"
-        ".Lff9d2a_000f9dcc:\n"
-        "calll RB_SetupLighting\n" /* line 1568 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "jmp .Lff9d2a_000f9d5f\n"
-        ".Lff9d2a_000f9dd9:\n"
-        "calll RB_UpdateViewport\n" /* line 1563 */
-        "jmp .Lff9d2a_000f9d4b\n"
+        "pushl %3\n"
+        "call RB_DrawSingleTechnique\n"
+        "addl $4, %%esp\n"
+        :
+        : "a"((int)techType), "d"((int)vertDeclType), "c"(args), "r"(stateOverride)
+        : "memory"
     );
 }
 
