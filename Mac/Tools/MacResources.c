@@ -5,6 +5,9 @@
 #include "common_types.h"
 #include "imports.h"
 
+/* Forward declarations */
+HCURSOR SetWinCursor(HCURSOR hCursor);
+
 extern int sResult; /* cached CFStringRef for MacResources_Get* */
 extern int sSavedWinCursor;
 extern int sCurrentCursor; /* WinCursor* */
@@ -469,7 +472,7 @@ void SwitchToWinCursor(void)
 {
     int saveWinCursor = sSavedWinCursor;
     sSavedWinCursor = 0;
-    SetWinCursor(saveWinCursor);
+    SetWinCursor((HCURSOR)(intptr_t)saveWinCursor);
 }
 
 void SwitchToMacCursor(void)
@@ -477,7 +480,7 @@ void SwitchToMacCursor(void)
     if (sSavedWinCursor)
         return;
 
-    sSavedWinCursor = SetWinCursor(-1);
+    sSavedWinCursor = (int)(intptr_t)SetWinCursor((HCURSOR)(intptr_t)-1);
 }
 
 /* game_dprintf is a no-op stub */

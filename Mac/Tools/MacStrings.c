@@ -13,7 +13,7 @@ void MacStrings_GetCString(const HFSUniStr255 *inUniStr, char *outCString, int i
 
     *outCString = '\0';
 
-    stringRef = CFStringCreateWithCharacters(NULL, (const UniChar *)inUniStr + 1, *(const UInt16 *)inUniStr);
+    stringRef = (CFStringRef)CFStringCreateWithCharacters(NULL, (const UniChar *)inUniStr + 1, *(const UInt16 *)inUniStr);
     if (!stringRef)
         return;
 

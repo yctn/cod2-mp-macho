@@ -179,9 +179,9 @@ int MoviesTask(); /* _MoviesTask */
 int NewAUGraph(); /* _NewAUGraph */
 int NewControlEditTextValidationUPP(); /* _NewControlEditTextValidationUPP */
 int NewControlKeyFilterUPP(); /* _NewControlKeyFilterUPP */
-int NewControlUserPaneDrawUPP(); /* _NewControlUserPaneDrawUPP */
-int NewControlUserPaneHitTestUPP(); /* _NewControlUserPaneHitTestUPP */
-int NewControlUserPaneTrackingUPP(); /* _NewControlUserPaneTrackingUPP */
+ControlUserPaneDrawUPP NewControlUserPaneDrawUPP(); /* _NewControlUserPaneDrawUPP */
+ControlUserPaneHitTestUPP NewControlUserPaneHitTestUPP(); /* _NewControlUserPaneHitTestUPP */
+ControlUserPaneTrackingUPP NewControlUserPaneTrackingUPP(); /* _NewControlUserPaneTrackingUPP */
 int NewGWorld(); /* _NewGWorld */
 int NewHandle(); /* _NewHandle */
 int NewMenu(); /* _NewMenu */

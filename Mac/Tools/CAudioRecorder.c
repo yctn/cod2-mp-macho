@@ -3,10 +3,21 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "Mac/Tools/MacExceptions.h"
  */
+
+/* Forward declarations for CCircularBuffer/CMutex/StMutexLock */
+void CMutex_CMutex(void *mutex);
+void ZN6CMutexD1Ev(void *mutex);
+void StMutexLock_StMutexLock(StMutexLock *lock, void *mutex);
+void ZN11StMutexLockD1Ev(StMutexLock *lock);
+void CCircularBuffer_CCircularBuffer(CCircularBuffer *_this);
+void CCircularBuffer_Alloc(CCircularBuffer *_this, UInt32 inBufferSize);
+void ZN15CCircularBufferD1Ev(CCircularBuffer *_this);
+void *CCircularBuffer_ReadPtr(CCircularBuffer *_this, UInt32 *ioSize);
 
 void CAudioRecorder_CAudioRecorder(CAudioRecorder * _this, Float64 inSampleRate, UInt32 inNumChannels, UInt32 inBitsPerChannel);
 Boolean CAudioRecorder_Start(CAudioRecorder * _this);
@@ -609,7 +620,7 @@ Boolean CAudioRecorder_Initialize(CAudioRecorder *_this)
     desc.componentFlags = 0;
     desc.componentFlagsMask = 0;
 
-    theComponent = FindNextComponent(NULL, &desc);
+    theComponent = (Component)FindNextComponent(NULL, &desc);
     if (!theComponent)
         return 0; /* throws paramErr in original, caught and returns false */
 

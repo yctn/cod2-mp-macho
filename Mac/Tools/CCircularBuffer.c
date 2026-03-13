@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
 
 void CCircularBuffer_CCircularBuffer(CCircularBuffer *_this);
 void CCircularBuffer_Reset(CCircularBuffer *_this);

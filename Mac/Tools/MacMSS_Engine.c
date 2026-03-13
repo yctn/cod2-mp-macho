@@ -8,6 +8,21 @@
  *   #include "Mac/Tools/MacExceptions.h"
  */
 
+/* C++ operator new/delete */
+void *__Znwm(unsigned long size);
+void __ZdlPv(void *ptr);
+void __ZdaPv(void *ptr);
+
+/* Forward declarations for functions defined in other translation units */
+void CStreamSound_CStreamSound();
+void CStreamSound_UpdateAllStreams(void);
+void StThreadLock_StThreadLock();
+void ZN12StThreadLockD1Ev();
+void CThread_Stop();
+void CSoundObject_Release();
+void ZN6CMutexD1Ev();
+void ZN7CThreadD2Ev();
+
 static char *sDeviceName; /* 0xceb480 */
 
 /*
@@ -68,8 +83,8 @@ void ZN12CSoundEngineD2Ev(void); /* CSoundEngine_~CSoundEngine */
 void ZN12CSoundEngineD1Ev(CSoundEngine *_this); /* CSoundEngine_~CSoundEngine */
 UInt32 CSoundEngine_GetPreferredChannelCount(const CSoundEngine * _this);
 J_DCT_METHOD CSoundEngine_CSoundEngine(const CSoundEngine * _this, UInt32 inBusCount, int inHighQuality);
-void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
-void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_(void); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
+void *ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void *_this, CSoundObject **__position); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
+void *ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_(void *_this, CSoundObject **__first, CSoundObject **__last); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
 void ZNSt6vectorIP12CSoundObjectSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_(void); /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >__M_insert_aux */
 
 /* line 339 */
@@ -1494,87 +1509,36 @@ J_DCT_METHOD CSoundEngine_CSoundEngine(const CSoundEngine * _this, UInt32 inBusC
 
 /* overload skip: CSoundEngine_CSoundEngine (0x117260) */
 
-/* line 110 */
-__attribute__((naked))
-void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void) /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
+/* line 110 — C replacement for vector::erase(iterator) */
+void *ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(
+    void *_this, CSoundObject **__position)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 110 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* __position */
-        "movl 4(%esi), %eax\n" /* line 352 | this */
-        "leal 4(%ebx), %edx\n" /* line 654 | __position */
-        "cmpl %eax, %edx\n" /* line 112 */
-        "je .Lf2c0ede_002c0f0b\n"
-        /* { scope 1 */
-        "subl %edx, %eax\n" /* line 300 */
-        "movl %eax, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* __position */
-        "calll memmove\n"
-        "movl 4(%esi), %eax\n" /* this */
-        /* } scope */
-        ".Lf2c0ede_002c0f0b:\n"
-        "subl $4, %eax\n" /* line 114 */
-        "movl %eax, 4(%esi)\n" /* this */
-        "movl %ebx, %eax\n" /* line 116 | __position */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    CSoundObject **finish = *(CSoundObject ***)(p + 4);
+
+    CSoundObject **next = __position + 1;
+    if (next != finish)
+    {
+        memmove(__position, next, (char *)finish - (char *)next);
+    }
+
+    *(CSoundObject ***)(p + 4) = finish - 1;
+    return __position;
 }
 
-/* line 122 */
-__attribute__((naked))
-void ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_(void) /* std_vector<CSoundObject*, std_allocator<CSoundObject*> >_erase */
+/* line 122 — C replacement for vector::erase(iterator, iterator) */
+void *ZNSt6vectorIP12CSoundObjectSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_(
+    void *_this, CSoundObject **__first, CSoundObject **__last)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 122 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* __first */
-        "movl 0x10(%ebp), %esi\n" /* __last */
-        "movl 8(%ebp), %eax\n" /* line 352 | this */
-        "movl 4(%eax), %ebx\n"
-        /* { scope 1 */
-        "subl %esi, %ebx\n" /* line 300 | __last */
-        "movl %ebx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* __last */
-        "movl %edi, (%esp)\n" /* __first */
-        "calll memmove\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 352 | this */
-        "movl 4(%eax), %edx\n"
-        "leal (%edi, %ebx), %eax\n" /* __first */
-        "cmpl %eax, %edx\n" /* line 173 */
-        "je .Lf2c0f1a_002c0f55\n"
-        ".Lf2c0f1a_002c0f4e:\n"
-        "addl $4, %eax\n" /* line 623 */
-        "cmpl %eax, %edx\n" /* line 173 */
-        "jne .Lf2c0f1a_002c0f4e\n"
-        ".Lf2c0f1a_002c0f55:\n"
-        "subl %edi, %esi\n" /* line 126 | __first, __last */
-        "andl $0xfffffffc, %esi\n" /* __last */
-        "subl %esi, %edx\n" /* __last */
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %edx, 4(%eax)\n"
-        "movl %edi, %eax\n" /* line 127 | __first */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *p = (char *)_this;
+    CSoundObject **finish = *(CSoundObject ***)(p + 4);
+
+    size_t tail = (char *)finish - (char *)__last;
+    memmove(__first, __last, tail);
+
+    size_t erased = (char *)__last - (char *)__first;
+    *(CSoundObject ***)(p + 4) = (CSoundObject **)((char *)finish - erased);
+    return __first;
 }
 
 /* line 249 */

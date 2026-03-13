@@ -12,6 +12,70 @@ extern const char *kHighQualityKey; /* 0x311480 */
 static Boolean sHighQualityEngine; /* 0xceb304 */
 static CSoundEngine *sSoundEngine; /* 0xceb300 */
 
+/* Forward declarations for CSoundEngine/CSoundObject functions used by AIL wrappers */
+void *CSoundEngine_GetSampleSound3D(CSoundEngine *engine, void *S);
+void CSoundEngine_set_3D_rolloff_factor(CSoundEngine *engine, float factor);
+void CSoundEngine_set_3D_distance_factor(CSoundEngine *engine, float factor);
+void CSoundEngine_set_3D_position(CSoundEngine *engine, float X, float Y, float Z);
+void CSoundEngine_get_3D_position(CSoundEngine *engine, float *X, float *Y, float *Z);
+void CSoundObject_set_3D_sample_effects_level(void *obj, float effects_level);
+void CSoundObject_get_3D_position(void *obj, float *X, float *Y, float *Z);
+
+/* CSoundEngine forward declarations */
+void CSoundEngine_UpdateAllSounds(CSoundEngine *engine);
+int CSoundEngine_get_cpu_percent(CSoundEngine *engine);
+void *CSoundEngine_NewSampleSound(CSoundEngine *engine);
+void *CSoundEngine_NewSampleSound3D(CSoundEngine *engine);
+void *CSoundEngine_GetSampleSound(CSoundEngine *engine, void *S);
+void *CSoundEngine_GetStreamSound(CSoundEngine *engine, void *S);
+void *CSoundEngine_NewStreamSound(CSoundEngine *engine, void *dig, const char *filename, long int stream_mem);
+int CSoundEngine_mixer_count(CSoundEngine *engine);
+int CSoundEngine_mixer_count_3D(CSoundEngine *engine);
+void CSoundEngine_set_digital_master_room_type(CSoundEngine *engine, long int room_type);
+void CSoundEngine_set_digital_master_reverb_levels(CSoundEngine *engine, float dry_level, float wet_level);
+long int CSoundEngine_minimum_sample_buffer_size(CSoundEngine *engine, long int playback_rate, long int format);
+long int CSoundEngine_size_processed_digital_audio(CSoundEngine *engine, long unsigned int dest_rate, long unsigned int dest_format);
+long int CSoundEngine_process_digital_audio(CSoundEngine *engine, void *dest_buffer, long int dest_buffer_size, long unsigned int dest_rate, long unsigned int dest_format);
+char *CSoundEngine_device_name(CSoundEngine *engine);
+void CSoundEngine_set_3D_room_type(CSoundEngine *engine, long int room_type);
+
+/* CSoundObject forward declarations */
+void CSoundObject_Release(void *obj);
+void CSoundObject_init_sample(void *obj);
+void CSoundObject_set_sample_adpcm_block_size(void *obj, long unsigned int blocksize);
+void CSoundObject_set_sample_address(void *obj, const void *start, long unsigned int len);
+void CSoundObject_set_sample_type(void *obj, long int format, long unsigned int flags);
+void CSoundObject_stop_sample(void *obj);
+void CSoundObject_resume_sample(void *obj);
+void CSoundObject_end_sample(void *obj);
+void CSoundObject_set_sample_playback_rate(void *obj, long int playback_rate);
+void CSoundObject_set_sample_volume_levels(void *obj, float left, float right);
+void CSoundObject_set_sample_reverb_levels(void *obj, float dry, float wet);
+void CSoundObject_set_sample_loop_count(void *obj, long int count);
+long unsigned int CSoundObject_get_sample_status(void *obj);
+long int CSoundObject_get_sample_playback_rate(void *obj);
+void CSoundObject_get_sample_volume_pan(void *obj, float *vol, float *pan);
+void CSoundObject_get_sample_volume_levels(void *obj, float *left, float *right);
+long int CSoundObject_sample_buffer_ready(void *obj);
+void CSoundObject_load_sample_buffer(void *obj, long unsigned int buff_num, const void *buffer, long unsigned int len);
+long unsigned int CSoundObject_get_sample_position(void *obj);
+void CSoundObject_set_sample_ms_position(void *obj, long int ms);
+void CSoundObject_get_sample_ms_position(void *obj, long int *total, long int *current);
+void CSoundObject_set_sample_volume(void *obj, float vol);
+float CSoundObject_get_sample_volume(void *obj);
+void CSoundObject_set_sample_position(void *obj, long unsigned int pos);
+long unsigned int CSoundObject_get_sample_length(void *obj);
+long int CSoundObject_set_sample_info(void *obj, const void *info);
+int CSoundObject_Is3DSound(void *obj);
+void CSoundObject_set_3D_position(void *obj, float X, float Y, float Z);
+void CSoundObject_set_3D_sample_distances(void *obj, float max_dist, float min_dist);
+void CSoundObject_set_file_callbacks(void *cb1, void *cb2, void *cb3, void *cb4);
+void CSoundObject_get_stream_info(void *obj, long int *datarate, long int *sndtype, long int *length, long int *memory);
+int CSoundObject_SampleBuffersEmpty(void *obj);
+
+/* MacPreferences forward declaration */
+void MacPreferences_PutBoolean(const char *key, int value);
+
 long int AIL_startup(long unsigned int bus_count);
 void AIL_shutdown(void);
 long int AIL_set_preference(long unsigned int number, long int value);

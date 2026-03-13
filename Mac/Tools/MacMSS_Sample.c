@@ -3,6 +3,10 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
+
+void CSoundObject_CSoundObject(char *_this, CSoundEngine *engine, unsigned int busIndex);
+void *CSoundEngine_GetMixerUnit(CSoundEngine *engine);
 
 /*
  * CSampleSound layout (deduced from ASM, inherits CSoundObject):
@@ -55,7 +59,7 @@ void CSampleSound_CSampleSound(CSampleSound *_this, CSoundEngine *inEngine, UInt
 {
     char *p = (char *)_this;
 
-    CSoundObject_CSoundObject(_this, inEngine, inBusIndex);
+    CSoundObject_CSoundObject((char *)_this, inEngine, inBusIndex);
 
     *(int *)(p + 0x00) = 0x3322c8; /* vtable */
     *(int *)(p + 0x108) = 0;

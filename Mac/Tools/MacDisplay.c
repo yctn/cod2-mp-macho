@@ -5,6 +5,8 @@
 #include "imports.h"
 #include <dlfcn.h>
 
+void *__Znam(unsigned long size);
+
 /* Original includes (from N_BINCL debug info):
  *   #include "Mac/Tools/MacMemory.h"
  */
@@ -42,7 +44,7 @@ typedef struct { short top; short left; short bottom; short right; } Rect;
 typedef struct { short v; short h; } RGBColor;
 
 /* C++ operator new[] / delete[] / delete */
-void *__Znam(unsigned int size);
+void *__Znam(unsigned long size);
 void __ZdaPv(void *ptr);
 void __ZdlPv(void *ptr);
 
@@ -151,7 +153,7 @@ CGrafPtr MacDisplay_GetMainPort(void)
     if (sScreenContext)
         return *(CGrafPtr *)((char *)sScreenContext + 4);
 
-    return GetWindowPort(sMainWindow);
+    return (CGrafPtr)GetWindowPort(sMainWindow);
 }
 
 /* line 495 */
@@ -701,9 +703,9 @@ short unsigned int MacDisplay_SetGammaRamp(const _D3DGAMMARAMP *inRamp)
 
     if (!sSystemGammaRed)
     {
-        sSystemGammaRed = (int)__Znam(0x400);
-        sSystemGammaGreen = (int)__Znam(0x400);
-        sSystemGammaBlue = (int)__Znam(0x400);
+        sSystemGammaRed = (CGGammaValue *)__Znam(0x400);
+        sSystemGammaGreen = (CGGammaValue *)__Znam(0x400);
+        sSystemGammaBlue = (CGGammaValue *)__Znam(0x400);
         int count;
         CGGetDisplayTransferByTable(sDisplayID, 0x100,
             sSystemGammaRed, sSystemGammaGreen, sSystemGammaBlue, &count);

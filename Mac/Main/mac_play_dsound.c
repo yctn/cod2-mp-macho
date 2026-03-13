@@ -4,6 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 
+/* Forward declarations */
+void CCircularBuffer_Write(const CCircularBuffer *_this, const void *inBuffer, UInt32 *ioSize);
+
 static Bool dsoundplay_initialized; /* 0xff2b80 */
 
 int DSound_UpdateSample(sample_t *sample, char *data, unsigned int data_len);
@@ -22,7 +25,7 @@ int DSound_UpdateSample(sample_t *sample, char *data, unsigned int data_len)
     if (!data_len)
         return 0;
 
-    unsigned int size = data_len;
+    UInt32 size = data_len;
     CCircularBuffer_Write(sample->mssBuffer, data, &size);
     return data_len;
 }
