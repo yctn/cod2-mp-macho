@@ -2018,56 +2018,13 @@ void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float 
 }
 
 /* line 5025 */
-__attribute__((naked))
+extern void CalcSplitScreenTextOffset(FontHandle font, float *y);
+extern void CalcScreenPlacement(float *x, float *y, float *xScale, float *yScale, int horzAlign, int vertAlign);
 void CL_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const vec_t *color, int style)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5025 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* font */
-        "leal 0x18(%ebp), %ebx\n" /* line 5027 | y */
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* font */
-        "calll CalcSplitScreenTextOffset\n"
-        "movl 0x20(%ebp), %eax\n" /* line 5028 | vertAlign */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x28(%ebp), %eax\n" /* yScale */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x24(%ebp), %eax\n" /* xScale */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "leal 0x14(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movl 0x30(%ebp), %eax\n" /* line 5029 | style */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x2c(%ebp), %eax\n" /* color */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x28(%ebp), %eax\n" /* yScale */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x24(%ebp), %eax\n" /* xScale */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* y */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* x */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* font */
-        "movl 0xc(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll *re+284\n"
-        "addl $0x30, %esp\n" /* line 5030 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CalcSplitScreenTextOffset(font, &y);
+    CalcScreenPlacement(&x, &y, &xScale, &yScale, horzAlign, vertAlign);
+    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)((char *)&re + 284))(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
 /* line 5033 */
@@ -2080,62 +2037,12 @@ void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle fo
 }
 
 /* line 5039 */
-__attribute__((naked))
 void CL_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5039 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0x10(%ebp), %edi\n" /* font */
-        "movsbl 0x38(%ebp), %ebx\n" /* cursor */
-        "leal 0x18(%ebp), %esi\n" /* line 5041 | y */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* font */
-        "calll CalcSplitScreenTextOffset\n"
-        "movl 0x20(%ebp), %eax\n" /* line 5042 | vertAlign */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x28(%ebp), %eax\n" /* yScale */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x24(%ebp), %eax\n" /* xScale */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal 0x14(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movl %ebx, 0x28(%esp)\n" /* line 5043 | cursor */
-        "movl 0x34(%ebp), %eax\n" /* cursorPos */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x30(%ebp), %eax\n" /* style */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x2c(%ebp), %eax\n" /* color */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x28(%ebp), %eax\n" /* yScale */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x24(%ebp), %eax\n" /* xScale */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* y */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* x */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* font */
-        "movl 0xc(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll *re+300\n"
-        "addl $0x3c, %esp\n" /* line 5044 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    cursor = (signed char)cursor;
+    CalcSplitScreenTextOffset(font, &y);
+    CalcScreenPlacement(&x, &y, &xScale, &yScale, horzAlign, vertAlign);
+    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)((char *)&re + 300))(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
 }
 
 /* line 5052 */

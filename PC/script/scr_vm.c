@@ -966,83 +966,51 @@ void Scr_AddArray(void)
 }
 
 /* line 4907 */
-__attribute__((naked))
+extern unsigned int GetNewVariable(unsigned int parentId, unsigned int name);
+extern void SetNewVariableValue(unsigned int id, const void *value);
 void Scr_AddArrayStringIndexed(unsigned int stringValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4907 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl scrVmPub+16, %edx\n" /* line 4912 */
-        "leal -8(%edx), %eax\n"
-        "movl %eax, scrVmPub+16\n"
-        "subl $1, scrVmPub+24\n" /* line 4913 */
-        "movl 8(%ebp), %eax\n" /* line 4915 | stringValue */
-        "movl %eax, 4(%esp)\n"
-        "movl -8(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll GetNewVariable\n"
-        "movl scrVmPub+16, %edx\n" /* line 4916 */
-        "addl $8, %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SetNewVariableValue\n"
-        /* } scope */
-        "leave\n" /* line 4917 */
-        "retl\n"
-    );
+    unsigned int parentId;
+    unsigned int varId;
+    byte *top;
+
+    top = (byte *)scrVmPub.top;
+    scrVmPub.top = (void *)(top - 8);
+    scrVmPub.inparamcount--;
+
+    parentId = *(unsigned int *)(top - 8);
+    varId = GetNewVariable(parentId, stringValue);
+    SetNewVariableValue(varId, (byte *)scrVmPub.top + 8);
 }
 
 /* line 4992 */
-__attribute__((naked))
+extern void Scr_GetObjectField(unsigned int classnum, int entnum, int offset);
+extern unsigned char bg_weapClips[];
 VariableValue GetEntityFieldValue(unsigned int classnum, int entnum, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4992 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $bg_weapClips+536, scrVmPub+16\n" /* line 4997 */
-        "movl $0, scrVmGlob+4\n" /* line 4998 */
-        "movl 0x10(%ebp), %eax\n" /* line 4999 | offset */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* entnum */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* classnum */
-        "movl %eax, (%esp)\n"
-        "calll Scr_GetObjectField\n"
-        "movl $0, scrVmPub+24\n" /* line 5005 */
-        "movl scrVmGlob, %eax\n" /* line 5006 */
-        "movl scrVmGlob+4, %edx\n"
-        "leave\n" /* line 5007 */
-        "retl\n"
-    );
+    VariableValue result;
+
+    *(int *)((byte *)&scrVmPub + 16) = (int)(bg_weapClips + 536);
+    *(int *)(scrVmGlob + 4) = 0;
+    Scr_GetObjectField(classnum, entnum, offset);
+    *(int *)((byte *)&scrVmPub + 24) = 0;
+
+    result.intValue = *(int *)scrVmGlob;
+    result.type = *(int *)(scrVmGlob + 4);
+    return result;
 }
 
 /* line 5010 */
-__attribute__((naked))
+extern unsigned int Scr_GetVariableField(unsigned int structId, unsigned int index);
+extern void SetVariableFieldValue(unsigned int id, const void *value);
 void Scr_SetStructField(unsigned int structId, unsigned int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5010 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 5022 | index */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* structId */
-        "movl %eax, (%esp)\n"
-        "calll Scr_GetVariableField\n"
-        "movl $0, scrVmPub+24\n" /* line 5025 */
-        "movl scrVmPub+16, %edx\n" /* line 5027 */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SetVariableFieldValue\n"
-        "subl $8, scrVmPub+16\n" /* line 5032 */
-        /* } scope */
-        "leave\n" /* line 5037 */
-        "retl\n"
-    );
+    unsigned int varId;
+
+    varId = Scr_GetVariableField(structId, index);
+    *(int *)((byte *)&scrVmPub + 24) = 0;
+    SetVariableFieldValue(varId, (void *)*(int *)((byte *)&scrVmPub + 16));
+    *(int *)((byte *)&scrVmPub + 16) -= 8;
 }
 
 /* line 161 */
@@ -8266,95 +8234,45 @@ void VM_Resume(unsigned int timeId)
 }
 
 /* line 5083 */
-__attribute__((naked))
+extern unsigned int FindVariable(unsigned int parentId, unsigned int name);
+extern unsigned int FindObject(unsigned int id);
+extern void VM_Resume(unsigned int threadId);
+extern void SafeRemoveVariable(unsigned int parentId, unsigned int name);
+extern void Scr_FreeEntityList(void);
+
+/* Shared helper: run pending waittill threads if any */
+static void Scr_RunPendingThreads(void)
+{
+    byte *svp = (byte *)imp_scrVarPub;
+    unsigned int notifyId = *(unsigned int *)(svp + 0x1c);
+    unsigned int varId;
+
+    if (!notifyId)
+        return;
+
+    varId = FindVariable(notifyId, *(unsigned int *)(svp + 0x18));
+    if (!varId)
+        return;
+
+    VM_Resume(FindObject(varId));
+    SafeRemoveVariable(*(unsigned int *)(svp + 0x1c), *(unsigned int *)(svp + 0x18));
+}
+
 void Scr_RunCurrentThreads(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5083 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_scrVarPub, %ebx\n" /* line 4160 */
-        "movl 0x1c(%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf87514_0008752e\n"
-        ".Lf87514_00087528:\n"
-        "addl $0x14, %esp\n" /* line 5097 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf87514_0008752e:\n"
-        "movl 0x18(%ebx), %eax\n" /* line 4162 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll FindVariable\n"
-        "testl %eax, %eax\n" /* line 4163 */
-        "je .Lf87514_00087528\n"
-        "movl %eax, (%esp)\n" /* line 4172 */
-        "calll FindObject\n"
-        "calll VM_Resume\n"
-        "movl 0x18(%ebx), %eax\n" /* line 4173 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x1c(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SafeRemoveVariable\n"
-        "addl $0x14, %esp\n" /* line 5097 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Scr_RunPendingThreads();
 }
 
 /* line 5060 */
-__attribute__((naked))
 void Scr_IncTime(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5060 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_scrVarPub, %ebx\n" /* line 4160 */
-        "movl 0x1c(%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf87566_00087599\n"
-        ".Lf87566_0008757a:\n"
-        "calll Scr_FreeEntityList\n" /* line 5063 */
-        "movl imp_scrVarPub, %edx\n" /* line 5067 */
-        "movl 0x18(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "andl $0x00FFFFFF, %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "addl $0x14, %esp\n" /* line 5072 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf87566_00087599:\n"
-        "movl 0x18(%ebx), %eax\n" /* line 4162 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll FindVariable\n"
-        "testl %eax, %eax\n" /* line 4163 */
-        "je .Lf87566_0008757a\n"
-        "movl %eax, (%esp)\n" /* line 4172 */
-        "calll FindObject\n"
-        "calll VM_Resume\n"
-        "movl 0x18(%ebx), %eax\n" /* line 4173 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x1c(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SafeRemoveVariable\n"
-        "calll Scr_FreeEntityList\n" /* line 5063 */
-        "movl imp_scrVarPub, %edx\n" /* line 5067 */
-        "movl 0x18(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "andl $0x00FFFFFF, %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "addl $0x14, %esp\n" /* line 5072 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *svp;
+
+    Scr_RunPendingThreads();
+    Scr_FreeEntityList();
+
+    svp = (byte *)imp_scrVarPub;
+    *(unsigned int *)(svp + 0x18) = (*(unsigned int *)(svp + 0x18) + 1) & 0x00FFFFFF;
 }
 
 /* Reconstructed wrapper for the overloaded VM_Execute at 0x875ea.

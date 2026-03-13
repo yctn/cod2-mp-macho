@@ -485,30 +485,15 @@ Bool FS_RegisterDvars(void)
 }
 
 /* line 3726 */
-__attribute__((naked))
 float FS_ClearIwdReferences(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3726 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl fs_searchpaths, %eax\n" /* line 3730 */
-        "testl %eax, %eax\n"
-        "je .Lf333ce_000333ee\n"
-        ".Lf333ce_000333da:\n"
-        "movl 4(%eax), %edx\n" /* line 3733 */
-        "testl %edx, %edx\n"
-        "je .Lf333ce_000333e8\n"
-        "movb $0, 0x310(%edx)\n" /* line 3734 */
-        ".Lf333ce_000333e8:\n"
-        "movl (%eax), %eax\n" /* line 3730 */
-        "testl %eax, %eax\n"
-        "jne .Lf333ce_000333da\n"
-        /* } scope */
-        ".Lf333ce_000333ee:\n"
-        "popl %ebp\n" /* line 3736 */
-        "retl\n"
-    );
+    byte *search;
+
+    for (search = (byte *)fs_searchpaths; search; search = *(byte **)search) {
+        byte *pack = *(byte **)(search + 4);
+        if (pack)
+            *(byte *)(pack + 0x310) = 0;
+    }
 }
 
 /* line 4057 */
