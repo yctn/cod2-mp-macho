@@ -72,6 +72,9 @@ extern void *R_RegisterModel(const char *name);
 extern int XModelBad(void *model);
 extern int strnicmp(const char *a, const char *b, int n);
 extern int stricmp(const char *a, const char *b);
+extern void *CM_GetPlaneNum(int planeIndex);
+extern void PerpendicularVector(const void *plane, vec_t *perpOut);
+extern void Vec3Cross(const void *plane, const vec_t *perp, vec_t *crossOut);
 
 /* Uses register calling convention: eax=tree, edx=totalTreesUsed */
 static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
@@ -2199,8 +2202,91 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
 }
 
 /* line 1530 */
+/* line 1530 — Load portals from BSP lump 0xC8.
+ * Source: 16 bytes per portal (planeIndex, cellIndex, firstVertIndex, vertCount).
+ * Dest: 68 (0x44) bytes per GfxPortal with plane, axes, cell/vert pointers. */
+static void R_LoadPortals_impl(const int *load)
+{
+    const byte *srcData;
+    int portalCount = R_ValidateLump(load, 0xc8, 16, &srcData);
+    byte *dst;
+    int i;
+
+    dst = (byte *)Hunk_AllocInternal(portalCount * 68);
+
+    for (i = 0; i < portalCount; i++) {
+        const int *src = (const int *)(srcData + i * 16);
+        byte *d = dst + i * 68;
+        const float *plane;
+
+        /* Get plane pointer from index */
+        plane = (const float *)CM_GetPlaneNum(src[0]);
+
+        /* Copy plane normal to dst+8 (vec3) */
+        *(float *)(d + 0x08) = plane[0];
+        *(float *)(d + 0x0c) = plane[1];
+        *(float *)(d + 0x10) = plane[2];
+
+        /* Negate plane distance: dst+0x14 = -(plane[3]) (flip sign bit) */
+        *(int *)(d + 0x14) = *(int *)&plane[3] ^ 0x80000000;
+
+        /* Compute axis permutation for broadphase (which axis is dominant) */
+        /* hintAxis[0]: plane.x > 0 ? 0xC : 0, hintAxis[1]: plane.y > 0 ? 0x10 : 4, hintAxis[2]: plane.z > 0 ? 0x14 : 8 */
+        *(byte *)(d + 0x18) = (plane[0] > 0.0f) ? 0x0c : 0x00;
+        *(byte *)(d + 0x19) = (plane[1] > 0.0f) ? 0x10 : 0x04;
+        *(byte *)(d + 0x1a) = (plane[2] > 0.0f) ? 0x14 : 0x08;
+
+        /* Cell pointer: src[1] (cellIndex) → s_world+256 + cellIndex * 60 */
+        {
+            int cellIdx = src[1];
+            *(void **)(d + 0x1c) = (byte *)*(void **)((byte *)&s_world + 256) + cellIdx * 60;
+        }
+
+        /* Vertex pointer: src[2] (firstVertIndex) → rgl+12 + index * 12 */
+        {
+            int vertIdx = src[2];
+            *(void **)(d + 0x20) = (byte *)*(void **)((byte *)&rgl + 12) + vertIdx * 12;
+        }
+
+        /* Vertex count */
+        *(byte *)(d + 0x24) = (byte)src[3];
+        *(byte *)(d + 0x25) = 0;
+        *(int *)(d + 0x28) = 0;
+
+        /* Compute perpendicular and cross product axes */
+        PerpendicularVector(plane, (vec_t *)(d + 0x2c));
+        Vec3Cross(plane, (vec_t *)(d + 0x2c), (vec_t *)(d + 0x38));
+    }
+
+    /* Fixup cell portal pointers: each cell's portalOffset becomes base+offset */
+    {
+        int cellCount = *(int *)((byte *)&s_world + 252);
+        byte *cells = *(byte **)((byte *)&s_world + 256);
+        for (i = 0; i < cellCount; i++) {
+            byte *cell = cells + i * 60;
+            int portalCountInCell = *(int *)(cell + 0x20);
+            if (portalCountInCell != 0) {
+                /* cell+0x24 currently holds byte offset; add base pointer */
+                *(void **)(cell + 0x24) = dst + *(int *)(cell + 0x24);
+            } else {
+                *(void **)(cell + 0x24) = NULL;
+            }
+        }
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadPortals(void)
+{
+    __asm__ __volatile__ (
+        "pushl %eax\n"
+        "calll R_LoadPortals_impl\n"
+        "addl $4, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1530 */
@@ -2392,10 +2478,85 @@ snd_alias_list_t R_LoadPortals(void)
         "jmp .Lfe41ae_000e4248\n"
     );
 }
+#endif
 
 /* line 1461 */
+/* line 1461 — Load cells from BSP lump 0xC0.
+ * Source: 52 (0x34) bytes per cell. Dest: 60 (0x3C) bytes per GfxCell.
+ * Remaps AABB tree indices to pointers, builds occluder/reflectionProbe lists. */
+static void R_LoadCells_impl(const int *load)
+{
+    const byte *srcData;
+    int cellCount = R_ValidateLump(load, 0xc0, 52, &srcData);
+    byte *dst;
+    int i;
+
+    /* Allocate: cellCount * (64 - 4) = cellCount * 60 = cellCount * 0x3C */
+    dst = (byte *)Hunk_AllocInternal(cellCount * 60);
+    *(void **)((byte *)&s_world + 256) = dst;
+    *(int *)((byte *)&s_world + 252) = cellCount;
+
+    for (i = 0; i < cellCount; i++) {
+        const byte *src = srcData + i * 52;
+        byte *d = dst + i * 60;
+        int aabbTreeIdx, portalCountAndOfs, surfCount;
+        int occluderCount, reflectionProbeCount;
+
+        /* Copy mins[3] (floats at src+0..0x0B → dst+4..0x0F) */
+        *(int *)(d + 0x04) = *(int *)(src + 0x00);
+        *(int *)(d + 0x08) = *(int *)(src + 0x04);
+        *(int *)(d + 0x0c) = *(int *)(src + 0x08);
+
+        /* Copy maxs[3] (floats at src+0x0C..0x17 → dst+0x10..0x1B) */
+        *(int *)(d + 0x10) = *(int *)(src + 0x0c);
+        *(int *)(d + 0x14) = *(int *)(src + 0x10);
+        *(int *)(d + 0x18) = *(int *)(src + 0x14);
+
+        /* AABB tree pointer: src+0x18 (index) → rgl+16 + index*48 */
+        aabbTreeIdx = *(int *)(src + 0x18);
+        *(void **)(d + 0x1c) = (byte *)*(void **)((byte *)&rgl + 16) + aabbTreeIdx * 48;
+
+        /* Portal byte offset: src+0x1C → dest+0x24 as byte offset into portal array */
+        portalCountAndOfs = *(int *)(src + 0x1c);
+        *(int *)(d + 0x24) = portalCountAndOfs * 68; /* 0x44 bytes per portal */
+
+        /* Portal/surface count */
+        *(int *)(d + 0x20) = *(int *)(src + 0x20);
+
+        /* Occluder index list */
+        occluderCount = *(int *)(src + 0x28);
+        if (occluderCount != 0) {
+            int occluderOfs = *(int *)(src + 0x24);
+            *(void **)(d + 0x2c) = (byte *)*(void **)((byte *)&rgl + 4) + occluderOfs * 4;
+        } else {
+            *(void **)(d + 0x2c) = NULL;
+        }
+        *(int *)(d + 0x28) = occluderCount;
+
+        /* Reflection probe index list */
+        reflectionProbeCount = *(int *)(src + 0x30);
+        if (reflectionProbeCount != 0) {
+            int reflOfs = *(int *)(src + 0x2c);
+            *(void **)(d + 0x34) = (byte *)*(void **)((byte *)&rgl) + reflOfs * 4;
+        } else {
+            *(void **)(d + 0x34) = NULL;
+        }
+        *(int *)(d + 0x30) = reflectionProbeCount;
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadCells(GfxBspLoad *load)
+{
+    __asm__ __volatile__ (
+        "pushl %eax\n"
+        "calll R_LoadCells_impl\n"
+        "addl $4, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1461 */
@@ -2559,6 +2720,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         "jmp .Lfe43f4_000e4427\n"
     );
 }
+#endif
 
 /* line 1431 */
 /* line 1431 — Load AABB trees from BSP lump 0xB8.
