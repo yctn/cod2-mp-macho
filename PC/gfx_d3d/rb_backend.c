@@ -177,6 +177,7 @@ extern void R_Error(int level, const char *msg, ...);
 extern void R_FlushStaticModelCache(void);
 extern void R_SetColorMappings(void);
 extern void RB_SetViewport(const void *viewport);
+extern BOOL QueryPerformanceCounter(void *lpPerformanceCount);
 
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
@@ -203,7 +204,9 @@ static void RB_UpdateColorInternal(const vec_t *floatColor, byte *color);
 void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis);
 void RB_AdaptiveGpuSyncWait(void);
 void RB_AdaptiveGpuSyncTarget(void);
+static void RB_EndBenchmarkGpu_impl(void *time);
 static void RB_EndBenchmarkGpu(void);
+static void RB_BeginBenchmarkGpu_impl(void *time);
 static void RB_BeginBenchmarkGpu(void);
 void RB_Set3D(void);
 static void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState);
@@ -668,129 +671,64 @@ void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis)
 }
 
 /* line 3220 */
-__attribute__((naked))
+static inline unsigned int rdtsc_lo(void)
+{
+    unsigned int lo;
+    __asm__ __volatile__ ("rdtsc" : "=a"(lo) : : "edx");
+    return lo;
+}
+
 void RB_AdaptiveGpuSyncWait(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3220 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_dx, %ebx\n" /* line 3226 */
-        "cmpl $3, 0x2c20(%ebx)\n"
-        "je .Lfd52a6_000d52d1\n"
-        "movl %ebx, %edi\n"
-        ".Lfd52a6_000d52c0:\n"
-        "cmpb $0, 0x2d68(%ebx)\n" /* line 3309 */
-        "jne .Lfd52a6_000d5327\n"
-        /* } scope */
-        ".Lfd52a6_000d52c9:\n"
-        "addl $0x2c, %esp\n" /* line 3249 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd52a6_000d52d1:\n"
-        "rdtsc\n" /* line 33 */
-        "movl %eax, %esi\n" /* line 3235 | startTime */
-        "xorl %edi, %edi\n"
-        "movl 0x2d64(%ebx), %eax\n"
-        "cltd\n"
-        "subl %eax, %esi\n" /* startTime */
-        "sbbl %edx, %edi\n"
-        "movl $0, 0x2d64(%ebx)\n" /* line 3236 */
-        "movl $0, -0x28(%ebp)\n" /* waitedTime */
-        "movl $0, -0x24(%ebp)\n"
-        ".Lfd52a6_000d52fa:\n"
-        "cmpb $0, 0x2d68(%ebx)\n" /* line 3309 */
-        "jne .Lfd52a6_000d5371\n"
-        ".Lfd52a6_000d5303:\n"
-        "movl 0x2d60(%ebx), %eax\n" /* line 3241 */
-        "movl %eax, %ecx\n"
-        "subl -0x28(%ebp), %ecx\n" /* waitedTime */
-        "movl %ecx, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %ecx, %edx\n"
-        "sarl $1, %edx\n"
-        "subl %edx, %eax\n"
-        "movl %eax, 0x2d60(%ebx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3249 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd52a6_000d5327:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne %al\n"
-        "movl %eax, %esi\n"
-        "testb %al, %al\n" /* line 3167 */
-        "jne .Lfd52a6_000d535b\n"
-        ".Lfd52a6_000d533f:\n"
-        "movl %esi, %eax\n" /* line 3317 | startTime */
-        "testb %al, %al\n"
-        "jne .Lfd52a6_000d534c\n"
-        "movl %edi, %ebx\n"
-        "jmp .Lfd52a6_000d52c0\n"
-        ".Lfd52a6_000d534c:\n"
-        "movb $0, 0x2d68(%ebx)\n" /* line 3319 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3249 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd52a6_000d535b:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3169 */
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd52a6_000d533f\n"
-        ".Lfd52a6_000d5371:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne -0x19(%ebp)\n"
-        "cmpb $0, -0x19(%ebp)\n" /* line 3167 */
-        "jne .Lfd52a6_000d53d8\n"
-        ".Lfd52a6_000d538a:\n"
-        "cmpb $0, -0x19(%ebp)\n" /* line 3317 */
-        "jne .Lfd52a6_000d53c6\n"
-        "rdtsc\n" /* line 33 */
-        "movl %eax, -0x28(%ebp)\n" /* line 3244 | waitedTime */
-        "movl $0, -0x24(%ebp)\n"
-        "subl %esi, -0x28(%ebp)\n" /* startTime, waitedTime */
-        "sbbl %edi, -0x24(%ebp)\n"
-        "cmpl $0, -0x24(%ebp)\n" /* line 3237 */
-        "jg .Lfd52a6_000d52c9\n"
-        "jl .Lfd52a6_000d53bb\n"
-        "cmpl $0x7fffffff, -0x28(%ebp)\n" /* waitedTime */
-        "ja .Lfd52a6_000d52c9\n"
-        ".Lfd52a6_000d53bb:\n"
-        "movl imp_dx, %ebx\n"
-        "jmp .Lfd52a6_000d52fa\n"
-        ".Lfd52a6_000d53c6:\n"
-        "movb $0, 0x2d68(%ebx)\n" /* line 3319 */
-        "movl imp_dx, %ebx\n"
-        "jmp .Lfd52a6_000d5303\n"
-        ".Lfd52a6_000d53d8:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3169 */
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd52a6_000d538a\n"
-    );
+    byte *dx = (byte *)imp_dx;
+    long long startTime;
+    long long waitedTime;
+    int syncTarget, diff;
+
+    if (*(int *)(dx + 0x2c20) != 3) {
+        /* Not adaptive sync mode — just check fence once */
+        if (dx[0x2d68]) {
+            qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+            if (finished)
+                glDeleteFencesAPPLE(1, &g_FenceID);
+            if (finished)
+                dx[0x2d68] = 0;
+        }
+        return;
+    }
+
+    /* Compute start time minus GPU waited ticks (sign-extended to 64-bit) */
+    startTime = (long long)rdtsc_lo() - (long long)*(int *)(dx + 0x2d64);
+    *(int *)(dx + 0x2d64) = 0;
+    waitedTime = 0;
+
+    /* Spin-wait for fence with timeout */
+    for (;;) {
+        dx = (byte *)imp_dx;
+        if (dx[0x2d68]) {
+            qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+            if (finished)
+                glDeleteFencesAPPLE(1, &g_FenceID);
+            if (finished) {
+                dx[0x2d68] = 0;
+                dx = (byte *)imp_dx;
+                break;
+            }
+            /* Check timeout: if elapsed > 0x7fffffff ticks, give up */
+            waitedTime = (long long)rdtsc_lo() - startTime;
+            if (waitedTime > 0x7fffffffLL)
+                return;
+        } else {
+            break;
+        }
+    }
+
+    /* Update adaptive sync target: exponential moving average
+     * syncTarget = (syncTarget + waitedTime) / 2 */
+    syncTarget = *(int *)(dx + 0x2d60);
+    diff = syncTarget - (int)waitedTime;
+    syncTarget -= (diff + ((unsigned int)diff >> 31)) >> 1;
+    *(int *)(dx + 0x2d60) = syncTarget;
 }
 
 /* line 3252 */
@@ -816,193 +754,139 @@ void RB_AdaptiveGpuSyncTarget(void)
 }
 
 /* line 3363 */
+static void RB_EndBenchmarkGpu_impl(void *time)
+{
+    byte *dx;
+    void *device;
+    void **vtable;
+
+    /* IDirect3DDevice9::EndScene — vtable 0xA8 */
+    do {
+        dx = (byte *)imp_dx;
+        device = *(void **)(dx + 8);
+        vtable = *(void ***)device;
+        ((HRESULT (*)(void *))(vtable[0xA8 / 4]))(device);
+    } while (*(volatile int *)imp_alwaysfails);
+
+    /* Clear benchmarking flag */
+    dx = (byte *)imp_dx;
+    dx[0x2d3d] = 0;
+
+    /* Wait for any pending fence to finish */
+    while (dx[0x2d68]) {
+        qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+        if (finished)
+            glDeleteFencesAPPLE(1, &g_FenceID);
+        if (finished) {
+            dx[0x2d68] = 0;
+            break;
+        }
+        dx = (byte *)imp_dx;
+    }
+
+    /* Generate and set a new fence */
+    glGenFencesAPPLE(1, &g_FenceID);
+    glSetFenceAPPLE(g_FenceID);
+    dx = (byte *)imp_dx;
+    dx[0x2d68] = 1;
+
+    /* Wait for the new fence to complete */
+    while (dx[0x2d68]) {
+        qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+        if (finished)
+            glDeleteFencesAPPLE(1, &g_FenceID);
+        if (finished) {
+            dx[0x2d68] = 0;
+            break;
+        }
+        dx = (byte *)imp_dx;
+    }
+
+    /* Record end time */
+    QueryPerformanceCounter(time);
+}
+
+/* Naked trampoline: marshals eax (time pointer) to stack arg */
 static __attribute__((naked))
 void RB_EndBenchmarkGpu(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3363 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl %eax, %edi\n" /* time */
-        "movl imp_dx, %esi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfd5464_000d547b:\n"
-        "movl 8(%esi), %eax\n" /* line 3366 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xa8(%edx)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd5464_000d547b\n"
-        "movb $0, 0x2d3d(%esi)\n" /* line 3367 */
-        "movl imp_dx, %esi\n"
-        ".Lfd5464_000d549c:\n"
-        "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
-        "jne .Lfd5464_000d54ec\n"
-        ".Lfd5464_000d54a5:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3202 */
-        "movl $1, (%esp)\n"
-        "calll glGenFencesAPPLE\n"
-        "movl g_FenceID, %eax\n" /* line 3203 */
-        "movl %eax, (%esp)\n"
-        "calll glSetFenceAPPLE\n"
-        "movl imp_dx, %esi\n" /* line 3206 */
-        "movb $1, 0x2d68(%esi)\n"
-        ".Lfd5464_000d54d3:\n"
-        "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
-        "jne .Lfd5464_000d550f\n"
-        "movl %edi, (%esp)\n" /* line 3370 | time */
-        "calll QueryPerformanceCounter\n"
-        "addl $0x1c, %esp\n" /* line 3371 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %eax\n"
+        "calll RB_EndBenchmarkGpu_impl\n"
+        "addl $4, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lfd5464_000d54ec:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne %bl\n"
-        "testb %bl, %bl\n" /* line 3167 */
-        "jne .Lfd5464_000d555e\n"
-        ".Lfd5464_000d5502:\n"
-        "testb %bl, %bl\n" /* line 3317 */
-        "je .Lfd5464_000d549c\n"
-        "movb $0, 0x2d68(%esi)\n" /* line 3319 */
-        "jmp .Lfd5464_000d54a5\n"
-        ".Lfd5464_000d550f:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne %bl\n"
-        "testb %bl, %bl\n" /* line 3167 */
-        "jne .Lfd5464_000d5548\n"
-        ".Lfd5464_000d5525:\n"
-        "testb %bl, %bl\n" /* line 3317 */
-        "jne .Lfd5464_000d5531\n"
-        "movl imp_dx, %esi\n"
-        "jmp .Lfd5464_000d54d3\n"
-        ".Lfd5464_000d5531:\n"
-        "movb $0, 0x2d68(%esi)\n" /* line 3319 */
-        "movl %edi, (%esp)\n" /* line 3370 | time */
-        "calll QueryPerformanceCounter\n"
-        "addl $0x1c, %esp\n" /* line 3371 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd5464_000d5548:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3169 */
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd5464_000d5525\n"
-        ".Lfd5464_000d555e:\n"
-        "movl $g_FenceID, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd5464_000d5502\n"
     );
 }
 
 /* line 3352 */
+static void RB_BeginBenchmarkGpu_impl(void *time)
+{
+    byte *dx;
+    void *device;
+    void **vtable;
+
+    /* Wait for any pending fence to finish */
+    dx = (byte *)imp_dx;
+    while (dx[0x2d68]) {
+        qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+        if (finished)
+            glDeleteFencesAPPLE(1, &g_FenceID);
+        if (finished) {
+            dx[0x2d68] = 0;
+            break;
+        }
+        dx = (byte *)imp_dx;
+    }
+
+    /* Generate and set a new fence */
+    glGenFencesAPPLE(1, &g_FenceID);
+    glSetFenceAPPLE(g_FenceID);
+    dx = (byte *)imp_dx;
+    dx[0x2d68] = 1;
+
+    /* Wait for the new fence to complete */
+    while (dx[0x2d68]) {
+        qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+        if (finished)
+            glDeleteFencesAPPLE(1, &g_FenceID);
+        if (finished) {
+            dx[0x2d68] = 0;
+            break;
+        }
+        dx = (byte *)imp_dx;
+    }
+
+    /* Record begin time */
+    QueryPerformanceCounter(time);
+
+    /* Set benchmarking flag */
+    dx = (byte *)imp_dx;
+    dx[0x2d3d] = 1;
+
+    /* IDirect3DDevice9::BeginScene — vtable 0xA4 */
+    do {
+        dx = (byte *)imp_dx;
+        device = *(void **)(dx + 8);
+        vtable = *(void ***)device;
+        ((HRESULT (*)(void *))(vtable[0xA4 / 4]))(device);
+    } while (*(volatile int *)imp_alwaysfails);
+}
+
+/* Naked trampoline: marshals eax (time pointer) to stack arg */
 static __attribute__((naked))
 void RB_BeginBenchmarkGpu(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3352 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl %eax, %edi\n" /* time */
-        "movl imp_dx, %esi\n"
-        ".Lfd5574_000d5585:\n"
-        "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
-        "jne .Lfd5574_000d5603\n"
-        ".Lfd5574_000d558e:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3202 */
-        "movl $1, (%esp)\n"
-        "calll glGenFencesAPPLE\n"
-        "movl g_FenceID, %eax\n" /* line 3203 */
-        "movl %eax, (%esp)\n"
-        "calll glSetFenceAPPLE\n"
-        "movl imp_dx, %ebx\n" /* line 3206 */
-        "movb $1, 0x2d68(%ebx)\n"
-        ".Lfd5574_000d55bc:\n"
-        "cmpb $0, 0x2d68(%ebx)\n" /* line 3309 */
-        "jne .Lfd5574_000d562d\n"
-        ".Lfd5574_000d55c5:\n"
-        "movl %edi, (%esp)\n" /* line 3355 | time */
-        "calll QueryPerformanceCounter\n"
-        "movl imp_dx, %ebx\n" /* line 3358 */
-        "movb $1, 0x2d3d(%ebx)\n"
-        "jmp .Lfd5574_000d55e2\n"
-        ".Lfd5574_000d55dc:\n"
-        "movl imp_dx, %ebx\n"
-        ".Lfd5574_000d55e2:\n"
-        "movl 8(%ebx), %eax\n" /* line 3359 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xa4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd5574_000d55dc\n"
-        "addl $0x1c, %esp\n" /* line 3360 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %eax\n"
+        "calll RB_BeginBenchmarkGpu_impl\n"
+        "addl $4, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lfd5574_000d5603:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne %bl\n"
-        "testb %bl, %bl\n" /* line 3167 */
-        "jne .Lfd5574_000d5678\n"
-        ".Lfd5574_000d5619:\n"
-        "testb %bl, %bl\n" /* line 3317 */
-        "je .Lfd5574_000d5585\n"
-        "movb $0, 0x2d68(%esi)\n" /* line 3319 */
-        "jmp .Lfd5574_000d558e\n"
-        ".Lfd5574_000d562d:\n"
-        "movl g_FenceID, %eax\n" /* line 3155 */
-        "movl %eax, (%esp)\n"
-        "calll glTestFenceAPPLE\n"
-        "testb %al, %al\n" /* line 3165 */
-        "setne %al\n"
-        "movl %eax, %esi\n"
-        "testb %al, %al\n" /* line 3167 */
-        "jne .Lfd5574_000d5662\n"
-        ".Lfd5574_000d5645:\n"
-        "movl %esi, %eax\n" /* line 3317 */
-        "testb %al, %al\n"
-        "jne .Lfd5574_000d5656\n"
-        "movl imp_dx, %ebx\n"
-        "jmp .Lfd5574_000d55bc\n"
-        ".Lfd5574_000d5656:\n"
-        "movb $0, 0x2d68(%ebx)\n" /* line 3319 */
-        "jmp .Lfd5574_000d55c5\n"
-        ".Lfd5574_000d5662:\n"
-        "movl $g_FenceID, 4(%esp)\n" /* line 3169 */
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd5574_000d5645\n"
-        ".Lfd5574_000d5678:\n"
-        "movl $g_FenceID, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "jmp .Lfd5574_000d5619\n"
     );
 }
 
@@ -5853,38 +5737,13 @@ void RB_ExecuteRenderCommands(const void *data)
 }
 
 /* line 466 */
-__attribute__((naked))
 void RB_DrawFullScreenColoredQuad(const Material *material, float s0, float t0, float s1, float t1, D3DCOLOR color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 466 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 473 */
-        "movl 0x1c(%ebp), %eax\n" /* color */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* t1 */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* s1 */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* t0 */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* s0 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl imp_dxState, %eax\n"
-        "cvtsi2ssl 0x20a0(%eax), %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "cvtsi2ssl 0x209c(%eax), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "leave\n" /* line 474 */
-        "retl\n"
-    );
+    char *dxState_ptr = (char *)imp_dxState;
+    float w = (float)*(int *)(dxState_ptr + 0x209c);
+    float h = (float)*(int *)(dxState_ptr + 0x20a0);
+
+    RB_DrawStretchPic(material, 0.0f, 0.0f, w, h, s0, t0, s1, t1, color, 0xa);
 }
 
 /* line 748 */
