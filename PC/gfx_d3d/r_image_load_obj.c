@@ -22,6 +22,10 @@ extern void AxisTransformVector(const void *matrix, float x, float y, float z, v
 extern int Vec3MajorAxis(const vec_t *v);
 extern void *Hunk_AllocateTempMemoryInternal(int size);
 extern void Hunk_FreeTempMemory(void *buf);
+extern void R_LoadJpg(const char *filepath, void **file, byte **pic, int *width, int *height, int *imageFormat);
+extern void R_GenerateOutdoorImage(GfxImage *image);
+extern void Image_BuildSpecularityMap(int unused, byte *pic);
+/* strcmp and memcmp from system headers */
 extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack);
 static vec3_t lightGridLookupMatrix[3]; /* lightGridLookupMatrix */
 static const int faceAxis[6][3]; /* faceAxis */
@@ -1270,81 +1274,26 @@ jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, in
 }
 
 /* line 672 */
-__attribute__((naked))
+/* line 672 — Load a raw JPEG image file */
 Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 672 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* image */
-        /* { scope 1 */
-        "movl $0, -0x20(%ebp)\n" /* line 680 | pic */
-        "leal -0x2c(%ebp), %eax\n" /* line 681 | imageFormat */
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* height */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* width */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* pic */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* file */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* filepath */
-        "movl %eax, (%esp)\n"
-        "calll R_LoadJpg\n"
-        "movl -0x20(%ebp), %esi\n" /* line 682 | pic */
-        "testl %esi, %esi\n"
-        "je .Lffd920_000fd9ec\n"
-        "movl -0x2c(%ebp), %ebx\n" /* line 685 | imageFormat */
-        /* { scope 2 */
-        "movl %ebx, 0x18(%esp)\n" /* line 570 */
-        "movl $0, 0x14(%esp)\n"
-        "movl $3, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl -0x28(%ebp), %eax\n" /* height */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* width */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Image_Setup\n"
-        "movl $0, (%esp)\n" /* line 575 */
-        "calll Image_CubemapFace\n"
-        "movl %esi, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Image_UploadData\n"
-        /* } scope */
-        "movl -0x20(%ebp), %eax\n" /* line 686 | pic */
-        "movl %eax, (%esp)\n"
-        "calll Hunk_FreeTempMemory\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 687 | file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 689 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lffd920_000fd9ec:\n"
-        "xorl %eax, %eax\n" /* line 682 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 689 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *pic = NULL;
+    void *file;
+    int width, height, imageFormat;
+
+    (void)imageTrack;
+
+    R_LoadJpg(filepath, &file, &pic, &width, &height, &imageFormat);
+
+    if (!pic)
+        return 0;
+
+    Image_Setup(image, width, height, 1, 3, 0, imageFormat);
+    Image_UploadData(image, imageFormat, Image_CubemapFace(0), 0, pic);
+
+    Hunk_FreeTempMemory(pic);
+    FS_FreeFile(file);
+    return 1;
 }
 
 /* line 771 */
@@ -1550,8 +1499,99 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
 }
 
 /* line 1165 */
-__attribute__((naked))
+/* Helper: create a 1x1 solid-color image */
+static GfxImage *Image_CreateSolidColor(const char *name, int semantic, int imageTrack,
+                                         byte r, byte g, byte b, byte a)
+{
+    byte pic[4];
+    GfxImage *image = Image_Alloc(name, 1, semantic, imageTrack);
+    pic[0] = a; pic[1] = r; pic[2] = g; pic[3] = b;
+    Image_Setup(image, 1, 1, 1, 3, 0, 0x15); /* D3DFMT_A8R8G8B8 */
+    Image_UploadData(image, 0x15, Image_CubemapFace(0), 0, pic);
+    return image;
+}
+
+/* line 1165 — Main image loading entry point. Handles both file-based images
+ * and built-in procedural images (names starting with '$'). */
 GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
+{
+    GfxImage *image;
+
+    /* Normal file-based image */
+    if (name[0] != '$') {
+        image = Image_Alloc(name, 3, (byte)semantic, imageTrack);
+        if (!Image_LoadFromFile(image))
+            return NULL;
+        return image;
+    }
+
+    /* Built-in procedural images */
+    if (!memcmp(name, "$white", 7)) {
+        return Image_CreateSolidColor(name, (byte)semantic, imageTrack, 0xFF, 0xFF, 0xFF, 0xFF);
+    }
+    if (!memcmp(name, "$black", 7)) {
+        return Image_CreateSolidColor(name, (byte)semantic, imageTrack, 0x00, 0x00, 0x00, 0xFF);
+    }
+    if (!memcmp(name, "$identitynormalmap", 19)) {
+        /* Identity normal: (0x80, 0x80, 0xFF) with alpha 0x80 */
+        return Image_CreateSolidColor(name, (byte)semantic, imageTrack, 0x80, 0x80, 0xFF, 0x80);
+    }
+    if (!memcmp(name, "$specularmap", 13)) {
+        byte pic[0x2000]; /* 32x256 specularity map buffer */
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        Image_BuildSpecularityMap(0, pic);
+        Image_Setup(image, 0x20, 0x100, 1, 3, 0, 0x32);
+        Image_UploadData(image, 0x32, Image_CubemapFace(0), 0, pic);
+        return image;
+    }
+    if (!memcmp(name, "$outdoor", 9)) {
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        R_GenerateOutdoorImage(image);
+        return image;
+    }
+    if (!memcmp(name, "$lightmapweights0", 17)) {
+        byte pic[4];
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        Image_GenerateCubemapFunction(image, pic, 0x20, 0, (jpeg_alloc (*)())Image_GetLightGridWeightsForVector);
+        return image;
+    }
+    if (!memcmp(name, "$lightmapweights1", 17)) {
+        /* Note: difference from weights0 is userData=1 */
+        /* Actually the ASM shows both have len 0x13=19 including null. Let me re-examine. */
+        byte pic[4];
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        Image_GenerateCubemapFunction(image, pic, 0x20, 1, (jpeg_alloc (*)())Image_GetLightGridWeightsForVector);
+        return image;
+    }
+    if (!memcmp(name, "$watercolor", 12)) {
+        byte pic[4];
+        int waterColor;
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        /* Build packed water color: ARGB = 0x4D004033FF (approx) */
+        waterColor = 0;
+        ((byte *)&waterColor)[0] = 0xFF;
+        ((byte *)&waterColor)[1] = 0x33;
+        ((byte *)&waterColor)[2] = 0x40;
+        waterColor = (waterColor & 0x00FFFFFF) | 0x4D000000;
+        Image_GenerateCubemapFunction(image, pic, 0x10, waterColor,
+            (jpeg_alloc (*)())Image_GetWaterColorForVector);
+        return image;
+    }
+    if (!memcmp(name, "$sunhalfangle", 14)) {
+        byte *pic;
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        pic = (byte *)Hunk_AllocateTempMemoryInternal(0x18000);
+        Image_GenerateCubemapFunction(image, pic, 0x40, 0,
+            (jpeg_alloc (*)())Image_GetSunHalfAngleForVector);
+        Hunk_FreeTempMemory(pic);
+        return image;
+    }
+
+    Com_Printf("ERROR: Unknown built-in image '%s'", name);
+    return NULL;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1165 */
@@ -1969,3 +2009,4 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fde24\n"
     );
 }
+#endif
