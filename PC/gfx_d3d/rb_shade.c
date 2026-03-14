@@ -3945,6 +3945,10 @@ void RB_EndSurface(void)
     }
 
     /* Look up technique for current techType */
+    if (!material->techniqueSet) {
+        g_rb_endsurface_notechnique++;
+        goto cleanup;
+    }
     technique = material->techniqueSet->techniques[
         *(MaterialTechniqueType *)(tess + 0x5a7c0)];
 

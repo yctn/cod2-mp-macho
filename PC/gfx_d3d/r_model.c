@@ -266,7 +266,7 @@ extern void R_FatalLockError(HRESULT hr);
 
 void R_LockSkinnedCache(GfxLockType lockType)
 {
-    byte *frontEndData = *(byte **)*(byte **)imp_frontEndDataOut;
+    byte *frontEndData = *(byte **)imp_frontEndDataOut;
     byte *vb = *(byte **)(*(byte **)(frontEndData + 0x217c78) + 8);
     byte *dx = (byte *)imp_dx;
     void **vtable;
