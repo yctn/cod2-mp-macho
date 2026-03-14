@@ -20,6 +20,8 @@ extern float floorf(float x);
 extern float FresnelTerm(float ior0, float ior1, float cosIncident);
 extern void AxisTransformVector(const void *matrix, float x, float y, float z, vec_t *out);
 extern int Vec3MajorAxis(const vec_t *v);
+extern void *Hunk_AllocateTempMemoryInternal(int size);
+extern void Hunk_FreeTempMemory(void *buf);
 extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack);
 static vec3_t lightGridLookupMatrix[3]; /* lightGridLookupMatrix */
 static const int faceAxis[6][3]; /* faceAxis */
@@ -40,6 +42,17 @@ static jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int 
 Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack);
 static jpeg_alloc Image_LoadLightmapWeights(GfxImage *image);
 GfxImage * Image_Load(const char *name, int semantic, int imageTrack);
+
+/* Compute mip level count: smallest power of 2 >= max(w, h, d), return log2 */
+static int Image_ComputeMipCount(int w, int h, int d)
+{
+    int mips = 1, size = 1;
+    while (size < w || size < h || size < d) {
+        size <<= 1;
+        mips++;
+    }
+    return mips - 1;
+}
 
 /* line 560 */
 void Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat)
@@ -70,11 +83,101 @@ void Image_BuildWaterMap(GfxImage *image)
 }
 
 /* line 195 */
+/* line 195 */
+static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel)
+{
+    byte *img = (byte *)image;
+    const byte *hdr = (const byte *)fileHeader;
+    int faceCount, mipLevel, maxMip;
+    byte *expandedData = NULL;
+    const byte *srcPtr = data;
+
+    /* Setup image dimensions and format */
+    Image_Setup(image, *(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa),
+                hdr[5], 0, format);
+
+    /* Cubemap: 6 faces if image type == 5, else 1 */
+    faceCount = (*(int *)img == 5) ? 6 : 1;
+
+    /* Allocate temp buffer for BGR→ARGB expansion if needed */
+    if (format == 0x16) { /* D3DFMT_A8R8G8B8 */
+        int pixelCount = *(unsigned short *)(img + 0x18) * *(unsigned short *)(img + 0x1a);
+        expandedData = (byte *)Hunk_AllocateTempMemoryInternal(pixelCount * 4);
+    }
+
+    /* Compute max mip level */
+    if (hdr[5] & 2) {
+        mipLevel = 0; /* hasMips flag set: start from 0 */
+    } else {
+        mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
+    }
+
+    /* Iterate mip levels from max down to 0 */
+    while (1) {
+        maxMip = img[8];
+        if (mipLevel >= maxMip)
+            break;
+
+        {
+            int mipW = *(short *)(hdr + 6) >> mipLevel;
+            int mipH = *(short *)(hdr + 8) >> mipLevel;
+            int face;
+            int mipPixels, mipDataSize;
+
+            if (mipW < 1) mipW = 1;
+            if (mipH < 1) mipH = 1;
+            mipPixels = mipW * mipH;
+            mipDataSize = mipPixels * bytesPerPixel;
+
+            for (face = 0; face < faceCount; face++) {
+                int uploadMip = mipLevel - img[8];
+
+                if (format == 0x16) {
+                    /* Convert BGR (3 bytes) → ARGB (4 bytes) */
+                    int p;
+                    byte *dst = expandedData;
+                    const byte *src = srcPtr;
+                    for (p = 0; p < mipPixels; p++) {
+                        dst[0] = 0xFF;     /* alpha */
+                        dst[1] = src[2];   /* R */
+                        dst[2] = src[1];   /* G */
+                        dst[3] = src[0];   /* B */
+                        dst += 4;
+                        src += 3;
+                    }
+                    Image_UploadData(image, 0x16, Image_CubemapFace(face), uploadMip, expandedData);
+                } else {
+                    Image_UploadData(image, format, Image_CubemapFace(face), uploadMip, (byte *)srcPtr);
+                }
+                srcPtr += mipDataSize;
+            }
+        }
+        mipLevel--;
+    }
+
+    /* Free temp expansion buffer */
+    if (expandedData)
+        Hunk_FreeTempMemory(expandedData);
+}
+
+/* Naked trampoline: marshals register args (eax=image, edx=fileHeader, ecx=data)
+ * plus stack args (format, bytesPerPixel) to _impl */
 static __attribute__((naked))
 jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 195 */
+        "pushl 0xc(%esp)\n"    /* bytesPerPixel */
+        "pushl 0xc(%esp)\n"    /* format */
+        "pushl %ecx\n"         /* data */
+        "pushl %edx\n"         /* fileHeader */
+        "pushl %eax\n"         /* image */
+        "calll Image_LoadBitmap_impl\n"
+        "addl $20, %esp\n"
+        "retl $8\n"
+    );
+}
+
+#if 0 /* original Image_LoadBitmap ASM — replaced above */
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
@@ -266,142 +369,71 @@ jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeade
         "jmp .Lffc83e_000fc8b6\n"
     );
 }
+#endif
 
 /* line 245 */
+/* line 245 */
+static jpeg_alloc Image_LoadDxtc_impl(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock)
+{
+    byte *img = (byte *)image;
+    const byte *hdr = (const byte *)fileHeader;
+    int faceCount, mipLevel;
+    const byte *srcPtr = data;
+
+    Image_Setup(image, *(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa),
+                hdr[5], 0, format);
+
+    faceCount = (*(int *)img == 5) ? 6 : 1;
+
+    if (hdr[5] & 2)
+        mipLevel = 0;
+    else
+        mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
+
+    while (1) {
+        int maxMip = img[8];
+        int mipW, mipH, face, mipDataSize;
+        int blocksW, blocksH;
+
+        if (mipLevel >= maxMip)
+            break;
+
+        mipW = *(short *)(hdr + 6) >> mipLevel;
+        mipH = *(short *)(hdr + 8) >> mipLevel;
+        if (mipW < 1) mipW = 1;
+        if (mipH < 1) mipH = 1;
+
+        /* DXTC: round up to 4x4 blocks */
+        blocksW = (mipW + 3) >> 2;
+        blocksH = (mipH + 3) >> 2;
+        mipDataSize = blocksW * blocksH * bytesPerBlock;
+
+        if (faceCount <= 0) {
+            mipLevel--;
+            continue;
+        }
+
+        for (face = 0; face < faceCount; face++) {
+            int uploadMip = mipLevel - img[8];
+            Image_UploadData(image, format, Image_CubemapFace(face), uploadMip, (byte *)srcPtr);
+            srcPtr += mipDataSize;
+        }
+        mipLevel--;
+    }
+}
+
 static __attribute__((naked))
 jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 245 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movl %ecx, -0x2c(%ebp)\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 48 | format */
-        "movl %eax, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movzbl 5(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movswl 0xa(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movswl 8(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movswl 6(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x24(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll Image_Setup\n"
-        "movl -0x24(%ebp), %ecx\n" /* line 266 */
-        "xorl %eax, %eax\n"
-        "cmpl $5, (%ecx)\n"
-        "sete %al\n"
-        "leal 1(%eax, %eax, 4), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* faceCount */
-        /* { scope 2 */
-        "movl -0x28(%ebp), %ebx\n" /* line 61 */
-        "testb $2, 5(%ebx)\n"
-        "je .Lffca62_000fcb9b\n"
-        "xorl %edi, %edi\n"
-        /* } scope */
-        ".Lffca62_000fcacf:\n"
-        "movl -0x24(%ebp), %edx\n" /* line 272 */
-        "movzbl 8(%edx), %eax\n"
-        "cmpl %eax, %edi\n" /* mipLevel */
-        "jge .Lffca62_000fcaf1\n"
-        "jmp .Lffca62_000fcb93\n"
-        ".Lffca62_000fcadf:\n"
-        "subl $1, %edi\n" /* mipLevel */
-        "movl -0x24(%ebp), %edx\n"
-        "movzbl 8(%edx), %eax\n"
-        "cmpl %edi, %eax\n" /* mipLevel */
-        "jg .Lffca62_000fcb93\n"
-        ".Lffca62_000fcaf1:\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 142 */
-        "movswl 6(%ecx), %ebx\n"
-        "movl %edi, %ecx\n"
-        "sarl %cl, %ebx\n"
-        "movl $1, %eax\n" /* line 154 */
-        "movl $1, %edx\n"
-        "cmpl %ebx, %edx\n"
-        "cmovnsl %eax, %ebx\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 142 */
-        "movswl 8(%ecx), %edx\n"
-        "movl %edi, %ecx\n"
-        "sarl %cl, %edx\n"
-        "movl $1, %ecx\n" /* line 154 */
-        "cmpl %edx, %ecx\n"
-        "cmovnsl %eax, %edx\n"
-        "movl -0x20(%ebp), %esi\n" /* line 276 | faceCount, face */
-        "testl %esi, %esi\n" /* face */
-        "jle .Lffca62_000fcadf\n"
-        "addl $3, %edx\n"
-        "sarl $2, %edx\n"
-        "leal 3(%ebx), %eax\n" /* width */
-        "sarl $2, %eax\n"
-        "imull %eax, %edx\n"
-        "imull 0xc(%ebp), %edx\n" /* bytesPerBlock */
-        "movl %edx, -0x1c(%ebp)\n"
-        "xorl %esi, %esi\n" /* face */
-        ".Lffca62_000fcb3f:\n"
-        "movl -0x24(%ebp), %ebx\n" /* line 278 | width */
-        "movzbl 8(%ebx), %eax\n" /* width */
-        "movl %edi, %ebx\n" /* mipLevel, width */
-        "subl %eax, %ebx\n" /* width */
-        "movl %esi, (%esp)\n" /* face */
-        "calll Image_CubemapFace\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* width */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* format */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x24(%ebp), %ebx\n" /* width */
-        "movl %ebx, (%esp)\n" /* width */
-        "calll Image_UploadData\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 279 */
-        "addl %eax, -0x2c(%ebp)\n"
-        "addl $1, %esi\n" /* line 276 | face */
-        "cmpl %esi, -0x20(%ebp)\n" /* face, faceCount */
-        "jne .Lffca62_000fcb3f\n"
-        "subl $1, %edi\n" /* line 272 | mipLevel */
-        "movl -0x24(%ebp), %edx\n"
-        "movzbl 8(%edx), %eax\n"
-        "cmpl %edi, %eax\n" /* mipLevel */
-        "jle .Lffca62_000fcaf1\n"
-        /* } scope */
-        ".Lffca62_000fcb93:\n"
-        "addl $0x4c, %esp\n" /* line 282 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lffca62_000fcb9b:\n"
-        "movswl 6(%ebx), %ecx\n" /* line 66 */
-        "movl $1, %edx\n"
-        "movl $1, %eax\n"
-        "movswl 0xa(%ebx), %esi\n"
-        "movswl 8(%ebx), %ebx\n"
-        "jmp .Lffca62_000fcbb8\n"
-        ".Lffca62_000fcbb3:\n"
-        "addl %eax, %eax\n" /* line 68 */
-        "addl $1, %edx\n" /* line 69 */
-        ".Lffca62_000fcbb8:\n"
-        "cmpl %ecx, %eax\n" /* line 66 */
-        "jl .Lffca62_000fcbb3\n"
-        "cmpl %ebx, %eax\n"
-        "jl .Lffca62_000fcbb3\n"
-        "cmpl %esi, %eax\n"
-        "jl .Lffca62_000fcbb3\n"
-        "leal -1(%edx), %edi\n"
-        "jmp .Lffca62_000fcacf\n"
+        "pushl 0xc(%esp)\n"
+        "pushl 0xc(%esp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Image_LoadDxtc_impl\n"
+        "addl $20, %esp\n"
+        "retl $8\n"
     );
 }
 
