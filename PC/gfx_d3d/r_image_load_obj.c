@@ -14,6 +14,12 @@ extern void Image_Setup(GfxImage *image, int width, int height, int depth, int s
 extern int Image_CubemapFace(int face);
 extern void Image_UploadData(GfxImage *image, int imageFormat, int face, int mipLevel, byte *pixels);
 extern void Image_Create2DTexture(GfxImage *image, int width, int height, int depth, int flags, int format, int unused);
+extern float Vec3NormalizeTo(const vec_t *src, vec_t *dst);
+extern float Vec3Normalize(vec_t *v);
+extern float floorf(float x);
+extern float FresnelTerm(float ior0, float ior1, float cosIncident);
+extern void AxisTransformVector(const void *matrix, float x, float y, float z, vec_t *out);
+extern int Vec3MajorAxis(const vec_t *v);
 extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack);
 static vec3_t lightGridLookupMatrix[3]; /* lightGridLookupMatrix */
 static const int faceAxis[6][3]; /* faceAxis */
@@ -789,342 +795,136 @@ jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, c
 }
 
 /* line 981 */
-static __attribute__((naked))
-jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel)
+/* line 981 — Compute sun half-angle direction and store as packed RGBA byte pixel.
+ * halfAngle = normalize(sunDir - normalize(facePos)), mapped to [0,255]. */
+static jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 981 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* pixel */
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 988 | dirFromEye */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* facePos */
-        "movl %eax, (%esp)\n"
-        "calll Vec3NormalizeTo\n"
-        "fstp %st(0)\n"
-        "movl imp_rgp, %eax\n"
-        "movl 0x109c(%eax), %eax\n"
-        "leal 0xb8(%eax), %edx\n"
-        /* { scope 2 */
-        "movss 0xb8(%eax), %xmm0\n" /* line 248 */
-        "subss -0x14(%ebp), %xmm0\n" /* dirFromEye */
-        "movss %xmm0, -0x20(%ebp)\n" /* halfAngle */
-        "movss 4(%edx), %xmm0\n" /* line 249 */
-        "subss -0x10(%ebp), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "movss 8(%edx), %xmm0\n" /* line 250 */
-        "subss -0xc(%ebp), %xmm0\n"
-        "movss %xmm0, -0x18(%ebp)\n"
-        /* } scope */
-        "leal -0x20(%ebp), %eax\n" /* line 990 | halfAngle */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss lit4_002ed5d8, %xmm1\n" /* line 428 | 0.5f */
-        "movss -0x18(%ebp), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x48(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x2c(%ebp)\n"
-        "cvttss2si -0x2c(%ebp), %eax\n"
-        "movb %al, 3(%ebx)\n"
-        "movss -0x48(%ebp), %xmm1\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x30(%ebp)\n"
-        "cvttss2si -0x30(%ebp), %eax\n"
-        "movb %al, 2(%ebx)\n"
-        "movss -0x48(%ebp), %xmm1\n"
-        "movss -0x20(%ebp), %xmm0\n" /* halfAngle */
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x34(%ebp)\n"
-        "cvttss2si -0x34(%ebp), %eax\n"
-        "movb %al, 1(%ebx)\n"
-        "movb $0x80, (%ebx)\n" /* line 999 | pixel */
-        /* } scope */
-        "addl $0x54, %esp\n" /* line 1013 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    vec_t dirFromEye[3], halfAngle[3];
+    char *drawSurfs;
+    const vec_t *sunDir;
+
+    (void)ignored;
+
+    Vec3NormalizeTo(facePos, dirFromEye);
+
+    drawSurfs = *(char **)((char *)imp_rgp + 0x109c);
+    sunDir = (const vec_t *)(drawSurfs + 0xb8);
+
+    halfAngle[0] = sunDir[0] - dirFromEye[0];
+    halfAngle[1] = sunDir[1] - dirFromEye[1];
+    halfAngle[2] = sunDir[2] - dirFromEye[2];
+    Vec3Normalize(halfAngle);
+
+    /* Map [-1,1] → [0,255]: val * 0.5 + 0.5, then * 255 + 0.5 for rounding */
+    pixel[3] = (byte)(int)floorf(halfAngle[2] * 0.5f * 255.0f + 0.5f * 255.0f + 0.5f);
+    pixel[2] = (byte)(int)floorf(halfAngle[1] * 0.5f * 255.0f + 0.5f * 255.0f + 0.5f);
+    pixel[1] = (byte)(int)floorf(halfAngle[0] * 0.5f * 255.0f + 0.5f * 255.0f + 0.5f);
+    pixel[0] = 0x80;
 }
 
 /* line 1026 */
-static __attribute__((naked))
-jpeg_alloc Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel)
+/* line 1026 — Compute water color with Fresnel reflectance in the alpha channel.
+ * packedColor provides base RGB, Fresnel term replaces the alpha byte. */
+static jpeg_alloc Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1026 */
-        "movl %esp, %ebp\n"
-        "subl $0x48, %esp\n"
-        /* { scope 1 */
-        "leal -0x18(%ebp), %eax\n" /* line 1032 | dirFromEye */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* facePos */
-        "movl %eax, (%esp)\n"
-        "calll Vec3NormalizeTo\n"
-        "fstp %st(0)\n"
-        "movl -0x10(%ebp), %eax\n" /* line 1033 */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x3faa9fbe, 4(%esp)\n"
-        "movl $0x3f800000, (%esp)\n"
-        "calll FresnelTerm\n"
-        "fstps -0x2c(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1036 | packedColor */
-        "movl %eax, -0xc(%ebp)\n" /* color */
-        "mulss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "movb %al, -0xc(%ebp)\n" /* color */
-        "movl -0xc(%ebp), %edx\n" /* line 606 | color */
-        "movl 0x10(%ebp), %eax\n" /* pixel */
-        "movl %edx, (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 1050 */
-        "retl\n"
-    );
+    vec_t dirFromEye[3];
+    float fresnel;
+    int color;
+
+    Vec3NormalizeTo(facePos, dirFromEye);
+
+    /* FresnelTerm(ior_air=1.0, ior_water=1.333, cosIncident=dirFromEye.y) */
+    fresnel = FresnelTerm(1.0f, *(float *)&(int){0x3faa9fbe}, *(float *)&dirFromEye[1]);
+
+    color = packedColor;
+    /* Replace alpha byte (byte 0) with Fresnel reflectance */
+    ((byte *)&color)[0] = (byte)(int)floorf(fresnel * 255.0f + 0.5f);
+    *(int *)pixel = color;
 }
 
 /* line 928 */
-static __attribute__((naked))
-jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel)
+/* Clamp an int to [0, 255] */
+static inline byte ClampByte(int v)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 928 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* facePos */
-        "movl 0x10(%ebp), %esi\n" /* pixel */
-        /* { scope 1 */
-        "leal -0x24(%ebp), %ebx\n" /* line 943 | transformedPos */
-        "movl %ebx, 0x10(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $lightGridLookupMatrix, (%esp)\n"
-        "calll AxisTransformVector\n"
-        "movl %ebx, (%esp)\n" /* line 944 */
-        "calll Vec3MajorAxis\n"
-        "movss -0x24(%ebp, %eax, 4), %xmm0\n" /* line 945 */
-        "andps lightGridLookupMatrix+48, %xmm0\n"
-        "movss lit4_002ed5d0, %xmm7\n" /* 1.0f */
-        "movaps %xmm7, %xmm2\n"
-        "divss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n" /* line 272 */
-        "mulss -0x24(%ebp), %xmm0\n" /* transformedPos */
-        "movss %xmm0, -0x24(%ebp)\n" /* transformedPos */
-        "movaps %xmm2, %xmm1\n" /* line 273 */
-        "mulss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, -0x20(%ebp)\n"
-        "mulss -0x1c(%ebp), %xmm2\n" /* line 274 */
-        "movss %xmm2, -0x1c(%ebp)\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* line 948 | 0.5f, lerp */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f, lerp */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm5\n" /* line 924 */
-        "mulss %xmm0, %xmm5\n"
-        "movss lit4_002ed628, %xmm3\n" /* -2.0f */
-        "mulss %xmm3, %xmm0\n"
-        "movss lit4_002ed720, %xmm6\n" /* 3.0f */
-        "addss %xmm6, %xmm0\n"
-        "mulss %xmm0, %xmm5\n"
-        /* } scope */
-        "mulss lit4_002ed5d8, %xmm1\n" /* line 949 | 0.5f, lerp */
-        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f, lerp */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm4\n" /* line 924 */
-        "mulss %xmm1, %xmm4\n"
-        "mulss %xmm3, %xmm1\n"
-        "addss %xmm6, %xmm1\n"
-        "mulss %xmm1, %xmm4\n"
-        /* } scope */
-        "movl 0xc(%ebp), %ebx\n" /* line 950 | subMap */
-        "testl %ebx, %ebx\n"
-        "jne .Lffd178_000fd3bd\n"
-        "movaps %xmm2, %xmm0\n" /* line 951 */
-        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
-        ".Lffd178_000fd262:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 953 | 0.5f, lerp */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm2\n" /* line 924 */
-        "mulss %xmm0, %xmm2\n"
-        "mulss %xmm3, %xmm0\n"
-        "addss %xmm6, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        /* } scope */
-        "movaps %xmm7, %xmm0\n" /* line 955 */
-        "subss %xmm4, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "movaps %xmm7, %xmm1\n"
-        "subss %xmm5, %xmm1\n"
-        "movaps %xmm5, %xmm3\n" /* line 956 */
-        "mulss %xmm0, %xmm3\n"
-        "mulss %xmm4, %xmm2\n" /* line 957 */
-        "movaps %xmm1, %xmm4\n"
-        "mulss %xmm2, %xmm4\n"
-        "movss %xmm4, -0x30(%ebp)\n"
-        "mulss %xmm2, %xmm5\n" /* line 958 */
-        "movss %xmm5, -0x34(%ebp)\n"
-        "mulss %xmm1, %xmm0\n" /* line 428 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm3, -0x58(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x38(%ebp)\n"
-        "cvttss2si -0x38(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "movss -0x58(%ebp), %xmm3\n"
-        "js .Lffd178_000fd3cd\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lffd178_000fd2f1:\n"
-        "movb %dl, -0x29(%ebp)\n"
-        /* } scope */
-        ".Lffd178_000fd2f4:\n"
-        "mulss lit4_002ed5d4, %xmm3\n" /* line 428 | 255.0f */
-        "addss lit4_002ed5d8, %xmm3\n" /* 0.5f */
-        "movss %xmm3, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x3c(%ebp)\n"
-        "cvttss2si -0x3c(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lffd178_000fd418\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lffd178_000fd328:\n"
-        "movl %edx, %edi\n"
-        /* } scope */
-        ".Lffd178_000fd32a:\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "mulss -0x30(%ebp), %xmm0\n"
-        "movss lit4_002ed5d8, %xmm4\n" /* 0.5f */
-        "addss %xmm0, %xmm4\n"
-        "movss %xmm4, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x40(%ebp)\n"
-        "cvttss2si -0x40(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lffd178_000fd405\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lffd178_000fd367:\n"
-        "movl %edx, %ebx\n"
-        /* } scope */
-        ".Lffd178_000fd369:\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "mulss -0x34(%ebp), %xmm0\n"
-        "movss lit4_002ed5d8, %xmm4\n" /* 0.5f */
-        "addss %xmm0, %xmm4\n"
-        "movss %xmm4, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x44(%ebp)\n"
-        "cvttss2si -0x44(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lffd178_000fd3e2\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lffd178_000fd3a2:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        "movb %bl, (%esi)\n" /* line 965 | pixel */
-        "movl %edi, %edx\n"
-        "movb %dl, 1(%esi)\n" /* pixel */
-        "movzbl -0x29(%ebp), %edx\n"
-        "movb %dl, 2(%esi)\n" /* pixel */
-        "movb %al, 3(%esi)\n" /* pixel */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 969 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lffd178_000fd3bd:\n"
-        "movaps %xmm2, %xmm0\n" /* line 953 | lerp */
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f, lerp */
-        "jmp .Lffd178_000fd262\n"
-        ".Lffd178_000fd3cd:\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lffd178_000fd2f1\n"
-        "movb $0, -0x29(%ebp)\n"
-        "jmp .Lffd178_000fd2f4\n"
-        /* } scope */
-        ".Lffd178_000fd3e2:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lffd178_000fd3a2\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "movb %bl, (%esi)\n" /* line 965 | pixel */
-        "movl %edi, %edx\n"
-        "movb %dl, 1(%esi)\n" /* pixel */
-        "movzbl -0x29(%ebp), %edx\n"
-        "movb %dl, 2(%esi)\n" /* pixel */
-        "movb %al, 3(%esi)\n" /* pixel */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 969 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lffd178_000fd405:\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lffd178_000fd367\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lffd178_000fd369\n"
-        /* } scope */
-        ".Lffd178_000fd418:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lffd178_000fd328\n"
-        "xorl %edi, %edi\n"
-        "jmp .Lffd178_000fd32a\n"
-    );
+    if (v < 0) return 0;
+    if (v > 255) return 255;
+    return (byte)v;
+}
+
+/* Hermite smoothstep: 3t^2 - 2t^3 = t^2 * (3 - 2t) */
+static inline float SmoothStep(float t)
+{
+    return t * t * (3.0f - 2.0f * t);
+}
+
+/* line 928 — Compute light grid blend weights for a cubemap face direction.
+ * Transforms facePos through lightGridLookupMatrix, normalizes to cube face,
+ * applies smoothstep interpolation, and outputs 4-byte blend weights. */
+static jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel)
+{
+    vec_t transformedPos[3];
+    float invMajor;
+    int majorAxis;
+    float u, v, w;
+    float su, sv, sw; /* smoothstepped */
+    float w00, w01, w10, w11; /* bilinear weights */
+
+    AxisTransformVector(lightGridLookupMatrix, facePos[0], facePos[1], facePos[2], transformedPos);
+
+    majorAxis = Vec3MajorAxis(transformedPos);
+
+    /* Normalize so major axis component = ±1 (project onto cube face) */
+    {
+        float majorVal = transformedPos[majorAxis];
+        /* abs via andps with sign mask — just use fabsf equivalent */
+        if (majorVal < 0.0f) majorVal = -majorVal;
+        invMajor = 1.0f / majorVal;
+    }
+    transformedPos[0] *= invMajor;
+    transformedPos[1] *= invMajor;
+    transformedPos[2] *= invMajor;
+
+    /* Map [-1,1] → [0,1] */
+    u = transformedPos[0] * 0.5f + 0.5f;
+    v = transformedPos[1] * 0.5f + 0.5f;
+
+    /* Third axis: subMap 0 uses -0.5*z, subMap 1 uses +0.5*z */
+    if (subMap == 0)
+        w = transformedPos[2] * -0.5f + 0.5f;
+    else
+        w = transformedPos[2] * 0.5f + 0.5f;
+
+    /* Apply smoothstep for smooth blending */
+    su = SmoothStep(u);
+    sv = SmoothStep(v);
+    sw = SmoothStep(w);
+
+    /* Compute bilinear blend weights */
+    w00 = (1.0f - sv) * sw * (1.0f - su); /* pixel[2] */
+    w01 = su * sv * sw;                    /* pixel[3] */
+    w10 = (1.0f - su) * sv * sw;          /* pixel[1] (not used directly) */
+    w11 = (1.0f - su) * (1.0f - sv) * sw; /* pixel[0] (not used directly) */
+
+    /* Actually the original computes:
+     * weight0 = (1-su) * (1-sv) * sw   → pixel[2]
+     * weight1 = su * (1-sv) * sw       → pixel[1] (stored as xmm3)
+     * weight2 = (1-su) * sv * sw       → pixel[0]
+     * weight3 = su * sv * sw           → pixel[3]
+     */
+    {
+        float oneMinusSu = 1.0f - su;
+        float oneMinusSv = 1.0f - sv;
+
+        float blend_00 = oneMinusSu * oneMinusSv * sw; /* (1-su)*(1-sv)*sw */
+        float blend_10 = su * oneMinusSv * sw;         /* su*(1-sv)*sw */
+        float blend_01 = oneMinusSu * sv * sw;         /* (1-su)*sv*sw */
+        float blend_11 = su * sv * sw;                 /* su*sv*sw */
+
+        pixel[0] = ClampByte((int)floorf(blend_01 * 255.0f + 0.5f));
+        pixel[1] = ClampByte((int)floorf(blend_10 * 255.0f + 0.5f));
+        pixel[2] = ClampByte((int)floorf(blend_00 * 255.0f + 0.5f));
+        pixel[3] = ClampByte((int)floorf(blend_11 * 255.0f + 0.5f));
+    }
 }
 
 /* line 467 */
