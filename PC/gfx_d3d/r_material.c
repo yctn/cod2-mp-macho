@@ -62,6 +62,10 @@ __asm__(
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);
+extern void R_SetPicmip(void);
+extern void Image_UpdatePicmip(GfxImage *image);
+extern void Image_Release(GfxImage *image);
+extern Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack);
 extern void R_Error(int errorLevel, const char *msg, ...);
 extern r_global_permanent_t rgp; /* imp_rgp */
 
@@ -292,66 +296,47 @@ void Material_ReleaseAll(void)
 }
 
 /* line 1538 */
-__attribute__((naked))
 void Material_UpdatePicmipAll(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1538 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "calll R_SetPicmip\n" /* line 1545 */
-        "movl imp_rg, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "movl %eax, -0x20(%ebp)\n"
-        ".Lfd34ee_000d3509:\n"
-        "movl 0x28(%eax), %ebx\n" /* line 1550 | material */
-        "testl %ebx, %ebx\n" /* line 1551 | material */
-        "je .Lfd34ee_000d3547\n"
-        "movzwl 0x34(%ebx), %edx\n" /* line 1554 | material */
-        "testl %edx, %edx\n"
-        "jle .Lfd34ee_000d3547\n"
-        "xorl %edi, %edi\n" /* textureIndex */
-        "xorl %esi, %esi\n"
-        ".Lfd34ee_000d351c:\n"
-        "movl %esi, %eax\n" /* line 1555 | texdef */
-        "addl 0x3c(%ebx), %eax\n" /* material, texdef */
-        /* { scope 2 */
-        "cmpb $5, 5(%eax)\n" /* line 1530 */
-        "je .Lfd34ee_000d353a\n"
-        "movl 8(%eax), %eax\n" /* line 1532 */
-        "testl %eax, %eax\n"
-        "je .Lfd34ee_000d353a\n"
-        "movl %eax, (%esp)\n" /* line 1534 */
-        "calll Image_UpdatePicmip\n"
-        "movzwl 0x34(%ebx), %edx\n"
-        /* } scope */
-        ".Lfd34ee_000d353a:\n"
-        "addl $1, %edi\n" /* line 1554 | textureIndex */
-        "addl $0xc, %esi\n"
-        "cmpl %edx, %edi\n" /* textureIndex */
-        "jl .Lfd34ee_000d351c\n"
-        "movl -0x20(%ebp), %ecx\n"
-        ".Lfd34ee_000d3547:\n"
-        "addl $4, -0x1c(%ebp)\n"
-        "leal 0x1000(%ecx), %eax\n" /* line 1538 */
-        "cmpl -0x1c(%ebp), %eax\n" /* line 1548 */
-        "je .Lfd34ee_000d355b\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "jmp .Lfd34ee_000d3509\n"
-        /* } scope */
-        ".Lfd34ee_000d355b:\n"
-        "addl $0x2c, %esp\n" /* line 1557 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *rg = (byte *)imp_rg;
+    byte *slot;
+    byte *rgEnd;
+    int textureIndex, textureCount;
+    byte *material;
+    byte *texdef;
+    byte *texdefs;
+    GfxImage *image;
+
+    R_SetPicmip();
+
+    /* Iterate all material slots in rg (0x1000 byte stride, pointer at offset 0x28) */
+    rgEnd = rg + 0x1000;
+    for (slot = rg; slot < rgEnd; slot += 4) {
+        material = *(byte **)(slot + 0x28);
+        if (!material)
+            continue;
+
+        textureCount = *(unsigned short *)(material + 0x34);
+        if (textureCount <= 0)
+            continue;
+
+        texdefs = *(byte **)(material + 0x3c);
+        for (textureIndex = 0; textureIndex < textureCount; textureIndex++) {
+            texdef = texdefs + textureIndex * 0xc;
+
+            /* Skip water textures (semantic == 5) */
+            if (*(byte *)(texdef + 5) == 5)
+                continue;
+
+            image = *(GfxImage **)(texdef + 8);
+            if (!image)
+                continue;
+
+            Image_UpdatePicmip(image);
+            /* Re-read count since UpdatePicmip may have side effects */
+            textureCount = *(unsigned short *)(material + 0x34);
+        }
+    }
 }
 
 /* line 1588 */
@@ -890,77 +875,35 @@ void Material_Shutdown(void)
 }
 
 /* line 1134 */
-__attribute__((naked))
 _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1134 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "cmpb $0, (%esi)\n" /* line 1141 | name */
-        "jne .Lfd3c0e_000d3c32\n"
-        "movl imp_rgp, %eax\n" /* line 1142 */
-        "movl 0x102c(%eax), %edx\n"
-        /* } scope */
-        ".Lfd3c0e_000d3c29:\n"
-        "movl %edx, %eax\n" /* line 1146 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd3c0e_000d3c32:\n"
-        "movl imp_rgp, %ebx\n" /* line 1081 */
-        "movl 0x1030(%ebx), %edx\n"
-        "movl 0x102c(%ebx), %ecx\n" /* line 986 */
-        "movl 0x3c(%edx), %eax\n"
-        "cmpl 0x3c(%ecx), %eax\n"
-        "je .Lfd3c0e_000d3c95\n"
-        ".Lfd3c0e_000d3c4c:\n"
-        "movl 0x1098(%ebx), %eax\n" /* line 1084 */
-        "movl %eax, (%esp)\n"
-        "calll Image_Release\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1086 | imageTrack */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl 0x1098(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Image_LoadRaw\n"
-        "testb %al, %al\n"
-        "jne .Lfd3c0e_000d3c86\n"
-        "movl 0x102c(%ebx), %edx\n" /* line 1087 */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 1146 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd3c0e_000d3c86:\n"
-        "movl 0x1030(%ebx), %edx\n" /* line 1089 */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 1146 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd3c0e_000d3c95:\n"
-        "movl 0x40(%edx), %eax\n" /* line 988 */
-        "cmpl 0x40(%ecx), %eax\n"
-        "jne .Lfd3c0e_000d3c4c\n"
-        "movl 0x38(%edx), %eax\n" /* line 990 */
-        "cmpl 0x38(%ecx), %eax\n"
-        "jne .Lfd3c0e_000d3c4c\n"
-        "jmp .Lfd3c0e_000d3c29\n"
-    );
+    byte *rgp = (byte *)imp_rgp;
+    byte *defaultImage = *(byte **)(rgp + 0x102c);
+    byte *rawImage = *(byte **)(rgp + 0x1030);
+    _ValueType result;
+
+    /* Empty name returns default image */
+    if (*name == '\0') {
+        *(void **)&result = defaultImage;
+        return result;
+    }
+
+    /* Check if raw image matches default (no reload needed) */
+    if (*(int *)(rawImage + 0x3c) == *(int *)(defaultImage + 0x3c) &&
+        *(int *)(rawImage + 0x40) == *(int *)(defaultImage + 0x40) &&
+        *(int *)(rawImage + 0x38) == *(int *)(defaultImage + 0x38)) {
+        *(void **)&result = defaultImage;
+        return result;
+    }
+
+    /* Release and reload raw image */
+    Image_Release(*(GfxImage **)(rgp + 0x1098));
+    if (Image_LoadRaw(*(GfxImage **)(rgp + 0x1098), name, imageTrack)) {
+        *(void **)&result = *(void **)(rgp + 0x1030); /* rawImage */
+    } else {
+        *(void **)&result = *(void **)(rgp + 0x102c); /* defaultImage */
+    }
+    return result;
 }
 
 /* line 1479 */

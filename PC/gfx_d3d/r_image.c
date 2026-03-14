@@ -17,6 +17,8 @@ extern const char * imageTypeName[10]; /* imageTypeName */
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
 extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);
+extern Bool Image_LoadFromFile(GfxImage *image);
+extern void R_Error(int level, const char *msg, ...);
 void R_GetImageList(ImageList *imageList);
 int R_GetMinSpecImageMemory(void);
 void R_ResetImageAllocations(void);
@@ -83,245 +85,101 @@ void R_FreeImageAllocations(void)
 }
 
 /* line 648 */
-__attribute__((naked))
+extern const char *R_ErrorDescription(HRESULT hr);
+
 void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCount, DWORD usage, D3DFORMAT imageFormat, D3DPOOL memPool)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 648 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* image */
-        "movl 0xc(%ebp), %ecx\n" /* width */
-        "movl 0x10(%ebp), %edx\n" /* height */
-        /* { scope 1 */
-        "movw %cx, 0x18(%edi)\n" /* line 655 | image */
-        "movw %dx, 0x1a(%edi)\n" /* line 656 | image */
-        "movw $1, 0x1c(%edi)\n" /* line 657 | image */
-        "movl $3, (%edi)\n" /* line 659 | image */
-        "movl imp_dx, %eax\n" /* line 661 */
-        "movl 8(%eax), %ebx\n" /* hr */
-        "movl (%ebx), %esi\n" /* hr */
-        "movl $0, 0x20(%esp)\n"
-        "leal 4(%edi), %eax\n" /* image */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* memPool */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* imageFormat */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* usage */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* mipmapCount */
-        "movl %eax, 0xc(%esp)\n"
-        "movzwl %dx, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movzwl %cx, %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* hr */
-        "calll *0x5c(%esi)\n"
-        "movl %eax, %ebx\n" /* hr */
-        "testl %eax, %eax\n" /* line 662 */
-        "js .Lfe72bc_000e7339\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 666 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe72bc_000e7339:\n"
-        "movl %eax, (%esp)\n" /* line 663 */
-        "calll R_ErrorDescription\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n" /* hr */
-        "movl 0x1c(%ebp), %eax\n" /* imageFormat */
-        "movl %eax, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movzwl 0x1a(%edi), %eax\n" /* image */
-        "movl %eax, 0x10(%esp)\n"
-        "movzwl 0x18(%edi), %eax\n" /* image */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x20(%edi), %eax\n" /* image */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_0022520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 666 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *img = (byte *)image;
+    void *device;
+    void **vtable;
+    HRESULT hr;
+
+    *(unsigned short *)(img + 0x18) = (unsigned short)width;
+    *(unsigned short *)(img + 0x1a) = (unsigned short)height;
+    *(unsigned short *)(img + 0x1c) = 1;
+    *(int *)img = 3; /* texture type = 2D */
+
+    /* IDirect3DDevice9::CreateTexture — vtable 0x5C */
+    device = *(void **)((char *)imp_dx + 8);
+    vtable = *(void ***)device;
+    hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
+        device, (unsigned short)width, (unsigned short)height,
+        mipmapCount, usage, imageFormat, memPool, (void **)(img + 4), NULL);
+
+    if (hr < 0) {
+        R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
+            *(const char **)(img + 0x20),
+            (int)*(unsigned short *)(img + 0x18),
+            (int)*(unsigned short *)(img + 0x1a),
+            0, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
+    }
 }
 
 /* line 669 */
-__attribute__((naked))
 void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, int mipmapCount, DWORD usage, D3DFORMAT imageFormat, D3DPOOL memPool)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 669 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* width */
-        "movl 0x10(%ebp), %ecx\n" /* height */
-        "movl 0x14(%ebp), %edx\n" /* depth */
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 676 | image */
-        "movw %bx, 0x18(%eax)\n" /* hr */
-        "movw %cx, 0x1a(%eax)\n" /* line 677 */
-        "movw %dx, 0x1c(%eax)\n" /* line 678 */
-        "movl $4, (%eax)\n" /* line 680 */
-        "movl imp_dx, %eax\n" /* line 682 */
-        "movl 8(%eax), %esi\n"
-        "movl (%esi), %edi\n"
-        "movl $0, 0x24(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* image */
-        "addl $4, %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x24(%ebp), %eax\n" /* memPool */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* imageFormat */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* usage */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* mipmapCount */
-        "movl %eax, 0x10(%esp)\n"
-        "movzwl %dx, %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movzwl %cx, %ecx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movzwl %bx, %ebx\n" /* hr */
-        "movl %ebx, 4(%esp)\n" /* hr */
-        "movl %esi, (%esp)\n"
-        "calll *0x60(%edi)\n"
-        "movl %eax, %ebx\n" /* hr */
-        "testl %eax, %eax\n" /* line 683 */
-        "js .Lfe738c_000e7414\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 687 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe738c_000e7414:\n"
-        "movl %eax, (%esp)\n" /* line 684 */
-        "calll R_ErrorDescription\n"
-        "movl %eax, 0x24(%esp)\n"
-        "movl %ebx, 0x20(%esp)\n" /* hr */
-        "movl 0x20(%ebp), %edx\n" /* imageFormat */
-        "movl %edx, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* image */
-        "movzwl 0x1c(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movzwl 0x1a(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movzwl 0x18(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x20(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00225244, 4(%esp)\n" /* "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 687 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *img = (byte *)image;
+    void *device;
+    void **vtable;
+    HRESULT hr;
+
+    *(unsigned short *)(img + 0x18) = (unsigned short)width;
+    *(unsigned short *)(img + 0x1a) = (unsigned short)height;
+    *(unsigned short *)(img + 0x1c) = (unsigned short)depth;
+    *(int *)img = 4; /* texture type = 3D/volume */
+
+    /* IDirect3DDevice9::CreateVolumeTexture — vtable 0x60 */
+    device = *(void **)((char *)imp_dx + 8);
+    vtable = *(void ***)device;
+    hr = ((HRESULT (*)(void *, UINT, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x60 / 4]))(
+        device, (unsigned short)width, (unsigned short)height, (unsigned short)depth,
+        mipmapCount, usage, imageFormat, memPool, (void **)(img + 4), NULL);
+
+    if (hr < 0) {
+        R_Error(1, "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s",
+            *(const char **)(img + 0x20),
+            (int)*(unsigned short *)(img + 0x18),
+            (int)*(unsigned short *)(img + 0x1a),
+            (int)*(unsigned short *)(img + 0x1c),
+            0, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
+    }
 }
 
 /* line 690 */
-__attribute__((naked))
 void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWORD usage, D3DFORMAT imageFormat, D3DPOOL memPool)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 690 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* image */
-        "movl 0xc(%ebp), %eax\n" /* edgeLen, memPool */
-        "movl 0x10(%ebp), %edi\n" /* mipmapCount */
-        "movl %eax, %ebx\n" /* memPool, edgeLen */
-        /* { scope 1 */
-        "movw %ax, 0x18(%esi)\n" /* line 697 | image */
-        "movw %ax, 0x1a(%esi)\n" /* line 698 | image */
-        "movw $1, 0x1c(%esi)\n" /* line 699 | image */
-        "movl $5, (%esi)\n" /* line 701 | image */
-        "movl imp_dx, %eax\n" /* line 703 */
-        "cmpb $0, 0x2d7b(%eax)\n"
-        "jne .Lfe7472_000e7500\n"
-        "movl $1, %edi\n" /* mipmapCount */
-        "movl $1, -0x1c(%ebp)\n"
-        ".Lfe7472_000e74b4:\n"
-        "movl 8(%eax), %edx\n" /* line 706 */
-        "movl (%edx), %ecx\n"
-        "movl $0, 0x1c(%esp)\n"
-        "leal 4(%esi), %eax\n" /* image */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* memPool */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* imageFormat */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movzwl %bx, %eax\n" /* hr */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0x64(%ecx)\n"
-        "movl %eax, %ebx\n" /* hr */
-        "testl %eax, %eax\n" /* line 707 */
-        "js .Lfe7472_000e7505\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 711 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe7472_000e7500:\n"
-        "movl %edi, -0x1c(%ebp)\n" /* line 703 | mipmapCount */
-        "jmp .Lfe7472_000e74b4\n"
-        ".Lfe7472_000e7505:\n"
-        "movl %eax, (%esp)\n" /* line 708 */
-        "calll R_ErrorDescription\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n" /* hr */
-        "movl 0x18(%ebp), %edx\n" /* imageFormat */
-        "movl %edx, 0x14(%esp)\n"
-        "movl %edi, 0x10(%esp)\n" /* mipmapCount */
-        "movzwl 0x18(%esi), %eax\n" /* image */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x20(%esi), %eax\n" /* image */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00225280, 4(%esp)\n" /* "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 711 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *img = (byte *)image;
+    byte *dx;
+    void *device;
+    void **vtable;
+    HRESULT hr;
+    int actualMipCount;
+
+    *(unsigned short *)(img + 0x18) = (unsigned short)edgeLen;
+    *(unsigned short *)(img + 0x1a) = (unsigned short)edgeLen;
+    *(unsigned short *)(img + 0x1c) = 1;
+    *(int *)img = 5; /* texture type = cube */
+
+    /* Check if cubemap mipmaps are supported */
+    dx = (byte *)imp_dx;
+    if (dx[0x2d7b])
+        actualMipCount = mipmapCount;
+    else
+        actualMipCount = 1;
+
+    /* IDirect3DDevice9::CreateCubeTexture — vtable 0x64 */
+    device = *(void **)(dx + 8);
+    vtable = *(void ***)device;
+    hr = ((HRESULT (*)(void *, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x64 / 4]))(
+        device, (unsigned short)edgeLen, actualMipCount, 0, imageFormat, memPool,
+        (void **)(img + 4), NULL);
+
+    if (hr < 0) {
+        R_Error(1, "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s",
+            *(const char **)(img + 0x20),
+            (int)*(unsigned short *)(img + 0x18),
+            mipmapCount, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
+    }
 }
 
 /* line 752 */
@@ -1054,69 +912,35 @@ GfxImage * Image_AllocProg(int imageProgType, int category)
 }
 
 /* line 516 */
-__attribute__((naked))
 GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 516 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        "movzbl 0xc(%ebp), %eax\n" /* category, imageTrack */
-        "movb %al, -0x19(%ebp)\n" /* imageTrack, category */
-        "movzbl 0x10(%ebp), %eax\n" /* semantic, imageTrack */
-        "movb %al, -0x1a(%ebp)\n" /* imageTrack, semantic */
-        /* { scope 1 */
-        "cld\n" /* line 525 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %esi, %edi\n" /* name, image */
-        "repne scasb %es:(%edi), %al\n" /* image */
-        "movl %ecx, %ebx\n"
-        "notl %ebx\n"
-        "leal 0x24(%ebx), %eax\n" /* line 528 */
-        "movl %eax, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0xc(%eax)\n"
-        "movl %eax, %edi\n" /* image */
-        "leal 0x24(%eax), %eax\n" /* line 533 */
-        "movl %eax, 0x20(%edi)\n" /* image */
-        "movl %ebx, 8(%esp)\n" /* line 453 */
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movzbl -0x19(%ebp), %eax\n" /* line 457 | category */
-        "movb %al, 0x1e(%edi)\n"
-        "movzbl -0x1a(%ebp), %eax\n" /* line 458 | semantic */
-        "movb %al, 0xa(%edi)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 463 | imageTrack */
-        "movb %al, 0xc(%edi)\n"
-        "movl %esi, (%esp)\n" /* line 270 */
-        "calll R_HashAssetName\n"
-        "andl $0x7ff, %eax\n"
-        "movl imageGlobals(, %eax, 4), %esi\n" /* line 435 */
-        "testl %esi, %esi\n"
-        "je .Lfe7dd2_000e7e61\n"
-        ".Lfe7dd2_000e7e4e:\n"
-        "addl $1, %eax\n" /* line 438 */
-        "andl $0x7ff, %eax\n"
-        "movl imageGlobals(, %eax, 4), %ebx\n" /* line 435 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfe7dd2_000e7e4e\n"
-        ".Lfe7dd2_000e7e61:\n"
-        "movl %edi, imageGlobals(, %eax, 4)\n" /* line 538 | image */
-        /* } scope */
-        "movl %edi, %eax\n" /* line 541 | image */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int nameLen = strlen(name) + 1; /* including null terminator */
+    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    byte *image;
+    char *nameDst;
+    int hash;
+
+    /* Allocate image struct + name string (0x24 bytes for struct + name) */
+    image = (byte *)hunkAlloc(0x24 + nameLen);
+
+    /* Name stored right after the struct */
+    nameDst = (char *)(image + 0x24);
+    *(char **)(image + 0x20) = nameDst;
+    memcpy(nameDst, name, nameLen);
+
+    /* Initialize fields */
+    *(byte *)(image + 0x1e) = (byte)category;
+    *(byte *)(image + 0x0a) = (byte)semantic;
+    *(byte *)(image + 0x0c) = (byte)imageTrack;
+
+    /* Insert into hash table */
+    hash = R_HashAssetName(name) & 0x7ff;
+    while (imageGlobals[hash] != 0) {
+        hash = (hash + 1) & 0x7ff;
+    }
+    imageGlobals[hash] = (int)image;
+
+    return (GfxImage *)image;
 }
 
 /* line 1318 */
@@ -2178,144 +2002,51 @@ void R_ShutdownImages(void)
 }
 
 /* line 915 */
-__attribute__((naked))
 void R_ReleaseLostImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 915 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl $imageGlobals, %esi\n"
-        ".Lfe8d60_000e8d6d:\n"
-        "movl (%esi), %ebx\n" /* line 923 */
-        "testl %ebx, %ebx\n" /* line 924 */
-        "je .Lfe8d60_000e8ddc\n"
-        "cmpb $4, 0x1e(%ebx)\n" /* line 928 */
-        "jbe .Lfe8d60_000e8ddc\n"
-        "cmpb $4, 0xc(%ebx)\n" /* line 170 */
-        "ja .Lfe8d60_000e8d8e\n"
-        "movsbl 0xc(%ebx), %ecx\n"
-        "movl $1, %eax\n"
-        "shll %cl, %eax\n"
-        "testb $0x13, %al\n"
-        "jne .Lfe8d60_000e8db2\n"
-        ".Lfe8d60_000e8d8e:\n"
-        "movl %ebx, %edx\n" /* line 285 */
-        "movl $imageGlobals, %ecx\n"
-        ".Lfe8d60_000e8d95:\n"
-        "movl 0x200c(%ecx), %eax\n" /* line 288 */
-        "subl 0x10(%edx), %eax\n"
-        "movl %eax, 0x200c(%ecx)\n"
-        "addl $4, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
-        "jne .Lfe8d60_000e8d95\n"
-        ".Lfe8d60_000e8db2:\n"
-        "movl 4(%ebx), %edx\n" /* line 292 */
-        "testl %edx, %edx\n"
-        "je .Lfe8d60_000e8dd6\n"
-        "movl (%edx), %eax\n" /* line 295 */
-        "movl %edx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "movl $0, 4(%ebx)\n" /* line 298 */
-        "movl $0, 0x10(%ebx)\n" /* line 301 */
-        "movl $0, 0x14(%ebx)\n"
-        ".Lfe8d60_000e8dd6:\n"
-        "movl $0, (%ebx)\n" /* line 312 */
-        ".Lfe8d60_000e8ddc:\n"
-        "addl $4, %esi\n"
-        "cmpl $imageGlobals+8192, %esi\n" /* line 921 */
-        "jne .Lfe8d60_000e8d6d\n"
-        "addl $0x10, %esp\n" /* line 932 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+
+    for (i = 0; i < 2048; i++) {
+        GfxImage *image = (GfxImage *)imageGlobals[i];
+
+        if (!image)
+            continue;
+
+        /* Only release images with category > 4 */
+        if (*(byte *)((char *)image + 0x1e) <= 4)
+            continue;
+
+        Image_Release(image);
+    }
 }
 
 /* line 1019 */
-__attribute__((naked))
+extern void Image_GetPicmip(const GfxImage *image, Picmip *picmip);
+
 void Image_UpdatePicmip(GfxImage *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1019 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* image */
-        /* { scope 1 */
-        "leal -0xa(%ebp), %eax\n" /* line 1025 | picmip */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* image */
-        "calll Image_GetPicmip\n"
-        "movzbl 8(%ebx), %eax\n" /* line 1026 | image */
-        "cmpb -0xa(%ebp), %al\n" /* picmip */
-        "je .Lfe8dee_000e8e78\n"
-        "cmpb $4, 0xc(%ebx)\n" /* line 170 */
-        "jbe .Lfe8dee_000e8e7e\n"
-        ".Lfe8dee_000e8e16:\n"
-        "movl %ebx, %edx\n" /* line 285 */
-        "movl $imageGlobals, %ecx\n"
-        ".Lfe8dee_000e8e1d:\n"
-        "movl 0x200c(%ecx), %eax\n" /* line 288 */
-        "subl 0x10(%edx), %eax\n"
-        "movl %eax, 0x200c(%ecx)\n"
-        "addl $4, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
-        "jne .Lfe8dee_000e8e1d\n"
-        ".Lfe8dee_000e8e3a:\n"
-        "movl 4(%ebx), %edx\n" /* line 292 */
-        "testl %edx, %edx\n"
-        "je .Lfe8dee_000e8e5e\n"
-        "movl (%edx), %eax\n" /* line 295 */
-        "movl %edx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "movl $0, 4(%ebx)\n" /* line 298 */
-        "movl $0, 0x10(%ebx)\n" /* line 301 */
-        "movl $0, 0x14(%ebx)\n"
-        ".Lfe8dee_000e8e5e:\n"
-        "movl $0, (%ebx)\n" /* line 312 */
-        "movzwl -0xa(%ebp), %eax\n" /* line 1030 | picmip */
-        "movw %ax, 8(%ebx)\n" /* image */
-        "movl %ebx, (%esp)\n" /* line 1032 | image */
-        "calll Image_LoadFromFile\n"
-        "testb %al, %al\n"
-        "je .Lfe8dee_000e8e8f\n"
-        /* } scope */
-        ".Lfe8dee_000e8e78:\n"
-        "addl $0x24, %esp\n" /* line 1034 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe8dee_000e8e7e:\n"
-        "movsbl 0xc(%ebx), %ecx\n" /* line 170 */
-        "movl $1, %eax\n"
-        "shll %cl, %eax\n"
-        "testb $0x13, %al\n"
-        "jne .Lfe8dee_000e8e3a\n"
-        "jmp .Lfe8dee_000e8e16\n"
-        ".Lfe8dee_000e8e8f:\n"
-        "movl 0x20(%ebx), %eax\n" /* line 1033 | image */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00225554, 4(%esp)\n" /* "failed to load image '%s'" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 1034 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Picmip picmip;
+    byte *img = (byte *)image;
+
+    Image_GetPicmip(image, &picmip);
+
+    /* If picmip level hasn't changed, nothing to do */
+    if (img[8] == ((byte *)&picmip)[0])
+        return;
+
+    /* Release current texture and reload with new picmip */
+    Image_Release(image);
+
+    /* Set new picmip value (copy 2 bytes) */
+    *(unsigned short *)(img + 8) = *(unsigned short *)&picmip;
+
+    if (!Image_LoadFromFile(image)) {
+        R_Error(1, "failed to load image '%s'",
+            *(const char **)(img + 0x20));
+    }
 }
 
 /* line 1037 */
-extern Bool Image_LoadFromFile(GfxImage *image);
-extern void R_Error(int level, const char *msg, ...);
 
 void Image_Reload(GfxImage *image)
 {
