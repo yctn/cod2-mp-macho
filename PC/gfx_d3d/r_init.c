@@ -38,6 +38,20 @@ extern void R_ShutdownStaticModelCache(void);
 extern void R_FreeStaticVertexBuffer(void *buf);
 extern void R_FreeStaticIndexBuffer(void *buf);
 extern void WinSleep(int ms);
+extern void R_ShutdownBackendData(void);
+extern void R_ShutdownDebug(void);
+extern void RB_SaveLightVisHistory(void);
+extern void R_ShutdownLightDefs(void);
+extern void R_ShutdownWorld(void);
+extern void R_ShutdownFonts(void);
+extern void R_ShutdownModels(void);
+extern void Material_Shutdown(void);
+extern void R_ShutdownImages(void);
+extern void R_UnlockSkinnedCache(void);
+extern void R_FlushStaticModelCache(void);
+extern void R_UnregisterCmds(void);
+extern void R_UnregisterDvars(void);
+extern void RB_ClearAllStreamSources(void);
 extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern Bool Sys_IsMainThread(void);
 extern void R_SyncRenderThread(void);
@@ -956,8 +970,58 @@ void R_FatalLockError(HRESULT hr)
 }
 
 /* line 1920 */
-static __attribute__((naked))
-void R_Shutdown(qboolean destroyWindow)
+/* line 1920 — Full renderer shutdown. Releases all subsystems, and if
+ * destroyWindow is true, also releases the D3D device and IDirect3D9 objects. */
+static void R_Shutdown(qboolean destroyWindow)
+{
+    byte *d = (byte *)&dx;
+
+    *(byte *)&rg = 0; /* rg.registered = false */
+
+    /* If device exists and in windowed mode, clear stream sources */
+    if (*(void **)(d + 8)) {
+        if (*(byte *)(d + 11580))
+            RB_ClearAllStreamSources();
+    }
+
+    /* Shutdown all subsystems */
+    R_ShutdownBackendData();
+    R_ShutdownDebug();
+    RB_SaveLightVisHistory();
+    R_ShutdownLightDefs();
+    R_ShutdownWorld();
+    R_ShutdownFonts();
+    R_ShutdownModels();
+    Material_Shutdown();
+    R_ShutdownImages();
+
+    *(int *)((byte *)&rgp + 4252) = 0;
+    R_UnlockSkinnedCache();
+    R_FlushStaticModelCache();
+
+    if (destroyWindow) {
+        R_ReleaseForShutdownOrReset();
+
+        /* Release swap chains in reverse order */
+        while (*(int *)(d + 11592) > 0) {
+            int idx = *(int *)(d + 11592) - 1;
+            *(int *)(d + 11592) = idx;
+            *(void **)(d + 11584 + idx * 16 + 12) = NULL;
+        }
+
+        /* Release D3D device (dx+8) */
+        R_SafeRelease((void **)(d + 8));
+
+        /* Release IDirect3D9 (dx+4) */
+        R_SafeRelease((void **)(d + 4));
+
+        R_UnregisterDvars();
+    }
+
+    R_UnregisterCmds();
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1920 */
@@ -1041,6 +1105,7 @@ void R_Shutdown(qboolean destroyWindow)
         "jmp .Lfcb66e_000cb695\n"
     );
 }
+#endif
 
 /* line 789 */
 void R_SetColorMappings(void)
