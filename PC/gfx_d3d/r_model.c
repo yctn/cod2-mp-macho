@@ -260,63 +260,37 @@ void R_ModelBounds(GfxBrushModel *bmodel, vec_t *mins, vec_t *maxs)
 }
 
 /* line 556 */
-__attribute__((naked))
+extern void R_FatalLockError(HRESULT hr);
+
 void R_LockSkinnedCache(GfxLockType lockType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 556 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        /* { scope 1 */
-        "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
-        "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
-        "movl 8(%eax), %ebx\n" /* vb */
-        "movl imp_dx, %esi\n" /* line 569 */
-        "movl 0x2c20(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd0604_000d0633\n"
-        "movl 8(%ebp), %eax\n" /* lockType */
-        "testl %eax, %eax\n"
-        "je .Lfd0604_000d0684\n"
-        ".Lfd0604_000d0633:\n"
-        "movl $__mh_execute_header, %ecx\n"
-        ".Lfd0604_000d0638:\n"
-        "leal 0x2dc0(%esi), %eax\n" /* line 574 */
-        "movl (%ebx), %edx\n" /* vb */
-        "movl %ecx, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* vb */
-        "calll *0x2c(%edx)\n"
-        "testl %eax, %eax\n" /* line 575 */
-        "js .Lfd0604_000d068b\n"
-        ".Lfd0604_000d0662:\n"
-        "testb $0xf, 0x2dc0(%esi)\n" /* line 577 */
-        "je .Lfd0604_000d067d\n"
-        "movl (%ebx), %eax\n" /* line 580 | vb */
-        "movl %ebx, (%esp)\n" /* vb */
-        "calll *0x30(%eax)\n"
-        "movl $0, 0x2dc0(%esi)\n" /* line 581 */
-        /* } scope */
-        ".Lfd0604_000d067d:\n"
-        "addl $0x20, %esp\n" /* line 584 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd0604_000d0684:\n"
-        "movl $0x2000, %ecx\n" /* line 569 */
-        "jmp .Lfd0604_000d0638\n"
-        ".Lfd0604_000d068b:\n"
-        "movl %eax, (%esp)\n" /* line 576 */
-        "calll R_FatalLockError\n"
-        "jmp .Lfd0604_000d0662\n"
-    );
+    byte *frontEndData = *(byte **)*(byte **)imp_frontEndDataOut;
+    byte *vb = *(byte **)(*(byte **)(frontEndData + 0x217c78) + 8);
+    byte *dx = (byte *)imp_dx;
+    void **vtable;
+    DWORD lockFlags;
+    HRESULT hr;
+
+    /* D3DLOCK_NOOVERWRITE(0x1000) if GPU sync active or lockType!=0, else D3DLOCK_DISCARD(0x2000) */
+    if (*(int *)(dx + 0x2c20) != 0 || lockType != 0)
+        lockFlags = 0x1000;
+    else
+        lockFlags = 0x2000;
+
+    /* IDirect3DVertexBuffer9::Lock(0, 0, &pData, lockFlags) — vtable 0x2C */
+    vtable = *(void ***)vb;
+    hr = ((HRESULT (*)(void *, UINT, UINT, void **, DWORD))(vtable[0x2C / 4]))(
+        vb, 0, 0, (void **)(dx + 0x2dc0), lockFlags);
+
+    if (hr < 0)
+        R_FatalLockError(hr);
+
+    /* Check alignment of locked pointer */
+    if (*(int *)(dx + 0x2dc0) & 0xf) {
+        vtable = *(void ***)vb;
+        ((HRESULT (*)(void *))(vtable[0x30 / 4]))(vb);
+        *(int *)(dx + 0x2dc0) = 0;
+    }
 }
 
 /* line 2911 */

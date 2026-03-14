@@ -30,109 +30,54 @@ static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load);
 GfxWorld * R_LoadWorldInternal(const char *name);
 
 /* line 1396 */
+extern void ClearBounds(void *mins, void *maxs);
+extern void ExpandBounds(const void *mins, const void *maxs, void *dstMins, void *dstMaxs);
+
+/* Uses register calling convention: eax=tree, edx=totalTreesUsed */
+static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
+{
+    byte *treeMins = tree;
+    byte *treeMaxs = tree + 0xc;
+    int childCount, surfCount, i;
+
+    ClearBounds(treeMins, treeMaxs);
+
+    childCount = *(int *)(tree + 0x28);
+    if (childCount) {
+        /* Has children — assign child array from rgl pool */
+        *(byte **)(tree + 0x2c) = *(byte **)((byte *)&rgl + 16) + totalTreesUsed * 48;
+        totalTreesUsed += childCount;
+
+        /* Recurse into each child */
+        for (i = 0; i < childCount; i++) {
+            byte *child = *(byte **)(tree + 0x2c) + i * 0x30;
+            totalTreesUsed = R_FinishLoadingAabbTrees_r_impl(child, totalTreesUsed);
+            ExpandBounds(child, child + 0xc, treeMins, treeMaxs);
+        }
+    } else {
+        /* Leaf node — expand bounds from surface data */
+        int firstSurf = *(int *)(tree + 0x1c);
+        byte *surfPtr = (byte *)*(void **)((byte *)&s_world + 20) + firstSurf * 12;
+        surfCount = *(int *)(tree + 0x18);
+
+        for (i = 0; i < surfCount; i++) {
+            byte *surfData = *(byte **)(surfPtr + 8);
+            ExpandBounds(surfData + 4, surfData + 0x10, treeMins, treeMaxs);
+            surfPtr += 0xc;
+        }
+    }
+
+    return totalTreesUsed;
+}
+
 static __attribute__((naked))
 int R_FinishLoadingAabbTrees_r(void)
 {
     __asm__ __volatile__ (
-        ".Lfe29ce_000e29ce:\n"
-        "pushl %ebp\n" /* line 1396 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %ebx\n" /* tree */
-        "movl %edx, %edi\n" /* totalTreesUsed */
-        /* { scope 1 */
-        "leal 0xc(%eax), %eax\n" /* line 1406 */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* tree */
-        "calll ClearBounds\n"
-        "movl 0x28(%ebx), %edx\n" /* line 1407 | tree */
-        "testl %edx, %edx\n"
-        "jne .Lfe29ce_000e2a14\n"
-        "movl 0x1c(%ebx), %eax\n" /* line 1409 | tree */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl s_world+20, %edx\n"
-        "leal (%edx, %eax, 4), %esi\n" /* surf */
-        "movl 0x18(%ebx), %eax\n" /* tree */
-        "testl %eax, %eax\n"
-        "jg .Lfe29ce_000e2a7b\n"
-        /* } scope */
-        ".Lfe29ce_000e2a0a:\n"
-        "movl %edi, %eax\n" /* line 1428 | totalTreesUsed */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe29ce_000e2a14:\n"
-        "leal (%edi, %edi, 2), %eax\n" /* line 1417 | totalTreesUsed */
-        "shll $4, %eax\n"
-        "addl rgl+16, %eax\n"
-        "movl %eax, 0x2c(%ebx)\n" /* tree */
-        "movl 0x28(%ebx), %eax\n" /* line 1419 | tree */
-        "addl %eax, %edi\n" /* totalTreesUsed */
-        "testl %eax, %eax\n" /* line 1420 */
-        "jle .Lfe29ce_000e2a0a\n"
-        "movl $0, -0x1c(%ebp)\n" /* childIndex */
-        "xorl %esi, %esi\n" /* surf */
-        ".Lfe29ce_000e2a35:\n"
-        "movl %esi, %eax\n" /* line 1422 | surf */
-        "addl 0x2c(%ebx), %eax\n" /* tree */
-        "movl %edi, %edx\n" /* totalTreesUsed */
-        "calll R_FinishLoadingAabbTrees_r\n"
-        "movl %eax, %edi\n" /* totalTreesUsed */
-        "movl %esi, %edx\n" /* line 1423 | surf */
-        "addl 0x2c(%ebx), %edx\n" /* tree */
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* tree */
-        "leal 0xc(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll ExpandBounds\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 1420 | childIndex */
-        "addl $0x30, %esi\n" /* surf */
-        "movl -0x1c(%ebp), %eax\n" /* childIndex */
-        "cmpl %eax, 0x28(%ebx)\n" /* tree */
-        "jg .Lfe29ce_000e2a35\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 1428 | totalTreesUsed */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe29ce_000e2a7b:\n"
-        "movl $0, -0x20(%ebp)\n" /* line 1409 | surfNodeIndex */
-        ".Lfe29ce_000e2a82:\n"
-        "movl 8(%esi), %edx\n" /* line 1411 | surf */
-        "movl -0x24(%ebp), %eax\n" /* line 1412 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* tree */
-        "leal 0x10(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "addl $4, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll ExpandBounds\n"
-        "addl $1, -0x20(%ebp)\n" /* line 1409 | surfNodeIndex */
-        "addl $0xc, %esi\n" /* surf */
-        "movl -0x20(%ebp), %eax\n" /* surfNodeIndex */
-        "cmpl %eax, 0x18(%ebx)\n" /* tree */
-        "jg .Lfe29ce_000e2a82\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 1428 | totalTreesUsed */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_FinishLoadingAabbTrees_r_impl\n"
+        "addl $8, %esp\n"
         "retl\n"
     );
 }

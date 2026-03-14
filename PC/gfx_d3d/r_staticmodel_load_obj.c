@@ -63,173 +63,77 @@ int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstan
 }
 
 /* line 565 */
-__attribute__((naked))
+extern void * Hunk_AllocateTempMemoryInternal(int size);
+
 int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 565 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* smodelCount */
-        /* { scope 1 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 570 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lf1072e6_001073c2\n"
-        "movl $1, smodelLoadGlob\n" /* line 578 */
-        "cmpl $1, %esi\n" /* line 579 | smodelCount */
-        "jg .Lf1072e6_001073a7\n"
-        "movl $1, %ecx\n"
-        ".Lf1072e6_0010731a:\n"
-        "movl %ecx, smodelLoadGlob+4\n" /* line 582 */
-        "movl %ecx, %edx\n" /* line 583 */
-        "imull smodelLoadGlob, %edx\n"
-        "leal (%esi, %esi), %eax\n" /* smodelCount */
-        "cmpl %eax, %edx\n"
-        "jl .Lf1072e6_0010733a\n"
-        "leal 1(%ecx), %eax\n" /* line 584 */
-        "sarl $1, %eax\n"
-        "movl %eax, smodelLoadGlob+4\n"
-        ".Lf1072e6_0010733a:\n"
-        "movl smodelLoadGlob, %ebx\n" /* line 586 | lightingImageSize */
-        "leal (%ebx, %ebx), %eax\n" /* lightingImageSize */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movaps %xmm1, %xmm2\n"
-        "divss %xmm0, %xmm2\n"
-        "movss %xmm2, smodelLoadGlob+8\n"
-        "movl smodelLoadGlob+4, %eax\n" /* line 587 */
-        "addl %eax, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, smodelLoadGlob+12\n"
-        "imull smodelLoadGlob+4, %ebx\n" /* line 590 | lightingImageSize */
-        "shll $5, %ebx\n" /* lightingImageSize */
-        "movl %ebx, (%esp)\n" /* line 591 | lightingImageSize */
-        "calll Hunk_AllocateTempMemoryInternal\n"
-        "movl %eax, smodelLoadGlob+16\n"
-        "movl %ebx, 8(%esp)\n" /* line 592 | lightingImageSize */
-        "movl $0x80, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1072e6_001073a7:\n"
-        "movl $1, %ecx\n" /* line 579 */
-        ".Lf1072e6_001073ac:\n"
-        "addl %ecx, %ecx\n" /* line 580 */
-        "movl %ecx, %eax\n" /* line 579 */
-        "imull %ecx, %eax\n"
-        "cmpl %esi, %eax\n" /* smodelCount */
-        "jl .Lf1072e6_001073ac\n"
-        "movl %ecx, smodelLoadGlob\n"
-        "jmp .Lf1072e6_0010731a\n"
-        ".Lf1072e6_001073c2:\n"
-        "movl imp_ri, %ebx\n" /* line 572 | lightingImageSize */
-        "leal (%esi, %esi, 2), %eax\n" /* smodelCount */
-        "shll $5, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xc(%ebx)\n" /* lightingImageSize */
-        "movl 8(%ebp), %edx\n" /* world */
-        "movl %eax, 0x12c(%edx)\n"
-        "leal (, %esi, 4), %eax\n" /* line 573 */
-        "movl %eax, (%esp)\n"
-        "calll *0xc(%ebx)\n" /* lightingImageSize */
-        "movl 8(%ebp), %edx\n" /* world */
-        "movl %eax, 0x130(%edx)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int rendererType = *(int *)(*(char **)imp_r_rendererInUse + 8);
+    void *(*hunkAlloc)(int);
+
+    if (rendererType == 2) {
+        /* Dx7 path: allocate via ri->hunkAlloc */
+        hunkAlloc = *(void *(**)(int))((byte *)imp_ri + 0xc);
+        *(void **)((byte *)world + 0x12c) = hunkAlloc(smodelCount * 3 * 32);
+        *(void **)((byte *)world + 0x130) = hunkAlloc(smodelCount * 4);
+    } else {
+        /* Non-Dx7: compute image dimensions for lighting cache texture */
+        int width = 1;
+        int height;
+        int lightingImageSize;
+
+        /* Find smallest power of 2 where width*width >= smodelCount */
+        if (smodelCount > 1) {
+            while (width * width < smodelCount)
+                width *= 2;
+        }
+        smodelLoadGlob = width;
+
+        /* Height = width, but halve if width*height/2 >= smodelCount */
+        height = width;
+        if (width * height >= smodelCount * 2)
+            height = (height + 1) / 2;
+        ((int *)&smodelLoadGlob)[1] = height;
+
+        /* Store texel sizes (1.0 / (2*dim)) */
+        ((float *)&smodelLoadGlob)[2] = 1.0f / (float)(width * 2);
+        ((float *)&smodelLoadGlob)[3] = 1.0f / (float)(height * 2);
+
+        /* Allocate pixel buffer: width * height * 32 bytes */
+        lightingImageSize = width * height * 32;
+        ((void **)&smodelLoadGlob)[4] = Hunk_AllocateTempMemoryInternal(lightingImageSize);
+        memset(((void **)&smodelLoadGlob)[4], 0x80, lightingImageSize);
+    }
+    return 0;
 }
 
 /* line 622 */
-__attribute__((naked))
+extern int XModelGetNumLods(struct XModel *model);
+extern int XModelGetSurfaces(struct XModel *model, void **surfaces, int *partBits, int lodIndex);
+extern int XSurfaceGetBoneOffset(void *surface);
+extern const char * XModelGetName(struct XModel *model);
+extern void Com_Printf(const char *fmt, ...);
+
 Bool R_ValidateStaticModel(struct XModel *model)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 622 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 631 | model */
-        "movl %eax, (%esp)\n"
-        "calll XModelGetNumLods\n"
-        "movl %eax, -0x2c(%ebp)\n" /* lodCount */
-        "testl %eax, %eax\n" /* line 632 */
-        "jg .Lf1073fa_00107422\n"
-        ".Lf1073fa_00107415:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 655 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1073fa_00107422:\n"
-        "xorl %edi, %edi\n" /* line 632 | lodIndex */
-        "jmp .Lf1073fa_0010742e\n"
-        ".Lf1073fa_00107426:\n"
-        "addl $1, %edi\n" /* lodIndex */
-        "cmpl %edi, -0x2c(%ebp)\n" /* lodIndex, lodCount */
-        "je .Lf1073fa_00107415\n"
-        ".Lf1073fa_0010742e:\n"
-        "leal -0x20(%ebp), %eax\n" /* line 634 | partBits */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* lodIndex */
-        "leal -0x1c(%ebp), %eax\n" /* surfaces */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* model */
-        "movl %eax, (%esp)\n"
-        "calll XModelGetSurfaces\n"
-        "movl %eax, %esi\n" /* surfCount */
-        "testl %eax, %eax\n" /* line 635 */
-        "jle .Lf1073fa_00107426\n"
-        "xorl %ebx, %ebx\n" /* surfIndex */
-        "jmp .Lf1073fa_0010745c\n"
-        ".Lf1073fa_00107455:\n"
-        "addl $1, %ebx\n" /* surfIndex */
-        "cmpl %ebx, %esi\n" /* surfIndex, surfCount */
-        "je .Lf1073fa_00107426\n"
-        ".Lf1073fa_0010745c:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 637 | surfaces */
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll XSurfaceGetBoneOffset\n"
-        "addl $1, %eax\n"
-        "jne .Lf1073fa_00107455\n"
-        "movl 8(%ebp), %eax\n" /* line 639 | model */
-        "movl %eax, (%esp)\n"
-        "calll XModelGetName\n"
-        "movl %ebx, 0xc(%esp)\n" /* surfIndex */
-        "movl %edi, 8(%esp)\n" /* lodIndex */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00228ae4, (%esp)\n" /* "^1ERROR: model '%s' is not a valid static model, since lod %" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 655 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int lodCount = XModelGetNumLods(model);
+    int lodIndex, surfIndex, surfCount;
+    void *surfaces;
+    int partBits[4];
+
+    for (lodIndex = 0; lodIndex < lodCount; lodIndex++) {
+        surfCount = XModelGetSurfaces(model, &surfaces, partBits, lodIndex);
+
+        for (surfIndex = 0; surfIndex < surfCount; surfIndex++) {
+            void *surf = ((void **)surfaces)[surfIndex];
+            if (XSurfaceGetBoneOffset(surf) == -1) {
+                Com_Printf("^1ERROR: model '%s' is not a valid static model, since lod %i surface %i has bone offsets\n",
+                    XModelGetName(model), lodIndex, surfIndex);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
 }
 
 /* line 238 */
