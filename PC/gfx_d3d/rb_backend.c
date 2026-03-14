@@ -175,6 +175,15 @@ extern void RB_SetRenderTarget(int renderTargetId);
 extern void RB_DrawSunPostEffects(const void *sunData);
 extern void *RB_GetActiveWorldMatrix(void);
 extern void MatrixIdentity44(void *matrix);
+extern void MatrixMultiply44(const void *a, const void *b, void *out);
+extern Bool RB_GetViewport(void *viewport);
+extern void MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(void *proj, float width, float height);
+extern void RB_SetViewMatrix(const void *matrix);
+extern void RB_SetProjectionMatrix(const void *matrix);
+extern void MatrixForViewer(void *out, const void *origin, const void *axis);
+extern void InfinitePerspectiveMatrix(void *out, float fovX, float fovY, float zNear);
+extern void RB_PushMatrixStack(void);
+extern void RB_PopMatrixStack(void);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
@@ -2095,8 +2104,143 @@ static void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 197 */
-static __attribute__((naked))
-void RB_Set2D(void)
+/* line 197 */
+static void RB_Set2D(void)
+{
+    char *be = (char *)&backEnd;
+    int viewport[4]; /* x, y, width, height */
+    float transform[16];
+    float identity[16];
+    float invW, invH;
+    int stackIdx;
+    char *am; /* activeMatrices base */
+    int isDx7;
+    int i;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    *(byte *)(be + 1213) = 1; /* is2D = true */
+
+    if (!RB_GetViewport(viewport))
+        return;
+
+    /* Build orthographic projection matrix */
+    invW = 1.0f / (float)viewport[2]; /* 1/width */
+    invH = 1.0f / (float)viewport[3]; /* 1/height */
+    for (i = 0; i < 16; i++)
+        transform[i] = 0.0f;
+    transform[0]  = 2.0f * invW;         /* [0][0] */
+    transform[5]  = -2.0f * invH;        /* [1][1] */
+    transform[10] = 1.0f;                /* [2][2] */
+    transform[12] = -1.0f;               /* [3][0] */
+    transform[13] = 1.0f;                /* [3][1] */
+    transform[15] = 1.0f;                /* [3][3] */
+
+    MatrixIdentity44(identity);
+
+    /* Compute activeMatrices pointer from stack index */
+    stackIdx = *(int *)(be + 11904);
+    am = be + 1248 + stackIdx * 3552;
+
+    /* Copy projection transform to activeMatrices+0x340 */
+    for (i = 0; i < 16; i++)
+        *(int *)(am + 0x340 + i * 4) = *(int *)&transform[i];
+    *(byte *)(am + 0x440) = 1; /* projection dirty */
+
+    /* Clear view matrix dirty flags for slots 1-3 */
+    for (i = 1; i < 4; i++)
+        *(byte *)(am + 0x441 + (i - 1)) = 0;
+
+    /* Copy identity matrix to 4 view matrix slots at am+0x10, stride 0x40 */
+    for (i = 0; i < 4; i++) {
+        memcpy(am + 0x10 + i * 0x40, identity, 64);
+        *(byte *)(am + 0x110 + i) = 1; /* view dirty */
+    }
+
+    /* Replicate view/projection blocks */
+    memcpy(am + 0x230, am + 0x10, 0x110);    /* view → viewProj slot 1 */
+    memcpy(am + 0x450, am + 0x10, 0x110);    /* view → viewProj slot 2 */
+    memcpy(am + 0x670, am + 0x340, 0x110);   /* proj → projViewProj slot 1 */
+    memcpy(am + 0x780, am + 0x340, 0x110);   /* proj → projViewProj slot 2 */
+
+    /* Build OpenGL matrices */
+    {
+        float OGLView[16], OGLProjection[16], OGLWorldView[16];
+
+        /* Copy view matrix */
+        memcpy(OGLView, am + 0x230, 64);
+        /* Copy projection matrix */
+        memcpy(OGLProjection, am + 0x340, 64);
+
+        /* Negate column 2 for OpenGL coordinate convention (Z flip) */
+        OGLView[2]  = -OGLView[2];
+        OGLView[6]  = -OGLView[6];
+        OGLView[10] = -OGLView[10];
+        OGLView[14] = -OGLView[14];
+
+        MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(
+            OGLProjection, (float)viewport[2], (float)viewport[3]);
+
+        /* OGLWorldView = identity * OGLView */
+        MatrixMultiply44(am + 0x10, OGLView, OGLWorldView);
+        /* viewProjection = OGLWorldView * OGLProjection */
+        MatrixMultiply44(OGLWorldView, OGLProjection, am + 0xcd0);
+
+        memcpy(am + 0x120, am + 0x10, 0x110);   /* identity → world matrices */
+        memcpy(am + 0x560, am + 0x450, 0x110);
+        memcpy(am + 0x890, am + 0x450, 0x110);
+    }
+
+    /* Dx7: set D3D transforms directly */
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    if (isDx7) {
+        char *dx = (char *)imp_dx;
+        /* SetTransform: vtable[0xb0/4] = index 44 */
+        do {
+            void *device = *(void **)(dx + 8);
+            void **vtable = *(void ***)device;
+            ((int (__attribute__((stdcall)) *)(void *, int, const void *))vtable[0xb0/4])(
+                device, 0x100, identity); /* D3DTS_WORLD */
+        } while (*(int *)imp_alwaysfails);
+        do {
+            void *device = *(void **)(dx + 8);
+            void **vtable = *(void ***)device;
+            ((int (__attribute__((stdcall)) *)(void *, int, const void *))vtable[0xb0/4])(
+                device, 2, identity); /* D3DTS_VIEW */
+        } while (*(int *)imp_alwaysfails);
+        do {
+            void *device = *(void **)(dx + 8);
+            void **vtable = *(void ***)device;
+            ((int (__attribute__((stdcall)) *)(void *, int, const void *))vtable[0xb0/4])(
+                device, 3, transform); /* D3DTS_PROJECTION */
+        } while (*(int *)imp_alwaysfails);
+    }
+
+    /* Set 2D screen-space direction vectors */
+    /* frustumCenter = (0, 0, 1, 1) */
+    *(float *)(be + 176) = 0.0f;
+    *(float *)(be + 180) = 0.0f;
+    *(float *)(be + 184) = 1.0f;
+    *(float *)(be + 188) = 1.0f;
+    /* frustumRight = (0, 0, 1, 0) */
+    *(float *)(be + 192) = 0.0f;
+    *(float *)(be + 196) = 0.0f;
+    *(float *)(be + 200) = 1.0f;
+    *(float *)(be + 204) = 0.0f;
+    /* up = (1, 0, 0, 0) */
+    *(float *)(be + 208) = 1.0f;
+    *(float *)(be + 212) = 0.0f;
+    *(float *)(be + 216) = 0.0f;
+    *(float *)(be + 220) = 0.0f;
+    /* extra = (0, 1, 0, 0) */
+    *(float *)(be + 224) = 0.0f;
+    *(float *)(be + 228) = 1.0f;
+    *(float *)(be + 232) = 0.0f;
+    *(float *)(be + 236) = 0.0f;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 197 */
@@ -2491,6 +2635,7 @@ void RB_Set2D(void)
         "jmp .Lfd6670_000d6c68\n"
     );
 }
+#endif
 
 /* line 2388 */
 /* line 2388 */
@@ -8097,8 +8242,99 @@ static void RB_DrawLinesCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1298 */
-static __attribute__((naked))
-void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
+/* Write a clip-space vertex (xyzw) to tess with standard 2D normal/tangent/binormal */
+static inline void RB_SetClipSpaceVertex(char *tessBase, int vertIndex, int isDx7,
+                                          float px, float py, float pz, float pw, D3DCOLOR color)
+{
+    if (isDx7) {
+        char *v = tessBase + vertIndex * 36;
+        *(float *)(v + 0x00) = px / pw;
+        *(float *)(v + 0x04) = py / pw;
+        *(float *)(v + 0x08) = pz / pw;
+        *(int *)(v + 0x0c) = 0;          /* normal.x */
+        *(int *)(v + 0x10) = 0;          /* normal.y */
+        *(float *)(v + 0x14) = 1.0f;     /* normal.z */
+        *(D3DCOLOR *)(v + 0x18) = color;
+        *(int *)(v + 0x1c) = 0;          /* s */
+        *(int *)(v + 0x20) = 0;          /* t */
+    } else {
+        char *v = tessBase + vertIndex * 64;
+        *(float *)(v + 0x00) = px;        *(float *)(v + 0x04) = py;
+        *(float *)(v + 0x08) = pz;        *(float *)(v + 0x0c) = pw;
+        *(int *)(v + 0x10) = 0;           *(int *)(v + 0x14) = 0;
+        *(float *)(v + 0x18) = 1.0f;     /* normal = (0,0,1) */
+        *(D3DCOLOR *)(v + 0x1c) = color;
+        *(int *)(v + 0x20) = 0;           *(int *)(v + 0x24) = 0; /* texcoord = (0,0) */
+        *(int *)(v + 0x28) = 0;           *(float *)(v + 0x2c) = 1.0f;
+        *(int *)(v + 0x30) = 0;           /* binormal = (0,1,0) */
+        *(float *)(v + 0x34) = 1.0f;     *(int *)(v + 0x38) = 0;
+        *(int *)(v + 0x3c) = 0;           /* tangent = (1,0,0) */
+    }
+}
+
+/* line 1298 */
+static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
+{
+    byte *cmd;
+    char *t = (char *)&tess;
+    const Material *stencilMaterial;
+    int planeCount, planeIdx;
+    float zOffset;
+    int isDx7;
+    D3DCOLOR white = 0xffffffff;
+
+    cmd = *(byte **)execState;
+
+    stencilMaterial = *(const Material **)((char *)imp_rgp + 0x1034);
+    RB_BeginSurface2D(t, stencilMaterial);
+
+    planeCount = *(int *)(cmd + 8);
+    zOffset = *(float *)(cmd + 4);
+
+    if (planeCount <= 0)
+        goto done;
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    for (planeIdx = 0; planeIdx < planeCount; planeIdx++) {
+        float d = *(float *)(cmd + 0xc + planeIdx * 4);
+        float negD = -d;
+        float z = d - zOffset;
+        int vc;
+
+        /* Check overflow */
+        vc = RB_CheckTessOverflow4(t);
+
+        /* Write 6 indices: (vc, vc+1, vc+2, vc+2, vc+3, vc) */
+        {
+            int ic = *(int *)(t + 0x5a7d0);
+            r_index_t *indices = *(r_index_t **)(t + 0x5a7b0);
+            indices[ic + 0] = (r_index_t)vc;
+            indices[ic + 1] = (r_index_t)(vc + 1);
+            indices[ic + 2] = (r_index_t)(vc + 2);
+            indices[ic + 3] = (r_index_t)(vc + 2);
+            indices[ic + 4] = (r_index_t)(vc + 3);
+            indices[ic + 5] = (r_index_t)vc;
+        }
+
+        /* 4 clip-space vertices forming a plane quad */
+        RB_SetClipSpaceVertex(t, vc + 0, isDx7, negD, negD, z, d, white);
+        RB_SetClipSpaceVertex(t, vc + 1, isDx7, negD,    d, z, d, white);
+        RB_SetClipSpaceVertex(t, vc + 2, isDx7,    d,    d, z, d, white);
+        RB_SetClipSpaceVertex(t, vc + 3, isDx7,    d, negD, z, d, white);
+
+        *(int *)(t + 0x5a7d4) = vc + 4;
+        *(int *)(t + 0x5a7d0) += 6;
+    }
+
+done:
+    RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1298 */
@@ -8549,6 +8785,7 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfdd250_000dd2aa\n"
     );
 }
+#endif
 
 /* line 2211 */
 static __attribute__((naked))
