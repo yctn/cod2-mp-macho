@@ -39,6 +39,12 @@ extern double atof(const char *s);
 extern int sscanf(const char *str, const char *fmt, ...);
 extern float ColorNormalize(const float *color, float *out);
 extern void Com_Printf(const char *fmt, ...);
+extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
+extern void R_Error(int level, const char *msg, ...);
+extern void *R_RegisterModel(const char *name);
+extern int XModelBad(void *model);
+extern int strnicmp(const char *a, const char *b, int n);
+extern int stricmp(const char *a, const char *b);
 
 /* Uses register calling convention: eax=tree, edx=totalTreesUsed */
 static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
@@ -396,9 +402,62 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 }
 #endif
 
-/* line 1911 */
-__attribute__((naked))
+/* line 1911 — Convert parsed sun light parameters into a GfxLight structure. */
 snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight)
+{
+    byte *sp = (byte *)sunParse;
+    byte *sl = (byte *)sunLight;
+    vec_t sunDirection[3];
+    float ambient, sunIntensity, sunAngleOverride;
+    float *sunColor;
+    float ambientR, ambientG, ambientB;
+    float scale;
+    float diffR, diffG, diffB;
+
+    /* Compute sun direction from angles (sunParse+0x74) */
+    AngleVectors((vec_t *)(sp + 0x74), sunDirection, NULL, NULL);
+
+    ambient = *(float *)(sp + 0x40);
+    sunIntensity = *(float *)(sp + 0x50);
+    sunAngleOverride = *(float *)(sp + 0x54);
+    sunColor = (float *)(sp + 0x44);
+
+    /* Compute ambient color contribution */
+    if (ambient != 0.0f) {
+        float normLen = ColorNormalize(sunColor, sunColor);
+        if (normLen != 0.0f) {
+            ambientR = ambient * sunColor[0];
+            ambientG = ambient * sunColor[1];
+            ambientB = ambient * sunColor[2];
+        } else {
+            ambientR = ambientG = ambientB = 0.0f;
+        }
+    } else {
+        ambientR = ambientG = ambientB = 0.0f;
+    }
+
+    /* Diffuse: sunDir * (sunAngleOverride - ambient) * (1 - sunIntensity) */
+    scale = (sunAngleOverride - ambient) * (1.0f - sunIntensity);
+    diffR = scale * *(float *)(sp + 0x58);
+    diffG = scale * *(float *)(sp + 0x5c);
+    diffB = scale * *(float *)(sp + 0x60);
+
+    /* Fill GfxLight if provided */
+    if (sunLight) {
+        *(float *)(sl + 0x04) = sunDirection[0];
+        *(float *)(sl + 0x08) = sunDirection[1];
+        *(float *)(sl + 0x0c) = sunDirection[2];
+        *(float *)(sl + 0x10) = 0.0f;
+        *(float *)(sl + 0x14) = diffR;
+        *(float *)(sl + 0x18) = diffG;
+        *(float *)(sl + 0x1c) = diffB;
+        *(float *)(sl + 0x20) = ambientR;
+        *(float *)(sl + 0x24) = ambientG;
+        *(float *)(sl + 0x28) = ambientB;
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1911 */
@@ -498,11 +557,103 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
         "jmp .Lfe2db6_000e2ea4\n"
     );
 }
+#endif
 
 /* line 1004 */
+/* Find a key in spawnVars[count][2] by name; returns the value string or NULL */
+static const char *R_FindSpawnVar(const void *spawnVars, int count, const char *key)
+{
+    /* spawnVars is array of {key, value} string pairs, stride 8 bytes */
+    int i;
+    byte *vars = (byte *)spawnVars;
+    for (i = 0; i < count; i++) {
+        if (!stricmp(*(char **)(vars + i * 8), key))
+            return *(char **)(vars + i * 8 + 4);
+    }
+    return NULL;
+}
+
+/* line 1004 */
+static Bool R_IsValidStaticModel_impl(char *spawnVars, int spawnVarCount, struct XModel **model, vec_t *origin)
+{
+    const char *originStr;
+    const char *modelName;
+    vec_t tempOrigin[3] = {0, 0, 0};
+    struct XModel *tempModel;
+    int hasOrigin;
+
+    /* Find "origin" key */
+    originStr = R_FindSpawnVar(spawnVars, spawnVarCount, "origin");
+    hasOrigin = (originStr != NULL);
+    if (!originStr)
+        originStr = "0 0 0";
+
+    sscanf(originStr, "%f %f %f", &tempOrigin[0], &tempOrigin[1], &tempOrigin[2]);
+
+    if (!hasOrigin)
+        R_Error(1, "R_LoadMiscModel: \"origin\" must be specified for misc_model");
+
+    /* Find "model" key */
+    modelName = R_FindSpawnVar(spawnVars, spawnVarCount, "model");
+    if (!modelName) {
+        R_Error(1, "R_LoadMiscModel: no model specified in misc_model at (%.0f %.0f %.0f)",
+                (double)tempOrigin[0], (double)tempOrigin[1], (double)tempOrigin[2]);
+    }
+
+    /* Skip shadow models */
+    if (modelName && !strnicmp(modelName, "xmodel/shadow_", 14))
+        return 0;
+
+    /* Try to register the model */
+    if (modelName) {
+        tempModel = (struct XModel *)R_RegisterModel(modelName);
+    } else {
+        tempModel = NULL;
+    }
+
+    if (!tempModel || XModelBad(tempModel)) {
+        /* Bad model — try fallback */
+        Com_Printf("^1bad static model '%s' at (%.0f %.0f %.0f)\n",
+                    modelName, (double)tempOrigin[0], (double)tempOrigin[1], (double)tempOrigin[2]);
+        tempModel = (struct XModel *)R_RegisterModel("$default");
+    }
+
+    if (!tempModel || XModelBad(tempModel))
+        return 0;
+
+    /* Validate model */
+    {
+        extern Bool R_ValidateStaticModel(struct XModel *model);
+        if (!R_ValidateStaticModel(tempModel))
+            if (!tempModel || XModelBad(tempModel))
+                return 0;
+    }
+
+    if (model)
+        *model = tempModel;
+    if (origin) {
+        origin[0] = tempOrigin[0];
+        origin[1] = tempOrigin[1];
+        origin[2] = tempOrigin[2];
+    }
+    return 1;
+}
+
+/* Naked trampoline: marshals register args (eax, edx, ecx) + stack arg (origin) */
 static __attribute__((naked))
 Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XModel * *model, vec_t *origin)
 {
+    __asm__ __volatile__ (
+        "pushl 8(%esp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_IsValidStaticModel_impl\n"
+        "addl $16, %esp\n"
+        "retl $4\n"
+    );
+}
+#if 0 /* original R_IsValidStaticModel ASM — replaced above */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1004 */
         "movl %esp, %ebp\n"
@@ -696,6 +847,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "jmp .Lfe2ece_000e2fe9\n"
     );
 }
+#endif
 
 /* line 1727 */
 static __attribute__((naked))
