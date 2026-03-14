@@ -178,7 +178,92 @@ extern void MatrixIdentity44(void *matrix);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
+extern float sinf(float x);
+extern float cosf(float x);
 extern double pow(double base, double exponent);
+
+/* Write a 2D vertex to the tess buffer at the given vertex index.
+ * Handles both Dx7 (stride 36) and non-Dx7 (stride 64) layouts. */
+static inline void RB_SetVertex2D(char *tessBase, int vertIndex, int isDx7,
+                                   float px, float py, float s, float t, D3DCOLOR color)
+{
+    if (isDx7) {
+        char *v = tessBase + vertIndex * 36;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(int *)(v + 0x08) = 0;
+        *(int *)(v + 0x0c) = 0;
+        *(int *)(v + 0x10) = 0;
+        *(float *)(v + 0x14) = 1.0f;
+        *(D3DCOLOR *)(v + 0x18) = color;
+        *(float *)(v + 0x1c) = s;
+        *(float *)(v + 0x20) = t;
+    } else {
+        char *v = tessBase + vertIndex * 64;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(int *)(v + 0x08) = 0;
+        *(float *)(v + 0x0c) = 1.0f;
+        *(int *)(v + 0x10) = 0;
+        *(int *)(v + 0x14) = 0;
+        *(float *)(v + 0x18) = 1.0f;
+        *(D3DCOLOR *)(v + 0x1c) = color;
+        *(float *)(v + 0x20) = s;
+        *(float *)(v + 0x24) = t;
+        *(int *)(v + 0x28) = 0;
+        *(float *)(v + 0x2c) = 1.0f;
+        *(int *)(v + 0x30) = 0;
+        *(float *)(v + 0x34) = 1.0f;
+        *(int *)(v + 0x38) = 0;
+        *(int *)(v + 0x3c) = 0;
+    }
+}
+
+/* Standard check-overflow-and-flush for tess quad rendering.
+ * Returns new vc (vertex count) after potential flush. */
+static inline int RB_CheckTessOverflow4(char *t)
+{
+    int vc = *(int *)(t + 0x5a7d4);
+    int ic = *(int *)(t + 0x5a7d0);
+    if (vc + 4 > 0x154a || ic + 6 > 0x100000) {
+        int savedDecl = *(int *)(t + 0x5a7cc);
+        RB_EndSurface();
+        RB_BeginSurface(*(const Material **)(t + 0x5a7bc),
+                        *(MaterialTechniqueType *)(t + 0x5a7c0),
+                        *(int *)(t + 0x5a7c4));
+        if (*(int *)(t + 0x5a7cc) != savedDecl) {
+            if (*(int *)(t + 0x5a7d0) != 0 || *(int *)(t + 0x5a7e0) != 0)
+                RB_EndSurface();
+            *(int *)(t + 0x5a7cc) = savedDecl;
+        }
+        vc = *(int *)(t + 0x5a7d4);
+    }
+    return vc;
+}
+
+/* Write 6 indices for a standard quad (2 triangles) at current tess position. */
+static inline void RB_WriteQuadIndices(char *t, int vc)
+{
+    int ic = *(int *)(t + 0x5a7d0);
+    r_index_t *indices = *(r_index_t **)(t + 0x5a7b0);
+    indices[ic + 0] = (r_index_t)(vc + 3);
+    indices[ic + 1] = (r_index_t)vc;
+    indices[ic + 2] = (r_index_t)(vc + 2);
+    indices[ic + 3] = (r_index_t)(vc + 2);
+    indices[ic + 4] = (r_index_t)vc;
+    indices[ic + 5] = (r_index_t)(vc + 1);
+}
+
+/* Begin 2D surface with material if not already active */
+static inline void RB_BeginSurface2D(char *t, const Material *material)
+{
+    if (material != *(const Material **)(t + 0x5a7bc) ||
+        *(MaterialTechniqueType *)(t + 0x5a7c0) != 3) {
+        if (*(int *)(t + 0x5a7d0) != 0 || *(int *)(t + 0x5a7e0) != 0)
+            RB_EndSurface();
+        RB_BeginSurface(material, 3, 0x1f);
+    }
+}
 
 /* Smallest power of 2 >= v (for texture dimension rounding) */
 static inline unsigned int nextPow2(unsigned int v)
@@ -6711,8 +6796,67 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 620 */
-static __attribute__((naked))
-void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
+/* line 620 */
+static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
+{
+    byte *cmd;
+    char *t = (char *)&tess;
+    const Material *material;
+    float halfW, halfH, midX, midY;
+    float radians, sinR, cosR;
+    float cx, sx, sy, cy; /* rotated half-extents */
+    float v0x, v0y, v1x, v1y, v2x, v2y, v3x, v3y;
+    int vc, isDx7;
+    D3DCOLOR color;
+
+    cmd = *(byte **)execState;
+
+    if (!*((byte *)&backEnd + 0x4bd))
+        RB_Set2D();
+
+    material = *(const Material **)(cmd + 4);
+    RB_BeginSurface2D(t, material);
+    vc = RB_CheckTessOverflow4(t);
+
+    /* Update tess counts early (matches original) */
+    *(int *)(t + 0x5a7d4) = vc + 4;
+    *(int *)(t + 0x5a7d0) += 6;
+    RB_WriteQuadIndices(t, vc);
+
+    /* Compute rotation parameters */
+    halfW = *(float *)(cmd + 0x10) * 0.5f;
+    halfH = *(float *)(cmd + 0x14) * 0.5f;
+    midX = *(float *)(cmd + 8) + halfW;
+    midY = *(float *)(cmd + 0xc) + halfH;
+    radians = *(float *)(cmd + 0x2c) * (float)(3.14159265358979323846 / 180.0);
+    sinR = sinf(radians);
+    cosR = cosf(radians);
+
+    /* Rotated half-extents */
+    cx = halfW * cosR;   /* x contribution from width */
+    sx = halfW * sinR;   /* y contribution from width */
+    sy = -halfH * sinR;  /* x contribution from height (negated) */
+    cy = halfH * cosR;   /* y contribution from height */
+
+    /* 4 rotated corners: center +/- rotated half-extents */
+    v0x = midX - cx - sy;  v0y = midY - sx - cy;
+    v1x = midX + cx - sy;  v1y = midY + sx - cy;
+    v2x = midX + cx + sy;  v2y = midY + sx + cy;
+    v3x = midX - cx + sy;  v3y = midY - sx + cy;
+
+    color = *(D3DCOLOR *)(cmd + 0x28);
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    RB_SetVertex2D(t, vc + 0, isDx7, v0x, v0y, *(float *)(cmd + 0x18), *(float *)(cmd + 0x1c), color);
+    RB_SetVertex2D(t, vc + 1, isDx7, v1x, v1y, *(float *)(cmd + 0x20), *(float *)(cmd + 0x1c), color);
+    RB_SetVertex2D(t, vc + 2, isDx7, v2x, v2y, *(float *)(cmd + 0x20), *(float *)(cmd + 0x24), color);
+    RB_SetVertex2D(t, vc + 3, isDx7, v3x, v3y, *(float *)(cmd + 0x18), *(float *)(cmd + 0x24), color);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 620 */
@@ -7200,430 +7344,42 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfdb912_000dbb65\n"
     );
 }
+#endif
 
 /* line 678 */
-static __attribute__((naked))
-void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
+static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 678 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1: vertIndex */
-        "movl 8(%ebp), %eax\n" /* line 684 | execState */
-        "movl (%eax), %edi\n" /* cmd */
-        "cmpb $0, backEnd+1213\n" /* line 686 */
-        "je .Lfdbff2_000dc422\n"
-        "movl 4(%edi), %ebx\n" /* line 692 | cmd, material */
-        /* { scope 2 */
-        "cmpl tess+370620, %ebx\n" /* line 300 */
-        "je .Lfdbff2_000dc436\n"
-        ".Lfdbff2_000dc01c:\n"
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfdbff2_000dc3fc\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfdbff2_000dc3fc\n"
-        ".Lfdbff2_000dc036:\n"
-        "movl $0x1f, 8(%esp)\n" /* line 303 */
-        "movl $3, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        /* } scope */
-        ".Lfdbff2_000dc04e:\n"
-        "movl tess+370644, %ecx\n" /* line 344 */
-        "leal 4(%ecx), %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lfdbff2_000dc39d\n"
-        "movl tess+370640, %edx\n"
-        "leal 6(%edx), %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jg .Lfdbff2_000dc39d\n"
-        ".Lfdbff2_000dc076:\n"
-        "movl %ecx, %ebx\n" /* line 696 | material */
-        "movl %ecx, %esi\n" /* vertCount */
-        "leal 4(%ecx), %eax\n" /* line 699 */
-        "movl %eax, tess+370644\n"
-        "leal 6(%edx), %eax\n" /* line 700 */
-        "movl %eax, tess+370640\n"
-        "leal (%edx, %edx), %ecx\n" /* line 702 */
-        "leal 3(%ebx), %edx\n" /* material */
-        "movl tess+370608, %eax\n"
-        "movw %dx, (%eax, %ecx)\n"
-        "movl tess+370608, %eax\n" /* line 703 */
-        "movw %bx, 2(%eax, %ecx)\n" /* material */
-        "leal 2(%ebx), %edx\n" /* line 704 | material */
-        "movl tess+370608, %eax\n"
-        "movw %dx, 4(%ecx, %eax)\n"
-        "movl tess+370608, %eax\n" /* line 705 */
-        "movw %dx, 6(%ecx, %eax)\n"
-        "movl tess+370608, %eax\n" /* line 706 */
-        "movw %bx, 8(%ecx, %eax)\n" /* material */
-        "leal 1(%ebx), %edx\n" /* line 707 | material */
-        "movl tess+370608, %eax\n"
-        "movw %dx, 0xa(%ecx, %eax)\n"
-        "movl 0x28(%edi), %edx\n" /* line 709 | cmd */
-        "movl %edx, -0x24(%ebp)\n"
-        "movl 0xc(%edi), %ebx\n" /* cmd, material */
-        "movl 8(%edi), %ecx\n" /* cmd */
-        "movzwl %si, %esi\n" /* vertCount */
-        "movl %esi, -0x20(%ebp)\n" /* vertCount, vertIndex */
-        /* { scope 2 */
-        "movl imp_r_rendererInUse, %eax\n" /* line 348 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfdbff2_000dc551\n"
-        "movl %esi, %edx\n"
-        "shll $6, %edx\n" /* line 358 */
-        "leal tess(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%edx)\n" /* line 447 */
-        "movl %ebx, 4(%eax)\n" /* line 448 | y */
-        "xorl %esi, %esi\n" /* line 449 */
-        "movl %esi, 8(%eax)\n"
-        "movl $0x3f800000, %ebx\n" /* line 450 | y */
-        "movl %ebx, 0xc(%eax)\n" /* y */
-        /* } scope */
-        "leal 0x10(%edx), %eax\n" /* line 359 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl %esi, tess(%eax)\n" /* line 191 */
-        "movl %esi, 4(%ecx)\n" /* line 192 */
-        "movl %ebx, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl -0x24(%ebp), %eax\n" /* line 360 */
-        "movl %eax, tess+28(%edx)\n"
-        "leal 0x20(%edx), %eax\n" /* line 361 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl %esi, tess(%eax)\n" /* line 30 */
-        "movl %esi, 4(%ecx)\n" /* line 31 */
-        /* } scope */
-        "addl $tess+48, %edx\n" /* line 362 */
-        "leal 4(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl %ebx, 4(%edx)\n" /* line 191 */
-        "movl %esi, 4(%eax)\n" /* line 192 */
-        "movl %esi, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 8(%ecx), %eax\n" /* line 363 | v */
-        /* { scope 3 */
-        "movl %esi, 8(%ecx)\n" /* line 191 */
-        "movl %ebx, 4(%eax)\n" /* line 192 */
-        "movl %esi, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        /* } scope */
-        ".Lfdbff2_000dc166:\n"
-        "movl 0x28(%edi), %esi\n" /* line 710 | cmd, vertCount */
-        "movl 0x14(%edi), %ebx\n" /* cmd, material */
-        "movl 0x10(%edi), %ecx\n" /* cmd */
-        "movl -0x20(%ebp), %eax\n" /* vertIndex */
-        "addl $1, %eax\n" /* vertIndex */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edx\n" /* line 348 */
-        "cmpl $2, 8(%edx)\n"
-        "je .Lfdbff2_000dc4ff\n"
-        "movl %eax, %edx\n" /* line 358 | v */
-        "shll $6, %edx\n"
-        "leal tess(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%edx)\n" /* line 447 */
-        "movl %ebx, 4(%eax)\n" /* line 448 | y */
-        "movl $0, 8(%eax)\n" /* line 449 */
-        "movl $0x3f800000, 0xc(%eax)\n" /* line 450 */
-        /* } scope */
-        "leal 0x10(%edx), %eax\n" /* line 359 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0, tess(%eax)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+28(%edx)\n" /* line 360 */
-        "leal 0x20(%edx), %eax\n" /* line 361 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, tess(%eax)\n" /* line 30 */
-        "movl $0, 4(%ecx)\n" /* line 31 */
-        /* } scope */
-        "addl $tess+48, %edx\n" /* line 362 */
-        "leal 4(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, 4(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 8(%ecx), %eax\n" /* line 363 | v */
-        /* { scope 3 */
-        "movl $0, 8(%ecx)\n" /* line 191 */
-        "movl $0x3f800000, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        /* } scope */
-        ".Lfdbff2_000dc21b:\n"
-        "movl 0x28(%edi), %esi\n" /* line 711 | cmd, vertCount */
-        "movl 0x1c(%edi), %ebx\n" /* cmd, material */
-        "movl 0x18(%edi), %ecx\n" /* cmd */
-        "movl -0x20(%ebp), %eax\n" /* vertIndex */
-        "addl $2, %eax\n" /* vertIndex */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edx\n" /* line 348 */
-        "cmpl $2, 8(%edx)\n"
-        "je .Lfdbff2_000dc4ad\n"
-        "movl %eax, %edx\n" /* line 358 | v */
-        "shll $6, %edx\n"
-        "leal tess(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%edx)\n" /* line 447 */
-        "movl %ebx, 4(%eax)\n" /* line 448 | y */
-        "movl $0, 8(%eax)\n" /* line 449 */
-        "movl $0x3f800000, 0xc(%eax)\n" /* line 450 */
-        /* } scope */
-        "leal 0x10(%edx), %eax\n" /* line 359 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0, tess(%eax)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+28(%edx)\n" /* line 360 */
-        "leal 0x20(%edx), %eax\n" /* line 361 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, tess(%eax)\n" /* line 30 */
-        "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
-        /* } scope */
-        "addl $tess+48, %edx\n" /* line 362 */
-        "leal 4(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, 4(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 8(%ecx), %eax\n" /* line 363 | v */
-        /* { scope 3 */
-        "movl $0, 8(%ecx)\n" /* line 191 */
-        "movl $0x3f800000, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        /* } scope */
-        ".Lfdbff2_000dc2d0:\n"
-        "movl 0x28(%edi), %esi\n" /* line 712 | cmd, vertCount */
-        "movl 0x24(%edi), %ebx\n" /* cmd, material */
-        "movl 0x20(%edi), %ecx\n" /* cmd */
-        "movl -0x20(%ebp), %eax\n" /* vertIndex */
-        "addl $3, %eax\n" /* vertIndex */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edx\n" /* line 348 */
-        "cmpl $2, 8(%edx)\n"
-        "je .Lfdbff2_000dc448\n"
-        "movl %eax, %edx\n" /* line 358 | v */
-        "shll $6, %edx\n"
-        "leal tess(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%edx)\n" /* line 447 */
-        "movl %ebx, 4(%eax)\n" /* line 448 | y */
-        "movl $0, 8(%eax)\n" /* line 449 */
-        "movl $0x3f800000, 0xc(%eax)\n" /* line 450 */
-        /* } scope */
-        "leal 0x10(%edx), %eax\n" /* line 359 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0, tess(%eax)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+28(%edx)\n" /* line 360 */
-        "leal 0x20(%edx), %eax\n" /* line 361 */
-        "leal tess(%eax), %ecx\n" /* v */
-        /* { scope 3 */
-        "movl $0, tess(%eax)\n" /* line 30 */
-        "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
-        /* } scope */
-        "addl $tess+48, %edx\n" /* line 362 */
-        "leal 4(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, 4(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 8(%ecx), %eax\n" /* line 363 | v */
-        /* { scope 3 */
-        "movl $0, 8(%ecx)\n" /* line 191 */
-        "movl $0x3f800000, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 715 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: vertIndex */
-        ".Lfdbff2_000dc39d:\n"
-        "movl tess+370636, %ebx\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl tess+370628, %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl tess+370624, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl tess+370620, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl tess+370636, %ebx\n" /* line 310 */
-        "je .Lfdbff2_000dc594\n"
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfdbff2_000dc406\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfdbff2_000dc406\n"
-        "movl %ebx, tess+370636\n" /* line 313 */
-        "movl tess+370644, %ecx\n"
-        "movl tess+370640, %edx\n"
-        "jmp .Lfdbff2_000dc076\n"
-        /* { scope 2 */
-        ".Lfdbff2_000dc3fc:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfdbff2_000dc036\n"
-        /* } scope */
-        ".Lfdbff2_000dc406:\n"
-        "calll RB_EndSurface\n"
-        "movl %ebx, tess+370636\n" /* line 313 */
-        "movl tess+370644, %ecx\n"
-        "movl tess+370640, %edx\n"
-        "jmp .Lfdbff2_000dc076\n"
-        ".Lfdbff2_000dc422:\n"
-        "calll RB_Set2D\n" /* line 688 */
-        "movl 4(%edi), %ebx\n" /* line 692 | cmd, material */
-        /* { scope 2 */
-        "cmpl tess+370620, %ebx\n" /* line 300 */
-        "jne .Lfdbff2_000dc01c\n"
-        ".Lfdbff2_000dc436:\n"
-        "cmpl $3, tess+370624\n"
-        "jne .Lfdbff2_000dc01c\n"
-        "jmp .Lfdbff2_000dc04e\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfdbff2_000dc448:\n"
-        "leal (%eax, %eax, 8), %eax\n" /* line 350 */
-        "shll $2, %eax\n"
-        "leal tess(%eax), %edx\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%eax)\n" /* line 191 */
-        "movl %ebx, 4(%edx)\n" /* line 192 */
-        "movl $0, 8(%edx)\n" /* line 193 */
-        /* } scope */
-        "leal 0xc(%edx), %ecx\n" /* line 351 | v */
-        /* { scope 3 */
-        "movl $0, 0xc(%edx)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+24(%eax)\n" /* line 352 */
-        "addl $tess+16, %eax\n" /* line 353 */
-        "movl $0, 0xc(%eax)\n" /* line 30 */
-        "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 715 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: vertIndex */
-        /* { scope 2 */
-        ".Lfdbff2_000dc4ad:\n"
-        "leal (%eax, %eax, 8), %eax\n" /* line 350 */
-        "shll $2, %eax\n"
-        "leal tess(%eax), %edx\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%eax)\n" /* line 191 */
-        "movl %ebx, 4(%edx)\n" /* line 192 */
-        "movl $0, 8(%edx)\n" /* line 193 */
-        /* } scope */
-        "leal 0xc(%edx), %ecx\n" /* line 351 | v */
-        /* { scope 3 */
-        "movl $0, 0xc(%edx)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+24(%eax)\n" /* line 352 */
-        "addl $tess+16, %eax\n" /* line 353 */
-        "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
-        "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
-        "jmp .Lfdbff2_000dc2d0\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfdbff2_000dc4ff:\n"
-        "leal (%eax, %eax, 8), %eax\n" /* line 350 */
-        "shll $2, %eax\n"
-        "leal tess(%eax), %edx\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%eax)\n" /* line 191 */
-        "movl %ebx, 4(%edx)\n" /* line 192 */
-        "movl $0, 8(%edx)\n" /* line 193 */
-        /* } scope */
-        "leal 0xc(%edx), %ecx\n" /* line 351 | v */
-        /* { scope 3 */
-        "movl $0, 0xc(%edx)\n" /* line 191 */
-        "movl $0, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl %esi, tess+24(%eax)\n" /* line 352 */
-        "addl $tess+16, %eax\n" /* line 353 */
-        "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
-        "movl $0, 0x10(%eax)\n" /* line 31 */
-        "jmp .Lfdbff2_000dc21b\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfdbff2_000dc551:\n"
-        "leal (%esi, %esi, 8), %eax\n" /* line 350 */
-        "shll $2, %eax\n"
-        "leal tess(%eax), %edx\n" /* v */
-        /* { scope 3 */
-        "movl %ecx, tess(%eax)\n" /* line 191 */
-        "movl %ebx, 4(%edx)\n" /* line 192 */
-        "xorl %esi, %esi\n" /* line 193 */
-        "movl %esi, 8(%edx)\n"
-        /* } scope */
-        "leal 0xc(%edx), %ecx\n" /* line 351 | v */
-        /* { scope 3 */
-        "movl %esi, 0xc(%edx)\n" /* line 191 */
-        "movl %esi, 4(%ecx)\n" /* line 192 */
-        "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
-        /* } scope */
-        "movl -0x24(%ebp), %edx\n" /* line 352 */
-        "movl %edx, tess+24(%eax)\n"
-        "addl $tess+16, %eax\n" /* line 353 */
-        "movl %esi, 0xc(%eax)\n" /* line 30 */
-        "movl %esi, 0x10(%eax)\n" /* line 31 */
-        "jmp .Lfdbff2_000dc166\n"
-        ".Lfdbff2_000dc594:\n"
-        "movl tess+370644, %ecx\n"
-        "movl tess+370640, %edx\n"
-        "jmp .Lfdbff2_000dc076\n"
-    );
+    byte *cmd;
+    char *t = (char *)&tess;
+    const Material *material;
+    int vc, isDx7;
+    D3DCOLOR color;
+
+    cmd = *(byte **)execState;
+
+    if (!*((byte *)&backEnd + 0x4bd))
+        RB_Set2D();
+
+    material = *(const Material **)(cmd + 4);
+    RB_BeginSurface2D(t, material);
+    vc = RB_CheckTessOverflow4(t);
+
+    /* Update tess counts and write indices */
+    *(int *)(t + 0x5a7d4) = vc + 4;
+    *(int *)(t + 0x5a7d0) += 6;
+    RB_WriteQuadIndices(t, vc);
+
+    color = *(D3DCOLOR *)(cmd + 0x28);
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    /* 4 explicit corner positions with fixed texcoords */
+    RB_SetVertex2D(t, vc + 0, isDx7, *(float *)(cmd + 0x08), *(float *)(cmd + 0x0c), 0.0f, 0.0f, color);
+    RB_SetVertex2D(t, vc + 1, isDx7, *(float *)(cmd + 0x10), *(float *)(cmd + 0x14), 1.0f, 0.0f, color);
+    RB_SetVertex2D(t, vc + 2, isDx7, *(float *)(cmd + 0x18), *(float *)(cmd + 0x1c), 1.0f, 1.0f, color);
+    RB_SetVertex2D(t, vc + 3, isDx7, *(float *)(cmd + 0x20), *(float *)(cmd + 0x24), 0.0f, 1.0f, color);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2273 */
