@@ -28,6 +28,8 @@ extern void DB_EnumXAssets(int type, void (*func)(XAssetHeader, void *), void *d
 extern int XModelBad(union XAssetHeader header);
 extern void XModelUnoptimize(union XAssetHeader header);
 extern void XModelOptimize(union XAssetHeader header);
+extern float Vec3Distance(const void *a, const void *b);
+extern int DObjGetLodForDist(const void *obj, int modelIndex, float dist);
 extern void DObjSetModel(struct DObj_s *obj, void *model);
 extern int DObjGetNumModels(const struct DObj_s *obj);
 extern int DObjGetSurfaces(const struct DObj_s *obj, DSurface_s *surfaces, int *partBits, char *lods);
@@ -334,8 +336,49 @@ void R_DObjGetSurfMaterials(struct DObj_s *obj, int lod, MaterialHandle *matHand
 }
 
 /* line 257 */
+/* line 257 — Compute per-model LOD levels based on distance and entity scale,
+ * then get surfaces for all LODs. Register convention: eax=ent, edx=obj, ecx=surfaces. */
+static int R_GetSurfaceData_impl(const byte *ent, const void *obj, void *surfaces, int *partBits, char *lods)
+{
+    char *rg = (char *)imp_rg;
+    int modelCount, i;
+    float dist, scale;
+
+    modelCount = DObjGetNumModels(obj);
+    scale = *(float *)(ent + 0x38);
+
+    /* Compute distance from entity origin to camera, scaled by LOD parameters */
+    dist = Vec3Distance(ent + 0x3c, rg + 0x317c);
+    dist = dist * *(float *)(rg + 0x3188) + *(float *)(rg + 0x318c);
+
+    /* Apply entity scale if non-zero */
+    if (scale != 0.0f)
+        dist /= scale;
+
+    /* Compute LOD level for each sub-model */
+    for (i = 0; i < modelCount; i++) {
+        lods[i] = (char)DObjGetLodForDist(obj, i, dist);
+    }
+
+    return DObjGetSurfaces(obj, surfaces, partBits, lods);
+}
+
 static __attribute__((naked))
 int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lods)
+{
+    __asm__ __volatile__ (
+        "pushl 0xc(%esp)\n"
+        "pushl 0xc(%esp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_GetSurfaceData_impl\n"
+        "addl $20, %esp\n"
+        "retl $8\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 257 */
@@ -427,6 +470,7 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "retl\n"
     );
 }
+#endif
 
 /* line 299 */
 static __attribute__((naked))
