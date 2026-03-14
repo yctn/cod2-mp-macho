@@ -251,63 +251,44 @@ void Material_FinishLoading(void)
 }
 
 /* line 1470 */
-__attribute__((naked))
+extern void RB_ReleaseVertexDecl(void);
+
 void Material_ReleaseAll(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1470 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "calll RB_ReleaseVertexDecl\n" /* line 1381 */
-        "movl $materialGlobals+4, -0x1c(%ebp)\n"
-        ".Lfd346a_000d347f:\n"
-        "movl -0x1c(%ebp), %esi\n"
-        "movl $4, %edi\n"
-        ".Lfd346a_000d3487:\n"
-        "leal 8(%esi), %ebx\n" /* line 1470 */
-        "movl 8(%esi), %eax\n" /* line 1389 */
-        "testl %eax, %eax\n"
-        "je .Lfd346a_000d34ac\n"
-        ".Lfd346a_000d3491:\n"
-        "movl (%ebx), %eax\n" /* line 1390 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        "movl $0, (%ebx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd346a_000d3491\n"
-        ".Lfd346a_000d34ac:\n"
-        "addl $4, %esi\n"
-        "subl $1, %edi\n" /* line 1387 */
-        "jne .Lfd346a_000d3487\n"
-        "addl $0x18, -0x1c(%ebp)\n" /* line 1393 */
-        "cmpl $materialGlobals+772, -0x1c(%ebp)\n" /* line 1385 */
-        "jne .Lfd346a_000d347f\n"
-        "movl $materialGlobals, %ebx\n"
-        ".Lfd346a_000d34c6:\n"
-        "movl 0x259c(%ebx), %eax\n" /* line 838 */
-        "testl %eax, %eax\n"
-        "je .Lfd346a_000d34db\n"
-        "movl 0xc(%eax), %eax\n" /* line 813 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        ".Lfd346a_000d34db:\n"
-        "addl $4, %ebx\n"
-        "cmpl $materialGlobals+1024, %ebx\n" /* line 836 */
-        "jne .Lfd346a_000d34c6\n"
-        "addl $0x2c, %esp\n" /* line 1476 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *outer;
+    int j;
+    void *obj;
+    void **vtable;
+    int i;
+
+    RB_ReleaseVertexDecl();
+
+    /* Release technique COM objects: 32 entries of 24 bytes, 4 COM ptrs each at offset +8 */
+    for (outer = materialGlobals + 4; outer < materialGlobals + 772; outer += 24) {
+        byte *slot = outer;
+        for (j = 0; j < 4; j++) {
+            void **pObj = (void **)(slot + 8);
+            if (*pObj) {
+                do {
+                    obj = *pObj;
+                    vtable = *(void ***)obj;
+                    ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
+                    *pObj = NULL;
+                } while (*(volatile int *)imp_alwaysfails);
+            }
+            slot += 4;
+        }
+    }
+
+    /* Release shader COM objects: 256 entries */
+    for (i = 0; i < 256; i++) {
+        void *shader = *(void **)(materialGlobals + 0x259c + i * 4);
+        if (shader) {
+            obj = *(void **)((byte *)shader + 0xc);
+            vtable = *(void ***)obj;
+            ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
+        }
+    }
 }
 
 /* line 1538 */

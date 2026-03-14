@@ -4824,49 +4824,25 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
 }
 
 /* line 609 */
-static __attribute__((naked))
-void RB_StretchPicCmd(GfxRenderCommandExecState *execState)
+static void RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 609 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ebx), %edx\n" /* line 613 | execState */
-        "movl $8, 0x28(%esp)\n" /* line 614 */
-        "movl 0x28(%edx), %eax\n"
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x24(%edx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x20(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x1c(%edx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x18(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x34, %esp\n" /* line 617 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+
+    RB_DrawStretchPic(
+        *(const Material **)(cmd + 4),  /* material */
+        *(float *)(cmd + 8),            /* x */
+        *(float *)(cmd + 0xc),          /* y */
+        *(float *)(cmd + 0x10),         /* w */
+        *(float *)(cmd + 0x14),         /* h */
+        *(float *)(cmd + 0x18),         /* s0 */
+        *(float *)(cmd + 0x1c),         /* t0 */
+        *(float *)(cmd + 0x20),         /* s1 */
+        *(float *)(cmd + 0x24),         /* t1 */
+        *(D3DCOLOR *)(cmd + 0x28),      /* color */
+        8);                             /* statsTarget */
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 3383 */
@@ -9182,55 +9158,23 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
 }
 
 /* line 2347 */
-static __attribute__((naked))
-void RB_DrawLinesCmd(GfxRenderCommandExecState *execState)
+static void RB_DrawLinesCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2347 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ebx), %edx\n" /* line 2351 | execState */
-        "cmpb $0, backEnd+1213\n" /* line 2353 */
-        "je .Lfdd1dc_000dd21c\n"
-        "leal 8(%edx), %eax\n" /* line 2354 */
-        "movl %eax, 8(%esp)\n"
-        "movswl 6(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movswl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawLines2D\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 2359 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfdd1dc_000dd21c:\n"
-        "movl $1, 0xc(%esp)\n" /* line 2356 */
-        "leal 8(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movswl 6(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movswl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawLines3D\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 2359 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+    int count = *(short *)(cmd + 4);
+    int width = *(short *)(cmd + 6);
+    const GfxPointVertex *verts = (const GfxPointVertex *)(cmd + 8);
+
+    if (*(byte *)((char *)&backEnd + 1213)) {
+        /* 2D mode */
+        RB_DrawLines2D(count, width, verts);
+    } else {
+        /* 3D mode */
+        RB_DrawLines3D(count, width, verts, 1);
+    }
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 1298 */
