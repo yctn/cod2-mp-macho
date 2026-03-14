@@ -172,6 +172,11 @@ extern void MatrixIdentity44(void *matrix);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
+extern const char *R_ErrorDescription(HRESULT hr);
+extern void R_Error(int level, const char *msg, ...);
+extern void R_FlushStaticModelCache(void);
+extern void R_SetColorMappings(void);
+extern void RB_SetViewport(const void *viewport);
 
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
@@ -358,80 +363,53 @@ void RB_GpuWaited(int ticks)
 }
 
 /* line 3710 */
-__attribute__((naked))
 static void RB_EndFrame_real(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3710 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        /* { scope 1 */
-        "movl imp_dx, %ebx\n" /* line 3736 */
-        "movl 8(%ebx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x44(%edx)\n"
-        "testl %eax, %eax\n" /* line 3741 */
-        "js .Lfd4ad4_000d4b7d\n"
-        ".Lfd4ad4_000d4b11:\n"
-        "movl imp_dx, %eax\n" /* line 3755 */
-        "movl 0x2d8c(%eax), %eax\n"
-        "movl $0, (%eax)\n"
-        "movb $0, backEnd+1213\n" /* line 3762 */
-        "movl imp_r_gamma, %eax\n" /* line 3769 */
-        "movl (%eax), %edx\n"
-        "cmpb $0, 7(%edx)\n"
-        "jne .Lfd4ad4_000d4b43\n"
-        "movl imp_r_ignoreHwGamma, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 7(%eax)\n"
-        "je .Lfd4ad4_000d4b6b\n"
-        ".Lfd4ad4_000d4b43:\n"
-        "movl imp_ri, %esi\n" /* line 3771 */
-        "movl %edx, (%esp)\n"
-        "calll *0x88(%esi)\n"
-        "movl imp_r_ignoreHwGamma, %ebx\n" /* line 3772 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x88(%esi)\n"
-        "movl (%ebx), %eax\n" /* line 3774 */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfd4ad4_000d4b72\n"
-        /* } scope */
-        ".Lfd4ad4_000d4b6b:\n"
-        "addl $0x20, %esp\n" /* line 3778 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd4ad4_000d4b72:\n"
-        "addl $0x20, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp R_SetColorMappings\n" /* line 3775 */
-        ".Lfd4ad4_000d4b7d:\n"
-        "cmpl $0x88760868, %eax\n" /* line 3744 */
-        "je .Lfd4ad4_000d4ba4\n"
-        "movl %eax, (%esp)\n" /* line 3745 */
-        "calll R_ErrorDescription\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_0022459c, 4(%esp)\n" /* "Direct3DDevice9::Present failed: %s
-" */
-        "movl $0, (%esp)\n"
-        "calll R_Error\n"
-        ".Lfd4ad4_000d4ba4:\n"
-        "movb $1, 0x2d3c(%ebx)\n" /* line 3746 */
-        "calll R_FlushStaticModelCache\n" /* line 3748 */
-        "jmp .Lfd4ad4_000d4b11\n"
-    );
+    char *dx = (char *)imp_dx;
+    void *device;
+    void **vtable;
+    HRESULT hr;
+    char *r_gamma_cvar;
+    char *r_ignoreHwGamma_cvar;
+    void (*Cvar_ClearModified)(void *);
+
+    /* IDirect3DDevice9::Present(NULL, NULL, NULL, NULL) — vtable offset 0x44 */
+    device = *(void **)(dx + 8);
+    vtable = *(void ***)device;
+    hr = ((HRESULT (*)(void *, void *, void *, void *, void *))(vtable[0x44 / 4]))(device, NULL, NULL, NULL, NULL);
+
+    if (hr < 0) {
+        if (hr != (HRESULT)0x88760868) { /* D3DERR_DEVICELOST */
+            R_Error(0, "Direct3DDevice9::Present failed: %s\n", R_ErrorDescription(hr));
+        }
+        *(byte *)(dx + 0x2d3c) = 1; /* deviceLost = true */
+        R_FlushStaticModelCache();
+    }
+
+    /* Reset index buffer lock position */
+    dx = (char *)imp_dx;
+    *(int *)*(void **)(dx + 0x2d8c) = 0;
+
+    /* backEnd.in2d = false */
+    *(byte *)((char *)&backEnd + 1213) = 0;
+
+    /* Check if gamma cvars were modified */
+    r_gamma_cvar = *(char **)imp_r_gamma;
+    r_ignoreHwGamma_cvar = *(char **)imp_r_ignoreHwGamma;
+
+    if (*(byte *)(r_gamma_cvar + 7) || *(byte *)(r_ignoreHwGamma_cvar + 7)) {
+        /* Clear modified flags via ri->Cvar_ClearModified (offset 0x88) */
+        Cvar_ClearModified = *(void (**)(void *))((char *)imp_ri + 0x88);
+        Cvar_ClearModified(r_gamma_cvar);
+
+        r_ignoreHwGamma_cvar = *(char **)imp_r_ignoreHwGamma;
+        Cvar_ClearModified(r_ignoreHwGamma_cvar);
+
+        if (!*(byte *)(r_ignoreHwGamma_cvar + 8)) {
+            R_SetColorMappings();
+            return;
+        }
+    }
 }
 
 void RB_InitSceneViewport(void);
@@ -485,240 +463,130 @@ static void RB_CallCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1339 */
-static __attribute__((naked))
-void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
+static void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1339 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 1344 | execState */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* cmd */
-        "movl 4(%eax), %edx\n" /* line 1346 */
-        "movl imp_dxState, %eax\n"
-        "cmpl 0x2154(%eax), %edx\n"
-        "je .Lfd4cb0_000d4d89\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %ebx\n"
-        "jmp .Lfd4cb0_000d4ce9\n"
-        ".Lfd4cb0_000d4ce3:\n"
-        "movl -0x1c(%ebp), %ecx\n" /* cmd */
-        "movl 4(%ecx), %edx\n"
-        ".Lfd4cb0_000d4ce9:\n"
-        "movl 8(%edi), %eax\n" /* line 1355 */
-        "movl (%eax), %esi\n" /* planeIndex */
-        "movl %esi, -0x2c(%ebp)\n" /* planeIndex */
-        "movl $1, %esi\n" /* planeIndex */
-        "movl %edx, %ecx\n"
-        "shll %cl, %esi\n" /* planeIndex */
-        "movl %esi, %edx\n" /* planeIndex */
-        "subl $1, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x98, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "calll *0xe4(%edx)\n"
-        "movl (%ebx), %esi\n" /* planeIndex */
-        "testl %esi, %esi\n" /* planeIndex */
-        "jne .Lfd4cb0_000d4ce3\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 1356 | cmd */
-        "movl 4(%ecx), %edx\n"
-        "movl imp_dxState, %eax\n"
-        "movl %edx, 0x2154(%eax)\n"
-        "movl %ecx, %esi\n" /* planeIndex */
-        ".Lfd4cb0_000d4d30:\n"
-        "movl 4(%esi), %ebx\n" /* line 1359 | planeIndex */
-        "testl %ebx, %ebx\n"
-        "jle .Lfd4cb0_000d4d74\n"
-        "movl %esi, %ebx\n" /* planeIndex */
-        "xorl %esi, %esi\n" /* planeIndex */
-        "movl imp_alwaysfails, %edi\n"
-        "addl $8, %ebx\n"
-        ".Lfd4cb0_000d4d44:\n"
-        "movl imp_dx, %edx\n" /* line 1360 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* planeIndex */
-        "movl %eax, (%esp)\n"
-        "calll *0xdc(%edx)\n"
-        "movl (%edi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfd4cb0_000d4d44\n"
-        "addl $1, %esi\n" /* line 1359 | planeIndex */
-        "addl $0x10, %ebx\n"
-        "movl -0x1c(%ebp), %ecx\n" /* cmd */
-        "cmpl 4(%ecx), %esi\n" /* planeIndex */
-        "jl .Lfd4cb0_000d4d44\n"
-        ".Lfd4cb0_000d4d74:\n"
-        "movl 8(%ebp), %esi\n" /* line 169 | execState */
-        "movl (%esi), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1363 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd4cb0_000d4d89:\n"
-        "movl -0x1c(%ebp), %esi\n" /* cmd, planeIndex */
-        "jmp .Lfd4cb0_000d4d30\n"
-    );
+    byte *cmd = *(byte **)execState;
+    int planeCount = *(int *)(cmd + 4);
+    void *device;
+    void **vtable;
+    int i;
+
+    /* Update clip plane enable render state if changed */
+    if (planeCount != *(int *)((char *)imp_dxState + 0x2154)) {
+        /* IDirect3DDevice9::SetRenderState(D3DRS_CLIPPLANEENABLE, (1<<count)-1) — vtable 0xE4 */
+        do {
+            device = *(void **)((char *)imp_dx + 8);
+            vtable = *(void ***)device;
+            ((HRESULT (*)(void *, DWORD, DWORD))(vtable[0xE4 / 4]))(
+                device, 0x98, (DWORD)((1 << planeCount) - 1));
+        } while (*(volatile int *)imp_alwaysfails);
+
+        *(int *)((char *)imp_dxState + 0x2154) = planeCount;
+    }
+
+    /* Set each clip plane — planes start at cmd+8, 16 bytes each */
+    if (planeCount > 0) {
+        byte *planeData = cmd + 8;
+        for (i = 0; i < planeCount; i++) {
+            /* IDirect3DDevice9::SetClipPlane(i, planeData) — vtable 0xDC */
+            do {
+                device = *(void **)((char *)imp_dx + 8);
+                vtable = *(void ***)device;
+                ((HRESULT (*)(void *, DWORD, const float *))(vtable[0xDC / 4]))(
+                    device, (DWORD)i, (const float *)planeData);
+            } while (*(volatile int *)imp_alwaysfails);
+            planeData += 16;
+        }
+    }
+
+    /* Advance command pointer */
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 843 */
-static __attribute__((naked))
-void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
+static void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 843 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        /* { scope 1: data, rows, h, w, ... */
-        "movl 8(%ebp), %edx\n" /* line 847 | execState */
-        "movl (%edx), %eax\n"
-        "movl 0x1c(%eax), %edx\n" /* line 849 */
-        "movl %edx, -0x54(%ebp)\n" /* data */
-        "movl 0x18(%eax), %edx\n"
-        "movl %edx, -0x50(%ebp)\n" /* rows */
-        "movl 0x14(%eax), %edi\n" /* cols */
-        "movl 0x10(%eax), %edx\n"
-        "movl %edx, -0x4c(%ebp)\n" /* h */
-        "movl 0xc(%eax), %edx\n"
-        "movl %edx, -0x48(%ebp)\n" /* w */
-        "movl 8(%eax), %edx\n"
-        "movl %edx, -0x44(%ebp)\n" /* y */
-        "movl 4(%eax), %eax\n"
-        "movl %eax, -0x40(%ebp)\n" /* x */
-        /* { scope 2: rawSurf, lockedRect, dstRect, newline, ... */
-        /* { scope 3 */
-        "movl imp_dx, %eax\n" /* line 781 */
-        "movl 8(%eax), %edx\n"
-        "movl (%edx), %ecx\n"
-        "movl $0, 0x20(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* rawSurf */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0x16, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl -0x50(%ebp), %eax\n" /* rows */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0x5c(%ecx)\n"
-        "testl %eax, %eax\n" /* line 785 */
-        "js .Lfd4d8e_000d4efb\n"
-        "leal -0x28(%ebp), %esi\n" /* lockedRect, rowIndex */
-        "movl imp_alwaysfails, %ebx\n" /* dest */
-        ".Lfd4d8e_000d4e1e:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 788 | rawSurf */
-        "movl (%eax), %edx\n"
-        "movl $0x2000, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* rowIndex */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x4c(%edx)\n"
-        "movl (%ebx), %eax\n" /* dest */
-        "testl %eax, %eax\n"
-        "jne .Lfd4d8e_000d4e1e\n"
-        "movl -0x24(%ebp), %ebx\n" /* line 789 | dest */
-        "movl -0x28(%ebp), %edx\n" /* line 791 | lockedRect */
-        "movl %edx, -0x3c(%ebp)\n" /* newline */
-        "movl -0x50(%ebp), %eax\n" /* line 795 | rows */
-        "testl %eax, %eax\n"
-        "jg .Lfd4d8e_000d4f13\n"
-        ".Lfd4d8e_000d4e5f:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 823 | rawSurf */
-        "movl (%eax), %edx\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x50(%edx)\n"
-        "movl -0x40(%ebp), %edx\n" /* line 825 | x */
-        "movl %edx, -0x38(%ebp)\n" /* dstRect */
-        "movl -0x44(%ebp), %eax\n" /* line 826 | y */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl -0x48(%ebp), %eax\n" /* line 827 | w */
-        "addl %edx, %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* line 828 | h */
-        "addl -0x44(%ebp), %eax\n" /* y */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 831 | rawSurf */
-        "movl (%edx), %ecx\n"
-        "leal -0x20(%ebp), %eax\n" /* rs */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *0x48(%ecx)\n"
-        "movl imp_dx, %edx\n" /* line 832 */
-        "movl 8(%edx), %ecx\n"
-        "movl (%ecx), %ebx\n" /* dest */
-        "movl $2, 0x14(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* dstRect */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x2c34(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* rs */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *0x88(%ebx)\n" /* dest */
-        "movl -0x20(%ebp), %eax\n" /* line 833 | rs */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 838 | rawSurf */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd4d8e_000d4efb:\n"
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 852 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: data, rows, h, w, ... */
-        /* { scope 2: rawSurf, lockedRect, dstRect, newline, ... */
-        /* { scope 3 */
-        ".Lfd4d8e_000d4f13:\n"
-        "shll $2, %edi\n" /* line 795 */
-        "xorl %esi, %esi\n" /* rowIndex */
-        ".Lfd4d8e_000d4f18:\n"
-        "movl %edi, 8(%esp)\n" /* line 798 */
-        "movl -0x54(%ebp), %eax\n" /* data */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* dest */
-        "calll memcpy\n"
-        "addl %edi, -0x54(%ebp)\n" /* line 799 | data */
-        "addl -0x3c(%ebp), %ebx\n" /* line 821 | newline, dest */
-        "addl $1, %esi\n" /* line 795 | rowIndex */
-        "cmpl %esi, -0x50(%ebp)\n" /* rowIndex, rows */
-        "jne .Lfd4d8e_000d4f18\n"
-        "jmp .Lfd4d8e_000d4e5f\n"
-    );
+    byte *cmd = *(byte **)execState;
+    int x     = *(int *)(cmd + 4);
+    int y     = *(int *)(cmd + 8);
+    int w     = *(int *)(cmd + 0xc);
+    int h     = *(int *)(cmd + 0x10);
+    int cols  = *(int *)(cmd + 0x14);
+    int rows  = *(int *)(cmd + 0x18);
+    byte *data = *(byte **)(cmd + 0x1c);
+    void *rawTexture = NULL;
+    void *device;
+    void **devVtable;
+    void **texVtable;
+    HRESULT hr;
+    int lockedRect[2]; /* [0]=Pitch, [1]=pBits */
+    int dstRect[4];
+    void *surface = NULL;
+    byte *dest;
+    int pitch;
+    int rowBytes;
+    int i;
+
+    /* IDirect3DDevice9::CreateTexture(cols, rows, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &rawTexture, NULL) — vtable 0x5C */
+    device = *(void **)((char *)imp_dx + 8);
+    devVtable = *(void ***)device;
+    hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(devVtable[0x5C / 4]))(
+        device, (UINT)cols, (UINT)rows, 1, 0, 0x16, 0, &rawTexture, NULL);
+
+    if (hr >= 0) {
+        /* IDirect3DTexture9::LockRect(0, &lockedRect, NULL, D3DLOCK_DISCARD) — vtable 0x4C */
+        do {
+            texVtable = *(void ***)rawTexture;
+            ((HRESULT (*)(void *, UINT, void *, void *, DWORD))(texVtable[0x4C / 4]))(
+                rawTexture, 0, lockedRect, NULL, 0x2000);
+        } while (*(volatile int *)imp_alwaysfails);
+
+        dest = (byte *)(size_t)lockedRect[1]; /* pBits */
+        pitch = lockedRect[0]; /* Pitch */
+
+        /* Copy pixel data row by row */
+        if (rows > 0) {
+            rowBytes = cols * 4;
+            for (i = 0; i < rows; i++) {
+                memcpy(dest, data, rowBytes);
+                data += rowBytes;
+                dest += pitch;
+            }
+        }
+
+        /* IDirect3DTexture9::UnlockRect(0) — vtable 0x50 */
+        texVtable = *(void ***)rawTexture;
+        ((HRESULT (*)(void *, UINT))(texVtable[0x50 / 4]))(rawTexture, 0);
+
+        /* Build destination RECT */
+        dstRect[0] = x;
+        dstRect[1] = y;
+        dstRect[2] = x + w;
+        dstRect[3] = y + h;
+
+        /* IDirect3DTexture9::GetSurfaceLevel(0, &surface) — vtable 0x48 */
+        texVtable = *(void ***)rawTexture;
+        ((HRESULT (*)(void *, UINT, void **))(texVtable[0x48 / 4]))(rawTexture, 0, &surface);
+
+        /* IDirect3DDevice9::StretchRect(surface, NULL, backBuffer, &dstRect, D3DTEXF_LINEAR) — vtable 0x88 */
+        {
+            char *dx = (char *)imp_dx;
+            void *backBuffer = *(void **)(dx + 0x2c34);
+            device = *(void **)(dx + 8);
+            devVtable = *(void ***)device;
+            ((HRESULT (*)(void *, void *, void *, void *, void *, DWORD))(devVtable[0x88 / 4]))(
+                device, surface, NULL, backBuffer, dstRect, 2);
+        }
+
+        /* Release surface and texture — vtable 0x08 = Release */
+        ((ULONG (*)(void *))(*(void ***)surface)[0x08 / 4])(surface);
+        ((ULONG (*)(void *))(*(void ***)rawTexture)[0x08 / 4])(rawTexture);
+    }
+
+    /* Advance command pointer */
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 1246 */
@@ -731,184 +599,47 @@ static void RB_DrawSunCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 1366 */
-__attribute__((naked))
 void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stencil)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1366 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* color */
-        "movzbl 0x14(%ebp), %eax\n" /* stencil */
-        "movb %al, -0x31(%ebp)\n" /* stencil */
-        /* { scope 1 */
-        "movzbl 8(%ebp), %edx\n" /* line 1382 | whichToClear */
-        "movl %edx, %eax\n"
-        "andl $2, %eax\n"
-        "cmpl $1, %eax\n"
-        "sbbl %edi, %edi\n" /* clearFlags */
-        "notl %edi\n" /* clearFlags */
-        "andl $2, %edi\n" /* clearFlags */
-        "movl %edi, %eax\n" /* line 1385 | clearFlags */
-        "orl $4, %eax\n"
-        "testb $4, %dl\n"
-        "cmovnel %eax, %edi\n" /* clearFlags */
-        "movl %edi, %eax\n" /* line 1387 | clearFlags */
-        "orl $1, %eax\n"
-        "andb $1, %dl\n"
-        "cmovnel %eax, %edi\n" /* clearFlags */
-        "movl $0, -0x28(%ebp)\n" /* line 1390 | viewport */
-        "movl $0, -0x24(%ebp)\n" /* line 1391 */
-        "movl imp_dxState, %edx\n" /* line 1392 */
-        "movl 0x209c(%edx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x20a0(%edx), %eax\n" /* line 1393 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal -0x28(%ebp), %eax\n" /* line 1394 | viewport */
-        "movl %eax, (%esp)\n"
-        "calll RB_SetViewport\n"
-        "movb $1, backEnd+1212\n" /* line 1395 */
-        "movss (%ebx), %xmm0\n" /* line 428 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x38(%ebp)\n"
-        "cvttss2si -0x38(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lfd4f66_000d513a\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lfd4f66_000d5012:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lfd4f66_000d5014:\n"
-        "movzbl %al, %eax\n" /* line 1404 */
-        "movl %eax, -0x30(%ebp)\n" /* r */
-        "movss 4(%ebx), %xmm0\n" /* line 428 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x3c(%ebp)\n"
-        "cvttss2si -0x3c(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lfd4f66_000d5173\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lfd4f66_000d5053:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lfd4f66_000d5055:\n"
-        "movzbl %al, %esi\n" /* line 1405 | g */
-        "movss 8(%ebx), %xmm0\n" /* line 428 */
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x40(%ebp)\n"
-        "cvttss2si -0x40(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lfd4f66_000d5160\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lfd4f66_000d5091:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lfd4f66_000d5093:\n"
-        "movzbl %al, %eax\n" /* line 1406 */
-        "movl %eax, -0x2c(%ebp)\n" /* b */
-        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "mulss 0xc(%ebx), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x44(%ebp)\n"
-        "cvttss2si -0x44(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lfd4f66_000d514d\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lfd4f66_000d50d2:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lfd4f66_000d50d4:\n"
-        "movl %eax, %ebx\n" /* line 1408 | color */
-        "shll $0x18, %ebx\n" /* color */
-        "shll $0x10, -0x30(%ebp)\n" /* r */
-        "orl -0x30(%ebp), %ebx\n" /* r, color */
-        "shll $8, %esi\n" /* g */
-        "orl %esi, %ebx\n" /* g, color */
-        "orl -0x2c(%ebp), %ebx\n" /* b, color */
-        "movzbl -0x31(%ebp), %esi\n" /* stencil, g */
-        ".Lfd4f66_000d50ec:\n"
-        "movl imp_dx, %edx\n" /* line 1412 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %esi, 0x18(%esp)\n" /* g */
-        "movss 0x10(%ebp), %xmm0\n" /* depth */
-        "movss %xmm0, 0x14(%esp)\n"
-        "movl %ebx, 0x10(%esp)\n" /* color */
-        "movl %edi, 0xc(%esp)\n" /* clearFlags */
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0xac(%edx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd4f66_000d50ec\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1414 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4f66_000d513a:\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lfd4f66_000d5012\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lfd4f66_000d5014\n"
-        /* } scope */
-        ".Lfd4f66_000d514d:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lfd4f66_000d50d2\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lfd4f66_000d50d4\n"
-        /* } scope */
-        ".Lfd4f66_000d5160:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lfd4f66_000d5091\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lfd4f66_000d5093\n"
-        /* } scope */
-        ".Lfd4f66_000d5173:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lfd4f66_000d5053\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lfd4f66_000d5055\n"
-    );
+    DWORD clearFlags = 0;
+    int viewport[4];
+    byte r, g, b, a;
+    DWORD d3dColor;
+    void *device;
+    void **vtable;
+
+    /* Build D3DCLEAR flags from whichToClear bitmask */
+    if (whichToClear & 2)
+        clearFlags |= 2;  /* D3DCLEAR_ZBUFFER */
+    if (whichToClear & 4)
+        clearFlags |= 4;  /* D3DCLEAR_STENCIL */
+    if (whichToClear & 1)
+        clearFlags |= 1;  /* D3DCLEAR_TARGET */
+
+    /* Set viewport to full render target */
+    viewport[0] = 0;
+    viewport[1] = 0;
+    viewport[2] = *(int *)((char *)imp_dxState + 0x209c);
+    viewport[3] = *(int *)((char *)imp_dxState + 0x20a0);
+    RB_SetViewport(viewport);
+    *(byte *)((char *)&backEnd + 1212) = 1;
+
+    /* Convert float color [0..1] to byte [0..255] with clamping */
+    r = (byte)(int)floorf(color[0] * 255.0f + 0.5f);
+    g = (byte)(int)floorf(color[1] * 255.0f + 0.5f);
+    b = (byte)(int)floorf(color[2] * 255.0f + 0.5f);
+    a = (byte)(int)floorf(color[3] * 255.0f + 0.5f);
+
+    /* Pack ARGB color */
+    d3dColor = ((DWORD)a << 24) | ((DWORD)r << 16) | ((DWORD)g << 8) | (DWORD)b;
+
+    /* IDirect3DDevice9::Clear(0, NULL, flags, color, depth, stencil) — vtable 0xAC */
+    do {
+        device = *(void **)((char *)imp_dx + 8);
+        vtable = *(void ***)device;
+        ((HRESULT (*)(void *, DWORD, void *, DWORD, DWORD, float, DWORD))(vtable[0xAC / 4]))(
+            device, 0, NULL, clearFlags, d3dColor, depth, (DWORD)(byte)stencil);
+    } while (*(volatile int *)imp_alwaysfails);
 }
 
 /* line 1417 */
