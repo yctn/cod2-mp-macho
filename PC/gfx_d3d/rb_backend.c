@@ -184,6 +184,9 @@ extern void MatrixForViewer(void *out, const void *origin, const void *axis);
 extern void InfinitePerspectiveMatrix(void *out, float fovX, float fovY, float zNear);
 extern void RB_PushMatrixStack(void);
 extern void RB_PopMatrixStack(void);
+extern float Vec2Normalize(float *v);
+extern float Vec3Normalize(float *v);
+extern Glyph *R_GetCharacterGlyph(FontHandle font, int charCode);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
@@ -2920,8 +2923,115 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2226 */
-__attribute__((naked))
+/* Write a line vertex at tessBase + vertIndex with xyz, color, and st.
+ * z is stored as raw int bits (from GfxPointVertex.xyz[2]). */
+static inline void RB_SetLineVertex(char *tessBase, int vertIndex, int isDx7,
+                                     float px, float py, int zBits, float s, float t, D3DCOLOR color)
+{
+    if (isDx7) {
+        char *v = tessBase + vertIndex * 36;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(int *)(v + 0x08) = zBits;
+        *(int *)(v + 0x0c) = 0;
+        *(int *)(v + 0x10) = 0;
+        *(float *)(v + 0x14) = 1.0f;
+        *(D3DCOLOR *)(v + 0x18) = color;
+        *(float *)(v + 0x1c) = s;
+        *(float *)(v + 0x20) = t;
+    } else {
+        char *v = tessBase + vertIndex * 64;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(int *)(v + 0x08) = zBits;
+        *(float *)(v + 0x0c) = 1.0f;
+        *(int *)(v + 0x10) = 0;
+        *(int *)(v + 0x14) = 0;
+        *(float *)(v + 0x18) = 1.0f;
+        *(D3DCOLOR *)(v + 0x1c) = color;
+        *(float *)(v + 0x20) = s;
+        *(float *)(v + 0x24) = t;
+        *(int *)(v + 0x28) = 0;
+        *(float *)(v + 0x2c) = 1.0f;
+        *(int *)(v + 0x30) = 0;
+        *(float *)(v + 0x34) = 1.0f;
+        *(int *)(v + 0x38) = 0;
+        *(int *)(v + 0x3c) = 0;
+    }
+}
+
+/* Write 6 indices for a line billboard quad: (vc+1, vc, vc+2, vc+2, vc, vc+3) */
+static inline void RB_WriteLineQuadIndices(char *t, int vc)
+{
+    int ic = *(int *)(t + 0x5a7d0);
+    r_index_t *indices = *(r_index_t **)(t + 0x5a7b0);
+    indices[ic + 0] = (r_index_t)(vc + 1);
+    indices[ic + 1] = (r_index_t)vc;
+    indices[ic + 2] = (r_index_t)(vc + 2);
+    indices[ic + 3] = (r_index_t)(vc + 2);
+    indices[ic + 4] = (r_index_t)vc;
+    indices[ic + 5] = (r_index_t)(vc + 3);
+}
+
+/* line 2226 */
 void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
+{
+    char *t = (char *)&tess;
+    const Material *lineMaterial;
+    int lineIdx;
+    int isDx7;
+
+    (void)width;
+
+    lineMaterial = *(const Material **)((char *)imp_rgp + 0x1038);
+    RB_BeginSurface2D(t, lineMaterial);
+
+    if (count <= 0)
+        return;
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    for (lineIdx = 0; lineIdx < count; lineIdx++) {
+        const GfxPointVertex *p0 = &verts[lineIdx * 2];
+        const GfxPointVertex *p1 = &verts[lineIdx * 2 + 1];
+        float delta[2];
+        float x0, y0, x1, y1;
+        int z0, z1;
+        D3DCOLOR c0, c1;
+        int vc;
+
+        /* Perpendicular to line direction: (dy, -dx) */
+        delta[0] = p1->xyz[1] - p0->xyz[1];
+        delta[1] = p0->xyz[0] - p1->xyz[0];
+        Vec2Normalize(delta);
+        delta[0] *= 0.5f;
+        delta[1] *= 0.5f;
+
+        /* Check tess overflow */
+        vc = RB_CheckTessOverflow4(t);
+
+        /* Write indices and advance tess counts */
+        RB_WriteLineQuadIndices(t, vc);
+        *(int *)(t + 0x5a7d0) += 6;
+
+        x0 = p0->xyz[0];  y0 = p0->xyz[1];
+        x1 = p1->xyz[0];  y1 = p1->xyz[1];
+        z0 = *(int *)&p0->xyz[2];
+        z1 = *(int *)&p1->xyz[2];
+        c0 = *(D3DCOLOR *)p0->color;
+        c1 = *(D3DCOLOR *)p1->color;
+
+        /* 4 vertices: endpoints ± perpendicular offset */
+        RB_SetLineVertex(t, vc + 0, isDx7, x0 - delta[0], y0 - delta[1], z0, 0.0f, 0.0f, c0);
+        RB_SetLineVertex(t, vc + 1, isDx7, x1 - delta[0], y1 - delta[1], z1, 0.0f, 1.0f, c1);
+        RB_SetLineVertex(t, vc + 2, isDx7, x1 + delta[0], y1 + delta[1], z1, 1.0f, 1.0f, c1);
+        RB_SetLineVertex(t, vc + 3, isDx7, x0 + delta[0], y0 + delta[1], z0, 1.0f, 0.0f, c0);
+
+        *(int *)(t + 0x5a7d4) += 4;
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2226 */
@@ -3385,10 +3495,140 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "jmp .Lfd743e_000d748a\n"
     );
 }
+#endif
 
 /* line 3063 */
-__attribute__((naked))
+/* Write a 3D vertex (xyz + w=1.0) with color, texcoord, normal=(0,0,1), tangent/binormal.
+ * Used for 3D text and similar world-space quads. */
+static inline void RB_SetVertex3DWorld(char *tessBase, int vertIndex, int isDx7,
+                                        float px, float py, float pz,
+                                        float s, float t, D3DCOLOR color)
+{
+    if (isDx7) {
+        char *v = tessBase + vertIndex * 36;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(float *)(v + 0x08) = pz;
+        *(int *)(v + 0x0c) = 0;
+        *(int *)(v + 0x10) = 0;
+        *(float *)(v + 0x14) = 1.0f;
+        *(D3DCOLOR *)(v + 0x18) = color;
+        *(float *)(v + 0x1c) = s;
+        *(float *)(v + 0x20) = t;
+    } else {
+        char *v = tessBase + vertIndex * 64;
+        *(float *)(v + 0x00) = px;
+        *(float *)(v + 0x04) = py;
+        *(float *)(v + 0x08) = pz;
+        *(float *)(v + 0x0c) = 1.0f;
+        *(int *)(v + 0x10) = 0;
+        *(int *)(v + 0x14) = 0;
+        *(float *)(v + 0x18) = 1.0f;
+        *(D3DCOLOR *)(v + 0x1c) = color;
+        *(float *)(v + 0x20) = s;
+        *(float *)(v + 0x24) = t;
+        *(int *)(v + 0x28) = 0;
+        *(float *)(v + 0x2c) = 1.0f;
+        *(int *)(v + 0x30) = 0;
+        *(float *)(v + 0x34) = 1.0f;
+        *(int *)(v + 0x38) = 0;
+        *(int *)(v + 0x3c) = 0;
+    }
+}
+
+/* line 3063 */
 void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, const vec_t *xPixelStep, const vec_t *yPixelStep, D3DCOLOR color)
+{
+    char *t = (char *)&tess;
+    const Material *material;
+    float startX, startY, startZ;
+    int isDx7;
+    int (*Q_ReadToken)(const char **, int);
+
+    /* Get font material */
+    material = *(const Material **)((byte *)font + 0xc);
+
+    /* Set view matrices for current viewParms */
+    RB_SetMatricesForView(*(void **)((char *)&backEnd + 968));
+
+    /* Starting position: org offset by -0.5 of both pixel step axes */
+    startX = org[0] - 0.5f * xPixelStep[0] - 0.5f * yPixelStep[0];
+    startY = org[1] - 0.5f * xPixelStep[1] - 0.5f * yPixelStep[1];
+    startZ = org[2] - 0.5f * xPixelStep[2] - 0.5f * yPixelStep[2];
+
+    /* Function to read next character code from text string */
+    Q_ReadToken = *(int (**)(const char **, int))((byte *)imp_ri + 0x118);
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    while (*text) {
+        int charCode;
+        Glyph *glyph;
+        float posX, posY, posZ;
+        float wdX, wdY, wdZ; /* width step: pixelWidth * xPixelStep */
+        float htX, htY, htZ; /* height step: pixelHeight * yPixelStep */
+        int vc;
+
+        /* Read next character from string */
+        charCode = Q_ReadToken(&text, 0);
+        glyph = R_GetCharacterGlyph(font, charCode);
+
+        /* Position: start + x0*xPixelStep + y0*yPixelStep */
+        {
+            float x0 = (float)(signed char)glyph->x0;
+            float y0 = (float)(signed char)glyph->y0;
+            posX = startX + x0 * xPixelStep[0] + y0 * yPixelStep[0];
+            posY = startY + x0 * xPixelStep[1] + y0 * yPixelStep[1];
+            posZ = startZ + x0 * xPixelStep[2] + y0 * yPixelStep[2];
+        }
+
+        /* Glyph extent vectors */
+        {
+            float pw = (float)glyph->pixelWidth;
+            float ph = (float)glyph->pixelHeight;
+            wdX = pw * xPixelStep[0];  wdY = pw * xPixelStep[1];  wdZ = pw * xPixelStep[2];
+            htX = ph * yPixelStep[0];  htY = ph * yPixelStep[1];  htZ = ph * yPixelStep[2];
+        }
+
+        /* Begin surface with font material */
+        if (material != *(const Material **)(t + 0x5a7bc) ||
+            *(MaterialTechniqueType *)(t + 0x5a7c0) != 3) {
+            if (*(int *)(t + 0x5a7d0) != 0 || *(int *)(t + 0x5a7e0) != 0)
+                RB_EndSurface();
+            RB_BeginSurface(material, 3, 0x1f);
+        }
+
+        /* Check overflow and write indices */
+        vc = RB_CheckTessOverflow4(t);
+        *(int *)(t + 0x5a7d4) = vc + 4;
+        *(int *)(t + 0x5a7d0) += 6;
+        RB_WriteQuadIndices(t, vc);
+
+        /* 4 vertices: glyph quad in world space */
+        RB_SetVertex3DWorld(t, vc + 0, isDx7,
+            posX, posY, posZ,
+            glyph->s0, glyph->t0, color);
+        RB_SetVertex3DWorld(t, vc + 1, isDx7,
+            posX + wdX, posY + wdY, posZ + wdZ,
+            glyph->s1, glyph->t0, color);
+        RB_SetVertex3DWorld(t, vc + 2, isDx7,
+            posX + wdX + htX, posY + wdY + htY, posZ + wdZ + htZ,
+            glyph->s1, glyph->t1, color);
+        RB_SetVertex3DWorld(t, vc + 3, isDx7,
+            posX + htX, posY + htY, posZ + htZ,
+            glyph->s0, glyph->t1, color);
+
+        /* Advance cursor by glyph advance width */
+        {
+            float dx = (float)glyph->dx;
+            startX += dx * xPixelStep[0];
+            startY += dx * xPixelStep[1];
+            startZ += dx * xPixelStep[2];
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 3063 */
@@ -3960,6 +4200,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "jmp .Lfd7acc_000d7c53\n"
     );
 }
+#endif
 
 /* line 3113 */
 /* line 3113 */

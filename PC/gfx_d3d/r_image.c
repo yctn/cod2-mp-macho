@@ -361,156 +361,64 @@ water_t * R_LoadWaterSetup(const water_t *water)
 }
 
 /* line 1566 */
-__attribute__((naked))
 void R_DownsampleMipMapBilinear(const byte *src, int srcBufferSize, int srcWidth, int srcHeight, int texelPitch, byte *dst, int dstBufferSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1566 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* srcWidth */
-        /* { scope 1 */
-        "cmpl $1, %eax\n" /* line 1587 */
-        "je .Lfe7906_000e7a6d\n"
-        ".Lfe7906_000e791b:\n"
-        "movl %eax, %edx\n" /* line 1592 */
-        "sarl $1, %edx\n"
-        "movl %edx, -0x34(%ebp)\n" /* dstWidth */
-        "movl 0x14(%ebp), %edi\n" /* line 1593 | srcHeight */
-        "sarl $1, %edi\n"
-        "movl %edi, -0x30(%ebp)\n" /* dstHeight */
-        "imull 0x18(%ebp), %eax\n" /* line 1594 | texelPitch */
-        "movl %eax, -0x24(%ebp)\n" /* srcRowPitch */
-        "imull 0x18(%ebp), %edx\n" /* line 1595 | texelPitch */
-        "movl %edx, -0x20(%ebp)\n" /* dstRowPitch */
-        "movl -0x34(%ebp), %eax\n" /* line 1597 | dstWidth */
-        "testl %eax, %eax\n"
-        "je .Lfe7906_000e7a04\n"
-        "cmpl $0, %edi\n"
-        "je .Lfe7906_000e7a04\n"
-        "jle .Lfe7906_000e79fc\n" /* line 1613 */
-        "movl 0x18(%ebp), %eax\n" /* line 1624 | texelPitch */
-        "addl %eax, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n" /* rowIndex */
-        ".Lfe7906_000e7961:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 1615 | rowIndex */
-        "imull -0x24(%ebp), %eax\n" /* srcRowPitch */
-        "movl 8(%ebp), %edx\n" /* src */
-        "leal (%edx, %eax, 2), %edi\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 1616 | rowIndex */
-        "imull -0x20(%ebp), %eax\n" /* dstRowPitch */
-        "addl 0x1c(%ebp), %eax\n" /* dst */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl -0x34(%ebp), %ebx\n" /* line 1618 | dstWidth, channelIndex */
-        "testl %ebx, %ebx\n" /* channelIndex */
-        "jle .Lfe7906_000e79ec\n"
-        "movl $0, -0x14(%ebp)\n"
-        ".Lfe7906_000e7989:\n"
-        "movl 0x18(%ebp), %ecx\n" /* line 1620 | texelPitch */
-        "testl %ecx, %ecx\n"
-        "jle .Lfe7906_000e79d7\n"
-        "movl 0x18(%ebp), %eax\n" /* texelPitch */
-        "addl -0x24(%ebp), %eax\n" /* srcRowPitch */
-        "leal (%edi, %eax), %esi\n" /* dstPos */
-        "xorl %ebx, %ebx\n" /* channelIndex */
-        ".Lfe7906_000e799b:\n"
-        "movzbl (%edi, %ebx), %eax\n" /* line 1621 */
-        "movl %eax, -0x40(%ebp)\n"
-        "leal (%edi, %ebx), %ecx\n"
-        "movl 0x18(%ebp), %eax\n" /* texelPitch */
-        "movzbl (%ecx, %eax), %edx\n"
-        "addl -0x40(%ebp), %edx\n"
-        "movl %edx, -0x40(%ebp)\n"
-        "movl -0x24(%ebp), %eax\n" /* srcRowPitch */
-        "movzbl (%ecx, %eax), %edx\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl %edx, %eax\n"
-        "movzbl (%esi), %edx\n" /* dstPos */
-        "addl %edx, %eax\n"
-        "sarl $2, %eax\n"
-        "movl -0x10(%ebp), %edx\n"
-        "movb %al, (%edx, %ebx)\n"
-        "addl $1, %ebx\n" /* line 1620 | channelIndex */
-        "addl $1, %esi\n" /* dstPos */
-        "cmpl %ebx, 0x18(%ebp)\n" /* channelIndex, texelPitch */
-        "jne .Lfe7906_000e799b\n"
-        ".Lfe7906_000e79d7:\n"
-        "movl 0x18(%ebp), %eax\n" /* line 1623 | texelPitch */
-        "addl %eax, -0x10(%ebp)\n"
-        "addl -0x1c(%ebp), %edi\n" /* line 1624 */
-        "addl $1, -0x14(%ebp)\n" /* line 1618 */
-        "movl -0x14(%ebp), %edx\n"
-        "cmpl %edx, -0x34(%ebp)\n" /* dstWidth */
-        "jne .Lfe7906_000e7989\n"
-        ".Lfe7906_000e79ec:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 1613 | rowIndex */
-        "movl -0x2c(%ebp), %edi\n" /* rowIndex */
-        "cmpl %edi, -0x30(%ebp)\n" /* dstHeight */
-        "jne .Lfe7906_000e7961\n"
-        /* } scope */
-        ".Lfe7906_000e79fc:\n"
-        "addl $0x34, %esp\n" /* line 1628 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe7906_000e7a04:\n"
-        "movl -0x34(%ebp), %eax\n" /* line 1600 | dstWidth */
-        "addl -0x30(%ebp), %eax\n" /* dstHeight */
-        "movl %eax, -0x18(%ebp)\n"
-        "testl %eax, %eax\n" /* line 1602 */
-        "jle .Lfe7906_000e79fc\n"
-        "movl 0x18(%ebp), %edx\n" /* line 1608 | texelPitch */
-        "addl %edx, %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl 8(%ebp), %edi\n" /* src */
-        "movl %edi, -0x3c(%ebp)\n" /* srcPos */
-        "movl 0x1c(%ebp), %esi\n" /* dst, dstPos */
-        "movl $0, -0x28(%ebp)\n" /* colIndex */
-        ".Lfe7906_000e7a29:\n"
-        "movl 0x18(%ebp), %edi\n" /* line 1604 | texelPitch */
-        "testl %edi, %edi\n"
-        "jle .Lfe7906_000e7a50\n"
-        "xorl %ebx, %ebx\n" /* line 1608 | channelIndex */
-        "movl -0x3c(%ebp), %ecx\n" /* srcPos */
-        ".Lfe7906_000e7a35:\n"
-        "movzbl (%ecx), %eax\n" /* line 1605 */
-        "movl 0x18(%ebp), %edi\n" /* texelPitch */
-        "movzbl (%ecx, %edi), %edx\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "movb %al, (%esi, %ebx)\n" /* dstPos */
-        "addl $1, %ebx\n" /* line 1604 | channelIndex */
-        "addl $1, %ecx\n"
-        "cmpl %ebx, %edi\n" /* channelIndex */
-        "jne .Lfe7906_000e7a35\n"
-        ".Lfe7906_000e7a50:\n"
-        "addl 0x18(%ebp), %esi\n" /* line 1607 | texelPitch, dstPos */
-        "movl -0x38(%ebp), %eax\n" /* line 1608 */
-        "addl %eax, -0x3c(%ebp)\n" /* srcPos */
-        "addl $1, -0x28(%ebp)\n" /* line 1602 | colIndex */
-        "movl -0x28(%ebp), %edx\n" /* colIndex */
-        "cmpl %edx, -0x18(%ebp)\n"
-        "jne .Lfe7906_000e7a29\n"
-        /* } scope */
-        "addl $0x34, %esp\n" /* line 1628 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe7906_000e7a6d:\n"
-        "cmpl $1, 0x14(%ebp)\n" /* line 1587 | srcHeight */
-        "jne .Lfe7906_000e791b\n"
-        "jmp .Lfe7906_000e79fc\n"
-    );
+    int dstWidth, dstHeight;
+    int srcRowPitch, dstRowPitch;
+    int row, col, ch;
+
+    (void)srcBufferSize;
+    (void)dstBufferSize;
+
+    /* 1x1 source: nothing to downsample */
+    if (srcWidth == 1 && srcHeight == 1)
+        return;
+
+    dstWidth = srcWidth >> 1;
+    dstHeight = srcHeight >> 1;
+    srcRowPitch = srcWidth * texelPitch;
+    dstRowPitch = dstWidth * texelPitch;
+
+    /* Degenerate case: one dimension is 0 after halving (1xN or Nx1 source) */
+    if (dstWidth == 0 || dstHeight == 0) {
+        int totalTexels = dstWidth + dstHeight;
+        const byte *srcPos = src;
+        byte *dstPos = dst;
+        int srcStride = texelPitch * 2;
+
+        for (col = 0; col < totalTexels; col++) {
+            for (ch = 0; ch < texelPitch; ch++) {
+                /* Average 2 adjacent texels along the non-degenerate axis */
+                dstPos[ch] = (byte)(((int)srcPos[ch] + (int)srcPos[ch + texelPitch]) >> 1);
+            }
+            dstPos += texelPitch;
+            srcPos += srcStride;
+        }
+        return;
+    }
+
+    /* Normal 2D downsample: average 2x2 blocks */
+    for (row = 0; row < dstHeight; row++) {
+        const byte *srcRow = src + row * 2 * srcRowPitch;
+        byte *dstRow = dst + row * dstRowPitch;
+
+        for (col = 0; col < dstWidth; col++) {
+            const byte *srcTexel = srcRow;
+            const byte *srcTexelNextRow = srcRow + texelPitch + srcRowPitch;
+
+            for (ch = 0; ch < texelPitch; ch++) {
+                /* Average 4 texels: (row,col), (row,col+1), (row+1,col), (row+1,col+1) */
+                int sum = (int)srcTexel[ch];
+                sum += (int)srcTexel[ch + texelPitch];
+                sum += (int)srcTexel[ch + srcRowPitch];
+                sum += (int)srcTexelNextRow[0];
+                dstRow[ch] = (byte)(sum >> 2);
+                srcTexelNextRow++;
+            }
+            dstRow += texelPitch;
+            srcRow += texelPitch * 2;
+        }
+    }
 }
 
 /* line 276 */

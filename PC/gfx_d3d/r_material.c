@@ -7,6 +7,7 @@
 
 extern void Com_Printf(const char *fmt, ...);
 extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern const char *R_ErrorDescription(int hr);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -362,135 +363,72 @@ int R_GetMaterialSubimageCount(MaterialHandle handle)
 }
 
 /* line 876 */
-__attribute__((naked))
+/* line 876 — Sort the material pointer array using introsort + insertion sort,
+ * then update each material's sortKey index. */
 void Material_Sort(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 876 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_rgp, %ebx\n" /* line 884 */
-        "movl 4(%ebx), %eax\n"
-        "leal 8(%ebx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x24(%ebp)\n" /* __last */
-        /* { scope 2: __last */
-        "cmpl %edx, %eax\n" /* line 2604 */
-        "je .Lfd35d0_000d36a6\n"
-        "movl %eax, %edi\n" /* line 2606 | __n */
-        "subl %edx, %edi\n"
-        "movl %edi, %eax\n" /* __n */
-        "sarl $2, %eax\n" /* __n */
-        /* { scope 3 */
-        /* { scope 4: __val */
-        "cmpl $1, %eax\n" /* line 2253 */
-        "je .Lfd35d0_000d36ed\n"
-        "xorl %edx, %edx\n"
-        ".Lfd35d0_000d3607:\n"
-        "addl $1, %edx\n" /* line 2254 */
-        "sarl $1, %eax\n" /* line 2253 */
-        "cmpl $1, %eax\n"
-        "jne .Lfd35d0_000d3607\n"
-        "leal (%edx, %edx), %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd35d0_000d3614:\n"
-        "movl $Material_Compare, 0xc(%esp)\n" /* line 2606 */
-        "movl %eax, 8(%esp)\n" /* __n */
-        "movl -0x24(%ebp), %eax\n" /* __last, __n */
-        "movl %eax, 4(%esp)\n" /* __n */
-        "leal 8(%ebx), %esi\n" /* __last */
-        "movl %esi, (%esp)\n"
-        "calll ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_\n"
-        "cmpl $0x43, %edi\n" /* line 2233 */
-        "jle .Lfd35d0_000d36cb\n"
-        "movl $Material_Compare, 8(%esp)\n" /* line 2235 */
-        "addl $0x48, %ebx\n" /* __last */
-        "movl %ebx, 4(%esp)\n" /* __last */
-        "movl %esi, (%esp)\n"
-        "calll ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_\n"
-        /* { scope 3 */
-        /* { scope 4: __val */
-        "cmpl %ebx, -0x24(%ebp)\n" /* line 2200 | __last */
-        "je .Lfd35d0_000d36a0\n"
-        "movl %ebx, -0x1c(%ebp)\n"
-        "movl %ebx, %eax\n"
-        "movl %ebx, %edi\n"
-        ".Lfd35d0_000d365e:\n"
-        "movl (%eax), %eax\n" /* line 2201 */
-        "movl %eax, -0x20(%ebp)\n" /* __val */
-        "movl -0x1c(%ebp), %ebx\n" /* __last */
-        "subl $4, %ebx\n" /* __last */
-        "jmp .Lfd35d0_000d3675\n"
-        /* { scope 5 */
-        ".Lfd35d0_000d366b:\n"
-        "movl %esi, (%edi)\n" /* line 2110 */
-        "movl %ebx, %edi\n" /* line 2112 */
-        "subl $4, %ebx\n"
-        "movl -0x20(%ebp), %eax\n" /* __val */
-        ".Lfd35d0_000d3675:\n"
-        "movl (%ebx), %esi\n" /* line 2108 */
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Material_Compare\n"
-        "testb %al, %al\n"
-        "jne .Lfd35d0_000d366b\n"
-        "movl -0x20(%ebp), %eax\n" /* line 2114 | __val */
-        "movl %eax, (%edi)\n"
-        /* } scope */
-        "addl $4, -0x1c(%ebp)\n" /* line 2200 */
-        "movl -0x1c(%ebp), %eax\n"
-        "cmpl %eax, -0x24(%ebp)\n" /* __last */
-        "je .Lfd35d0_000d36a0\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl -0x1c(%ebp), %edi\n"
-        "jmp .Lfd35d0_000d365e\n"
-        ".Lfd35d0_000d36a0:\n"
-        "movl imp_rgp, %ebx\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfd35d0_000d36a6:\n"
-        "movl 4(%ebx), %ecx\n" /* line 886 */
-        "testl %ecx, %ecx\n"
-        "jle .Lfd35d0_000d36c3\n"
-        "xorl %edx, %edx\n"
-        "movl %ebx, %ecx\n"
-        ".Lfd35d0_000d36b1:\n"
-        "movl 8(%ecx), %eax\n" /* line 887 */
-        "movw %dx, 0xa(%eax)\n"
-        "addl $1, %edx\n" /* line 886 */
-        "addl $4, %ecx\n"
-        "cmpl 4(%ebx), %edx\n"
-        "jl .Lfd35d0_000d36b1\n"
-        /* } scope */
-        ".Lfd35d0_000d36c3:\n"
-        "addl $0x2c, %esp\n" /* line 888 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd35d0_000d36cb:\n"
-        "movl $Material_Compare, 8(%esp)\n" /* line 2240 */
-        "movl -0x24(%ebp), %eax\n" /* __last */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_rgp, %ebx\n" /* __last */
-        "leal 8(%ebx), %eax\n" /* __last */
-        "movl %eax, (%esp)\n"
-        "calll ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_\n"
-        "jmp .Lfd35d0_000d36a6\n"
-        /* { scope 2: __last */
-        /* { scope 3 */
-        ".Lfd35d0_000d36ed:\n"
-        "xorb %al, %al\n" /* line 2253 */
-        "jmp .Lfd35d0_000d3614\n"
-    );
+    typedef void (*introsort_fn)(const Material **, const Material **, int, Bool (*)(const Material *, const Material *));
+    typedef void (*insertion_sort_fn)(const Material **, const Material **, Bool (*)(const Material *, const Material *));
+
+    char *rgp = (char *)imp_rgp;
+    int count = *(int *)(rgp + 4);
+    const Material **first = (const Material **)(rgp + 8);
+    const Material **last = first + count;
+    int i;
+
+    if (first != last) {
+        int n = count;
+        int byteRange = (int)((byte *)last - (byte *)first);
+        int depthLimit = 0;
+
+        /* Compute introsort depth limit: 2 * floor(log2(n)) */
+        if (n > 1) {
+            int tmp = n;
+            while (tmp > 1) {
+                depthLimit++;
+                tmp >>= 1;
+            }
+            depthLimit *= 2;
+        }
+
+        /* Phase 1: introsort partitioning */
+        ((introsort_fn)ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_)(
+            first, last, depthLimit, Material_Compare);
+
+        /* Phase 2: insertion sort for final ordering */
+        if (byteRange <= 0x43) {
+            /* Small range: insertion sort the whole thing */
+            ((insertion_sort_fn)ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_)(
+                first, last, Material_Compare);
+        } else {
+            /* Large range: insertion sort first 18 elements, then rest */
+            const Material **mid = (const Material **)((byte *)first + 0x48);
+            ((insertion_sort_fn)ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_)(
+                first, mid, Material_Compare);
+
+            /* Unguarded insertion sort for remaining elements */
+            while (mid != last) {
+                const Material *val = *mid;
+                const Material **hole = mid;
+                const Material **prev = mid - 1;
+                while (Material_Compare(val, *prev)) {
+                    *hole = *prev;
+                    hole = prev;
+                    prev--;
+                }
+                *hole = val;
+                mid++;
+            }
+        }
+    }
+
+    /* Update sortKey index for each material */
+    rgp = (char *)imp_rgp;
+    count = *(int *)(rgp + 4);
+    for (i = 0; i < count; i++) {
+        byte *mtl = *(byte **)(rgp + 8 + i * 4);
+        *(unsigned short *)(mtl + 0xa) = (unsigned short)i;
+    }
 }
 
 /* line 338 */
@@ -734,9 +672,134 @@ _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTra
     return result;
 }
 
-/* line 1479 */
-__attribute__((naked))
+/* line 1479 — Rebuild all vertex declarations and reload D3D shaders for all materials.
+ * Called after device recovery (lost device). */
 void Material_ReloadAll(void)
+{
+    char *dx = (char *)imp_dx;
+    /* materialGlobals layout:
+     * +0x00: first vertDecl table entry (24 bytes each, stride 0x18)
+     * Each entry at offset +4 has a sub-pointer, offset +0 has routing data count
+     * 32 entries total from +4 to +772 */
+    byte *vertDeclPtr = materialGlobals + 4;
+    byte *routingPtr = materialGlobals + 8;
+    int i;
+
+    /* Phase 1: Rebuild all vertex declarations (same loop as Load_BuildVertexDecl) */
+    while (vertDeclPtr < materialGlobals + 772) {
+        int routingCount = *(int *)(routingPtr - 4);
+        if (routingCount != 0) {
+            /* Rebuild vertex decls for this material's vertex declaration set */
+            const byte *sourceInfoBase = (const byte *)s_streamSourceInfo;
+            int vertDeclType;
+
+            for (vertDeclType = 0; vertDeclType < 4; vertDeclType++) {
+                const byte *sourceInfo = sourceInfoBase + vertDeclType * 21;
+                int elemCount = *(int *)(routingPtr);
+                const byte *routingData = *(const byte **)(routingPtr - 4);
+                D3DVERTEXELEMENT9 elemTable[256];
+                void *decl = NULL;
+                int numElems = 0;
+                int routingIdx;
+                const byte *rp = routingData;
+
+                if (elemCount == 0)
+                    goto writeEnd2;
+
+                for (routingIdx = 0; routingIdx < elemCount; routingIdx++) {
+                    byte sourceIdx = rp[0];
+                    byte destIdx = rp[1];
+                    const byte *src = sourceInfo + sourceIdx * 3;
+                    const byte *dest = (const byte *)s_streamDestInfo + destIdx * 2;
+                    int insertPos;
+
+                    rp += 2;
+
+                    if (src[0] == 0xFF) {
+                        decl = NULL;
+                        goto storeDecl2;
+                    }
+
+                    insertPos = numElems;
+                    if (numElems > 0 && (unsigned)elemTable[numElems - 1].Stream > (unsigned)src[0]) {
+                        int j = numElems - 1;
+                        while (j > 0) {
+                            elemTable[j] = elemTable[j - 1];
+                            if ((unsigned)elemTable[j - 1].Stream <= (unsigned)src[0])
+                                break;
+                            j--;
+                        }
+                        insertPos = j;
+                    }
+
+                    *(unsigned short *)&elemTable[insertPos].Stream = (unsigned short)src[0];
+                    *(unsigned short *)&elemTable[insertPos].Offset = (unsigned short)src[1];
+                    ((byte *)&elemTable[insertPos])[4] = src[2];
+                    ((byte *)&elemTable[insertPos])[5] = 0;
+                    ((byte *)&elemTable[insertPos])[6] = dest[0];
+                    ((byte *)&elemTable[insertPos])[7] = dest[1];
+                    numElems++;
+                }
+
+writeEnd2:
+                *(int *)&elemTable[numElems] = *(int *)&declEnd;
+                *(int *)((byte *)&elemTable[numElems] + 4) = *((int *)&declEnd + 1);
+
+                do {
+                    void *device = *(void **)(dx + 8);
+                    void **vtable = *(void ***)device;
+                    ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x158/4])(
+                        device, elemTable, &decl);
+                } while (*(int *)imp_alwaysfails);
+
+storeDecl2:
+                *(void **)(vertDeclPtr + vertDeclType * 4) = decl;
+            }
+        }
+
+        vertDeclPtr += 0x18;
+        routingPtr += 0x18;
+    }
+
+    /* Phase 2: Reload D3D shaders for all materials */
+    {
+        byte *matSlot = materialGlobals;
+        byte *matEnd = materialGlobals + 1024;
+        void (*ri_Printf)(int, const char *, ...) = *(void (**)(int, const char *, ...))(
+            (byte *)imp_ri + 4);
+
+        for (; matSlot < matEnd; matSlot += 4) {
+            /* Each slot at materialGlobals + 0x259c + slotIndex has a shader pointer */
+            byte *shader = *(byte **)(matSlot + 0x259c);
+            int hr;
+
+            if (!shader)
+                continue;
+
+            /* Check shader managed flag at offset 0x0a */
+            if (*(byte *)(shader + 0x0a) == 0) {
+                /* Not managed: call D3D CreatePixelShader (vtable[0x16c/4]) */
+                void *device = *(void **)(dx + 8);
+                void **vtable = *(void ***)device;
+                hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x16c/4])(
+                    device, *(void **)(shader + 4), (void **)(shader + 0xc));
+            } else {
+                /* Managed: call D3D CreateVertexShader (vtable[0x1a8/4]) */
+                void *device = *(void **)(dx + 8);
+                void **vtable = *(void ***)device;
+                hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x1a8/4])(
+                    device, *(void **)(shader + 4), (void **)(shader + 0xc));
+            }
+
+            if (hr < 0) {
+                ri_Printf(0, "Couldn't reload shader '%s' when recovering from a lost devi",
+                    *(const char **)shader, R_ErrorDescription(hr), hr);
+            }
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1479 */
@@ -966,10 +1029,97 @@ void Material_ReloadAll(void)
         "jmp .Lfd3ca8_000d3f27\n"
     );
 }
+#endif
 
-/* line 481 */
-__attribute__((naked))
-void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl)
+/* line 481 — Build D3D vertex declarations from stream routing data.
+ * For each of 4 vertex declaration types, reads routing pairs from the
+ * material's vertex declaration, looks up source/dest info, builds a sorted
+ * D3DVERTEXELEMENT9 array, and calls CreateVertexDeclaration. */
+void Load_BuildVertexDecl(MaterialVertexDeclaration **mtlVertDecl)
+{
+    const byte *sourceInfoBase = (const byte *)s_streamSourceInfo;
+    int vertDeclType;
+
+    for (vertDeclType = 0; vertDeclType < 4; vertDeclType++) {
+        MaterialVertexDeclaration *vd = *mtlVertDecl;
+        int elemCount = *(int *)((byte *)vd + 4); /* routing count */
+        const byte *routingData = *(const byte **)vd;
+        D3DVERTEXELEMENT9 elemTable[256];
+        void *decl = NULL;
+        int numElems = 0;
+        int routingIdx;
+        const byte *routingPtr;
+        const byte *sourceInfo;
+
+        sourceInfo = sourceInfoBase + vertDeclType * 21; /* s_streamSourceInfo stride = 21 (0x15) */
+        routingPtr = routingData;
+
+        if (elemCount == 0)
+            goto writeEnd;
+
+        /* For each routing pair (2 bytes: sourceIdx, destIdx) */
+        for (routingIdx = 0; routingIdx < elemCount; routingIdx++) {
+            byte sourceIdx = routingPtr[0];
+            byte destIdx = routingPtr[1];
+            const byte *src = sourceInfo + sourceIdx * 3;
+            const byte *dest = (const byte *)s_streamDestInfo + destIdx * 2;
+            int insertPos;
+
+            routingPtr += 2;
+
+            /* Check if this source is valid (0xFF = skip) */
+            if (src[0] == 0xFF) {
+                decl = NULL;
+                goto storeDecl;
+            }
+
+            /* Binary insertion sort: find position to insert by source stream */
+            insertPos = numElems;
+            if (numElems > 0 && (unsigned)elemTable[numElems - 1].Stream > (unsigned)src[0]) {
+                /* Shift elements down to make room */
+                int j = numElems - 1;
+                while (j > 0) {
+                    int prev = j - 1;
+                    elemTable[j] = elemTable[j - 1];
+                    if ((unsigned)elemTable[prev].Stream <= (unsigned)src[0])
+                        break;
+                    j = prev;
+                }
+                insertPos = j;
+            }
+
+            /* Insert the new element */
+            *(unsigned short *)&elemTable[insertPos].Stream = (unsigned short)src[0];
+            *(unsigned short *)&elemTable[insertPos].Offset = (unsigned short)src[1];
+            ((byte *)&elemTable[insertPos])[4] = src[2]; /* Type */
+            ((byte *)&elemTable[insertPos])[5] = 0;      /* Method */
+            ((byte *)&elemTable[insertPos])[6] = dest[0]; /* Usage */
+            ((byte *)&elemTable[insertPos])[7] = dest[1]; /* UsageIndex */
+            numElems++;
+        }
+
+writeEnd:
+        /* Append D3DDECL_END() sentinel */
+        *(int *)&elemTable[numElems] = *(int *)&declEnd;
+        *(int *)((byte *)&elemTable[numElems] + 4) = *((int *)&declEnd + 1);
+
+        /* CreateVertexDeclaration: device->vtable[0x158/4] */
+        do {
+            void *device = *(void **)((byte *)imp_dx + 8);
+            void **vtable = *(void ***)device;
+            ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x158/4])(
+                device, elemTable, &decl);
+        } while (*(int *)imp_alwaysfails);
+
+storeDecl:
+        /* Store the vertex declaration pointer in mtlVertDecl struct */
+        *(void **)((byte *)vd + 8 + vertDeclType * 4) = decl;
+
+        sourceInfoBase += 21; /* advance to next vertDeclType's source info block */
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 481 */
@@ -1129,6 +1279,7 @@ void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl)
         "jmp .Lfd404e_000d427d\n"
     );
 }
+#endif
 
 /* line 1560 */
 extern void RB_BindDefaultImages(void);
