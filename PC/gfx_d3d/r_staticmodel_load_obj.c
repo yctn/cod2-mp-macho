@@ -13,6 +13,8 @@
 static int smodelLoadGlob; /* smodelLoadGlob */
 
 extern void *Hunk_AllocAlignInternal(int size, int alignment);
+extern GfxImage *Image_Alloc(const char *name, int category, int semantic, int imageTrack);
+extern void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, int imageFormat);
 
 static int CompareStaticModels(const int *smodel0, const int *smodel1);
 int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale, float *sunVisibility, vec4_t *colorForDir);
@@ -491,59 +493,35 @@ int R_FilterStaticModelIntoCells_r(GfxStaticModelInstance *smodelInst, const vec
     );
 }
 
-/* line 596 */
-__attribute__((naked))
+/* line 596 — Finalize static model lighting cache: create 3D lighting texture
+ * from accumulated lighting data. Only for non-Dx7 renderer. */
 int R_FinishStaticModelLightingCache(GfxWorld *world)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 596 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* world */
-        "movl imp_r_rendererInUse, %eax\n" /* line 602 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lf107826_0010790d\n"
-        "movl $4, 0xc(%esp)\n" /* line 609 */
-        "movl $1, 8(%esp)\n"
-        "movl $2, 4(%esp)\n"
-        "movl $str_00228b80, (%esp)\n" /* "*smodel_lighting" */
-        "calll Image_Alloc\n"
-        "movl %eax, 0x10c(%ebx)\n" /* world */
-        "movl $0x15, 0x14(%esp)\n" /* line 614 */
-        "movl $2, 0x10(%esp)\n"
-        "movl smodelLoadGlob+4, %edx\n"
-        "addl %edx, %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl smodelLoadGlob, %edx\n"
-        "addl %edx, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl smodelLoadGlob+16, %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Image_Generate3D\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* line 616 | 0.5f */
-        "movss smodelLoadGlob+12, %xmm1\n" /* y */
-        "mulss %xmm0, %xmm1\n" /* y */
-        "leal 0x110(%ebx), %eax\n" /* world, v */
-        /* { scope 1 */
-        "mulss smodelLoadGlob+8, %xmm0\n" /* line 191 */
-        "movss %xmm0, 0x110(%ebx)\n"
-        "movss %xmm1, 4(%eax)\n" /* line 192 */
-        "movl $0x3e800000, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "movl $0, smodelLoadGlob\n" /* line 618 */
-        "movl $0, smodelLoadGlob+4\n"
-        "movl $0, smodelLoadGlob+8\n"
-        "movl $0, smodelLoadGlob+12\n"
-        "movl $0, smodelLoadGlob+16\n"
-        ".Lf107826_0010790d:\n"
-        "addl $0x24, %esp\n" /* line 619 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *w = (byte *)world;
+    int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    if (!isDx7) {
+        int *sg = (int *)&smodelLoadGlob;
+        GfxImage *image;
+
+        /* Allocate image: "*smodel_lighting", category=2, semantic=1, track=4 */
+        image = Image_Alloc("*smodel_lighting", 2, 1, 4);
+        *(GfxImage **)(w + 0x10c) = image;
+
+        /* Generate 3D texture from cached lighting data:
+         * width = sg[0]*2, height = sg[1]*2, depth = sg[4], format = A8R8G8B8 */
+        Image_Generate3D(image, (byte *)(void *)(long)sg[4], sg[0] * 2, sg[1] * 2, 2, 0x15);
+
+        /* Store texel size as vec3 at world+0x110:
+         * x = sg[2] * 0.5, y = sg[3] * 0.5, z = 0.25 */
+        *(float *)(w + 0x110) = *(float *)&sg[2] * 0.5f;
+        *(float *)(w + 0x114) = *(float *)&sg[3] * 0.5f;
+        *(float *)(w + 0x118) = 0.25f;
+
+        /* Clear smodelLoadGlob */
+        sg[0] = 0; sg[1] = 0; sg[2] = 0; sg[3] = 0; sg[4] = 0;
+    }
+    return 0;
 }
 
 /* line 547 */

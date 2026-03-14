@@ -32,6 +32,13 @@ GfxWorld * R_LoadWorldInternal(const char *name);
 /* line 1396 */
 extern void ClearBounds(void *mins, void *maxs);
 extern void ExpandBounds(const void *mins, const void *maxs, void *dstMins, void *dstMaxs);
+extern const char *Com_Parse(const char **text);
+extern void I_strncpyz(char *dest, const char *src, int size);
+extern int I_stricmp(const char *a, const char *b);
+extern double atof(const char *s);
+extern int sscanf(const char *str, const char *fmt, ...);
+extern float ColorNormalize(const float *color, float *out);
+extern void Com_Printf(const char *fmt, ...);
 
 /* Uses register calling convention: eax=tree, edx=totalTreesUsed */
 static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
@@ -83,8 +90,81 @@ int R_FinishLoadingAabbTrees_r(void)
 }
 
 /* line 1129 */
-__attribute__((naked))
+/* line 1129 — Parse sun light parameters from an entity definition text block.
+ * Reads key-value pairs: ambient, sunColor, sunIntensity, sunDir, diffuseColor,
+ * diffuseColorLinear, specularColor, angles, sunLight. */
 const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
+{
+    byte *p = (byte *)params;
+    char keyname[0x800];
+    char value[0x800];
+    const char *token;
+
+    while (1) {
+        token = Com_Parse(&text);
+        if (!token[0] || token[0] == '}')
+            break;
+
+        if (token[0] == '{') {
+            /* Initialize sun light params */
+            *(float *)(p + 0x40) = 0.0f;       /* ambient */
+            *(float *)(p + 0x54) = 0.0f;        /* sunAngleOverride */
+            *(float *)(p + 0x50) = 0.5f;         /* sunIntensity */
+            *(byte *)(p + 0x70) = 0;             /* hasDiffuseColorLinear */
+            /* Clear sunDir, diffuseColor, diffuseColorLinear (3 vec3s) */
+            *(float *)(p + 0x44) = 0; *(float *)(p + 0x48) = 0; *(float *)(p + 0x4c) = 0;
+            *(float *)(p + 0x58) = 0; *(float *)(p + 0x5c) = 0; *(float *)(p + 0x60) = 0;
+            *(float *)(p + 0x64) = 0; *(float *)(p + 0x68) = 0; *(float *)(p + 0x6c) = 0;
+            continue;
+        }
+
+        /* Read key name */
+        I_strncpyz(keyname, token, 0x800);
+
+        /* Read value */
+        token = Com_Parse(&text);
+        if (!token[0] || token[0] == '}')
+            break;
+        I_strncpyz(value, token, 0x800);
+
+        /* Match key */
+        if (!I_stricmp(keyname, "ambient")) {
+            *(float *)(p + 0x40) = (float)atof(value);
+            if (*(float *)(p + 0x40) > 2.0f) {
+                Com_Printf("^3WARNING: ambient too big, assuming it uses the old 0-255 s", value);
+                *(float *)(p + 0x40) *= 0.01568627543747425f; /* 4.0/255.0 */
+            }
+        } else if (!I_stricmp(keyname, "sunColor")) {
+            *(float *)(p + 0x44) = 0; *(float *)(p + 0x48) = 0; *(float *)(p + 0x4c) = 0;
+            sscanf(value, "%f %f %f", (float *)(p + 0x44), (float *)(p + 0x48), (float *)(p + 0x4c));
+        } else if (!I_stricmp(keyname, "sunIntensity")) {
+            *(float *)(p + 0x50) = (float)atof(value);
+        } else if (!I_stricmp(keyname, "sunDir")) {
+            float *v = (float *)(p + 0x58);
+            v[0] = 0; v[1] = 0; v[2] = 0;
+            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
+            ColorNormalize(v, v);
+        } else if (!I_stricmp(keyname, "diffuseColor")) {
+            float *v = (float *)(p + 0x64);
+            v[0] = 0; v[1] = 0; v[2] = 0;
+            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
+            ColorNormalize(v, v);
+            *(byte *)(p + 0x70) = 1; /* hasDiffuseColorLinear */
+        } else if (!I_stricmp(keyname, "sunAngleOverride")) {
+            *(float *)(p + 0x54) = (float)atof(value);
+        } else if (!I_stricmp(keyname, "specularColor")) {
+            float *v = (float *)(p + 0x74);
+            v[0] = 0; v[1] = 0; v[2] = 0;
+            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
+        } else if (!I_stricmp(keyname, "sunLight")) {
+            I_strncpyz((char *)params, value, 0x40);
+        }
+    }
+
+    return text;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1129 */
@@ -314,6 +394,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "jmp .Lfe2abc_000e2acb\n"
     );
 }
+#endif
 
 /* line 1911 */
 __attribute__((naked))
