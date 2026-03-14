@@ -33,6 +33,11 @@ extern void R_AllocStaticIndexBuffer(void *outBuf, int size);
 extern void R_FinishStaticVertexBuffer(void *buf);
 extern void R_FinishStaticIndexBuffer(void *buf);
 extern int rand(void);
+extern void R_ShutdownRenderTargets(void);
+extern void R_ShutdownStaticModelCache(void);
+extern void R_FreeStaticVertexBuffer(void *buf);
+extern void R_FreeStaticIndexBuffer(void *buf);
+extern void WinSleep(int ms);
 extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern Bool Sys_IsMainThread(void);
 extern void R_SyncRenderThread(void);
@@ -279,8 +284,85 @@ static void R_CreateParticleCloudBuffer(void)
 #endif
 
 /* line 930 */
-static __attribute__((naked))
-void R_ReleaseForShutdownOrReset(void)
+/* Helper: release a COM object and null the pointer */
+static inline void R_SafeRelease(void **objPtr)
+{
+    void *obj = *objPtr;
+    if (obj) {
+        do {
+            ((void (__attribute__((stdcall)) *)(void *))((*(void ***)obj)[2]))(obj);
+            *objPtr = NULL;
+        } while (*(int *)&alwaysfails);
+    }
+}
+
+/* line 930 — Release all D3D resources for shutdown or device reset.
+ * Releases swap chains, render targets, depth stencil, back buffer,
+ * dynamic VB/IB lock slots, particle buffers, font surface, and sun flare textures. */
+static void R_ReleaseForShutdownOrReset(void)
+{
+    byte *d = (byte *)&dx;
+    int i;
+
+    /* Release swap chain presentation surfaces */
+    {
+        int scCount = *(int *)(d + 11592);
+        for (i = 0; i < scCount; i++) {
+            void **psc = (void **)(d + 0x2d50 + i * 16);
+            R_SafeRelease(psc);
+        }
+    }
+
+    R_ShutdownRenderTargets();
+    R_ShutdownStaticModelCache();
+
+    /* Release depth stencil surface (dx+11656) */
+    R_SafeRelease((void **)(d + 11656));
+
+    /* Release back buffer surface (dx+11696) */
+    R_SafeRelease((void **)(d + 11696));
+
+    /* Release dynamic VB/IB lock slots (2 entries at dx+0x2d98, stride 12) */
+    for (i = 0; i < 2; i++) {
+        R_SafeRelease((void **)(d + 0x2d98 + i * 12));
+    }
+
+    /* Free shader cache buffer (dx+11728) */
+    if (*(void **)(d + 11728)) {
+        /* Call ri.Hunk_FreeTempMemory (ri+44) */
+        ((void (*)(void *))*(void **)((byte *)&ri + 44))(*(void **)(d + 11728));
+        *(void **)(d + 11728) = NULL;
+        *(int *)(d + 11732) = 0;
+    }
+
+    /* Free particle cloud VB and IB */
+    if (*(void **)(d + 11704)) {
+        R_FreeStaticVertexBuffer(*(void **)(d + 11704));
+        *(void **)(d + 11704) = NULL;
+    }
+    if (*(void **)(d + 11708)) {
+        R_FreeStaticIndexBuffer(*(void **)(d + 11708));
+        *(void **)(d + 11708) = NULL;
+    }
+
+    /* Release font surface (dx+11612) */
+    R_SafeRelease((void **)(d + 11612));
+
+    /* Release sun flare textures (4 views × 2 textures each) */
+    {
+        byte *sunFlare = (byte *)imp_sunFlareArray;
+        int view;
+        for (view = 0; view < 4; view++) {
+            byte *viewBase = sunFlare + view * 0x30;
+            int tex;
+            for (tex = 0; tex < 2; tex++) {
+                R_SafeRelease((void **)(viewBase + 0x24 + tex * 4));
+            }
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 930 */
@@ -431,6 +513,7 @@ void R_ReleaseForShutdownOrReset(void)
         "jmp .Lfcad62_000cad79\n"
     );
 }
+#endif
 
 /* line 968 */
 static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMODE *mode1)
@@ -447,8 +530,54 @@ static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMOD
 }
 
 /* line 1107 */
+/* line 1107 — Create D3D device with retry logic. Uses register calling convention:
+ * eax=hwnd, edx=behavior, ecx=d3dpp. Tries CreateDevice up to 20 times with 100ms
+ * sleeps, falling back to adapter 0 if initial adapter fails. */
+static HRESULT R_CreateDevice_impl(HWND hwnd, DWORD behavior, void *d3dpp)
+{
+    byte *d = (byte *)&dx;
+    HRESULT hr;
+    int attempt;
+
+    for (;;) {
+        /* Print "Creating D3D device..." */
+        ((void (*)(int, const char *))*(void **)&ri)(0, "Creating D3D device...\n");
+
+        for (attempt = 0; attempt < 20; attempt++) {
+            /* IDirect3D9::CreateDevice (vtable[0x40/4] = index 16) */
+            void *d3d9 = *(void **)(d + 4);
+            void **vtable = *(void ***)d3d9;
+            hr = ((HRESULT (__attribute__((stdcall)) *)(void *, int, int, HWND, DWORD, void *, void **))
+                  vtable[0x40/4])(d3d9, *(int *)(d + 12), 1, hwnd, behavior, d3dpp, (void **)(d + 8));
+
+            if (hr >= 0)
+                return hr;
+
+            WinSleep(100);
+        }
+
+        /* After 20 failures, try falling back to default adapter */
+        if (*(int *)(d + 12) == 0)
+            return hr; /* Already on adapter 0, give up */
+
+        *(int *)(d + 12) = 0; /* Reset to default adapter and retry */
+    }
+}
+
 static __attribute__((naked))
 HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
+{
+    __asm__ __volatile__ (
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_CreateDevice_impl\n"
+        "addl $12, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1107 */
@@ -508,6 +637,7 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
         "jmp .Lfcaf5a_000caf6b\n"
     );
 }
+#endif
 
 /* line 1256 */
 void R_UpdateGpuSyncType(void)
