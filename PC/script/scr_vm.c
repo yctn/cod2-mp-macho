@@ -995,7 +995,7 @@ VariableValue GetEntityFieldValue(unsigned int classnum, int entnum, int offset)
     Scr_GetObjectField(classnum, entnum, offset);
     *(int *)((byte *)&scrVmPub + 24) = 0;
 
-    result.intValue = *(int *)scrVmGlob;
+    result.u.intValue = *(int *)scrVmGlob;
     result.type = *(int *)(scrVmGlob + 4);
     return result;
 }
