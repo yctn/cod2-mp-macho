@@ -695,135 +695,50 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
 }
 
 /* line 320 */
-__attribute__((naked))
-jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, const byte *srcData)
+/* Helper: call naked Image_LoadWavelet with register calling convention */
+static void Image_LoadWavelet_call(GfxImage *image, const void *fileHeader, const byte *data, int format, int bytesPerPixel)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 320 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* image */
-        "movl 0xc(%ebp), %edx\n" /* fileHeader */
-        "movl 0x10(%ebp), %ecx\n" /* srcData */
-        "movl $0, 4(%ebx)\n" /* line 322 | image */
-        "movzbl 4(%edx), %eax\n" /* line 324 */
-        "cmpl $0xd, %eax\n"
-        "ja .Lffce9e_000fcec2\n"
-        "jmpl *.Ljt_fce9e_0(, %eax, 4)\n"
-        ".Lffce9e_000fcec2:\n"
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lffce9e_000fcec5:\n"
-        "movl $4, 0xc(%ebp)\n" /* line 327 | fileHeader */
-        "movl $0x15, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadBitmap\n" /* line 327 */
-        ".Lffce9e_000fcedc:\n"
-        "movl $3, 0xc(%ebp)\n" /* line 330 | fileHeader */
-        "movl $0x16, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadBitmap\n" /* line 330 */
-        ".Lffce9e_000fcef3:\n"
-        "movl $2, 0xc(%ebp)\n" /* line 333 | fileHeader */
-        "movl $0x33, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadBitmap\n" /* line 333 */
-        ".Lffce9e_000fcf0a:\n"
-        "movl $1, 0xc(%ebp)\n" /* line 336 | fileHeader */
-        "movl $0x32, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadBitmap\n" /* line 336 */
-        ".Lffce9e_000fcf21:\n"
-        "movl $1, 0xc(%ebp)\n" /* line 339 | fileHeader */
-        "movl $0x1c, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadBitmap\n" /* line 339 */
-        ".Lffce9e_000fcf38:\n"
-        "movl $4, 0xc(%ebp)\n" /* line 343 | fileHeader */
-        "movl $0x15, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadWavelet\n" /* line 343 */
-        ".Lffce9e_000fcf4f:\n"
-        "movl $3, 0xc(%ebp)\n" /* line 346 | fileHeader */
-        "movl $0x16, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadWavelet\n" /* line 346 */
-        ".Lffce9e_000fcf66:\n"
-        "movl $2, 0xc(%ebp)\n" /* line 349 | fileHeader */
-        "movl $0x33, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadWavelet\n" /* line 349 */
-        ".Lffce9e_000fcf7d:\n"
-        "movl $1, 0xc(%ebp)\n" /* line 352 | fileHeader */
-        "movl $0x32, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadWavelet\n" /* line 352 */
-        ".Lffce9e_000fcf94:\n"
-        "movl $1, 0xc(%ebp)\n" /* line 355 | fileHeader */
-        "movl $0x1c, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadWavelet\n" /* line 355 */
-        ".Lffce9e_000fcfab:\n"
-        "movl $8, 0xc(%ebp)\n" /* line 359 | fileHeader */
-        "movl $0x31545844, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadDxtc\n" /* line 359 */
-        ".Lffce9e_000fcfc2:\n"
-        "movl $0x10, 0xc(%ebp)\n" /* line 362 | fileHeader */
-        "movl $0x33545844, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadDxtc\n" /* line 362 */
-        ".Lffce9e_000fcfd9:\n"
-        "movl $0x10, 0xc(%ebp)\n" /* line 365 | fileHeader */
-        "movl $0x35545844, 8(%ebp)\n" /* image */
-        "movl %ebx, %eax\n" /* image */
-        "popl %ebx\n" /* line 376 */
-        "popl %ebp\n"
-        "jmp Image_LoadDxtc\n" /* line 365 */
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_fce9e_0:\n"
-        ".long .Lffce9e_000fcec2\n"
-        ".long .Lffce9e_000fcec5\n"
-        ".long .Lffce9e_000fcedc\n"
-        ".long .Lffce9e_000fcef3\n"
-        ".long .Lffce9e_000fcf0a\n"
-        ".long .Lffce9e_000fcf21\n"
-        ".long .Lffce9e_000fcf38\n"
-        ".long .Lffce9e_000fcf4f\n"
-        ".long .Lffce9e_000fcf66\n"
-        ".long .Lffce9e_000fcf7d\n"
-        ".long .Lffce9e_000fcf94\n"
-        ".long .Lffce9e_000fcfab\n"
-        ".long .Lffce9e_000fcfc2\n"
-        ".long .Lffce9e_000fcfd9\n"
-        ".text\n"
+        "pushl %4\n"
+        "pushl %3\n"
+        "movl %2, %%ecx\n"
+        "movl %1, %%edx\n"
+        "movl %0, %%eax\n"
+        "calll Image_LoadWavelet\n"
+        "addl $8, %%esp\n"
+        :: "g"(image), "g"(fileHeader), "g"(data), "g"(format), "g"(bytesPerPixel)
+        : "eax", "ecx", "edx", "memory"
     );
+}
+
+/* line 320 — Dispatch image data to the appropriate loader based on format type. */
+jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, const byte *srcData)
+{
+    byte *img = (byte *)image;
+    const byte *hdr = (const byte *)fileHeader;
+    int formatType;
+
+    /* Clear image flags */
+    *(int *)(img + 4) = 0;
+
+    formatType = hdr[4];
+
+    switch (formatType) {
+    case 1:  Image_LoadBitmap_impl(image, fileHeader, srcData, 0x15, 4); break; /* A8R8G8B8, 4 bpp */
+    case 2:  Image_LoadBitmap_impl(image, fileHeader, srcData, 0x16, 3); break; /* X8R8G8B8 (BGR), 3 bpp */
+    case 3:  Image_LoadBitmap_impl(image, fileHeader, srcData, 0x33, 2); break; /* A1R5G5B5, 2 bpp */
+    case 4:  Image_LoadBitmap_impl(image, fileHeader, srcData, 0x32, 1); break; /* R5G6B5, 1 bpp */
+    case 5:  Image_LoadBitmap_impl(image, fileHeader, srcData, 0x1c, 1); break; /* A4R4G4B4, 1 bpp */
+    case 6:  Image_LoadWavelet_call(image, fileHeader, srcData, 0x15, 4); break; /* ARGB wavelet */
+    case 7:  Image_LoadWavelet_call(image, fileHeader, srcData, 0x16, 3); break; /* BGR wavelet */
+    case 8:  Image_LoadWavelet_call(image, fileHeader, srcData, 0x33, 2); break;
+    case 9:  Image_LoadWavelet_call(image, fileHeader, srcData, 0x32, 1); break;
+    case 10: Image_LoadWavelet_call(image, fileHeader, srcData, 0x1c, 1); break;
+    case 11: Image_LoadDxtc_impl(image, fileHeader, srcData, 0x31545844, 8); break;  /* DXT1, 8 bytes/block */
+    case 12: Image_LoadDxtc_impl(image, fileHeader, srcData, 0x33545844, 16); break; /* DXT3, 16 bytes/block */
+    case 13: Image_LoadDxtc_impl(image, fileHeader, srcData, 0x35545844, 16); break; /* DXT5, 16 bytes/block */
+    default: break;
+    }
 }
 
 /* line 981 */
@@ -959,9 +874,67 @@ static jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int s
     }
 }
 
+extern int FS_ReadFile(const char *path, void **buf);
+extern void FS_FreeFile(void *buf);
+extern void Com_Printf(const char *fmt, ...);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+
 /* line 467 */
-__attribute__((naked))
 Bool Image_LoadFromFile(GfxImage *image)
+{
+    byte *img = (byte *)image;
+    char filepath[64];
+    void *imageFile;
+    const byte *fileData;
+    int fileLen;
+    int result;
+
+    /* Build filepath: "images/<name>.iwi" */
+    result = Com_sprintf(filepath, 0x40, "%s%s%s", "images/", *(const char **)(img + 0x20), ".iwi");
+    if (result < 0) {
+        Com_Printf("^1ERROR: filename '%s' too long\n", filepath);
+        return 0;
+    }
+
+    fileLen = FS_ReadFile(filepath, &imageFile);
+    if (fileLen < 0) {
+        Com_Printf("^1ERROR: image '%s' is missing\n", filepath);
+        return 0;
+    }
+    if (fileLen == 0) {
+        Com_Printf("^1ERROR: image '%s' has 0 length\n", filepath);
+        FS_FreeFile(imageFile);
+        return 0;
+    }
+
+    fileData = (const byte *)imageFile;
+
+    /* Check for hasMips flag */
+    if (fileData[5] & 3)
+        img[0xb] = 1;
+
+    /* Validate IWI magic: first 3 bytes == "IWi" (0x695749) */
+    if ((*(int *)fileData & 0x00FFFFFF) != 0x695749) {
+        Com_Printf("^1ERROR: image '%s' is not an IW image\n", filepath);
+        FS_FreeFile(imageFile);
+        return 0;
+    }
+
+    /* Check version (byte 3 must be 5) */
+    if (fileData[3] != 5) {
+        Com_Printf("^1ERROR: image '%s' is version %i but should be version %i\n",
+                    filepath, (int)fileData[3], 5);
+        FS_FreeFile(imageFile);
+        return 0;
+    }
+
+    /* Load the image data (header at fileData, pixel data at fileData+0x1c) */
+    Image_LoadFromData(image, (GfxImageFileHeader *)fileData, fileData + 0x1c);
+    FS_FreeFile(imageFile);
+    return 1;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 467 */
@@ -1077,6 +1050,7 @@ Bool Image_LoadFromFile(GfxImage *image)
         "jmp .Lffd42c_000fd4c6\n"
     );
 }
+#endif
 
 /* line 1202 */
 GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight)
