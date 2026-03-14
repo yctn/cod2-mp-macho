@@ -24,6 +24,9 @@ extern void Com_Memcpy(void *dest, const void *src, int count);
 extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 extern void RB_UpdateViewport(void);
 extern int RB_SetIteratorFog(void);
+extern int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Material *material, D3DLIGHT9 *lights, int maxLights);
+extern void RB_SetupEntityLighting(const GfxEntity *ent, GfxEntityLighting *lighting);
+extern void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 
 static inline char *RB_TessBase(void)
 {
@@ -34,8 +37,10 @@ void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, i
 int RB_SetIndexData(const r_index_t *indices, int indexCount);
 static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samplerState);
 static void RB_GetTextureFromCode(void);
+static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibility);
 static void RB_SetEntityHwLightsDx7(void);
 void RB_CreateDynamicBuffers(void);
+static void RB_SetupLighting_impl(void);
 static void RB_SetupLighting(void);
 void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCount, int stride);
 static const float * RB_GetCodeMatrix(int source, int firstRow);
@@ -312,99 +317,58 @@ void RB_GetTextureFromCode(void)
 }
 
 /* line 1481 */
+static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibility)
+{
+    D3DLIGHT9 lights[8];
+    const Material *material;
+    int lightCount;
+    void *device;
+    void **vtable;
+    int i;
+
+    material = *(const Material **)((char *)imp_tess + 0x5a7bc);
+    lightCount = RB_DeriveEntityLights(colorForDir, sunVisibility, material, lights, 8);
+
+    /* Enable and configure each active light */
+    for (i = 0; i < lightCount; i++) {
+        /* IDirect3DDevice9::LightEnable(i, TRUE) — vtable offset 0xD4 */
+        do {
+            device = *(void **)((char *)imp_dx + 8);
+            vtable = *(void ***)device;
+            ((HRESULT (*)(void *, DWORD, BOOL))(vtable[0xD4 / 4]))(device, (DWORD)i, 1);
+        } while (*(volatile int *)imp_alwaysfails);
+
+        /* IDirect3DDevice9::SetLight(i, &lights[i]) — vtable offset 0xCC */
+        do {
+            device = *(void **)((char *)imp_dx + 8);
+            vtable = *(void ***)device;
+            ((HRESULT (*)(void *, DWORD, const D3DLIGHT9 *))(vtable[0xCC / 4]))(device, (DWORD)i, &lights[i]);
+        } while (*(volatile int *)imp_alwaysfails);
+    }
+
+    /* Disable remaining lights (lightCount..7) */
+    for (i = (lightCount > 0) ? lightCount : 0; (unsigned)i <= 7; i++) {
+        do {
+            device = *(void **)((char *)imp_dx + 8);
+            vtable = *(void ***)device;
+            ((HRESULT (*)(void *, DWORD, BOOL))(vtable[0xD4 / 4]))(device, (DWORD)i, 0);
+        } while (*(volatile int *)imp_alwaysfails);
+    }
+}
+
+/* Naked trampoline: marshals register args (eax=colorForDir, xmm0=sunVisibility)
+ * to standard C calling convention */
 static __attribute__((naked))
 void RB_SetEntityHwLightsDx7(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1481 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x37c, %esp\n"
-        /* { scope 1 */
-        "movl $8, 0x10(%esp)\n" /* line 1487 */
-        "leal -0x358(%ebp), %esi\n" /* lights */
-        "movl %esi, 0xc(%esp)\n"
-        "movl imp_tess, %edx\n"
-        "movl 0x5a7bc(%edx), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n" /* sunVisibility */
-        "movl %eax, (%esp)\n" /* colorForDir */
-        "calll RB_DeriveEntityLights\n"
-        "movl %eax, -0x360(%ebp)\n" /* colorForDir, lightCount */
-        "testl %eax, %eax\n" /* line 1489 | colorForDir */
-        "jg .Lff72c8_000f7363\n"
-        "movl $0, -0x35c(%ebp)\n" /* lightIndex */
-        "xorl %ebx, %ebx\n"
-        ".Lff72c8_000f731a:\n"
-        "movl imp_dx, %edi\n"
-        "movl imp_alwaysfails, %esi\n"
-        ".Lff72c8_000f7326:\n"
-        "movl 8(%edi), %eax\n" /* line 1495 | colorForDir */
-        "movl (%eax), %edx\n" /* colorForDir */
-        "movl $0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n" /* colorForDir */
-        "calll *0xd4(%edx)\n"
-        "movl (%esi), %eax\n" /* colorForDir */
-        "testl %eax, %eax\n" /* colorForDir */
-        "jne .Lff72c8_000f7326\n"
-        "addl $1, -0x35c(%ebp)\n" /* line 1494 | lightIndex */
-        "movl -0x35c(%ebp), %ebx\n" /* lightIndex */
-        "cmpl $7, %ebx\n"
-        "jbe .Lff72c8_000f7326\n"
-        /* } scope */
-        "addl $0x37c, %esp\n" /* line 1496 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lff72c8_000f7363:\n"
-        "xorl %ebx, %ebx\n" /* line 1489 */
-        "movl imp_dx, %edi\n"
-        "movl %edi, %edx\n"
-        "jmp .Lff72c8_000f7375\n"
-        ".Lff72c8_000f736f:\n"
-        "movl imp_dx, %edx\n"
-        ".Lff72c8_000f7375:\n"
-        "movl 8(%edx), %eax\n" /* line 1491 | colorForDir */
-        "movl (%eax), %edx\n" /* colorForDir */
-        "movl $1, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n" /* colorForDir */
-        "calll *0xd4(%edx)\n"
-        "movl imp_alwaysfails, %eax\n" /* colorForDir */
-        "movl (%eax), %eax\n" /* colorForDir */
-        "testl %eax, %eax\n" /* colorForDir */
-        "jne .Lff72c8_000f736f\n"
-        ".Lff72c8_000f739a:\n"
-        "movl 8(%edi), %eax\n" /* line 1492 | colorForDir */
-        "movl (%eax), %edx\n" /* colorForDir */
-        "movl %esi, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n" /* colorForDir */
-        "calll *0xcc(%edx)\n"
-        "movl imp_alwaysfails, %edx\n"
-        "movl (%edx), %eax\n" /* colorForDir */
-        "testl %eax, %eax\n" /* colorForDir */
-        "jne .Lff72c8_000f739a\n"
-        "addl $1, %ebx\n" /* line 1489 */
-        "addl $0x68, %esi\n"
-        "cmpl %ebx, -0x360(%ebp)\n" /* lightCount */
-        "jne .Lff72c8_000f736f\n"
-        "movl -0x360(%ebp), %eax\n" /* lightCount, colorForDir */
-        "movl %eax, -0x35c(%ebp)\n" /* colorForDir, lightIndex */
-        "movl %eax, %ebx\n" /* colorForDir */
-        "cmpl $7, %eax\n" /* line 1494 | colorForDir */
-        "jbe .Lff72c8_000f731a\n"
-        /* } scope */
-        "addl $0x37c, %esp\n" /* line 1496 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "subl $8, %esp\n"
+        "movss %xmm0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll RB_SetEntityHwLightsDx7_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
     );
@@ -420,202 +384,98 @@ void RB_CreateDynamicBuffers(void)
 }
 
 /* line 1500 */
+static void RB_SetupLighting_impl(void)
+{
+    char *backEnd = (char *)imp_backEnd;
+    char *lighting;
+    char *entity;
+    int rendererType;
+
+    rendererType = *(int *)(*(char **)imp_r_rendererInUse + 8);
+
+    if (rendererType == 2) {
+        /* Dx7 renderer path */
+        int techType = *(int *)((char *)imp_tess + 0x5a7c0);
+
+        /* techType 15, 16, or 17: no lighting setup needed */
+        if ((unsigned)(techType - 15) <= 2)
+            return;
+
+        lighting = *(char **)(backEnd + 0x444);
+        if (lighting) {
+            if (*(int *)lighting != *(int *)(backEnd + 0x3b4)) {
+                RB_SetupEntityLighting(
+                    (const GfxEntity *)*(void **)(backEnd + 0x440),
+                    (GfxEntityLighting *)lighting);
+                lighting = *(char **)(backEnd + 0x444);
+            }
+            /* tail-call with lighting's inline colorForDir and sunVisibility */
+            RB_SetEntityHwLightsDx7_impl(
+                (vec4_t *)(lighting + 8),
+                *(float *)(lighting + 4));
+        } else {
+            entity = *(char **)(backEnd + 0x440);
+            if (*(int *)entity == 2) {
+                /* Static model: colorForDir ptr and sunVisibility from entity */
+                RB_SetEntityHwLightsDx7_impl(
+                    *(vec4_t **)(entity + 8),
+                    *(float *)(entity + 0xc));
+            }
+        }
+        return;
+    }
+
+    /* Non-Dx7 path */
+    lighting = *(char **)(backEnd + 0x444);
+    if (lighting) {
+        if (*(int *)lighting != *(int *)(backEnd + 0x3b4)) {
+            RB_SetupEntityLighting(
+                (const GfxEntity *)*(void **)(backEnd + 0x440),
+                (GfxEntityLighting *)lighting);
+            lighting = *(char **)(backEnd + 0x444);
+        }
+
+        /* Set sunPrimaryDir code constant (0x85) with w = lighting sunVisibility */
+        RB_SetCodeConstant(0x85,
+            *(vec_t *)(backEnd + 0x2eb0),
+            *(vec_t *)(backEnd + 0x2eb4),
+            *(vec_t *)(backEnd + 0x2eb8),
+            *(vec_t *)(lighting + 4));
+
+        /* Copy 6 vec4 lighting blocks to backEnd */
+        Com_Memcpy(backEnd + 0x120, lighting + 0x08, 96);
+    } else {
+        /* No lighting: copy sunPrimaryDir as fallback */
+        *(float *)(backEnd + 0x50) = *(float *)(backEnd + 0x2eb0);
+        *(float *)(backEnd + 0x54) = *(float *)(backEnd + 0x2eb4);
+        *(float *)(backEnd + 0x58) = *(float *)(backEnd + 0x2eb8);
+        *(float *)(backEnd + 0x5c) = *(float *)(backEnd + 0x2ebc);
+
+        entity = *(char **)(backEnd + 0x440);
+        if (*(int *)entity == 2) {
+            /* Static model: copy light grid dir and entity origin */
+            char *smodel = *(char **)((char *)imp_rgp + 0x109c);
+
+            *(float *)(backEnd + 0x190) = *(float *)(smodel + 0x110);
+            *(float *)(backEnd + 0x194) = *(float *)(smodel + 0x114);
+            *(float *)(backEnd + 0x198) = *(float *)(smodel + 0x118);
+            *(float *)(backEnd + 0x19c) = 0.0f;
+
+            *(float *)(backEnd + 0x180) = *(float *)(entity + 0x08);
+            *(float *)(backEnd + 0x184) = *(float *)(entity + 0x0c);
+            *(float *)(backEnd + 0x188) = *(float *)(entity + 0x10);
+            *(float *)(backEnd + 0x18c) = 0.0f;
+        }
+    }
+}
+
+/* Naked trampoline: RB_SetupLighting is void(void) with standard calling
+ * convention, so just tail-call the impl directly */
 static __attribute__((naked))
 void RB_SetupLighting(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1500 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1503 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lff7428_000f75ab\n"
-        "movl imp_backEnd, %esi\n" /* line 1525 */
-        "movl 0x444(%esi), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lff7428_000f7607\n"
-        "movl (%edx), %eax\n" /* line 1527 */
-        "cmpl 0x3b4(%esi), %eax\n"
-        "je .Lff7428_000f7477\n"
-        "movl %edx, 4(%esp)\n" /* line 1529 */
-        "movl 0x440(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetupEntityLighting\n"
-        "movl 0x444(%esi), %edx\n"
-        ".Lff7428_000f7477:\n"
-        "movl 4(%edx), %eax\n" /* line 1533 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x2eb8(%esi), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x2eb4(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x2eb0(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x85, (%esp)\n"
-        "calll RB_SetCodeConstant\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 8(%eax), %edx\n"
-        "leal 0x120(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 8(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x120(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 0x18(%eax), %edx\n"
-        /* } scope */
-        "leal 0x130(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x18(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x130(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 0x28(%eax), %edx\n"
-        /* } scope */
-        "leal 0x140(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x28(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x140(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 0x38(%eax), %edx\n"
-        /* } scope */
-        "leal 0x150(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x38(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x150(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 0x48(%eax), %edx\n"
-        /* } scope */
-        "leal 0x160(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x48(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x160(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x444(%esi), %eax\n"
-        "leal 0x58(%eax), %edx\n"
-        /* } scope */
-        "leal 0x170(%esi), %ecx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x58(%eax), %eax\n" /* line 456 */
-        "movl %eax, 0x170(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        ".Lff7428_000f75a4:\n"
-        "addl $0x20, %esp\n" /* line 1553 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lff7428_000f75ab:\n"
-        "movl imp_tess, %eax\n" /* line 1505 */
-        "movl 0x5a7c0(%eax), %eax\n"
-        "subl $0xf, %eax\n"
-        "cmpl $2, %eax\n"
-        "jbe .Lff7428_000f75a4\n"
-        "movl imp_backEnd, %ebx\n" /* line 1508 */
-        "movl 0x444(%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lff7428_000f76a3\n"
-        "movl (%edx), %eax\n" /* line 1510 */
-        "cmpl 0x3b4(%ebx), %eax\n"
-        "je .Lff7428_000f75f4\n"
-        "movl %edx, 4(%esp)\n" /* line 1512 */
-        "movl 0x440(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetupEntityLighting\n"
-        "movl 0x444(%ebx), %edx\n"
-        ".Lff7428_000f75f4:\n"
-        "leal 8(%edx), %eax\n" /* line 1515 */
-        "movss 4(%edx), %xmm0\n"
-        ".Lff7428_000f75fc:\n"
-        "addl $0x20, %esp\n" /* line 1553 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp RB_SetEntityHwLightsDx7\n" /* line 1519 */
-        ".Lff7428_000f7607:\n"
-        "leal 0x50(%esi), %edx\n" /* line 275 | to */
-        /* { scope 1 */
-        "movl 0x2eb0(%esi), %eax\n" /* line 456 */
-        "movl %eax, 0x50(%esi)\n"
-        "movl 0x2eb4(%esi), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl 0x2eb8(%esi), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0x2ebc(%esi), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movl 0x440(%esi), %eax\n" /* line 1547 */
-        "cmpl $2, (%eax)\n"
-        "jne .Lff7428_000f75a4\n"
-        "movl imp_rgp, %eax\n"
-        "movl 0x109c(%eax), %eax\n"
-        "leal 0x110(%eax), %edx\n"
-        "leal 0x190(%esi), %ecx\n" /* line 284 | to */
-        /* { scope 1 */
-        "movl 0x110(%eax), %eax\n" /* line 199 */
-        "movl %eax, 0x190(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "xorl %ebx, %ebx\n" /* line 285 */
-        "movl %ebx, 0x19c(%esi)\n"
-        "movl 0x440(%esi), %eax\n"
-        "leal 8(%eax), %edx\n"
-        "leal 0x180(%esi), %ecx\n" /* line 284 | to */
-        /* { scope 1 */
-        "movl 8(%eax), %eax\n" /* line 199 */
-        "movl %eax, 0x180(%esi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl %ebx, 0x18c(%esi)\n" /* line 285 */
-        "jmp .Lff7428_000f75a4\n"
-        ".Lff7428_000f76a3:\n"
-        "movl 0x440(%ebx), %edx\n" /* line 1517 */
-        "cmpl $2, (%edx)\n"
-        "jne .Lff7428_000f75a4\n"
-        "movl 8(%edx), %eax\n" /* line 1519 */
-        "movss 0xc(%edx), %xmm0\n"
-        "jmp .Lff7428_000f75fc\n"
+        "jmp RB_SetupLighting_impl\n"
     );
 }
 
