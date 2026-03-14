@@ -493,88 +493,44 @@ void Material_Sort(void)
 }
 
 /* line 338 */
-__attribute__((naked))
+extern int R_HashString(const char *string);
+extern void R_Error(int level, const char *msg, ...);
+
 const char * Material_RegisterString(const char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 338 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 344 | string */
-        "movl %eax, (%esp)\n"
-        "calll R_HashString\n"
-        "movl %eax, %esi\n" /* hashIndex */
-        "andl $0x3f, %esi\n" /* hashIndex */
-        "movl materialGlobals+9368(, %esi, 4), %ebx\n" /* line 345 */
-        "testl %ebx, %ebx\n"
-        "je .Lfd36f4_000d373c\n"
-        ".Lfd36f4_000d3718:\n"
-        "movl 8(%ebp), %eax\n" /* line 347 | string */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd36f4_000d3792\n"
-        "addl $1, %esi\n" /* line 350 | hashIndex */
-        "andl $0x3f, %esi\n" /* hashIndex */
-        "movl materialGlobals+9368(, %esi, 4), %ebx\n" /* line 345 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfd36f4_000d3718\n"
-        ".Lfd36f4_000d373c:\n"
-        "movl materialGlobals+9364, %eax\n" /* line 353 */
-        "addl $1, %eax\n"
-        "movl %eax, materialGlobals+9364\n"
-        "cmpl $0x40, %eax\n" /* line 354 */
-        "je .Lfd36f4_000d379c\n"
-        ".Lfd36f4_000d374e:\n"
-        "cld\n" /* line 357 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 8(%ebp), %edi\n" /* string */
-        "repne scasb %es:(%edi), %al\n"
-        "movl %ecx, %ebx\n"
-        "notl %ebx\n"
-        "movl %ebx, (%esp)\n" /* line 221 */
-        "movl imp_ri, %eax\n"
-        "calll *0xc(%eax)\n"
-        "movl %eax, %edi\n"
-        "movl %ebx, 8(%esp)\n" /* line 359 */
-        "movl 8(%ebp), %eax\n" /* string */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll memcpy\n"
-        "movl $materialGlobals+9360, %eax\n" /* line 361 */
-        "movl %edi, 8(%eax, %esi, 4)\n"
-        "movl %edi, %eax\n" /* line 362 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 363 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd36f4_000d3792:\n"
-        "movl %ebx, %eax\n" /* line 348 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 363 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd36f4_000d379c:\n"
-        "movl $0x3f, 8(%esp)\n" /* line 355 */
-        "movl $str_002243b8, 4(%esp)\n" /* "More than %i string identifiers used by shaders" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfd36f4_000d374e\n"
-    );
+    int hash = R_HashString(string) & 0x3f;
+    const char *existing;
+    int count;
+    int nameLen;
+    void *(*hunkAlloc)(int);
+    char *copy;
+
+    /* Search hash table for existing string */
+    existing = *(const char **)(materialGlobals + 9368 + hash * 4);
+    while (existing) {
+        if (strcmp(existing, string) == 0)
+            return existing;
+        hash = (hash + 1) & 0x3f;
+        existing = *(const char **)(materialGlobals + 9368 + hash * 4);
+    }
+
+    /* Not found — register new string */
+    count = *(int *)(materialGlobals + 9364) + 1;
+    *(int *)(materialGlobals + 9364) = count;
+    if (count == 64) {
+        R_Error(1, "More than %i string identifiers used by shaders", 63);
+    }
+
+    /* Allocate and copy string via ri->hunkAlloc */
+    nameLen = strlen(string) + 1;
+    hunkAlloc = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    copy = (char *)hunkAlloc(nameLen);
+    memcpy(copy, string, nameLen);
+
+    /* Insert into hash table */
+    *(const char **)(materialGlobals + 9368 + hash * 4) = copy;
+
+    return copy;
 }
 
 /* line 492 */
