@@ -30,6 +30,7 @@ static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load);
 GfxWorld * R_LoadWorldInternal(const char *name);
 
 /* line 1396 */
+extern void R_Error(int level, const char *msg, ...);
 extern void ClearBounds(void *mins, void *maxs);
 extern void ExpandBounds(const void *mins, const void *maxs, void *dstMins, void *dstMaxs);
 extern const char *Com_Parse(const char **text);
@@ -39,8 +40,34 @@ extern double atof(const char *s);
 extern int sscanf(const char *str, const char *fmt, ...);
 extern float ColorNormalize(const float *color, float *out);
 extern void Com_Printf(const char *fmt, ...);
+extern void *Hunk_AllocInternal(int size);
+
+/* Validate and get a BSP lump. Returns element count.
+ * load[0]=header, load[4]=fileBase, load[8]=fileSize.
+ * Lump at header+lumpOfs: [0]=size, [4]=offset. */
+static int R_ValidateLump(const int *load, int lumpOfs, int elemSize, const byte **outData)
+{
+    const byte *header = (const byte *)load[0];
+    int lumpSize = *(int *)(header + lumpOfs);
+    int lumpFileOfs = *(int *)(header + lumpOfs + 4);
+    int count;
+
+    if (lumpFileOfs + lumpSize > load[2])
+        R_Error(1, "LoadMap: lump extends past end of file in %s", *(const char **)&s_world);
+    if (lumpFileOfs <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", *(const char **)&s_world);
+
+    count = lumpSize / elemSize;
+    if (lumpSize < 0)
+        count = (lumpSize + elemSize - 1) / elemSize; /* round toward zero for negative (shouldn't happen) */
+    if (count * elemSize != lumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", *(const char **)&s_world);
+
+    if (outData)
+        *outData = (const byte *)load[1] + lumpFileOfs;
+    return count;
+}
 extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
-extern void R_Error(int level, const char *msg, ...);
 extern void *R_RegisterModel(const char *name);
 extern int XModelBad(void *model);
 extern int strnicmp(const char *a, const char *b, int n);
@@ -2534,8 +2561,69 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
 }
 
 /* line 1431 */
+/* line 1431 — Load AABB trees from BSP lump 0xB8.
+ * Source: 12 bytes per entry (childFirst, childCount, smodelCount).
+ * Dest: 48 (0x30) bytes per entry in GfxAabbTree format.
+ * Then call R_FinishLoadingAabbTrees_r to compute bounds. */
+static void R_LoadAabbTrees_impl(const int *load)
+{
+    const byte *srcData;
+    int count = R_ValidateLump(load, 0xb8, 12, &srcData);
+    byte *dst;
+    int i;
+
+    dst = (byte *)Hunk_AllocInternal(count * 48);
+    *(void **)((byte *)&rgl + 16) = dst;
+    *(int *)((byte *)&rgl + 20) = count;
+
+    for (i = 0; i < count; i++) {
+        const int *src = (const int *)(srcData + i * 12);
+        byte *d = dst + i * 48;
+        int childCount = src[1];
+        int smodelCount = src[2];
+
+        /* childFirst → child pointer or -1 if no children */
+        if (childCount == 0) {
+            *(int *)(d + 0x1c) = -1;
+        } else {
+            *(int *)(d + 0x1c) = src[0]; /* childFirst index */
+        }
+        *(int *)(d + 0x18) = childCount;
+        *(int *)(d + 0x28) = smodelCount;
+    }
+
+    /* Recursively compute AABB bounds for each root tree */
+    {
+        extern int R_FinishLoadingAabbTrees_r(void); /* uses register convention: eax=tree, edx=treeIndex */
+        byte *trees = *(byte **)((byte *)&rgl + 16);
+        for (i = 0; i < count; ) {
+            __asm__ __volatile__ (
+                "movl %1, %%edx\n"
+                "movl %0, %%eax\n"
+                "calll R_FinishLoadingAabbTrees_r\n"
+                "movl %%eax, %1\n"
+                : "+g"(trees)
+                : "r"(i + 1)
+                : "eax", "edx", "ecx", "memory"
+            );
+            i++;
+            trees += 48;
+        }
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadAabbTrees(void)
+{
+    __asm__ __volatile__ (
+        "pushl %eax\n"
+        "calll R_LoadAabbTrees_impl\n"
+        "addl $4, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1431 */
@@ -2655,6 +2743,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         "jmp .Lfe45e8_000e4617\n"
     );
 }
+#endif
 
 /* line 1627 */
 static __attribute__((naked))
@@ -3029,8 +3118,37 @@ snd_alias_list_t R_LoadOccluders(void)
 }
 
 /* line 1506 */
+/* line 1506 — Load portal vertex positions from BSP lump 0x90.
+ * Each vertex is a vec3_t (12 bytes). Stored at rgl+12. */
+static void R_LoadPortalVerts_impl(const int *load)
+{
+    const byte *srcData;
+    int vertCount = R_ValidateLump(load, 0x90, 12, &srcData);
+    float *dst;
+    int i;
+
+    dst = (float *)Hunk_AllocInternal(vertCount * 12);
+    *(float **)((byte *)&rgl + 12) = dst;
+
+    for (i = 0; i < vertCount; i++) {
+        dst[i * 3 + 0] = *(float *)(srcData + i * 12 + 0);
+        dst[i * 3 + 1] = *(float *)(srcData + i * 12 + 4);
+        dst[i * 3 + 2] = *(float *)(srcData + i * 12 + 8);
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadPortalVerts(void)
+{
+    __asm__ __volatile__ (
+        "pushl %eax\n"
+        "calll R_LoadPortalVerts_impl\n"
+        "addl $4, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1506 */
@@ -3132,10 +3250,57 @@ snd_alias_list_t R_LoadPortalVerts(void)
         "jmp .Lfe4be0_000e4c0f\n"
     );
 }
+#endif
 
-/* line 1568 */
+/* line 1568 — Load cull groups from BSP lump 0x58. Each group is 32 bytes.
+ * Contains mins/maxs bounding box + surface count + surface start index. */
+static void R_LoadCullGroups_impl(const int *load)
+{
+    const byte *srcData;
+    int count = R_ValidateLump(load, 0x58, 32, &srcData);
+    byte *dst;
+    int i;
+
+    dst = (byte *)Hunk_AllocInternal(count * 32);
+    *(void **)((byte *)&s_world + 240) = dst;
+    *(int *)((byte *)&s_world + 236) = count;
+
+    for (i = 0; i < count; i++) {
+        const byte *src = srcData + i * 32;
+        byte *d = dst + i * 32;
+        int j;
+
+        /* Copy mins[3] and maxs[3] (6 floats at offsets 0,4,8 and 0xC,0x10,0x14) */
+        for (j = 0; j < 3; j++) {
+            *(int *)(d + j * 4) = *(int *)(src + j * 4);
+            *(int *)(d + j * 4 + 12) = *(int *)(src + j * 4 + 12);
+        }
+
+        /* surfaceCount (offset 0x18): 0 → -1, else copy from src offset 0x18 */
+        {
+            int surfCount = *(int *)(src + 0x1c);
+            if (surfCount == 0) {
+                *(int *)(d + 0x1c) = -1;
+            } else {
+                *(int *)(d + 0x1c) = *(int *)(src + 0x18);
+            }
+            *(int *)(d + 0x18) = surfCount;
+        }
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadCullGroups(void)
+{
+    __asm__ __volatile__ (
+        "pushl %eax\n"
+        "calll R_LoadCullGroups_impl\n"
+        "addl $4, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1568 */
@@ -3257,6 +3422,7 @@ snd_alias_list_t R_LoadCullGroups(void)
         "jmp .Lfe4cfa_000e4d30\n"
     );
 }
+#endif
 
 /* line 642 */
 static __attribute__((naked))
