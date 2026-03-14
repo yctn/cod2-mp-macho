@@ -644,210 +644,82 @@ void R_ReloadLostImages(void)
 }
 
 /* line 388 */
-__attribute__((naked))
+extern int Image_GetCardMemoryAmount(int imageFlags, D3DFORMAT format, int width, int height, int depth);
+
 void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int width, int height, int depth)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 388 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "testb $1, 0xc(%ebp)\n" /* imageFlags */
-        "jne .Lfe7b5a_000e7c1d\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %esi\n" /* line 416 | image */
-        "movl %esi, %edi\n"
-        "movl $imageGlobals, -0x1c(%ebp)\n"
-        ".Lfe7b5a_000e7b79:\n"
-        "movzbl 8(%esi), %ecx\n" /* line 405 */
-        "movl 0x14(%ebp), %edx\n" /* width */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n" /* line 154 */
-        "cmpl %edx, %eax\n"
-        "js .Lfe7b5a_000e7b90\n"
-        "movl $1, %edx\n"
-        ".Lfe7b5a_000e7b90:\n"
-        "movl 0x18(%ebp), %ebx\n" /* line 406 | height, heightUsed */
-        "sarl %cl, %ebx\n" /* heightUsed */
-        "movl $1, %eax\n" /* line 154 */
-        "cmpl %ebx, %eax\n"
-        "js .Lfe7b5a_000e7ba3\n"
-        "movl $1, %ebx\n"
-        ".Lfe7b5a_000e7ba3:\n"
-        "movl 0x1c(%ebp), %eax\n" /* line 407 | depth */
-        "sarl %cl, %eax\n"
-        "movl $1, %ecx\n" /* line 154 */
-        "cmpl %eax, %ecx\n"
-        "js .Lfe7b5a_000e7bb6\n"
-        "movl $1, %eax\n" /* line 412 */
-        ".Lfe7b5a_000e7bb6:\n"
-        "movl %eax, 0x10(%esp)\n" /* line 409 */
-        "movl %ebx, 0xc(%esp)\n" /* heightUsed */
-        "movl %edx, 8(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* format */
-        "movl %ecx, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* imageFlags */
-        "movl %eax, (%esp)\n"
-        "calll Image_GetCardMemoryAmount\n"
-        "movl %eax, 0x10(%edi)\n"
-        "movl 8(%ebp), %edx\n" /* line 170 | image */
-        "cmpb $4, 0xc(%edx)\n"
-        "ja .Lfe7b5a_000e7c12\n"
-        "movsbl 0xc(%edx), %ecx\n"
-        "movl $1, %edx\n"
-        "shll %cl, %edx\n"
-        "movl %edx, %ecx\n"
-        "andb $0x13, %cl\n"
-        "je .Lfe7b5a_000e7c12\n"
-        ".Lfe7b5a_000e7bf2:\n"
-        "addl $4, -0x1c(%ebp)\n" /* line 154 */
-        "addl $4, %edi\n"
-        "addl $1, %esi\n"
-        "movl $imageGlobals+8, %edx\n" /* line 395 */
-        "cmpl -0x1c(%ebp), %edx\n"
-        "jne .Lfe7b5a_000e7b79\n"
-        /* } scope */
-        ".Lfe7b5a_000e7c0a:\n"
-        "addl $0x3c, %esp\n" /* line 416 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe7b5a_000e7c12:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 413 */
-        "addl %eax, 0x200c(%edx)\n"
-        "jmp .Lfe7b5a_000e7bf2\n"
-        /* } scope */
-        ".Lfe7b5a_000e7c1d:\n"
-        "movl 8(%ebp), %ebx\n" /* line 388 | image */
-        "movl $imageGlobals, %esi\n"
-        "movl $1, %edi\n"
-        /* { scope 1 */
-        ".Lfe7b5a_000e7c2a:\n"
-        "movl 0x1c(%ebp), %eax\n" /* line 409 | depth */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x18(%ebp), %edx\n" /* height */
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0x14(%ebp), %ecx\n" /* width */
-        "movl %ecx, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* format */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* imageFlags */
-        "movl %edx, (%esp)\n"
-        "calll Image_GetCardMemoryAmount\n"
-        "movl %eax, 0x10(%ebx)\n" /* heightUsed */
-        "movl 8(%ebp), %ecx\n" /* line 170 | image */
-        "cmpb $4, 0xc(%ecx)\n"
-        "ja .Lfe7b5a_000e7c6c\n"
-        "movsbl 0xc(%ecx), %ecx\n"
-        "movl %edi, %edx\n"
-        "shll %cl, %edx\n"
-        "movl %edx, %ecx\n"
-        "andb $0x13, %cl\n"
-        "jne .Lfe7b5a_000e7c72\n"
-        ".Lfe7b5a_000e7c6c:\n"
-        "addl %eax, 0x200c(%esi)\n" /* line 413 */
-        ".Lfe7b5a_000e7c72:\n"
-        "addl $4, %esi\n"
-        "addl $4, %ebx\n" /* heightUsed */
-        "movl $imageGlobals+8, %ecx\n" /* line 395 */
-        "cmpl %esi, %ecx\n"
-        "je .Lfe7b5a_000e7c0a\n"
-        "jmp .Lfe7b5a_000e7c2a\n"
-    );
+    byte *img = (byte *)image;
+    signed char mapType = *(signed char *)(img + 0xc);
+    int needsGlobalAccounting;
+    int amount;
+    int i;
+
+    /* Check if this image type needs per-image tracking (bit test) */
+    needsGlobalAccounting = ((byte)mapType > 4) || !((1 << mapType) & 0x13);
+
+    if (!(imageFlags & 1)) {
+        /* Multi-platform path: iterate per-platform picmip levels */
+        for (i = 0; i < 2; i++) {
+            int picmipLevel = *(byte *)(img + 8 + i);
+            int mipW = width >> picmipLevel;
+            int mipH = height >> picmipLevel;
+            int mipD = depth >> picmipLevel;
+            if (mipW < 1) mipW = 1;
+            if (mipH < 1) mipH = 1;
+            if (mipD < 1) mipD = 1;
+
+            amount = Image_GetCardMemoryAmount(imageFlags, format, mipW, mipH, mipD);
+            *(int *)(img + 0x10 + i * 4) = amount;
+
+            if (needsGlobalAccounting)
+                imageGlobals[0x200c / 4 + i] += amount;
+        }
+    } else {
+        /* Single-platform path: same dimensions for all platforms */
+        for (i = 0; i < 2; i++) {
+            amount = Image_GetCardMemoryAmount(imageFlags, format, width, height, depth);
+            *(int *)(img + 0x10 + i * 4) = amount;
+
+            if (needsGlobalAccounting)
+                imageGlobals[0x200c / 4 + i] += amount;
+        }
+    }
 }
 
 /* line 362 */
-__attribute__((naked))
 void Image_TrackFullscreenTexture(GfxImage *image, int picmip, D3DFORMAT format)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 362 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl $0, -0x1c(%ebp)\n" /* platform */
-        /* { scope 1 */
-        ".Lfe7c84_000e7c94:\n"
-        "movl imp_vidConfig, %edx\n" /* line 343 */
-        "movl (%edx), %ebx\n"
-        "movl -0x1c(%ebp), %eax\n" /* platform */
-        "shll $2, %eax\n"
-        "leal imageGlobals+8204(%eax), %edi\n"
-        "movl 8(%ebp), %ecx\n" /* image */
-        "leal 0x10(%eax, %ecx), %esi\n"
-        "cmpl $1, -0x1c(%ebp)\n" /* line 350 | platform */
-        "je .Lfe7c84_000e7d5f\n"
-        "movl 4(%edx), %edx\n" /* line 358 */
-        "movl %edx, -0x2c(%ebp)\n" /* screenHeight */
-        ".Lfe7c84_000e7cbf:\n"
-        "movl %ebx, %eax\n" /* line 142 */
-        "movzbl 0xc(%ebp), %ecx\n" /* picmip */
-        "sarl %cl, %eax\n"
-        /* { scope 2 */
-        "movl $1, %ebx\n" /* line 154 */
-        "movl $1, %edx\n"
-        "cmpl %eax, %ebx\n"
-        "cmovnsl %edx, %eax\n"
-        "movw %ax, -0x48(%ebp)\n"
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 142 | screenHeight */
-        "sarl %cl, %eax\n"
-        /* { scope 2 */
-        "cmpl %eax, %ebx\n" /* line 154 */
-        "cmovsl %eax, %edx\n"
-        /* } scope */
-        "movl $1, 0x10(%esp)\n" /* line 376 */
-        "movzwl %dx, %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movzwl -0x48(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* format */
-        "movl %edx, 4(%esp)\n"
-        "movl $3, (%esp)\n"
-        "calll Image_GetCardMemoryAmount\n"
-        "addl %eax, (%esi)\n" /* line 378 */
-        "movl 8(%ebp), %ecx\n" /* line 170 | image */
-        "cmpb $4, 0xc(%ecx)\n"
-        "ja .Lfe7c84_000e7d36\n"
-        "movsbl 0xc(%ecx), %ecx\n"
-        "shll %cl, %ebx\n"
-        "andb $0x13, %bl\n"
-        "je .Lfe7c84_000e7d36\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 371 | platform */
-        "cmpl $1, -0x1c(%ebp)\n" /* platform */
-        "jle .Lfe7c84_000e7d42\n"
-        /* } scope */
-        ".Lfe7c84_000e7d2e:\n"
-        "addl $0x5c, %esp\n" /* line 385 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe7c84_000e7d36:\n"
-        "addl %eax, (%edi)\n" /* line 382 */
-        "addl $1, -0x1c(%ebp)\n" /* line 371 | platform */
-        "cmpl $1, -0x1c(%ebp)\n" /* platform */
-        "jg .Lfe7c84_000e7d2e\n"
-        ".Lfe7c84_000e7d42:\n"
-        "jne .Lfe7c84_000e7c94\n" /* line 335 */
-        "addl $4, %edi\n"
-        "addl $4, %esi\n"
-        "movl $0x1e0, -0x2c(%ebp)\n" /* screenHeight */
-        "movl $0x280, %ebx\n"
-        "jmp .Lfe7c84_000e7cbf\n"
-        ".Lfe7c84_000e7d5f:\n"
-        "movl $0x1e0, -0x2c(%ebp)\n" /* line 350 | screenHeight */
-        "jmp .Lfe7c84_000e7cbf\n"
-    );
+    byte *img = (byte *)image;
+    signed char mapType = *(signed char *)(img + 0xc);
+    int needsGlobalAccounting = ((byte)mapType > 4) || !((1 << mapType) & 0x13);
+    int platform;
+    int screenWidth, screenHeight;
+    int mipW, mipH;
+    int amount;
+
+    for (platform = 0; platform <= 1; platform++) {
+        if (platform == 0) {
+            /* Platform 0: actual screen resolution */
+            int *vidConfig = (int *)imp_vidConfig;
+            screenWidth = vidConfig[0];
+            screenHeight = vidConfig[1];
+        } else {
+            /* Platform 1: fixed 640x480 */
+            screenWidth = 640;
+            screenHeight = 480;
+        }
+
+        mipW = screenWidth >> (byte)picmip;
+        if (mipW < 1) mipW = 1;
+        mipH = screenHeight >> (byte)picmip;
+        if (mipH < 1) mipH = 1;
+
+        amount = Image_GetCardMemoryAmount(3, format, mipW, mipH, 1);
+        *(int *)(img + 0x10 + platform * 4) += amount;
+
+        if (needsGlobalAccounting)
+            imageGlobals[0x200c / 4 + platform] += amount;
+    }
 }
 
 /* line 474 */
@@ -1453,93 +1325,56 @@ GfxImage * Image_Register(const char *imageName, int semantic, int imageTrack)
 }
 
 /* line 1272 */
-__attribute__((naked))
+extern void RB_InitImages(void);
+
 void R_InitImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1272 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "calll R_SetPicmip\n" /* line 1282 */
-        "movl $0, 8(%esp)\n" /* line 1096 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_00225570, (%esp)\n" /* "$white" */
-        "calll Image_Register\n"
-        "movl imp_rgp, %ebx\n"
-        "movl %eax, 0x1008(%ebx)\n"
-        "movl $0, 8(%esp)\n" /* line 1099 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_00225578, (%esp)\n" /* "$black" */
-        "calll Image_Register\n"
-        "movl %eax, 0x100c(%ebx)\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1103 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfe86e2_000e887a\n"
-        "movl $0, 8(%esp)\n" /* line 1111 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_0022558c, (%esp)\n" /* "$identitynormalmap" */
-        "calll Image_Register\n"
-        "movl %eax, 0x1010(%ebx)\n"
-        "movl $0, 8(%esp)\n" /* line 1115 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002255a0, (%esp)\n" /* "$specularity" */
-        "calll Image_Register\n"
-        "movl %eax, 0x1014(%ebx)\n"
-        "movl $0, 8(%esp)\n" /* line 1119 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002255b0, (%esp)\n" /* "$lightgridweights0" */
-        "calll Image_Register\n"
-        "movl %eax, 0x101c(%ebx)\n"
-        "movl $0, 8(%esp)\n" /* line 1121 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002255c4, (%esp)\n" /* "$lightgridweights1" */
-        "calll Image_Register\n"
-        "movl %eax, 0x1020(%ebx)\n"
-        "movl $0, 8(%esp)\n" /* line 1124 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002255d8, (%esp)\n" /* "$lightmapweights" */
-        "calll Image_Register\n"
-        "movl %eax, 0x1018(%ebx)\n"
-        ".Lfe86e2_000e87f3:\n"
-        "calll RB_InitImages\n" /* line 1287 */
-        "movl g_imageProgNames+44, %eax\n" /* line 485 */
-        "movl %eax, g_imageProgs+428\n" /* line 486 */
-        "movb $4, g_imageProgs+426\n" /* line 489 */
-        "movb $0, g_imageProgs+406\n" /* line 490 */
-        "movb $0, g_imageProgs+408\n" /* line 495 */
-        "movl %eax, (%esp)\n" /* line 270 */
-        "calll R_HashAssetName\n"
-        "andl $0x7ff, %eax\n"
-        "movl imageGlobals(, %eax, 4), %ecx\n" /* line 435 */
-        "testl %ecx, %ecx\n"
-        "je .Lfe86e2_000e8842\n"
-        ".Lfe86e2_000e882f:\n"
-        "addl $1, %eax\n" /* line 438 */
-        "andl $0x7ff, %eax\n"
-        "movl imageGlobals(, %eax, 4), %edx\n" /* line 435 */
-        "testl %edx, %edx\n"
-        "jne .Lfe86e2_000e882f\n"
-        ".Lfe86e2_000e8842:\n"
-        "movl $g_imageProgs+396, imageGlobals(, %eax, 4)\n" /* line 499 */
-        "movl imp_rgp, %eax\n" /* line 1084 */
-        "movl $g_imageProgs+396, 0x1098(%eax)\n"
-        "movb $0x32, 0x10e8(%eax)\n" /* line 1087 */
-        "movb $0, 0x10e9(%eax)\n" /* line 1088 */
-        "movl $g_imageProgs+396, 0x10ec(%eax)\n" /* line 1089 */
-        "addl $0x14, %esp\n" /* line 1292 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfe86e2_000e887a:\n"
-        "movl $0, 8(%esp)\n" /* line 1105 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_00225580, (%esp)\n" /* "$watercolor" */
-        "calll Image_Register\n"
-        "movl %eax, 0x10a4(%ebx)\n"
-        "jmp .Lfe86e2_000e87f3\n"
-    );
+    byte *rgp = (byte *)imp_rgp;
+    int rendererType;
+    int hash;
+    GfxImage *rawImage;
+
+    R_SetPicmip();
+
+    /* Register built-in images */
+    *(GfxImage **)(rgp + 0x1008) = Image_Register("$white", 1, 0);
+    rgp = (byte *)imp_rgp;
+    *(GfxImage **)(rgp + 0x100c) = Image_Register("$black", 1, 0);
+
+    rendererType = *(int *)(*(char **)imp_r_rendererInUse + 8);
+    if (rendererType == 2) {
+        /* Dx7 path */
+        *(GfxImage **)(rgp + 0x10a4) = Image_Register("$watercolor", 1, 0);
+    } else {
+        /* Non-Dx7 path */
+        *(GfxImage **)(rgp + 0x1010) = Image_Register("$identitynormalmap", 1, 0);
+        *(GfxImage **)(rgp + 0x1014) = Image_Register("$specularity", 1, 0);
+        *(GfxImage **)(rgp + 0x101c) = Image_Register("$lightgridweights0", 1, 0);
+        *(GfxImage **)(rgp + 0x1020) = Image_Register("$lightgridweights1", 1, 0);
+        *(GfxImage **)(rgp + 0x1018) = Image_Register("$lightmapweights", 1, 0);
+    }
+
+    RB_InitImages();
+
+    /* Initialize raw image prog (index 11 = offset 396 in g_imageProgs) */
+    rawImage = &g_imageProgs[11];
+    *(const char **)((byte *)rawImage + 0x20) = g_imageProgNames[11];
+    *((byte *)rawImage + 0x1e) = 4;  /* category */
+    *((byte *)rawImage + 0x0a) = 0;  /* state */
+    *((byte *)rawImage + 0x0c) = 0;  /* mapType */
+
+    /* Insert into hash table */
+    hash = R_HashAssetName(g_imageProgNames[11]) & 0x7ff;
+    while (imageGlobals[hash] != 0)
+        hash = (hash + 1) & 0x7ff;
+    imageGlobals[hash] = (int)rawImage;
+
+    /* Set up rgp raw image references */
+    rgp = (byte *)imp_rgp;
+    *(GfxImage **)(rgp + 0x1098) = rawImage;
+    *(byte *)(rgp + 0x10e8) = 0x32;  /* samplerState */
+    *(byte *)(rgp + 0x10e9) = 0;
+    *(GfxImage **)(rgp + 0x10ec) = rawImage;
 }
 
 /* line 715 */
