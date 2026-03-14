@@ -644,130 +644,61 @@ MaterialShader * Material_FindShader(const char *shaderName, MaterialShaderType 
 }
 
 /* line 1437 */
-__attribute__((naked))
 void Material_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1437 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "calll RB_ReleaseVertexDecl\n" /* line 1381 */
-        "movl $materialGlobals+4, -0x1c(%ebp)\n"
-        ".Lfd3a6c_000d3a81:\n"
-        "movl -0x1c(%ebp), %esi\n"
-        "xorl %edi, %edi\n"
-        ".Lfd3a6c_000d3a86:\n"
-        "leal 8(%esi), %ebx\n" /* line 1437 */
-        "movl 8(%esi), %eax\n" /* line 1389 */
-        "testl %eax, %eax\n"
-        "je .Lfd3a6c_000d3aab\n"
-        ".Lfd3a6c_000d3a90:\n"
-        "movl (%ebx), %eax\n" /* line 1390 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        "movl $0, (%ebx)\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl (%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfd3a6c_000d3a90\n"
-        ".Lfd3a6c_000d3aab:\n"
-        "addl $1, %edi\n" /* line 1387 */
-        "addl $4, %esi\n"
-        "cmpl $4, %edi\n"
-        "jne .Lfd3a6c_000d3a86\n"
-        "addl $0x18, -0x1c(%ebp)\n" /* line 1393 */
-        "cmpl $materialGlobals+772, -0x1c(%ebp)\n" /* line 1385 */
-        "jne .Lfd3a6c_000d3a81\n"
-        "movl $0x300, 8(%esp)\n" /* line 1420 */
-        "movl $0, 4(%esp)\n"
-        "movl $materialGlobals+4, (%esp)\n"
-        "calll memset\n"
-        "movl $0, materialGlobals\n" /* line 1421 */
-        "movl $materialGlobals, %ebx\n"
-        ".Lfd3a6c_000d3aee:\n"
-        "movl 0x259c(%ebx), %eax\n" /* line 838 */
-        "testl %eax, %eax\n"
-        "je .Lfd3a6c_000d3b03\n"
-        "movl 0xc(%eax), %eax\n" /* line 813 */
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        ".Lfd3a6c_000d3b03:\n"
-        "addl $4, %ebx\n"
-        "cmpl $materialGlobals+1024, %ebx\n" /* line 836 */
-        "jne .Lfd3a6c_000d3aee\n"
-        "movl $materialGlobals, %eax\n"
-        ".Lfd3a6c_000d3b13:\n"
-        "movl $0, 0x259c(%eax)\n" /* line 869 */
-        "addl $4, %eax\n"
-        "cmpl %eax, %ebx\n" /* line 864 */
-        "jne .Lfd3a6c_000d3b13\n"
-        "movl $0, materialGlobals+8972\n" /* line 334 */
-        "movl $materialGlobals, %eax\n"
-        ".Lfd3a6c_000d3b33:\n"
-        "movl 0x2498(%eax), %edx\n" /* line 372 */
-        "testl %edx, %edx\n"
-        "je .Lfd3a6c_000d3b47\n"
-        "movl $0, 0x2498(%eax)\n" /* line 377 */
-        ".Lfd3a6c_000d3b47:\n"
-        "addl $4, %eax\n"
-        "cmpl $materialGlobals+256, %eax\n" /* line 370 */
-        "jne .Lfd3a6c_000d3b33\n"
-        "movl $materialGlobals, %eax\n"
-        ".Lfd3a6c_000d3b56:\n"
-        "movl 0x2414(%eax), %edi\n" /* line 736 */
-        "testl %edi, %edi\n"
-        "je .Lfd3a6c_000d3b6a\n"
-        "movl $0, 0x2414(%eax)\n" /* line 739 */
-        ".Lfd3a6c_000d3b6a:\n"
-        "addl $4, %eax\n"
-        "cmpl $materialGlobals+128, %eax\n" /* line 734 */
-        "jne .Lfd3a6c_000d3b56\n"
-        "movl $materialGlobals, %eax\n"
-        "movl $materialGlobals+4096, %ecx\n"
-        ".Lfd3a6c_000d3b7e:\n"
-        "movl 0x130c(%eax), %esi\n" /* line 608 */
-        "testl %esi, %esi\n"
-        "je .Lfd3a6c_000d3b92\n"
-        "movl $0, 0x130c(%eax)\n" /* line 611 */
-        ".Lfd3a6c_000d3b92:\n"
-        "addl $4, %eax\n"
-        "movl $materialGlobals+4096, %edx\n" /* line 1437 */
-        "cmpl %eax, %ecx\n" /* line 606 */
-        "jne .Lfd3a6c_000d3b7e\n"
-        "movl $materialGlobals, %eax\n"
-        ".Lfd3a6c_000d3ba3:\n"
-        "movl 0x308(%eax), %ebx\n" /* line 672 */
-        "testl %ebx, %ebx\n"
-        "je .Lfd3a6c_000d3bb7\n"
-        "movl $0, 0x308(%eax)\n" /* line 675 */
-        ".Lfd3a6c_000d3bb7:\n"
-        "addl $4, %eax\n"
-        "cmpl %eax, %edx\n" /* line 670 */
-        "jne .Lfd3a6c_000d3ba3\n"
-        "movl $0x299c, 8(%esp)\n" /* line 1463 */
-        "movl $0, 4(%esp)\n"
-        "movl $materialGlobals, (%esp)\n"
-        "calll memset\n"
-        "movl imp_rg, %eax\n" /* line 1464 */
-        "addl $0x28, %eax\n"
-        "movl $__mh_execute_header, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl imp_rgp, %eax\n" /* line 1465 */
-        "movl $0, 4(%eax)\n"
-        "addl $0x2c, %esp\n" /* line 1466 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *outer;
+    int j, i;
+    void *obj;
+    void **vtable;
+
+    RB_ReleaseVertexDecl();
+
+    /* Release technique COM objects */
+    for (outer = materialGlobals + 4; outer < materialGlobals + 772; outer += 24) {
+        byte *slot = outer;
+        for (j = 0; j < 4; j++) {
+            void **pObj = (void **)(slot + 8);
+            if (*pObj) {
+                do {
+                    obj = *pObj;
+                    vtable = *(void ***)obj;
+                    ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
+                    *pObj = NULL;
+                } while (*(volatile int *)imp_alwaysfails);
+            }
+            slot += 4;
+        }
+    }
+
+    memset(materialGlobals + 4, 0, 0x300);
+    *(int *)materialGlobals = 0;
+
+    /* Release shader COM objects */
+    for (i = 0; i < 256; i++) {
+        void *shader = *(void **)(materialGlobals + 0x259c + i * 4);
+        if (shader) {
+            obj = *(void **)((byte *)shader + 0xc);
+            vtable = *(void ***)obj;
+            ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
+        }
+    }
+
+    /* Clear all hash tables */
+    for (i = 0; i < 256; i++)
+        *(void **)(materialGlobals + 0x259c + i * 4) = NULL;
+    *(int *)(materialGlobals + 8972) = 0;
+    for (i = 0; i < 64; i++)
+        *(void **)(materialGlobals + 0x2498 + i * 4) = NULL;
+    for (i = 0; i < 32; i++)
+        *(void **)(materialGlobals + 0x2414 + i * 4) = NULL;
+    for (i = 0; i < 1024; i++)
+        *(void **)(materialGlobals + 0x130c + i * 4) = NULL;
+    for (i = 0; i < 1024; i++)
+        *(void **)(materialGlobals + 0x308 + i * 4) = NULL;
+
+    memset(materialGlobals, 0, 0x299c);
+    memset((byte *)imp_rg + 0x28, 0, 0x1000);
+    *(int *)((byte *)imp_rgp + 4) = 0;
 }
 
 /* line 1134 */

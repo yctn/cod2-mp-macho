@@ -229,150 +229,89 @@ IDirect3DSurface9 * Image_GetSurface(GfxImage *image)
 }
 
 /* line 1130 */
-__attribute__((naked))
+extern int R_AvailableTextureMemory(void);
+
 void R_SetPicmip(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1130 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "calll R_AvailableTextureMemory\n" /* line 1139 */
-        "movl %eax, %edi\n" /* texMemInMegs */
-        "movl imp_ri, %ebx\n" /* line 1140 */
-        "movl $str_00222ab4, (%esp)\n" /* "sys_sysMB" */
-        "calll *0xe0(%ebx)\n"
-        "movl %eax, %esi\n" /* sysMemInMegs */
-        "movl imp_r_picmip_manual, %eax\n" /* line 1143 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfe75e4_000e779f\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1151 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfe75e4_000e773c\n"
-        "movl $str_00225308, 4(%esp)\n" /* line 1184 */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        "movl $2, imageGlobals+8192\n" /* line 1225 */
-        "movl $2, imageGlobals+8196\n" /* line 1226 */
-        "movl $2, imageGlobals+8200\n" /* line 1227 */
-        "cmpl $0x17f, %esi\n" /* line 1230 | sysMemInMegs */
-        "ja .Lfe75e4_000e77f6\n"
-        "movl $2, %eax\n"
-        "cmpl %eax, imageGlobals+8192\n" /* line 1239 */
-        "jl .Lfe75e4_000e7790\n"
-        ".Lfe75e4_000e7677:\n"
-        "xorl %edx, %edx\n"
-        ".Lfe75e4_000e7679:\n"
-        "cmpl %eax, imageGlobals+8196\n" /* line 1244 */
-        "jge .Lfe75e4_000e768b\n"
-        "movl %eax, imageGlobals+8196\n" /* line 1246 */
-        "movl $1, %edx\n"
-        ".Lfe75e4_000e768b:\n"
-        "cmpl %eax, imageGlobals+8200\n" /* line 1249 */
-        "jge .Lfe75e4_000e77e3\n"
-        "movl %eax, imageGlobals+8200\n" /* line 1251 */
-        ".Lfe75e4_000e769c:\n"
-        "movl %esi, 8(%esp)\n" /* line 1255 | sysMemInMegs */
-        "movl $str_00225330, 4(%esp)\n" /* "Reducing texture detail based on total system memory of %i M" */
-        "movl $0, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "movl imp_r_picmip, %edx\n"
-        ".Lfe75e4_000e76bc:\n"
-        "movl imp_ri, %ebx\n" /* line 1258 */
-        "movl imageGlobals+8192, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x98(%ebx)\n"
-        "movl imageGlobals+8196, %eax\n" /* line 1259 */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_r_picmip_bump, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x98(%ebx)\n"
-        "movl imageGlobals+8200, %eax\n" /* line 1260 */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_r_picmip_spec, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x98(%ebx)\n"
-        "movl imageGlobals+8200, %eax\n" /* line 1262 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl imageGlobals+8196, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl imageGlobals+8192, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00225388, 4(%esp)\n" /* "Using picmip %i on most textures, %i on normal maps, and %i " */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1268 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe75e4_000e773c:\n"
-        "movl $str_002252d4, 4(%esp)\n" /* line 1153 */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        "cmpl $0x80, %edi\n" /* line 1163 | texMemInMegs */
-        "jbe .Lfe75e4_000e7808\n"
-        "movl $1, imageGlobals+8192\n" /* line 1166 */
-        "movl $1, imageGlobals+8196\n" /* line 1167 */
-        "movl $1, imageGlobals+8200\n" /* line 1168 */
-        ".Lfe75e4_000e7777:\n"
-        "cmpl $0x17f, %esi\n" /* line 1176 | sysMemInMegs */
-        "ja .Lfe75e4_000e77eb\n"
-        "movl $1, %eax\n" /* line 1268 */
-        ".Lfe75e4_000e7784:\n"
-        "cmpl %eax, imageGlobals+8192\n" /* line 1239 */
-        "jge .Lfe75e4_000e7677\n"
-        ".Lfe75e4_000e7790:\n"
-        "movl %eax, imageGlobals+8192\n" /* line 1241 */
-        "movl $1, %edx\n"
-        "jmp .Lfe75e4_000e7679\n"
-        ".Lfe75e4_000e779f:\n"
-        "movl $str_002252b8, 4(%esp)\n" /* line 1145 */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        "movl imp_r_picmip, %edx\n" /* line 1146 */
-        "movl (%edx), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, imageGlobals+8192\n"
-        "movl imp_r_picmip_bump, %eax\n" /* line 1147 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, imageGlobals+8196\n"
-        "movl imp_r_picmip_spec, %eax\n" /* line 1148 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, imageGlobals+8200\n"
-        "jmp .Lfe75e4_000e76bc\n"
-        ".Lfe75e4_000e77e3:\n"
-        "testb %dl, %dl\n" /* line 1254 */
-        "jne .Lfe75e4_000e769c\n"
-        ".Lfe75e4_000e77eb:\n"
-        "movl imp_r_picmip, %edx\n"
-        "jmp .Lfe75e4_000e76bc\n"
-        ".Lfe75e4_000e77f6:\n"
-        "cmpl $0x1df, %esi\n" /* line 1232 | sysMemInMegs */
-        "ja .Lfe75e4_000e77eb\n"
-        "movl $1, %eax\n" /* line 1268 */
-        "jmp .Lfe75e4_000e7784\n"
-        ".Lfe75e4_000e7808:\n"
-        "movl $2, imageGlobals+8192\n" /* line 1172 */
-        "movl $2, imageGlobals+8196\n" /* line 1173 */
-        "movl $2, imageGlobals+8200\n" /* line 1174 */
-        "jmp .Lfe75e4_000e7777\n"
-    );
+    byte *ri = (byte *)imp_ri;
+    void (*ri_Printf)(int, const char *, ...) = *(void (**)(int, const char *, ...))ri;
+    void (*Cvar_SetValue)(void *, int) = *(void (**)(void *, int))(ri + 0x98);
+    int (*Cvar_VariableIntegerValue)(const char *) = *(int (**)(const char *))(ri + 0xe0);
+    int texMemInMegs, sysMemInMegs;
+    int minPicmip;
+    int changed;
+
+    texMemInMegs = R_AvailableTextureMemory();
+    sysMemInMegs = Cvar_VariableIntegerValue("sys_sysMB");
+
+    /* Manual picmip override */
+    if (*(byte *)(*(char **)imp_r_picmip_manual + 8)) {
+        ri_Printf(0, "Using manual picmip settings\n");
+        imageGlobals[2048] = *(int *)(*(char **)imp_r_picmip + 8);
+        imageGlobals[2049] = *(int *)(*(char **)imp_r_picmip_bump + 8);
+        imageGlobals[2050] = *(int *)(*(char **)imp_r_picmip_spec + 8);
+    } else if (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2) {
+        /* Dx7 renderer */
+        ri_Printf(0, "Dx7 renderer: using low-res textures\n");
+        if (texMemInMegs > 128) {
+            imageGlobals[2048] = 1;
+            imageGlobals[2049] = 1;
+            imageGlobals[2050] = 1;
+        } else {
+            imageGlobals[2048] = 2;
+            imageGlobals[2049] = 2;
+            imageGlobals[2050] = 2;
+        }
+
+        /* Apply system memory constraints */
+        if (sysMemInMegs <= 383) {
+            minPicmip = 1;
+            goto apply_sysmem;
+        }
+    } else {
+        /* Non-Dx7 renderer */
+        ri_Printf(0, "Using non-Dx7 renderer\n");
+        imageGlobals[2048] = 2;
+        imageGlobals[2049] = 2;
+        imageGlobals[2050] = 2;
+
+        if (sysMemInMegs <= 383) {
+            if (sysMemInMegs <= 479) {
+                minPicmip = 1;
+                goto apply_sysmem;
+            }
+        } else {
+            minPicmip = 2;
+apply_sysmem:
+            changed = 0;
+            if (imageGlobals[2048] < minPicmip) {
+                imageGlobals[2048] = minPicmip;
+                changed = 1;
+            }
+            if (imageGlobals[2049] < minPicmip) {
+                imageGlobals[2049] = minPicmip;
+                changed = 1;
+            }
+            if (imageGlobals[2050] < minPicmip) {
+                imageGlobals[2050] = minPicmip;
+                changed = 1;
+            } else if (!changed) {
+                goto set_cvars;
+            }
+            ri_Printf(0, "Reducing texture detail based on total system memory of %i M", sysMemInMegs);
+        }
+    }
+
+set_cvars:
+    /* Set cvar values to match computed picmip levels */
+    ri = (byte *)imp_ri;
+    Cvar_SetValue = *(void (**)(void *, int))(ri + 0x98);
+    ri_Printf = *(void (**)(int, const char *, ...))ri;
+    Cvar_SetValue(*(void **)imp_r_picmip, imageGlobals[2048]);
+    Cvar_SetValue(*(void **)imp_r_picmip_bump, imageGlobals[2049]);
+    Cvar_SetValue(*(void **)imp_r_picmip_spec, imageGlobals[2050]);
+    ri_Printf(0, "Using picmip %i on most textures, %i on normal maps, and %i on spec maps",
+        imageGlobals[2048], imageGlobals[2049], imageGlobals[2050]);
 }
 
 /* line 1301 */
