@@ -28,8 +28,8 @@ extern int R_InitFonts(void);
 extern void R_InitLightDefs(void);
 extern void R_ClearFogs(void);
 extern void R_InitDebug(void);
-extern void R_AllocStaticVertexBuffer(void *outBuf, int size);
-extern void R_AllocStaticIndexBuffer(void *outBuf, int size);
+extern void * R_AllocStaticVertexBuffer(void *outBuf, int size);
+extern void * R_AllocStaticIndexBuffer(void *outBuf, int size);
 extern void R_FinishStaticVertexBuffer(void *buf);
 extern void R_FinishStaticIndexBuffer(void *buf);
 extern int rand(void);
@@ -119,12 +119,8 @@ static void R_CreateParticleCloudBuffer(void)
     int xIter, yIter, zIter, corner;
     int vertexIndex = 0;
 
-    R_AllocStaticVertexBuffer(&dx + 11704/4, 0x14000);
-    R_AllocStaticIndexBuffer(&dx + 11708/4, 0x3000);
-
-    /* These are actually byte pointers into mapped buffers */
-    verts = *(float **)((byte *)&dx + 11704);
-    indices = *(unsigned short **)((byte *)&dx + 11708);
+    verts = R_AllocStaticVertexBuffer((IDirect3DVertexBuffer9 **)((byte *)&dx + 11704), 0x14000);
+    indices = R_AllocStaticIndexBuffer((IDirect3DIndexBuffer9 **)((byte *)&dx + 11708), 0x3000);
 
     for (xIter = 0; xIter < 8; xIter++) {
         float xBase = (float)xIter;
