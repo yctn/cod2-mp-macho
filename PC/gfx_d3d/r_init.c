@@ -28,6 +28,11 @@ extern int R_InitFonts(void);
 extern void R_InitLightDefs(void);
 extern void R_ClearFogs(void);
 extern void R_InitDebug(void);
+extern void R_AllocStaticVertexBuffer(void *outBuf, int size);
+extern void R_AllocStaticIndexBuffer(void *outBuf, int size);
+extern void R_FinishStaticVertexBuffer(void *buf);
+extern void R_FinishStaticIndexBuffer(void *buf);
+extern int rand(void);
 extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern Bool Sys_IsMainThread(void);
 extern void R_SyncRenderThread(void);
@@ -85,8 +90,65 @@ const char * R_ErrorDescription(HRESULT hr)
 }
 
 /* line 629 */
-static __attribute__((naked))
-void R_CreateParticleCloudBuffer(void)
+/* line 629 — Create static vertex+index buffers for particle cloud rendering.
+ * Generates 8x8x16 = 1024 particles, each with 4 vertices and 6 indices.
+ * Vertices have randomized positions + corner texcoords. */
+static void R_CreateParticleCloudBuffer(void)
+{
+    float *verts;
+    unsigned short *indices;
+    int xIter, yIter, zIter, corner;
+    int vertexIndex = 0;
+
+    R_AllocStaticVertexBuffer(&dx + 11704/4, 0x14000);
+    R_AllocStaticIndexBuffer(&dx + 11708/4, 0x3000);
+
+    /* These are actually byte pointers into mapped buffers */
+    verts = *(float **)((byte *)&dx + 11704);
+    indices = *(unsigned short **)((byte *)&dx + 11708);
+
+    for (xIter = 0; xIter < 8; xIter++) {
+        float xBase = (float)xIter;
+        int baseVertForX = xIter * 128; /* 8*16 particles per X slice, 4 verts each */
+
+        for (yIter = 0; yIter < 8; yIter++) {
+            float yBase = (float)yIter;
+
+            for (zIter = 0; zIter < 16; zIter++) {
+                /* Randomized particle position: map to [-1,1] cube */
+                float px = ((float)rand() * 4.656612873077393e-10f + xBase) * 0.25f - 1.0f;
+                float py = ((float)rand() * 4.656612873077393e-10f + yBase) * 0.25f - 1.0f;
+                float pz = ((float)rand() * 4.656612873077393e-10f + (float)zIter) * 0.125f - 1.0f;
+
+                /* 4 vertices per particle (billboard corners) */
+                for (corner = 0; corner < 4; corner++) {
+                    /* position (vec3) */
+                    *verts++ = px;
+                    *verts++ = py;
+                    *verts++ = pz;
+                    /* texcoord (vec2) from cornerTexCoords */
+                    *verts++ = cornerTexCoords[corner][0];
+                    *verts++ = cornerTexCoords[corner][1];
+                }
+
+                /* 6 indices per particle (2 triangles) from quadIndices template */
+                {
+                    int baseVert = (baseVertForX + zIter) * 4;
+                    int qi;
+                    for (qi = 0; qi < 6; qi++) {
+                        *indices++ = (unsigned short)(baseVert + quadIndices[qi]);
+                    }
+                }
+            }
+            baseVertForX += 16; /* advance by particles in this Y row */
+        }
+    }
+
+    R_FinishStaticIndexBuffer(*(void **)((byte *)&dx + 11708));
+    R_FinishStaticVertexBuffer(*(void **)((byte *)&dx + 11704));
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 629 */
@@ -214,6 +276,7 @@ void R_CreateParticleCloudBuffer(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 930 */
 static __attribute__((naked))
