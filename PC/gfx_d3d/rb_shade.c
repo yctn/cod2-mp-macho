@@ -18,6 +18,8 @@ extern const GfxStateOverride overrideEnableRenormalize; /* rodata.c */
 extern const DWORD s_fvfForVertDeclType[]; /* rodata.c */
 
 extern void R_FatalLockError(HRESULT hr);
+extern void R_Error(int level, const char *msg, ...);
+extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Memcpy(void *dest, const void *src, int count);
 extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 extern void RB_UpdateViewport(void);
@@ -30,6 +32,7 @@ static inline char *RB_TessBase(void)
 
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
 int RB_SetIndexData(const r_index_t *indices, int indexCount);
+static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samplerState);
 static void RB_GetTextureFromCode(void);
 static void RB_SetEntityHwLightsDx7(void);
 void RB_CreateDynamicBuffers(void);
@@ -117,281 +120,194 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
     return baseIndex;
 }
 
+static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samplerState)
+{
+    char *rgp = (char *)imp_rgp;
+    char *tess;
+    char *backEnd = (char *)imp_backEnd;
+    char *dx = (char *)imp_dx;
+    int lmapIdx;
+    char *drawSurfs;
+    int idx;
+
+    switch (codeTexture) {
+    default:
+        *samplerState = 0;
+        *image = NULL;
+        return;
+
+    case 0: /* white image */
+        *image = *(void **)(rgp + 0x100c);
+        *samplerState = 1;
+        return;
+
+    case 1: /* black image */
+        *image = *(void **)(rgp + 0x1008);
+        *samplerState = 1;
+        return;
+
+    case 2:
+        *image = *(void **)(rgp + 0x1010);
+        *samplerState = 1;
+        return;
+
+    case 3:
+        *image = *(void **)(rgp + 0x1014);
+        *samplerState = 0x32;
+        return;
+
+    case 4: { /* smodelLighting */
+        char *surfs = *(char **)(rgp + 0x109c);
+        if (!surfs || !*(void **)(surfs + 0x10c))
+            Com_Error(1, str_002266cc);
+        *image = *(void **)((char *)*(char **)(rgp + 0x109c) + 0x10c);
+        *samplerState = 0x72;
+        return;
+    }
+
+    case 5:
+    case 6:
+        *image = *(void **)(rgp + 0x1008 + codeTexture * 4);
+        *samplerState = 0x32;
+        return;
+
+    case 7:
+        *image = *(void **)(rgp + 0x1018);
+        *samplerState = 0x32;
+        return;
+
+    case 8:
+    case 9:
+    case 10:
+    case 11: { /* lightmap */
+        tess = (char *)imp_tess;
+        lmapIdx = *(int *)(tess + 0x5a7c4);
+        if (lmapIdx == 0x1f) {
+            char *mat = *(char **)(tess + 0x5a7bc);
+            R_Error(0, str_00226700, *(char **)mat);
+            tess = (char *)imp_tess;
+            lmapIdx = *(int *)(tess + 0x5a7c4);
+        }
+        drawSurfs = *(char **)(rgp + 0x109c);
+        *image = *(void **)(*(char **)(drawSurfs + 0x108) + lmapIdx * 16 + codeTexture * 4 - 0x20);
+        *samplerState = 0x32;
+        /* r_lightMap debug mode override */
+        {
+            int mode = *(int *)((char *)*(void **)imp_r_lightMap + 8);
+            if (mode == 1) {
+                *image = *(void **)(rgp + 0x1008);
+                *samplerState = 1;
+            } else if (mode == 2) {
+                *image = *(void **)(rgp + 0x100c);
+                *samplerState = 1;
+            }
+        }
+        return;
+    }
+
+    case 12:
+        *image = *(void **)(dx + 0x2c80);
+        *samplerState = 0x32;
+        return;
+
+    case 13:
+        *image = *(void **)(backEnd + 0x2e8c);
+        *samplerState = 0x32;
+        return;
+
+    case 14:
+        idx = *(int *)(backEnd + 0x2e84);
+        *image = *(void **)(dx + 0x2c30 + idx * 20);
+        *samplerState = 0x32;
+        return;
+
+    case 15:
+        idx = *(int *)(backEnd + 0x2e88);
+        *image = *(void **)(dx + 0x2c30 + idx * 20);
+        *samplerState = 0x32;
+        return;
+
+    case 16: { /* sky sampler */
+        drawSurfs = *(char **)(rgp + 0x109c);
+        if (!drawSurfs || !*(void **)(drawSurfs + 0x20))
+            R_Error(1, str_00226828);
+        drawSurfs = *(char **)(rgp + 0x109c);
+        *image = *(void **)(drawSurfs + 0x20);
+        *samplerState = *(byte *)(drawSurfs + 0x24);
+        return;
+    }
+
+    case 17: { /* shadow cookie 0 */
+        char *entry = *(char **)(backEnd + 0x2ed0);
+        *image = *(void **)(entry + 0x0c);
+        *samplerState = *(byte *)(entry + 0x10);
+        return;
+    }
+
+    case 18: { /* shadow cookie 1 */
+        char *entry = *(char **)(backEnd + 0x2ed0 + 68);
+        *image = *(void **)(entry + 0x0c);
+        *samplerState = *(byte *)(entry + 0x10);
+        return;
+    }
+
+    case 19: { /* shadow cookie conditional */
+        int sc_on = *(byte *)((char *)*(void **)imp_sc_enable + 8);
+        if (sc_on) {
+            char *entity = *(char **)(backEnd + 0x440);
+            if (*(int *)entity > 2 || (*(byte *)(entity + 5) & 1)) {
+                *image = *(void **)(dx + 0x2c6c);
+                *samplerState = 0x32;
+                return;
+            }
+        }
+        *image = *(void **)(rgp + 0x1008);
+        *samplerState = 0x32;
+        return;
+    }
+
+    case 20: { /* outdoor sampler */
+        drawSurfs = *(char **)(rgp + 0x109c);
+        if (!drawSurfs || !*(void **)(drawSurfs + 0x200))
+            R_Error(1, str_002267f4);
+        *image = *(void **)((char *)*(char **)(rgp + 0x109c) + 0x200);
+        *samplerState = 0x32;
+        return;
+    }
+
+    case 21:
+        *image = NULL;
+        *samplerState = 0x31;
+        return;
+
+    case 22:
+        *image = *(void **)(rgp + 0x10a0);
+        *samplerState = 0x32;
+        return;
+
+    case 23:
+        *image = *(void **)(rgp + 0x10a4);
+        *samplerState = 0x32;
+        return;
+    }
+}
+
 /* line 522 */
 static __attribute__((naked))
 void RB_GetTextureFromCode(void)
 {
+    /* Marshal register args (eax=codeTexture, edx=image, ecx=samplerState)
+     * to standard C calling convention */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 522 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl %eax, %ebx\n" /* codeTexture */
-        "movl %edx, %esi\n" /* image */
-        "movl %ecx, %edi\n" /* samplerState */
-        "cmpl $0x17, %eax\n" /* line 527 */
-        "ja .Lff6f78_000f6f93\n"
-        "jmpl *.Ljt_f6f78_0(, %eax, 4)\n"
-        ".Lff6f78_000f6f93:\n"
-        "movb $0, (%ecx)\n" /* line 659 */
-        "movl $0, (%edx)\n" /* line 660 */
-        ".Lff6f78_000f6f9c:\n"
-        "addl $0x1c, %esp\n" /* line 663 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll RB_GetTextureFromCode_impl\n"
+        "addl $12, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lff6f78_000f6fa4:\n"
-        "movl imp_rgp, %eax\n" /* line 530 */
-        "movl 0x100c(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $1, (%ecx)\n" /* line 531 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f6fb6:\n"
-        "movl imp_rgp, %eax\n" /* line 535 */
-        "movl 0x1008(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $1, (%ecx)\n" /* line 536 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f6fc8:\n"
-        "movl imp_rgp, %eax\n" /* line 540 */
-        "movl 0x1010(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $1, (%ecx)\n" /* line 541 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f6fda:\n"
-        "movl imp_rgp, %eax\n" /* line 545 */
-        "movl 0x1014(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%ecx)\n" /* line 546 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f6fec:\n"
-        "movl imp_rgp, %ebx\n" /* line 550 | codeTexture */
-        "movl 0x109c(%ebx), %eax\n" /* codeTexture */
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f725b\n"
-        "movl 0x10c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f725b\n"
-        ".Lff6f78_000f700e:\n"
-        "movl 0x109c(%ebx), %eax\n" /* line 552 | codeTexture */
-        "movl 0x10c(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x72, (%edi)\n" /* line 553 | samplerState */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f7024:\n"
-        "movl imp_rgp, %eax\n" /* line 558 */
-        "movl 0x1008(%eax, %ebx, 4), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%ecx)\n" /* line 559 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f703a:\n"
-        "movl imp_rgp, %eax\n" /* line 563 */
-        "movl 0x1018(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%ecx)\n" /* line 564 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f704f:\n"
-        "movl imp_tess, %eax\n" /* line 572 */
-        "cmpl $0x1f, 0x5a7c4(%eax)\n"
-        "je .Lff6f78_000f729d\n"
-        "movl %eax, %edx\n"
-        ".Lff6f78_000f7063:\n"
-        "movl imp_rgp, %ecx\n" /* line 582 */
-        "movl 0x5a7c4(%edx), %eax\n"
-        "shll $4, %eax\n"
-        "leal (%eax, %ebx, 4), %eax\n"
-        "movl 0x109c(%ecx), %edx\n"
-        "addl 0x108(%edx), %eax\n"
-        "movl -0x20(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x32, (%edi)\n" /* line 583 | samplerState */
-        "movl imp_r_lightMap, %eax\n" /* line 452 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f6f9c\n"
-        "cmpl $1, %eax\n" /* line 455 */
-        "je .Lff6f78_000f728d\n"
-        "cmpl $2, %eax\n" /* line 462 */
-        "jne .Lff6f78_000f6f9c\n"
-        "movl 0x100c(%ecx), %eax\n" /* line 464 */
-        "movl %eax, (%esi)\n"
-        "movb $1, (%edi)\n" /* line 465 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f70bd:\n"
-        "movl imp_dx, %eax\n" /* line 595 */
-        "movl 0x2c80(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%ecx)\n" /* line 596 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f70d2:\n"
-        "movl imp_backEnd, %eax\n" /* line 609 */
-        "movl 0x2e8c(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%ecx)\n" /* line 610 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f70e7:\n"
-        "movl imp_backEnd, %eax\n" /* line 614 */
-        "movl 0x2e84(%eax), %eax\n"
-        ".Lff6f78_000f70f2:\n"
-        "leal (%eax, %eax, 4), %eax\n" /* line 619 */
-        "shll $2, %eax\n"
-        "addl imp_dx, %eax\n"
-        "movl 0x2c30(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x32, (%edi)\n" /* line 648 | samplerState */
-        ".Lff6f78_000f7109:\n"
-        "addl $0x1c, %esp\n" /* line 663 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lff6f78_000f7111:\n"
-        "movl imp_backEnd, %eax\n" /* line 619 */
-        "movl 0x2e88(%eax), %eax\n"
-        "jmp .Lff6f78_000f70f2\n"
-        ".Lff6f78_000f711e:\n"
-        "movl imp_rgp, %ebx\n" /* line 624 | codeTexture */
-        "movl 0x109c(%ebx), %eax\n" /* codeTexture */
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f7242\n"
-        "movl 0x20(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f7242\n"
-        ".Lff6f78_000f713d:\n"
-        "movl 0x109c(%ebx), %eax\n" /* line 626 | codeTexture */
-        "movl 0x20(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movl 0x109c(%ebx), %eax\n" /* line 627 | codeTexture */
-        "movzbl 0x24(%eax), %eax\n"
-        "movb %al, (%edi)\n" /* samplerState */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f7159:\n"
-        "shll $6, %eax\n" /* line 634 */
-        "leal -0x484(%eax, %ebx, 4), %eax\n"
-        "addl imp_backEnd, %eax\n"
-        "movl 0x2ed0(%eax), %edx\n"
-        "movl 0xc(%edx), %edx\n"
-        "movl %edx, (%esi)\n" /* image */
-        "movl 0x2ed0(%eax), %eax\n" /* line 635 */
-        "movzbl 0x10(%eax), %eax\n"
-        "movb %al, (%ecx)\n"
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f7185:\n"
-        "movl imp_rgp, %ebx\n" /* line 588 | codeTexture */
-        "movl 0x109c(%ebx), %eax\n" /* codeTexture */
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f7274\n"
-        "movl 0x200(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lff6f78_000f7274\n"
-        ".Lff6f78_000f71a7:\n"
-        "movl 0x109c(%ebx), %eax\n" /* line 590 | codeTexture */
-        "movl 0x200(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x32, (%edi)\n" /* line 591 | samplerState */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f71bd:\n"
-        "movl $0, (%edx)\n" /* line 640 */
-        "movb $0x31, (%ecx)\n" /* line 641 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f71cb:\n"
-        "movl imp_sc_enable, %eax\n" /* line 600 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lff6f78_000f722d\n"
-        "movl imp_backEnd, %eax\n"
-        "movl 0x440(%eax), %eax\n"
-        "cmpl $2, (%eax)\n"
-        "jg .Lff6f78_000f71ee\n"
-        "testb $1, 5(%eax)\n"
-        "je .Lff6f78_000f722d\n"
-        ".Lff6f78_000f71ee:\n"
-        "movl imp_dx, %eax\n" /* line 602 */
-        "movl 0x2c6c(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x32, (%edi)\n" /* line 648 | samplerState */
-        "jmp .Lff6f78_000f7109\n"
-        ".Lff6f78_000f7203:\n"
-        "movl imp_rgp, %eax\n" /* line 652 */
-        "movl 0x10a0(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%edi)\n" /* line 648 | samplerState */
-        "jmp .Lff6f78_000f7109\n"
-        ".Lff6f78_000f7218:\n"
-        "movl imp_rgp, %eax\n" /* line 647 */
-        "movl 0x10a4(%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0x32, (%edi)\n" /* line 648 | samplerState */
-        "jmp .Lff6f78_000f7109\n"
-        ".Lff6f78_000f722d:\n"
-        "movl imp_rgp, %eax\n" /* line 604 */
-        "movl 0x1008(%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* image */
-        "movb $0x32, (%edi)\n" /* line 648 | samplerState */
-        "jmp .Lff6f78_000f7109\n"
-        ".Lff6f78_000f7242:\n"
-        "movl $str_00226828, 4(%esp)\n" /* line 625 */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lff6f78_000f713d\n"
-        ".Lff6f78_000f725b:\n"
-        "movl $str_002266cc, 4(%esp)\n" /* line 551 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lff6f78_000f700e\n"
-        ".Lff6f78_000f7274:\n"
-        "movl $str_002267f4, 4(%esp)\n" /* line 589 */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lff6f78_000f71a7\n"
-        ".Lff6f78_000f728d:\n"
-        "movl 0x1008(%ecx), %eax\n" /* line 457 */
-        "movl %eax, (%esi)\n"
-        "movb $1, (%edi)\n" /* line 458 */
-        "jmp .Lff6f78_000f6f9c\n"
-        ".Lff6f78_000f729d:\n"
-        "movl 0x5a7bc(%eax), %eax\n" /* line 580 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00226700, 4(%esp)\n" /* "Material '%s' tried to use a lightmap but doesn't have one s" */
-        "movl $0, (%esp)\n"
-        "calll R_Error\n"
-        "movl imp_tess, %edx\n"
-        "jmp .Lff6f78_000f7063\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_f6f78_0:\n"
-        ".long .Lff6f78_000f6fa4\n"
-        ".long .Lff6f78_000f6fb6\n"
-        ".long .Lff6f78_000f6fc8\n"
-        ".long .Lff6f78_000f6fda\n"
-        ".long .Lff6f78_000f6fec\n"
-        ".long .Lff6f78_000f7024\n"
-        ".long .Lff6f78_000f7024\n"
-        ".long .Lff6f78_000f703a\n"
-        ".long .Lff6f78_000f704f\n"
-        ".long .Lff6f78_000f704f\n"
-        ".long .Lff6f78_000f704f\n"
-        ".long .Lff6f78_000f704f\n"
-        ".long .Lff6f78_000f70bd\n"
-        ".long .Lff6f78_000f70d2\n"
-        ".long .Lff6f78_000f70e7\n"
-        ".long .Lff6f78_000f7111\n"
-        ".long .Lff6f78_000f711e\n"
-        ".long .Lff6f78_000f7159\n"
-        ".long .Lff6f78_000f7159\n"
-        ".long .Lff6f78_000f71cb\n"
-        ".long .Lff6f78_000f7185\n"
-        ".long .Lff6f78_000f71bd\n"
-        ".long .Lff6f78_000f7203\n"
-        ".long .Lff6f78_000f7218\n"
-        ".text\n"
     );
 }
 

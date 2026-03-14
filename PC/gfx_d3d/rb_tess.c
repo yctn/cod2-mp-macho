@@ -46,6 +46,11 @@ void RB_TessParticleCloud(const GfxEntity *re);
 void RB_TessXModelRigid(const surfaceType_t *surfType);
 static void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1);
 static void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1);
+static void RB_AddQuadStampDx7_impl(const vec_t *origin, const vec_t *left, const vec_t *up, int nativeColor, float s0, float t0, float s1, float t1);
+static void RB_AddQuadStamp_impl(const vec_t *origin, const vec_t *left, const vec_t *up, int nativeColor, float s0, float t0, float s1, float t1);
+static void RB_BuildSprite_impl(const char *re, const float *worldRadius);
+static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
+static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
 static void RB_BuildSprite(void);
 static void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
 static void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
@@ -575,854 +580,385 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
     );
 }
 
+/* Calling convention: eax=re, edx=worldRadius (float[2]) */
+static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
+{
+    float worldOrigin[3], left[3], up[3];
+    float scale, angle, sinA, cosA;
+    int nativeColor;
+    int ncols, nrows, totalFrames, frame, row, col;
+    float s0, t0, s1, t1;
+    char *backEnd, *viewParms;
+    char *material;
+    char *r_rendererInUse;
+
+    /* Copy origin from re->0x3c */
+    worldOrigin[0] = *(float *)(re + 0x3c);
+    worldOrigin[1] = *(float *)(re + 0x40);
+    worldOrigin[2] = *(float *)(re + 0x44);
+
+    /* Flag at re+5 bit 0x10: if set, offset z by worldRadius[1] */
+    if (*(unsigned char *)(re + 5) & 0x10) {
+        worldOrigin[2] += worldRadius[1];
+    }
+
+    /* re->0x6c = rotation angle */
+    angle = *(float *)(re + 0x6c);
+
+    backEnd = (char *)imp_backEnd;
+    viewParms = *(char **)(backEnd + 0x3c8);
+
+    if (angle == 0.0f) {
+        /* Scale left axis by worldRadius[0], up axis by worldRadius[1] */
+        scale = worldRadius[0];
+        left[0] = *(float *)(viewParms + 0x18) * scale;
+        left[1] = *(float *)(viewParms + 0x1c) * scale;
+        left[2] = *(float *)(viewParms + 0x20) * scale;
+        scale = worldRadius[1];
+        up[0] = *(float *)(viewParms + 0x24) * scale;
+        up[1] = *(float *)(viewParms + 0x28) * scale;
+        up[2] = *(float *)(viewParms + 0x2c) * scale;
+    } else {
+        /* Apply rotation: angle in degrees -> radians */
+        float radians = (float)((double)angle * 0.017453292519943295);
+        sinA = sinf(radians);
+        cosA = cosf(radians);
+
+        /* left = cos*worldRadius[0]*leftAxis + (-sin)*worldRadius[0]*upAxis */
+        left[0] = cosA * worldRadius[0] * *(float *)(viewParms + 0x18)
+                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x24);
+        left[1] = cosA * worldRadius[0] * *(float *)(viewParms + 0x1c)
+                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x28);
+        left[2] = cosA * worldRadius[0] * *(float *)(viewParms + 0x20)
+                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x2c);
+
+        /* up = cos*worldRadius[1]*upAxis + sin*worldRadius[1]*leftAxis */
+        up[0] = cosA * worldRadius[1] * *(float *)(viewParms + 0x24)
+              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x18);
+        up[1] = cosA * worldRadius[1] * *(float *)(viewParms + 0x28)
+              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x1c);
+        up[2] = cosA * worldRadius[1] * *(float *)(viewParms + 0x2c)
+              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x20);
+    }
+
+    /* nativeColor from re->0x5b,0x58,0x59,0x5a (byte order) */
+    ((unsigned char *)&nativeColor)[0] = *(unsigned char *)(re + 0x5b);
+    ((unsigned char *)&nativeColor)[1] = *(unsigned char *)(re + 0x58);
+    ((unsigned char *)&nativeColor)[2] = *(unsigned char *)(re + 0x59);
+    ((unsigned char *)&nativeColor)[3] = *(unsigned char *)(re + 0x5a);
+
+    /* Animation frame UVs */
+    material = *(char **)(re + 0x54);
+    ncols = *(unsigned char *)(material + 0x0e);
+    nrows = *(unsigned char *)(material + 0x0f);
+    totalFrames = ncols * nrows;
+
+    if (totalFrames == 1) {
+        s0 = 0.0f; t0 = 0.0f; s1 = 1.0f; t1 = 1.0f;
+    } else {
+        float inv_nrows = 1.0f / (float)nrows;
+        float inv_ncols = 1.0f / (float)ncols;
+        frame = *(int *)(re + 0x60);
+        row = frame / nrows;
+        col = frame % nrows;
+        s0 = (float)col * inv_nrows;
+        t0 = (float)row * inv_ncols;
+        s1 = s0 + inv_nrows;
+        t1 = t0 + inv_ncols;
+    }
+
+    /* Dispatch to renderer */
+    r_rendererInUse = *(char **)imp_r_rendererInUse;
+    if (*(int *)(r_rendererInUse + 8) == 2) {
+        RB_AddQuadStampDx7_impl(worldOrigin, left, up, nativeColor, s0, t0, s1, t1);
+    } else {
+        RB_AddQuadStamp_impl(worldOrigin, left, up, nativeColor, s0, t0, s1, t1);
+    }
+}
+
 /* line 299 */
 static __attribute__((naked))
 void RB_BuildSprite(void)
 {
+    /* Marshal register args (eax=re, edx=worldRadius) to standard C calling convention */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 299 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "movl %eax, %ebx\n" /* re */
-        "movl %edx, %esi\n" /* worldRadius */
-        /* { scope 1 */
-        "leal 0x3c(%eax), %eax\n" /* line 317 | from */
-        /* { scope 2 */
-        "movl 0x3c(%ebx), %edx\n" /* line 199 */
-        "movl %edx, -0x28(%ebp)\n" /* worldOrigin */
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, -0x24(%ebp)\n"
-        "movss 8(%eax), %xmm0\n" /* line 201 */
-        "movss %xmm0, -0x20(%ebp)\n"
-        /* } scope */
-        "testb $0x10, 5(%ebx)\n" /* line 319 | re */
-        "jne .Lfff02e_000ff17d\n"
-        "leal 4(%esi), %edi\n" /* worldRadius */
-        "movss 0x6c(%ebx), %xmm0\n" /* line 322 | re */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jne .Lfff02e_000ff19c\n"
-        ".Lfff02e_000ff073:\n"
-        "jp .Lfff02e_000ff19c\n"
-        "movss (%esi), %xmm1\n" /* line 324 | worldRadius, scale */
-        "movl imp_backEnd, %eax\n"
-        "movl 0x3c8(%eax), %eax\n"
-        "leal 0x18(%eax), %edx\n" /* v */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss 0x18(%eax), %xmm0\n"
-        "movss %xmm0, -0x34(%ebp)\n" /* left */
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 4(%edx), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "mulss 8(%edx), %xmm1\n" /* line 274 */
-        "movss %xmm1, -0x2c(%ebp)\n"
-        /* } scope */
-        "movss (%edi), %xmm1\n" /* line 325 | scale */
-        "leal 0x24(%eax), %edx\n" /* v */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss 0x24(%eax), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n" /* up */
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 4(%edx), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "mulss 8(%edx), %xmm1\n" /* line 274 */
-        "movss %xmm1, -0x38(%ebp)\n"
-        /* } scope */
-        ".Lfff02e_000ff0da:\n"
-        "movzbl 0x5b(%ebx), %eax\n" /* line 341 | re */
-        "movb %al, -0x1c(%ebp)\n" /* nativeColor */
-        "movzbl 0x58(%ebx), %eax\n" /* line 342 | re */
-        "movb %al, -0x1b(%ebp)\n"
-        "movzbl 0x59(%ebx), %eax\n" /* line 343 | re */
-        "movb %al, -0x1a(%ebp)\n"
-        "movzbl 0x5a(%ebx), %eax\n" /* line 344 | re */
-        "movb %al, -0x19(%ebp)\n"
-        /* { scope 2 */
-        "movl 0x54(%ebx), %eax\n" /* line 207 */
-        "movzbl 0xe(%eax), %ecx\n" /* line 266 */
-        "movzbl 0xf(%eax), %edx\n"
-        "movl %ecx, %eax\n" /* line 271 */
-        "imull %edx, %eax\n"
-        "subl $1, %eax\n"
-        "je .Lfff02e_000ff2dd\n"
-        "cvtsi2ssl %edx, %xmm1\n" /* line 283 */
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movaps %xmm0, %xmm2\n"
-        "divss %xmm1, %xmm2\n"
-        "cvtsi2ssl %ecx, %xmm1\n" /* line 284 */
-        "divss %xmm1, %xmm0\n"
-        "movl 0x60(%ebx), %eax\n" /* line 286 */
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        "cvtsi2ssl %edx, %xmm4\n"
-        "mulss %xmm2, %xmm4\n"
-        "cvtsi2ssl %eax, %xmm1\n" /* line 287 */
-        "mulss %xmm0, %xmm1\n"
-        "addss %xmm4, %xmm2\n" /* line 288 */
-        "movaps %xmm0, %xmm3\n" /* line 289 */
-        "addss %xmm1, %xmm3\n"
-        /* } scope */
-        ".Lfff02e_000ff14d:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 352 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfff02e_000ff2be\n"
-        "leal -0x40(%ebp), %ecx\n" /* line 358 | up */
-        "leal -0x34(%ebp), %edx\n" /* left */
-        "leal -0x28(%ebp), %eax\n" /* worldOrigin */
-        "movl -0x1c(%ebp), %ebx\n" /* nativeColor, re */
-        "movl %ebx, (%esp)\n" /* re */
-        "movaps %xmm4, %xmm0\n"
-        "calll RB_AddQuadStamp\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 359 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll RB_BuildSprite_impl\n"
+        "addl $8, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfff02e_000ff17d:\n"
-        "leal 4(%esi), %edi\n" /* line 320 | worldRadius */
-        "addss 4(%esi), %xmm0\n" /* worldRadius */
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movss 0x6c(%ebx), %xmm0\n" /* line 322 | re */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "je .Lfff02e_000ff073\n"
-        ".Lfff02e_000ff19c:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 329 */
-        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n" /* angle */
-        "movss %xmm0, (%esp)\n" /* line 485 */
-        "calll sinf\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm3\n"
-        "movss -0x4c(%ebp), %xmm0\n" /* line 486 | angle */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm3, -0x68(%ebp)\n"
-        "calll cosf\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm2\n"
-        "movaps %xmm2, %xmm1\n" /* line 332 | scale */
-        "mulss (%esi), %xmm1\n" /* worldRadius, scale */
-        "movl imp_backEnd, %eax\n"
-        "movl 0x3c8(%eax), %eax\n"
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss 0x18(%eax), %xmm0\n"
-        "movss %xmm0, -0x34(%ebp)\n" /* left */
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 0x1c(%eax), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "mulss 0x20(%eax), %xmm1\n" /* line 274 */
-        "movss %xmm1, -0x2c(%ebp)\n"
-        /* } scope */
-        "movss -0x68(%ebp), %xmm3\n" /* line 333 */
-        "movaps %xmm3, %xmm1\n" /* scale */
-        "xorps faceAxis+144, %xmm1\n" /* scale */
-        "mulss (%esi), %xmm1\n" /* worldRadius, scale */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 288 */
-        "mulss 0x24(%eax), %xmm0\n"
-        "addss -0x34(%ebp), %xmm0\n" /* left */
-        "movss %xmm0, -0x34(%ebp)\n" /* left */
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss 0x28(%eax), %xmm0\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "mulss 0x2c(%eax), %xmm1\n" /* line 290 */
-        "addss -0x2c(%ebp), %xmm1\n"
-        "movss %xmm1, -0x2c(%ebp)\n"
-        /* } scope */
-        "mulss (%edi), %xmm2\n" /* line 335 | scale */
-        /* { scope 2 */
-        "movaps %xmm2, %xmm0\n" /* line 272 */
-        "mulss 0x24(%eax), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n" /* up */
-        "movaps %xmm2, %xmm0\n" /* line 273 */
-        "mulss 0x28(%eax), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "mulss 0x2c(%eax), %xmm2\n" /* line 274 */
-        "movss %xmm2, -0x38(%ebp)\n"
-        /* } scope */
-        "mulss (%edi), %xmm3\n" /* line 336 | scale */
-        /* { scope 2 */
-        "movaps %xmm3, %xmm0\n" /* line 288 */
-        "mulss 0x18(%eax), %xmm0\n"
-        "addss -0x40(%ebp), %xmm0\n" /* up */
-        "movss %xmm0, -0x40(%ebp)\n" /* up */
-        "movaps %xmm3, %xmm0\n" /* line 289 */
-        "mulss 0x1c(%eax), %xmm0\n"
-        "addss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "mulss 0x20(%eax), %xmm3\n" /* line 290 */
-        "addss %xmm2, %xmm3\n"
-        "movss %xmm3, -0x38(%ebp)\n"
-        "jmp .Lfff02e_000ff0da\n"
-        /* } scope */
-        ".Lfff02e_000ff2be:\n"
-        "leal -0x40(%ebp), %ecx\n" /* line 354 | up */
-        "leal -0x34(%ebp), %edx\n" /* left */
-        "leal -0x28(%ebp), %eax\n" /* worldOrigin */
-        "movl -0x1c(%ebp), %ebx\n" /* nativeColor, re */
-        "movl %ebx, (%esp)\n" /* re */
-        "movaps %xmm4, %xmm0\n"
-        "calll RB_AddQuadStampDx7\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 359 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfff02e_000ff2dd:\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* line 271 | 1.0f */
-        "movaps %xmm2, %xmm3\n"
-        "pxor %xmm4, %xmm4\n"
-        "movaps %xmm4, %xmm1\n"
-        "jmp .Lfff02e_000ff14d\n"
     );
+}
+
+/* Dx7 line vertex layout: stride = 36 bytes
+ *   +0x00: vec3 position
+ *   +0x0c: vec3 normal
+ *   +0x18: DWORD color
+ *   +0x1c: float s, +0x20: float t
+ * Calling convention: eax=start, edx=end, xmm0=width, ecx=nativeColor,
+ *   xmm1=s0, xmm2=t0, xmm3=s1, 4(%esp)=t1
+ */
+static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width,
+                                D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
+{
+    char *tess = RB_TessBase();
+    char *backEnd = (char *)imp_backEnd;
+    void *savedMat;
+    int vc, ic;
+    unsigned short *indices;
+    char *v0, *v1, *v2, *v3;
+    float v1v[3], v2v[3], tangent[3], halfTangent[3], binormal[3], normal[3];
+    float *viewOrigin;
+
+    /* Flush tessellation buffer on overflow */
+    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
+        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
+        savedMat = *(void **)(tess + 0x5a7cc);
+        RB_EndSurface();
+        RB_BeginSurface(*(void **)(tess + 0x5a7bc), *(int *)(tess + 0x5a7c0), *(int *)(tess + 0x5a7c4));
+        if (*(void **)(tess + 0x5a7cc) != savedMat) {
+            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+                RB_EndSurface();
+            *(void **)(tess + 0x5a7cc) = savedMat;
+        }
+    }
+
+    /* Compute tangent = cross(start-view, end-view), normalize */
+    viewOrigin = (float *)(*(char **)(backEnd + 0x3c8));
+    v1v[0] = start[0] - viewOrigin[0]; v1v[1] = start[1] - viewOrigin[1]; v1v[2] = start[2] - viewOrigin[2];
+    v2v[0] = end[0]   - viewOrigin[0]; v2v[1] = end[1]   - viewOrigin[1]; v2v[2] = end[2]   - viewOrigin[2];
+    Vec3Cross(v1v, v2v, tangent);
+    Vec3Normalize(tangent);
+
+    halfTangent[0] = tangent[0] * width;
+    halfTangent[1] = tangent[1] * width;
+    halfTangent[2] = tangent[2] * width;
+
+    /* binormal = normalize(end - start) */
+    binormal[0] = end[0] - start[0]; binormal[1] = end[1] - start[1]; binormal[2] = end[2] - start[2];
+    Vec3Normalize(binormal);
+
+    /* normal = cross(tangent, binormal) */
+    Vec3Cross(tangent, binormal, normal);
+
+    vc = *(int *)(tess + 0x5a7d4);
+    ic = *(int *)(tess + 0x5a7d0);
+    indices = *(unsigned short **)(tess + 0x5a7b0);
+
+    indices[ic + 0] = (unsigned short)vc;
+    indices[ic + 1] = (unsigned short)(vc + 1);
+    indices[ic + 2] = (unsigned short)(vc + 2);
+    indices[ic + 3] = (unsigned short)(vc + 2);
+    indices[ic + 4] = (unsigned short)(vc + 1);
+    indices[ic + 5] = (unsigned short)(vc + 3);
+
+    /* Vertex base: Dx7 stride = 36 bytes */
+    v0 = tess + (unsigned short)vc * 36;
+    v1 = v0 + 36;
+    v2 = v0 + 72;
+    v3 = v0 + 108;
+
+    /* Positions */
+    *(float *)(v0 + 0x00) = start[0] + halfTangent[0]; *(float *)(v0 + 0x04) = start[1] + halfTangent[1]; *(float *)(v0 + 0x08) = start[2] + halfTangent[2];
+    *(float *)(v1 + 0x00) = start[0] - halfTangent[0]; *(float *)(v1 + 0x04) = start[1] - halfTangent[1]; *(float *)(v1 + 0x08) = start[2] - halfTangent[2];
+    *(float *)(v2 + 0x00) = end[0]   + halfTangent[0]; *(float *)(v2 + 0x04) = end[1]   + halfTangent[1]; *(float *)(v2 + 0x08) = end[2]   + halfTangent[2];
+    *(float *)(v3 + 0x00) = end[0]   - halfTangent[0]; *(float *)(v3 + 0x04) = end[1]   - halfTangent[1]; *(float *)(v3 + 0x08) = end[2]   - halfTangent[2];
+
+    /* Normals at +0x0c */
+    *(float *)(v0 + 0x0c) = normal[0]; *(float *)(v0 + 0x10) = normal[1]; *(float *)(v0 + 0x14) = normal[2];
+    *(float *)(v1 + 0x0c) = normal[0]; *(float *)(v1 + 0x10) = normal[1]; *(float *)(v1 + 0x14) = normal[2];
+    *(float *)(v2 + 0x0c) = normal[0]; *(float *)(v2 + 0x10) = normal[1]; *(float *)(v2 + 0x14) = normal[2];
+    *(float *)(v3 + 0x0c) = normal[0]; *(float *)(v3 + 0x10) = normal[1]; *(float *)(v3 + 0x14) = normal[2];
+
+    /* Colors at +0x18 */
+    *(int *)(v0 + 0x18) = nativeColor;
+    *(int *)(v1 + 0x18) = nativeColor;
+    *(int *)(v2 + 0x18) = nativeColor;
+    *(int *)(v3 + 0x18) = nativeColor;
+
+    /* UVs at +0x1c/+0x20: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
+    *(float *)(v0 + 0x1c) = s0; *(float *)(v0 + 0x20) = t0;
+    *(float *)(v1 + 0x1c) = s1; *(float *)(v1 + 0x20) = t0;
+    *(float *)(v2 + 0x1c) = s0; *(float *)(v2 + 0x20) = t1;
+    *(float *)(v3 + 0x1c) = s1; *(float *)(v3 + 0x20) = t1;
+
+    *(int *)(tess + 0x5a7d4) = vc + 4;
+    *(int *)(tess + 0x5a7d0) = ic + 6;
 }
 
 /* line 877 */
 static __attribute__((naked))
 void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
+    /* Marshal register args (eax=start,edx=end,xmm0=width,ecx=nativeColor,
+     * xmm1=s0,xmm2=t0,xmm3=s1,4(%esp)=t1) to standard C calling convention */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 877 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl %eax, %edi\n" /* start */
-        "movl %edx, -0x7c(%ebp)\n"
-        "movss %xmm0, -0x80(%ebp)\n"
-        "movl %ecx, -0x84(%ebp)\n"
-        "movss %xmm1, -0x88(%ebp)\n"
-        "movss %xmm2, -0x8c(%ebp)\n"
-        "movss %xmm3, -0x90(%ebp)\n"
-        /* { scope 1 */
-        "movl imp_backEnd, %eax\n" /* line 888 | b */
-        "movl 0x3c8(%eax), %eax\n" /* b */
-        /* { scope 2 */
-        "movss (%edi), %xmm0\n" /* line 248 */
-        "subss (%eax), %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n" /* v1 */
-        "leal 4(%edi), %edx\n" /* line 249 */
-        "movl %edx, -0x74(%ebp)\n"
-        "movss 4(%edi), %xmm0\n"
-        "subss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "leal 8(%edi), %ecx\n" /* line 250 */
-        "movl %ecx, -0x70(%ebp)\n"
-        "movss 8(%edi), %xmm0\n"
-        "subss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        /* } scope */
-        "movl -0x7c(%ebp), %esi\n" /* line 248 */
-        "movss (%esi), %xmm0\n"
-        "subss (%eax), %xmm0\n"
-        "movss %xmm0, -0x54(%ebp)\n" /* v2 */
-        "addl $4, %esi\n" /* line 249 */
-        "movl %esi, -0x6c(%ebp)\n"
-        "movl -0x7c(%ebp), %edx\n"
-        "movss 4(%edx), %xmm0\n"
-        "subss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x50(%ebp)\n"
-        "addl $8, %edx\n" /* line 250 */
-        "movl %edx, -0x68(%ebp)\n"
-        "movl -0x7c(%ebp), %ecx\n"
-        "movss 8(%ecx), %xmm0\n"
-        "subss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n"
-        "leal -0x24(%ebp), %esi\n" /* line 890 | tangent */
-        "movl %esi, 8(%esp)\n"
-        "leal -0x54(%ebp), %eax\n" /* v2 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x48(%ebp), %eax\n" /* v1 */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl %esi, (%esp)\n" /* line 891 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 272 */
-        "mulss -0x24(%ebp), %xmm0\n" /* tangent */
-        "movss %xmm0, -0x5c(%ebp)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 273 */
-        "mulss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, -0x60(%ebp)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 274 */
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x64(%ebp)\n"
-        "movl -0x7c(%ebp), %eax\n" /* line 248 */
-        "movss (%eax), %xmm0\n"
-        "subss (%edi), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* binormal */
-        "movss 4(%eax), %xmm0\n" /* line 249 */
-        "subss 4(%edi), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 8(%eax), %xmm0\n" /* line 250 */
-        "subss 8(%edi), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "leal -0x30(%ebp), %ebx\n" /* line 895 | binormal, vbase */
-        "movl %ebx, (%esp)\n" /* vbase */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "leal -0x3c(%ebp), %eax\n" /* line 896 | normal */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* vbase */
-        "movl %esi, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl imp_tess, %edx\n" /* line 344 */
-        "movl 0x5a7d4(%edx), %eax\n"
-        "addl $4, %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lfff2f4_000ff733\n"
-        "movl 0x5a7d0(%edx), %eax\n"
-        "addl $6, %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jle .Lfff2f4_000ff71e\n"
-        "movl imp_tess, %ecx\n"
-        ".Lfff2f4_000ff47c:\n"
-        "movl 0x5a7cc(%ecx), %ebx\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl imp_tess, %esi\n" /* line 331 */
-        "movl 0x5a7c4(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%esi), %ebx\n" /* line 310 */
-        "je .Lfff2f4_000ff71e\n"
-        "movl 0x5a7d0(%esi), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfff2f4_000ff729\n"
-        "movl 0x5a7e0(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfff2f4_000ff729\n"
-        ".Lfff2f4_000ff4d7:\n"
-        "movl imp_tess, %eax\n" /* line 313 */
-        "movl %ebx, 0x5a7cc(%eax)\n"
-        "movl %eax, %edx\n"
-        ".Lfff2f4_000ff4e4:\n"
-        "movl 0x5a7d4(%edx), %eax\n" /* line 901 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movss -0x5c(%ebp), %xmm0\n" /* line 240 */
-        "addss (%edi), %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "movss -0x60(%ebp), %xmm0\n" /* line 241 */
-        "movl -0x74(%ebp), %ecx\n"
-        "addss (%ecx), %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "movss -0x64(%ebp), %xmm0\n" /* line 242 */
-        "movl -0x70(%ebp), %esi\n"
-        "addss (%esi), %xmm0\n"
-        "movss %xmm0, 8(%eax)\n"
-        "leal 0x24(%eax), %edx\n" /* line 903 */
-        "movl %edx, -0x78(%ebp)\n"
-        "movss (%edi), %xmm0\n" /* line 248 */
-        "subss -0x5c(%ebp), %xmm0\n"
-        "movss %xmm0, 0x24(%eax)\n"
-        "movss (%ecx), %xmm0\n" /* line 249 */
-        "subss -0x60(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%edx)\n"
-        "movss (%esi), %xmm0\n" /* line 250 */
-        "subss -0x64(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%edx)\n"
-        "leal 0x48(%eax), %esi\n" /* line 904 */
-        "movss -0x5c(%ebp), %xmm0\n" /* line 240 */
-        "movl -0x7c(%ebp), %ecx\n"
-        "addss (%ecx), %xmm0\n"
-        "movss %xmm0, 0x48(%eax)\n"
-        "movss -0x60(%ebp), %xmm0\n" /* line 241 */
-        "movl -0x6c(%ebp), %edi\n"
-        "addss (%edi), %xmm0\n"
-        "movss %xmm0, 4(%esi)\n"
-        "movss -0x64(%ebp), %xmm0\n" /* line 242 */
-        "movl -0x68(%ebp), %edx\n"
-        "addss (%edx), %xmm0\n"
-        "movss %xmm0, 8(%esi)\n"
-        "leal 0x6c(%eax), %ebx\n" /* line 905 | vbase */
-        "movss (%ecx), %xmm0\n" /* line 248 */
-        "subss -0x5c(%ebp), %xmm0\n"
-        "movss %xmm0, 0x6c(%eax)\n"
-        "movss (%edi), %xmm0\n" /* line 249 */
-        "subss -0x60(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%ebx)\n"
-        "movss (%edx), %xmm0\n" /* line 250 */
-        "subss -0x64(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%ebx)\n"
-        "leal 0xc(%eax), %ecx\n" /* line 907 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %edx\n" /* line 199 | normal */
-        "movl %edx, 0xc(%eax)\n"
-        "movl -0x38(%ebp), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl -0x34(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x30(%eax), %ecx\n" /* line 908 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %edx\n" /* line 199 | normal */
-        "movl %edx, 0x30(%eax)\n"
-        "movl -0x38(%ebp), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl -0x34(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x54(%eax), %ecx\n" /* line 909 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %edx\n" /* line 199 | normal */
-        "movl %edx, 0x54(%eax)\n"
-        "movl -0x38(%ebp), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl -0x34(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x78(%eax), %ecx\n" /* line 910 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %edx\n" /* line 199 | normal */
-        "movl %edx, 0x78(%eax)\n"
-        "movl -0x38(%ebp), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl -0x34(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "movss -0x88(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x1c(%eax)\n"
-        "movss -0x8c(%ebp), %xmm0\n" /* line 31 */
-        "movss %xmm0, 0x20(%eax)\n"
-        "movss -0x90(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x40(%eax)\n"
-        "movss -0x8c(%ebp), %xmm0\n" /* line 31 */
-        "movss %xmm0, 0x44(%eax)\n"
-        "movss -0x88(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x64(%eax)\n"
-        "movss 8(%ebp), %xmm0\n" /* line 31 | t1 */
-        "movss %xmm0, 0x68(%eax)\n"
-        "movss -0x90(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x88(%eax)\n"
-        "movss 8(%ebp), %xmm0\n" /* line 31 | t1 */
-        "movss %xmm0, 0x8c(%eax)\n"
-        "movl -0x84(%ebp), %edx\n" /* line 917 */
-        "movl %edx, 0x18(%eax)\n"
-        "movl -0x78(%ebp), %ecx\n" /* line 918 */
-        "movl %edx, 0x18(%ecx)\n"
-        "movl %edx, 0x18(%esi)\n" /* line 919 */
-        "movl %edx, 0x18(%ebx)\n" /* line 920 | vbase */
-        "movl imp_tess, %esi\n" /* line 922 */
-        "movl 0x5a7d4(%esi), %ecx\n"
-        "movl %ecx, %ebx\n" /* vbase */
-        "movl 0x5a7d0(%esi), %edx\n" /* line 923 */
-        "movl 0x5a7b0(%esi), %eax\n"
-        "movw %cx, (%eax, %edx, 2)\n"
-        "leal 1(%ecx), %esi\n" /* line 924 */
-        "movl imp_tess, %edi\n" /* start */
-        "movl 0x5a7d0(%edi), %edx\n" /* start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %si, 2(%eax, %edx, 2)\n"
-        "leal 2(%ecx), %ecx\n" /* line 925 */
-        "movl 0x5a7d0(%edi), %edx\n" /* start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %cx, 4(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 927 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 928 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %si, 8(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 929 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "addl $3, %ebx\n" /* vbase */
-        "movw %bx, 0xa(%eax, %edx, 2)\n" /* vbase */
-        "addl $4, 0x5a7d4(%edi)\n" /* line 931 | start */
-        "addl $6, 0x5a7d0(%edi)\n" /* line 932 | start */
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 933 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "subl $16, %esp\n"
+        "movss %xmm0, -4(%ebp)\n"
+        "movss %xmm1, -8(%ebp)\n"
+        "movss %xmm2, -12(%ebp)\n"
+        "movss %xmm3, -16(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl -16(%ebp)\n"
+        "pushl -12(%ebp)\n"
+        "pushl -8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl -4(%ebp)\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll RB_AddLineDx7_impl\n"
+        "addl $32, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lfff2f4_000ff71e:\n"
-        "movl imp_tess, %edx\n"
-        "jmp .Lfff2f4_000ff4e4\n"
-        /* { scope 1 */
-        ".Lfff2f4_000ff729:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfff2f4_000ff4d7\n"
-        ".Lfff2f4_000ff733:\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lfff2f4_000ff47c\n"
     );
+}
+
+
+/* Non-Dx7 line vertex layout: stride = 64 bytes
+ *   +0x00: vec3 position, +0x0c: float 1.0
+ *   +0x10: vec3 normal, +0x1c: DWORD color
+ *   +0x20: float s, +0x24: float t
+ *   +0x28: vec3 binormal, +0x34: vec3 tangent
+ * Calling convention: eax=start, edx=end, xmm0=width, ecx=nativeColor,
+ *   xmm1=s0, xmm2=t0, xmm3=s1, 4(%esp)=t1
+ */
+static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width,
+                             D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
+{
+    char *tess = RB_TessBase();
+    char *backEnd = (char *)imp_backEnd;
+    void *savedMat;
+    int vc, ic;
+    unsigned short *indices;
+    char *v0, *v1, *v2, *v3;
+    float v1v[3], v2v[3], tangent[3], halfTangent[3], binormal[3], normal[3];
+    float *viewOrigin;
+
+    /* Flush tessellation buffer on overflow */
+    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
+        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
+        savedMat = *(void **)(tess + 0x5a7cc);
+        RB_EndSurface();
+        RB_BeginSurface(*(void **)(tess + 0x5a7bc), *(int *)(tess + 0x5a7c0), *(int *)(tess + 0x5a7c4));
+        if (*(void **)(tess + 0x5a7cc) != savedMat) {
+            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+                RB_EndSurface();
+            *(void **)(tess + 0x5a7cc) = savedMat;
+        }
+    }
+
+    /* Compute tangent = cross(start-view, end-view), normalize */
+    viewOrigin = (float *)(*(char **)(backEnd + 0x3c8));
+    v1v[0] = start[0] - viewOrigin[0]; v1v[1] = start[1] - viewOrigin[1]; v1v[2] = start[2] - viewOrigin[2];
+    v2v[0] = end[0]   - viewOrigin[0]; v2v[1] = end[1]   - viewOrigin[1]; v2v[2] = end[2]   - viewOrigin[2];
+    Vec3Cross(v1v, v2v, tangent);
+    Vec3Normalize(tangent);
+
+    halfTangent[0] = tangent[0] * width;
+    halfTangent[1] = tangent[1] * width;
+    halfTangent[2] = tangent[2] * width;
+
+    /* binormal = normalize(end - start) */
+    binormal[0] = end[0] - start[0]; binormal[1] = end[1] - start[1]; binormal[2] = end[2] - start[2];
+    Vec3Normalize(binormal);
+
+    /* normal = cross(tangent, binormal) */
+    Vec3Cross(tangent, binormal, normal);
+
+    vc = *(int *)(tess + 0x5a7d4);
+    ic = *(int *)(tess + 0x5a7d0);
+    indices = *(unsigned short **)(tess + 0x5a7b0);
+
+    indices[ic + 0] = (unsigned short)vc;
+    indices[ic + 1] = (unsigned short)(vc + 1);
+    indices[ic + 2] = (unsigned short)(vc + 2);
+    indices[ic + 3] = (unsigned short)(vc + 2);
+    indices[ic + 4] = (unsigned short)(vc + 1);
+    indices[ic + 5] = (unsigned short)(vc + 3);
+
+    /* Vertex base: non-Dx7 stride = 64 bytes */
+    v0 = tess + (unsigned short)vc * 64;
+    v1 = v0 + 64;
+    v2 = v0 + 128;
+    v3 = v0 + 192;
+
+    /* Positions */
+    *(float *)(v0 + 0x00) = start[0] + halfTangent[0]; *(float *)(v0 + 0x04) = start[1] + halfTangent[1]; *(float *)(v0 + 0x08) = start[2] + halfTangent[2];
+    *(float *)(v1 + 0x00) = start[0] - halfTangent[0]; *(float *)(v1 + 0x04) = start[1] - halfTangent[1]; *(float *)(v1 + 0x08) = start[2] - halfTangent[2];
+    *(float *)(v2 + 0x00) = end[0]   + halfTangent[0]; *(float *)(v2 + 0x04) = end[1]   + halfTangent[1]; *(float *)(v2 + 0x08) = end[2]   + halfTangent[2];
+    *(float *)(v3 + 0x00) = end[0]   - halfTangent[0]; *(float *)(v3 + 0x04) = end[1]   - halfTangent[1]; *(float *)(v3 + 0x08) = end[2]   - halfTangent[2];
+
+    /* W = 1.0 at +0x0c */
+    *(float *)(v0 + 0x0c) = 1.0f;
+    *(float *)(v1 + 0x0c) = 1.0f;
+    *(float *)(v2 + 0x0c) = 1.0f;
+    *(float *)(v3 + 0x0c) = 1.0f;
+
+    /* Normals at +0x10 */
+    *(float *)(v0 + 0x10) = normal[0]; *(float *)(v0 + 0x14) = normal[1]; *(float *)(v0 + 0x18) = normal[2];
+    *(float *)(v1 + 0x10) = normal[0]; *(float *)(v1 + 0x14) = normal[1]; *(float *)(v1 + 0x18) = normal[2];
+    *(float *)(v2 + 0x10) = normal[0]; *(float *)(v2 + 0x14) = normal[1]; *(float *)(v2 + 0x18) = normal[2];
+    *(float *)(v3 + 0x10) = normal[0]; *(float *)(v3 + 0x14) = normal[1]; *(float *)(v3 + 0x18) = normal[2];
+
+    /* Colors at +0x1c */
+    *(int *)(v0 + 0x1c) = nativeColor;
+    *(int *)(v1 + 0x1c) = nativeColor;
+    *(int *)(v2 + 0x1c) = nativeColor;
+    *(int *)(v3 + 0x1c) = nativeColor;
+
+    /* UVs at +0x20/+0x24: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
+    *(float *)(v0 + 0x20) = s0; *(float *)(v0 + 0x24) = t0;
+    *(float *)(v1 + 0x20) = s1; *(float *)(v1 + 0x24) = t0;
+    *(float *)(v2 + 0x20) = s0; *(float *)(v2 + 0x24) = t1;
+    *(float *)(v3 + 0x20) = s1; *(float *)(v3 + 0x24) = t1;
+
+    /* Binormals at +0x28 */
+    *(float *)(v0 + 0x28) = binormal[0]; *(float *)(v0 + 0x2c) = binormal[1]; *(float *)(v0 + 0x30) = binormal[2];
+    *(float *)(v1 + 0x28) = binormal[0]; *(float *)(v1 + 0x2c) = binormal[1]; *(float *)(v1 + 0x30) = binormal[2];
+    *(float *)(v2 + 0x28) = binormal[0]; *(float *)(v2 + 0x2c) = binormal[1]; *(float *)(v2 + 0x30) = binormal[2];
+    *(float *)(v3 + 0x28) = binormal[0]; *(float *)(v3 + 0x2c) = binormal[1]; *(float *)(v3 + 0x30) = binormal[2];
+
+    /* Tangents at +0x34 */
+    *(float *)(v0 + 0x34) = tangent[0]; *(float *)(v0 + 0x38) = tangent[1]; *(float *)(v0 + 0x3c) = tangent[2];
+    *(float *)(v1 + 0x34) = tangent[0]; *(float *)(v1 + 0x38) = tangent[1]; *(float *)(v1 + 0x3c) = tangent[2];
+    *(float *)(v2 + 0x34) = tangent[0]; *(float *)(v2 + 0x38) = tangent[1]; *(float *)(v2 + 0x3c) = tangent[2];
+    *(float *)(v3 + 0x34) = tangent[0]; *(float *)(v3 + 0x38) = tangent[1]; *(float *)(v3 + 0x3c) = tangent[2];
+
+    *(int *)(tess + 0x5a7d4) = vc + 4;
+    *(int *)(tess + 0x5a7d0) = ic + 6;
 }
 
 /* line 803 */
 static __attribute__((naked))
 void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
+    /* Marshal register args (eax=start,edx=end,xmm0=width,ecx=nativeColor,
+     * xmm1=s0,xmm2=t0,xmm3=s1,4(%esp)=t1) to standard C calling convention */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 803 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl %eax, %edi\n" /* start */
-        "movl %edx, -0x7c(%ebp)\n"
-        "movss %xmm0, -0x80(%ebp)\n"
-        "movl %ecx, -0x84(%ebp)\n"
-        "movss %xmm1, -0x88(%ebp)\n"
-        "movss %xmm2, -0x8c(%ebp)\n"
-        "movss %xmm3, -0x90(%ebp)\n"
-        /* { scope 1 */
-        "movl imp_backEnd, %eax\n" /* line 814 | b */
-        "movl 0x3c8(%eax), %eax\n" /* b */
-        /* { scope 2 */
-        "movss (%edi), %xmm0\n" /* line 248 */
-        "subss (%eax), %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n" /* v1 */
-        "leal 4(%edi), %edx\n" /* line 249 */
-        "movl %edx, -0x74(%ebp)\n"
-        "movss 4(%edi), %xmm0\n"
-        "subss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "leal 8(%edi), %ecx\n" /* line 250 */
-        "movl %ecx, -0x70(%ebp)\n"
-        "movss 8(%edi), %xmm0\n"
-        "subss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        /* } scope */
-        "movl -0x7c(%ebp), %esi\n" /* line 248 */
-        "movss (%esi), %xmm0\n"
-        "subss (%eax), %xmm0\n"
-        "movss %xmm0, -0x54(%ebp)\n" /* v2 */
-        "addl $4, %esi\n" /* line 249 */
-        "movl %esi, -0x6c(%ebp)\n"
-        "movl -0x7c(%ebp), %edx\n"
-        "movss 4(%edx), %xmm0\n"
-        "subss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x50(%ebp)\n"
-        "addl $8, %edx\n" /* line 250 */
-        "movl %edx, -0x68(%ebp)\n"
-        "movl -0x7c(%ebp), %ecx\n"
-        "movss 8(%ecx), %xmm0\n"
-        "subss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n"
-        "leal -0x24(%ebp), %esi\n" /* line 816 | tangent */
-        "movl %esi, 8(%esp)\n"
-        "leal -0x54(%ebp), %eax\n" /* v2 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x48(%ebp), %eax\n" /* v1 */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl %esi, (%esp)\n" /* line 817 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 272 */
-        "mulss -0x24(%ebp), %xmm0\n" /* tangent */
-        "movss %xmm0, -0x5c(%ebp)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 273 */
-        "mulss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, -0x60(%ebp)\n"
-        "movss -0x80(%ebp), %xmm0\n" /* line 274 */
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x64(%ebp)\n"
-        "movl -0x7c(%ebp), %eax\n" /* line 248 */
-        "movss (%eax), %xmm0\n"
-        "subss (%edi), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* binormal */
-        "movss 4(%eax), %xmm0\n" /* line 249 */
-        "subss 4(%edi), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 8(%eax), %xmm0\n" /* line 250 */
-        "subss 8(%edi), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "leal -0x30(%ebp), %ebx\n" /* line 821 | binormal, vbase */
-        "movl %ebx, (%esp)\n" /* vbase */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "leal -0x3c(%ebp), %eax\n" /* line 822 | normal */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* vbase */
-        "movl %esi, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl imp_tess, %edx\n" /* line 344 */
-        "movl 0x5a7d4(%edx), %eax\n"
-        "addl $4, %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lfff73a_000ffc69\n"
-        "movl 0x5a7d0(%edx), %eax\n"
-        "addl $6, %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jle .Lfff73a_000ffc54\n"
-        "movl imp_tess, %ecx\n"
-        ".Lfff73a_000ff8c2:\n"
-        "movl 0x5a7cc(%ecx), %ebx\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl imp_tess, %esi\n" /* line 331 */
-        "movl 0x5a7c4(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%esi), %ebx\n" /* line 310 */
-        "je .Lfff73a_000ffc54\n"
-        "movl 0x5a7d0(%esi), %edx\n" /* line 261 */
-        "testl %edx, %edx\n"
-        "jne .Lfff73a_000ffc5f\n"
-        "movl 0x5a7e0(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfff73a_000ffc5f\n"
-        ".Lfff73a_000ff91d:\n"
-        "movl imp_tess, %eax\n" /* line 313 */
-        "movl %ebx, 0x5a7cc(%eax)\n"
-        "movl %eax, %ecx\n"
-        ".Lfff73a_000ff92a:\n"
-        "movl 0x5a7d4(%ecx), %edx\n" /* line 827 */
-        "shll $6, %edx\n"
-        "addl %ecx, %edx\n"
-        "movss -0x5c(%ebp), %xmm0\n" /* line 240 */
-        "addss (%edi), %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "movss -0x60(%ebp), %xmm0\n" /* line 241 */
-        "movl -0x74(%ebp), %esi\n"
-        "addss (%esi), %xmm0\n"
-        "movss %xmm0, 4(%edx)\n"
-        "movss -0x64(%ebp), %xmm0\n" /* line 242 */
-        "movl -0x70(%ebp), %eax\n"
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, 8(%edx)\n"
-        "leal 0x40(%edx), %ecx\n" /* line 829 */
-        "movl %ecx, -0x78(%ebp)\n"
-        "movss (%edi), %xmm0\n" /* line 248 */
-        "subss -0x5c(%ebp), %xmm0\n"
-        "movss %xmm0, 0x40(%edx)\n"
-        "movss (%esi), %xmm0\n" /* line 249 */
-        "subss -0x60(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%ecx)\n"
-        "movss (%eax), %xmm0\n" /* line 250 */
-        "subss -0x64(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%ecx)\n"
-        "leal 0x80(%edx), %esi\n" /* line 830 */
-        "movss -0x5c(%ebp), %xmm0\n" /* line 240 */
-        "movl -0x7c(%ebp), %edi\n"
-        "addss (%edi), %xmm0\n"
-        "movss %xmm0, 0x80(%edx)\n"
-        "movss -0x60(%ebp), %xmm0\n" /* line 241 */
-        "movl -0x6c(%ebp), %eax\n"
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, 4(%esi)\n"
-        "movss -0x64(%ebp), %xmm0\n" /* line 242 */
-        "movl -0x68(%ebp), %ecx\n"
-        "addss (%ecx), %xmm0\n"
-        "movss %xmm0, 8(%esi)\n"
-        "leal 0xc0(%edx), %ebx\n" /* line 831 | vbase */
-        "movss (%edi), %xmm0\n" /* line 248 */
-        "subss -0x5c(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc0(%edx)\n"
-        "movss (%eax), %xmm0\n" /* line 249 */
-        "subss -0x60(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%ebx)\n"
-        "movss (%ecx), %xmm0\n" /* line 250 */
-        "subss -0x64(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%ebx)\n"
-        "movl $0x3f800000, %eax\n" /* line 832 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl -0x78(%ebp), %edi\n" /* line 833 | start */
-        "movl %eax, 0xc(%edi)\n" /* start */
-        "movl %eax, 0xc(%esi)\n" /* line 834 */
-        "movl %eax, 0xc(%ebx)\n" /* line 835 | vbase */
-        "leal 0x10(%edx), %ecx\n" /* line 837 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %eax\n" /* line 199 | normal */
-        "movl %eax, 0x10(%edx)\n"
-        "movl -0x38(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x34(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x50(%edx), %ecx\n" /* line 838 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %eax\n" /* line 199 | normal */
-        "movl %eax, 0x50(%edx)\n"
-        "movl -0x38(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x34(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x90(%edx), %ecx\n" /* line 839 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %eax\n" /* line 199 | normal */
-        "movl %eax, 0x90(%edx)\n"
-        "movl -0x38(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x34(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xd0(%edx), %ecx\n" /* line 840 | to */
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %eax\n" /* line 199 | normal */
-        "movl %eax, 0xd0(%edx)\n"
-        "movl -0x38(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x34(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x28(%edx), %ecx\n" /* line 842 | to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | binormal */
-        "movl %eax, 0x28(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x68(%edx), %ecx\n" /* line 843 | to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | binormal */
-        "movl %eax, 0x68(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xa8(%edx), %ecx\n" /* line 844 | to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | binormal */
-        "movl %eax, 0xa8(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xe8(%edx), %ecx\n" /* line 845 | to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | binormal */
-        "movl %eax, 0xe8(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x34(%edx), %ecx\n" /* line 847 | to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | tangent */
-        "movl %eax, 0x34(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x74(%edx), %ecx\n" /* line 848 | to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | tangent */
-        "movl %eax, 0x74(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xb4(%edx), %ecx\n" /* line 849 | to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | tangent */
-        "movl %eax, 0xb4(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xf4(%edx), %ecx\n" /* line 850 | to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | tangent */
-        "movl %eax, 0xf4(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movss -0x88(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x20(%edx)\n"
-        "movss -0x8c(%ebp), %xmm0\n" /* line 31 */
-        "movss %xmm0, 0x24(%edx)\n"
-        "movss -0x90(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0x60(%edx)\n"
-        "movss -0x8c(%ebp), %xmm0\n" /* line 31 */
-        "movss %xmm0, 0x64(%edx)\n"
-        "movss -0x88(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0xa0(%edx)\n"
-        "movss 8(%ebp), %xmm0\n" /* line 31 | t1 */
-        "movss %xmm0, 0xa4(%edx)\n"
-        "movss -0x90(%ebp), %xmm0\n" /* line 30 */
-        "movss %xmm0, 0xe0(%edx)\n"
-        "movss 8(%ebp), %xmm0\n" /* line 31 | t1 */
-        "movss %xmm0, 0xe4(%edx)\n"
-        "movl -0x84(%ebp), %eax\n" /* line 857 */
-        "movl %eax, 0x1c(%edx)\n"
-        "movl %eax, 0x1c(%edi)\n" /* line 858 | start */
-        "movl %eax, 0x1c(%esi)\n" /* line 859 */
-        "movl %eax, 0x1c(%ebx)\n" /* line 860 | vbase */
-        "movl imp_tess, %edx\n" /* line 862 */
-        "movl 0x5a7d4(%edx), %ecx\n"
-        "movl %ecx, %ebx\n" /* vbase */
-        "movl %edx, %esi\n" /* line 863 */
-        "movl 0x5a7d0(%edx), %edx\n"
-        "movl 0x5a7b0(%esi), %eax\n"
-        "movw %cx, (%eax, %edx, 2)\n"
-        "leal 1(%ecx), %esi\n" /* line 864 */
-        "movl imp_tess, %edi\n" /* start */
-        "movl 0x5a7d0(%edi), %edx\n" /* start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %si, 2(%eax, %edx, 2)\n"
-        "leal 2(%ecx), %ecx\n" /* line 865 */
-        "movl 0x5a7d0(%edi), %edx\n" /* start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %cx, 4(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 867 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 868 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "movw %si, 8(%eax, %edx, 2)\n"
-        "movl 0x5a7d0(%edi), %edx\n" /* line 869 | start */
-        "movl 0x5a7b0(%edi), %eax\n" /* start */
-        "addl $3, %ebx\n" /* vbase */
-        "movw %bx, 0xa(%eax, %edx, 2)\n" /* vbase */
-        "addl $4, 0x5a7d4(%edi)\n" /* line 871 | start */
-        "addl $6, 0x5a7d0(%edi)\n" /* line 872 | start */
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 873 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "subl $16, %esp\n"
+        "movss %xmm0, -4(%ebp)\n"
+        "movss %xmm1, -8(%ebp)\n"
+        "movss %xmm2, -12(%ebp)\n"
+        "movss %xmm3, -16(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl -16(%ebp)\n"
+        "pushl -12(%ebp)\n"
+        "pushl -8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl -4(%ebp)\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll RB_AddLine_impl\n"
+        "addl $32, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lfff73a_000ffc54:\n"
-        "movl imp_tess, %ecx\n"
-        "jmp .Lfff73a_000ff92a\n"
-        /* { scope 1 */
-        ".Lfff73a_000ffc5f:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfff73a_000ff91d\n"
-        ".Lfff73a_000ffc69:\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lfff73a_000ff8c2\n"
     );
 }
 
