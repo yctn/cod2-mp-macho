@@ -534,117 +534,57 @@ const char * Material_RegisterString(const char *string)
 }
 
 /* line 492 */
-__attribute__((naked))
 MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *routingData, int streamCount, Bool *existing)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 492 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 0xc(%ebp), %eax\n" /* line 402 | streamCount */
-        "addl %eax, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "testl %eax, %eax\n" /* line 403 */
-        "jg .Lfd37ba_000d388a\n"
-        "xorl %ebx, %ebx\n" /* hash */
-        "jmp .Lfd37ba_000d37e5\n"
-        /* } scope */
-        ".Lfd37ba_000d37d7:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 502 | streamCount */
-        "cmpl 4(%edx), %eax\n"
-        "je .Lfd37ba_000d385c\n"
-        ".Lfd37ba_000d37df:\n"
-        "addl $1, %ebx\n" /* line 508 | data */
-        "andl $0x1f, %ebx\n" /* data */
-        ".Lfd37ba_000d37e5:\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 499 | data */
-        "leal materialGlobals(, %eax, 8), %eax\n"
-        "leal 4(%eax), %edx\n"
-        "movl %edx, -0x20(%ebp)\n" /* mvd */
-        "movl 4(%eax), %esi\n" /* line 500 */
-        "testl %esi, %esi\n"
-        "jne .Lfd37ba_000d37d7\n"
-        "cmpl $0x1f, materialGlobals\n" /* line 511 */
-        "je .Lfd37ba_000d38ad\n"
-        ".Lfd37ba_000d3809:\n"
-        "addl $1, materialGlobals\n" /* line 513 */
-        "movl -0x1c(%ebp), %esi\n" /* line 221 */
-        "movl %esi, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0xc(%eax)\n"
-        "movl %eax, %ebx\n"
-        "movl %esi, 8(%esp)\n" /* line 516 */
-        "movl 8(%ebp), %eax\n" /* routingData */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* data */
-        "calll memcpy\n"
-        "cld\n" /* line 518 */
-        "movl $6, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl -0x20(%ebp), %edi\n" /* mvd */
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl -0x20(%ebp), %edx\n" /* line 519 | mvd */
-        "movl %ebx, (%edx)\n" /* data */
-        "movl 0xc(%ebp), %esi\n" /* line 520 | streamCount */
-        "movl %esi, 4(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 522 | existing */
-        "movb $0, (%eax)\n"
-        /* } scope */
-        ".Lfd37ba_000d3851:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 524 | mvd */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd37ba_000d385c:\n"
-        "cld\n" /* line 502 */
-        "movl -0x1c(%ebp), %eax\n"
-        "cmpl %eax, %eax\n"
-        "movl 8(%ebp), %edi\n" /* routingData */
-        "movl %eax, %ecx\n"
-        "repe cmpsb %es:(%edi), (%esi)\n"
-        "movl $0, %eax\n"
-        "je .Lfd37ba_000d387a\n"
-        "movzbl -1(%esi), %eax\n"
-        "movzbl -1(%edi), %ecx\n"
-        "subl %ecx, %eax\n"
-        ".Lfd37ba_000d387a:\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd37ba_000d37df\n"
-        "movl 0x10(%ebp), %edx\n" /* line 504 | existing */
-        "movb $1, (%edx)\n"
-        "jmp .Lfd37ba_000d3851\n"
-        /* { scope 2 */
-        ".Lfd37ba_000d388a:\n"
-        "xorl %ecx, %ecx\n" /* line 403 */
-        "xorl %ebx, %ebx\n" /* hash */
-        "movl 8(%ebp), %esi\n" /* routingData */
-        ".Lfd37ba_000d3891:\n"
-        "leal 0x77(%ecx), %eax\n" /* line 404 */
-        "movzbl (%esi, %ecx), %edx\n"
-        "imull %edx, %eax\n"
-        "addl %eax, %ebx\n" /* hash */
-        "addl $1, %ecx\n" /* line 403 */
-        "cmpl %ecx, -0x1c(%ebp)\n"
-        "jne .Lfd37ba_000d3891\n"
-        "andl $0x1f, %ebx\n" /* hash */
-        "jmp .Lfd37ba_000d37e5\n"
-        /* } scope */
-        ".Lfd37ba_000d38ad:\n"
-        "movl $0x1f, 8(%esp)\n" /* line 512 */
-        "movl $str_002243e8, 4(%esp)\n" /* "More than %i vertex declarations in use" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfd37ba_000d3809\n"
-    );
+    int dataSize = streamCount * 2; /* each stream routing is 2 bytes */
+    int hash = 0;
+    int i;
+    byte *routingBytes = (byte *)routingData;
+    byte *mvd; /* MaterialVertexDeclaration pointer */
+    byte *data;
+    void *(*hunkAlloc)(int);
+
+    /* Compute hash over routing data bytes */
+    for (i = 0; i < dataSize; i++) {
+        hash += (i + 0x77) * routingBytes[i];
+    }
+    hash &= 0x1f;
+
+    /* Search hash table for existing match (24-byte entries in materialGlobals) */
+    for (;;) {
+        mvd = (byte *)&materialGlobals[hash * 6 + 1]; /* materialGlobals + hash*24 + 4 */
+        data = *(byte **)mvd;
+
+        if (!data)
+            break; /* empty slot — need to allocate */
+
+        /* Check streamCount and data match */
+        if (*(int *)(mvd + 4) == streamCount &&
+            memcmp(data, routingData, dataSize) == 0) {
+            *existing = 1;
+            return (MaterialVertexDeclaration *)mvd;
+        }
+
+        hash = (hash + 1) & 0x1f;
+    }
+
+    /* Allocate new entry */
+    if (*(int *)materialGlobals == 0x1f) {
+        R_Error(1, "More than %i vertex declarations in use", 31);
+    }
+    (*(int *)materialGlobals)++;
+
+    hunkAlloc = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    data = (byte *)hunkAlloc(dataSize);
+    memcpy(data, routingData, dataSize);
+
+    /* Zero the mvd struct (24 bytes = 6 ints) and fill in fields */
+    memset(mvd, 0, 24);
+    *(byte **)(mvd + 0) = data;
+    *(int *)(mvd + 4) = streamCount;
+
+    *existing = 0;
+    return (MaterialVertexDeclaration *)mvd;
 }
 
 /* line 699 */
@@ -1393,247 +1333,124 @@ void R_Cmd_ReloadMaterialTextures(void)
 }
 
 /* line 920 */
-__attribute__((naked))
 _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 920 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 385 | name */
-        "movl %eax, (%esp)\n"
-        "calll R_HashAssetName\n"
-        "movl %eax, %edi\n" /* line 1004 | hashIndex */
-        "andw $0x3ff, %di\n" /* hashIndex */
-        "movzwl %di, %esi\n" /* line 1005 | hashIndex */
-        "movl imp_rg, %ebx\n" /* nameBackup */
-        "movl 0x28(%ebx, %esi, 4), %eax\n" /* nameBackup */
-        "testl %eax, %eax\n"
-        "je .Lfd43e6_000d443e\n"
-        ".Lfd43e6_000d4412:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1007 | name */
-        "movl %edx, 4(%esp)\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd43e6_000d44cd\n"
-        "addl $1, %edi\n" /* line 1013 | hashIndex */
-        "andw $0x3ff, %di\n" /* hashIndex */
-        "movzwl %di, %esi\n" /* line 1005 | hashIndex */
-        "movl 0x28(%ebx, %esi, 4), %eax\n" /* nameBackup */
-        "testl %eax, %eax\n"
-        "jne .Lfd43e6_000d4412\n"
-        ".Lfd43e6_000d443e:\n"
-        "cld\n" /* line 944 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 0xc(%ebp), %edi\n" /* name, hashIndex */
-        "repne scasb %es:(%edi), %al\n" /* hashIndex */
-        "movl %ecx, %ebx\n" /* nameBackup */
-        "notl %ebx\n" /* nameBackup */
-        "leal 0x44(%ebx), %eax\n" /* line 946 | nameBackup */
-        "movl %eax, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0xc(%eax)\n"
-        "movl %eax, %edi\n" /* hashIndex */
-        "movl $0x44, 8(%esp)\n" /* line 951 */
-        "movl 8(%ebp), %eax\n" /* mtlCopy */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* hashIndex */
-        "calll memcpy\n"
-        "leal 0x44(%edi), %eax\n" /* line 952 | hashIndex */
-        "movl %eax, (%edi)\n" /* hashIndex */
-        "movl %ebx, 8(%esp)\n" /* line 955 | nameBackup */
-        "movl 0xc(%ebp), %edx\n" /* name */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl imp_rgp, %ecx\n" /* line 907 */
-        "movl $1, (%ecx)\n"
-        "movw %si, 8(%edi)\n" /* line 910 */
-        "movl 4(%ecx), %eax\n" /* line 911 */
-        "movw %ax, 0xa(%edi)\n"
-        "movl 4(%ecx), %eax\n" /* line 912 */
-        "movl %edi, 8(%ecx, %eax, 4)\n"
-        "movl imp_rg, %edx\n" /* line 913 */
-        "movl %edi, 0x28(%edx, %esi, 4)\n"
-        "addl $1, %eax\n" /* line 914 */
-        "movl %eax, 4(%ecx)\n"
-        "cmpl $0x400, %eax\n" /* line 915 */
-        "je .Lfd43e6_000d4501\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 961 | hashIndex */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd43e6_000d44cd:\n"
-        "movl 0x28(%ebx, %esi, 4), %edi\n" /* line 934 | nameBackup, hashIndex */
-        "movl (%edi), %ebx\n" /* line 935 | hashIndex, nameBackup */
-        "movl $0x44, 8(%esp)\n" /* line 936 */
-        "movl 8(%ebp), %eax\n" /* mtlCopy */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* hashIndex */
-        "calll memcpy\n"
-        "movl %ebx, (%edi)\n" /* line 937 | nameBackup, hashIndex */
-        "movl imp_rgp, %eax\n" /* line 939 */
-        "movl $1, (%eax)\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 961 | hashIndex */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd43e6_000d4501:\n"
-        "movl $0x400, 8(%esp)\n" /* line 916 */
-        "movl $str_002244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
-" */
-        "movl $0, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 961 | hashIndex */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *rg = (byte *)imp_rg;
+    byte *rgp;
+    int hash = R_HashAssetName(name) & 0x3ff;
+    byte *material;
+    byte *existing;
+    int nameLen;
+    void *(*hunkAlloc)(int);
+    char *nameDst;
+    int count;
+    _ValueType result;
+
+    /* Search for existing material with this name */
+    existing = *(byte **)(rg + 0x28 + hash * 4);
+    while (existing) {
+        if (strcmp(*(const char **)existing, name) == 0) {
+            /* Found — overwrite with new data, preserve name pointer */
+            char *savedName = *(char **)existing;
+            memcpy(existing, (void *)*(int *)&mtlCopy, 0x44);
+            *(char **)existing = savedName;
+            *(int *)imp_rgp = 1; /* rgp->needsSort = true */
+            *(void **)&result = existing;
+            return result;
+        }
+        hash = (hash + 1) & 0x3ff;
+        rg = (byte *)imp_rg;
+        existing = *(byte **)(rg + 0x28 + hash * 4);
+    }
+
+    /* Not found — allocate new material (0x44 struct + name string) */
+    nameLen = strlen(name) + 1;
+    hunkAlloc = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    material = (byte *)hunkAlloc(0x44 + nameLen);
+
+    /* Copy material struct from source */
+    memcpy(material, (void *)*(int *)&mtlCopy, 0x44);
+
+    /* Name stored after struct, set name pointer */
+    nameDst = (char *)(material + 0x44);
+    *(char **)material = nameDst;
+    memcpy(nameDst, name, nameLen);
+
+    /* Register in rgp and rg */
+    rgp = (byte *)imp_rgp;
+    *(int *)rgp = 1; /* needsSort */
+    *(unsigned short *)(material + 8) = (unsigned short)hash;
+    count = *(int *)(rgp + 4);
+    *(unsigned short *)(material + 0xa) = (unsigned short)count;
+    *(void **)(rgp + 8 + count * 4) = material;
+    rg = (byte *)imp_rg;
+    *(void **)(rg + 0x28 + hash * 4) = material;
+    count++;
+    *(int *)(rgp + 4) = count;
+
+    if (count == 0x400)
+        R_Error(0, "Too many unique materials (%i or more)\n", 0x400);
+
+    *(void **)&result = material;
+    return result;
 }
 
 /* line 1019 */
-__attribute__((naked))
+extern Material * Material_Load(const char *name, int imageTrack);
+
 MaterialHandle Material_Register(const char *name, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1019 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* name */
-        "movl 0xc(%ebp), %eax\n" /* imageTrack */
-        "movl %eax, -0x1c(%ebp)\n" /* imageTrack */
-        /* { scope 1 */
-        "movl %edi, (%esp)\n" /* line 385 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n" /* line 1004 */
-        "andw $0x3ff, %bx\n"
-        "movzwl %bx, %esi\n" /* line 1005 */
-        "movl imp_rg, %edx\n"
-        "movl 0x28(%edx, %esi, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd4528_000d4585\n"
-        ".Lfd4528_000d455a:\n"
-        "movl %edi, 4(%esp)\n" /* line 1007 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd4528_000d45d9\n"
-        "addl $1, %ebx\n" /* line 1013 */
-        "andw $0x3ff, %bx\n" /* line 1004 */
-        "movzwl %bx, %esi\n" /* line 1005 */
-        "movl imp_rg, %edx\n"
-        "movl 0x28(%edx, %esi, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd4528_000d455a\n"
-        ".Lfd4528_000d4585:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1032 | imageTrack */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* name */
-        "calll Material_Load\n"
-        "movl %eax, %ebx\n" /* hashIndex */
-        "testl %eax, %eax\n" /* line 1033 */
-        "je .Lfd4528_000d4613\n"
-        "movl imp_rgp, %ecx\n" /* line 907 */
-        "movl $1, (%ecx)\n"
-        "movw %si, 8(%eax)\n" /* line 910 */
-        "movl 4(%ecx), %eax\n" /* line 911 */
-        "movw %ax, 0xa(%ebx)\n"
-        "movl 4(%ecx), %eax\n" /* line 912 */
-        "movl %ebx, 8(%ecx, %eax, 4)\n"
-        "movl imp_rg, %edx\n" /* line 913 */
-        "movl %ebx, 0x28(%edx, %esi, 4)\n"
-        "addl $1, %eax\n" /* line 914 */
-        "movl %eax, 4(%ecx)\n"
-        "cmpl $0x400, %eax\n" /* line 915 */
-        "je .Lfd4528_000d45ed\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1038 | hashIndex */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4528_000d45d9:\n"
-        "movl imp_rg, %edx\n" /* line 1030 */
-        "movl 0x28(%edx, %esi, 4), %ebx\n" /* hashIndex */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1038 | hashIndex */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4528_000d45ed:\n"
-        "movl $0x400, 8(%esp)\n" /* line 916 */
-        "movl $str_002244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
-" */
-        "movl $0, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1038 | hashIndex */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4528_000d4613:\n"
-        "movl imp_rgp, %ebx\n" /* line 968 */
-        "movl 0x102c(%ebx), %esi\n"
-        "testl %esi, %esi\n"
-        "je .Lfd4528_000d464b\n"
-        ".Lfd4528_000d4623:\n"
-        "movl %edi, 4(%esp)\n" /* line 974 */
-        "movl $str_0022451c, (%esp)\n" /* "^3WARNING: Could not find material '%s'
-" */
-        "calll Com_Printf\n"
-        "movl %edi, 0xc(%ebp)\n" /* line 975 | imageTrack */
-        "movl 0x102c(%ebx), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* name */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1038 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Material_Duplicate\n" /* line 975 */
-        ".Lfd4528_000d464b:\n"
-        "movl $str_002244f8, 4(%esp)\n" /* line 971 */
-        "movl $0, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfd4528_000d4623\n"
-    );
+    byte *rg;
+    byte *rgp;
+    int hash = R_HashAssetName(name) & 0x3ff;
+    byte *existing;
+    Material *material;
+    int count;
+
+    /* Search for existing material */
+    rg = (byte *)imp_rg;
+    existing = *(byte **)(rg + 0x28 + hash * 4);
+    while (existing) {
+        if (strcmp(*(const char **)existing, name) == 0) {
+            /* Found existing material */
+            return (MaterialHandle)*(void **)((byte *)imp_rg + 0x28 + hash * 4);
+        }
+        hash = (hash + 1) & 0x3ff;
+        rg = (byte *)imp_rg;
+        existing = *(byte **)(rg + 0x28 + hash * 4);
+    }
+
+    /* Not found — try loading */
+    material = Material_Load(name, imageTrack);
+    if (!material) {
+        /* Load failed — duplicate from default material */
+        rgp = (byte *)imp_rgp;
+        if (!*(void **)(rgp + 0x102c))
+            R_Error(0, "No default material loaded for %s fallback", name);
+
+        Com_Printf("^3WARNING: Could not find material '%s'\n", name);
+        {
+            _ValueType dup = Material_Duplicate(*(_ValueType *)(rgp + 0x102c), name);
+            return *(MaterialHandle *)&dup;
+        }
+    }
+
+    /* Register new material */
+    rgp = (byte *)imp_rgp;
+    *(int *)rgp = 1; /* needsSort */
+    *(unsigned short *)((byte *)material + 8) = (unsigned short)hash;
+    count = *(int *)(rgp + 4);
+    *(unsigned short *)((byte *)material + 0xa) = (unsigned short)count;
+    *(void **)(rgp + 8 + count * 4) = material;
+    rg = (byte *)imp_rg;
+    *(void **)(rg + 0x28 + hash * 4) = material;
+    count++;
+    *(int *)(rgp + 4) = count;
+
+    if (count == 0x400)
+        R_Error(0, "Too many unique materials (%i or more)\n", 0x400);
+
+    return (MaterialHandle)material;
 }
 
 /* line 1119 */
