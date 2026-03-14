@@ -178,6 +178,7 @@ extern void MatrixIdentity44(void *matrix);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
+extern double pow(double base, double exponent);
 extern const char *R_ErrorDescription(HRESULT hr);
 extern void R_Error(int level, const char *msg, ...);
 extern void R_FlushStaticModelCache(void);
@@ -5209,402 +5210,166 @@ static void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState
 }
 
 /* line 2074 */
-static __attribute__((naked))
-void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
+/* Smallest power of 2 >= v (for texture dimension rounding) */
+static inline unsigned int nextPow2(unsigned int v)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2074 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* execState */
-        /* { scope 1 */
-        "movl (%edi), %ebx\n" /* line 2082 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd9e64_000d9eba\n"
-        "movl tess+370656, %esi\n"
-        "testl %esi, %esi\n"
-        "jne .Lfd9e64_000d9eba\n"
-        "cmpb $0, backEnd+1213\n" /* line 2088 */
-        "je .Lfd9e64_000d9ec8\n"
-        ".Lfd9e64_000d9e8e:\n"
-        "movl imp_rgp, %esi\n" /* line 2094 | material */
-        "movl backEnd+952, %eax\n"
-        "subl 0x10e0(%esi), %eax\n" /* line 2095 | material */
-        "js .Lfd9e64_000d9ea8\n"
-        "movl 4(%ebx), %edx\n" /* cmd */
-        "cmpl %edx, %eax\n"
-        "jl .Lfd9e64_000d9ecf\n"
-        ".Lfd9e64_000d9ea8:\n"
-        "movl (%edi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%edi)\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 2122 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd9e64_000d9eba:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "cmpb $0, backEnd+1213\n" /* line 2088 */
-        "jne .Lfd9e64_000d9e8e\n"
-        ".Lfd9e64_000d9ec8:\n"
-        "calll RB_Set2D\n" /* line 2090 */
-        "jmp .Lfd9e64_000d9e8e\n"
-        ".Lfd9e64_000d9ecf:\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 2097 */
-        "cvtsi2ssl %edx, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 8(%esp)\n"
-        "movl $0x40000000, (%esp)\n"
-        "movl $0x3f847ae1, 4(%esp)\n"
-        "calll pow\n"
-        "fstpl -0x38(%ebp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm0\n"
-        "ucomiss lit4_002ed858, %xmm0\n" /* line 2098 | 0.9900000095367432f */
-        "jbe .Lfd9e64_000da034\n"
-        "movss lit4_002ed85c, %xmm0\n" /* 252.4499969482422f */
-        ".Lfd9e64_000d9f16:\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x3c(%ebp)\n"
-        "cvttss2si -0x3c(%ebp), %eax\n"
-        "movb %al, -0x1c(%ebp)\n" /* color */
-        "movb $0xff, -0x1b(%ebp)\n" /* line 2110 */
-        "movb $0xff, -0x1a(%ebp)\n" /* line 2111 */
-        "movb $0xff, -0x19(%ebp)\n" /* line 2112 */
-        "movl imp_dx, %eax\n" /* line 360 */
-        "movl 0x2cbc(%eax), %eax\n"
-        "movl %eax, backEnd+11916\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 2118 | color */
-        "movl %eax, -0x2c(%ebp)\n" /* color */
-        "movl 0x10d0(%esi), %esi\n" /* material */
-        /* { scope 2: color */
-        "movl imp_dxState, %eax\n" /* line 491 */
-        "movl 0x209c(%eax), %edx\n"
-        "cvtsi2ssl %edx, %xmm3\n"
-        "movl 0x20a0(%eax), %ebx\n" /* line 492 */
-        "cvtsi2ssl %ebx, %xmm2\n"
-        /* { scope 3 */
-        "cmpl $1, %edx\n" /* line 144 */
-        "ja .Lfd9e64_000da012\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        /* } scope */
-        ".Lfd9e64_000d9f85:\n"
-        "movaps %xmm3, %xmm1\n" /* line 494 */
-        "divss %xmm0, %xmm1\n"
-        /* { scope 3 */
-        "cmpl $1, %ebx\n" /* line 144 */
-        "ja .Lfd9e64_000d9ff3\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        /* } scope */
-        /* { scope 3 */
-        ".Lfd9e64_000d9f99:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 473 */
-        "movl -0x2c(%ebp), %eax\n" /* color */
-        "movl %eax, 0x24(%esp)\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movss %xmm1, 0x1c(%esp)\n"
-        "movaps %xmm2, %xmm1\n"
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x18(%esp)\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss %xmm2, 0x10(%esp)\n"
-        "movss %xmm3, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        /* } scope */
-        /* } scope */
-        "movl (%edi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%edi)\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 2122 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2: color */
-        /* { scope 3 */
-        ".Lfd9e64_000d9ff3:\n"
-        "movl $1, %edx\n" /* line 144 */
-        "movl $0x20, %eax\n"
-        ".Lfd9e64_000d9ffd:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, %ebx\n"
-        "jbe .Lfd9e64_000da054\n"
-        "subl $1, %eax\n"
-        "jne .Lfd9e64_000d9ffd\n"
-        "testl %edx, %edx\n"
-        "js .Lfd9e64_000da067\n"
-        ".Lfd9e64_000da00c:\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "jmp .Lfd9e64_000d9f99\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lfd9e64_000da012:\n"
-        "movl $1, %ecx\n"
-        "movl $0x20, %eax\n"
-        ".Lfd9e64_000da01c:\n"
-        "addl %ecx, %ecx\n"
-        "cmpl %ecx, %edx\n"
-        "jbe .Lfd9e64_000da041\n"
-        "subl $1, %eax\n"
-        "jne .Lfd9e64_000da01c\n"
-        "testl %ecx, %ecx\n"
-        "js .Lfd9e64_000da07d\n"
-        ".Lfd9e64_000da02b:\n"
-        "cvtsi2ssl %ecx, %xmm0\n"
-        "jmp .Lfd9e64_000d9f85\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd9e64_000da034:\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* line 2098 | 255.0f */
-        "jmp .Lfd9e64_000d9f16\n"
-        /* { scope 2: color */
-        /* { scope 3 */
-        ".Lfd9e64_000da041:\n"
-        "testl %ecx, %ecx\n" /* line 144 */
-        "jns .Lfd9e64_000da02b\n"
-        "shrl $1, %ecx\n"
-        "cvtsi2ssl %ecx, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lfd9e64_000d9f85\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lfd9e64_000da054:\n"
-        "testl %edx, %edx\n"
-        "jns .Lfd9e64_000da00c\n"
-        "shrl $1, %edx\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lfd9e64_000d9f99\n"
-        ".Lfd9e64_000da067:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lfd9e64_000d9f99\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lfd9e64_000da07d:\n"
-        "movl %ecx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %ecx\n"
-        "orl %ecx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lfd9e64_000d9f85\n"
-    );
+    unsigned int p = 1;
+    if (v <= 1) return 1;
+    while (p < v) p <<= 1;
+    return p;
+}
+
+/* line 2074 */
+static void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
+{
+    byte *cmd;
+    char *rgp;
+    int elapsed, fadeFrames;
+    float alpha, alphaScaled;
+    int alphaByte;
+    D3DCOLOR blendColor;
+    const Material *blendMaterial;
+    float screenWidth, screenHeight;
+    float pow2Width, pow2Height;
+
+    cmd = *(byte **)execState;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    if (!*((byte *)&backEnd + 0x4bd))
+        RB_Set2D();
+
+    rgp = (char *)imp_rgp;
+
+    /* Check if saved screen is recent enough to blend */
+    elapsed = *(int *)((char *)&backEnd + 952) - *(int *)(rgp + 0x10e0);
+    fadeFrames = *(int *)(cmd + 4);
+
+    if (elapsed < 0 || elapsed >= fadeFrames)
+        goto advance;
+
+    /* Calculate blend alpha: pow(0.01, elapsed/fadeFrames) */
+    alpha = (float)pow(0.01, (double)((float)elapsed / (float)fadeFrames));
+
+    if (alpha > 0.99f)
+        alphaScaled = 252.45f;
+    else
+        alphaScaled = alpha * 255.0f;
+
+    /* Convert to byte: floor(alphaScaled + 0.5f) */
+    alphaByte = (int)floorf(alphaScaled + 0.5f);
+
+    /* Build color: [alphaByte, 0xFF, 0xFF, 0xFF] as DWORD */
+    {
+        byte colorBytes[4];
+        colorBytes[0] = (byte)alphaByte;
+        colorBytes[1] = 0xFF;
+        colorBytes[2] = 0xFF;
+        colorBytes[3] = 0xFF;
+        blendColor = *(D3DCOLOR *)colorBytes;
+    }
+
+    /* Set feedback texture to saved screen image */
+    *(void **)((char *)&backEnd + 11916) = *(void **)((char *)imp_dx + 0x2cbc);
+
+    blendMaterial = *(const Material **)(rgp + 0x10d0);
+
+    /* Get screen dimensions and power-of-2 rounded texture sizes */
+    {
+        char *dxState = (char *)imp_dxState;
+        unsigned int sw = (unsigned int)*(int *)(dxState + 0x209c);
+        unsigned int sh = (unsigned int)*(int *)(dxState + 0x20a0);
+        screenWidth = (float)sw;
+        screenHeight = (float)sh;
+        pow2Width = (float)nextPow2(sw);
+        pow2Height = (float)nextPow2(sh);
+    }
+
+    /* Draw fullscreen quad with saved screen texture, UV mapped to power-of-2 texture */
+    RB_DrawStretchPic(blendMaterial,
+        0.0f, 0.0f, screenWidth, screenHeight,
+        0.0f, screenHeight / pow2Height,
+        screenWidth / pow2Width, 0.0f,
+        blendColor, 10);
+
+advance:
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 1868 */
-static __attribute__((naked))
-void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
+/* line 1868 — Helper: StretchRect backbuffer to surface, then Release */
+static void RB_CopyBackBufferToSurface(void *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1868 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        /* { scope 1: screenWidth, screenHeight, screenWidth, screenHeight */
-        "movl tess+370640, %ecx\n" /* line 261 */
-        "testl %ecx, %ecx\n"
-        "jne .Lfda094_000da0d7\n"
-        "movl tess+370656, %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfda094_000da0d7\n"
-        "movl imp_sc_blur, %eax\n" /* line 1880 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lfda094_000da0ea\n"
-        ".Lfda094_000da0bf:\n"
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 1887 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: screenWidth, screenHeight, screenWidth, screenHeight */
-        ".Lfda094_000da0d7:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl imp_sc_blur, %eax\n" /* line 1880 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lfda094_000da0bf\n"
-        ".Lfda094_000da0ea:\n"
-        "movl $0, -0x2c(%ebp)\n" /* blurIter */
-        "movl imp_dxState, %edi\n"
-        "movl imp_alwaysfails, %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "movl imp_dx, %edx\n"
-        "movl %edx, -0x34(%ebp)\n"
-        "movl %edi, -0x38(%ebp)\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "movl %edx, %eax\n"
-        /* { scope 2: image */
-        ".Lfda094_000da113:\n"
-        "cvtsi2ssl 0x209c(%edi), %xmm0\n" /* line 1850 */
-        "movss %xmm0, -0x28(%ebp)\n" /* screenWidth */
-        "cvtsi2ssl 0x20a0(%edi), %xmm0\n" /* line 1851 */
-        "movss %xmm0, -0x24(%ebp)\n" /* screenHeight */
-        "movl 0x2c94(%eax), %esi\n" /* line 1854 */
-        /* { scope 3 */
-        "movl %esi, (%esp)\n" /* line 563 */
-        "calll Image_GetSurface\n"
-        "movl %eax, %ebx\n" /* imageSurface */
-        ".Lfda094_000da13d:\n"
-        "movl imp_dx, %edx\n" /* line 566 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl $2, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* imageSurface */
-        "movl $0, 8(%esp)\n"
-        "movl 0x20a8(%edi), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x88(%ecx)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfda094_000da13d\n"
-        ".Lfda094_000da180:\n"
-        "movl (%ebx), %eax\n" /* line 568 | imageSurface */
-        "movl %ebx, (%esp)\n" /* imageSurface */
-        "calll *8(%eax)\n"
-        "movl imp_alwaysfails, %edx\n"
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfda094_000da180\n"
-        /* } scope */
-        /* { scope 3 */
-        "movl %esi, backEnd+11916\n" /* line 360 */
-        /* } scope */
-        "movl $0xa, 0x28(%esp)\n" /* line 1863 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl $0x3f7f0000, %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0x3c400000, %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0x24(%ebp), %xmm0\n" /* screenHeight */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x28(%ebp), %xmm0\n" /* screenWidth */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movl $0x3f800000, 4(%esp)\n"
-        "movl imp_rgp, %edx\n"
-        "movl 0x1054(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "calll RB_EndSurface\n" /* line 1864 */
-        /* } scope */
-        /* { scope 2: image */
-        "cvtsi2ssl 0x209c(%edi), %xmm0\n" /* line 1850 */
-        "movss %xmm0, -0x20(%ebp)\n" /* screenWidth */
-        "cvtsi2ssl 0x20a0(%edi), %xmm0\n" /* line 1851 */
-        "movss %xmm0, -0x1c(%ebp)\n" /* screenHeight */
-        "movl imp_dx, %eax\n" /* line 1854 */
-        "movl 0x2c94(%eax), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n" /* image */
-        /* { scope 3 */
-        "movl %eax, (%esp)\n" /* line 563 */
-        "calll Image_GetSurface\n"
-        "movl %eax, %ebx\n" /* imageSurface */
-        ".Lfda094_000da245:\n"
-        "movl -0x34(%ebp), %edx\n" /* line 566 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl $2, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* imageSurface */
-        "movl $0, 8(%esp)\n"
-        "movl -0x38(%ebp), %esi\n"
-        "movl 0x20a8(%esi), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x88(%ecx)\n"
-        "movl -0x3c(%ebp), %eax\n"
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfda094_000da245\n"
-        ".Lfda094_000da288:\n"
-        "movl (%ebx), %eax\n" /* line 568 | imageSurface */
-        "movl %ebx, (%esp)\n" /* imageSurface */
-        "calll *8(%eax)\n"
-        "movl -0x40(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfda094_000da288\n"
-        /* } scope */
-        /* { scope 3 */
-        "movl -0x4c(%ebp), %esi\n" /* line 360 | image */
-        "movl %esi, backEnd+11916\n"
-        /* } scope */
-        "movl $0xa, 0x28(%esp)\n" /* line 1863 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl $0x3f7d0000, %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0x3b800000, %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* screenHeight */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x20(%ebp), %xmm0\n" /* screenWidth */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movl $0x3f800000, 4(%esp)\n"
-        "movl imp_rgp, %edx\n"
-        "movl 0x1054(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "calll RB_EndSurface\n" /* line 1864 */
-        /* } scope */
-        "addl $1, -0x2c(%ebp)\n" /* line 1880 | blurIter */
-        "movl imp_sc_blur, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl -0x2c(%ebp), %esi\n" /* blurIter, image */
-        "cmpl 8(%eax), %esi\n" /* image */
-        "jge .Lfda094_000da0bf\n"
-        "movl imp_dx, %eax\n"
-        "jmp .Lfda094_000da113\n"
-    );
+    char *dx = (char *)imp_dx;
+    void *imageSurface = Image_GetSurface(image);
+
+    do {
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        void *backBuffer = *(void **)((char *)imp_dxState + 0x20a8);
+        ((int (__attribute__((stdcall)) *)(void *, void *, void *, void *, void *, int))vtable[0x88/4])(
+            device, backBuffer, NULL, imageSurface, NULL, 2);
+    } while (*(int *)imp_alwaysfails);
+
+    do {
+        ((int (__attribute__((stdcall)) *)(void *))((*(void ***)imageSurface)[2]))(imageSurface);
+    } while (*(int *)imp_alwaysfails);
+}
+
+/* line 1868 */
+static void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
+{
+    int blurCount;
+    int blurIter;
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    blurCount = *(int *)(*(char **)imp_sc_blur + 8);
+    if (blurCount <= 0)
+        goto advance;
+
+    for (blurIter = 0; blurIter < blurCount; blurIter++) {
+        char *dxState = (char *)imp_dxState;
+        char *dx = (char *)imp_dx;
+        float screenWidth = (float)*(int *)(dxState + 0x209c);
+        float screenHeight = (float)*(int *)(dxState + 0x20a0);
+        void *shadowImage = *(void **)(dx + 0x2c94);
+        const Material *blurMaterial = *(const Material **)((char *)imp_rgp + 0x1054);
+
+        /* Pass 1: copy backbuffer, draw with coarse UV inset */
+        RB_CopyBackBufferToSurface(shadowImage);
+        *(void **)((char *)&backEnd + 11916) = shadowImage;
+
+        /* s0=t0=0.01171875 (0x3c400000), s1=t1=0.99609375 (0x3f7f0000) */
+        RB_DrawStretchPic(blurMaterial,
+            1.0f, 1.0f, screenWidth - 2.0f, screenHeight - 2.0f,
+            0.01171875f, 0.01171875f, 0.99609375f, 0.99609375f,
+            0xffffffff, 10);
+        RB_EndSurface();
+
+        /* Pass 2: copy backbuffer again, draw with fine UV inset */
+        screenWidth = (float)*(int *)(dxState + 0x209c);
+        screenHeight = (float)*(int *)(dxState + 0x20a0);
+        shadowImage = *(void **)(dx + 0x2c94);
+
+        RB_CopyBackBufferToSurface(shadowImage);
+        *(void **)((char *)&backEnd + 11916) = shadowImage;
+
+        /* s0=t0=0.00390625 (0x3b800000), s1=t1=0.98828125 (0x3f7d0000) */
+        RB_DrawStretchPic(blurMaterial,
+            1.0f, 1.0f, screenWidth - 2.0f, screenHeight - 2.0f,
+            0.00390625f, 0.00390625f, 0.98828125f, 0.98828125f,
+            0xffffffff, 10);
+        RB_EndSurface();
+    }
+
+advance:
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2904 */
