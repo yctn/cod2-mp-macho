@@ -163,6 +163,10 @@ extern int ColorIndex(int c);
 extern void RB_EndSurface(void);
 extern void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
 extern void diag_rb_draw(unsigned int x_hex, unsigned int y_hex, unsigned int mat_ptr);
+extern void *Image_GetSurface(void *image);
+extern void RB_TessEntity(void *entity);
+extern Bool Material_IsDefault(MaterialHandle handle);
+extern BOOL QueryPerformanceFrequency(void *lpPerformanceFrequency);
 extern void RB_DrawSun(const void *sunData);
 extern void RB_SetShadowLookupMatrix(const void *matrix);
 extern void RB_UpdateViewportConstants(void);
@@ -948,181 +952,78 @@ static void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2475 */
-static __attribute__((naked))
-void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
+/* line 2475 */
+static void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2475 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xc, %esp\n"
-        "movl 8(%ebp), %edi\n" /* execState */
-        /* { scope 1 */
-        "movl (%edi), %esi\n" /* line 2479 | execState, cmd */
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd57be_000d57de\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd57be_000d57e3\n"
-        ".Lfd57be_000d57de:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd57be_000d57e3:\n"
-        "movl 4(%esi), %eax\n" /* line 2486 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2ea0(%edx, %eax, 4), %eax\n"
-        "leal backEnd(%eax), %ebx\n" /* to */
-        "leal 0x18(%esi), %ecx\n" /* cmd, from */
-        /* { scope 2 */
-        "movl 0x18(%esi), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ecx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ebx)\n" /* from */
-        "movl 8(%ecx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ebx)\n" /* from */
-        "movl 0xc(%ecx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ebx)\n" /* from */
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2487 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2eb0(%edx, %eax, 4), %eax\n"
-        "leal backEnd(%eax), %ebx\n" /* to */
-        "leal 0x28(%esi), %ecx\n" /* cmd, from */
-        /* { scope 2 */
-        "movl 0x28(%esi), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ecx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ebx)\n" /* from */
-        "movl 8(%ecx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ebx)\n" /* from */
-        "movl 0xc(%ecx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ebx)\n" /* from */
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2488 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2ec0(%edx, %eax, 4), %eax\n"
-        "leal backEnd(%eax), %ebx\n" /* to */
-        "leal 0x38(%esi), %ecx\n" /* cmd, from */
-        /* { scope 2 */
-        "movl 0x38(%esi), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ecx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ebx)\n" /* from */
-        "movl 8(%ecx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ebx)\n" /* from */
-        "movl 0xc(%ecx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ebx)\n" /* from */
-        /* } scope */
-        "movl 4(%esi), %edx\n" /* line 2489 | cmd */
-        "movl %edx, %ecx\n"
-        "shll $6, %ecx\n"
-        "movl 0x48(%esi), %eax\n" /* cmd */
-        "movl %eax, backEnd+11984(%ecx, %edx, 4)\n"
-        "movl 4(%esi), %eax\n" /* line 2490 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2e90(%edx, %eax, 4), %eax\n"
-        "leal backEnd(%eax), %ebx\n" /* to */
-        "leal 8(%esi), %ecx\n" /* cmd, from */
-        /* { scope 2 */
-        "movl 8(%esi), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ecx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ebx)\n" /* from */
-        "movl 8(%ecx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ebx)\n" /* from */
-        "movl 0xc(%ecx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ebx)\n" /* from */
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2492 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2e90(%edx, %eax, 4), %edx\n"
-        "leal backEnd(%edx), %ebx\n" /* to */
-        "shll $4, %eax\n" /* line 275 */
-        "addl $0x30, %eax\n"
-        "leal backEnd(%eax), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl backEnd(%edx), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 | from */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 | from */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 | from */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2493 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2ea0(%edx, %eax, 4), %edx\n"
-        "leal backEnd(%edx), %ebx\n" /* to */
-        "shll $4, %eax\n" /* line 275 */
-        "addl $0x70, %eax\n"
-        "leal backEnd(%eax), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl backEnd(%edx), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 | from */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 | from */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 | from */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2494 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2eb0(%edx, %eax, 4), %edx\n"
-        "leal backEnd(%edx), %ebx\n" /* to */
-        "shll $4, %eax\n" /* line 275 */
-        "addl $0x50, %eax\n"
-        "leal backEnd(%eax), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl backEnd(%edx), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 | from */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 | from */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 | from */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 2495 | cmd */
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x2ec0(%edx, %eax, 4), %edx\n"
-        "leal backEnd(%edx), %ebx\n" /* to */
-        "shll $4, %eax\n" /* line 275 */
-        "addl $0x90, %eax\n"
-        "leal backEnd(%eax), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl backEnd(%edx), %edx\n" /* line 456 */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 4(%ebx), %eax\n" /* line 457 | from */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 458 | from */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 459 | from */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "movl (%edi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%edi)\n"
-        /* } scope */
-        "addl $0xc, %esp\n" /* line 2498 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd;
+    char *be = (char *)&backEnd;
+    int idx;
+    int lightOfs; /* idx * 68 */
+    int compactOfs; /* idx * 16 */
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+    idx = *(int *)(cmd + 4);
+    lightOfs = idx * 68; /* (idx << 6) + idx * 4 */
+    compactOfs = idx * 16;
+
+    /* Copy light color/direction vectors from cmd to per-light arrays */
+    /* color1 (cmd+0x18) → backEnd+0x2EA0+lightOfs */
+    *(int *)(be + 0x2ea0 + lightOfs + 0)  = *(int *)(cmd + 0x18);
+    *(int *)(be + 0x2ea0 + lightOfs + 4)  = *(int *)(cmd + 0x1c);
+    *(int *)(be + 0x2ea0 + lightOfs + 8)  = *(int *)(cmd + 0x20);
+    *(int *)(be + 0x2ea0 + lightOfs + 12) = *(int *)(cmd + 0x24);
+
+    /* color2 (cmd+0x28) → backEnd+0x2EB0+lightOfs */
+    *(int *)(be + 0x2eb0 + lightOfs + 0)  = *(int *)(cmd + 0x28);
+    *(int *)(be + 0x2eb0 + lightOfs + 4)  = *(int *)(cmd + 0x2c);
+    *(int *)(be + 0x2eb0 + lightOfs + 8)  = *(int *)(cmd + 0x30);
+    *(int *)(be + 0x2eb0 + lightOfs + 12) = *(int *)(cmd + 0x34);
+
+    /* color3 (cmd+0x38) → backEnd+0x2EC0+lightOfs */
+    *(int *)(be + 0x2ec0 + lightOfs + 0)  = *(int *)(cmd + 0x38);
+    *(int *)(be + 0x2ec0 + lightOfs + 4)  = *(int *)(cmd + 0x3c);
+    *(int *)(be + 0x2ec0 + lightOfs + 8)  = *(int *)(cmd + 0x40);
+    *(int *)(be + 0x2ec0 + lightOfs + 12) = *(int *)(cmd + 0x44);
+
+    /* attenuation scalar (cmd+0x48) → backEnd+0x2ED0+lightOfs */
+    *(int *)(be + 0x2ed0 + lightOfs) = *(int *)(cmd + 0x48);
+
+    /* position (cmd+0x08) → backEnd+0x2E90+lightOfs */
+    *(int *)(be + 0x2e90 + lightOfs + 0)  = *(int *)(cmd + 0x08);
+    *(int *)(be + 0x2e90 + lightOfs + 4)  = *(int *)(cmd + 0x0c);
+    *(int *)(be + 0x2e90 + lightOfs + 8)  = *(int *)(cmd + 0x10);
+    *(int *)(be + 0x2e90 + lightOfs + 12) = *(int *)(cmd + 0x14);
+
+    /* Copy per-light data to compact arrays */
+    /* position → backEnd+compactOfs+0x30 */
+    *(int *)(be + compactOfs + 0x30 + 0)  = *(int *)(be + 0x2e90 + lightOfs + 0);
+    *(int *)(be + compactOfs + 0x30 + 4)  = *(int *)(be + 0x2e90 + lightOfs + 4);
+    *(int *)(be + compactOfs + 0x30 + 8)  = *(int *)(be + 0x2e90 + lightOfs + 8);
+    *(int *)(be + compactOfs + 0x30 + 12) = *(int *)(be + 0x2e90 + lightOfs + 12);
+
+    /* color1 → backEnd+compactOfs+0x70 */
+    *(int *)(be + compactOfs + 0x70 + 0)  = *(int *)(be + 0x2ea0 + lightOfs + 0);
+    *(int *)(be + compactOfs + 0x70 + 4)  = *(int *)(be + 0x2ea0 + lightOfs + 4);
+    *(int *)(be + compactOfs + 0x70 + 8)  = *(int *)(be + 0x2ea0 + lightOfs + 8);
+    *(int *)(be + compactOfs + 0x70 + 12) = *(int *)(be + 0x2ea0 + lightOfs + 12);
+
+    /* color2 → backEnd+compactOfs+0x50 */
+    *(int *)(be + compactOfs + 0x50 + 0)  = *(int *)(be + 0x2eb0 + lightOfs + 0);
+    *(int *)(be + compactOfs + 0x50 + 4)  = *(int *)(be + 0x2eb0 + lightOfs + 4);
+    *(int *)(be + compactOfs + 0x50 + 8)  = *(int *)(be + 0x2eb0 + lightOfs + 8);
+    *(int *)(be + compactOfs + 0x50 + 12) = *(int *)(be + 0x2eb0 + lightOfs + 12);
+
+    /* color3 → backEnd+compactOfs+0x90 */
+    *(int *)(be + compactOfs + 0x90 + 0)  = *(int *)(be + 0x2ec0 + lightOfs + 0);
+    *(int *)(be + compactOfs + 0x90 + 4)  = *(int *)(be + 0x2ec0 + lightOfs + 4);
+    *(int *)(be + compactOfs + 0x90 + 8)  = *(int *)(be + 0x2ec0 + lightOfs + 8);
+    *(int *)(be + compactOfs + 0x90 + 12) = *(int *)(be + 0x2ec0 + lightOfs + 12);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 1281 */
@@ -2705,275 +2606,147 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2064 */
-static __attribute__((naked))
-void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
+/* line 2064 */
+static void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2064 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl tess+370640, %edi\n" /* line 261 */
-        "testl %edi, %edi\n"
-        "jne .Lfd7124_000d71ec\n"
-        "movl tess+370656, %esi\n"
-        "testl %esi, %esi\n"
-        "jne .Lfd7124_000d71ec\n"
-        /* { scope 1 */
-        ".Lfd7124_000d7149:\n"
-        "movl imp_dx, %ebx\n" /* line 563 */
-        "movl 0x2cbc(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Image_GetSurface\n"
-        "movl %eax, %esi\n" /* imageSurface */
-        "movl %ebx, -0x1c(%ebp)\n"
-        "movl imp_alwaysfails, %edi\n"
-        "movl %ebx, %edx\n"
-        "jmp .Lfd7124_000d716f\n"
-        ".Lfd7124_000d716c:\n"
-        "movl -0x1c(%ebp), %edx\n"
-        ".Lfd7124_000d716f:\n"
-        "movl 8(%edx), %eax\n" /* line 566 */
-        "movl (%eax), %ecx\n"
-        "movl $2, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n" /* imageSurface */
-        "movl $0, 8(%esp)\n"
-        "movl imp_dxState, %ebx\n"
-        "movl 0x20a8(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x88(%ecx)\n"
-        "movl (%edi), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lfd7124_000d716c\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfd7124_000d71b5:\n"
-        "movl (%esi), %eax\n" /* line 568 | imageSurface */
-        "movl %esi, (%esp)\n" /* imageSurface */
-        "calll *8(%eax)\n"
-        "movl (%ebx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfd7124_000d71b5\n"
-        /* } scope */
-        "movl backEnd+952, %edx\n" /* line 2068 */
-        "movl imp_rgp, %eax\n"
-        "movl %edx, 0x10e0(%eax)\n"
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        "addl $0x3c, %esp\n" /* line 2071 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd7124_000d71ec:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfd7124_000d7149\n"
-    );
+    char *dx;
+    void *imageSurface;
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    dx = (char *)imp_dx;
+    imageSurface = Image_GetSurface(*(void **)(dx + 0x2cbc));
+
+    /* StretchRect: copy back buffer to save surface (vtable[0x88/4]) */
+    do {
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        void *backBuffer = *(void **)((char *)imp_dxState + 0x20a8);
+        ((int (__attribute__((stdcall)) *)(void *, void *, void *, void *, void *, int))vtable[0x88/4])(
+            device, backBuffer, NULL, imageSurface, NULL, 2);
+    } while (*(int *)imp_alwaysfails);
+
+    /* Release imageSurface (vtable[2]) */
+    do {
+        ((int (__attribute__((stdcall)) *)(void *))((*(void ***)imageSurface)[2]))(imageSurface);
+    } while (*(int *)imp_alwaysfails);
+
+    /* Store current viewParms index as saved screen frame */
+    *(int *)((char *)imp_rgp + 0x10e0) = *(int *)((char *)&backEnd + 952);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2036 */
-static __attribute__((naked))
-void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
+/* line 2036 */
+static void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2036 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd71f6_000d730a\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd71f6_000d730a\n"
-        ".Lfd71f6_000d7219:\n"
-        "movl $0xe, backEnd+11908\n" /* line 2042 */
-        "movl imp_r_distortion, %eax\n" /* line 2043 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd71f6_000d726e\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1795 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd71f6_000d72f2\n"
-        "movl imp_dx, %eax\n" /* line 1798 */
-        "cmpb $0, 0x2d7d(%eax)\n"
-        "je .Lfd71f6_000d72f2\n"
-        "movl imp_r_glow, %eax\n" /* line 1801 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd71f6_000d7314\n"
-        ".Lfd71f6_000d7264:\n"
-        "xorl %eax, %eax\n"
-        ".Lfd71f6_000d7266:\n"
-        "testl %eax, %eax\n" /* line 2043 */
-        "je .Lfd71f6_000d72f2\n"
-        /* { scope 1 */
-        ".Lfd71f6_000d726e:\n"
-        "movl imp_dx, %ebx\n" /* line 563 */
-        "movl 0x2c44(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Image_GetSurface\n"
-        "movl %eax, %esi\n" /* imageSurface */
-        "movl %ebx, -0x1c(%ebp)\n"
-        "movl imp_alwaysfails, %edi\n"
-        "movl %ebx, %edx\n"
-        "jmp .Lfd71f6_000d7294\n"
-        ".Lfd71f6_000d7291:\n"
-        "movl -0x1c(%ebp), %edx\n"
-        ".Lfd71f6_000d7294:\n"
-        "movl 8(%edx), %eax\n" /* line 566 */
-        "movl (%eax), %ecx\n"
-        "movl $2, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n" /* imageSurface */
-        "movl $0, 8(%esp)\n"
-        "movl imp_dxState, %ebx\n"
-        "movl 0x20a8(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x88(%ecx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd71f6_000d7291\n"
-        "movl imp_alwaysfails, %ebx\n"
-        ".Lfd71f6_000d72da:\n"
-        "movl (%esi), %eax\n" /* line 568 | imageSurface */
-        "movl %esi, (%esp)\n" /* imageSurface */
-        "calll *8(%eax)\n"
-        "movl (%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd71f6_000d72da\n"
-        /* } scope */
-        "movl $1, backEnd+11908\n" /* line 2054 */
-        ".Lfd71f6_000d72f2:\n"
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        "addl $0x3c, %esp\n" /* line 2061 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd71f6_000d730a:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfd71f6_000d7219\n"
-        ".Lfd71f6_000d7314:\n"
-        "movl imp_r_fullbright, %eax\n" /* line 1801 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd71f6_000d7264\n"
-        "movl $1, %eax\n"
-        "jmp .Lfd71f6_000d7266\n"
-    );
+    int needCopy;
+    byte *cmd;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    /* Set render target to post-effect target */
+    *(int *)((char *)&backEnd + 11908) = 0xe;
+
+    /* Check if distortion is enabled */
+    needCopy = *(byte *)(*(char **)imp_r_distortion + 8);
+
+    if (!needCopy) {
+        /* Check glow support: not Dx7, hardware supports it, glow enabled, not fullbright */
+        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        if (!isDx7 && *(byte *)((char *)imp_dx + 0x2d7d)) {
+            if (*(byte *)(*(char **)imp_r_glow + 8)) {
+                needCopy = !*(byte *)(*(char **)imp_r_fullbright + 8);
+            }
+        }
+    }
+
+    if (needCopy) {
+        char *dx = (char *)imp_dx;
+        void *imageSurface = Image_GetSurface(*(void **)(dx + 0x2c44));
+
+        /* StretchRect: copy back buffer to post-effect surface */
+        do {
+            void *device = *(void **)(dx + 8);
+            void **vtable = *(void ***)device;
+            void *backBuffer = *(void **)((char *)imp_dxState + 0x20a8);
+            ((int (__attribute__((stdcall)) *)(void *, void *, void *, void *, void *, int))vtable[0x88/4])(
+                device, backBuffer, NULL, imageSurface, NULL, 2);
+        } while (*(int *)imp_alwaysfails);
+
+        /* Release imageSurface */
+        do {
+            ((int (__attribute__((stdcall)) *)(void *))((*(void ***)imageSurface)[2]))(imageSurface);
+        } while (*(int *)imp_alwaysfails);
+
+        *(int *)((char *)&backEnd + 11908) = 1;
+    }
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 718 */
-static __attribute__((naked))
-void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
+/* line 718 */
+static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 718 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* execState */
-        /* { scope 1 */
-        "movl (%edi), %esi\n" /* line 723 | execState, cmd */
-        "cmpb $0, backEnd+1213\n" /* line 725 */
-        "jne .Lfd7330_000d7417\n"
-        "movl 4(%esi), %ebx\n" /* line 726 | cmd */
-        /* { scope 2 */
-        "cmpl tess+370620, %ebx\n" /* line 300 */
-        "je .Lfd7330_000d742b\n"
-        ".Lfd7330_000d735d:\n"
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd7330_000d740d\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd7330_000d740d\n"
-        ".Lfd7330_000d7377:\n"
-        "movl $0x1f, 8(%esp)\n" /* line 303 */
-        "movl $3, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        /* } scope */
-        ".Lfd7330_000d738f:\n"
-        "leal -0x8c(%ebp), %ebx\n" /* line 730 | ent, material */
-        "movl $0x74, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* material */
-        "calll memset\n"
-        "leal 0xc(%esi), %edx\n" /* line 732 | cmd, from */
-        /* { scope 2 */
-        "movl 0xc(%esi), %eax\n" /* line 199 */
-        "movl %eax, -0x50(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x4c(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x48(%ebp)\n"
-        /* } scope */
-        "movl 4(%esi), %eax\n" /* line 733 | cmd */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl $4, -0x8c(%ebp)\n" /* line 734 | ent */
-        "movl 0x20(%esi), %eax\n" /* line 735 | cmd */
-        "movl %eax, -0x88(%ebp)\n"
-        "movl 0x18(%esi), %eax\n" /* line 736 | cmd, y */
-        /* { scope 2 */
-        "movl %eax, -0x28(%ebp)\n" /* line 30 */
-        "movl %eax, -0x24(%ebp)\n" /* line 31 */
-        /* } scope */
-        "movl 0x1c(%esi), %eax\n" /* line 737 | cmd */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 8(%esi), %eax\n" /* line 606 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 742 | material */
-        "calll RB_TessEntity\n"
-        "movl (%edi), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%edi)\n"
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 745 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfd7330_000d740d:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lfd7330_000d7377\n"
-        /* } scope */
-        ".Lfd7330_000d7417:\n"
-        "calll RB_Set3D\n" /* line 726 */
-        "movl 4(%esi), %ebx\n" /* cmd */
-        /* { scope 2 */
-        "cmpl tess+370620, %ebx\n" /* line 300 */
-        "jne .Lfd7330_000d735d\n"
-        ".Lfd7330_000d742b:\n"
-        "cmpl $3, tess+370624\n"
-        "jne .Lfd7330_000d735d\n"
-        "jmp .Lfd7330_000d738f\n"
-    );
+    byte *cmd;
+    const Material *spriteMaterial;
+    char *t = (char *)&tess;
+    byte entity[0x74]; /* local GfxEntity-like struct for RB_TessEntity */
+
+    cmd = *(byte **)execState;
+
+    /* Switch to 3D mode if in 2D */
+    if (!*((byte *)&backEnd + 0x4bd))
+        RB_Set3D();
+
+    spriteMaterial = *(const Material **)(cmd + 4);
+
+    /* Begin surface if material or technique changed */
+    if (spriteMaterial != *(const Material **)(t + 0x5a7bc) ||
+        *(MaterialTechniqueType *)(t + 0x5a7c0) != 3) {
+        if (*(int *)(t + 0x5a7d0) != 0 || *(int *)(t + 0x5a7e0) != 0)
+            RB_EndSurface();
+        RB_BeginSurface(spriteMaterial, 3, 0x1f);
+    }
+
+    /* Build entity on stack */
+    memset(entity, 0, 0x74);
+
+    /* origin (entity+0x3c) = cmd+0x0c (vec3) */
+    *(int *)(entity + 0x3c) = *(int *)(cmd + 0x0c);
+    *(int *)(entity + 0x40) = *(int *)(cmd + 0x10);
+    *(int *)(entity + 0x44) = *(int *)(cmd + 0x14);
+
+    /* material (entity+0x54) = cmd+4 */
+    *(int *)(entity + 0x54) = *(int *)(cmd + 4);
+
+    /* surfaceType (entity+0x00) = 4 */
+    *(int *)(entity + 0x00) = 4;
+
+    /* materialTime (entity+0x04) = cmd+0x20 */
+    *(int *)(entity + 0x04) = *(int *)(cmd + 0x20);
+
+    /* radius[0] = radius[1] = cmd+0x18 */
+    *(int *)(entity + 0x64) = *(int *)(cmd + 0x18);
+    *(int *)(entity + 0x68) = *(int *)(cmd + 0x18);
+
+    /* scale (entity+0x70) = cmd+0x1c */
+    *(int *)(entity + 0x70) = *(int *)(cmd + 0x1c);
+
+    /* color (entity+0x58) = cmd+8 */
+    *(int *)(entity + 0x58) = *(int *)(cmd + 8);
+
+    RB_TessEntity(entity);
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 2226 */
@@ -4019,40 +3792,21 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
 }
 
 /* line 3113 */
-static __attribute__((naked))
-void RB_DrawTextInSpaceCmd(GfxRenderCommandExecState *execState)
+/* line 3113 */
+static void RB_DrawTextInSpaceCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3113 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        /* { scope 1 */
-        "movl (%ebx), %eax\n" /* line 3117 | execState */
-        "movl 0x2c(%eax), %edx\n" /* line 3119 */
-        "movl %edx, 0x14(%esp)\n"
-        "leal 0x20(%eax), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "leal 0x14(%eax), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "leal 4(%eax), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl 0x10(%eax), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "addl $0x30, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawTextInSpace\n"
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 3122 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cmd = *(byte **)execState;
+
+    RB_DrawTextInSpace(
+        (const char *)(cmd + 0x30),      /* text */
+        *(FontHandle *)(cmd + 0x10),     /* font */
+        (const vec_t *)(cmd + 4),        /* org */
+        (const vec_t *)(cmd + 0x14),     /* xPixelStep */
+        (const vec_t *)(cmd + 0x20),     /* yPixelStep */
+        *(D3DCOLOR *)(cmd + 0x2c));      /* color */
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 3416 */
@@ -4606,93 +4360,47 @@ static void RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 3383 */
+/* line 3383 */
+static float RB_BenchmarkRepeatedCalls_impl(const Material *material, int iterationCount, float width, float height)
+{
+    long long beginTime, endTime, frequency;
+    int i;
+
+    if (Material_IsDefault((MaterialHandle)material))
+        return 0.0f;
+
+    RB_BeginBenchmarkGpu_impl(&beginTime);
+
+    for (i = 0; i < iterationCount; i++) {
+        RB_DrawStretchPic(material, 0.0f, 0.0f, width, height,
+                          0.0f, 0.0f, 1.0f, 1.0f, 0xffffffff, 10);
+    }
+
+    RB_EndSurface();
+    RB_EndBenchmarkGpu_impl(&endTime);
+
+    QueryPerformanceFrequency(&frequency);
+
+    {
+        double elapsed = (double)(endTime - beginTime) / (double)frequency;
+        return (float)((double)iterationCount / elapsed);
+    }
+}
+
+/* Naked trampoline: marshals register args (eax=material, edx=iterationCount,
+ * xmm0=width, xmm1=height) to stack for _impl */
 static __attribute__((naked))
 float RB_BenchmarkRepeatedCalls(float width, float height)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3383 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "movl %eax, %edi\n" /* material */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movss %xmm1, -0x40(%ebp)\n"
-        "movl %edx, %esi\n" /* iterationCount */
-        /* { scope 1: frequency */
-        "movl %eax, (%esp)\n" /* line 3392 */
-        "calll Material_IsDefault\n"
-        "pxor %xmm0, %xmm0\n"
-        "testb %al, %al\n"
-        "je .Lfd9088_000d90b7\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 3404 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: frequency */
-        ".Lfd9088_000d90b7:\n"
-        "leal -0x20(%ebp), %eax\n" /* line 3395 | beginTime */
-        "calll RB_BeginBenchmarkGpu\n"
-        "testl %esi, %esi\n" /* line 3397 | iterationCount */
-        "jg .Lfd9088_000d9116\n"
-        ".Lfd9088_000d90c3:\n"
-        "calll RB_EndSurface\n" /* line 3399 */
-        "leal -0x28(%ebp), %eax\n" /* line 3401 | endTime */
-        "calll RB_EndBenchmarkGpu\n"
-        /* { scope 2 */
-        "leal -0x30(%ebp), %eax\n" /* line 3378 | frequency */
+        "subl $16, %esp\n"
+        "movss %xmm1, 12(%esp)\n"
+        "movss %xmm0, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
-        "calll QueryPerformanceFrequency\n"
-        /* } scope */
-        "cvtsi2sdl %esi, %xmm1\n" /* line 3403 | iterationCount */
-        "movl -0x28(%ebp), %eax\n" /* endTime */
-        "movl -0x24(%ebp), %edx\n"
-        "subl -0x20(%ebp), %eax\n" /* beginTime */
-        "sbbl -0x1c(%ebp), %edx\n"
-        "pushl %edx\n"
-        "pushl %eax\n"
-        "fildll (%esp)\n"
-        "addl $8, %esp\n"
-        "fstpl -0x50(%ebp)\n"
-        "movsd -0x50(%ebp), %xmm0\n"
-        "fildll -0x30(%ebp)\n" /* frequency */
-        "fstpl -0x48(%ebp)\n"
-        "divsd -0x48(%ebp), %xmm0\n"
-        "divsd %xmm0, %xmm1\n"
-        "cvtsd2ss %xmm1, %xmm0\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 3404 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "calll RB_BenchmarkRepeatedCalls_impl\n"
+        "addl $16, %esp\n"
         "retl\n"
-        /* { scope 1: frequency */
-        ".Lfd9088_000d9116:\n"
-        "xorl %ebx, %ebx\n" /* line 3397 | iteration */
-        ".Lfd9088_000d9118:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 3398 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl $0x3f800000, 0x20(%esp)\n"
-        "movl $0x3f800000, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss -0x40(%ebp), %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* material */
-        "calll RB_DrawStretchPic\n"
-        "addl $1, %ebx\n" /* line 3397 | iteration */
-        "cmpl %ebx, %esi\n" /* iteration, iterationCount */
-        "jne .Lfd9088_000d9118\n"
-        "jmp .Lfd9088_000d90c3\n"
     );
 }
 
