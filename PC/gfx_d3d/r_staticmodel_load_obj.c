@@ -46,46 +46,20 @@ int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale,
 }
 
 /* line 533 */
-__attribute__((naked))
+extern float RB_GetLightingAtPoint(const void *lightGrid, const vec_t *samplePos, vec4_t *colorForDir);
+
 int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float *sunVisibility, vec4_t *colorForDir)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 533 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* smodelInst, sunVisibility */
-        "leal 0x14(%eax), %edx\n"
-        "leal 0x20(%eax), %ecx\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "movss 0x14(%eax), %xmm0\n" /* line 256 */
-        "addss 0x20(%eax), %xmm0\n"
-        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* lightingOrigin */
-        "movss 4(%edx), %xmm0\n" /* line 257 */
-        "addss 4(%ecx), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "movss 8(%edx), %xmm0\n" /* line 258 */
-        "addss 8(%ecx), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0xc(%ebp)\n"
-        /* } scope */
-        "movl 0x14(%ebp), %eax\n" /* line 543 | colorForDir */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x14(%ebp), %eax\n" /* lightingOrigin */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* world */
-        "addl $0x11c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_GetLightingAtPoint\n"
-        "movl 0x10(%ebp), %eax\n" /* sunVisibility */
-        "fstps (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 544 */
-        "retl\n"
-    );
+    float lightingOrigin[3];
+    byte *inst = (byte *)smodelInst;
+
+    /* lightingOrigin = midpoint of absmin and absmax (offsets 0x14 and 0x20) */
+    lightingOrigin[0] = (*(float *)(inst + 0x14) + *(float *)(inst + 0x20)) * 0.5f;
+    lightingOrigin[1] = (*(float *)(inst + 0x18) + *(float *)(inst + 0x24)) * 0.5f;
+    lightingOrigin[2] = (*(float *)(inst + 0x1c) + *(float *)(inst + 0x28)) * 0.5f;
+
+    *sunVisibility = RB_GetLightingAtPoint((byte *)world + 0x11c, lightingOrigin, colorForDir);
+    return 0;
 }
 
 /* line 565 */
@@ -667,46 +641,23 @@ int R_FinishStaticModelLightingCache(GfxWorld *world)
 }
 
 /* line 547 */
-__attribute__((naked))
 int R_GetStaticModelLightingFromGround(const vec_t *groundLight, float *sunVisibility, vec4_t *colorForDir)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 547 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* groundLight */
-        "movl 0x10(%ebp), %edx\n" /* colorForDir */
-        "movl $1, %ebx\n"
-        "leal 4(%esi), %ecx\n" /* groundLight */
-        ".Lf107914_00107927:\n"
-        "movl -4(%ecx), %eax\n" /* line 557 | w */
-        /* { scope 1 */
-        "movl %eax, (%edx)\n" /* line 447 */
-        "movl %eax, 4(%edx)\n" /* line 448 */
-        "movl %eax, 8(%edx)\n" /* line 449 */
-        "movl %eax, 0xc(%edx)\n" /* line 450 */
-        /* } scope */
-        "movl -4(%ecx), %eax\n" /* line 558 | w */
-        /* { scope 1 */
-        "movl %eax, 0x10(%edx)\n" /* line 447 */
-        "movl %eax, 0x14(%edx)\n" /* line 448 */
-        "movl %eax, 0x18(%edx)\n" /* line 449 */
-        "movl %eax, 0x1c(%edx)\n" /* line 450 */
-        "addl $1, %ebx\n"
-        "addl $4, %ecx\n"
-        "addl $0x20, %edx\n"
-        /* } scope */
-        "cmpl $4, %ebx\n" /* line 555 */
-        "jne .Lf107914_00107927\n"
-        "movl 0xc(%esi), %edx\n" /* line 561 | groundLight */
-        "movl 0xc(%ebp), %eax\n" /* sunVisibility */
-        "movl %edx, (%eax)\n"
-        "popl %ebx\n" /* line 562 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i, j;
+    float *dst = (float *)colorForDir;
+
+    /* For each of 3 light directions (indices 1-3), fill two vec4s with the
+     * groundLight value broadcast to all 4 components */
+    for (i = 1; i < 4; i++) {
+        float val = groundLight[i - 1];
+        for (j = 0; j < 4; j++)
+            *dst++ = val;
+        for (j = 0; j < 4; j++)
+            *dst++ = val;
+    }
+
+    *sunVisibility = groundLight[3];
+    return 0;
 }
 
 /* line 658 */

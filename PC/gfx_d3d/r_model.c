@@ -211,174 +211,36 @@ static void R_OptimizeModel(XAssetHeader header, void *data)
 }
 
 /* line 1696 */
-__attribute__((naked))
 void R_GetRigidTransform(const DObjSkelMat *bone, const vec_t *origin, vec3_t *axis, float scale, vec3_t *boneAxis)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1696 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %edx\n" /* bone */
-        "movl 0xc(%ebp), %esi\n" /* origin */
-        "movl 0x10(%ebp), %eax\n" /* axis */
-        "movss 0x14(%ebp), %xmm1\n" /* scale */
-        "movl 0x18(%ebp), %ebx\n" /* boneAxis */
-        /* { scope 1 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss (%eax), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n" /* scaledAxis */
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movaps %xmm1, %xmm0\n" /* line 274 */
-        "mulss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n"
-        "leal 0xc(%eax), %ecx\n" /* line 1701 | v */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss 0xc(%eax), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 4(%ecx), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "movaps %xmm1, %xmm0\n" /* line 274 */
-        "mulss 8(%ecx), %xmm0\n"
-        "movss %xmm0, -0x18(%ebp)\n"
-        /* } scope */
-        "leal 0x18(%eax), %ecx\n" /* line 1702 | v */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 272 */
-        "mulss 0x18(%eax), %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n"
-        "movaps %xmm1, %xmm0\n" /* line 273 */
-        "mulss 4(%ecx), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "mulss 8(%ecx), %xmm1\n" /* line 274 */
-        "movss %xmm1, -0xc(%ebp)\n"
-        /* } scope */
-        "movss (%edx), %xmm1\n" /* line 1704 */
-        "mulss -0x2c(%ebp), %xmm1\n" /* scaledAxis */
-        "movss 4(%edx), %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%edx), %xmm0\n"
-        "mulss -0x14(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%ebx)\n" /* boneAxis */
-        "movss (%edx), %xmm1\n" /* line 1705 */
-        "mulss -0x28(%ebp), %xmm1\n"
-        "movss 4(%edx), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%edx), %xmm0\n"
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%ebx)\n" /* boneAxis */
-        "movss (%edx), %xmm1\n" /* line 1706 */
-        "mulss -0x24(%ebp), %xmm1\n"
-        "movss 4(%edx), %xmm0\n"
-        "mulss -0x18(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%edx), %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 8(%ebx)\n" /* boneAxis */
-        "leal 0xc(%ebx), %eax\n" /* line 1708 | boneAxis */
-        "movss 0x10(%edx), %xmm1\n"
-        "mulss -0x2c(%ebp), %xmm1\n" /* scaledAxis */
-        "movss 0x14(%edx), %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x18(%edx), %xmm0\n"
-        "mulss -0x14(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc(%ebx)\n" /* boneAxis */
-        "movss 0x10(%edx), %xmm1\n" /* line 1709 */
-        "mulss -0x28(%ebp), %xmm1\n"
-        "movss 0x14(%edx), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x18(%edx), %xmm0\n"
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%eax)\n"
-        "movss 0x10(%edx), %xmm1\n" /* line 1710 */
-        "mulss -0x24(%ebp), %xmm1\n"
-        "movss 0x14(%edx), %xmm0\n"
-        "mulss -0x18(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x18(%edx), %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 8(%eax)\n"
-        "leal 0x18(%ebx), %eax\n" /* line 1712 | boneAxis */
-        "movss 0x20(%edx), %xmm1\n"
-        "mulss -0x2c(%ebp), %xmm1\n" /* scaledAxis */
-        "movss 0x24(%edx), %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x28(%edx), %xmm0\n"
-        "mulss -0x14(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x18(%ebx)\n" /* boneAxis */
-        "movss 0x20(%edx), %xmm1\n" /* line 1713 */
-        "mulss -0x28(%ebp), %xmm1\n"
-        "movss 0x24(%edx), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x28(%edx), %xmm0\n"
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%eax)\n"
-        "movss 0x20(%edx), %xmm1\n" /* line 1714 */
-        "mulss -0x24(%ebp), %xmm1\n"
-        "movss 0x24(%edx), %xmm0\n"
-        "mulss -0x18(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x28(%edx), %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 8(%eax)\n"
-        "leal 0x24(%ebx), %eax\n" /* line 1716 | boneAxis */
-        "movss 0x30(%edx), %xmm1\n"
-        "mulss -0x2c(%ebp), %xmm1\n" /* scaledAxis */
-        "movss 0x34(%edx), %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x38(%edx), %xmm0\n"
-        "mulss -0x14(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss (%esi), %xmm1\n" /* origin */
-        "movss %xmm1, 0x24(%ebx)\n" /* boneAxis */
-        "movss 0x30(%edx), %xmm1\n" /* line 1717 */
-        "mulss -0x28(%ebp), %xmm1\n"
-        "movss 0x34(%edx), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x38(%edx), %xmm0\n"
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 4(%esi), %xmm1\n" /* origin */
-        "movss %xmm1, 4(%eax)\n"
-        "movss 0x30(%edx), %xmm1\n" /* line 1718 */
-        "mulss -0x24(%ebp), %xmm1\n"
-        "movss 0x34(%edx), %xmm0\n"
-        "mulss -0x18(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0x38(%edx), %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 8(%esi), %xmm1\n" /* origin */
-        "movss %xmm1, 8(%eax)\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 1719 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float *ax = (float *)axis;
+    float *b = (float *)bone;
+    float *ba = (float *)boneAxis;
+    float sa[9]; /* scaledAxis = scale * axis (3x3 matrix) */
+    int row, col;
+
+    /* Scale the 3x3 axis matrix */
+    for (col = 0; col < 9; col++)
+        sa[col] = scale * ax[col];
+
+    /* Multiply bone rotation (4x3 at bone+0..+0x2c) by scaled axis (3x3)
+     * Result rows 0-3 go to boneAxis[0..3], row 4 (translation) adds origin */
+    for (row = 0; row < 4; row++) {
+        float r0 = b[row * 4 + 0];
+        float r1 = b[row * 4 + 1];
+        float r2 = b[row * 4 + 2];
+
+        ba[row * 3 + 0] = r0 * sa[0] + r1 * sa[3] + r2 * sa[6];
+        ba[row * 3 + 1] = r0 * sa[1] + r1 * sa[4] + r2 * sa[7];
+        ba[row * 3 + 2] = r0 * sa[2] + r1 * sa[5] + r2 * sa[8];
+
+        /* Last row: add origin offset */
+        if (row == 3) {
+            ba[row * 3 + 0] += origin[0];
+            ba[row * 3 + 1] += origin[1];
+            ba[row * 3 + 2] += origin[2];
+        }
+    }
 }
 
 /* line 230 */

@@ -65,6 +65,7 @@ extern int stricmp(const char *s1, const char *s2);
 extern void R_SetPicmip(void);
 extern void Image_UpdatePicmip(GfxImage *image);
 extern void Image_Release(GfxImage *image);
+extern void Image_Reload(GfxImage *image);
 extern Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack);
 extern void R_Error(int errorLevel, const char *msg, ...);
 extern r_global_permanent_t rgp; /* imp_rgp */
@@ -1130,137 +1131,91 @@ void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl)
 }
 
 /* line 1560 */
-__attribute__((naked))
+extern void RB_BindDefaultImages(void);
+extern const char * va(const char *fmt, ...);
+
 void R_Cmd_ReloadMaterialTextures(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1560 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl imp_ri, %ebx\n" /* line 1565 | hashIndex */
-        "calll *0x100(%ebx)\n" /* hashIndex */
-        "cmpl $2, %eax\n"
-        "je .Lfd42b6_000d42e9\n"
-        "movl $str_00224460, 4(%esp)\n" /* line 1567 */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n" /* hashIndex */
-        /* } scope */
-        ".Lfd42b6_000d42e1:\n"
-        "addl $0x2c, %esp\n" /* line 1585 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd42b6_000d42e9:\n"
-        "movl $1, (%esp)\n" /* line 1571 */
-        "calll *0x104(%ebx)\n" /* hashIndex */
-        "movl %eax, %edi\n" /* name */
-        /* { scope 2 */
-        "movl %eax, (%esp)\n" /* line 385 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n" /* line 1004 */
-        "jmp .Lfd42b6_000d4319\n"
-        ".Lfd42b6_000d4304:\n"
-        "movl %edi, 4(%esp)\n" /* line 1007 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd42b6_000d435b\n"
-        "addl $1, %ebx\n" /* line 1013 */
-        ".Lfd42b6_000d4319:\n"
-        "andw $0x3ff, %bx\n" /* line 1004 */
-        "movzwl %bx, %esi\n" /* line 1005 */
-        "movl imp_rg, %edx\n"
-        "movl 0x28(%edx, %esi, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd42b6_000d4304\n"
-        /* } scope */
-        ".Lfd42b6_000d432f:\n"
-        "movl imp_ri, %eax\n" /* line 1578 */
-        "movl (%eax), %ebx\n" /* hashIndex */
-        "movl %edi, 4(%esp)\n" /* name */
-        "movl $str_00224490, (%esp)\n" /* "ReloadMaterialTextures: Material '%s' is not currently loade" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll *%ebx\n" /* hashIndex */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1585 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfd42b6_000d435b:\n"
-        "movl imp_rg, %eax\n" /* line 1111 */
-        "movl 0x28(%eax, %esi, 4), %esi\n"
-        "movl %esi, -0x1c(%ebp)\n" /* material */
-        /* } scope */
-        "testl %esi, %esi\n" /* line 1576 | maxConvert */
-        "je .Lfd42b6_000d432f\n"
-        "calll RB_BindDefaultImages\n" /* line 1582 */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edx\n" /* line 1500 | material */
-        "movzwl 0x34(%edx), %eax\n"
-        "movzwl %ax, %edi\n" /* textureCount */
-        "testw %ax, %ax\n" /* line 1509 */
-        "je .Lfd42b6_000d42e1\n"
-        "xorl %esi, %esi\n" /* maxConvert */
-        ".Lfd42b6_000d4385:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1511 | material */
-        "movl 0x3c(%edx), %eax\n"
-        "testl %esi, %esi\n" /* maxConvert */
-        "je .Lfd42b6_000d43c6\n"
-        "movl %eax, %edx\n" /* line 1522 */
-        "xorl %ecx, %ecx\n"
-        "xorl %ebx, %ebx\n" /* hashIndex */
-        ".Lfd42b6_000d4395:\n"
-        "cmpb $5, 5(%edx)\n" /* line 1512 */
-        "je .Lfd42b6_000d43a8\n"
-        "movl 8(%edx), %eax\n" /* line 1515 */
-        "cmpl %eax, %ebx\n" /* line 1516 | hashIndex */
-        "jae .Lfd42b6_000d43a8\n"
-        "cmpl %eax, %esi\n" /* maxConvert */
-        "jbe .Lfd42b6_000d43a8\n"
-        "movl %eax, %ebx\n" /* hashIndex */
-        ".Lfd42b6_000d43a8:\n"
-        "addl $1, %ecx\n" /* line 1509 */
-        "addl $0xc, %edx\n"
-        "cmpl %ecx, %edi\n" /* textureCount */
-        "jne .Lfd42b6_000d4395\n"
-        ".Lfd42b6_000d43b2:\n"
-        "testl %ebx, %ebx\n" /* line 1521 | hashIndex */
-        "je .Lfd42b6_000d42e1\n"
-        "movl %ebx, (%esp)\n" /* line 1522 | hashIndex */
-        "calll Image_Reload\n"
-        "movl %ebx, %esi\n" /* hashIndex, maxConvert */
-        "jmp .Lfd42b6_000d4385\n"
-        ".Lfd42b6_000d43c6:\n"
-        "movl %eax, %edx\n" /* line 1511 */
-        "xorl %ecx, %ecx\n"
-        "xorl %ebx, %ebx\n" /* hashIndex */
-        ".Lfd42b6_000d43cc:\n"
-        "cmpb $5, 5(%edx)\n" /* line 1512 */
-        "je .Lfd42b6_000d43da\n"
-        "movl 8(%edx), %eax\n" /* line 1515 */
-        "cmpl %eax, %ebx\n" /* line 1516 | hashIndex */
-        "cmovbl %eax, %ebx\n" /* hashIndex */
-        ".Lfd42b6_000d43da:\n"
-        "addl $1, %ecx\n" /* line 1509 */
-        "addl $0xc, %edx\n"
-        "cmpl %ecx, %edi\n" /* textureCount */
-        "jne .Lfd42b6_000d43cc\n"
-        "jmp .Lfd42b6_000d43b2\n"
-    );
+    byte *ri = (byte *)imp_ri;
+    void (*ri_Printf)(int, const char *, ...) = *(void (**)(int, const char *, ...))ri;
+    int (*Cmd_Argc)(void) = *(int (**)(void))(ri + 0x100);
+    const char *(*Cmd_Argv)(int) = *(const char *(**)(int))(ri + 0x104);
+    const char *name;
+    byte *rg;
+    int hash;
+    byte *existing;
+    byte *material;
+    int textureCount, i;
+    byte *texdefs;
+    GfxImage *best;
+    GfxImage *lastReloaded;
+
+    if (Cmd_Argc() != 2) {
+        ri_Printf(0, "Usage: reloadMaterialTextures <materialName>\n");
+        return;
+    }
+
+    name = Cmd_Argv(1);
+
+    /* Look up material in hash table */
+    hash = R_HashAssetName(name);
+    hash &= 0x3ff;
+    rg = (byte *)imp_rg;
+    existing = *(byte **)(rg + 0x28 + hash * 4);
+    while (existing) {
+        if (strcmp(*(const char **)existing, name) == 0)
+            break;
+        hash = (hash + 1) & 0x3ff;
+        rg = (byte *)imp_rg;
+        existing = *(byte **)(rg + 0x28 + hash * 4);
+    }
+
+    material = existing ? *(byte **)((byte *)imp_rg + 0x28 + hash * 4) : NULL;
+
+    if (!material) {
+        ri_Printf(0, "%s", va("ReloadMaterialTextures: Material '%s' is not currently loaded\n", name));
+        return;
+    }
+
+    RB_BindDefaultImages();
+
+    /* Reload textures in order: repeatedly find the smallest image pointer
+     * greater than lastReloaded, and reload it. This ensures ordered reload. */
+    textureCount = *(unsigned short *)(material + 0x34);
+    if (textureCount == 0)
+        return;
+
+    texdefs = *(byte **)(material + 0x3c);
+    lastReloaded = NULL;
+
+    for (;;) {
+        best = NULL;
+        for (i = 0; i < textureCount; i++) {
+            byte *texdef = texdefs + i * 0xc;
+            GfxImage *img;
+
+            if (*(byte *)(texdef + 5) == 5) /* skip water */
+                continue;
+
+            img = *(GfxImage **)(texdef + 8);
+            if (!lastReloaded) {
+                /* First pass: find largest image pointer */
+                if ((unsigned int)img > (unsigned int)best)
+                    best = img;
+            } else {
+                /* Subsequent passes: find largest below lastReloaded */
+                if ((unsigned int)img > (unsigned int)best &&
+                    (unsigned int)img < (unsigned int)lastReloaded)
+                    best = img;
+            }
+        }
+
+        if (!best)
+            return;
+
+        Image_Reload(best);
+        lastReloaded = best;
+    }
 }
 
 /* line 920 */
