@@ -22,6 +22,7 @@ extern void R_Error(int level, const char *msg, ...);
 extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Memcpy(void *dest, const void *src, int count);
 extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
+extern void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
 extern void RB_UpdateViewport(void);
 extern int RB_SetIteratorFog(void);
 extern int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Material *material, D3DLIGHT9 *lights, int maxLights);
@@ -3566,366 +3567,163 @@ void diag_endsurface_entry(void *tess_base) {
     (void)tess_base;
 }
 /* line 1712 */
-__attribute__((naked))
 void RB_EndSurface(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1712 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl imp_tess, %edi\n"
-        "pushl %edi\n"
-        "calll diag_endsurface_entry\n"
-        "addl $4, %esp\n"
-        "movl imp_tess, %edi\n"
-        "movl 0x5a7bc(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lff9de4_diag_has_material\n"
-        "incl g_rb_endsurface_nomaterial\n"
-        "jmp .Lff9de4_000f9e2b\n"
-        ".Lff9de4_diag_has_material:\n"
-        "movl 0x38(%eax), %edx\n"
-        "movl 0x5a7c0(%edi), %eax\n"
-        "movl 4(%edx, %eax, 4), %ebx\n"
-        /* { scope 1 */
-        "incl g_rb_endsurface_count\n" /* diagnostic */
-        "testl %ebx, %ebx\n" /* line 1695 */
-        "jne .Lff9de4_diag_has_tech\n"
-        "incl g_rb_endsurface_notechnique\n" /* diagnostic: no technique */
-        "jmp .Lff9de4_000f9e2b\n"
-        ".Lff9de4_diag_has_tech:\n"
-        "movl imp_backEnd, %esi\n" /* line 1698 */
-        "cmpb $0, 0x4bc(%esi)\n"
-        "jne .Lff9de4_000f9fa6\n"
-        ".Lff9de4_000f9e1d:\n"
-        "movl imp_dxState, %eax\n" /* line 1700 */
-        "cmpb $0, 0x20c8(%eax)\n"
-        "je .Lff9de4_000f9e51\n"
-        "incl g_rb_endsurface_dxstate\n" /* diagnostic: dxState caused skip */
-        /* } scope */
-        ".Lff9de4_000f9e2b:\n"
-        "movl $0, 0x5a7e0(%edi)\n" /* line 1725 */
-        "movl $0, 0x5a7d0(%edi)\n" /* line 1726 */
-        "movl $0, 0x5a7d4(%edi)\n" /* line 1727 */
-        ".Lff9de4_000f9e49:\n"
-        "addl $0x3c, %esp\n" /* line 1765 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lff9de4_000f9e51:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 1703 */
-        "testb $1, %al\n"
-        "je .Lff9de4_000f9e62\n"
-        "cmpl $0xe, 0x2e84(%esi)\n"
-        "jne .Lff9de4_flag1_nonskip\n"
-        "incl g_rb_endsurface_flag1skip\n"
-        "jmp .Lff9de4_000f9e2b\n"
-        ".Lff9de4_flag1_nonskip:\n"
-        ".Lff9de4_000f9e62:\n"
-        "testb $2, %al\n" /* line 1705 */
-        "jne .Lff9de4_000f9fb0\n"
-        /* } scope */
-        ".Lff9de4_000f9e6a:\n"
-        "movl 0x5a7e0(%edi), %ecx\n" /* line 1738 */
-        "testl %ecx, %ecx\n"
-        "jne .Lff9de4_000f9fd7\n"
-        ".Lff9de4_000f9e78:\n"
-        "movl 0x5a7d0(%edi), %ecx\n" /* line 1744 */
-        "testl %ecx, %ecx\n"
-        "jne .Lff9de4_idxnonzero\n"
-        "incl g_rb_endsurface_idxzero\n"
-        "movl g_rb_last_tess_type, %eax\n"
-        "incl g_rb_tess_type_idxzero(, %eax, 4)\n"
-        "pushl %edi\n"
-        "calll diag_idxzero\n"
-        "addl $4, %esp\n"
-        "jmp .Lff9de4_000f9e49\n"
-        ".Lff9de4_idxnonzero:\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 1667 */
-        "movl 0x5a7d4(%edi), %eax\n" /* line 1668 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl $0x55555556, %edx\n" /* line 1669 */
-        "movl %ecx, %eax\n"
-        "imull %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, -0x24(%ebp)\n"
-        "cmpl $1, 0x5a7cc(%edi)\n" /* line 1672 */
-        "je .Lff9de4_000fa11c\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1067 */
-        "movl (%eax), %edx\n"
-        "movl $0x24, %eax\n"
-        "cmpl $2, 8(%edx)\n"
-        "movl $0x40, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* line 1675 */
-        ".Lff9de4_000f9ecd:\n"
-        "movl %ecx, 4(%esp)\n" /* line 1678 */
-        "movl 0x5a7b0(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetIndexData\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl imp_dx, %eax\n" /* line 27 */
-        "movl 0x2db4(%eax), %edx\n"
-        "movl 0x5a7d4(%edi), %eax\n"
-        "imull -0x20(%ebp), %eax\n"
-        "addl (%edx), %eax\n"
-        "cmpl 4(%edx), %eax\n"
-        "jle .Lff9de4_000f9f04\n"
-        "movl $0, (%edx)\n" /* line 28 */
-        ".Lff9de4_000f9f04:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1681 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x5a7d4(%edi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_SetVertexData\n"
-        "movl $0, -0x20(%ebp)\n" /* line 1682 */
-        "movl 0x5a7cc(%edi), %esi\n" /* line 1685 */
-        "movl imp_backEnd, %eax\n" /* line 1562 */
-        "cmpb $0, 0x4bc(%eax)\n"
-        "jne .Lff9de4_000fa112\n"
-        ".Lff9de4_000f9f44:\n"
-        "movl 0x5a7c0(%edi), %edx\n" /* line 1567 */
-        "leal -6(%edx), %eax\n"
-        "cmpl $0xb, %eax\n"
-        "jbe .Lff9de4_000fa102\n"
-        ".Lff9de4_000f9f56:\n"
-        "leal -3(%edx), %eax\n" /* line 1569 */
-        "cmpl $0x17, %eax\n"
-        "jbe .Lff9de4_000fa0f8\n"
-        ".Lff9de4_000f9f62:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lff9de4_000f9fc2\n"
-        ".Lff9de4_000f9f6f:\n"
-        "xorl %edx, %edx\n" /* line 1577 */
-        ".Lff9de4_000f9f71:\n"
-        "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl imp_tess, %ebx\n"
-        "movl 0x5a7c0(%ebx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "movl %esi, %edx\n"
-        "incl g_rb_endsurface_draw\n" /* diagnostic: reached draw */
-        "calll RB_DrawSingleTechnique\n"
-        "movl $0, 0x5a7d0(%ebx)\n" /* line 1686 */
-        "movl $0, 0x5a7d4(%ebx)\n" /* line 1687 */
-        "addl $0x3c, %esp\n" /* line 1765 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lff9de4_000f9fa6:\n"
-        "calll RB_UpdateViewport\n" /* line 1699 */
-        "jmp .Lff9de4_000f9e1d\n"
-        ".Lff9de4_000f9fb0:\n"
-        "cmpl $0xe, 0x2e88(%esi)\n" /* line 1705 */
-        "jne .Lff9de4_000f9e6a\n"
-        "incl g_rb_endsurface_flag2skip\n"
-        "jmp .Lff9de4_000f9e2b\n"
-        /* } scope */
-        ".Lff9de4_000f9fc2:\n"
-        "movl 0x5a7c0(%edi), %eax\n" /* line 1577 */
-        "subl $9, %eax\n"
-        "cmpl $5, %eax\n"
-        "ja .Lff9de4_000f9f6f\n"
-        "movl $overrideEnableRenormalize, %edx\n"
-        "jmp .Lff9de4_000f9f71\n"
-        ".Lff9de4_000f9fd7:\n"
-        "movl 0x5a7e8(%edi), %eax\n" /* line 1624 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 1625 */
-        "movl 0x5a7e4(%edi), %eax\n" /* line 1626 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl $0x55555556, %edx\n" /* line 1627 */
-        "movl %ecx, %eax\n"
-        "imull %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, -0x24(%ebp)\n"
-        "movl %ecx, 4(%esp)\n" /* line 1629 */
-        "movl 0x5a7b4(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetIndexData\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "cmpl $1, 0x5a7b8(%edi)\n" /* line 1631 */
-        "je .Lff9de4_000fa19b\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1089 */
-        "movl (%eax), %eax\n"
-        "movl $0x18, %edx\n"
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x40, %eax\n"
-        "cmovnel %eax, %edx\n"
-        "movl imp_dx, %eax\n" /* line 1024 */
-        "movl 0x2dc4(%eax), %ecx\n"
-        "movl imp_dxState, %eax\n" /* line 220 */
-        "cmpl 0x20d0(%eax), %ecx\n"
-        "je .Lff9de4_000fa13c\n"
-        ".Lff9de4_000fa059:\n"
-        "movl %edx, 0xc(%esp)\n" /* line 221 */
-        "movl $0, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_ChangeStreamSource\n"
-        ".Lff9de4_000fa075:\n"
-        "movl imp_backEnd, %eax\n" /* line 1562 */
-        "cmpb $0, 0x4bc(%eax)\n"
-        "jne .Lff9de4_000fa175\n"
-        ".Lff9de4_000fa087:\n"
-        "movl imp_tess, %ebx\n" /* line 1567 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "leal -6(%edx), %eax\n"
-        "cmpl $0xb, %eax\n"
-        "jbe .Lff9de4_000fa165\n"
-        ".Lff9de4_000fa09f:\n"
-        "leal -3(%edx), %eax\n" /* line 1569 */
-        "cmpl $0x17, %eax\n"
-        "jbe .Lff9de4_000fa15b\n"
-        ".Lff9de4_000fa0ab:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lff9de4_000fa17f\n"
-        ".Lff9de4_000fa0bc:\n"
-        "xorl %edx, %edx\n" /* line 1577 */
-        ".Lff9de4_000fa0be:\n"
-        "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl imp_tess, %eax\n"
-        "movl 0x5a7c0(%eax), %eax\n"
-        "movl %edx, (%esp)\n"
-        "movl $3, %edx\n"
-        "calll RB_DrawSingleTechnique\n"
-        ".Lff9de4_000fa0d9:\n"
-        "movl imp_tess, %edi\n" /* line 1653 */
-        "movl $0, 0x5a7e0(%edi)\n"
-        "movl $0, 0x5a7b8(%edi)\n" /* line 1654 */
-        "jmp .Lff9de4_000f9e78\n"
-        ".Lff9de4_000fa0f8:\n"
-        "calll RB_SetIteratorFog\n" /* line 1570 */
-        "jmp .Lff9de4_000f9f62\n"
-        ".Lff9de4_000fa102:\n"
-        "calll RB_SetupLighting\n" /* line 1568 */
-        "movl 0x5a7c0(%edi), %edx\n"
-        "jmp .Lff9de4_000f9f56\n"
-        ".Lff9de4_000fa112:\n"
-        "calll RB_UpdateViewport\n" /* line 1563 */
-        "jmp .Lff9de4_000f9f44\n"
-        ".Lff9de4_000fa11c:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1078 */
-        "movl (%eax), %edx\n"
-        "movl $0x20, %eax\n"
-        "cmpl $2, 8(%edx)\n"
-        "movl $0x44, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* line 1673 */
-        "jmp .Lff9de4_000f9ecd\n"
-        ".Lff9de4_000fa13c:\n"
-        "movl 0x20d4(%eax), %ebx\n" /* line 220 */
-        "testl %ebx, %ebx\n"
-        "jne .Lff9de4_000fa059\n"
-        "cmpl 0x20d8(%eax), %edx\n"
-        "jne .Lff9de4_000fa059\n"
-        "jmp .Lff9de4_000fa075\n"
-        ".Lff9de4_000fa15b:\n"
-        "calll RB_SetIteratorFog\n" /* line 1570 */
-        "jmp .Lff9de4_000fa0ab\n"
-        ".Lff9de4_000fa165:\n"
-        "calll RB_SetupLighting\n" /* line 1568 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "jmp .Lff9de4_000fa09f\n"
-        ".Lff9de4_000fa175:\n"
-        "calll RB_UpdateViewport\n" /* line 1563 */
-        "jmp .Lff9de4_000fa087\n"
-        ".Lff9de4_000fa17f:\n"
-        "movl 0x5a7c0(%ebx), %eax\n" /* line 1577 */
-        "subl $9, %eax\n"
-        "cmpl $5, %eax\n"
-        "ja .Lff9de4_000fa0bc\n"
-        "movl $overrideEnableRenormalize, %edx\n"
-        "jmp .Lff9de4_000fa0be\n"
-        ".Lff9de4_000fa19b:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1078 */
-        "movl (%eax), %eax\n"
-        "movl $0x20, %edx\n"
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x44, %eax\n"
-        "cmovnel %eax, %edx\n"
-        "movl imp_rgp, %eax\n" /* line 1638 */
-        "movl 0x109c(%eax), %eax\n"
-        "movl 0x30(%eax), %ecx\n"
-        "movl imp_dxState, %eax\n" /* line 220 */
-        "cmpl 0x20d0(%eax), %ecx\n"
-        "je .Lff9de4_000fa260\n"
-        ".Lff9de4_000fa1d2:\n"
-        "movl %edx, 0xc(%esp)\n" /* line 221 */
-        "movl $0, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_ChangeStreamSource\n"
-        ".Lff9de4_000fa1ee:\n"
-        "movl imp_backEnd, %eax\n" /* line 1562 */
-        "cmpb $0, 0x4bc(%eax)\n"
-        "jne .Lff9de4_000fa293\n"
-        ".Lff9de4_000fa200:\n"
-        "movl imp_tess, %ebx\n" /* line 1567 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "leal -6(%edx), %eax\n"
-        "cmpl $0xb, %eax\n"
-        "jbe .Lff9de4_000fa286\n"
-        ".Lff9de4_000fa214:\n"
-        "leal -3(%edx), %eax\n" /* line 1569 */
-        "cmpl $0x17, %eax\n"
-        "jbe .Lff9de4_000fa27f\n"
-        ".Lff9de4_000fa21c:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lff9de4_000fa24b\n"
-        ".Lff9de4_000fa229:\n"
-        "xorl %edx, %edx\n" /* line 1577 */
-        ".Lff9de4_000fa22b:\n"
-        "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl imp_tess, %eax\n"
-        "movl 0x5a7c0(%eax), %eax\n"
-        "movl %edx, (%esp)\n"
-        "movl $1, %edx\n"
-        "calll RB_DrawSingleTechnique\n"
-        "jmp .Lff9de4_000fa0d9\n"
-        ".Lff9de4_000fa24b:\n"
-        "movl 0x5a7c0(%ebx), %eax\n" /* line 1577 */
-        "subl $9, %eax\n"
-        "cmpl $5, %eax\n"
-        "ja .Lff9de4_000fa229\n"
-        "movl $overrideEnableRenormalize, %edx\n"
-        "jmp .Lff9de4_000fa22b\n"
-        ".Lff9de4_000fa260:\n"
-        "movl 0x20d4(%eax), %esi\n" /* line 220 */
-        "testl %esi, %esi\n"
-        "jne .Lff9de4_000fa1d2\n"
-        "cmpl 0x20d8(%eax), %edx\n"
-        "jne .Lff9de4_000fa1d2\n"
-        "jmp .Lff9de4_000fa1ee\n"
-        ".Lff9de4_000fa27f:\n"
-        "calll RB_SetIteratorFog\n" /* line 1570 */
-        "jmp .Lff9de4_000fa21c\n"
-        ".Lff9de4_000fa286:\n"
-        "calll RB_SetupLighting\n" /* line 1568 */
-        "movl 0x5a7c0(%ebx), %edx\n"
-        "jmp .Lff9de4_000fa214\n"
-        ".Lff9de4_000fa293:\n"
-        "calll RB_UpdateViewport\n" /* line 1563 */
-        "jmp .Lff9de4_000fa200\n"
-    );
+    char *tess = RB_TessBase();
+    const Material *material;
+    MaterialTechnique *technique;
+    unsigned short techFlags;
+    char *backEnd;
+    int isDx7;
+    int indexCount;
+    int cachedIndexCount;
+    GfxDrawPrimArgs args;
+    int vertexStride;
+
+    diag_endsurface_entry(tess);
+    tess = RB_TessBase();
+
+    /* Validate material */
+    material = *(const Material **)(tess + 0x5a7bc);
+    if (!material) {
+        g_rb_endsurface_nomaterial++;
+        goto cleanup;
+    }
+
+    /* Look up technique for current techType */
+    technique = material->techniqueSet->techniques[
+        *(MaterialTechniqueType *)(tess + 0x5a7c0)];
+
+    g_rb_endsurface_count++;
+
+    if (!technique) {
+        g_rb_endsurface_notechnique++;
+        goto cleanup;
+    }
+
+    /* Update viewport if dirty */
+    backEnd = (char *)imp_backEnd;
+    if (*(byte *)(backEnd + 0x4bc))
+        RB_UpdateViewport();
+
+    /* Skip draw if dxState device lost / not ready */
+    if (*(byte *)((char *)imp_dxState + 0x20c8)) {
+        g_rb_endsurface_dxstate++;
+        goto cleanup;
+    }
+
+    /* Check technique flags for shadow texture availability */
+    techFlags = technique->flags;
+    if (techFlags & 1) {
+        if (*(int *)(backEnd + 0x2e84) == 0xe) {
+            g_rb_endsurface_flag1skip++;
+            goto cleanup;
+        }
+    }
+    if (techFlags & 2) {
+        if (*(int *)(backEnd + 0x2e88) == 0xe) {
+            g_rb_endsurface_flag2skip++;
+            goto cleanup;
+        }
+    }
+
+    /* === Cached/optimized geometry path (static model cache, world VB) === */
+    cachedIndexCount = *(int *)(tess + 0x5a7e0); /* optimizedIndexCount */
+    if (cachedIndexCount != 0) {
+        int cachedVertDeclType;
+        IDirect3DVertexBuffer9 *vb;
+        char *dxState;
+
+        /* Build draw args from cached fields */
+        args.firstVertexFromBase = 0;
+        args.vertexCount = *(int *)(tess + 0x5a7e4); /* optimizedVertexCount */
+        args.primCount = cachedIndexCount / 3;
+        args.u.buf.baseIndex = RB_SetIndexData(
+            *(r_index_t **)(tess + 0x5a7b4), cachedIndexCount);
+
+        isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+        if (*(int *)(tess + 0x5a7b8) == 1) {
+            /* VERTDECL_WORLD: vertex data in world vertex buffer */
+            vertexStride = isDx7 ? 0x20 : 0x44;
+            vb = *(IDirect3DVertexBuffer9 **)
+                ((char *)*(void **)((char *)imp_rgp + 0x109c) + 0x30);
+            cachedVertDeclType = 1; /* VERTDECL_WORLD */
+        } else {
+            /* VERTDECL_STATICMODELCACHE: vertex data in static model cache VB */
+            vertexStride = isDx7 ? 0x18 : 0x40;
+            vb = *(IDirect3DVertexBuffer9 **)((char *)imp_dx + 0x2dc4);
+            cachedVertDeclType = 3; /* VERTDECL_STATICMODELCACHE */
+        }
+
+        /* Update stream source if VB, offset, or stride changed */
+        dxState = (char *)imp_dxState;
+        if (vb != *(IDirect3DVertexBuffer9 **)(dxState + 0x20d0) ||
+            *(int *)(dxState + 0x20d4) != 0 ||
+            *(int *)(dxState + 0x20d8) != vertexStride) {
+            RB_ChangeStreamSource(0, vb, 0, vertexStride);
+        }
+
+        args.u.buf.baseVertex = *(int *)(tess + 0x5a7e8); /* firstOptimizedVertex */
+
+        /* Draw cached geometry: setup lighting/fog/renormalize + draw */
+        RB_DrawTechnique(cachedVertDeclType, &args);
+
+        /* Clear cached state and fall through to check main tess path */
+        tess = RB_TessBase();
+        *(int *)(tess + 0x5a7e0) = 0; /* optimizedIndexCount */
+        *(int *)(tess + 0x5a7b8) = 0; /* optimizedVertexSource */
+    }
+
+    /* === Main tessellation path === */
+    indexCount = *(int *)(tess + 0x5a7d0);
+    if (indexCount == 0) {
+        g_rb_endsurface_idxzero++;
+        g_rb_tess_type_idxzero[g_rb_last_tess_type]++;
+        diag_idxzero(tess);
+        return;
+    }
+
+    /* Build draw args from main tess fields */
+    args.firstVertexFromBase = 0;
+    args.vertexCount = *(int *)(tess + 0x5a7d4);
+    args.primCount = indexCount / 3;
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    if (*(int *)(tess + 0x5a7cc) == 1) /* declType == VERTDECL_WORLD */
+        vertexStride = isDx7 ? 0x20 : 0x44;
+    else
+        vertexStride = isDx7 ? 0x24 : 0x40;
+
+    /* Upload index data to GPU index buffer */
+    args.u.buf.baseIndex = RB_SetIndexData(
+        *(r_index_t **)(tess + 0x5a7b0), indexCount);
+
+    /* Dynamic VB overflow check: reset write offset if data won't fit */
+    {
+        char *dx = (char *)imp_dx;
+        int *lockSlot = *(int **)(dx + 0x2db4);
+        int needed = *(int *)(tess + 0x5a7d4) * vertexStride + lockSlot[0];
+        if (needed > lockSlot[1])
+            lockSlot[0] = 0;
+    }
+
+    /* Upload vertex data to GPU vertex buffer */
+    RB_SetVertexData(0, tess, *(int *)(tess + 0x5a7d4), vertexStride);
+    args.u.buf.baseVertex = 0;
+
+    /* Draw main tess geometry */
+    g_rb_endsurface_draw++;
+    RB_DrawTechnique(*(MaterialVertexDeclType *)(tess + 0x5a7cc), &args);
+
+    /* Clear tess counts */
+    tess = RB_TessBase();
+    *(int *)(tess + 0x5a7d0) = 0; /* indexCount */
+    *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
+    return;
+
+cleanup:
+    *(int *)(tess + 0x5a7e0) = 0; /* optimizedIndexCount */
+    *(int *)(tess + 0x5a7d0) = 0; /* indexCount */
+    *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
 }
