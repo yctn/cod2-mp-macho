@@ -23,6 +23,7 @@ extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Memcpy(void *dest, const void *src, int count);
 extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 extern void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
+extern void *CColorConverter_GetColorConverter(int mode);
 extern void RB_UpdateViewport(void);
 extern int RB_SetIteratorFog(void);
 extern int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Material *material, D3DLIGHT9 *lights, int maxLights);
@@ -481,8 +482,129 @@ void RB_SetupLighting(void)
 }
 
 /* line 210 */
-__attribute__((naked))
+/* Copy vertex data with color conversion for a specific stride.
+ * colorOfs = byte offset of the DWORD color field within the vertex.
+ * Copies all fields verbatim except color, which goes through the converter. */
+static void RB_CopyVerticesWithColorConvert(const byte *src, byte *dst,
+                                             int vertCount, int stride,
+                                             int colorOfs, void *converter)
+{
+    typedef void (*ConvertFunc)(void *conv, int *outColor, const byte *srcColor);
+    ConvertFunc convert = *(ConvertFunc *)*(void ***)converter;
+    int i;
+
+    for (i = 0; i < vertCount; i++) {
+        int j;
+        int convertedColor;
+
+        /* Copy all dwords before color */
+        for (j = 0; j < colorOfs; j += 4)
+            *(int *)(dst + j) = *(const int *)(src + j);
+
+        /* Convert color */
+        convert(converter, &convertedColor, src + colorOfs);
+        *(int *)(dst + colorOfs) = convertedColor;
+
+        /* Copy all dwords after color */
+        for (j = colorOfs + 4; j < stride; j += 4)
+            *(int *)(dst + j) = *(const int *)(src + j);
+
+        src += stride;
+        dst += stride;
+    }
+}
+
+/* line 210 */
 void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCount, int stride)
+{
+    char *dx = (char *)imp_dx;
+    int totalSize = stride * vertexCount;
+    int *lockSlot = *(int **)(dx + 0x2db4);
+    IDirect3DVertexBuffer9 *dxVb = *(IDirect3DVertexBuffer9 **)(lockSlot + 2); /* lockSlot[8] = VB ptr */
+    int writeOffset = lockSlot[0];
+    DWORD lockFlags;
+    byte *bufferData;
+    HRESULT hr;
+
+    /* Determine lock flags: DISCARD if at start, NOOVERWRITE if appending */
+    if (writeOffset == 0 || *(int *)(dx + 0x2c20) == 0)
+        lockFlags = 0x2000; /* D3DLOCK_DISCARD */
+    else
+        lockFlags = 0; /* D3DLOCK_NOOVERWRITE */
+
+    /* Lock vertex buffer: VB vtable[0x2c/4] = Lock (index 11) */
+    hr = ((HRESULT (__attribute__((stdcall)) *)(IDirect3DVertexBuffer9 *, UINT, UINT, void **, DWORD))
+          (*(void ***)(dxVb))[0x2c/4])(dxVb, (UINT)writeOffset, (UINT)totalSize, (void **)&bufferData, lockFlags);
+
+    if (hr < 0)
+        R_FatalLockError(hr);
+
+    /* Copy vertex data from tess to locked buffer, applying color conversion */
+    {
+        int numVerts = totalSize / stride;
+        void *converter = CColorConverter_GetColorConverter(0);
+
+        switch (stride) {
+        case 0x14: /* 20 bytes: no color conversion, direct memcpy */
+            Com_Memcpy(bufferData, data, totalSize);
+            break;
+
+        case 0x18: /* 24 = Dx7 world vertex: color at offset 0x0c */
+            RB_CopyVerticesWithColorConvert((const byte *)data, bufferData,
+                numVerts, stride, 0x0c, converter);
+            break;
+
+        case 0x20: /* 32 = static model cached Dx7: color at offset 0x0c */
+            RB_CopyVerticesWithColorConvert((const byte *)data, bufferData,
+                numVerts, stride, 0x0c, converter);
+            break;
+
+        case 0x24: /* 36 = Dx7 generic vertex: color at offset 0x18 */
+            RB_CopyVerticesWithColorConvert((const byte *)data, bufferData,
+                numVerts, stride, 0x18, converter);
+            break;
+
+        case 0x40: /* 64 = non-Dx7 generic vertex: color at offset 0x1c */
+            RB_CopyVerticesWithColorConvert((const byte *)data, bufferData,
+                numVerts, stride, 0x1c, converter);
+            break;
+
+        case 0x44: /* 68 = non-Dx7 world vertex: color at offset 0x1c */
+            RB_CopyVerticesWithColorConvert((const byte *)data, bufferData,
+                numVerts, stride, 0x1c, converter);
+            break;
+
+        default: /* Unknown stride: memcpy without color conversion */
+            Com_Memcpy(bufferData, data, totalSize);
+            break;
+        }
+    }
+
+    /* Unlock vertex buffer: VB vtable[0x30/4] = Unlock (index 12) */
+    do {
+        ((HRESULT (__attribute__((stdcall)) *)(IDirect3DVertexBuffer9 *))
+            (*(void ***)(dxVb))[0x30/4])(dxVb);
+    } while (*(int *)imp_alwaysfails);
+
+    /* Update stream source if VB, offset, or stride changed */
+    {
+        char *dxState = (char *)imp_dxState;
+        int ssOfs = streamIndex * 12;
+        int vertexOffset = lockSlot[0];
+
+        if (dxVb != *(IDirect3DVertexBuffer9 **)(dxState + 0x20d0 + ssOfs)) {
+            RB_ChangeStreamSource(streamIndex, dxVb, vertexOffset, stride);
+        } else if (*(int *)(dxState + 0x20d4 + ssOfs) != vertexOffset ||
+                   *(int *)(dxState + 0x20d8 + ssOfs) != stride) {
+            RB_ChangeStreamSource(streamIndex, dxVb, vertexOffset, stride);
+        }
+    }
+
+    /* Advance the write position in the lock slot */
+    lockSlot[0] += totalSize;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 210 */
@@ -1033,6 +1155,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         ".text\n"
     );
 }
+#endif
 
 /* line 710 */
 static __attribute__((naked))
