@@ -1085,8 +1085,96 @@ static void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2761 */
-static __attribute__((naked))
-void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
+static void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
+{
+    byte *cmd;
+    char *be = (char *)&backEnd;
+    char *viewParms;
+    char *frustum;
+    float invProjDist, twoInvProjDist;
+    float pow2W, pow2H;
+    float pixelScaleW, pixelScaleH;
+    float scale;
+    int i;
+
+    if (*(int *)((byte *)&tess + 370640) || *(int *)((byte *)&tess + 370656))
+        RB_EndSurface();
+
+    cmd = *(byte **)execState;
+
+    /* Copy render target ID */
+    *(int *)(be + 948) = *(int *)(cmd + 0x2c);
+
+    /* Copy view parameters (cmd+4..cmd+0x28 → backEnd+952..988) */
+    for (i = 0; i < 10; i++)
+        *(int *)(be + 952 + i * 4) = *(int *)(cmd + 4 + i * 4);
+
+    /* viewParms pointer stored at cmd+0x14, also saved to backEnd+968 */
+    viewParms = *(char **)(be + 968);
+
+    /* Copy viewport rect (viewParms+0x30..0x3c → backEnd+992..1004) */
+    for (i = 0; i < 4; i++)
+        *(int *)(be + 992 + i * 4) = *(int *)(viewParms + 0x30 + i * 4);
+
+    /* Copy projection matrix (viewParms+0xc8..0x104 → backEnd+1008..1068, 16 floats) */
+    for (i = 0; i < 16; i++)
+        *(int *)(be + 1008 + i * 4) = *(int *)(viewParms + 0xc8 + i * 4);
+
+    *(int *)(be + 1072) = 0;
+    *(int *)(be + 1076) = 1;
+
+    /* Copy screen dimensions from vidConfig */
+    *(int *)(be + 1080) = *(int *)((char *)imp_vidConfig);
+    *(int *)(be + 1084) = *(int *)((char *)imp_vidConfig + 4);
+
+    /* Update viewport constants if no render target is set */
+    if (!*(int *)((char *)imp_dxState + 0x20a4))
+        RB_UpdateViewportConstants();
+
+    /* Compute frustum vectors for pixel-accurate rendering */
+    viewParms = *(char **)(be + 968);
+    frustum = viewParms + 0x108;
+
+    /* frustumCenter = projPoint/projDist - viewOrigin */
+    invProjDist = 1.0f / *(float *)(frustum + 0x3c);
+    *(float *)(be + 240) = invProjDist * *(float *)(frustum + 0x30) - *(float *)viewParms;
+    *(float *)(be + 244) = invProjDist * *(float *)(frustum + 0x34) - *(float *)(viewParms + 4);
+    *(float *)(be + 248) = invProjDist * *(float *)(frustum + 0x38) - *(float *)(viewParms + 8);
+    *(int *)(be + 252) = 0;
+
+    twoInvProjDist = invProjDist * 2.0f;
+
+    /* frustumRight = pixelScaleWidth * twoInvProjDist * rightAxis */
+    {
+        unsigned int sw = (unsigned int)*(int *)(be + 1080);
+        pow2W = (float)nextPow2(sw);
+        pixelScaleW = pow2W / (float)sw;
+    }
+    scale = pixelScaleW * twoInvProjDist;
+    *(float *)(be + 256) = scale * *(float *)(frustum + 0);
+    *(float *)(be + 260) = scale * *(float *)(frustum + 4);
+    *(float *)(be + 264) = scale * *(float *)(frustum + 8);
+    *(int *)(be + 268) = 0;
+
+    /* frustumUp = -pixelScaleHeight * twoInvProjDist * upAxis */
+    {
+        unsigned int sh = (unsigned int)*(int *)(be + 1084);
+        pow2H = (float)nextPow2(sh);
+        pixelScaleH = pow2H / (float)sh;
+    }
+    scale = -(pixelScaleH * twoInvProjDist);
+    *(float *)(be + 272) = scale * *(float *)(frustum + 0x10);
+    *(float *)(be + 276) = scale * *(float *)(frustum + 0x14);
+    *(float *)(be + 280) = scale * *(float *)(frustum + 0x18);
+    *(int *)(be + 284) = 0;
+
+    RB_Set3D();
+
+    cmd = *(byte **)execState;
+    *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2761 */
@@ -1322,6 +1410,7 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfd5af4_000d5cfd\n"
     );
 }
+#endif
 
 /* line 2807 */
 static void RB_SetViewportCmd(GfxRenderCommandExecState *execState)
