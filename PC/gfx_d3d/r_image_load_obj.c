@@ -1073,8 +1073,106 @@ GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight)
 }
 
 /* line 856 */
-static __attribute__((naked))
-jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, jpeg_alloc (*Callback)())
+/* Callback type for cubemap pixel generation */
+typedef void (*CubemapPixelCallback)(const vec_t *facePos, int userData, byte *pixel);
+
+/* line 856 — Generate a cubemap by calling a per-pixel callback for each face.
+ * faceAxis[6][3] encodes normal/right/up axes: bit0=sign, bits1+=axisIndex.
+ * For each face texel, computes world-space direction and calls the callback. */
+static jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, jpeg_alloc (*Callback)())
+{
+    CubemapPixelCallback cb = (CubemapPixelCallback)Callback;
+    float invRes = 1.0f / (float)res;
+    int pixelIndex = 0;
+    int face;
+
+    for (face = 0; face < 6; face++) {
+        const int *axes = &faceAxis[face][0];
+        vec_t faceOrigin[3] = {0, 0, 0};
+        vec_t rightStep[3] = {0, 0, 0};
+        vec_t upStep[3] = {0, 0, 0};
+        int t, s;
+
+        /* Normal axis: set face origin component */
+        {
+            int a = axes[0];
+            int idx = a >> 1;
+            faceOrigin[idx] = (a & 1) ? -1.0f : 1.0f;
+        }
+
+        /* Right axis: add to origin + set step vector */
+        {
+            int a = axes[1];
+            int idx = a >> 1;
+            if (a & 1) {
+                faceOrigin[idx] += 1.0f;
+                rightStep[idx] = -2.0f;
+            } else {
+                faceOrigin[idx] += -1.0f;
+                rightStep[idx] = 2.0f;
+            }
+        }
+
+        /* Up axis: add to origin + set step vector */
+        {
+            int a = axes[2];
+            int idx = a >> 1;
+            if (a & 1) {
+                faceOrigin[idx] += 1.0f;
+                upStep[idx] = -2.0f;
+            } else {
+                faceOrigin[idx] += -1.0f;
+                upStep[idx] = 2.0f;
+            }
+        }
+
+        /* Scale step vectors by 1/res */
+        rightStep[0] *= invRes;  rightStep[1] *= invRes;  rightStep[2] *= invRes;
+        upStep[0] *= invRes;     upStep[1] *= invRes;     upStep[2] *= invRes;
+
+        /* Iterate over texels */
+        for (t = 0; t < res; t++) {
+            /* Start position for this row: origin + (0.5) * rightStep */
+            vec_t facePos[3];
+            facePos[0] = faceOrigin[0] + 0.5f * rightStep[0];
+            facePos[1] = faceOrigin[1] + 0.5f * rightStep[1];
+            facePos[2] = faceOrigin[2] + 0.5f * rightStep[2];
+
+            /* Add (t + 0.5) * upStep */
+            {
+                float tScale = (float)t + 0.5f;
+                facePos[0] += tScale * upStep[0];
+                facePos[1] += tScale * upStep[1];
+                facePos[2] += tScale * upStep[2];
+            }
+
+            for (s = 0; s < res; s++) {
+                cb(facePos, userData, pic + pixelIndex * 4);
+                pixelIndex++;
+
+                /* Advance position by rightStep */
+                facePos[0] += rightStep[0];
+                facePos[1] += rightStep[1];
+                facePos[2] += rightStep[2];
+            }
+        }
+    }
+
+    /* Setup as cubemap and upload each face */
+    {
+        int faceStride = res * res * 4;
+        byte *faceData = pic;
+
+        Image_Setup(image, res, res, 1, 7, 0, 0x15); /* D3DFMT_A8R8G8B8, cubemap */
+
+        for (face = 0; face < 6; face++) {
+            Image_UploadData(image, 0x15, Image_CubemapFace(face), 0, faceData);
+            faceData += faceStride;
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 856 */
@@ -1272,6 +1370,7 @@ jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, in
         "jmp .Lffd64a_000fd691\n"
     );
 }
+#endif
 
 /* line 672 */
 /* line 672 — Load a raw JPEG image file */

@@ -12,6 +12,8 @@
 
 static int smodelLoadGlob; /* smodelLoadGlob */
 
+extern void *Hunk_AllocAlignInternal(int size, int alignment);
+
 static int CompareStaticModels(const int *smodel0, const int *smodel1);
 int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale, float *sunVisibility, vec4_t *colorForDir);
 int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float *sunVisibility, vec4_t *colorForDir);
@@ -1623,8 +1625,37 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
 }
 
 /* line 28 */
-__attribute__((naked))
+/* line 28 — Recursively allocate permanent Hunk memory for static model index
+ * arrays in each AABB tree node. Replaces temp pointers with Hunk-allocated copies.
+ * GfxAabbTree layout: +0x20=smodelCount, +0x24=smodelIndices, +0x28=childCount, +0x2c=children */
+static void R_AllocStaticModels_node(byte *node)
+{
+    int smodelCount = *(int *)(node + 0x20);
+    int childCount, i;
+
+    /* Allocate and copy static model indices if this node has any */
+    if (smodelCount > 0) {
+        int size = smodelCount * 4;
+        void *dst = Hunk_AllocAlignInternal(size, 4);
+        memcpy(dst, *(void **)(node + 0x24), size);
+        *(void **)(node + 0x24) = dst;
+    }
+
+    /* Recurse into children (each child node is 0x30 bytes) */
+    childCount = *(int *)(node + 0x28);
+    for (i = 0; i < childCount; i++) {
+        byte *child = *(byte **)(node + 0x2c) + i * 0x30;
+        R_AllocStaticModels_node(child);
+    }
+}
+
 int R_AllocStaticModels(GfxAabbTree *tree)
+{
+    R_AllocStaticModels_node((byte *)tree);
+    return 0;
+}
+
+#if 0 /* original naked — 450 lines of unrolled recursion replaced by ~20 lines above */
 {
     __asm__ __volatile__ (
         ".Lf10863a_0010863a:\n"
@@ -2051,4 +2082,5 @@ int R_AllocStaticModels(GfxAabbTree *tree)
         "retl\n"
     );
 }
+#endif
 
