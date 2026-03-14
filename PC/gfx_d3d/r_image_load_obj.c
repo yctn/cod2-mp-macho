@@ -37,12 +37,13 @@ static jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fi
 static jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock);
 static jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel);
 jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, const byte *srcData);
-static jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel);
-static jpeg_alloc Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel);
-static jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel);
+static void Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel);
+static void Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel);
+static void Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel);
 Bool Image_LoadFromFile(GfxImage *image);
 GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight);
-static jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, jpeg_alloc (*Callback)());
+typedef void (*CubemapPixelCallback)(const vec_t *facePos, int userData, byte *pixel);
+static void Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, CubemapPixelCallback Callback);
 Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack);
 static jpeg_alloc Image_LoadLightmapWeights(GfxImage *image);
 GfxImage * Image_Load(const char *name, int semantic, int imageTrack);
@@ -748,7 +749,7 @@ jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, c
 /* line 981 */
 /* line 981 — Compute sun half-angle direction and store as packed RGBA byte pixel.
  * halfAngle = normalize(sunDir - normalize(facePos)), mapped to [0,255]. */
-static jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel)
+static void Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel)
 {
     vec_t dirFromEye[3], halfAngle[3];
     char *drawSurfs;
@@ -776,7 +777,7 @@ static jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignor
 /* line 1026 */
 /* line 1026 — Compute water color with Fresnel reflectance in the alpha channel.
  * packedColor provides base RGB, Fresnel term replaces the alpha byte. */
-static jpeg_alloc Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel)
+static void Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel)
 {
     vec_t dirFromEye[3];
     float fresnel;
@@ -811,7 +812,7 @@ static inline float SmoothStep(float t)
 /* line 928 — Compute light grid blend weights for a cubemap face direction.
  * Transforms facePos through lightGridLookupMatrix, normalizes to cube face,
  * applies smoothstep interpolation, and outputs 4-byte blend weights. */
-static jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel)
+static void Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, byte *pixel)
 {
     vec_t transformedPos[3];
     float invMajor;
@@ -1073,15 +1074,12 @@ GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight)
 }
 
 /* line 856 */
-/* Callback type for cubemap pixel generation */
-typedef void (*CubemapPixelCallback)(const vec_t *facePos, int userData, byte *pixel);
-
 /* line 856 — Generate a cubemap by calling a per-pixel callback for each face.
  * faceAxis[6][3] encodes normal/right/up axes: bit0=sign, bits1+=axisIndex.
  * For each face texel, computes world-space direction and calls the callback. */
-static jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, jpeg_alloc (*Callback)())
+static void Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, int userData, CubemapPixelCallback Callback)
 {
-    CubemapPixelCallback cb = (CubemapPixelCallback)Callback;
+    CubemapPixelCallback cb = Callback;
     float invRes = 1.0f / (float)res;
     int pixelIndex = 0;
     int face;
@@ -1635,7 +1633,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         /* Identity normal: (0x80, 0x80, 0xFF) with alpha 0x80 */
         return Image_CreateSolidColor(name, (byte)semantic, imageTrack, 0x80, 0x80, 0xFF, 0x80);
     }
-    if (!memcmp(name, "$specularmap", 13)) {
+    if (!memcmp(name, "$specularity", 13)) {
         byte pic[0x2000]; /* 32x256 specularity map buffer */
         image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
         Image_BuildSpecularityMap(0, pic);
@@ -1648,22 +1646,25 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         R_GenerateOutdoorImage(image);
         return image;
     }
-    if (!memcmp(name, "$lightmapweights0", 17)) {
-        byte pic[4];
+    if (!memcmp(name, "$lightmapweights", 17)) {
         image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
-        Image_GenerateCubemapFunction(image, pic, 0x20, 0, (jpeg_alloc (*)())Image_GetLightGridWeightsForVector);
+        Image_LoadLightmapWeights(image);
         return image;
     }
-    if (!memcmp(name, "$lightmapweights1", 17)) {
-        /* Note: difference from weights0 is userData=1 */
-        /* Actually the ASM shows both have len 0x13=19 including null. Let me re-examine. */
-        byte pic[4];
+    if (!memcmp(name, "$lightgridweights0", 19)) {
+        byte pic[0x6000]; /* 6 * 32 * 32 * 4 = 24576 bytes for cubemap */
         image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
-        Image_GenerateCubemapFunction(image, pic, 0x20, 1, (jpeg_alloc (*)())Image_GetLightGridWeightsForVector);
+        Image_GenerateCubemapFunction(image, pic, 0x20, 0, (CubemapPixelCallback)Image_GetLightGridWeightsForVector);
+        return image;
+    }
+    if (!memcmp(name, "$lightgridweights1", 19)) {
+        byte pic[0x6000]; /* 6 * 32 * 32 * 4 = 24576 bytes for cubemap */
+        image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
+        Image_GenerateCubemapFunction(image, pic, 0x20, 1, (CubemapPixelCallback)Image_GetLightGridWeightsForVector);
         return image;
     }
     if (!memcmp(name, "$watercolor", 12)) {
-        byte pic[4];
+        byte pic[0x1800]; /* 6 * 16 * 16 * 4 = 6144 bytes for cubemap */
         int waterColor;
         image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
         /* Build packed water color: ARGB = 0x4D004033FF (approx) */
@@ -1673,7 +1674,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         ((byte *)&waterColor)[2] = 0x40;
         waterColor = (waterColor & 0x00FFFFFF) | 0x4D000000;
         Image_GenerateCubemapFunction(image, pic, 0x10, waterColor,
-            (jpeg_alloc (*)())Image_GetWaterColorForVector);
+            (CubemapPixelCallback)Image_GetWaterColorForVector);
         return image;
     }
     if (!memcmp(name, "$sunhalfangle", 14)) {
@@ -1681,7 +1682,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         image = Image_Alloc(name, 1, (byte)semantic, imageTrack);
         pic = (byte *)Hunk_AllocateTempMemoryInternal(0x18000);
         Image_GenerateCubemapFunction(image, pic, 0x40, 0,
-            (jpeg_alloc (*)())Image_GetSunHalfAngleForVector);
+            (CubemapPixelCallback)Image_GetSunHalfAngleForVector);
         Hunk_FreeTempMemory(pic);
         return image;
     }
