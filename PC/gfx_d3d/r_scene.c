@@ -26,12 +26,15 @@ extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compa
 /* g_dxCaps was imp_r_rendererInUse */
 extern const float *colorWhite;        /* imp_colorWhite */
 /* fx_sort and com_statmon accessed via imp_fx_sort, imp_com_statmon */
+extern void AxisCopy(vec3_t *in, vec3_t *out);
+extern void R_Error(int level, const char *msg, ...);
+extern const char *va(const char *format, ...);
 
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 void R_ClearDpvsScene(void);
 void R_DrawModel(int entIndex);
-void R_AddScaledDebugString(const char *pos, const char *color, const char *origin, const char *str, int unused);
+void R_AddScaledDebugString(const char *pos, const char *tag, const char *origin, const char *color, const char *str);
 int XSurfaceGetNumTris(XSurface *xsurf);
 int XSurfaceGetNumVerts(XSurface *xsurf);
 const char *XModelGetName(void *model);
@@ -241,178 +244,81 @@ void qsortDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount)
 }
 
 /* line 905 */
-__attribute__((naked))
 void R_AddXModelSurfaces(int entIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 905 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1: drawSurf */
-        "movl 8(%ebp), %edx\n" /* line 915 | entIndex */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal scene+1476(, %eax, 4), %edi\n" /* sceneEnt */
-        "movl %edx, %eax\n" /* line 918 */
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl scene+16, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* ent */
-        "movl 0x30(%edi), %esi\n" /* line 923 | sceneEnt, modelSurf */
-        "movl 0x10(%edi), %edx\n" /* line 925 | sceneEnt */
-        "testl %edx, %edx\n"
-        "jle .Lfc5b38_000c5c47\n"
-        "movl $0, -0x2c(%ebp)\n" /* surfIndex */
-        "movl $0, -0x28(%ebp)\n" /* totalTriCount */
-        "movl $0, -0x24(%ebp)\n" /* totalVertCount */
-        "jmp .Lfc5b38_000c5bb8\n"
-        ".Lfc5b38_000c5b8c:\n"
-        "movl imp_r_showVertCounts, %eax\n" /* line 939 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfc5b38_000c5c8d\n"
-        ".Lfc5b38_000c5b9d:\n"
-        "movl (%esi), %eax\n" /* line 942 | modelSurf */
-        "movzbl s_XModelSurfaceSize(%eax), %eax\n"
-        "addl %eax, %esi\n" /* modelSurf */
-        "movl 0x10(%edi), %edx\n" /* sceneEnt */
-        ".Lfc5b38_000c5bab:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 925 | surfIndex */
-        "cmpl %edx, -0x2c(%ebp)\n" /* surfIndex */
-        "jge .Lfc5b38_000c5c55\n"
-        ".Lfc5b38_000c5bb8:\n"
-        "movl 0x2c(%edi), %eax\n" /* line 927 | sceneEnt */
-        "movl -0x2c(%ebp), %ecx\n" /* surfIndex */
-        "movl (%eax, %ecx, 4), %ebx\n" /* material */
-        "testl %ebx, %ebx\n" /* line 928 | material */
-        "je .Lfc5b38_000c5bab\n"
-        "movl $0x7ff, %ecx\n" /* line 932 */
-        "cmpl $5, (%esi)\n" /* modelSurf */
-        "cmovnel 8(%ebp), %ecx\n" /* entIndex */
-        /* { scope 2 */
-        "movl imp_frontEndDataOut, %eax\n" /* line 655 */
-        "movl (%eax), %edx\n"
-        "movl 4(%edx), %eax\n"
-        "cmpl $0xffff, %eax\n"
-        "jg .Lfc5b38_000c5c22\n"
-        "leal 8(%edx, %eax, 8), %edx\n" /* line 660 */
-        "movl %edx, -0x1c(%ebp)\n" /* drawSurf */
-        "movl (%esi), %edx\n" /* line 663 */
-        "cmpl $2, %edx\n" /* line 667 */
-        "je .Lfc5b38_000c5ca0\n"
-        ".Lfc5b38_000c5bf4:\n"
-        "shll $4, %ecx\n" /* line 676 */
-        "addl %ecx, %edx\n"
-        "movzwl 0xa(%ebx), %eax\n" /* line 677 */
-        "shll $0x15, %eax\n"
-        "leal 0x1f0000(%edx, %eax), %eax\n" /* line 678 */
-        ".Lfc5b38_000c5c07:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 680 | drawSurf */
-        "movl %eax, (%edx)\n"
-        "movl %esi, 4(%edx)\n" /* line 681 */
-        "addl $1, scene+1464\n" /* line 685 */
-        "movl imp_frontEndDataOut, %ecx\n" /* line 686 */
-        "movl (%ecx), %eax\n"
-        "addl $1, 4(%eax)\n"
-        /* } scope */
-        ".Lfc5b38_000c5c22:\n"
-        "movl imp_r_showTriCounts, %edx\n" /* line 937 */
-        "movl (%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5b38_000c5b8c\n"
-        "movl 4(%esi), %eax\n" /* line 938 | modelSurf */
-        "movl %eax, (%esp)\n"
-        "calll XSurfaceGetNumTris\n"
-        "addl %eax, -0x28(%ebp)\n" /* totalTriCount */
-        "jmp .Lfc5b38_000c5b9d\n"
-        ".Lfc5b38_000c5c47:\n"
-        "movl $0, -0x28(%ebp)\n" /* line 925 | totalTriCount */
-        "movl $0, -0x24(%ebp)\n" /* totalVertCount */
-        ".Lfc5b38_000c5c55:\n"
-        "movl imp_r_showTriCounts, %ecx\n" /* line 945 */
-        "movl (%ecx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfc5b38_000c5d1c\n"
-        "movl imp_r_showVertCounts, %eax\n" /* line 947 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfc5b38_000c5cc7\n"
-        "movl imp_r_showSurfCounts, %eax\n" /* line 949 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfc5b38_000c5d25\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 951 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: drawSurf */
-        ".Lfc5b38_000c5c8d:\n"
-        "movl 4(%esi), %eax\n" /* line 940 | modelSurf */
-        "movl %eax, (%esp)\n"
-        "calll XSurfaceGetNumVerts\n"
-        "addl %eax, -0x24(%ebp)\n" /* totalVertCount */
-        "jmp .Lfc5b38_000c5b9d\n"
-        /* { scope 2 */
-        ".Lfc5b38_000c5ca0:\n"
-        "movl imp_fx_sort, %eax\n" /* line 667 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5b38_000c5bf4\n"
-        "shll $0x13, %ecx\n" /* line 670 */
-        "movzwl 0xa(%ebx), %eax\n" /* line 671 */
-        "shll $9, %eax\n"
-        "leal -0x7ffffe0e(%ecx, %eax), %eax\n" /* line 672 */
-        "jmp .Lfc5b38_000c5c07\n"
-        /* } scope */
-        ".Lfc5b38_000c5cc7:\n"
-        "movl -0x24(%ebp), %edx\n" /* line 948 | totalVertCount */
-        "movl %edx, 4(%esp)\n"
-        ".Lfc5b38_000c5cce:\n"
-        "movl $str_0021785c, (%esp)\n" /* line 950 */
-        "calll va\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl imp_colorCyan, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* ent */
-        "addl $0x3c, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl imp_rg, %eax\n"
-        "movl 0x3190(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl imp_frontEndDataOut, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %eax, (%esp)\n"
-        "calll R_AddScaledDebugString\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 951 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: drawSurf */
-        ".Lfc5b38_000c5d1c:\n"
-        "movl -0x28(%ebp), %eax\n" /* line 946 | totalTriCount */
-        "movl %eax, 4(%esp)\n"
-        "jmp .Lfc5b38_000c5cce\n"
-        ".Lfc5b38_000c5d25:\n"
-        "movl %edx, 4(%esp)\n" /* line 950 */
-        "jmp .Lfc5b38_000c5cce\n"
-    );
-}
+    GfxSceneEntity *sceneEnt;
+    GfxEntity *ent;
+    GfxModelSurface *modelSurf;
+    const Material *material;
+    GfxBackEndData *buf;
+    GfxDrawSurf *drawSurf;
+    unsigned int sortValue;
+    int i, surfCount, entIdx, surfType;
+    int totalTriCount, totalVertCount;
 
+    sceneEnt = &scene.sceneEnts[entIndex];
+    ent = &scene.def.entities[entIndex];
+    modelSurf = (GfxModelSurface *)sceneEnt->surfs;
+    surfCount = sceneEnt->surfCount;
+    totalTriCount = 0;
+    totalVertCount = 0;
+
+    /* surfs array only has entries for non-null-material surfaces;
+       advance modelSurf only when we actually consume a surface */
+    for (i = 0; i < surfCount; i++) {
+        material = sceneEnt->materials[i];
+        if (!material)
+            continue;
+
+        entIdx = (modelSurf->surfType == 5) ? 0x7ff : entIndex;
+
+        buf = frontEndDataOut;
+        if (buf->drawSurfCount <= 0xffff) {
+            drawSurf = &buf->drawSurfs[buf->drawSurfCount];
+            surfType = modelSurf->surfType;
+            if (surfType == 2 && (*(const dvar_t **)imp_fx_sort)->current.enabled) {
+                sortValue = (unsigned int)((entIdx << 19) + (material->info.sortedIndex << 9) + 0x800001f2u);
+            } else {
+                sortValue = (unsigned int)(surfType + (entIdx << 4) + (material->info.sortedIndex << 21) + 0x1f0000);
+            }
+            drawSurf->sort = sortValue;
+            drawSurf->surface = (const surfaceType_t *)modelSurf;
+            scene.drawSurfCount++;
+            buf->drawSurfCount++;
+        }
+
+        if ((*(const dvar_t **)imp_r_showTriCounts)->current.enabled)
+            totalTriCount += XSurfaceGetNumTris(modelSurf->xsurf);
+        else if ((*(const dvar_t **)imp_r_showVertCounts)->current.enabled)
+            totalVertCount += XSurfaceGetNumVerts(modelSurf->xsurf);
+
+        modelSurf = (GfxModelSurface *)((byte *)modelSurf + s_XModelSurfaceSize[modelSurf->surfType]);
+    }
+
+    /* debug display: show tri/vert/surf count above the entity */
+    if ((*(const dvar_t **)imp_r_showTriCounts)->current.enabled) {
+        R_AddScaledDebugString(
+            (char *)frontEndDataOut + 0x249d18,
+            *(char **)((byte *)&rg + 0x3190),
+            (const char *)&ent->origin,
+            (const char *)imp_colorCyan,
+            va("%i", totalTriCount));
+    } else if ((*(const dvar_t **)imp_r_showVertCounts)->current.enabled) {
+        R_AddScaledDebugString(
+            (char *)frontEndDataOut + 0x249d18,
+            *(char **)((byte *)&rg + 0x3190),
+            (const char *)&ent->origin,
+            (const char *)imp_colorCyan,
+            va("%i", totalVertCount));
+    } else if ((*(const dvar_t **)imp_r_showSurfCounts)->current.enabled) {
+        R_AddScaledDebugString(
+            (char *)frontEndDataOut + 0x249d18,
+            *(char **)((byte *)&rg + 0x3190),
+            (const char *)&ent->origin,
+            (const char *)imp_colorCyan,
+            va("%i", surfCount));
+    }
+}
 /* line 883 */
 void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
 {
@@ -1619,465 +1525,201 @@ void R_RenderScene(const refdef_t *refdef)
 }
 
 /* line 272 */
-__attribute__((naked))
 int R_AddStaticModelToScene(int smodelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 272 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl imp_r_drawEntities, %eax\n" /* line 235 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc7336_000c74cc\n"
-        "movl scene+12, %esi\n" /* line 241 */
-        "cmpl $0x7fd, %esi\n"
-        "ja .Lfc7336_000c7536\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 243 */
-        "movl (%eax), %edx\n"
-        "movl 0xa000c(%edx), %eax\n"
-        "cmpl $0x1ff7, %eax\n"
-        "ja .Lfc7336_000c74c2\n"
-        "addl $1, %eax\n" /* line 249 */
-        "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, scene+12\n" /* line 250 */
-        "testl %esi, %esi\n" /* line 280 | entIndex */
-        "js .Lfc7336_000c74cc\n"
-        "leal (, %esi, 8), %eax\n" /* line 283 */
-        "subl %esi, %eax\n" /* entIndex */
-        "leal (%esi, %eax, 4), %eax\n" /* entIndex */
-        "movl scene+16, %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* backEndRefEnt */
-        "movl 8(%ebp), %eax\n" /* line 285 | smodelIndex */
-        "leal (%eax, %eax, 2), %edi\n"
-        "shll $5, %edi\n"
-        "movl imp_rgp, %edx\n"
-        "movl 0x109c(%edx), %eax\n"
-        "movl 0xf8(%eax), %eax\n"
-        "addl %edi, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* smodelInst */
-        "movl $0x74, 8(%esp)\n" /* line 88 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll memset\n"
-        "movl $2, (%ebx)\n" /* line 289 | backEndRefEnt */
-        "leal 0x3c(%ebx), %ecx\n" /* line 291 | backEndRefEnt, to */
-        "movl -0x1c(%ebp), %edx\n" /* smodelInst, from */
-        "addl $4, %edx\n" /* from */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %eax\n" /* line 199 | smodelInst */
-        "movss 4(%eax), %xmm0\n"
-        "movss %xmm0, 0x3c(%ebx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0x14(%ebx), %eax\n" /* line 292 | backEndRefEnt */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* smodelInst */
-        "addl $0x2c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll AxisCopy\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 293 | smodelInst */
-        "movl 0x50(%edx), %eax\n"
-        "movl %eax, 0x38(%ebx)\n" /* backEndRefEnt */
-        "movl imp_r_rendererInUse, %eax\n" /* line 295 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfc7336_000c74db\n"
-        "leal 8(%ebx), %ecx\n" /* line 303 | backEndRefEnt, to */
-        "movl -0x1c(%ebp), %edx\n" /* smodelInst, from */
-        "addl $0x54, %edx\n" /* from */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edi\n" /* line 199 | smodelInst */
-        "movl 0x54(%edi), %eax\n"
-        "movl %eax, 8(%ebx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        ".Lfc7336_000c7454:\n"
-        "leal (%esi, %esi, 2), %edx\n" /* line 306 | entIndex */
-        "leal (%esi, %edx, 4), %edx\n" /* entIndex */
-        "leal scene+1472(, %edx, 4), %edx\n"
-        "leal 4(%edx), %ebx\n" /* backEndRefEnt */
-        "cld\n" /* line 80 */
-        "movl $0xd, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl $2, 0xc(%ebx)\n" /* line 309 | backEndRefEnt */
-        "movl -0x1c(%ebp), %ecx\n" /* line 310 | smodelInst */
-        "movl 0x10(%ecx), %eax\n"
-        "movl %eax, 4(%ebx)\n" /* backEndRefEnt */
-        "leal 0x18(%edx), %ebx\n" /* line 311 | to */
-        "movl -0x1c(%ebp), %ecx\n" /* smodelInst, from */
-        "addl $0x14, %ecx\n" /* from */
-        /* { scope 2 */
-        "movl -0x1c(%ebp), %edi\n" /* line 199 | smodelInst */
-        "movl 0x14(%edi), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "leal 0x24(%edx), %ebx\n" /* line 312 | to */
-        "movl %edi, %ecx\n" /* from */
-        "addl $0x20, %ecx\n" /* from */
-        /* { scope 2 */
-        "movl 0x20(%edi), %eax\n" /* line 199 */
-        "movl %eax, 0x24(%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        /* } scope */
-        "movl %esi, %eax\n" /* line 315 | entIndex */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc7336_000c74c2:\n"
-        "movl (%edx), %eax\n" /* line 254 */
-        "cmpl warnCount, %eax\n"
-        "jne .Lfc7336_000c750c\n"
-        /* { scope 2 */
-        ".Lfc7336_000c74cc:\n"
-        "movl $0xffffffff, %esi\n" /* line 314 | entIndex */
-        /* } scope */
-        /* } scope */
-        ".Lfc7336_000c74d1:\n"
-        "movl %esi, %eax\n" /* line 315 | entIndex */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc7336_000c74db:\n"
-        "movl imp_rgp, %ecx\n" /* line 297 */
-        "movl 0x109c(%ecx), %edx\n"
-        "movl %edi, %eax\n"
-        "addl 0x12c(%edx), %eax\n"
-        "movl %eax, 8(%ebx)\n" /* backEndRefEnt */
-        "movl 0x109c(%ecx), %eax\n" /* line 298 */
-        "movl 0x130(%eax), %eax\n"
-        "movl 8(%ebp), %edi\n" /* smodelIndex */
-        "movl (%eax, %edi, 4), %eax\n"
-        "movl %eax, 0xc(%ebx)\n" /* backEndRefEnt */
-        "jmp .Lfc7336_000c7454\n"
-        ".Lfc7336_000c750c:\n"
-        "movl %eax, warnCount\n" /* line 256 */
-        "movl $0x1ff8, 8(%esp)\n" /* line 257 */
-        "movl $str_00222d94, 4(%esp)\n" /* "too many visible models (more than %i)
-" */
-        "movl $2, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "movl $0xffffffff, %esi\n"
-        "jmp .Lfc7336_000c74d1\n"
-        ".Lfc7336_000c7536:\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 263 */
-        "movl (%eax), %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpl warnCount, %eax\n"
-        "je .Lfc7336_000c74cc\n"
-        "movl %eax, warnCount\n" /* line 265 */
-        "movl $0x7fe, 8(%esp)\n" /* line 266 */
-        "movl $str_00222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
-" */
-        "movl $2, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "movl $0xffffffff, %esi\n"
-        "jmp .Lfc7336_000c74d1\n"
-    );
+    GfxBackEndData *buf;
+    GfxEntity *backEndRefEnt;
+    GfxSceneEntity *sceneEnt;
+    GfxStaticModelInstance *smodelInst;
+    GfxWorld *world;
+    int entIndex;
+
+    if (!(*(const dvar_t **)imp_r_drawEntities)->current.enabled)
+        return -1;
+
+    entIndex = scene.def.entityCount;
+    if ((unsigned int)entIndex > 0x7fd) {
+        buf = frontEndDataOut;
+        if (buf->frameCount == warnCount)
+            return -1;
+        warnCount = buf->frameCount;
+        ri.Printf(2, "too many scene entities (more than %%i)\n", 0x7fe);
+        return -1;
+    }
+
+    buf = frontEndDataOut;
+    if (buf->entityCount > 0x1ff7) {
+        if (buf->frameCount == warnCount)
+            return -1;
+        warnCount = buf->frameCount;
+        ri.Printf(2, "too many visible models (more than %i)\n", 0x1ff8);
+        return -1;
+    }
+
+    buf->entityCount++;
+    scene.def.entityCount++;
+
+    if (entIndex < 0)
+        return -1;
+
+    backEndRefEnt = &scene.def.entities[entIndex];
+    world = rgp.world;
+    smodelInst = &world->smodelInsts[smodelIndex];
+
+    memset(backEndRefEnt, 0, sizeof(GfxEntity));
+    backEndRefEnt->reType = 2;
+    backEndRefEnt->origin[0] = smodelInst->origin[0];
+    backEndRefEnt->origin[1] = smodelInst->origin[1];
+    backEndRefEnt->origin[2] = smodelInst->origin[2];
+    AxisCopy(smodelInst->axis, backEndRefEnt->axis);
+    backEndRefEnt->scale = smodelInst->scale;
+
+    if ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2) {
+        /* DX7: index into world pre-computed static model lighting table */
+        *(int *)&backEndRefEnt->lighting = smodelIndex + *(int *)((byte *)world + 0x12c);
+        *((int *)&backEndRefEnt->lighting + 1) = (*(int **)((byte *)world + 0x130))[smodelIndex];
+    } else {
+        backEndRefEnt->lighting.baseCoords[0] = smodelInst->baseLightingCoords[0];
+        backEndRefEnt->lighting.baseCoords[1] = smodelInst->baseLightingCoords[1];
+        backEndRefEnt->lighting.baseCoords[2] = smodelInst->baseLightingCoords[2];
+    }
+
+    sceneEnt = &scene.sceneEnts[entIndex];
+    memset(sceneEnt, 0, sizeof(*sceneEnt));
+    sceneEnt->cullState = 2;
+    sceneEnt->u.model = smodelInst->model;
+    sceneEnt->curMins[0] = smodelInst->mins[0];
+    sceneEnt->curMins[1] = smodelInst->mins[1];
+    sceneEnt->curMins[2] = smodelInst->mins[2];
+    sceneEnt->curMaxs[0] = smodelInst->maxs[0];
+    sceneEnt->curMaxs[1] = smodelInst->maxs[1];
+    sceneEnt->curMaxs[2] = smodelInst->maxs[2];
+
+    return entIndex;
 }
 
 /* line 385 */
-__attribute__((naked))
 GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, const struct centity_s *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 385 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* refEnt */
-        /* { scope 1 */
-        "cmpl $1, (%esi)\n" /* line 394 | refEnt */
-        "jle .Lfc7574_000c77a3\n"
-        "movl imp_com_statmon, %eax\n" /* line 399 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfc7574_000c76de\n"
-        ".Lfc7574_000c759a:\n"
-        "movl (%esi), %eax\n" /* line 402 | refEnt */
-        "cmpl $9, %eax\n"
-        "ja .Lfc7574_000c7722\n"
-        ".Lfc7574_000c75a5:\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 405 */
-        "movl (%eax), %edx\n"
-        "movl 0xa000c(%edx), %ecx\n"
-        "cmpl $0x1ff7, %ecx\n"
-        "ja .Lfc7574_000c76c4\n"
-        "movl imp_r_drawEntities, %eax\n" /* line 235 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc7574_000c76d2\n"
-        "movl scene+12, %ebx\n" /* line 241 */
-        "cmpl $0x7fd, %ebx\n"
-        "ja .Lfc7574_000c773f\n"
-        "leal 1(%ecx), %eax\n" /* line 249 */
-        "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, scene+12\n" /* line 250 */
-        "testl %ebx, %ebx\n" /* line 416 | backEndRefEnt */
-        "js .Lfc7574_000c76d2\n"
-        /* { scope 2: sceneEnt, sceneEnt */
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 100 */
-        "leal (%ebx, %eax, 4), %eax\n"
-        "leal scene+1476(, %eax, 4), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* sceneEnt */
-        "leal (, %ebx, 8), %eax\n" /* line 101 */
-        "subl %ebx, %eax\n"
-        "leal (%ebx, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movl %eax, %edi\n" /* backEndRefEnt */
-        "addl scene+16, %edi\n" /* backEndRefEnt */
-        "movl $0x74, 8(%esp)\n" /* line 105 */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* backEndRefEnt */
-        "calll memcpy\n"
-        "pxor %xmm0, %xmm0\n" /* line 106 */
-        "ucomiss 0x38(%esi), %xmm0\n"
-        "jne .Lfc7574_000c764a\n"
-        "jp .Lfc7574_000c764a\n"
-        "movl $0x3f800000, 0x38(%edi)\n" /* line 107 | backEndRefEnt */
-        /* { scope 3 */
-        ".Lfc7574_000c764a:\n"
-        "cld\n" /* line 80 */
-        "movl $0xd, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl -0x1c(%ebp), %edi\n" /* sceneEnt */
-        "rep stosl %eax, %es:(%edi)\n"
-        /* } scope */
-        "cmpl $3, (%esi)\n" /* line 111 */
-        "jle .Lfc7574_000c7795\n"
-        "movl 0x54(%esi), %ecx\n"
-        /* { scope 3 */
-        /* { scope 4 */
-        "movl imp_frontEndDataOut, %edi\n" /* line 655 | backEndRefEnt */
-        "movl (%edi), %edx\n" /* backEndRefEnt */
-        "movl 4(%edx), %eax\n"
-        "cmpl $0xffff, %eax\n"
-        "jg .Lfc7574_000c76b1\n"
-        "leal 8(%edx, %eax, 8), %esi\n" /* line 660 | drawSurf */
-        "movl s_entitySurface, %edx\n" /* line 663 */
-        "cmpl $2, %edx\n" /* line 667 */
-        "je .Lfc7574_000c787c\n"
-        ".Lfc7574_000c7688:\n"
-        "shll $4, %ebx\n" /* line 676 | backEndRefEnt */
-        "addl %ebx, %edx\n" /* backEndRefEnt */
-        "movzwl 0xa(%ecx), %eax\n" /* line 677 */
-        "shll $0x15, %eax\n"
-        "leal 0x1f0000(%edx, %eax), %eax\n" /* line 678 */
-        ".Lfc7574_000c769b:\n"
-        "movl %eax, (%esi)\n" /* line 680 | drawSurf */
-        "movl $s_entitySurface, 4(%esi)\n" /* line 681 | drawSurf */
-        "addl $1, scene+1464\n" /* line 685 */
-        "movl (%edi), %eax\n" /* line 686 | backEndRefEnt */
-        "addl $1, 4(%eax)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfc7574_000c76b1:\n"
-        "movl -0x28(%ebp), %ebx\n" /* line 420 | backEndRefEnt */
-        "addl scene+16, %ebx\n" /* backEndRefEnt */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 421 | backEndRefEnt */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc7574_000c76c4:\n"
-        "movl (%edx), %eax\n" /* line 407 */
-        "cmpl warnCount, %eax\n"
-        "jne .Lfc7574_000c7773\n"
-        ".Lfc7574_000c76d2:\n"
-        "xorl %ebx, %ebx\n" /* line 420 | backEndRefEnt */
-        /* } scope */
-        ".Lfc7574_000c76d4:\n"
-        "movl %ebx, %eax\n" /* line 421 | backEndRefEnt */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc7574_000c76de:\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 399 */
-        "movl (%eax), %eax\n"
-        "cmpl $0x1cc4, 0xa000c(%eax)\n"
-        "jbe .Lfc7574_000c759a\n"
-        "movl $str_00222e58, 8(%esp)\n" /* line 400 */
-        "movl $0xbb8, 4(%esp)\n"
-        "movl $5, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *0x124(%eax)\n"
-        "movl (%esi), %eax\n" /* line 402 | refEnt */
-        "cmpl $9, %eax\n"
-        "jbe .Lfc7574_000c75a5\n"
-        ".Lfc7574_000c7722:\n"
-        "movl %eax, 8(%esp)\n" /* line 403 */
-        "movl $str_00222e74, 4(%esp)\n" /* "R_AddRefEntityToScene: bad reType %i" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfc7574_000c75a5\n"
-        ".Lfc7574_000c773f:\n"
-        "movl (%edx), %eax\n" /* line 263 */
-        "cmpl warnCount, %eax\n"
-        "je .Lfc7574_000c76d2\n"
-        ".Lfc7574_000c7749:\n"
-        "movl %eax, warnCount\n" /* line 265 */
-        "movl $0x7fe, 8(%esp)\n" /* line 266 */
-        "movl $str_00222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
-" */
-        "movl $2, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lfc7574_000c76d4\n"
-        ".Lfc7574_000c7773:\n"
-        "movl %eax, warnCount\n" /* line 409 */
-        "movl $str_00222e9c, 4(%esp)\n" /* line 410 */
-        "movl $2, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "xorl %ebx, %ebx\n" /* backEndRefEnt */
-        "jmp .Lfc7574_000c76d4\n"
-        /* { scope 2: sceneEnt, sceneEnt */
-        ".Lfc7574_000c7795:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 117 | sceneModel */
-        "movl -0x1c(%ebp), %edx\n" /* sceneEnt */
-        "movl %eax, 4(%edx)\n"
-        "jmp .Lfc7574_000c76b1\n"
-        /* } scope */
-        /* { scope 2: sceneEnt, sceneEnt */
-        ".Lfc7574_000c77a3:\n"
-        "movl imp_r_drawEntities, %eax\n" /* line 235 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc7574_000c76d2\n"
-        "movl scene+12, %eax\n" /* line 241 */
-        "movl %eax, -0x24(%ebp)\n"
-        "cmpl $0x7fd, %eax\n"
-        "ja .Lfc7574_000c78db\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 243 */
-        "movl (%eax), %edx\n"
-        "movl 0xa000c(%edx), %eax\n"
-        "cmpl $0x1ff7, %eax\n"
-        "ja .Lfc7574_000c78a3\n"
-        "addl $1, %eax\n" /* line 249 */
-        "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, scene+12\n" /* line 250 */
-        "movl -0x24(%ebp), %eax\n" /* line 331 */
-        "testl %eax, %eax\n"
-        "js .Lfc7574_000c76d2\n"
-        "movl -0x24(%ebp), %edx\n" /* line 334 */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal scene+1476(, %eax, 4), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* sceneEnt */
-        "movl %edx, %eax\n" /* line 335 */
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl scene+16, %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* backEndRefEnt */
-        "movl $0x74, 8(%esp)\n" /* line 337 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* backEndRefEnt */
-        "calll memcpy\n"
-        "pxor %xmm0, %xmm0\n" /* line 338 */
-        "ucomiss 0x38(%esi), %xmm0\n"
-        "jne .Lfc7574_000c7847\n"
-        "jp .Lfc7574_000c7847\n"
-        "movl $0x3f800000, 0x38(%ebx)\n" /* line 339 | backEndRefEnt */
-        /* { scope 3 */
-        ".Lfc7574_000c7847:\n"
-        "cld\n" /* line 80 */
-        "movl $0xd, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl -0x20(%ebp), %edi\n" /* sceneEnt */
-        "rep stosl %eax, %es:(%edi)\n"
-        /* } scope */
-        "movl 0xc(%ebp), %edx\n" /* line 342 | sceneModel */
-        "movl -0x20(%ebp), %eax\n" /* sceneEnt */
-        "movl %edx, 4(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 343 | cent */
-        "movl %edx, 8(%eax)\n"
-        "cmpl $1, (%esi)\n" /* line 346 */
-        "jne .Lfc7574_000c76d4\n"
-        "movl -0x24(%ebp), %eax\n" /* line 347 */
-        "movl %eax, (%esp)\n"
-        "calll R_DrawModel\n"
-        "jmp .Lfc7574_000c76d4\n"
-        /* } scope */
-        /* { scope 2: sceneEnt, sceneEnt */
-        /* { scope 3 */
-        /* { scope 4 */
-        ".Lfc7574_000c787c:\n"
-        "movl imp_fx_sort, %eax\n" /* line 667 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc7574_000c7688\n"
-        "shll $0x13, %ebx\n" /* line 670 | backEndRefEnt */
-        "movzwl 0xa(%ecx), %eax\n" /* line 671 */
-        "shll $9, %eax\n"
-        "leal -0x7ffffe0e(%ebx, %eax), %eax\n" /* line 672 | backEndRefEnt */
-        "jmp .Lfc7574_000c769b\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: sceneEnt, sceneEnt */
-        ".Lfc7574_000c78a3:\n"
-        "movl (%edx), %eax\n" /* line 254 */
-        "cmpl warnCount, %eax\n"
-        "je .Lfc7574_000c76d2\n"
-        "movl %eax, warnCount\n" /* line 256 */
-        "movl $0x1ff8, 8(%esp)\n" /* line 257 */
-        "movl $str_00222d94, 4(%esp)\n" /* "too many visible models (more than %i)
-" */
-        "movl $2, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lfc7574_000c76d4\n"
-        ".Lfc7574_000c78db:\n"
-        "movl imp_frontEndDataOut, %eax\n" /* line 263 */
-        "movl (%eax), %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpl warnCount, %eax\n"
-        "je .Lfc7574_000c76d2\n"
-        "jmp .Lfc7574_000c7749\n"
-    );
+    GfxBackEndData *buf;
+    GfxEntity *backEndRefEnt;
+    GfxSceneEntity *sceneEnt;
+    const Material *material;
+    GfxDrawSurf *drawSurf;
+    unsigned int sortValue;
+    int entIndex, surfType;
+
+    if (refEnt->reType > 1) {
+        /* check performance monitor */
+        if ((*(const dvar_t **)imp_com_statmon)->current.enabled) {
+            if (frontEndDataOut->entityCount > 0x1cc4)
+                ri.StatMon_Warning(5, "R_AddRefEntityToScene: too many entity render calls", 0xbb8);
+        }
+
+        if (refEnt->reType > 9)
+            R_Error(1, "R_AddRefEntityToScene: bad reType %i", refEnt->reType);
+
+        buf = frontEndDataOut;
+        if (buf->entityCount > 0x1ff7) {
+            if (buf->frameCount == warnCount)
+                return NULL;
+            warnCount = buf->frameCount;
+            ri.Printf(2, "R_AddRefEntityToScene: too many entities");
+            return NULL;
+        }
+
+        if (!(*(const dvar_t **)imp_r_drawEntities)->current.enabled)
+            return NULL;
+
+        entIndex = scene.def.entityCount;
+        if ((unsigned int)entIndex > 0x7fd) {
+            buf = frontEndDataOut;
+            if (buf->frameCount == warnCount)
+                return NULL;
+            warnCount = buf->frameCount;
+            ri.Printf(2, "too many scene entities (more than %i)\n", 0x7fe);
+            return NULL;
+        }
+
+        buf->entityCount++;
+        scene.def.entityCount++;
+
+        if (entIndex < 0)
+            return NULL;
+
+        sceneEnt = &scene.sceneEnts[entIndex];
+        backEndRefEnt = &scene.def.entities[entIndex];
+
+        memcpy(backEndRefEnt, refEnt, sizeof(GfxEntity));
+        if (backEndRefEnt->scale == 0.0f)
+            backEndRefEnt->scale = 1.0f;
+
+        memset(sceneEnt, 0, sizeof(*sceneEnt));
+
+        if (refEnt->reType > 3) {
+            /* add entity draw surface */
+            material = refEnt->customMaterial;
+            buf = frontEndDataOut;
+            if (buf->drawSurfCount <= 0xffff) {
+                drawSurf = &buf->drawSurfs[buf->drawSurfCount];
+                surfType = s_entitySurface;
+                if (surfType == 2 && (*(const dvar_t **)imp_fx_sort)->current.enabled) {
+                    sortValue = (unsigned int)((entIndex << 19) + (material->info.sortedIndex << 9) + 0x800001f2u);
+                } else {
+                    sortValue = (unsigned int)(surfType + (entIndex << 4) + (material->info.sortedIndex << 21) + 0x1f0000);
+                }
+                drawSurf->sort = sortValue;
+                drawSurf->surface = &s_entitySurface;
+                scene.drawSurfCount++;
+                buf->drawSurfCount++;
+            }
+        } else {
+            sceneEnt->u = sceneModel;
+        }
+    } else {
+        /* reType <= 1: model entities (DObj, XModel) */
+        if (!(*(const dvar_t **)imp_r_drawEntities)->current.enabled)
+            return NULL;
+
+        entIndex = scene.def.entityCount;
+        if ((unsigned int)entIndex > 0x7fd) {
+            buf = frontEndDataOut;
+            if (buf->frameCount == warnCount)
+                return NULL;
+            warnCount = buf->frameCount;
+            ri.Printf(2, "too many scene entities (more than %i)\n", 0x7fe);
+            return NULL;
+        }
+
+        buf = frontEndDataOut;
+        if (buf->entityCount > 0x1ff7) {
+            if (buf->frameCount == warnCount)
+                return NULL;
+            warnCount = buf->frameCount;
+            ri.Printf(2, "too many visible models (more than %i)\n", 0x1ff8);
+            return NULL;
+        }
+
+        buf->entityCount++;
+        scene.def.entityCount++;
+
+        if (entIndex < 0)
+            return NULL;
+
+        sceneEnt = &scene.sceneEnts[entIndex];
+        backEndRefEnt = &scene.def.entities[entIndex];
+
+        memcpy(backEndRefEnt, refEnt, sizeof(GfxEntity));
+        if (backEndRefEnt->scale == 0.0f)
+            backEndRefEnt->scale = 1.0f;
+
+        memset(sceneEnt, 0, sizeof(*sceneEnt));
+        sceneEnt->u = sceneModel;
+        sceneEnt->cent = cent;
+
+        if (refEnt->reType == 1)
+            R_DrawModel(entIndex);
+    }
+
+    return backEndRefEnt;
 }
