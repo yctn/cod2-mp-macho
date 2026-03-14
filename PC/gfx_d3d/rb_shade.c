@@ -24,6 +24,12 @@ extern void Com_Memcpy(void *dest, const void *src, int count);
 extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 extern void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
 extern void *CColorConverter_GetColorConverter(int mode);
+extern void MatrixInverse44(const void *src, void *dst);
+extern void MatrixTranspose44(const void *src, void *dst);
+extern void MatrixMultiply44(const void *a, const void *b, void *out);
+extern void MatrixTransformVector44(const void *vec, const void *mat, void *out);
+extern Bool RB_GetViewport(void *viewport);
+extern void MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(void *proj, float width, float height);
 extern void RB_UpdateViewport(void);
 extern int RB_SetIteratorFog(void);
 extern int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Material *material, D3DLIGHT9 *lights, int maxLights);
@@ -1158,8 +1164,232 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
 #endif
 
 /* line 710 */
+/* line 710 — Compute activeMatrices base from matrix stack index */
+static inline char *RB_GetActiveMatrices(void)
+{
+    char *be = (char *)imp_backEnd;
+    int idx = *(int *)(be + 0x2e80);
+    return be + 0x4e0 + idx * 3552;
+}
+
+/* Scale a 4x4 matrix by 1/worldScale: multiply xyz columns, keep w column */
+static void RB_ScaleWorldMatrix(const float *src, float *dst, float invScale)
+{
+    int i;
+    for (i = 0; i < 3; i++) {
+        dst[i * 4 + 0] = src[i * 4 + 0] * invScale;
+        dst[i * 4 + 1] = src[i * 4 + 1] * invScale;
+        dst[i * 4 + 2] = src[i * 4 + 2] * invScale;
+        dst[i * 4 + 3] = src[i * 4 + 3];
+    }
+    dst[12] = src[12]; dst[13] = src[13]; dst[14] = src[14]; dst[15] = src[15];
+}
+
+/* line 710 — Return pointer to a row within a code matrix.
+ * source encodes both the matrix type (upper bits) and variant (low 2 bits:
+ * 0=normal, 1=inverse, 2=transpose, 3=inverse-transpose).
+ * Computes the matrix lazily if not already cached. */
+static const float *RB_GetCodeMatrix_impl(int source, int firstRow)
+{
+    char *am = RB_GetActiveMatrices();
+    int sourceType = source & ~3;
+    int matrixIndex = source & 3;
+    char *codeMatrix;
+    int transposeIndex;
+
+    /* Select the matrix block based on source type */
+    switch (sourceType) {
+    case 0xBC: codeMatrix = am + 0x10; break;   /* World */
+    case 0xC0: codeMatrix = am + 0x230; break;  /* View */
+    case 0xC4: codeMatrix = am + 0x340; break;  /* Projection */
+
+    case 0xC8: /* WorldView (computed: World * View) */
+        codeMatrix = am + 0x450;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            MatrixMultiply44(am + 0x10, am + 0x230, codeMatrix);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xCC: /* ViewProjection */
+        codeMatrix = am + 0x670;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            if (!*(byte *)(am + 0x550)) {
+                /* WorldView not computed yet — compute it */
+                MatrixMultiply44(am + 0x10, am + 0x230, am + 0x450);
+                *(byte *)(am + 0x550) = 1;
+            }
+            MatrixMultiply44(am + 0x450, am + 0x340, codeMatrix);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xD0: /* WorldViewProjection */
+        codeMatrix = am + 0x780;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            if (!*(byte *)(am + 0x550)) {
+                MatrixMultiply44(am + 0x10, am + 0x230, am + 0x450);
+                *(byte *)(am + 0x550) = 1;
+            }
+            MatrixMultiply44(am + 0x450, am + 0x340, codeMatrix);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xD4: { /* ViewProjectionGL (OpenGL conversion) */
+        float OGLWorld[16], OGLView[16], OGLWorldView[16], OGLProjection[16];
+        int viewport[4];
+        codeMatrix = am + 0xcd0;
+        /* Get World, View, Projection matrices via recursive calls */
+        {
+            const float *w = RB_GetCodeMatrix_impl(0xBC, 0);
+            const float *v = RB_GetCodeMatrix_impl(0xC0, 0);
+            const float *p = RB_GetCodeMatrix_impl(0xC4, 0);
+            int i;
+            for (i = 0; i < 16; i++) OGLWorld[i] = w[i];
+            for (i = 0; i < 16; i++) OGLView[i] = v[i];
+            for (i = 0; i < 16; i++) OGLProjection[i] = p[i];
+        }
+        /* Negate column 2 for OpenGL Z convention */
+        OGLView[2] = -OGLView[2]; OGLView[6] = -OGLView[6];
+        OGLView[10] = -OGLView[10]; OGLView[14] = -OGLView[14];
+        MatrixMultiply44(OGLWorld, OGLView, OGLWorldView);
+        RB_GetViewport(viewport);
+        MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(OGLProjection,
+            (float)viewport[2], (float)viewport[3]);
+        MatrixMultiply44(OGLWorldView, OGLProjection, codeMatrix);
+        *(byte *)(codeMatrix + 0x100) = 1;
+        *(byte *)(codeMatrix + 0x101) = 0;
+        *(byte *)(codeMatrix + 0x102) = 0;
+        *(byte *)(codeMatrix + 0x103) = 0;
+        break;
+    }
+
+    case 0xD8: /* WorldScaled */
+        codeMatrix = am + 0x120;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            const float *w = RB_GetCodeMatrix_impl(0xBC, 0);
+            float invScale = 1.0f / *(float *)am;
+            RB_ScaleWorldMatrix(w, (float *)codeMatrix, invScale);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xDC: /* WorldScaledView */
+        codeMatrix = am + 0x560;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            const float *wv = RB_GetCodeMatrix_impl(0xC8, 0);
+            float invScale = 1.0f / *(float *)am;
+            RB_ScaleWorldMatrix(wv, (float *)codeMatrix, invScale);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xE0: /* WorldScaledViewProjection */
+        codeMatrix = am + 0x560;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            const float *wvp = RB_GetCodeMatrix_impl(0xD0, 0);
+            float invScale = 1.0f / *(float *)am;
+            RB_ScaleWorldMatrix(wvp, (float *)codeMatrix, invScale);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xE4: /* ShadowLookup (World * shadowLookupMatrix) */
+        codeMatrix = am + 0x9a0;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            char *be = (char *)imp_backEnd;
+            MatrixMultiply44(am + 0x10, be + 0x36e48, codeMatrix);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xE8: /* LightGridLookup (ViewProjection * lightGridLookupMatrix) */
+        codeMatrix = am + 0xab0;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            const float *vp = RB_GetCodeMatrix_impl(0xBF, 0); /* ViewProjection normal variant */
+            MatrixMultiply44(vp, lightGridLookupMatrix, codeMatrix);
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+
+    case 0xEC: { /* OutdoorMatrix */
+        float biasVec[4], biasWorld[4], biasResult[4];
+        codeMatrix = am + 0xbc0;
+        if (!*(byte *)(codeMatrix + 0x100)) {
+            const float *worldMat = RB_GetCodeMatrix_impl(0xBC, 0);
+            const float *viewProj = RB_GetCodeMatrix_impl(0xC1, 0); /* ViewProjection w/ some variant */
+            char *rgp = (char *)imp_rgp;
+            int awayBias = *(int *)(*(char **)imp_r_outdoorAwayBias + 8);
+            float downBias = *(float *)(*(char **)imp_r_outdoorDownBias + 8);
+            /* Build bias direction vector: (0, 0, -awayBias, 0) */
+            biasVec[0] = 0.0f; biasVec[1] = 0.0f;
+            biasVec[2] = -*(float *)&awayBias; biasVec[3] = 0.0f;
+            /* Transform bias through viewProjection */
+            MatrixTransformVector44(biasVec, viewProj, biasWorld);
+            biasWorld[1] += downBias;
+            /* Transform through outdoor lookup matrix */
+            MatrixTransformVector44(biasWorld,
+                (char *)*(void **)(rgp + 0x109c) + 0x1c0, biasResult);
+            /* Compute outdoor matrix = world * outdoorLookup */
+            MatrixMultiply44(worldMat,
+                (char *)*(void **)(rgp + 0x109c) + 0x1c0, codeMatrix);
+            /* Add bias to translation row */
+            *(float *)(am + 0xbf0 + 0) += biasResult[0];
+            *(float *)(am + 0xbf0 + 4) += biasResult[1];
+            *(float *)(am + 0xbf0 + 8) += biasResult[2];
+            *(float *)(am + 0xbf0 + 12) += biasResult[3];
+            *(byte *)(codeMatrix + 0x100) = 1;
+        }
+        break;
+    }
+
+    default:
+        return NULL;
+    }
+
+    /* Handle matrix variants (inverse, transpose, inverse-transpose) */
+    if (!*(byte *)(codeMatrix + 0x100 + matrixIndex)) {
+        transposeIndex = matrixIndex ^ 2;
+        if (*(byte *)(codeMatrix + 0x100 + transposeIndex)) {
+            /* Have transpose — get normal via transpose of transpose */
+            MatrixTranspose44(codeMatrix + transposeIndex * 64, codeMatrix + matrixIndex * 64);
+            *(byte *)(codeMatrix + 0x100 + matrixIndex) = 1;
+        } else {
+            int inverseIndex = matrixIndex ^ 1;
+            if (*(byte *)(codeMatrix + 0x100 + inverseIndex)) {
+                /* Have the non-transposed partner — compute via inverse */
+                MatrixInverse44(codeMatrix + inverseIndex * 64, codeMatrix + matrixIndex * 64);
+                *(byte *)(codeMatrix + 0x100 + matrixIndex) = 1;
+            } else {
+                /* Need to compute transpose then inverse */
+                MatrixTranspose44(codeMatrix + (matrixIndex ^ 3) * 64, codeMatrix + transposeIndex * 64);
+                *(byte *)(codeMatrix + 0x100 + transposeIndex) = 1;
+                MatrixInverse44(codeMatrix + transposeIndex * 64, codeMatrix + matrixIndex * 64);
+                *(byte *)(codeMatrix + 0x100 + matrixIndex) = 1;
+            }
+        }
+    }
+
+    /* Return pointer to the requested row(s) within the selected variant */
+    return (const float *)(codeMatrix + (firstRow + matrixIndex * 4) * 16);
+}
+
+/* Naked trampoline: marshals register args (eax=source, edx=firstRow)
+ * to stack for _impl, returns result in eax */
 static __attribute__((naked))
 const float * RB_GetCodeMatrix(int source, int firstRow)
+{
+    __asm__ __volatile__ (
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll RB_GetCodeMatrix_impl\n"
+        "addl $8, %esp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         ".Lff7dca_000f7dca:\n"
@@ -1782,6 +2012,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         ".text\n"
     );
 }
+#endif
 
 /* line 1439 */
 static __attribute__((naked))
