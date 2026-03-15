@@ -1393,206 +1393,100 @@ Bool Image_LoadRaw(GfxImage *image, const char *filepath, int imageTrack)
     return 1;
 }
 
-/* line 771 */
-static __attribute__((naked))
-jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
+/* line 771 — Image_LoadLightmapWeights
+ * Generates a 32x32 procedural lightmap weights texture.
+ * For each texel, computes direction on hemisphere, determines which cubemap faces
+ * contribute via angular distance, and encodes blend weights as RGBA bytes.
+ * The weight computation uses atan2 for face selection and acos for angular falloff. */
+extern float acosf(float x);
+extern float floorf(float x);
+extern double atan2(double y, double x);
+extern float Vec2Normalize(float *v);
+
+static jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 771 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x108c, %esp\n"
-        "leal -0x1024(%ebp), %edi\n" /* pic */
-        "movl $0, -0x1034(%ebp)\n" /* t */
-        /* { scope 1 */
-        ".Lffd9f6_000fda12:\n"
-        "cvtsi2ssl -0x1034(%ebp), %xmm0\n" /* line 792 | t */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, -0x20(%ebp)\n"
-        "xorl %esi, %esi\n" /* s */
-        "jmp .Lffd9f6_000fdbe1\n"
-        ".Lffd9f6_000fda46:\n"
-        "subss lit4_002ed5d0, %xmm1\n" /* line 743 | 1.0f */
-        "movss %xmm1, -0x102c(%ebp)\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* line 745 | 1.0f */
-        "subss -0x102c(%ebp), %xmm1\n"
-        "pxor %xmm2, %xmm2\n"
-        ".Lffd9f6_000fda6a:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 757 */
-        "movl %eax, (%esp)\n"
-        "movss %xmm1, -0x1058(%ebp)\n"
-        "movss %xmm2, -0x1068(%ebp)\n"
-        "calll acosf\n"
-        "fstps -0x1074(%ebp)\n"
-        "movss -0x1074(%ebp), %xmm0\n"
-        "divss lit4_002ed88c, %xmm0\n" /* -0.9553166031837463f */
-        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
-        "addss %xmm3, %xmm0\n"
-        "pxor %xmm4, %xmm4\n" /* line 759 */
-        "ucomiss %xmm0, %xmm4\n"
-        "movss -0x1058(%ebp), %xmm1\n"
-        "movss -0x1068(%ebp), %xmm2\n"
-        "ja .Lffd9f6_000fdcf4\n"
-        "ucomiss %xmm3, %xmm0\n" /* line 761 */
-        "jbe .Lffd9f6_000fdd04\n"
-        "movl $0, -0x1030(%ebp)\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        ".Lffd9f6_000fdadf:\n"
-        "leal (%edi, %esi, 4), %ebx\n" /* line 771 */
-        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x1058(%ebp)\n"
-        "movss %xmm2, -0x1068(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x1038(%ebp)\n"
-        "cvttss2si -0x1038(%ebp), %eax\n"
-        "movb %al, (%ebx)\n"
-        "movss -0x1068(%ebp), %xmm2\n"
-        "mulss -0x1030(%ebp), %xmm2\n"
-        "mulss lit4_002ed5d4, %xmm2\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm2\n" /* 0.5f */
-        "movss %xmm2, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x103c(%ebp)\n"
-        "cvttss2si -0x103c(%ebp), %eax\n"
-        "movb %al, 1(%ebx)\n"
-        "movss -0x1058(%ebp), %xmm1\n"
-        "mulss -0x1030(%ebp), %xmm1\n"
-        "mulss lit4_002ed5d4, %xmm1\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "movss %xmm1, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1040(%ebp)\n"
-        "cvttss2si -0x1040(%ebp), %eax\n"
-        "movb %al, 2(%ebx)\n"
-        "movss -0x1030(%ebp), %xmm0\n"
-        "mulss -0x102c(%ebp), %xmm0\n"
-        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
-        "mulss %xmm0, %xmm1\n"
-        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
-        "addss %xmm1, %xmm3\n"
-        "movss %xmm3, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1044(%ebp)\n"
-        "cvttss2si -0x1044(%ebp), %eax\n"
-        "movb %al, 3(%ebx)\n"
-        "addl $1, %esi\n" /* line 793 | s */
-        "cmpl $0x20, %esi\n" /* s */
-        "je .Lffd9f6_000fdd3b\n"
-        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
-        ".Lffd9f6_000fdbe1:\n"
-        "cvtsi2ssl %esi, %xmm0\n" /* line 795 | s */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, -0x24(%ebp)\n" /* dir */
-        "movss -0x20(%ebp), %xmm1\n" /* line 126 */
-        "mulss %xmm0, %xmm0\n" /* line 796 */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "pxor %xmm3, %xmm3\n" /* line 797 */
-        "ucomiss %xmm1, %xmm3\n"
-        "ja .Lffd9f6_000fdd25\n"
-        ".Lffd9f6_000fdc2f:\n"
-        "sqrtss %xmm0, %xmm0\n" /* line 81 */
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "cvtss2sd -0x24(%ebp), %xmm0\n" /* line 728 | dir */
-        "cvtss2sd -0x20(%ebp), %xmm1\n"
-        "movsd %xmm0, 8(%esp)\n"
-        "movsd %xmm1, (%esp)\n"
-        "calll atan2\n"
-        "fstpl -0x1070(%ebp)\n"
-        "movsd -0x1070(%ebp), %xmm0\n"
-        "mulsd lit8_00307cf8, %xmm0\n" /* 0.477464829275686 */
-        "subsd lit8_00307d00, %xmm0\n" /* 0.75 */
-        "cvtsd2ss %xmm0, %xmm1\n"
-        "pxor %xmm0, %xmm0\n" /* line 729 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lffd9f6_000fdcea\n"
-        "ucomiss lit4_002ed720, %xmm1\n" /* line 731 | 3.0f */
-        "jbe .Lffd9f6_000fdc8e\n"
-        "subss lit4_002ed720, %xmm1\n" /* line 732 | 3.0f */
-        ".Lffd9f6_000fdc8e:\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* line 734 | 1.0f */
-        "ucomiss %xmm1, %xmm3\n"
-        "ja .Lffd9f6_000fdcd4\n"
-        "movss lit4_002ed62c, %xmm0\n" /* line 741 | 2.0f */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lffd9f6_000fda46\n"
-        "movaps %xmm1, %xmm2\n" /* line 750 */
-        "subss lit4_002ed62c, %xmm2\n" /* 2.0f */
-        "movss lit4_002ed5d0, %xmm1\n" /* line 753 | 1.0f */
-        "subss %xmm2, %xmm1\n"
-        "movss %xmm1, -0x102c(%ebp)\n"
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lffd9f6_000fda6a\n"
-        ".Lffd9f6_000fdcd4:\n"
-        "movaps %xmm3, %xmm2\n" /* line 737 */
-        "subss %xmm1, %xmm2\n"
-        "movl $0, -0x102c(%ebp)\n"
-        "jmp .Lffd9f6_000fda6a\n"
-        ".Lffd9f6_000fdcea:\n"
-        "addss lit4_002ed720, %xmm1\n" /* line 730 | 3.0f */
-        "jmp .Lffd9f6_000fdc8e\n"
-        ".Lffd9f6_000fdcf4:\n"
-        "movss %xmm3, -0x1030(%ebp)\n" /* line 759 */
-        "movaps %xmm4, %xmm0\n"
-        "jmp .Lffd9f6_000fdadf\n"
-        ".Lffd9f6_000fdd04:\n"
-        "movss lit4_002ed5d0, %xmm3\n" /* line 761 | 1.0f */
-        "subss %xmm0, %xmm3\n"
-        "movss %xmm3, -0x1030(%ebp)\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "jmp .Lffd9f6_000fdadf\n"
-        ".Lffd9f6_000fdd25:\n"
-        "leal -0x24(%ebp), %eax\n" /* line 799 | dir */
-        "movl %eax, (%esp)\n"
-        "calll Vec2Normalize\n"
-        "fstp %st(0)\n"
-        "pxor %xmm0, %xmm0\n"
-        "jmp .Lffd9f6_000fdc2f\n"
-        ".Lffd9f6_000fdd3b:\n"
-        "subl $-0x80, %edi\n" /* line 793 | dest */
-        "addl $1, -0x1034(%ebp)\n" /* line 790 | t */
-        "cmpl $0x20, -0x1034(%ebp)\n" /* t */
-        "jne .Lffd9f6_000fda12\n"
-        "movl $0x15, 0x18(%esp)\n" /* line 570 */
-        "movl $0, 0x14(%esp)\n"
-        "movl $3, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl $0x20, 8(%esp)\n"
-        "movl $0x20, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* image */
-        "movl %eax, (%esp)\n"
-        "calll Image_Setup\n"
-        "movl $0, (%esp)\n" /* line 575 */
-        "calll Image_CubemapFace\n"
-        "leal -0x1024(%ebp), %edx\n" /* pic */
-        "movl %edx, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x15, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* image */
-        "movl %eax, (%esp)\n"
-        "calll Image_UploadData\n"
-        /* } scope */
-        "addl $0x108c, %esp\n" /* line 831 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte pic[32 * 32 * 4]; /* 32x32 RGBA */
+    int t, s;
+
+    for (t = 0; t < 32; t++) {
+        float tv = ((float)t + 0.5f) * (1.0f / 32.0f) * 2.0f - 1.0f;
+
+        for (s = 0; s < 32; s++) {
+            float sv = ((float)s + 0.5f) * (1.0f / 32.0f) * 2.0f - 1.0f;
+
+            /* Compute z^2 = 1 - sv^2 - tv^2 for hemisphere mapping */
+            float zSq = 1.0f - sv * sv - tv * tv;
+            float dir[2];
+            dir[0] = sv;
+
+            if (zSq < 0.0f) {
+                /* Outside hemisphere: normalize 2D direction, set z=0 */
+                Vec2Normalize(dir);
+                zSq = 0.0f;
+            }
+
+            float z = __builtin_sqrtf(zSq);
+
+            /* Convert (sv, tv) to face angle via atan2, scale to [0, 3) range */
+            float angle = (float)(atan2((double)sv, (double)tv) * 0.477464829275686 - 0.75);
+
+            /* Wrap angle to [0, 3) */
+            if (angle < 0.0f)
+                angle += 3.0f;
+            if (angle > 3.0f)
+                angle -= 3.0f;
+
+            /* Determine face blending weights based on angle region */
+            float w0, w1, w2; /* blend weights for 3 adjacent faces */
+
+            if (angle < 1.0f) {
+                /* Region 0-1: blend between face 0 and face 1 */
+                w2 = 1.0f - angle;
+                w1 = 0.0f;
+                w0 = 0.0f; /* w0 = 0 (encoded below via separate path) */
+            } else if (angle < 2.0f) {
+                /* Region 1-2 */
+                w1 = angle - 1.0f;
+                w0 = 1.0f - w1;
+                w2 = 0.0f;
+            } else {
+                /* Region 2-3 */
+                w2 = angle - 2.0f;
+                w0 = 1.0f - w2;
+                w1 = 0.0f;
+            }
+
+            /* Compute angular falloff from hemisphere center */
+            float falloff = acosf(z) / -0.9553166031837463f + 1.0f;
+            float complement, mainWeight;
+
+            if (falloff < 0.0f) {
+                /* Full falloff: all weight goes to main channel */
+                mainWeight = 1.0f;
+                falloff = 0.0f;
+            } else if (falloff > 1.0f) {
+                /* No falloff contribution */
+                complement = 0.0f;
+                mainWeight = 255.0f * falloff; /* note: goes through floor path below */
+                goto write_pixel;
+            } else {
+                complement = 1.0f - falloff;
+                mainWeight = 255.0f * falloff;
+            }
+
+        write_pixel:;
+            byte *pixel = &pic[(t * 32 + s) * 4];
+            pixel[0] = (byte)(int)floorf(mainWeight + 0.5f);
+            pixel[1] = (byte)(int)floorf(w2 * complement * 255.0f + 0.5f);
+            pixel[2] = (byte)(int)floorf(w1 * complement * 255.0f + 0.5f);
+            pixel[3] = (byte)(int)floorf(complement * w0 * 255.0f + 0.5f);
+        }
+    }
+
+    /* Upload as 32x32 2D texture, format 0x15, 1 mip, depth 3 */
+    Image_Setup(image, 32, 32, 1, 3, 0, 0x15);
+    int face = Image_CubemapFace(0);
+    Image_UploadData(image, 0x15, face, 0, pic);
 }
 
 /* line 1165 */

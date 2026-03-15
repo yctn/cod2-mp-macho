@@ -218,118 +218,51 @@ static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, co
     return strcmp(*(const char **)cached0, *(const char **)cached1) < 0;
 }
 
-/* line 897 */
-__attribute__((naked))
+/* line 897 — IncludeClass_Open
+ * D3DX shader include handler. Binary-searches the pre-loaded cached shader text
+ * array (mtlLoadGlob) for the requested filename. Tries exact match first,
+ * then "lib/" prefix. Returns S_OK (0) on success, 1 on failure. */
+extern const char *va(const char *fmt, ...);
+extern int stricmp(const char *s1, const char *s2);
+
+/* Binary search helper for cached shader text */
+static int Material_FindCachedShaderText(const char *searchName)
+{
+    int count = *(int *)mtlLoadGlob;
+    GfxCachedShaderText *cached = *(GfxCachedShaderText **)(mtlLoadGlob + 4);
+    int bot = 0, top = count - 1;
+
+    while (bot <= top) {
+        int mid = (bot + top) / 2;
+        int cmp = stricmp(searchName, cached[mid].name);
+        if (cmp == 0)
+            return mid;
+        if (cmp > 0)
+            bot = mid + 1;
+        else
+            top = mid - 1;
+    }
+    return -1;
+}
+
 HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeType, LPCSTR filename, LPCVOID parentData, LPCVOID *data, MaterialTechnique * (*byteCount)[4][34])
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 897 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1: bot */
-        "movl mtlLoadGlob, %esi\n" /* line 877 | top */
-        "subl $1, %esi\n" /* top */
-        "jns .Lf101b34_00101bbe\n"
-        /* } scope */
-        ".Lf101b34_00101b48:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 901 | filename */
-        "movl %edx, 4(%esp)\n"
-        "movl $str_00227f5c, (%esp)\n" /* "lib/%s" */
-        "calll va\n"
-        "movl %eax, -0x20(%ebp)\n" /* filename */
-        /* { scope 1: bot */
-        /* { scope 2 */
-        "movl mtlLoadGlob, %esi\n" /* line 877 | top */
-        "subl $1, %esi\n" /* top */
-        "jns .Lf101b34_00101b76\n"
-        /* } scope */
-        /* } scope */
-        ".Lf101b34_00101b69:\n"
-        "movl $1, %eax\n" /* line 901 */
-        "addl $0x2c, %esp\n" /* line 904 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: bot */
-        /* { scope 2 */
-        ".Lf101b34_00101b76:\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 877 | bot */
-        "jmp .Lf101b34_00101b8a\n"
-        ".Lf101b34_00101b7f:\n"
-        "addl $1, %ebx\n" /* line 890 | mid */
-        "movl %ebx, -0x1c(%ebp)\n" /* mid, bot */
-        ".Lf101b34_00101b85:\n"
-        "cmpl %esi, -0x1c(%ebp)\n" /* line 877 | top, bot */
-        "jg .Lf101b34_00101b69\n"
-        ".Lf101b34_00101b8a:\n"
-        "movl -0x1c(%ebp), %ebx\n" /* line 879 | bot, mid */
-        "addl %esi, %ebx\n" /* top, mid */
-        "sarl $1, %ebx\n" /* mid */
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 880 | mid */
-        "leal (, %eax, 4), %edi\n"
-        "movl mtlLoadGlob+4, %eax\n"
-        "movl (%eax, %edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20(%ebp), %ecx\n" /* filename */
-        "movl %ecx, (%esp)\n"
-        "calll stricmp\n"
-        "cmpl $0, %eax\n" /* line 881 */
-        "je .Lf101b34_00101c0a\n"
-        "jge .Lf101b34_00101b7f\n" /* line 887 */
-        "leal -1(%ebx), %esi\n" /* line 888 | mid, top */
-        "jmp .Lf101b34_00101b85\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1: bot */
-        ".Lf101b34_00101bbe:\n"
-        "movl $0, -0x24(%ebp)\n" /* line 877 | bot */
-        "jmp .Lf101b34_00101bd6\n"
-        ".Lf101b34_00101bc7:\n"
-        "addl $1, %ebx\n" /* line 890 | mid */
-        "movl %ebx, -0x24(%ebp)\n" /* mid, bot */
-        ".Lf101b34_00101bcd:\n"
-        "cmpl %esi, -0x24(%ebp)\n" /* line 877 | top, bot */
-        "jg .Lf101b34_00101b48\n"
-        ".Lf101b34_00101bd6:\n"
-        "movl -0x24(%ebp), %ebx\n" /* line 879 | bot, mid */
-        "addl %esi, %ebx\n" /* top, mid */
-        "sarl $1, %ebx\n" /* mid */
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 880 | mid */
-        "leal (, %eax, 4), %edi\n"
-        "movl mtlLoadGlob+4, %eax\n"
-        "movl (%eax, %edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* filename */
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "cmpl $0, %eax\n" /* line 881 */
-        "je .Lf101b34_00101c0a\n"
-        "jge .Lf101b34_00101bc7\n" /* line 887 */
-        "leal -1(%ebx), %esi\n" /* line 888 | mid, top */
-        "jmp .Lf101b34_00101bcd\n"
-        ".Lf101b34_00101c0a:\n"
-        "movl %edi, %eax\n" /* line 883 */
-        "addl mtlLoadGlob+4, %eax\n"
-        "movl 8(%eax), %edx\n"
-        "movl 0x1c(%ebp), %ecx\n" /* byteCount */
-        "movl %edx, (%ecx)\n"
-        "movl 4(%eax), %eax\n" /* line 884 */
-        "movl 0x18(%ebp), %edx\n" /* data */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "xorl %eax, %eax\n" /* line 901 */
-        "addl $0x2c, %esp\n" /* line 904 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxCachedShaderText *cached = *(GfxCachedShaderText **)(mtlLoadGlob + 4);
+    int idx;
+
+    /* Try exact filename match */
+    idx = Material_FindCachedShaderText(filename);
+    if (idx < 0) {
+        /* Try "lib/" prefix */
+        idx = Material_FindCachedShaderText(va("lib/%s", filename));
+        if (idx < 0)
+            return 1; /* not found */
+    }
+
+    /* Return text data and size */
+    *(const char **)data = cached[idx].text;
+    *(int *)byteCount = cached[idx].textSize;
+    return 0;
 }
 
 /* line 3595 */
