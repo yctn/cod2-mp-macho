@@ -47,6 +47,12 @@ extern void Vec3Cross(const vec_t *v0, const vec_t *v1, vec_t *cross);
 extern float Vec3Normalize(vec_t *v);
 extern int BoxOnPlaneSide(const vec_t *emins, const vec_t *emaxs, const cplane_t *p);
 extern void ExpandBounds(const vec_t *addedmins, const vec_t *addedmaxs, vec_t *mins, vec_t *maxs);
+extern float Vec3Distance(const vec_t *v0, const vec_t *v1);
+extern const char *XModelGetName(void *model);
+extern void R_AddDebugString(void *debugGlobals, const vec_t *origin, const void *color, float scale, const char *text);
+extern void R_SkinStaticModel(void *sceneEnt, void *ent, int smodelIndex);
+extern int R_AddStaticModelToScene(int smodelIndex);
+extern void R_AddDrawSurfForSurface(void *surf, int entIndex);
 void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
@@ -59,8 +65,67 @@ static vec3_t * R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, cons
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
 static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals);
 static __attribute__((regparm(3))) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes);
 static __attribute__((regparm(3))) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+
+/* Shared helper: test a DpvsPlane against AABB bounds (mins+maxs, 24 bytes).
+ * side[i] is a byte offset into the bounds selecting the appropriate corner. */
+static inline float R_DpvsPlaneBoundsTest(const DpvsPlane *plane, const float *bounds)
+{
+    return plane->coeffs[0] * *(float *)((byte *)bounds + plane->side[0])
+         + plane->coeffs[1] * *(float *)((byte *)bounds + plane->side[1])
+         + plane->coeffs[2] * *(float *)((byte *)bounds + plane->side[2])
+         + plane->coeffs[3];
+}
+
+/* Shared: test frustum planes against bounds. Returns 0 if culled, 1 if visible. */
+static inline int R_CullByFrustumPlanes(DpvsPlane *planes, int planeCount, int stackLevel, const float *bounds)
+{
+    int i;
+    for (i = 0; i < planeCount; i++) {
+        if ((unsigned char)planes[i].u.frontal > (unsigned)stackLevel)
+            continue;
+        planes[i].u.frontal = 0xFF;
+        if (R_DpvsPlaneBoundsTest(&planes[i], bounds) <= 0.0f)
+            return 0;
+    }
+    return 1;
+}
+
+/* Shared: test global occluder planes against bounds. Returns 0 if occluded, 1 if visible. */
+static inline int R_CullByOccluders(int stackLevel, const float *bounds)
+{
+    int occCount = *(int *)((byte *)&dpvsGlob + 56);
+    int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
+    int i;
+    for (i = 0; i < occCount; i++) {
+        byte *occ = (byte *)occTable[i];
+        if (stackLevel > *(int *)(occ + 0x18))
+            continue;
+        int planeCount = *(int *)(occ + 0x1c);
+        DpvsPlane *planes = *(DpvsPlane **)(occ + 0x20);
+        if (planeCount <= 0)
+            return 0; /* degenerate occluder: fully occluded */
+        int j;
+        int allBehind = 1;
+        for (j = 0; j < planeCount; j++) {
+            if ((unsigned char)planes[j].u.frontal > (unsigned)stackLevel) {
+                allBehind = 0;
+                break;
+            }
+            planes[j].u.frontal = 0xFF;
+            if (R_DpvsPlaneBoundsTest(&planes[j], bounds) > 0.0f) {
+                allBehind = 0;
+                break;
+            }
+        }
+        if (allBehind && j >= planeCount)
+            return 0;
+    }
+    return 1;
+}
 static void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel);
 static int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count);
 static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount);
@@ -439,221 +504,85 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
     );
 }
 
-/* line 1582 */
+/* line 1582 — R_AddStaticModelWithCull
+ * Adds a static model to the scene after frustum + occluder culling.
+ * LOD distance check, then frustum plane test, then global occluder test.
+ * On success: marks frame, adds to scene, skins, and dispatches XModel surfaces. */
+static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    byte *rg_ptr = (byte *)&rg;
+    int *smodelDync = (int *)(*(int *)(rg_ptr + 0x3194) + smodelIndex * 8);
+    int viewCount = *(int *)imp_scene;
+
+    /* Already processed this frame? */
+    if (smodelDync[0] == viewCount)
+        return;
+
+    /* Get static model instance */
+    byte *world = *(byte **)((byte *)&rgp + 0x109c);
+    GfxStaticModelInstance *smodelInst = (GfxStaticModelInstance *)(*(byte **)(world + 0xf8) + smodelIndex * 96);
+
+    /* LOD distance check (only if cullDist != 0) */
+    if (smodelInst->cullDist != 0.0f) {
+        float dist = Vec3Distance(smodelInst->origin, (const vec_t *)(rg_ptr + 0x317c));
+        float scaledDist = dist * *(float *)(rg_ptr + 0x3188) + *(float *)(rg_ptr + 0x318c);
+        if (scaledDist > smodelInst->cullDist) {
+            smodelDync[0] = viewCount; /* mark as visited (LOD culled) */
+            return;
+        }
+    }
+
+    /* Frustum plane culling against smodel bounds (mins at offset 0x14) */
+    const float *bounds = (const float *)&smodelInst->mins;
+    if (!R_CullByFrustumPlanes((DpvsPlane *)planes, planeCount, stackLevel, bounds))
+        return;
+
+    /* Global occluder culling */
+    if (!R_CullByOccluders(stackLevel, bounds))
+        return;
+
+    /* Passed all culling — add to scene */
+    smodelDync[0] = viewCount;
+
+    /* Debug: show static model names */
+    if (*(byte *)(*(int *)imp_r_showSModelNames + 8)) {
+        const char *name = XModelGetName(smodelInst->model);
+        byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
+        R_AddDebugString(debugGlobals, smodelInst->origin, (const void *)imp_colorWhite, 0.3f, name);
+    }
+
+    int entIndex = R_AddStaticModelToScene(smodelIndex);
+    if (entIndex < 0)
+        return;
+
+    /* Build scene entity: sceneEnt = scene + 0x5c4 + entIndex * 52 */
+    byte *scene = (byte *)imp_scene;
+    byte *sceneEnt = scene + 0x5c4 + entIndex * 52;
+    /* ent = scene->entities + entIndex * 116 */
+    byte *entities = *(byte **)(scene + 0x10);
+    byte *ent = entities + entIndex * 116;
+
+    R_SkinStaticModel(sceneEnt, ent, smodelIndex);
+    *(int *)(sceneEnt + 0xc) = 5; /* surfaceType = 5 */
+
+    R_AddXModelSurfaces(entIndex);
+}
+
+/* Trampoline: regparm(3) (eax=smodelIndex, edx=planes, ecx=planeCount, stack=stackLevel) → cdecl */
 static __attribute__((naked)) __attribute__((regparm(3)))
 void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1582 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %edx, %ebx\n" /* planes */
-        "movl %ecx, -0x28(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* stackLevel */
-        "movl %eax, -0x2c(%ebp)\n" /* stackLevel */
-        /* { scope 1: occluderIndex */
-        "movl imp_rg, %esi\n" /* line 1590 | entIndex */
-        "movl 0x3194(%esi), %eax\n" /* entIndex */
-        "movl -0x24(%ebp), %edx\n"
-        "leal (%eax, %edx, 8), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* smodelDync */
-        "movl (%eax), %eax\n" /* line 1591 */
-        "movl imp_scene, %edx\n"
-        "cmpl (%edx), %eax\n"
-        "je .Lfef4ee_000ef654\n"
-        "movl imp_rgp, %eax\n" /* line 1594 */
-        "movl 0x109c(%eax), %eax\n"
-        "movl -0x24(%ebp), %ecx\n"
-        "leal (%ecx, %ecx, 2), %edi\n" /* smodelInst */
-        "shll $5, %edi\n" /* smodelInst */
-        "addl 0xf8(%eax), %edi\n" /* smodelInst */
-        "pxor %xmm0, %xmm0\n" /* line 1595 */
-        "ucomiss (%edi), %xmm0\n" /* smodelInst */
-        "jp .Lfef4ee_000ef6f3\n"
-        "jne .Lfef4ee_000ef6f3\n"
-        ".Lfef4ee_000ef557:\n"
-        "leal 0x14(%edi), %esi\n" /* line 1603 | smodelInst, entIndex */
-        /* { scope 2 */
-        "movl -0x28(%ebp), %ecx\n" /* line 346 */
-        "testl %ecx, %ecx\n"
-        "jle .Lfef4ee_000ef5be\n"
-        "xorl %edx, %edx\n"
-        "pxor %xmm2, %xmm2\n"
-        ".Lfef4ee_000ef567:\n"
-        "movzbl 0x13(%ebx), %eax\n" /* line 348 | occluder */
-        "cmpl %eax, -0x2c(%ebp)\n" /* stackLevel */
-        "jg .Lfef4ee_000ef5b3\n"
-        "movb $0xff, 0x13(%ebx)\n" /* line 350 | occluder */
-        "movzbl 0x10(%ebx), %eax\n" /* line 51 */
-        "movss (%ebx), %xmm1\n"
-        "mulss (%eax, %esi), %xmm1\n"
-        "movzbl 0x11(%ebx), %eax\n" /* line 52 */
-        "movss 4(%ebx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%ebx), %eax\n" /* line 53 */
-        "movss 8(%ebx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 0xc(%ebx), %xmm1\n" /* line 351 | occluder */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfef4ee_000ef654\n"
-        ".Lfef4ee_000ef5b3:\n"
-        "addl $1, %edx\n" /* line 346 */
-        "addl $0x14, %ebx\n" /* occluder */
-        "cmpl %edx, -0x28(%ebp)\n"
-        "jne .Lfef4ee_000ef567\n"
-        ".Lfef4ee_000ef5be:\n"
-        "movl dpvsGlob+56, %edx\n" /* line 355 */
-        "testl %edx, %edx\n"
-        "jle .Lfef4ee_000ef65c\n"
-        "movl $0, -0x1c(%ebp)\n" /* occluderIndex */
-        "pxor %xmm3, %xmm3\n"
-        "movl -0x1c(%ebp), %edx\n" /* occluderIndex */
-        ".Lfef4ee_000ef5da:\n"
-        "movl dpvsGlob+60, %eax\n" /* line 357 */
-        "movl (%eax, %edx, 4), %ebx\n" /* occluder */
-        "movl -0x2c(%ebp), %ecx\n" /* line 358 | stackLevel */
-        "cmpl 0x18(%ebx), %ecx\n" /* occluder */
-        "jg .Lfef4ee_000ef6d9\n"
-        "movl 0x20(%ebx), %edx\n" /* line 361 | occluder */
-        "movl 0x1c(%ebx), %eax\n" /* occluder */
-        "testl %eax, %eax\n"
-        "jle .Lfef4ee_000ef654\n"
-        "xorl %ecx, %ecx\n"
-        "movaps %xmm3, %xmm2\n"
-        ".Lfef4ee_000ef5fd:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 363 */
-        "cmpl %eax, -0x2c(%ebp)\n" /* stackLevel */
-        "jg .Lfef4ee_000ef649\n"
-        "movb $0xff, 0x13(%edx)\n" /* line 365 */
-        /* { scope 3 */
-        "movzbl 0x10(%edx), %eax\n" /* line 51 */
-        "movss (%edx), %xmm1\n"
-        "mulss (%eax, %esi), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 52 */
-        "movss 4(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 53 */
-        "movss 8(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        /* } scope */
-        "addss 0xc(%edx), %xmm1\n" /* line 366 */
-        "ucomiss %xmm2, %xmm1\n"
-        "ja .Lfef4ee_000ef6d9\n"
-        ".Lfef4ee_000ef649:\n"
-        "addl $1, %ecx\n" /* line 361 */
-        "addl $0x14, %edx\n"
-        "cmpl 0x1c(%ebx), %ecx\n" /* occluder */
-        "jl .Lfef4ee_000ef5fd\n"
-        /* } scope */
-        /* } scope */
-        ".Lfef4ee_000ef654:\n"
-        "addl $0x5c, %esp\n" /* line 1628 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_AddStaticModelWithCull_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: occluderIndex */
-        ".Lfef4ee_000ef65c:\n"
-        "movl imp_scene, %edx\n" /* line 1610 */
-        "movl (%edx), %eax\n"
-        "movl -0x20(%ebp), %ecx\n" /* smodelDync */
-        "movl %eax, (%ecx)\n"
-        "movl imp_r_showSModelNames, %eax\n" /* line 1617 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfef4ee_000ef73e\n"
-        ".Lfef4ee_000ef67a:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1620 */
-        "movl %eax, (%esp)\n"
-        "calll R_AddStaticModelToScene\n"
-        "movl %eax, %esi\n" /* entIndex */
-        "testl %eax, %eax\n" /* line 1621 */
-        "js .Lfef4ee_000ef654\n"
-        "leal (%eax, %eax, 2), %ebx\n" /* line 1624 | sceneEnt */
-        "leal (%eax, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl imp_scene, %edx\n"
-        "leal 0x5c4(%edx, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl -0x24(%ebp), %ecx\n" /* line 1625 */
-        "movl %ecx, 8(%esp)\n"
-        "leal (, %eax, 8), %eax\n"
-        "subl %esi, %eax\n" /* entIndex */
-        "leal (%esi, %eax, 4), %eax\n" /* entIndex */
-        "movl 0x10(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* sceneEnt */
-        "calll R_SkinStaticModel\n"
-        "movl $5, 0xc(%ebx)\n" /* line 1626 | sceneEnt */
-        "movl %esi, 8(%ebp)\n" /* line 1627 | entIndex, stackLevel */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1628 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1: occluderIndex */
-        "jmp R_AddXModelSurfaces\n" /* line 1627 */
-        /* { scope 2 */
-        ".Lfef4ee_000ef6d9:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 355 | occluderIndex */
-        "movl -0x1c(%ebp), %eax\n" /* occluderIndex */
-        "cmpl dpvsGlob+56, %eax\n"
-        "jge .Lfef4ee_000ef65c\n"
-        "movl %eax, %edx\n"
-        "jmp .Lfef4ee_000ef5da\n"
-        /* } scope */
-        ".Lfef4ee_000ef6f3:\n"
-        "leal 0x317c(%esi), %eax\n" /* line 1598 | entIndex */
-        "movl %eax, 4(%esp)\n"
-        "leal 4(%edi), %eax\n" /* smodelInst */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Distance\n"
-        "fstps -0x3c(%ebp)\n"
-        "movss -0x3c(%ebp), %xmm0\n"
-        "mulss 0x3188(%esi), %xmm0\n" /* line 1600 | entIndex */
-        "addss 0x318c(%esi), %xmm0\n" /* entIndex */
-        "ucomiss (%edi), %xmm0\n" /* smodelInst */
-        "jbe .Lfef4ee_000ef557\n"
-        "movl imp_scene, %edx\n" /* line 1602 */
-        "movl (%edx), %eax\n"
-        "movl -0x20(%ebp), %ecx\n" /* smodelDync */
-        "movl %eax, (%ecx)\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1628 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: occluderIndex */
-        ".Lfef4ee_000ef73e:\n"
-        "movl 0x10(%edi), %eax\n" /* line 1618 | smodelInst */
-        "movl %eax, (%esp)\n"
-        "calll XModelGetName\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0x3e99999a, 0xc(%esp)\n"
-        "movl imp_colorWhite, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 4(%edi), %eax\n" /* smodelInst */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_frontEndDataOut, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %eax, (%esp)\n"
-        "calll R_AddDebugString\n"
-        "jmp .Lfef4ee_000ef67a\n"
     );
 }
 
@@ -683,149 +612,55 @@ void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int s
     }
 }
 
-/* line 1068 */
+/* line 1068 — R_AddWorldSurfaceWithCull
+ * Adds a world surface to the draw list after frustum + occluder culling.
+ * Checks frame visit, optionally tests frustum planes (r_portalFineCull),
+ * tests global occluders, then dispatches via R_AddDrawSurfForSurface. */
+static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    byte *rg_ptr = (byte *)&rg;
+
+    /* Per-surface visibility data: skip if already visited this frame */
+    int *surfVisData = *(int **)(rg_ptr + 0x3198);
+    int viewCount = *(int *)imp_scene;
+    if (surfVisData[surfIndex] == viewCount)
+        return;
+
+    /* Look up the surface's triangle data for bounds */
+    byte *world = *(byte **)((byte *)&rgp + 0x109c);
+    GfxSurface *surfaces = *(GfxSurface **)(world + 0x14);
+    GfxSurface *surf = &surfaces[surfIndex];
+    srfTriangles_t *tris = surf->tris;
+
+    /* Frustum plane culling (only if r_portalFineCull is enabled) */
+    if (*(byte *)(*(int *)imp_r_portalFineCull + 8)) {
+        const float *bounds = (const float *)tris->bounds;
+        if (!R_CullByFrustumPlanes((DpvsPlane *)planes, planeCount, stackLevel, bounds))
+            return;
+        if (!R_CullByOccluders(stackLevel, bounds))
+            return;
+    }
+
+    /* Passed culling — mark surface as visited and add draw surface */
+    surfVisData[surfIndex] = viewCount;
+
+    int entIndex = surf->sortGroup + 0x800;
+    R_AddDrawSurfForSurface(surf, entIndex);
+}
+
+/* Trampoline: regparm(3) (eax=surfIndex, edx=planes, ecx=planeCount, stack=stackLevel) → cdecl */
 static __attribute__((naked)) __attribute__((regparm(3)))
 void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1068 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %ebx\n" /* surfIndex */
-        "movl 8(%ebp), %edi\n" /* stackLevel */
-
-        /* { scope 1: occluderIndex */
-        "leal (, %eax, 4), %eax\n" /* line 1072 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl imp_rg, %esi\n" /* minmax */
-        "movl 0x3198(%esi), %eax\n" /* minmax */
-        "movl -0x20(%ebp), %esi\n" /* minmax */
-        "movl (%eax, %esi), %eax\n"
-        "movl imp_scene, %esi\n" /* minmax */
-        "cmpl (%esi), %eax\n" /* minmax */
-        "je .Lfef8a0_000efa54\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 1075 | tris */
-        "shll $2, %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl imp_rgp, %ebx\n" /* tris */
-        "movl 0x109c(%ebx), %eax\n" /* tris */
-        "movl 0x14(%eax), %eax\n"
-        "movl -0x24(%ebp), %esi\n" /* minmax */
-        "movl 8(%eax, %esi), %ebx\n" /* tris */
-        "movl imp_r_portalFineCull, %eax\n" /* line 1076 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfef8a0_000efa13\n"
-        "leal 4(%ebx), %esi\n" /* tris, minmax */
-        /* { scope 2 */
-        "testl %ecx, %ecx\n" /* line 346 */
-        "jle .Lfef8a0_000ef96a\n"
-        "xorl %ebx, %ebx\n" /* occluder */
-        "pxor %xmm2, %xmm2\n"
-        ".Lfef8a0_000ef915:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 348 */
-        "cmpl %eax, %edi\n"
-        "jg .Lfef8a0_000ef960\n"
-        "movb $0xff, 0x13(%edx)\n" /* line 350 */
-        "movzbl 0x10(%edx), %eax\n" /* line 51 */
-        "movss (%edx), %xmm1\n"
-        "mulss (%eax, %esi), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 52 */
-        "movss 4(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 53 */
-        "movss 8(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 0xc(%edx), %xmm1\n" /* line 351 */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfef8a0_000efa54\n"
-        ".Lfef8a0_000ef960:\n"
-        "addl $1, %ebx\n" /* line 346 | occluder */
-        "addl $0x14, %edx\n"
-        "cmpl %ebx, %ecx\n" /* occluder */
-        "jne .Lfef8a0_000ef915\n"
-        ".Lfef8a0_000ef96a:\n"
-        "movl dpvsGlob+56, %eax\n" /* line 355 */
-        "testl %eax, %eax\n"
-        "jle .Lfef8a0_000efa13\n"
-        "movl $0, -0x1c(%ebp)\n" /* occluderIndex */
-        "pxor %xmm3, %xmm3\n"
-        "movl -0x1c(%ebp), %edx\n" /* occluderIndex */
-        ".Lfef8a0_000ef985:\n"
-        "movl dpvsGlob+60, %eax\n" /* line 357 */
-        "movl (%eax, %edx, 4), %ebx\n" /* occluder */
-        "cmpl 0x18(%ebx), %edi\n" /* line 358 | occluder */
-        "jg .Lfef8a0_000ef9fd\n"
-        "movl 0x20(%ebx), %edx\n" /* line 361 | occluder */
-        "movl 0x1c(%ebx), %eax\n" /* occluder */
-        "testl %eax, %eax\n"
-        "jle .Lfef8a0_000efa54\n"
-        "xorl %ecx, %ecx\n"
-        "movaps %xmm3, %xmm2\n"
-        "jmp .Lfef8a0_000ef9b6\n"
-        ".Lfef8a0_000ef9a7:\n"
-        "addl $1, %ecx\n"
-        "addl $0x14, %edx\n"
-        "cmpl 0x1c(%ebx), %ecx\n" /* occluder */
-        "jge .Lfef8a0_000efa54\n"
-        ".Lfef8a0_000ef9b6:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 363 */
-        "cmpl %eax, %edi\n"
-        "jg .Lfef8a0_000ef9a7\n"
-        "movb $0xff, 0x13(%edx)\n" /* line 365 */
-        /* { scope 3 */
-        "movzbl 0x10(%edx), %eax\n" /* line 51 */
-        "movss (%edx), %xmm1\n"
-        "mulss (%eax, %esi), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 52 */
-        "movss 4(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 53 */
-        "movss 8(%edx), %xmm0\n"
-        "mulss (%esi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        /* } scope */
-        "addss 0xc(%edx), %xmm1\n" /* line 366 */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfef8a0_000ef9a7\n"
-        ".Lfef8a0_000ef9fd:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 355 | occluderIndex */
-        "movl -0x1c(%ebp), %ecx\n" /* occluderIndex */
-        "cmpl dpvsGlob+56, %ecx\n"
-        "jge .Lfef8a0_000efa13\n"
-        "movl %ecx, %edx\n"
-        "jmp .Lfef8a0_000ef985\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfef8a0_000efa13:\n"
-        "movl imp_rg, %ebx\n" /* line 580 | occluder */
-        "movl 0x3198(%ebx), %edx\n" /* occluder */
-        "movl imp_scene, %esi\n" /* minmax */
-        "movl (%esi), %eax\n" /* minmax */
-        "movl -0x20(%ebp), %ecx\n"
-        "movl %eax, (%ecx, %edx)\n"
-        "movl imp_rgp, %ebx\n" /* line 581 | occluder */
-        "movl 0x109c(%ebx), %eax\n" /* occluder */
-        "movl -0x24(%ebp), %edx\n"
-        "addl 0x14(%eax), %edx\n"
-        "movzwl 6(%edx), %eax\n" /* line 584 */
-        "addl $0x800, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll R_AddDrawSurfForSurface\n"
-        /* } scope */
-        /* } scope */
-        ".Lfef8a0_000efa54:\n"
-        "addl $0x2c, %esp\n" /* line 1085 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_AddWorldSurfaceWithCull_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
     );
