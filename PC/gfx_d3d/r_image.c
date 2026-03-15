@@ -628,9 +628,212 @@ GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTr
     return (GfxImage *)image;
 }
 
-/* line 1318 */
-__attribute__((naked))
+/* line 1318 — Console command: lists all loaded images with format, size, and type stats */
+extern int I_stricmp(const char *, const char *);
 void R_ImageList_f(void)
+{
+    typedef int (*PrintFunc)(int, const char *, ...);
+    typedef int (*CmdArgcFunc)(void);
+    typedef const char *(*CmdArgvFunc)(int);
+    typedef HRESULT (__attribute__((stdcall)) *GetDescFunc)(void *, UINT, void *);
+
+    PrintFunc Com_Printf = *(PrintFunc *)((char *)imp_ri);
+    CmdArgcFunc Cmd_Argc = *(CmdArgcFunc *)((char *)imp_ri + 0x100);
+    CmdArgvFunc Cmd_Argv = *(CmdArgvFunc *)((char *)imp_ri + 0x104);
+
+    int imageListBuf[2049]; /* [0]=count, [1..2048]=GfxImage* pointers */
+    int imageTrack[20];     /* [imageType*2 + platform] per-type per-platform size */
+    int total[2];           /* per-platform total size */
+    byte listAllImages;
+    int i, j, platform;
+    int desc[8];            /* D3D surface/volume desc buffer */
+
+    /* Check for "all" argument */
+    if (Cmd_Argc() == 2) {
+        const char *arg = Cmd_Argv(1);
+        listAllImages = (I_stricmp(arg, "all") == 0) ? 1 : 0;
+    } else {
+        listAllImages = 0;
+    }
+
+    total[0] = 0;
+    total[1] = 0;
+    memset(imageTrack, 0, 0x50);
+
+    /* Enumerate all image assets */
+    imageListBuf[0] = 0;
+    DB_EnumXAssets(3, R_AddImageToList, imageListBuf, 1);
+
+    /* If listAllImages, also add procedural image entries from g_imageProgs */
+    if (listAllImages) {
+        int count;
+        for (j = 0; j < 12; j++) {
+            count = imageListBuf[0];
+            if ((unsigned int)count > 0x7ff)
+                break;
+            if (*(int *)((char *)&g_imageProgs + j * 36) != 0) {
+                imageListBuf[1 + count] = (int)((char *)&g_imageProgs + j * 36);
+                imageListBuf[0] = count + 1;
+            }
+        }
+    }
+
+    {
+        int count = imageListBuf[0];
+        GfxImage **first = (GfxImage **)&imageListBuf[1];
+        GfxImage **last = first + count;
+
+        /* Sort images using std::sort (introsort + insertion sort) */
+        if (first != last) {
+            int n = count;
+            int depth = 0;
+            if (n > 1) {
+                int tmp = n;
+                while (tmp > 1) { depth++; tmp >>= 1; }
+                depth *= 2;
+            }
+            ZSt16__introsort_loopIPP8GfxImageiPFiS1_S1_EEvT_S5_T0_T1_(first, last, depth, imagecompare);
+            if ((char *)last - (char *)first > 0x43) {
+                GfxImage **threshold = first + 16;
+                ZSt16__insertion_sortIPP8GfxImagePFiS1_S1_EEvT_S5_T0_(first, threshold, imagecompare);
+                /* Finish rest with unguarded insertion sort */
+                for (i = (int)(threshold - first); &first[i] != last; i++) {
+                    GfxImage *val = first[i];
+                    GfxImage **hole = &first[i];
+                    GfxImage **prev = hole - 1;
+                    while (imagecompare(val, *prev)) {
+                        *hole = *prev;
+                        hole = prev;
+                        prev--;
+                    }
+                    *hole = val;
+                }
+            } else {
+                ZSt16__insertion_sortIPP8GfxImagePFiS1_S1_EEvT_S5_T0_(first, last, imagecompare);
+            }
+        }
+
+        /* Print header */
+        Com_Printf(0, "\n-if-- ");
+        for (j = 0; j < 2; j++)
+            Com_Printf(0, "%s", g_platform_name[j]);
+        Com_Printf(0, " ---------\n");
+
+        /* Print each image */
+        for (i = 0; i < count; i++) {
+            GfxImage *image = first[i];
+            int imageKind = *(int *)image; /* image->type at +0 */
+            int format;
+            void *d3dRes;
+
+            /* Get D3D format via GetLevelDesc */
+            if (imageKind == 4) {
+                /* Volume texture */
+                d3dRes = *(void **)((char *)image + 4);
+                (*(GetDescFunc **)d3dRes)[0x44/4](d3dRes, 0, desc);
+                format = desc[0];
+            } else if (imageKind == 5 || imageKind == 3) {
+                /* Cube or regular texture */
+                d3dRes = *(void **)((char *)image + 4);
+                (*(GetDescFunc **)d3dRes)[0x44/4](d3dRes, 0, desc);
+                format = desc[0];
+            } else {
+                /* Unknown type — bail */
+                return;
+            }
+
+            /* Print format name */
+            switch (format) {
+                case 0x15: Com_Printf(0, "A1R5"); break; /* D3DFMT_A1R5G5B5 */
+                case 0x16: Com_Printf(0, "A4R4"); break; /* D3DFMT_A4R4G4B4 */
+                case 0x17: Com_Printf(0, "R3G3"); break; /* D3DFMT_R3G3B2 */
+                case 0x1c: Com_Printf(0, "8888"); break; /* D3DFMT_A8R8G8B8 */
+                case 0x32: Com_Printf(0, "L___"); break; /* D3DFMT_L8 */
+                case 0x33: Com_Printf(0, "AL__"); break; /* D3DFMT_A8L8 */
+                case 0x31545844: Com_Printf(0, "DXT1"); break;
+                case 0x33545844: Com_Printf(0, "DXT3"); break;
+                case 0x35545844: Com_Printf(0, "DXT5"); break;
+                case 0x72: Com_Printf(0, "DP__"); break; /* D3DFMT_D32 */
+                default: break;
+            }
+
+            /* Print image type */
+            Com_Printf(0, "  %s", imageTypeName[*(byte *)((char *)image + 0xc)]);
+
+            if (!listAllImages) {
+                /* Print per-platform sizes */
+                for (platform = 0; platform < 2; platform++) {
+                    int size = *(int *)((char *)image + 0x10 + platform * 4);
+                    float sizeKB = (float)size * 0.0009765625f; /* / 1024.0 */
+                    if (sizeKB < 10.0f)
+                        Com_Printf(0, "%7.1f", (double)sizeKB);
+                    else
+                        Com_Printf(0, "%7.0f", (double)sizeKB);
+
+                    /* Accumulate per-type stats */
+                    {
+                        int imgType = *(byte *)((char *)image + 0xc);
+                        imageTrack[imgType * 2 + platform] += size;
+                    }
+
+                    /* Accumulate total for eligible types */
+                    {
+                        int imgType = *(byte *)((char *)image + 0xc);
+                        if (imgType <= 4 && ((1 << imgType) & 0x13))
+                            ; /* skip total for these types */
+                        else
+                            total[platform] += size;
+                    }
+                }
+            } else {
+                /* listAllImages: print sizes and accumulate totals directly */
+                for (platform = 0; platform < 2; platform++) {
+                    int size = *(int *)((char *)image + 0x10 + platform * 4);
+                    float sizeKB = (float)size * 0.0009765625f;
+                    const char *fmt = (sizeKB >= 10.0f) ? "%7.0f" : "%7.1f";
+                    Com_Printf(0, fmt, (double)sizeKB);
+
+                    {
+                        int imgType = *(byte *)((char *)image + 0xc);
+                        imageTrack[imgType * 2 + platform] += size;
+                    }
+                    total[platform] += size;
+                }
+            }
+
+            /* Print image name */
+            Com_Printf(0, "  %s\n", *(const char **)((char *)image + 0x20));
+        }
+
+        /* Print summary */
+        Com_Printf(0, " ---------\n");
+        Com_Printf(0, " %i total images\n", count);
+
+        for (platform = 0; platform < 2; platform++) {
+            Com_Printf(0, " %5.1f MB %s total image size\n",
+                (double)((float)total[platform] * 9.5367431640625e-07f),
+                g_platform_name[platform]);
+        }
+        Com_Printf(0, "\n");
+        Com_Printf(0, " ---------\n");
+        for (j = 0; j < 2; j++)
+            Com_Printf(0, "%s", g_platform_name[j]);
+        Com_Printf(0, "\n");
+
+        /* Per-type breakdown */
+        for (j = 0; j < 10; j++) {
+            Com_Printf(0, "%s:", imageTypeName[j]);
+            for (platform = 0; platform < 2; platform++) {
+                Com_Printf(0, "  %5.1f",
+                    (double)((float)imageTrack[j * 2 + platform] * 9.5367431640625e-07f));
+            }
+            Com_Printf(0, "\n");
+        }
+        Com_Printf(0, "\n");
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1318 */
@@ -1134,6 +1337,7 @@ void R_ImageList_f(void)
         "jmp .Lfe7e74_000e823b\n"
     );
 }
+#endif /* original naked R_ImageList_f */
 
 /* line 881 */
 extern GfxImage * Image_Load(const char *name, int semantic, int imageTrack);
