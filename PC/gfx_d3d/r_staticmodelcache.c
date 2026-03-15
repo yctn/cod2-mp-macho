@@ -909,8 +909,71 @@ void R_InitStaticModelCache(void)
 }
 
 /* line 147 */
-static __attribute__((naked)) __attribute__((regparm(3)))
+/* line 147 — Recursive tree traversal to free cached static model surfaces.
+ * Original was compiler-unrolled 3-4 levels deep (650 lines ASM → 40 lines C).
+ * Traverses binary tree: unlinks leaf surfaces from doubly-linked lists,
+ * clears cached surface LOD slot references, updates cache size counters. */
+static __attribute__((regparm(3)))
 void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf)
+{
+    char *t = (char *)tree;
+
+    /* Check reference count at tree node */
+    if (*(short *)(t + nodeIndex * 4 + 0xc) == 0) {
+        /* No references: unlink leaf surface from doubly-linked list */
+        int leafIdx = (nodeIndex + 1) << levelsToLeaf;
+        char *surf = t + leafIdx * 16 - 0x80;
+        void *next = *(void **)(surf + 0xc);
+        void *prev = *(void **)(surf + 0x8);
+        *(void **)next = prev;              /* next->prev = prev */
+        *((void **)prev + 1) = next;        /* prev->next = next */
+        return;
+    }
+
+    /* Clear reference count */
+    *(short *)(t + nodeIndex * 4 + 0xc) = 0;
+
+    /* Check if node has cached surface data */
+    if (*(byte *)(t + nodeIndex * 4 + 0xe) != 0) {
+        /* Free cached surface: compute surface address */
+        int leafIdx = (nodeIndex + 1) << levelsToLeaf;
+        char *surf = t + leafIdx * 16 - 0x78;
+        char *header = *(char **)(surf + 0xc);
+
+        /* Find and clear LOD slot that references this surface */
+        if (*(void **)header != (void *)surf) {
+            int lodLevel = 0;
+            char *slot = header;
+            while (lodLevel < 4) {
+                if (*(void **)(slot + lodLevel * 4) == (void *)surf) {
+                    *(void **)(slot + lodLevel * 4) = NULL;
+                    break;
+                }
+                lodLevel++;
+            }
+        }
+
+        /* Update cache totals */
+        *(int *)((char *)cache + 0xc430) -= (1 << (levelsToLeaf + 5));
+        {
+            short vertCount = *(short *)(*(char **)(surf + 8) + 2);
+            *(int *)((char *)cache + 0xc434) -= vertCount;
+        }
+
+        /* Clear cached surface flag */
+        *(byte *)(t + nodeIndex * 4 + 0xe) = 0;
+    }
+
+    /* Recurse on children */
+    {
+        int left = nodeIndex * 2 + 1;
+        int right = nodeIndex * 2 + 2;
+        SMC_FreeCachedSurface_r(cache, tree, left, levelsToLeaf - 1);
+        SMC_FreeCachedSurface_r(cache, tree, right, levelsToLeaf - 1);
+    }
+}
+
+#if 0 /* original naked (650 lines compiler-unrolled) — replaced above */
 {
     __asm__ __volatile__ (
         ".Lfe1074_000e1074:\n"
@@ -1559,6 +1622,7 @@ void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIn
         "jmp .Lfe1074_000e1751\n"
     );
 }
+#endif /* original naked SMC_FreeCachedSurface_r */
 
 /* line 827 */
 void R_StaticModelCacheFlush_f(void)
