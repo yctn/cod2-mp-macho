@@ -64,12 +64,23 @@ static const PassOptionDx7 s_passOptionsDx7[5]; /* s_passOptionsDx7 — unused i
 
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data);
 static Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);
+static Bool Material_ValidatePassArguments_impl(const Material *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);
 static void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, GfxCachedShaderText *cached);
+static void Material_PreLoadSingleShaderText_impl(const char *filename, const char *subdir, GfxCachedShaderText *cached);
+extern int Com_MatchToken(const char **text, const char *match, int allowLineBreaks);
+extern float Com_ParseFloat(const char **text);
+extern void Com_Printf(const char *fmt, ...);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern int FS_FOpenFileRead(const char *filename, int *fileHandle, int uniqueFILE);
+extern void FS_Read(void *buf, int len, int fileHandle);
+extern void FS_FCloseFile(int fileHandle);
+extern void *Hunk_AllocAlignInternal(int size, int align);
 static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, const GfxCachedShaderText *cached1);
 HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeType, LPCSTR filename, LPCVOID parentData, LPCVOID *data, MaterialTechnique * (*byteCount)[4][34]);
 void Material_PreLoadAllShaderText(void);
 static Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRouting *routing, int offset, const CodeConstantSource *sourceTable, MaterialShaderArgument *arg);
 static Bool Material_ParseVector(int elemCount);
+static Bool Material_ParseVector_impl(const char **text, int elemCount, float *vector);
 static Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits);
 static Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg);
 static Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg);
@@ -89,209 +100,107 @@ HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data)
     return 0;
 }
 
-/* line 3290 */
+/* line 3290 — Material_ValidatePassArguments
+ * Validates that all shader arguments reference textures/constants that exist in the material.
+ * Actual convention: eax=material, edx=techniqueSetName, ecx=techniqueName, stack=argCount,args */
+static Bool Material_ValidatePassArguments_impl(const Material *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args)
+{
+    int i, j;
+    for (i = 0; i < argCount; i++) {
+        const MaterialShaderArgument *arg = &args[i];
+
+        if (arg->type == 2) {
+            /* Constant argument: verify it exists in material's constants list (stride 0x14) */
+            const char *argName = arg->u.name;
+            byte *consts = (byte *)material->constants;
+            int found = 0;
+            for (j = 0; j < material->constantCount; j++) {
+                if (*(const char **)(consts + j * 0x14) == argName) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                Com_Printf("material '%s' using technique '%s' from techniqueSet '%s' doesn't have constant '%s'\n",
+                           material->info.name, techniqueName, techniqueSetName, argName);
+                return 0;
+            }
+        } else if (arg->type == 4) {
+            /* Texture argument: verify it exists in material's textures list (stride 0x0c) */
+            const char *argName = arg->u.name;
+            byte *texs = (byte *)material->textures;
+            int found = 0;
+            for (j = 0; j < material->textureCount; j++) {
+                if (*(const char **)(texs + j * 0x0c) == argName) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                Com_Printf("material '%s' using technique '%s' from techniqueSet '%s' doesn't have texture '%s'\n",
+                           material->info.name, techniqueName, techniqueSetName, argName);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+/* Trampoline: eax=material, edx=techniqueSetName, ecx=techniqueName, stack=argCount,args */
 static __attribute__((naked))
 Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3290 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %edx, -0x24(%ebp)\n"
-        "movl %ecx, -0x28(%ebp)\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 3294 | argCount */
-        "testl %eax, %eax\n"
-        "jle .Lf101922_00101963\n"
-        "movl 0xc(%ebp), %esi\n" /* args */
-        "movl $0, -0x1c(%ebp)\n" /* argIndex */
-        ".Lf101922_00101945:\n"
-        "movzwl (%esi), %eax\n" /* line 3296 */
-        "cmpw $2, %ax\n"
-        "je .Lf101922_00101970\n"
-        "cmpw $4, %ax\n" /* line 3303 */
-        "je .Lf101922_001019cd\n"
-        ".Lf101922_00101954:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 3294 | argIndex */
-        "addl $8, %esi\n"
-        "movl -0x1c(%ebp), %eax\n" /* argIndex */
-        "cmpl %eax, 8(%ebp)\n" /* argCount */
-        "jne .Lf101922_00101945\n"
-        ".Lf101922_00101963:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 3312 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf101922_00101970:\n"
-        "movl 4(%esi), %ebx\n" /* line 3298 */
-        /* { scope 2 */
-        "movl -0x20(%ebp), %eax\n" /* line 3268 */
-        "movzwl 0x36(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jle .Lf101922_0010199c\n"
-        "movl 0x40(%eax), %eax\n" /* line 3270 */
-        "cmpl (%eax), %ebx\n"
-        "je .Lf101922_00101954\n"
-        "leal 0x14(%eax), %edx\n"
-        "xorl %ecx, %ecx\n"
-        "jmp .Lf101922_00101995\n"
-        ".Lf101922_0010198c:\n"
-        "movl (%edx), %eax\n"
-        "addl $0x14, %edx\n"
-        "cmpl %ebx, %eax\n"
-        "je .Lf101922_00101954\n"
-        ".Lf101922_00101995:\n"
-        "addl $1, %ecx\n" /* line 3268 */
-        "cmpl %edi, %ecx\n"
-        "jne .Lf101922_0010198c\n"
-        /* } scope */
-        ".Lf101922_0010199c:\n"
-        "movl %ebx, 0x10(%esp)\n" /* line 3300 */
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x28(%ebp), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl -0x20(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00227e8c, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 3312 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf101922_001019cd:\n"
-        "movl 4(%esi), %ebx\n" /* line 3305 */
-        /* { scope 2 */
-        "movl -0x20(%ebp), %eax\n" /* line 3281 */
-        "movzwl 0x34(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jle .Lf101922_00101a01\n"
-        "movl 0x3c(%eax), %eax\n" /* line 3283 */
-        "cmpl (%eax), %ebx\n"
-        "je .Lf101922_00101954\n"
-        "leal 0xc(%eax), %edx\n"
-        "xorl %ecx, %ecx\n"
-        "jmp .Lf101922_001019fa\n"
-        ".Lf101922_001019ed:\n"
-        "movl (%edx), %eax\n"
-        "addl $0xc, %edx\n"
-        "cmpl %ebx, %eax\n"
-        "je .Lf101922_00101954\n"
-        ".Lf101922_001019fa:\n"
-        "addl $1, %ecx\n" /* line 3281 */
-        "cmpl %ecx, %edi\n"
-        "jne .Lf101922_001019ed\n"
-        /* } scope */
-        ".Lf101922_00101a01:\n"
-        "movl %ebx, 0x10(%esp)\n" /* line 3307 */
-        "movl -0x24(%ebp), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl -0x28(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x20(%ebp), %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00227ee8, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 3312 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 0xc(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Material_ValidatePassArguments_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
     );
 }
 
-/* line 3553 */
+/* line 3553 — Material_PreLoadSingleShaderText
+ * Loads a shader text file from disk into a GfxCachedShaderText entry.
+ * Builds path "materials/shaders/{subdir}{filename}", allocates memory for
+ * name + file contents, reads file, and populates the cached struct.
+ * Actual convention: eax=filename, edx=subdir, ecx=cached */
+static void Material_PreLoadSingleShaderText_impl(const char *filename, const char *subdir, GfxCachedShaderText *cached)
+{
+    char filepath[64];
+    int fileHandle;
+
+    Com_sprintf(filepath, 64, "materials/shaders/%s%s", subdir, filename);
+    int fileSize = FS_FOpenFileRead(filepath, &fileHandle, 1);
+
+    /* Allocate: room for "subdir" + "filename" + NUL + file contents + NUL */
+    int allocSize = strlen(subdir) + strlen(filename) + fileSize + 2;
+    char *buf = (char *)Hunk_AllocAlignInternal(allocSize, 1);
+
+    cached->name = buf;
+    int nameLen = sprintf(buf, "%s%s", subdir, filename);
+    cached->text = buf + nameLen + 1;
+    FS_Read((void *)cached->text, fileSize, fileHandle);
+    FS_FCloseFile(fileHandle);
+    ((char *)cached->text)[fileSize] = '\0';
+    cached->textSize = fileSize;
+}
+
+/* Trampoline: eax=filename, edx=subdir, ecx=cached */
 static __attribute__((naked))
 void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, GfxCachedShaderText *cached)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3553 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl %eax, -0x6c(%ebp)\n"
-        "movl %edx, -0x70(%ebp)\n"
-        "movl %ecx, -0x74(%ebp)\n"
-        /* { scope 1 */
-        "movl %eax, 0x10(%esp)\n" /* line 3561 */
-        "movl %edx, 0xc(%esp)\n"
-        "movl $str_00227f44, 8(%esp)\n" /* "materials/shaders/%s%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0x5c(%ebp), %ebx\n" /* filepath */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl $1, 8(%esp)\n" /* line 3562 */
-        "leal -0x1c(%ebp), %eax\n" /* fileHandle */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_FOpenFileRead\n"
-        "movl %eax, %esi\n" /* fileSize */
-        "movl $1, 4(%esp)\n" /* line 3565 */
-        "movl $0xffffffff, %edx\n"
-        "movl -0x70(%ebp), %ebx\n"
-        "xorl %eax, %eax\n"
-        "cld\n"
-        "movl %edx, %ecx\n"
-        "movl %ebx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx, %esi), %ebx\n"
-        "movl -0x6c(%ebp), %edi\n"
-        "movl %edx, %ecx\n"
-        "repne scasb %es:(%edi), %al\n"
-        "subl %ecx, %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll Hunk_AllocAlignInternal\n"
-        "movl %eax, %ebx\n"
-        "movl -0x74(%ebp), %edi\n" /* line 3567 */
-        "movl %eax, (%edi)\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 3568 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x70(%ebp), %ecx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
-        "movl %ebx, (%esp)\n"
-        "calll sprintf\n"
-        "addl %eax, %ebx\n" /* line 3569 */
-        "leal 1(%ebx), %edx\n"
-        "movl %edx, 4(%edi)\n" /* line 3571 */
-        "movl -0x1c(%ebp), %eax\n" /* line 3572 | fileHandle */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* fileSize */
-        "movl %edx, (%esp)\n"
-        "calll FS_Read\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 3573 | fileHandle */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movb $0, 1(%ebx, %esi)\n" /* line 3574 */
-        "movl %esi, 8(%edi)\n" /* line 3576 | fileSize */
-        /* } scope */
-        "addl $0x8c, %esp\n" /* line 3577 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Material_PreLoadSingleShaderText_impl\n"
+        "addl $12, %esp\n"
         "retl\n"
     );
 }
@@ -1161,72 +1070,39 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
     );
 }
 
-/* line 1670 */
+/* line 1670 — Material_ParseVector
+ * Parses a vector of floats from text in format "( x, y, z )" or "( x, y, z, w )".
+ * Actual convention: eax=text(const char**), edx=elemCount, ecx=vector(float*) */
+static Bool Material_ParseVector_impl(const char **text, int elemCount, float *vector)
+{
+    int i;
+
+    if (!Com_MatchToken(text, "(", 1))
+        return 0;
+
+    /* Parse first element */
+    vector[0] = Com_ParseFloat(text);
+
+    /* Parse remaining elements separated by commas */
+    for (i = 1; i < elemCount; i++) {
+        if (!Com_MatchToken(text, ",", 1))
+            return 0;
+        vector[i] = Com_ParseFloat(text);
+    }
+
+    return Com_MatchToken(text, ")", 1) ? 1 : 0;
+}
+
+/* Trampoline: eax=text, edx=elemCount, ecx=vector */
 static __attribute__((naked))
 Bool Material_ParseVector(int elemCount)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1670 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %esi\n" /* text */
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl %ecx, %edi\n" /* vector */
-        /* { scope 1 */
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_002221e8, 4(%esp)\n" /* "(" */
-        "movl %eax, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1674 */
-        "jne .Lf102400_00102436\n"
-        ".Lf102400_0010242c:\n"
-        "xorl %eax, %eax\n" /* line 1686 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1687 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf102400_00102436:\n"
-        "xorl %ebx, %ebx\n" /* line 1674 | elemIndex */
-        "movl %esi, (%esp)\n" /* line 1679 | text */
-        "calll Com_ParseFloat\n"
-        "fstps (%edi, %ebx, 4)\n" /* vector */
-        "addl $1, %ebx\n" /* line 1680 | elemIndex */
-        "cmpl -0x1c(%ebp), %ebx\n" /* line 1681 | elemIndex */
-        "je .Lf102400_0010247a\n"
-        ".Lf102400_0010244b:\n"
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021f88c, 4(%esp)\n" /* "," */
-        "movl %esi, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1683 */
-        "je .Lf102400_0010242c\n"
-        "movl %esi, (%esp)\n" /* line 1679 | text */
-        "calll Com_ParseFloat\n"
-        "fstps (%edi, %ebx, 4)\n" /* vector */
-        "addl $1, %ebx\n" /* line 1680 | elemIndex */
-        "cmpl -0x1c(%ebp), %ebx\n" /* line 1681 | elemIndex */
-        "jne .Lf102400_0010244b\n"
-        ".Lf102400_0010247a:\n"
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_00222224, 4(%esp)\n" /* ")" */
-        "movl %esi, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1686 */
-        "setne %al\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1687 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Material_ParseVector_impl\n"
+        "addl $12, %esp\n"
         "retl\n"
     );
 }
