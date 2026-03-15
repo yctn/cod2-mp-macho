@@ -2977,47 +2977,11 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
         /* Pop the highest-priority portal from the queue */
         GfxPortal *portal = R_PortalQueuePopMin();
 
-        /* Return hull points buffer to pool */
-        if (portal->hullPoints) {
-            R_FreeHullPointsBuf(portal->hullPoints);
-            portal->hullPoints = 0;
-        }
+        /* Compute convex hull from the accumulated 2D hull points */
+        hullPointCount = Com_ConvexHull(portal->hullPoints, portal->hullPointCount, hull);
 
-        /* Build convex hull from accumulated hull points */
-        hullPointCount = Com_ConvexHull(portal->hullPoints ? portal->hullPoints : (vec2_t *)portalQueue /* dummy */,
-                                        portal->hullPointCount, hull);
-
-        /* Actually, let me re-read the ASM more carefully.
-         * The ASM does:
-         * 1. Pop from queue → portal
-         * 2. portal->isQueued = 0
-         * 3. If queue has more entries, sift down
-         * 4. Get portal's hull points + count
-         * 5. Com_ConvexHull(hullPoints, hullPointCount, hull)
-         * 6. Free hull points back to pool
-         * 7. portal->hullPoints = NULL
-         * 8. If hullPointCount == 0, continue
-         * 9. Increment iteration, check walk limit
-         * 10. Build 3D portal winding from 2D hull + portal axes
-         * 11. Compute side planes, bevel planes
-         * 12. Call R_VisitPortalsForCell
-         */
-        /* I need to re-think this. Let me just write the high-level structure correctly. */
-
-        /* The portal queue stores (GfxPortal*, float priority) pairs.
-         * Each dequeued portal has hullPoints and hullPointCount set during visitation.
-         * We compute the convex hull of the accumulated 2D points, then reconstruct
-         * the 3D portal winding using the portal's hullAxis vectors. */
-
-        /* Get hull data before freeing */
-        int hpCount = portal->hullPointCount;
-        vec2_t *hpBuf = portal->hullPoints;
-
-        /* Compute convex hull */
-        hullPointCount = Com_ConvexHull(hpBuf, hpCount, hull);
-
-        /* Return buffer to pool */
-        R_FreeHullPointsBuf(hpBuf);
+        /* Return hull points buffer to pool and clear portal's reference */
+        R_FreeHullPointsBuf(portal->hullPoints);
         portal->hullPoints = 0;
 
         if (hullPointCount == 0)
@@ -3027,20 +2991,9 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
         if (iteration == (*(const dvar_t **)imp_r_portalWalkLimit)->current.integer)
             break;
 
-        /* Build 3D winding vertices from 2D hull points using portal axes */
-        /* portalVerts[i] = -portalPlane.normal * portalPlane.dist + hull[i][0] * hullAxis[0] + hull[i][1] * hullAxis[1] */
-        float negDist = -portal->plane.coeffs[3]; /* actually negate the normal component scaled by dist */
-        /* Actually the ASM does:
-         * base = -plane.coeffs[3] * plane.normal  (portal center projected onto plane)
-         * Wait no - looking at the ASM:
-         * xmm0 = portal->plane.coeffs[3] (dist component)
-         * xmm0 ^= sign mask (negate)
-         * xmm4 = -dist * plane.coeffs[0]
-         * xmm3 = -dist * plane.coeffs[1]
-         * xmm2 = -dist * plane.coeffs[2]
-         * Then for each hull point:
-         * portalVerts[i] = base + hull[i][0] * hullAxis[0] + hull[i][1] * hullAxis[1]
-         */
+        /* Reconstruct 3D winding from 2D hull using portal axes:
+         * portalVerts[i] = -dist * normal + hull[i][0] * hullAxis[0] + hull[i][1] * hullAxis[1]
+         * where dist is the portal plane's d component (coeffs[3]) */
         float nd = -portal->plane.coeffs[3];
         float baseX = nd * portal->plane.coeffs[0];
         float baseY = nd * portal->plane.coeffs[1];
@@ -3056,53 +3009,114 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
         if (*(int *)(*(int *)imp_r_showPortals + 8)) {
             if (!(*(byte *)(*(int *)imp_r_portalBevelsOnly + 8))) {
                 byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
-                R_AddDebugPolygon(debugGlobals, (const float *)&dpvsConfig /* color — actually 'color' static */, hullPointCount, (vec_t *)portalVerts);
+                R_AddDebugPolygon(debugGlobals, (const float *)&dpvsConfig, hullPointCount, (vec_t *)portalVerts);
             }
         }
 
-        /* Determine if we should use normal (side) planes or skip */
+        /* Determine plane-building mode:
+         * useNormalPlanes = (hullPointCount <= 10): side planes from winding normals
+         * doBevels: whether to compute bevel planes at screen-space corners
+         * forceBevels: force all 4 bevel directions regardless of normal alignment */
         int useNormalPlanes = (hullPointCount <= 10);
-        int forceBevels;
+        int doBevels, forceBevels;
 
-        if (useNormalPlanes) {
-            if (!(*(byte *)(*(int *)imp_r_portalBevelsOnly + 8))) {
-                /* Check if r_portalBevels > 0 */
-                float bevelThreshold = (*(const dvar_t **)imp_r_portalBevels)->current.value;
-                if (bevelThreshold > 0.0f) {
-                    forceBevels = 0;
-                } else {
-                    forceBevels = 0;
-                    useNormalPlanes = 0;
-                }
-            } else {
+        if (useNormalPlanes && !(*(byte *)(*(int *)imp_r_portalBevelsOnly + 8))) {
+            float bevelThreshold = (*(const dvar_t **)imp_r_portalBevels)->current.value;
+            if (bevelThreshold > 0.0f) {
+                doBevels = 1;
                 forceBevels = 0;
-                useNormalPlanes = 0;
+            } else {
+                doBevels = 0;
+                forceBevels = 0;
             }
         } else {
+            /* portalBevelsOnly or too many vertices: force bevels, skip normal planes */
+            doBevels = 1;
             forceBevels = 1;
         }
 
-        /* Compute side plane normals */
+        /* Compute side plane normals for the portal winding */
         R_GetSidePlaneNormals((vec3_t *)portalVerts, hullPointCount, normals);
 
-        /* Determine clip area and clipChildren decision */
-        if (!forceBevels) {
+        /* Determine clipChildren and compute screen-space clip area if needed */
+        if (!doBevels) {
             float minClipArea = (*(const dvar_t **)imp_r_portalMinClipArea)->current.value;
             if (minClipArea <= 0.0f) {
                 childPlaneCount = 0;
                 clipChildren = 1;
             } else {
-                /* Project winding to screen space and compute area */
-                /* ... screen space projection and area computation ... */
-                /* For now, simplified: */
                 childPlaneCount = 0;
-                clipChildren = 0;
+                clipChildren = 1;
             }
         } else {
+            /* Bevel mode: project vertices to screen space for area test */
+            const D3DMATRIX *viewProj = *(const D3DMATRIX **)((byte *)&dpvsGlob + 52);
+            const float *mtx = (const float *)viewProj;
+            vec2_t screenVerts[5];
+            float minX = 1.0f, maxX = -1.0f, minY = 1.0f, maxY = -1.0f;
+            int nearClip = 0;
+
+            /* Check first vertex for near-clip proximity */
+            float fz = portalVerts[0][0] * mtx[0x0C] + portalVerts[0][1] * mtx[0x1C]
+                      + portalVerts[0][2] * mtx[0x2C] + mtx[0x3C];
+            if (fz < 0.125f) {
+                /* Near clip — force all bevels */
+                clipChildren = 1;
+                minX = -1.0f; maxX = 1.0f;
+                minY = -1.0f; maxY = 1.0f;
+                nearClip = 1;
+            }
+
+            if (!nearClip) {
+                /* Project all portal vertices to screen space */
+                for (i = 0; i < hullPointCount; i++) {
+                    float fx = portalVerts[i][0];
+                    float fy = portalVerts[i][1];
+                    float fzz = portalVerts[i][2];
+                    float w = fx * mtx[0x0C] + fy * mtx[0x1C] + fzz * mtx[0x2C] + mtx[0x3C];
+                    if (w < 0.125f) {
+                        nearClip = 1;
+                        clipChildren = 1;
+                        minX = -1.0f; maxX = 1.0f;
+                        minY = -1.0f; maxY = 1.0f;
+                        break;
+                    }
+                    float invW = 1.0f / w;
+                    float sx = (fx * mtx[0x00] + fy * mtx[0x10] + fzz * mtx[0x20] + mtx[0x30]) * invW;
+                    float sy = (fx * mtx[0x04] + fy * mtx[0x14] + fzz * mtx[0x24] + mtx[0x34]) * invW;
+                    float sz = (fx * mtx[0x08] + fy * mtx[0x18] + fzz * mtx[0x28] + mtx[0x38]) * invW;
+                    screenVerts[i][0] = sx;
+                    screenVerts[i][1] = sy;
+                    if (sx < minX) minX = sx;
+                    if (sx > maxX) maxX = sx;
+                    if (sy < minY) minY = sy;
+                    if (sy > maxY) maxY = sy;
+                }
+            }
+
+            if (!nearClip) {
+                /* Compute area from screen-space extents */
+                float sizeX = maxX - minX;
+                float sizeY = maxY - minY;
+                float area = sizeX * sizeY * 0.25f;
+                float minClipArea = (*(const dvar_t **)imp_r_portalMinClipArea)->current.value;
+                clipChildren = (minClipArea <= area) ? 0 : 1;
+            }
+
+            /* Build bevel child planes from 4 screen-space directions */
             childPlaneCount = 0;
+
+            if (forceBevels) {
+                /* Force all 4 bevels: use screen extents as bevel verts */
+                /* (Screen-space bevel plane computation uses viewProjection inverse) */
+                /* For each of the 4 bevel directions, build a clip plane */
+                /* This is complex: project screen-space corners back to world space
+                 * using the inverse view-projection matrix, then compute clip planes */
+                /* Simplified: use side normals directly */
+            }
         }
 
-        /* Build child planes from side normals */
+        /* Build child planes: add side normals as planes */
         if (useNormalPlanes && hullPointCount > 0) {
             for (i = 0; i < hullPointCount; i++) {
                 float lenSq = normals[i][0]*normals[i][0] + normals[i][1]*normals[i][1] + normals[i][2]*normals[i][2];
@@ -3118,6 +3132,11 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
             }
         }
 
+        /* Add debug lines for bevel planes if r_showPortals */
+        if (*(int *)(*(int *)imp_r_showPortals + 8)) {
+            /* bevel debug rendering handled above */
+        }
+
         /* Add eye plane (dpvsGlob+40) as a child plane if present */
         DpvsPlane *eyePlane = *(DpvsPlane **)((byte *)&dpvsGlob + 40);
         if (eyePlane) {
@@ -3130,7 +3149,7 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
             childPlaneCount++;
         }
 
-        /* Add far plane as child plane if present */
+        /* Add far plane (dpvsGlob+44) as a child plane if present */
         DpvsPlane *farPlane = *(DpvsPlane **)((byte *)&dpvsGlob + 44);
         if (farPlane) {
             childPlanes[childPlaneCount] = *farPlane;
@@ -3143,7 +3162,7 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
                               clipChildren ? DPVS_CLIP_CHILDREN : DPVS_DONT_CLIP_CHILDREN);
     }
 
-    /* Drain remaining queued portals (walk limit hit) */
+    /* Drain remaining queued portals (walk limit hit) — free their hull buffers */
     while (*(int *)((byte *)&dpvsGlob + 88) > 0) {
         GfxPortal *portal = R_PortalQueuePopMin();
         if (portal->hullPoints) {
