@@ -18,6 +18,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text);
 snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight);
 static Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XModel * *model, vec_t *origin);
 static snd_alias_list_t R_SetParentAndCell_r(void);
+static void R_SetParentAndCell_r_impl(mnode_t *node, int parent);
 static snd_alias_list_t R_LoadEntities(void);
 static snd_alias_list_t R_LoadNodesAndLeafs(void);
 static snd_alias_list_t R_LoadPortals(void);
@@ -879,228 +880,41 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
 }
 #endif
 
-/* line 1727 */
+/* line 1727 — R_SetParentAndCell_r
+ * Recursively sets parent pointers and cell indices for BSP nodes.
+ * For leaf nodes: parent is set, cellIndex is already valid.
+ * For internal nodes: recurses into both children, sets cellIndex to -2 (split)
+ * unless both children have the same cellIndex, in which case it propagates up.
+ * Original ASM was deeply unrolled (3-4 levels inlined) for performance.
+ * Actual convention: eax=node, edx=parent (stored as int in node->parent) */
+static void R_SetParentAndCell_r_impl(mnode_t *node, int parent)
+{
+    node->parent = parent;
+
+    /* Leaf node: cellIndex is already set from loading */
+    if (node->contents != -1)
+        return;
+
+    /* Internal node: recurse into both children */
+    R_SetParentAndCell_r_impl(node->u.node.children[0], (int)(intptr_t)node);
+    R_SetParentAndCell_r_impl(node->u.node.children[1], (int)(intptr_t)node);
+
+    /* Determine cell index: -2 if children differ, else propagate */
+    node->cellIndex = -2;
+    if (node->u.node.children[0]->cellIndex == node->u.node.children[1]->cellIndex)
+        node->cellIndex = node->u.node.children[0]->cellIndex;
+}
+
+/* Trampoline: eax=node, edx=parent */
 static __attribute__((naked))
 snd_alias_list_t R_SetParentAndCell_r(void)
 {
     __asm__ __volatile__ (
-        ".Lfe3104_000e3104:\n"
-        "pushl %ebp\n" /* line 1727 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl %eax, %esi\n" /* node */
-        "movl %edx, 4(%eax)\n" /* line 1729 | parent */
-        "cmpl $-1, (%eax)\n" /* line 1730 */
-        "je .Lfe3104_000e311f\n"
-        ".Lfe3104_000e3117:\n"
-        "addl $0x1c, %esp\n" /* line 1738 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_SetParentAndCell_r_impl\n"
+        "addl $8, %esp\n"
         "retl\n"
-        ".Lfe3104_000e311f:\n"
-        "movl 0x10(%eax), %ebx\n" /* line 1732 */
-        "movl %eax, 4(%ebx)\n" /* line 1729 */
-        "cmpl $-1, (%ebx)\n" /* line 1730 */
-        "je .Lfe3104_000e3152\n"
-        ".Lfe3104_000e312a:\n"
-        "movl 0x14(%esi), %ebx\n" /* line 1733 | node, parent */
-        "movl %esi, 4(%ebx)\n" /* line 1729 | node */
-        "cmpl $-1, (%ebx)\n" /* line 1730 */
-        "je .Lfe3104_000e3187\n"
-        ".Lfe3104_000e3135:\n"
-        "movl $0xfffffffe, 8(%esi)\n" /* line 1735 | node */
-        "movl 0x10(%esi), %eax\n" /* line 1736 | node */
-        "movl 8(%eax), %eax\n"
-        "cmpl 8(%ebx), %eax\n" /* parent */
-        "jne .Lfe3104_000e3117\n"
-        "movl %eax, 8(%esi)\n" /* line 1737 | node */
-        "addl $0x1c, %esp\n" /* line 1738 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfe3104_000e3152:\n"
-        "movl 0x10(%ebx), %edi\n" /* line 1732 | node */
-        /* { scope 1 */
-        "movl %ebx, 4(%edi)\n" /* line 1729 */
-        "cmpl $-1, (%edi)\n" /* line 1730 */
-        "je .Lfe3104_000e3267\n"
-        /* } scope */
-        ".Lfe3104_000e3161:\n"
-        "movl 0x14(%ebx), %edi\n" /* line 1733 | parent, node */
-        /* { scope 1 */
-        "movl %ebx, 4(%edi)\n" /* line 1729 */
-        "cmpl $-1, (%edi)\n" /* line 1730 */
-        "je .Lfe3104_000e3236\n"
-        /* } scope */
-        ".Lfe3104_000e3170:\n"
-        "movl $0xfffffffe, 8(%ebx)\n" /* line 1735 | parent */
-        "movl 0x10(%ebx), %eax\n" /* line 1736 | parent */
-        "movl 8(%eax), %eax\n"
-        "cmpl 8(%edi), %eax\n" /* node */
-        "jne .Lfe3104_000e312a\n"
-        "movl %eax, 8(%ebx)\n" /* line 1737 | parent */
-        "jmp .Lfe3104_000e312a\n"
-        ".Lfe3104_000e3187:\n"
-        "movl 0x10(%ebx), %edi\n" /* line 1732 | node */
-        /* { scope 1 */
-        "movl %ebx, 4(%edi)\n" /* line 1729 */
-        "cmpl $-1, (%edi)\n" /* line 1730 */
-        "je .Lfe3104_000e3201\n"
-        /* } scope */
-        ".Lfe3104_000e3192:\n"
-        "movl 0x14(%ebx), %edi\n" /* line 1733 | parent, node */
-        "movl %ebx, 4(%edi)\n" /* line 1729 */
-        "cmpl $-1, (%edi)\n" /* line 1730 */
-        "je .Lfe3104_000e31bf\n"
-        ".Lfe3104_000e319d:\n"
-        "movl $0xfffffffe, 8(%ebx)\n" /* line 1735 | parent */
-        "movl 0x10(%ebx), %eax\n" /* line 1736 | parent */
-        "movl 8(%eax), %eax\n"
-        "cmpl 8(%edi), %eax\n" /* node */
-        "je .Lfe3104_000e31b4\n"
-        "movl 0x14(%esi), %ebx\n" /* node, parent */
-        "jmp .Lfe3104_000e3135\n"
-        ".Lfe3104_000e31b4:\n"
-        "movl %eax, 8(%ebx)\n" /* line 1737 | parent */
-        "movl 0x14(%esi), %ebx\n" /* node, parent */
-        "jmp .Lfe3104_000e3135\n"
-        ".Lfe3104_000e31bf:\n"
-        "movl 0x10(%edi), %eax\n" /* line 1732 | node */
-        "movl %eax, -0x1c(%ebp)\n" /* node */
-        /* { scope 1 */
-        "movl %edi, 4(%eax)\n" /* line 1729 */
-        "cmpl $-1, (%eax)\n" /* line 1730 */
-        "je .Lfe3104_000e32f3\n"
-        /* } scope */
-        ".Lfe3104_000e31d1:\n"
-        "movl 0x14(%edi), %eax\n" /* line 1733 | node */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %edi, 4(%eax)\n" /* line 1729 */
-        "cmpl $-1, (%eax)\n" /* line 1730 */
-        "je .Lfe3104_000e32b2\n"
-        ".Lfe3104_000e31e3:\n"
-        "movl $0xfffffffe, 8(%edi)\n" /* line 1735 | node */
-        "movl 0x10(%edi), %eax\n" /* line 1736 | node */
-        "movl 8(%eax), %eax\n"
-        "movl -0x20(%ebp), %ecx\n"
-        "cmpl 8(%ecx), %eax\n"
-        "je .Lfe3104_000e329c\n"
-        "movl 0x14(%ebx), %edi\n" /* parent, node */
-        "jmp .Lfe3104_000e319d\n"
-        /* { scope 1 */
-        ".Lfe3104_000e3201:\n"
-        "movl 0x10(%edi), %eax\n" /* line 1732 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl 0x14(%edi), %eax\n" /* line 1733 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl $0xfffffffe, 8(%edi)\n" /* line 1735 | node */
-        "movl 0x10(%edi), %eax\n" /* line 1736 | node */
-        "movl 8(%eax), %edx\n" /* parent */
-        "movl 0x14(%edi), %eax\n" /* node */
-        "cmpl 8(%eax), %edx\n" /* parent */
-        "jne .Lfe3104_000e3192\n"
-        "movl %edx, 8(%edi)\n" /* line 1737 | parent, node */
-        "jmp .Lfe3104_000e3192\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lfe3104_000e3236:\n"
-        "movl 0x10(%edi), %eax\n" /* line 1732 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl 0x14(%edi), %eax\n" /* line 1733 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl $0xfffffffe, 8(%edi)\n" /* line 1735 | node */
-        "movl 0x10(%edi), %eax\n" /* line 1736 | node */
-        "movl 8(%eax), %edx\n" /* parent */
-        "movl 0x14(%edi), %eax\n" /* node */
-        "cmpl 8(%eax), %edx\n" /* parent */
-        "je .Lfe3104_000e32a7\n"
-        "movl 0x14(%ebx), %edi\n" /* parent, node */
-        "jmp .Lfe3104_000e3170\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lfe3104_000e3267:\n"
-        "movl 0x10(%edi), %eax\n" /* line 1732 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl 0x14(%edi), %eax\n" /* line 1733 | node */
-        "movl %edi, %edx\n" /* node, parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl $0xfffffffe, 8(%edi)\n" /* line 1735 | node */
-        "movl 0x10(%edi), %eax\n" /* line 1736 | node */
-        "movl 8(%eax), %edx\n" /* parent */
-        "movl 0x14(%edi), %eax\n" /* node */
-        "cmpl 8(%eax), %edx\n" /* parent */
-        "jne .Lfe3104_000e3161\n"
-        "movl %edx, 8(%edi)\n" /* line 1737 | parent, node */
-        "jmp .Lfe3104_000e3161\n"
-        /* } scope */
-        ".Lfe3104_000e329c:\n"
-        "movl %eax, 8(%edi)\n" /* node */
-        "movl 0x14(%ebx), %edi\n" /* parent, node */
-        "jmp .Lfe3104_000e319d\n"
-        /* { scope 1 */
-        ".Lfe3104_000e32a7:\n"
-        "movl %edx, 8(%edi)\n" /* parent, node */
-        "movl 0x14(%ebx), %edi\n" /* parent, node */
-        "jmp .Lfe3104_000e3170\n"
-        /* } scope */
-        ".Lfe3104_000e32b2:\n"
-        "movl -0x20(%ebp), %edx\n" /* line 1732 | parent */
-        "movl 0x10(%edx), %eax\n" /* parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl -0x20(%ebp), %ecx\n" /* line 1733 */
-        "movl 0x14(%ecx), %eax\n"
-        "movl %ecx, %edx\n" /* parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1735 */
-        "movl $0xfffffffe, 8(%eax)\n"
-        "movl -0x20(%ebp), %edx\n" /* line 1736 | parent */
-        "movl 0x10(%edx), %eax\n" /* parent */
-        "movl 8(%eax), %edx\n" /* parent */
-        "movl -0x20(%ebp), %ecx\n"
-        "movl 0x14(%ecx), %eax\n"
-        "cmpl 8(%eax), %edx\n" /* parent */
-        "je .Lfe3104_000e3335\n"
-        "movl 0x14(%edi), %edx\n" /* node, parent */
-        "movl %edx, -0x20(%ebp)\n" /* parent */
-        "jmp .Lfe3104_000e31e3\n"
-        /* { scope 1 */
-        ".Lfe3104_000e32f3:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1732 | node, parent */
-        "movl 0x10(%edx), %eax\n" /* parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 1733 | node */
-        "movl 0x14(%ecx), %eax\n"
-        "movl %ecx, %edx\n" /* parent */
-        "calll R_SetParentAndCell_r\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1735 | node */
-        "movl $0xfffffffe, 8(%eax)\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1736 | node, parent */
-        "movl 0x10(%edx), %eax\n" /* parent */
-        "movl 8(%eax), %edx\n" /* parent */
-        "movl -0x1c(%ebp), %ecx\n" /* node */
-        "movl 0x14(%ecx), %eax\n"
-        "cmpl 8(%eax), %edx\n" /* parent */
-        "jne .Lfe3104_000e31d1\n"
-        "movl %edx, 8(%ecx)\n" /* line 1737 | parent */
-        "jmp .Lfe3104_000e31d1\n"
-        /* } scope */
-        ".Lfe3104_000e3335:\n"
-        "movl %edx, 8(%ecx)\n" /* parent */
-        "movl 0x14(%edi), %eax\n" /* node */
-        "movl %eax, -0x20(%ebp)\n"
-        "jmp .Lfe3104_000e31e3\n"
     );
 }
 

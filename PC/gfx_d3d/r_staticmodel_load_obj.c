@@ -51,6 +51,7 @@ int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale,
 
 /* line 533 */
 extern float RB_GetLightingAtPoint(const void *lightGrid, const vec_t *samplePos, vec4_t *colorForDir);
+extern float floorf(float x);
 
 int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float *sunVisibility, vec4_t *colorForDir)
 {
@@ -874,256 +875,88 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
     );
 }
 
-/* line 463 */
-__attribute__((naked))
+/* line 463 — R_CacheStaticModelLighting
+ * Caches per-static-model lighting data into a 3D texture.
+ * Dx7 path: simple memcpy from world lighting tables.
+ * Non-Dx7 path: computes 2x2x2 texel block from per-direction color + sun visibility,
+ * quantizes to RGBA bytes, and stores coordinates for GPU lookup. */
+static inline byte R_ClampByte(int v)
+{
+    if (v > 255) return 255;
+    if (v < 0) return 0;
+    return (byte)v;
+}
+
 int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float sunVisibility, vec4_t *colorForDir)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 463 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* world */
-        /* { scope 1: comparand */
-        "movl 0xf4(%esi), %ebx\n" /* line 479 | world, smodelIndex */
-        "subl $1, %ebx\n" /* smodelIndex */
-        "movl imp_r_rendererInUse, %eax\n" /* line 483 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lf107db6_00108084\n"
-        "movl %ebx, %eax\n" /* line 494 | smodelIndex */
-        "cltd\n"
-        "idivl smodelLoadGlob\n"
-        "movl %eax, %ecx\n"
-        "addl %edx, %edx\n"
-        "movl %edx, -0x50(%ebp)\n" /* x0 */
-        "addl %ecx, %ecx\n" /* line 495 */
-        "movl %ecx, -0x4c(%ebp)\n" /* y0 */
-        "movl %ecx, %edx\n"
-        "addl $2, %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl -0x50(%ebp), %eax\n" /* x0 */
-        "addl $2, %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "mulss 0x10(%ebp), %xmm0\n" /* sunVisibility */
-        "movss %xmm0, -0x30(%ebp)\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "addss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "movl $0, -0x54(%ebp)\n" /* cornerIndex */
-        "movl $0, -0x44(%ebp)\n" /* z */
-        "movl 0x14(%ebp), %eax\n" /* colorForDir */
-        "addl $0x40, %eax\n"
-        "movl %eax, -0x68(%ebp)\n"
-        "movl 0x14(%ebp), %edx\n" /* colorForDir */
-        "addl $0x20, %edx\n"
-        "movl %edx, -0x6c(%ebp)\n"
-        ".Lf107db6_00107e49:\n"
-        "movl -0x38(%ebp), %eax\n" /* line 499 */
-        "cmpl %eax, -0x4c(%ebp)\n" /* y0 */
-        "jge .Lf107db6_00107e6c\n"
-        "movl -0x4c(%ebp), %edi\n" /* y0, y */
-        "movl $2, -0x28(%ebp)\n"
-        ".Lf107db6_00107e5b:\n"
-        "movl -0x34(%ebp), %eax\n" /* line 501 */
-        "cmpl %eax, -0x50(%ebp)\n" /* x0 */
-        "jl .Lf107db6_00107ebf\n"
-        ".Lf107db6_00107e63:\n"
-        "addl $1, %edi\n" /* line 499 | y */
-        "subl $1, -0x28(%ebp)\n"
-        "jne .Lf107db6_00107e5b\n"
-        ".Lf107db6_00107e6c:\n"
-        "addl $1, -0x44(%ebp)\n" /* line 497 | z */
-        "cmpl $2, -0x44(%ebp)\n" /* z */
-        "jne .Lf107db6_00107e49\n"
-        "cvtsi2ssl -0x50(%ebp), %xmm0\n" /* line 527 | x0 */
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "addss %xmm1, %xmm0\n"
-        "mulss smodelLoadGlob+8, %xmm0\n"
-        "movl 0xc(%ebp), %eax\n" /* smodelInst */
-        "movss %xmm0, 0x54(%eax)\n"
-        "cvtsi2ssl -0x4c(%ebp), %xmm0\n" /* line 528 | y0 */
-        "addss %xmm1, %xmm0\n"
-        "mulss smodelLoadGlob+12, %xmm0\n"
-        "movss %xmm0, 0x58(%eax)\n"
-        "movl $0x3f000000, 0x5c(%eax)\n" /* line 529 */
-        /* } scope */
-        "addl $0x8c, %esp\n" /* line 530 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: comparand */
-        ".Lf107db6_00107ebf:\n"
-        "movss -0x30(%ebp), %xmm0\n" /* line 428 */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x64(%ebp)\n"
-        "cvttss2si -0x64(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "subl $0xff, %eax\n" /* line 178 */
-        "movl %eax, -0x40(%ebp)\n" /* comparand */
-        "movl -0x1c(%ebp), %edx\n"
-        "negl %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl -0x54(%ebp), %eax\n" /* cornerIndex */
-        "movl 0x14(%ebp), %edx\n" /* colorForDir */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl -0x50(%ebp), %edx\n" /* x0 */
-        "movl %edx, -0x48(%ebp)\n" /* x */
-        "xorl %esi, %esi\n"
-        ".Lf107db6_00107efd:\n"
-        "movl -0x54(%ebp), %edx\n" /* line 463 | cornerIndex */
-        "leal (%esi, %edx), %eax\n" /* world */
-        "shll $2, %eax\n" /* line 503 */
-        "movl -0x68(%ebp), %edx\n"
-        "movss (%edx, %eax), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movl -0x6c(%ebp), %edx\n"
-        "movss (%edx, %eax), %xmm1\n"
-        "movl -0x44(%ebp), %eax\n" /* line 504 | z */
-        "imull smodelLoadGlob+4, %eax\n"
-        "leal (%edi, %eax, 2), %eax\n" /* y */
-        "imull smodelLoadGlob, %eax\n"
-        "movl -0x48(%ebp), %edx\n" /* x */
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl smodelLoadGlob+16, %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* smodelIndex */
-        "movl -0x24(%ebp), %eax\n" /* line 428 */
-        "movss (%eax), %xmm0\n"
-        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x88(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x58(%ebp)\n"
-        "cvttss2si -0x58(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "movss -0x88(%ebp), %xmm1\n"
-        "js .Lf107db6_00108040\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf107db6_00107f89:\n"
-        "movb %dl, -0x2a(%ebp)\n"
-        /* } scope */
-        ".Lf107db6_00107f8c:\n"
-        "mulss lit4_002ed5d4, %xmm1\n" /* line 428 | 255.0f */
-        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "movss %xmm1, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x5c(%ebp)\n"
-        "cvttss2si -0x5c(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf107db6_0010806f\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf107db6_00107fc0:\n"
-        "movb %dl, -0x29(%ebp)\n"
-        /* } scope */
-        ".Lf107db6_00107fc3:\n"
-        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "mulss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "addss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x60(%ebp)\n"
-        "cvttss2si -0x60(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf107db6_00108063\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf107db6_00108002:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf107db6_00108004:\n"
-        "movl -0x40(%ebp), %edx\n" /* comparand */
-        "testl %edx, %edx\n"
-        "js .Lf107db6_00108055\n"
-        "movl $0xff, %edx\n"
-        /* } scope */
-        ".Lf107db6_00108010:\n"
-        "movb %dl, (%ebx)\n" /* line 512 | smodelIndex */
-        "movzbl -0x2a(%ebp), %edx\n"
-        "movb %dl, 1(%ebx)\n" /* smodelIndex */
-        "movzbl -0x29(%ebp), %edx\n"
-        "movb %dl, 2(%ebx)\n" /* smodelIndex */
-        "movb %al, 3(%ebx)\n" /* smodelIndex */
-        "addl $1, -0x48(%ebp)\n" /* line 501 | x */
-        "addl $1, %esi\n" /* world */
-        "addl $4, -0x24(%ebp)\n"
-        "cmpl $2, %esi\n" /* world */
-        "jne .Lf107db6_00107efd\n"
-        "addl $2, -0x54(%ebp)\n" /* cornerIndex */
-        "jmp .Lf107db6_00107e63\n"
-        ".Lf107db6_00108040:\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf107db6_00107f89\n"
-        "movb $0, -0x2a(%ebp)\n"
-        "jmp .Lf107db6_00107f8c\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf107db6_00108055:\n"
-        "movl -0x1c(%ebp), %edx\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl -0x20(%ebp), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "js .Lf107db6_00108010\n"
-        "xorl %edx, %edx\n"
-        "jmp .Lf107db6_00108010\n"
-        /* } scope */
-        ".Lf107db6_00108063:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf107db6_00108002\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf107db6_00108004\n"
-        /* } scope */
-        ".Lf107db6_0010806f:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf107db6_00107fc0\n"
-        "movb $0, -0x29(%ebp)\n"
-        "jmp .Lf107db6_00107fc3\n"
-        /* } scope */
-        ".Lf107db6_00108084:\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 486 | smodelIndex */
-        "shll $5, %eax\n"
-        "addl 0x12c(%esi), %eax\n" /* world */
-        "movl $0x60, 8(%esp)\n"
-        "movl 0x14(%ebp), %edx\n" /* colorForDir */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0x130(%esi), %eax\n" /* line 487 | world */
-        "movss 0x10(%ebp), %xmm0\n" /* sunVisibility */
-        "movss %xmm0, (%eax, %ebx, 4)\n"
-        /* } scope */
-        "addl $0x8c, %esp\n" /* line 530 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *worldBytes = (byte *)world;
+    int smodelIndex = *(int *)(worldBytes + 0xf4) - 1; /* world->smodelCount - 1 */
+
+    /* Dx7 path: direct copy from world lighting tables */
+    if (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2) {
+        byte *lightingColors = *(byte **)(worldBytes + 0x12c) + smodelIndex * 96;
+        memcpy(colorForDir, lightingColors, 0x60);
+        float *sunVisTable = *(float **)(worldBytes + 0x130);
+        sunVisTable[smodelIndex] = sunVisibility;
+        return 0;
+    }
+
+    /* Non-Dx7: compute 3D texture coordinates and fill 2x2x2 texel block */
+    int width = *(int *)&smodelLoadGlob;
+    int height = *(int *)((byte *)&smodelLoadGlob + 4);
+    float xScale = *(float *)((byte *)&smodelLoadGlob + 8);
+    float yScale = *(float *)((byte *)&smodelLoadGlob + 12);
+    byte *texBase = *(byte **)((byte *)&smodelLoadGlob + 16);
+
+    int y0 = (smodelIndex / width) * 2;
+    int x0 = (smodelIndex % width) * 2;
+    float sunByte = sunVisibility * 255.0f + 0.5f;
+    int sunVal = (int)floorf(sunByte);
+
+    /* colorForDir layout: [0..7] = base colors, [8..15] = secondary colors, [16..23] = tertiary colors */
+    float *colorHigh = (float *)colorForDir + 16; /* offset +0x40 */
+    float *colorMid  = (float *)colorForDir + 8;  /* offset +0x20 */
+
+    int cornerIndex = 0;
+    int z, yi, xi;
+
+    for (z = 0; z < 2; z++) {
+        int y;
+        for (y = y0, yi = 0; yi < 2 && y < y0 + 2; y++, yi++) {
+            int x;
+            for (x = x0, xi = 0; xi < 2; x++, xi++) {
+                if (x >= x0 + 2)
+                    break;
+
+                float cHigh = colorHigh[cornerIndex + xi];
+                float cMid  = colorMid[cornerIndex + xi];
+
+                /* Compute 3D texture index */
+                int texIdx = (x + (y + z * height * 2) * width * 2);
+                byte *pixel = texBase + texIdx * 4;
+
+                /* Quantize and clamp each channel to [0, 255] */
+                float *colorPtr = (float *)colorForDir + cornerIndex + xi;
+                byte ch0 = R_ClampByte((int)floorf(colorPtr[0] * 255.0f + 0.5f));
+                byte ch1 = R_ClampByte((int)floorf(cMid * 255.0f + 0.5f));
+                byte ch2 = R_ClampByte((int)floorf(cHigh * 255.0f + 0.5f));
+                byte ch3 = R_ClampByte(sunVal);
+
+                pixel[0] = ch3;
+                pixel[1] = ch0;
+                pixel[2] = ch1;
+                pixel[3] = ch2;
+            }
+            cornerIndex += 2;
+        }
+    }
+
+    /* Store texture lookup coordinates in smodelInst */
+    smodelInst->baseLightingCoords[0] = ((float)x0 + 1.0f) * xScale;
+    smodelInst->baseLightingCoords[1] = ((float)y0 + 1.0f) * yScale;
+    smodelInst->baseLightingCoords[2] = 0.5f;
+
+    return 0;
 }
 
 /* line 92 */
