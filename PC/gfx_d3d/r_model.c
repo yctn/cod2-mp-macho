@@ -640,8 +640,173 @@ void R_XModelDebugAxes(void)
 }
 
 /* line 2749 */
-__attribute__((naked))
+/* line 2749 — Computes world-space bounding box for an XModel entity by transforming
+ * per-bone half-extents through quaternion rotation matrices and accumulating bounds. */
+extern int DObjBad(const void *obj);
+extern void ClearBounds(float *mins, float *maxs);
+extern void GetRotatedBounds(float *bounds, float *origin, float *axis, float *outBounds);
+extern int InterlockedCompareExchange(volatile int *dest, int exchange, int comparand);
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
+{
+    char *se = (char *)sceneEnt;
+    char *e = (char *)ent;
+    void *obj;
+    int boneCount, i;
+    int partBits[4];
+    short surfaces[67];
+    char lods[8];
+    float bounds[6]; /* mins[3], maxs[3] */
+    int boneInfo[128]; /* bone info array */
+
+    /* Check state: must be <= 3 to proceed */
+    if (*(int *)(se + 0xc) > 3)
+        return;
+
+    /* Atomic compare-exchange: try to claim state 0→1 */
+    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 0, 1) != 0) {
+        /* Someone else is processing — spin until done */
+        while (*(volatile int *)(se + 0xc) <= 1)
+            ;
+        return;
+    }
+
+    /* Handle entity type override */
+    if (*(int *)e != 0) {
+        char *rg = (char *)imp_rg;
+        void *defaultModel = *(void **)(rg + 0x3110);
+        obj = *(void **)(se + 4);
+        DObjSetModel(defaultModel, obj);
+    } else {
+        obj = *(void **)(se + 4);
+    }
+
+    /* Check for bad DObj */
+    if (DObjBad(obj)) {
+        if (*(int *)(*(char **)imp_developer + 8)) {
+            __asm__ __volatile__ (
+                "movl %[obj], %%ecx\n"
+                "movl %[ent], %%edx\n"
+                "movl %[se], %%eax\n"
+                "calll R_XModelDebugBoxes\n"
+                "movl %[obj], %%ecx\n"
+                "movl %[ent], %%edx\n"
+                "movl %[se], %%eax\n"
+                "calll R_XModelDebugAxes\n"
+                : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
+                : "eax", "ecx", "edx", "memory"
+            );
+        }
+        goto set_origin_bounds;
+    }
+
+    /* Get surface data */
+    {
+        int surfCount;
+        __asm__ __volatile__ (
+            "movl %[lods], 4(%%esp)\n"
+            "movl %[pb], (%%esp)\n"
+            "movl %[obj], %%edx\n"
+            "movl %[ent], %%eax\n"
+            "leal %[surfs], %%ecx\n"
+            "calll R_GetSurfaceData\n"
+            "movl %%eax, %[out]\n"
+            : [out]"=r"(surfCount)
+            : [ent]"m"(ent), [obj]"m"(obj), [surfs]"m"(surfaces[0]),
+              [pb]"r"(partBits), [lods]"r"(lods)
+            : "eax", "ecx", "edx", "memory"
+        );
+        if (surfCount == 0)
+            goto set_origin_bounds;
+    }
+
+    /* Calculate pose if animation exists */
+    {
+        void *anim = *(void **)(se + 8);
+        if (anim)
+            CG_DObjCalcPose(anim, obj, partBits);
+    }
+
+    /* Get bone rotation/translation array */
+    {
+        const DObjAnimMat *boneMatrix = (const DObjAnimMat *)DObjGetRotTransArray(obj);
+        if (!boneMatrix)
+            goto set_origin_bounds;
+
+        ClearBounds(&bounds[0], &bounds[3]);
+        DObjGetBoneInfo(obj, (void **)boneInfo);
+        boneCount = DObjNumBones(obj);
+
+        /* For each active bone: build rotation matrix, expand bounds */
+        for (i = 0; i < boneCount; i++) {
+            if (!(partBits[i >> 5] & (1 << (i & 0x1f))))
+                continue;
+
+            {
+                const float *q = boneMatrix[i].quat;
+                float w2 = boneMatrix[i].transWeight;
+                const float *trans = boneMatrix[i].trans;
+                const int *bi = &boneInfo[i * 4]; /* bone info for this bone */
+
+                /* Quaternion to rotation matrix (same as R_SkinXModelCmd) */
+                float xx2 = w2*q[0], yy2 = w2*q[1], zz2 = w2*q[2];
+                float xx = xx2*q[0], xy = xx2*q[1], xz = xx2*q[2], xw = xx2*q[3];
+                float yy = yy2*q[1], yz = yy2*q[2], yw = yy2*q[3];
+                float zz = zz2*q[2], zw = zz2*q[3];
+
+                float m00 = 1.0f-(yy+zz), m01 = xy+zw,        m02 = xz-yw;
+                float m10 = xy-zw,         m11 = 1.0f-(xx+zz), m12 = yz+xw;
+                float m20 = xz+yw,         m21 = yz-xw,        m22 = 1.0f-(xx+yy);
+
+                /* Expand bounds using rotation × bone half-extents.
+                 * For each world axis, compute min/max contribution from each bone axis
+                 * using sign-selected half-extent pairs from boneInfo. */
+                float bmin, bmax;
+                const float *bif = (const float *)bi;
+
+                /* X axis */
+                #define AXIS_CONTRIB(rot, biOfs) do { \
+                    int sel = (*(int*)&(rot)) >> 31 & 3; /* 0 or 3 based on sign */ \
+                    bmin += (rot) * bif[sel]; \
+                    bmax += (rot) * bif[3 - sel]; \
+                } while(0)
+
+                bmin = trans[0]; bmax = trans[0];
+                AXIS_CONTRIB(m00, 0); AXIS_CONTRIB(m10, 1); AXIS_CONTRIB(m20, 2);
+                if (bmin < bounds[0]) bounds[0] = bmin;
+                if (bmax > bounds[3]) bounds[3] = bmax;
+
+                bmin = trans[1]; bmax = trans[1];
+                AXIS_CONTRIB(m01, 0); AXIS_CONTRIB(m11, 1); AXIS_CONTRIB(m21, 2);
+                if (bmin < bounds[1]) bounds[1] = bmin;
+                if (bmax > bounds[4]) bounds[4] = bmax;
+
+                bmin = trans[2]; bmax = trans[2];
+                AXIS_CONTRIB(m02, 0); AXIS_CONTRIB(m12, 1); AXIS_CONTRIB(m22, 2);
+                if (bmin < bounds[2]) bounds[2] = bmin;
+                if (bmax > bounds[5]) bounds[5] = bmax;
+
+                #undef AXIS_CONTRIB
+            }
+        }
+
+        /* Transform bounds by entity orientation */
+        GetRotatedBounds(bounds, (float *)(e + 0x3c), (float *)(e + 0x14), (float *)(se + 0x14));
+        *(int *)(se + 0xc) = 2;
+        return;
+    }
+
+set_origin_bounds:
+    /* Degenerate bounds: min = max = entity origin */
+    *(float *)(se + 0x14) = *(float *)(e + 0x3c);
+    *(float *)(se + 0x18) = *(float *)(e + 0x40);
+    *(float *)(se + 0x1c) = *(float *)(e + 0x44);
+    *(float *)(se + 0x20) = *(float *)(e + 0x3c);
+    *(float *)(se + 0x24) = *(float *)(e + 0x40);
+    *(float *)(se + 0x28) = *(float *)(e + 0x44);
+    *(int *)(se + 0xc) = 2;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2749 */
@@ -1035,6 +1200,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "jmp .Lfd0d64_000d0d7b\n"
     );
 }
+#endif /* original naked R_UpdateXModelBounds */
 
 /* line 1836 */
 static __attribute__((naked))
