@@ -79,6 +79,8 @@ static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, co
 HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeType, LPCSTR filename, LPCVOID parentData, LPCVOID *data, MaterialTechnique * (*byteCount)[4][34]);
 void Material_PreLoadAllShaderText(void);
 static Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRouting *routing, int offset, const CodeConstantSource *sourceTable, MaterialShaderArgument *arg);
+static Bool Material_ParseCodeConstantSource_r_impl(const char **text, const byte *routing, int offset, const CodeConstantSource *sourceTable, byte *arg);
+extern void Com_UngetToken(void);
 static Bool Material_ParseVector(int elemCount);
 static Bool Material_ParseVector_impl(const char **text, int elemCount, float *vector);
 static Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits);
@@ -705,308 +707,158 @@ void Material_PreLoadAllShaderText(void)
     );
 }
 
-/* line 1759 */
+/* line 1759 — Material_ParseCodeConstantSource_r
+ * Recursively resolves a code constant source from a dot-separated path.
+ * Handles simple constants (source <= 186), matrix constants (source > 186) with
+ * optional row selection [N], array indexing [N], and subtable recursion.
+ * Actual convention: eax=text, edx=routing, ecx=offset, stack=sourceTable,arg */
+static Bool Material_ParseCodeConstantSource_r_impl(const char **text, const byte *routing, int offset, const CodeConstantSource *sourceTable, byte *arg)
+{
+    if (!Com_MatchToken(text, ".", 1))
+        return 0;
+
+    const char *token = Com_Parse(text);
+
+    /* Search source table for matching name (stride 0x14 = 20 bytes) */
+    int sourceIndex;
+    for (sourceIndex = 0; sourceTable[sourceIndex].name; sourceIndex++) {
+        if (strcmp(token, sourceTable[sourceIndex].name) == 0)
+            goto found;
+    }
+    Com_ScriptWarning("unknown constant source '%s'\n", token);
+    return 0;
+
+found:;
+    const CodeConstantSource *entry = &sourceTable[sourceIndex];
+    int arrayCount = entry->arrayCount;
+    int arrayIndex = 0;
+
+    /* If no array but routing requires multi-component access, handle index parsing */
+    if (arrayCount == 0 && entry->subtable == 0) {
+        byte componentCount = *(routing + 5);
+        if (componentCount > 1) {
+            /* Check for explicit array index "[N, M]" syntax */
+            const char *peek = Com_Parse(text);
+            if (*peek == '[') {
+                /* Parse starting index */
+                arrayIndex = Com_ParseInt(text);
+                if (arrayIndex < 0 || arrayIndex >= entry->arrayCount) {
+                    Com_ScriptWarning("index %i is not in the range [0, %i]\n", arrayIndex, entry->arrayCount - 1);
+                    return 0;
+                }
+                /* Multi-component: parse ", endIndex" and validate range */
+                if (componentCount > 1) {
+                    if (!Com_MatchToken(text, ",", 1))
+                        return 0;
+                    int endIndex = Com_ParseInt(text);
+                    int expectedEnd = arrayIndex + componentCount - 1;
+                    if (endIndex != expectedEnd) {
+                        Com_ScriptWarning("ending index %i should be %i instead\n", endIndex, expectedEnd);
+                        return 0;
+                    }
+                }
+                if (!Com_MatchToken(text, "]", 1))
+                    return 0;
+                offset += arrayIndex;
+                goto after_array;
+            } else {
+                Com_UngetToken();
+                /* Validate component count fits */
+                if ((int)componentCount > entry->arrayCount) {
+                    Com_ScriptWarning("code constant '%s' has only %i members, but %i were requested\n",
+                                      entry->name, entry->arrayCount, (int)componentCount);
+                    return 0;
+                }
+                offset += 0; /* no index offset */
+                goto after_array;
+            }
+        }
+    }
+
+    /* Handle array indexing [N] if entry has arrayCount */
+    if (arrayCount != 0) {
+        int arrayStride = entry->arrayStride;
+        if (!Com_MatchToken(text, "[", 1))
+            return 0;
+        arrayIndex = Com_ParseInt(text);
+        if (arrayIndex < 0 || arrayIndex >= arrayCount) {
+            Com_ScriptWarning("array index must be in range [0, %i]\n", arrayCount - 1);
+            return 0;
+        }
+        if (!Com_MatchToken(text, "]", 1))
+            return 0;
+        offset += arrayIndex * arrayStride;
+    }
+
+after_array:
+    /* Check for subtable (recurse deeper) */
+    if (entry->subtable) {
+        return Material_ParseCodeConstantSource_r_impl(text, routing, offset,
+            (const CodeConstantSource *)(intptr_t)entry->subtable, arg);
+    }
+
+    /* Leaf: compute final source value */
+    int source = offset + (unsigned char)entry->source;
+
+    if (source <= 0xBA) {
+        /* Simple code constant */
+        *(unsigned short *)(arg + 4) = (unsigned short)source;
+        *(arg + 6) = 0;
+        *(arg + 7) = *(routing + 5); /* component count */
+        return 1;
+    }
+
+    /* Matrix constant (source > 186): may need row selection or component info */
+    /* Check if routing's pixel shader type == 3 → XOR source with 2 */
+    short *routingShaderType = *(short **)(routing + 0xc);
+    if (*routingShaderType == 3)
+        source ^= 2;
+
+    /* Parse next token to determine mode */
+    const char *nextToken = Com_Parse(text);
+    if (*nextToken == ';') {
+        /* Semicolon: use full matrix constant with routing's component count */
+        Com_UngetToken();
+        *(unsigned short *)(arg + 4) = (unsigned short)source;
+        *(arg + 6) = 0;
+        byte *routingShader = *(byte **)(routing + 8);
+        *(arg + 7) = (byte)*(unsigned short *)(routingShader + 8);
+        return 1;
+    }
+
+    if (*nextToken == '[') {
+        /* Row selection: source[rowIndex] */
+        *(unsigned short *)(arg + 4) = (unsigned short)source;
+        int rowIndex = Com_ParseInt(text);
+        if ((unsigned)rowIndex > 3) {
+            Com_ScriptWarning("row index %i should be in the range [0, 3]\n", rowIndex);
+            return 0;
+        }
+        *(arg + 6) = (byte)rowIndex;
+        *(arg + 7) = 1;
+        return Com_MatchToken(text, "]", 1) ? 1 : 0;
+    }
+
+    Com_ScriptWarning("expected ';' or '[', found '%s' instead\n", nextToken);
+    return 0;
+}
+
+/* Trampoline: eax=text, edx=routing, ecx=offset, stack=sourceTable,arg */
 static __attribute__((naked))
 Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRouting *routing, int offset, const CodeConstantSource *sourceTable, MaterialShaderArgument *arg)
 {
     __asm__ __volatile__ (
-        ".Lf102076_00102076:\n"
-        "pushl %ebp\n" /* line 1759 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movl %ecx, -0x2c(%ebp)\n"
-        /* { scope 1: arrayStride */
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_00217ff8, 4(%esp)\n" /* "." */
-        "movl %eax, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1771 */
-        "jne .Lf102076_001020ae\n"
-        ".Lf102076_001020a4:\n"
-        "xorl %eax, %eax\n" /* line 1842 */
-        /* } scope */
-        ".Lf102076_001020a6:\n"
-        "addl $0x3c, %esp\n" /* line 1843 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 0xc(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Material_ParseCodeConstantSource_r_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: arrayStride */
-        ".Lf102076_001020ae:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1773 */
-        "movl %eax, (%esp)\n"
-        "calll Com_Parse\n"
-        "movl %eax, -0x20(%ebp)\n" /* token */
-        "movl 8(%ebp), %edx\n" /* line 1775 | sourceTable */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf102076_001020ef\n"
-        "movl %edx, %ebx\n" /* source */
-        "addl $0x14, %ebx\n" /* source */
-        "xorl %esi, %esi\n" /* sourceIndex */
-        "xorl %edi, %edi\n" /* arrayIndex */
-        ".Lf102076_001020ce:\n"
-        "movl %eax, 4(%esp)\n" /* line 1777 */
-        "movl -0x20(%ebp), %ecx\n" /* token */
-        "movl %ecx, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf102076_0010210c\n"
-        "addl $1, %esi\n" /* line 1775 | sourceIndex */
-        "movl %esi, %edi\n" /* sourceIndex, arrayIndex */
-        "movl (%ebx), %eax\n" /* source */
-        "addl $0x14, %ebx\n" /* source */
-        "testl %eax, %eax\n"
-        "jne .Lf102076_001020ce\n"
-        ".Lf102076_001020ef:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1841 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002280b0, (%esp)\n" /* "unknown constant source '%s'
-" */
-        "calll Com_ScriptWarning\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1843 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: arrayStride */
-        ".Lf102076_0010210c:\n"
-        "leal (%edi, %edi, 4), %eax\n" /* line 1780 | arrayIndex */
-        "movl 8(%ebp), %edx\n" /* sourceTable */
-        "leal (%edx, %eax, 4), %esi\n" /* sourceIndex */
-        "movl 0xc(%esi), %ebx\n" /* sourceIndex, source */
-        "testl %ebx, %ebx\n" /* source */
-        "je .Lf102076_001021ad\n"
-        "movl 8(%esi), %ecx\n" /* line 1783 | sourceIndex */
-        "testl %ecx, %ecx\n"
-        "je .Lf102076_00102232\n"
-        ".Lf102076_0010212b:\n"
-        "movl 0x10(%esi), %edx\n" /* line 1790 | sourceIndex */
-        "movl %edx, -0x1c(%ebp)\n" /* arrayStride */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021e510, 4(%esp)\n" /* "[" */
-        "movl -0x24(%ebp), %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1558 */
-        "je .Lf102076_001020a4\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1560 */
-        "movl %eax, (%esp)\n"
-        "calll Com_ParseInt\n"
-        "movl %eax, %edi\n" /* arrayIndex */
-        "testl %eax, %eax\n" /* line 1561 */
-        "js .Lf102076_00102169\n"
-        "cmpl %eax, %ebx\n"
-        "jg .Lf102076_00102181\n"
-        ".Lf102076_00102169:\n"
-        "leal -1(%ebx), %eax\n" /* line 1563 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00228030, (%esp)\n" /* "array index must be in range [0, %i]
-" */
-        "calll Com_ScriptWarning\n"
-        "jmp .Lf102076_001020a4\n"
-        ".Lf102076_00102181:\n"
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021e504, 4(%esp)\n" /* "]" */
-        "movl -0x24(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1566 */
-        "je .Lf102076_001020a4\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1569 | arrayStride */
-        "imull %edi, %eax\n" /* arrayIndex */
-        /* } scope */
-        /* } scope */
-        "addl %eax, -0x2c(%ebp)\n" /* line 1793 */
-        ".Lf102076_001021ad:\n"
-        "movl 8(%esi), %eax\n" /* line 1796 | sourceIndex */
-        "testl %eax, %eax\n"
-        "je .Lf102076_001021d4\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1797 | arg */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "movl -0x2c(%ebp), %ecx\n"
-        "movl -0x28(%ebp), %edx\n"
-        "movl -0x24(%ebp), %eax\n"
-        "calll Material_ParseCodeConstantSource_r\n"
-        "movzbl %al, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        ".Lf102076_001021d4:\n"
-        "movzbl 4(%esi), %eax\n" /* line 1799 | sourceIndex */
-        "movl -0x2c(%ebp), %ebx\n" /* source */
-        "addl %eax, %ebx\n" /* source */
-        "cmpl $0xba, %ebx\n" /* line 1800 | source */
-        "jle .Lf102076_00102272\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 1808 */
-        "movl 0xc(%ecx), %eax\n"
-        "movl %ebx, %edx\n" /* line 1809 | source */
-        "xorl $2, %edx\n"
-        "cmpw $3, (%eax)\n"
-        "cmovel %edx, %ebx\n" /* source */
-        "movl -0x24(%ebp), %eax\n" /* line 1811 */
-        "movl %eax, (%esp)\n"
-        "calll Com_Parse\n"
-        "movzbl (%eax), %edx\n" /* line 1812 */
-        "cmpb $0x3b, %dl\n"
-        "je .Lf102076_00102336\n"
-        "cmpb $0x5b, %dl\n" /* line 1821 */
-        "je .Lf102076_001022ca\n"
-        "movl %eax, 4(%esp)\n" /* line 1836 */
-        "movl $str_00228084, (%esp)\n" /* "expected ';' or '[', found '%s' instead
-" */
-        "calll Com_ScriptWarning\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        ".Lf102076_00102232:\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 1783 */
-        "cmpb $1, 5(%ecx)\n"
-        "jbe .Lf102076_0010212b\n"
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 1722 */
-        "movl %eax, (%esp)\n"
-        "calll Com_Parse\n"
-        "cmpb $0x5b, (%eax)\n" /* line 1723 */
-        "je .Lf102076_00102291\n"
-        "calll Com_UngetToken\n" /* line 1725 */
-        "movl -0x28(%ebp), %edx\n" /* line 1726 */
-        "movzbl 5(%edx), %eax\n"
-        "movl 0xc(%esi), %edx\n"
-        "cmpl %edx, %eax\n"
-        "jg .Lf102076_00102317\n"
-        "xorl %ebx, %ebx\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1785 | source */
-        ".Lf102076_0010226a:\n"
-        "addl %eax, -0x2c(%ebp)\n" /* line 1793 */
-        "jmp .Lf102076_001021ad\n"
-        ".Lf102076_00102272:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 1802 | arg */
-        "movw %bx, 4(%ecx)\n" /* source */
-        "movb $0, 6(%ecx)\n" /* line 1803 */
-        "movl -0x28(%ebp), %edx\n" /* line 1804 */
-        "movzbl 5(%edx), %eax\n"
-        "movb %al, 7(%ecx)\n"
-        "movl $1, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        /* { scope 2 */
-        ".Lf102076_00102291:\n"
-        "movl -0x24(%ebp), %ecx\n" /* line 1735 */
-        "movl %ecx, (%esp)\n"
-        "calll Com_ParseInt\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n" /* line 1736 */
-        "js .Lf102076_001022ab\n"
-        "cmpl 0xc(%esi), %eax\n"
-        "jl .Lf102076_0010235d\n"
-        ".Lf102076_001022ab:\n"
-        "movl 0xc(%esi), %eax\n" /* line 1738 */
-        "subl $1, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_00227fe0, (%esp)\n" /* "index %i is not in the range [0, %i]
-" */
-        "calll Com_ScriptWarning\n"
-        "jmp .Lf102076_001020a4\n"
-        /* } scope */
-        ".Lf102076_001022ca:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1823 | arg */
-        "movw %bx, 4(%edx)\n" /* source */
-        "movl -0x24(%ebp), %ecx\n" /* line 1824 */
-        "movl %ecx, (%esp)\n"
-        "calll Com_ParseInt\n"
-        "cmpl $3, %eax\n" /* line 1825 */
-        "ja .Lf102076_001023be\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1830 | arg */
-        "movb %al, 6(%edx)\n"
-        "movb $1, 7(%edx)\n" /* line 1831 */
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021e504, 4(%esp)\n" /* "]" */
-        "movl -0x24(%ebp), %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1832 */
-        "setne %al\n"
-        "andl $1, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        /* { scope 2 */
-        ".Lf102076_00102317:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 1728 */
-        "movl %edx, 8(%esp)\n"
-        "movl (%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00227fa0, (%esp)\n" /* "code constant '%s' has only %i members, but %i were requeste" */
-        "calll Com_ScriptWarning\n"
-        "jmp .Lf102076_001020a4\n"
-        /* } scope */
-        ".Lf102076_00102336:\n"
-        "calll Com_UngetToken\n" /* line 1814 */
-        "movl 0xc(%ebp), %ecx\n" /* line 1815 | arg */
-        "movw %bx, 4(%ecx)\n" /* source */
-        "movb $0, 6(%ecx)\n" /* line 1816 */
-        "movl -0x28(%ebp), %edx\n" /* line 1817 */
-        "movl 8(%edx), %eax\n"
-        "movzwl 8(%eax), %eax\n"
-        "movb %al, 7(%ecx)\n"
-        "movl $1, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        /* { scope 2 */
-        ".Lf102076_0010235d:\n"
-        "movl -0x28(%ebp), %eax\n" /* line 1744 */
-        "cmpb $1, 5(%eax)\n"
-        "jbe .Lf102076_001023d5\n"
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021f88c, 4(%esp)\n" /* "," */
-        "movl -0x24(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll Com_MatchToken\n"
-        "testl %eax, %eax\n" /* line 1746 */
-        "je .Lf102076_001020a4\n"
-        "movl -0x24(%ebp), %ecx\n" /* line 1748 */
-        "movl %ecx, (%esp)\n"
-        "calll Com_ParseInt\n"
-        "movl %eax, %edx\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 1749 */
-        "movzbl 5(%ecx), %eax\n"
-        "leal -1(%ebx, %eax), %eax\n"
-        "cmpl %eax, %edx\n"
-        "je .Lf102076_001023d5\n"
-        "movl %eax, 8(%esp)\n" /* line 1751 */
-        "movl %edx, 4(%esp)\n"
-        "movl $str_00228008, (%esp)\n" /* "ending index %i should be %i instead
-" */
-        "calll Com_ScriptWarning\n"
-        "jmp .Lf102076_001020a4\n"
-        /* } scope */
-        ".Lf102076_001023be:\n"
-        "movl %eax, 4(%esp)\n" /* line 1827 */
-        "movl $str_00228058, (%esp)\n" /* "row index %i should be in the range [0, 3]
-" */
-        "calll Com_ScriptWarning\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf102076_001020a6\n"
-        /* { scope 2 */
-        ".Lf102076_001023d5:\n"
-        "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $str_0021e504, 4(%esp)\n" /* "]" */
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_MatchToken\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1785 */
-        "je .Lf102076_001020a4\n"
-        "movl %ebx, %eax\n" /* source */
-        "jmp .Lf102076_0010226a\n"
     );
 }
 
