@@ -1510,144 +1510,69 @@ MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int
     return rgp.defaultMaterial;
 }
 
-/* line 1345 */
-__attribute__((naked))
+/* line 1345 — Material_Init
+ * Initializes the material system: registers all built-in materials,
+ * optionally registers fill-test materials, registers $raw material,
+ * and validates technique set compatibility with $default. */
+extern void Material_PreLoadAllShaderText(void);
+extern void Com_Error(int errorLevel, const char *msg, ...);
+extern BuiltInMaterialTable s_builtInMaterials[];
+extern BuiltInMaterialTable s_builtInMaterials_end[];
+
 void Material_Init(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1345 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl $0x299c, 8(%esp)\n" /* line 1348 */
-        "movl $0, 4(%esp)\n"
-        "movl $materialGlobals, (%esp)\n"
-        "calll memset\n"
-        "calll Material_PreLoadAllShaderText\n" /* line 1349 */
-        "movl $s_builtInMaterials+4, %esi\n"
-        "movl $s_builtInMaterials_end+4, %edi\n"
-        "jmp .Lfd4686_000d46c3\n"
-        ".Lfd4686_000d46bc:\n"
-        "addl $8, %esi\n" /* line 1325 */
-        "cmpl %esi, %edi\n" /* line 1320 */
-        "je .Lfd4686_000d4704\n"
-        ".Lfd4686_000d46c3:\n"
-        "movl (%esi), %ebx\n" /* line 1323 */
-        "movl $0, 4(%esp)\n"
-        "movl -4(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Material_Register\n"
-        "movl %eax, (%ebx)\n"
-        "movl (%esi), %eax\n" /* line 1324 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd4686_000d46bc\n"
-        "movl -4(%esi), %eax\n" /* line 1325 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224548, 4(%esp)\n" /* "Could not find material '%s'" */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "addl $8, %esi\n"
-        "cmpl %esi, %edi\n" /* line 1320 */
-        "jne .Lfd4686_000d46c3\n"
-        ".Lfd4686_000d4704:\n"
-        "movl imp_r_testFillEnable, %eax\n" /* line 1353 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd4686_000d47cf\n"
-        ".Lfd4686_000d4715:\n"
-        "movl $0, 4(%esp)\n" /* line 1062 */
-        "movl $str_00224568, (%esp)\n" /* "$raw" */
-        "calll Material_Register\n"
-        "movl %eax, %edx\n"
-        "movl imp_rgp, %esi\n"
-        "movl %eax, 0x1030(%esi)\n"
-        "movl 0x102c(%esi), %ecx\n" /* line 986 */
-        "movl 0x3c(%eax), %eax\n"
-        "cmpl 0x3c(%ecx), %eax\n"
-        "je .Lfd4686_000d479b\n"
-        ".Lfd4686_000d4745:\n"
-        "cmpw $1, 0x34(%edx)\n" /* line 1066 */
-        "je .Lfd4686_000d47ab\n"
-        "movl $str_00224570, 4(%esp)\n" /* line 1068 */
-        "movl $3, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "movl imp_rgp, %esi\n" /* line 1069 */
-        "movl 0x102c(%esi), %eax\n"
-        "movl %eax, 0x1030(%esi)\n"
-        "movl %eax, %ecx\n"
-        "movl %eax, %edx\n"
-        "movl 0x3c(%ecx), %ebx\n" /* line 986 */
-        "cmpl 0x3c(%edx), %ebx\n"
-        "je .Lfd4686_000d47bf\n"
-        ".Lfd4686_000d4780:\n"
-        "movl %ecx, %edx\n"
-        ".Lfd4686_000d4782:\n"
-        "movl (%ebx), %eax\n" /* line 1339 */
-        "movl %eax, 0x10e4(%esi)\n"
-        "leal 0x10e4(%esi), %eax\n" /* line 1340 */
-        "movl %eax, 0x3c(%edx)\n"
-        ".Lfd4686_000d4793:\n"
-        "addl $0x1c, %esp\n" /* line 1363 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd4686_000d479b:\n"
-        "movl 0x40(%edx), %eax\n" /* line 988 */
-        "cmpl 0x40(%ecx), %eax\n"
-        "jne .Lfd4686_000d4745\n"
-        "movl 0x38(%edx), %eax\n" /* line 990 */
-        "cmpl 0x38(%ecx), %eax\n"
-        "jne .Lfd4686_000d4745\n"
-        ".Lfd4686_000d47ab:\n"
-        "movl 0x1030(%esi), %ecx\n"
-        "movl 0x102c(%esi), %edx\n"
-        "movl 0x3c(%ecx), %ebx\n" /* line 986 */
-        "cmpl 0x3c(%edx), %ebx\n"
-        "jne .Lfd4686_000d4780\n"
-        ".Lfd4686_000d47bf:\n"
-        "movl 0x40(%ecx), %eax\n" /* line 988 */
-        "cmpl 0x40(%edx), %eax\n"
-        "je .Lfd4686_000d4822\n"
-        ".Lfd4686_000d47c7:\n"
-        "movl 0x1030(%esi), %edx\n"
-        "jmp .Lfd4686_000d4782\n"
-        ".Lfd4686_000d47cf:\n"
-        "movl $s_fillTestMaterials+4, %esi\n" /* line 1353 */
-        "movl $s_builtInMaterials+4, %edi\n"
-        "jmp .Lfd4686_000d47e6\n"
-        ".Lfd4686_000d47db:\n"
-        "addl $8, %esi\n" /* line 1325 */
-        "cmpl %esi, %edi\n" /* line 1320 */
-        "je .Lfd4686_000d4715\n"
-        ".Lfd4686_000d47e6:\n"
-        "movl (%esi), %ebx\n" /* line 1323 */
-        "movl $0, 4(%esp)\n"
-        "movl -4(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Material_Register\n"
-        "movl %eax, (%ebx)\n"
-        "movl (%esi), %eax\n" /* line 1324 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd4686_000d47db\n"
-        "movl -4(%esi), %eax\n" /* line 1325 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224548, 4(%esp)\n" /* "Could not find material '%s'" */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lfd4686_000d47db\n"
-        ".Lfd4686_000d4822:\n"
-        "movl 0x38(%ecx), %eax\n" /* line 990 */
-        "cmpl 0x38(%edx), %eax\n"
-        "jne .Lfd4686_000d47c7\n"
-        "jmp .Lfd4686_000d4793\n"
-    );
+    byte *rgp_ptr = (byte *)&rgp;
+
+    memset(materialGlobals, 0, 0x299c);
+    Material_PreLoadAllShaderText();
+
+    /* Register all built-in materials */
+    BuiltInMaterialTable *entry;
+    for (entry = s_builtInMaterials; entry < s_builtInMaterials_end; entry++) {
+        *(Material **)entry->material = Material_Register(entry->name, 0);
+        if (!*(Material **)entry->material)
+            Com_Error(0, "Could not find material '%s'", entry->name);
+    }
+
+    /* If fill-rate testing enabled, register fill-test materials */
+    if (*(byte *)(*(int *)imp_r_testFillEnable + 8)) {
+        for (entry = (BuiltInMaterialTable *)&s_fillTestMaterials; entry < s_builtInMaterials; entry++) {
+            *(Material **)entry->material = Material_Register(entry->name, 0);
+            if (!*(Material **)entry->material)
+                Com_Error(0, "Could not find material '%s'", entry->name);
+        }
+    }
+
+    /* Register $raw material and validate against $default */
+    Material *rawMaterial = Material_Register("$raw", 0);
+    *(Material **)(rgp_ptr + 0x1030) = rawMaterial; /* rgp.rawMaterial */
+    Material *defaultMaterial = *(Material **)(rgp_ptr + 0x102c); /* rgp.defaultMaterial */
+
+    /* First pass: check if raw material is compatible with default */
+    if (rawMaterial->textures != defaultMaterial->textures ||
+        rawMaterial->constants != defaultMaterial->constants ||
+        rawMaterial->techniqueSet != defaultMaterial->techniqueSet) {
+        if (rawMaterial->textureCount != 1) {
+            /* Incompatible: fall back to $default */
+            typedef void (*ri_Printf_fn)(int, const char *, ...);
+            ((ri_Printf_fn)(*(void **)imp_ri))(3, "$raw material is not compatible with $default");
+            rawMaterial = defaultMaterial;
+            *(Material **)(rgp_ptr + 0x1030) = defaultMaterial;
+        }
+    }
+
+    /* Reload pointers (may have changed after fallback) */
+    rawMaterial = *(Material **)(rgp_ptr + 0x1030);
+    defaultMaterial = *(Material **)(rgp_ptr + 0x102c);
+
+    /* Second pass: if textures/constants/techniqueSet still differ, copy technique data */
+    if (rawMaterial->textures != defaultMaterial->textures ||
+        rawMaterial->constants != defaultMaterial->constants ||
+        rawMaterial->techniqueSet != defaultMaterial->techniqueSet) {
+        /* Copy first entry from raw's textures to rgp fallback slot, redirect pointer */
+        *(int *)(rgp_ptr + 0x10e4) = *(int *)rawMaterial->textures;
+        rawMaterial->textures = (MaterialTextureDef *)(rgp_ptr + 0x10e4);
+    }
 }
 
 /* line 273 */

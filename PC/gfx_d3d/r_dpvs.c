@@ -127,6 +127,19 @@ static inline int R_CullByOccluders(int stackLevel, const float *bounds)
     return 1;
 }
 static void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel);
+static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, int planeCount, int stackLevel);
+
+/* Shared helper: far-corner test against AABB tree bounds (for plane reduction).
+ * Tests the corner OPPOSITE to what R_DpvsPlaneBoundsTest uses, allowing plane elimination
+ * when the far corner is in front. Uses (tree_base + component_offset - side[i]) access pattern. */
+static inline float R_DpvsPlaneFarBoundsTest(const DpvsPlane *plane, const GfxAabbTree *tree)
+{
+    byte *tp = (byte *)tree;
+    return plane->coeffs[0] * *(float *)(tp + 0x0C - plane->side[0])
+         + plane->coeffs[1] * *(float *)(tp + 0x14 - plane->side[1])
+         + plane->coeffs[2] * *(float *)(tp + 0x1C - plane->side[2])
+         + plane->coeffs[3];
+}
 static int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count);
 static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount);
 static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, DpvsClipChildren clipChildren);
@@ -666,408 +679,186 @@ void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int plane
     );
 }
 
-/* line 1088 */
+/* line 1088 — R_AddAabbTreeSurfaces_r
+ * Recursive AABB tree traversal for the DPVS visibility system.
+ * Three-phase culling: (1) near-corner frustum test, (2) occluder test,
+ * (3) far-corner plane reduction to eliminate planes for children.
+ * Actual calling convention: eax=tree, edx=planes, ecx=planeCount, stack=stackLevel */
+
+/* Helper: add a static model directly to the scene (no frustum/occluder culling) */
+static void R_AddStaticModelDirect(int smodelIndex)
+{
+    byte *rg_ptr = (byte *)&rg;
+    int *smodelDync = (int *)(*(int *)(rg_ptr + 0x3194) + smodelIndex * 8);
+    int viewCount = *(int *)imp_scene;
+
+    if (smodelDync[0] == viewCount)
+        return;
+    smodelDync[0] = viewCount;
+
+    byte *world = *(byte **)((byte *)&rgp + 0x109c);
+    GfxStaticModelInstance *inst = (GfxStaticModelInstance *)(*(byte **)(world + 0xf8) + smodelIndex * 96);
+
+    /* LOD distance check */
+    if (inst->cullDist != 0.0f) {
+        float dist = Vec3Distance(inst->origin, (const vec_t *)(rg_ptr + 0x317c));
+        float scaledDist = dist * *(float *)(rg_ptr + 0x3188) + *(float *)(rg_ptr + 0x318c);
+        if (scaledDist > inst->cullDist)
+            return;
+    }
+
+    /* Debug name display */
+    if (*(byte *)(*(int *)imp_r_showSModelNames + 8)) {
+        const char *name = XModelGetName(inst->model);
+        byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
+        R_AddDebugString(debugGlobals, inst->origin, (const void *)imp_colorWhite, 0.3f, name);
+    }
+
+    int entIndex = R_AddStaticModelToScene(smodelIndex);
+    if (entIndex < 0)
+        return;
+
+    byte *scene = (byte *)imp_scene;
+    byte *sceneEnt = scene + 0x5c4 + entIndex * 52;
+    byte *ent = *(byte **)(scene + 0x10) + entIndex * 116;
+    R_SkinStaticModel(sceneEnt, ent, smodelIndex);
+    *(int *)(sceneEnt + 0xc) = 5;
+    R_AddXModelSurfaces(entIndex);
+}
+
+/* Helper: add a world surface directly (no frustum culling, just frame check) */
+static void R_AddWorldSurfaceDirect(int surfIndex)
+{
+    int *surfVisData = *(int **)((byte *)&rg + 0x3198);
+    int viewCount = *(int *)imp_scene;
+    if (surfVisData[surfIndex] == viewCount)
+        return;
+    surfVisData[surfIndex] = viewCount;
+
+    byte *world = *(byte **)((byte *)&rgp + 0x109c);
+    GfxSurface *surfaces = *(GfxSurface **)(world + 0x14);
+    GfxSurface *surf = &surfaces[surfIndex];
+    R_AddDrawSurfForSurface(surf, surf->sortGroup + 0x800);
+}
+
+static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    float *bounds = (float *)tree; /* mins at +0, maxs at +0x0C */
+    int i;
+
+    /* Phase 1: Near-corner frustum cull — if near corner is behind any plane, entire tree is culled */
+    if (!R_CullByFrustumPlanes(planes, planeCount, stackLevel, bounds))
+        return;
+
+    /* Phase 2: Occluder cull — test near corner against each global occluder volume */
+    int occCount = *(int *)((byte *)&dpvsGlob + 56);
+    int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
+    for (i = 0; i < occCount; i++) {
+        byte *occ = (byte *)occTable[i];
+        if (stackLevel > *(int *)(occ + 0x18))
+            continue;
+        int occPlaneCount = *(int *)(occ + 0x1c);
+        DpvsPlane *occPlanes = *(DpvsPlane **)(occ + 0x20);
+        if (occPlaneCount <= 0)
+            return; /* degenerate occluder */
+        int occluded = 1;
+        int j;
+        for (j = 0; j < occPlaneCount; j++) {
+            DpvsPlane *op = &occPlanes[j];
+            if ((unsigned char)op->u.frontal > (unsigned)stackLevel) {
+                op->u.frontal = stackLevel;
+                continue;
+            }
+            op->u.frontal = 0xFF;
+            if (R_DpvsPlaneBoundsTest(op, bounds) > 0.0f)
+                occluded = 0;
+            else
+                op->u.frontal = stackLevel;
+        }
+        if (occluded)
+            return;
+    }
+
+    /* Phase 3: Far-corner plane reduction — test far corner to eliminate planes for children.
+     * If far corner is in front of a plane, that plane is fully satisfied for the entire subtree. */
+    int recursionNeeded = 0;
+    if (planeCount > 0) {
+        for (i = 0; i < planeCount; i++) {
+            DpvsPlane *p = &planes[i];
+            if ((unsigned char)p->u.frontal > (unsigned)stackLevel)
+                continue;
+            if (R_DpvsPlaneFarBoundsTest(p, tree) >= 0.0f)
+                p->u.frontal = stackLevel; /* plane satisfied — eliminate for children */
+            else
+                recursionNeeded = 1;
+        }
+    }
+
+    /* Check if any global occluder could still affect children */
+    if (!recursionNeeded) {
+        for (i = 0; i < occCount; i++) {
+            if (stackLevel <= *(int *)((byte *)occTable[i] + 0x18)) {
+                recursionNeeded = 1;
+                break;
+            }
+        }
+    }
+
+    /* Phase 4: Dispatch */
+    int childStackLevel = stackLevel + 1;
+
+    if (recursionNeeded) {
+        if (tree->childCount > 0) {
+            /* Internal node: recurse into child AABB trees */
+            for (i = 0; i < tree->childCount; i++) {
+                GfxAabbTree *child = (GfxAabbTree *)((byte *)(intptr_t)tree->children + i * sizeof(GfxAabbTree));
+                R_AddAabbTreeSurfaces_r_impl(child, planes, planeCount, childStackLevel);
+            }
+        } else {
+            /* Leaf node with culling needed */
+            byte smodelFlag = *(byte *)((byte *)&dpvsGlob + 102);
+
+            /* Add static models with per-model culling */
+            if (smodelFlag && tree->staticModelCount > 0) {
+                for (i = 0; i < tree->staticModelCount; i++)
+                    R_AddStaticModelWithCull_impl(tree->staticModels[i], (const DpvsPlane *)planes, planeCount, childStackLevel);
+            }
+
+            /* Add surfaces with per-surface culling */
+            for (i = 0; i < tree->surfaceCount; i++)
+                R_AddWorldSurfaceWithCull_impl(tree->startSurfIndex + i, (const DpvsPlane *)planes, planeCount, childStackLevel);
+        }
+    } else {
+        /* No further culling needed — add everything directly */
+        byte smodelFlag = *(byte *)((byte *)&dpvsGlob + 102);
+
+        /* Add static models without culling */
+        if (smodelFlag && tree->staticModelCount > 0) {
+            for (i = 0; i < tree->staticModelCount; i++)
+                R_AddStaticModelDirect(tree->staticModels[i]);
+        }
+
+        /* Add all surfaces directly (just frame check) */
+        for (i = 0; i < tree->surfaceCount; i++)
+            R_AddWorldSurfaceDirect(tree->startSurfIndex + i);
+    }
+}
+
+/* Trampoline: marshals (eax=tree, edx=planes, ecx=planeCount, stack=stackLevel) to cdecl */
 static __attribute__((naked))
 void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
-        ".Lfefa5c_000efa5c:\n"
-        "pushl %ebp\n" /* line 1088 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl %eax, %edi\n" /* tree */
-        "movl %edx, -0x3c(%ebp)\n"
-        "movl %ecx, -0x40(%ebp)\n"
-        "movl 8(%ebp), %esi\n" /* stackLevel */
-        /* { scope 1: occluded, occluderIndex, recursionNeeded, smodelIndex */
-        /* { scope 2 */
-        "testl %ecx, %ecx\n" /* line 415 */
-        "jle .Lfefa5c_000efad0\n"
-        "xorl %ecx, %ecx\n"
-        "pxor %xmm2, %xmm2\n"
-        ".Lfefa5c_000efa7a:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 417 */
-        "cmpl %eax, %esi\n"
-        "jg .Lfefa5c_000efac5\n"
-        "movb $0xff, 0x13(%edx)\n" /* line 419 */
-        "movzbl 0x10(%edx), %eax\n" /* line 51 */
-        "movss (%edx), %xmm1\n"
-        "mulss (%eax, %edi), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 52 */
-        "movss 4(%edx), %xmm0\n"
-        "mulss (%edi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 53 */
-        "movss 8(%edx), %xmm0\n"
-        "mulss (%edi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 0xc(%edx), %xmm1\n" /* line 420 */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfefa5c_000efc36\n"
-        ".Lfefa5c_000efac5:\n"
-        "addl $1, %ecx\n" /* line 415 */
-        "addl $0x14, %edx\n"
-        "cmpl %ecx, -0x40(%ebp)\n"
-        "jne .Lfefa5c_000efa7a\n"
-        ".Lfefa5c_000efad0:\n"
-        "movl dpvsGlob+56, %eax\n" /* line 424 */
-        "testl %eax, %eax\n"
-        "jle .Lfefa5c_000efb98\n"
-        "movl $0, -0x2c(%ebp)\n" /* occluderIndex */
-        "pxor %xmm3, %xmm3\n"
-        ".Lfefa5c_000efae8:\n"
-        "movl dpvsGlob+60, %eax\n" /* line 426 */
-        "movl -0x2c(%ebp), %edx\n" /* occluderIndex */
-        "movl (%eax, %edx, 4), %ecx\n"
-        "cmpl 0x18(%ecx), %esi\n" /* line 427 */
-        "jg .Lfefa5c_000efb85\n"
-        "movl 0x20(%ecx), %edx\n" /* line 430 */
-        "movl 0x1c(%ecx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jle .Lfefa5c_000efc36\n"
-        "xorl %ebx, %ebx\n"
-        "movb $1, -0x2d(%ebp)\n" /* occluded */
-        "movaps %xmm3, %xmm2\n"
-        "jmp .Lfefa5c_000efb25\n"
-        ".Lfefa5c_000efb15:\n"
-        "movl %esi, %eax\n" /* line 438 */
-        "movb %al, 0x13(%edx)\n"
-        ".Lfefa5c_000efb1a:\n"
-        "addl $1, %ebx\n" /* line 430 */
-        "addl $0x14, %edx\n"
-        "cmpl %ebx, 0x1c(%ecx)\n"
-        "jle .Lfefa5c_000efb7b\n"
-        ".Lfefa5c_000efb25:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 432 */
-        "cmpl %eax, %esi\n"
-        "jg .Lfefa5c_000efb1a\n"
-        "movb $0xff, 0x13(%edx)\n" /* line 434 */
-        /* { scope 3 */
-        "movzbl 0x10(%edx), %eax\n" /* line 51 */
-        "movss (%edx), %xmm1\n"
-        "mulss (%eax, %edi), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 52 */
-        "movss 4(%edx), %xmm0\n"
-        "mulss (%edi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 53 */
-        "movss 8(%edx), %xmm0\n"
-        "mulss (%edi, %eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        /* } scope */
-        "addss 0xc(%edx), %xmm1\n" /* line 435 */
-        "ucomiss %xmm2, %xmm1\n"
-        "jbe .Lfefa5c_000efb15\n"
-        "movb $0, -0x2d(%ebp)\n" /* occluded */
-        "addl $1, %ebx\n" /* line 430 */
-        "addl $0x14, %edx\n"
-        "cmpl %ebx, 0x1c(%ecx)\n"
-        "jg .Lfefa5c_000efb25\n"
-        ".Lfefa5c_000efb7b:\n"
-        "cmpb $0, -0x2d(%ebp)\n" /* line 440 | occluded */
-        "jne .Lfefa5c_000efc36\n"
-        ".Lfefa5c_000efb85:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 424 | occluderIndex */
-        "movl -0x2c(%ebp), %edx\n" /* occluderIndex */
-        "cmpl %edx, dpvsGlob+56\n"
-        "jg .Lfefa5c_000efae8\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfefa5c_000efb98:\n"
-        "movl -0x40(%ebp), %eax\n" /* line 457 */
-        "testl %eax, %eax\n"
-        "jle .Lfefa5c_000efc3e\n"
-        /* } scope */
-        "movl -0x3c(%ebp), %edx\n" /* line 1097 */
-        "xorl %ecx, %ecx\n"
-        "movb $0, -0x4d(%ebp)\n" /* recursionNeeded */
-        "pxor %xmm2, %xmm2\n"
-        "jmp .Lfefa5c_000efbc2\n"
-        /* { scope 2 */
-        ".Lfefa5c_000efbb2:\n"
-        "movl %esi, %eax\n" /* line 463 */
-        "movb %al, 0x13(%edx)\n"
-        ".Lfefa5c_000efbb7:\n"
-        "addl $1, %ecx\n" /* line 457 */
-        "addl $0x14, %edx\n"
-        "cmpl %ecx, -0x40(%ebp)\n"
-        "je .Lfefa5c_000efc20\n"
-        ".Lfefa5c_000efbc2:\n"
-        "movzbl 0x13(%edx), %eax\n" /* line 459 */
-        "cmpl %eax, %esi\n"
-        "jg .Lfefa5c_000efbb7\n"
-        "movzbl 0x10(%edx), %eax\n" /* line 64 */
-        "movl %edi, %ebx\n"
-        "subl %eax, %ebx\n"
-        "movss (%edx), %xmm1\n"
-        "mulss 0xc(%ebx), %xmm1\n"
-        "movzbl 0x11(%edx), %eax\n" /* line 65 */
-        "movl %edi, %ebx\n"
-        "subl %eax, %ebx\n"
-        "movss 4(%edx), %xmm0\n"
-        "mulss 0x14(%ebx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movzbl 0x12(%edx), %eax\n" /* line 66 */
-        "movl %edi, %ebx\n"
-        "subl %eax, %ebx\n"
-        "movss 8(%edx), %xmm0\n"
-        "mulss 0x1c(%ebx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss 0xc(%edx), %xmm1\n" /* line 462 */
-        "ucomiss %xmm1, %xmm2\n"
-        "jbe .Lfefa5c_000efbb2\n"
-        "movb $1, -0x4d(%ebp)\n" /* recursionNeeded */
-        "addl $1, %ecx\n" /* line 457 */
-        "addl $0x14, %edx\n"
-        "cmpl %ecx, -0x40(%ebp)\n"
-        "jne .Lfefa5c_000efbc2\n"
-        ".Lfefa5c_000efc20:\n"
-        "cmpb $0, -0x4d(%ebp)\n" /* line 467 | recursionNeeded */
-        "je .Lfefa5c_000efc3e\n"
-        /* } scope */
-        ".Lfefa5c_000efc26:\n"
-        "cmpl $0, 0x28(%edi)\n" /* line 1121 | tree */
-        "je .Lfefa5c_000efd8e\n"
-        "jg .Lfefa5c_000efddb\n" /* line 1123 */
-        /* } scope */
-        ".Lfefa5c_000efc36:\n"
-        "addl $0x6c, %esp\n" /* line 1142 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_AddAabbTreeSurfaces_r_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: occluded, occluderIndex, recursionNeeded, smodelIndex */
-        /* { scope 2 */
-        ".Lfefa5c_000efc3e:\n"
-        "movl dpvsGlob+56, %ecx\n" /* line 470 */
-        "testl %ecx, %ecx\n"
-        "jle .Lfefa5c_000efc68\n"
-        "movl dpvsGlob+60, %ebx\n" /* line 472 */
-        "movl (%ebx), %eax\n" /* line 473 */
-        "cmpl 0x18(%eax), %esi\n"
-        "jle .Lfefa5c_000efc26\n"
-        "xorl %edx, %edx\n"
-        "jmp .Lfefa5c_000efc61\n"
-        ".Lfefa5c_000efc59:\n"
-        "movl (%ebx, %edx, 4), %eax\n"
-        "cmpl 0x18(%eax), %esi\n"
-        "jle .Lfefa5c_000efc26\n"
-        ".Lfefa5c_000efc61:\n"
-        "addl $1, %edx\n" /* line 470 */
-        "cmpl %ecx, %edx\n"
-        "jne .Lfefa5c_000efc59\n"
-        /* } scope */
-        ".Lfefa5c_000efc68:\n"
-        "cmpb $0, dpvsGlob+102\n" /* line 1107 */
-        "je .Lfefa5c_000efe0b\n"
-        "movl 0x20(%edi), %eax\n" /* line 1109 | tree */
-        "testl %eax, %eax\n"
-        "jle .Lfefa5c_000efe0b\n"
-        "movl $0, -0x34(%ebp)\n" /* smodelChildIndex */
-        "movl -0x34(%ebp), %edx\n" /* smodelChildIndex */
-        "jmp .Lfefa5c_000efd05\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfefa5c_000efc8c:\n"
-        "movl imp_r_showSModelNames, %eax\n" /* line 1568 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfefa5c_000efeba\n"
-        ".Lfefa5c_000efc9d:\n"
-        "movl -0x28(%ebp), %ebx\n" /* line 1571 | smodelIndex, sceneEnt */
-        "movl %ebx, (%esp)\n" /* sceneEnt */
-        "calll R_AddStaticModelToScene\n"
-        "movl %eax, %esi\n" /* entIndex */
-        "testl %eax, %eax\n" /* line 1572 */
-        "js .Lfefa5c_000efcf5\n"
-        "leal (%eax, %eax, 2), %ebx\n" /* line 1575 | sceneEnt */
-        "leal (%eax, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl imp_scene, %edx\n"
-        "leal 0x5c4(%edx, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl -0x28(%ebp), %eax\n" /* line 1576 | smodelIndex */
-        "movl %eax, 8(%esp)\n"
-        "leal (, %esi, 8), %eax\n"
-        "subl %esi, %eax\n" /* entIndex */
-        "leal (%esi, %eax, 4), %eax\n" /* entIndex */
-        "movl 0x10(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* sceneEnt */
-        "calll R_SkinStaticModel\n"
-        "movl $5, 0xc(%ebx)\n" /* line 1577 | sceneEnt */
-        "movl %esi, (%esp)\n" /* line 1578 | entIndex */
-        "calll R_AddXModelSurfaces\n"
-        /* } scope */
-        /* } scope */
-        ".Lfefa5c_000efcf5:\n"
-        "addl $1, -0x34(%ebp)\n" /* line 1109 | smodelChildIndex */
-        "movl -0x34(%ebp), %edx\n" /* smodelChildIndex */
-        "cmpl %edx, 0x20(%edi)\n" /* tree */
-        "jle .Lfefa5c_000efe0b\n"
-        ".Lfefa5c_000efd05:\n"
-        "movl 0x24(%edi), %eax\n" /* line 1110 | tree */
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl %eax, -0x28(%ebp)\n" /* smodelIndex */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl imp_rg, %esi\n" /* line 1549 | entIndex */
-        "movl 0x3194(%esi), %eax\n" /* entIndex */
-        "movl -0x28(%ebp), %ecx\n" /* smodelIndex */
-        "leal (%eax, %ecx, 8), %edx\n"
-        "movl imp_scene, %eax\n" /* line 1550 */
-        "movl (%eax), %eax\n"
-        "cmpl %eax, (%edx)\n"
-        "je .Lfefa5c_000efcf5\n"
-        "movl %eax, (%edx)\n" /* line 1552 */
-        "movl imp_rgp, %eax\n" /* line 1554 */
-        "movl 0x109c(%eax), %eax\n"
-        "leal (%ecx, %ecx, 2), %ebx\n" /* sceneEnt */
-        "shll $5, %ebx\n" /* sceneEnt */
-        "addl 0xf8(%eax), %ebx\n" /* sceneEnt */
-        "pxor %xmm0, %xmm0\n" /* line 1555 */
-        "ucomiss (%ebx), %xmm0\n" /* sceneEnt */
-        "jp .Lfefa5c_000efd53\n"
-        "je .Lfefa5c_000efc8c\n"
-        ".Lfefa5c_000efd53:\n"
-        "leal 0x317c(%esi), %eax\n" /* line 1558 | entIndex */
-        "movl %eax, 4(%esp)\n"
-        "leal 4(%ebx), %eax\n" /* sceneEnt */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Distance\n"
-        "fstps -0x4c(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm0\n"
-        "mulss 0x3188(%esi), %xmm0\n" /* line 1559 | entIndex */
-        "addss 0x318c(%esi), %xmm0\n" /* entIndex */
-        "ucomiss (%ebx), %xmm0\n" /* sceneEnt */
-        "ja .Lfefa5c_000efcf5\n"
-        "jmp .Lfefa5c_000efc8c\n"
-        /* } scope */
-        /* } scope */
-        ".Lfefa5c_000efd8e:\n"
-        "cmpb $0, dpvsGlob+102\n" /* line 1133 */
-        "je .Lfefa5c_000efda2\n"
-        "movl 0x20(%edi), %eax\n" /* line 1135 | tree */
-        "testl %eax, %eax\n"
-        "jg .Lfefa5c_000efe8a\n"
-        ".Lfefa5c_000efda2:\n"
-        "movl 0x1c(%edi), %ebx\n" /* line 1139 | tree, surfIndex */
-        "movl 0x18(%edi), %eax\n" /* tree */
-        "testl %eax, %eax\n"
-        "jle .Lfefa5c_000efc36\n"
-        "addl $1, %esi\n" /* childIndex */
-        "movl %esi, -0x1c(%ebp)\n" /* childIndex */
-        "xorl %esi, %esi\n" /* childIndex */
-        ".Lfefa5c_000efdb8:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1140 */
-        "movl %eax, (%esp)\n"
-        "movl -0x40(%ebp), %ecx\n"
-        "movl -0x3c(%ebp), %edx\n"
-        "movl %ebx, %eax\n" /* surfIndex */
-        "calll R_AddWorldSurfaceWithCull\n"
-        "addl $1, %esi\n" /* line 1139 | childIndex */
-        "addl $1, %ebx\n" /* surfIndex */
-        "cmpl 0x18(%edi), %esi\n" /* tree, childIndex */
-        "jl .Lfefa5c_000efdb8\n"
-        "jmp .Lfefa5c_000efc36\n"
-        ".Lfefa5c_000efddb:\n"
-        "addl $1, %esi\n" /* line 1123 | childIndex */
-        "movl %esi, -0x24(%ebp)\n" /* childIndex */
-        "xorl %esi, %esi\n" /* childIndex */
-        "xorl %ebx, %ebx\n" /* surfIndex */
-        ".Lfefa5c_000efde5:\n"
-        "movl %ebx, %eax\n" /* line 1124 | surfIndex */
-        "addl 0x2c(%edi), %eax\n" /* tree */
-        "movl -0x24(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "movl -0x40(%ebp), %ecx\n"
-        "movl -0x3c(%ebp), %edx\n"
-        "calll R_AddAabbTreeSurfaces_r\n"
-        "addl $1, %esi\n" /* line 1123 | childIndex */
-        "addl $0x30, %ebx\n" /* surfIndex */
-        "cmpl 0x28(%edi), %esi\n" /* tree, childIndex */
-        "jl .Lfefa5c_000efde5\n"
-        "jmp .Lfefa5c_000efc36\n"
-        ".Lfefa5c_000efe0b:\n"
-        "movl 0x1c(%edi), %eax\n" /* line 1113 | tree */
-        "movl 0x18(%edi), %edx\n" /* tree */
-        "testl %edx, %edx\n"
-        "jle .Lfefa5c_000efc36\n"
-        "leal (, %eax, 4), %ebx\n" /* line 1088 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "leal (, %eax, 4), %esi\n" /* stackLevel */
-        "movl $0, -0x38(%ebp)\n" /* surfNodeIndex */
-        ".Lfefa5c_000efe31:\n"
-        "movl %ebx, %edx\n" /* line 1115 | surfIndex */
-        "movl imp_rg, %ecx\n"
-        "addl 0x3198(%ecx), %edx\n"
-        "movl imp_scene, %ecx\n"
-        "movl (%ecx), %eax\n"
-        "cmpl %eax, (%edx)\n"
-        "je .Lfefa5c_000efe73\n"
-        /* { scope 2 */
-        "movl %eax, (%edx)\n" /* line 580 */
-        "movl imp_rgp, %edx\n" /* line 581 */
-        "movl 0x109c(%edx), %eax\n"
-        "movl %esi, %edx\n"
-        "addl 0x14(%eax), %edx\n"
-        "movzwl 6(%edx), %eax\n" /* line 584 */
-        "addl $0x800, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll R_AddDrawSurfForSurface\n"
-        /* } scope */
-        ".Lfefa5c_000efe73:\n"
-        "addl $1, -0x38(%ebp)\n" /* line 1113 | surfNodeIndex */
-        "addl $4, %ebx\n" /* surfIndex */
-        "addl $0xc, %esi\n" /* childIndex */
-        "movl -0x38(%ebp), %ecx\n" /* surfNodeIndex */
-        "cmpl 0x18(%edi), %ecx\n" /* tree */
-        "jl .Lfefa5c_000efe31\n"
-        "jmp .Lfefa5c_000efc36\n"
-        ".Lfefa5c_000efe8a:\n"
-        "leal 1(%esi), %edx\n" /* line 1135 | childIndex */
-        "movl %edx, -0x20(%ebp)\n"
-        "xorl %ebx, %ebx\n" /* surfIndex */
-        "movl %edx, %ecx\n"
-        "jmp .Lfefa5c_000efe99\n"
-        ".Lfefa5c_000efe96:\n"
-        "movl -0x20(%ebp), %ecx\n"
-        ".Lfefa5c_000efe99:\n"
-        "movl 0x24(%edi), %eax\n" /* line 1136 | tree */
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "movl -0x40(%ebp), %ecx\n"
-        "movl -0x3c(%ebp), %edx\n"
-        "calll R_AddStaticModelWithCull\n"
-        "addl $1, %ebx\n" /* line 1135 | surfIndex */
-        "cmpl 0x20(%edi), %ebx\n" /* tree, surfIndex */
-        "jl .Lfefa5c_000efe96\n"
-        "jmp .Lfefa5c_000efda2\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfefa5c_000efeba:\n"
-        "movl 0x10(%ebx), %eax\n" /* line 1569 | sceneEnt */
-        "movl %eax, (%esp)\n"
-        "calll XModelGetName\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0x3e99999a, 0xc(%esp)\n"
-        "movl imp_colorWhite, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 4(%ebx), %eax\n" /* sceneEnt */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_frontEndDataOut, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %eax, (%esp)\n"
-        "calll R_AddDebugString\n"
-        "jmp .Lfefa5c_000efc9d\n"
     );
 }
 
