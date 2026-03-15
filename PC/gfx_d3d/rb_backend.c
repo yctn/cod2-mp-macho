@@ -9041,9 +9041,173 @@ done:
 }
 #endif
 
-/* line 2211 */
-static __attribute__((naked))
-void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
+/* line 2211 — Point sprite rendering: creates axis-aligned billboard quads for each point.
+ * Two paths: 2D (screen coords) or 3D (viewProjection transform with screen-space size). */
+static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
+{
+    char *t = (char *)&tess;
+    const byte *cmd = (const byte *)execState->cmd;
+    const Material *debugMtl = *(const Material **)((char *)imp_rgp + 0x1038);
+    short pointCount = *(short *)(cmd + 4);
+    float size = (float)(short)*(short *)(cmd + 6) * 0.5f;
+    const byte *verts = cmd + 8;
+    int isDx7, pointIndex;
+
+    /* Begin surface with debug material */
+    if (debugMtl != *(const Material **)(t + 0x5a7bc) ||
+        *(int *)(t + 0x5a7c0) != 3) {
+        if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+            RB_EndSurface();
+        RB_BeginSurface(debugMtl, 3, 0x1f);
+    }
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    if (*(byte *)((char *)&backEnd + 1213)) {
+        /* === 3D path: transform through viewProjection matrix === */
+        float identity[16];
+        float invWidth, invHeight;
+        const float *row0, *row1, *row2, *row3;
+        char *vp = *(char **)((char *)&backEnd + 968);
+
+        MatrixIdentity44(identity);
+        RB_SetProjectionMatrix(identity);
+        RB_SetViewMatrix(identity);
+
+        row0 = (const float *)(vp + 0xc8);
+        row1 = (const float *)(vp + 0xd8);
+        row2 = (const float *)(vp + 0xe8);
+        row3 = (const float *)(vp + 0xf8);
+        {
+            float fSize = (float)(short)*(short *)(cmd + 6);
+            char *dxSt = (char *)imp_dxState;
+            invWidth = fSize / (float)*(int *)(dxSt + 0x209c);
+            invHeight = fSize / (float)*(int *)(dxSt + 0x20a0);
+        }
+
+        for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+            const float *xyz = (const float *)(verts + pointIndex * 16);
+            D3DCOLOR color = *(D3DCOLOR *)(verts + pointIndex * 16 + 12);
+            float cx, cy, cz, cw, ox, oy;
+            int vc, ic;
+            r_index_t *indices;
+
+            /* Transform to clip space */
+            cx = xyz[0]*row0[0] + xyz[1]*row1[0] + xyz[2]*row2[0] + row3[0];
+            cy = xyz[0]*row0[1] + xyz[1]*row1[1] + xyz[2]*row2[1] + row3[1];
+            cz = xyz[0]*row0[2] + xyz[1]*row1[2] + xyz[2]*row2[2] + row3[2];
+            cw = xyz[0]*row0[3] + xyz[1]*row1[3] + xyz[2]*row2[3] + row3[3];
+            ox = cw * invWidth;
+            oy = cw * invHeight;
+
+            /* Check tess overflow */
+            vc = RB_CheckTessOverflow4(t);
+            ic = *(int *)(t + 0x5a7d0);
+
+            /* Indices: (vc+1, vc, vc+2, vc+2, vc, vc+3) */
+            indices = *(r_index_t **)(t + 0x5a7b0);
+            indices[ic+0] = (r_index_t)(vc+1); indices[ic+1] = (r_index_t)vc;
+            indices[ic+2] = (r_index_t)(vc+2); indices[ic+3] = (r_index_t)(vc+2);
+            indices[ic+4] = (r_index_t)vc;     indices[ic+5] = (r_index_t)(vc+3);
+            *(int *)(t + 0x5a7d0) += 6;
+
+            /* 4 vertices: quad corners at clip ± offset */
+            if (isDx7) {
+                char *v;
+                v=t+(vc+0)*36; *(float*)(v+0)=(cx-ox)/cw; *(float*)(v+4)=(cy-oy)/cw; *(float*)(v+8)=cz/cw;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(int*)(v+28)=0; *(int*)(v+32)=0;
+                v=t+(vc+1)*36; *(float*)(v+0)=(cx-ox)/cw; *(float*)(v+4)=(cy+oy)/cw; *(float*)(v+8)=cz/cw;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(int*)(v+28)=0; *(float*)(v+32)=1.0f;
+                v=t+(vc+2)*36; *(float*)(v+0)=(cx+ox)/cw; *(float*)(v+4)=(cy+oy)/cw; *(float*)(v+8)=cz/cw;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(float*)(v+28)=1.0f; *(float*)(v+32)=1.0f;
+                v=t+(vc+3)*36; *(float*)(v+0)=(cx+ox)/cw; *(float*)(v+4)=(cy-oy)/cw; *(float*)(v+8)=cz/cw;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(float*)(v+28)=1.0f; *(int*)(v+32)=0;
+            } else {
+                char *v;
+                v=t+(vc+0)*64; *(float*)(v+0)=cx-ox; *(float*)(v+4)=cy-oy; *(float*)(v+8)=cz; *(float*)(v+12)=cw;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(int*)(v+32)=0; *(int*)(v+36)=0; *(int*)(v+40)=0; *(float*)(v+44)=0.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+1)*64; *(float*)(v+0)=cx-ox; *(float*)(v+4)=cy+oy; *(float*)(v+8)=cz; *(float*)(v+12)=cw;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(int*)(v+32)=0; *(float*)(v+36)=1.0f; *(int*)(v+40)=0; *(float*)(v+44)=1.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+2)*64; *(float*)(v+0)=cx+ox; *(float*)(v+4)=cy+oy; *(float*)(v+8)=cz; *(float*)(v+12)=cw;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(float*)(v+32)=1.0f; *(float*)(v+36)=1.0f; *(float*)(v+40)=1.0f; *(float*)(v+44)=1.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+3)*64; *(float*)(v+0)=cx+ox; *(float*)(v+4)=cy-oy; *(float*)(v+8)=cz; *(float*)(v+12)=cw;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(float*)(v+32)=1.0f; *(int*)(v+36)=0; *(float*)(v+40)=1.0f; *(int*)(v+44)=0; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+            }
+            *(int *)(t + 0x5a7d4) += 4;
+        }
+
+        RB_EndSurface();
+        RB_SetMatricesForView(*(void **)((char *)&backEnd + 968));
+    } else {
+        /* === 2D path: render points in screen coordinates === */
+        for (pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+            const float *xyz = (const float *)(verts + pointIndex * 16);
+            D3DCOLOR color = *(D3DCOLOR *)(verts + pointIndex * 16 + 12);
+            float px = xyz[0], py = xyz[1];
+            int pz_i = *(int *)(xyz + 2); /* z as raw int bits */
+            int vc, ic;
+            r_index_t *indices;
+
+            vc = RB_CheckTessOverflow4(t);
+            ic = *(int *)(t + 0x5a7d0);
+
+            indices = *(r_index_t **)(t + 0x5a7b0);
+            indices[ic+0] = (r_index_t)(vc+1); indices[ic+1] = (r_index_t)vc;
+            indices[ic+2] = (r_index_t)(vc+2); indices[ic+3] = (r_index_t)(vc+2);
+            indices[ic+4] = (r_index_t)vc;     indices[ic+5] = (r_index_t)(vc+3);
+            *(int *)(t + 0x5a7d0) += 6;
+
+            if (isDx7) {
+                char *v;
+                v=t+(vc+0)*36; *(float*)(v+0)=px-size; *(float*)(v+4)=py-size; *(int*)(v+8)=pz_i;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(int*)(v+28)=0; *(int*)(v+32)=0;
+                v=t+(vc+1)*36; *(float*)(v+0)=px-size; *(float*)(v+4)=py+size; *(int*)(v+8)=pz_i;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(int*)(v+28)=0; *(float*)(v+32)=1.0f;
+                v=t+(vc+2)*36; *(float*)(v+0)=px+size; *(float*)(v+4)=py+size; *(int*)(v+8)=pz_i;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(float*)(v+28)=1.0f; *(float*)(v+32)=1.0f;
+                v=t+(vc+3)*36; *(float*)(v+0)=px+size; *(float*)(v+4)=py-size; *(int*)(v+8)=pz_i;
+                *(int*)(v+12)=0; *(int*)(v+16)=0; *(float*)(v+20)=1.0f; *(D3DCOLOR*)(v+24)=color; *(float*)(v+28)=1.0f; *(int*)(v+32)=0;
+            } else {
+                char *v;
+                v=t+(vc+0)*64; *(float*)(v+0)=px-size; *(float*)(v+4)=py-size; *(int*)(v+8)=pz_i; *(float*)(v+12)=1.0f;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(int*)(v+32)=0; *(int*)(v+36)=0; *(int*)(v+40)=0; *(float*)(v+44)=0.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+1)*64; *(float*)(v+0)=px-size; *(float*)(v+4)=py+size; *(int*)(v+8)=pz_i; *(float*)(v+12)=1.0f;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(int*)(v+32)=0; *(float*)(v+36)=1.0f; *(int*)(v+40)=0; *(float*)(v+44)=1.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+2)*64; *(float*)(v+0)=px+size; *(float*)(v+4)=py+size; *(int*)(v+8)=pz_i; *(float*)(v+12)=1.0f;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(float*)(v+32)=1.0f; *(float*)(v+36)=1.0f; *(float*)(v+40)=1.0f; *(float*)(v+44)=1.0f; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+                v=t+(vc+3)*64; *(float*)(v+0)=px+size; *(float*)(v+4)=py-size; *(int*)(v+8)=pz_i; *(float*)(v+12)=1.0f;
+                *(int*)(v+16)=0; *(int*)(v+20)=0; *(float*)(v+24)=1.0f; *(D3DCOLOR*)(v+28)=color;
+                *(float*)(v+32)=1.0f; *(int*)(v+36)=0; *(float*)(v+40)=1.0f; *(int*)(v+44)=0; *(int*)(v+48)=0;
+                *(float*)(v+52)=1.0f; *(int*)(v+56)=0; *(int*)(v+60)=0;
+            }
+            *(int *)(t + 0x5a7d4) += 4;
+        }
+
+        RB_EndSurface();
+    }
+
+    /* Advance command pointer */
+    {
+        const byte *c = (const byte *)execState->cmd;
+        execState->cmd = c + *(unsigned short *)(c + 2);
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2211 */
@@ -10072,3 +10236,4 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfdd8e2_000dde99\n"
     );
 }
+#endif /* original naked RB_DrawPointsCmd */
