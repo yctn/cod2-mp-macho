@@ -186,6 +186,11 @@ extern void RB_PushMatrixStack(void);
 extern void RB_PopMatrixStack(void);
 extern float Vec2Normalize(float *v);
 extern float Vec3Normalize(float *v);
+extern void R_DecomposeSort(unsigned int sortKey, int *entityIndex, const Material **material, int *lightmap);
+extern void RB_SetDepthRange(float near, float far);
+extern void RB_SetDepthHackNearClip(float nearClip);
+extern void RB_SetWorldMatrixForEntity(const void *entity);
+extern int RB_FogOffset(void);
 extern Glyph *R_GetCharacterGlyph(FontHandle font, int charCode);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
@@ -329,7 +334,8 @@ static void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState);
 static void RB_BeginViewCmd(GfxRenderCommandExecState *execState);
 static void RB_SetViewportCmd(GfxRenderCommandExecState *execState);
 static void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState);
-static void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechniqueType techType, GfxDrawSurfOrder order);
+static void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount,
+                                   MaterialTechniqueType techType, GfxDrawSurfOrder order);
 static void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState);
 static void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState);
 static void RB_Set2D(void);
@@ -340,6 +346,7 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState);
 void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts);
 void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, const vec_t *xPixelStep, const vec_t *yPixelStep, D3DCOLOR color);
 static void RB_DrawTextInSpaceCmd(GfxRenderCommandExecState *execState);
+static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueType techType);
 static float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType);
 void RB_DrawStretchPic(const Material *material, float x, float y, float w, float h, float s0, float t0, float s1, float t1, D3DCOLOR color, GfxPrimStatsTarget statsTarget);
 static void RB_StretchPicCmd(GfxRenderCommandExecState *execState);
@@ -1554,501 +1561,368 @@ static void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
     *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
-/* line 936 */
+/* line 936 — Core draw surface rendering loop: iterates sorted draw surfaces,
+ * manages entity/material/technique state transitions, dispatches to tessellation. */
 int rb_rdsl_diag = 0;
 int rb_rdsl_call_count = 0;
-__attribute__((naked))
-void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechniqueType techType, GfxDrawSurfOrder order)
+static void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount,
+                                   MaterialTechniqueType techType, GfxDrawSurfOrder order)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 936 */
-        "movl %esp, %ebp\n"
-        "incl rb_rdsl_call_count\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1: radians, w, z */
-        "movl $backEnd+1096, backEnd+1088\n" /* line 995 */
-        "movl $0, backEnd+1092\n" /* line 996 */
-        "movl 0x14(%ebp), %edi\n" /* line 1002 | order, drawSurf */
-        "testl %edi, %edi\n" /* drawSurf */
-        "jne .Lfd5f2e_000d61aa\n"
-        "movl 8(%ebp), %edi\n" /* drawSurfs, drawSurf */
-        "movl $1, %eax\n"
-        ".Lfd5f2e_000d5f5e:\n"
-        "movl 0xc(%ebp), %esi\n" /* line 1014 | drawSurfCount */
-        "testl %esi, %esi\n"
-        "jg .Lfd5f2e_000d5ff6\n"
-        "movb $1, -0x5a(%ebp)\n" /* isWorldSpaceEntPrev */
-        "movl $0, -0x54(%ebp)\n" /* depthRange */
-        ".Lfd5f2e_000d5f74:\n"
-        "movl tess+370640, %ebx\n" /* line 261 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfd5f2e_000d5fb6\n"
-        "movl tess+370656, %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfd5f2e_000d5fb6\n"
-        "movl -0x54(%ebp), %edx\n" /* line 1158 | depthRange */
-        "testl %edx, %edx\n"
-        "jne .Lfd5f2e_000d5fc2\n"
-        ".Lfd5f2e_000d5f8f:\n"
-        "cmpb $0, -0x5a(%ebp)\n" /* line 1165 | isWorldSpaceEntPrev */
-        "jne .Lfd5f2e_000d5f9a\n"
-        "calll RB_PopMatrixStack\n" /* line 1166 */
-        ".Lfd5f2e_000d5f9a:\n"
-        "movl $0, backEnd+1088\n" /* line 1169 */
-        "movl $0, backEnd+1092\n" /* line 1170 */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 1173 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: radians, w, z */
-        ".Lfd5f2e_000d5fb6:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl -0x54(%ebp), %edx\n" /* line 1158 | depthRange */
-        "testl %edx, %edx\n"
-        "je .Lfd5f2e_000d5f8f\n"
-        ".Lfd5f2e_000d5fc2:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 1160 */
-        "movl $0, (%esp)\n"
-        "calll RB_SetDepthRange\n"
-        "cmpl $8, -0x54(%ebp)\n" /* line 1161 | depthRange */
-        "jne .Lfd5f2e_000d5f8f\n"
-        "movl backEnd+968, %eax\n" /* line 1162 */
-        "movl 0xc0(%eax), %eax\n"
-        "xorl $0x80000000, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetDepthHackNearClip\n"
-        "jmp .Lfd5f2e_000d5f8f\n"
-        ".Lfd5f2e_000d5ff6:\n"
-        "shll $3, %eax\n" /* line 1014 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x10(%ebp), %eax\n" /* techType */
-        "movl %eax, -0x3c(%ebp)\n" /* actualTechTypePrev */
-        "movl $0, -0x64(%ebp)\n" /* materialPrev */
-        "movl $0x1f, -0x60(%ebp)\n" /* lightmapPrev */
-        "movb $0, -0x5c(%ebp)\n" /* ignoreSurfs */
-        "movb $1, -0x5b(%ebp)\n" /* isWorldSpaceEnt */
-        "movl $0x7fe, -0x58(%ebp)\n" /* entityIndexPrev */
-        "movl $0, -0x50(%ebp)\n" /* depthRangePrev */
-        "movl $0xffffffff, -0x48(%ebp)\n" /* prevSort */
-        "pxor %xmm0, %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n" /* materialTime */
-        "movss lit4_002ed684, %xmm0\n" /* 3.4028234663852886e+38f */
-        "movss %xmm0, -0x40(%ebp)\n" /* materialTimePrev */
-        "movl $0, -0x4c(%ebp)\n" /* iteration */
-        "movl $0, -0x54(%ebp)\n" /* depthRange */
-        "movb $1, -0x5a(%ebp)\n" /* isWorldSpaceEntPrev */
-        "movl (%edi), %eax\n" /* line 1016 | drawSurf */
-        "cmpl -0x48(%ebp), %eax\n" /* prevSort */
-        "je .Lfd5f2e_000d610b\n"
-        ".Lfd5f2e_000d6060:\n"
-        "incl g_rdsl_sortchange\n"
-        "movl %eax, -0x48(%ebp)\n" /* line 1027 | prevSort */
-        "leal -0x20(%ebp), %eax\n" /* line 1028 | lightmap */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* material */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* entityIndex */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x48(%ebp), %eax\n" /* prevSort */
-        "movl %eax, (%esp)\n"
-        "calll R_DecomposeSort\n"
-        "movl -0x24(%ebp), %edx\n" /* line 1029 | entityIndex */
-        "movl -0x20(%ebp), %eax\n" /* lightmap, lmapIndex */
-        /* { scope 2 */
-        /* { scope 3 */
-        "cmpl $6, 0x10(%ebp)\n" /* line 881 | techType */
-        "je .Lfd5f2e_000d6168\n"
-        ".Lfd5f2e_000d6093:\n"
-        "movl imp_r_depthPrepassModels, %eax\n" /* line 892 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd5f2e_000d60ad\n"
-        "movl 0x10(%ebp), %ebx\n" /* techType */
-        "testl %ebx, %ebx\n"
-        "je .Lfd5f2e_000d6122\n"
-        "cmpl $2, 0x10(%ebp)\n" /* techType */
-        "je .Lfd5f2e_000d6122\n"
-        ".Lfd5f2e_000d60ad:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 900 | techType */
-        "subl $3, %eax\n"
-        "movl 0x10(%ebp), %ebx\n" /* techType */
-        "cmpl $0x17, %eax\n" /* line 905 */
-        "jbe .Lfd5f2e_000d619e\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd5f2e_000d60bf:\n"
-        "incl g_rdsl_bf_entry\n"
-        "movl -0x1c(%ebp), %esi\n" /* line 1032 | material */
-        "movl imp_r_drawDecals, %eax\n" /* line 917 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfd5f2e_000d60d5\n"
-        "testb $0x30, 0x30(%esi)\n"
-        "je .Lfd5f2e_000d60d5\n"
-        "incl g_rdsl_ignore_decal\n"
-        "jmp .Lfd5f2e_000d60e9\n"
-        ".Lfd5f2e_000d60d5:\n"
-        "cmpl $-1, %ebx\n" /* line 926 */
-        "jne .Lfd5f2e_000d60d5b\n"
-        "incl g_rdsl_ignore_techm1\n"
-        "jmp .Lfd5f2e_000d60e9\n"
-        ".Lfd5f2e_000d60d5b:\n"
-        "movl 0x38(%esi), %eax\n" /* line 929 */
-        "movl 4(%eax, %ebx, 4), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lfd5f2e_000d61cc\n"
-        "incl g_rdsl_ignore_technull\n"
-        /* Save material ptr and techtype for first NULL tech occurrence */
-        /* Only save for LIGHTMAP type (6) */
-        "cmpl $6, %ebx\n"
-        "jne .Lskip_technull_save\n"
-        "cmpl $30, g_technull_saved\n"
-        "jge .Lskip_technull_save\n"
-        "movl %esi, g_technull_mat\n"
-        "movl %ebx, g_technull_type\n"
-        "incl g_technull_saved\n"
-        ".Lskip_technull_save:\n"
-        ".Lfd5f2e_000d60e9:\n"
-        "movb $1, -0x5c(%ebp)\n" /* line 1032 | ignoreSurfs */
-        ".Lfd5f2e_000d60ed:\n"
-        "addl $1, -0x4c(%ebp)\n" /* line 1014 | iteration */
-        "addl -0x2c(%ebp), %edi\n" /* drawSurf */
-        "movl -0x4c(%ebp), %eax\n" /* iteration */
-        "cmpl %eax, 0xc(%ebp)\n" /* drawSurfCount */
-        "je .Lfd5f2e_000d5f74\n"
-        "movl (%edi), %eax\n" /* line 1016 | drawSurf */
-        "cmpl -0x48(%ebp), %eax\n" /* prevSort */
-        "jne .Lfd5f2e_000d6060\n"
-        ".Lfd5f2e_000d610b:\n"
-        "cmpb $0, -0x5c(%ebp)\n" /* line 1018 | ignoreSurfs */
-        "jne .Lfd5f2e_000d60ed\n"
-        ".Lfd5f2e_000d6111:\n"
-        "movl 4(%edi), %eax\n" /* line 1151 | drawSurf */
-        "movl (%eax), %edx\n"
-        "incl g_rb_tess_type_counts(, %edx, 4)\n" /* diagnostic: count per type */
-        "movl %edx, g_rb_last_tess_type\n" /* diagnostic: track last type for idxzero */
-        "incl g_tess_since_begin\n"
-        "movl %eax, (%esp)\n"
-        "calll *rb_tessTable(, %edx, 4)\n"
-        "jmp .Lfd5f2e_000d60ed\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfd5f2e_000d6122:\n"
-        "cmpl $0x7ff, %edx\n" /* line 894 */
-        "je .Lfd5f2e_000d615e\n"
-        "cmpl $0x7fd, %edx\n" /* line 897 */
-        "jg .Lfd5f2e_000d60ad\n"
-        "leal (, %edx, 8), %eax\n" /* line 899 */
-        "subl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl backEnd+964, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "cmpl $2, (%eax)\n" /* line 900 */
-        "jg .Lfd5f2e_000d60ad\n"
-        "testb $1, 5(%eax)\n"
-        "jne .Lfd5f2e_000d60ad\n"
-        ".Lfd5f2e_000d615e:\n"
-        "movl $0xffffffff, %ebx\n" /* line 908 */
-        "jmp .Lfd5f2e_000d60bf\n"
-        ".Lfd5f2e_000d6168:\n"
-        "cmpl $0x1f, %eax\n" /* line 881 */
-        "jne .Lfd5f2e_000d6093\n"
-        "cmpl $0x7fe, %edx\n" /* line 883 */
-        "je .Lfd5f2e_000d6199\n"
-        "cmpl $0x7ff, %edx\n" /* line 885 */
-        "je .Lfd5f2e_000d61c5\n"
-        "leal (, %edx, 8), %eax\n" /* line 887 */
-        "subl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl backEnd+964, %edx\n"
-        "cmpl $2, (%edx, %eax, 4)\n"
-        "je .Lfd5f2e_000d61be\n"
-        ".Lfd5f2e_000d6199:\n"
-        "movl $9, %ebx\n" /* line 900 */
-        ".Lfd5f2e_000d619e:\n"
-        "calll RB_FogOffset\n" /* line 907 */
-        "addl %eax, %ebx\n" /* line 908 */
-        "jmp .Lfd5f2e_000d60bf\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd5f2e_000d61aa:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1010 | drawSurfCount */
-        "movl 8(%ebp), %edx\n" /* drawSurfs */
-        "leal -8(%edx, %eax, 8), %edi\n" /* drawSurf */
-        "movl $0xffffffff, %eax\n"
-        "jmp .Lfd5f2e_000d5f5e\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfd5f2e_000d61be:\n"
-        "movl $0xc, %ebx\n" /* line 887 */
-        "jmp .Lfd5f2e_000d619e\n"
-        ".Lfd5f2e_000d61c5:\n"
-        "movl $0xf, %ebx\n" /* line 885 */
-        "jmp .Lfd5f2e_000d619e\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd5f2e_000d61cc:\n"
-        "incl g_rdsl_noignore\n"
-        "movb $0, -0x5c(%ebp)\n" /* line 1032 | ignoreSurfs */
-        "movl -0x24(%ebp), %ecx\n" /* line 1036 | entityIndex */
-        "cmpl %ecx, -0x58(%ebp)\n" /* entityIndexPrev */
-        "je .Lfd5f2e_000d6580\n"
-        "leal -0x7fe(%ecx), %eax\n" /* line 1043 */
-        "cmpl $1, %eax\n"
-        "jbe .Lfd5f2e_000d6589\n"
-        "leal (, %ecx, 8), %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl backEnd+964, %edx\n"
-        "movl (%edx, %eax, 4), %eax\n"
-        "cmpb $0, refEntIsInWorldSpace(%eax)\n"
-        "jne .Lfd5f2e_000d6589\n"
-        "movb $0, -0x5b(%ebp)\n" /* isWorldSpaceEnt */
-        ".Lfd5f2e_000d6211:\n"
-        "movb $0, -0x59(%ebp)\n" /* line 1047 | entityMergable */
-        ".Lfd5f2e_000d6215:\n"
-        "cmpl $0x7fe, %ecx\n" /* line 1049 */
-        "je .Lfd5f2e_000d6572\n"
-        "leal (, %ecx, 8), %eax\n" /* line 1052 */
-        "subl %ecx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl backEnd+964, %edx\n"
-        "movss 0x5c(%edx, %eax, 4), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n" /* materialTime */
-        ".Lfd5f2e_000d623e:\n"
-        "cmpl %esi, -0x64(%ebp)\n" /* line 1055 | materialPrev */
-        "je .Lfd5f2e_000d64df\n"
-        ".Lfd5f2e_000d6247:\n"
-        "movl tess+370640, %edx\n" /* line 261 */
-        "testl %edx, %edx\n"
-        "jne .Lfd5f2e_000d625a\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd5f2e_000d6262\n"
-        ".Lfd5f2e_000d625a:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl -0x1c(%ebp), %esi\n" /* material */
-        ".Lfd5f2e_000d6262:\n"
-        "movss -0x44(%ebp), %xmm0\n" /* line 1058 | materialTime */
-        "ucomiss -0x40(%ebp), %xmm0\n" /* materialTimePrev */
-        "jp .Lfd5f2e_000d6497\n"
-        "jne .Lfd5f2e_000d6497\n"
-        ".Lfd5f2e_000d6277:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1060 | lightmap */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* actualTechType */
-        "movl %esi, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1061 | material */
-        "movl %eax, -0x64(%ebp)\n" /* materialPrev */
-        "movl -0x20(%ebp), %edx\n" /* line 1062 | lightmap */
-        "movl %edx, -0x60(%ebp)\n" /* lightmapPrev */
-        "movss -0x44(%ebp), %xmm0\n" /* materialTime */
-        "movss %xmm0, -0x40(%ebp)\n" /* materialTimePrev */
-        "movl %ebx, -0x3c(%ebp)\n" /* actualTechType, actualTechTypePrev */
-        "movl -0x24(%ebp), %ecx\n" /* entityIndex */
-        ".Lfd5f2e_000d62a6:\n"
-        "cmpl %ecx, -0x58(%ebp)\n" /* line 1067 | entityIndexPrev */
-        "je .Lfd5f2e_000d6111\n"
-        "cmpl $0x7fe, %ecx\n" /* line 1072 */
-        "je .Lfd5f2e_000d647e\n"
-        "cmpl $0x7ff, %ecx\n" /* line 1078 */
-        "je .Lfd5f2e_000d647e\n"
-        "leal (, %ecx, 8), %eax\n" /* line 1088 */
-        "subl %ecx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl backEnd+964, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, backEnd+1088\n"
-        "cmpl $1, (%eax)\n" /* line 1089 */
-        "jle .Lfd5f2e_000d6467\n"
-        "movl $0, backEnd+1092\n" /* line 1092 */
-        ".Lfd5f2e_000d62f4:\n"
-        "cmpb $0, -0x5b(%ebp)\n" /* line 1095 | isWorldSpaceEnt */
-        "je .Lfd5f2e_000d6339\n"
-        "cmpb $0, -0x5a(%ebp)\n" /* line 1097 | isWorldSpaceEntPrev */
-        "jne .Lfd5f2e_000d6305\n"
-        "calll RB_PopMatrixStack\n" /* line 1098 */
-        ".Lfd5f2e_000d6305:\n"
-        "movl -0x50(%ebp), %eax\n" /* line 1100 | depthRangePrev */
-        "testl %eax, %eax\n"
-        "je .Lfd5f2e_000d6327\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 1102 */
-        "movl $0, (%esp)\n"
-        "calll RB_SetDepthRange\n"
-        "movl $0, -0x50(%ebp)\n" /* depthRangePrev */
-        ".Lfd5f2e_000d6327:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1145 | entityIndex */
-        "movl %eax, -0x58(%ebp)\n" /* entityIndexPrev */
-        "movzbl -0x5b(%ebp), %edx\n" /* isWorldSpaceEnt */
-        "movb %dl, -0x5a(%ebp)\n" /* isWorldSpaceEntPrev */
-        "jmp .Lfd5f2e_000d6111\n"
-        ".Lfd5f2e_000d6339:\n"
-        "cmpb $0, -0x5a(%ebp)\n" /* line 1108 | isWorldSpaceEntPrev */
-        "je .Lfd5f2e_000d6344\n"
-        "calll RB_PushMatrixStack\n" /* line 1109 */
-        ".Lfd5f2e_000d6344:\n"
-        "movl backEnd+1088, %eax\n" /* line 1110 */
-        "movl %eax, (%esp)\n"
-        "calll RB_SetWorldMatrixForEntity\n"
-        "movl backEnd+1088, %eax\n" /* line 1113 */
-        "movl 4(%eax), %eax\n"
-        "andl $0x18, %eax\n"
-        "movl %eax, -0x54(%ebp)\n" /* depthRange */
-        "cmpl %eax, -0x50(%ebp)\n" /* line 1114 | depthRangePrev */
-        "je .Lfd5f2e_000d6327\n"
-        "movl tess+370640, %eax\n" /* line 1116 */
-        "testl %eax, %eax\n"
-        "jne .Lfd5f2e_000d6376\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd5f2e_000d63c5\n"
-        ".Lfd5f2e_000d6376:\n"
-        "movl tess+370636, %ebx\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl tess+370628, %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl tess+370624, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl tess+370620, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl tess+370636, %ebx\n" /* line 310 */
-        "je .Lfd5f2e_000d63c5\n"
-        "movl tess+370640, %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lfd5f2e_000d63ba\n"
-        "movl tess+370656, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfd5f2e_000d63bf\n"
-        ".Lfd5f2e_000d63ba:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        ".Lfd5f2e_000d63bf:\n"
-        "movl %ebx, tess+370636\n" /* line 313 */
-        ".Lfd5f2e_000d63c5:\n"
-        "cmpl $8, -0x54(%ebp)\n" /* line 1122 | depthRange */
-        "je .Lfd5f2e_000d641b\n"
-        "jg .Lfd5f2e_000d63f9\n"
-        "movl -0x54(%ebp), %esi\n" /* depthRange */
-        "testl %esi, %esi\n"
-        "jne .Lfd5f2e_000d63e8\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 1125 */
-        "movl $0, (%esp)\n"
-        "calll RB_SetDepthRange\n"
-        ".Lfd5f2e_000d63e8:\n"
-        "cmpl $8, -0x50(%ebp)\n" /* line 1138 | depthRangePrev */
-        "je .Lfd5f2e_000d6444\n"
-        "movl -0x54(%ebp), %eax\n" /* depthRange */
-        "movl %eax, -0x50(%ebp)\n" /* depthRangePrev */
-        "jmp .Lfd5f2e_000d6327\n"
-        ".Lfd5f2e_000d63f9:\n"
-        "cmpl $0x10, -0x54(%ebp)\n" /* line 1122 | depthRange */
-        "je .Lfd5f2e_000d6405\n"
-        "cmpl $0x18, -0x54(%ebp)\n" /* depthRange */
-        "jne .Lfd5f2e_000d63e8\n"
-        ".Lfd5f2e_000d6405:\n"
-        "movl $0x3f000000, 4(%esp)\n" /* line 1135 */
-        "movl $0, (%esp)\n"
-        "calll RB_SetDepthRange\n"
-        "jmp .Lfd5f2e_000d63e8\n"
-        ".Lfd5f2e_000d641b:\n"
-        "movl backEnd+968, %eax\n" /* line 1129 */
-        "movl 0x148(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetDepthHackNearClip\n"
-        "movl $0x3e4ccccd, 4(%esp)\n" /* line 1130 */
-        "movl $0, (%esp)\n"
-        "calll RB_SetDepthRange\n"
-        "jmp .Lfd5f2e_000d63e8\n"
-        ".Lfd5f2e_000d6444:\n"
-        "movl backEnd+968, %eax\n" /* line 1139 */
-        "movl 0xc0(%eax), %eax\n"
-        "xorl $0x80000000, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_SetDepthHackNearClip\n"
-        "movl -0x54(%ebp), %edx\n" /* depthRange */
-        "movl %edx, -0x50(%ebp)\n" /* depthRangePrev */
-        "jmp .Lfd5f2e_000d6327\n"
-        ".Lfd5f2e_000d6467:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1090 */
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal backEnd+12056(, %eax, 8), %eax\n"
-        "movl %eax, backEnd+1092\n"
-        "jmp .Lfd5f2e_000d62f4\n"
-        ".Lfd5f2e_000d647e:\n"
-        "movl $backEnd+1096, backEnd+1088\n" /* line 1080 */
-        "movl $0, backEnd+1092\n" /* line 1081 */
-        "jmp .Lfd5f2e_000d62f4\n"
-        ".Lfd5f2e_000d6497:\n"
-        "movss backEnd+956, %xmm0\n" /* line 1059 */
-        "subss -0x44(%ebp), %xmm0\n" /* materialTime */
-        "movss %xmm0, -0x34(%ebp)\n" /* w */
-        "movss %xmm0, (%esp)\n" /* line 861 */
-        "calll floorf\n"
-        "fstps -0x68(%ebp)\n"
-        "movss -0x34(%ebp), %xmm0\n" /* w */
-        "subss -0x68(%ebp), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* z */
-        "movl imp_r_rendererInUse, %eax\n" /* line 864 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "jne .Lfd5f2e_000d6518\n"
-        "movss %xmm0, backEnd+1244\n" /* line 866 */
-        "jmp .Lfd5f2e_000d6277\n"
-        ".Lfd5f2e_000d64df:\n"
-        "movl -0x60(%ebp), %eax\n" /* line 1055 | lightmapPrev */
-        "cmpl -0x20(%ebp), %eax\n" /* lightmap */
-        "jne .Lfd5f2e_000d6247\n"
-        "cmpl %ebx, -0x3c(%ebp)\n" /* actualTechType, actualTechTypePrev */
-        "jne .Lfd5f2e_000d6247\n"
-        "movss -0x44(%ebp), %xmm0\n" /* materialTime */
-        "ucomiss -0x40(%ebp), %xmm0\n" /* materialTimePrev */
-        "jne .Lfd5f2e_000d6247\n"
-        "jp .Lfd5f2e_000d6247\n"
-        "cmpb $0, -0x59(%ebp)\n" /* entityMergable */
-        "jne .Lfd5f2e_000d62a6\n"
-        "jmp .Lfd5f2e_000d6247\n"
-        ".Lfd5f2e_000d6518:\n"
-        "cvtss2sd -0x30(%ebp), %xmm0\n" /* line 871 | z */
-        "mulsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x38(%ebp)\n" /* radians */
-        /* { scope 2 */
-        "movss %xmm0, (%esp)\n" /* line 486 */
-        "calll cosf\n"
-        "fstps backEnd+36\n"
-        /* } scope */
-        /* { scope 2 */
-        "movss -0x38(%ebp), %xmm0\n" /* line 485 | radians */
-        "movss %xmm0, (%esp)\n"
-        "calll sinf\n"
-        "fstps backEnd+32\n"
-        "movss -0x30(%ebp), %xmm0\n" /* line 449 | z */
-        "movss %xmm0, backEnd+40\n"
-        "movss -0x34(%ebp), %xmm0\n" /* line 450 | w */
-        "movss %xmm0, backEnd+44\n"
-        "jmp .Lfd5f2e_000d6277\n"
-        /* } scope */
-        ".Lfd5f2e_000d6572:\n"
-        "pxor %xmm0, %xmm0\n" /* line 1049 */
-        "movss %xmm0, -0x44(%ebp)\n" /* materialTime */
-        "jmp .Lfd5f2e_000d623e\n"
-        ".Lfd5f2e_000d6580:\n"
-        "movb $1, -0x59(%ebp)\n" /* line 1036 | entityMergable */
-        "jmp .Lfd5f2e_000d623e\n"
-        ".Lfd5f2e_000d6589:\n"
-        "movb $1, -0x5b(%ebp)\n" /* line 1043 | isWorldSpaceEnt */
-        "cmpb $0, -0x5a(%ebp)\n" /* line 1047 | isWorldSpaceEntPrev */
-        "je .Lfd5f2e_000d6211\n"
-        "movb $1, -0x59(%ebp)\n" /* entityMergable */
-        "jmp .Lfd5f2e_000d6215\n"
-    );
+    char *t = (char *)&tess;
+    char *b = (char *)&backEnd;
+    GfxDrawSurf *drawSurf;
+    int byteStep, iteration;
+    unsigned int prevSort, sortKey;
+    const Material *materialPrev, *material;
+    int lightmapPrev, lightmap;
+    MaterialTechniqueType actualTechType, actualTechTypePrev;
+    byte ignoreSurfs, isWorldSpaceEnt, isWorldSpaceEntPrev, entityMergable;
+    int entityIndexPrev, entityIndex;
+    int depthRange, depthRangePrev;
+    float materialTime, materialTimePrev;
+    char *entities;
+
+    rb_rdsl_call_count++;
+
+    /* currentEntity = &worldEntity, currentEntityLighting = NULL */
+    *(void **)(b + 1088) = (void *)(b + 1096);
+    *(void **)(b + 1092) = NULL;
+
+    /* Determine traversal direction */
+    if (order != 0) {
+        drawSurf = (GfxDrawSurf *)((char *)drawSurfs + (drawSurfCount - 1) * 8);
+        byteStep = -8;
+    } else {
+        drawSurf = drawSurfs;
+        byteStep = 8;
+    }
+
+    if (drawSurfCount <= 0) {
+        isWorldSpaceEntPrev = 1;
+        depthRange = 0;
+        goto cleanup;
+    }
+
+    /* Initialize tracking state */
+    actualTechTypePrev = techType;
+    materialPrev = NULL;
+    lightmapPrev = 0x1f;
+    ignoreSurfs = 0;
+    isWorldSpaceEnt = 1;
+    entityIndexPrev = 0x7fe;
+    depthRangePrev = 0;
+    prevSort = 0xffffffff;
+    materialTime = 0.0f;
+    materialTimePrev = 3.4028234663852886e+38f;
+    iteration = 0;
+    depthRange = 0;
+    isWorldSpaceEntPrev = 1;
+
+    /* Main loop */
+    sortKey = drawSurf->sort;
+    if (sortKey == prevSort)
+        goto same_sort;
+    goto sort_changed;
+
+advance:
+    iteration++;
+    drawSurf = (GfxDrawSurf *)((char *)drawSurf + byteStep);
+    if (iteration == drawSurfCount)
+        goto cleanup;
+    sortKey = drawSurf->sort;
+    if (sortKey == prevSort)
+        goto same_sort;
+
+sort_changed:
+    g_rdsl_sortchange++;
+    prevSort = sortKey;
+    R_DecomposeSort(sortKey, &entityIndex, &material, &lightmap);
+
+    /* --- Determine actual technique type --- */
+    actualTechType = techType;
+    if (techType == 6 && lightmap == 0x1f) {
+        /* LIGHTMAP technique with default lightmap: pick based on entity type */
+        entities = *(char **)(b + 964);
+        if (entityIndex == 0x7fe) {
+            actualTechType = 9;
+        } else if (entityIndex == 0x7ff) {
+            actualTechType = 15;
+        } else {
+            int reType = *(int *)(entities + entityIndex * 116);
+            if (reType == 2)
+                actualTechType = 12;
+            else
+                actualTechType = 9;
+        }
+        actualTechType += RB_FogOffset();
+        goto have_tech;
+    }
+    if (techType != 6)
+        goto non_lightmap;
+    /* techType==6 but lightmap!=0x1f: fall through to non-lightmap path */
+
+non_lightmap:
+    /* Check depth prepass filtering */
+    if (!*(byte *)(*(char **)imp_r_depthPrepassModels + 8)) {
+        if (techType == 0 || techType == 2) {
+            /* DEPTH_PREPASS or BUILD_SHADOWMAP: check entity eligibility */
+            entities = *(char **)(b + 964);
+            if (entityIndex == 0x7ff) {
+                actualTechType = -1;
+                goto have_tech;
+            }
+            if (entityIndex <= 0x7fd) {
+                char *ent = entities + entityIndex * 116;
+                if (*(int *)ent <= 2 && !(*(byte *)(ent + 5) & 1)) {
+                    actualTechType = -1;
+                    goto have_tech;
+                }
+            }
+        }
+    }
+    /* Normal technique: check if in fog-eligible range [3..26] */
+    if ((unsigned int)(techType - 3) <= 0x17) {
+        actualTechType = techType + RB_FogOffset();
+    } else {
+        actualTechType = techType;
+    }
+
+have_tech:
+    g_rdsl_bf_entry++;
+    material = material; /* reload after decompose (esi in ASM) */
+
+    /* Decal filtering */
+    if (!*(byte *)(*(char **)imp_r_drawDecals + 8)) {
+        if (*(byte *)((char *)material + 0x30) & 0x30) {
+            g_rdsl_ignore_decal++;
+            goto ignore_surf;
+        }
+    }
+
+    /* Skip if technique is -1 */
+    if (actualTechType == (MaterialTechniqueType)-1) {
+        g_rdsl_ignore_techm1++;
+        goto ignore_surf;
+    }
+
+    /* Null technique check */
+    {
+        void *techSet = *(void **)((char *)material + 0x38);
+        void *technique = ((void **)techSet)[actualTechType + 1];
+        if (!technique) {
+            g_rdsl_ignore_technull++;
+            if (actualTechType == 6 && g_technull_saved < 30) {
+                g_technull_mat = (void *)material;
+                g_technull_type = actualTechType;
+                g_technull_saved++;
+            }
+            goto ignore_surf;
+        }
+    }
+
+    /* Valid technique — process this surface */
+    g_rdsl_noignore++;
+    ignoreSurfs = 0;
+    entities = *(char **)(b + 964);
+
+    /* --- Entity change handling --- */
+    if (entityIndex != entityIndexPrev) {
+        /* Determine if world-space entity */
+        if ((unsigned int)(entityIndex - 0x7fe) <= 1) {
+            isWorldSpaceEnt = 1;
+        } else {
+            int reType = *(int *)(entities + entityIndex * 116);
+            if (refEntIsInWorldSpace[reType])
+                isWorldSpaceEnt = 1;
+            else
+                isWorldSpaceEnt = 0;
+        }
+
+        /* Determine entity mergability */
+        if (!isWorldSpaceEnt) {
+            entityMergable = 0;
+        } else if (isWorldSpaceEntPrev) {
+            entityMergable = 1;
+        } else {
+            entityMergable = 0;
+        }
+    } else {
+        entityMergable = 1;
+        goto check_material;
+    }
+
+    /* Get material time for this entity */
+    if (entityIndex == 0x7fe) {
+        materialTime = 0.0f;
+    } else {
+        materialTime = *(float *)(entities + entityIndex * 116 + 0x5c);
+    }
+
+check_material:
+    /* Check if material/lightmap/technique changed */
+    if (materialPrev == material) {
+        if (lightmapPrev == lightmap &&
+            actualTechTypePrev == actualTechType &&
+            materialTime == materialTimePrev &&
+            !(materialTime != materialTimePrev)) /* NaN check via ordered compare */
+        {
+            if (entityMergable)
+                goto do_entity_setup;
+        }
+    }
+
+    /* Need new surface: flush pending tess */
+    if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+        RB_EndSurface();
+
+    /* Update material time constants */
+    if (materialTime != materialTimePrev || materialTime != materialTime) {
+        float w = *(float *)(b + 956) - materialTime;
+        float frac = w - floorf(w);
+        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        if (isDx7) {
+            *(float *)(b + 1244) = frac;
+        } else {
+            float radians = (float)((double)frac * 6.283185307179586);
+            *(float *)(b + 36) = cosf(radians);
+            *(float *)(b + 32) = sinf(radians);
+            *(float *)(b + 40) = frac;
+            *(float *)(b + 44) = w;
+        }
+    }
+
+    /* Begin new surface */
+    RB_BeginSurface(material, actualTechType, lightmap);
+    materialPrev = material;
+    lightmapPrev = lightmap;
+    materialTimePrev = materialTime;
+    actualTechTypePrev = actualTechType;
+
+do_entity_setup:
+    /* Handle entity state change */
+    if (entityIndexPrev == entityIndex)
+        goto dispatch;
+
+    if (entityIndex == 0x7fe || entityIndex == 0x7ff) {
+        /* World or none entity */
+        *(void **)(b + 1088) = (void *)(b + 1096);
+        *(void **)(b + 1092) = NULL;
+    } else {
+        /* Regular entity */
+        char *ent = entities + entityIndex * 116;
+        *(void **)(b + 1088) = ent;
+        if (*(int *)ent <= 1) {
+            /* reType <= 1: has entity lighting */
+            int idx13 = entityIndex + entityIndex * 3 * 4; /* entityIndex * 13 */
+            *(void **)(b + 1092) = (void *)(b + 12056 + idx13 * 8);
+        } else {
+            *(void **)(b + 1092) = NULL;
+        }
+    }
+
+    if (isWorldSpaceEnt) {
+        /* Transitioning to world-space entity */
+        if (!isWorldSpaceEntPrev)
+            RB_PopMatrixStack();
+        if (depthRangePrev) {
+            RB_SetDepthRange(0.0f, 1.0f);
+            depthRangePrev = 0;
+        }
+    } else {
+        /* Transitioning to non-world-space entity */
+        if (isWorldSpaceEntPrev)
+            RB_PushMatrixStack();
+        RB_SetWorldMatrixForEntity(*(void **)(b + 1088));
+
+        /* Get depth range from entity flags */
+        depthRange = *(int *)((char *)*(void **)(b + 1088) + 4) & 0x18;
+
+        if (depthRange != depthRangePrev) {
+            /* Flush tess if depth range changes mid-surface */
+            if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0)) {
+                int savedDecl = *(int *)(t + 0x5a7cc);
+                RB_EndSurface();
+                RB_BeginSurface(*(const Material **)(t + 0x5a7bc),
+                                *(MaterialTechniqueType *)(t + 0x5a7c0),
+                                *(int *)(t + 0x5a7c4));
+                if (*(int *)(t + 0x5a7cc) != savedDecl) {
+                    if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+                        RB_EndSurface();
+                    *(int *)(t + 0x5a7cc) = savedDecl;
+                }
+            }
+
+            /* Set appropriate depth range */
+            if (depthRange == 8) {
+                /* Weapon depth hack */
+                char *vp = *(char **)(b + 968);
+                RB_SetDepthHackNearClip(*(float *)(vp + 0x148));
+                RB_SetDepthRange(0.0f, 0.2f);
+            } else if (depthRange == 0x10 || depthRange == 0x18) {
+                RB_SetDepthRange(0.0f, 0.5f);
+            } else if (depthRange == 0) {
+                RB_SetDepthRange(0.0f, 1.0f);
+            }
+
+            /* Undo previous depth hack if needed */
+            if (depthRangePrev == 8) {
+                char *vp = *(char **)(b + 968);
+                float nc = *(float *)(vp + 0xc0);
+                /* Negate: XOR sign bit */
+                *(int *)&nc ^= 0x80000000;
+                RB_SetDepthHackNearClip(nc);
+            }
+            depthRangePrev = depthRange;
+        }
+    }
+
+    entityIndexPrev = entityIndex;
+    isWorldSpaceEntPrev = isWorldSpaceEnt;
+
+dispatch:
+    /* Call tessellation function for this surface */
+    {
+        const surfaceType_t *surfType = drawSurf->surface;
+        int type = *(const int *)surfType;
+        g_rb_tess_type_counts[type]++;
+        g_rb_last_tess_type = type;
+        g_tess_since_begin++;
+        rb_tessTable[type](surfType);
+    }
+    goto advance;
+
+ignore_surf:
+    ignoreSurfs = 1;
+    goto advance;
+
+same_sort:
+    if (ignoreSurfs)
+        goto advance;
+    goto dispatch;
+
+cleanup:
+    /* End any pending surface */
+    if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+        RB_EndSurface();
+
+    /* Restore depth range */
+    if (depthRange) {
+        RB_SetDepthRange(0.0f, 1.0f);
+        if (depthRange == 8) {
+            char *vp = *(char **)(b + 968);
+            float nc = *(float *)(vp + 0xc0);
+            *(int *)&nc ^= 0x80000000;
+            RB_SetDepthHackNearClip(nc);
+        }
+    }
+
+    /* Pop matrix stack if last entity was non-world */
+    if (!isWorldSpaceEntPrev)
+        RB_PopMatrixStack();
+
+    /* Clear entity pointers */
+    *(void **)(b + 1088) = NULL;
+    *(void **)(b + 1092) = NULL;
 }
 
 /* line 1222 */
@@ -4220,334 +4094,181 @@ static void RB_DrawTextInSpaceCmd(GfxRenderCommandExecState *execState)
     *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
-/* line 3416 */
+/* line 3416 — GPU fill-rate benchmark: renders a test quad with iterationCount
+ * copies of indices, times the GPU, returns estimated triangles/frame at 60fps.
+ * All 4 vertex positions write to tess slot 0 (degenerate geometry for pure GPU throughput). */
+static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueType techType)
+{
+    char *t = (char *)&tess;
+    float origin[3] = {0.0f, 0.0f, 0.0f};
+    float axis[9] = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+    float view[16];
+    float projection[16];
+    long long beginTime, endTime, frequency;
+    int isDx7, iterationCount, i;
+    D3DCOLOR white = 0xffffffff;
+    float x0, y0, z0, x, y, z;
+
+    MatrixForViewer(view, origin, axis);
+    InfinitePerspectiveMatrix(projection, 90.0f, 90.0f, 0.9f);
+    RB_Set3D();
+    RB_PushMatrixStack();
+    MatrixIdentity44(RB_GetActiveWorldMatrix());
+    RB_ChangedWorldMatrix(1.0f);
+    RB_SetViewMatrix(view);
+    RB_SetProjectionMatrix(projection);
+
+    /* currentEntity = &worldEntity, currentEntityLighting = NULL */
+    *(void **)((char *)&backEnd + 1088) = (void *)((char *)&backEnd + 1096);
+    *(void **)((char *)&backEnd + 1092) = NULL;
+    /* codeConsts[5] = {1,1,1,1} */
+    *(float *)((char *)&backEnd + 80) = 1.0f;
+    *(float *)((char *)&backEnd + 84) = 1.0f;
+    *(float *)((char *)&backEnd + 88) = 1.0f;
+    *(float *)((char *)&backEnd + 92) = 1.0f;
+    /* codeConsts[3] = {0,0,0,1} */
+    *(float *)((char *)&backEnd + 48) = 0.0f;
+    *(float *)((char *)&backEnd + 52) = 0.0f;
+    *(float *)((char *)&backEnd + 56) = 0.0f;
+    *(float *)((char *)&backEnd + 60) = 1.0f;
+    /* codeConsts[11] = {0,0,0,1} */
+    *(float *)((char *)&backEnd + 176) = 0.0f;
+    *(float *)((char *)&backEnd + 180) = 0.0f;
+    *(float *)((char *)&backEnd + 184) = 0.0f;
+    *(float *)((char *)&backEnd + 188) = 1.0f;
+
+    RB_BeginSurface(material, techType, 0);
+
+    /* Move origin along forward axis (axis[0]) */
+    origin[0] += axis[0];
+    origin[1] += axis[1];
+    origin[2] += axis[2];
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    x0 = origin[0];
+    y0 = origin[1];
+    z0 = origin[2];
+
+    /* Write 4 test quad vertices to tess slot 0 (fill-rate benchmark).
+     * Positions: origin ± axis[1] ± axis[2], texcoords: standard quad UVs. */
+
+    /* Vertex 0: origin + axis[1] + axis[2], tc=(0,0) */
+    x = x0 + axis[3] + axis[6];
+    y = y0 + axis[4] + axis[7];
+    z = z0 + axis[5] + axis[8];
+    if (isDx7) {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(int *)(t + 12) = 0;  *(int *)(t + 16) = 0;  *(float *)(t + 20) = 1.0f;
+        *(D3DCOLOR *)(t + 24) = white;
+        *(int *)(t + 28) = 0;  *(int *)(t + 32) = 0;
+    } else {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(float *)(t + 12) = 1.0f;
+        *(int *)(t + 16) = 0;  *(int *)(t + 20) = 0;  *(float *)(t + 24) = 1.0f;
+        *(D3DCOLOR *)(t + 28) = white;
+        *(int *)(t + 32) = 0;  *(int *)(t + 36) = 0;
+        *(float *)(t + 52) = 1.0f;  *(int *)(t + 56) = 0;  *(int *)(t + 60) = 0;
+        *(int *)(t + 40) = 0;  *(float *)(t + 44) = 1.0f;  *(int *)(t + 48) = 0;
+    }
+
+    /* Vertex 1: origin - axis[1] + axis[2], tc=(1,0) */
+    x = x0 - axis[3] + axis[6];
+    y = y0 - axis[4] + axis[7];
+    z = z0 - axis[5] + axis[8];
+    if (isDx7) {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(int *)(t + 12) = 0;  *(int *)(t + 16) = 0;  *(float *)(t + 20) = 1.0f;
+        *(D3DCOLOR *)(t + 24) = white;
+        *(float *)(t + 28) = 1.0f;  *(int *)(t + 32) = 0;
+    } else {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(float *)(t + 12) = 1.0f;
+        *(int *)(t + 16) = 0;  *(int *)(t + 20) = 0;  *(float *)(t + 24) = 1.0f;
+        *(D3DCOLOR *)(t + 28) = white;
+        *(float *)(t + 32) = 1.0f;  *(int *)(t + 36) = 0;
+    }
+
+    /* Vertex 2: origin - axis[1] - axis[2], tc=(1,1) */
+    x = x0 - axis[3] - axis[6];
+    y = y0 - axis[4] - axis[7];
+    z = z0 - axis[5] - axis[8];
+    if (isDx7) {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(int *)(t + 12) = 0;  *(int *)(t + 16) = 0;  *(float *)(t + 20) = 1.0f;
+        *(D3DCOLOR *)(t + 24) = white;
+        *(float *)(t + 28) = 1.0f;  *(float *)(t + 32) = 1.0f;
+    } else {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(float *)(t + 12) = 1.0f;
+        *(int *)(t + 16) = 0;  *(int *)(t + 20) = 0;  *(float *)(t + 24) = 1.0f;
+        *(D3DCOLOR *)(t + 28) = white;
+        *(float *)(t + 32) = 1.0f;  *(float *)(t + 36) = 1.0f;
+        *(float *)(t + 52) = 1.0f;  *(int *)(t + 56) = 0;  *(int *)(t + 60) = 0;
+        *(int *)(t + 40) = 0;  *(float *)(t + 44) = 1.0f;  *(int *)(t + 48) = 0;
+    }
+
+    /* Vertex 3: origin + axis[1] - axis[2], tc=(0,1) */
+    x = x0 + axis[3] - axis[6];
+    y = y0 + axis[4] - axis[7];
+    z = z0 + axis[5] - axis[8];
+    if (isDx7) {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(int *)(t + 12) = 0;  *(int *)(t + 16) = 0;  *(float *)(t + 20) = 1.0f;
+        *(D3DCOLOR *)(t + 24) = white;
+        *(int *)(t + 28) = 0;  *(float *)(t + 32) = 1.0f;
+    } else {
+        *(float *)(t + 0) = x;  *(float *)(t + 4) = y;  *(float *)(t + 8) = z;
+        *(float *)(t + 12) = 1.0f;
+        *(int *)(t + 16) = 0;  *(int *)(t + 20) = 0;  *(float *)(t + 24) = 1.0f;
+        *(D3DCOLOR *)(t + 28) = white;
+        *(int *)(t + 32) = 0;  *(float *)(t + 36) = 1.0f;
+    }
+
+    /* vertexCount = 4 */
+    *(int *)(t + 0x5a7d4) = 4;
+
+    /* Write indices: iterationCount copies of quad (3,0,2, 2,0,1) */
+    iterationCount = *(int *)(*(char **)imp_r_testFill + 8);
+    for (i = 0; i < iterationCount; i++) {
+        int ic = *(int *)(t + 0x5a7d0);
+        r_index_t *indices = *(r_index_t **)(t + 0x5a7b0);
+        indices[ic + 0] = 3;
+        indices[ic + 1] = 0;
+        indices[ic + 2] = 2;
+        indices[ic + 3] = 2;
+        indices[ic + 4] = 0;
+        indices[ic + 5] = 1;
+        *(int *)(t + 0x5a7d0) = ic + 6;
+    }
+
+    /* Time the GPU render */
+    RB_BeginBenchmarkGpu_impl(&beginTime);
+    RB_EndSurface();
+    RB_EndBenchmarkGpu_impl(&endTime);
+    RB_PopMatrixStack();
+
+    /* Compute triangles per frame at 60fps */
+    QueryPerformanceFrequency(&frequency);
+    {
+        double elapsed = (double)(endTime - beginTime) / (double)frequency;
+        return (float)((double)iterationCount / elapsed / 60.0);
+    }
+}
+
+/* Naked trampoline: marshals register args (eax=material, edx=techType) to stack for _impl */
 static __attribute__((naked))
 float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType)
 {
+    (void)material; (void)techType;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3416 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10c, %esp\n"
-        "movl %eax, -0xec(%ebp)\n"
-        "movl %edx, -0xf0(%ebp)\n"
-        /* { scope 1: frequency */
-        "xorl %edi, %edi\n" /* line 183 */
-        "movl %edi, -0x40(%ebp)\n" /* origin */
-        "movl %edi, -0x3c(%ebp)\n" /* line 184 */
-        "movl %edi, -0x38(%ebp)\n" /* line 185 */
-        "movl $0x3f800000, -0x64(%ebp)\n" /* line 191 | axis */
-        "leal -0x64(%ebp), %eax\n" /* line 192 | axis */
-        "movl %edi, -0x60(%ebp)\n"
-        "movl %edi, -0x5c(%ebp)\n" /* line 193 */
-        "movl %edi, -0x58(%ebp)\n" /* line 191 */
-        "movl $0x3f800000, -0x54(%ebp)\n" /* line 192 */
-        "movl %edi, -0x50(%ebp)\n" /* line 193 */
-        "movl %edi, -0x4c(%ebp)\n" /* line 191 */
-        "movl %edi, -0x48(%ebp)\n" /* line 192 */
-        "movl $0x3f800000, -0x44(%ebp)\n" /* line 193 */
-        "movl %eax, 8(%esp)\n" /* line 3434 */
-        "leal -0x40(%ebp), %eax\n" /* origin */
-        "movl %eax, 4(%esp)\n"
-        "leal -0xa4(%ebp), %esi\n" /* view */
-        "movl %esi, (%esp)\n"
-        "calll MatrixForViewer\n"
-        "movl $0x3f666666, 0xc(%esp)\n" /* line 3435 */
-        "movl $0x42b40000, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0xe4(%ebp), %ebx\n" /* projection, iterationCount */
-        "movl %ebx, (%esp)\n" /* iterationCount */
-        "calll InfinitePerspectiveMatrix\n"
-        "calll RB_Set3D\n" /* line 3437 */
-        "calll RB_PushMatrixStack\n" /* line 3438 */
-        "calll RB_GetActiveWorldMatrix\n" /* line 3439 */
-        "movl %eax, (%esp)\n" /* line 3440 */
-        "calll MatrixIdentity44\n"
-        "movl $0x3f800000, (%esp)\n" /* line 3441 */
-        "calll RB_ChangedWorldMatrix\n"
-        "movl %esi, (%esp)\n" /* line 3442 */
-        "calll RB_SetViewMatrix\n"
-        "movl %ebx, (%esp)\n" /* line 3443 | iterationCount */
-        "calll RB_SetProjectionMatrix\n"
-        "movl $backEnd+1096, backEnd+1088\n" /* line 3445 */
-        "movl $0, backEnd+1092\n" /* line 3446 */
-        "movl $0x3f800000, backEnd+80\n" /* line 447 */
-        "movl $0x3f800000, backEnd+84\n" /* line 448 */
-        "movl $0x3f800000, backEnd+88\n" /* line 449 */
-        "movl $0x3f800000, backEnd+92\n" /* line 450 */
-        "movl %edi, backEnd+48\n" /* line 447 */
-        "movl %edi, backEnd+52\n" /* line 448 */
-        "movl %edi, backEnd+56\n" /* line 449 */
-        "movl $0x3f800000, backEnd+60\n" /* line 450 */
-        "movl %edi, backEnd+176\n" /* line 447 */
-        "movl %edi, backEnd+180\n" /* line 448 */
-        "movl %edi, backEnd+184\n" /* line 449 */
-        "movl $0x3f800000, backEnd+188\n" /* line 450 */
-        "movl $0, 8(%esp)\n" /* line 3452 */
-        "movl -0xf0(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0xec(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movss -0x40(%ebp), %xmm5\n" /* line 240 | origin */
-        "addss -0x64(%ebp), %xmm5\n" /* axis */
-        "movss %xmm5, -0x40(%ebp)\n" /* origin */
-        "movss -0x3c(%ebp), %xmm4\n" /* line 241 */
-        "addss -0x60(%ebp), %xmm4\n"
-        "movss %xmm4, -0x3c(%ebp)\n"
-        "movss -0x38(%ebp), %xmm3\n" /* line 242 */
-        "addss -0x5c(%ebp), %xmm3\n"
-        "movss %xmm3, -0x38(%ebp)\n"
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* line 3457 | white */
-        "movaps %xmm3, %xmm2\n" /* line 3458 */
-        "addss -0x50(%ebp), %xmm2\n"
-        "addss -0x44(%ebp), %xmm2\n"
-        "movaps %xmm4, %xmm1\n"
-        "addss -0x54(%ebp), %xmm1\n"
-        "addss -0x48(%ebp), %xmm1\n"
-        "movaps %xmm5, %xmm0\n"
-        "addss -0x58(%ebp), %xmm0\n"
-        "addss -0x4c(%ebp), %xmm0\n"
-        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
-        "movl (%ebx), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd8330_000d88aa\n"
-        /* { scope 2 */
-        "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, tess+4\n" /* line 448 */
-        "movss %xmm2, tess+8\n" /* line 449 */
-        "movl $0x3f800000, tess+12\n" /* line 450 */
-        /* } scope */
-        "movl %edi, tess+16\n" /* line 191 */
-        "movl %edi, tess+20\n" /* line 192 */
-        "movl $0x3f800000, tess+24\n" /* line 193 */
-        "leal -0x1c(%ebp), %ecx\n" /* line 606 | white */
-        "movl $0xffffffff, tess+28\n"
-        "movl %edi, tess+32\n" /* line 30 */
-        "movl %edi, tess+36\n" /* line 31 */
-        "movl $0x3f800000, tess+52\n" /* line 191 */
-        "movl %edi, tess+56\n" /* line 192 */
-        "movl %edi, tess+60\n" /* line 193 */
-        "movl %edi, tess+40\n" /* line 191 */
-        "movl $0x3f800000, tess+44\n" /* line 192 */
-        "movl %edi, tess+48\n" /* line 193 */
-        ".Lfd8330_000d856a:\n"
-        "movaps %xmm3, %xmm2\n" /* line 3459 */
-        "subss -0x50(%ebp), %xmm2\n"
-        "addss -0x44(%ebp), %xmm2\n"
-        "movaps %xmm4, %xmm1\n"
-        "subss -0x54(%ebp), %xmm1\n"
-        "addss -0x48(%ebp), %xmm1\n"
-        "movaps %xmm5, %xmm0\n"
-        "subss -0x58(%ebp), %xmm0\n"
-        "addss -0x4c(%ebp), %xmm0\n"
-        "movl (%ebx), %eax\n" /* line 370 */
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd8330_000d89a0\n"
-        /* { scope 2 */
-        "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, tess+4\n" /* line 448 */
-        "movss %xmm2, tess+8\n" /* line 449 */
-        "movl $0x3f800000, %edx\n" /* line 450 */
-        "movl %edx, tess+12\n"
-        /* } scope */
-        "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, tess+16\n"
-        "movl %eax, tess+20\n" /* line 192 */
-        "movl %edx, tess+24\n" /* line 193 */
-        "movl (%ecx), %ecx\n" /* line 606 */
-        "movl %ecx, tess+28\n"
-        "movl %edx, tess+32\n" /* line 30 */
-        "movl %eax, tess+36\n" /* line 31 */
-        "movl %edx, tess+52\n" /* line 191 */
-        "movl %eax, tess+56\n" /* line 192 */
-        "movl %eax, tess+60\n" /* line 193 */
-        "movl %eax, tess+40\n" /* line 191 */
-        "movl %edx, tess+44\n" /* line 192 */
-        "movl %eax, tess+48\n" /* line 193 */
-        ".Lfd8330_000d8605:\n"
-        "movaps %xmm3, %xmm2\n" /* line 3460 */
-        "subss -0x50(%ebp), %xmm2\n"
-        "subss -0x44(%ebp), %xmm2\n"
-        "movaps %xmm4, %xmm1\n"
-        "subss -0x54(%ebp), %xmm1\n"
-        "subss -0x48(%ebp), %xmm1\n"
-        "movaps %xmm5, %xmm0\n"
-        "subss -0x58(%ebp), %xmm0\n"
-        "subss -0x4c(%ebp), %xmm0\n"
-        "movl (%ebx), %eax\n" /* line 370 */
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd8330_000d894b\n"
-        /* { scope 2 */
-        "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, tess+4\n" /* line 448 */
-        "movss %xmm2, tess+8\n" /* line 449 */
-        "movl $0x3f800000, tess+12\n" /* line 450 */
-        /* } scope */
-        "movl $0, tess+16\n" /* line 191 */
-        "movl $0, tess+20\n" /* line 192 */
-        "movl $0x3f800000, tess+24\n" /* line 193 */
-        "movl %ecx, tess+28\n" /* line 606 */
-        "movl $0x3f800000, tess+32\n" /* line 30 */
-        "movl $0x3f800000, tess+36\n" /* line 31 */
-        "movl $0x3f800000, tess+52\n" /* line 191 */
-        "movl $0, tess+56\n" /* line 192 */
-        "movl $0, tess+60\n" /* line 193 */
-        "movl $0, tess+40\n" /* line 191 */
-        "movl $0x3f800000, tess+44\n" /* line 192 */
-        "movl $0, tess+48\n" /* line 193 */
-        ".Lfd8330_000d86ce:\n"
-        "movaps %xmm3, %xmm2\n" /* line 3461 */
-        "addss -0x50(%ebp), %xmm2\n"
-        "subss -0x44(%ebp), %xmm2\n"
-        "movaps %xmm4, %xmm1\n"
-        "addss -0x54(%ebp), %xmm1\n"
-        "subss -0x48(%ebp), %xmm1\n"
-        "movaps %xmm5, %xmm0\n"
-        "addss -0x58(%ebp), %xmm0\n"
-        "subss -0x4c(%ebp), %xmm0\n"
-        "movl (%ebx), %eax\n" /* line 370 */
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd8330_000d88f6\n"
-        /* { scope 2 */
-        "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, tess+4\n" /* line 448 */
-        "movss %xmm2, tess+8\n" /* line 449 */
-        "movl $0x3f800000, tess+12\n" /* line 450 */
-        /* } scope */
-        "movl $0, tess+16\n" /* line 191 */
-        "movl $0, tess+20\n" /* line 192 */
-        "movl $0x3f800000, tess+24\n" /* line 193 */
-        "movl %ecx, tess+28\n" /* line 606 */
-        "movl $0, tess+32\n" /* line 30 */
-        "movl $0x3f800000, tess+36\n" /* line 31 */
-        "movl $0x3f800000, tess+52\n" /* line 191 */
-        "movl $0, tess+56\n" /* line 192 */
-        "movl $0, tess+60\n" /* line 193 */
-        "movl $0, tess+40\n" /* line 191 */
-        "movl $0x3f800000, tess+44\n" /* line 192 */
-        "movl $0, tess+48\n" /* line 193 */
-        ".Lfd8330_000d8797:\n"
-        "movl $4, tess+370644\n" /* line 3462 */
-        "movl imp_r_testFill, %eax\n" /* line 3464 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %ebx\n" /* iterationCount */
-        "testl %ebx, %ebx\n" /* line 3465 | iterationCount */
-        "jle .Lfd8330_000d8836\n"
-        "xorl %ecx, %ecx\n"
-        "movl tess+370640, %edx\n"
-        ".Lfd8330_000d87bb:\n"
-        "movl tess+370608, %eax\n" /* line 3467 */
-        "movw $3, (%eax, %edx, 2)\n"
-        "movl tess+370640, %edx\n" /* line 3468 */
-        "movl tess+370608, %eax\n"
-        "movw $0, 2(%eax, %edx, 2)\n"
-        "movl tess+370640, %edx\n" /* line 3469 */
-        "movl tess+370608, %eax\n"
-        "movw $2, 4(%eax, %edx, 2)\n"
-        "movl tess+370640, %edx\n" /* line 3470 */
-        "movl tess+370608, %eax\n"
-        "movw $2, 6(%eax, %edx, 2)\n"
-        "movl tess+370640, %edx\n" /* line 3471 */
-        "movl tess+370608, %eax\n"
-        "movw $0, 8(%eax, %edx, 2)\n"
-        "movl tess+370640, %edx\n" /* line 3472 */
-        "movl tess+370608, %eax\n"
-        "movw $1, 0xa(%eax, %edx, 2)\n"
-        "movl tess+370640, %eax\n" /* line 3473 */
-        "addl $6, %eax\n"
-        "movl %eax, %edx\n"
-        "movl %eax, tess+370640\n"
-        "addl $1, %ecx\n" /* line 3465 */
-        "cmpl %ecx, %ebx\n" /* iterationCount */
-        "jne .Lfd8330_000d87bb\n"
-        ".Lfd8330_000d8836:\n"
-        "leal -0x2c(%ebp), %eax\n" /* line 3476 | beginTime */
-        "calll RB_BeginBenchmarkGpu\n"
-        "calll RB_EndSurface\n" /* line 3478 */
-        "leal -0x24(%ebp), %eax\n" /* line 3480 | endTime */
-        "calll RB_EndBenchmarkGpu\n"
-        "calll RB_PopMatrixStack\n" /* line 3482 */
-        /* { scope 2 */
-        "leal -0x34(%ebp), %eax\n" /* line 3378 | frequency */
-        "movl %eax, (%esp)\n"
-        "calll QueryPerformanceFrequency\n"
-        "cvtsi2sdl %ebx, %xmm1\n"
-        "movl -0x24(%ebp), %eax\n" /* endTime */
-        "movl -0x20(%ebp), %edx\n"
-        "subl -0x2c(%ebp), %eax\n" /* beginTime */
-        "sbbl -0x28(%ebp), %edx\n"
         "pushl %edx\n"
         "pushl %eax\n"
-        "fildll (%esp)\n"
-        "fstpl -0x100(%ebp)\n"
-        "movsd -0x100(%ebp), %xmm0\n"
-        "fildll -0x34(%ebp)\n" /* frequency */
-        "fstpl -0xf8(%ebp)\n"
-        "divsd -0xf8(%ebp), %xmm0\n"
-        "divsd %xmm0, %xmm1\n"
-        "divsd lit8_00307cd8, %xmm1\n" /* 60.0 */
-        /* } scope */
-        /* } scope */
-        "cvtsd2ss %xmm1, %xmm0\n" /* line 3485 */
-        "addl $0x114, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "calll RB_TestFillPass3D_impl\n"
+        "addl $8, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: frequency */
-        ".Lfd8330_000d88aa:\n"
-        "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, tess+4\n" /* line 192 */
-        "movss %xmm2, tess+8\n" /* line 193 */
-        "movl %edi, tess+12\n" /* line 191 */
-        "movl %edi, tess+16\n" /* line 192 */
-        "movl $0x3f800000, tess+20\n" /* line 193 */
-        "leal -0x1c(%ebp), %ecx\n" /* line 606 | white */
-        "movl $0xffffffff, tess+24\n"
-        "movl %edi, tess+28\n" /* line 30 */
-        "movl %edi, tess+32\n" /* line 31 */
-        "jmp .Lfd8330_000d856a\n"
-        ".Lfd8330_000d88f6:\n"
-        "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, tess+4\n" /* line 192 */
-        "movss %xmm2, tess+8\n" /* line 193 */
-        "movl $0, tess+12\n" /* line 191 */
-        "movl $0, tess+16\n" /* line 192 */
-        "movl $0x3f800000, tess+20\n" /* line 193 */
-        "movl %ecx, tess+24\n" /* line 606 */
-        "movl $0, tess+28\n" /* line 30 */
-        "movl $0x3f800000, tess+32\n" /* line 31 */
-        "jmp .Lfd8330_000d8797\n"
-        ".Lfd8330_000d894b:\n"
-        "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, tess+4\n" /* line 192 */
-        "movss %xmm2, tess+8\n" /* line 193 */
-        "movl $0, tess+12\n" /* line 191 */
-        "movl $0, tess+16\n" /* line 192 */
-        "movl $0x3f800000, tess+20\n" /* line 193 */
-        "movl %ecx, tess+24\n" /* line 606 */
-        "movl $0x3f800000, tess+28\n" /* line 30 */
-        "movl $0x3f800000, tess+32\n" /* line 31 */
-        "jmp .Lfd8330_000d86ce\n"
-        ".Lfd8330_000d89a0:\n"
-        "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, tess+4\n" /* line 192 */
-        "movss %xmm2, tess+8\n" /* line 193 */
-        "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, tess+12\n"
-        "movl %eax, tess+16\n" /* line 192 */
-        "movl $0x3f800000, %edx\n" /* line 193 */
-        "movl %edx, tess+20\n"
-        "movl (%ecx), %ecx\n" /* line 606 */
-        "movl %ecx, tess+24\n"
-        "movl %edx, tess+28\n" /* line 30 */
-        "movl %eax, tess+32\n" /* line 31 */
-        "jmp .Lfd8330_000d8605\n"
     );
 }
 
