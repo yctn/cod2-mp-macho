@@ -43,14 +43,21 @@ extern void R_AddXModelSurfaces(int entIndex);
 extern r_globals_t rg;
 extern r_global_permanent_t rgp;
 extern void R_Error(int level, const char *fmt, ...);
+extern void Vec3Cross(const vec_t *v0, const vec_t *v1, vec_t *cross);
+extern float Vec3Normalize(vec_t *v);
+extern int BoxOnPlaneSide(const vec_t *emins, const vec_t *emaxs, const cplane_t *p);
+extern void ExpandBounds(const vec_t *addedmins, const vec_t *addedmaxs, vec_t *mins, vec_t *maxs);
 void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
 void R_SetCullDist(float dist);
 static int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs);
+static int R_FilterEntityIntoCells_r_impl(mnode_t *node, int entIndex, const vec_t *mins, const vec_t *maxs);
 int R_CellForPoint(const vec_t *origin);
 static vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut);
+static vec3_t * R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut);
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
+static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals);
 static __attribute__((regparm(3))) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes);
 static __attribute__((regparm(3))) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
@@ -127,224 +134,105 @@ void R_SetCullDist(float dist)
     *(float *)&dpvsConfig = dist > 0.0f ? dist : 0.0f;
 }
 
-/* line 1273 */
+/* line 1273 — R_FilterEntityIntoCells_r
+ * Actual calling convention: eax=node, edx=entIndex, ecx=mins, stack=maxs
+ * Recursively walks BSP tree, assigns entity to leaf cell's modelRef list. */
+static int R_FilterEntityIntoCells_r_impl(mnode_t *node, int entIndex, const vec_t *mins, const vec_t *maxs)
+{
+    int cellIndex = node->cellIndex;
+
+    if (cellIndex == -2) {
+        /* Internal node: split plane test */
+        cplane_t *plane = node->u.node.plane;
+        int side = BoxOnPlaneSide(mins, maxs, plane);
+
+        if (side == 3) {
+            /* Entity straddles the split plane */
+            if (plane->type > 2) {
+                /* Non-axial plane: recurse both children with full bounds */
+                int cell1 = R_FilterEntityIntoCells_r_impl(node->u.node.children[0], entIndex, mins, maxs);
+                int cell2 = R_FilterEntityIntoCells_r_impl(node->u.node.children[1], entIndex, mins, maxs);
+                if (cell1 == cell2)
+                    return cell1;
+                return -2;
+            } else {
+                /* Axial plane: clip bounds at plane->dist and recurse each half */
+                vec3_t localmins, localmaxs;
+                localmins[0] = mins[0]; localmins[1] = mins[1]; localmins[2] = mins[2];
+                localmins[plane->type] = plane->dist;
+                localmaxs[0] = maxs[0]; localmaxs[1] = maxs[1]; localmaxs[2] = maxs[2];
+                localmaxs[plane->type] = plane->dist;
+
+                /* Back child with clipped maxs */
+                int cell1 = R_FilterEntityIntoCells_r_impl(node->u.node.children[1], entIndex, mins, localmaxs);
+                /* Front child only if bounds extend past the split */
+                if (maxs[plane->type] > localmins[plane->type]) {
+                    int cell2 = R_FilterEntityIntoCells_r_impl(node->u.node.children[0], entIndex, localmins, maxs);
+                    if (cell1 != cell2)
+                        return -2;
+                    return cell2;
+                }
+                return cell1;
+            }
+        } else {
+            /* Fully on one side: recurse into that child (side 1=front, 2=back) */
+            return R_FilterEntityIntoCells_r_impl(node->u.node.children[side - 1], entIndex, mins, maxs);
+        }
+    }
+
+    if (cellIndex < 0)
+        return cellIndex;
+
+    /* Leaf cell: add entity to cell's modelRef list */
+    byte *world = *(byte **)((byte *)&rgp + 0x109c);
+    GfxCell *cells = *(GfxCell **)(world + 0x100);
+    GfxCell *cell = &cells[cellIndex];
+
+    /* Check modelRef limit */
+    if (dpvsScene.modelRefCount >= 4096) {
+        R_Error(1, "^1Max xmodel refs (%i) exceeded\n", 4096);
+        return node->cellIndex;
+    }
+
+    /* Walk existing modelRef list — if entity already present, expand bounds */
+    GfxSceneModelCellRef *ref = cell->modelRefs;
+    while (ref) {
+        if (ref->entIndex == entIndex) {
+            ExpandBounds(mins, maxs, ref->mins, ref->maxs);
+            return node->cellIndex;
+        }
+        ref = (GfxSceneModelCellRef *)(intptr_t)ref->next;
+    }
+
+    /* Allocate new modelRef entry */
+    int idx = dpvsScene.modelRefCount;
+    GfxSceneModelCellRef *newRef = &dpvsScene.modelRefs[idx];
+    dpvsScene.modelRefCount = idx + 1;
+
+    newRef->entIndex = entIndex;
+    newRef->mins[0] = mins[0]; newRef->mins[1] = mins[1]; newRef->mins[2] = mins[2];
+    newRef->maxs[0] = maxs[0]; newRef->maxs[1] = maxs[1]; newRef->maxs[2] = maxs[2];
+    newRef->next = (int)(intptr_t)cell->modelRefs;
+    cell->modelRefs = newRef;
+
+    return node->cellIndex;
+}
+
+/* Trampoline: marshals register args (eax=node, edx=entIndex, ecx=mins, stack=maxs) to cdecl */
 static __attribute__((naked))
 int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
 {
     __asm__ __volatile__ (
-        ".Lfeedbe_000eedbe:\n"
-        "pushl %ebp\n" /* line 1273 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl %edx, %esi\n" /* entIndex */
-        "movl %ecx, %edi\n" /* mins */
-        /* { scope 1: localmins, localmaxs */
-        "movl 8(%eax), %ecx\n" /* line 1277 */
-        "cmpl $-2, %ecx\n"
-        "je .Lfeedbe_000eeea7\n"
-        "testl %ecx, %ecx\n" /* line 1280 */
-        "js .Lfeedbe_000eee6b\n"
-        "movl imp_rgp, %eax\n" /* line 1283 */
-        "movl 0x109c(%eax), %edx\n"
-        "leal (, %ecx, 4), %eax\n"
-        "movl %ecx, %ebx\n" /* cell */
-        "shll $6, %ebx\n" /* cell */
-        "subl %eax, %ebx\n" /* cell */
-        "addl 0x100(%edx), %ebx\n" /* cell */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl dpvsScene+131072, %eax\n" /* line 1245 */
-        "cmpl $__mh_execute_header, %eax\n"
-        "je .Lfeedbe_000eeee4\n"
-        "movl 0x38(%ebx), %edx\n" /* line 1252 */
-        "testl %edx, %edx\n"
-        "jne .Lfeedbe_000eee7e\n"
-        ".Lfeedbe_000eee18:\n"
-        "movl %eax, %edx\n" /* line 1262 */
-        "shll $5, %edx\n"
-        "leal dpvsScene(%edx), %ecx\n"
-        "addl $1, %eax\n" /* line 1263 */
-        "movl %eax, dpvsScene+131072\n"
-        "movl %esi, dpvsScene(%edx)\n" /* line 1265 */
-        "leal 4(%ecx), %edx\n" /* line 1266 | to */
-        /* { scope 4 */
-        "movl (%edi), %eax\n" /* line 199 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 4(%edi), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%edi), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0x10(%ecx), %edx\n" /* line 1267 | to */
-        /* { scope 4 */
-        "movl 8(%ebp), %esi\n" /* line 199 | maxs */
-        "movl (%esi), %eax\n"
-        "movl %eax, 0x10(%ecx)\n"
-        "movl 4(%esi), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 0x38(%ebx), %eax\n" /* line 1268 */
-        "movl %eax, 0x1c(%ecx)\n"
-        "movl %ecx, 0x38(%ebx)\n" /* line 1269 */
-        "movl -0x3c(%ebp), %eax\n"
-        "movl 8(%eax), %ecx\n"
-        /* } scope */
-        /* } scope */
-        ".Lfeedbe_000eee6b:\n"
-        "movl %ecx, %ebx\n" /* line 1286 | cell */
-        /* } scope */
-        ".Lfeedbe_000eee6d:\n"
-        "movl %ebx, %eax\n" /* line 1332 | cell */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 8(%ebp)\n"          /* maxs (4th arg) */
+        "pushl %ecx\n"             /* mins (3rd arg) */
+        "pushl %edx\n"             /* entIndex (2nd arg) */
+        "pushl %eax\n"             /* node (1st arg) */
+        "calll R_FilterEntityIntoCells_r_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: localmins, localmaxs */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfeedbe_000eee77:\n"
-        "movl 0x1c(%edx), %edx\n" /* line 1252 */
-        "testl %edx, %edx\n"
-        "je .Lfeedbe_000eee18\n"
-        ".Lfeedbe_000eee7e:\n"
-        "cmpl (%edx), %esi\n" /* line 1254 */
-        "jne .Lfeedbe_000eee77\n"
-        "leal 0x10(%edx), %eax\n" /* line 1256 */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 4(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll ExpandBounds\n"
-        "movl -0x3c(%ebp), %esi\n"
-        "movl 8(%esi), %ecx\n"
-        "jmp .Lfeedbe_000eee6b\n"
-        /* } scope */
-        /* } scope */
-        ".Lfeedbe_000eeea7:\n"
-        "movl 0xc(%eax), %eax\n" /* line 1290 */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* maxs */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* mins */
-        "calll BoxOnPlaneSide\n"
-        "cmpl $3, %eax\n" /* line 1291 */
-        "je .Lfeedbe_000eef0d\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 1330 */
-        "movl 0xc(%edx, %eax, 4), %eax\n"
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, (%esp)\n"
-        "movl %edi, %ecx\n" /* mins */
-        "movl %esi, %edx\n" /* entIndex */
-        "calll R_FilterEntityIntoCells_r\n"
-        "movl %eax, %ebx\n" /* cell */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1332 | cell */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: localmins, localmaxs */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfeedbe_000eeee4:\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 1247 */
-        "movl $str_002259ac, 4(%esp)\n" /* "^1Max xmodel refs (%i) exceeded
-" */
-        "movl $1, (%esp)\n"
-        "movl imp_ri, %eax\n"
-        "calll *(%eax)\n"
-        "movl -0x3c(%ebp), %eax\n"
-        "movl 8(%eax), %ecx\n"
-        "jmp .Lfeedbe_000eee6b\n"
-        /* } scope */
-        /* } scope */
-        ".Lfeedbe_000eef0d:\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 1296 */
-        "movl 0xc(%edx), %ecx\n"
-        "cmpb $2, 0x10(%ecx)\n"
-        "ja .Lfeedbe_000eef8b\n"
-        /* { scope 2 */
-        "movl (%edi), %eax\n" /* line 199 */
-        "movl %eax, -0x24(%ebp)\n" /* localmins */
-        "movl 4(%edi), %eax\n" /* line 200 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 8(%edi), %eax\n" /* line 201 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movzbl 0x10(%ecx), %edx\n" /* line 1303 */
-        "movl 0xc(%ecx), %eax\n"
-        "movl %eax, -0x24(%ebp, %edx, 4)\n"
-        "movl 8(%ebp), %edx\n" /* line 199 | maxs */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* localmaxs */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movzbl 0x10(%ecx), %edx\n" /* line 1306 */
-        "movl 0xc(%ecx), %eax\n"
-        "movl %eax, -0x30(%ebp, %edx, 4)\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 1311 */
-        "movl 0x14(%edx), %eax\n"
-        "leal -0x30(%ebp), %edx\n" /* localmaxs */
-        "movl %edx, (%esp)\n"
-        "movl %edi, %ecx\n" /* mins */
-        "movl %esi, %edx\n" /* entIndex */
-        "calll R_FilterEntityIntoCells_r\n"
-        "movl %eax, %edi\n" /* mins */
-        "movl -0x3c(%ebp), %edx\n" /* line 1313 */
-        "movl 0xc(%edx), %eax\n"
-        "movzbl 0x10(%eax), %eax\n"
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movss (%edx, %eax, 4), %xmm0\n"
-        "ucomiss -0x24(%ebp, %eax, 4), %xmm0\n"
-        "ja .Lfeedbe_000eefc8\n"
-        "movl %edi, %ebx\n" /* mins, cell */
-        "jmp .Lfeedbe_000eee6d\n"
-        /* } scope */
-        ".Lfeedbe_000eef8b:\n"
-        "movl 0x10(%edx), %eax\n" /* line 1321 */
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, (%esp)\n"
-        "movl %edi, %ecx\n" /* mins */
-        "movl %esi, %edx\n" /* entIndex */
-        "calll R_FilterEntityIntoCells_r\n"
-        "movl %eax, %ebx\n" /* cell */
-        "movl -0x3c(%ebp), %edx\n" /* line 1322 */
-        "movl 0x14(%edx), %eax\n"
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, (%esp)\n"
-        "movl %edi, %ecx\n" /* mins */
-        "movl %esi, %edx\n" /* entIndex */
-        "calll R_FilterEntityIntoCells_r\n"
-        "movl %eax, %edi\n" /* mins */
-        ".Lfeedbe_000eefb6:\n"
-        "cmpl %edi, %ebx\n" /* line 1324 | mins, cell */
-        "je .Lfeedbe_000eee6d\n"
-        "movl $0xfffffffe, %ebx\n" /* cell */
-        "jmp .Lfeedbe_000eee6d\n"
-        /* { scope 2 */
-        ".Lfeedbe_000eefc8:\n"
-        "leal -0x24(%ebp), %ecx\n" /* line 1314 | localmins */
-        "movl -0x3c(%ebp), %edx\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, (%esp)\n"
-        "movl %esi, %edx\n" /* entIndex */
-        "calll R_FilterEntityIntoCells_r\n"
-        "movl %eax, %ebx\n" /* cell */
-        "jmp .Lfeedbe_000eefb6\n"
     );
 }
 
@@ -379,357 +267,174 @@ int R_CellForPoint(const vec_t *origin)
     }
 }
 
-/* line 990 */
+/* line 990 — R_ChopPortalWinding
+ * Sutherland-Hodgman clip of a polygon winding against a single plane.
+ * Actual calling convention: eax=vertsIn, edx=vertexCount_ptr, ecx=plane(vec4), stack=vertsOut
+ * Returns clipped winding (vertsOut if clipped, vertsIn if fully visible, NULL if fully clipped). */
+static vec3_t *R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut)
+{
+    int count = *vertexCount;
+    if (count <= 0) {
+        *vertexCount = 0;
+        return NULL;
+    }
+
+    float nx = plane[0], ny = plane[1], nz = plane[2], dist = plane[3];
+    float distForVert[128];
+    byte sideForVert[129]; /* +1 for wrap-around */
+    int frontCount = 0, backCount = 0;
+    int i;
+
+    /* Classify each vertex as front (0), back (1), or on-plane (2) */
+    for (i = 0; i < count; i++) {
+        float d = nx * vertsIn[i][0] + ny * vertsIn[i][1] + nz * vertsIn[i][2] + dist - 0.001f;
+        distForVert[i] = d;
+        sideForVert[i] = 2; /* on plane */
+        if (d < -0.001f) {
+            sideForVert[i] = 1; /* back */
+            backCount++;
+        } else if (d > 0.001f) {
+            sideForVert[i] = 0; /* front */
+            frontCount++;
+        }
+    }
+
+    if (frontCount == 0) {
+        *vertexCount = 0;
+        return NULL;
+    }
+    if (backCount == 0)
+        return vertsIn;
+
+    /* Wrap-around for clipping loop */
+    sideForVert[count] = sideForVert[0];
+    distForVert[count] = distForVert[0];
+
+    int newVertCount = 0;
+    float *out = (float *)vertsOut;
+
+    for (i = 0; ; ) {
+        byte side = sideForVert[i];
+
+        if (side == 2) {
+            /* On plane: copy vertex */
+            out[0] = vertsIn[i][0]; out[1] = vertsIn[i][1]; out[2] = vertsIn[i][2];
+            newVertCount++;
+            out += 3;
+        } else if (side == 0) {
+            /* Front side: keep vertex */
+            out[0] = vertsIn[i][0]; out[1] = vertsIn[i][1]; out[2] = vertsIn[i][2];
+            newVertCount++;
+            out += 3;
+        }
+        /* Back side (1): discard */
+
+        int next = i + 1;
+        byte nextSide = sideForVert[next];
+
+        /* If edge crosses the plane, emit interpolated intersection point */
+        if (nextSide != 2 && nextSide != side) {
+            float d0 = distForVert[i];
+            float frac = d0 / (d0 - distForVert[next]);
+            int nextVert = next % count; /* wrapped vertex index for position lookup */
+            float *a = (float *)vertsIn[i];
+            float *b = (float *)vertsIn[nextVert];
+            out[0] = a[0] + frac * (b[0] - a[0]);
+            out[1] = a[1] + frac * (b[1] - a[1]);
+            out[2] = a[2] + frac * (b[2] - a[2]);
+            newVertCount++;
+            out += 3;
+        }
+
+        if (next >= count || newVertCount > 127)
+            break;
+        i = next;
+    }
+
+    *vertexCount = newVertCount;
+    return vertsOut;
+}
+
+/* Trampoline: marshals (eax=vertsIn, edx=vertexCount_ptr, ecx=plane, stack=vertsOut) to cdecl */
 static __attribute__((naked))
 vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 990 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2ac, %esp\n"
-        "movl %eax, -0x2a8(%ebp)\n"
-        "movl %edx, -0x2ac(%ebp)\n"
-        /* { scope 1 */
-        "movl (%edx), %ebx\n" /* line 1004 */
-        "testl %ebx, %ebx\n"
-        "jle .Lfef06e_000ef2a6\n"
-        "movss (%ecx), %xmm5\n" /* line 304 */
-        "movss 4(%ecx), %xmm4\n"
-        "movss 8(%ecx), %xmm3\n"
-        "movss 0xc(%ecx), %xmm2\n" /* line 42 */
-        "movl %eax, %edx\n"
-        "movl $0, -0x2b4(%ebp)\n" /* frontCount */
-        "xorl %esi, %esi\n"
-        "xorl %ecx, %ecx\n"
-        "movss lit4_002ed658, %xmm6\n" /* 0.0010000000474974513f */
-        "movss lit4_002ed670, %xmm7\n" /* -0.0010000000474974513f */
-        "jmp .Lfef06e_000ef0d5\n"
-        ".Lfef06e_000ef0c5:\n"
-        "movb $1, (%eax)\n" /* line 1010 */
-        "addl $1, %esi\n" /* line 1011 | backCount */
-        ".Lfef06e_000ef0cb:\n"
-        "addl $1, %ecx\n" /* line 1004 | plane */
-        "addl $0xc, %edx\n"
-        "cmpl %ecx, %ebx\n" /* plane */
-        "je .Lfef06e_000ef133\n"
-        ".Lfef06e_000ef0d5:\n"
-        "movaps %xmm5, %xmm1\n" /* line 1006 */
-        "mulss (%edx), %xmm1\n"
-        "movaps %xmm4, %xmm0\n"
-        "mulss 4(%edx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movaps %xmm3, %xmm0\n"
-        "mulss 8(%edx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "addss %xmm2, %xmm1\n"
-        "subss %xmm6, %xmm1\n"
-        "movss %xmm1, -0x298(%ebp, %ecx, 4)\n"
-        "leal -0x91(%ebp), %edi\n" /* line 990 | sideForVert */
-        "leal (%ecx, %edi), %eax\n" /* plane */
-        "movb $2, (%eax)\n" /* line 1007 */
-        "ucomiss %xmm1, %xmm7\n" /* line 1008 */
-        "ja .Lfef06e_000ef0c5\n"
-        "ucomiss lit4_002ed658, %xmm1\n" /* line 1013 | 0.0010000000474974513f */
-        "jbe .Lfef06e_000ef0cb\n"
-        "movb $0, (%eax)\n" /* line 1015 */
-        "addl $1, -0x2b4(%ebp)\n" /* line 1016 | frontCount */
-        "addl $1, %ecx\n" /* line 1004 | plane */
-        "addl $0xc, %edx\n"
-        "cmpl %ecx, %ebx\n" /* plane */
-        "jne .Lfef06e_000ef0d5\n"
-        ".Lfef06e_000ef133:\n"
-        "movl -0x2b4(%ebp), %eax\n" /* line 1021 | frontCount */
-        "testl %eax, %eax\n"
-        "je .Lfef06e_000ef2ed\n"
-        "testl %esi, %esi\n" /* line 1027 | backCount */
-        "je .Lfef06e_000ef2f5\n"
-        "movzbl -0x91(%ebp), %eax\n" /* line 1031 | sideForVert */
-        "movb %al, -0x91(%ebp, %ecx)\n"
-        "movl -0x298(%ebp), %eax\n" /* line 1032 | distForVert */
-        "movl %eax, -0x298(%ebp, %ecx, 4)\n"
-        "xorl %edi, %edi\n" /* vertexIndex */
-        "movl $0, -0x2a4(%ebp)\n" /* newVertCount */
-        "movl 8(%ebp), %esi\n" /* vertsOut, backCount */
-        "jmp .Lfef06e_000ef26a\n"
-        ".Lfef06e_000ef178:\n"
-        "testb %bl, %bl\n" /* line 1044 */
-        "jne .Lfef06e_000ef1a2\n"
-        "leal (%edi, %edi, 2), %eax\n" /* line 1046 | vertexIndex, from */
-        "movl -0x2a8(%ebp), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n" /* from */
-        /* { scope 2 */
-        "movl (%eax), %edx\n" /* line 199 */
-        "movl %edx, (%esi)\n"
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, 4(%esi)\n"
-        "movl 8(%eax), %eax\n" /* line 201 */
-        "movl %eax, 8(%esi)\n"
-        /* } scope */
-        "addl $1, -0x2a4(%ebp)\n" /* line 1047 | newVertCount */
-        "addl $0xc, %esi\n" /* backCount */
-        ".Lfef06e_000ef1a2:\n"
-        "leal 1(%edi), %ecx\n" /* line 1050 | vertexIndex, plane */
-        "movzbl -0x91(%ebp, %ecx), %eax\n"
-        "cmpb $2, %al\n"
-        "je .Lfef06e_000ef251\n"
-        "cmpb %al, %bl\n"
-        "je .Lfef06e_000ef251\n"
-        "movss -0x298(%ebp, %edi, 4), %xmm2\n" /* line 1054 */
-        "movaps %xmm2, %xmm0\n"
-        "subss -0x298(%ebp, %ecx, 4), %xmm0\n"
-        "divss %xmm0, %xmm2\n"
-        "movl %ecx, %eax\n" /* line 1055 | plane */
-        "movl -0x2ac(%ebp), %ebx\n"
-        "cltd\n"
-        "idivl (%ebx)\n"
-        "leal (%edx, %edx, 2), %edx\n"
-        "movl -0x2a8(%ebp), %eax\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "leal (%edi, %edi, 2), %eax\n" /* line 1056 | vertexIndex */
-        "movl -0x2a8(%ebp), %ebx\n"
-        "leal (%ebx, %eax, 4), %eax\n"
-        "movss (%eax), %xmm1\n"
-        "movss (%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%esi)\n" /* backCount */
-        "movss 4(%eax), %xmm1\n" /* line 1057 */
-        "movss 4(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%esi)\n" /* backCount */
-        "movss 8(%eax), %xmm1\n" /* line 1058 */
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "addss %xmm2, %xmm1\n"
-        "movss %xmm1, 8(%esi)\n" /* backCount */
-        "addl $1, -0x2a4(%ebp)\n" /* line 1059 | newVertCount */
-        "addl $0xc, %esi\n" /* backCount */
-        ".Lfef06e_000ef251:\n"
-        "movl -0x2ac(%ebp), %edi\n" /* line 1035 | vertexIndex */
-        "cmpl (%edi), %ecx\n" /* vertexIndex, plane */
-        "jge .Lfef06e_000ef306\n"
-        "cmpl $0x7f, -0x2a4(%ebp)\n" /* newVertCount */
-        "jg .Lfef06e_000ef2c9\n"
-        "movl %ecx, %edi\n" /* plane, vertexIndex */
-        ".Lfef06e_000ef26a:\n"
-        "movzbl -0x91(%ebp, %edi), %ebx\n" /* line 1037 */
-        "cmpb $2, %bl\n"
-        "jne .Lfef06e_000ef178\n"
-        "leal (%edi, %edi, 2), %eax\n" /* line 1039 | vertexIndex, from */
-        "movl -0x2a8(%ebp), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n" /* from */
-        /* { scope 2 */
-        "movl (%eax), %edx\n" /* line 199 */
-        "movl %edx, (%esi)\n"
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, 4(%esi)\n"
-        "movl 8(%eax), %eax\n" /* line 201 */
-        "movl %eax, 8(%esi)\n"
-        /* } scope */
-        "addl $1, -0x2a4(%ebp)\n" /* line 1040 | newVertCount */
-        "addl $0xc, %esi\n" /* backCount */
-        "leal 1(%edi), %ecx\n" /* vertexIndex, plane */
-        "jmp .Lfef06e_000ef251\n"
-        ".Lfef06e_000ef2a6:\n"
-        "movl %edx, %eax\n"
-        ".Lfef06e_000ef2a8:\n"
-        "movl $0, (%eax)\n" /* line 1023 */
-        "movl $0, -0x2a8(%ebp)\n"
-        "movl -0x2a8(%ebp), %eax\n"
-        /* } scope */
-        "addl $0x2ac, %esp\n" /* line 1065 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 8(%ebp)\n"          /* vertsOut (4th arg) */
+        "pushl %ecx\n"             /* plane (3rd arg) */
+        "pushl %edx\n"             /* vertexCount_ptr (2nd arg) */
+        "pushl %eax\n"             /* vertsIn (1st arg) */
+        "calll R_ChopPortalWinding_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        ".Lfef06e_000ef2c9:\n"
-        "movl -0x2ac(%ebp), %eax\n"
-        /* { scope 1 */
-        ".Lfef06e_000ef2cf:\n"
-        "movl -0x2a4(%ebp), %edx\n" /* line 1063 | newVertCount */
-        "movl %edx, (%eax)\n"
-        "movl 8(%ebp), %ebx\n" /* vertsOut */
-        "movl %ebx, -0x2a8(%ebp)\n"
-        "movl %ebx, %eax\n"
-        /* } scope */
-        "addl $0x2ac, %esp\n" /* line 1065 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfef06e_000ef2ed:\n"
-        "movl -0x2ac(%ebp), %eax\n"
-        "jmp .Lfef06e_000ef2a8\n"
-        ".Lfef06e_000ef2f5:\n"
-        "movl -0x2a8(%ebp), %eax\n"
-        "addl $0x2ac, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfef06e_000ef306:\n"
-        "movl %edi, %eax\n" /* vertexIndex */
-        "jmp .Lfef06e_000ef2cf\n"
     );
 }
 
-/* line 247 */
+/* line 247 — R_GetSidePlaneNormals
+ * Computes outward-facing side plane normals for a portal winding.
+ * Two paths: if dpvsGlob+84 != 0 (near eye), uses per-vertex eye direction differences.
+ * If dpvsGlob+84 == 0 (far/directional eye), uses eye direction × edge vector.
+ * Actual calling convention: eax=winding, edx=vertexCount, ecx=normals */
+static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals)
+{
+    float *eyePos = (float *)((byte *)&dpvsGlob + 72);
+    float eyeDist = *(float *)((byte *)&dpvsGlob + 84);
+
+    if (eyeDist != 0.0f) {
+        /* Near eye: compute direction from eye to each vertex, then cross consecutive pairs */
+        vec3_t diff[129]; /* max 128 vertices + 1 wrap */
+        int i;
+
+        for (i = 0; i < vertexCount; i++) {
+            diff[i][0] = winding[i][0] - eyePos[0];
+            diff[i][1] = winding[i][1] - eyePos[1];
+            diff[i][2] = winding[i][2] - eyePos[2];
+        }
+
+        /* Wrap: diff[vertexCount] = diff[0] */
+        diff[vertexCount][0] = diff[0][0];
+        diff[vertexCount][1] = diff[0][1];
+        diff[vertexCount][2] = diff[0][2];
+
+        for (i = 0; i < vertexCount; i++) {
+            Vec3Cross(diff[i + 1], diff[i], normals[i]);
+            Vec3Normalize(normals[i]);
+        }
+    } else {
+        /* Far/directional eye: cross eye direction with each edge vector */
+        int prevIdx = vertexCount - 1;
+        int i;
+
+        if (vertexCount <= 0)
+            return;
+
+        for (i = 0; i < vertexCount; i++) {
+            vec3_t delta;
+            delta[0] = winding[i][0] - winding[prevIdx][0];
+            delta[1] = winding[i][1] - winding[prevIdx][1];
+            delta[2] = winding[i][2] - winding[prevIdx][2];
+
+            Vec3Cross(eyePos, delta, normals[prevIdx]);
+            Vec3Normalize(normals[prevIdx]);
+
+            prevIdx = i;
+        }
+    }
+}
+
+/* Trampoline: marshals (eax=winding, edx=vertexCount, ecx=normals) to cdecl */
 static __attribute__((naked))
 void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 247 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x63c, %esp\n"
-        "movl %eax, -0x630(%ebp)\n"
-        "movl %edx, -0x634(%ebp)\n"
-        "movl %ecx, -0x638(%ebp)\n"
-        /* { scope 1 */
-        "pxor %xmm0, %xmm0\n" /* line 255 */
-        "ucomiss dpvsGlob+84, %xmm0\n"
-        "jne .Lfef30c_000ef35b\n"
-        "jp .Lfef30c_000ef35b\n"
-        "movl -0x634(%ebp), %edx\n" /* line 269 */
-        "subl $1, %edx\n"
-        "movl -0x634(%ebp), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lfef30c_000ef45a\n"
-        /* } scope */
-        ".Lfef30c_000ef350:\n"
-        "addl $0x63c, %esp\n" /* line 276 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfef30c_000ef35b:\n"
-        "movl -0x634(%ebp), %eax\n" /* line 257 */
-        "testl %eax, %eax\n"
-        "jle .Lfef30c_000ef3c5\n"
-        /* { scope 2 */
-        "movss dpvsGlob+72, %xmm3\n" /* line 248 */
-        "movss dpvsGlob+76, %xmm2\n" /* line 249 */
-        "movss dpvsGlob+80, %xmm1\n" /* line 250 */
-        "movl -0x630(%ebp), %ecx\n"
-        "xorl %edx, %edx\n"
-        /* } scope */
-        ".Lfef30c_000ef385:\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 258 | diff */
-        "leal -0x624(%ebp, %eax, 4), %eax\n" /* diff */
-        /* { scope 2 */
-        "movss (%ecx), %xmm0\n" /* line 248 */
-        "subss %xmm3, %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "movss 4(%ecx), %xmm0\n" /* line 249 */
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "movss 8(%ecx), %xmm0\n" /* line 250 */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 8(%eax)\n"
-        /* } scope */
-        "addl $1, %edx\n" /* line 257 */
-        "addl $0xc, %ecx\n"
-        "cmpl %edx, -0x634(%ebp)\n"
-        "jne .Lfef30c_000ef385\n"
-        ".Lfef30c_000ef3c5:\n"
-        "movl -0x634(%ebp), %eax\n" /* line 259 */
-        "leal (%eax, %eax, 2), %edx\n" /* to */
-        "leal -0x624(%ebp, %edx, 4), %edx\n" /* to */
-        /* { scope 2 */
-        "movl -0x624(%ebp), %eax\n" /* line 199 | delta */
-        "movl %eax, (%edx)\n"
-        "movl -0x620(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x61c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl -0x634(%ebp), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jle .Lfef30c_000ef350\n"
-        "movl -0x638(%ebp), %ebx\n"
-        "movl $0, -0x62c(%ebp)\n"
-        "leal -0x624(%ebp), %edi\n" /* delta, vertexIndexNext */
-        "movl %edi, %esi\n" /* vertexIndexNext */
-        ".Lfef30c_000ef415:\n"
-        "movl %esi, %eax\n" /* line 263 */
-        "addl $1, -0x62c(%ebp)\n"
-        "addl $0xc, %esi\n"
-        "addl $0xc, %edi\n" /* vertexIndexNext */
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* vertexIndexNext */
-        "calll Vec3Cross\n"
-        "movl %ebx, (%esp)\n" /* line 264 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "addl $0xc, %ebx\n"
-        "movl -0x62c(%ebp), %edx\n" /* line 261 */
-        "cmpl %edx, -0x634(%ebp)\n"
-        "jne .Lfef30c_000ef415\n"
-        /* } scope */
-        "addl $0x63c, %esp\n" /* line 276 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfef30c_000ef45a:\n"
-        "movl -0x630(%ebp), %esi\n" /* line 269 */
-        "xorl %edi, %edi\n" /* vertexIndexNext */
-        "jmp .Lfef30c_000ef466\n"
-        ".Lfef30c_000ef464:\n"
-        "movl %eax, %edi\n" /* vertexIndexNext */
-        ".Lfef30c_000ef466:\n"
-        "leal (%edx, %edx, 2), %ebx\n" /* line 271 */
-        "shll $2, %ebx\n"
-        "movl -0x630(%ebp), %edx\n"
-        "leal (%ebx, %edx), %eax\n" /* b */
-        /* { scope 2 */
-        "movss (%esi), %xmm0\n" /* line 248 */
-        "subss (%eax), %xmm0\n"
-        "movss %xmm0, -0x624(%ebp)\n" /* delta */
-        "movss 4(%esi), %xmm0\n" /* line 249 */
-        "subss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x620(%ebp)\n"
-        "movss 8(%esi), %xmm0\n" /* line 250 */
-        "subss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x61c(%ebp)\n"
-        /* } scope */
-        "addl -0x638(%ebp), %ebx\n" /* line 272 */
-        "movl %ebx, 8(%esp)\n"
-        "leal -0x624(%ebp), %eax\n" /* delta */
-        "movl %eax, 4(%esp)\n"
-        "movl $dpvsGlob+72, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl %ebx, (%esp)\n" /* line 273 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "leal 1(%edi), %eax\n" /* line 269 | vertexIndexNext */
-        "addl $0xc, %esi\n"
-        "movl %edi, %edx\n" /* vertexIndexNext */
-        "cmpl %eax, -0x634(%ebp)\n"
-        "jne .Lfef30c_000ef464\n"
-        /* } scope */
-        "addl $0x63c, %esp\n" /* line 276 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %ecx\n"             /* normals (3rd arg) */
+        "pushl %edx\n"             /* vertexCount (2nd arg) */
+        "pushl %eax\n"             /* winding (1st arg) */
+        "calll R_GetSidePlaneNormals_impl\n"
+        "addl $12, %esp\n"
         "retl\n"
     );
 }
