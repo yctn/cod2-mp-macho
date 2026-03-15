@@ -2707,8 +2707,77 @@ void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
 }
 
 /* line 2224 */
-__attribute__((naked))
+/* line 2224 — XModel skinning: converts bone quaternions to 3x4 matrices,
+ * then dispatches per-surface skinning (skinned or rigid transform). */
 void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
+{
+    char *matArray = (char *)imp_g_skinBuffers + context * 5 * 8192;
+    const DObjAnimMat *bones = skinCmd->mat;
+    int boneCount = skinCmd->boneCount;
+    int boneIndex;
+    const surfaceType_t *surfPos;
+    int surfaceIndex;
+
+    /* Phase 1: Build rotation matrices from bone quaternions */
+    for (boneIndex = 0; boneIndex < boneCount; boneIndex++) {
+        /* Check if this bone is used (bit test in surfacePartBits) */
+        if (skinCmd->surfacePartBits[boneIndex >> 5] & (1 << (boneIndex & 0x1f))) {
+            const float *q = bones[boneIndex].quat;
+            const float *t = bones[boneIndex].trans;
+            float w2 = bones[boneIndex].transWeight;
+            float *m = (float *)(matArray + boneIndex * 64);
+
+            /* Quaternion to 3x4 rotation matrix with w2 scaling */
+            float xx2 = w2 * q[0], yy2 = w2 * q[1], zz2 = w2 * q[2];
+            float xx = xx2 * q[0], xy = xx2 * q[1], xz = xx2 * q[2], xw = xx2 * q[3];
+            float yy = yy2 * q[1], yz = yy2 * q[2], yw = yy2 * q[3];
+            float zz = zz2 * q[2], zw = zz2 * q[3];
+
+            m[0]  = 1.0f - (yy + zz);  m[1]  = zw + xy;           m[2]  = xz - yw;           m[3]  = 0.0f;
+            m[4]  = xy - zw;            m[5]  = 1.0f - (xx + zz);  m[6]  = xw + yz;           m[7]  = 0.0f;
+            m[8]  = xz + yw;            m[9]  = yz - xw;           m[10] = 1.0f - (xx + yy);  m[11] = 0.0f;
+            m[12] = t[0];               m[13] = t[1];              m[14] = t[2];               m[15] = 1.0f;
+        }
+    }
+
+    /* Phase 2: Process surfaces */
+    surfPos = skinCmd->surfs;
+    for (surfaceIndex = 0; surfaceIndex < skinCmd->surfCount; surfaceIndex++) {
+        int surfType = *(const int *)surfPos;
+        const DObjSkelMat *boneMatrix = (const DObjSkelMat *)(matArray + skinCmd->matOffset[surfaceIndex] * 64);
+
+        if (surfType == 3) {
+            /* Skinned surface */
+            __asm__ __volatile__ (
+                "movl %[surf], %%eax\n"
+                "movl %[bone], %%edx\n"
+                "calll R_SkinXSurfaceSkinned\n"
+                : : [surf]"r"(surfPos), [bone]"r"(boneMatrix) : "eax", "ecx", "edx", "memory"
+            );
+            surfPos = (const surfaceType_t *)((const byte *)surfPos + 16);
+        } else if (surfType == 5) {
+            /* Static cached surface — skip */
+            surfPos = (const surfaceType_t *)((const byte *)surfPos + 16);
+        } else {
+            /* Rigid surface (type 4 or other) */
+            const byte *rigidSurf = (const byte *)surfPos;
+            surfPos = (const surfaceType_t *)(rigidSurf + 0x38);
+            {
+                extern int XSurfaceGetBoneOffset(int xsurfIndex);
+                int boneOffset = XSurfaceGetBoneOffset(*(int *)(rigidSurf + 4));
+                GfxEntity *refEnt = skinCmd->e;
+                R_GetRigidTransform(
+                    (const DObjSkelMat *)((const char *)boneMatrix + boneOffset),
+                    (const vec_t *)((const byte *)refEnt + 0x3c),
+                    (vec3_t *)((const byte *)refEnt + 0x14),
+                    *(float *)((const byte *)refEnt + 0x38),
+                    (vec3_t *)(rigidSurf + 8));
+            }
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2224 */
@@ -2917,6 +2986,7 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
         "jmp .Lfd29cc_000d2b67\n"
     );
 }
+#endif /* original naked R_SkinXModelCmd */
 
 /* line 2162 — R_SkinRigidXModelCmd
  * Processes a rigid XModel skinning command. Builds a 3x4 rotation matrix from the
