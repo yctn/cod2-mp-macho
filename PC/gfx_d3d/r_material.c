@@ -102,9 +102,10 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name);
 MaterialHandle Material_Register(const char *name, int imageTrack);
 MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack);
 void Material_Init(void);
-void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(void); /* void std___adjust_heap<Material**, int, Material*, unsigned char (*)(Material const*, Material const*)> */
-void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(void); /* void std___insertion_sort<Material**, unsigned char (*)(Material const*, Material const*)> */
-void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void); /* void std___introsort_loop<Material**, int, unsigned char (*)(Material const*, Material const*)> */
+typedef unsigned char (*MaterialCompFunc)(const Material *, const Material *);
+void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(Material **first, int holeIndex, int len, Material *value, MaterialCompFunc comp);
+void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(Material **first, Material **last, MaterialCompFunc comp);
+void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(Material **first, Material **last, int depth_limit, MaterialCompFunc comp);
 
 /* line 218 */
 void * Material_Alloc(int size)
@@ -1575,205 +1576,120 @@ void Material_Init(void)
     }
 }
 
-/* line 273 */
-__attribute__((naked))
-void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(void) /* void std___adjust_heap<Material**, int, Material*, unsigned char (*)(Material const*, Material const*)> */
+/* std::__adjust_heap for Material** — heap sift-down + push-up */
+void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(
+    Material **first, int holeIndex, int len, Material *value, MaterialCompFunc comp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 273 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 276 | __holeIndex */
-        "leal 2(%eax, %eax), %ebx\n" /* __secondChild */
-        "cmpl 0x10(%ebp), %ebx\n" /* line 277 | __len, __secondChild */
-        "jl .Lf2bf8e2_002bf965\n"
-        "movl 8(%ebp), %edx\n" /* __first */
-        "leal (%edx, %eax, 4), %esi\n"
-        "movl %eax, %edi\n"
-        ".Lf2bf8e2_002bf8ff:\n"
-        "cmpl %ebx, 0x10(%ebp)\n" /* line 286 | __secondChild, __len */
-        "je .Lf2bf8e2_002bf9b7\n"
-        ".Lf2bf8e2_002bf908:\n"
-        "leal -1(%edi), %edx\n" /* line 165 */
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "leal (%eax, %edx), %ebx\n"
-        "sarl $1, %ebx\n"
-        "cmpl 0xc(%ebp), %edi\n" /* line 166 | __holeIndex */
-        "jg .Lf2bf8e2_002bf944\n"
-        ".Lf2bf8e2_002bf91a:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 173 | __value */
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 291 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf2bf8e2_002bf927:\n"
-        "movl (%esi), %eax\n" /* line 169 */
-        "movl 8(%ebp), %edx\n" /* __first */
-        "movl %eax, (%edx, %edi, 4)\n"
-        "leal -1(%ebx), %edx\n" /* line 171 */
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "cmpl 0xc(%ebp), %ebx\n" /* line 166 | __holeIndex */
-        "jle .Lf2bf8e2_002bf91a\n"
-        "movl %ebx, %edi\n"
-        "movl %eax, %ebx\n"
-        ".Lf2bf8e2_002bf944:\n"
-        "movl 8(%ebp), %eax\n" /* __first */
-        "leal (%eax, %ebx, 4), %esi\n"
-        "movl 0x14(%ebp), %edx\n" /* __value */
-        "movl %edx, 4(%esp)\n"
-        "movl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x18(%ebp)\n" /* __comp */
-        "testb %al, %al\n"
-        "jne .Lf2bf8e2_002bf927\n"
-        "movl 8(%ebp), %ecx\n" /* __first */
-        "leal (%ecx, %edi, 4), %esi\n"
-        "jmp .Lf2bf8e2_002bf91a\n"
-        ".Lf2bf8e2_002bf965:\n"
-        "movl %eax, -0x1c(%ebp)\n" /* line 277 */
-        "movl %ebx, %edi\n" /* __secondChild */
-        "jmp .Lf2bf8e2_002bf98f\n"
-        ".Lf2bf8e2_002bf96c:\n"
-        "leal -1(%ebx), %edi\n" /* line 281 | __secondChild */
-        "movl 8(%ebp), %ecx\n" /* __first */
-        "leal (%ecx, %edi, 4), %esi\n"
-        ".Lf2bf8e2_002bf975:\n"
-        "movl (%esi), %eax\n" /* line 282 */
-        "movl -0x1c(%ebp), %edx\n"
-        "movl %eax, (%ecx, %edx, 4)\n"
-        "leal 2(%edi, %edi), %ebx\n" /* line 284 | __secondChild */
-        "cmpl %ebx, 0x10(%ebp)\n" /* line 277 | __secondChild, __len */
-        "jle .Lf2bf8e2_002bf8ff\n"
-        "movl %edi, -0x1c(%ebp)\n"
-        "movl %ebx, %edi\n" /* __secondChild */
-        ".Lf2bf8e2_002bf98f:\n"
-        "leal (, %ebx, 4), %eax\n" /* line 279 */
-        "movl 8(%ebp), %esi\n" /* __first */
-        "addl %eax, %esi\n"
-        "movl 8(%ebp), %edx\n" /* __first */
-        "movl -4(%edx, %eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x18(%ebp)\n" /* __comp */
-        "testb %al, %al\n"
-        "jne .Lf2bf8e2_002bf96c\n"
-        "movl 8(%ebp), %ecx\n" /* __first */
-        "jmp .Lf2bf8e2_002bf975\n"
-        ".Lf2bf8e2_002bf9b7:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 288 | __len */
-        "movl 8(%ebp), %ecx\n" /* __first */
-        "movl -4(%ecx, %edx, 4), %eax\n"
-        "movl %eax, (%esi)\n"
-        "movl %edx, %edi\n" /* line 289 */
-        "subl $1, %edi\n"
-        "leal (%ecx, %edi, 4), %esi\n"
-        "jmp .Lf2bf8e2_002bf908\n"
-    );
+    int topIndex = holeIndex;
+    int secondChild = 2 * holeIndex + 2;
+    while (secondChild < len) {
+        if (comp(first[secondChild], first[secondChild - 1]))
+            secondChild--;
+        first[holeIndex] = first[secondChild];
+        holeIndex = secondChild;
+        secondChild = 2 * secondChild + 2;
+    }
+    if (secondChild == len) {
+        first[holeIndex] = first[len - 1];
+        holeIndex = len - 1;
+    }
+    while (holeIndex > topIndex) {
+        int parent = (holeIndex - 1) / 2;
+        if (!comp(first[parent], value))
+            break;
+        first[holeIndex] = first[parent];
+        holeIndex = parent;
+    }
+    first[holeIndex] = value;
 }
 
-/* line 2152 */
-__attribute__((naked))
-void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(void) /* void std___insertion_sort<Material**, unsigned char (*)(Material const*, Material const*)> */
+/* std::__insertion_sort for Material** — insertion sort with comparator */
+void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(
+    Material **first, Material **last, MaterialCompFunc comp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2152 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 2154 | __last */
-        "cmpl %eax, 8(%ebp)\n" /* __first */
-        "je .Lf2bf9d0_002bfa35\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 2156 | __first */
-        "addl $4, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* __i */
-        "cmpl %edx, %eax\n"
-        "je .Lf2bf9d0_002bfa35\n"
-        /* { scope 2 */
-        ".Lf2bf9d0_002bf9ee:\n"
-        "movl (%edx), %edi\n" /* line 2159 | __val */
-        "movl 8(%ebp), %edx\n" /* line 2160 | __first */
-        "movl (%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* __val */
-        "calll *0x10(%ebp)\n" /* __comp */
-        "testb %al, %al\n"
-        "jne .Lf2bf9d0_002bfa3d\n"
-        "movl -0x1c(%ebp), %ebx\n" /* line 2107 | __i */
-        "subl $4, %ebx\n"
-        "movl -0x1c(%ebp), %esi\n" /* __i */
-        "jmp .Lf2bf9d0_002bfa17\n"
-        ".Lf2bf9d0_002bfa0e:\n"
-        "movl (%ebx), %eax\n" /* line 2110 */
-        "movl %eax, (%esi)\n"
-        "movl %ebx, %esi\n" /* line 2112 */
-        "subl $4, %ebx\n"
-        ".Lf2bf9d0_002bfa17:\n"
-        "movl (%ebx), %eax\n" /* line 2108 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll *0x10(%ebp)\n" /* __comp */
-        "testb %al, %al\n"
-        "jne .Lf2bf9d0_002bfa0e\n"
-        "movl %edi, (%esi)\n" /* line 2114 */
-        "addl $4, -0x1c(%ebp)\n" /* __i */
-        "movl -0x1c(%ebp), %edx\n" /* __i */
-        /* } scope */
-        ".Lf2bf9d0_002bfa30:\n"
-        "cmpl %edx, 0xc(%ebp)\n" /* line 2156 | __last */
-        "jne .Lf2bf9d0_002bf9ee\n"
-        /* } scope */
-        ".Lf2bf9d0_002bfa35:\n"
-        "addl $0x2c, %esp\n" /* line 2166 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf2bf9d0_002bfa3d:\n"
-        "movl -0x1c(%ebp), %ebx\n" /* line 2162 | __i */
-        "addl $4, %ebx\n"
-        /* { scope 3 */
-        "movl -0x1c(%ebp), %eax\n" /* line 424 | __i */
-        "subl 8(%ebp), %eax\n" /* __first */
-        "andl $0xfffffffc, %eax\n" /* line 425 */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* __first */
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, %edx\n"
-        "subl %eax, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll memmove\n"
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 2163 | __first */
-        "movl %edi, (%eax)\n" /* __val */
-        "movl %ebx, -0x1c(%ebp)\n" /* __i */
-        "movl %ebx, %edx\n"
-        "jmp .Lf2bf9d0_002bfa30\n"
-    );
+    Material **i;
+    if (first == last) return;
+    for (i = first + 1; i != last; i++) {
+        Material *val = *i;
+        if (comp(val, *first)) {
+            unsigned int n = (unsigned int)((char *)i - (char *)first) & ~3u;
+            memmove(first + 1, first, n);
+            *first = val;
+        } else {
+            Material **prev = i - 1;
+            Material **hole = i;
+            while (comp(val, *prev)) {
+                *hole = *prev;
+                hole = prev;
+                prev--;
+            }
+            *hole = val;
+        }
+    }
 }
 
-/* line 2514 */
-__attribute__((naked))
-void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void) /* void std___introsort_loop<Material**, int, unsigned char (*)(Material const*, Material const*)> */
+/* std::__introsort_loop for Material** — introsort with heapsort fallback */
+void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(
+    Material **first, Material **last, int depth_limit, MaterialCompFunc comp)
+{
+    while ((char *)last - (char *)first > 64) {
+        if (depth_limit == 0) {
+            int n = (int)(last - first);
+            int half = (n - 2) / 2;
+            int i;
+            Material **end;
+            for (i = half; i >= 0; i--)
+                ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(
+                    first, i, n, first[i], comp);
+            for (end = last - 1; end - first > 0; end--) {
+                Material *value = *end;
+                *end = *first;
+                ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(
+                    first, 0, (int)(end - first), value, comp);
+            }
+            return;
+        }
+        depth_limit--;
+        {
+            int n = (int)(last - first);
+            Material **midPtr = first + n / 2;
+            Material **pivotPtr;
+            Material *pivot;
+            Material **lo, **hi;
+            if (comp(*first, *midPtr)) {
+                if (comp(*midPtr, *(last - 1)))
+                    pivotPtr = midPtr;
+                else if (comp(*first, *(last - 1)))
+                    pivotPtr = last - 1;
+                else
+                    pivotPtr = first;
+            } else {
+                if (comp(*first, *(last - 1)))
+                    pivotPtr = first;
+                else if (comp(*(last - 1), *midPtr))
+                    pivotPtr = midPtr;
+                else
+                    pivotPtr = last - 1;
+            }
+            pivot = *pivotPtr;
+            lo = first;
+            hi = last;
+            for (;;) {
+                while (!comp(pivot, *lo)) lo++;
+                hi--;
+                while (!comp(*hi, pivot)) hi--;
+                if (lo >= hi) break;
+                { Material *tmp = *lo; *lo = *hi; *hi = tmp; }
+                lo++;
+            }
+            ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(
+                lo, last, depth_limit, comp);
+            last = lo;
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         ".Lf2bfa70_002bfa70:\n"
@@ -2007,3 +1923,4 @@ void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void) /* void s
         "jmp .Lf2bfa70_002bfba3\n"
     );
 }
+#endif /* original naked Material introsort */

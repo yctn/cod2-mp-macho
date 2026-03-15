@@ -87,9 +87,10 @@ void R_SetColorMappings(void);
 static Bool R_CreateForInitOrReset(void);
 void R_BeginRegistration(vidConfig_t *vidConfigOut);
 Bool R_RecoverLostDevice(void);
-void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void); /* void std___adjust_heap<_D3DDISPLAYMODE*, int, _D3DDISPLAYMODE, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
-void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void); /* void std___insertion_sort<_D3DDISPLAYMODE*, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
-void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /* void std___introsort_loop<_D3DDISPLAYMODE*, int, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+typedef unsigned char (*D3DDispModeCompFunc)(const _D3DDISPLAYMODE *, const _D3DDISPLAYMODE *);
+void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(_D3DDISPLAYMODE *first, int holeIndex, int len, _D3DDISPLAYMODE value, D3DDispModeCompFunc comp);
+void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(_D3DDISPLAYMODE *first, _D3DDISPLAYMODE *last, D3DDispModeCompFunc comp);
+void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(_D3DDISPLAYMODE *first, _D3DDISPLAYMODE *last, int depth_limit, D3DDispModeCompFunc comp);
 
 /* line 123 */
 void R_FatalInitError(const char *msg)
@@ -2538,9 +2539,34 @@ Bool R_RecoverLostDevice_naked(void)
 }
 #endif /* original naked R_RecoverLostDevice */
 
-/* line 273 */
-__attribute__((naked))
-void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void) /* void std___adjust_heap<_D3DDISPLAYMODE*, int, _D3DDISPLAYMODE, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+/* std::__adjust_heap for _D3DDISPLAYMODE* — heap sift-down + push-up (16-byte elements) */
+void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
+    _D3DDISPLAYMODE *first, int holeIndex, int len, _D3DDISPLAYMODE value, D3DDispModeCompFunc comp)
+{
+    int topIndex = holeIndex;
+    int secondChild = 2 * holeIndex + 2;
+    while (secondChild < len) {
+        if (comp(&first[secondChild], &first[secondChild - 1]))
+            secondChild--;
+        first[holeIndex] = first[secondChild];
+        holeIndex = secondChild;
+        secondChild = 2 * secondChild + 2;
+    }
+    if (secondChild == len) {
+        first[holeIndex] = first[len - 1];
+        holeIndex = len - 1;
+    }
+    while (holeIndex > topIndex) {
+        int parent = (holeIndex - 1) / 2;
+        if (!comp(&first[parent], &value))
+            break;
+        first[holeIndex] = first[parent];
+        holeIndex = parent;
+    }
+    first[holeIndex] = value;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 273 */
@@ -2704,10 +2730,33 @@ void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void)
         "jmp .Lf2bf346_002bf38d\n"
     );
 }
+#endif /* original naked D3D adjust_heap */
 
-/* line 2152 */
-__attribute__((naked))
-void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void) /* void std___insertion_sort<_D3DDISPLAYMODE*, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+/* std::__insertion_sort for _D3DDISPLAYMODE* — insertion sort with 16-byte element copies */
+void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(
+    _D3DDISPLAYMODE *first, _D3DDISPLAYMODE *last, D3DDispModeCompFunc comp)
+{
+    _D3DDISPLAYMODE *i;
+    if (first == last) return;
+    for (i = first + 1; i != last; i++) {
+        _D3DDISPLAYMODE val = *i;
+        if (comp(&val, first)) {
+            memmove(first + 1, first, (char *)i - (char *)first);
+            *first = val;
+        } else {
+            _D3DDISPLAYMODE *prev = i - 1;
+            _D3DDISPLAYMODE *hole = i;
+            while (comp(&val, prev)) {
+                *hole = *prev;
+                hole = prev;
+                prev--;
+            }
+            *hole = val;
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2152 */
@@ -2834,10 +2883,71 @@ void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void) /* voi
         "jmp .Lf2bf4d4_002bf57a\n"
     );
 }
+#endif /* original naked D3D insertion_sort */
 
 /* line 2514 */
-__attribute__((naked))
-void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void) /* void std___introsort_loop<_D3DDISPLAYMODE*, int, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+/* std::__introsort_loop for _D3DDISPLAYMODE* — introsort with heapsort fallback (16-byte elements) */
+void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(
+    _D3DDISPLAYMODE *first, _D3DDISPLAYMODE *last, int depth_limit, D3DDispModeCompFunc comp)
+{
+    while ((char *)last - (char *)first > 16 * 16) { /* > 16 elements of 16 bytes */
+        if (depth_limit == 0) {
+            int n = (int)(last - first);
+            int half = (n - 2) / 2;
+            int i;
+            _D3DDISPLAYMODE *end;
+            for (i = half; i >= 0; i--)
+                ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
+                    first, i, n, first[i], comp);
+            for (end = last - 1; end - first > 0; end--) {
+                _D3DDISPLAYMODE value = *end;
+                *end = *first;
+                ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
+                    first, 0, (int)(end - first), value, comp);
+            }
+            return;
+        }
+        depth_limit--;
+        {
+            int n = (int)(last - first);
+            _D3DDISPLAYMODE *midPtr = first + n / 2;
+            _D3DDISPLAYMODE *pivotPtr;
+            _D3DDISPLAYMODE pivot;
+            _D3DDISPLAYMODE *lo, *hi;
+            if (comp(first, midPtr)) {
+                if (comp(midPtr, last - 1))
+                    pivotPtr = midPtr;
+                else if (comp(first, last - 1))
+                    pivotPtr = last - 1;
+                else
+                    pivotPtr = first;
+            } else {
+                if (comp(first, last - 1))
+                    pivotPtr = first;
+                else if (comp(last - 1, midPtr))
+                    pivotPtr = midPtr;
+                else
+                    pivotPtr = last - 1;
+            }
+            pivot = *pivotPtr;
+            lo = first;
+            hi = last;
+            for (;;) {
+                while (!comp(&pivot, lo)) lo++;
+                hi--;
+                while (!comp(hi, &pivot)) hi--;
+                if (lo >= hi) break;
+                { _D3DDISPLAYMODE tmp = *lo; *lo = *hi; *hi = tmp; }
+                lo++;
+            }
+            ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(
+                lo, last, depth_limit, comp);
+            last = lo;
+        }
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         ".Lf2bf5f2_002bf5f2:\n"
@@ -3124,3 +3234,4 @@ void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void) /*
         "jmp .Lf2bf5f2_002bf7bf\n"
     );
 }
+#endif /* original naked D3D introsort */
