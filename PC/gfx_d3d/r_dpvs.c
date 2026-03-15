@@ -141,6 +141,7 @@ static inline float R_DpvsPlaneFarBoundsTest(const DpvsPlane *plane, const GfxAa
          + plane->coeffs[3];
 }
 static int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count);
+static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t *v, const GfxCell **list, int count);
 static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount);
 static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, DpvsClipChildren clipChildren);
 static void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount);
@@ -862,352 +863,144 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
     );
 }
 
-/* line 1907 */
+/* line 1907 — R_GetFurtherCellList_r
+ * Recursively traverses portals to build a list of visible cells.
+ * For each portal in the cell: checks eye-facing, clips winding against parent plane,
+ * frustum planes, and occluders, then recurses into the destination cell.
+ * Actual convention: eax=cell, edx=parentPlane, ecx=planes, stack=planeCount,v,list,count */
+static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t *v, const GfxCell **list, int count)
+{
+    float *eyeDir = (float *)((byte *)&dpvsGlob + 72);
+    int portalCount = cell->portalCount;
+    int portalIndex;
+
+    for (portalIndex = 0; portalIndex < portalCount; portalIndex++) {
+        byte *portal = (byte *)cell->portals + portalIndex * 0x44;
+        const GfxCell *destCell = *(const GfxCell **)(portal + 0x1c);
+
+        /* Skip if destination cell is already in the list */
+        int already = 0;
+        int k;
+        for (k = 0; k < count; k++) {
+            if (list[k] == destCell) {
+                already = 1;
+                break;
+            }
+        }
+        if (already)
+            continue;
+
+        /* Skip if portal doesn't face the eye */
+        if (*(byte *)(portal + 1))
+            continue;
+
+        /* Eye-facing test: dot(portalPlane.normal, eyeDir) + portalPlane.dist * eyeDist */
+        float *portalPlane = (float *)(portal + 8);
+        float dot = portalPlane[0] * eyeDir[0] + portalPlane[1] * eyeDir[1]
+                  + portalPlane[2] * eyeDir[2] + portalPlane[3] * eyeDir[3];
+        if (dot > 0.0f)
+            continue;
+
+        /* Get portal winding */
+        vec3_t *portalVerts = *(vec3_t **)(portal + 0x20);
+        int vertCount = (unsigned char)*(portal + 0x24);
+
+        /* Clip winding against parent plane */
+        vec3_t *w;
+        if (parentPlane) {
+            w = R_ChopPortalWinding_impl(portalVerts, &vertCount, (const float *)parentPlane, v);
+            if (!vertCount)
+                continue;
+
+            /* Second clip if dpvsGlob+44 is set */
+            if (*(int *)((byte *)&dpvsGlob + 44)) {
+                vec3_t *altBuf = (w != v) ? v : v + 128; /* alternate buffer at v+0x600 */
+                w = R_ChopPortalWinding_impl(w, &vertCount, (const float *)parentPlane, altBuf);
+                if (!vertCount)
+                    continue;
+            }
+        } else {
+            w = portalVerts;
+        }
+
+        /* Clip against each frustum plane */
+        int pi;
+        for (pi = 0; pi < planeCount; pi++) {
+            vec3_t *altBuf = (w != v) ? v : v + 128;
+            w = R_ChopPortalWinding_impl(w, &vertCount, (const float *)&planes[pi], altBuf);
+            if (!vertCount)
+                break;
+        }
+        if (!vertCount)
+            continue;
+
+        /* Test against global occluders */
+        int occCount = *(int *)((byte *)&dpvsGlob + 56);
+        int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
+        int occluded = 0;
+        int oi;
+        for (oi = 0; oi < occCount && !occluded; oi++) {
+            byte *occ = (byte *)occTable[oi];
+            int occPlaneCount = *(int *)(occ + 0x1c);
+            DpvsPlane *occPlanes = *(DpvsPlane **)(occ + 0x20);
+            if (occPlaneCount <= 0) {
+                occluded = 1;
+                break;
+            }
+            /* Test all occluder planes against all portal winding vertices.
+             * If any vertex is in front of any occluder plane, not fully occluded. */
+            int allBehind = 1;
+            int opi;
+            for (opi = 0; opi < occPlaneCount && allBehind; opi++) {
+                float *op = occPlanes[opi].coeffs;
+                /* Test first vertex */
+                float *vert = (float *)portalVerts; /* use original verts for quick test */
+                float d = op[0] * vert[0] + op[1] * vert[1] + op[2] * vert[2] + op[3];
+                if (d > 0.0f)
+                    allBehind = 0;
+                /* Test remaining vertices */
+                int vi;
+                for (vi = 1; vi < (int)(unsigned char)*(portal + 0x24) && allBehind; vi++) {
+                    vert = (float *)((byte *)portalVerts + vi * 12);
+                    d = op[0] * vert[0] + op[1] * vert[1] + op[2] * vert[2] + op[3];
+                    if (d > 0.0f)
+                        allBehind = 0;
+                }
+            }
+            if (allBehind)
+                occluded = 1;
+        }
+        if (occluded)
+            continue;
+
+        /* Winding survived all clipping — add destination cell and recurse */
+        if (vertCount > 0) {
+            list[count] = destCell;
+            count = R_GetFurtherCellList_r_impl(destCell, parentPlane, planes, planeCount, v, list, count + 1);
+        }
+    }
+
+    return count;
+}
+
+/* Trampoline: eax=cell, edx=parentPlane, ecx=planes, stack=planeCount,v,list,count */
 static __attribute__((naked))
 int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count)
 {
     __asm__ __volatile__ (
-        ".Lfefefa_000efefa:\n"
-        "pushl %ebp\n" /* line 1907 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl %eax, %edi\n" /* cell */
-        "movl %edx, -0x7c(%ebp)\n"
-        "movl %ecx, -0x80(%ebp)\n"
-        "movl 0x14(%ebp), %esi\n" /* count */
-        /* { scope 1: c, v, occluderIndex, planeIndex, ... */
-        "movl 0x20(%eax), %ecx\n" /* line 1912 */
-        "testl %ecx, %ecx\n"
-        "jle .Lfefefa_000eff5b\n"
-        "movl $0, -0x78(%ebp)\n" /* portalIndex */
-        "movl $0, -0x2c(%ebp)\n"
-        ".Lfefefa_000eff26:\n"
-        "movl -0x2c(%ebp), %ebx\n" /* line 1914 | portal */
-        "addl 0x24(%edi), %ebx\n" /* cell, portal */
-        "movl 0x1c(%ebx), %edx\n" /* portal */
-        /* { scope 2: planeCount */
-        /* { scope 3: v */
-        "testl %esi, %esi\n" /* line 1891 */
-        "jle .Lfefefa_000eff68\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1893 | list */
-        "cmpl (%eax), %edx\n"
-        "je .Lfefefa_000eff4b\n"
-        "xorl %eax, %eax\n"
-        ".Lfefefa_000eff3c:\n"
-        "addl $1, %eax\n" /* line 1891 */
-        "cmpl %eax, %esi\n"
-        "je .Lfefefa_000eff68\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1893 | list */
-        "cmpl (%ecx, %eax, 4), %edx\n"
-        "jne .Lfefefa_000eff3c\n"
-        /* } scope */
-        /* } scope */
-        ".Lfefefa_000eff4b:\n"
-        "addl $1, -0x78(%ebp)\n" /* line 1912 | portalIndex */
-        "addl $0x44, -0x2c(%ebp)\n"
-        "movl -0x78(%ebp), %eax\n" /* portalIndex */
-        "cmpl 0x20(%edi), %eax\n" /* cell */
-        "jl .Lfefefa_000eff26\n"
-        /* } scope */
-        ".Lfefefa_000eff5b:\n"
-        "movl %esi, %eax\n" /* line 1926 | count */
-        "addl $0x9c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl 0x14(%ebp)\n"
+        "pushl 0x10(%ebp)\n"
+        "pushl 0xc(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_GetFurtherCellList_r_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: c, v, occluderIndex, planeIndex, ... */
-        ".Lfefefa_000eff68:\n"
-        "cmpb $0, 1(%ebx)\n" /* line 1814 */
-        "jne .Lfefefa_000eff4b\n"
-        "leal 8(%ebx), %eax\n" /* line 220 */
-        "movss 8(%ebx), %xmm1\n" /* line 1816 */
-        "mulss dpvsGlob+72, %xmm1\n"
-        "movss 4(%eax), %xmm0\n"
-        "mulss dpvsGlob+76, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss dpvsGlob+80, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss 0xc(%eax), %xmm0\n"
-        "mulss dpvsGlob+84, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "pxor %xmm3, %xmm3\n"
-        "ucomiss %xmm3, %xmm1\n"
-        "ja .Lfefefa_000eff4b\n"
-        "movl 8(%ebp), %edx\n" /* line 966 | planeCount */
-        "testl %edx, %edx\n"
-        "je .Lfefefa_000f0050\n"
-        /* { scope 2: planeCount */
-        "movl 0x20(%ebx), %edx\n" /* line 954 */
-        "movl %edx, -0x6c(%ebp)\n" /* v */
-        "movzbl 0x24(%ebx), %ecx\n" /* line 955 */
-        "movb %cl, -0x71(%ebp)\n"
-        "movzbl %cl, %eax\n"
-        "movl %eax, -0x70(%ebp)\n" /* c */
-        "addl $4, %edx\n" /* line 304 */
-        "movl %edx, -0x68(%ebp)\n"
-        "movl -0x6c(%ebp), %edx\n" /* v */
-        "addl $8, %edx\n"
-        "movl %edx, -0x64(%ebp)\n"
-        "movl -0x80(%ebp), %edx\n"
-        "movl $0, -0x30(%ebp)\n"
-        ".Lfefefa_000efff1:\n"
-        "cmpb $0, -0x71(%ebp)\n" /* line 955 */
-        "je .Lfefefa_000eff4b\n"
-        "movss (%edx), %xmm6\n" /* line 304 */
-        "movss 4(%edx), %xmm5\n"
-        "movss 8(%edx), %xmm4\n"
-        "movss 0xc(%edx), %xmm2\n" /* line 42 */
-        "movaps %xmm6, %xmm0\n" /* line 957 */
-        "movl -0x6c(%ebp), %eax\n" /* v */
-        "mulss (%eax), %xmm0\n"
-        "movaps %xmm5, %xmm1\n"
-        "movl -0x68(%ebp), %ecx\n" /* plane */
-        "mulss (%ecx), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movaps %xmm4, %xmm1\n"
-        "movl -0x64(%ebp), %eax\n"
-        "mulss (%eax), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "addss %xmm2, %xmm0\n"
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lfefefa_000f0294\n"
-        /* } scope */
-        ".Lfefefa_000f0041:\n"
-        "addl $0x14, %edx\n" /* line 966 */
-        "addl $1, -0x30(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* planeCount */
-        "cmpl %eax, -0x30(%ebp)\n"
-        "jne .Lfefefa_000efff1\n"
-        /* { scope 2: planeCount */
-        ".Lfefefa_000f0050:\n"
-        "movl dpvsGlob+56, %ecx\n" /* line 1658 */
-        "movl %ecx, -0x60(%ebp)\n"
-        "testl %ecx, %ecx\n"
-        "jle .Lfefefa_000f0136\n"
-        "movl dpvsGlob+60, %eax\n" /* line 1660 */
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl $0, -0x58(%ebp)\n" /* occluderIndex */
-        "movl %eax, %ecx\n"
-        "movl -0x58(%ebp), %edx\n" /* occluderIndex */
-        "movl (%ecx, %edx, 4), %eax\n"
-        "movl 0x1c(%eax), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* planeCount */
-        "movl 0x20(%eax), %ecx\n"
-        /* { scope 3: v */
-        "testl %edx, %edx\n" /* line 977 */
-        "je .Lfefefa_000eff4b\n"
-        /* { scope 4 */
-        ".Lfefefa_000f0089:\n"
-        "movl 0x20(%ebx), %eax\n" /* line 954 */
-        "movl %eax, -0x4c(%ebp)\n" /* v */
-        "movzbl 0x24(%ebx), %edx\n" /* line 955 */
-        "movb %dl, -0x4d(%ebp)\n"
-        "movzbl %dl, %eax\n"
-        /* { scope 5 */
-        "movl -0x4c(%ebp), %edx\n" /* line 304 | v */
-        "addl $4, %edx\n"
-        "movl %edx, -0x48(%ebp)\n"
-        "movl -0x4c(%ebp), %edx\n" /* v */
-        "addl $8, %edx\n"
-        "movl %edx, -0x44(%ebp)\n"
-        "movl $0, -0x34(%ebp)\n"
-        "subl $1, %eax\n"
-        "movl %eax, -0x88(%ebp)\n"
-        /* } scope */
-        ".Lfefefa_000f00bb:\n"
-        "cmpb $0, -0x4d(%ebp)\n" /* line 955 */
-        "je .Lfefefa_000f027c\n"
-        /* { scope 5 */
-        "movss (%ecx), %xmm7\n" /* line 304 */
-        "movss 4(%ecx), %xmm6\n"
-        "movss 8(%ecx), %xmm5\n"
-        "movss 0xc(%ecx), %xmm4\n" /* line 42 */
-        /* } scope */
-        "movaps %xmm7, %xmm0\n" /* line 957 */
-        "movl -0x4c(%ebp), %eax\n" /* v */
-        "mulss (%eax), %xmm0\n"
-        "movaps %xmm6, %xmm1\n"
-        "movl -0x48(%ebp), %edx\n"
-        "mulss (%edx), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movaps %xmm5, %xmm1\n"
-        "movl -0x44(%ebp), %eax\n"
-        "mulss (%eax), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "addss %xmm4, %xmm0\n"
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lfefefa_000f023a\n"
-        /* } scope */
-        /* } scope */
-        ".Lfefefa_000f010b:\n"
-        "addl $1, -0x58(%ebp)\n" /* line 1658 | occluderIndex */
-        "movl -0x60(%ebp), %ecx\n"
-        "cmpl %ecx, -0x58(%ebp)\n" /* occluderIndex */
-        "je .Lfefefa_000f0136\n"
-        "movl -0x5c(%ebp), %ecx\n"
-        "movl -0x58(%ebp), %edx\n" /* line 1660 | occluderIndex */
-        "movl (%ecx, %edx, 4), %eax\n"
-        "movl 0x1c(%eax), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* planeCount */
-        "movl 0x20(%eax), %ecx\n"
-        /* { scope 3: v */
-        "testl %edx, %edx\n" /* line 977 */
-        "je .Lfefefa_000eff4b\n"
-        "jmp .Lfefefa_000f0089\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: planeCount */
-        ".Lfefefa_000f0136:\n"
-        "movzbl 0x24(%ebx), %eax\n" /* line 1837 */
-        "movl %eax, -0x1c(%ebp)\n" /* vertCount */
-        "movl 0x20(%ebx), %eax\n" /* line 1838 */
-        "movl 0xc(%ebp), %edx\n" /* line 1841 | v */
-        "movl %edx, (%esp)\n"
-        "movl -0x7c(%ebp), %ecx\n"
-        "leal -0x1c(%ebp), %edx\n" /* vertCount */
-        "calll R_ChopPortalWinding\n"
-        "movl %eax, -0x3c(%ebp)\n" /* w */
-        "movl -0x1c(%ebp), %eax\n" /* line 1842 | vertCount */
-        "testl %eax, %eax\n"
-        "je .Lfefefa_000eff4b\n"
-        "movl dpvsGlob+44, %ecx\n" /* line 1847 */
-        "testl %ecx, %ecx\n"
-        "je .Lfefefa_000f019b\n"
-        "movl $0x600, %eax\n" /* line 1849 */
-        "movl -0x3c(%ebp), %edx\n" /* w */
-        "cmpl %edx, 0xc(%ebp)\n" /* v */
-        "movl $0, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "addl 0xc(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* vertCount */
-        "movl -0x3c(%ebp), %eax\n" /* w */
-        "calll R_ChopPortalWinding\n"
-        "movl %eax, -0x3c(%ebp)\n" /* w */
-        "movl -0x1c(%ebp), %eax\n" /* line 1850 | vertCount */
-        "testl %eax, %eax\n"
-        "je .Lfefefa_000eff4b\n"
-        ".Lfefefa_000f019b:\n"
-        "movl 8(%ebp), %eax\n" /* line 1855 | planeCount */
-        "testl %eax, %eax\n"
-        "jle .Lfefefa_000f01f6\n"
-        "movl -0x80(%ebp), %ecx\n"
-        "movl %ecx, -0x38(%ebp)\n"
-        "movl $0, -0x40(%ebp)\n" /* planeIndex */
-        "jmp .Lfefefa_000f01b4\n"
-        ".Lfefefa_000f01b1:\n"
-        "movl -0x38(%ebp), %ecx\n"
-        ".Lfefefa_000f01b4:\n"
-        "movl $0x600, %eax\n" /* line 1857 */
-        "movl 0xc(%ebp), %edx\n" /* v */
-        "cmpl %edx, -0x3c(%ebp)\n" /* w */
-        "movl $0, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "addl 0xc(%ebp), %eax\n" /* v */
-        "movl %eax, (%esp)\n"
-        "leal -0x1c(%ebp), %edx\n" /* vertCount */
-        "movl -0x3c(%ebp), %eax\n" /* w */
-        "calll R_ChopPortalWinding\n"
-        "movl %eax, -0x3c(%ebp)\n" /* w */
-        "movl -0x1c(%ebp), %eax\n" /* line 1858 | vertCount */
-        "testl %eax, %eax\n"
-        "je .Lfefefa_000eff4b\n"
-        "addl $1, -0x40(%ebp)\n" /* line 1855 | planeIndex */
-        "addl $0x14, -0x38(%ebp)\n"
-        "movl -0x40(%ebp), %ecx\n" /* planeIndex */
-        "cmpl %ecx, 8(%ebp)\n" /* planeCount */
-        "jne .Lfefefa_000f01b1\n"
-        /* } scope */
-        ".Lfefefa_000f01f6:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1919 | vertCount */
-        "testl %eax, %eax\n"
-        "je .Lfefefa_000eff4b\n"
-        "movl 0x1c(%ebx), %eax\n" /* line 1902 */
-        "movl 0x10(%ebp), %edx\n" /* list */
-        "movl %eax, (%edx, %esi, 4)\n"
-        "leal 1(%esi), %edx\n" /* line 1903 */
-        "movl 0x1c(%ebx), %eax\n" /* line 1923 | portal */
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* list */
-        "movl %ecx, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* v */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* planeCount */
-        "movl %ecx, (%esp)\n"
-        "movl -0x80(%ebp), %ecx\n"
-        "movl -0x7c(%ebp), %edx\n"
-        "calll R_GetFurtherCellList_r\n"
-        "movl %eax, %esi\n" /* count */
-        "jmp .Lfefefa_000eff4b\n"
-        /* { scope 2: planeCount */
-        /* { scope 3: v */
-        /* { scope 4 */
-        ".Lfefefa_000f023a:\n"
-        "movl -0x4c(%ebp), %edx\n" /* line 957 | v */
-        "xorl %eax, %eax\n"
-        "jmp .Lfefefa_000f0274\n"
-        /* { scope 5 */
-        ".Lfefefa_000f0241:\n"
-        "movaps %xmm5, %xmm0\n" /* line 42 */
-        "mulss 0x14(%edx), %xmm0\n"
-        "movaps %xmm6, %xmm1\n"
-        "mulss 0x10(%edx), %xmm1\n"
-        "movaps %xmm7, %xmm2\n"
-        "mulss 0xc(%edx), %xmm2\n"
-        "addss %xmm2, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "addss %xmm4, %xmm0\n"
-        "addl $1, %eax\n"
-        "addl $0xc, %edx\n"
-        /* } scope */
-        "ucomiss %xmm3, %xmm0\n" /* line 957 */
-        "ja .Lfefefa_000f010b\n"
-        ".Lfefefa_000f0274:\n"
-        "cmpl -0x88(%ebp), %eax\n" /* line 955 */
-        "jne .Lfefefa_000f0241\n"
-        /* } scope */
-        ".Lfefefa_000f027c:\n"
-        "addl $0x14, %ecx\n" /* line 977 */
-        "addl $1, -0x34(%ebp)\n"
-        "movl -0x54(%ebp), %edx\n" /* planeCount */
-        "cmpl %edx, -0x34(%ebp)\n"
-        "jne .Lfefefa_000f00bb\n"
-        "jmp .Lfefefa_000eff4b\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: planeCount */
-        ".Lfefefa_000f0294:\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 957 | v */
-        "movl $0, -0x8c(%ebp)\n"
-        "movl -0x70(%ebp), %ecx\n" /* c, plane */
-        "subl $1, %ecx\n" /* plane */
-        "movl %ecx, -0x84(%ebp)\n" /* plane */
-        "jmp .Lfefefa_000f02ec\n"
-        ".Lfefefa_000f02af:\n"
-        "movaps %xmm6, %xmm0\n" /* line 42 */
-        "mulss 0xc(%eax), %xmm0\n"
-        "movaps %xmm5, %xmm1\n"
-        "mulss 0x10(%eax), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movaps %xmm4, %xmm1\n"
-        "mulss 0x14(%eax), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "addss %xmm2, %xmm0\n"
-        "addl $1, -0x8c(%ebp)\n"
-        "addl $0xc, %eax\n"
-        "ucomiss %xmm3, %xmm0\n" /* line 957 */
-        "ja .Lfefefa_000f0041\n"
-        "movl -0x84(%ebp), %ecx\n" /* plane */
-        ".Lfefefa_000f02ec:\n"
-        "cmpl %ecx, -0x8c(%ebp)\n" /* line 955 */
-        "jne .Lfefefa_000f02af\n"
-        "jmp .Lfefefa_000eff4b\n"
     );
 }
 
