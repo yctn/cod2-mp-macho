@@ -21,6 +21,7 @@ static snd_alias_list_t R_SetParentAndCell_r(void);
 static void R_SetParentAndCell_r_impl(mnode_t *node, int parent);
 static snd_alias_list_t R_LoadEntities(void);
 static snd_alias_list_t R_LoadNodesAndLeafs(void);
+static void R_LoadNodesAndLeafs_impl(const byte *loadState);
 static snd_alias_list_t R_LoadPortals(void);
 static snd_alias_list_t R_LoadCells(GfxBspLoad *load);
 static snd_alias_list_t R_LoadAabbTrees(void);
@@ -1783,234 +1784,89 @@ snd_alias_list_t R_LoadEntities(void)
     );
 }
 
-/* line 1741 */
+/* line 1741 — R_LoadNodesAndLeafs
+ * Loads BSP nodes and leafs from lumps 0xD0 (nodes, 36 bytes each) and 0xD8 (leafs, 36 bytes each).
+ * Allocates combined mnode_t array, resolves child indices to pointers, calls R_SetParentAndCell_r.
+ * Actual convention: eax=load (BSP load state pointer) */
+static void R_LoadNodesAndLeafs_impl(const byte *loadState)
+{
+    const byte *bspHeader = *(const byte **)loadState;
+    const byte *bspData = *(const byte **)(loadState + 4);
+    int fileSize = *(int *)(loadState + 8);
+    int i;
+
+    /* Validate node lump (BSP header offset 0xD0: size, 0xD4: offset) */
+    int nodeLumpSize = *(int *)(bspHeader + 0xD0);
+    int nodeLumpOffset = *(int *)(bspHeader + 0xD4);
+    if (nodeLumpOffset + nodeLumpSize > fileSize)
+        R_Error(1, "LoadMap: lump extends past end of file in %s", s_world.name);
+    if (nodeLumpSize <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", s_world.name);
+    int nodeCount = nodeLumpSize / 36;
+    if (nodeLumpSize < 0 || nodeCount * 36 != nodeLumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", s_world.name);
+
+    const byte *inNode = bspData + nodeLumpOffset;
+
+    /* Validate leaf lump (BSP header offset 0xD8: size, 0xDC: offset) */
+    int leafLumpSize = *(int *)(bspHeader + 0xD8);
+    int leafLumpOffset = *(int *)(bspHeader + 0xDC);
+    if (leafLumpOffset + leafLumpSize > fileSize)
+        R_Error(1, "LoadMap: lump extends past end of file in %s", s_world.name);
+    if (leafLumpSize <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", s_world.name);
+    int leafCount = leafLumpSize / 36;
+    if (leafLumpSize < 0 || leafCount * 36 != leafLumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", s_world.name);
+
+    const byte *inLeaf = bspData + leafLumpOffset;
+
+    /* Allocate combined node+leaf array */
+    int totalCount = nodeCount + leafCount;
+    s_world.nodeCount = totalCount;
+    mnode_t *nodes = (mnode_t *)Hunk_AllocInternal(totalCount * sizeof(mnode_t));
+    s_world.nodes = nodes;
+
+    /* Fill internal nodes from BSP data */
+    for (i = 0; i < nodeCount; i++) {
+        const byte *src = inNode + i * 36;
+        mnode_t *node = &nodes[i];
+
+        node->contents = -1; /* mark as internal node */
+        node->u.node.plane = (cplane_t *)CM_GetPlaneNum(*(int *)src);
+
+        /* Resolve child indices to pointers (positive = node, negative = leaf) */
+        int j;
+        for (j = 0; j < 2; j++) {
+            int childIdx = *(int *)(src + 4 + j * 4);
+            if (childIdx >= 0)
+                node->u.node.children[j] = &nodes[childIdx];
+            else
+                node->u.node.children[j] = &nodes[nodeCount + (-childIdx) - 1];
+        }
+    }
+
+    /* Fill leaf nodes from BSP data */
+    for (i = 0; i < leafCount; i++) {
+        const byte *src = inLeaf + i * 36;
+        mnode_t *leaf = &nodes[nodeCount + i];
+
+        leaf->cellIndex = *(int *)(src + 0x18);  /* cellIndex from BSP */
+        leaf->u.leaf.cluster = *(int *)src;        /* cluster from BSP */
+    }
+
+    /* Set parent pointers and propagate cell indices from root */
+    R_SetParentAndCell_r_impl(&nodes[0], 0);
+}
+
+/* Trampoline: eax=load */
 static __attribute__((naked))
 snd_alias_list_t R_LoadNodesAndLeafs(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1741 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, %esi\n" /* load */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl (%eax), %ebx\n" /* line 46 */
-        "leal 0xd0(%ebx), %edi\n" /* lump */
-        "movl 4(%edi), %eax\n" /* line 47 | lump */
-        "addl 0xd0(%ebx), %eax\n"
-        "cmpl 8(%esi), %eax\n"
-        "jg .Lfe3f00_000e4070\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jle .Lfe3f00_000e4097\n"
-        ".Lfe3f00_000e3f2f:\n"
-        "movl 0xd0(%ebx), %ecx\n" /* line 52 */
-        "movl $0x38e38e39, %eax\n"
-        "imull %ecx\n"
-        "sarl $3, %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, -0x20(%ebp)\n" /* nodeCount */
-        "testl %ecx, %ecx\n" /* line 53 */
-        "js .Lfe3f00_000e3f57\n"
-        "leal (%edx, %edx, 8), %eax\n"
-        "shll $2, %eax\n"
-        "cmpl %eax, %ecx\n"
-        "je .Lfe3f00_000e3f74\n"
-        ".Lfe3f00_000e3f57:\n"
-        "movl s_world, %eax\n" /* line 54 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        ".Lfe3f00_000e3f74:\n"
-        "movl (%esi), %ebx\n" /* line 1756 | load */
-        "movl 4(%esi), %ecx\n" /* load */
-        "movl %ecx, -0x28(%ebp)\n" /* inNode */
-        "movl 0xd4(%ebx), %eax\n"
-        "addl %eax, %ecx\n"
-        "movl %ecx, -0x28(%ebp)\n" /* inNode */
-        /* { scope 2 */
-        "leal 0xd8(%ebx), %edi\n" /* line 46 | lump */
-        "movl 4(%edi), %eax\n" /* line 47 | lump */
-        "addl 0xd8(%ebx), %eax\n"
-        "cmpl 8(%esi), %eax\n"
-        "jg .Lfe3f00_000e4153\n"
-        ".Lfe3f00_000e3f9f:\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jle .Lfe3f00_000e4131\n"
-        ".Lfe3f00_000e3fa9:\n"
-        "movl 0xd8(%ebx), %ecx\n" /* line 52 */
-        "movl $0x38e38e39, %eax\n"
-        "imull %ecx\n"
-        "sarl $3, %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* leafCount */
-        "testl %ecx, %ecx\n" /* line 53 */
-        "js .Lfe3f00_000e3fd1\n"
-        "leal (%edx, %edx, 8), %eax\n"
-        "shll $2, %eax\n"
-        "cmpl %eax, %ecx\n"
-        "je .Lfe3f00_000e3fee\n"
-        ".Lfe3f00_000e3fd1:\n"
-        "movl s_world, %eax\n" /* line 54 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        ".Lfe3f00_000e3fee:\n"
-        "movl (%esi), %eax\n" /* line 1759 | load */
-        "movl 4(%esi), %esi\n" /* load */
-        "movl %esi, -0x24(%ebp)\n" /* load, inLeaf */
-        "movl 0xdc(%eax), %ecx\n"
-        "addl %ecx, -0x24(%ebp)\n" /* inLeaf */
-        "movl -0x20(%ebp), %eax\n" /* line 1761 | nodeCount */
-        "addl -0x1c(%ebp), %eax\n" /* leafCount */
-        "movl %eax, s_world+8\n"
-        "leal (%eax, %eax, 2), %eax\n" /* line 1762 */
-        "shll $3, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocInternal\n"
-        "movl %eax, %ebx\n"
-        "movl %eax, s_world+12\n" /* line 1764 */
-        "movl -0x20(%ebp), %esi\n" /* line 1767 | nodeCount, load */
-        "testl %esi, %esi\n" /* load */
-        "jg .Lfe3f00_000e40b9\n"
-        ".Lfe3f00_000e402a:\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 1783 | leafCount */
-        "testl %ecx, %ecx\n"
-        "jle .Lfe3f00_000e4052\n"
-        "xorl %edx, %edx\n"
-        "movl -0x24(%ebp), %ecx\n" /* inLeaf */
-        ".Lfe3f00_000e4036:\n"
-        "movl 0x18(%ecx), %eax\n" /* line 1785 */
-        "movl %eax, 8(%ebx)\n"
-        "movl (%ecx), %eax\n" /* line 1786 */
-        "movl %eax, 0xc(%ebx)\n"
-        "addl $1, %edx\n" /* line 1783 */
-        "addl $0x24, %ecx\n"
-        "movl %ecx, -0x24(%ebp)\n" /* inLeaf */
-        "addl $0x18, %ebx\n"
-        "cmpl %edx, -0x1c(%ebp)\n" /* leafCount */
-        "jne .Lfe3f00_000e4036\n"
-        ".Lfe3f00_000e4052:\n"
-        "movl s_world+12, %ebx\n" /* line 1789 | node */
-        /* { scope 2 */
-        "movl $0, 4(%ebx)\n" /* line 1729 */
-        "cmpl $-1, (%ebx)\n" /* line 1730 */
-        "je .Lfe3f00_000e4175\n"
-        /* } scope */
-        /* } scope */
-        ".Lfe3f00_000e4068:\n"
-        "addl $0x3c, %esp\n" /* line 1790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfe3f00_000e4070:\n"
-        "movl s_world, %eax\n" /* line 48 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jg .Lfe3f00_000e3f2f\n"
-        ".Lfe3f00_000e4097:\n"
-        "movl s_world, %eax\n" /* line 50 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe3f00_000e3f2f\n"
-        /* } scope */
-        ".Lfe3f00_000e40b9:\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 1767 | nodeIndex */
-        "jmp .Lfe3f00_000e40f3\n"
-        ".Lfe3f00_000e40c2:\n"
-        "leal (%eax, %eax, 2), %eax\n" /* line 1776 */
-        "movl s_world+12, %edx\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl %eax, 0x10(%ecx)\n"
-        ".Lfe3f00_000e40d1:\n"
-        "addl $4, %esi\n" /* line 1778 | load */
-        "addl $4, %ecx\n"
-        "subl $1, %edi\n" /* line 1772 | lump */
-        "jne .Lfe3f00_000e4113\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 1767 | nodeIndex */
-        "addl $0x24, -0x28(%ebp)\n" /* inNode */
-        "addl $0x18, %ebx\n"
-        "movl -0x2c(%ebp), %ecx\n" /* nodeIndex */
-        "cmpl %ecx, -0x20(%ebp)\n" /* nodeCount */
-        "je .Lfe3f00_000e402a\n"
-        ".Lfe3f00_000e40f3:\n"
-        "movl -0x28(%ebp), %edx\n" /* line 1769 | inNode */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_GetPlaneNum\n"
-        "movl %eax, 0xc(%ebx)\n"
-        "movl $0xffffffff, (%ebx)\n" /* line 1770 */
-        "movl -0x28(%ebp), %esi\n" /* inNode, load */
-        "movl %ebx, %ecx\n"
-        "movl $2, %edi\n" /* lump */
-        ".Lfe3f00_000e4113:\n"
-        "movl 4(%esi), %eax\n" /* line 1774 | load */
-        "testl %eax, %eax\n" /* line 1775 */
-        "jns .Lfe3f00_000e40c2\n"
-        "movl -0x20(%ebp), %edx\n" /* line 1778 | nodeCount */
-        "subl %eax, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "movl s_world+12, %edx\n"
-        "leal -0x18(%edx, %eax, 8), %eax\n"
-        "movl %eax, 0x10(%ecx)\n"
-        "jmp .Lfe3f00_000e40d1\n"
-        /* { scope 2 */
-        ".Lfe3f00_000e4131:\n"
-        "movl s_world, %eax\n" /* line 50 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe3f00_000e3fa9\n"
-        ".Lfe3f00_000e4153:\n"
-        "movl s_world, %eax\n" /* line 48 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe3f00_000e3f9f\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfe3f00_000e4175:\n"
-        "movl 0x10(%ebx), %eax\n" /* line 1732 */
-        "movl %ebx, %edx\n"
-        "calll R_SetParentAndCell_r\n"
-        "movl 0x14(%ebx), %eax\n" /* line 1733 */
-        "movl %ebx, %edx\n"
-        "calll R_SetParentAndCell_r\n"
-        "movl $0xfffffffe, 8(%ebx)\n" /* line 1735 */
-        "movl 0x10(%ebx), %eax\n" /* line 1736 */
-        "movl 8(%eax), %edx\n"
-        "movl 0x14(%ebx), %eax\n"
-        "cmpl 8(%eax), %edx\n"
-        "jne .Lfe3f00_000e4068\n"
-        "movl %edx, 8(%ebx)\n" /* line 1737 */
-        /* } scope */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %eax\n"
+        "calll R_LoadNodesAndLeafs_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
     );
 }
