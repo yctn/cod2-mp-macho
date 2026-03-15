@@ -1045,213 +1045,112 @@ void R_SetColorMappings(void)
     RB_SetGammaRamp(gammaRamp);
 }
 
-/* line 871 */
-static __attribute__((naked))
-Bool R_CreateForInitOrReset(void)
+/* line 871 — R_CreateForInitOrReset
+ * Creates D3D dynamic vertex/index buffers, allocates memory, initializes
+ * particle cloud, sun flare array, and render state. Called during init and device reset. */
+extern void R_InitRenderTargets(void);
+extern void R_InitStaticModelCache(void);
+extern void RB_SetInitialState(void);
+extern const char *va(const char *fmt, ...);
+
+/* Fatal D3D error handler: prints error info via ri function table, then calls ri.Error */
+static void R_DxFatalError(const char *fmt, int size, HRESULT hr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 871 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl $str_00223ac8, 4(%esp)\n" /* line 879 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll R_InitRenderTargets\n" /* line 880 */
-        "movl $str_00223ae8, 4(%esp)\n" /* line 882 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll R_InitStaticModelCache\n" /* line 883 */
-        "movl $str_00223b0c, 4(%esp)\n" /* line 885 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1067 | d3dpp */
-        "movl (%eax), %eax\n" /* d3dpp */
-        "movl $0x120000, %ebx\n" /* viewIndex */
-        "cmpl $2, 8(%eax)\n" /* d3dpp */
-        "movl $0x200000, %eax\n" /* d3dpp */
-        "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
-        "movl $0, dx+11688\n" /* line 538 */
-        "movl %ebx, dx+11692\n" /* line 539 */
-        "movl dx+8, %eax\n" /* line 552 */
-        "movl (%eax), %edx\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $dx+11696, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0x208, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x68(%edx)\n"
-        "testl %eax, %eax\n" /* line 553 */
-        "js .Lfcb866_000cbb37\n"
-        ".Lfcb866_000cb921:\n"
-        "movl $dx+11688, dx+11700\n" /* line 593 */
-        "movl $0, -0x1c(%ebp)\n"
-        "movl $0x2d90, %esi\n"
-        "movl $dx+11672, %edi\n"
-        ".Lfcb866_000cb93c:\n"
-        "movl imp_r_rendererInUse, %eax\n" /* line 1067 | d3dpp */
-        "movl (%eax), %eax\n" /* d3dpp */
-        "movl $0x00480000, %ebx\n" /* viewIndex */
-        "cmpl $2, 8(%eax)\n" /* d3dpp */
-        "movl $0x00800000, %eax\n" /* d3dpp */
-        "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
-        "movl $0, dx(%esi)\n" /* line 538 */
-        "movl %ebx, dx+4(%esi)\n" /* line 539 */
-        "movl dx+8, %eax\n" /* line 552 */
-        "movl (%eax), %edx\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0x208, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x68(%edx)\n"
-        "testl %eax, %eax\n" /* line 553 */
-        "js .Lfcb866_000cbab6\n"
-        ".Lfcb866_000cb9a1:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 596 */
-        "addl $0xc, %esi\n"
-        "addl $0xc, %edi\n"
-        "cmpl $2, -0x1c(%ebp)\n"
-        "jne .Lfcb866_000cb93c\n"
-        "movl $0, dx+11648\n" /* line 563 */
-        "movl $0x200000, dx+11652\n" /* line 564 */
-        "movl dx+8, %eax\n" /* line 577 */
-        "movl (%eax), %edx\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $dx+11656, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0x65, 0xc(%esp)\n"
-        "movl $0x208, 8(%esp)\n"
-        "movl $0x200000, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x6c(%edx)\n"
-        "testl %eax, %eax\n" /* line 578 */
-        "js .Lfcb866_000cbbb8\n"
-        ".Lfcb866_000cba0a:\n"
-        "movl $dx+11648, dx+11660\n" /* line 601 */
-        "movl $0xa00000, (%esp)\n" /* line 606 */
-        "calll *ri+32\n"
-        "movl %eax, dx+11728\n"
-        "movl $str_00223b98, 4(%esp)\n" /* line 887 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll R_CreateParticleCloudBuffer\n" /* line 888 */
-        "movl $str_00223bc0, 4(%esp)\n" /* line 890 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movb $0, dx+11624\n" /* line 893 */
-        "movl $0, dx+11612\n" /* line 899 */
-        "xorl %ebx, %ebx\n" /* viewIndex */
-        "movl imp_sunFlareArray, %esi\n"
-        "xorl %ecx, %ecx\n"
-        ".Lfcb866_000cba70:\n"
-        "leal (%ecx, %esi), %eax\n" /* d3dpp */
-        "movl $2, %edx\n" /* wndParms */
-        ".Lfcb866_000cba78:\n"
-        "movb $0, 0x2c(%eax)\n" /* line 919 | d3dpp */
-        "addl $1, %eax\n" /* d3dpp */
-        "subl $1, %edx\n" /* line 912 | wndParms */
-        "jne .Lfcb866_000cba78\n"
-        "addl $1, %ebx\n" /* line 910 | viewIndex */
-        "addl $0x30, %ecx\n"
-        "cmpl $4, %ebx\n" /* viewIndex */
-        "jne .Lfcb866_000cba70\n"
-        "movl $str_00223be0, 4(%esp)\n" /* line 923 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll RB_SetInitialState\n" /* line 924 */
-        /* } scope */
-        "movl $1, %eax\n" /* line 926 | d3dpp */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcb866_000cbab6:\n"
-        "movl %eax, (%esp)\n" /* line 177 */
-        "calll DXGetErrorDescription9A\n"
-        "movl %eax, 8(%esp)\n" /* line 554 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_00223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
-        "calll va\n"
-        "movl %eax, %ebx\n"
-        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223938, 4(%esp)\n" /* line 126 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223994, 4(%esp)\n" /* line 127 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $str_002239f0, 4(%esp)\n" /* "
-%s
-" */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll *ri+72\n" /* line 131 */
-        "jmp .Lfcb866_000cb9a1\n"
-        ".Lfcb866_000cbb37:\n"
-        "movl %eax, (%esp)\n" /* line 177 */
-        "calll DXGetErrorDescription9A\n"
-        "movl %eax, 8(%esp)\n" /* line 554 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_00223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
-        "calll va\n"
-        "movl %eax, %ebx\n"
-        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223938, 4(%esp)\n" /* line 126 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223994, 4(%esp)\n" /* line 127 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $str_002239f0, 4(%esp)\n" /* "
-%s
-" */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll *ri+72\n" /* line 131 */
-        "jmp .Lfcb866_000cb921\n"
-        ".Lfcb866_000cbbb8:\n"
-        "movl %eax, (%esp)\n" /* line 177 */
-        "calll DXGetErrorDescription9A\n"
-        "movl %eax, 8(%esp)\n" /* line 579 */
-        "movl $0x200000, 4(%esp)\n"
-        "movl $str_00223b64, (%esp)\n" /* "Couldn't create a %i-byte dynamic index buffer: %s" */
-        "calll va\n"
-        "movl %eax, %ebx\n"
-        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223938, 4(%esp)\n" /* line 126 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $str_00223994, 4(%esp)\n" /* line 127 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $str_002239f0, 4(%esp)\n" /* "
-%s
-" */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "calll *ri+72\n" /* line 131 */
-        "jmp .Lfcb866_000cba0a\n"
-    );
+    typedef void (*ri_fn)(int, const char *, ...);
+    typedef void (*ri_err_fn)(void);
+    ri_fn Printf = *(ri_fn *)&ri;
+    ri_err_fn Error = *(ri_err_fn *)((byte *)&ri + 72);
+    const char *msg = va(fmt, size, DXGetErrorDescription9A(hr));
+    Printf(0, "------- Initializing Renderer -------");
+    Printf(0, "------- Renderer Initialization -------");
+    Printf(0, "------- Server Initialization -------");
+    Printf(0, "\n%s\n", msg);
+    Error();
+}
+
+static Bool R_CreateForInitOrReset(void)
+{
+    typedef void (*ri_fn)(int, const char *, ...);
+    typedef void *(*ri_alloc_fn)(int);
+    ri_fn Printf = *(ri_fn *)&ri;
+    ri_alloc_fn Hunk_Alloc = *(ri_alloc_fn *)((byte *)&ri + 32);
+    byte *dxp = (byte *)(void *)&dx;
+    int i;
+
+    Printf(0, "R_InitRenderTargets");
+    R_InitRenderTargets();
+    Printf(0, "R_InitStaticModelCache");
+    R_InitStaticModelCache();
+    Printf(0, "Dynamic buffers");
+
+    /* Choose VB size based on renderer type */
+    int isDx7 = (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2);
+    int vbSize = isDx7 ? 0x120000 : 0x200000;
+
+    /* Create primary dynamic vertex buffer */
+    *(int *)(dxp + 11688) = 0;
+    *(int *)(dxp + 11692) = vbSize;
+    void *d3dDevice = *(void **)(dxp + 8);
+    void **vtable = *(void ***)d3dDevice;
+    typedef HRESULT (*CreateVB_fn)(void *, int, int, int, int, void **, void *);
+    HRESULT hr = ((CreateVB_fn)vtable[26])(d3dDevice, vbSize, 0x208, 0, 0, (void **)(dxp + 11696), NULL);
+    if (hr < 0)
+        R_DxFatalError("Couldn't create a %i-byte dynamic vertex buffer: %s", vbSize, hr);
+
+    /* Store VB wrapper pointer */
+    *(int *)(dxp + 11700) = (int)(intptr_t)(dxp + 11688);
+
+    /* Create 2 additional VBs for multi-buffering */
+    int loopVbSize = isDx7 ? 0x480000 : 0x800000;
+    int offset = 0x2d90;
+    byte *vbOut = dxp + 11672;
+    for (i = 0; i < 2; i++) {
+        isDx7 = (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2);
+        loopVbSize = isDx7 ? 0x480000 : 0x800000;
+        *(int *)(dxp + offset) = 0;
+        *(int *)(dxp + offset + 4) = loopVbSize;
+        d3dDevice = *(void **)(dxp + 8);
+        vtable = *(void ***)d3dDevice;
+        hr = ((CreateVB_fn)vtable[26])(d3dDevice, loopVbSize, 0x208, 0, 0, (void **)vbOut, NULL);
+        if (hr < 0)
+            R_DxFatalError("Couldn't create a %i-byte dynamic vertex buffer: %s", loopVbSize, hr);
+        offset += 0xc;
+        vbOut += 0xc;
+    }
+
+    /* Create dynamic index buffer (2MB) */
+    *(int *)(dxp + 11648) = 0;
+    *(int *)(dxp + 11652) = 0x200000;
+    d3dDevice = *(void **)(dxp + 8);
+    vtable = *(void ***)d3dDevice;
+    typedef HRESULT (*CreateIB_fn)(void *, int, int, int, int, void **, void *);
+    hr = ((CreateIB_fn)vtable[27])(d3dDevice, 0x200000, 0x208, 0x65, 0, (void **)(dxp + 11656), NULL);
+    if (hr < 0)
+        R_DxFatalError("Couldn't create a %i-byte dynamic index buffer: %s", 0x200000, hr);
+
+    *(int *)(dxp + 11660) = (int)(intptr_t)(dxp + 11648);
+
+    /* Allocate large memory block (10MB) */
+    *(void **)(dxp + 11728) = Hunk_Alloc(0xa00000);
+
+    Printf(0, "Particle cloud");
+    R_CreateParticleCloudBuffer();
+    Printf(0, "State");
+
+    /* Clear flags */
+    *(byte *)(dxp + 11624) = 0;
+    *(int *)(dxp + 11612) = 0;
+
+    /* Clear sun flare textures for all 4 views */
+    byte *sunFlares = (byte *)imp_sunFlareArray;
+    for (i = 0; i < 4; i++) {
+        sunFlares[i * 0x30 + 0x2c] = 0;
+        sunFlares[i * 0x30 + 0x2d] = 0;
+    }
+
+    Printf(0, "Initial state");
+    RB_SetInitialState();
+    return 1;
 }
 
 /* line 1985 */
