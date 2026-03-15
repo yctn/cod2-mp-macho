@@ -1494,8 +1494,38 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
             float *eye = (float *)((byte *)&dpvsGlob + 72);
             float eyeDot = portalPlaneCoeffs[0] * eye[0] + portalPlaneCoeffs[1] * eye[1]
                          + portalPlaneCoeffs[2] * eye[2] + portalPlaneCoeffs[3] * *(float *)((byte *)&dpvsGlob + 84);
-            if (eyeDot <= 0.0f) {
-                /* Eye behind portal — check frustum planes against occluders */
+            if (eyeDot > 0.0f)
+                continue;
+
+            {
+                /* Eye behind portal — test frustum planes, then occluders */
+                int vertCount = portal->vertexCount;
+                vec3_t *verts = portal->vertices;
+
+                /* Test each frustum plane: portal must have at least one vertex
+                 * in front of every frustum plane to be potentially visible */
+                int frustumVisible = 1;
+                for (int pi = 0; pi < planeCount; pi++) {
+                    const float *pc = planes[pi].coeffs;
+                    int anyInFront = 0;
+                    for (int vi = 0; vi < vertCount; vi++) {
+                        float d = pc[0] * verts[vi][0] + pc[1] * verts[vi][1]
+                                + pc[2] * verts[vi][2] + pc[3];
+                        if (d > 0.0f) {
+                            anyInFront = 1;
+                            break;
+                        }
+                    }
+                    if (!anyInFront) {
+                        frustumVisible = 0;
+                        break;
+                    }
+                }
+                if (!frustumVisible)
+                    continue;
+
+                /* Test each active occluder: if ALL portal vertices are behind
+                 * ALL view planes of any single occluder, portal is fully occluded */
                 int occCount = *(int *)((byte *)&dpvsGlob + 56);
                 int visible = 1;
                 for (int oi = 0; oi < occCount; oi++) {
@@ -1508,9 +1538,6 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
                         break;
                     }
 
-                    /* Test portal winding vertices against each occluder view plane */
-                    int vertCount = portal->vertexCount;
-                    vec3_t *verts = portal->vertices;
                     int allBehind = 1;
                     for (int pi = 0; pi < vpCount; pi++) {
                         int anyInFront = 0;
@@ -1626,7 +1653,7 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
                 float *nearPlaneCoeffs = (float *)&dpvsGlob;
                 float priority = R_PortalMinDot(portal->vertices, portal->vertexCount, nearPlaneCoeffs);
                 R_PortalQueueInsert(portal, priority);
-            }
+            } /* end portal processing block */
         }
     } else {
         /* !clipChildren: gather further cells and add surfaces */
