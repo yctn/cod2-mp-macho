@@ -4545,8 +4545,363 @@ int g_rb_dispatch_count = 0; /* diagnostic: how many commands dispatched */
 int g_rb_first_cmd = -1; /* diagnostic: first command word seen */
 int g_rb_skip_reason = 0; /* diagnostic: 1=disableRendering, 2=needToTouch+recover_fail, 3=skipBackEnd, 4=empty_buf */
 /* line 3915 */
-__attribute__((naked))
+/* line 3915 — Main frame render command processor: device state management,
+ * dvar-driven parameter updates, command dispatch loop, GPU fence sync,
+ * optional benchmark fill/transform tests. */
+extern void RB_DecideDefaultSamplerState(void);
+extern void RB_SetAnisotropy(void);
+extern void RB_SetAlphaAntiAliasingState(int state);
+extern qboolean R_RecoverLostDevice(void);
+extern void RB_DrawDebug(const void *viewParms);
+extern void RB_ChangeIndices(int value);
+extern void RB_ClearAllStreamSources(void);
+extern void Image_RebuildCosinePowerMap(float shift);
 void RB_ExecuteRenderCommands(const void *data)
+{
+    char *dx;
+    byte needToTouchImages;
+    int deviceState;
+    GfxRenderCommandExecState execState;
+
+    g_rb_exec_count++;
+    diag_rb_frame_start();
+
+    backEndData = 0;
+
+    /* Check if rendering is disabled */
+    if (*(int *)imp_g_disableRendering) {
+        g_rb_skip_reason = 1;
+        diag_rb_skip_this_frame = 1;
+        goto done;
+    }
+
+    dx = (char *)imp_dx;
+
+    /* Test D3D cooperative level if no pending device state */
+    if (!*(byte *)(dx + 0x2d3c)) {
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        HRESULT hr = ((HRESULT (__attribute__((stdcall)) *)(void *))(vtable[0x0c/4]))(device);
+        if ((unsigned int)(hr + 0x7789f798u) <= 1) /* D3DERR_DEVICELOST or DEVICENOTRESET */
+            *(byte *)(dx + 0x2d3c) = 1;
+    }
+
+    needToTouchImages = *(byte *)(dx + 0x2d3c);
+    if (needToTouchImages) {
+        if (!R_RecoverLostDevice())
+            goto done;
+    }
+
+    /* Store back-end data pointer */
+    backEndData = (const GfxBackEndData *)data;
+
+    /* Check and apply dvar changes */
+    {
+        char *dvar;
+        dvar = *(char **)imp_r_textureMode;
+        if (*(byte *)(dvar + 7)) {
+            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar); /* Cvar_ClearModified */
+            RB_DecideDefaultSamplerState();
+        }
+        dvar = *(char **)imp_r_anisotropy;
+        if (*(byte *)(dvar + 7)) {
+            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+            RB_SetAnisotropy();
+        }
+        dvar = *(char **)imp_r_cosinePowerMapShift;
+        if (*(byte *)(dvar + 7)) {
+            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+            Image_RebuildCosinePowerMap(*(float *)(dvar + 8));
+        }
+        dvar = *(char **)imp_r_outdoorFeather;
+        if (*(byte *)(dvar + 7)) {
+            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+            {
+                float val = *(float *)(dvar + 8);
+                *(float *)((char *)&backEnd + 800) = val;
+                *(float *)((char *)&backEnd + 804) = val;
+                *(float *)((char *)&backEnd + 808) = val;
+                *(float *)((char *)&backEnd + 812) = val;
+            }
+        }
+        dvar = *(char **)imp_r_aaAlpha;
+        if (*(byte *)(dvar + 7)) {
+            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+            dx = (char *)imp_dx;
+            if (*(byte *)(dx + 0x2d7e)) {
+                char *dxSt = (char *)imp_dxState;
+                RB_SetAlphaAntiAliasingState(*(int *)(dxSt + 0x2008));
+            }
+        }
+    }
+
+    /* D3D device state machine */
+    dx = (char *)imp_dx;
+    deviceState = *(int *)(dx + 0x2c20);
+    if (deviceState == 3) {
+        /* Full fence wait + generate new fence */
+        while (*(byte *)(dx + 0x2d68)) {
+            qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+            if (finished)
+                glDeleteFencesAPPLE(1, &g_FenceID);
+            if (finished) { *(byte *)(dx + 0x2d68) = 0; break; }
+            dx = (char *)imp_dx;
+        }
+        /* Skip to done after fence wait for state 3 */
+        glGenFencesAPPLE(1, &g_FenceID);
+        glSetFenceAPPLE(g_FenceID);
+        *(byte *)((char *)imp_dx + 0x2d68) = 1;
+        goto done;
+    } else if (deviceState == 1) {
+        /* Fence wait loop before sync */
+        while (*(byte *)(dx + 0x2d68)) {
+            qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+            if (finished)
+                glDeleteFencesAPPLE(1, &g_FenceID);
+            if (finished) { *(byte *)(dx + 0x2d68) = 0; break; }
+            dx = (char *)imp_dx;
+        }
+        /* Generate new fence and sync */
+        glGenFencesAPPLE(1, &g_FenceID);
+        glSetFenceAPPLE(g_FenceID);
+        dx = (char *)imp_dx;
+        *(byte *)(dx + 0x2d68) = 1;
+    }
+
+    /* Set benchmarking flag, BeginScene */
+    dx = (char *)imp_dx;
+    *(byte *)(dx + 0x2d3d) = 1;
+    do {
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        ((HRESULT (__attribute__((stdcall)) *)(void *))(vtable[0xa4/4]))(device); /* BeginScene */
+    } while (*(volatile int *)imp_alwaysfails);
+
+    *(int *)((char *)&backEnd + 944) += 1; /* frameCount++ */
+
+    if (needToTouchImages)
+        RB_TouchAllImages();
+
+    /* Check r_skipBackEnd */
+    if (*(byte *)(*(char **)imp_r_skipBackEnd + 8)) {
+        g_rb_skip_reason = 3;
+        diag_rb_skip_this_frame = 3;
+        goto post_render;
+    }
+
+    /* Get render command buffer */
+    {
+        const byte *cmdBuf = (const byte *)backEndData + 0x219d0c;
+        unsigned short firstCmd;
+        execState.cmd = cmdBuf;
+        execState.stackPos = 0;
+
+        firstCmd = *(unsigned short *)cmdBuf;
+        g_rb_first_cmd = firstCmd;
+
+        if (firstCmd == 0) {
+            g_rb_skip_reason = 4;
+            diag_rb_skip_this_frame = 4;
+        } else {
+            /* Main command dispatch loop */
+            unsigned short cmd = firstCmd;
+            g_rb_dispatch_count = 0;
+            while (cmd != 0) {
+                g_rb_dispatch_count++;
+                diag_rb_cmd(cmd);
+                RB_RenderCommandTable[cmd](&execState);
+                cmd = *(unsigned short *)execState.cmd;
+            }
+        }
+    }
+
+post_render:
+    /* End any pending surface */
+    if (*(int *)((char *)&tess + 370640) || *(int *)((char *)&tess + 370656))
+        RB_EndSurface();
+
+    /* Draw debug overlay if developer mode */
+    {
+        void *vp = *(void **)((char *)&backEnd + 968);
+        if (vp) {
+            int dev = *(int *)(*(char **)imp_developer + 8);
+            if (dev)
+                RB_DrawDebug(vp);
+        }
+    }
+
+    /* Update viewport dirty state */
+    if (*(byte *)((char *)&backEnd + 1212)) {
+        RB_UpdateViewport();
+    }
+
+    /* D3D Clear */
+    do {
+        dx = (char *)imp_dx;
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        ((HRESULT (__attribute__((stdcall)) *)(void *, int, void *, int, float, int))
+            (vtable[0xac/4]))(device, 0, 0, 1, 0.0f, 0); /* Clear */
+    } while (*(volatile int *)imp_alwaysfails);
+
+    /* Clear indices/streams */
+    {
+        char *dxSt = (char *)imp_dxState;
+        if (*(int *)(dxSt + 0x20cc))
+            RB_ChangeIndices(0);
+    }
+    RB_ClearAllStreamSources();
+
+    /* EndScene */
+    dx = (char *)imp_dx;
+    do {
+        void *device = *(void **)(dx + 8);
+        void **vtable = *(void ***)device;
+        ((HRESULT (__attribute__((stdcall)) *)(void *))(vtable[0xa8/4]))(device); /* EndScene */
+    } while (*(volatile int *)imp_alwaysfails);
+    *(byte *)(dx + 0x2d3d) = 0;
+
+    /* r_testFill benchmark */
+    {
+        int testFillCount = *(int *)(*(char **)imp_r_testFill + 8);
+        if (testFillCount > 0) {
+            if (!*(byte *)(*(char **)imp_r_testFillEnable + 8)) {
+                typedef int (*PrintFunc)(int, const char *, ...);
+                PrintFunc ri_printf = *(PrintFunc *)imp_ri;
+                ri_printf(0, "Fill testing uses extra textures and materials, so it is usu");
+                ri_printf(0, "ally only useful if r_testFillEnable is set before starting the game.\n");
+            } else {
+                /* Run fill benchmark tests */
+                typedef int (*PrintFunc)(int, const char *, ...);
+                PrintFunc ri_printf = *(PrintFunc *)imp_ri;
+                char *rgp = (char *)imp_rgp;
+                char *dxSt = (char *)imp_dxState;
+                float screenW = (float)*(int *)(dxSt + 0x209c);
+                float screenH = (float)*(int *)(dxSt + 0x20a0);
+                float result;
+                ri_printf(0, "-----------------------------------------------\n");
+
+                /* 2D fill tests */
+                #define FILL_TEST_2D(mat_off, fmt) \
+                    result = RB_BenchmarkRepeatedCalls_impl(*(const Material **)(rgp + mat_off), testFillCount, screenW, screenH) / 60.0f; \
+                    ri_printf(0, fmt, (double)result)
+                FILL_TEST_2D(0x105c, "normal fill                 %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1060, "alpha blend fill            %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1064, "alpha test pass fill        %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1068, "alpha test fail fill        %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x106c, "additive fill               %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1070, "depth only fill             %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1074, "1-sided stencil keep fill   %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_2D(0x1078, "1-sided stencil reject fill %4.1f overdraw @ 60Hz\n");
+                #undef FILL_TEST_2D
+
+                /* 2-sided stencil tests (if supported) */
+                if (*(byte *)(dx + 0x2d78)) {
+                    #define FILL_TEST_2D_S(mat_off, fmt) \
+                        result = RB_BenchmarkRepeatedCalls_impl(*(const Material **)(rgp + mat_off), testFillCount, screenW, screenH) / 60.0f; \
+                        ri_printf(0, fmt, (double)result)
+                    FILL_TEST_2D_S(0x107c, "2-sided stencil keep fill   %4.1f overdraw @ 60Hz\n");
+                    FILL_TEST_2D_S(0x1080, "2-sided stencil reject fill %4.1f overdraw @ 60Hz\n");
+                    #undef FILL_TEST_2D_S
+                }
+
+                /* 3D fill tests */
+                #define FILL_TEST_3D(mat_off, tech, fmt) \
+                    result = RB_TestFillPass3D_impl(*(const Material **)(rgp + mat_off), tech); \
+                    ri_printf(0, fmt, (double)result)
+                FILL_TEST_3D(0x1084, 0x12, "phong point bump fill       %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_3D(0x1088, 0x12, "phong point bump+spec fill  %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_3D(0x1084, 9,    "phong dir bump fill         %4.1f overdraw @ 60Hz\n");
+                FILL_TEST_3D(0x1088, 9,    "phong dir bump+spec fill    %4.1f overdraw @ 60Hz\n");
+                #undef FILL_TEST_3D
+                ri_printf(0, "-----------------------------------------------\n");
+            }
+            /* Reset dvar */
+            ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x98))(*(void **)imp_r_testFill, 0);
+        }
+    }
+
+    /* r_testTransform benchmark */
+    {
+        int testTransformCount = *(int *)(*(char **)imp_r_testTransform + 8);
+        if (testTransformCount > 0) {
+            typedef int (*PrintFunc)(int, const char *, ...);
+            PrintFunc ri_printf = *(PrintFunc *)imp_ri;
+            char *rgp = (char *)imp_rgp;
+            float dynRate;
+
+            dynRate = RB_BenchmarkRepeatedCalls_impl(
+                *(const Material **)(rgp + 0x1038), testTransformCount, 0.0f, 0.0f) / 60.0f;
+
+            ri_printf(0, "-----------------------------------------------\n");
+            ri_printf(0, "static vertex data    %8.0f verts/sec @ 60Hz\n", 0.0);
+            ri_printf(0, "static vertex data    %8.0f tris/sec @ 60Hz\n", 0.0);
+            ri_printf(0, "skinned vertex data   %8.0f verts/sec @ 60Hz\n", 0.0);
+            ri_printf(0, "skinned vertex data   %8.0f tris/sec @ 60Hz\n", 0.0);
+            ri_printf(0, "dynamic vertex data   %8.0f verts/sec @ 60Hz\n", (double)(dynRate * 4.0f));
+            ri_printf(0, "dynamic vertex data   %8.0f tris/sec @ 60Hz\n", (double)(dynRate * 2.0f));
+            ri_printf(0, "-----------------------------------------------\n");
+            ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x98))(*(void **)imp_r_testTransform, 0);
+        }
+    }
+
+    /* Post-frame: generate fence for next frame */
+    dx = (char *)imp_dx;
+    deviceState = *(int *)(dx + 0x2c20);
+    if (deviceState == 3) {
+        glGenFencesAPPLE(1, &g_FenceID);
+        glSetFenceAPPLE(g_FenceID);
+        *(byte *)(dx + 0x2d68) = 1;
+        goto done;
+    }
+    if (deviceState == 2) {
+        /* Adaptive GPU sync wait */
+        while (*(byte *)(dx + 0x2d68)) {
+            qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+            if (finished)
+                glDeleteFencesAPPLE(1, &g_FenceID);
+            if (finished) { *(byte *)(dx + 0x2d68) = 0; break; }
+            dx = (char *)imp_dx;
+        }
+        {
+            unsigned int startTsc;
+            __asm__ __volatile__ ("rdtsc" : "=a"(startTsc) : : "edx");
+            dx = (char *)imp_dx;
+            while (*(byte *)(dx + 0x2d68)) {
+                qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
+                if (finished)
+                    glDeleteFencesAPPLE(1, &g_FenceID);
+                if (finished) { *(byte *)(dx + 0x2d68) = 0; break; }
+                {
+                    unsigned int now;
+                    __asm__ __volatile__ ("rdtsc" : "=a"(now) : : "edx");
+                    if ((int)(now - startTsc) > *(int *)(dx + 0x2d60))
+                        break;
+                }
+                dx = (char *)imp_dx;
+            }
+            {
+                unsigned int endTsc;
+                __asm__ __volatile__ ("rdtsc" : "=a"(endTsc) : : "edx");
+                int elapsed = (int)(endTsc - startTsc);
+                int scaled = (elapsed * 3 + 3) / 4;
+                if (elapsed <= -1) scaled = (elapsed * 3 + 3) / 4;
+                *(int *)(dx + 0x2d60) += scaled;
+            }
+        }
+    }
+
+    /* Generate fence for next frame */
+    glGenFencesAPPLE(1, &g_FenceID);
+    glSetFenceAPPLE(g_FenceID);
+    dx = (char *)imp_dx;
+    *(byte *)(dx + 0x2d68) = 1;
+
+done:
+    diag_rb_frame_end();
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 3915 */
@@ -5311,6 +5666,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "jmp .Lfd9182_000d9d43\n"
     );
 }
+#endif /* original naked RB_ExecuteRenderCommands */
 
 /* line 466 */
 void RB_DrawFullScreenColoredQuad(const Material *material, float s0, float t0, float s1, float t1, D3DCOLOR color)
