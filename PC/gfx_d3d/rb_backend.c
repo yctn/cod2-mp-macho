@@ -5494,455 +5494,184 @@ advance:
     *(byte **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
-/* line 2904 */
+/* line 2904 — Text rendering with cursor: iterates characters, handles color codes (^0-^9),
+ * newline/CR, shadow styles (3=1px, 6=2px drop shadow), cursor blink via Sys_Milliseconds.
+ * Each glyph drawn twice at +0.25px offset for subpixel antialiasing. */
+static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandle font,
+                                        float x, float y, float xScale, float yScale,
+                                        GfxColor color, int style, int cursorPos, int cursor)
+{
+    int (*Q_ReadToken)(const char **, int) = *(int (**)(const char **, int))((byte *)imp_ri + 0x118);
+    int (*Sys_Milliseconds)(void) = *(int (**)(void))((byte *)imp_ri + 8);
+    const Material *material = *(const Material **)((char *)font + 12);
+    GfxColor newColor = color;
+    GfxColor newBlack;
+    byte savedAlpha;
+    newBlack.packed = color.packed & 0xFF; /* alpha-only = black shadow */
+    savedAlpha = color.array[0];
+    float xOrig, yPos, xPos, xAdj, glyphX, glyphY, savedGlyphX2;
+    int count, ch;
+    Glyph *glyph;
+
+    /* Half-pixel offset for centering */
+    x += xScale * -0.5f;
+    y += yScale * -0.5f;
+    xOrig = x;
+    yPos = y;
+    xPos = x;
+    xAdj = 0.0f;
+    count = 0;
+
+    while (*text && maxChars) {
+        ch = Q_ReadToken(&text, 0);
+
+        /* Color escape: ^0 through ^9 */
+        if (ch == '^') {
+            const char *next = text;
+            if (next && *next != '^' && *next > '/' && *next <= '9') {
+                int colorIdx = ColorIndex((int)(unsigned char)*next);
+                int defaultIdx = ColorIndex(0x37);
+                if ((byte)colorIdx == (byte)defaultIdx) {
+                    newColor = color; /* reset to original */
+                } else {
+                    byte rgb[4];
+                    RB_LookupColor((int)(unsigned char)*next, rgb);
+                    newColor.packed = savedAlpha | ((unsigned int)rgb[0] << 8) |
+                                     ((unsigned int)rgb[1] << 16) | ((unsigned int)rgb[2] << 24);
+                }
+                text++; /* skip digit */
+                count += 2;
+                continue;
+            }
+            /* Lone ^ or ^^ — fall through to draw as normal character */
+        }
+
+        /* Newline */
+        if (ch == '\n') {
+            yPos += (float)*(int *)((char *)font + 4) * yScale;
+            xPos = xOrig;
+            continue;
+        }
+
+        /* Carriage return */
+        if (ch == '\r') {
+            xPos = xOrig;
+            continue;
+        }
+
+        /* Normal character */
+        glyph = R_GetCharacterGlyph(font, ch);
+        xAdj = (float)(signed char)glyph->x0 * xScale;
+        {
+            float yAdj = (float)(signed char)glyph->y0 * yScale;
+            float w, h, shadowOffset;
+
+            if (style == 3) {
+                shadowOffset = 1.0f;
+            } else if (style == 6) {
+                shadowOffset = 2.0f;
+            } else {
+                shadowOffset = 0.0f;
+            }
+
+            if (shadowOffset > 0.0f) {
+                /* Draw shadow pass first */
+                h = (float)glyph->pixelHeight * yScale;
+                w = (float)glyph->pixelWidth * xScale;
+                glyphY = yPos + yAdj;
+                glyphX = xPos + xAdj;
+                {
+                    float shadowY = glyphY + shadowOffset;
+                    float shadowX = glyphX + shadowOffset;
+                    RB_DrawStretchPic(material, shadowX, shadowY, w, h,
+                                      glyph->s0, glyph->t0, glyph->s1, glyph->t1, newBlack.packed, 8);
+                    RB_DrawStretchPic(material, shadowX + 0.25f, shadowY + 0.25f, w, h,
+                                      glyph->s0, glyph->t0, glyph->s1, glyph->t1, newBlack.packed, 8);
+                }
+                /* Fall through to draw foreground glyph */
+            } else {
+                glyphY = yPos + yAdj;
+                glyphX = xPos + xAdj;
+            }
+
+            /* Draw foreground glyph (twice for subpixel AA) */
+            h = (float)glyph->pixelHeight * yScale;
+            w = (float)glyph->pixelWidth * xScale;
+            RB_DrawStretchPic(material, glyphX, glyphY, w, h,
+                              glyph->s0, glyph->t0, glyph->s1, glyph->t1, newColor.packed, 8);
+            savedGlyphX2 = glyphX + 0.25f;
+            RB_DrawStretchPic(material, savedGlyphX2, glyphY + 0.25f, w, h,
+                              glyph->s0, glyph->t0, glyph->s1, glyph->t1, newColor.packed, 8);
+        }
+
+        /* Check for cursor at this character position */
+        if (count == cursorPos) {
+            int time = Sys_Milliseconds();
+            if (time <= -1) time += 255;
+            if (!((time >> 8) & 1)) {
+                /* Cursor blink ON — draw cursor glyph */
+                Glyph *cg = R_GetCharacterGlyph(font, cursor);
+                float ch_ = (float)cg->pixelHeight * yScale;
+                float cw = (float)cg->pixelWidth * xScale;
+                float cy = yPos + (float)(signed char)cg->y0 * yScale;
+                RB_DrawStretchPic(material, glyphX, cy, cw, ch_,
+                                  cg->s0, cg->t0, cg->s1, cg->t1, newColor.packed, 8);
+                RB_DrawStretchPic(material, savedGlyphX2, cy + 0.25f, cw, ch_,
+                                  cg->s0, cg->t0, cg->s1, cg->t1, newColor.packed, 8);
+            }
+        }
+
+        /* Advance */
+        xPos += (float)glyph->dx * xScale;
+        count++;
+        maxChars--;
+    }
+
+    /* Check cursor at end of text */
+    if (count == cursorPos) {
+        float cursorX = xPos + xAdj;
+        int time = Sys_Milliseconds();
+        if (time <= -1) time += 255;
+        if (!((time >> 8) & 1)) {
+            Glyph *cg = R_GetCharacterGlyph(font, cursor);
+            float ch_ = (float)cg->pixelHeight * yScale;
+            float cw = (float)cg->pixelWidth * xScale;
+            float cy = yPos + (float)(signed char)cg->y0 * yScale;
+            RB_DrawStretchPic(material, cursorX, cy, cw, ch_,
+                              cg->s0, cg->t0, cg->s1, cg->t1, newColor.packed, 8);
+            RB_DrawStretchPic(material, cursorX + 0.25f, cy + 0.25f, cw, ch_,
+                              cg->s0, cg->t0, cg->s1, cg->t1, newColor.packed, 8);
+        }
+    }
+}
+
+/* Naked trampoline: marshals register args (eax=text, edx=maxChars, ecx=font,
+ * xmm0=x, xmm1=y, xmm2=xScale, xmm3=yScale) + stack args to _impl */
 static __attribute__((naked))
 void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, float xScale, float yScale, const GfxColor color, int style, int cursorPos, int cursor)
 {
+    (void)text; (void)maxChars; (void)font; (void)xScale; (void)yScale;
+    (void)color; (void)style; (void)cursorPos; (void)cursor;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2904 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xdc, %esp\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl %edx, -0x60(%ebp)\n"
-        "movl %ecx, -0x64(%ebp)\n"
-        "movss %xmm2, -0x68(%ebp)\n"
-        "movss %xmm3, -0x6c(%ebp)\n"
-        "movzbl 0x14(%ebp), %edx\n" /* cursor */
-        "movb %dl, -0x6d(%ebp)\n" /* cursor */
-        /* { scope 1 */
-        "movl 8(%ebp), %edi\n" /* line 2921 | color, newColor */
-        "movl %edi, %ecx\n" /* line 2935 | newColor */
-        "movzbl %cl, %ecx\n"
-        "movl %ecx, -0x5c(%ebp)\n" /* newBlack */
-        "movl -0x64(%ebp), %edx\n" /* line 207 */
-        "movl 0xc(%edx), %edx\n"
-        "movl %edx, -0x4c(%ebp)\n" /* material */
-        "movss lit4_002ed63c, %xmm2\n" /* line 2948 | -0.5f */
-        "movss -0x68(%ebp), %xmm3\n"
-        "mulss %xmm2, %xmm3\n"
-        "addss %xmm3, %xmm0\n" /* x */
-        "movss %xmm0, -0x34(%ebp)\n" /* x */
-        "movss -0x6c(%ebp), %xmm4\n" /* line 2949 */
-        "mulss %xmm2, %xmm4\n"
-        "addss %xmm4, %xmm1\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "movl %edi, %ecx\n" /* line 2972 | newColor */
-        "movb %cl, -0x55(%ebp)\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* x */
-        "pxor %xmm0, %xmm0\n" /* x */
-        "movss %xmm0, -0x50(%ebp)\n" /* x, xAdj */
-        "movl $0, -0x54(%ebp)\n" /* count */
-        ".Lfda33c_000da3bc:\n"
-        "cmpb $0, (%eax)\n" /* line 2954 */
-        "je .Lfda33c_000da58f\n"
-        ".Lfda33c_000da3c5:\n"
-        "movl -0x60(%ebp), %ebx\n" /* glyph */
-        "testl %ebx, %ebx\n" /* glyph */
-        "je .Lfda33c_000da58f\n"
-        "movl $0, 4(%esp)\n" /* line 2956 */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "movl imp_ri, %edx\n"
-        "calll *0x118(%edx)\n"
-        "cmpl $0x5e, %eax\n" /* line 2959 */
-        "je .Lfda33c_000da5a6\n"
-        "cmpl $0xa, %eax\n" /* line 2990 */
-        "je .Lfda33c_000da642\n"
-        "cmpl $0xd, %eax\n" /* line 2996 */
-        "je .Lfda33c_000da7a9\n"
-        ".Lfda33c_000da405:\n"
-        "movl %eax, 4(%esp)\n" /* line 3002 */
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll R_GetCharacterGlyph\n"
-        "movl %eax, %esi\n" /* glyph */
-        "movsbl 2(%eax), %eax\n" /* line 3003 */
-        "cvtsi2ssl %eax, %xmm0\n" /* x */
-        "movss -0x68(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm2\n" /* x */
-        "movss %xmm2, -0x50(%ebp)\n" /* xAdj */
-        "movsbl 3(%esi), %eax\n" /* line 3004 | glyph */
-        "cvtsi2ssl %eax, %xmm1\n"
-        "mulss -0x6c(%ebp), %xmm1\n"
-        "cmpl $3, 0xc(%ebp)\n" /* line 3006 | style */
-        "je .Lfda33c_000da8f7\n"
-        "cmpl $6, 0xc(%ebp)\n" /* style */
-        "je .Lfda33c_000da66b\n"
-        "addss -0x38(%ebp), %xmm1\n"
-        "movss %xmm1, -0x40(%ebp)\n"
-        "movss -0x30(%ebp), %xmm3\n"
-        "addss -0x50(%ebp), %xmm3\n" /* xAdj */
-        "movss %xmm3, -0x3c(%ebp)\n"
-        "movaps %xmm1, %xmm2\n"
-        ".Lfda33c_000da469:\n"
-        "movzbl 6(%esi), %eax\n" /* line 3011 | glyph */
-        "cvtsi2ssl %eax, %xmm1\n" /* h */
-        "mulss -0x6c(%ebp), %xmm1\n" /* h */
-        "movzbl 5(%esi), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm0\n" /* w */
-        "mulss -0x68(%ebp), %xmm0\n" /* w */
-        /* { scope 2: x */
-        "movl $8, 0x28(%esp)\n" /* line 2868 */
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%esi), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%esi), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm2, 8(%esp)\n"
-        "movss %xmm3, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "movss %xmm0, -0x88(%ebp)\n"
-        "movss %xmm1, -0x98(%ebp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movss lit4_002ed604, %xmm2\n" /* line 2870 | 0.25f */
-        "addss -0x3c(%ebp), %xmm2\n"
-        "movss %xmm2, -0x48(%ebp)\n"
-        "movl $8, 0x28(%esp)\n"
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%esi), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%esi), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0x98(%ebp), %xmm1\n"
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss -0x88(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss lit4_002ed604, %xmm3\n" /* 0.25f */
-        "addss -0x40(%ebp), %xmm3\n"
-        "movss %xmm3, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        /* } scope */
-        "movl -0x54(%ebp), %edx\n" /* line 3013 | count */
-        "cmpl %edx, 0x10(%ebp)\n" /* cursorPos */
-        "je .Lfda33c_000da7bb\n"
-        ".Lfda33c_000da564:\n"
-        "movzbl 4(%esi), %eax\n" /* line 3016 | glyph */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss -0x68(%ebp), %xmm0\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "addl $1, -0x54(%ebp)\n" /* line 3017 | count */
-        "subl $1, -0x60(%ebp)\n" /* line 3018 */
-        "movl -0x2c(%ebp), %eax\n"
-        "cmpb $0, (%eax)\n" /* line 2954 */
-        "jne .Lfda33c_000da3c5\n"
-        ".Lfda33c_000da58f:\n"
-        "movl -0x54(%ebp), %edx\n" /* line 3021 | count */
-        "cmpl %edx, 0x10(%ebp)\n" /* cursorPos */
-        "je .Lfda33c_000da904\n"
-        /* } scope */
-        ".Lfda33c_000da59b:\n"
-        "addl $0xdc, %esp\n" /* line 3023 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        /* Build cdecl args for _impl (11 args, right-to-left) */
+        "pushl 0x14(%ebp)\n"       /* cursor */
+        "pushl 0x10(%ebp)\n"       /* cursorPos */
+        "pushl 0xc(%ebp)\n"        /* style */
+        "pushl 8(%ebp)\n"          /* color */
+        "subl $16, %esp\n"         /* space for 4 floats */
+        "movss %xmm3, 12(%esp)\n"  /* yScale */
+        "movss %xmm2, 8(%esp)\n"   /* xScale */
+        "movss %xmm1, 4(%esp)\n"   /* y */
+        "movss %xmm0, (%esp)\n"    /* x */
+        "pushl %ecx\n"             /* font */
+        "pushl %edx\n"             /* maxChars */
+        "pushl %eax\n"             /* text */
+        "calll RB_DrawTextWithCursor_impl\n"
+        "addl $44, %esp\n"         /* 11 * 4 */
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfda33c_000da5a6:\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 2959 */
-        "testl %edx, %edx\n"
-        "je .Lfda33c_000da405\n"
-        "movzbl (%edx), %edx\n"
-        "cmpb $0x5e, %dl\n"
-        "je .Lfda33c_000da405\n"
-        "cmpb $0x2f, %dl\n"
-        "jle .Lfda33c_000da405\n"
-        "cmpb $0x39, %dl\n"
-        "jg .Lfda33c_000da405\n"
-        "movzbl %dl, %eax\n" /* line 2961 */
-        "movl %eax, (%esp)\n"
-        "calll ColorIndex\n"
-        "movl %eax, %ebx\n" /* glyph */
-        "movl $0x37, (%esp)\n"
-        "calll ColorIndex\n"
-        "cmpb %al, %bl\n" /* glyph */
-        "je .Lfda33c_000daa5b\n"
-        "leal -0x1c(%ebp), %eax\n" /* line 2967 | rgbColor */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movzbl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_LookupColor\n"
-        "movl %edi, %ecx\n" /* line 2972 | newColor */
-        "movb -0x55(%ebp), %cl\n"
-        "movzbl -0x1c(%ebp), %eax\n" /* line 2973 | rgbColor */
-        "movb %al, %ch\n"
-        "movl %ecx, %edi\n" /* newColor */
-        "movzbl -0x1b(%ebp), %eax\n" /* line 2974 */
-        "shll $0x10, %eax\n"
-        "andl $0xff00ffff, %edi\n" /* newColor */
-        "orl %eax, %edi\n" /* newColor */
-        "movzbl -0x1a(%ebp), %eax\n" /* line 2975 */
-        "shll $0x18, %eax\n"
-        "andl $0x00FFFFFF, %edi\n" /* newColor */
-        "orl %eax, %edi\n" /* newColor */
-        ".Lfda33c_000da630:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 2986 */
-        "addl $1, %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "addl $2, -0x54(%ebp)\n" /* line 2987 | count */
-        "jmp .Lfda33c_000da3bc\n"
-        ".Lfda33c_000da642:\n"
-        "movl -0x64(%ebp), %eax\n" /* line 2993 */
-        "cvtsi2ssl 4(%eax), %xmm0\n" /* x */
-        "mulss -0x6c(%ebp), %xmm0\n" /* x */
-        "addss -0x38(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, -0x38(%ebp)\n" /* x */
-        "movss -0x34(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, -0x30(%ebp)\n" /* x */
-        "movl -0x2c(%ebp), %eax\n"
-        "jmp .Lfda33c_000da3bc\n"
-        ".Lfda33c_000da66b:\n"
-        "movss lit4_002ed62c, %xmm2\n" /* line 3006 | 2.0f */
-        ".Lfda33c_000da673:\n"
-        "movzbl 6(%esi), %eax\n" /* line 3009 | glyph */
-        "cvtsi2ssl %eax, %xmm3\n" /* h */
-        "mulss -0x6c(%ebp), %xmm3\n" /* h */
-        "movzbl 5(%esi), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm0\n" /* w */
-        "mulss -0x68(%ebp), %xmm0\n" /* w */
-        "addss -0x38(%ebp), %xmm1\n" /* y */
-        "movss %xmm1, -0x40(%ebp)\n" /* y */
-        "addss %xmm2, %xmm1\n" /* x, y */
-        "movss -0x30(%ebp), %xmm4\n"
-        "addss -0x50(%ebp), %xmm4\n" /* xAdj */
-        "movss %xmm4, -0x3c(%ebp)\n"
-        "addss %xmm4, %xmm2\n" /* x */
-        /* { scope 2: x */
-        "movl $8, 0x28(%esp)\n" /* line 2868 */
-        "movl -0x5c(%ebp), %eax\n" /* newBlack */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x14(%esi), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%esi), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss %xmm3, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl -0x4c(%ebp), %edx\n" /* material */
-        "movl %edx, (%esp)\n"
-        "movss %xmm0, -0x88(%ebp)\n"
-        "movss %xmm1, -0x98(%ebp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "movss %xmm3, -0xb8(%ebp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movl $8, 0x28(%esp)\n" /* line 2870 */
-        "movl -0x5c(%ebp), %ecx\n" /* newBlack */
-        "movl %ecx, 0x24(%esp)\n"
-        "movl 0x14(%esi), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%esi), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0xb8(%ebp), %xmm3\n"
-        "movss %xmm3, 0x10(%esp)\n"
-        "movss -0x88(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss -0x98(%ebp), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss -0xa8(%ebp), %xmm2\n"
-        "addss %xmm0, %xmm2\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movss -0x40(%ebp), %xmm2\n"
-        "movss -0x3c(%ebp), %xmm3\n"
-        "jmp .Lfda33c_000da469\n"
-        /* } scope */
-        ".Lfda33c_000da7a9:\n"
-        "movss -0x34(%ebp), %xmm2\n" /* line 2996 */
-        "movss %xmm2, -0x30(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "jmp .Lfda33c_000da3bc\n"
-        ".Lfda33c_000da7bb:\n"
-        "movl imp_ri, %ecx\n" /* line 2880 */
-        "calll *8(%ecx)\n"
-        "leal 0xff(%eax), %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "testb $1, %ah\n"
-        "jne .Lfda33c_000da564\n"
-        "movzbl -0x6d(%ebp), %eax\n" /* line 2883 | cursor */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll R_GetCharacterGlyph\n"
-        "movl %eax, %ebx\n"
-        "movzbl 6(%eax), %eax\n" /* line 2884 */
-        "cvtsi2ssl %eax, %xmm2\n" /* h */
-        "mulss -0x6c(%ebp), %xmm2\n" /* h */
-        "movzbl 5(%ebx), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm1\n" /* y */
-        "mulss -0x68(%ebp), %xmm1\n" /* y */
-        "movsbl 3(%ebx), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm0\n" /* y */
-        "mulss -0x6c(%ebp), %xmm0\n" /* y */
-        "addss -0x38(%ebp), %xmm0\n" /* y */
-        /* { scope 2: x */
-        "movl $8, 0x28(%esp)\n" /* line 2868 */
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%ebx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss %xmm2, 0x10(%esp)\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x3c(%ebp), %xmm3\n"
-        "movss %xmm3, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "movss %xmm0, -0x88(%ebp)\n"
-        "movss %xmm1, -0x98(%ebp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movl $8, 0x28(%esp)\n" /* line 2870 */
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%ebx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0xa8(%ebp), %xmm2\n"
-        "movss %xmm2, 0x10(%esp)\n"
-        "movss -0x98(%ebp), %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss -0x88(%ebp), %xmm0\n"
-        "addss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x48(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "jmp .Lfda33c_000da564\n"
-        /* } scope */
-        ".Lfda33c_000da8f7:\n"
-        "movss lit4_002ed5d0, %xmm2\n" /* line 3006 | 1.0f */
-        "jmp .Lfda33c_000da673\n"
-        ".Lfda33c_000da904:\n"
-        "movss -0x30(%ebp), %xmm0\n" /* line 3022 */
-        "addss -0x50(%ebp), %xmm0\n" /* xAdj */
-        "movss %xmm0, -0x44(%ebp)\n" /* x */
-        "movzbl -0x6d(%ebp), %ebx\n" /* cursor */
-        /* { scope 2: x */
-        "movl imp_ri, %eax\n" /* line 2880 */
-        "calll *8(%eax)\n"
-        "leal 0xff(%eax), %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "testb $1, %ah\n"
-        "jne .Lfda33c_000da59b\n"
-        "movzbl %bl, %eax\n" /* line 2883 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll R_GetCharacterGlyph\n"
-        "movl %eax, %ebx\n"
-        "movzbl 6(%eax), %eax\n" /* line 2884 */
-        "cvtsi2ssl %eax, %xmm2\n" /* h */
-        "mulss -0x6c(%ebp), %xmm2\n" /* h */
-        "movzbl 5(%ebx), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm0\n" /* y */
-        "mulss -0x68(%ebp), %xmm0\n" /* y */
-        "movsbl 3(%ebx), %eax\n" /* glyph */
-        "cvtsi2ssl %eax, %xmm1\n" /* y */
-        "mulss -0x6c(%ebp), %xmm1\n" /* y */
-        "addss -0x38(%ebp), %xmm1\n" /* y */
-        /* { scope 3 */
-        "movl $8, 0x28(%esp)\n" /* line 2868 */
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%ebx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss %xmm2, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss -0x44(%ebp), %xmm3\n" /* x */
-        "movss %xmm3, 4(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "movss %xmm0, -0x88(%ebp)\n"
-        "movss %xmm1, -0x98(%ebp)\n"
-        "movss %xmm2, -0xa8(%ebp)\n"
-        "calll RB_DrawStretchPic\n"
-        "movl $8, 0x28(%esp)\n" /* line 2870 */
-        "movl %edi, 0x24(%esp)\n"
-        "movl 0x14(%ebx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0xa8(%ebp), %xmm2\n"
-        "movss %xmm2, 0x10(%esp)\n"
-        "movss -0x88(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss lit4_002ed604, %xmm0\n" /* 0.25f */
-        "movss -0x98(%ebp), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "addss -0x44(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 4(%esp)\n"
-        "movl -0x4c(%ebp), %edx\n" /* material */
-        "movl %edx, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "addl $0xdc, %esp\n" /* line 3023 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfda33c_000daa5b:\n"
-        "movl 8(%ebp), %edi\n" /* line 2963 | color, newColor */
-        "jmp .Lfda33c_000da630\n"
     );
 }
 
