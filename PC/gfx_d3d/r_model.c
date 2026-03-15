@@ -38,7 +38,15 @@ extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
 extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 extern Bool R_ValidXModelName(const char *name);
 extern refimport_t ri; /* imp_ri */
-extern const int boxVerts[24][3]; /* boxVerts */
+extern const int boxVerts[24][3]; /* boxVerts — 12 pairs of box edge start/end vertex indices */
+extern const int s_streamSourceInfo[]; /* end sentinel for boxVerts iteration */
+extern int DObjNumBones(const void *obj);
+extern void DObjGetBoneInfo(const void *obj, void **boneInfoArray);
+extern void *DObjGetRotTransArray(const void *obj);
+extern void CG_DObjCalcPose(void *poseCtx, const void *obj, int *partBits);
+extern void MatrixTransformVectorQuatTrans(const vec_t *in, const void *quatTrans, vec_t *out);
+extern void MatrixTransformVector(const vec_t *in, const void *matrix, vec_t *out);
+extern void R_AddDebugLine(void *debugGlobals, const vec_t *start, const vec_t *end, const vec_t *color);
 
 #define VTABLE(obj) (*(void ***)((void *)(obj)))
 
@@ -66,7 +74,9 @@ void R_FinishLoadingModels(void);
 void R_DObjGetSurfMaterials(struct DObj_s *obj, int lod, MaterialHandle *matHandleArray);
 static int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lods);
 static void R_XModelDebugBoxes(void);
+static void R_XModelDebugBoxes_impl(const byte *sceneEnt, const byte *ent, const void *obj);
 static void R_XModelDebugAxes(void);
+static void R_XModelDebugAxes_impl(const byte *sceneEnt, const byte *ent, const void *obj);
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long unsigned int (*surface)[32], int surfaceIndex, char *lods, byte *surfPos);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent);
@@ -472,338 +482,159 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
 }
 #endif
 
-/* line 299 */
+/* line 299 — R_XModelDebugBoxes
+ * Draws wireframe bounding boxes for each active bone in an XModel.
+ * For each bone in partBits, transforms 12 box edge pairs through the bone
+ * quaternion and entity matrix, then draws debug lines.
+ * Actual convention: eax=sceneEnt, edx=ent, ecx=obj */
+static void R_XModelDebugBoxes_impl(const byte *sceneEnt, const byte *ent, const void *obj)
+{
+    byte surfaces[0x100];
+    int partBits[5];
+    char lods[16];
+    void *boneInfoArray[200];
+    int boneIndex, boneCount;
+
+    R_GetSurfaceData_impl(ent, obj, surfaces, partBits, lods);
+
+    /* Calculate bone poses if pose context exists */
+    if (*(void **)(sceneEnt + 8))
+        CG_DObjCalcPose(*(void **)(sceneEnt + 8), obj, partBits);
+
+    boneCount = DObjNumBones(obj);
+    DObjGetBoneInfo(obj, boneInfoArray);
+    byte *rotTransArray = (byte *)DObjGetRotTransArray(obj);
+    if (!rotTransArray)
+        return;
+
+    vec4_t color = {1.0f, 1.0f, 1.0f, 0.0f};
+    byte *entMatrix = (byte *)(ent + 0x14);
+    float *entOrigin = (float *)(ent + 0x3c);
+    byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
+
+    for (boneIndex = 0; boneIndex < boneCount; boneIndex++) {
+        /* Check partBits to see if this bone is active */
+        if (!((partBits[boneIndex >> 5] >> (boneIndex & 0x1f)) & 1))
+            continue;
+
+        float *bi = (float *)boneInfoArray[boneIndex];
+        byte *quatTrans = rotTransArray + boneIndex * 0x20;
+
+        /* Draw 12 box edges */
+        int edge;
+        for (edge = 0; edge < 12; edge++) {
+            const int *sv = boxVerts[edge * 2];     /* start vertex indices */
+            const int *ev = boxVerts[edge * 2 + 1]; /* end vertex indices */
+
+            /* Build start point from indexed bone info components */
+            vec3_t org, vec, start;
+            org[0] = bi[sv[0] * 3 + 0];
+            org[1] = bi[sv[1] * 3 + 1];
+            org[2] = bi[sv[2] * 3 + 2];
+            MatrixTransformVectorQuatTrans(org, quatTrans, vec);
+            MatrixTransformVector(vec, entMatrix, start);
+            start[0] += entOrigin[0];
+            start[1] += entOrigin[1];
+            start[2] += entOrigin[2];
+
+            /* Build end point */
+            vec3_t end;
+            org[0] = bi[ev[0] * 3 + 0];
+            org[1] = bi[ev[1] * 3 + 1];
+            org[2] = bi[ev[2] * 3 + 2];
+            MatrixTransformVectorQuatTrans(org, quatTrans, vec);
+            MatrixTransformVector(vec, entMatrix, end);
+            end[0] += entOrigin[0];
+            end[1] += entOrigin[1];
+            end[2] += entOrigin[2];
+
+            R_AddDebugLine(debugGlobals, start, end, color);
+        }
+    }
+}
+
 static __attribute__((naked))
 void R_XModelDebugBoxes(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 299 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x39c, %esp\n"
-        "movl %eax, %ebx\n" /* sceneEnt */
-        "movl %edx, %esi\n" /* ent */
-        "movl %ecx, %edi\n" /* obj */
-        /* { scope 1 */
-        "leal -0x170(%ebp), %ecx\n" /* line 317 | surfaces */
-        "leal -0x20(%ebp), %eax\n" /* lods */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x70(%ebp), %eax\n" /* partBits */
-        "movl %eax, (%esp)\n"
-        "movl %edi, %edx\n" /* obj */
-        "movl %esi, %eax\n" /* ent */
-        "calll R_GetSurfaceData\n"
-        "movl 8(%ebx), %eax\n" /* line 288 */
-        "testl %eax, %eax\n"
-        "je .Lfd08b6_000d08fe\n"
-        "leal -0x70(%ebp), %edx\n" /* line 294 | partBits */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_DObjCalcPose\n"
-        ".Lfd08b6_000d08fe:\n"
-        "movl %edi, (%esp)\n" /* line 321 | obj */
-        "calll DObjNumBones\n"
-        "movl %eax, -0x384(%ebp)\n" /* boneCount */
-        "leal -0x370(%ebp), %eax\n" /* line 323 | boneInfoArray */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* obj */
-        "calll DObjGetBoneInfo\n"
-        "movl %edi, (%esp)\n" /* line 324 | obj */
-        "calll DObjGetRotTransArray\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 325 */
-        "je .Lfd08b6_000d0b22\n"
-        "movl $0x3f800000, %eax\n" /* line 328 */
-        "movl %eax, -0x60(%ebp)\n" /* color */
-        "movl %eax, -0x5c(%ebp)\n" /* line 329 */
-        "movl %eax, -0x58(%ebp)\n" /* line 330 */
-        "movl $0, -0x54(%ebp)\n" /* line 331 */
-        "movl -0x384(%ebp), %ecx\n" /* line 333 | boneCount */
-        "testl %ecx, %ecx\n"
-        "jle .Lfd08b6_000d0b22\n"
-        "movl %edx, -0x37c(%ebp)\n"
-        "movl $0, -0x388(%ebp)\n" /* boneIndex */
-        "leal 0x14(%esi), %eax\n" /* ent */
-        "movl %eax, -0x38c(%ebp)\n"
-        "movl -0x388(%ebp), %eax\n" /* boneIndex */
-        ".Lfd08b6_000d0972:\n"
-        "sarl $5, %eax\n" /* line 335 */
-        "movl -0x388(%ebp), %ecx\n" /* boneIndex */
-        "andl $0x1f, %ecx\n"
-        "movl -0x70(%ebp, %eax, 4), %eax\n"
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lfd08b6_000d0b02\n"
-        "movl -0x388(%ebp), %edx\n" /* line 338 | boneIndex */
-        "movl -0x370(%ebp, %edx, 4), %ebx\n" /* boneInfo */
-        "movl $boxVerts+12, -0x380(%ebp)\n" /* line 299 */
-        "movl $boxVerts, %edi\n" /* obj */
-        ".Lfd08b6_000d09a8:\n"
-        "movl (%edi), %eax\n" /* line 343 | obj */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl (%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x44(%ebp)\n" /* org */
-        "movl 4(%edi), %eax\n" /* line 344 | obj */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 4(%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl 8(%edi), %eax\n" /* line 345 | obj */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 8(%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x3c(%ebp)\n"
-        "leal -0x38(%ebp), %eax\n" /* line 346 | vec */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x37c(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x44(%ebp), %eax\n" /* org */
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVectorQuatTrans\n"
-        "leal -0x2c(%ebp), %edx\n" /* line 347 | start */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x38c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* vec */
-        "movl %edx, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 240 | start */
-        "addss 0x3c(%esi), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n" /* start */
-        "movss -0x28(%ebp), %xmm0\n" /* line 241 */
-        "addss 0x40(%esi), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movss -0x24(%ebp), %xmm0\n" /* line 242 */
-        "addss 0x44(%esi), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n"
-        "movl -0x380(%ebp), %edx\n" /* line 351 */
-        "movl (%edx), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl (%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x44(%ebp)\n" /* org */
-        "movl 4(%edx), %eax\n" /* line 352 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 4(%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 353 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 8(%ebx, %eax, 4), %eax\n" /* boneInfo */
-        "movl %eax, -0x3c(%ebp)\n"
-        "leal -0x38(%ebp), %eax\n" /* line 354 | vec */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x37c(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x44(%ebp), %eax\n" /* org */
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVectorQuatTrans\n"
-        "leal -0x50(%ebp), %edx\n" /* line 355 | end */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x38c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* vec */
-        "movl %edx, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movss -0x50(%ebp), %xmm0\n" /* line 240 | end */
-        "addss 0x3c(%esi), %xmm0\n"
-        "movss %xmm0, -0x50(%ebp)\n" /* end */
-        "movss -0x4c(%ebp), %xmm0\n" /* line 241 */
-        "addss 0x40(%esi), %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n"
-        "movss -0x48(%ebp), %xmm0\n" /* line 242 */
-        "addss 0x44(%esi), %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n"
-        "leal -0x60(%ebp), %eax\n" /* line 359 | color */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x50(%ebp), %edx\n" /* end */
-        "movl %edx, 8(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n" /* start */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_frontEndDataOut, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %eax, (%esp)\n"
-        "calll R_AddDebugLine\n"
-        "addl $0x18, %edi\n" /* obj */
-        "addl $0x18, -0x380(%ebp)\n"
-        "movl $s_streamSourceInfo, %edx\n" /* line 341 */
-        "cmpl %edi, %edx\n" /* obj */
-        "jne .Lfd08b6_000d09a8\n"
-        ".Lfd08b6_000d0b02:\n"
-        "addl $1, -0x388(%ebp)\n" /* line 333 | boneIndex */
-        "addl $0x20, -0x37c(%ebp)\n"
-        "movl -0x388(%ebp), %eax\n" /* boneIndex */
-        "cmpl %eax, -0x384(%ebp)\n" /* boneCount */
-        "jne .Lfd08b6_000d0972\n"
-        /* } scope */
-        ".Lfd08b6_000d0b22:\n"
-        "addl $0x39c, %esp\n" /* line 362 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_XModelDebugBoxes_impl\n"
+        "addl $12, %esp\n"
         "retl\n"
     );
 }
 
-/* line 365 */
+/* line 365 — R_XModelDebugAxes
+ * Draws 3-axis coordinate frames for each active bone in an XModel.
+ * For each bone in partBits, draws X/Y/Z axes of length 6.0 as colored debug lines.
+ * Actual convention: eax=sceneEnt, edx=ent, ecx=obj */
+static void R_XModelDebugAxes_impl(const byte *sceneEnt, const byte *ent, const void *obj)
+{
+    byte surfaces[0x100];
+    int partBits[5];
+    char lods[16];
+    int boneIndex, boneCount, axis;
+
+    R_GetSurfaceData_impl(ent, obj, surfaces, partBits, lods);
+
+    if (*(void **)(sceneEnt + 8))
+        CG_DObjCalcPose(*(void **)(sceneEnt + 8), obj, partBits);
+
+    /* Axis translation vectors: 6 units along each axis */
+    vec3_t translation[3] = {{6.0f, 0.0f, 0.0f}, {0.0f, 6.0f, 0.0f}, {0.0f, 0.0f, 6.0f}};
+
+    boneCount = DObjNumBones(obj);
+    byte *rotTransArray = (byte *)DObjGetRotTransArray(obj);
+    if (!rotTransArray || boneCount <= 0)
+        return;
+
+    byte *entMatrix = (byte *)(ent + 0x14);
+    float *entOrigin = (float *)(ent + 0x3c);
+    byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
+
+    for (boneIndex = 0; boneIndex < boneCount; boneIndex++) {
+        if (!((partBits[boneIndex >> 5] >> (boneIndex & 0x1f)) & 1))
+            continue;
+
+        byte *quatTrans = rotTransArray + boneIndex * 0x20;
+
+        for (axis = 0; axis < 3; axis++) {
+            /* Color: 1.0 in the axis component, 0 elsewhere */
+            vec4_t color = {0.0f, 0.0f, 0.0f, 0.0f};
+            color[axis] = 1.0f;
+
+            /* Start = bone origin (transform vec3_origin through bone) */
+            vec3_t vec, start;
+            MatrixTransformVectorQuatTrans((const vec_t *)imp_vec3_origin, quatTrans, vec);
+            MatrixTransformVector(vec, entMatrix, start);
+            start[0] += entOrigin[0];
+            start[1] += entOrigin[1];
+            start[2] += entOrigin[2];
+
+            /* End = bone origin + axis * 6.0 (transform axis translation through bone) */
+            vec3_t end;
+            MatrixTransformVectorQuatTrans(translation[axis], quatTrans, vec);
+            MatrixTransformVector(vec, entMatrix, end);
+            end[0] += entOrigin[0];
+            end[1] += entOrigin[1];
+            end[2] += entOrigin[2];
+
+            R_AddDebugLine(debugGlobals, start, end, color);
+        }
+    }
+}
+
 static __attribute__((naked))
 void R_XModelDebugAxes(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 365 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x19c, %esp\n"
-        "movl %eax, %ebx\n" /* sceneEnt */
-        "movl %edx, %esi\n" /* ent */
-        "movl %ecx, %edi\n" /* obj */
-        /* { scope 1 */
-        "leal -0x188(%ebp), %ecx\n" /* line 380 | surfaces */
-        "leal -0x20(%ebp), %eax\n" /* lods */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x54(%ebp), %eax\n" /* partBits */
-        "movl %eax, (%esp)\n"
-        "movl %edi, %edx\n" /* obj */
-        "movl %esi, %eax\n" /* ent */
-        "calll R_GetSurfaceData\n"
-        "movl 8(%ebx), %eax\n" /* line 288 */
-        "testl %eax, %eax\n"
-        "je .Lfd0b2e_000d0b76\n"
-        "leal -0x54(%ebp), %edx\n" /* line 294 | partBits */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_DObjCalcPose\n"
-        ".Lfd0b2e_000d0b76:\n"
-        "movl $0x40c00000, %edx\n" /* line 383 */
-        "movl %edx, -0x88(%ebp)\n" /* translation */
-        "xorl %eax, %eax\n" /* line 384 */
-        "movl %eax, -0x84(%ebp)\n"
-        "movl %eax, -0x80(%ebp)\n" /* line 385 */
-        "movl %eax, -0x7c(%ebp)\n" /* line 387 */
-        "movl %edx, -0x78(%ebp)\n" /* line 388 */
-        "movl %eax, -0x74(%ebp)\n" /* line 389 */
-        "movl %eax, -0x70(%ebp)\n" /* line 391 */
-        "movl %eax, -0x6c(%ebp)\n" /* line 392 */
-        "movl %edx, -0x68(%ebp)\n" /* line 393 */
-        "movl %edi, (%esp)\n" /* line 396 | obj */
-        "calll DObjNumBones\n"
-        "movl %eax, -0x18c(%ebp)\n" /* boneCount */
-        "movl %edi, (%esp)\n" /* line 397 | obj */
-        "calll DObjGetRotTransArray\n"
-        "testl %eax, %eax\n" /* line 398 */
-        "je .Lfd0b2e_000d0d58\n"
-        "movl -0x18c(%ebp), %ebx\n" /* line 401 | boneCount, boneIndex */
-        "testl %ebx, %ebx\n" /* boneIndex */
-        "jle .Lfd0b2e_000d0d58\n"
-        "movl %eax, %edi\n" /* obj */
-        "xorl %ebx, %ebx\n" /* boneIndex */
-        "jmp .Lfd0b2e_000d0be2\n"
-        ".Lfd0b2e_000d0bd0:\n"
-        "addl $1, %ebx\n" /* boneIndex */
-        "addl $0x20, %edi\n" /* obj */
-        "cmpl %ebx, -0x18c(%ebp)\n" /* boneIndex, boneCount */
-        "je .Lfd0b2e_000d0d58\n"
-        ".Lfd0b2e_000d0be2:\n"
-        "movl %ebx, %eax\n" /* line 403 | boneIndex */
-        "sarl $5, %eax\n"
-        "movl %ebx, %ecx\n" /* boneIndex */
-        "andl $0x1f, %ecx\n"
-        "movl -0x54(%ebp, %eax, 4), %eax\n"
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lfd0b2e_000d0bd0\n"
-        "movl $0, -0x190(%ebp)\n" /* line 404 | axis */
-        "leal 0x14(%esi), %eax\n" /* ent */
-        "movl %eax, -0x194(%ebp)\n"
-        "leal -0x88(%ebp), %edx\n" /* translation */
-        "movl %edx, -0x198(%ebp)\n"
-        ".Lfd0b2e_000d0c15:\n"
-        "movl $0, -0x64(%ebp)\n" /* line 183 | color */
-        "movl $0, -0x60(%ebp)\n" /* line 184 */
-        "movl $0, -0x5c(%ebp)\n" /* line 185 */
-        "movl $0, -0x58(%ebp)\n" /* line 409 */
-        "movl -0x190(%ebp), %eax\n" /* line 410 | axis */
-        "movl $0x3f800000, -0x64(%ebp, %eax, 4)\n"
-        "leal -0x2c(%ebp), %edx\n" /* line 412 | vec */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* obj */
-        "movl imp_vec3_origin, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVectorQuatTrans\n"
-        "leal -0x38(%ebp), %eax\n" /* line 413 | start */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x194(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n" /* vec */
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 240 | start */
-        "addss 0x3c(%esi), %xmm0\n"
-        "movss %xmm0, -0x38(%ebp)\n" /* start */
-        "movss -0x34(%ebp), %xmm0\n" /* line 241 */
-        "addss 0x40(%esi), %xmm0\n"
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movss -0x30(%ebp), %xmm0\n" /* line 242 */
-        "addss 0x44(%esi), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n"
-        "leal -0x2c(%ebp), %edx\n" /* line 416 | vec */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* obj */
-        "movl -0x198(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVectorQuatTrans\n"
-        "leal -0x44(%ebp), %edx\n" /* line 417 | end */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x194(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x2c(%ebp), %edx\n" /* vec */
-        "movl %edx, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movss -0x44(%ebp), %xmm0\n" /* line 240 | end */
-        "addss 0x3c(%esi), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n" /* end */
-        "movss -0x40(%ebp), %xmm0\n" /* line 241 */
-        "addss 0x40(%esi), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        "movss -0x3c(%ebp), %xmm0\n" /* line 242 */
-        "addss 0x44(%esi), %xmm0\n"
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "leal -0x64(%ebp), %eax\n" /* line 420 | color */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x44(%ebp), %edx\n" /* end */
-        "movl %edx, 8(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* start */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_frontEndDataOut, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %eax, (%esp)\n"
-        "calll R_AddDebugLine\n"
-        "addl $1, -0x190(%ebp)\n" /* line 406 | axis */
-        "addl $0xc, -0x198(%ebp)\n"
-        "cmpl $3, -0x190(%ebp)\n" /* axis */
-        "jne .Lfd0b2e_000d0c15\n"
-        "addl $1, %ebx\n" /* line 401 | boneIndex */
-        "addl $0x20, %edi\n" /* obj */
-        "cmpl %ebx, -0x18c(%ebp)\n" /* boneIndex, boneCount */
-        "jne .Lfd0b2e_000d0be2\n"
-        /* } scope */
-        ".Lfd0b2e_000d0d58:\n"
-        "addl $0x19c, %esp\n" /* line 423 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll R_XModelDebugAxes_impl\n"
+        "addl $12, %esp\n"
         "retl\n"
     );
 }
