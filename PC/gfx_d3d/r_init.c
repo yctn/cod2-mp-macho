@@ -2191,9 +2191,144 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
     *(char *)&rg = 1;
 }
 
-/* line 2408 */
-__attribute__((naked))
+/* line 2408 — R_RecoverLostDevice
+ * Attempts to recover a lost D3D device. Tests cooperative level, releases resources,
+ * determines anti-aliasing support, resets device, recreates resources, reloads assets. */
+extern void R_ReleaseAllModels(void);
+extern void R_ReleaseLostImages(void);
+extern void Material_ReleaseAll(void);
+extern void R_ReleaseWorld(void);
+extern void R_ReleaseForShutdownOrReset(void);
+extern void R_ReloadWorld(void);
+extern void Material_ReloadAll(void);
+extern void R_ReloadLostImages(void);
+extern void R_OptimizeAllModels(void);
+extern int RB_CalcSunSpriteSamples(void);
+extern r_global_permanent_t rgp;
+
 Bool R_RecoverLostDevice(void)
+{
+    byte *dxp = (byte *)(void *)&dx;
+    typedef void (*ri_fn)(int, const char *, ...);
+    typedef void (*ri_err_fn)(void);
+    ri_fn Printf = *(ri_fn *)&ri;
+    ri_err_fn Error = *(ri_err_fn *)((byte *)&ri + 72);
+
+    /* Test cooperative level */
+    void *d3dDevice = *(void **)(dxp + 8);
+    void **vtable = *(void ***)d3dDevice;
+    typedef HRESULT (*TestCoopLevel_fn)(void *);
+    HRESULT hr = ((TestCoopLevel_fn)vtable[3])(d3dDevice);
+
+    if (hr == (HRESULT)0x88760868) /* D3DERR_DEVICELOST */
+        return 0;
+
+    Printf(0, "Recovering lost device");
+
+    /* Release all resources */
+    R_ReleaseAllModels();
+    R_ReleaseLostImages();
+    Material_ReleaseAll();
+
+    if (*(int *)((byte *)&rgp + 4252)) /* rgp.world != NULL */
+        R_ReleaseWorld();
+
+    /* Save current display parameters */
+    int displayMode = *(int *)(dxp + 11596);
+    int backBufWidth = *(int *)(dxp + 11604);
+    int backBufHeight = *(int *)(dxp + 11608);
+    int refreshRate = *(int *)((byte *)&vidConfig + 8);
+    int isFullscreen = *(int *)((byte *)&vidConfig + 12) != 0;
+    int aaSamples = *(int *)(*(int *)imp_r_aaSamples + 8);
+
+    /* Find supported AA level */
+    if (aaSamples > 1) {
+        void *d3d = *(void **)(dxp + 4);
+        void **d3dVtable = *(void ***)d3d;
+        typedef HRESULT (*CheckMultiSample_fn)(void *, int, int, int, int, int, void *);
+        int qualityLevels;
+        int testSamples = aaSamples;
+        while (testSamples > 1) {
+            *(int *)(dxp + 11300) = testSamples;
+            hr = ((CheckMultiSample_fn)d3dVtable[11])(d3d, 0, 1, 0x15, !isFullscreen, testSamples, &qualityLevels);
+            if (hr >= 0) {
+                *(int *)(dxp + 11304) = qualityLevels - 1;
+                goto aa_done;
+            }
+            testSamples--;
+        }
+        *(int *)(dxp + 11300) = 0;
+        *(int *)(dxp + 11304) = 0;
+    }
+
+aa_done:;
+    /* Build D3DPRESENT_PARAMETERS */
+    int d3dpp[14];
+    memset(d3dpp, 0, sizeof(d3dpp));
+    d3dpp[0] = backBufWidth;
+    d3dpp[1] = backBufHeight;
+    d3dpp[2] = 0x15; /* BackBufferFormat = D3DFMT_X8R8G8B8 */
+    d3dpp[3] = 1;    /* BackBufferCount */
+    d3dpp[4] = *(int *)(dxp + 11300); /* MultiSampleType */
+    d3dpp[5] = *(int *)(dxp + 11304); /* MultiSampleQuality */
+    d3dpp[6] = 1;    /* SwapEffect = D3DSWAPEFFECT_DISCARD */
+    d3dpp[8] = 0x4b; /* AutoDepthStencilFormat */
+    /* PresentationInterval: 1 if vsync, 0x80000000 if not */
+    int swapInterval = *(byte *)(*(int *)imp_r_swapInterval + 8);
+    d3dpp[11] = swapInterval ? 1 : 0x80000001;
+    d3dpp[10] = displayMode;
+    d3dpp[9] = 0; /* Windowed (set below) */
+    if (isFullscreen) {
+        d3dpp[7] = 0; /* hDeviceWindow = NULL (fullscreen) */
+        d3dpp[12] = refreshRate;
+    } else {
+        d3dpp[7] = 1; /* Windowed = TRUE */
+        d3dpp[12] = 0;
+    }
+
+    /* Release and reset device */
+    R_ReleaseForShutdownOrReset();
+
+    d3dDevice = *(void **)(dxp + 8);
+    vtable = *(void ***)d3dDevice;
+    typedef HRESULT (*Reset_fn)(void *, void *);
+    hr = ((Reset_fn)vtable[16])(d3dDevice, d3dpp);
+
+    if (hr < 0) {
+        const char *msg = va("Couldn't reset a lost Direct3D device - IDirect3DDevice9::Reset returned %s", DXGetErrorDescription9A(hr));
+        Printf(0, "------- Initializing Renderer -------");
+        Printf(0, "------- Renderer Initialization -------");
+        Printf(0, "------- Server Initialization -------");
+        Printf(0, "\n%s\n", msg);
+        Error();
+    }
+
+    *(byte *)(dxp + 11580) = 0;
+
+    /* Recreate resources */
+    if (!R_CreateForInitOrReset()) {
+        Printf(0, "------- Initializing Renderer -------");
+        Printf(0, "------- Renderer Initialization -------");
+        Printf(0, "------- Server Initialization -------");
+        Printf(0, "\nFailed to recreate resources after device reset\n");
+        Error();
+    }
+
+    /* Reload assets */
+    if (*(int *)((byte *)&rgp + 4252))
+        R_ReloadWorld();
+
+    Material_ReloadAll();
+    R_ReloadLostImages();
+    R_OptimizeAllModels();
+    *(int *)(dxp + 11308) = RB_CalcSunSpriteSamples();
+
+    Printf(0, "Device recovered successfully");
+    return 1;
+}
+
+#if 0 /* original naked */
+Bool R_RecoverLostDevice_naked(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2408 */
@@ -2401,6 +2536,7 @@ Bool R_RecoverLostDevice(void)
         "jmp .Lfccdba_000ccf80\n"
     );
 }
+#endif /* original naked R_RecoverLostDevice */
 
 /* line 273 */
 __attribute__((naked))
