@@ -2918,173 +2918,72 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
     );
 }
 
-/* line 2162 */
-__attribute__((naked))
+/* line 2162 — R_SkinRigidXModelCmd
+ * Processes a rigid XModel skinning command. Builds a 3x4 rotation matrix from the
+ * quaternion in the command's DObjAnimMat, then iterates surfaces calling
+ * R_SkinXSurfaceSkinned (type!=4,5) or R_GetRigidTransform (type==4) per surface. */
+extern int XSurfaceGetBoneOffset(int xsurfIndex);
+
 void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2162 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 2172 | skinRigidCmd */
-        "addl $0xc, %eax\n"
-        /* { scope 2: xx, yy, zw */
-        /* { scope 3: scale */
-        "movss 0x1c(%eax), %xmm1\n" /* line 350 | scale */
-        /* { scope 4 */
-        "movaps %xmm1, %xmm3\n" /* line 272 */
-        "movl 8(%ebp), %edx\n" /* skinRigidCmd */
-        "mulss 0xc(%edx), %xmm3\n"
-        "movaps %xmm1, %xmm6\n" /* line 273 */
-        "mulss 4(%eax), %xmm6\n"
-        "mulss 8(%eax), %xmm1\n" /* line 274 */
-        /* } scope */
-        "movaps %xmm3, %xmm0\n" /* line 352 */
-        "mulss 0xc(%edx), %xmm0\n"
-        "movss %xmm0, -0x74(%ebp)\n" /* xx */
-        "movss 4(%eax), %xmm4\n" /* line 353 */
-        "movaps %xmm3, %xmm5\n"
-        "mulss %xmm4, %xmm5\n"
-        "movss 8(%eax), %xmm2\n" /* line 354 */
-        "movaps %xmm3, %xmm7\n"
-        "mulss %xmm2, %xmm7\n"
-        "movss 0xc(%eax), %xmm0\n" /* line 355 */
-        "mulss %xmm0, %xmm3\n"
-        "mulss %xmm6, %xmm4\n" /* line 357 */
-        "movss %xmm4, -0x70(%ebp)\n" /* yy */
-        "movaps %xmm6, %xmm4\n" /* line 358 */
-        "mulss %xmm2, %xmm4\n"
-        "mulss %xmm0, %xmm6\n" /* line 359 */
-        "mulss %xmm1, %xmm2\n" /* line 361 */
-        "mulss %xmm0, %xmm1\n" /* line 362 */
-        "movss %xmm1, -0x7c(%ebp)\n" /* zw */
-        "movss -0x70(%ebp), %xmm0\n" /* line 364 | yy */
-        "addss %xmm2, %xmm0\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x68(%ebp)\n" /* buf */
-        "movss -0x7c(%ebp), %xmm0\n" /* line 365 | zw */
-        "addss %xmm5, %xmm0\n"
-        "movss %xmm0, -0x64(%ebp)\n"
-        "movaps %xmm7, %xmm0\n" /* line 366 */
-        "subss %xmm6, %xmm0\n"
-        "movss %xmm0, -0x60(%ebp)\n"
-        "xorl %eax, %eax\n" /* line 367 */
-        "movl %eax, -0x5c(%ebp)\n"
-        "subss -0x7c(%ebp), %xmm5\n" /* line 369 | zw */
-        "movss %xmm5, -0x58(%ebp)\n"
-        "addss -0x74(%ebp), %xmm2\n" /* line 370 | xx */
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, -0x54(%ebp)\n"
-        "movaps %xmm3, %xmm0\n" /* line 371 */
-        "addss %xmm4, %xmm0\n"
-        "movss %xmm0, -0x50(%ebp)\n"
-        "movl %eax, -0x4c(%ebp)\n" /* line 372 */
-        "addss %xmm6, %xmm7\n" /* line 374 */
-        "movss %xmm7, -0x48(%ebp)\n"
-        "subss %xmm3, %xmm4\n" /* line 375 */
-        "movss %xmm4, -0x44(%ebp)\n"
-        "movss -0x74(%ebp), %xmm0\n" /* line 376 | xx */
-        "addss -0x70(%ebp), %xmm0\n" /* yy */
-        "movss %xmm0, -0x74(%ebp)\n" /* xx */
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "subss -0x74(%ebp), %xmm0\n" /* xx */
-        "movss %xmm0, -0x40(%ebp)\n"
-        "movl %eax, -0x3c(%ebp)\n" /* line 377 */
-        "leal -0x68(%ebp), %ecx\n" /* line 383 | buf, to */
-        "addl $0x30, %ecx\n" /* to */
-        "addl $0x1c, %edx\n" /* from */
-        /* { scope 4 */
-        "movl 8(%ebp), %ebx\n" /* line 199 | skinRigidCmd */
-        "movl 0x1c(%ebx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl $0x3f800000, -0x2c(%ebp)\n" /* line 384 */
-        /* } scope */
-        /* } scope */
-        "movl (%ebx), %edi\n" /* line 2181 | rigidSurf, surfPos */
-        "movl 4(%ebx), %ebx\n" /* line 2182 | rigidSurf */
-        "testl %ebx, %ebx\n" /* rigidSurf */
-        "jle .Lfd2c30_000d2dc5\n"
-        "movl $0, -0x78(%ebp)\n" /* surfaceIndex */
-        "movl 8(%ebp), %eax\n" /* skinRigidCmd */
-        "jmp .Lfd2c30_000d2da9\n"
-        /* { scope 2: xx, yy, zw */
-        /* { scope 3: scale */
-        ".Lfd2c30_000d2d86:\n"
-        "cmpl $4, %eax\n" /* line 2105 */
-        "je .Lfd2c30_000d2dd0\n"
-        "movl %edi, %eax\n" /* line 2117 */
-        "addl $0x10, %edi\n" /* line 2118 */
-        "leal -0x68(%ebp), %edx\n" /* line 2119 | buf */
-        "calll R_SkinXSurfaceSkinned\n"
-        /* } scope */
-        /* } scope */
-        ".Lfd2c30_000d2d98:\n"
-        "addl $1, -0x78(%ebp)\n" /* line 2182 | surfaceIndex */
-        "movl -0x78(%ebp), %eax\n" /* surfaceIndex */
-        "movl 8(%ebp), %ebx\n" /* skinRigidCmd, rigidSurf */
-        "cmpl %eax, 4(%ebx)\n" /* rigidSurf */
-        "jle .Lfd2c30_000d2dc5\n"
-        ".Lfd2c30_000d2da7:\n"
-        "movl %ebx, %eax\n" /* rigidSurf */
-        ".Lfd2c30_000d2da9:\n"
-        "movl 8(%eax), %esi\n" /* line 2183 | refEnt */
-        /* { scope 2: xx, yy, zw */
-        /* { scope 3: scale */
-        "movl (%edi), %eax\n" /* line 2092 */
-        "cmpl $5, %eax\n"
-        "jne .Lfd2c30_000d2d86\n"
-        "addl $0x10, %edi\n" /* line 2095 */
-        /* } scope */
-        /* } scope */
-        "addl $1, -0x78(%ebp)\n" /* line 2182 | surfaceIndex */
-        "movl -0x78(%ebp), %eax\n" /* surfaceIndex */
-        "movl 8(%ebp), %ebx\n" /* skinRigidCmd, rigidSurf */
-        "cmpl %eax, 4(%ebx)\n" /* rigidSurf */
-        "jg .Lfd2c30_000d2da7\n"
-        /* } scope */
-        ".Lfd2c30_000d2dc5:\n"
-        "addl $0x9c, %esp\n" /* line 2186 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2: xx, yy, zw */
-        /* { scope 3: scale */
-        ".Lfd2c30_000d2dd0:\n"
-        "movl %edi, %ebx\n" /* line 2108 | rigidSurf */
-        "addl $0x38, %edi\n" /* line 2109 */
-        "movss 0x38(%esi), %xmm0\n" /* line 2110 */
-        "movss %xmm0, -0x6c(%ebp)\n" /* scale */
-        /* { scope 4 */
-        /* { scope 5 */
-        "movl 4(%ebx), %eax\n" /* line 1727 */
-        "movl %eax, (%esp)\n"
-        "calll XSurfaceGetBoneOffset\n"
-        "addl $8, %ebx\n" /* line 1731 */
-        "movl %ebx, 0x10(%esp)\n"
-        "movss -0x6c(%ebp), %xmm1\n" /* scale */
-        "movss %xmm1, 0xc(%esp)\n"
-        "leal 0x14(%esi), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "leal 0x3c(%esi), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x68(%ebp), %edx\n" /* buf */
-        "leal (%edx, %eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll R_GetRigidTransform\n"
-        "jmp .Lfd2c30_000d2d98\n"
-    );
+    float *q = skinRigidCmd->mat.quat;
+    float scale = skinRigidCmd->mat.transWeight;
+
+    /* Build scaled quaternion products */
+    float sx = scale * q[0], sy = scale * q[1], sz = scale * q[2];
+    float xx = sx * q[0], xy = sx * q[1], xz = sx * q[2], xw = sx * q[3];
+    float yy = sy * q[1], yz = sy * q[2], yw = sy * q[3];
+    float zz = sz * q[2], zw = sz * q[3];
+
+    /* Build 3x4 rotation matrix (row-major: 3 rows x 4 cols, last col = translation) */
+    float mtx[16]; /* only first 13 used: [0..11] = 3x4 matrix, [12] = 1.0 sentinel */
+    mtx[0]  = 1.0f - yy - zz;  mtx[1]  = xy + zw;          mtx[2]  = xz - yw;          mtx[3]  = 0.0f;
+    mtx[4]  = xy - zw;          mtx[5]  = 1.0f - xx - zz;   mtx[6]  = yz + xw;          mtx[7]  = 0.0f;
+    mtx[8]  = xz + yw;          mtx[9]  = yz - xw;          mtx[10] = 1.0f - xx - yy;   mtx[11] = 0.0f;
+
+    /* Copy translation into matrix row 3 (offset 0x30 = 48 bytes from start) */
+    mtx[12] = skinRigidCmd->mat.trans[0];
+    *(float *)((byte *)mtx + 0x34) = skinRigidCmd->mat.trans[1];
+    *(float *)((byte *)mtx + 0x38) = skinRigidCmd->mat.trans[2];
+    *(float *)((byte *)mtx + 0x3c) = 1.0f; /* homogeneous w */
+
+    /* Iterate through surfaces */
+    byte *surfPos = (byte *)skinRigidCmd->surfs;
+    GfxEntity *refEnt = skinRigidCmd->e;
+    int i;
+
+    for (i = 0; i < skinRigidCmd->surfCount; i++) {
+        int surfType = *(int *)surfPos;
+
+        if (surfType == 5) {
+            /* Skip rigid surface header */
+            surfPos += 0x10;
+            continue;
+        }
+
+        if (surfType == 4) {
+            /* Rigid transform path: get bone offset, compute transform, advance by 0x38 */
+            byte *rigidSurf = surfPos;
+            surfPos += 0x38;
+            float entScale = *(float *)((byte *)refEnt + 0x38);
+            int boneOffset = XSurfaceGetBoneOffset(*(int *)(rigidSurf + 4));
+            R_GetRigidTransform(
+                (const DObjSkelMat *)((byte *)mtx + boneOffset),
+                (const vec_t *)((byte *)refEnt + 0x3c),
+                (vec3_t *)((byte *)refEnt + 0x14),
+                entScale,
+                (vec3_t *)(rigidSurf + 8)
+            );
+        } else {
+            /* Standard skinned surface: call R_SkinXSurfaceSkinned(eax=surfPos, edx=mtx) */
+            byte *surf = surfPos;
+            surfPos += 0x10;
+            __asm__ __volatile__ (
+                "calll R_SkinXSurfaceSkinned\n"
+                :
+                : "a"(surf), "d"(mtx)
+                : "ecx", "memory"
+            );
+        }
+    }
 }

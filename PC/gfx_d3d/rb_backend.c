@@ -6225,52 +6225,52 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
     );
 }
 
-/* line 3101 */
-static __attribute__((naked))
-void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
+/* line 3101 — RB_DrawTextCmd
+ * Extracts text rendering parameters from GfxCmdDrawText and calls RB_DrawTextWithCursor.
+ * RB_DrawTextWithCursor uses custom register convention: eax=text, edx=maxChars, ecx=font,
+ * xmm0=x, xmm1=y, xmm2=xScale, xmm3=yScale, stack=style,color,cursorPos,cursor */
+static void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
 {
+    const GfxCmdDrawText *cmd = (const GfxCmdDrawText *)execState->cmd;
+
+    /* Extract all fields from the command */
+    const char *text = cmd->text;
+    int maxChars = cmd->maxChars;
+    int font = *(int *)&cmd->font; /* FontHandle as int */
+    float x = cmd->x;
+    float y = cmd->y;
+    float xScale = cmd->xScale;
+    float yScale = cmd->yScale;
+    int style = *(int *)&cmd->color; /* GfxColor at offset 0x18 → style stack slot */
+    int color = cmd->style;          /* int at offset 0x1c → color stack slot */
+    int cursorPos = cmd->cursorPos;
+    int cursor = (signed char)cmd->cursor;
+
+    /* Call RB_DrawTextWithCursor with custom register convention:
+     * eax=text, edx=maxChars, ecx=font, xmm0=x, xmm1=y, xmm2=xScale, xmm3=yScale,
+     * stack: style, color, cursorPos, cursor */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3101 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 3105 | execState */
-        "movl (%edx), %eax\n"
-        "movsbl 0x24(%eax), %esi\n" /* line 3107 */
-        "movl 0x20(%eax), %edi\n"
-        "movl 0x1c(%eax), %edx\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl 0x18(%eax), %ebx\n"
-        "movss 0x14(%eax), %xmm3\n"
-        "movss 0x10(%eax), %xmm2\n"
-        "movss 8(%eax), %xmm1\n"
-        "movss 4(%eax), %xmm0\n"
-        "movl 0xc(%eax), %ecx\n"
-        "movl 0x28(%eax), %edx\n"
-        "addl $0x2c, %eax\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl -0x1c(%ebp), %esi\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
+        "movss %[xScale], %%xmm2\n"
+        "movss %[yScale], %%xmm3\n"
+        "movss %[x], %%xmm0\n"
+        "movss %[y], %%xmm1\n"
+        "pushl %[cursor]\n"
+        "pushl %[cursorPos]\n"
+        "pushl %[color]\n"
+        "pushl %[style]\n"
         "calll RB_DrawTextWithCursor\n"
-        "movl 8(%ebp), %eax\n" /* line 169 | execState */
-        "movl (%eax), %edx\n"
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl 8(%ebp), %edx\n" /* execState */
-        "movl %eax, (%edx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3110 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
+        "addl $16, %%esp\n"
+        :
+        : "a"(text), "d"(maxChars), "c"(font),
+          [x]"m"(x), [y]"m"(y), [xScale]"m"(xScale), [yScale]"m"(yScale),
+          [style]"m"(style), [color]"m"(color),
+          [cursorPos]"m"(cursorPos), [cursor]"m"(cursor)
+        : "memory", "xmm0", "xmm1", "xmm2", "xmm3"
     );
+
+    /* Advance command pointer */
+    const byte *cmdBytes = (const byte *)execState->cmd;
+    execState->cmd = (const void *)(cmdBytes + *(unsigned short *)(cmdBytes + 2));
 }
 
 /* line 2004 */
