@@ -7219,8 +7219,214 @@ static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
 }
 
 /* line 2273 */
-__attribute__((naked))
+/* line 2273 — 3D line rendering: transforms line endpoints through viewProjection matrix,
+ * computes screen-space perpendicular offsets for billboard width, creates quad per line.
+ * Each quad has 4 vertices (start±offset, end±offset) with perspective-correct width. */
 void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depthTest)
+{
+    char *t = (char *)&tess;
+    const Material *debugMtl = *(const Material **)((char *)imp_rgp + 0x1044);
+    int isDx7, lineIndex;
+    float identity[16];
+    float invWidth, invHeight;
+    const float *row0, *row1, *row2, *row3;
+    char *vp;
+
+    /* Begin surface with debug material */
+    if (debugMtl != *(const Material **)(t + 0x5a7bc) ||
+        *(int *)(t + 0x5a7c0) != 3) {
+        if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+            RB_EndSurface();
+        RB_BeginSurface(debugMtl, 3, 0x1f);
+    } else if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0)) {
+        /* Same material but check techType match */
+    }
+
+    /* Disable depth test if requested */
+    if (!depthTest) {
+        char *mtl = *(char **)((char *)imp_rgp + 0x1044);
+        int bits = *(int *)(mtl + 0x30);
+        *(int *)(mtl + 0x30) = (bits & 0xfffffff1) | 2;
+    }
+
+    /* Set identity projection and view matrices */
+    MatrixIdentity44(identity);
+    RB_SetProjectionMatrix(identity);
+    RB_SetViewMatrix(identity);
+
+    /* Get viewProjection transform from viewParms (4x4 matrix at vp+0xc8) */
+    vp = *(char **)((char *)&backEnd + 968);
+    row0 = (const float *)(vp + 0xc8);
+    row1 = (const float *)(vp + 0xd8);
+    row2 = (const float *)(vp + 0xe8);
+    row3 = (const float *)(vp + 0xf8);
+
+    /* Compute pixel-to-clip-space scale factors */
+    {
+        float fWidth = (float)width;
+        char *dxState = (char *)imp_dxState;
+        float screenW = (float)*(int *)(dxState + 0x209c);
+        float screenH = (float)*(int *)(dxState + 0x20a0);
+        invWidth = fWidth / screenW;
+        invHeight = fWidth / screenH;
+    }
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+
+    /* Process each line */
+    for (lineIndex = 0; lineIndex < count; lineIndex++) {
+        const float *fromXyz = (const float *)&verts[lineIndex * 2];
+        const float *toXyz = (const float *)&verts[lineIndex * 2 + 1];
+        const byte *fromColor = (const byte *)&verts[lineIndex * 2] + 12;
+        const byte *toColor = (const byte *)&verts[lineIndex * 2 + 1] + 12;
+        float posA_x, posA_y, posA_z, posA_w;
+        float posB_x, posB_y, posB_z, posB_w;
+        float delta[2], offAx, offAy, offBx, offBy;
+        int vc, ic;
+        r_index_t *indices;
+
+        /* Transform endpoint A through viewProjection */
+        posA_x = fromXyz[0]*row0[0] + fromXyz[1]*row1[0] + fromXyz[2]*row2[0] + row3[0];
+        posA_y = fromXyz[0]*row0[1] + fromXyz[1]*row1[1] + fromXyz[2]*row2[1] + row3[1];
+        posA_z = fromXyz[0]*row0[2] + fromXyz[1]*row1[2] + fromXyz[2]*row2[2] + row3[2];
+        posA_w = fromXyz[0]*row0[3] + fromXyz[1]*row1[3] + fromXyz[2]*row2[3] + row3[3];
+
+        /* Transform endpoint B */
+        posB_x = toXyz[0]*row0[0] + toXyz[1]*row1[0] + toXyz[2]*row2[0] + row3[0];
+        posB_y = toXyz[0]*row0[1] + toXyz[1]*row1[1] + toXyz[2]*row2[1] + row3[1];
+        posB_z = toXyz[0]*row0[2] + toXyz[1]*row1[2] + toXyz[2]*row2[2] + row3[2];
+        posB_w = toXyz[0]*row0[3] + toXyz[1]*row1[3] + toXyz[2]*row2[3] + row3[3];
+
+        /* Compute 2D perpendicular direction for line billboard width */
+        delta[0] = posA_w * posB_y - posA_y * posB_w;
+        delta[1] = posA_x * posB_w - posA_w * posB_x;
+        Vec2Normalize(delta);
+        delta[0] *= invWidth;
+        delta[1] *= invHeight;
+
+        /* Scale perpendicular by w for perspective-correct width */
+        offAx = posA_w * delta[0];
+        offAy = posA_w * delta[1];
+        offBx = posB_w * delta[0];
+        offBy = posB_w * delta[1];
+
+        /* Check tess overflow: 4 verts + 6 indices */
+        vc = *(int *)(t + 0x5a7d4);
+        ic = *(int *)(t + 0x5a7d0);
+        if (vc + 4 > 0x154a || ic + 6 > 0x100000) {
+            int savedDecl = *(int *)(t + 0x5a7cc);
+            RB_EndSurface();
+            RB_BeginSurface(*(const Material **)(t + 0x5a7bc),
+                            *(MaterialTechniqueType *)(t + 0x5a7c0),
+                            *(int *)(t + 0x5a7c4));
+            if (*(int *)(t + 0x5a7cc) != savedDecl) {
+                if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+                    RB_EndSurface();
+                *(int *)(t + 0x5a7cc) = savedDecl;
+            }
+            vc = *(int *)(t + 0x5a7d4);
+            ic = *(int *)(t + 0x5a7d0);
+        }
+
+        /* Write 6 indices: quad (V3,V0,V2, V2,V0,V1) */
+        indices = *(r_index_t **)(t + 0x5a7b0);
+        indices[ic + 0] = (r_index_t)(vc + 3);
+        indices[ic + 1] = (r_index_t)vc;
+        indices[ic + 2] = (r_index_t)(vc + 2);
+        indices[ic + 3] = (r_index_t)(vc + 2);
+        indices[ic + 4] = (r_index_t)vc;
+        indices[ic + 5] = (r_index_t)(vc + 1);
+        *(int *)(t + 0x5a7d0) += 6;
+
+        /* Write 4 billboard vertices */
+        {
+            D3DCOLOR colA = *(D3DCOLOR *)fromColor;
+            D3DCOLOR colB = *(D3DCOLOR *)toColor;
+            float v0x = posA_x - offAx, v0y = posA_y - offAy;
+            float v1x = posB_x - offBx, v1y = posB_y - offBy;
+            float v2x = posB_x + offBx, v2y = posB_y + offBy;
+            float v3x = posA_x + offAx, v3y = posA_y + offAy;
+
+            if (isDx7) {
+                /* Dx7: perspective divide, stride 36 */
+                char *v;
+                /* Dx7: perspective divide, stride 36 */
+                char *vp_;
+                vp_ = t + (vc+0) * 36;
+                *(float *)(vp_+0) = v0x/posA_w; *(float *)(vp_+4) = v0y/posA_w; *(float *)(vp_+8) = posA_z/posA_w;
+                *(int *)(vp_+12) = 0; *(int *)(vp_+16) = 0; *(float *)(vp_+20) = 1.0f;
+                *(D3DCOLOR *)(vp_+24) = colA; *(int *)(vp_+28) = 0; *(int *)(vp_+32) = 0;
+
+                vp_ = t + (vc+1) * 36;
+                *(float *)(vp_+0) = v1x/posB_w; *(float *)(vp_+4) = v1y/posB_w; *(float *)(vp_+8) = posB_z/posB_w;
+                *(int *)(vp_+12) = 0; *(int *)(vp_+16) = 0; *(float *)(vp_+20) = 1.0f;
+                *(D3DCOLOR *)(vp_+24) = colB; *(int *)(vp_+28) = 0; *(float *)(vp_+32) = 1.0f;
+
+                vp_ = t + (vc+2) * 36;
+                *(float *)(vp_+0) = v2x/posB_w; *(float *)(vp_+4) = v2y/posB_w; *(float *)(vp_+8) = posB_z/posB_w;
+                *(int *)(vp_+12) = 0; *(int *)(vp_+16) = 0; *(float *)(vp_+20) = 1.0f;
+                *(D3DCOLOR *)(vp_+24) = colB; *(float *)(vp_+28) = 1.0f; *(float *)(vp_+32) = 1.0f;
+
+                vp_ = t + (vc+3) * 36;
+                *(float *)(vp_+0) = v3x/posA_w; *(float *)(vp_+4) = v3y/posA_w; *(float *)(vp_+8) = posA_z/posA_w;
+                *(int *)(vp_+12) = 0; *(int *)(vp_+16) = 0; *(float *)(vp_+20) = 1.0f;
+                *(D3DCOLOR *)(vp_+24) = colA; *(float *)(vp_+28) = 1.0f; *(int *)(vp_+32) = 0;
+            } else {
+                /* Non-Dx7: raw clip coords, stride 64 */
+                char *vp_;
+                vp_ = t + (vc+0) * 64;
+                *(float *)(vp_+0x00) = v0x; *(float *)(vp_+0x04) = v0y;
+                *(float *)(vp_+0x08) = posA_z; *(float *)(vp_+0x0c) = posA_w;
+                *(int *)(vp_+0x10) = 0; *(int *)(vp_+0x14) = 0; *(float *)(vp_+0x18) = 1.0f;
+                *(D3DCOLOR *)(vp_+0x1c) = colA;
+                *(int *)(vp_+0x20) = 0; *(int *)(vp_+0x24) = 0;
+                *(int *)(vp_+0x28) = 0; *(float *)(vp_+0x2c) = 0.0f; *(int *)(vp_+0x30) = 0;
+                *(float *)(vp_+0x34) = 1.0f; *(int *)(vp_+0x38) = 0; *(int *)(vp_+0x3c) = 0;
+
+                vp_ = t + (vc+1) * 64;
+                *(float *)(vp_+0x00) = v1x; *(float *)(vp_+0x04) = v1y;
+                *(float *)(vp_+0x08) = posB_z; *(float *)(vp_+0x0c) = posB_w;
+                *(int *)(vp_+0x10) = 0; *(int *)(vp_+0x14) = 0; *(float *)(vp_+0x18) = 1.0f;
+                *(D3DCOLOR *)(vp_+0x1c) = colB;
+                *(int *)(vp_+0x20) = 0; *(float *)(vp_+0x24) = 1.0f;
+                *(int *)(vp_+0x28) = 0; *(float *)(vp_+0x2c) = 1.0f; *(int *)(vp_+0x30) = 0;
+                *(float *)(vp_+0x34) = 1.0f; *(int *)(vp_+0x38) = 0; *(int *)(vp_+0x3c) = 0;
+
+                vp_ = t + (vc+2) * 64;
+                *(float *)(vp_+0x00) = v2x; *(float *)(vp_+0x04) = v2y;
+                *(float *)(vp_+0x08) = posB_z; *(float *)(vp_+0x0c) = posB_w;
+                *(int *)(vp_+0x10) = 0; *(int *)(vp_+0x14) = 0; *(float *)(vp_+0x18) = 1.0f;
+                *(D3DCOLOR *)(vp_+0x1c) = colB;
+                *(float *)(vp_+0x20) = 1.0f; *(float *)(vp_+0x24) = 1.0f;
+                *(float *)(vp_+0x28) = 1.0f; *(float *)(vp_+0x2c) = 1.0f; *(int *)(vp_+0x30) = 0;
+                *(float *)(vp_+0x34) = 1.0f; *(int *)(vp_+0x38) = 0; *(int *)(vp_+0x3c) = 0;
+
+                vp_ = t + (vc+3) * 64;
+                *(float *)(vp_+0x00) = v3x; *(float *)(vp_+0x04) = v3y;
+                *(float *)(vp_+0x08) = posA_z; *(float *)(vp_+0x0c) = posA_w;
+                *(int *)(vp_+0x10) = 0; *(int *)(vp_+0x14) = 0; *(float *)(vp_+0x18) = 1.0f;
+                *(D3DCOLOR *)(vp_+0x1c) = colA;
+                *(float *)(vp_+0x20) = 1.0f; *(int *)(vp_+0x24) = 0;
+                *(float *)(vp_+0x28) = 1.0f; *(int *)(vp_+0x2c) = 0; *(int *)(vp_+0x30) = 0;
+                *(float *)(vp_+0x34) = 1.0f; *(int *)(vp_+0x38) = 0; *(int *)(vp_+0x3c) = 0;
+            }
+        }
+        *(int *)(t + 0x5a7d4) += 4;
+    }
+
+    /* Flush and restore */
+    RB_EndSurface();
+    RB_SetMatricesForView(*(void **)((char *)&backEnd + 968));
+
+    /* Restore depth test if it was disabled */
+    if (!depthTest) {
+        char *mtl = *(char **)((char *)imp_rgp + 0x1044);
+        int bits = *(int *)(mtl + 0x30);
+        *(int *)(mtl + 0x30) = (bits & 0xfffffff1) | 4;
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2273 */
@@ -7911,6 +8117,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "jmp .Lfdc5a6_000dc607\n"
     );
 }
+#endif /* original naked RB_DrawLines3D */
 
 /* line 2347 */
 static void RB_DrawLinesCmd(GfxRenderCommandExecState *execState)
