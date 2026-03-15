@@ -26,6 +26,7 @@ static snd_alias_list_t R_LoadPortals(void);
 static snd_alias_list_t R_LoadCells(GfxBspLoad *load);
 static snd_alias_list_t R_LoadAabbTrees(void);
 static snd_alias_list_t R_LoadOccluders(void);
+static void R_LoadOccluders_impl(const byte *loadState);
 static snd_alias_list_t R_LoadPortalVerts(void);
 static snd_alias_list_t R_LoadCullGroups(void);
 static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load);
@@ -2577,375 +2578,123 @@ snd_alias_list_t R_LoadAabbTrees(void)
 }
 #endif
 
-/* line 1627 */
+/* line 1627 — R_LoadOccluders
+ * Loads occluder data from BSP lumps 0x98, 0xA0, 0xA8.
+ * Builds occluder structs with resolved plane normals and edge references.
+ * Actual convention: eax=loadState */
+static void R_LoadOccluders_impl(const byte *loadState)
+{
+    const byte *bspHeader = *(const byte **)loadState;
+    const byte *bspData = *(const byte **)(loadState + 4);
+    int fileSize = *(int *)(loadState + 8);
+    int i, j;
+
+    /* Validate occluder lump (0x98, element size 20) */
+    int occLumpSize = *(int *)(bspHeader + 0x98);
+    if (*(int *)(bspHeader + 0x9C) + occLumpSize > fileSize)
+        R_Error(1, "LoadMap: lump extends past end of file in %s", s_world.name);
+    if (occLumpSize <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", s_world.name);
+    int occluderCount = occLumpSize / 20;
+    if (occLumpSize < 0 || occluderCount * 20 != occLumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", s_world.name);
+    const byte *diskOcc = bspData + *(int *)(bspHeader + 0x9C);
+    byte *occluders = (byte *)Hunk_AllocInternal(occluderCount * 36);
+
+    /* Validate plane index lump (0xA0, element size 4) */
+    int planeLumpSize = *(int *)(bspHeader + 0xA0);
+    if (*(int *)(bspHeader + 0xA4) + planeLumpSize > fileSize)
+        R_Error(1, "LoadMap: lump extends past end of file in %s", s_world.name);
+    if (planeLumpSize <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", s_world.name);
+    int planeIdxCount = planeLumpSize / 4;
+    if (planeLumpSize < 0 || planeIdxCount * 4 != planeLumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", s_world.name);
+    const byte *planeIndices = bspData + *(int *)(bspHeader + 0xA4);
+    byte *sidePlanes = (byte *)Hunk_AllocInternal(planeIdxCount * 20);
+
+    /* Validate edge lump (0xA8, element size 4) */
+    int edgeLumpSize = *(int *)(bspHeader + 0xA8);
+    if (*(int *)(bspHeader + 0xAC) + edgeLumpSize > fileSize)
+        R_Error(1, "LoadMap: lump extends past end of file in %s", s_world.name);
+    if (edgeLumpSize <= 3)
+        R_Error(1, "LoadMap: funny lump offset in %s", s_world.name);
+    int edgeCount = edgeLumpSize / 4;
+    if (edgeLumpSize < 0 || edgeCount * 4 != edgeLumpSize)
+        R_Error(1, "LoadMap: funny lump size in %s", s_world.name);
+    const byte *diskEdges = bspData + *(int *)(bspHeader + 0xAC);
+    byte *edges = (byte *)Hunk_AllocInternal(edgeCount * 16);
+
+    *(byte **)((byte *)&rgl + 8) = occluders;
+    byte *vertBase = *(byte **)((byte *)&rgl + 12);
+
+    /* Build each occluder (input 20 bytes, output 36 bytes) */
+    /* Output layout (relative to base+0xc for esi pointer style):
+     * -0xc: planeCount, -8: sidePlanes ptr, -4: edgeCount2,
+     * 0: edges ptr, +4: edgeTotal, +8: cellVerts ptr,
+     * +0x14: vertexData ptr (from out+20), +0x10: reserved=0, +0x14: reserved=0 */
+    byte *out = occluders + 0xc;
+    for (i = 0; i < occluderCount; i++) {
+        int nPlanes = *(short *)(diskOcc + 4);
+        *(int *)(out - 0xc) = nPlanes;
+
+        int firstPlane = *(int *)diskOcc;
+        byte *planeBase = sidePlanes + firstPlane * 20;
+        *(byte **)(out - 8) = planeBase;
+
+        /* Build side planes: copy normal, negate dist, compute side bytes */
+        if (nPlanes > 0) {
+            const int *plIdx = (const int *)(planeIndices + firstPlane * 4);
+            for (j = 0; j < nPlanes; j++) {
+                float *src = (float *)CM_GetPlaneNum(plIdx[j]);
+                byte *dst = planeBase + j * 20;
+                *(float *)(dst + 0) = src[0];
+                *(float *)(dst + 4) = src[1];
+                *(float *)(dst + 8) = src[2];
+                *(int *)(dst + 12) = *(int *)(src + 3) ^ 0x80000000;
+                dst[16] = (*(int *)(dst + 0) > 0) ? 0x0C : 0x00;
+                dst[17] = (*(int *)(dst + 4) > 0) ? 0x10 : 0x04;
+                dst[18] = (*(int *)(dst + 8) > 0) ? 0x14 : 0x08;
+            }
+        }
+
+        *(byte **)(out + 8) = vertBase + *(int *)(diskOcc + 0xc) * 12;
+        *(int *)(out + 4) = *(short *)(diskOcc + 0x10);
+
+        int nEdges = *(short *)(diskOcc + 6);
+        *(int *)(out - 4) = nEdges;
+
+        int firstEdge = *(int *)(diskOcc + 8);
+        byte *edgeBase = edges + firstEdge * 16;
+        *(byte **)(out + 0) = edgeBase;
+
+        /* Build edges: 4 byte indices → 4 pointers (2 planes + 2 verts) */
+        const byte *de = diskEdges + firstEdge * 4;
+        for (j = 0; j < nEdges; j++) {
+            byte *e = edgeBase + j * 16;
+            *(byte **)(e + 0) = planeBase + de[j * 4 + 0] * 20;
+            *(byte **)(e + 4) = planeBase + de[j * 4 + 1] * 20;
+            byte *cv = *(byte **)(out + 8);
+            *(byte **)(e + 8) = cv + de[j * 4 + 2] * 12;
+            *(byte **)(e + 12) = cv + de[j * 4 + 3] * 12;
+        }
+
+        *(int *)(out + 16) = 0;
+        *(int *)(out + 20) = 0;
+
+        diskOcc += 20;
+        out += 36;
+    }
+}
+
 static __attribute__((naked))
 snd_alias_list_t R_LoadOccluders(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1627 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl %eax, %esi\n" /* load */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl (%eax), %ebx\n" /* line 46 */
-        "leal 0x98(%ebx), %edi\n" /* lump */
-        "movl 4(%edi), %eax\n" /* line 47 | lump */
-        "addl 0x98(%ebx), %eax\n"
-        "cmpl 8(%esi), %eax\n"
-        "jg .Lfe4736_000e4ae9\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jle .Lfe4736_000e4b10\n"
-        ".Lfe4736_000e4765:\n"
-        "movl 0x98(%ebx), %ecx\n" /* line 52 */
-        "movl $0x66666667, %eax\n"
-        "imull %ecx\n"
-        "sarl $3, %edx\n"
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %edx, -0x44(%ebp)\n" /* occluderCount */
-        "testl %ecx, %ecx\n" /* line 53 */
-        "js .Lfe4736_000e478d\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $2, %eax\n"
-        "cmpl %eax, %ecx\n"
-        "je .Lfe4736_000e47aa\n"
-        ".Lfe4736_000e478d:\n"
-        "movl s_world, %eax\n" /* line 54 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        ".Lfe4736_000e47aa:\n"
-        "movl (%esi), %eax\n" /* line 1648 | load */
-        "movl 4(%esi), %ecx\n" /* load */
-        "movl %ecx, -0x40(%ebp)\n" /* diskOccluders */
-        "movl 0x9c(%eax), %edx\n"
-        "addl %edx, %ecx\n"
-        "movl %ecx, -0x40(%ebp)\n" /* diskOccluders */
-        "movl -0x44(%ebp), %ecx\n" /* line 1649 | occluderCount */
-        "leal (%ecx, %ecx, 8), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocInternal\n"
-        "movl %eax, -0x3c(%ebp)\n" /* occluders */
-        /* { scope 2 */
-        "movl (%esi), %ebx\n" /* line 46 */
-        "leal 0xa0(%ebx), %edi\n" /* lump */
-        "movl 4(%edi), %eax\n" /* line 47 | lump */
-        "addl 0xa0(%ebx), %eax\n"
-        "cmpl 8(%esi), %eax\n"
-        "jg .Lfe4736_000e4bbe\n"
-        ".Lfe4736_000e47eb:\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jle .Lfe4736_000e4b89\n"
-        "movl 0xa0(%ebx), %edx\n" /* line 52 */
-        "movl %edx, %eax\n"
-        "testl %edx, %edx\n"
-        "js .Lfe4736_000e4bb6\n"
-        ".Lfe4736_000e4805:\n"
-        "movl %eax, %ebx\n"
-        "sarl $2, %ebx\n"
-        "testl %edx, %edx\n" /* line 53 */
-        "js .Lfe4736_000e4819\n"
-        "leal (, %ebx, 4), %eax\n"
-        "cmpl %eax, %edx\n"
-        "je .Lfe4736_000e4836\n"
-        ".Lfe4736_000e4819:\n"
-        "movl s_world, %eax\n" /* line 54 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        ".Lfe4736_000e4836:\n"
-        "movl (%esi), %eax\n" /* line 1652 | load */
-        "movl 4(%esi), %edx\n" /* load */
-        "movl %edx, -0x38(%ebp)\n" /* planeIndices */
-        "movl 0xa4(%eax), %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, -0x38(%ebp)\n" /* planeIndices */
-        "leal (%ebx, %ebx, 4), %eax\n" /* line 1653 */
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocInternal\n"
-        "movl %eax, -0x34(%ebp)\n" /* sideplanes */
-        /* { scope 2 */
-        "movl (%esi), %ebx\n" /* line 46 */
-        "leal 0xa8(%ebx), %edi\n" /* lump */
-        "movl 4(%edi), %eax\n" /* line 47 | lump */
-        "addl 0xa8(%ebx), %eax\n"
-        "cmpl 8(%esi), %eax\n"
-        "jg .Lfe4736_000e4b67\n"
-        ".Lfe4736_000e4874:\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jle .Lfe4736_000e4b32\n"
-        "movl 0xa8(%ebx), %edx\n" /* line 52 */
-        "movl %edx, %eax\n"
-        "testl %edx, %edx\n"
-        "js .Lfe4736_000e4b5f\n"
-        ".Lfe4736_000e488e:\n"
-        "movl %eax, %ebx\n"
-        "sarl $2, %ebx\n"
-        "testl %edx, %edx\n" /* line 53 */
-        "js .Lfe4736_000e48a2\n"
-        "leal (, %ebx, 4), %eax\n"
-        "cmpl %eax, %edx\n"
-        "je .Lfe4736_000e48bf\n"
-        ".Lfe4736_000e48a2:\n"
-        "movl s_world, %eax\n" /* line 54 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        /* } scope */
-        ".Lfe4736_000e48bf:\n"
-        "movl (%esi), %eax\n" /* line 1656 | load */
-        "movl 4(%esi), %esi\n" /* load */
-        "movl %esi, -0x30(%ebp)\n" /* load, diskEdges */
-        "movl 0xac(%eax), %edx\n"
-        "addl %edx, -0x30(%ebp)\n" /* diskEdges */
-        "movl %ebx, %eax\n" /* line 1657 */
-        "shll $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocInternal\n"
-        "movl %eax, -0x2c(%ebp)\n" /* edges */
-        "movl -0x3c(%ebp), %ecx\n" /* line 1659 | occluders */
-        "movl %ecx, rgl+8\n"
-        "movl -0x44(%ebp), %ebx\n" /* line 1666 | occluderCount */
-        "testl %ebx, %ebx\n"
-        "jle .Lfe4736_000e4ae1\n"
-        "movl -0x40(%ebp), %eax\n" /* diskOccluders */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl $0, -0x50(%ebp)\n" /* occluderIndex */
-        "movl %ecx, %esi\n" /* load */
-        "addl $0xc, %esi\n" /* load */
-        "movl %eax, %edx\n"
-        "movswl 4(%edx), %eax\n" /* line 1668 */
-        "movl %eax, -0xc(%esi)\n" /* load */
-        "movl (%edx), %eax\n" /* line 1670 */
-        "leal (, %eax, 4), %edx\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl -0x34(%ebp), %ecx\n" /* sideplanes */
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl %eax, -8(%esi)\n" /* load */
-        "movl -0xc(%esi), %ecx\n" /* line 1672 | load */
-        "testl %ecx, %ecx\n"
-        "jg .Lfe4736_000e4a47\n"
-        ".Lfe4736_000e4932:\n"
-        "movl -0x24(%ebp), %edx\n" /* line 1627 */
-        "addl $0x14, %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl -0x28(%ebp), %ecx\n" /* line 1681 */
-        "movl 0xc(%ecx), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl rgl+12, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 8(%esi)\n" /* load */
-        "movswl 0x10(%ecx), %eax\n" /* line 1683 */
-        "movl %eax, 4(%esi)\n" /* load */
-        "movl -0x24(%ebp), %eax\n" /* line 1627 */
-        "addl $8, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movswl 6(%ecx), %eax\n" /* line 1686 */
-        "movl %eax, -4(%esi)\n" /* load */
-        "movl 8(%ecx), %eax\n" /* line 1690 */
-        "shll $4, %eax\n"
-        "addl -0x2c(%ebp), %eax\n" /* edges */
-        "movl %eax, (%esi)\n" /* load */
-        "movl -4(%esi), %ebx\n" /* line 1691 | load */
-        "testl %ebx, %ebx\n"
-        "jle .Lfe4736_000e49f4\n"
-        "movl -0x30(%ebp), %edi\n" /* diskEdges, lump */
-        "movl $0, -0x48(%ebp)\n" /* edgeIndex */
-        "movl -0x48(%ebp), %ecx\n" /* edgeIndex */
-        ".Lfe4736_000e4986:\n"
-        "shll $4, %ecx\n"
-        "movl (%esi), %ebx\n" /* line 1693 | load */
-        "movzbl (%edi), %eax\n" /* lump */
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl -8(%esi), %edx\n" /* load */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, (%ebx, %ecx)\n"
-        "movl (%esi), %ebx\n" /* line 1694 | load */
-        "movzbl 1(%edi), %eax\n" /* lump */
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl -8(%esi), %edx\n" /* load */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%ebx, %ecx)\n"
-        "movl (%esi), %ebx\n" /* line 1695 | load */
-        "movzbl 2(%edi), %eax\n" /* lump */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl -0x5c(%ebp), %eax\n"
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl %edx, 8(%ebx, %ecx)\n"
-        "movl (%esi), %ebx\n" /* line 1696 | load */
-        "movzbl 3(%edi), %eax\n" /* lump */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl -0x5c(%ebp), %eax\n"
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl %edx, 0xc(%ebx, %ecx)\n"
-        "addl $1, -0x48(%ebp)\n" /* line 1691 | edgeIndex */
-        "addl $4, %edi\n" /* lump */
-        "movl -0x48(%ebp), %ecx\n" /* edgeIndex */
-        "movl -0x1c(%ebp), %edx\n"
-        "cmpl %ecx, (%edx)\n"
-        "jg .Lfe4736_000e4986\n"
-        ".Lfe4736_000e49f4:\n"
-        "movl $0, 0x10(%esi)\n" /* line 1699 | load */
-        "movl $0, 0x14(%esi)\n" /* line 1700 | load */
-        "addl $1, -0x50(%ebp)\n" /* line 1666 | occluderIndex */
-        "addl $0x14, -0x28(%ebp)\n"
-        "addl $0x24, -0x24(%ebp)\n"
-        "addl $0x24, %esi\n" /* load */
-        "movl -0x50(%ebp), %eax\n" /* occluderIndex */
-        "cmpl %eax, -0x44(%ebp)\n" /* occluderCount */
-        "je .Lfe4736_000e4ae1\n"
-        "movl -0x28(%ebp), %edx\n"
-        "movswl 4(%edx), %eax\n" /* line 1668 */
-        "movl %eax, -0xc(%esi)\n" /* load */
-        "movl (%edx), %eax\n" /* line 1670 */
-        "leal (, %eax, 4), %edx\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl -0x34(%ebp), %ecx\n" /* sideplanes */
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl %eax, -8(%esi)\n" /* load */
-        "movl -0xc(%esi), %ecx\n" /* line 1672 | load */
-        "testl %ecx, %ecx\n"
-        "jle .Lfe4736_000e4932\n"
-        ".Lfe4736_000e4a47:\n"
-        "movl -0x38(%ebp), %ebx\n" /* planeIndices */
-        "addl %edx, %ebx\n"
-        "movl $0, -0x4c(%ebp)\n" /* planeIndex */
-        "xorl %edi, %edi\n" /* lump */
-        ".Lfe4736_000e4a55:\n"
-        "movl (%ebx), %eax\n" /* line 1674 */
-        "movl %eax, (%esp)\n"
-        "calll CM_GetPlaneNum\n"
-        "movl %edi, %ecx\n" /* line 1675 | lump, to */
-        "addl -8(%esi), %ecx\n" /* load, to */
-        /* { scope 2 */
-        "movl (%eax), %edx\n" /* line 199 */
-        "movl %edx, (%ecx)\n"
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl 8(%eax), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "movl -8(%esi), %edx\n" /* line 1676 | load */
-        "movl 0xc(%eax), %eax\n"
-        "xorl $0x80000000, %eax\n"
-        "movl %eax, 0xc(%edi, %edx)\n" /* lump */
-        "movl %edi, %ecx\n" /* line 1677 | lump, plane */
-        "addl -8(%esi), %ecx\n" /* load, plane */
-        /* { scope 2 */
-        "movl $0xc, %eax\n" /* line 19 */
-        "movl (%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "movl $0, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x10(%ecx)\n"
-        "movl $0x10, %eax\n" /* line 20 */
-        "movl 4(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "movl $4, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x11(%ecx)\n"
-        "movl $0x14, %eax\n" /* line 21 */
-        "movl 8(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "movl $8, %edx\n"
-        "cmovlel %edx, %eax\n"
-        "movb %al, 0x12(%ecx)\n"
-        /* } scope */
-        "addl $1, -0x4c(%ebp)\n" /* line 1672 | planeIndex */
-        "addl $4, %ebx\n"
-        "addl $0x14, %edi\n" /* lump */
-        "movl -0x4c(%ebp), %eax\n" /* planeIndex */
-        "cmpl %eax, -0xc(%esi)\n" /* load */
-        "jg .Lfe4736_000e4a55\n"
-        "jmp .Lfe4736_000e4932\n"
-        /* } scope */
-        ".Lfe4736_000e4ae1:\n"
-        "addl $0x6c, %esp\n" /* line 1702 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %eax\n"
+        "calll R_LoadOccluders_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfe4736_000e4ae9:\n"
-        "movl s_world, %eax\n" /* line 48 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "cmpl $3, 4(%edi)\n" /* line 49 | lump */
-        "jg .Lfe4736_000e4765\n"
-        ".Lfe4736_000e4b10:\n"
-        "movl s_world, %eax\n" /* line 50 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe4736_000e4765\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfe4736_000e4b32:\n"
-        "movl s_world, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "movl 0xa8(%ebx), %edx\n" /* line 52 */
-        "movl %edx, %eax\n"
-        "testl %edx, %edx\n"
-        "jns .Lfe4736_000e488e\n"
-        ".Lfe4736_000e4b5f:\n"
-        "leal 3(%edx), %eax\n"
-        "jmp .Lfe4736_000e488e\n"
-        ".Lfe4736_000e4b67:\n"
-        "movl s_world, %eax\n" /* line 48 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe4736_000e4874\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lfe4736_000e4b89:\n"
-        "movl s_world, %eax\n" /* line 50 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "movl 0xa0(%ebx), %edx\n" /* line 52 */
-        "movl %edx, %eax\n"
-        "testl %edx, %edx\n"
-        "jns .Lfe4736_000e4805\n"
-        ".Lfe4736_000e4bb6:\n"
-        "leal 3(%edx), %eax\n"
-        "jmp .Lfe4736_000e4805\n"
-        ".Lfe4736_000e4bbe:\n"
-        "movl s_world, %eax\n" /* line 48 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfe4736_000e47eb\n"
     );
 }
 
