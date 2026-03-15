@@ -685,213 +685,132 @@ static void R_TrackStatistics(trStatistics_t *stats)
     *(trStatistics_t * *)((char *)&rg + 12664) = stats;
 }
 
-/* line 2097 */
-__attribute__((naked))
+/* line 2097 — GetRefAPI
+ * Renderer DLL entry point: copies refimport function table, fills refexport table
+ * with all renderer API function pointers, and returns it to the engine. */
 refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2097 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0x21c, 8(%esp)\n" /* line 2103 */
-        "movl 0xc(%ebp), %eax\n" /* rimp */
-        "movl %eax, 4(%esp)\n"
-        "movl $ri, (%esp)\n"
-        "calll memcpy\n"
-        "movl $0x160, 8(%esp)\n" /* line 2105 */
-        "movl $0, 4(%esp)\n"
-        "movl $re, (%esp)\n"
-        "calll memset\n"
-        "cmpl $0x3b, 8(%ebp)\n" /* line 2107 | apiVersion */
-        "jne .Lfcb074_000cb42f\n"
-        "movl $R_Shutdown, re\n" /* line 2115 */
-        "movl $R_BeginRegistration, re+4\n" /* line 2117 */
-        "movl imp_R_RegisterModel, %eax\n" /* line 2118 */
-        "movl %eax, re+8\n"
-        "movl imp_R_RegisterInlineModel, %eax\n" /* line 2119 */
-        "movl %eax, re+12\n"
-        "movl imp_R_GetMinSpecImageMemory, %eax\n" /* line 2124 */
-        "movl %eax, re+48\n"
-        "movl imp_Material_RegisterHandle, %eax\n" /* line 2133 */
-        "movl %eax, re+16\n"
-        "movl imp_R_RegisterRawImage, %eax\n" /* line 2134 */
-        "movl %eax, re+20\n"
-        "movl imp_Material_IsDefault, %eax\n" /* line 2135 */
-        "movl %eax, re+24\n"
-        "movl imp_R_LoadWorld, %eax\n" /* line 2136 */
-        "movl %eax, re+28\n"
-        "movl imp_R_GetWorldBounds, %eax\n" /* line 2137 */
-        "movl %eax, re+32\n"
-        "movl imp_R_FinishLoadingModels, %eax\n" /* line 2139 */
-        "movl %eax, re+36\n"
-        "movl imp_R_SetIgnorePrecacheErrors, %eax\n" /* line 2141 */
-        "movl %eax, re+40\n"
-        "movl imp_R_GetIgnorePrecacheErrors, %eax\n" /* line 2142 */
-        "movl %eax, re+44\n"
-        "movl $R_EndRegistration, re+68\n" /* line 2143 */
-        "movl imp_R_GetMaterialName, %eax\n" /* line 2144 */
-        "movl %eax, re+52\n"
-        "movl imp_R_GetMaterialSubimageCount, %eax\n" /* line 2145 */
-        "movl %eax, re+56\n"
-        "movl imp_R_IsMaterialRefractive, %eax\n" /* line 2146 */
-        "movl %eax, re+60\n"
-        "movl imp_R_GetFarPlaneDist, %eax\n" /* line 2147 */
-        "movl %eax, re+64\n"
-        "movl imp_R_BeginFrame, %eax\n" /* line 2149 */
-        "movl %eax, re+168\n"
-        "movl imp_R_EndFrame, %eax\n" /* line 2150 */
-        "movl %eax, re+172\n"
-        "movl imp_R_BeginDebugFrame, %eax\n" /* line 2152 */
-        "movl %eax, re+176\n"
-        "movl imp_R_EndDebugFrame, %eax\n" /* line 2153 */
-        "movl %eax, re+180\n"
-        "movl $R_EndView, re+184\n" /* line 2155 */
-        "movl $R_DoneRenderingViews, re+188\n" /* line 2156 */
-        "movl imp_R_AddCmdSaveScreen, %eax\n" /* line 2158 */
-        "movl %eax, re+192\n"
-        "movl imp_R_AddCmdBlendSavedScreen, %eax\n" /* line 2159 */
-        "movl %eax, re+196\n"
-        "movl imp_R_AddCmdClearScreen, %eax\n" /* line 2160 */
-        "movl %eax, re+200\n"
-        "movl imp_R_AddCmdSetViewport, %eax\n" /* line 2161 */
-        "movl %eax, re+204\n"
-        "movl imp_R_MarkFragments, %eax\n" /* line 2163 */
-        "movl %eax, re+208\n"
-        "movl imp_R_ModelBounds, %eax\n" /* line 2164 */
-        "movl %eax, re+212\n"
-        "movl imp_R_ClearScene, %eax\n" /* line 2166 */
-        "movl %eax, re+72\n"
-        "movl imp_R_DefaultVertexFrames, %eax\n" /* line 2177 */
-        "movl %eax, re+76\n"
-        "movl imp_R_AddPolyToScene, %eax\n" /* line 2178 */
-        "movl %eax, re+80\n"
-        "movl imp_R_AddLightToScene, %eax\n" /* line 2179 */
-        "movl %eax, re+84\n"
-        "movl imp_R_InterpretSunLightParseParams, %eax\n" /* line 2180 */
-        "movl %eax, re+88\n"
-        "movl imp_R_ResetSunLightParseParams, %eax\n" /* line 2181 */
-        "movl %eax, re+92\n"
-        "movl imp_R_SetCullDist, %eax\n" /* line 2182 */
-        "movl %eax, re+96\n"
-        "movl imp_R_SetFog, %eax\n" /* line 2183 */
-        "movl %eax, re+100\n"
-        "movl imp_R_SwitchFog, %eax\n" /* line 2184 */
-        "movl %eax, re+104\n"
-        "movl imp_R_ArchiveFogState, %eax\n" /* line 2185 */
-        "movl %eax, re+108\n"
-        "movl imp_R_ClearFogs, %eax\n" /* line 2186 */
-        "movl %eax, re+112\n"
-        "movl imp_R_SetSunLightOverride, %eax\n" /* line 2187 */
-        "movl %eax, re+116\n"
-        "movl imp_R_ResetSunLightOverride, %eax\n" /* line 2188 */
-        "movl %eax, re+120\n"
-        "movl imp_R_RenderScene, %eax\n" /* line 2190 */
-        "movl %eax, re+124\n"
-        "movl imp_R_BeginDelayedDrawing, %eax\n" /* line 2192 */
-        "movl %eax, re+128\n"
-        "movl imp_R_EndDelayedDrawing, %eax\n" /* line 2193 */
-        "movl %eax, re+132\n"
-        "movl imp_R_IssueDelayedDrawing, %eax\n" /* line 2194 */
-        "movl %eax, re+136\n"
-        "movl imp_R_ClearFlares, %eax\n" /* line 2196 */
-        "movl %eax, re+140\n"
-        "movl imp_R_AddCmdDrawStretchPic, %eax\n" /* line 2198 */
-        "movl %eax, re+148\n"
-        "movl imp_R_AddCmdDrawStretchPicRotate, %eax\n" /* line 2199 */
-        "movl %eax, re+152\n"
-        "movl imp_R_AddCmdDrawStretchRaw, %eax\n" /* line 2200 */
-        "movl %eax, re+156\n"
-        "movl imp_R_AddCmdDrawQuadPic, %eax\n" /* line 2201 */
-        "movl %eax, re+160\n"
-        "movl imp_R_AddCmdDrawSprite, %eax\n" /* line 2202 */
-        "movl %eax, re+164\n"
-        "movl imp_R_AddCmdSetMaterialColor, %eax\n" /* line 2204 */
-        "movl %eax, re+144\n"
-        "movl imp_R_RegisterFont, %eax\n" /* line 2206 */
-        "movl %eax, re+224\n"
-        "movl imp_R_ResetImageAllocations, %eax\n" /* line 2207 */
-        "movl %eax, re+228\n"
-        "movl imp_R_FreeImageAllocations, %eax\n" /* line 2208 */
-        "movl %eax, re+232\n"
-        "movl imp_R_BeginCubemapShot, %eax\n" /* line 2210 */
-        "movl %eax, re+236\n"
-        "movl imp_R_EndCubemapShot, %eax\n" /* line 2211 */
-        "movl %eax, re+240\n"
-        "movl imp_R_SaveCubemapShot, %eax\n" /* line 2212 */
-        "movl %eax, re+244\n"
-        "movl imp_R_LightingFromCubemapShots, %eax\n" /* line 2213 */
-        "movl %eax, re+248\n"
-        "movl imp_R_LocateDebugStrings, %eax\n" /* line 2215 */
-        "movl %eax, re+252\n"
-        "movl imp_R_LocateDebugLines, %eax\n" /* line 2216 */
-        "movl %eax, re+256\n"
-        "movl imp_R_AddPlume, %eax\n" /* line 2217 */
-        "movl %eax, re+260\n"
-        "movl imp_R_ShutdownDebug, %eax\n" /* line 2218 */
-        "movl %eax, re+264\n"
-        "movl $R_TrackStatistics, re+216\n" /* line 2220 */
-        "movl imp_R_PickMaterial, %eax\n" /* line 2221 */
-        "movl %eax, re+220\n"
-        "movl imp_RB_UpdateColor, %eax\n" /* line 2223 */
-        "movl %eax, re+268\n"
-        "movl imp_R_NormalizedTextScale, %eax\n" /* line 2224 */
-        "movl %eax, re+272\n"
-        "movl imp_R_TextWidth, %eax\n" /* line 2225 */
-        "movl %eax, re+276\n"
-        "movl imp_R_TextHeight, %eax\n" /* line 2226 */
-        "movl %eax, re+280\n"
-        "movl imp_R_DrawText, %eax\n" /* line 2227 */
-        "movl %eax, re+284\n"
-        "movl imp_R_AddCmdDrawTextInSpace, %eax\n" /* line 2228 */
-        "movl %eax, re+288\n"
-        "movl imp_R_ConsoleTextWidth, %eax\n" /* line 2229 */
-        "movl %eax, re+292\n"
-        "movl imp_R_DrawConsoleText, %eax\n" /* line 2230 */
-        "movl %eax, re+296\n"
-        "movl imp_R_AddCmdDrawTextWithCursor, %eax\n" /* line 2231 */
-        "movl %eax, re+300\n"
-        "movl imp_R_DObjGetSurfMaterials, %eax\n" /* line 2233 */
-        "movl %eax, re+304\n"
-        "movl imp_R_DObjReplaceMaterial, %eax\n" /* line 2234 */
-        "movl %eax, re+308\n"
-        "movl imp_R_ParseSunLight, %eax\n" /* line 2237 */
-        "movl %eax, re+312\n"
-        "movl imp_Material_Duplicate, %eax\n" /* line 2287 */
-        "movl %eax, re+316\n"
-        "movl imp_R_DuplicateFont, %eax\n" /* line 2288 */
-        "movl %eax, re+320\n"
-        "movb $1, re+324\n" /* line 2318 */
-        "movl imp_R_SyncRenderThread, %eax\n" /* line 2321 */
-        "movl %eax, re+328\n"
-        "movl imp_R_AbortRenderCommands, %eax\n" /* line 2322 */
-        "movl %eax, re+332\n"
-        "movl imp_RB_IsGpuFenceFinished, %eax\n" /* line 2330 */
-        "movl %eax, re+336\n"
-        "movl imp_RB_AdaptiveGpuSyncWait, %eax\n" /* line 2331 */
-        "movl %eax, re+340\n"
-        "movl imp_RB_GpuWaited, %eax\n" /* line 2332 */
-        "movl %eax, re+344\n"
-        "movl imp_R_SetLodOrigin, %eax\n" /* line 2334 */
-        "movl %eax, re+348\n"
-        "movl $re, %eax\n"
-        /* } scope */
-        "leave\n" /* line 2338 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcb074_000cb42f:\n"
-        "movl 8(%ebp), %eax\n" /* line 2109 | apiVersion */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0x3b, 8(%esp)\n"
-        "movl $str_00223a18, 4(%esp)\n" /* "Mismatched REF_API_VERSION: expected %i, got %i
-" */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "leave\n" /* line 2338 */
-        "retl\n"
-    );
+    typedef void (*ri_Printf_fn)(int, const char *, ...);
+
+    memcpy(&ri, rimp, sizeof(ri));
+    memset(&re, 0, sizeof(re));
+
+    if (apiVersion != 59) {
+        ((ri_Printf_fn)(*(void **)&ri))(0, "Mismatched REF_API_VERSION: expected %i, got %i\n", 59, apiVersion);
+        return NULL;
+    }
+
+    /* Fill refexport function pointer table — using byte offsets to match original ASM layout */
+    byte *r = (byte *)&re;
+    #define RE(off, fn) *(void **)(r + off) = (void *)(fn)
+
+    /* Core lifecycle (offsets 0-68) */
+    RE(0,   R_Shutdown);
+    RE(4,   R_BeginRegistration);
+    RE(8,   imp_R_RegisterModel);
+    RE(12,  imp_R_RegisterInlineModel);
+    RE(16,  imp_Material_RegisterHandle);
+    RE(20,  imp_R_RegisterRawImage);
+    RE(24,  imp_Material_IsDefault);
+    RE(28,  imp_R_LoadWorld);
+    RE(32,  imp_R_GetWorldBounds);
+    RE(36,  imp_R_FinishLoadingModels);
+    RE(40,  imp_R_SetIgnorePrecacheErrors);
+    RE(44,  imp_R_GetIgnorePrecacheErrors);
+    RE(48,  imp_R_GetMinSpecImageMemory);
+    RE(52,  imp_R_GetMaterialName);
+    RE(56,  imp_R_GetMaterialSubimageCount);
+    RE(60,  imp_R_IsMaterialRefractive);
+    RE(64,  imp_R_GetFarPlaneDist);
+    RE(68,  R_EndRegistration);
+
+    /* Scene management (offsets 72-140) */
+    RE(72,  imp_R_ClearScene);
+    RE(76,  imp_R_DefaultVertexFrames);
+    RE(80,  imp_R_AddPolyToScene);
+    RE(84,  imp_R_AddLightToScene);
+    RE(88,  imp_R_InterpretSunLightParseParams);
+    RE(92,  imp_R_ResetSunLightParseParams);
+    RE(96,  imp_R_SetCullDist);
+    RE(100, imp_R_SetFog);
+    RE(104, imp_R_SwitchFog);
+    RE(108, imp_R_ArchiveFogState);
+    RE(112, imp_R_ClearFogs);
+    RE(116, imp_R_SetSunLightOverride);
+    RE(120, imp_R_ResetSunLightOverride);
+    RE(124, imp_R_RenderScene);
+    RE(128, imp_R_BeginDelayedDrawing);
+    RE(132, imp_R_EndDelayedDrawing);
+    RE(136, imp_R_IssueDelayedDrawing);
+    RE(140, imp_R_ClearFlares);
+
+    /* 2D drawing (offsets 144-164) */
+    RE(144, imp_R_AddCmdSetMaterialColor);
+    RE(148, imp_R_AddCmdDrawStretchPic);
+    RE(152, imp_R_AddCmdDrawStretchPicRotate);
+    RE(156, imp_R_AddCmdDrawStretchRaw);
+    RE(160, imp_R_AddCmdDrawQuadPic);
+    RE(164, imp_R_AddCmdDrawSprite);
+
+    /* Frame control (offsets 168-212) */
+    RE(168, imp_R_BeginFrame);
+    RE(172, imp_R_EndFrame);
+    RE(176, imp_R_BeginDebugFrame);
+    RE(180, imp_R_EndDebugFrame);
+    RE(184, R_EndView);
+    RE(188, R_DoneRenderingViews);
+    RE(192, imp_R_AddCmdSaveScreen);
+    RE(196, imp_R_AddCmdBlendSavedScreen);
+    RE(200, imp_R_AddCmdClearScreen);
+    RE(204, imp_R_AddCmdSetViewport);
+    RE(208, imp_R_MarkFragments);
+    RE(212, imp_R_ModelBounds);
+
+    /* Statistics (offsets 216-220) */
+    RE(216, R_TrackStatistics);
+    RE(220, imp_R_PickMaterial);
+
+    /* Font / image (offsets 224-248) */
+    RE(224, imp_R_RegisterFont);
+    RE(228, imp_R_ResetImageAllocations);
+    RE(232, imp_R_FreeImageAllocations);
+    RE(236, imp_R_BeginCubemapShot);
+    RE(240, imp_R_EndCubemapShot);
+    RE(244, imp_R_SaveCubemapShot);
+    RE(248, imp_R_LightingFromCubemapShots);
+
+    /* Debug (offsets 252-264) */
+    RE(252, imp_R_LocateDebugStrings);
+    RE(256, imp_R_LocateDebugLines);
+    RE(260, imp_R_AddPlume);
+    RE(264, imp_R_ShutdownDebug);
+
+    /* Backend / text (offsets 268-348) */
+    RE(268, imp_RB_UpdateColor);
+    RE(272, imp_R_NormalizedTextScale);
+    RE(276, imp_R_TextWidth);
+    RE(280, imp_R_TextHeight);
+    RE(284, imp_R_DrawText);
+    RE(288, imp_R_AddCmdDrawTextInSpace);
+    RE(292, imp_R_ConsoleTextWidth);
+    RE(296, imp_R_DrawConsoleText);
+    RE(300, imp_R_AddCmdDrawTextWithCursor);
+    RE(304, imp_R_DObjGetSurfMaterials);
+    RE(308, imp_R_DObjReplaceMaterial);
+    RE(312, imp_R_ParseSunLight);
+    RE(316, imp_Material_Duplicate);
+    RE(320, imp_R_DuplicateFont);
+    *(byte *)(r + 324) = 1; /* initialized flag */
+    RE(328, imp_R_SyncRenderThread);
+    RE(332, imp_R_AbortRenderCommands);
+    RE(336, imp_RB_IsGpuFenceFinished);
+    RE(340, imp_RB_AdaptiveGpuSyncWait);
+    RE(344, imp_RB_GpuWaited);
+    RE(348, imp_R_SetLodOrigin);
+
+    #undef RE
+
+    return &re;
 }
 
 /* line 2463 */
