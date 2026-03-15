@@ -1395,8 +1395,207 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
 }
 
 /* line 2469 */
-__attribute__((naked))
+/* line 2469 — Scene DObj skinning: validates DObj, gets surfaces and bone matrices,
+ * allocates scene surface entries, pre-skins each surface, copies to front-end buffer,
+ * then queues a SkinXModelCmd or SkinRigidXModelCmd for the render thread. */
+extern int InterlockedExchangeAdd(volatile int *dest, int value);
+extern void R_AddFrontendCmd(int cmdType, const void *cmd);
+extern int DObjGetMatOffset(const void *obj, int surfIndex);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
+{
+    char *se = (char *)sceneEnt;
+    void *obj = *(void **)(se + 4);
+    int surfaceCount, boneCount;
+    const DObjAnimMat *boneMatrix;
+    short surfaces[67];
+    int partBits[4];
+    char lods[8];
+    byte surfBuf[3520]; /* large buffer for pre-skinned surface data */
+
+    /* Check state: must be <= 3 */
+    if (*(int *)(se + 0xc) > 3)
+        return;
+
+    /* Atomic compare-exchange: claim state 2→3 */
+    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
+        while (*(volatile int *)(se + 0xc) <= 3)
+            ;
+        return;
+    }
+
+    /* Validate DObj */
+    if (DObjBad(obj)) {
+        if (*(int *)(*(char **)imp_developer + 8)) {
+            __asm__ __volatile__ (
+                "movl %[obj], %%ecx\n"
+                "movl %[ent], %%edx\n"
+                "movl %[se], %%eax\n"
+                "calll R_XModelDebugBoxes\n"
+                "movl %[obj], %%ecx\n"
+                "movl %[ent], %%edx\n"
+                "movl %[se], %%eax\n"
+                "calll R_XModelDebugAxes\n"
+                : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
+                : "eax", "ecx", "edx", "memory"
+            );
+        }
+        *(int *)(se + 0xc) = 4;
+        return;
+    }
+
+    /* Get bone count and surface data */
+    boneCount = DObjNumBones(obj);
+    {
+        int sc;
+        __asm__ __volatile__ (
+            "movl %[lods], 4(%%esp)\n"
+            "movl %[pb], (%%esp)\n"
+            "movl %[obj], %%edx\n"
+            "movl %[ent], %%eax\n"
+            "leal %[surfs], %%ecx\n"
+            "calll R_GetSurfaceData\n"
+            "movl %%eax, %[out]\n"
+            : [out]"=r"(sc)
+            : [ent]"m"(ent), [obj]"m"(obj), [surfs]"m"(surfaces[0]),
+              [pb]"r"(partBits), [lods]"r"(lods)
+            : "eax", "ecx", "edx", "memory"
+        );
+        surfaceCount = sc;
+    }
+    if (surfaceCount == 0) {
+        *(int *)(se + 0xc) = 4;
+        return;
+    }
+
+    /* Get bone rotation/translation array */
+    boneMatrix = (const DObjAnimMat *)DObjGetRotTransArray(obj);
+    if (!boneMatrix) {
+        *(int *)(se + 0xc) = 4;
+        return;
+    }
+
+    /* Allocate scene surface entries atomically */
+    {
+        char *scene = (char *)imp_scene;
+        int startIndex = InterlockedExchangeAdd((volatile int *)(scene + 0x1a55c), surfaceCount);
+        extern int __mh_execute_header;
+        if (startIndex + surfaceCount > (int)(unsigned int)&__mh_execute_header) {
+            *(int *)(scene + 0x1a55c) = (int)(unsigned int)&__mh_execute_header;
+            {
+                byte *fed = *(byte **)imp_frontEndDataOut;
+                if (*(int *)fed != warnCount) {
+                    warnCount = *(int *)fed;
+                    typedef int (*PrintFunc)(int, const char *, ...);
+                    (*(PrintFunc *)imp_ri)(2, "MAX_SCENE_SURFS_PLUS_ENTITIES exceeded\n");
+                }
+            }
+            *(int *)(se + 0xc) = 4;
+            return;
+        }
+
+        /* Set surface list pointer in scene entity */
+        *(void **)(se + 0x2c) = (void *)(scene + 0x1a560 + startIndex * 4);
+    }
+
+    /* Pre-skin each surface */
+    {
+        byte *surfPtr = surfBuf;
+        int i;
+
+        for (i = 0; i < surfaceCount; i++) {
+            int result = R_PreSkinXSurface(sceneEnt, (const struct DObj_s *)obj,
+                (long unsigned int (*)[32])&surfaces[i], i, lods, surfPtr);
+            if (!result) {
+                *(int *)(se + 0xc) = 4;
+                return;
+            }
+            surfPtr += result;
+        }
+
+        /* Allocate front-end buffer and copy surface data */
+        {
+            int size = (int)(surfPtr - surfBuf);
+            byte *fed = *(byte **)imp_frontEndDataOut;
+            int offset = InterlockedExchangeAdd((volatile int *)(fed + 0x80008), size);
+            if (offset + size > 0x20000) {
+                *(int *)(fed + 0x80008) = 0x20000;
+                if (*(int *)fed != warnCount) {
+                    warnCount = *(int *)fed;
+                    typedef int (*PrintFunc)(int, const char *, ...);
+                    (*(PrintFunc *)imp_ri)(2, "MAX_SKINNED_CACHE exceeded\n");
+                }
+                *(int *)(se + 0xc) = 4;
+                return;
+            }
+
+            *(void **)(se + 0x30) = fed + 0x8000c + offset;
+            memcpy(fed + 0x8000c + offset, surfBuf, size);
+        }
+    }
+
+    /* Set surface count */
+    *(int *)(se + 0x10) = surfaceCount;
+
+    /* Debug rendering if r_xdebug */
+    {
+        char *xdebugDvar = *(char **)imp_r_xdebug;
+        int xdebug = *(int *)(xdebugDvar + 8);
+        if (xdebug) {
+            if (xdebug & 1) {
+                __asm__ __volatile__ (
+                    "movl %[obj], %%ecx\n"
+                    "movl %[ent], %%edx\n"
+                    "movl %[se], %%eax\n"
+                    "calll R_XModelDebugBoxes\n"
+                    : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
+                    : "eax", "ecx", "edx", "memory"
+                );
+                xdebugDvar = *(char **)imp_r_xdebug;
+            }
+            if (*(int *)(xdebugDvar + 8) & 2) {
+                __asm__ __volatile__ (
+                    "movl %[obj], %%ecx\n"
+                    "movl %[ent], %%edx\n"
+                    "movl %[se], %%eax\n"
+                    "calll R_XModelDebugAxes\n"
+                    : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
+                    : "eax", "ecx", "edx", "memory"
+                );
+            }
+        }
+    }
+
+    /* Build and queue skinning command */
+    if (boneCount == 1) {
+        /* Single bone: use rigid skinning command */
+        SkinRigidXModelCmd rigidCmd;
+        rigidCmd.surfs = *(surfaceType_t **)(se + 0x30);
+        rigidCmd.surfCount = surfaceCount;
+        rigidCmd.e = (GfxEntity *)ent;
+        /* Copy DObjAnimMat (32 bytes) */
+        memcpy(&rigidCmd.mat, boneMatrix, sizeof(DObjAnimMat));
+        R_AddFrontendCmd(2, &rigidCmd);
+    } else {
+        /* Multi-bone: build SkinXModelCmd with per-surface mat offsets */
+        SkinXModelCmd skinCmd;
+        int i;
+        skinCmd.surfs = *(surfaceType_t **)(se + 0x30);
+        skinCmd.surfCount = (byte)surfaceCount;
+        skinCmd.e = (GfxEntity *)ent;
+        skinCmd.mat = boneMatrix;
+        skinCmd.boneCount = (byte)boneCount;
+
+        for (i = 0; i < surfaceCount; i++) {
+            skinCmd.matOffset[i] = (byte)DObjGetMatOffset(obj, (int)(short)surfaces[i]);
+        }
+
+        R_AddFrontendCmd(surfaceCount > 10 ? 7 : 6, &skinCmd);
+    }
+
+    *(int *)(se + 0xc) = 4;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2469 */
@@ -1673,6 +1872,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "jmp .Lfd1568_000d15de\n"
     );
 }
+#endif /* original naked R_SkinSceneDObj */
 
 /* line 1949 */
 static __attribute__((naked))
@@ -1919,9 +2119,167 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
     );
 }
 
-/* line 2276 */
-static __attribute__((naked))
-void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
+/* line 2276 — XModel skinning for static models: validates model, computes LOD,
+ * gets surfaces, pre-skins, copies to front-end buffer, queues skinning command. */
+extern int XModelNumBones(const void *model);
+extern int XModelGetSurfaces(const void *model, void **surfaces, int lod, int *partBits);
+extern int XModelGetLodForDist(const void *model, float dist);
+extern const DObjAnimMat *XModelGetBasePose(const void *model);
+static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
+{
+    char *se = (char *)sceneEnt;
+    char *e = (char *)ent;
+    void *model = *(void **)(se + 4);
+    int boneCount, surfaceCount, lod;
+    void *surfacesPtr;
+    int partBits[4];
+    qboolean needSkinningSurf = 0;
+    byte surfBuf[3520];
+
+    if (*(int *)(se + 0xc) > 3) return;
+    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
+        while (*(volatile int *)(se + 0xc) <= 3) ;
+        return;
+    }
+
+    if (XModelBad(*(union XAssetHeader *)&model)) {
+        if (*(int *)(*(char **)imp_developer + 8)) {
+            char *rg = (char *)imp_rg;
+            void *defaultObj = *(void **)(rg + 0x3110);
+            DObjSetModel((struct DObj_s *)defaultObj, model);
+            __asm__ __volatile__ (
+                "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
+                "calll R_XModelDebugBoxes\n"
+                "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
+                "calll R_XModelDebugAxes\n"
+                : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
+                : "eax", "ecx", "edx", "memory"
+            );
+        }
+        *(int *)(se + 0xc) = 4; return;
+    }
+
+    boneCount = XModelNumBones(model);
+
+    /* Compute LOD based on distance */
+    {
+        char *rg = (char *)imp_rg;
+        float dist = Vec3Distance((const void *)(e + 0x3c), (const void *)(rg + 0x317c));
+        dist = dist * *(float *)(rg + 0x3188) + *(float *)(rg + 0x318c);
+        float scale = *(float *)(e + 0x38);
+        if (scale != 0.0f)
+            dist /= scale;
+        lod = XModelGetLodForDist(model, dist);
+    }
+    if (lod < 0) { *(int *)(se + 0xc) = 4; return; }
+
+    surfaceCount = XModelGetSurfaces(model, &surfacesPtr, lod, partBits);
+
+    /* Allocate scene surface entries */
+    {
+        char *scene = (char *)imp_scene;
+        int startIdx = InterlockedExchangeAdd((volatile int *)(scene + 0x1a55c), surfaceCount);
+        extern int __mh_execute_header;
+        if (startIdx + surfaceCount > (int)(unsigned int)&__mh_execute_header) {
+            *(int *)(scene + 0x1a55c) = (int)(unsigned int)&__mh_execute_header;
+            byte *fed = *(byte **)imp_frontEndDataOut;
+            if (*(int *)fed != warnCount) {
+                warnCount = *(int *)fed;
+                (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SCENE_SURFS_PLUS_ENTITIES exceeded\n");
+            }
+            *(int *)(se + 0xc) = 4; return;
+        }
+        *(void **)(se + 0x2c) = (void *)(scene + 0x1a560 + startIdx * 4);
+    }
+
+    /* Pre-skin each surface */
+    {
+        byte *surfPtr = surfBuf;
+        int i;
+        void **surfArray = (void **)surfacesPtr;
+        for (i = 0; i < surfaceCount; i++) {
+            int result = R_PreSkinStaticSurface(sceneEnt, ent, smodelIndex,
+                (const struct XModel *)model, (XSurface *)surfArray[i], i, lod, &needSkinningSurf, surfPtr);
+            if (!result) { *(int *)(se + 0xc) = 4; return; }
+            surfPtr += result;
+        }
+
+        /* Copy to front-end buffer */
+        {
+            int size = (int)(surfPtr - surfBuf);
+            byte *fed = *(byte **)imp_frontEndDataOut;
+            int offset = InterlockedExchangeAdd((volatile int *)(fed + 0x80008), size);
+            if (offset + size > 0x20000) {
+                *(int *)(fed + 0x80008) = 0x20000;
+                if (*(int *)fed != warnCount) {
+                    warnCount = *(int *)fed;
+                    (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SKINNED_CACHE exceeded\n");
+                }
+                *(int *)(se + 0xc) = 4; return;
+            }
+            *(void **)(se + 0x30) = fed + 0x8000c + offset;
+            memcpy(fed + 0x8000c + offset, surfBuf, size);
+        }
+    }
+
+    *(int *)(se + 0x10) = surfaceCount;
+
+    /* Debug rendering */
+    {
+        int xdebug = *(int *)(*(char **)imp_r_xdebug + 8);
+        if (xdebug) {
+            char *rg = (char *)imp_rg;
+            void *defaultObj = *(void **)(rg + 0x3110);
+            DObjSetModel((struct DObj_s *)defaultObj, model);
+            if (xdebug & 1) {
+                __asm__ __volatile__ (
+                    "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
+                    "calll R_XModelDebugBoxes\n"
+                    : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
+                    : "eax", "ecx", "edx", "memory"
+                );
+            }
+            if (*(int *)(*(char **)imp_r_xdebug + 8) & 2) {
+                __asm__ __volatile__ (
+                    "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
+                    "calll R_XModelDebugAxes\n"
+                    : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
+                    : "eax", "ecx", "edx", "memory"
+                );
+            }
+        }
+    }
+
+    if (!needSkinningSurf) { *(int *)(se + 0xc) = 4; return; }
+
+    /* Queue skinning command */
+    {
+        const DObjAnimMat *basePose = XModelGetBasePose(model);
+        if (boneCount == 1) {
+            SkinRigidXModelCmd rigidCmd;
+            rigidCmd.surfs = *(surfaceType_t **)(se + 0x30);
+            rigidCmd.surfCount = surfaceCount;
+            rigidCmd.e = (GfxEntity *)ent;
+            memcpy(&rigidCmd.mat, basePose, sizeof(DObjAnimMat));
+            R_AddFrontendCmd(2, &rigidCmd);
+        } else {
+            SkinXModelCmd skinCmd;
+            int i;
+            skinCmd.surfs = *(surfaceType_t **)(se + 0x30);
+            skinCmd.surfCount = (byte)surfaceCount;
+            skinCmd.e = (GfxEntity *)ent;
+            skinCmd.mat = basePose;
+            skinCmd.boneCount = (byte)boneCount;
+            memcpy(skinCmd.surfacePartBits, *(int **)&partBits[0], 16);
+            for (i = 0; i < surfaceCount; i++)
+                skinCmd.matOffset[i] = 0;
+            R_AddFrontendCmd(surfaceCount > 10 ? 7 : 6, &skinCmd);
+        }
+    }
+    *(int *)(se + 0xc) = 4;
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2276 */
@@ -2258,6 +2616,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "jmp .Lfd1c38_000d1cae\n"
     );
 }
+#endif /* original naked R_SkinXModel */
 
 /* line 2651 */
 void R_SkinStaticModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
