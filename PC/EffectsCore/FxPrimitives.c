@@ -4871,9 +4871,121 @@ void Particle_GetTotalVelocity(const Particle *_this, float normTime, vec_t *out
     outVector[2] = velocityValue[2] + velocity2Value[2] + gravityValue[2] + *(float *)(self + 0xcc);
 }
 
-/* line 1911 */
+/* Emitter_UpdateEmitFx — spawn sub-effects along emitter trajectory at step intervals */
+void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orientation_t *or_)
+{
+    byte *self = (byte *)_this;
+
+    /* Check emit flag */
+    if (!(*(byte *)(self + 0xa9) & 1))
+        return;
+
+    byte *helper = *(byte **)imp_theFxHelper;
+    int frameTimeMs = *(int *)(helper + 0xc);
+    if (frameTimeMs == 0)
+        return;
+
+    float step = *(float *)(self + 0x274);
+    float step2 = step * step;
+    int t = *(int *)(self + 0x270);
+    int startTime = *(int *)(self + 0xb8);
+    float age = (float)(*(int *)(helper + 4) - startTime) * 0.001f;
+    float lifeTime = (float)(*(int *)(self + 0xbc) - startTime) * 0.001f;
+
+    int dif = 0;
+    float ftimeTotal = 0.0f;
+
+    /* Time-stepping loop: advance by 12ms per step */
+    while (t < *(int *)(helper + 4)) {
+        dif += 12;
+        float ftime = (float)dif * 0.001f;
+
+        /* Save old position */
+        vec3_t oldorg;
+        oldorg[0] = *(float *)(self + 0x24c) + *(float *)(self + 0x264);
+        oldorg[1] = *(float *)(self + 0x250) + *(float *)(self + 0x268);
+        oldorg[2] = *(float *)(self + 0x254) + *(float *)(self + 0x26c);
+
+        /* Compute normalized time */
+        float normTime = (ftimeTotal + age) / lifeTime;
+        if (normTime > 1.0f) normTime = 1.0f;
+
+        /* Get velocity at normTime */
+        vec3_t velocity;
+        Particle_GetTotalVelocity((const Particle *)_this, normTime, velocity, or_);
+
+        /* Compute new position = base + velocity * ftime */
+        vec3_t org;
+        org[0] = *(float *)(self + 0x24c) + velocity[0] * ftime;
+        org[1] = *(float *)(self + 0x250) + velocity[1] * ftime;
+        org[2] = *(float *)(self + 0x254) + velocity[2] * ftime;
+
+        /* Add bind velocity if present */
+        if (or_ && bindVelocity) {
+            org[0] += bindVelocity[0] * ftime;
+            org[1] += bindVelocity[1] * ftime;
+            org[2] += bindVelocity[2] * ftime;
+        }
+
+        /* Check if moved far enough to spawn */
+        float distSq = Vec3DistanceSq(org, oldorg);
+        if (distSq < step2) {
+            t += 12;
+            continue;
+        }
+
+        /* Spawn effect at computed position */
+        vec3_t spawnPos;
+        if (or_) {
+            OrientationPosToWorldPos((void *)or_, org, spawnPos);
+        } else {
+            spawnPos[0] = org[0]; spawnPos[1] = org[1]; spawnPos[2] = org[2];
+        }
+
+        /* Get bolt info for PlayEffect */
+        void *boltInfo = NULL;
+        if (*(byte **)(self + 0xc0))
+            boltInfo = (byte *)(*(byte **)(self + 0xc0)) + 0x3c;
+
+        void *emitEffect = *(void **)(self + 0x290);
+        FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, emitEffect, spawnPos, NULL);
+
+        /* Advance with adaptive time step based on velocity */
+        float velLenSq = velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2];
+        float dF = (velLenSq + velLenSq) * ftime;
+        float nextFtime;
+        if (dF != 0.0f) {
+            /* Adaptive: nextFtime based on step/velocity ratio */
+            float sq; __asm__ __volatile__("sqrtss %1,%0":"=x"(sq):"x"(step2 / dF));
+            nextFtime = sq * ftime;
+        } else {
+            nextFtime = ftime;
+        }
+        float nextTime = nextFtime + (ftimeTotal + age);
+        float nextNormTime = nextTime / lifeTime;
+        if (nextNormTime > 1.0f) nextNormTime = 1.0f;
+
+        /* Get velocity at next time for position update */
+        vec3_t nextVel;
+        Particle_GetTotalVelocity((const Particle *)_this, nextNormTime, nextVel, or_);
+
+        /* Update emitter origin to new position */
+        *(float *)(self + 0x24c) = org[0];
+        *(float *)(self + 0x250) = org[1];
+        *(float *)(self + 0x254) = org[2];
+        *(float *)(self + 0x264) = nextVel[0] * nextFtime - velocity[0] * ftime;
+        *(float *)(self + 0x268) = nextVel[1] * nextFtime - velocity[1] * ftime;
+        *(float *)(self + 0x26c) = nextVel[2] * nextFtime - velocity[2] * ftime;
+
+        ftimeTotal += nextFtime;
+        dif = (int)(ftimeTotal * 1000.0f);
+        t = startTime + dif;
+        *(int *)(self + 0x270) = t;
+    }
+}
+#if 0 /* Original ASM (367 lines) */
 __attribute__((naked))
-void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orientation_t *or_)
+void Emitter_UpdateEmitFx_asm(const Emitter * _this, vec_t *bindVelocity, const orientation_t *or_)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1911 */
@@ -5240,6 +5352,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "jmp .Lfa467a_000a4c31\n"
     );
 }
+#endif
 
 /* Particle_GetTotalVelocityAtTime0 — get velocity at t=0 using bolt orientation if available */
 extern void *imp_cl;
@@ -5829,9 +5942,94 @@ Bool Particle_UpdateOrigin_asm(const Particle * _this, const orientation_t *or_)
 }
 #endif
 
-/* line 1833 */
+/* Emitter_Update — full emitter tick: normTime, bolt, origin, emit sub-effects, endpoint, radius, RGB, alpha */
+Bool Emitter_Update(const Emitter *_this)
+{
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    /* Get bolt orientation */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    /* Update origin */
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient))
+        return 0;
+
+    /* Compute bind velocity for emitter */
+    vec3_t bindVelocity = {0, 0, 0};
+    if (orient) {
+        /* Get velocity from bolt position delta */
+        byte *helper = *(byte **)imp_theFxHelper;
+        int frameTime = *(int *)(helper + 0xc);
+        if (frameTime > 0) {
+            float invFt = 1.0f / ((float)frameTime * 0.001f);
+            vec3_t worldPos;
+            OrientationPosToWorldPos(orient, (vec_t *)(self + 4), worldPos);
+            bindVelocity[0] = (worldPos[0] - *(float *)(self + 0x7c)) * invFt;
+            bindVelocity[1] = (worldPos[1] - *(float *)(self + 0x80)) * invFt;
+            bindVelocity[2] = (worldPos[2] - *(float *)(self + 0x84)) * invFt;
+            *(float *)(self + 0x7c) = worldPos[0];
+            *(float *)(self + 0x80) = worldPos[1];
+            *(float *)(self + 0x84) = worldPos[2];
+        }
+    } else {
+        *(float *)(self + 0x7c) = *(float *)(self + 4);
+        *(float *)(self + 0x80) = *(float *)(self + 8);
+        *(float *)(self + 0x84) = *(float *)(self + 0xc);
+    }
+
+    /* Emit sub-effects */
+    Emitter_UpdateEmitFx(_this, bindVelocity, (const orientation_t *)orient);
+
+    /* Evaluate radius */
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        float v0 = EvalCurve1(self + 0x174, normTime);
+        float v1 = EvalCurve1(self + 0x180, normTime);
+        radius = (v0 + (v1 - v0) * bf) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+
+    if (radius == 0.0f) {
+        *(int *)(self + 0xa8) |= 0x01000000;
+        return 1;
+    }
+
+    /* Update RGB and alpha */
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+
+    return 1;
+}
+#if 0 /* Original ASM (445 lines) */
 __attribute__((naked))
-Bool Emitter_Update(const Emitter * _this)
+Bool Emitter_Update_asm(const Emitter * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1833 */
@@ -6276,6 +6474,7 @@ Bool Emitter_Update(const Emitter * _this)
         "jmp .Lfa52f2_000a5680\n"
     );
 }
+#endif
 
 /* Particle_UpdateAlpha — evaluate alpha channel at normTime, apply to particle */
 void Particle_UpdateAlpha(const Particle *_this)
@@ -6569,9 +6768,87 @@ void Particle_UpdateAlpha_asm(const Particle * _this)
 }
 #endif
 
-/* line 1749 */
+/* line 1749 — Cylinder_Update converted to C */
+Bool Cylinder_Update(const Cylinder *_this)
+{
+    /* Cylinder_Update follows Tail_Update pattern: normTime + bolt + origin + tail length + endpoint + radius + RGB + alpha */
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0) orient = boltFrame + 8;
+        }
+    }
+
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient)) return 0;
+
+    if (orient) OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+    else { *(float *)(self + 0x7c) = *(float *)(self + 4); *(float *)(self + 0x80) = *(float *)(self + 8); *(float *)(self + 0x84) = *(float *)(self + 0xc); }
+
+    /* Tail length curves */
+    float tailLen;
+    if (*(byte *)(self + 0xaa) & 2) {
+        float bf = *(float *)(self + 0x25c);
+        tailLen = (EvalCurve1(self + 0x260, normTime) + (EvalCurve1(self + 0x26c, normTime) - EvalCurve1(self + 0x260, normTime)) * bf) * *(float *)(self + 0x260 + 8);
+    } else {
+        tailLen = EvalCurve1(self + 0x260, normTime) * *(float *)(self + 0x260 + 8);
+    }
+    *(float *)(self + 0x258) = tailLen;
+
+    Tail_CalcNewEndpoint((const Tail *)_this, (const orientation_t *)orient);
+    if (orient) OrientationPosToWorldPos(orient, (vec_t *)(self + 0x9c), (vec_t *)(self + 0x9c));
+
+    /* Evaluate two radii for cylinder (start + end) */
+    float radius1, radius2;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        radius1 = (EvalCurve1(self + 0x174, normTime) + (EvalCurve1(self + 0x180, normTime) - EvalCurve1(self + 0x174, normTime)) * bf) * *(float *)(self + 0x174 + 8);
+        /* Second radius uses different curve at 0x198/0x1a4 */
+        if (*(byte *)(self + 0xaa) & 4) {
+            float bf2 = *(float *)(self + 0x124);
+            radius2 = (EvalCurve1(self + 0x198, normTime) + (EvalCurve1(self + 0x1a4, normTime) - EvalCurve1(self + 0x198, normTime)) * bf2) * *(float *)(self + 0x198 + 8);
+        } else {
+            radius2 = EvalCurve1(self + 0x198, normTime) * *(float *)(self + 0x198 + 8);
+        }
+    } else {
+        radius1 = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+        if (*(byte *)(self + 0xaa) & 4) {
+            float bf2 = *(float *)(self + 0x124);
+            radius2 = (EvalCurve1(self + 0x198, normTime) + (EvalCurve1(self + 0x1a4, normTime) - EvalCurve1(self + 0x198, normTime)) * bf2) * *(float *)(self + 0x198 + 8);
+        } else {
+            radius2 = EvalCurve1(self + 0x198, normTime) * *(float *)(self + 0x198 + 8);
+        }
+    }
+    *(float *)(self + 0x88) = radius1;
+    *(float *)(self + 0x8c) = radius2;
+
+    if (radius1 == 0.0f && radius2 == 0.0f) { *(int *)(self + 0xa8) |= 0x01000000; return 1; }
+
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+    return 1;
+}
+#if 0 /* Original ASM (693 lines) */
 __attribute__((naked))
-Bool Cylinder_Update(const Cylinder * _this)
+Bool Cylinder_Update_asm(const Cylinder * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1749 */
@@ -7264,10 +7541,84 @@ Bool Cylinder_Update(const Cylinder * _this)
         "jmp .Lfa5b84_000a6084\n"
     );
 }
+#endif
 
-/* line 1619 */
+/* Tail_Update — Particle_Update + tail length eval + endpoint computation */
+Bool Tail_Update(const Tail *_this)
+{
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    /* Get bolt orientation */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient))
+        return 0;
+
+    /* Transform origin to world */
+    if (orient) OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+    else { *(float *)(self + 0x7c) = *(float *)(self + 4); *(float *)(self + 0x80) = *(float *)(self + 8); *(float *)(self + 0x84) = *(float *)(self + 0xc); }
+
+    /* Evaluate tail length curve(s) */
+    float tailLen;
+    if (*(byte *)(self + 0xaa) & 2) {
+        float bf = *(float *)(self + 0x25c);
+        float v0 = EvalCurve1(self + 0x260, normTime);
+        float v1 = EvalCurve1(self + 0x26c, normTime);
+        tailLen = (v0 + (v1 - v0) * bf) * *(float *)(self + 0x260 + 8);
+    } else {
+        tailLen = EvalCurve1(self + 0x260, normTime) * *(float *)(self + 0x260 + 8);
+    }
+    *(float *)(self + 0x258) = tailLen;
+
+    /* Compute new endpoint */
+    Tail_CalcNewEndpoint(_this, (const orientation_t *)orient);
+
+    /* Transform endpoint to world */
+    if (orient) OrientationPosToWorldPos(orient, (vec_t *)(self + 0x9c), (vec_t *)(self + 0x9c));
+
+    /* Evaluate radius */
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        radius = (EvalCurve1(self + 0x174, normTime) + (EvalCurve1(self + 0x180, normTime) - EvalCurve1(self + 0x174, normTime)) * bf) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+    *(float *)(self + 0x8c) = radius;
+
+    if (radius == 0.0f) { *(int *)(self + 0xa8) |= 0x01000000; return 1; }
+
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+    return 1;
+}
+#if 0 /* Original ASM (524 lines) */
 __attribute__((naked))
-Bool Tail_Update(const Tail * _this)
+Bool Tail_Update_asm(const Tail * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1619 */
@@ -7791,6 +8142,7 @@ Bool Tail_Update(const Tail * _this)
         "jmp .Lfa63aa_000a6770\n"
     );
 }
+#endif
 
 /* Line_Update — Particle_Update + endpoint transform for line/cylinder */
 extern void OrientationPosToWorldPos(void *orient, vec_t *localPos, vec_t *worldPos);
@@ -9075,7 +9427,75 @@ Bool Cloud_Update(const Cloud * _this)
 
 /* line 1282 */
 __attribute__((naked))
-Bool OrientedParticle_Update(const OrientedParticle * _this)
+Bool OrientedParticle_Update(const OrientedParticle *_this)
+{
+    /* Same as Particle_Update + normal vector transform to world (0x24c → orient transform → 0x9c) */
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0) orient = boltFrame + 8;
+        }
+    }
+
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient)) return 0;
+
+    if (orient) {
+        OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+        /* Transform normal direction to world */
+        OrientationDirFromWorldDir(orient, (vec_t *)(self + 0x24c), (vec_t *)(self + 0x9c));
+    } else {
+        *(float *)(self + 0x7c) = *(float *)(self + 4); *(float *)(self + 0x80) = *(float *)(self + 8); *(float *)(self + 0x84) = *(float *)(self + 0xc);
+        *(float *)(self + 0x9c) = *(float *)(self + 0x24c); *(float *)(self + 0xa0) = *(float *)(self + 0x250); *(float *)(self + 0xa4) = *(float *)(self + 0x254);
+    }
+
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        radius = (EvalCurve1(self + 0x174, normTime) + (EvalCurve1(self + 0x180, normTime) - EvalCurve1(self + 0x174, normTime)) * bf) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+    if (radius == 0.0f) { *(int *)(self + 0xa8) |= 0x01000000; return 1; }
+
+    /* Rotation eval */
+    if (*(byte *)(self + 0xaa) & 1) {
+        float rot;
+        if (*(byte *)(self + 0xaa) & 0x10) {
+            float bf = *(float *)(self + 0x128);
+            rot = (EvalCurve1(self + 0x18c, normTime) + (EvalCurve1(self + 0x198, normTime) - EvalCurve1(self + 0x18c, normTime)) * bf) * *(float *)(self + 0x18c + 8);
+        } else {
+            rot = EvalCurve1(self + 0x18c, normTime) * *(float *)(self + 0x18c + 8);
+        }
+        *(float *)(self + 0x8c) = rot;
+    }
+
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+    return 1;
+}
+#if 0 /* Original ASM (751 lines) */
+__attribute__((naked))
+Bool OrientedParticle_Update_asm(const OrientedParticle * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1282 */
@@ -9826,6 +10246,7 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
         "jmp .Lfa77be_000a7ad3\n"
     );
 }
+#endif
 
 /* Particle_Update — core particle tick: normTime, origin update, radius eval, RGB/alpha update */
 extern void OrientationPosToWorldPos(void *orient, vec_t *localPos, vec_t *worldPos);
