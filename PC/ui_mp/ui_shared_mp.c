@@ -240,48 +240,16 @@ void Menu_Paint(displayContextDef_t *dc, menuDef_t *menu, qboolean forcePaint);
 void Menu_PaintAll(displayContextDef_t *dc);
 void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean down);
 
-/* line 88 */
-__attribute__((naked))
+/* LerpColor — lerp 4-component color, clamp each to [0,1] */
 void LerpColor(vec_t *a, vec_t *b, vec_t *c, float t)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 88 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* a */
-        "movl 0xc(%ebp), %ebx\n" /* b */
-        "movl 0x10(%ebp), %ecx\n" /* c */
-        "movss 0x14(%ebp), %xmm3\n" /* t */
-        "movl $1, %edx\n"
-        "pxor %xmm2, %xmm2\n"
-        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
-        ".Lf163b08_00163b2c:\n"
-        "leal (, %edx, 4), %eax\n"
-        "movss -4(%esi, %eax), %xmm0\n" /* line 94 | a */
-        "movss -4(%ebx, %eax), %xmm1\n" /* b */
-        "subss %xmm0, %xmm1\n"
-        "mulss %xmm3, %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "leal (%ecx, %eax), %eax\n" /* line 88 */
-        "movss %xmm1, -4(%eax)\n" /* line 94 */
-        "ucomiss %xmm1, %xmm2\n" /* line 95 */
-        "ja .Lf163b08_00163b70\n"
-        "ucomiss %xmm4, %xmm1\n" /* line 97 */
-        "jbe .Lf163b08_00163b64\n"
-        "movl $0x3f800000, -4(%eax)\n" /* line 98 */
-        ".Lf163b08_00163b64:\n"
-        "addl $1, %edx\n"
-        "cmpl $5, %edx\n" /* line 92 */
-        "jne .Lf163b08_00163b2c\n"
-        "popl %ebx\n" /* line 100 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf163b08_00163b70:\n"
-        "movl $0, -4(%eax)\n" /* line 96 */
-        "jmp .Lf163b08_00163b64\n"
-    );
+    int i;
+    for (i = 0; i < 4; i++) {
+        float v = a[i] + (b[i] - a[i]) * t;
+        if (v < 0.0f) v = 0.0f;
+        else if (v > 1.0f) v = 1.0f;
+        c[i] = v;
+    }
 }
 
 /* line 130 */
@@ -865,50 +833,16 @@ void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut)
 __attribute__((naked))
 menuDef_t * Menus_FindByName(displayContextDef_t *dc, const char *p)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 752 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dc */
-        /* { scope 1 */
-        "movl 0x22c(%edi), %eax\n" /* line 756 | dc */
-        "testl %eax, %eax\n"
-        "jg .Lf16416a_0016418a\n"
-        ".Lf16416a_00164180:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf16416a_00164182:\n"
-        "addl $0x1c, %esp\n" /* line 762 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16416a_0016418a:\n"
-        "movl %edi, %ebx\n" /* line 756 | dc */
-        "xorl %esi, %esi\n" /* i */
-        ".Lf16416a_0016418e:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 758 | p */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x2c(%ebx), %eax\n"
-        "movl 0xc0(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf16416a_001641ba\n"
-        "addl $1, %esi\n" /* line 756 | i */
-        "addl $4, %ebx\n"
-        "cmpl 0x22c(%edi), %esi\n" /* dc, i */
-        "jl .Lf16416a_0016418e\n"
-        "jmp .Lf16416a_00164180\n"
-        ".Lf16416a_001641ba:\n"
-        "movl 0x2c(%edi, %esi, 4), %eax\n" /* line 759 | dc */
-        "jmp .Lf16416a_00164182\n"
-    );
+    byte *d = (byte *)dc;
+    int count = *(int *)(d + 0x22c);
+    int i;
+    for (i = 0; i < count; i++) {
+        byte *menu = *(byte **)(d + 0x2c + i * 4);
+        const char *menuName = *(const char **)(menu + 0xc0);
+        if (I_stricmp(menuName, p) == 0)
+            return (menuDef_t *)menu;
+    }
+    return NULL;
 }
 
 /* line 829 */
@@ -951,54 +885,15 @@ void Script_FadeOut(displayContextDef_t *dc, itemDef_t *item, const char * *args
     }
 }
 
-/* line 1099 */
-__attribute__((naked))
-void Script_SetDvar(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+/* Script_SetDvar — parse dvar name and value from args, set dvar */
+extern void Dvar_SetFromStringByName(const char *name, const char *val);
+void Script_SetDvar(displayContextDef_t *dc, itemDef_t *item, const char **args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1099 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x81c, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* args */
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 1104 */
-        "leal -0x418(%ebp), %edi\n" /* dvarName */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "jne .Lf164308_00164340\n"
-        /* } scope */
-        ".Lf164308_00164335:\n"
-        "addl $0x81c, %esp\n" /* line 1106 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164308_00164340:\n"
-        "movl $0x400, 8(%esp)\n" /* line 1104 */
-        "leal -0x818(%ebp), %esi\n" /* val */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf164308_00164335\n"
-        "movl %esi, 4(%esp)\n" /* line 1105 */
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetFromStringByName\n"
-        /* } scope */
-        "addl $0x81c, %esp\n" /* line 1106 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)dc; (void)item;
+    char dvarName[0x400], val[0x400];
+    if (!String_Parse(args, dvarName, 0x400)) return;
+    if (!String_Parse(args, val, 0x400)) return;
+    Dvar_SetFromStringByName(dvarName, val);
 }
 
 /* Script_ExecNow — parse string from args, execute immediately via Cbuf_ExecuteText */
