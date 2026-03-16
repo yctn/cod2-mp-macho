@@ -47,6 +47,8 @@ extern Bool FxHelper_IsMaterialRefractive(FxHelper *helper, MaterialHandle mater
 extern void FxHelper_FxHelper(FxHelper *helper);
 extern void Z_FreeInternal(void *ptr);
 extern void *Z_MallocInternal(int size);
+extern void __ZdaPv(void *ptr);
+extern void Rand_Init(int seed);
 extern void *__Znam(int size);
 extern float flrand(float min, float max);
 extern void Particle_Particle(void *particle);
@@ -685,9 +687,73 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
     );
 }
 
-/* line 2153 */
-__attribute__((naked))
+/* FX_AddScheduledEffects — walk scheduled effects linked list, dispatch due effects */
+extern void Rand_Init(int seed);
+extern void FxScheduler_CreateEffect(void *scheduler, void *fx, void *primTemp, void *origin, void *orient, void *ax, int lateTime, int indexInBatch);
 void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
+{
+    (void)start; (void)end;
+    if (!*(byte *)(*(int *)imp_fx_enable + 8))
+        return;
+
+    byte *scheduler = (byte *)imp_theFxScheduler;
+    byte **prevNext = (byte **)(scheduler + 4);
+    byte *scheduled = *prevNext;
+
+    while (scheduled) {
+        /* Check if effect is due */
+        int startTime = *(int *)(scheduled + 8);
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (startTime > curTime) {
+            /* Not yet due — advance to next */
+            prevNext = (byte **)(scheduled + 0x4c);
+            scheduled = *prevNext;
+            continue;
+        }
+
+        /* Get effect template and prim template */
+        byte *fx = *(byte **)scheduled;
+        int primIndex = *(int *)(scheduled + 4);
+        byte *primTemp = *(byte **)(fx + 8 + primIndex * 4);
+
+        /* Init random seed */
+        Rand_Init(*(int *)(scheduled + 0x44));
+
+        /* Unlink from list */
+        *prevNext = *(byte **)(scheduled + 0x4c);
+        *(int *)(scheduler + 8) -= 1;
+
+        /* Dispatch effect */
+        int boltEntity = *(int *)(scheduled + 0xc);
+        int lateTime = curTime - startTime;
+        int indexInBatch = *(int *)(scheduled + 0x48);
+
+        if (boltEntity >= 0) {
+            /* Bolt-based: get bone orientation */
+            orientation_t orient;
+            Bool ok = FX_GetBoneOrientation((void *)(scheduled + 0xc), &orient);
+            if (ok) {
+                FxScheduler_CreateEffect(scheduler, fx, primTemp,
+                    scheduled + 0xc, &orient, (byte *)&orient + 0xc,
+                    lateTime, indexInBatch);
+            }
+        } else {
+            /* Origin-based */
+            FxScheduler_CreateEffect(scheduler, fx, primTemp,
+                scheduled + 0xc, scheduled + 0x14, scheduled + 0x20,
+                lateTime, indexInBatch);
+        }
+
+        /* Free scheduled effect */
+        if (scheduled) __ZdaPv(scheduled);
+
+        /* Continue from prevNext (which now points to the next element) */
+        scheduled = *prevNext;
+    }
+}
+#if 0 /* Original ASM + merged FX_GetServerVisibility */
+__attribute__((naked))
+void FX_AddScheduledEffects_asm(const vec_t *start, const vec_t *end)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2153 */
@@ -825,6 +891,7 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         "movss 4(%eax), %xmm0\n"
     );
 }
+#endif
 
 /* line 636 */
 /* FX_GetServerVisibility — ray vs effect visibility spheres, returns accumulated visibility */
@@ -1336,11 +1403,60 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
     );
 }
 
-/* line 1636 */
+/* FX_InitParticle — register convention: eax=prim, edx=particle, ecx=newOrigin, stack: origin, ax, indexInBatch */
+extern void Particle_SetRandomVelocityWeights(void *particle, float w0, float w1, float w2);
+extern void Particle_SetRandomVelocity2Weights(void *particle, float w0, float w1, float w2);
+extern void Particle_SetAxis(void *particle, vec3_t *ax);
+static void FX_InitParticle_impl(byte *prim, byte *particle, vec_t *newOrigin, const vec_t *origin, vec3_t *ax, int indexInBatch)
+{
+    (void)indexInBatch;
+    byte *primTemp = *(byte **)(prim + 4);
+    int flags = *(int *)(primTemp + 0x90);
+
+    /* Random blend weights based on flags */
+    if (flags & 0x2000) *(float *)(particle + 0x118) = flrand(0.0f, 1.0f);
+    if (flags & 0x4000) *(float *)(particle + 0x11c) = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) *(float *)(particle + 0x120) = flrand(0.0f, 1.0f); /* bit 15 */
+    if (flags & 0x10000) *(float *)(particle + 0x124) = flrand(0.0f, 1.0f);
+    if (flags & 0x40000) *(float *)(particle + 0x128) = flrand(0.0f, 1.0f);
+    if (flags & 0x80000) {
+        Particle_SetRandomVelocityWeights(particle, flrand(0,1), flrand(0,1), flrand(0,1));
+    }
+    if (flags & 0x100000) {
+        Particle_SetRandomVelocity2Weights(particle, flrand(0,1), flrand(0,1), flrand(0,1));
+    }
+
+    /* Range values */
+    *(float *)(particle + 0xf4) = FxRange_GetVal(primTemp + 0x258); /* gravity */
+    *(float *)(particle + 0xf8) = FxRange_GetVal(primTemp + 0xf8);  /* bounce */
+
+    /* Calculate origin and set axis */
+    __asm__ __volatile__ (
+        "pushl %2\n" "movl %1, %%edx\n" "movl %0, %%eax\n"
+        "calll FX_CalcOriginAndAxis\n" "addl $4, %%esp\n"
+        : : "g"(prim), "g"(newOrigin), "g"(ax) : "eax", "ecx", "edx", "memory");
+    Particle_SetAxis(particle, ax);
+
+    /* Copy primTemp fields to particle */
+    *(byte *)(particle + 0x104) = *(byte *)(primTemp + 0x9c);
+    *(float *)(particle + 0x100) = FxRange_GetVal(primTemp + 0x280); /* bounce coefficient */
+    *(float *)(particle + 0x44) = FxRange_GetVal(primTemp + 0x220);  /* size */
+}
 static __attribute__((naked))
 void FX_InitParticle(EffectPrimitive *prim, Particle *particle, vec_t *newOrigin, const vec_t *origin, vec3_t *ax, int indexInBatch)
 {
+    (void)prim; (void)particle; (void)newOrigin; (void)origin; (void)ax; (void)indexInBatch;
     __asm__ __volatile__ (
+        "pushl 0x10(%esp)\n"
+        "pushl 0x10(%esp)\n"
+        "pushl 0x10(%esp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll FX_InitParticle_impl\n"
+        "addl $24, %esp\n"
+        "retl\n"
+#if 0 /* Original ASM */
         "pushl %ebp\n" /* line 1636 */
         "movl %esp, %ebp\n"
         "pushl %edi\n"
@@ -1518,6 +1634,7 @@ void FX_InitParticle(EffectPrimitive *prim, Particle *particle, vec_t *newOrigin
         "fstps 0x118(%eax)\n"
         "movl 0x90(%edi), %eax\n"
         "jmp .Lf5a4e0_0005a504\n"
+#endif
     );
 }
 
@@ -3130,9 +3247,71 @@ void FX_AddTail_asm2(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, con
 }
 #endif
 
-/* line 1847 */
-__attribute__((naked))
+/* FX_AddEmitter — allocate Emitter, add to system, init, set material, late time, emitter setup */
+extern void Emitter_Emitter(void *emitter);
+extern void Particle_GetTotalVelocityAtTime0(void *particle, vec_t *outVector);
 void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    byte *p = (byte *)__Znam(0x29c);
+    if (p) memset(p, 0, 0x29c);
+    Emitter_Emitter(p);
+    if (!p) return;
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+    vec3_t newOrigin;
+    __asm__ __volatile__ ("pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory");
+    byte *primTemp = *(byte **)((byte *)prim + 4);
+    if (lateTime > 0) {
+        float dt = (float)lateTime * 0.001f;
+        vec3_t velSum;
+        Particle_IntegrateTotalVelocity(p, lateTime, velSum);
+        newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
+    }
+    /* Emitter-specific: range values for spawn parameters */
+    float spawnSize = FxRange_GetVal(primTemp + 0x238);
+    float spawnDensity = FxRange_GetVal(primTemp + 0x230);
+    float spawnVariance = FxRange_GetVal(primTemp + 0x248);
+    float spawnStep = FxRange_GetVal(primTemp + 0x240);
+    /* Get material */
+    void *material = MediaHandles_GetHandle(primTemp + 0x68);
+    /* Copy origin */
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    /* Copy endpoint = origin (same position for emitter) */
+    *(float *)(p + 0x24c) = newOrigin[0]; *(float *)(p + 0x250) = newOrigin[1]; *(float *)(p + 0x254) = newOrigin[2];
+    /* Get velocity at t=0 for emit direction */
+    vec3_t vel;
+    Particle_GetTotalVelocityAtTime0(p, vel);
+    *(float *)(p + 0x258) = vel[0]; *(float *)(p + 0x25c) = vel[1]; *(float *)(p + 0x260) = vel[2];
+    /* Store spawn parameters */
+    *(float *)(p + 0x278) = spawnSize;
+    *(float *)(p + 0x284) = spawnDensity;
+    *(float *)(p + 0x28c) = spawnStep;
+    *(float *)(p + 0x294) = spawnVariance;
+    /* Set model reference from primTemp */
+    *(int *)(p + 0xb4) = *(int *)(primTemp + 0x250);
+    /* Set emitter effect template */
+    *(int *)(p + 0x290) = *(int *)(primTemp + 0x88);
+    /* Set material + refractive flag */
+    *(void **)(p + 0x40) = material;
+    *(int *)(p + 0xb0) = 0;
+    if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
+        *(int *)(p + 0xb0) = -1;
+    /* Random weights based on flags */
+    int flags = *(int *)(primTemp + 0x90);
+    if (flags & 0x2000) *(float *)(p + 0x118) = flrand(0.0f, 1.0f);
+    if (flags & 0x4000) *(float *)(p + 0x11c) = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) *(float *)(p + 0x120) = flrand(0.0f, 1.0f);
+}
+#if 0 /* Original ASM (257 lines) */
+__attribute__((naked))
+void FX_AddEmitter_asm(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1847 */
@@ -3389,6 +3568,7 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* FX_AddOrientedParticle — allocate, add, init, material, late time, copy normal+origin */
 extern void OrientedParticle_OrientedParticle(void *op);
