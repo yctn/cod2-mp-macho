@@ -706,9 +706,9 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow)
         byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
         if (!item) continue;
         if (bShow) {
-            Window_AddDynamicFlags(item, 4);
+            Window_AddDynamicFlags((void *)item, 4);
         } else {
-            Window_RemoveDynamicFlags(item, 4);
+            Window_RemoveDynamicFlags((void *)item, 4);
             int cinHandle = *(int *)(item + 0xcc);
             if (cinHandle >= 0) {
                 CIN_StopCinematic(cinHandle);
@@ -727,11 +727,11 @@ void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut)
         byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
         if (!item) continue;
         if (fadeOut) {
-            Window_AddDynamicFlags(item, 0x14);  /* fade out + visible */
-            Window_RemoveDynamicFlags(item, 0x20);
+            Window_AddDynamicFlags((void *)item, 0x14);  /* fade out + visible */
+            Window_RemoveDynamicFlags((void *)item, 0x20);
         } else {
-            Window_AddDynamicFlags(item, 0x24);  /* fade in + visible */
-            Window_RemoveDynamicFlags(item, 0x10);
+            Window_AddDynamicFlags((void *)item, 0x24);  /* fade in + visible */
+            Window_RemoveDynamicFlags((void *)item, 0x10);
         }
     }
 }
@@ -1578,11 +1578,11 @@ void Item_MouseLeave(displayContextDef_t *dc, itemDef_t *item)
     if (*(byte *)(it + 0xe8) & 0x40) {
         /* Has focus script — run it, remove focus flag */
         Item_RunScript(dc, item, *(const char **)(it + 0x2a4));
-        Window_RemoveDynamicFlags(item, 0x40);
+        Window_RemoveDynamicFlags((void *)item, 0x40);
     }
     /* Run mouse leave script, remove hover+highlight flags */
     Item_RunScript(dc, item, *(const char **)(it + 0x2ac));
-    Window_RemoveDynamicFlags(item, 0x300);
+    Window_RemoveDynamicFlags((void *)item, 0x300);
 }
 
 /* line 1597 */
