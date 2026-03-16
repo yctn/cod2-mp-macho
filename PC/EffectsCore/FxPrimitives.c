@@ -149,6 +149,9 @@ void ZN5FlashD1Ev(void); /* Flash_~Flash */
 /* Shared helper: release bolt frame reference, free if refcount reaches 0 */
 extern void __ZdaPv(void *ptr);
 extern void *__Znam(int size);
+extern void OrientationDirFromWorldDir(void *orient, vec_t *worldDir, vec_t *localDir);
+extern void OrientationPosToWorldPos(void *orient, vec_t *localPos, vec_t *worldPos);
+extern void AxisTransformVector(void *curve, float x, float y, float z, vec_t *out);
 extern void FxArchive_ReadData(void *arch, void *data, int size);
 extern void FxArchive_WriteData(void *arch, void *data, int size);
 extern void FxArchive_ArchiveChannelInstance(void *arch, void *channelInst);
@@ -1187,96 +1190,42 @@ void Particle_Die(const Particle * _this)
     FxScheduler_PlayEffect(scheduler, *(void **)(p + 0x30), (float *)(p + 4), norm);
 }
 
-/* line 1665 */
-__attribute__((naked))
-void Tail_CalcNewEndpoint(const Tail * _this, const orientation_t *or_)
+/* Tail_CalcNewEndpoint — compute new endpoint from origin + normalized direction * length */
+void Tail_CalcNewEndpoint(const Tail *_this, const orientation_t *or_)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1665 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* or_ */
-        /* { scope 1 */
-        "leal 0x24c(%edx), %eax\n" /* line 1670 | a */
-        /* { scope 2 */
-        "movss 0x24c(%edx), %xmm3\n" /* line 248 */
-        "subss 4(%edx), %xmm3\n"
-        "movss %xmm3, -0x14(%ebp)\n" /* direction */
-        "movss 4(%eax), %xmm1\n" /* line 249 */
-        "subss 8(%edx), %xmm1\n"
-        "movss %xmm1, -0x10(%ebp)\n"
-        "movss 8(%eax), %xmm0\n" /* line 250 */
-        "subss 0xc(%edx), %xmm0\n"
-        "movss %xmm0, -0xc(%ebp)\n"
-        /* } scope */
-        "movaps %xmm3, %xmm2\n" /* line 81 */
-        "mulss %xmm3, %xmm2\n"
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm2\n"
-        "mulss %xmm0, %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "sqrtss %xmm2, %xmm2\n"
-        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 1674 | 0.0f */
-        "jbe .Lfa1926_000a1a13\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 1676 | 1.0f, scale */
-        "divss %xmm2, %xmm0\n" /* scale */
-        /* { scope 2 */
-        "mulss %xmm0, %xmm3\n" /* line 272 */
-        "movss %xmm3, -0x14(%ebp)\n" /* direction */
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss -0x10(%ebp), %xmm1\n"
-        "movss %xmm1, -0x10(%ebp)\n"
-        "mulss -0xc(%ebp), %xmm0\n" /* line 274 */
-        "movss %xmm0, -0xc(%ebp)\n"
-        /* } scope */
-        "testl %ecx, %ecx\n" /* line 1678 */
-        "je .Lfa1926_000a1a15\n"
-        "movss 0x258(%edx), %xmm1\n" /* line 1680 | scale */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 288 */
-        "mulss %xmm3, %xmm0\n"
-        "addss 4(%edx), %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* direction */
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss 8(%edx), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "mulss -0xc(%ebp), %xmm1\n" /* line 290 */
-        "addss 0xc(%edx), %xmm1\n"
-        "movss %xmm1, -0xc(%ebp)\n"
-        /* } scope */
-        "leal 0x9c(%edx), %eax\n" /* line 1681 */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x14(%ebp), %eax\n" /* direction */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll OrientationPosToWorldPos\n"
-        /* } scope */
-        ".Lfa1926_000a1a13:\n"
-        "leave\n" /* line 1688 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa1926_000a1a15:\n"
-        "leal 0x9c(%edx), %eax\n" /* line 1685 | result */
-        "movss 0x258(%edx), %xmm1\n" /* scale */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 288 */
-        "mulss -0x14(%ebp), %xmm0\n" /* direction */
-        "addss 4(%edx), %xmm0\n"
-        "movss %xmm0, 0x9c(%edx)\n"
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss -0x10(%ebp), %xmm0\n"
-        "addss 8(%edx), %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "mulss -0xc(%ebp), %xmm1\n" /* line 290 */
-        "addss 0xc(%edx), %xmm1\n"
-        "movss %xmm1, 8(%eax)\n"
-        /* } scope */
-        /* } scope */
-        "leave\n" /* line 1688 */
-        "retl\n"
-    );
+    byte *self = (byte *)_this;
+    /* direction = endpoint - origin */
+    float dx = *(float *)(self + 0x24c) - *(float *)(self + 4);
+    float dy = *(float *)(self + 0x250) - *(float *)(self + 8);
+    float dz = *(float *)(self + 0x254) - *(float *)(self + 0xc);
+
+    /* Normalize direction */
+    float lenSq = dx * dx + dy * dy + dz * dz;
+    float len;
+    __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(len) : "x"(lenSq));
+    if (len <= 0.0f) return;
+
+    float invLen = 1.0f / len;
+    dx *= invLen;
+    dy *= invLen;
+    dz *= invLen;
+
+    /* Scale by tail length at 0x258 and offset from origin */
+    float scale = *(float *)(self + 0x258);
+    float newX = dx * scale + *(float *)(self + 4);
+    float newY = dy * scale + *(float *)(self + 8);
+    float newZ = dz * scale + *(float *)(self + 0xc);
+
+    if (or_) {
+        /* Transform local endpoint to world space via orientation */
+        vec3_t localPt;
+        localPt[0] = newX; localPt[1] = newY; localPt[2] = newZ;
+        OrientationPosToWorldPos((void *)or_, localPt, (vec_t *)(self + 0x9c));
+    } else {
+        *(float *)(self + 0x9c) = newX;
+        *(float *)(self + 0xa0) = newY;
+        *(float *)(self + 0xa4) = newZ;
+    }
 }
 
 /* line 1486 */
@@ -4498,96 +4447,39 @@ void Particle_CalcVelocity2Value(const Particle * _this, float normTime, vec_t *
     );
 }
 
-/* line 988 */
-__attribute__((naked))
-void Particle_GetTotalVelocity(const Particle * _this, float normTime, vec_t *outVector, const orientation_t *or_)
+/* Particle_GetTotalVelocity — compute total velocity (vel1 + vel2 + gravity + impact offset) at normTime */
+void Particle_GetTotalVelocity(const Particle *_this, float normTime, vec_t *outVector, const orientation_t *or_)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 988 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x10(%ebp), %edi\n" /* outVector */
-        "movl 0x14(%ebp), %esi\n" /* or_ */
-        /* { scope 1: gravityValue */
-        "movl %esi, 0xc(%esp)\n" /* line 1000 | or_ */
-        "leal -0x24(%ebp), %eax\n" /* velocityValue */
-        "movl %eax, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* normTime */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_CalcVelocityValue\n"
-        "movl %esi, 0xc(%esp)\n" /* line 1001 | or_ */
-        "leal -0x30(%ebp), %eax\n" /* velocity2Value */
-        "movl %eax, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* normTime */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_CalcVelocity2Value\n"
-        /* { scope 2 */
-        "movl 0xbc(%ebx), %eax\n" /* line 854 | duration */
-        "subl 0xb8(%ebx), %eax\n" /* duration */
-        "cvtsi2ssl %eax, %xmm0\n" /* duration */
-        "mulss 0xc(%ebp), %xmm0\n" /* normTime */
-        "cvttss2si %xmm0, %eax\n" /* duration */
-        /* { scope 3 */
-        "xorl %edx, %edx\n" /* line 936 */
-        "movl %edx, -0x48(%ebp)\n" /* gravityValue */
-        "movl %edx, -0x44(%ebp)\n" /* line 937 */
-        "cvtsi2ssl %eax, %xmm0\n" /* line 938 */
-        "mulss 0xf4(%ebx), %xmm0\n"
-        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "movss %xmm0, -0x40(%ebp)\n"
-        /* } scope */
-        "testl %esi, %esi\n" /* line 856 */
-        "je .Lfa4562_000a466d\n"
-        "leal -0x3c(%ebp), %eax\n" /* line 857 | gravityValue */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x48(%ebp), %eax\n" /* gravityValue */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll OrientationDirFromWorldDir\n"
-        /* } scope */
-        ".Lfa4562_000a4604:\n"
-        "movss -0x24(%ebp), %xmm0\n" /* line 240 | velocityValue */
-        "addss -0x30(%ebp), %xmm0\n" /* velocity2Value */
-        "movss -0x20(%ebp), %xmm1\n" /* line 241 */
-        "addss -0x2c(%ebp), %xmm1\n"
-        "movss -0x1c(%ebp), %xmm2\n" /* line 242 */
-        "addss -0x28(%ebp), %xmm2\n"
-        "addss -0x3c(%ebp), %xmm0\n" /* line 240 | gravityValue */
-        "movss %xmm0, (%edi)\n"
-        "addss -0x38(%ebp), %xmm1\n" /* line 241 */
-        "movss %xmm1, 4(%edi)\n"
-        "addss -0x34(%ebp), %xmm2\n" /* line 242 */
-        "movss %xmm2, 8(%edi)\n"
-        "leal 0xc4(%ebx), %eax\n"
-        /* { scope 2 */
-        "addss 0xc4(%ebx), %xmm0\n" /* line 240 */
-        "movss %xmm0, (%edi)\n"
-        "addss 4(%eax), %xmm1\n" /* line 241 */
-        "movss %xmm1, 4(%edi)\n"
-        "addss 8(%eax), %xmm2\n" /* line 242 */
-        "movss %xmm2, 8(%edi)\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1013 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: gravityValue */
-        /* { scope 2 */
-        ".Lfa4562_000a466d:\n"
-        "movl %edx, -0x3c(%ebp)\n" /* line 199 | gravityValue */
-        "movl %edx, -0x38(%ebp)\n" /* line 200 */
-        "movss %xmm0, -0x34(%ebp)\n" /* line 201 */
-        "jmp .Lfa4562_000a4604\n"
-    );
+    byte *self = (byte *)_this;
+    vec3_t velocityValue, velocity2Value, gravityValue;
+
+    Particle_CalcVelocityValue(_this, normTime, velocityValue, or_);
+    Particle_CalcVelocity2Value(_this, normTime, velocity2Value, or_);
+
+    /* Compute gravity contribution */
+    int lifetime = *(int *)(self + 0xbc) - *(int *)(self + 0xb8);
+    int duration = (int)((float)lifetime * normTime);
+    gravityValue[0] = 0.0f;
+    gravityValue[1] = 0.0f;
+    float gravZ = (float)duration * *(float *)(self + 0xf4) * 0.001f;
+
+    if (or_) {
+        /* Transform gravity to local space */
+        vec3_t worldGrav;
+        worldGrav[0] = 0.0f;
+        worldGrav[1] = 0.0f;
+        worldGrav[2] = gravZ;
+        OrientationDirFromWorldDir((void *)or_, worldGrav, gravityValue);
+    } else {
+        gravityValue[0] = 0.0f;
+        gravityValue[1] = 0.0f;
+        gravityValue[2] = gravZ;
+    }
+
+    /* Sum all velocity components + impact offset at 0xc4 */
+    outVector[0] = velocityValue[0] + velocity2Value[0] + gravityValue[0] + *(float *)(self + 0xc4);
+    outVector[1] = velocityValue[1] + velocity2Value[1] + gravityValue[1] + *(float *)(self + 0xc8);
+    outVector[2] = velocityValue[2] + velocity2Value[2] + gravityValue[2] + *(float *)(self + 0xcc);
 }
 
 /* line 1911 */
@@ -4994,9 +4886,69 @@ void Particle_GetTotalVelocityAtTime0(const Particle *_this, vec_t *outVector)
     Particle_GetTotalVelocity(_this, 0.0f, outVector, (const orientation_t *)orient);
 }
 
-/* line 621 */
+/* Particle_ApplyImpact — apply collision: bounce velocity via reflection, update impact offset */
+void Particle_ApplyImpact(const Particle *_this, const orientation_t *or_, float normTime, const vec_t *velocity, float traceFraction, const vec_t *traceNormal)
+{
+    byte *self = (byte *)_this;
+
+    /* Check if normal Z > 0 AND velocity has enough speed (> 16 squared = 4.0 per axis) */
+    if (traceNormal[2] > 0.0f) {
+        float vLenSq = velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2];
+        if (vLenSq >= 16.0f)
+            goto do_reflect;
+    }
+
+    /* traceFraction == 0 means stuck - disable impact */
+    if (traceFraction == 0.0f) {
+        int flags = *(int *)(self + 0xa8);
+        flags &= ~0x0800; /* clear bit 11 */
+        flags &= ~0x0020; /* clear bit 5 */
+        flags |= 0x01000000; /* set bit 24 */
+        *(int *)(self + 0xa8) = flags;
+        return;
+    }
+
+do_reflect:;
+    /* Transform traceNormal to local space if orientation exists */
+    vec3_t normal;
+    if (or_) {
+        OrientationDirFromWorldDir((void *)or_, (vec_t *)traceNormal, normal);
+    } else {
+        normal[0] = traceNormal[0];
+        normal[1] = traceNormal[1];
+        normal[2] = traceNormal[2];
+    }
+
+    /* Get current total velocity and apply bounce scale */
+    vec3_t reflectVelocity;
+    Particle_GetTotalVelocity(_this, normTime, reflectVelocity, or_);
+
+    /* Save old velocity for delta computation */
+    float oldVx = reflectVelocity[0] - *(float *)(self + 0xc4);
+    float oldVy = reflectVelocity[1] - *(float *)(self + 0xc8);
+    float oldVz = reflectVelocity[2] - *(float *)(self + 0xcc);
+
+    /* Scale velocity by bounce coefficient */
+    float bounceScale = *(float *)(self + 0x100);
+    reflectVelocity[0] *= bounceScale;
+    reflectVelocity[1] *= bounceScale;
+    reflectVelocity[2] *= bounceScale;
+
+    /* Update impact offset = scaled - old */
+    *(float *)(self + 0xc4) = reflectVelocity[0] - oldVx;
+    *(float *)(self + 0xc8) = reflectVelocity[1] - oldVy;
+    *(float *)(self + 0xcc) = reflectVelocity[2] - oldVz;
+
+    /* Compute reflection: v' = v + 2 * (-dot(v, n)) * n */
+    float dot = reflectVelocity[0]*normal[0] + reflectVelocity[1]*normal[1] + reflectVelocity[2]*normal[2];
+    float reflScale = -2.0f * dot;
+    *(float *)(self + 0xc4) += reflScale * normal[0];
+    *(float *)(self + 0xc8) += reflScale * normal[1];
+    *(float *)(self + 0xcc) += reflScale * normal[2];
+}
+#if 0 /* Original ASM preserved */
 __attribute__((naked))
-void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, float normTime, const vec_t *velocity, float traceFraction, const vec_t *traceNormal)
+void Particle_ApplyImpact_asm(const Particle * _this, const orientation_t *or_, float normTime, const vec_t *velocity, float traceFraction, const vec_t *traceNormal)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 621 */
@@ -5120,6 +5072,7 @@ void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, floa
         "jmp .Lfa4d30_000a4db1\n"
     );
 }
+#endif
 
 /* line 677 */
 __attribute__((naked))
