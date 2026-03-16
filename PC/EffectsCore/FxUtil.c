@@ -47,6 +47,15 @@ extern Bool FxHelper_IsMaterialRefractive(FxHelper *helper, MaterialHandle mater
 extern void FxHelper_FxHelper(FxHelper *helper);
 extern void Z_FreeInternal(void *ptr);
 extern void *Z_MallocInternal(int size);
+extern void *__Znam(int size);
+extern float flrand(float min, float max);
+extern void Particle_Particle(void *particle);
+extern void Particle_IntegrateTotalVelocity(void *particle, int time, vec_t *velSum);
+extern void Cloud_Cloud(void *cloud);
+extern void Cylinder_Cylinder(void *cyl);
+extern void Light_Light(void *light);
+extern void *FxBoltFrame_GetOrientation(void *boltFrame);
+extern void OrientationDirFromWorldDir(void *orient, vec_t *normal, vec_t *localNormal);
 extern void FxScheduler_Clean(void *scheduler, int bRemoveTemplates, int arg3);
 extern void *imp_fxSchedulers;
 extern void *imp_theFxScheduler;
@@ -2114,134 +2123,88 @@ Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
 }
 
 /* line 2102 */
-__attribute__((naked))
+/* FX_AddCloud — allocate Cloud, add to system, init, set material, late time, extra cloud setup */
+extern void Cloud_Cloud(void *cloud);
 void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2102 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %esi\n" /* prim */
-        /* { scope 1: velSum */
-        /* { scope 2 */
-        "movl $0x27c, (%esp)\n" /* line 24 */
-        "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
-        "je .Lf5b06e_0005b0a3\n"
-        "movl $0x27c, 8(%esp)\n" /* line 27 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        ".Lf5b06e_0005b0a3:\n"
-        "movl %ebx, (%esp)\n" /* line 2111 | ptr */
-        "calll Cloud_Cloud\n"
-        "testl %ebx, %ebx\n" /* line 2112 | ptr */
-        "je .Lf5b06e_0005b1a8\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 2115 | origin */
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* primTemp */
-        "calll FX_AddPrimitive\n"
-        "testb %al, %al\n" /* line 2116 */
-        "je .Lf5b06e_0005b1af\n"
-        "leal -0x14(%ebp), %ecx\n" /* line 2122 | newOrigin */
-        "movl 0x18(%ebp), %eax\n" /* indexInBatch */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* ax */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* origin */
-        "movl %eax, (%esp)\n"
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* primTemp */
-        "calll FX_InitParticle\n"
-        "movl 4(%esi), %esi\n" /* line 2124 | primTemp */
-        "movl 0xbc(%ebx), %ecx\n" /* line 2128 | ptr */
-        "subl 0xb8(%ebx), %ecx\n" /* ptr */
-        "movl 0x18(%ebp), %eax\n" /* indexInBatch */
-        "movl %eax, (%esp)\n"
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* primTemp */
-        "calll FX_SetMaterialAndSequenceParams\n"
-        /* { scope 2 */
-        "movl 0x14(%ebp), %eax\n" /* line 1472 | lateTime */
-        "testl %eax, %eax\n"
-        "jle .Lf5b06e_0005b16c\n"
-        "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
-        "leal -0x20(%ebp), %eax\n" /* line 1476 | velSum */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* ptr */
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll Particle_IntegrateTotalVelocity\n"
-        /* { scope 3 */
-        "movss -0x38(%ebp), %xmm1\n" /* line 288 */
-        "movaps %xmm1, %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n" /* velSum */
-        "addss -0x14(%ebp), %xmm0\n" /* newOrigin */
-        "movss %xmm0, -0x14(%ebp)\n" /* newOrigin */
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss -0x10(%ebp), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "mulss -0x18(%ebp), %xmm1\n" /* line 290 */
-        "addss -0xc(%ebp), %xmm1\n"
-        "movss %xmm1, -0xc(%ebp)\n"
-        /* } scope */
-        /* } scope */
-        ".Lf5b06e_0005b16c:\n"
-        "leal 4(%ebx), %edx\n" /* line 208 | ptr, to */
-        /* { scope 2 */
-        "movl -0x14(%ebp), %eax\n" /* line 199 | newOrigin */
-        "movl %eax, 4(%ebx)\n" /* ptr */
-        "movl -0x10(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl $0x3f800000, 4(%esp)\n" /* line 2132 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "fstps 0x260(%ebx)\n" /* ptr */
-        "movzbl 0x9d(%esi), %eax\n" /* line 2133 | primTemp */
-        "movb %al, 0x25c(%ebx)\n" /* ptr */
-        /* } scope */
-        ".Lf5b06e_0005b1a8:\n"
-        "addl $0x40, %esp\n" /* line 2134 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: velSum */
-        ".Lf5b06e_0005b1af:\n"
-        "movl (%ebx), %eax\n" /* line 2118 | ptr */
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll *4(%eax)\n"
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 2134 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %esi\n" /* primTemp */
-        /* { scope 1: velSum */
-        "testl %ebx, %ebx\n" /* line 35 | ptr */
-        "je .Lf5b06e_0005b1cc\n"
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll __ZdaPv\n"
-        ".Lf5b06e_0005b1cc:\n"
-        "movl %esi, (%esp)\n"
-        "calll __Unwind_Resume\n"
-    );
+    byte *p = (byte *)__Znam(0x27c);
+    if (p) memset(p, 0, 0x27c);
+    Cloud_Cloud(p);
+    if (!p) return;
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+    vec3_t newOrigin;
+    __asm__ __volatile__ ("pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory");
+    byte *primTemp = *(byte **)((byte *)prim + 4);
+    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    FX_SetMaterialAndSequenceParams_impl(primTemp, p, killTime, indexInBatch);
+    if (lateTime > 0) {
+        float dt = (float)lateTime * 0.001f;
+        vec3_t velSum;
+        Particle_IntegrateTotalVelocity(p, lateTime, velSum);
+        newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
+    }
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)(p + 0x260) = flrand(0.0f, 1.0f);
+    *(byte *)(p + 0x25c) = *(byte *)(primTemp + 0x9d);
 }
 
 /* line 2063 */
-__attribute__((naked))
+/* FX_AddFlash — allocate Flash (Light subclass), add, set material+origin, call Flash_Init */
+extern void *imp__ZTV5Flash;
+extern void Flash_Init(void *flash);
 void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    (void)ax; (void)lateTime; (void)indexInBatch;
+    byte *p = (byte *)__Znam(0xfc);
+    if (p) memset(p, 0, 0xfc);
+    Light_Light(p);
+    /* Set Flash vtable */
+    *(void **)p = (byte *)imp__ZTV5Flash + 8;
+
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) {
+        /* Call destructor via vtable[1] */
+        typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p);
+        return;
+    }
+
+    byte *primTemp = *(byte **)((byte *)prim + 4);
+    void *material = MediaHandles_GetHandle(primTemp + 0x68);
+
+    /* Copy origin to p+4 */
+    if (origin) {
+        *(float *)(p + 4) = origin[0]; *(float *)(p + 8) = origin[1]; *(float *)(p + 0xc) = origin[2];
+    } else {
+        *(float *)(p + 4) = 0; *(float *)(p + 8) = 0; *(float *)(p + 0xc) = 0;
+    }
+
+    *(void **)(p + 0x40) = material;
+
+    /* Check flags for random weight */
+    if (*(byte *)(primTemp + 0x91) & 0x20)
+        *(float *)(p + 0xc4) = flrand(0.0f, 1.0f);
+
+    /* Set refractive flag */
+    *(int *)(p + 0xb0) = 0;
+    if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
+        *(int *)(p + 0xb0) = -1;
+
+    Flash_Init(p);
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_AddFlash_original(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2063 */
@@ -2368,6 +2331,7 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* line 1978 */
 /* FX_AddLight — allocate Light, add to effect system, set origin + random weights */
@@ -2421,9 +2385,49 @@ void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         *(float *)(light + 0xc8) = flrand(0.0f, 1.0f);
 }
 
-/* line 1802 */
-__attribute__((naked))
+/* FX_AddCylinder — allocate Cylinder, add, init, set material, copy normal/origin */
+extern void Cylinder_Cylinder(void *cyl);
+extern void *FxBoltFrame_GetOrientation(void *boltFrame);
+extern void OrientationDirFromWorldDir(void *orient, vec_t *normal, vec_t *localNormal);
 void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    (void)lateTime;
+    byte *p = (byte *)__Znam(0x278);
+    if (p) memset(p, 0, 0x278);
+    Cylinder_Cylinder(p);
+    if (!p) return;
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+    vec3_t newOrigin;
+    __asm__ __volatile__ ("pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory");
+    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
+
+    /* Copy normal to cylinder axis at p+0x48 */
+    vec3_t normal;
+    normal[0] = ((float *)ax)[0]; normal[1] = ((float *)ax)[1]; normal[2] = ((float *)ax)[2];
+    void *bolt = *(void **)((byte *)prim + 8);
+    if (bolt) {
+        /* Transform normal via bolt orientation */
+        void *orient = FxBoltFrame_GetOrientation(bolt);
+        vec3_t localNormal;
+        OrientationDirFromWorldDir(orient, normal, localNormal);
+        *(float *)(p + 0x48) = localNormal[0]; *(float *)(p + 0x4c) = localNormal[1]; *(float *)(p + 0x50) = localNormal[2];
+    } else {
+        *(float *)(p + 0x48) = normal[0]; *(float *)(p + 0x4c) = normal[1]; *(float *)(p + 0x50) = normal[2];
+    }
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+}
+#if 0 /* Original ASM preserved */
+__attribute__((naked))
+void FX_AddCylinder_original(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1802 */
@@ -2557,6 +2561,7 @@ void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* line 1701 */
 __attribute__((naked))
