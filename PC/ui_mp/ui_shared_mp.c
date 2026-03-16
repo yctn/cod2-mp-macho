@@ -1719,52 +1719,19 @@ void UI_AddMenuList(displayContextDef_t *dc, MenuList *menuList)
     );
 }
 
-/* line 1873 */
-__attribute__((naked))
+/* Item_MouseLeave — run mouse leave scripts, remove hover/focus dynamic flags */
 void Item_MouseLeave(displayContextDef_t *dc, itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1873 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dc */
-        "movl 0xc(%ebp), %ebx\n" /* item */
-        "testl %ebx, %ebx\n" /* line 1876 | item */
-        "je .Lf164d38_00164da6\n"
-        "testb $0x40, 0xe8(%ebx)\n" /* line 1878 | item */
-        "jne .Lf164d38_00164d7e\n"
-        ".Lf164d38_00164d53:\n"
-        "movl 0x2ac(%ebx), %eax\n" /* line 1883 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Item_RunScript\n"
-        "movl $0x300, 0xc(%ebp)\n" /* line 1884 | item */
-        "movl %ebx, 8(%ebp)\n" /* item, dc */
-        "addl $0x10, %esp\n" /* line 1886 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp Window_RemoveDynamicFlags\n" /* line 1884 */
-        ".Lf164d38_00164d7e:\n"
-        "movl 0x2a4(%ebx), %eax\n" /* line 1880 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Item_RunScript\n"
-        "movl $0x40, 4(%esp)\n" /* line 1881 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        "jmp .Lf164d38_00164d53\n"
-        ".Lf164d38_00164da6:\n"
-        "addl $0x10, %esp\n" /* line 1886 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *it = (byte *)item;
+    if (!item) return;
+    if (*(byte *)(it + 0xe8) & 0x40) {
+        /* Has focus script — run it, remove focus flag */
+        Item_RunScript(dc, item, *(const char **)(it + 0x2a4));
+        Window_RemoveDynamicFlags(item, 0x40);
+    }
+    /* Run mouse leave script, remove hover+highlight flags */
+    Item_RunScript(dc, item, *(const char **)(it + 0x2ac));
+    Window_RemoveDynamicFlags(item, 0x300);
 }
 
 /* line 1597 */
@@ -1929,48 +1896,18 @@ qboolean Menu_CheckOnKey(displayContextDef_t *dc, menuDef_t *menu, int key)
     );
 }
 
-/* line 5473 */
-__attribute__((naked))
+/* Menus_AnyFullScreenVisible — check if any visible menu has fullscreen flag + material */
 qboolean Menus_AnyFullScreenVisible(displayContextDef_t *dc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5473 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        /* { scope 1 */
-        "movl 0x270(%eax), %ebx\n" /* line 5477 | i */
-        "subl $1, %ebx\n" /* i */
-        "js .Lf164f42_00164f7f\n"
-        "leal 0x230(%eax, %ebx, 4), %edx\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf164f42_00164f5d:\n"
-        "movl (%edx), %eax\n" /* line 5479 */
-        "testb $4, 0xe8(%eax)\n"
-        "je .Lf164f42_00164f72\n"
-        "movl 0x214(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf164f42_00164f84\n"
-        ".Lf164f42_00164f72:\n"
-        "addl $1, %ecx\n"
-        "subl $4, %edx\n"
-        "leal 1(%ebx), %eax\n" /* line 5477 | i */
-        "cmpl %ecx, %eax\n"
-        "jne .Lf164f42_00164f5d\n"
-        ".Lf164f42_00164f7f:\n"
-        "xorl %eax, %eax\n" /* line 5479 */
-        /* } scope */
-        "popl %ebx\n" /* line 5483 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164f42_00164f84:\n"
-        "movl $1, %eax\n" /* line 5479 */
-        /* } scope */
-        "popl %ebx\n" /* line 5483 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *d = (byte *)dc;
+    int count = *(int *)(d + 0x270);
+    int i;
+    for (i = count - 1; i >= 0; i--) {
+        byte *menu = *(byte **)(d + 0x230 + i * 4);
+        if ((*(byte *)(menu + 0xe8) & 4) && *(int *)(menu + 0x214))
+            return 1;
+    }
+    return 0;
 }
 
 /* line 5396 */
@@ -2018,61 +1955,23 @@ menuDef_t * Menu_GetFocused(displayContextDef_t *dc)
     );
 }
 
-/* line 1485 */
-__attribute__((naked))
+/* Item_ListBox_MaxScroll — compute max scroll position based on item count and visible rows */
 int Item_ListBox_MaxScroll(itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1485 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* item */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 1487 | item */
-        "calll Item_GetListBoxDef\n"
-        "movl %eax, %ebx\n" /* listPtr */
-        "movl 0x2d8(%esi), %eax\n" /* line 1488 | item */
-        "movl %eax, (%esp)\n"
-        "calll UI_FeederCount\n"
-        "movl %eax, %edx\n" /* count */
-        "testl %ebx, %ebx\n" /* line 1492 | listPtr */
-        "je .Lf164fd4_0016503b\n"
-        "testb $0x20, 0xe6(%esi)\n" /* line 1496 | item */
-        "je .Lf164fd4_00165024\n"
-        "movss 8(%esi), %xmm0\n" /* line 1498 | item */
-        "divss 0x34(%ebx), %xmm0\n" /* listPtr */
-        "cvttss2si %xmm0, %eax\n"
-        "subl %eax, %edx\n"
-        "leal 1(%edx), %eax\n"
-        "testl %eax, %eax\n" /* line 1504 */
-        "js .Lf164fd4_0016503b\n"
-        /* } scope */
-        ".Lf164fd4_0016501d:\n"
-        "addl $0x10, %esp\n" /* line 1509 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164fd4_00165024:\n"
-        "movss 0xc(%esi), %xmm0\n" /* line 1502 | item */
-        "divss 0x38(%ebx), %xmm0\n" /* listPtr */
-        "cvttss2si %xmm0, %eax\n"
-        "subl %eax, %edx\n"
-        "leal 1(%edx), %eax\n"
-        "testl %eax, %eax\n" /* line 1504 */
-        "jns .Lf164fd4_0016501d\n"
-        ".Lf164fd4_0016503b:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1509 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *it = (byte *)item;
+    byte *listPtr = (byte *)Item_GetListBoxDef(item);
+    int count = UI_FeederCount(*(int *)(it + 0x2d8));
+    if (!listPtr) return 0;
+    int visibleRows;
+    if (*(byte *)(it + 0xe6) & 0x20) {
+        /* Horizontal */
+        visibleRows = (int)(*(float *)(it + 8) / *(float *)(listPtr + 0x34));
+    } else {
+        /* Vertical */
+        visibleRows = (int)(*(float *)(it + 0xc) / *(float *)(listPtr + 0x38));
+    }
+    int maxScroll = count - visibleRows + 1;
+    return (maxScroll >= 0) ? maxScroll : 0;
 }
 
 /* line 1512 */
@@ -9741,52 +9640,25 @@ void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
     );
 }
 
-/* line 2802 */
-static __attribute__((naked))
-void Scroll_ListBox_AutoFunc(displayContextDef_t *dc, void *p)
+/* Scroll_ListBox_AutoFunc — auto-scroll list box: handle key repeat, adjust timing */
+static void Scroll_ListBox_AutoFunc(displayContextDef_t *dc, void *p)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2802 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dc */
-        "movl 0xc(%ebp), %ebx\n" /* p */
-        "movl 4(%esi), %eax\n" /* line 2806 | dc */
-        "cmpl (%ebx), %eax\n" /* p */
-        "jg .Lf16bc9c_0016bcd3\n"
-        ".Lf16bc9c_0016bcb1:\n"
-        "cmpl 4(%ebx), %eax\n" /* line 2815 | p */
-        "jle .Lf16bc9c_0016bccc\n"
-        "addl $0x96, %eax\n" /* line 2817 */
-        "movl %eax, 4(%ebx)\n" /* p */
-        "movl 8(%ebx), %eax\n" /* line 2818 | p */
-        "cmpl $0x14, %eax\n"
-        "jle .Lf16bc9c_0016bccc\n"
-        "subl $0x28, %eax\n" /* line 2820 */
-        "movl %eax, 8(%ebx)\n" /* p */
-        ".Lf16bc9c_0016bccc:\n"
-        "addl $0x20, %esp\n" /* line 2823 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf16bc9c_0016bcd3:\n"
-        "movl $0, 0x10(%esp)\n" /* line 2811 */
-        "movl $1, 0xc(%esp)\n"
-        "movl 0xc(%ebx), %eax\n" /* p */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x18(%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Item_ListBox_HandleKey\n"
-        "movl 4(%esi), %eax\n" /* line 2812 | dc */
-        "addl 8(%ebx), %eax\n" /* p */
-        "movl %eax, (%ebx)\n" /* p */
-        "movl 4(%esi), %eax\n" /* dc */
-        "jmp .Lf16bc9c_0016bcb1\n"
-    );
+    byte *d = (byte *)dc;
+    byte *scroll = (byte *)p;
+    int curTime = *(int *)(d + 4);
+
+    /* If past next scroll time, handle key and advance */
+    while (curTime > *(int *)scroll) {
+        Item_ListBox_HandleKey(dc, *(void **)(scroll + 0x18), *(int *)(scroll + 0xc), 1, 0);
+        *(int *)scroll = curTime + *(int *)(scroll + 8);
+    }
+
+    /* Adjust next scroll time if past hold time */
+    if (curTime > *(int *)(scroll + 4)) {
+        *(int *)(scroll + 4) = curTime + 150;
+        if (*(int *)(scroll + 8) > 20)
+            *(int *)(scroll + 8) -= 40;
+    }
 }
 
 /* line 4728 */

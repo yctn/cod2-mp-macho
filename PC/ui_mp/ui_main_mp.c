@@ -2810,35 +2810,14 @@ const char * UI_ReplaceConversions(const char *sourceString, ConversionArguments
     );
 }
 
-/* line 5202 */
-__attribute__((naked))
-const char * UI_ReplaceConversionString(const char *sourceString, const char *replaceString)
+/* UI_ReplaceConversionString — build convArgs with 1 replacement string, call UI_ReplaceConversions */
+const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5202 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "subl $0x44, %esp\n"
-        /* { scope 1 */
-        "leal -0x30(%ebp), %edx\n" /* line 5206 | convArgs */
-        "cld\n"
-        "movl $0xa, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl $1, -0x30(%ebp)\n" /* line 5207 | convArgs */
-        "movl 0xc(%ebp), %eax\n" /* line 5208 | replaceString */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl %edx, 4(%esp)\n" /* line 5209 */
-        "movl 8(%ebp), %eax\n" /* sourceString */
-        "movl %eax, (%esp)\n"
-        "calll UI_ReplaceConversions\n"
-        /* } scope */
-        "addl $0x44, %esp\n" /* line 5210 */
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int convArgs[10];
+    memset(convArgs, 0, sizeof(convArgs));
+    convArgs[0] = 1;
+    convArgs[1] = (int)replaceString;
+    return UI_ReplaceConversions(sourceString, (ConversionArguments *)convArgs);
 }
 
 /* line 5293 */
