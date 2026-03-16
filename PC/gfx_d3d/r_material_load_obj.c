@@ -268,9 +268,174 @@ HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeTy
     return 0;
 }
 
-/* line 3595 */
-__attribute__((naked))
+/* line 3595 — Loads all shader text files from materials/shaders/ and materials/shaders/lib/,
+ * builds a sorted GfxCachedShaderText cache for binary search during shader compilation.
+ * Enumerates .hlsl files, allocates Hunk memory, reads file contents, sorts by name. */
+extern char ** FS_ListFiles(const char *dir, const char *ext, int flags, int *count, int);
+extern void FS_FreeFileList(char **list);
+extern int FS_ReadFile(const char *path, void **buffer);
+extern void FS_FreeFile(void *buffer);
+extern void *Hunk_AllocInternal(int size);
+extern unsigned char Material_CachedShaderTextLess(const GfxCachedShaderText *, const GfxCachedShaderText *);
+/* mtlLoadGlob: [0]=count, [4]=array ptr — declared as extern byte[] at top of file */
 void Material_PreLoadAllShaderText(void)
+{
+    int fileCountRoot, fileCountLib;
+    char **shaderListRoot, **shaderListLib;
+    GfxCachedShaderText *cache;
+    int totalCount, i;
+
+    /* Enumerate shader files */
+    shaderListRoot = FS_ListFiles("materials/shaders/", "hlsl", 0, &fileCountRoot, 0x14);
+    shaderListLib = FS_ListFiles("materials/shaders/lib/", "hlsl", 0, &fileCountLib, 0x14);
+
+    totalCount = fileCountRoot + fileCountLib;
+    *(int *)mtlLoadGlob = totalCount;
+    cache = (GfxCachedShaderText *)Hunk_AllocInternal(totalCount * 12);
+    *(int *)(mtlLoadGlob + 4) = (int)cache;
+
+    /* Load root shader files */
+    {
+        GfxCachedShaderText *entry = cache;
+        for (i = 0; i < fileCountRoot; i++) {
+            const char *filename = shaderListRoot[i];
+            char path[256];
+            void *fileData;
+            int fileLen;
+
+            /* Build path: materials/shaders/<filename> */
+            sprintf(path, "materials/shaders/%s", filename);
+
+            /* Strip extension for name */
+            entry->name = (const char *)Hunk_AllocInternal((int)strlen(filename) + 1);
+            {
+                char *dst = (char *)entry->name;
+                const char *src = filename;
+                while (*src && *src != '.') *dst++ = *src++;
+                *dst = '\0';
+            }
+
+            fileLen = FS_ReadFile(path, &fileData);
+            if (fileLen > 0) {
+                entry->text = (const char *)Hunk_AllocInternal(fileLen + 1);
+                memcpy((void *)entry->text, fileData, fileLen);
+                ((char *)entry->text)[fileLen] = '\0';
+                entry->textSize = fileLen;
+                FS_FreeFile(fileData);
+            } else {
+                entry->text = "";
+                entry->textSize = 0;
+            }
+            entry++;
+        }
+
+        /* Load lib shader files */
+        for (i = 0; i < fileCountLib; i++) {
+            const char *filename = shaderListLib[i];
+            char path[256];
+            void *fileData;
+            int fileLen;
+
+            sprintf(path, "materials/shaders/lib/%s", filename);
+
+            /* Name includes "lib/" prefix */
+            {
+                int nameLen = (int)strlen(filename) + 5; /* "lib/" + name + null */
+                entry->name = (const char *)Hunk_AllocInternal(nameLen);
+                char *dst = (char *)entry->name;
+                memcpy(dst, "lib/", 4);
+                dst += 4;
+                const char *src = filename;
+                while (*src && *src != '.') *dst++ = *src++;
+                *dst = '\0';
+            }
+
+            fileLen = FS_ReadFile(path, &fileData);
+            if (fileLen > 0) {
+                entry->text = (const char *)Hunk_AllocInternal(fileLen + 1);
+                memcpy((void *)entry->text, fileData, fileLen);
+                ((char *)entry->text)[fileLen] = '\0';
+                entry->textSize = fileLen;
+                FS_FreeFile(fileData);
+            } else {
+                entry->text = "";
+                entry->textSize = 0;
+            }
+            entry++;
+        }
+    }
+
+    /* Sort cache by name using introsort + insertion sort */
+    {
+        GfxCachedShaderText *first = *(GfxCachedShaderText **)(mtlLoadGlob + 4);
+        GfxCachedShaderText *last = first + totalCount;
+        if (first != last && totalCount > 1) {
+            int n = totalCount, depth = 0;
+            while (n > 1) { depth++; n >>= 1; }
+            depth *= 2;
+            ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(
+                first, last, depth, Material_CachedShaderTextLess);
+            /* Insertion sort for final cleanup */
+            if ((char *)last - (char *)first > 12 * 16) {
+                GfxCachedShaderText *threshold = first + 16;
+                /* Sort first 16 elements */
+                GfxCachedShaderText *ii;
+                for (ii = first + 1; ii != threshold && ii != last; ii++) {
+                    GfxCachedShaderText val = *ii;
+                    if (Material_CachedShaderTextLess(&val, first)) {
+                        memmove(first + 1, first, (char *)ii - (char *)first);
+                        *first = val;
+                    } else {
+                        GfxCachedShaderText *prev = ii - 1;
+                        GfxCachedShaderText *hole = ii;
+                        while (Material_CachedShaderTextLess(&val, prev)) {
+                            *hole = *prev;
+                            hole = prev;
+                            prev--;
+                        }
+                        *hole = val;
+                    }
+                }
+                /* Unguarded insertion sort for remaining */
+                for (; ii != last; ii++) {
+                    GfxCachedShaderText val = *ii;
+                    GfxCachedShaderText *prev = ii - 1;
+                    GfxCachedShaderText *hole = ii;
+                    while (Material_CachedShaderTextLess(&val, prev)) {
+                        *hole = *prev;
+                        hole = prev;
+                        prev--;
+                    }
+                    *hole = val;
+                }
+            } else {
+                /* Small array: direct insertion sort */
+                GfxCachedShaderText *ii;
+                for (ii = first + 1; ii != last; ii++) {
+                    GfxCachedShaderText val = *ii;
+                    if (Material_CachedShaderTextLess(&val, first)) {
+                        memmove(first + 1, first, (char *)ii - (char *)first);
+                        *first = val;
+                    } else {
+                        GfxCachedShaderText *prev = ii - 1;
+                        GfxCachedShaderText *hole = ii;
+                        while (Material_CachedShaderTextLess(&val, prev)) {
+                            *hole = *prev;
+                            hole = prev;
+                            prev--;
+                        }
+                        *hole = val;
+                    }
+                }
+            }
+        }
+    }
+
+    FS_FreeFileList(shaderListRoot);
+    FS_FreeFileList(shaderListLib);
+}
+
+#if 0 /* original naked (436 lines) */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 3595 */
@@ -707,6 +872,7 @@ void Material_PreLoadAllShaderText(void)
         "jmp .Lf101c2c_00101e06\n"
     );
 }
+#endif /* original naked Material_PreLoadAllShaderText */
 
 /* line 1759 — Material_ParseCodeConstantSource_r
  * Recursively resolves a code constant source from a dot-separated path.
