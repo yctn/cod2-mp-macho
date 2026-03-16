@@ -2852,9 +2852,21 @@ void R_SkinSceneEnt(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 }
 
 /* line 1735 */
+/* line 1735 — Vertex skinning kernel: transforms each vertex through its bone matrix(es).
+ * Register convention: eax=skinnedSurf (surfType_t*), edx=boneMatrix (DObjSkelMat*).
+ * Algorithm:
+ *   1. Get XSurface from skinnedSurf[1], output buffer offset from skinnedSurf[2]
+ *   2. Determine output buffer: cached VB (offset >= 0) or dynamic VB (offset == -1)
+ *   3. XSurfaceGetBoneOffset → add to boneMatrix base for this surface's bone subset
+ *   4. For Dx7 (stride 36): transform pos through bone 3x4 matrix, copy normal+color+texcoord
+ *   5. For non-Dx7 (stride 64): transform pos, normal, tangent, binormal through matrix
+ *   6. Handle single-bone (rigid) vs multi-bone (weighted) paths
+ *   7. Uses SSE for matrix×vector multiplication in non-Dx7 weighted path
+ * 594 lines of vertex transformation — performance-critical skinning hot path. */
 static __attribute__((naked))
 void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
 {
+    (void)boneMatrix;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1735 */
         "movl %esp, %ebp\n"

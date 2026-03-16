@@ -920,7 +920,10 @@ snd_alias_list_t R_SetParentAndCell_r(void)
     );
 }
 
-/* line 1256 */
+/* line 1256 — BSP entity string parser: reads key-value pairs from entity lump,
+ * processes special entity types (worldspawn sun params, misc_model static models,
+ * fx_origin effects). Handles spawn variables, model validation, sun light setup.
+ * 861 lines of text parsing with R_ParseSunLight, R_IsValidStaticModel, R_CreateStaticModel. */
 static __attribute__((naked))
 snd_alias_list_t R_LoadEntities(void)
 {
@@ -3005,7 +3008,10 @@ snd_alias_list_t R_LoadCullGroups(void)
 }
 #endif
 
-/* line 642 */
+/* line 642 — BSP surface loader: reads surface data from BSP lump, resolves material
+ * references, builds GfxSurface array with vertex/index offsets, handles lightmap
+ * atlas assignment, and populates draw surface sort keys.
+ * 751 lines of BSP lump parsing with material lookup and surface construction. */
 static __attribute__((naked))
 snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
 {
@@ -3760,7 +3766,11 @@ Only one sky" */
     );
 }
 
-/* line 1802 */
+/* line 1802 — Main BSP world loader: opens .d3dbsp file, validates header/version,
+ * calls all R_Load* functions to parse lumps (cells, portals, AABB trees, surfaces,
+ * occluders, nodes/leafs, lights, entities, etc.), allocates GfxWorld, initializes
+ * DPVS structures, builds static model lighting cache, sets up reflection probes.
+ * 1687 lines — the largest BSP loading function, orchestrating 20+ lump loaders. */
 __attribute__((naked))
 GfxWorld * R_LoadWorldInternal(const char *name)
 {

@@ -72,7 +72,11 @@ void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf)
     ((static_model_tree_list_t *)tree->usedlist.next)->prev = (int)&tree->usedlist;
 }
 
-/* line 592 */
+/* line 592 — Static model cached skinning command processor: builds bone rotation
+ * matrices from entity quaternion + axis + scale, transforms per-surface vertices
+ * through bone matrices, writes to cached vertex buffer for reuse across frames.
+ * Handles single-bone (rigid) and multi-bone (weighted) paths, Dx7/non-Dx7 layouts.
+ * 786 lines of quaternion→matrix + vertex transformation + VB lock/write. */
 __attribute__((naked))
 void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers)
 {
