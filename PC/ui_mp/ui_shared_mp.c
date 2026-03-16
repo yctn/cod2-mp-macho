@@ -1262,43 +1262,25 @@ void Controls_GetConfig(void)
     );
 }
 
-/* line 4346 */
-__attribute__((naked))
+/* Controls_SetConfig — iterate g_bindings, apply key bindings, exec bindingsave */
+extern void Key_SetBinding(int key, const char *command);
+extern byte szShotName[];
 void Controls_SetConfig(qboolean restart)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4346 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl $g_bindings+12, %ebx\n"
-        ".Lf16487a_00164886:\n"
-        "movl (%ebx), %edx\n" /* line 4357 */
-        "cmpl $-1, %edx\n"
-        "je .Lf16487a_001648b3\n"
-        "movl -0xc(%ebx), %eax\n" /* line 4359 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl 4(%ebx), %edx\n" /* line 4361 */
-        "cmpl $-1, %edx\n"
-        "je .Lf16487a_001648b3\n"
-        "movl -0xc(%ebx), %eax\n" /* line 4362 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Key_SetBinding\n"
-        ".Lf16487a_001648b3:\n"
-        "addl $0x14, %ebx\n"
-        "cmpl $szShotName+8, %ebx\n" /* line 4355 */
-        "jne .Lf16487a_00164886\n"
-        "movl $str_002ac244, 4(%esp)\n" /* line 4371 */
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "addl $0x14, %esp\n" /* line 4373 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)restart;
+    /* g_bindings: 20-byte entries {name, ?, ?, key1, key2}. offset 12 = key1, 16 = key2, 0 = command */
+    byte *entry = (byte *)g_bindings + 12;
+    byte *endPtr = szShotName + 8;
+    while (entry != endPtr) {
+        int key1 = *(int *)entry;
+        if (key1 != -1)
+            Key_SetBinding(key1, *(const char **)(entry - 12));
+        int key2 = *(int *)(entry + 4);
+        if (key2 != -1)
+            Key_SetBinding(key2, *(const char **)(entry - 12));
+        entry += 20;
+    }
+    Cbuf_ExecuteText(2, "bindingsave\n");
 }
 
 /* line 4381 */
@@ -1910,49 +1892,19 @@ qboolean Menus_AnyFullScreenVisible(displayContextDef_t *dc)
     return 0;
 }
 
-/* line 5396 */
-__attribute__((naked))
-menuDef_t * Menu_GetFocused(displayContextDef_t *dc)
+/* Menu_GetFocused — find topmost visible+focused menu */
+menuDef_t *Menu_GetFocused(displayContextDef_t *dc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5396 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        /* { scope 1 */
-        "movl 0x270(%eax), %esi\n" /* line 5400 | i */
-        "subl $1, %esi\n" /* i */
-        "js .Lf164f8e_00164fcd\n"
-        "leal 0x230(%eax, %esi, 4), %ecx\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf164f8e_00164faa:\n"
-        "movl (%ecx), %eax\n" /* line 5402 */
-        "movl 0xe8(%eax), %edx\n" /* line 143 */
-        "testb $4, %dl\n" /* line 155 */
-        "je .Lf164f8e_00164fc0\n"
-        "andb $2, %dl\n" /* line 5402 */
-        "je .Lf164f8e_00164fc0\n"
-        /* } scope */
-        "popl %ebx\n" /* line 5407 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164f8e_00164fc0:\n"
-        "addl $1, %ebx\n" /* line 5402 */
-        "subl $4, %ecx\n"
-        "leal 1(%esi), %eax\n" /* line 5400 | i */
-        "cmpl %ebx, %eax\n"
-        "jne .Lf164f8e_00164faa\n"
-        ".Lf164f8e_00164fcd:\n"
-        "xorl %eax, %eax\n" /* line 5402 */
-        /* } scope */
-        "popl %ebx\n" /* line 5407 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *d = (byte *)dc;
+    int count = *(int *)(d + 0x270);
+    int i;
+    for (i = count - 1; i >= 0; i--) {
+        byte *menu = *(byte **)(d + 0x230 + i * 4);
+        int flags = *(int *)(menu + 0xe8);
+        if ((flags & 4) && (flags & 2))
+            return (menuDef_t *)menu;
+    }
+    return NULL;
 }
 
 /* Item_ListBox_MaxScroll — compute max scroll position based on item count and visible rows */
@@ -2412,50 +2364,15 @@ void Menus_Close(displayContextDef_t *dc, menuDef_t *menu)
     );
 }
 
-/* line 820 */
-__attribute__((naked))
+/* Menus_CloseAll — close every open menu */
 void Menus_CloseAll(displayContextDef_t *dc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 820 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* dc */
-        /* { scope 1 */
-        "movl 0x22c(%edi), %eax\n" /* line 824 | dc */
-        "testl %eax, %eax\n"
-        "jg .Lf165534_00165552\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 826 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf165534_00165552:\n"
-        "movl %edi, %ebx\n" /* line 824 | dc */
-        "xorl %esi, %esi\n" /* i */
-        ".Lf165534_00165556:\n"
-        "movl 0x2c(%ebx), %eax\n" /* line 825 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* dc */
-        "calll Menus_Close\n"
-        "addl $1, %esi\n" /* line 824 | i */
-        "addl $4, %ebx\n"
-        "cmpl %esi, 0x22c(%edi)\n" /* i, dc */
-        "jg .Lf165534_00165556\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 826 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *d = (byte *)dc;
+    int count = *(int *)(d + 0x22c);
+    int i;
+    for (i = 0; i < count; i++) {
+        Menus_Close(dc, *(void **)(d + 0x2c + i * 4));
+    }
 }
 
 /* line 3715 */

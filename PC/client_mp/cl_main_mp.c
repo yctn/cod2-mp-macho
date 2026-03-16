@@ -5311,69 +5311,28 @@ void CL_ForwardCommandToServer(const char *string)
     );
 }
 
-/* line 1647 */
-__attribute__((naked))
+/* CL_ForwardToServer_f — forward console command to server via reliable command buffer */
+/* externs already declared above */
 void CL_ForwardToServer_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1647 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "cmpl $8, clientConnections\n" /* line 1649 */
-        "je .Lf14d00c_0014d030\n"
-        ".Lf14d00c_0014d01d:\n"
-        "movl $str_002a8b24, (%esp)\n" /* line 1651 */
-        "calll Com_Printf\n"
-        ".Lf14d00c_0014d029:\n"
-        "addl $0x10, %esp\n" /* line 1660 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14d00c_0014d030:\n"
-        "movl clientConnections+264096, %ecx\n" /* line 1649 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf14d00c_0014d01d\n"
-        "calll Cmd_Argc\n" /* line 1656 */
-        "subl $1, %eax\n"
-        "jle .Lf14d00c_0014d029\n"
-        "movl $1, (%esp)\n" /* line 1658 */
-        "calll Cmd_Args\n"
-        "movl %eax, %esi\n" /* cmd */
-        /* { scope 1 */
-        "movl clc, %ebx\n" /* line 651 */
-        "movl 0x130(%ebx), %edx\n"
-        "movl %edx, %eax\n"
-        "subl 0x134(%ebx), %eax\n"
-        "addl $-0x80, %eax\n"
-        "jg .Lf14d00c_0014d0a2\n"
-        ".Lf14d00c_0014d06b:\n"
-        "leal 1(%edx), %eax\n" /* line 655 */
-        "movl %eax, 0x130(%ebx)\n"
-        "movl $0x400, 8(%esp)\n" /* line 657 */
-        "movl 0x130(%ebx), %eax\n"
-        "andl $0x7f, %eax\n"
-        "shll $0xa, %eax\n"
-        "leal 0x138(%eax, %ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll MSG_WriteReliableCommandToBuffer\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1660 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14d00c_0014d0a2:\n"
-        "movl $str_002a8a5c, 4(%esp)\n" /* line 653 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x130(%ebx), %edx\n"
-        "jmp .Lf14d00c_0014d06b\n"
-    );
+    if (*(int *)clientConnections != 8 || *(int *)(clientConnections + 264096) != 0) {
+        Com_Printf("Not connected to a server.\n");
+        return;
+    }
+    if (Cmd_Argc() <= 1) return;
+    const char *cmd = (const char *)Cmd_Args(1);
+    /* Write to reliable command buffer */
+    byte *c = (byte *)&clc;
+    int seq = *(int *)(c + 0x130);
+    int acked = *(int *)(c + 0x134);
+    if (seq - acked - 128 > 0) {
+        Com_Error(1, "CL_ForwardToServer_f: MAX_RELIABLE_COMMANDS exceeded\n");
+    }
+    seq++;
+    *(int *)(c + 0x130) = seq;
+    int slot = seq & 0x7f;
+    byte *buf = c + 0x138 + slot * 0x400;
+    MSG_WriteReliableCommandToBuffer(cmd, buf, 0x400);
 }
 
 /* line 2020 */
