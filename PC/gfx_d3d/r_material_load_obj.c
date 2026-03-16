@@ -83,6 +83,17 @@ static Bool Material_ParseCodeConstantSource_r_impl(const char **text, const byt
 extern void Com_UngetToken(void);
 static Bool Material_ParseVector(int elemCount);
 static Bool Material_ParseVector_impl(const char **text, int elemCount, float *vector);
+/* Forward declarations for the 6 material parsing _impl functions (cdecl convention).
+ * These form a call chain: FinishLoadingInstance → LoadPassShader/LoadPassStateMap/
+ * SetPassShaderArguments/LoadPassTextureStateDx7 → ParseRuleSet → helpers.
+ * Each _impl takes the text pointer as an explicit first arg instead of in eax. */
+static Bool Material_LoadPassTextureStateDx7_impl(const char **text, int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits);
+static Bool Material_SetPassShaderArguments_impl(const char **text, short unsigned int *techFlags, short unsigned int *argCount, MaterialShaderArgument **args);
+static Bool Material_ParseRuleSet_impl(const char **text, const char *ruleSetName, const MtlStateMapBitGroup *stateSet, const MaterialStateMapRuleSet **ruleSet);
+static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap **stateMap);
+static MaterialShader *Material_LoadPassShader_impl(const char **text, MaterialShaderType shaderType);
+static Bool Material_FinishLoadingInstance_impl(const char **text, MaterialObj *material, int imageTrack);
+
 static Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits);
 static Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg);
 static Bool Material_CodeSamplerSource_r_impl(const char **text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg);
@@ -2955,7 +2966,10 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
     );
 }
 
-/* line 1371 */
+/* line 1371 — State map loader: loads .sm file, parses 10 rule set categories
+ * (alphaTest, blendFunc, separateAlphaBlendFunc, cullFace, depthTest, depthWrite,
+ * colorWrite, fog, polygonOffset, stencil, wireframe), handles Dx7 blend fallbacks.
+ * Part of the 6-function material parsing register convention chain (eax=text). */
 static __attribute__((naked))
 Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
 {
