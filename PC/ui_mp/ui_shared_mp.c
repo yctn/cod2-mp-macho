@@ -3797,423 +3797,172 @@ qboolean Item_YesNo_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key)
     return 1;
 }
 
-/* line 1357 */
-__attribute__((naked))
+/* Item_SetFocus — set focus to an item: unfocus all siblings, run scripts, play sound */
+extern void UI_PlayLocalSoundAlias(int sound);
 qboolean Item_SetFocus(displayContextDef_t *dc, itemDef_t *item, float x, float y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1357 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        "movl imp_sharedUiInfo, %eax\n" /* line 1362 */
-        "movl 0x40(%eax), %eax\n"
-        "movl %eax, -0x40(%ebp)\n" /* sound */
-        "movl 0xc(%ebp), %eax\n" /* line 1370 | item */
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a014\n"
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "testb $0x10, 0xe6(%eax)\n"
-        "jne .Lf169ce4_0016a014\n"
-        "movl %eax, %edx\n"
-        "movl 0xe8(%eax), %eax\n"
-        "testb $4, %al\n"
-        "je .Lf169ce4_0016a014\n"
-        "testb $2, %al\n" /* line 1374 */
-        "jne .Lf169ce4_0016a01e\n"
-        "movl 0x29c(%edx), %ecx\n" /* line 1386 */
-        "movl %ecx, -0x3c(%ebp)\n" /* parent */
-        "testl %ecx, %ecx\n" /* line 1388 */
-        "je .Lf169ce4_00169d4e\n"
-        "movl 0xe8(%ecx), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf169ce4_00169e5a\n"
-        "testb $2, %al\n" /* line 1388 */
-        "je .Lf169ce4_00169e5a\n"
-        ".Lf169ce4_00169d4e:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1399 | item */
-        "movl 0x2d0(%edx), %eax\n"
-        "testb $3, %al\n"
-        "jne .Lf169ce4_0016a1a7\n"
-        ".Lf169ce4_00169d5f:\n"
-        "testb $0xc, %al\n" /* line 1404 */
-        "jne .Lf169ce4_0016a1cd\n"
-        ".Lf169ce4_00169d67:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1409 | item */
-        "movl 0x29c(%eax), %esi\n" /* menu */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "testl %esi, %esi\n" /* line 381 */
-        "je .Lf169ce4_0016a02b\n"
-        "movl 0x218(%esi), %edi\n" /* line 386 */
-        "testl %edi, %edi\n"
-        "jle .Lf169ce4_0016a02b\n"
-        "movl $0, -0x44(%ebp)\n" /* oldFocus */
-        "xorl %ebx, %ebx\n" /* i */
-        ".Lf169ce4_00169d8f:\n"
-        "leal (, %ebx, 4), %edi\n" /* line 381 */
-        "movl 0x27c(%esi), %eax\n" /* line 388 */
-        "movl (%edi, %eax), %eax\n"
-        "movl 0xe8(%eax), %edx\n" /* line 143 */
-        "testb $4, %dl\n" /* line 155 */
-        "je .Lf169ce4_00169db6\n"
-        "andb $2, %dl\n" /* line 388 */
-        "movl -0x44(%ebp), %edx\n" /* oldFocus */
-        "cmovnel %eax, %edx\n"
-        "movl %edx, -0x44(%ebp)\n" /* oldFocus */
-        ".Lf169ce4_00169db6:\n"
-        "movl $2, 4(%esp)\n" /* line 392 */
-        "movl %eax, (%esp)\n"
-        "calll Window_RemoveDynamicFlags\n"
-        "movl 0x27c(%esi), %eax\n" /* line 393 */
-        "movl (%edi, %eax), %edx\n"
-        "movl 0x2bc(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_00169dec\n"
-        "movl %eax, 8(%esp)\n" /* line 395 */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl %ecx, (%esp)\n"
-        "calll Item_RunScript\n"
-        ".Lf169ce4_00169dec:\n"
-        "addl $1, %ebx\n" /* line 386 | i */
-        "cmpl 0x218(%esi), %ebx\n" /* i */
-        "jl .Lf169ce4_00169d8f\n"
-        /* } scope */
-        /* } scope */
-        "movl 0xc(%ebp), %ebx\n" /* line 1411 | item, i */
-        "movl 0x270(%ebx), %eax\n" /* i */
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a043\n"
-        ".Lf169ce4_00169e08:\n"
-        "movl $2, 4(%esp)\n" /* line 1451 */
-        "movl %ebx, (%esp)\n" /* i */
-        "calll Window_AddDynamicFlags\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 1452 | item */
-        "movl 0x2b8(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a245\n"
-        "movl %eax, 8(%esp)\n" /* line 1454 */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %ebx\n" /* dc, i */
-        "movl %ebx, (%esp)\n" /* i */
-        "calll Item_RunScript\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        ".Lf169ce4_00169e3f:\n"
-        "movl 0x2d4(%edx), %eax\n" /* line 1457 */
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a232\n"
-        ".Lf169ce4_00169e4d:\n"
-        "movl %eax, (%esp)\n" /* line 1468 */
-        "calll UI_PlayLocalSoundAlias\n"
-        "jmp .Lf169ce4_0016a132\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf169ce4_00169e5a:\n"
-        "movl 8(%ebp), %ebx\n" /* line 5400 | dc, i */
-        "movl 0x270(%ebx), %esi\n" /* i */
-        "subl $1, %esi\n" /* i */
-        "js .Lf169ce4_00169d4e\n"
-        "leal 0x230(%ebx, %esi, 4), %edx\n" /* i */
-        "xorl %ecx, %ecx\n"
-        ".Lf169ce4_00169e75:\n"
-        "movl (%edx), %ebx\n" /* line 5402 | i */
-        "movl 0xe8(%ebx), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf169ce4_0016a185\n"
-        "testb $2, %al\n" /* line 5402 */
-        "je .Lf169ce4_0016a185\n"
-        /* } scope */
-        "testl %ebx, %ebx\n" /* line 1391 | i */
-        "je .Lf169ce4_00169d4e\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        "movl (%ebx), %eax\n" /* line 417 | i */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%ebx), %eax\n" /* line 418 | i */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 419 | i */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 420 | i */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %esi\n" /* compareY */
-        "movl %esi, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%ebx), %eax\n" /* line 428 | i */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* i */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %ebx\n" /* i */
-        "movl %ebx, 8(%esp)\n" /* i */
-        "leal -0x34(%ebp), %edi\n"
-        "movl %edi, 4(%esp)\n"
-        "leal -0x38(%ebp), %ecx\n" /* compareRect */
-        "movl %ecx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf169ce4_00169d4e\n"
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        "movl -0x3c(%ebp), %edx\n" /* line 417 | parent */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%edx), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%edx), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "movl %esi, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 428 | parent */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %ecx\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* i */
-        "movl %edi, 4(%esp)\n"
-        "leal -0x38(%ebp), %ebx\n" /* compareRect, i */
-        "movl %ebx, (%esp)\n" /* i */
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_00169d4e\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf169ce4_00169d4e\n"
-        /* } scope */
-        ".Lf169ce4_0016a014:\n"
-        "xorl %eax, %eax\n" /* line 1472 */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1482 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf169ce4_0016a01e:\n"
-        "movl $1, %eax\n" /* line 1472 */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1482 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        ".Lf169ce4_0016a02b:\n"
-        "movl $0, -0x44(%ebp)\n" /* line 386 | oldFocus */
-        /* } scope */
-        /* } scope */
-        "movl 0xc(%ebp), %ebx\n" /* line 1411 | item, i */
-        "movl 0x270(%ebx), %eax\n" /* i */
-        "testl %eax, %eax\n"
-        "jne .Lf169ce4_00169e08\n"
-        ".Lf169ce4_0016a043:\n"
-        "movl %ebx, %ecx\n" /* i */
-        /* { scope 2: compareRect, compareX, compareY */
-        "movl %ebx, %eax\n" /* line 99 */
-        "addl $0x210, %eax\n"
-        "movl 8(%eax), %edx\n" /* line 1418 */
-        "movl 0x14(%eax), %ebx\n" /* i */
-        "movl 0x10(%eax), %esi\n" /* menu */
-        "movss 0xc(%eax), %xmm1\n"
-        "movss 4(%eax), %xmm0\n"
-        /* { scope 3 */
-        "movl 0x210(%ecx), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "subss %xmm1, %xmm0\n" /* line 418 */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movl %edx, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %ebx, 0x14(%esp)\n" /* line 428 | i */
-        "movl %esi, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_0016a0f8\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf169ce4_0016a1ed\n"
-        /* } scope */
-        ".Lf169ce4_0016a0f8:\n"
-        "movl -0x44(%ebp), %esi\n" /* line 1438 | oldFocus, menu */
-        "testl %esi, %esi\n" /* menu */
-        "je .Lf169ce4_0016a132\n"
-        "movl $2, 4(%esp)\n" /* line 1440 */
-        "movl -0x44(%ebp), %ecx\n" /* oldFocus */
-        "movl %ecx, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl -0x44(%ebp), %ebx\n" /* line 1441 | oldFocus, i */
-        "movl 0x2b8(%ebx), %eax\n" /* i */
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a132\n"
-        "movl %eax, 8(%esp)\n" /* line 1443 */
-        "movl %ebx, 4(%esp)\n" /* i */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        /* } scope */
-        ".Lf169ce4_0016a132:\n"
-        "movl -0x3c(%ebp), %ebx\n" /* line 1472 | parent, i */
-        "movl 0x218(%ebx), %ecx\n" /* i */
-        "testl %ecx, %ecx\n"
-        "jle .Lf169ce4_0016a01e\n"
-        "movl 0x27c(%ebx), %edx\n" /* line 1474 | i */
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "cmpl (%edx), %eax\n"
-        "je .Lf169ce4_0016a24c\n"
-        "xorl %eax, %eax\n" /* line 1477 */
-        ".Lf169ce4_0016a156:\n"
-        "addl $1, %eax\n" /* line 1472 */
-        "cmpl %eax, %ecx\n"
-        "je .Lf169ce4_0016a01e\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 1474 | item, i */
-        "cmpl (%edx, %eax, 4), %ebx\n" /* i */
-        "jne .Lf169ce4_0016a156\n"
-        ".Lf169ce4_0016a169:\n"
-        "movl %eax, 4(%esp)\n" /* line 1476 */
-        "movl -0x3c(%ebp), %eax\n" /* parent */
-        "movl %eax, (%esp)\n"
-        "calll Menu_SetCursorItem\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 1482 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf169ce4_0016a185:\n"
-        "addl $1, %ecx\n" /* line 155 */
-        "subl $4, %edx\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        "leal 1(%esi), %eax\n" /* line 5400 | i */
-        "cmpl %eax, %ecx\n"
-        "jne .Lf169ce4_00169e75\n"
-        /* } scope */
-        "movl 0xc(%ebp), %edx\n" /* line 1399 | item */
-        "movl 0x2d0(%edx), %eax\n"
-        "testb $3, %al\n"
-        "je .Lf169ce4_00169d5f\n"
-        ".Lf169ce4_0016a1a7:\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a014\n"
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        "movl 0x2d0(%ecx), %eax\n"
-        "jmp .Lf169ce4_00169d5f\n"
-        ".Lf169ce4_0016a1cd:\n"
-        "movl $4, 4(%esp)\n" /* line 1404 */
-        "movl 0xc(%ebp), %ebx\n" /* item, i */
-        "movl %ebx, (%esp)\n" /* i */
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "jne .Lf169ce4_00169d67\n"
-        "jmp .Lf169ce4_0016a014\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        ".Lf169ce4_0016a1ed:\n"
-        "movss -0x34(%ebp), %xmm0\n" /* line 430 */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf169ce4_0016a0f8\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf169ce4_0016a0f8\n"
-        /* } scope */
-        "movl $2, 4(%esp)\n" /* line 1426 */
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1428 | item */
-        "movl 0x2d4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf169ce4_00169e4d\n"
-        /* } scope */
-        ".Lf169ce4_0016a232:\n"
-        "movl -0x40(%ebp), %eax\n" /* line 1466 | sound */
-        "testl %eax, %eax\n"
-        "je .Lf169ce4_0016a132\n"
-        "movl -0x40(%ebp), %eax\n" /* line 1457 | sound */
-        "jmp .Lf169ce4_00169e4d\n"
-        ".Lf169ce4_0016a245:\n"
-        "movl %ecx, %edx\n"
-        "jmp .Lf169ce4_00169e3f\n"
-        ".Lf169ce4_0016a24c:\n"
-        "xorl %eax, %eax\n" /* line 1474 */
-        "jmp .Lf169ce4_0016a169\n"
-    );
+    byte *it = (byte *)item;
+    byte *d = (byte *)dc;
+    int i;
+
+    int defaultSound = *(int *)(*(byte *)imp_sharedUiInfo + 0x40);
+
+    /* Validation */
+    if (!item) return 0;
+    if (*(byte *)(it + 0xe6) & 0x10) return 0; /* disabled */
+    int flags = *(int *)(it + 0xe8);
+    if (!(flags & 4)) return 0; /* not visible */
+    if (flags & 2) return 1; /* already focused */
+
+    /* Get parent menu */
+    byte *parent = *(byte **)(it + 0x29c);
+
+    /* If parent exists but is not visible+focused, find the focused menu */
+    if (parent) {
+        int pflags = *(int *)(parent + 0xe8);
+        if (!(pflags & 4) || !(pflags & 2)) {
+            /* Find focused menu from open menus */
+            byte *focusedMenu = NULL;
+            int openCount = *(int *)(d + 0x270);
+            for (i = openCount - 1; i >= 0; i--) {
+                byte *om = *(byte **)(d + 0x230 + i * 4);
+                int omf = *(int *)(om + 0xe8);
+                if ((omf & 4) && (omf & 2)) { focusedMenu = om; break; }
+            }
+            if (!focusedMenu) goto check_dvar;
+
+            /* Hit test cursor against focused menu rect */
+            float rx = *(float *)focusedMenu, ry = *(float *)(focusedMenu + 4);
+            float rw = *(float *)(focusedMenu + 8), rh = *(float *)(focusedMenu + 0xc);
+            float cx = x, cy = y;
+            CalcScreenX(&cx, 4);
+            CalcScreenY(&cy, 4);
+            CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(focusedMenu + 0x10), *(int *)(focusedMenu + 0x14));
+            if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh)
+                goto check_dvar;
+
+            /* Also hit test parent rect */
+            float prx = *(float *)parent, pry = *(float *)(parent + 4);
+            float prw = *(float *)(parent + 8), prh = *(float *)(parent + 0xc);
+            float pcx = x, pcy = y;
+            CalcScreenX(&pcy, 4);
+            CalcScreenY(&pcx, 4);
+            CalcScreenPlacement(&prx, &prw, &pry, &prh, *(int *)(parent + 0x10), *(int *)(parent + 0x14));
+            if (pcx < prx || pcx > prx + prw || pcy < pry || pcy > pry + prh)
+                goto check_dvar;
+        }
+    }
+
+check_dvar:;
+    /* Dvar show checks */
+    int dvarFlags = *(int *)(it + 0x2d0);
+    if (dvarFlags & 3) {
+        if (!Item_EnableShowViaDvar(item, 1))
+            return 0;
+        dvarFlags = *(int *)(it + 0x2d0);
+    }
+    if (dvarFlags & 0xc) {
+        if (!Item_EnableShowViaDvar(item, 4))
+            return 0;
+    }
+
+    /* Get parent menu for item iteration */
+    byte *menu = *(byte **)(it + 0x29c);
+
+    /* Remove focus from all items in menu, track old focus */
+    void *oldFocus = NULL;
+    if (menu && *(int *)(menu + 0x218) > 0) {
+        int itemCount = *(int *)(menu + 0x218);
+        for (i = 0; i < itemCount; i++) {
+            byte *sibling = *(byte **)(*(byte **)(menu + 0x27c) + i * 4);
+            int sf = *(int *)(sibling + 0xe8);
+            if ((sf & 4) && (sf & 2))
+                oldFocus = sibling;
+            Window_RemoveDynamicFlags((void *)sibling, 2);
+            /* Run lostFocus script */
+            byte *reloaded = *(byte **)(*(byte **)(menu + 0x27c) + i * 4);
+            if (*(void **)(reloaded + 0x2bc))
+                Item_RunScript(dc, (itemDef_t *)reloaded, *(const char **)(reloaded + 0x2bc));
+        }
+    } else {
+        oldFocus = NULL;
+    }
+
+    /* Check item type for focusability */
+    int itemType = *(int *)(it + 0x270);
+    if (itemType == 0) {
+        /* Type 0: hit-test text rect */
+        byte *textRect = it + 0x210;
+        float tw = *(float *)(textRect + 8);
+        float th = *(float *)(textRect + 0xc);
+        float tx = *(float *)(it + 0x210);
+        float ty = *(float *)(textRect + 4) - th;
+        float tcx = x, tcy = y;
+        CalcScreenX(&tcx, 4);
+        CalcScreenY(&tcy, 4);
+        CalcScreenPlacement(&tx, &tw, &ty, &th, *(int *)(textRect + 0x10), *(int *)(textRect + 0x14));
+        if (tcx < tx || tcx > tx + tw) goto fail;
+        if (tcy < ty || tcy > ty + th) goto fail;
+
+        /* Focus the item */
+        Window_AddDynamicFlags((void *)it, 2);
+        int itemSound = *(int *)(it + 0x2d4);
+        if (itemSound) {
+            UI_PlayLocalSoundAlias(itemSound);
+        } else if (defaultSound) {
+            UI_PlayLocalSoundAlias(defaultSound);
+        }
+        goto set_cursor;
+    }
+
+    /* Add focus */
+    Window_AddDynamicFlags((void *)it, 2);
+
+    /* Run onFocus script */
+    if (*(void **)(it + 0x2b8))
+        Item_RunScript(dc, item, *(const char **)(it + 0x2b8));
+
+    /* Play sound */
+    int itemSound = *(int *)(it + 0x2d4);
+    if (itemSound) {
+        UI_PlayLocalSoundAlias(itemSound);
+    } else if (defaultSound) {
+        UI_PlayLocalSoundAlias(defaultSound);
+    }
+
+set_cursor:;
+    /* Find item index and set cursor */
+    if (menu) {
+        int itemCount = *(int *)(menu + 0x218);
+        byte *items = *(byte **)(menu + 0x27c);
+        for (i = 0; i < itemCount; i++) {
+            if (*(void **)(items + i * 4) == item) {
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, i);
+                return 1;
+            }
+        }
+    }
+    return 1;
+
+fail:
+    /* Restore old focus if present */
+    if (oldFocus) {
+        Window_AddDynamicFlags(oldFocus, 2);
+        if (*(void **)((byte *)oldFocus + 0x2b8))
+            Item_RunScript(dc, (itemDef_t *)oldFocus, *(const char **)((byte *)oldFocus + 0x2b8));
+    }
+    /* Find item index and set cursor anyway */
+    if (menu) {
+        int itemCount = *(int *)(menu + 0x218);
+        byte *items = *(byte **)(menu + 0x27c);
+        for (i = 0; i < itemCount; i++) {
+            if (*(void **)(items + i * 4) == item) {
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, i);
+                return 1;
+            }
+        }
+    }
+    return 1;
 }
 
 /* Script_SetFocusByDvar — find item with matching dvarTest and set focus */
