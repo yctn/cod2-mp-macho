@@ -141,7 +141,11 @@ Bool R_ValidateStaticModel(struct XModel *model)
     return 1;
 }
 
-/* line 238 */
+/* line 238 — Adds a static model to an AABB tree leaf node. Allocates/grows the
+ * leaf's index array (power-of-2 sizing), appends smodelIndex, then updates
+ * the leaf's bounds by expanding against the static model instance's bounds.
+ * Register convention: eax=world, edx=tree, ecx=smodelIndex.
+ * 201 lines with Hunk allocation, bounds expansion, and child iteration. */
 static __attribute__((naked))
 int R_AddStaticModelToAabbTree_r(GfxWorld *world, int smodelIndex)
 {
@@ -351,7 +355,8 @@ int R_AddStaticModelToAabbTree_r(GfxWorld *world, int smodelIndex)
  * by traversing BSP tree nodes. For axial planes, splits bounds and recurses on children.
  * Register convention: eax=world, edx=node, ecx=smodelInst, stack=mins,maxs.
  * Algorithm: node.childIndex == -2 → axial split; >= 0 → leaf cell (add to AABB tree);
- * < 0 → null. Uses BoxOnPlaneSide for plane classification. */
+ * < 0 → null. Uses BoxOnPlaneSide for plane classification.
+ * 145 lines of recursive BSP traversal with bounds splitting. */
 static __attribute__((naked))
 int R_FilterStaticModelIntoCells_r(GfxStaticModelInstance *smodelInst, const vec_t *mins, const vec_t *maxs)
 {
