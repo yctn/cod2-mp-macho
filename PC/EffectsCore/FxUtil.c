@@ -5229,9 +5229,106 @@ void FX_UpdateAllNonBolt_asm(void)
 }
 #endif
 
-/* line 2270 */
-__attribute__((naked))
+/* FX_DrawScheduledEffects — main FX frame tick: cleanup removed, add scheduled, update all */
 void FX_DrawScheduledEffects(void)
+{
+    typedef void (*VtFn)(void *);
+    typedef Bool (*UpdateFn)(void *);
+    int i, count;
+
+    if (!*(byte *)(*(int *)imp_fx_enable + 8))
+        return;
+
+    /* Phase 1: Cleanup removed non-bolt effects (between private and initial counts) */
+    count = privateEffectActiveCountNonBolt;
+    for (i = count; i < initialEffectActiveCountNonBolt; i++) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0)
+            FX_RemoveCluster(clusterId);
+        ((VtFn)(*(void ***)eff)[1])(eff);
+        effectActiveCountNonBolt--;
+        ((byte **)effectListNonBolt)[i] = ((byte **)effectListNonBolt)[effectActiveCountNonBolt];
+        effectActiveCount--;
+    }
+
+    /* Phase 2: Cleanup removed bolt effects */
+    count = privateEffectActiveCountBolt;
+    for (i = count; i < initialEffectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0)
+            FX_RemoveCluster(clusterId);
+        ((VtFn)(*(void ***)eff)[1])(eff);
+        effectActiveCountBolt--;
+        ((byte **)effectListBolt)[i] = ((byte **)effectListBolt)[effectActiveCountBolt];
+        effectActiveCount--;
+    }
+
+    /* Phase 3: Add scheduled effects */
+    FX_AddScheduledEffects(NULL, NULL);
+
+    /* Phase 4: Update bolt effects */
+    count = effectActiveCountBolt;
+    privateEffectActiveCountBolt = count;
+    initialEffectActiveCountBolt = count;
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            *(int *)(eff + 0xa8) &= ~0x400;
+            byte *dead = eff;
+            count--;
+            privateEffectActiveCountBolt = count;
+            byte *last = ((byte **)effectListBolt)[count];
+            ((byte **)effectListBolt)[i] = last;
+            ((byte **)effectListBolt)[count] = dead;
+            ((VtFn)(*(void ***)dead)[2])(dead);
+            if (*(byte *)(dead + 0xa9) & 0x10) effectBlockSightCount--;
+            count = privateEffectActiveCountBolt;
+        } else {
+            Bool alive = ((UpdateFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue;
+            i++;
+            count = privateEffectActiveCountBolt;
+        }
+    }
+
+    /* Phase 5: Update non-bolt effects */
+    count = effectActiveCountNonBolt;
+    privateEffectActiveCountNonBolt = count;
+    initialEffectActiveCountNonBolt = count;
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            *(int *)(eff + 0xa8) &= ~0x400;
+            byte *dead = eff;
+            count--;
+            privateEffectActiveCountNonBolt = count;
+            byte *last = ((byte **)effectListNonBolt)[count];
+            ((byte **)effectListNonBolt)[i] = last;
+            ((byte **)effectListNonBolt)[count] = dead;
+            ((VtFn)(*(void ***)dead)[2])(dead);
+            if (*(byte *)(dead + 0xa9) & 0x10) effectBlockSightCount--;
+            count = privateEffectActiveCountNonBolt;
+        } else {
+            Bool alive = ((UpdateFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue;
+            i++;
+            count = privateEffectActiveCountNonBolt;
+        }
+    }
+}
+#if 0 /* Original ASM (523 lines) */
+__attribute__((naked))
+void FX_DrawScheduledEffects_asm(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2270 */
@@ -5754,6 +5851,7 @@ void FX_DrawScheduledEffects(void)
         "retl\n"
     );
 }
+#endif
 
 /* FX_Restore — restore effects from save file: clean, read archive, reconstruct effect list */
 extern void FxArchive_FxArchive(void *arch);

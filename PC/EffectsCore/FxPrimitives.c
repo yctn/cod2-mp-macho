@@ -7792,9 +7792,86 @@ Bool Tail_Update(const Tail * _this)
     );
 }
 
-/* line 1526 */
+/* Line_Update — Particle_Update + endpoint transform for line/cylinder */
+extern void OrientationPosToWorldPos(void *orient, vec_t *localPos, vec_t *worldPos);
+Bool Line_Update(const Line *_this)
+{
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    /* Get bolt orientation */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    /* Update origin */
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient))
+        return 0;
+
+    /* Transform origin to world space */
+    if (orient)
+        OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+    else {
+        *(float *)(self + 0x7c) = *(float *)(self + 4);
+        *(float *)(self + 0x80) = *(float *)(self + 8);
+        *(float *)(self + 0x84) = *(float *)(self + 0xc);
+    }
+
+    /* Transform endpoint (0x24c) to world space (0x9c) */
+    if (orient)
+        OrientationPosToWorldPos(orient, (vec_t *)(self + 0x24c), (vec_t *)(self + 0x9c));
+    else {
+        *(float *)(self + 0x9c) = *(float *)(self + 0x24c);
+        *(float *)(self + 0xa0) = *(float *)(self + 0x250);
+        *(float *)(self + 0xa4) = *(float *)(self + 0x254);
+    }
+
+    /* Evaluate radius */
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        radius = (EvalCurve1(self + 0x174, normTime) + (EvalCurve1(self + 0x180, normTime) - EvalCurve1(self + 0x174, normTime)) * bf) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+    *(float *)(self + 0x8c) = radius;
+
+    if (radius == 0.0f) {
+        *(int *)(self + 0xa8) |= 0x01000000;
+        return 1;
+    }
+
+    /* Update RGB and alpha */
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+
+    return 1;
+}
+#if 0 /* Original ASM (290 lines) */
 __attribute__((naked))
-Bool Line_Update(const Line * _this)
+Bool Line_Update_asm(const Line * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1526 */
@@ -8084,6 +8161,7 @@ Bool Line_Update(const Line * _this)
         "jmp .Lfa69da_000a6c56\n"
     );
 }
+#endif
 
 /* line 1418 */
 __attribute__((naked))
