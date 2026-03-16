@@ -76,10 +76,12 @@ void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf)
  * matrices from entity quaternion + axis + scale, transforms per-surface vertices
  * through bone matrices, writes to cached vertex buffer for reuse across frames.
  * Handles single-bone (rigid) and multi-bone (weighted) paths, Dx7/non-Dx7 layouts.
- * 786 lines of quaternion→matrix + vertex transformation + VB lock/write. */
+ * 786 lines of quaternion→matrix + vertex transformation + VB lock/write.
+ * Uses cdecl calling convention (all stack args). */
 __attribute__((naked))
 void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers)
 {
+    (void)skinCmd; (void)skinBuffers;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 592 */
         "movl %esp, %ebp\n"
