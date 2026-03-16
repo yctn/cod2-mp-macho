@@ -5106,150 +5106,71 @@ void Item_List_Paint(itemDef_t *item, const char *text)
     );
 }
 
-/* line 3027 */
-__attribute__((naked))
+/* Item_Slider_HandleKey — handle mouse click/arrow keys for slider items */
+extern const char *Dvar_GetVariantString(const char *dvarName);
 qboolean Item_Slider_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3027 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x50, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* item */
-        /* { scope 1 */
-        "movl 0x2c0(%ebx), %ecx\n" /* line 3033 | item */
-        "testl %ecx, %ecx\n"
-        "je .Lf16993a_00169a53\n"
-        "movl 0xe8(%ebx), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16993a_00169a53\n"
-        "testb $2, %al\n" /* line 2280 */
-        "je .Lf16993a_00169a53\n"
-        "movl 0x10(%ebp), %eax\n" /* line 2283 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $2, %eax\n"
-        "jbe .Lf16993a_0016999b\n"
-        ".Lf16993a_00169976:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 3039 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $2, %eax\n"
-        "ja .Lf16993a_00169a5c\n"
-        "movl %ebx, %edx\n" /* line 3041 | item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "calll Scroll_Slider_SetThumbPos\n"
-        "movl $1, %eax\n"
-        "jmp .Lf16993a_00169a55\n"
-        ".Lf16993a_0016999b:\n"
-        "movl 8(%ebp), %eax\n" /* line 2274 | dc */
-        "cvtsi2ssl 0x10(%eax), %xmm1\n" /* y */
-        "cvtsi2ssl 0xc(%eax), %xmm0\n" /* x */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n" /* line 417 */
-        "movl %eax, -0x28(%ebp)\n" /* compareRect */
-        "movl 4(%ebx), %eax\n" /* line 418 */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 419 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 420 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss %xmm0, -0xc(%ebp)\n" /* line 422 | compareX */
-        "movss %xmm1, -0x10(%ebp)\n" /* line 423 | compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0xc(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x10(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%ebx), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x28(%ebp), %edx\n" /* compareRect */
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x20(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x28(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0xc(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16993a_00169a53\n"
-        "addss -0x20(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16993a_00169a53\n"
-        "movss -0x24(%ebp), %xmm0\n"
-        "movss -0x10(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16993a_00169a53\n"
-        "addss -0x1c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf16993a_00169976\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16993a_00169a53:\n"
-        "xorl %eax, %eax\n" /* line 3062 */
-        /* } scope */
-        ".Lf16993a_00169a55:\n"
-        "addl $0x50, %esp\n" /* line 3066 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16993a_00169a5c:\n"
-        "movl %ebx, (%esp)\n" /* line 3045 | item */
-        "calll Item_GetEditFieldDef\n"
-        "movl %eax, %esi\n" /* editDef */
-        "testl %eax, %eax\n" /* line 3046 */
-        "je .Lf16993a_00169a53\n"
-        "movss 4(%eax), %xmm0\n" /* line 3048 */
-        "movss %xmm0, -0x2c(%ebp)\n" /* step */
-        "subss (%eax), %xmm0\n"
-        "mulss lit4_002ed72c, %xmm0\n" /* 0.05000000074505806f */
-        "movss %xmm0, -0x2c(%ebp)\n" /* step */
-        "movl 0x2c0(%ebx), %eax\n" /* line 3049 | item */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x38(%ebp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm0\n"
-        "cmpl $0x9c, 0x10(%ebp)\n" /* line 3051 | key */
-        "je .Lf16993a_00169b07\n"
-        "cmpl $0xa4, 0x10(%ebp)\n" /* key */
-        "je .Lf16993a_00169b07\n"
-        "cmpl $0x9d, 0x10(%ebp)\n" /* line 3058 | key */
-        "je .Lf16993a_00169ac7\n"
-        "cmpl $0xa3, 0x10(%ebp)\n" /* key */
-        "jne .Lf16993a_00169a53\n"
-        ".Lf16993a_00169ac7:\n"
-        "addss -0x2c(%ebp), %xmm0\n" /* line 3060 | step */
-        "movss 4(%esi), %xmm1\n" /* editDef */
-        "minss %xmm1, %xmm0\n"
-        ".Lf16993a_00169ad5:\n"
-        "cvtss2sd %xmm0, %xmm0\n" /* line 3061 */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00217c20, (%esp)\n" /* "%g" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x2c0(%ebx), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetFromStringByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf16993a_00169a55\n"
-        ".Lf16993a_00169b07:\n"
-        "subss -0x2c(%ebp), %xmm0\n" /* line 3053 | step */
-        "movss (%esi), %xmm1\n" /* editDef */
-        "maxss %xmm1, %xmm0\n"
-        "jmp .Lf16993a_00169ad5\n"
-    );
+    byte *it = (byte *)item;
+    byte *d = (byte *)dc;
+
+    /* Basic checks: must have dvar, be visible+focused */
+    if (!*(void **)(it + 0x2c0))
+        return 0;
+    if (!(*(byte *)(it + 0xe8) & 4) || !(*(byte *)(it + 0xe8) & 2))
+        return 0;
+
+    /* Mouse click (keys 0xc8-0xca) — check if within item bounds */
+    if (key >= 0xc8 && key <= 0xca) {
+        float cx = (float)*(int *)(d + 0xc);
+        float cy = (float)*(int *)(d + 0x10);
+        /* Rect-in-rect test with screen placement */
+        float rx = *(float *)it, ry = *(float *)(it + 4);
+        float rw = *(float *)(it + 8), rh = *(float *)(it + 0xc);
+        CalcScreenX(&cx, 4);
+        CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(it + 0x10), *(int *)(it + 0x14));
+        if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh)
+            return 0;
+        /* Fall through to handle as slider drag */
+    }
+
+    /* Mouse drag — set thumb position */
+    if (key >= 0xc8 && key <= 0xca) {
+        __asm__ __volatile__ (
+            "movl %0, %%edx\n"
+            "movl %1, %%eax\n"
+            "calll Scroll_Slider_SetThumbPos\n"
+            : : "r"(item), "r"(dc) : "eax", "ecx", "edx", "memory"
+        );
+        return 1;
+    }
+
+    /* Arrow keys — adjust value by step */
+    editFieldDef_t *editDef = Item_GetEditFieldDef(item);
+    if (!editDef)
+        return 0;
+
+    float maxVal = *((float *)editDef + 1);
+    float minVal = *(float *)editDef;
+    float step = (maxVal - minVal) * 0.05f;
+
+    const char *valStr = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+    float value = (float)atof(valStr);
+
+    if (key == 0x9c || key == 0xa4) {
+        /* Left arrow — decrease */
+        value -= step;
+        if (value < minVal) value = minVal;
+    } else if (key == 0x9d || key == 0xa3) {
+        /* Right arrow — increase */
+        value += step;
+        if (value > maxVal) value = maxVal;
+    } else {
+        return 0;
+    }
+
+    Dvar_SetFromStringByName(*(const char **)(it + 0x2c0), va("%g", (double)value));
+    return 1;
 }
 
 /* line 2290 */
@@ -6453,384 +6374,142 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
     );
 }
 
-/* line 1749 */
-__attribute__((naked))
+/* Item_ListBox_MouseEnter — handle mouse enter for listbox: update cursor from mouse position */
 void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1749 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        /* { scope 1: compareRect, compareX, compareY */
-        "movl %ebx, (%esp)\n" /* line 1753 | item */
-        "calll Item_GetListBoxDef\n"
-        "movl %eax, %esi\n" /* listPtr */
-        "testl %eax, %eax\n" /* line 1755 */
-        "je .Lf16acbc_0016ad38\n"
-        "movl $0x1f00, 4(%esp)\n" /* line 1758 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 1759 | y */
-        "movss %xmm0, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm2\n" /* x */
-        "movss %xmm2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Item_ListBox_OverLB\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "movl 0x10(%ebx), %eax\n" /* line 1762 | item */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl 0x14(%ebx), %edi\n" /* line 1763 | item */
-        "testb $0x20, 0xe6(%ebx)\n" /* line 1764 | item */
-        "je .Lf16acbc_0016ad40\n"
-        "testl $0x1f00, 0xe8(%ebx)\n" /* line 1766 | item */
-        "jne .Lf16acbc_0016ad38\n"
-        "cmpl $1, 0x3c(%esi)\n" /* line 1769 | listPtr */
-        "je .Lf16acbc_0016ae7f\n"
-        /* } scope */
-        ".Lf16acbc_0016ad38:\n"
-        "addl $0x5c, %esp\n" /* line 1805 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf16acbc_0016ad40:\n"
-        "testl $0x1f00, 0xe8(%ebx)\n" /* line 1790 | item */
-        "jne .Lf16acbc_0016ad38\n"
-        "movss 4(%ebx), %xmm2\n" /* line 1793 | item */
-        "movss %xmm2, -0x44(%ebp)\n"
-        "movss 8(%ebx), %xmm1\n" /* line 1794 | item */
-        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "cvtsi2ssl 0x20(%esi), %xmm2\n" /* line 1795 | listPtr */
-        "movss 0xc(%ebx), %xmm0\n" /* item */
-        "subss %xmm2, %xmm0\n"
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movss -0x44(%ebp), %xmm2\n" /* line 418 */
-        "movss %xmm2, -0x34(%ebp)\n"
-        "movss %xmm1, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movss 0x10(%ebp), %xmm2\n" /* line 423 | y */
-        "movss %xmm2, -0x20(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %edi, 0x14(%esp)\n" /* line 428 */
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16acbc_0016ad38\n"
-        /* } scope */
-        "movss 0x10(%ebp), %xmm0\n" /* line 1798 | y */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "subss -0x44(%ebp), %xmm0\n"
-        "movss %xmm0, 0x10(%ebp)\n" /* y */
-        "divss 0x38(%esi), %xmm0\n" /* listPtr */
-        "cvttss2si %xmm0, %eax\n"
-        "addl (%esi), %eax\n" /* listPtr */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetCursorPos\n"
-        "movl 0x24(%esi), %eax\n" /* line 1799 | listPtr */
-        "cmpl 0x10(%esi), %eax\n" /* listPtr */
-        "jle .Lf16acbc_0016ad38\n"
-        ".Lf16acbc_0016ae6b:\n"
-        "movl 0x10(%esi), %eax\n" /* line 1801 | listPtr */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetCursorPos\n"
-        "jmp .Lf16acbc_0016ad38\n"
-        ".Lf16acbc_0016ae7f:\n"
-        "movss (%ebx), %xmm0\n" /* line 1771 | item */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movl 4(%ebx), %eax\n" /* line 1772 | item */
-        "movss 0xc(%ebx), %xmm1\n" /* line 1773 | item */
-        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "cvtsi2ssl 0x20(%esi), %xmm2\n" /* line 1774 | listPtr */
-        "movss 8(%ebx), %xmm0\n" /* item */
-        "subss %xmm2, %xmm0\n"
-        /* { scope 2 */
-        "movss -0x3c(%ebp), %xmm2\n" /* line 417 */
-        "movss %xmm2, -0x38(%ebp)\n" /* compareRect */
-        "movl %eax, -0x34(%ebp)\n" /* line 418 */
-        "movss %xmm0, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm2\n" /* line 423 | y */
-        "movss %xmm2, -0x1c(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %edi, 0x14(%esp)\n" /* line 428 */
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16acbc_0016ad38\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16acbc_0016ad38\n"
-        /* } scope */
-        "movss 0xc(%ebp), %xmm0\n" /* line 1777 | x */
-        "subss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%ebp)\n" /* x */
-        "divss 0x34(%esi), %xmm0\n" /* listPtr */
-        "cvttss2si %xmm0, %eax\n"
-        "addl (%esi), %eax\n" /* listPtr */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetCursorPos\n"
-        "movl 0x24(%esi), %eax\n" /* line 1778 | listPtr */
-        "cmpl 0x10(%esi), %eax\n" /* listPtr */
-        "jl .Lf16acbc_0016ad38\n"
-        "jmp .Lf16acbc_0016ae6b\n"
-    );
+    byte *it = (byte *)item;
+    byte *listPtr = (byte *)Item_GetListBoxDef(item);
+    if (!listPtr) return;
+
+    Window_RemoveDynamicFlags((void *)it, 0x1f00);
+    int overLB = Item_ListBox_OverLB(item, x, y);
+    Window_AddDynamicFlags((void *)it, overLB);
+
+    int horzAlign = *(int *)(it + 0x10);
+    int vertAlign = *(int *)(it + 0x14);
+
+    if (*(byte *)(it + 0xe6) & 0x20) {
+        /* Horizontal listbox */
+        if (*(int *)(it + 0xe8) & 0x1f00) return;
+        if (*(int *)(listPtr + 0x3c) == 1) {
+            /* Single-column horizontal */
+            float itemX = *(float *)it;
+            float itemY = *(float *)(it + 4);
+            float rectW = *(float *)(it + 0xc) - 16.0f;
+            int headerH = *(int *)(listPtr + 0x20);
+            float rectH = *(float *)(it + 8) - (float)headerH;
+            /* Hit test */
+            float cx = x, cy = y;
+            float rx = itemX, ry = itemY, rw = rectH, rh = rectW;
+            CalcScreenX(&cx, 4);
+            CalcScreenY(&cy, 4);
+            CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+            if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh) return;
+            int cursorPos = (int)((x - itemX) / *(float *)(listPtr + 0x34)) + *(int *)listPtr;
+            ListBox_SetCursorPos((itemDef_t *)listPtr, cursorPos);
+            if (*(int *)(listPtr + 0x24) >= *(int *)(listPtr + 0x10))
+                ListBox_SetCursorPos((itemDef_t *)listPtr, *(int *)(listPtr + 0x10));
+        }
+    } else {
+        /* Vertical listbox */
+        if (*(int *)(it + 0xe8) & 0x1f00) return;
+        float itemY = *(float *)(it + 4);
+        float rectW = *(float *)(it + 8) - 16.0f;
+        int headerH = *(int *)(listPtr + 0x20);
+        float rectH = *(float *)(it + 0xc) - (float)headerH;
+        /* Hit test */
+        float cx = x, cy = y;
+        float rx = *(float *)it, ry = itemY, rw = rectW, rh = rectH;
+        CalcScreenX(&cx, 4);
+        CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh) return;
+        int cursorPos = (int)((y - 2.0f - itemY) / *(float *)(listPtr + 0x38)) + *(int *)listPtr;
+        ListBox_SetCursorPos((itemDef_t *)listPtr, cursorPos);
+        if (*(int *)(listPtr + 0x24) > *(int *)(listPtr + 0x10))
+            ListBox_SetCursorPos((itemDef_t *)listPtr, *(int *)(listPtr + 0x10));
+    }
 }
 
-/* line 1808 */
-__attribute__((naked))
+/* Item_MouseEnter — handle mouse enter/exit for an item with rect hit test */
 void Item_MouseEnter(displayContextDef_t *dc, itemDef_t *item, float x, float y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1808 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* item */
-        /* { scope 1: compareRect, compareX, compareY */
-        "testl %ebx, %ebx\n" /* line 1814 | item */
-        "je .Lf16af9c_0016b0c1\n"
-        "leal 0x210(%ebx), %eax\n" /* line 99 */
-        "movss 8(%eax), %xmm0\n" /* line 1817 */
-        "movss %xmm0, -0x4c(%ebp)\n"
-        "movl 0x210(%ebx), %edi\n" /* item */
-        "movl 0x14(%eax), %edx\n"
-        "movl %edx, -0x48(%ebp)\n"
-        "movl 0x10(%eax), %edx\n"
-        "movl %edx, -0x44(%ebp)\n"
-        "movss 0xc(%eax), %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        "movss 4(%eax), %xmm0\n"
-        "subss -0x40(%ebp), %xmm0\n" /* line 1818 */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movl 0x2d0(%ebx), %eax\n" /* line 1824 | item */
-        "testb $3, %al\n"
-        "jne .Lf16af9c_0016b145\n"
-        ".Lf16af9c_0016aff9:\n"
-        "testb $0xc, %al\n" /* line 1829 */
-        "jne .Lf16af9c_0016b0c9\n"
-        ".Lf16af9c_0016b001:\n"
-        "movl 0xe8(%ebx), %esi\n" /* line 80 */
-        /* { scope 2 */
-        "movl %edi, -0x38(%ebp)\n" /* line 417 | compareRect */
-        "movss -0x3c(%ebp), %xmm0\n" /* line 418 */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm0\n" /* line 419 */
-        "movss %xmm0, -0x30(%ebp)\n"
-        "movss -0x40(%ebp), %xmm0\n" /* line 420 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl -0x48(%ebp), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl -0x44(%ebp), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16af9c_0016b0e3\n"
-        /* } scope */
-        ".Lf16af9c_0016b09f:\n"
-        "testl $0x40, %esi\n" /* line 1852 | flags */
-        "jne .Lf16af9c_0016b168\n"
-        "andl $1, %esi\n" /* line 1858 | flags */
-        "je .Lf16af9c_0016b19a\n"
-        ".Lf16af9c_0016b0b4:\n"
-        "cmpl $6, 0x270(%ebx)\n" /* line 1864 | item */
-        "je .Lf16af9c_0016b1d0\n"
-        /* } scope */
-        ".Lf16af9c_0016b0c1:\n"
-        "addl $0x6c, %esp\n" /* line 1870 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf16af9c_0016b0c9:\n"
-        "movl $4, 4(%esp)\n" /* line 1829 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16af9c_0016b001\n"
-        "jmp .Lf16af9c_0016b0c1\n"
-        /* { scope 2 */
-        ".Lf16af9c_0016b0e3:\n"
-        "addss -0x30(%ebp), %xmm0\n" /* line 430 */
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16af9c_0016b09f\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16af9c_0016b09f\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16af9c_0016b09f\n"
-        /* } scope */
-        "testl $0x40, %esi\n" /* line 1837 | flags */
-        "je .Lf16af9c_0016b1f6\n"
-        ".Lf16af9c_0016b112:\n"
-        "andl $1, %esi\n" /* line 1842 | flags */
-        "jne .Lf16af9c_0016b0c1\n"
-        "movl 0x2a8(%ebx), %eax\n" /* line 1844 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %edx\n" /* dc */
-        "movl %edx, (%esp)\n"
-        "calll Item_RunScript\n"
-        "movl $1, 4(%esp)\n" /* line 1845 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "jmp .Lf16af9c_0016b0c1\n"
-        ".Lf16af9c_0016b145:\n"
-        "movl $1, 4(%esp)\n" /* line 1824 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "je .Lf16af9c_0016b0c1\n"
-        "movl 0x2d0(%ebx), %eax\n" /* item */
-        "jmp .Lf16af9c_0016aff9\n"
-        ".Lf16af9c_0016b168:\n"
-        "movl 0x2a4(%ebx), %eax\n" /* line 1855 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        "movl $0x40, 4(%esp)\n" /* line 1856 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        "andl $1, %esi\n" /* line 1858 | flags */
-        "jne .Lf16af9c_0016b0b4\n"
-        ".Lf16af9c_0016b19a:\n"
-        "movl 0x2a8(%ebx), %eax\n" /* line 1860 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %edx\n" /* dc */
-        "movl %edx, (%esp)\n"
-        "calll Item_RunScript\n"
-        "movl $1, 4(%esp)\n" /* line 1861 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "cmpl $6, 0x270(%ebx)\n" /* line 1864 | item */
-        "jne .Lf16af9c_0016b0c1\n"
-        ".Lf16af9c_0016b1d0:\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 1866 | y */
-        "movss %xmm0, 8(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Item_ListBox_MouseEnter\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 1870 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf16af9c_0016b1f6:\n"
-        "movl 0x2a0(%ebx), %eax\n" /* line 1839 | item */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        "movl $0x40, 4(%esp)\n" /* line 1840 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "jmp .Lf16af9c_0016b112\n"
-    );
+    byte *it = (byte *)item;
+    byte *parent;
+    int flags;
+    int horzAlign, vertAlign;
+    qboolean inside;
+
+    if (!item) return;
+
+    parent = *(byte **)(it + 0x29c);
+    if (!parent) return;
+
+    /* Get textRect from parent+0x210 */
+    float textX = *(float *)(parent + 0x210);
+    float textY = *(float *)(parent + 4);
+    float textH = *(float *)(parent + 0xc) - textY; /* h - y offset? Actually from ASM */
+    horzAlign = *(int *)(parent + 0x10);
+    vertAlign = *(int *)(parent + 0x14);
+
+    /* Read from item->0x210 = textRect */
+    textX = *(int *)(it + 0x210);
+
+    /* Dvar show checks */
+    int dvarFlags = *(int *)(it + 0x2d0);
+    if (dvarFlags & 3) {
+        if (!Item_EnableShowViaDvar((itemDef_t *)it, 1))
+            return;
+        dvarFlags = *(int *)(it + 0x2d0);
+    }
+    if (dvarFlags & 0xc) {
+        if (!Item_EnableShowViaDvar((itemDef_t *)it, 4))
+            return;
+    }
+
+    flags = *(int *)(it + 0xe8);
+
+    /* Hit test: check if (x,y) is inside item rect */
+    float rx = *(float *)it, ry = *(float *)(it + 4);
+    float rw = *(float *)(it + 8), rh = *(float *)(it + 0xc);
+    float cx = x, cy = y;
+    CalcScreenX(&cx, 4);
+    CalcScreenY(&cy, 4);
+    CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(it + 0x10), *(int *)(it + 0x14));
+
+    inside = (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh);
+
+    if (inside) {
+        /* Mouse is inside item */
+        if (!(flags & 0x40)) {
+            /* Not yet focused — run mouseEnterText script, add focus flag */
+            Item_RunScript(dc, item, *(const char **)(it + 0x2a0));
+            Window_AddDynamicFlags((void *)it, 0x40);
+        }
+        /* Check hover flag */
+        if (!(flags & 1)) {
+            /* Run mouseEnter script, add hover flag */
+            Item_RunScript(dc, item, *(const char **)(it + 0x2a8));
+            Window_AddDynamicFlags((void *)it, 1);
+        }
+    } else {
+        /* Mouse is outside item */
+        if (flags & 0x40) {
+            /* Was focused — run onFocusLost script, remove focus */
+            Item_RunScript(dc, item, *(const char **)(it + 0x2a4));
+            Window_RemoveDynamicFlags((void *)it, 0x40);
+        }
+        if (!(flags & 1)) {
+            /* Not hovered — run mouseEnter script, add hover */
+            Item_RunScript(dc, item, *(const char **)(it + 0x2a8));
+            Window_AddDynamicFlags((void *)it, 1);
+        }
+    }
+
+    /* If listbox type (6), handle listbox mouse enter */
+    if (*(int *)(it + 0x270) == 6) {
+        Item_ListBox_MouseEnter(item, x, y);
+    }
 }
 
 /* line 1928 */
@@ -8936,124 +8615,54 @@ qboolean Menu_HandleMouseMove(displayContextDef_t *dc, menuDef_t *menu, float x,
     );
 }
 
-/* line 5710 */
-__attribute__((naked))
+/* Display_MouseMove — handle mouse movement: reposition menu or dispatch to open menus */
 qboolean Display_MouseMove(displayContextDef_t *dc, void *p, int x, int y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5710 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* p */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 5717 | p */
-        "je .Lf16ce94_0016cf09\n"
-        "movl (%ebx), %eax\n" /* line 5738 | p */
-        "movl %eax, -0x30(%ebp)\n" /* newRect */
-        "movl 4(%ebx), %eax\n" /* p */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* p */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* p */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x10(%ebx), %eax\n" /* p */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x14(%ebx), %eax\n" /* p */
-        "movl %eax, -0x1c(%ebp)\n"
-        "cvtsi2ssl 0x10(%ebp), %xmm0\n" /* line 5739 | x */
-        "addss -0x30(%ebp), %xmm0\n" /* newRect */
-        "movss %xmm0, -0x30(%ebp)\n" /* newRect */
-        "cvtsi2ssl 0x14(%ebp), %xmm0\n" /* line 5740 | y */
-        "addss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 5741 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* p */
-        "calll Window_SetRect\n"
-        "movl %ebx, (%esp)\n" /* line 5742 | p */
-        "calll Menu_UpdatePosition\n"
-        /* } scope */
-        ".Lf16ce94_0016cefc:\n"
-        "movl $1, %eax\n" /* line 5745 */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16ce94_0016cf09:\n"
-        "movl 8(%ebp), %eax\n" /* line 5400 | dc */
-        "movl 0x270(%eax), %edi\n"
-        "subl $1, %edi\n"
-        "js .Lf16ce94_0016cefc\n"
-        "leal 0x230(%eax, %edi, 4), %edx\n"
-        ".Lf16ce94_0016cf1e:\n"
-        "movl (%edx), %ecx\n" /* line 5402 */
-        "movl 0xe8(%ecx), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16ce94_0016cfa4\n"
-        "testb $2, %al\n" /* line 5402 */
-        "je .Lf16ce94_0016cfa4\n"
-        "testl %ecx, %ecx\n" /* line 5720 */
-        "je .Lf16ce94_0016cf3b\n"
-        "testb $1, 0xe7(%ecx)\n" /* line 5722 */
-        "jne .Lf16ce94_0016cfb7\n"
-        ".Lf16ce94_0016cf3b:\n"
-        "cvtsi2ssl 0x14(%ebp), %xmm0\n" /* line 5725 | y */
-        "movss %xmm0, -0x40(%ebp)\n"
-        "cvtsi2ssl 0x10(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "leal 0x230(%eax, %edi, 4), %ebx\n" /* p */
-        "xorl %esi, %esi\n"
-        "addl $1, %edi\n" /* i */
-        ".Lf16ce94_0016cf5e:\n"
-        "movss -0x40(%ebp), %xmm0\n" /* line 5731 */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x3c(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl (%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Menu_HandleMouseMove\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16ce94_0016cefc\n"
-        "addl $1, %esi\n" /* line 5732 */
-        "subl $4, %ebx\n" /* p */
-        "cmpl %edi, %esi\n" /* line 5729 | i */
-        "jne .Lf16ce94_0016cf5e\n"
-        /* } scope */
-        "movl $1, %eax\n" /* line 5745 */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16ce94_0016cfa4:\n"
-        "addl $1, %ebx\n" /* line 5742 | p */
-        "subl $4, %edx\n"
-        "leal 1(%edi), %eax\n" /* line 5400 */
-        "cmpl %eax, %ebx\n"
-        "jne .Lf16ce94_0016cf1e\n"
-        "jmp .Lf16ce94_0016cf3b\n"
-        ".Lf16ce94_0016cfb7:\n"
-        "cvtsi2ssl 0x14(%ebp), %xmm0\n" /* line 5724 | y */
-        "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0x10(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Menu_HandleMouseMove\n"
-        "jmp .Lf16ce94_0016cefc\n"
-    );
+    byte *d = (byte *)dc;
+
+    if (p) {
+        /* Reposition the menu by adding x/y offset */
+        byte *menu = (byte *)p;
+        rectDef_t newRect = *(rectDef_t *)menu;
+        newRect.x += (float)x;
+        newRect.y += (float)y;
+        ((void (*)(void *, void *))Window_SetRect)(p, &newRect);
+        ((void (*)(void *))Menu_UpdatePosition)(p);
+        return 1;
+    }
+
+    /* Find topmost visible+focused menu */
+    int openCount = *(int *)(d + 0x270);
+    int i = openCount - 1;
+    if (i < 0)
+        return 1;
+
+    byte *focusedMenu = NULL;
+    int startIdx = i;
+    for (; i >= 0; i--) {
+        byte *menu = *(byte **)(d + 0x230 + i * 4);
+        int flags = *(int *)(menu + 0xe8);
+        if ((flags & 4) && (flags & 2)) {
+            /* Found focused menu */
+            if (*(byte *)(menu + 0xe7) & 1) {
+                /* Menu is draggable — handle directly */
+                Menu_HandleMouseMove(dc, (menuDef_t *)menu, (float)x, (float)y);
+                return 1;
+            }
+            startIdx = i;
+            break;
+        }
+    }
+
+    /* Iterate open menus from startIdx backwards, dispatch mouse move */
+    float fx = (float)x, fy = (float)y;
+    for (i = 0; i <= startIdx; i++) {
+        byte *menu = *(byte **)(d + 0x230 + (startIdx - i) * 4);
+        if (Menu_HandleMouseMove(dc, (menuDef_t *)menu, fx, fy))
+            return 1;
+    }
+
+    return 1;
 }
 
 /* line 3263 */
@@ -9340,222 +8949,118 @@ void Script_InGameOpen(displayContextDef_t *dc, itemDef_t *item, const char * *a
     Menus_OpenByName(dc, name);
 }
 
-/* line 3178 */
-__attribute__((naked))
+/* Menu_SetNextCursorItem — advance cursor to next focusable item, wrapping */
 itemDef_t * Menu_SetNextCursorItem(displayContextDef_t *dc, menuDef_t *menu)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3178 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dc */
-        "movl 0xc(%ebp), %ebx\n" /* menu */
-        /* { scope 1 */
-        "movl 0x220(%ebx), %eax\n" /* line 92 */
-        "movl %eax, -0x1c(%ebp)\n" /* oldCursor */
-        "movl %eax, %edx\n"
-        "addl $1, %eax\n" /* line 3189 */
-        "je .Lf16d52e_0016d641\n"
-        "xorl %edi, %edi\n" /* line 3217 | wrapped */
-        "jmp .Lf16d52e_0016d55b\n"
-        ".Lf16d52e_0016d555:\n"
-        "movl 0x220(%ebx), %edx\n" /* menu */
-        ".Lf16d52e_0016d55b:\n"
-        "cmpl 0x218(%ebx), %edx\n" /* line 3195 | menu */
-        "jge .Lf16d52e_0016d628\n"
-        "leal 1(%edx), %eax\n" /* line 3197 */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movl 0x220(%ebx), %edx\n" /* line 3198 | menu */
-        "cmpl 0x218(%ebx), %edx\n" /* menu */
-        "jl .Lf16d52e_0016d5a6\n"
-        "testl %edi, %edi\n" /* line 3200 | wrapped */
-        "jne .Lf16d52e_0016d661\n"
-        "movl $0, 4(%esp)\n" /* line 3203 */
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movw $1, %di\n" /* wrapped */
-        "movl 0x220(%ebx), %edx\n" /* menu */
-        ".Lf16d52e_0016d5a6:\n"
-        "cvtsi2ssl 0x10(%esi), %xmm0\n" /* line 3211 | dc */
-        "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0xc(%esi), %xmm0\n" /* dc */
-        "movss %xmm0, 8(%esp)\n"
-        "movl 0x27c(%ebx), %eax\n" /* menu */
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Item_SetFocus\n"
-        "testl %eax, %eax\n"
-        "je .Lf16d52e_0016d555\n"
-        "movl 0x220(%ebx), %edx\n" /* line 53 */
-        "movl 0x27c(%ebx), %eax\n"
-        "movl (%eax, %edx, 4), %eax\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 3215 | 1.0f */
-        "movss 4(%eax), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* menu */
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Menu_HandleMouseMove\n"
-        "movl 0x220(%ebx), %edx\n" /* line 3217 | menu */
-        "movl 0x27c(%ebx), %eax\n" /* menu */
-        "movl (%eax, %edx, 4), %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3222 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16d52e_0016d628:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 3220 | oldCursor */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3222 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16d52e_0016d641:\n"
-        "movl $0, 4(%esp)\n" /* line 3191 */
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movl $1, %edi\n" /* wrapped */
-        "movl 0x220(%ebx), %edx\n" /* menu */
-        "jmp .Lf16d52e_0016d55b\n"
-        ".Lf16d52e_0016d661:\n"
-        "movl 0x27c(%ebx), %eax\n" /* line 3207 | menu */
-        "movl -0x1c(%ebp), %edx\n" /* oldCursor */
-        "movl (%eax, %edx, 4), %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3222 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *m = (byte *)menu;
+    byte *d = (byte *)dc;
+    int oldCursor = *(int *)(m + 0x220);
+    int wrapped = 0;
+    int cursor;
+
+    if (oldCursor == -1) {
+        /* cursor unset, start from 0 */
+        ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
+        wrapped = 1;
+    }
+
+    for (;;) {
+        cursor = *(int *)(m + 0x220);
+        if (cursor >= *(int *)(m + 0x218)) {
+            /* Past end */
+            if (wrapped) {
+                /* Already wrapped, return old cursor item */
+                return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
+            }
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
+            wrapped = 1;
+            cursor = *(int *)(m + 0x220);
+        } else {
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor + 1);
+            cursor = *(int *)(m + 0x220);
+            if (cursor >= *(int *)(m + 0x218)) {
+                if (wrapped) {
+                    return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
+                }
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
+                wrapped = 1;
+                cursor = *(int *)(m + 0x220);
+            }
+        }
+
+        /* Try to focus current item */
+        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
+            /* Success — trigger mouse move and return */
+            cursor = *(int *)(m + 0x220);
+            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
+            cursor = *(int *)(m + 0x220);
+            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        }
+    }
+
+    /* Unreachable — restore old cursor */
+    ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor);
+    return NULL;
 }
 
-/* line 3130 */
-__attribute__((naked))
+/* Menu_SetPrevCursorItem — move cursor to previous focusable item, wrapping */
 itemDef_t * Menu_SetPrevCursorItem(displayContextDef_t *dc, menuDef_t *menu)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3130 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* dc */
-        "movl 0xc(%ebp), %ebx\n" /* menu */
-        /* { scope 1 */
-        "movl 0x220(%ebx), %edi\n" /* line 92 */
-        "movl %edi, %eax\n"
-        "testl %edi, %edi\n" /* line 3141 | oldCursor */
-        "js .Lf16d676_0016d795\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 3169 | wrapped */
-        "jmp .Lf16d676_0016d6e1\n"
-        ".Lf16d676_0016d69e:\n"
-        "movl 0x220(%ebx), %edx\n" /* line 92 */
-        "testl %edx, %edx\n" /* line 3156 */
-        "js .Lf16d676_0016d72c\n"
-        ".Lf16d676_0016d6ac:\n"
-        "cvtsi2ssl 0x10(%esi), %xmm0\n" /* line 3163 | dc */
-        "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0xc(%esi), %xmm0\n" /* dc */
-        "movss %xmm0, 8(%esp)\n"
-        "movl 0x27c(%ebx), %eax\n" /* menu */
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Item_SetFocus\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16d676_0016d742\n"
-        "movl 0x220(%ebx), %eax\n" /* menu */
-        ".Lf16d676_0016d6e1:\n"
-        "cmpl $-1, %eax\n" /* line 3147 */
-        "jle .Lf16d676_0016d72c\n"
-        "subl $1, %eax\n" /* line 3149 */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movl 0x220(%ebx), %eax\n" /* line 3150 | menu */
-        "testl %eax, %eax\n"
-        "jns .Lf16d676_0016d69e\n"
-        "movl -0x1c(%ebp), %eax\n" /* wrapped */
-        "testl %eax, %eax\n"
-        "jne .Lf16d676_0016d69e\n"
-        "movl 0x218(%ebx), %eax\n" /* line 3153 | menu */
-        "subl $1, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movl $1, -0x1c(%ebp)\n" /* wrapped */
-        "movl 0x220(%ebx), %edx\n" /* line 92 */
-        "testl %edx, %edx\n" /* line 3156 */
-        "jns .Lf16d676_0016d6ac\n"
-        ".Lf16d676_0016d72c:\n"
-        "movl %edi, 4(%esp)\n" /* line 3172 | oldCursor */
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3175 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16d676_0016d742:\n"
-        "movl 0x220(%ebx), %edx\n" /* line 53 */
-        "movl 0x27c(%ebx), %eax\n"
-        "movl (%eax, %edx, 4), %eax\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 3167 | 1.0f */
-        "movss 4(%eax), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* menu */
-        "movl %esi, (%esp)\n" /* dc */
-        "calll Menu_HandleMouseMove\n"
-        "movl 0x220(%ebx), %edx\n" /* line 3169 | menu */
-        "movl 0x27c(%ebx), %eax\n" /* menu */
-        "movl (%eax, %edx, 4), %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 3175 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16d676_0016d795:\n"
-        "movl 0x218(%ebx), %eax\n" /* line 3143 | menu */
-        "subl $1, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Menu_SetCursorItem\n"
-        "movl $1, -0x1c(%ebp)\n" /* wrapped */
-        "movl 0x220(%ebx), %eax\n" /* menu */
-        "jmp .Lf16d676_0016d6e1\n"
-    );
+    byte *m = (byte *)menu;
+    byte *d = (byte *)dc;
+    int oldCursor = *(int *)(m + 0x220);
+    int wrapped = 0;
+    int cursor;
+
+    if (oldCursor < 0) {
+        /* cursor unset, start from end */
+        ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
+        wrapped = 1;
+    }
+
+    for (;;) {
+        cursor = *(int *)(m + 0x220);
+        if (cursor <= -1) {
+            /* Past beginning */
+            if (wrapped)
+                goto fail;
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
+            wrapped = 1;
+            cursor = *(int *)(m + 0x220);
+            if (cursor < 0)
+                goto fail;
+        } else {
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor - 1);
+            cursor = *(int *)(m + 0x220);
+            if (cursor < 0) {
+                if (wrapped)
+                    goto try_focus;
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
+                wrapped = 1;
+                cursor = *(int *)(m + 0x220);
+                if (cursor < 0)
+                    goto fail;
+            }
+        }
+
+try_focus:;
+        /* Try to focus current item */
+        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
+            /* Success — trigger mouse move and return */
+            cursor = *(int *)(m + 0x220);
+            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
+            cursor = *(int *)(m + 0x220);
+            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        }
+    }
+
+fail:
+    ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor);
+    return NULL;
 }
 
 /* line 2583 */
