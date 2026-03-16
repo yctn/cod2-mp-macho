@@ -643,6 +643,11 @@ void R_XModelDebugAxes(void)
 /* line 2749 — Computes world-space bounding box for an XModel entity by transforming
  * per-bone half-extents through quaternion rotation matrices and accumulating bounds. */
 extern int DObjBad(const void *obj);
+extern void *DObjGetSurface(const void *obj, int surfIdx, int xsurf, int lod);
+extern int XSurfaceGetNumVerts(void *xsurf);
+extern int InterlockedExchange(volatile int *dest, int value);
+extern int InterlockedExchangeAdd(volatile int *dest, int value);
+extern int XSurfaceGetBoneOffset(int xsurfIndex);
 extern void ClearBounds(float *mins, float *maxs);
 extern void GetRotatedBounds(float *bounds, float *origin, float *axis, float *outBounds);
 extern int InterlockedCompareExchange(volatile int *dest, int exchange, int comparand);
@@ -1206,11 +1211,6 @@ set_origin_bounds:
 /* line 1836 — Pre-skin XModel surface: resolves material from skin/LOD, sets up
  * surface entry for skinned (type 3) or rigid (type 4) rendering, allocates
  * cached vertex buffer space if available. Returns surface data size or 0 on failure. */
-extern void *DObjGetModel(const void *obj, int surfIndex);
-extern void *XModelGetSkins(void *model);
-extern void *DObjGetSurface(const void *obj, int surfIndex, int xsurf, int lod);
-extern int XSurfaceGetNumVerts(void *xsurf);
-extern int InterlockedExchange(volatile int *dest, int value);
 static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long unsigned int (*surface)[32], int surfaceIndex, char *lods, byte *surfPos)
 {
     int surfIdx = *(short *)surface;
@@ -1975,9 +1975,125 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 }
 #endif /* original naked R_SkinSceneDObj */
 
-/* line 1949 */
-static __attribute__((naked))
-int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex, const struct XModel *model, XSurface *xsurf, int surfaceIndex, int lod, qboolean *needSkinningSurf, byte *surfPos)
+/* line 1949 — Pre-skin static model surface: resolves material from skin/LOD, checks
+ * for static model cache (SMC) availability, allocates cached or dynamic VB space. */
+extern void *R_CacheStaticModelSurface(void *staticSurf, void *xsurf, int smodelIndex, void *material);
+extern void R_UsedCachedStaticModelSurface(void *cached);
+static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex,
+    const struct XModel *model, XSurface *xsurf, int surfaceIndex, int lod,
+    qboolean *needSkinningSurf, byte *surfPos)
+{
+    void *skins = XModelGetSkins((void *)model);
+    if (!skins) return 0;
+
+    /* Set material in scene surface list */
+    {
+        void *material = *(void **)((char *)*(void **)((char *)skins + lod * 4) + surfaceIndex * 4);
+        *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4) = material;
+    }
+
+    /* Check for static model cached surface (SMC) */
+    if (*(int *)ent == 2 && *(byte *)(*(char **)imp_r_smc_enable + 8)) {
+        void *xsurfMat = (void *)xsurf;
+        if (XSurfaceGetBoneOffset((int)(intptr_t)xsurfMat) != -1) {
+            int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+            if (!isDx7) {
+                /* Check for valid material technique for SMC */
+                void *mat = *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4);
+                void *techSet = *(void **)((char *)mat + 0x38);
+                void *tech34 = *(void **)((char *)techSet + 0x34);
+                if (tech34 && *(short *)((char *)tech34 + 6) && *(byte *)((char *)tech34 + 0xc)) {
+                    goto try_smc;
+                }
+            } else {
+                try_smc: {
+                    char *rg_p = (char *)imp_rg;
+                    void *smcData = *(void **)(rg_p + 0x3194);
+                    char *staticSurf = (char *)*(void **)((char *)smcData + smodelIndex * 8 + 4) + surfaceIndex * 16;
+                    void *cached = *(void **)(staticSurf + lod * 4);
+                    if (!cached) {
+                        void *mat = *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4);
+                        cached = R_CacheStaticModelSurface(staticSurf, xsurf, smodelIndex, mat);
+                        *(void **)(staticSurf + lod * 4) = cached;
+                        if (!cached) goto no_smc;
+                    }
+                    R_UsedCachedStaticModelSurface(cached);
+                    *(int *)surfPos = 5;
+                    *(void **)(surfPos + 4) = xsurf;
+                    *(void **)(surfPos + 8) = cached;
+                    *(void **)(surfPos + 0xc) = ent;
+                    return 0x10;
+                }
+            }
+        }
+    }
+no_smc:
+
+    /* Check if surface has pre-built rigid skinning */
+    if (*(int *)((char *)xsurf + 0x10)) {
+        *(int *)surfPos = 4;
+        *(void **)(surfPos + 4) = xsurf;
+        *needSkinningSurf = 1;
+        return 0x38;
+    }
+
+    /* Skinned surface: allocate from cache or dynamic VB */
+    /* (Same pattern as R_PreSkinXSurface) */
+    if (*(byte *)(*(char **)imp_r_skinCache + 8) && *(int *)((char *)xsurf + 0x14)) {
+        *(int *)(surfPos + 0xc) = 0;
+        int vertCount = XSurfaceGetNumVerts(xsurf);
+        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        int stride = isDx7 ? 0x24 : 0x40;
+        char *dx = (char *)imp_dx;
+        if (*(void **)(dx + 0x2dc0)) {
+            char *fed = *(char **)imp_frontEndDataOut;
+            void *lockPtr = *(void **)(fed + 0x217c78);
+            int offset = InterlockedExchangeAdd((volatile int *)lockPtr, vertCount * stride);
+            if (*(int *)lockPtr > *(int *)((char *)lockPtr + 4)) {
+                if (offset <= *(int *)((char *)lockPtr + 4))
+                    InterlockedExchange((volatile int *)lockPtr, offset);
+                if (*(int *)fed != warnCount) {
+                    warnCount = *(int *)fed;
+                    (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SKINNED_CACHE_VERTICES exceeded\n");
+                }
+                offset = -1;
+            }
+            *(int *)(surfPos + 8) = offset;
+            if (offset >= 0 && (char *)*(void **)(dx + 0x2dc0) + *(int *)lockPtr) {
+                *(int *)surfPos = 3;
+                *(void **)(surfPos + 4) = xsurf;
+                *needSkinningSurf = 1;
+                return 0x10;
+            }
+        }
+    }
+    *(int *)(surfPos + 8) = -1;
+    {
+        int vertCount = XSurfaceGetNumVerts(xsurf);
+        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        int stride = isDx7 ? 0x24 : 0x40;
+        int needed = vertCount * stride;
+        char *dx = (char *)imp_dx;
+        int current = *(int *)(dx + 0x2dd4);
+        if (current + needed > 0xa00000) {
+            char *fed = *(char **)imp_frontEndDataOut;
+            if (*(int *)fed != warnCount) {
+                warnCount = *(int *)fed;
+                (*(int (**)(int, const char *, ...))imp_ri)(2, "Exceeded dynamic vertex buffer limit\n");
+            }
+            return 0;
+        }
+        *(int *)(surfPos + 0xc) = *(int *)(dx + 0x2dd0) + current;
+        *(int *)(dx + 0x2dd4) += needed;
+        ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x24))((void *)*(int *)(surfPos + 0xc), needed);
+    }
+    *(int *)surfPos = 3;
+    *(void **)(surfPos + 4) = xsurf;
+    *needSkinningSurf = 1;
+    return 0x10;
+}
+
+#if 0 /* original naked */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1949 */
@@ -2219,6 +2335,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "jmp .Lfd193e_000d1ae8\n"
     );
 }
+#endif /* original naked R_PreSkinStaticSurface */
 
 /* line 2276 — XModel skinning for static models: validates model, computes LOD,
  * gets surfaces, pre-skins, copies to front-end buffer, queues skinning command. */
