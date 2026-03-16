@@ -16,7 +16,6 @@ extern int strcmpi(const char *str1, const char *str2);
 
 static char token[1024]; /* token */
 
-static char * GetToken(Bool readUntilEOL);
 const char * GPValue_GetTopValue(const GPValue * _this);
 Bool GPValue_IsList(const GPValue * _this);
 void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject);
@@ -26,8 +25,8 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
 GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *textPool);
 void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool);
 GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *value, TextPool * *textPool);
-void ZN14GenericParser2D2Ev(void); /* GenericParser2_~GenericParser2 */
-void ZN14GenericParser2D1Ev(void); /* GenericParser2_~GenericParser2 */
+void ZN14GenericParser2D2Ev(GenericParser2 *_this); /* GenericParser2_~GenericParser2 */
+void ZN14GenericParser2D1Ev(GenericParser2 *_this); /* GenericParser2_~GenericParser2 */
 Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool);
 Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cleanFirst, int writeable);
 
@@ -231,11 +230,24 @@ finish_token:
     return token;
 }
 
-/* line 30 */
+/* line 30 — GetToken: originally register convention (eax=text, edx=allowLineBreaks, ecx=readUntilEOL).
+ * All active callers now use GetToken_impl directly; this wrapper is kept for completeness.
+ */
+#if 0 /* Original ASM — register convention naked trampoline + full body */
 static __attribute__((naked))
 char * GetToken(Bool readUntilEOL)
 {
-#if 0 /* Original ASM */
+    /* Register convention trampoline: eax=text(char**), edx=allowLineBreaks, ecx=readUntilEOL */
+    __asm__ __volatile__ (
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll GetToken_impl\n"
+        "addl $12, %esp\n"
+        "retl\n"
+    );
+
+    /* Original full ASM body */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 30 */
         "movl %esp, %ebp\n"
@@ -470,17 +482,8 @@ char * GetToken(Bool readUntilEOL)
         "jg .Lfabf10_000ac00b\n"
         "jmp .Lfabf10_000ac02e\n"
     );
-#endif /* Original ASM */
-    /* Register convention trampoline: eax=text(char**), edx=allowLineBreaks, ecx=readUntilEOL */
-    __asm__ __volatile__ (
-        "pushl %ecx\n"
-        "pushl %edx\n"
-        "pushl %eax\n"
-        "calll GetToken_impl\n"
-        "addl $12, %esp\n"
-        "retl\n"
-    );
 }
+#endif /* Original ASM */
 
 /* line 335 */
 const char * GPValue_GetTopValue(const GPValue * _this)
@@ -1457,18 +1460,9 @@ static void GenericParser2_Destroy(byte *self)
 }
 
 /* line 825 */
-void ZN14GenericParser2D2Ev(void) /* GenericParser2_~GenericParser2 */
+void ZN14GenericParser2D2Ev(GenericParser2 *_this) /* GenericParser2_~GenericParser2 */
 {
-    /* cdecl: this at 8(%ebp) */
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl 8(%ebp)\n"
-        "calll GenericParser2_Destroy\n"
-        "addl $4, %esp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GenericParser2_Destroy((byte *)_this);
 #if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 825 */
@@ -1516,18 +1510,9 @@ void ZN14GenericParser2D2Ev(void) /* GenericParser2_~GenericParser2 */
 }
 
 /* line 825 */
-void ZN14GenericParser2D1Ev(void) /* GenericParser2_~GenericParser2 */
+void ZN14GenericParser2D1Ev(GenericParser2 *_this) /* GenericParser2_~GenericParser2 */
 {
-    /* cdecl: this at 8(%ebp) — identical to D2 */
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl 8(%ebp)\n"
-        "calll GenericParser2_Destroy\n"
-        "addl $4, %esp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GenericParser2_Destroy((byte *)_this);
 #if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 825 */
