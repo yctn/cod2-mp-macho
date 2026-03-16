@@ -148,6 +148,9 @@ void ZN5FlashD1Ev(void); /* Flash_~Flash */
 
 /* Shared helper: release bolt frame reference, free if refcount reaches 0 */
 extern void __ZdaPv(void *ptr);
+extern void FxArchive_ReadData(void *arch, void *data, int size);
+extern void FxArchive_WriteData(void *arch, void *data, int size);
+extern void FxArchive_ArchiveChannelInstance(void *arch, void *channelInst);
 extern byte *__ZN11FxBoltFrame12g_mFrameListE; /* FxBoltFrame::g_mFrameList */
 extern byte __ZTV6Effect[];  /* Effect vtable */
 static void FxBoltFrame_ReleaseHelper(byte *boltFrame)
@@ -1834,72 +1837,40 @@ void ZN6EffectD0Ev(void) /* Effect_~Effect */
 }
 
 /* line 269 */
-__attribute__((naked))
-void Effect_SetBoltFrame(const Effect * _this, FxBoltFramePtr *boltFrame)
+/* Effect_SetBoltFrame — assign bolt frame with reference counting */
+void Effect_SetBoltFrame(const Effect *_this, FxBoltFramePtr *boltFrame)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 269 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* boltFrame */
-        "leal 0xc0(%eax), %ebx\n" /* line 272 | this */
-        /* { scope 1 */
-        "movl 0xc0(%eax), %edx\n" /* line 78 */
-        "cmpl (%esi), %edx\n"
-        "je .Lfa22f6_000a2360\n"
-        "testl %edx, %edx\n" /* line 80 */
-        "je .Lfa22f6_000a2355\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa22f6_000a234f\n"
-        /* { scope 2 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa22f6_000a2343\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa22f6_000a2367\n"
-        ".Lfa22f6_000a2330:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa22f6_000a2343\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa22f6_000a2330\n"
-        ".Lfa22f6_000a233e:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa22f6_000a2343:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa22f6_000a234f\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa22f6_000a234f:\n"
-        "movl $0, (%ebx)\n" /* line 83 */
-        ".Lfa22f6_000a2355:\n"
-        "movl (%esi), %eax\n" /* line 106 */
-        "testl %eax, %eax\n" /* line 85 */
-        "je .Lfa22f6_000a2360\n"
-        "addl $1, (%eax)\n" /* line 39 */
-        "movl %eax, (%ebx)\n" /* line 86 */
-        /* } scope */
-        ".Lfa22f6_000a2360:\n"
-        "addl $0x10, %esp\n" /* line 273 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfa22f6_000a2367:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa22f6_000a233e\n"
-    );
+    byte *self = (byte *)_this;
+    byte **bfSlot = (byte **)(self + 0xc0);
+    byte *newBf = *(byte **)boltFrame;
+    byte *oldBf = *bfSlot;
+
+    if (oldBf == newBf)
+        return;
+
+    /* Release old bolt frame */
+    if (oldBf) {
+        int rc = *(int *)oldBf - 1;
+        *(int *)oldBf = rc;
+        if (rc == 0) {
+            /* Remove from linked list and free */
+            byte **prevNext = &__ZN11FxBoltFrame12g_mFrameListE;
+            byte *cur = *prevNext;
+            while (cur) {
+                if (cur == oldBf) { *prevNext = *(byte **)(oldBf + 0x38); break; }
+                prevNext = (byte **)(cur + 0x38);
+                cur = *prevNext;
+            }
+            if (oldBf) __ZdaPv(oldBf);
+        }
+        *bfSlot = NULL;
+    }
+
+    /* Acquire new bolt frame */
+    if (newBf) {
+        *(int *)newBf += 1;
+        *bfSlot = newBf;
+    }
 }
 
 /* line 1041 */
@@ -9990,94 +9961,22 @@ void Effect_Archive(const Effect * _this, FxArchive *arch)
     );
 }
 
-/* line 2220 */
-__attribute__((naked))
-void Light_Archive(const Light * _this, FxArchive *arch)
+/* Light_Archive — Effect_Archive + 4 channels + 2 floats (0xc4, 0xc8) */
+void Light_Archive(const Light *_this, FxArchive *arch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2220 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* arch */
-        "movl %ebx, 4(%esp)\n" /* line 2224 | arch */
-        "movl %esi, (%esp)\n" /* this */
-        "calll Effect_Archive\n"
-        "leal 0xcc(%esi), %eax\n" /* line 2226 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "leal 0xd8(%esi), %eax\n" /* line 2227 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "leal 0xe4(%esi), %eax\n" /* line 2228 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "leal 0xf0(%esi), %eax\n" /* line 2229 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "cmpb $0, 4(%ebx)\n" /* line 213 */
-        "je .Lfa8c6e_000a8d22\n"
-        /* { scope 1 */
-        "movl $4, 8(%esp)\n" /* line 108 */
-        "leal -0x1c(%ebp), %edi\n" /* f */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 214 | f */
-        "movl %eax, 0xc4(%esi)\n"
-        "cmpb $0, 4(%ebx)\n" /* line 213 */
-        "je .Lfa8c6e_000a8d48\n"
-        /* { scope 1 */
-        ".Lfa8c6e_000a8cfd:\n"
-        "movl $4, 8(%esp)\n" /* line 108 */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 214 | f */
-        "movl %eax, 0xc8(%esi)\n"
-        "addl $0x2c, %esp\n" /* line 2233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa8c6e_000a8d22:\n"
-        "movl 0xc4(%esi), %eax\n" /* line 214 */
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* { scope 1 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %edi\n" /* f */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        "cmpb $0, 4(%ebx)\n" /* line 213 */
-        "jne .Lfa8c6e_000a8cfd\n"
-        ".Lfa8c6e_000a8d48:\n"
-        "movl 0xc8(%esi), %eax\n" /* line 214 */
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* { scope 1 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 2233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+    Effect_Archive((const Effect *)_this, arch);
+    FxArchive_ArchiveChannelInstance(arch, self + 0xcc);
+    FxArchive_ArchiveChannelInstance(arch, self + 0xd8);
+    FxArchive_ArchiveChannelInstance(arch, self + 0xe4);
+    FxArchive_ArchiveChannelInstance(arch, self + 0xf0);
+    /* Float at 0xc4 */
+    if (*(byte *)(a + 4)) { float f; FxArchive_ReadData(arch, &f, 4); *(float *)(self + 0xc4) = f; }
+    else { float f = *(float *)(self + 0xc4); FxArchive_WriteData(arch, &f, 4); }
+    /* Float at 0xc8 */
+    if (*(byte *)(a + 4)) { float f; FxArchive_ReadData(arch, &f, 4); *(float *)(self + 0xc8) = f; }
+    else { float f = *(float *)(self + 0xc8); FxArchive_WriteData(arch, &f, 4); }
 }
 
 /* line 2311 */
