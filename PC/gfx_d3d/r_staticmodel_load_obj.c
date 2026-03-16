@@ -551,9 +551,133 @@ int R_GetStaticModelLightingFromGround(const vec_t *groundLight, float *sunVisib
     return 0;
 }
 
-/* line 658 */
-__attribute__((naked))
+/* line 658 — Creates a static model instance: sets origin/angles/scale, builds bone
+ * rotation matrices from base pose quaternions, computes per-vertex bounds from
+ * all surfaces, applies scale+origin transform, gets LOD distance, filters into cells. */
+extern void AnglesToAxis(const vec_t *angles, void *axis);
+extern void *Hunk_AllocateTempMemoryInternal(int size);
+extern void Hunk_FreeTempMemory(void *mem);
+extern int XModelNumBones(const void *model);
+extern const DObjAnimMat *XModelGetBasePose(const void *model);
+extern int XSurfaceGetNumVerts(void *xsurf);
+extern void XSurfaceGetVerts(void *xsurf, void *matArray, void *vertBuf, void *, void *);
+extern float XModelGetLodOutDist(const void *model);
 int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *origin, const vec_t *angles, vec_t scale, GfxStaticModelInstance *smodelInst)
+{
+    char *si = (char *)smodelInst;
+    void *surfacesPtr;
+    int partBits[4];
+    int surfaceCount, numBones, i;
+    char *matArray, *vertBuf;
+
+    /* Set model, origin, angles→axis, scale */
+    *(void **)(si + 0x10) = model;
+    memcpy(si + 4, origin, 12);
+    AnglesToAxis(angles, si + 0x2c);
+    *(float *)(si + 0x50) = scale;
+
+    /* Init bounds to FLT_MAX / -FLT_MAX */
+    *(int *)(si + 0x14) = 0x7f7fffff;
+    *(int *)(si + 0x18) = 0x7f7fffff;
+    *(int *)(si + 0x1c) = 0x7f7fffff;
+    *(int *)(si + 0x20) = 0xff7fffff;
+    *(int *)(si + 0x24) = 0xff7fffff;
+    *(int *)(si + 0x28) = 0xff7fffff;
+
+    /* Get surfaces for LOD 0 */
+    surfaceCount = XModelGetSurfaces(model, &surfacesPtr, partBits, 0);
+
+    /* Allocate temp buffers for bone matrices and vertices */
+    matArray = (char *)Hunk_AllocateTempMemoryInternal(0x2000);
+    vertBuf = (char *)Hunk_AllocateTempMemoryInternal(0xff78);
+
+    /* Build bone rotation matrices from base pose */
+    numBones = XModelNumBones(model);
+    {
+        const DObjAnimMat *basePose = XModelGetBasePose(model);
+        for (i = 0; i < numBones; i++) {
+            const float *q = basePose[i].quat;
+            float w2 = basePose[i].transWeight;
+            float *m = (float *)(matArray + i * 64);
+
+            float xx2 = w2*q[0], yy2 = w2*q[1], zz2 = w2*q[2];
+            float xx = xx2*q[0], xy = xx2*q[1], xz = xx2*q[2], xw = xx2*q[3];
+            float yy = yy2*q[1], yz = yy2*q[2], yw = yy2*q[3];
+            float zz = zz2*q[2], zw = zz2*q[3];
+
+            m[0] = 1.0f-(yy+zz); m[1] = zw+xy;        m[2] = xz-yw;        m[3] = 0;
+            m[4] = xy-zw;         m[5] = 1.0f-(xx+zz); m[6] = xw+yz;        m[7] = 0;
+            m[8] = xz+yw;         m[9] = yz-xw;        m[10]= 1.0f-(xx+yy); m[11]= 0;
+            memcpy(m+12, basePose[i].trans, 12);
+            m[15] = 1.0f;
+        }
+    }
+
+    /* Compute bounds from all surface vertices */
+    {
+        void **surfs = (void **)surfacesPtr;
+        float *mins = (float *)(si + 0x14);
+        float *maxs = (float *)(si + 0x20);
+        for (i = 0; i < surfaceCount; i++) {
+            int vertCount = XSurfaceGetNumVerts(surfs[i]);
+            XSurfaceGetVerts(surfs[i], matArray, vertBuf, NULL, NULL);
+            {
+                float *v = (float *)vertBuf;
+                int vi;
+                for (vi = 0; vi < vertCount; vi++) {
+                    int axis;
+                    for (axis = 0; axis < 3; axis++) {
+                        float val = v[vi * 3 + axis];
+                        if (val < mins[axis]) mins[axis] = val;
+                        if (val > maxs[axis]) maxs[axis] = val;
+                    }
+                }
+            }
+        }
+    }
+
+    Hunk_FreeTempMemory(vertBuf);
+    Hunk_FreeTempMemory(matArray);
+
+    /* Apply scale + origin to bounds */
+    {
+        float *mins = (float *)(si + 0x14);
+        float *maxs = (float *)(si + 0x20);
+        int a;
+        for (a = 0; a < 3; a++) {
+            mins[a] = mins[a] * scale + origin[a];
+            maxs[a] = maxs[a] * scale + origin[a];
+        }
+    }
+
+    /* Get LOD out distance */
+    {
+        float lodOutDist = XModelGetLodOutDist(model);
+        *(float *)si = lodOutDist * scale;
+    }
+
+    /* Filter into BSP cells */
+    {
+        char *cells = *(char **)((char *)world + 0xc);
+        float *mins = (float *)(si + 0x14);
+        float *maxs = (float *)(si + 0x20);
+        __asm__ __volatile__ (
+            "movl %[si], %%ecx\n"
+            "movl %[cells], %%edx\n"
+            "movl %[world], %%eax\n"
+            "pushl %[maxs]\n"
+            "pushl %[mins]\n"
+            "calll R_FilterStaticModelIntoCells_r\n"
+            "addl $8, %%esp\n"
+            : : [world]"m"(world), [cells]"r"(cells), [si]"m"(smodelInst),
+                [mins]"r"(mins), [maxs]"r"(maxs)
+            : "eax", "ecx", "edx", "memory"
+        );
+    }
+    return 0;
+}
+
+#if 0 /* original naked */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 658 */
@@ -880,6 +1004,7 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
         "jmp .Lf10795e_00107cda\n"
     );
 }
+#endif /* original naked R_CreateStaticModel */
 
 /* line 463 — R_CacheStaticModelLighting
  * Caches per-static-model lighting data into a 3D texture.
