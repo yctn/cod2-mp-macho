@@ -2949,83 +2949,43 @@ qboolean CL_UpdateDirtyPings_f(int source)
     );
 }
 
-/* line 2981 */
-__attribute__((naked))
+/* CL_RunOncePerClientFrame — per-frame timing: avidemo, FPS calc, frame_msec computation */
+/* externs already declared */
 void CL_RunOncePerClientFrame(int msec)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2981 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* msec */
-        "calll UI_IsFullscreen\n" /* line 2998 */
-        "testl %eax, %eax\n"
-        "jne .Lf14ad4e_0014ae2c\n"
-        ".Lf14ad4e_0014ad65:\n"
-        "movl cl_avidemo, %edx\n" /* line 3006 */
-        "movl 8(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf14ad4e_0014ad76\n"
-        "testl %ebx, %ebx\n" /* msec */
-        "jne .Lf14ad4e_0014add8\n"
-        ".Lf14ad4e_0014ad76:\n"
-        "movl cls+272, %eax\n" /* line 3021 */
-        "testl %eax, %eax\n"
-        "jne .Lf14ad4e_0014ae22\n"
-        ".Lf14ad4e_0014ad83:\n"
-        "movl %ebx, cls+284\n" /* line 3025 | msec */
-        "movl %ebx, cls+276\n" /* line 3028 | msec */
-        "addl %ebx, cls+280\n" /* line 3030 | msec */
-        "movl imp_com_frameTime, %eax\n" /* line 3032 */
-        "movl (%eax), %ecx\n"
-        "movl $1, %eax\n" /* line 3034 */
-        "movl %ecx, %edx\n"
-        "subl old_com_frameTime, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, frame_msec\n"
-        "movl $0xc8, %eax\n" /* line 3040 */
-        "cmpl $0xc9, frame_msec\n"
-        "cmovbl frame_msec, %eax\n"
-        "movl %eax, frame_msec\n"
-        "movl %ecx, old_com_frameTime\n" /* line 3042 */
-        "addl $0x14, %esp\n" /* line 3043 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14ad4e_0014add8:\n"
-        "movl clc, %eax\n" /* line 3009 */
-        "cmpl $8, (%eax)\n"
-        "je .Lf14ad4e_0014ae37\n"
-        "movl cl_forceavidemo, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf14ad4e_0014ae37\n"
-        ".Lf14ad4e_0014aded:\n"
-        "cvtsi2ssl 8(%edx), %xmm1\n" /* line 3014 */
-        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "movl imp_com_timescaleValue, %eax\n"
-        "mulss (%eax), %xmm0\n"
-        "cvttss2si %xmm0, %ebx\n" /* msec */
-        "testl %ebx, %ebx\n" /* line 3015 | msec */
-        "movl $1, %eax\n"
-        "cmovel %eax, %ebx\n" /* msec */
-        "movl cls+272, %eax\n" /* line 3021 */
-        "testl %eax, %eax\n"
-        "je .Lf14ad4e_0014ad83\n"
-        ".Lf14ad4e_0014ae22:\n"
-        "calll CG_CalculateFPS\n" /* line 3022 */
-        "jmp .Lf14ad4e_0014ad83\n"
-        ".Lf14ad4e_0014ae2c:\n"
-        "calll *re+340\n" /* line 4981 */
-        "jmp .Lf14ad4e_0014ad65\n"
-        ".Lf14ad4e_0014ae37:\n"
-        "movl $str_002a942c, 4(%esp)\n" /* line 3011 */
-        "movl $0, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "movl cl_avidemo, %edx\n"
-        "jmp .Lf14ad4e_0014aded\n"
-    );
+    /* If fullscreen UI, call re.EndRegistration (re+340) */
+    if (UI_IsFullscreen()) {
+        typedef void (*Fn)(void);
+        ((Fn)(*(void **)((byte *)&re + 340)))();
+    }
+
+    /* Avidemo override: adjust msec based on demo framerate */
+    int avidemoVal = *(int *)((byte *)cl_avidemo + 8);
+    if (avidemoVal && msec) {
+        /* Check if connected or force avidemo */
+        if (*(int *)(byte *)&clc == 8 || *(byte *)((byte *)cl_forceavidemo + 8)) {
+            Cbuf_ExecuteText(0, "screenshot silent\n");
+        }
+        float timescale = *(float *)imp_com_timescaleValue;
+        msec = (int)(1000.0f / (float)avidemoVal * timescale);
+        if (msec == 0) msec = 1;
+    }
+
+    /* FPS calculation if active */
+    if (*(int *)((byte *)&cls + 272))
+        CG_CalculateFPS();
+
+    /* Set frame timing */
+    *(int *)((byte *)&cls + 284) = msec;
+    *(int *)((byte *)&cls + 276) = msec;
+    *(int *)((byte *)&cls + 280) += msec;
+
+    /* Compute frame_msec from com_frameTime delta */
+    int curFrameTime = *(int *)imp_com_frameTime;
+    int delta = curFrameTime - old_com_frameTime;
+    frame_msec = (delta != 0) ? delta : 1;
+    if (frame_msec > 200) frame_msec = 200;
+    old_com_frameTime = curFrameTime;
 }
 
 /* line 2911 */
