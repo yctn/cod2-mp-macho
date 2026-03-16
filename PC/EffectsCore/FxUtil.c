@@ -2884,9 +2884,48 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
     *(float *)(p + 0xc) = newOrigin[2];
 }
 
-/* line 1768 */
-__attribute__((naked))
+/* FX_AddTail — allocate Tail, add to system, init, late time, endpoint setup */
+extern void Tail_Tail(void *tail);
+extern void Tail_InitEndPoint(void *tail);
 void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    byte *p = (byte *)__Znam(0x278);
+    if (p) memset(p, 0, 0x278);
+    Tail_Tail(p);
+    if (!p) return;
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+    vec3_t newOrigin;
+    __asm__ __volatile__ ("pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory");
+    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
+    if (lateTime > 0) {
+        float dt = (float)lateTime * 0.001f;
+        vec3_t velSum;
+        Particle_IntegrateTotalVelocity(p, lateTime, velSum);
+        newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
+    }
+    /* Copy origin */
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    /* Copy endpoint direction = newOrigin - ax[0]*something */
+    float ny = newOrigin[1]; /* saved for below */
+    *(float *)(p + 0x24c) = newOrigin[0] - ((float *)ax)[0];
+    *(float *)(p + 0x250) = ny - ((float *)ax)[1];
+    *(float *)(p + 0x254) = newOrigin[2] - ((float *)ax)[2];
+    /* Random weight */
+    *(float *)(p + 0x25c) = flrand(0.0f, 1.0f);
+    Tail_InitEndPoint(p);
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_AddTail_asm2(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1768 */
@@ -3026,6 +3065,7 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* line 1847 */
 __attribute__((naked))
