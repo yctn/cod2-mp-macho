@@ -5757,6 +5757,7 @@ void FX_DrawScheduledEffects(void)
 
 /* FX_Restore — restore effects from save file: clean, read archive, reconstruct effect list */
 extern void FxArchive_FxArchive(void *arch);
+extern void FxArchive_ReadData(void *arch, void *data, int size);
 extern void FxArchive_BeginReading(void *arch, void *memFile);
 extern void FxHelper_Archive(void *helper, void *arch);
 extern void FxScheduler_Archive(void *scheduler, void *arch);
