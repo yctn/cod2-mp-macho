@@ -1399,57 +1399,19 @@ void BindingFromName(const char *dvar, char *nameBind)
     );
 }
 
-/* line 4467 */
-__attribute__((naked))
+/* GetCommandHasBinding — check if command has a key binding in g_bindings[56] */
 qboolean GetCommandHasBinding(const char *command)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4467 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %esi, %esi\n"
-        "movl $g_bindings, %ebx\n"
-        "movl $g_bindings+12, %edi\n"
-        "jmp .Lf164a5a_00164a7f\n"
-        /* { scope 1 */
-        ".Lf164a5a_00164a71:\n"
-        "addl $1, %esi\n" /* line 4476 | i */
-        "addl $0x14, %edi\n"
-        "addl $0x14, %ebx\n"
-        "cmpl $0x38, %esi\n" /* i */
-        "je .Lf164a5a_00164aa3\n"
-        ".Lf164a5a_00164a7f:\n"
-        "movl (%ebx), %eax\n" /* line 4478 */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* command */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf164a5a_00164a71\n"
-        "cmpl $-1, (%edi)\n" /* line 4481 */
-        "je .Lf164a5a_00164aa3\n"
-        "movb $1, %al\n" /* line 4482 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 4495 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164a5a_00164aa3:\n"
-        "xorl %eax, %eax\n" /* line 4476 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 4495 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    /* g_bindings: 20-byte entries, offset 0=command name, offset 12=key1, offset 16=key2 */
+    int i;
+    for (i = 0; i < 56; i++) {
+        byte *entry = (byte *)g_bindings + i * 20;
+        if (I_stricmp(command, *(const char **)entry) == 0) {
+            if (*(int *)(entry + 12) != -1)
+                return 1;
+        }
+    }
+    return 0;
 }
 
 /* line 4506 */
