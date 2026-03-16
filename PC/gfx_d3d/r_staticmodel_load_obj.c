@@ -1090,9 +1090,169 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
     return 0;
 }
 
-/* line 92 */
-__attribute__((naked))
+/* line 92 — Recursive AABB tree builder: sorts static model indices, computes bounds
+ * from instances, partitions into quadrants based on bounds midpoints, allocates child
+ * nodes, recurses. Original: 472 lines of compiler-unrolled quadrant partitioning.
+ * Algorithm: qsort models → compute bounds → if >7 models, partition into 4 spatial
+ * quadrants using bounds midpoints → allocate Hunk children → recurse each child. */
+extern void *Hunk_AllocAlignInternal(int size, int align);
+extern void qsort(void *, unsigned int, unsigned int, int (*)(const void *, const void *));
 int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
+{
+    char *t = (char *)tree;
+    int smodelCount, childCount_existing, i;
+    float mins[3], maxs[3];
+
+    /* Sort static model indices */
+    qsort(*(void **)(t + 0x24), *(int *)(t + 0x20), 4, (int (*)(const void *, const void *))CompareStaticModels);
+
+    /* If tree has existing children, recurse on them first */
+    childCount_existing = *(int *)(t + 0x28);
+    if (childCount_existing > 0) {
+        char *children = *(char **)(t + 0x2c);
+        for (i = 0; i < childCount_existing; i++)
+            R_SortGfxAabbTree(world, (GfxAabbTree *)(children + i * 0x30));
+        return 0;
+    }
+
+    /* Compute bounds from static model instances */
+    mins[0] = mins[1] = mins[2] = 3.4028234663852886e+38f;
+    maxs[0] = maxs[1] = maxs[2] = -3.4028234663852886e+38f;
+    smodelCount = *(int *)(t + 0x20);
+    {
+        int *indices = *(int **)(t + 0x24);
+        char *smodelInsts = *(char **)((char *)world + 0xf8);
+        for (i = 0; i < smodelCount; i++) {
+            char *inst = smodelInsts + indices[i] * 96;
+            int a;
+            for (a = 0; a < 3; a++) {
+                float lo = *(float *)(inst + 0x14 + a*4);
+                float hi = *(float *)(inst + 0x20 + a*4);
+                if (lo < mins[a]) mins[a] = lo;
+                if (hi > maxs[a]) maxs[a] = hi;
+            }
+        }
+    }
+
+    /* Set bounds if no existing child bounds */
+    if (!*(int *)(t + 0x18)) {
+        memcpy(t, mins, 12);
+        memcpy(t + 0xc, maxs, 12);
+    }
+
+    /* If <= 7 models, this is a leaf — done */
+    if (smodelCount <= 7)
+        return 0;
+
+    /* Partition into quadrants using bounds midpoints.
+     * This is the compiler-unrolled section — 4 passes each testing
+     * static model bounds against x/y midpoint to split into 4 groups. */
+    {
+        float midX = (mins[0] + maxs[0]) * 0.5f;
+        float midY = (mins[1] + maxs[1]) * 0.5f;
+        int *indices = *(int **)(t + 0x24);
+        char *smodelInsts = *(char **)((char *)world + 0xf8);
+        int counts[4] = {0, 0, 0, 0};
+        int remaining = smodelCount;
+        int *ptr = indices;
+
+        /* 4-pass spatial partitioning */
+        int q;
+        float testMins[4][3], testMaxs[4][3];
+        /* Quadrant bounds for classification */
+        for (q = 0; q < 4; q++) {
+            testMins[q][0] = (q & 1) ? midX : mins[0];
+            testMins[q][1] = (q & 2) ? midY : mins[1];
+            testMins[q][2] = mins[2];
+            testMaxs[q][0] = (q & 1) ? maxs[0] : midX;
+            testMaxs[q][1] = (q & 2) ? maxs[1] : midY;
+            testMaxs[q][2] = maxs[2];
+        }
+
+        int partStart = 0;
+        for (q = 0; q < 4; q++) {
+            int count = 0;
+            int *front = indices + partStart;
+            for (i = 0; i < remaining; i++) {
+                int idx = ptr[i];
+                char *inst = smodelInsts + idx * 96;
+                /* Test if instance fits in this quadrant */
+                if (*(float *)(inst + 0x14) >= testMins[q][0] &&
+                    *(float *)(inst + 0x18) >= testMins[q][1] &&
+                    *(float *)(inst + 0x1c) >= testMins[q][2] &&
+                    *(float *)(inst + 0x20) <= testMaxs[q][0] &&
+                    *(float *)(inst + 0x24) <= testMaxs[q][1] &&
+                    *(float *)(inst + 0x28) <= testMaxs[q][2])
+                {
+                    /* Swap to front */
+                    int tmp = *front;
+                    *front = idx;
+                    ptr[i] = tmp;
+                    front++;
+                    count++;
+                }
+            }
+            counts[q] = count > 1 ? count : 0;
+            if (count > 1) {
+                partStart += count;
+                remaining -= count;
+                ptr = indices + partStart;
+            }
+        }
+
+        /* Count non-empty partitions, allocate children */
+        int numChildren = 0;
+        for (q = 0; q < 4; q++)
+            if (counts[q]) numChildren++;
+        if (*(int *)(t + 0x18)) numChildren++;
+        if (remaining > 0) numChildren++;
+
+        if (numChildren == 0)
+            return 0;
+
+        char *childNodes = (char *)Hunk_AllocAlignInternal(numChildren * 0x30, 4);
+        *(void **)(t + 0x2c) = childNodes;
+
+        /* Copy existing node data to first child if needed */
+        if (*(int *)(t + 0x18)) {
+            int ci = *(int *)(t + 0x28);
+            char *child = childNodes + ci * 0x30;
+            memcpy(child, t, 0x18);
+            *(int *)(child + 0x1c) = *(int *)(t + 0x1c);
+            *(int *)(child + 0x18) = *(int *)(t + 0x18);
+            *(int *)(t + 0x28) = ci + 1;
+        }
+
+        /* Create child nodes for each non-empty partition */
+        int *partPtr = indices;
+        for (q = 0; q < 4; q++) {
+            if (!counts[q]) continue;
+            int ci = *(int *)(t + 0x28);
+            char *child = childNodes + ci * 0x30;
+            *(int *)(t + 0x28) = ci + 1;
+            *(int *)(child + 0x20) = counts[q];
+            *(void **)(child + 0x24) = partPtr;
+            R_SortGfxAabbTree(world, (GfxAabbTree *)child);
+            partPtr += counts[q];
+        }
+
+        /* Remaining models become a leaf child */
+        if (remaining > 0) {
+            int ci = *(int *)(t + 0x28);
+            char *child = childNodes + ci * 0x30;
+            *(int *)(t + 0x28) = ci + 1;
+            *(int *)(child + 0x20) = remaining;
+            *(void **)(child + 0x24) = partPtr;
+            tree = (GfxAabbTree *)child;
+            goto recurse_top;
+        }
+    }
+    return 0;
+recurse_top:
+    return R_SortGfxAabbTree(world, tree);
+}
+
+#if 0 /* original naked (472 lines) */
 {
     __asm__ __volatile__ (
         ".Lf1080c2_001080c2:\n"
@@ -1565,6 +1725,7 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
         "jmp .Lf1080c2_00108609\n"
     );
 }
+#endif /* original naked R_SortGfxAabbTree */
 
 /* line 28 */
 /* line 28 — Recursively allocate permanent Hunk memory for static model index
