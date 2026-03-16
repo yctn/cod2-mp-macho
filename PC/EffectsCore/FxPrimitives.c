@@ -146,6 +146,30 @@ Bool Flash_Cull(const Flash * _this);
 void ZN5FlashD0Ev(void); /* Flash_~Flash */
 void ZN5FlashD1Ev(void); /* Flash_~Flash */
 
+/* Shared helper: release bolt frame reference, free if refcount reaches 0 */
+extern void __ZdaPv(void *ptr);
+extern byte *__ZN11FxBoltFrame12g_mFrameListE; /* FxBoltFrame::g_mFrameList */
+extern byte __ZTV6Effect[];  /* Effect vtable */
+static void FxBoltFrame_ReleaseHelper(byte *boltFrame)
+{
+    if (!boltFrame) return;
+    int refCount = *(int *)boltFrame - 1;
+    *(int *)boltFrame = refCount;
+    if (refCount != 0) return;
+    /* Remove from g_mFrameList linked list */
+    byte **prevNext = &__ZN11FxBoltFrame12g_mFrameListE;
+    byte *cur = *prevNext;
+    while (cur) {
+        if (cur == boltFrame) {
+            *prevNext = *(byte **)(boltFrame + 0x38);
+            break;
+        }
+        prevNext = (byte **)(cur + 0x38);
+        cur = *prevNext;
+    }
+    if (boltFrame) __ZdaPv(boltFrame);
+}
+
 /* line 69 */
 __attribute__((naked))
 void FxBoltFrame_Release(const FxBoltFrame * _this)
@@ -1595,55 +1619,20 @@ void Light_UpdateRGB(const Light * _this, const Light * _this_1)
 }
 
 /* line 182 */
+/* Effect D1 destructor — cleanup bolt frame */
+void ZN6EffectD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN6EffectD1Ev(void) /* Effect_~Effect */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 182 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n"
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa202a_000a2078\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa202a_000a2078\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa202a_000a206b\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "je .Lfa202a_000a207a\n"
-        ".Lfa202a_000a2058:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa202a_000a206b\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "jne .Lfa202a_000a2058\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa202a_000a206b:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa202a_000a2078\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 184 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa202a_000a2078:\n"
-        "popl %ebp\n" /* line 184 */
+        "pushl 8(%esp)\n"
+        "calll ZN6EffectD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa202a_000a207a:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa202a_000a206b\n"
     );
 }
 
@@ -1868,63 +1857,21 @@ void FxBoltFramePtr_Archive(const FxBoltFramePtr * _this, FxArchive *arch)
 }
 
 /* line 182 */
+/* Effect D0 destructor — cleanup bolt frame + delete this */
+void ZN6EffectD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN6EffectD0Ev(void) /* Effect_~Effect */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 182 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* this */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa2286_000a22d7\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa2286_000a22d7\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa2286_000a22cb\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "je .Lfa2286_000a22ee\n"
-        ".Lfa2286_000a22b8:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa2286_000a22cb\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa2286_000a22b8\n"
-        ".Lfa2286_000a22c6:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa2286_000a22cb:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa2286_000a22d7\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa2286_000a22d7:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfa2286_000a22e8\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 184 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfa2286_000a22e8:\n"
-        "addl $0x14, %esp\n" /* line 184 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN6EffectD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa2286_000a22ee:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa2286_000a22c6\n"
     );
 }
 
@@ -2777,117 +2724,40 @@ void Particle_Particle(const Particle * _this)
 
 /* overload skip: Particle_Particle (0xa2e3c) */
 
-/* line 366 */
+/* Particle D1 destructor — cleanup bolt frame, set vtable to Effect base */
+void ZN8ParticleD1Ev_impl(void *_this)
+{
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN8ParticleD1Ev(void) /* Particle_~Particle */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 366 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa2e68_000a2eb6\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa2e68_000a2eb6\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa2e68_000a2ea9\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "je .Lfa2e68_000a2eb8\n"
-        ".Lfa2e68_000a2e96:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa2e68_000a2ea9\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa2e68_000a2e96\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa2e68_000a2ea9:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa2e68_000a2eb6\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 368 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa2e68_000a2eb6:\n"
-        "popl %ebp\n" /* line 368 */
+        "pushl 8(%esp)\n"
+        "calll ZN8ParticleD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa2e68_000a2eb8:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa2e68_000a2ea9\n"
     );
 }
 
-/* line 366 */
+/* Particle D0 destructor — cleanup bolt frame + delete this */
+void ZN8ParticleD0Ev_impl(void *_this)
+{
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN8ParticleD0Ev(void) /* Particle_~Particle */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 366 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa2ec4_000a2f15\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa2ec4_000a2f15\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa2ec4_000a2f09\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa2ec4_000a2f2c\n"
-        ".Lfa2ec4_000a2ef6:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa2ec4_000a2f09\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa2ec4_000a2ef6\n"
-        ".Lfa2ec4_000a2f04:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa2ec4_000a2f09:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa2ec4_000a2f15\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa2ec4_000a2f15:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfa2ec4_000a2f26\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 368 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfa2ec4_000a2f26:\n"
-        "addl $0x14, %esp\n" /* line 368 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN8ParticleD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa2ec4_000a2f2c:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa2ec4_000a2f04\n"
     );
 }
 
@@ -2901,116 +2771,39 @@ void Light_Light(const Light * _this)
 /* overload skip: Light_Light (0xa2f4c) */
 
 /* line 2136 */
+/* Light D1 destructor — cleanup bolt frame */
+void ZN5LightD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN5LightD1Ev(void) /* Light_~Light */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2136 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa2f64_000a2fb2\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa2f64_000a2fb2\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa2f64_000a2fa5\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "je .Lfa2f64_000a2fb4\n"
-        ".Lfa2f64_000a2f92:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa2f64_000a2fa5\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa2f64_000a2f92\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa2f64_000a2fa5:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa2f64_000a2fb2\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 2138 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa2f64_000a2fb2:\n"
-        "popl %ebp\n" /* line 2138 */
+        "pushl 8(%esp)\n"
+        "calll ZN5LightD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa2f64_000a2fb4:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa2f64_000a2fa5\n"
     );
 }
 
 /* line 2136 */
+/* Light D0 destructor — cleanup bolt frame + delete this */
+void ZN5LightD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN5LightD0Ev(void) /* Light_~Light */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2136 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa2fc0_000a3011\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa2fc0_000a3011\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa2fc0_000a3005\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa2fc0_000a3028\n"
-        ".Lfa2fc0_000a2ff2:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa2fc0_000a3005\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa2fc0_000a2ff2\n"
-        ".Lfa2fc0_000a3000:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa2fc0_000a3005:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa2fc0_000a3011\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa2fc0_000a3011:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfa2fc0_000a3022\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 2138 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfa2fc0_000a3022:\n"
-        "addl $0x14, %esp\n" /* line 2138 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN5LightD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa2fc0_000a3028:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa2fc0_000a3000\n"
     );
 }
 
@@ -11652,116 +11445,39 @@ void Emitter_Archive(const Emitter * _this, FxArchive *arch)
 }
 
 /* line 1732 */
+/* Cylinder D0 destructor — cleanup bolt frame + delete this */
+void ZN8CylinderD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN8CylinderD0Ev(void) /* Cylinder_~Cylinder */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1732 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa9e16_000a9e67\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa9e16_000a9e67\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa9e16_000a9e5b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa9e16_000a9e7e\n"
-        ".Lfa9e16_000a9e48:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa9e16_000a9e5b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa9e16_000a9e48\n"
-        ".Lfa9e16_000a9e56:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa9e16_000a9e5b:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa9e16_000a9e67\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa9e16_000a9e67:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfa9e16_000a9e78\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1734 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfa9e16_000a9e78:\n"
-        "addl $0x14, %esp\n" /* line 1734 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN8CylinderD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa9e16_000a9e7e:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa9e16_000a9e56\n"
     );
 }
 
 /* line 1732 */
+/* Cylinder D1 destructor — cleanup bolt frame */
+void ZN8CylinderD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN8CylinderD1Ev(void) /* Cylinder_~Cylinder */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1732 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa9e86_000a9ed4\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa9e86_000a9ed4\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa9e86_000a9ec7\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa9e86_000a9ed6\n"
-        ".Lfa9e86_000a9eb4:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa9e86_000a9ec7\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa9e86_000a9eb4\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa9e86_000a9ec7:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa9e86_000a9ed4\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1734 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa9e86_000a9ed4:\n"
-        "popl %ebp\n" /* line 1734 */
+        "pushl 8(%esp)\n"
+        "calll ZN8CylinderD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa9e86_000a9ed6:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa9e86_000a9ec7\n"
     );
 }
 
@@ -11782,116 +11498,39 @@ void OrientedParticle_OrientedParticle(const OrientedParticle * _this)
 }
 
 /* line 1265 */
+/* OrientedParticle D1 destructor — cleanup bolt frame */
+void ZN16OrientedParticleD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN16OrientedParticleD1Ev(void) /* OrientedParticle_~OrientedParticle */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1265 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa9f1e_000a9f6c\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa9f1e_000a9f6c\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa9f1e_000a9f5f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa9f1e_000a9f6e\n"
-        ".Lfa9f1e_000a9f4c:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa9f1e_000a9f5f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa9f1e_000a9f4c\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa9f1e_000a9f5f:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa9f1e_000a9f6c\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1267 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa9f1e_000a9f6c:\n"
-        "popl %ebp\n" /* line 1267 */
+        "pushl 8(%esp)\n"
+        "calll ZN16OrientedParticleD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa9f1e_000a9f6e:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa9f1e_000a9f5f\n"
     );
 }
 
 /* line 1265 */
+/* OrientedParticle D0 destructor — cleanup bolt frame + delete this */
+void ZN16OrientedParticleD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN16OrientedParticleD0Ev(void) /* OrientedParticle_~OrientedParticle */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1265 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfa9f7a_000a9fcb\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa9f7a_000a9fcb\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa9f7a_000a9fbf\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfa9f7a_000a9fe2\n"
-        ".Lfa9f7a_000a9fac:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa9f7a_000a9fbf\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa9f7a_000a9fac\n"
-        ".Lfa9f7a_000a9fba:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa9f7a_000a9fbf:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa9f7a_000a9fcb\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfa9f7a_000a9fcb:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfa9f7a_000a9fdc\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1267 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfa9f7a_000a9fdc:\n"
-        "addl $0x14, %esp\n" /* line 1267 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN16OrientedParticleD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfa9f7a_000a9fe2:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfa9f7a_000a9fba\n"
     );
 }
 
@@ -11911,116 +11550,39 @@ void Cloud_Cloud(const Cloud * _this, const Cloud * _this_1)
 }
 
 /* line 1347 */
+/* Cloud D1 destructor — cleanup bolt frame */
+void ZN5CloudD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN5CloudD1Ev(void) /* Cloud_~Cloud */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1347 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa112_000aa160\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa112_000aa160\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa112_000aa153\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa112_000aa162\n"
-        ".Lfaa112_000aa140:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa112_000aa153\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa112_000aa140\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa112_000aa153:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa112_000aa160\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1349 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfaa112_000aa160:\n"
-        "popl %ebp\n" /* line 1349 */
+        "pushl 8(%esp)\n"
+        "calll ZN5CloudD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa112_000aa162:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfaa112_000aa153\n"
     );
 }
 
 /* line 1347 */
+/* Cloud D0 destructor — cleanup bolt frame + delete this */
+void ZN5CloudD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN5CloudD0Ev(void) /* Cloud_~Cloud */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1347 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa16e_000aa1bf\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa16e_000aa1bf\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa16e_000aa1b3\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa16e_000aa1d6\n"
-        ".Lfaa16e_000aa1a0:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa16e_000aa1b3\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa16e_000aa1a0\n"
-        ".Lfaa16e_000aa1ae:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa16e_000aa1b3:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa16e_000aa1bf\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfaa16e_000aa1bf:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfaa16e_000aa1d0\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1349 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfaa16e_000aa1d0:\n"
-        "addl $0x14, %esp\n" /* line 1349 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN5CloudD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa16e_000aa1d6:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfaa16e_000aa1ae\n"
     );
 }
 
@@ -12033,116 +11595,39 @@ void Line_Line(const Line * _this)
 }
 
 /* line 1504 */
+/* Line D1 destructor — cleanup bolt frame */
+void ZN4LineD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN4LineD1Ev(void) /* Line_~Line */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1504 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa1fe_000aa24c\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa1fe_000aa24c\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa1fe_000aa23f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa1fe_000aa24e\n"
-        ".Lfaa1fe_000aa22c:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa1fe_000aa23f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa1fe_000aa22c\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa1fe_000aa23f:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa1fe_000aa24c\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1506 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfaa1fe_000aa24c:\n"
-        "popl %ebp\n" /* line 1506 */
+        "pushl 8(%esp)\n"
+        "calll ZN4LineD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa1fe_000aa24e:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfaa1fe_000aa23f\n"
     );
 }
 
 /* line 1504 */
+/* Line D0 destructor — cleanup bolt frame + delete this */
+void ZN4LineD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN4LineD0Ev(void) /* Line_~Line */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1504 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa25a_000aa2ab\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa25a_000aa2ab\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa25a_000aa29f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa25a_000aa2c2\n"
-        ".Lfaa25a_000aa28c:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa25a_000aa29f\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa25a_000aa28c\n"
-        ".Lfaa25a_000aa29a:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa25a_000aa29f:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa25a_000aa2ab\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfaa25a_000aa2ab:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfaa25a_000aa2bc\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1506 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfaa25a_000aa2bc:\n"
-        "addl $0x14, %esp\n" /* line 1506 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN4LineD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa25a_000aa2c2:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfaa25a_000aa29a\n"
     );
 }
 
@@ -12155,116 +11640,39 @@ void Tail_Tail(const Tail * _this)
 }
 
 /* line 1584 */
+/* Tail D1 destructor — cleanup bolt frame */
+void ZN4TailD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN4TailD1Ev(void) /* Tail_~Tail */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1584 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa2ea_000aa338\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa2ea_000aa338\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa2ea_000aa32b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa2ea_000aa33a\n"
-        ".Lfaa2ea_000aa318:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa2ea_000aa32b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa2ea_000aa318\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa2ea_000aa32b:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa2ea_000aa338\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1586 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfaa2ea_000aa338:\n"
-        "popl %ebp\n" /* line 1586 */
+        "pushl 8(%esp)\n"
+        "calll ZN4TailD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa2ea_000aa33a:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfaa2ea_000aa32b\n"
     );
 }
 
 /* line 1584 */
+/* Tail D0 destructor — cleanup bolt frame + delete this */
+void ZN4TailD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN4TailD0Ev(void) /* Tail_~Tail */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1584 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa346_000aa397\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa346_000aa397\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa346_000aa38b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa346_000aa3ae\n"
-        ".Lfaa346_000aa378:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa346_000aa38b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa346_000aa378\n"
-        ".Lfaa346_000aa386:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa346_000aa38b:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa346_000aa397\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfaa346_000aa397:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfaa346_000aa3a8\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1586 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfaa346_000aa3a8:\n"
-        "addl $0x14, %esp\n" /* line 1586 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN4TailD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa346_000aa3ae:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfaa346_000aa386\n"
     );
 }
 
@@ -12277,116 +11685,39 @@ void Emitter_Emitter(const Emitter * _this)
 }
 
 /* line 1809 */
+/* Emitter D1 destructor — cleanup bolt frame */
+void ZN7EmitterD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN7EmitterD1Ev(void) /* Emitter_~Emitter */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1809 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa3d6_000aa424\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa3d6_000aa424\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa3d6_000aa417\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa3d6_000aa426\n"
-        ".Lfaa3d6_000aa404:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa3d6_000aa417\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa3d6_000aa404\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa3d6_000aa417:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa3d6_000aa424\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 1811 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfaa3d6_000aa424:\n"
-        "popl %ebp\n" /* line 1811 */
+        "pushl 8(%esp)\n"
+        "calll ZN7EmitterD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa3d6_000aa426:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfaa3d6_000aa417\n"
     );
 }
 
 /* line 1809 */
+/* Emitter D0 destructor — cleanup bolt frame + delete this */
+void ZN7EmitterD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN7EmitterD0Ev(void) /* Emitter_~Emitter */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1809 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lfaa432_000aa483\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfaa432_000aa483\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfaa432_000aa477\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lfaa432_000aa49a\n"
-        ".Lfaa432_000aa464:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfaa432_000aa477\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfaa432_000aa464\n"
-        ".Lfaa432_000aa472:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfaa432_000aa477:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfaa432_000aa483\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lfaa432_000aa483:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lfaa432_000aa494\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1811 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lfaa432_000aa494:\n"
-        "addl $0x14, %esp\n" /* line 1811 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN7EmitterD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfaa432_000aa49a:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lfaa432_000aa472\n"
     );
 }
 
@@ -12408,116 +11739,39 @@ Bool Flash_Cull(const Flash * _this)
 }
 
 /* line 282 */
+/* Flash D0 destructor — cleanup bolt frame + delete this */
+void ZN5FlashD0Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+    if (self) __ZdaPv(self);
+}
 __attribute__((naked))
 void ZN5FlashD0Ev(void) /* Flash_~Flash */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 282 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
-        "movl 0xc0(%ebx), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lf2bf27a_002bf2cb\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lf2bf27a_002bf2cb\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lf2bf27a_002bf2bf\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lf2bf27a_002bf2e2\n"
-        ".Lf2bf27a_002bf2ac:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf2bf27a_002bf2bf\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lf2bf27a_002bf2ac\n"
-        ".Lf2bf27a_002bf2ba:\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lf2bf27a_002bf2bf:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lf2bf27a_002bf2cb\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        /* } scope */
-        ".Lf2bf27a_002bf2cb:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf2bf27a_002bf2dc\n"
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 282 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp __ZdaPv\n" /* line 35 */
-        ".Lf2bf27a_002bf2dc:\n"
-        "addl $0x14, %esp\n" /* line 282 */
-        "popl %ebx\n"
-        "popl %ebp\n"
+        "pushl 8(%esp)\n"
+        "calll ZN5FlashD0Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lf2bf27a_002bf2e2:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "jmp .Lf2bf27a_002bf2ba\n"
     );
 }
 
 /* line 282 */
+/* Flash D1 destructor — cleanup bolt frame */
+void ZN5FlashD1Ev_impl(void *_this) {
+    byte *self = (byte *)_this;
+    *(void **)self = __ZTV6Effect + 8;
+    FxBoltFrame_ReleaseHelper(*(byte **)(self + 0xc0));
+}
 __attribute__((naked))
 void ZN5FlashD1Ev(void) /* Flash_~Flash */
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 282 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
-        "movl 0xc0(%eax), %edx\n" /* line 60 */
-        "testl %edx, %edx\n"
-        "je .Lf2bf2ea_002bf338\n"
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lf2bf2ea_002bf338\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lf2bf2ea_002bf32b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "je .Lf2bf2ea_002bf33a\n"
-        ".Lf2bf2ea_002bf318:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf2bf2ea_002bf32b\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lf2bf2ea_002bf318\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lf2bf2ea_002bf32b:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lf2bf2ea_002bf338\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 282 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lf2bf2ea_002bf338:\n"
-        "popl %ebp\n" /* line 282 */
+        "pushl 8(%esp)\n"
+        "calll ZN5FlashD1Ev_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lf2bf2ea_002bf33a:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lf2bf2ea_002bf32b\n"
     );
 }
 

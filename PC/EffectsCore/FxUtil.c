@@ -3227,9 +3227,50 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
     );
 }
 
-/* line 2013 */
-__attribute__((naked))
+/* FX_AddOrientedParticle — allocate, add, init, material, late time, copy normal+origin */
+extern void OrientedParticle_OrientedParticle(void *op);
 void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    byte *p = (byte *)__Znam(0x258);
+    if (p) memset(p, 0, 0x258);
+    OrientedParticle_OrientedParticle(p);
+    if (!p) return;
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+    vec3_t newOrigin;
+    __asm__ __volatile__ ("pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory");
+    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
+    if (lateTime > 0) {
+        float dt = (float)lateTime * 0.001f;
+        vec3_t velSum;
+        Particle_IntegrateTotalVelocity(p, lateTime, velSum);
+        newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
+    }
+    /* Copy normal to p+0x24c — either direct or via bolt orientation */
+    vec3_t normal;
+    normal[0] = ((float *)ax)[0]; normal[1] = ((float *)ax)[1]; normal[2] = ((float *)ax)[2];
+    void *bolt = *(void **)((byte *)prim + 8);
+    if (bolt) {
+        void *orient = FxBoltFrame_GetOrientation(bolt);
+        vec3_t localNormal;
+        OrientationDirFromWorldDir(orient, normal, localNormal);
+        *(float *)(p + 0x24c) = localNormal[0]; *(float *)(p + 0x250) = localNormal[1]; *(float *)(p + 0x254) = localNormal[2];
+    } else {
+        *(float *)(p + 0x24c) = normal[0]; *(float *)(p + 0x250) = normal[1]; *(float *)(p + 0x254) = normal[2];
+    }
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_AddOrientedParticle_original(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2013 */
@@ -3386,6 +3427,7 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* FX_UpdateScheduledEffectsNonBolt — update non-bolt effects: expire dead, cull visible */
 extern void *imp_fx_enable;
