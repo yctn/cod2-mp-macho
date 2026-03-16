@@ -3,10 +3,16 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/EffectsCore/GenericParser2.h"
  */
+
+extern void Z_FreeInternal(void *ptr);
+extern void *Z_MallocInternal(int size);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern int strcmpi(const char *str1, const char *str2);
 
 static char token[1024]; /* token */
 
@@ -25,10 +31,211 @@ void ZN14GenericParser2D1Ev(void); /* GenericParser2_~GenericParser2 */
 Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool);
 Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cleanFirst, int writeable);
 
+/* ================================================================
+ * GetToken — register convention: eax=text(char**), edx=allowLineBreaks, ecx=readUntilEOL
+ * Returns pointer to static token buffer.
+ * ================================================================ */
+static char * GetToken_impl(char **text, int allowLineBreaks, int readUntilEOL)
+{
+    char *pointer;
+    int length;
+    int foundNewline;
+
+    pointer = *text;
+    token[0] = '\0';
+
+    if (!pointer) {
+        return token;
+    }
+
+    /* Skip whitespace, comments */
+    while (1) {
+        unsigned char ch = (unsigned char)*pointer;
+
+        /* Skip whitespace */
+        while (ch && ch <= 0x20) {
+            if (ch == '\n') {
+                foundNewline = 1;
+            }
+            pointer++;
+            ch = (unsigned char)*pointer;
+            if (ch > 0x20) {
+                /* Non-whitespace found; check if we hit a newline and shouldn't cross lines */
+                if (foundNewline && !allowLineBreaks) {
+                    *text = pointer;
+                    return token;
+                }
+                goto check_comment;
+            }
+            if (!ch) {
+                break;
+            }
+        }
+
+        if (!ch) {
+            *text = 0;
+            return token;
+        }
+
+check_comment:
+        foundNewline = 0;
+        if (ch == '/') {
+            unsigned char next = (unsigned char)pointer[1];
+            if (next == '/') {
+                /* Single-line comment: skip to end of line */
+                pointer += 2;
+                while (1) {
+                    ch = (unsigned char)*pointer;
+                    if (!ch) break;
+                    if (ch == '\n') break;
+                    pointer++;
+                }
+                continue;
+            } else if (next == '*') {
+                /* Multi-line comment: skip to */
+                pointer += 2;
+                while (1) {
+                    ch = (unsigned char)*pointer;
+                    if (!ch) break;
+                    if (ch == '*' && pointer[1] == '/') {
+                        pointer += 2;
+                        break;
+                    }
+                    pointer++;
+                }
+                continue;
+            }
+            /* Not a comment — '/' is a regular character, fall through */
+        }
+
+        break; /* Not whitespace or comment, proceed to tokenize */
+    }
+
+    /* At this point, *pointer is the first non-whitespace, non-comment char */
+    {
+        unsigned char ch = (unsigned char)*pointer;
+
+        if (ch == '"' && !readUntilEOL) {
+            /* Quoted string */
+            pointer++; /* skip opening quote */
+            length = 0;
+            while (1) {
+                ch = (unsigned char)*pointer;
+                pointer++;
+                if (ch == '"') break;
+                if (!ch) break;
+                if (length <= 0x3ff) {
+                    token[length] = (char)ch;
+                    length++;
+                }
+            }
+            /* Check if token starts with '"', strip surrounding quotes via memmove */
+            if (token[0] == '"') {
+                int newLen = length - 1;
+                memmove(token, token + 1, newLen);
+                length = newLen;
+                if (newLen > 0 && token[length - 2] == '"') {
+                    length = length - 2;
+                }
+            }
+        } else if (readUntilEOL) {
+            /* Read until end-of-line mode */
+            length = 0;
+            while (1) {
+                /* Check for comment start */
+                if (ch == '/') {
+                    unsigned char next = (unsigned char)pointer[1];
+                    if (next == '/' || next == '*') {
+                        break; /* Stop at comment */
+                    }
+                    pointer++;
+                } else {
+                    pointer++;
+                }
+                if (length <= 0x3ff) {
+                    token[length] = (char)ch;
+                    length++;
+                }
+                ch = (unsigned char)*pointer;
+                if (ch == '\n' || ch == '\r') break;
+            }
+            /* Strip trailing whitespace */
+            if (length > 0) {
+                int trimLen = length - 1;
+                if ((unsigned char)token[trimLen] <= 0x1f) {
+                    /* Walk backwards stripping control chars */
+                    int count = 0;
+                    while (trimLen > count) {
+                        if ((unsigned char)token[trimLen - count - 1] > 0x1f) {
+                            break;
+                        }
+                        count++;
+                    }
+                    length = trimLen - count;
+                }
+            }
+        } else {
+            /* Regular (unquoted, non-EOL) token */
+            if (ch == '/') {
+                ch = '/'; /* not a comment, treat '/' as start of token */
+            }
+            length = 0;
+            /* Read token char */
+            token[length] = (char)ch;
+            length++;
+            if (length > 0x3ff) {
+                /* Token too long, skip remaining non-whitespace */
+                pointer++;
+                while ((unsigned char)*pointer > 0x20) {
+                    pointer++;
+                }
+            } else {
+                /* Read next chars */
+                pointer++;
+                ch = (unsigned char)*pointer;
+                while (ch > 0x20) {
+                    token[length] = (char)ch;
+                    length++;
+                    if (length > 0x3ff) {
+                        pointer++;
+                        while ((unsigned char)*pointer > 0x20) {
+                            pointer++;
+                        }
+                        goto finish_token;
+                    }
+                    pointer++;
+                    ch = (unsigned char)*pointer;
+                }
+            }
+        }
+
+finish_token:
+        /* Check if token starts with '"' and strip quotes */
+        if (token[0] == '"') {
+            int newLen = length - 1;
+            memmove(token, token + 1, newLen);
+            length = newLen;
+            if (newLen > 0 && token[length - 2] == '"') {
+                length = length - 2;
+            }
+        }
+
+        /* Null-terminate */
+        if (length >= 0x400) {
+            length = 0;
+        }
+        token[length] = '\0';
+        *text = pointer;
+    }
+
+    return token;
+}
+
 /* line 30 */
 static __attribute__((naked))
 char * GetToken(Bool readUntilEOL)
 {
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 30 */
         "movl %esp, %ebp\n"
@@ -263,6 +470,16 @@ char * GetToken(Bool readUntilEOL)
         "jg .Lfabf10_000ac00b\n"
         "jmp .Lfabf10_000ac02e\n"
     );
+#endif /* Original ASM */
+    /* Register convention trampoline: eax=text(char**), edx=allowLineBreaks, ecx=readUntilEOL */
+    __asm__ __volatile__ (
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll GetToken_impl\n"
+        "addl $12, %esp\n"
+        "retl\n"
+    );
 }
 
 /* line 335 */
@@ -275,9 +492,18 @@ const char * GPValue_GetTopValue(const GPValue * _this)
 }
 
 /* line 324 */
-__attribute__((naked))
 Bool GPValue_IsList(const GPValue * _this)
 {
+    byte *self = (byte *)_this;
+    void *p = *(void **)(self + 0x10);
+    if (p) {
+        void *next = *(void **)((byte *)p + 4);
+        if (next) {
+            return 1;
+        }
+    }
+    return 0;
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 324 */
         "movl %esp, %ebp\n"
@@ -296,12 +522,86 @@ Bool GPValue_IsList(const GPValue * _this)
         "popl %ebp\n" /* line 332 */
         "retl\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 568 */
-__attribute__((naked))
+/*
+ * GPGroup_SortObject — inserts 'object' into a sorted linked list.
+ * Objects at offsets: 0x00=name, 0x04=next(unsorted), 0x08=next(sorted), 0x0c=prev(sorted)
+ *
+ * unsortedList: the head of the unsorted chain (object is removed from here)
+ * sortedList: the head of the sorted chain (object is inserted here in order)
+ * lastObject: the tail of the sorted chain
+ */
 void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject)
 {
+    byte *obj = (byte *)object;
+    byte *test;
+    byte *last;
+
+    /* If unsortedList is empty, this is the first+only object in both lists */
+    if (*unsortedList == NULL) {
+        *sortedList = object;
+        *unsortedList = object;
+        *lastObject = object;
+        return;
+    }
+
+    /* Link: lastObject->next(sorted) = object  (offset 4 of the linked node at *lastObject) */
+    /* Actually from the ASM: *((*lastObject) + 4) = object — that's the "next" field at offset 4 */
+    *(GPObject **)((byte *)(*lastObject) + 4) = object;
+
+    /* Walk the sorted list to find insertion point */
+    test = (byte *)(*sortedList);
+    if (!test) {
+        /* Sorted list is empty, object becomes head */
+        *sortedList = object;
+        *lastObject = object;
+        return;
+    }
+
+    last = NULL;
+    while (1) {
+        /* Compare object->name with test->name */
+        const char *objName = *(const char **)obj;     /* offset 0x00 */
+        const char *testName = *(const char **)test;   /* offset 0x00 */
+        int cmp = strcmpi(objName, testName);
+        if (cmp < 0) {
+            /* Insert before test */
+            *(GPObject **)((byte *)test + 0x0c) = object;  /* test->prev = object */
+            *(GPObject **)(obj + 0x08) = (GPObject *)test;  /* object->next(sorted) = test */
+            if (last) {
+                /* Insert after last */
+                *(GPObject **)(last + 0x08) = object;       /* last->next(sorted) = object */
+                *(GPObject **)(obj + 0x0c) = (GPObject *)last;  /* object->prev = last */
+                *lastObject = object;
+            } else {
+                /* Object becomes new head of sorted list */
+                *sortedList = object;
+                *lastObject = object;
+            }
+            return;
+        }
+        /* Move to next in sorted list */
+        {
+            void *nextSorted = *(void **)((byte *)test + 8); /* offset 0x08 = next(sorted) */
+            if (!nextSorted) {
+                /* End of sorted list, insert after test */
+                last = test;
+                break;
+            }
+            last = test;
+            test = (byte *)nextSorted;
+        }
+    }
+
+    /* Insert after last (at end of sorted list) */
+    *(GPObject **)(last + 0x08) = object;       /* last->next(sorted) = object */
+    *(GPObject **)(obj + 0x0c) = (GPObject *)last; /* object->prev = last */
+    *lastObject = object;
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 568 */
         "movl %esp, %ebp\n"
@@ -389,12 +689,87 @@ void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *uns
         "movl %edi, (%edx)\n" /* line 605 | object */
         "jmp .Lfac1d6_000ac238\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 505 */
-__attribute__((naked))
+/*
+ * GPGroup_Clean — frees all GPValues (at offset 0x10) and GPGroups (at offset 0x1c)
+ * owned by this group, then zeroes all internal pointers.
+ *
+ * GPGroup layout (offsets used):
+ *   0x10: pairList (first GPValue*)
+ *   0x14: pairSortedList
+ *   0x18: nextPair / temp
+ *   0x1c: subGroupList (first GPGroup*)
+ *   0x20: subGroupSortedList
+ *   0x24: nextSubGroup / temp
+ *   0x28: field28
+ *   0x2c: writeable (byte)
+ */
 void GPGroup_Clean(const GPGroup * _this)
 {
+    byte *self = (byte *)_this;
+    byte *pair;
+    byte *nextPair;
+    byte *subGroup;
+    byte *nextSubGroup;
+
+    /* Free all pairs (GPValues) at offset 0x10 */
+    pair = *(byte **)(self + 0x10);
+    while (pair) {
+        /* Save the next pointer (offset 4 of pair = next unsorted) */
+        nextPair = *(byte **)(pair + 4);
+        *(byte **)(self + 0x18) = nextPair;
+
+        /* Free all value nodes in this pair's value list (offset 0x10 of GPValue) */
+        {
+            byte *valNode = *(byte **)(pair + 0x10);
+            while (valNode) {
+                byte *nextVal = *(byte **)(valNode + 4);
+                Z_FreeInternal(valNode);
+                *(byte **)(pair + 0x10) = nextVal;
+                valNode = nextVal;
+            }
+        }
+
+        /* Free the pair itself */
+        Z_FreeInternal(pair);
+
+        /* Move to next pair */
+        pair = *(byte **)(self + 0x18);
+        *(byte **)(self + 0x10) = pair;
+    }
+
+    /* Free all sub-groups (GPGroups) at offset 0x1c */
+    subGroup = *(byte **)(self + 0x1c);
+    while (subGroup) {
+        /* Save next pointer (offset 4 of subgroup = next unsorted) */
+        nextSubGroup = *(byte **)(subGroup + 4);
+        *(byte **)(self + 0x24) = nextSubGroup;
+
+        /* Recursively clean the sub-group */
+        GPGroup_Clean((const GPGroup *)subGroup);
+
+        /* Free the sub-group itself */
+        Z_FreeInternal(subGroup);
+
+        /* Move to next sub-group */
+        subGroup = *(byte **)(self + 0x24);
+        *(byte **)(self + 0x1c) = subGroup;
+    }
+
+    /* Zero out all internal pointers */
+    *(void **)(self + 0x18) = 0;
+    *(void **)(self + 0x14) = 0;
+    *(void **)(self + 0x10) = 0;
+    *(void **)(self + 0x24) = 0;
+    *(void **)(self + 0x20) = 0;
+    *(void **)(self + 0x1c) = 0;
+    *(void **)(self + 0x28) = 0;
+    *(byte *)(self + 0x2c) = 0;
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         ".Lfac26a_000ac26a:\n"
         "pushl %ebp\n" /* line 505 */
@@ -484,12 +859,39 @@ void GPGroup_Clean(const GPGroup * _this)
         "movl %eax, %esi\n"
         "jmp .Lfac26a_000ac2b5\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 818 */
-__attribute__((naked))
+/*
+ * GenericParser2 constructor.
+ *
+ * GenericParser2 layout:
+ *   0x00: name (set to "Top Level")
+ *   0x04-0x0c: zeros (GPObject base fields)
+ *   0x10-0x2c: GPGroup fields (all zeroed)
+ *   0x30: textPoolList (NULL)
+ *   0x34: writeable flag (0)
+ */
 void GenericParser2_GenericParser2(const GenericParser2 * _this)
 {
+    byte *self = (byte *)_this;
+    *(const char **)(self + 0x00) = str_0021e4f8; /* "Top Level" */
+    *(int *)(self + 0x04) = 0;
+    *(int *)(self + 0x08) = 0;
+    *(int *)(self + 0x0c) = 0;
+    *(int *)(self + 0x10) = 0;
+    *(int *)(self + 0x14) = 0;
+    *(int *)(self + 0x18) = 0;
+    *(int *)(self + 0x1c) = 0;
+    *(int *)(self + 0x20) = 0;
+    *(int *)(self + 0x24) = 0;
+    *(int *)(self + 0x28) = 0;
+    *(byte *)(self + 0x2c) = 0;
+    *(int *)(self + 0x30) = 0;
+    *(byte *)(self + 0x34) = 0;
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 818 */
         "movl %esp, %ebp\n"
@@ -511,12 +913,78 @@ void GenericParser2_GenericParser2(const GenericParser2 * _this)
         "popl %ebp\n" /* line 822 */
         "retl\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 201 */
-__attribute__((naked))
+/*
+ * TextPool_AllocText — allocates text from a pool, creating a new pool node if needed.
+ *
+ * TextPool layout (0x10 bytes):
+ *   0x00: data (char*)
+ *   0x04: next (TextPool*)
+ *   0x08: capacity (int)
+ *   0x0c: used (int)
+ */
 char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextPool * *poolPtr)
 {
+    byte *pool = (byte *)_this;
+    int length;
+    int extra;
+    int used;
+    char *dest;
+
+    extra = addNULL ? 1 : 0;
+    length = strlen(text) + extra;
+
+    used = *(int *)(pool + 0x0c);
+    if (used + length + 1 <= *(int *)(pool + 0x08)) {
+        /* Fits in current pool */
+        dest = *(char **)pool + used;
+        strcpy(dest, text);
+        used += length;
+        *(int *)(pool + 0x0c) = used;
+        /* Null terminate at end */
+        (*(char **)pool)[used] = '\0';
+        /* Return pointer to start of allocated text */
+        return *(char **)pool + used - length;
+    }
+
+    /* Doesn't fit — need a new pool */
+    if (!poolPtr) {
+        return NULL;
+    }
+
+    {
+        byte *newPool;
+        int initSize;
+        TextPool *prev;
+        TextPool *newNode;
+
+        initSize = *(int *)(pool + 0x08);
+
+        /* Allocate new TextPool node (0x10 bytes) */
+        newPool = (byte *)Z_MallocInternal(0x10);
+
+        /* Initialize new pool */
+        *(void **)(newPool + 0x04) = NULL;
+        *(int *)(newPool + 0x08) = initSize;
+        *(int *)(newPool + 0x0c) = 0;
+        *(void **)newPool = Z_MallocInternal(initSize);
+
+        /* Link: current pool's next = newPool */
+        prev = (TextPool *)(*poolPtr);
+        *(void **)((byte *)prev + 0x04) = (void *)newPool;
+
+        /* Update poolPtr to point to new pool */
+        newNode = (TextPool *)(*(void **)((byte *)(*poolPtr) + 0x04));
+        *poolPtr = newNode;
+
+        /* Recurse into new pool with no poolPtr (NULL) to avoid infinite recursion */
+        return TextPool_AllocText(newNode, text, addNULL ? 1 : 0, NULL);
+    }
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         ".Lfac3a2_000ac3a2:\n"
         "pushl %ebp\n" /* line 201 */
@@ -614,12 +1082,55 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
         "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 641 */
-__attribute__((naked))
+/*
+ * GPGroup_AddGroup — creates a new sub-group with the given name, inserts into sorted list.
+ *
+ * GPGroup offsets for sub-group tracking:
+ *   0x1c: subGroupUnsortedList
+ *   0x20: subGroupSortedList
+ *   0x24: subGroupLastObject
+ */
 GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *textPool)
 {
+    byte *self = (byte *)_this;
+    const char *allocName = name;
+    byte *newGroup;
+
+    /* Allocate the name in the text pool if textPool is provided */
+    if (textPool) {
+        allocName = TextPool_AllocText(*textPool, (char *)name, 1, textPool);
+    }
+
+    /* Allocate a new GPGroup (0x30 bytes) */
+    newGroup = (byte *)Z_MallocInternal(0x30);
+
+    /* Initialize: name at offset 0, rest zeroed */
+    *(const char **)(newGroup + 0x00) = allocName;
+    *(int *)(newGroup + 0x04) = 0;
+    *(int *)(newGroup + 0x08) = 0;
+    *(int *)(newGroup + 0x0c) = 0;
+    *(int *)(newGroup + 0x10) = 0;
+    *(int *)(newGroup + 0x14) = 0;
+    *(int *)(newGroup + 0x18) = 0;
+    *(int *)(newGroup + 0x1c) = 0;
+    *(int *)(newGroup + 0x20) = 0;
+    *(int *)(newGroup + 0x24) = 0;
+    *(int *)(newGroup + 0x28) = 0;
+    *(byte *)(newGroup + 0x2c) = 0;
+
+    /* Insert into sorted sub-group list */
+    GPGroup_SortObject(_this, (GPObject *)newGroup,
+                       (GPObject **)(self + 0x1c),
+                       (GPObject **)(self + 0x20),
+                       (GPObject **)(self + 0x24));
+
+    return (GPGroup *)newGroup;
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 641 */
         "movl %esp, %ebp\n"
@@ -672,12 +1183,71 @@ GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *
         "popl %ebp\n"
         "retl\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 346 */
-__attribute__((naked))
+/*
+ * GPValue_AddValue — adds a new value to a GPValue's value list.
+ *
+ * GPValue layout:
+ *   0x00: name
+ *   0x04: next (unsorted)
+ *   0x08: next (sorted) / also used as "last" pointer in value list
+ *   0x0c: prev (sorted)
+ *   0x10: valueListHead (first value node)
+ *
+ * Value node layout (0x10 bytes):
+ *   0x00: string value
+ *   0x04: next node
+ *   0x08: last node pointer (only on head)
+ *   0x0c: unused
+ */
 void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool)
 {
+    byte *self = (byte *)_this;
+    const char *allocValue = newValue;
+    byte *head;
+    byte *newNode;
+
+    /* Allocate value string in text pool if provided */
+    if (textPool) {
+        allocValue = TextPool_AllocText(*textPool, (char *)newValue, 1, textPool);
+    }
+
+    head = *(byte **)(self + 0x10);
+    if (head) {
+        /* Value list already exists — append new node */
+        newNode = (byte *)Z_MallocInternal(0x10);
+        *(const char **)(newNode + 0x00) = allocValue;
+        *(void **)(newNode + 0x04) = NULL;
+        *(void **)(newNode + 0x08) = NULL;
+        *(void **)(newNode + 0x0c) = NULL;
+
+        /* Link: last->next = newNode */
+        {
+            byte *lastNode = *(byte **)(head + 0x08); /* head's "last" pointer */
+            *(void **)(lastNode + 0x04) = newNode;
+        }
+
+        /* Update head's "last" pointer to point to newNode */
+        {
+            byte *lastNode = *(byte **)(head + 0x08);
+            byte *nextOfLast = *(byte **)(lastNode + 0x04);
+            *(byte **)(head + 0x08) = nextOfLast;
+        }
+    } else {
+        /* First value — create head node */
+        newNode = (byte *)Z_MallocInternal(0x10);
+        *(const char **)(newNode + 0x00) = allocValue;
+        *(void **)(newNode + 0x04) = NULL;
+        *(void **)(newNode + 0x0c) = NULL;
+        *(byte **)(self + 0x10) = newNode;
+        /* Head's "last" pointer points to itself */
+        *(byte **)(newNode + 0x08) = newNode;
+    }
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 346 */
         "movl %esp, %ebp\n"
@@ -732,12 +1302,58 @@ void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *t
         "popl %ebp\n"
         "retl\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 613 */
-__attribute__((naked))
+/*
+ * GPGroup_AddPair — creates a new GPValue pair with name and optional value,
+ * inserts into sorted pair list.
+ *
+ * GPGroup offsets for pair tracking:
+ *   0x10: pairUnsortedList
+ *   0x14: pairSortedList
+ *   0x18: pairLastObject
+ *
+ * GPValue is 0x14 bytes (name + GPObject fields + value list head).
+ */
 GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *value, TextPool * *textPool)
 {
+    byte *self = (byte *)_this;
+    const char *allocName = name;
+    const char *allocValue = value;
+    byte *newPair;
+
+    /* Allocate name and value in text pool if textPool is provided */
+    if (textPool) {
+        allocName = TextPool_AllocText(*textPool, (char *)name, 1, textPool);
+        if (value) {
+            allocValue = TextPool_AllocText(*textPool, (char *)value, 1, textPool);
+        }
+    }
+
+    /* Allocate new GPValue (0x14 bytes) */
+    newPair = (byte *)Z_MallocInternal(0x14);
+    *(const char **)(newPair + 0x00) = allocName;
+    *(int *)(newPair + 0x04) = 0;
+    *(int *)(newPair + 0x08) = 0;
+    *(int *)(newPair + 0x0c) = 0;
+    *(int *)(newPair + 0x10) = 0;
+
+    /* Add the value if present */
+    if (allocValue) {
+        GPValue_AddValue((const GPValue *)newPair, allocValue, NULL);
+    }
+
+    /* Insert into sorted pair list */
+    GPGroup_SortObject(_this, (GPObject *)newPair,
+                       (GPObject **)(self + 0x10),
+                       (GPObject **)(self + 0x14),
+                       (GPObject **)(self + 0x18));
+
+    return (GPValue *)newPair;
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 613 */
         "movl %esp, %ebp\n"
@@ -811,12 +1427,49 @@ GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *v
         "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
     );
+#endif /* Original ASM */
+}
+
+/* Helper: shared destructor logic for GenericParser2 */
+static void GenericParser2_Destroy(byte *self)
+{
+    byte *pool;
+    byte *next;
+
+    /* Clean the group */
+    GPGroup_Clean((const GPGroup *)self);
+
+    /* Free all text pools */
+    pool = *(byte **)(self + 0x30);
+    while (pool) {
+        next = *(byte **)(pool + 0x04); /* pool->next */
+        /* Free pool data buffer */
+        Z_FreeInternal(*(void **)pool);
+        /* Free pool node */
+        Z_FreeInternal(pool);
+        pool = next;
+    }
+
+    *(void **)(self + 0x30) = NULL;
+
+    /* Clean again (tail call in original) */
+    GPGroup_Clean((const GPGroup *)self);
 }
 
 /* line 825 */
-__attribute__((naked))
 void ZN14GenericParser2D2Ev(void) /* GenericParser2_~GenericParser2 */
 {
+    /* cdecl: this at 8(%ebp) */
+    __asm__ __volatile__ (
+        "pushl %ebp\n"
+        "movl %esp, %ebp\n"
+        "pushl 8(%ebp)\n"
+        "calll GenericParser2_Destroy\n"
+        "addl $4, %esp\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 825 */
         "movl %esp, %ebp\n"
@@ -859,12 +1512,23 @@ void ZN14GenericParser2D2Ev(void) /* GenericParser2_~GenericParser2 */
         "movl %ebx, (%esp)\n" /* line 466 | this */
         "calll __Unwind_Resume\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 825 */
-__attribute__((naked))
 void ZN14GenericParser2D1Ev(void) /* GenericParser2_~GenericParser2 */
 {
+    /* cdecl: this at 8(%ebp) — identical to D2 */
+    __asm__ __volatile__ (
+        "pushl %ebp\n"
+        "movl %esp, %ebp\n"
+        "pushl 8(%ebp)\n"
+        "calll GenericParser2_Destroy\n"
+        "addl $4, %esp\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 825 */
         "movl %esp, %ebp\n"
@@ -907,12 +1571,93 @@ void ZN14GenericParser2D1Ev(void) /* GenericParser2_~GenericParser2 */
         "movl %ebx, (%esp)\n" /* line 466 | this */
         "calll __Unwind_Resume\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 682 */
-__attribute__((naked))
+/*
+ * GPGroup_Parse — recursively parses a group from text data.
+ *
+ * Grammar:
+ *   group = (pair | subgroup)*
+ *   pair = name value | name "[" value* "]"
+ *   subgroup = name "{" group "}"
+ *   token "}" ends the current group
+ *
+ * GetToken is called with register convention: eax=dataPtr, edx=allowLineBreaks, ecx=readUntilEOL
+ */
 Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
 {
+    byte *self = (byte *)_this;
+    char *tok;
+    char lastToken[0x400];
+
+    while (1) {
+        /* Get next token (allowLineBreaks=1, readUntilEOL=0) */
+        tok = GetToken_impl(dataPtr, 1, 0);
+
+        if (tok[0] == '\0') {
+            /* End of data */
+            /* If this->field_0x28 (parent) is non-null, we hit EOF inside a group = error */
+            if (*(void **)(self + 0x28) != NULL) {
+                return 0;
+            }
+            return 1;
+        }
+
+        /* Check for "}" — end of group */
+        if (strcmpi(tok, str_0021e508) == 0) {
+            return 1;
+        }
+
+        /* Save current token as name */
+        I_strncpyz(lastToken, tok, 0x400);
+
+        /* Get next token to determine what follows the name */
+        tok = GetToken_impl(dataPtr, 1, 1);
+
+        if (strcmpi(tok, str_0021e50c) == 0) {
+            /* "{" — sub-group */
+            GPGroup *newGroup;
+            newGroup = GPGroup_AddGroup(_this, lastToken, textPool);
+            /* Copy writeable flag from parent */
+            *(byte *)((byte *)newGroup + 0x2c) = *(byte *)(self + 0x2c);
+            /* Recursively parse sub-group */
+            if (!GPGroup_Parse((const GPGroup *)newGroup, dataPtr, textPool)) {
+                return 0;
+            }
+            continue;
+        }
+
+        if (strcmpi(tok, str_0021e510) == 0) {
+            /* "[" — list of values */
+            GPValue *newPair;
+            newPair = GPGroup_AddPair(_this, lastToken, NULL, textPool);
+
+            /* Read values until "]" */
+            while (1) {
+                tok = GetToken_impl(dataPtr, 1, 1);
+                if (tok[0] == '\0') {
+                    return 0;
+                }
+                if (strcmpi(tok, str_0021e504) == 0) {
+                    /* "]" — end of list */
+                    break;
+                }
+                /* Allocate value text and add to the pair */
+                {
+                    char *allocValue = TextPool_AllocText(*textPool, tok, 1, textPool);
+                    GPValue_AddValue(newPair, allocValue, NULL);
+                }
+            }
+            continue;
+        }
+
+        /* Otherwise, tok is the value for a simple name-value pair */
+        GPGroup_AddPair(_this, lastToken, tok, textPool);
+    }
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         ".Lfac784_000ac784:\n"
         "pushl %ebp\n" /* line 682 */
@@ -1004,7 +1749,6 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "movl $1, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* token */
         "movl (%edi), %eax\n"
-        "movl %eax, (%esp)\n"
         "calll TextPool_AllocText\n"
         "movl $0, 8(%esp)\n" /* line 385 */
         "movl %eax, 4(%esp)\n"
@@ -1050,12 +1794,59 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "popl %ebp\n"
         "retl\n"
     );
+#endif /* Original ASM */
 }
 
 /* line 831 */
-__attribute__((naked))
+/*
+ * GenericParser2_Parse — entry point: optionally cleans, sets up text pool, parses.
+ *
+ * GenericParser2 layout (beyond GPGroup):
+ *   0x30: textPoolList (TextPool*)
+ *   0x34: writeable (byte)
+ *   0x2c: writeable flag (in GPGroup portion)
+ */
 Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cleanFirst, int writeable)
 {
+    byte *self = (byte *)_this;
+    TextPool *topPool;
+
+    if (cleanFirst) {
+        /* Clean the group */
+        GPGroup_Clean((const GPGroup *)self);
+
+        /* Free all text pools */
+        {
+            byte *pool = *(byte **)(self + 0x30);
+            while (pool) {
+                byte *next = *(byte **)(pool + 0x04);
+                Z_FreeInternal(*(void **)pool);
+                Z_FreeInternal(pool);
+                pool = next;
+            }
+            *(void **)(self + 0x30) = NULL;
+        }
+    }
+
+    /* Ensure a text pool exists */
+    if (*(void **)(self + 0x30) == NULL) {
+        byte *newPool = (byte *)Z_MallocInternal(0x10);
+        *(void **)(newPool + 0x04) = NULL;
+        *(int *)(newPool + 0x08) = 0x2800;
+        *(int *)(newPool + 0x0c) = 0;
+        *(void **)newPool = Z_MallocInternal(0x2800);
+        *(void **)(self + 0x30) = newPool;
+    }
+
+    /* Set writeable flags */
+    *(byte *)(self + 0x34) = (byte)writeable;
+    *(byte *)(self + 0x2c) = (byte)writeable;
+
+    /* Parse using the top pool */
+    topPool = *(TextPool **)(self + 0x30);
+    return (Bool)GPGroup_Parse((const GPGroup *)self, dataPtr, &topPool);
+
+#if 0 /* Original ASM */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 831 */
         "movl %esp, %ebp\n"
@@ -1137,5 +1928,5 @@ Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cle
         "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
     );
+#endif /* Original ASM */
 }
-

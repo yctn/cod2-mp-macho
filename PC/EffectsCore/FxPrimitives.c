@@ -292,160 +292,45 @@ void Effect_FixupArchiveLoad(const Effect * _this, const PrimitiveTemplate *prim
 }
 
 /* line 468 */
-__attribute__((naked))
+extern void FxCurveIterator_Create(void *inst, void *curve);
+extern float FxRange_GetVal(void *range);
 void FxChannelInstance_Create(const FxChannel *master, FxChannelInstance *createe)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 468 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* master */
-        "movl 0xc(%ebp), %esi\n" /* createe */
-        "movl (%ebx), %eax\n" /* line 473 | master */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* createe */
-        "calll FxCurveIterator_Create\n"
-        "addl $4, %ebx\n" /* line 474 | master */
-        "movl %ebx, (%esp)\n" /* master */
-        "calll FxRange_GetVal\n"
-        "fstps 8(%esi)\n" /* createe */
-        "addl $0x10, %esp\n" /* line 475 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *m = (byte *)master;
+    byte *c = (byte *)createe;
+    /* line 473: create curve iterator from master's curve ptr */
+    FxCurveIterator_Create(c, *(void **)m);
+    /* line 474: get random value from master's range (at offset 4) */
+    *(float *)(c + 8) = FxRange_GetVal((void *)(m + 4));
 }
 
 /* line 478 */
-__attribute__((naked))
 void Particle_CreateChannelInstances(const Particle * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 478 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* primTemp */
-        "leal 0x144(%ebx), %eax\n" /* line 482 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x100(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x150(%ebx), %eax\n" /* line 483 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x10c(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x15c(%ebx), %eax\n" /* line 484 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x118(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x168(%ebx), %eax\n" /* line 485 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x124(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x174(%ebx), %eax\n" /* line 486 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x130(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x180(%ebx), %eax\n" /* line 487 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x13c(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x18c(%ebx), %eax\n" /* line 488 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x148(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x198(%ebx), %eax\n" /* line 489 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x154(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1a4(%ebx), %eax\n" /* line 490 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x178(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1b0(%ebx), %eax\n" /* line 491 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x184(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1bc(%ebx), %eax\n" /* line 493 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x190(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1c8(%ebx), %eax\n" /* line 494 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x19c(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1d4(%ebx), %eax\n" /* line 495 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1a8(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1e0(%ebx), %eax\n" /* line 496 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1b4(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1ec(%ebx), %eax\n" /* line 497 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1c0(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x1f8(%ebx), %eax\n" /* line 498 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1cc(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x204(%ebx), %eax\n" /* line 500 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1d8(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x210(%ebx), %eax\n" /* line 501 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1e4(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x21c(%ebx), %eax\n" /* line 502 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1f0(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x228(%ebx), %eax\n" /* line 503 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1fc(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0x234(%ebx), %eax\n" /* line 504 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x208(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "addl $0x240, %ebx\n" /* line 505 | this */
-        "movl %ebx, 0xc(%ebp)\n" /* this, primTemp */
-        "addl $0x214, %esi\n" /* primTemp */
-        "movl %esi, 8(%ebp)\n" /* primTemp, this */
-        "addl $0x10, %esp\n" /* line 506 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp FxChannelInstance_Create\n" /* line 505 */
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemp;
+    FxChannelInstance_Create((const FxChannel *)(p + 0x100), (FxChannelInstance *)(t + 0x144)); /* line 482 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x10c), (FxChannelInstance *)(t + 0x150)); /* line 483 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x118), (FxChannelInstance *)(t + 0x15c)); /* line 484 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x124), (FxChannelInstance *)(t + 0x168)); /* line 485 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x130), (FxChannelInstance *)(t + 0x174)); /* line 486 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x13c), (FxChannelInstance *)(t + 0x180)); /* line 487 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x148), (FxChannelInstance *)(t + 0x18c)); /* line 488 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x154), (FxChannelInstance *)(t + 0x198)); /* line 489 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x178), (FxChannelInstance *)(t + 0x1a4)); /* line 490 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x184), (FxChannelInstance *)(t + 0x1b0)); /* line 491 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x190), (FxChannelInstance *)(t + 0x1bc)); /* line 493 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x19c), (FxChannelInstance *)(t + 0x1c8)); /* line 494 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1a8), (FxChannelInstance *)(t + 0x1d4)); /* line 495 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1b4), (FxChannelInstance *)(t + 0x1e0)); /* line 496 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1c0), (FxChannelInstance *)(t + 0x1ec)); /* line 497 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1cc), (FxChannelInstance *)(t + 0x1f8)); /* line 498 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1d8), (FxChannelInstance *)(t + 0x204)); /* line 500 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1e4), (FxChannelInstance *)(t + 0x210)); /* line 501 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1f0), (FxChannelInstance *)(t + 0x21c)); /* line 502 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x1fc), (FxChannelInstance *)(t + 0x228)); /* line 503 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x208), (FxChannelInstance *)(t + 0x234)); /* line 504 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x214), (FxChannelInstance *)(t + 0x240)); /* line 505 */
 }
 
 /* line 522 */
@@ -474,35 +359,13 @@ void Cloud_Die(const Cloud * _this)
 }
 
 /* line 1395 */
-__attribute__((naked))
 void Cloud_CreateChannelInstances(const Cloud * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1395 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* primTemp */
-        "movl %esi, 4(%esp)\n" /* line 1399 | primTemp */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_CreateChannelInstances\n"
-        "leal 0x264(%ebx), %eax\n" /* line 1401 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x160(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "addl $0x270, %ebx\n" /* line 1402 | this */
-        "movl %ebx, 0xc(%ebp)\n" /* this, primTemp */
-        "addl $0x16c, %esi\n" /* primTemp */
-        "movl %esi, 8(%ebp)\n" /* primTemp, this */
-        "addl $0x10, %esp\n" /* line 1403 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp FxChannelInstance_Create\n" /* line 1402 */
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemp;
+    Particle_CreateChannelInstances((const Particle *)_this, primTemp); /* line 1399 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x160), (FxChannelInstance *)(t + 0x264)); /* line 1401 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x16c), (FxChannelInstance *)(t + 0x270)); /* line 1402 */
 }
 
 /* line 1466 */
@@ -523,35 +386,13 @@ unsigned char Line_TypeID(const Line * _this)
 }
 
 /* line 1602 */
-__attribute__((naked))
 void Tail_CreateChannelInstances(const Tail * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1602 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* primTemp */
-        "movl %esi, 4(%esp)\n" /* line 1606 | primTemp */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_CreateChannelInstances\n"
-        "leal 0x260(%ebx), %eax\n" /* line 1608 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x160(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "addl $0x26c, %ebx\n" /* line 1609 | this */
-        "movl %ebx, 0xc(%ebp)\n" /* this, primTemp */
-        "addl $0x16c, %esi\n" /* primTemp */
-        "movl %esi, 8(%ebp)\n" /* primTemp, this */
-        "addl $0x10, %esp\n" /* line 1610 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp FxChannelInstance_Create\n" /* line 1609 */
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemp;
+    Particle_CreateChannelInstances((const Particle *)_this, primTemp); /* line 1606 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x160), (FxChannelInstance *)(t + 0x260)); /* line 1608 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x16c), (FxChannelInstance *)(t + 0x26c)); /* line 1609 */
 }
 
 /* line 1693 */
@@ -579,42 +420,14 @@ unsigned char Emitter_TypeID(const Emitter * _this)
 }
 
 /* line 2141 */
-__attribute__((naked))
 void Light_CreateChannelInstances(const Light * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2141 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* primTemp */
-        "leal 0xcc(%ebx), %eax\n" /* line 2145 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x100(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0xd8(%ebx), %eax\n" /* line 2146 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x10c(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "leal 0xe4(%ebx), %eax\n" /* line 2147 | this */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x130(%esi), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "addl $0xf0, %ebx\n" /* line 2148 | this */
-        "movl %ebx, 0xc(%ebp)\n" /* this, primTemp */
-        "addl $0x13c, %esi\n" /* primTemp */
-        "movl %esi, 8(%ebp)\n" /* primTemp, this */
-        "addl $0x10, %esp\n" /* line 2149 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp FxChannelInstance_Create\n" /* line 2148 */
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemp;
+    FxChannelInstance_Create((const FxChannel *)(p + 0x100), (FxChannelInstance *)(t + 0xcc)); /* line 2145 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x10c), (FxChannelInstance *)(t + 0xd8)); /* line 2146 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x130), (FxChannelInstance *)(t + 0xe4)); /* line 2147 */
+    FxChannelInstance_Create((const FxChannel *)(p + 0x13c), (FxChannelInstance *)(t + 0xf0)); /* line 2148 */
 }
 
 /* line 2158 */
@@ -870,122 +683,94 @@ void FX_AddFxToScene(void)
 }
 
 /* line 1820 */
-__attribute__((naked))
 void Emitter_Draw(const Emitter * _this)
 {
+    byte *p = (byte *)_this;
+    /* line 1823: if not (flags & 0x10), return */
+    if (!(*(int *)(p + 0xa8) & 0x10))
+        return;
+    /* line 1827: if alpha == 0, return */
+    if (*(float *)(p + 0x98) == 0.0f)
+        return;
+    /* FX_AddFxToScene(this, 1) via register convention */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1820 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "testb $0x10, 0xa8(%eax)\n" /* line 1823 */
-        "je .Lfa0d40_000a0d5e\n"
-        "pxor %xmm0, %xmm0\n" /* line 1827 */
-        "ucomiss 0x98(%eax), %xmm0\n"
-        "jp .Lfa0d40_000a0d60\n"
-        "jne .Lfa0d40_000a0d60\n"
-        ".Lfa0d40_000a0d5e:\n"
-        "popl %ebp\n" /* line 1830 */
-        "retl\n"
-        ".Lfa0d40_000a0d60:\n"
-        "movl $1, %edx\n" /* line 1828 */
-        "popl %ebp\n" /* line 1830 */
-        "jmp FX_AddFxToScene\n" /* line 1828 */
+        "movl %0, %%eax\n"
+        "movl $1, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 1743 */
-__attribute__((naked))
 void Cylinder_Draw(const Cylinder * _this)
 {
+    /* FX_AddFxToScene uses register convention: eax=this, edx=reType */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1743 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $9, %edx\n" /* line 1745 */
-        "popl %ebp\n" /* line 1746 */
-        "jmp FX_AddFxToScene\n" /* line 1745 */
+        "movl %0, %%eax\n"
+        "movl $9, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 1613 */
-__attribute__((naked))
 void Tail_Draw(const Tail * _this)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1613 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $8, %edx\n" /* line 1615 */
-        "popl %ebp\n" /* line 1616 */
-        "jmp FX_AddFxToScene\n" /* line 1615 */
+        "movl %0, %%eax\n"
+        "movl $8, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 1520 */
-__attribute__((naked))
 void Line_Draw(const Line * _this)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1520 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $8, %edx\n" /* line 1522 */
-        "popl %ebp\n" /* line 1523 */
-        "jmp FX_AddFxToScene\n" /* line 1522 */
+        "movl %0, %%eax\n"
+        "movl $8, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 1389 */
-__attribute__((naked))
 void Cloud_Draw(const Cloud * _this)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1389 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $6, %edx\n" /* line 1391 */
-        "popl %ebp\n" /* line 1392 */
-        "jmp FX_AddFxToScene\n" /* line 1391 */
+        "movl %0, %%eax\n"
+        "movl $6, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 1276 */
-__attribute__((naked))
 void OrientedParticle_Draw(const OrientedParticle * _this)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1276 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $7, %edx\n" /* line 1278 */
-        "popl %ebp\n" /* line 1279 */
-        "jmp FX_AddFxToScene\n" /* line 1278 */
+        "movl %0, %%eax\n"
+        "movl $7, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 }
 
 /* line 401 */
-__attribute__((naked))
 void Particle_Draw(const Particle * _this)
 {
+    byte *p = (byte *)_this;
+    float radius = *(float *)(p + 0x88);
+    float height = *(float *)(p + 0x8c);
+    /* line 403: if both radius and height are zero, skip */
+    if (radius == 0.0f && height == 0.0f)
+        return;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 401 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "pxor %xmm0, %xmm0\n" /* line 403 */
-        "ucomiss 0x88(%eax), %xmm0\n"
-        "jp .Lfa0dc6_000a0ddb\n"
-        "je .Lfa0dc6_000a0de6\n"
-        ".Lfa0dc6_000a0ddb:\n"
-        "ucomiss 0x8c(%eax), %xmm0\n"
-        "jp .Lfa0dc6_000a0de8\n"
-        "jne .Lfa0dc6_000a0de8\n"
-        ".Lfa0dc6_000a0de6:\n"
-        "popl %ebp\n" /* line 407 */
-        "retl\n"
-        ".Lfa0dc6_000a0de8:\n"
-        "movl $4, %edx\n" /* line 406 */
-        "popl %ebp\n" /* line 407 */
-        "jmp FX_AddFxToScene\n" /* line 406 */
+        "movl %0, %%eax\n"
+        "movl $4, %%edx\n"
+        "calll FX_AddFxToScene\n"
+        : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
 }
 
@@ -1478,83 +1263,43 @@ float Particle_GetVisibility(const Particle * _this, const vec_t *start, const v
 }
 
 /* line 1225 */
-__attribute__((naked))
 void Particle_FixupArchiveLoad(const Particle * _this, const PrimitiveTemplate *primTemplate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1225 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %eax\n" /* primTemplate */
-        "movl 0x100(%eax), %ecx\n" /* line 1231 */
-        "movl %ecx, 0x144(%edx)\n"
-        "movl 0x10c(%eax), %ecx\n" /* line 1232 */
-        "movl %ecx, 0x150(%edx)\n"
-        "movl 0x118(%eax), %ecx\n" /* line 1233 */
-        "movl %ecx, 0x15c(%edx)\n"
-        "movl 0x124(%eax), %ecx\n" /* line 1234 */
-        "movl %ecx, 0x168(%edx)\n"
-        "movl 0x130(%eax), %ecx\n" /* line 1235 */
-        "movl %ecx, 0x174(%edx)\n"
-        "movl 0x13c(%eax), %ecx\n" /* line 1236 */
-        "movl %ecx, 0x180(%edx)\n"
-        "movl 0x148(%eax), %ecx\n" /* line 1237 */
-        "movl %ecx, 0x18c(%edx)\n"
-        "movl 0x154(%eax), %ecx\n" /* line 1238 */
-        "movl %ecx, 0x198(%edx)\n"
-        "movl 0x178(%eax), %ecx\n" /* line 1239 */
-        "movl %ecx, 0x1a4(%edx)\n"
-        "movl 0x184(%eax), %ecx\n" /* line 1240 */
-        "movl %ecx, 0x1b0(%edx)\n"
-        "movl 0x190(%eax), %ecx\n" /* line 1242 */
-        "movl %ecx, 0x1bc(%edx)\n"
-        "movl 0x19c(%eax), %ecx\n" /* line 1243 */
-        "movl %ecx, 0x1c8(%edx)\n"
-        "movl 0x1a8(%eax), %ecx\n" /* line 1244 */
-        "movl %ecx, 0x1d4(%edx)\n"
-        "movl 0x1b4(%eax), %ecx\n" /* line 1245 */
-        "movl %ecx, 0x1e0(%edx)\n"
-        "movl 0x1c0(%eax), %ecx\n" /* line 1246 */
-        "movl %ecx, 0x1ec(%edx)\n"
-        "movl 0x1cc(%eax), %ecx\n" /* line 1247 */
-        "movl %ecx, 0x1f8(%edx)\n"
-        "movl 0x1d8(%eax), %ecx\n" /* line 1249 */
-        "movl %ecx, 0x204(%edx)\n"
-        "movl 0x1e4(%eax), %ecx\n" /* line 1250 */
-        "movl %ecx, 0x210(%edx)\n"
-        "movl 0x1f0(%eax), %ecx\n" /* line 1251 */
-        "movl %ecx, 0x21c(%edx)\n"
-        "movl 0x1fc(%eax), %ecx\n" /* line 1252 */
-        "movl %ecx, 0x228(%edx)\n"
-        "movl 0x208(%eax), %ecx\n" /* line 1253 */
-        "movl %ecx, 0x234(%edx)\n"
-        "movl 0x214(%eax), %eax\n" /* line 1254 */
-        "movl %eax, 0x240(%edx)\n"
-        "popl %ebp\n" /* line 1255 */
-        "retl\n"
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemplate;
+    *(int *)(t + 0x144) = *(int *)(p + 0x100); /* line 1231 */
+    *(int *)(t + 0x150) = *(int *)(p + 0x10c); /* line 1232 */
+    *(int *)(t + 0x15c) = *(int *)(p + 0x118); /* line 1233 */
+    *(int *)(t + 0x168) = *(int *)(p + 0x124); /* line 1234 */
+    *(int *)(t + 0x174) = *(int *)(p + 0x130); /* line 1235 */
+    *(int *)(t + 0x180) = *(int *)(p + 0x13c); /* line 1236 */
+    *(int *)(t + 0x18c) = *(int *)(p + 0x148); /* line 1237 */
+    *(int *)(t + 0x198) = *(int *)(p + 0x154); /* line 1238 */
+    *(int *)(t + 0x1a4) = *(int *)(p + 0x178); /* line 1239 */
+    *(int *)(t + 0x1b0) = *(int *)(p + 0x184); /* line 1240 */
+    *(int *)(t + 0x1bc) = *(int *)(p + 0x190); /* line 1242 */
+    *(int *)(t + 0x1c8) = *(int *)(p + 0x19c); /* line 1243 */
+    *(int *)(t + 0x1d4) = *(int *)(p + 0x1a8); /* line 1244 */
+    *(int *)(t + 0x1e0) = *(int *)(p + 0x1b4); /* line 1245 */
+    *(int *)(t + 0x1ec) = *(int *)(p + 0x1c0); /* line 1246 */
+    *(int *)(t + 0x1f8) = *(int *)(p + 0x1cc); /* line 1247 */
+    *(int *)(t + 0x204) = *(int *)(p + 0x1d8); /* line 1249 */
+    *(int *)(t + 0x210) = *(int *)(p + 0x1e4); /* line 1250 */
+    *(int *)(t + 0x21c) = *(int *)(p + 0x1f0); /* line 1251 */
+    *(int *)(t + 0x228) = *(int *)(p + 0x1fc); /* line 1252 */
+    *(int *)(t + 0x234) = *(int *)(p + 0x208); /* line 1253 */
+    *(int *)(t + 0x240) = *(int *)(p + 0x214); /* line 1254 */
 }
 
 /* line 2236 */
-__attribute__((naked))
 void Light_FixupArchiveLoad(const Light * _this, const PrimitiveTemplate *primTemplate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2236 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* primTemplate */
-        "movl 0x100(%edx), %eax\n" /* line 2242 */
-        "movl %eax, 0xcc(%ecx)\n"
-        "movl 0x10c(%edx), %eax\n" /* line 2243 */
-        "movl %eax, 0xd8(%ecx)\n"
-        "movl 0x130(%edx), %eax\n" /* line 2244 */
-        "movl %eax, 0xe4(%ecx)\n"
-        "movl 0x13c(%edx), %eax\n" /* line 2245 */
-        "movl %eax, 0xf0(%ecx)\n"
-        "popl %ebp\n" /* line 2246 */
-        "retl\n"
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemplate;
+    *(int *)(t + 0xcc) = *(int *)(p + 0x100); /* line 2242 */
+    *(int *)(t + 0xd8) = *(int *)(p + 0x10c); /* line 2243 */
+    *(int *)(t + 0xe4) = *(int *)(p + 0x130); /* line 2244 */
+    *(int *)(t + 0xf0) = *(int *)(p + 0x13c); /* line 2245 */
 }
 
 /* line 456 */
@@ -12619,43 +12364,19 @@ void ZN8CylinderD1Ev(void) /* Cylinder_~Cylinder */
 }
 
 /* line 1727 */
-__attribute__((naked))
 void Cylinder_Cylinder(const Cylinder * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1727 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* line 1579 */
-        "calll Particle_Particle\n"
-        "movl $__ZTV8Cylinder+8, (%ebx)\n" /* line 1727 | this */
-        "addl $0x14, %esp\n" /* line 1729 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    extern void *__ZTV8Cylinder;
+    Particle_Particle((const Particle *)_this);
+    *(int *)_this = (int)&__ZTV8Cylinder + 8;
 }
 
 /* line 1260 */
-__attribute__((naked))
 void OrientedParticle_OrientedParticle(const OrientedParticle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1260 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Particle\n"
-        "movl $__ZTV16OrientedParticle+8, (%ebx)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1262 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    extern void *__ZTV16OrientedParticle;
+    Particle_Particle((const Particle *)_this);
+    *(int *)_this = (int)&__ZTV16OrientedParticle + 8;
 }
 
 /* line 1265 */
@@ -12773,37 +12494,18 @@ void ZN16OrientedParticleD0Ev(void) /* OrientedParticle_~OrientedParticle */
 }
 
 /* line 1341 */
-__attribute__((naked))
 void Cloud_Cloud(const Cloud * _this, const Cloud * _this_1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1341 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll Particle_Particle\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl $__ZTV5Cloud+8, (%edx)\n"
-        "movl $4, -0x1c(%ebp)\n"
-        "movl %edx, %edi\n"
-        "addl $0x24c, %edi\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl $3, %esi\n"
-        /* { scope 1 */
-        ".Lfa9fea_000aa01e:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 1372 */
-        "movl $0xbf800000, (%esp)\n"
-        "calll flrand\n"
-        "fstps 0x24c(%ebx)\n"
-        "addl $4, %ebx\n"
-        "subl $1, %esi\n" /* line 1371 */
-        "jne .Lfa9fea_000aa01e\n"
-        "movl 8(%ebp), %eax\n" /* line 316 | this */
-    );
+    extern void *__ZTV5Cloud;
+    extern float flrand(float min, float max);
+    byte *p = (byte *)_this;
+    int i;
+    (void)_this_1;
+    Particle_Particle((const Particle *)_this);
+    *(int *)p = (int)&__ZTV5Cloud + 8;
+    for (i = 0; i < 3; i++) {
+        *(float *)(p + 0x24c + i * 4) = flrand(-1.0f, 1.0f);
+    }
 }
 
 /* line 1347 */
@@ -12921,23 +12623,11 @@ void ZN5CloudD0Ev(void) /* Cloud_~Cloud */
 }
 
 /* line 1499 */
-__attribute__((naked))
 void Line_Line(const Line * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1499 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Particle\n"
-        "movl $__ZTV4Line+8, (%ebx)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1501 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    extern void *__ZTV4Line;
+    Particle_Particle((const Particle *)_this);
+    *(int *)_this = (int)&__ZTV4Line + 8;
 }
 
 /* line 1504 */
@@ -13055,23 +12745,11 @@ void ZN4LineD0Ev(void) /* Line_~Line */
 }
 
 /* line 1579 */
-__attribute__((naked))
 void Tail_Tail(const Tail * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1579 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Particle\n"
-        "movl $__ZTV4Tail+8, (%ebx)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1581 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    extern void *__ZTV4Tail;
+    Particle_Particle((const Particle *)_this);
+    *(int *)_this = (int)&__ZTV4Tail + 8;
 }
 
 /* line 1584 */
@@ -13189,23 +12867,11 @@ void ZN4TailD0Ev(void) /* Tail_~Tail */
 }
 
 /* line 1804 */
-__attribute__((naked))
 void Emitter_Emitter(const Emitter * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1804 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Particle\n"
-        "movl $__ZTV7Emitter+8, (%ebx)\n" /* this */
-        "addl $0x14, %esp\n" /* line 1806 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    extern void *__ZTV7Emitter;
+    Particle_Particle((const Particle *)_this);
+    *(int *)_this = (int)&__ZTV7Emitter + 8;
 }
 
 /* line 1809 */

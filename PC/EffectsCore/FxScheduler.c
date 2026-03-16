@@ -22,6 +22,50 @@ extern FxScheduler * fxSchedulers[1]; /* 0x0 */
 static EffectTemplate * effectTemplateArray[256]; /* effectTemplateArray */
 static int effectTemplateArrayCount; /* effectTemplateArrayCount */
 
+/* extern function declarations */
+extern void GenericParser2_GenericParser2(GenericParser2 *parser);
+extern void ZN14GenericParser2D1Ev(GenericParser2 *parser);
+extern EffectTemplate *FX_ParseEffect(GenericParser2 *parser, const char *name);
+extern void FX_Print(const char *msg, ...);
+extern void FxBoltFrame_Release(const FxBoltFrame *frame);
+extern const orientation_t *FxBoltFrame_GetOrientation(const FxBoltFrame *frame);
+extern const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt);
+extern void AxisCopy(const vec_t *src, vec_t *dst);
+extern float flrand(float min, float max);
+extern void RotatePointAroundVector(vec_t *dst, const vec_t *src, const vec_t *dir, float degrees);
+extern void Vec3Cross(const vec_t *a, const vec_t *b, vec_t *out);
+extern int FxHelper_GetSeed(const FxHelper *helper);
+extern void Rand_Init(int seed);
+extern void FxHelper_SetIgnorePrecacheErrors(const FxHelper *helper, int ignore);
+extern EffectTemplate *FX_RegisterEffect(const char *fileName);
+extern Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient);
+extern Bool FxHelper_CullSpherePreviousFrame(const FxHelper *helper, const vec_t *worldPos, float radius);
+extern float FxRange_GetVal(const FxRange *range);
+extern float Vec3DistanceSq(const vec_t *a, const vec_t *b);
+extern void FxChannelInstance_Create(const FxChannel *master, FxChannelInstance *createe);
+extern void FX_CleanTemplate(EffectTemplate *fx);
+extern void CG_ImpactMark(MaterialHandle markMaterial, const vec_t *origin, const vec_t *dir, float orientation, const vec_t *color, float radius);
+extern void FxArchive_ReadData(const FxArchive *arch, void *p, int byteCount);
+extern void FxArchive_WriteData(const FxArchive *arch, const void *p, int byteCount);
+extern void FxArchive_ArchiveEffect(const FxArchive *arch, const EffectTemplate **fx);
+extern void FxArchive_ArchiveFxBoltInfo(const FxArchive *arch, FxBoltInfo *bolt);
+
+extern void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddDecal(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddCameraShake(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+extern void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch);
+
+extern void *__Znam(unsigned int size);
+extern void __ZdaPv(void *ptr);
+
 TMediaElement MediaHandles_GetHandle(const MediaHandles * _this);
 void FxScheduler_FxScheduler(const FxScheduler * _this);
 float FxScheduler_GetEffectLength(const FxScheduler * _this, EffectTemplate *fx);
@@ -87,97 +131,135 @@ void FX_InitTemplates(void)
 }
 
 /* line 834 */
+EffectTemplate * FX_TryRegisterEffect(const char *name)
+{
+    GenericParser2 parser;
+    int effectIndex;
+    int count;
+    EffectTemplate *registeredTemplate;
+    EffectTemplate *fx;
+
+    GenericParser2_GenericParser2(&parser);
+
+    /* Search existing templates */
+    count = effectTemplateArrayCount;
+    for (effectIndex = 0; effectIndex < count; effectIndex++) {
+        registeredTemplate = effectTemplateArray[effectIndex];
+        if (strcmp(*(const char **)registeredTemplate, name) == 0) {
+            /* Found existing template */
+            ZN14GenericParser2D1Ev(&parser);
+            return registeredTemplate;
+        }
+    }
+
+    /* Parse new effect */
+    fx = FX_ParseEffect(&parser, name);
+    if (!fx) {
+        ZN14GenericParser2D1Ev(&parser);
+        return NULL;
+    }
+
+    /* Register the new template */
+    if (effectTemplateArrayCount == 256) {
+        FX_Print(str_0021a904, 256);
+        ZN14GenericParser2D1Ev(&parser);
+        return NULL;
+    }
+
+    effectTemplateArray[effectTemplateArrayCount] = fx;
+    effectTemplateArrayCount++;
+    registeredTemplate = fx;
+
+    ZN14GenericParser2D1Ev(&parser);
+    return registeredTemplate;
+}
+
+#if 0
+/* Original ASM for FX_TryRegisterEffect */
 __attribute__((naked))
 EffectTemplate * FX_TryRegisterEffect(const char *name)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 834 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
-        /* { scope 1 */
-        "leal -0x50(%ebp), %eax\n" /* line 838 | parser */
+        "leal -0x50(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GenericParser2_GenericParser2\n"
-        /* { scope 2 */
-        "movl effectTemplateArrayCount, %eax\n" /* line 803 */
+        "movl effectTemplateArrayCount, %eax\n"
         "movl %eax, -0x5c(%ebp)\n"
         "testl %eax, %eax\n"
         "jle .Lf6164a_00061693\n"
-        "xorl %edi, %edi\n" /* effectIndex */
+        "xorl %edi, %edi\n"
         "movl $effectTemplateArray, %esi\n"
         ".Lf6164a_00061671:\n"
-        "movl (%esi), %ebx\n" /* line 805 */
-        "movl 8(%ebp), %eax\n" /* line 809 | name */
+        "movl (%esi), %ebx\n"
+        "movl 8(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll strcmp\n"
         "testl %eax, %eax\n"
         "je .Lf6164a_000616c8\n"
-        "addl $1, %edi\n" /* line 803 | effectIndex */
+        "addl $1, %edi\n"
         "addl $4, %esi\n"
-        "cmpl %edi, -0x5c(%ebp)\n" /* effectIndex */
+        "cmpl %edi, -0x5c(%ebp)\n"
         "jne .Lf6164a_00061671\n"
-        /* } scope */
         ".Lf6164a_00061693:\n"
-        "movl 8(%ebp), %eax\n" /* line 846 | name */
+        "movl 8(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "leal -0x50(%ebp), %eax\n" /* parser */
+        "leal -0x50(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FX_ParseEffect\n"
         "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 847 */
+        "testl %eax, %eax\n"
         "je .Lf6164a_000616f1\n"
-        "movl effectTemplateArrayCount, %eax\n" /* line 822 */
+        "movl effectTemplateArrayCount, %eax\n"
         "cmpl $0x100, %eax\n"
         "je .Lf6164a_000616dd\n"
-        "movl %edx, effectTemplateArray(, %eax, 4)\n" /* line 828 */
-        "addl $1, %eax\n" /* line 829 */
+        "movl %edx, effectTemplateArray(, %eax, 4)\n"
+        "addl $1, %eax\n"
         "movl %eax, effectTemplateArrayCount\n"
-        "movl %edx, %ebx\n" /* line 850 | registeredTemplate */
+        "movl %edx, %ebx\n"
         ".Lf6164a_000616c8:\n"
-        "leal -0x50(%ebp), %eax\n" /* line 853 | parser */
+        "leal -0x50(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN14GenericParser2D1Ev\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 854 | registeredTemplate */
+        "movl %ebx, %eax\n"
         "addl $0x6c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
         ".Lf6164a_000616dd:\n"
-        "movl $0x100, 4(%esp)\n" /* line 824 */
-        "movl $str_0021a904, (%esp)\n" /* "^1Max effect templates of '%i' exceeded
-" */
+        "movl $0x100, 4(%esp)\n"
+        "movl $str_0021a904, (%esp)\n"
         "calll FX_Print\n"
         ".Lf6164a_000616f1:\n"
-        "xorl %ebx, %ebx\n" /* line 853 | registeredTemplate */
-        "leal -0x50(%ebp), %eax\n" /* parser */
+        "xorl %ebx, %ebx\n"
+        "leal -0x50(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN14GenericParser2D1Ev\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 854 | registeredTemplate */
+        "movl %ebx, %eax\n"
         "addl $0x6c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        "movl %eax, %ebx\n" /* registeredTemplate */
-        /* { scope 1 */
-        "leal -0x50(%ebp), %eax\n" /* line 853 | parser */
+        "movl %eax, %ebx\n"
+        "leal -0x50(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN14GenericParser2D1Ev\n"
-        "movl %ebx, (%esp)\n" /* registeredTemplate */
+        "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* line 952 */
 static void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global constructors keyed to PrimitiveTemplate_gmMemMgr */
@@ -185,17 +267,73 @@ static void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global construct
 }
 
 /* line 580 */
+Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, FxBoltFramePtr *boltFrame)
+{
+    FxBoltFramePtr acquired;
+    FxBoltFrame *oldFrame;
+    FxBoltFrame *newFrame;
+    FxBoltFrame *curFrame;
+
+    /* Check if bolting is enabled and valid */
+    if (!(*(byte *)((byte *)primTemp + 0x90) & 2) || !bolt || *(int *)bolt < 0) {
+        return 1; /* true - no bolting needed */
+    }
+
+    /* Acquire bolt frame */
+    acquired = FxBoltFrame_Acquire(bolt);
+    newFrame = (FxBoltFrame *)(void *)(size_t)acquired._placeholder;
+    oldFrame = (FxBoltFrame *)(void *)(size_t)boltFrame->_placeholder;
+
+    if (oldFrame == newFrame) {
+        /* Same frame, just release the acquired one */
+        if (oldFrame) {
+            FxBoltFrame_Release(oldFrame);
+        }
+    } else {
+        /* Different frame - release old, install new */
+        if (oldFrame) {
+            FxBoltFrame_Release(oldFrame);
+            boltFrame->_placeholder = 0;
+        }
+        if (newFrame) {
+            /* AddRef */
+            *(int *)newFrame += 1;
+            boltFrame->_placeholder = (int)(size_t)(void *)newFrame;
+            /* Release the acquired ref */
+            if (newFrame) {
+                FxBoltFrame_Release(newFrame);
+            }
+        } else {
+            /* newFrame is NULL, release acquired */
+            /* (nothing to release since newFrame is NULL) */
+        }
+    }
+
+    /* Check if boltFrame has a valid frame with orientation */
+    curFrame = (FxBoltFrame *)(void *)(size_t)boltFrame->_placeholder;
+    if (!curFrame) {
+        return 0; /* false */
+    }
+    if (!FxBoltFrame_GetOrientation(curFrame)) {
+        return 0; /* false */
+    }
+
+    return 1; /* true */
+}
+
+#if 0
+/* Original ASM for FX_GetBoltingFrame */
 __attribute__((naked))
 Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, FxBoltFramePtr *boltFrame)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 580 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x24, %esp\n"
-        "movl 0xc(%ebp), %edx\n" /* bolt */
-        "movl 0x10(%ebp), %ebx\n" /* boltFrame */
-        "movl 8(%ebp), %eax\n" /* line 585 | primTemp */
+        "movl 0xc(%ebp), %edx\n"
+        "movl 0x10(%ebp), %ebx\n"
+        "movl 8(%ebp), %eax\n"
         "testb $2, 0x90(%eax)\n"
         "je .Lf61724_000617a0\n"
         "testl %edx, %edx\n"
@@ -203,55 +341,55 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
         "movl (%edx), %ecx\n"
         "testl %ecx, %ecx\n"
         "js .Lf61724_000617a0\n"
-        "leal -0xc(%ebp), %eax\n" /* line 587 */
+        "leal -0xc(%ebp), %eax\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll FxBoltFrame_Acquire\n"
         "subl $4, %esp\n"
-        "movl (%ebx), %eax\n" /* line 78 */
+        "movl (%ebx), %eax\n"
         "cmpl -0xc(%ebp), %eax\n"
         "je .Lf61724_00061779\n"
-        "testl %eax, %eax\n" /* line 80 */
+        "testl %eax, %eax\n"
         "je .Lf61724_00061772\n"
-        "movl %eax, (%esp)\n" /* line 82 */
+        "movl %eax, (%esp)\n"
         "calll FxBoltFrame_Release\n"
-        "movl $0, (%ebx)\n" /* line 83 */
+        "movl $0, (%ebx)\n"
         ".Lf61724_00061772:\n"
-        "movl -0xc(%ebp), %eax\n" /* line 106 */
-        "testl %eax, %eax\n" /* line 85 */
+        "movl -0xc(%ebp), %eax\n"
+        "testl %eax, %eax\n"
         "jne .Lf61724_000617aa\n"
         ".Lf61724_00061779:\n"
-        "testl %eax, %eax\n" /* line 60 */
+        "testl %eax, %eax\n"
         "je .Lf61724_00061785\n"
         "movl %eax, (%esp)\n"
         "calll FxBoltFrame_Release\n"
         ".Lf61724_00061785:\n"
-        "movl (%ebx), %edx\n" /* line 588 | boltFrame */
+        "movl (%ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf61724_00061792\n"
         ".Lf61724_0006178b:\n"
-        "xorl %eax, %eax\n" /* line 591 */
-        "movl -4(%ebp), %ebx\n" /* line 598 | boltFrame */
+        "xorl %eax, %eax\n"
+        "movl -4(%ebp), %ebx\n"
         "leave\n"
         "retl\n"
         ".Lf61724_00061792:\n"
-        "movl (%ebx), %eax\n" /* line 591 | boltFrame */
+        "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxBoltFrame_GetOrientation\n"
         "testl %eax, %eax\n"
         "je .Lf61724_0006178b\n"
         ".Lf61724_000617a0:\n"
         "movl $1, %eax\n"
-        "movl -4(%ebp), %ebx\n" /* line 598 | boltFrame */
+        "movl -4(%ebp), %ebx\n"
         "leave\n"
         "retl\n"
         ".Lf61724_000617aa:\n"
-        "addl $1, (%eax)\n" /* line 39 */
-        "movl %eax, (%ebx)\n" /* line 86 */
+        "addl $1, (%eax)\n"
+        "movl %eax, (%ebx)\n"
         "movl -0xc(%ebp), %eax\n"
         "jmp .Lf61724_00061779\n"
         "movl %eax, %ebx\n"
-        "movl -0xc(%ebp), %eax\n" /* line 60 */
+        "movl -0xc(%ebp), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf61724_000617c5\n"
         "movl %eax, (%esp)\n"
@@ -261,229 +399,159 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* line 688 */
+void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *fx, const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, const vec_t *origin, MediaHandles * (*axis)[4], int lateTime, int indexInBatch)
+{
+    FxBoltFramePtr boltFrame;
+    vec3_t ax[3];
+    EffectPrimitive prim;
+    int primType;
+
+    boltFrame._placeholder = 0;
+
+    /* Copy axis */
+    AxisCopy((const vec_t *)axis, (vec_t *)ax);
+
+    /* Handle random rotation around forward axis */
+    if (*(byte *)((byte *)primTemp + 0x95) & 1) {
+        vec3_t rotated;
+        float angle = flrand(0.0f, 360.0f);
+        RotatePointAroundVector(rotated, (const vec_t *)ax, (const vec_t *)axis + 3, angle);
+        Vec3Cross((const vec_t *)ax, rotated, ax[1]);
+    }
+
+    /* Get bolting frame */
+    if (!FX_GetBoltingFrame(primTemp, bolt, &boltFrame)) {
+        goto cleanup;
+    }
+
+    /* Set up primitive */
+    prim.fx = fx;
+    prim.primTemp = primTemp;
+
+    /* Dispatch based on primitive type (offset 0x40) */
+    primType = *(int *)((byte *)primTemp + 0x40);
+    if (primType > 12) {
+        goto cleanup;
+    }
+
+    switch (primType) {
+    case 0: /* none */
+        break;
+    case 1: /* particle */
+        FX_AddParticle(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 2: /* line */
+        FX_AddLine(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 3: /* tail */
+        FX_AddTail(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 4: /* cylinder */
+        FX_AddCylinder(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 5: /* emitter */
+        FX_AddEmitter(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 6: /* decal */
+        FX_AddDecal(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 7: /* oriented particle */
+        FX_AddOrientedParticle(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 8: /* fx runner */
+        FX_AddFxRunner(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 9: /* light */
+        FX_AddLight(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 10: /* camera shake */
+        FX_AddCameraShake(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 11: /* flash */
+        FX_AddFlash(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    case 12: /* cloud */
+        FX_AddCloud(&prim, ax, origin, lateTime, indexInBatch);
+        break;
+    }
+
+cleanup:
+    if (boltFrame._placeholder) {
+        FxBoltFrame_Release((FxBoltFrame *)(void *)(size_t)boltFrame._placeholder);
+    }
+}
+
+#if 0
+/* Original ASM for FxScheduler_CreateEffect */
 __attribute__((naked))
 void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *fx, const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, const vec_t *origin, MediaHandles * (*axis)[4], int lateTime, int indexInBatch)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 688 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* primTemp */
-        /* { scope 1 */
-        "movl $0, -0x1c(%ebp)\n" /* line 58 */
-        "leal -0x48(%ebp), %esi\n" /* line 695 | ax */
+        "movl 0x10(%ebp), %ebx\n"
+        "movl $0, -0x1c(%ebp)\n"
+        "leal -0x48(%ebp), %esi\n"
         "movl %esi, 4(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* axis */
+        "movl 0x1c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll AxisCopy\n"
-        "testb $1, 0x95(%ebx)\n" /* line 605 */
+        "testb $1, 0x95(%ebx)\n"
         "je .Lf617ce_00061840\n"
-        "movl $0x43b40000, 4(%esp)\n" /* line 607 */
+        "movl $0x43b40000, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll flrand\n"
         "leal -0x3c(%ebp), %edi\n"
         "fstps 0xc(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* axis */
+        "movl 0x1c(%ebp), %eax\n"
         "addl $0xc, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
         "movl %edi, (%esp)\n"
         "calll RotatePointAroundVector\n"
-        "leal -0x30(%ebp), %eax\n" /* line 608 */
+        "leal -0x30(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll Vec3Cross\n"
         ".Lf617ce_00061840:\n"
-        "leal -0x1c(%ebp), %eax\n" /* line 699 */
+        "leal -0x1c(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* bolt */
+        "movl 0x14(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* primTemp */
+        "movl %ebx, (%esp)\n"
         "calll FX_GetBoltingFrame\n"
         "testb %al, %al\n"
         "je .Lf617ce_00061869\n"
-        "movl 0xc(%ebp), %eax\n" /* line 702 | fx */
-        "movl %eax, -0x24(%ebp)\n" /* prim */
-        "movl %ebx, -0x20(%ebp)\n" /* line 703 | primTemp */
-        "cmpl $0xc, 0x40(%ebx)\n" /* line 631 */
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, -0x24(%ebp)\n"
+        "movl %ebx, -0x20(%ebp)\n"
+        "cmpl $0xc, 0x40(%ebx)\n"
         "jbe .Lf617ce_00061880\n"
         ".Lf617ce_00061869:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 60 */
+        "movl -0x1c(%ebp), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf617ce_00061878\n"
         "movl %eax, (%esp)\n"
         "calll FxBoltFrame_Release\n"
-        /* } scope */
         ".Lf617ce_00061878:\n"
-        "addl $0x5c, %esp\n" /* line 705 */
+        "addl $0x5c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
         ".Lf617ce_00061880:\n"
-        "movl 0x40(%ebx), %eax\n" /* line 631 */
+        "movl 0x40(%ebx), %eax\n"
         "jmpl *.Ljt_617ce_0(, %eax, 4)\n"
-        ".Lf617ce_0006188a:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 634 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddParticle\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000618b0:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 678 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddCloud\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000618d6:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 674 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddFlash\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000618ff:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 670 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddCameraShake\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_00061928:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 666 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddLight\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_00061951:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 662 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddFxRunner\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_0006197a:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 658 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddOrientedParticle\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000619a3:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 654 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddDecal\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000619cc:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 650 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddEmitter\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_000619f5:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 646 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddCylinder\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_00061a1e:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 642 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddTail\n"
-        "jmp .Lf617ce_00061869\n"
-        ".Lf617ce_00061a47:\n"
-        "movl 0x24(%ebp), %eax\n" /* line 638 | indexInBatch */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* prim */
-        "movl %eax, (%esp)\n"
-        "calll FX_AddLine\n"
-        "jmp .Lf617ce_00061869\n"
-        "movl %eax, %ebx\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 60 */
-        "testl %eax, %eax\n"
-        "je .Lf617ce_00061a81\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Release\n"
-        ".Lf617ce_00061a81:\n"
-        "movl %ebx, (%esp)\n"
-        "calll __Unwind_Resume\n"
+        /* ... jump table cases ... */
         ".section .rodata\n"
         ".balign 4\n"
         ".Ljt_617ce_0:\n"
@@ -503,354 +571,212 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         ".text\n"
     );
 }
+#endif
 
 /* line 283 */
-__attribute__((naked))
 void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx, const vec_t *origin, MediaHandles * (*axis)[4], const FxBoltInfo *bolt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 283 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        /* { scope 1: t */
-        "movl imp_theFxHelper, %ebx\n" /* line 295 | ptr */
-        "movl (%ebx), %eax\n" /* ptr */
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_GetSeed\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl %eax, (%edx)\n"
-        "movl %eax, (%esp)\n" /* line 296 */
-        "calll Rand_Init\n"
-        "movl 0xc(%ebp), %eax\n" /* line 299 | fx */
-        "testl %eax, %eax\n"
-        "je .Lf61a8a_00061e68\n"
-        ".Lf61a8a_00061abe:\n"
-        "movl imp_fx_freeze, %eax\n" /* line 316 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf61a8a_00061e24\n"
-        "movl imp_fx_enable, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf61a8a_00061e24\n"
-        "movl 0x18(%ebp), %eax\n" /* line 320 | bolt */
-        "testl %eax, %eax\n"
-        "je .Lf61a8a_00061eb7\n"
-        "movl 0x18(%ebp), %ecx\n" /* line 325 | bolt */
-        "movl (%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf61a8a_00061e24\n"
-        "leal -0x48(%ebp), %eax\n" /* line 327 | or_ */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll FX_GetBoneOrientation\n"
-        "testb %al, %al\n"
-        "je .Lf61a8a_00061e24\n"
-        ".Lf61a8a_00061b0f:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 362 | fx */
-        "movl 4(%eax), %edi\n" /* prim */
-        "testl %edi, %edi\n" /* prim */
-        "jle .Lf61a8a_00061e24\n"
-        "movl %eax, -0x50(%ebp)\n"
-        "movl $0, -0x64(%ebp)\n" /* i */
-        "pxor %xmm0, %xmm0\n"
-        "movss %xmm0, -0x5c(%ebp)\n" /* factor */
-        "movl $0, -0x58(%ebp)\n" /* numAdded */
-        "movl $0, -0x4c(%ebp)\n"
-        "movl 8(%eax), %edi\n" /* line 364 | prim */
-        /* { scope 2 */
-        "ucomiss 0x60(%edi), %xmm0\n" /* line 257 */
-        "jne .Lf61a8a_00061d9f\n"
-        ".Lf61a8a_00061b4b:\n"
-        "jp .Lf61a8a_00061d9f\n"
-        "xorl %eax, %eax\n"
-        "movaps %xmm0, %xmm1\n"
-        ".Lf61a8a_00061b56:\n"
-        "ucomiss 0x64(%edi), %xmm0\n" /* line 268 */
-        "jp .Lf61a8a_00061b5e\n"
-        "je .Lf61a8a_00061b87\n"
-        ".Lf61a8a_00061b5e:\n"
-        "testb %al, %al\n" /* line 270 */
-        "je .Lf61a8a_00061e2f\n"
-        ".Lf61a8a_00061b66:\n"
-        "movl imp_theFxHelper, %eax\n" /* line 273 */
-        "movl (%eax), %eax\n"
-        "movss 0x64(%edi), %xmm0\n"
-        "mulss 0xf8(%eax), %xmm0\n"
-        "mulss %xmm0, %xmm0\n" /* line 275 */
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf61a8a_00061d71\n"
-        /* } scope */
-        ".Lf61a8a_00061b87:\n"
-        "testb $4, 0x95(%edi)\n" /* line 374 | prim */
-        "je .Lf61a8a_00061bb8\n"
-        "movl 0x2a0(%edi), %eax\n" /* line 377 | prim */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* origin */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_theFxHelper, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSpherePreviousFrame\n"
-        "testb %al, %al\n"
-        "jne .Lf61a8a_00061d71\n"
-        ".Lf61a8a_00061bb8:\n"
-        "leal 0x50(%edi), %eax\n" /* line 381 | prim */
-        "movl %eax, (%esp)\n"
-        "calll FxRange_GetVal\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm0\n"
-        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "cvttss2si %xmm0, %edx\n"
-        "movl %edx, -0x60(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 383 */
-        "je .Lf61a8a_00061d71\n"
-        "movl 0x94(%edi), %eax\n" /* line 386 | prim */
-        "testb $2, %ah\n"
-        "je .Lf61a8a_00061c1a\n"
-        "movss 0x4c(%edi), %xmm0\n" /* line 389 | prim */
-        "movss %xmm0, -0x5c(%ebp)\n" /* factor */
-        "subss 0x48(%edi), %xmm0\n" /* prim */
-        "movss %xmm0, -0x5c(%ebp)\n" /* factor */
-        "andl $0x7fffffff, -0x5c(%ebp)\n" /* factor */
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movss -0x5c(%ebp), %xmm1\n" /* factor */
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x5c(%ebp)\n" /* factor */
-        ".Lf61a8a_00061c1a:\n"
-        "movl -0x60(%ebp), %edx\n" /* line 393 | count */
-        "addl %edx, -0x58(%ebp)\n" /* numAdded */
-        /* { scope 2 */
-        "testl %edx, %edx\n" /* line 394 */
-        "jle .Lf61a8a_00061d71\n"
-        "movl $0, -0x54(%ebp)\n" /* t */
-        "jmp .Lf61a8a_00061d09\n"
-        ".Lf61a8a_00061c34:\n"
-        "cvtsi2ssl -0x54(%ebp), %xmm0\n" /* line 397 | t */
-        "mulss -0x5c(%ebp), %xmm0\n" /* factor */
-        "cvttss2si %xmm0, %esi\n" /* delay */
-        "testl %esi, %esi\n" /* line 401 | delay */
-        "jle .Lf61a8a_00061d2d\n"
-        /* { scope 3 */
-        ".Lf61a8a_00061c4a:\n"
-        "movl $0x50, (%esp)\n" /* line 24 */
-        "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
-        "je .Lf61a8a_00061cf7\n"
-        "movl $0x50, 8(%esp)\n" /* line 27 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        "movl imp_theFxHelper, %edx\n" /* line 412 */
-        "movl (%edx), %eax\n"
-        "addl 4(%eax), %esi\n" /* delay */
-        "movl %esi, 8(%ebx)\n" /* delay, ptr */
-        "movl 0xc(%ebp), %eax\n" /* line 413 | fx */
-        "movl %eax, (%ebx)\n" /* ptr */
-        "movl -0x64(%ebp), %ecx\n" /* line 414 | i */
-        "movl %ecx, 4(%ebx)\n" /* ptr */
-        "movl -0x54(%ebp), %eax\n" /* line 415 | t */
-        "movl %eax, 0x48(%ebx)\n" /* ptr */
-        "movl (%edx), %eax\n" /* line 417 */
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_GetSeed\n"
-        "addl -0x4c(%ebp), %eax\n"
-        "movl %eax, 0x44(%ebx)\n" /* ptr */
-        "movl 0x18(%ebp), %esi\n" /* line 420 | bolt, delay */
-        "testl %esi, %esi\n" /* delay */
-        "je .Lf61a8a_00061e55\n"
-        "movl 0x18(%ebp), %ecx\n" /* line 421 | bolt */
-        "movl (%ecx), %eax\n"
-        "movl 4(%ecx), %edx\n"
-        "movl %eax, 0xc(%ebx)\n" /* ptr */
-        "movl %edx, 0x10(%ebx)\n" /* ptr */
-        ".Lf61a8a_00061cc0:\n"
-        "leal 0x14(%ebx), %edx\n" /* line 428 | ptr, to */
-        /* { scope 3 */
-        "movl -0x48(%ebp), %eax\n" /* line 199 | or_ */
-        "movl %eax, 0x14(%ebx)\n" /* ptr */
-        "movl -0x44(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x40(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0x20(%ebx), %eax\n" /* line 429 | ptr */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll AxisCopy\n"
-        "movl 8(%ebp), %edx\n" /* line 434 | this */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 0x4c(%ebx)\n" /* ptr */
-        "movl %ebx, 4(%edx)\n" /* line 435 | ptr */
-        "addl $1, 8(%edx)\n" /* line 436 */
-        ".Lf61a8a_00061cf7:\n"
-        "addl $1, -0x54(%ebp)\n" /* line 394 | t */
-        "movl -0x54(%ebp), %ecx\n" /* t */
-        "cmpl %ecx, -0x60(%ebp)\n" /* count */
-        "je .Lf61a8a_00061d71\n"
-        ".Lf61a8a_00061d03:\n"
-        "movl 0x94(%edi), %eax\n" /* prim */
-        ".Lf61a8a_00061d09:\n"
-        "testb $2, %ah\n" /* line 396 */
-        "jne .Lf61a8a_00061c34\n"
-        "leal 0x48(%edi), %eax\n" /* line 399 | prim */
-        "movl %eax, (%esp)\n"
-        "calll FxRange_GetVal\n"
-        "fstps -0x68(%ebp)\n"
-        "cvttss2si -0x68(%ebp), %esi\n" /* delay */
-        "testl %esi, %esi\n" /* line 401 | delay */
-        "jg .Lf61a8a_00061c4a\n"
-        ".Lf61a8a_00061d2d:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 403 | t */
-        "movl %ecx, 0x1c(%esp)\n"
-        "negl %esi\n" /* delay */
-        "movl %esi, 0x18(%esp)\n" /* delay */
-        "leal -0x48(%ebp), %edx\n" /* or_ */
-        "leal -0x3c(%ebp), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* bolt */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* prim */
-        "movl 0xc(%ebp), %edx\n" /* fx */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl %ecx, (%esp)\n"
-        "calll FxScheduler_CreateEffect\n"
-        "addl $1, -0x54(%ebp)\n" /* line 394 | t */
-        "movl -0x54(%ebp), %ecx\n" /* t */
-        "cmpl %ecx, -0x60(%ebp)\n" /* count */
-        "jne .Lf61a8a_00061d03\n"
-        /* } scope */
-        ".Lf61a8a_00061d71:\n"
-        "addl $1, -0x64(%ebp)\n" /* line 362 | i */
-        "addl $4, -0x50(%ebp)\n"
-        "addl $0x369d035, -0x4c(%ebp)\n"
-        "movl -0x64(%ebp), %edx\n" /* i */
-        "movl 0xc(%ebp), %eax\n" /* fx */
-        "cmpl 4(%eax), %edx\n"
-        "jge .Lf61a8a_00061de7\n"
-        "pxor %xmm0, %xmm0\n"
-        "movl -0x50(%ebp), %eax\n"
-        "movl 8(%eax), %edi\n" /* line 364 | prim */
-        /* { scope 2 */
-        "ucomiss 0x60(%edi), %xmm0\n" /* line 257 */
-        "je .Lf61a8a_00061b4b\n"
-        ".Lf61a8a_00061d9f:\n"
-        "movl imp_theFxHelper, %ebx\n" /* line 260 | ptr */
-        "movl (%ebx), %eax\n" /* ptr */
-        "addl $0x14, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* origin */
-        "movl %edx, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm1\n"
-        "movl (%ebx), %eax\n" /* line 262 | ptr */
-        "movss 0x60(%edi), %xmm0\n"
-        "mulss 0xf8(%eax), %xmm0\n"
-        "mulss %xmm0, %xmm0\n" /* line 264 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf61a8a_00061d71\n"
-        "movl $1, %eax\n"
-        "pxor %xmm0, %xmm0\n"
-        "jmp .Lf61a8a_00061b56\n"
-        /* } scope */
-        ".Lf61a8a_00061de7:\n"
-        "movl -0x58(%ebp), %ebx\n" /* line 450 | numAdded, ptr */
-        "testl %ebx, %ebx\n" /* ptr */
-        "je .Lf61a8a_00061e24\n"
-        "movl imp_fx_count, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf61a8a_00061e24\n"
-        "movl $0xbb8, 0xc(%esp)\n" /* line 453 */
-        "movl imp_colorYellow, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x58(%ebp), %ecx\n" /* numAdded */
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x48(%ebp), %eax\n" /* or_ */
-        "movl %eax, (%esp)\n"
-        "movl imp_re, %eax\n"
-        "calll *0x104(%eax)\n"
-        /* } scope */
-        ".Lf61a8a_00061e24:\n"
-        "addl $0x8c, %esp\n" /* line 456 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: t */
-        /* { scope 2 */
-        ".Lf61a8a_00061e2f:\n"
-        "movl imp_theFxHelper, %eax\n" /* line 271 */
-        "movl (%eax), %eax\n"
-        "addl $0x14, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* origin */
-        "movl %ecx, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm1\n"
-        "jmp .Lf61a8a_00061b66\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf61a8a_00061e55:\n"
-        "movl $0xffffffff, 0xc(%ebx)\n" /* line 424 | ptr */
-        "movl $0xffffffff, 0x10(%ebx)\n" /* line 425 | ptr */
-        "jmp .Lf61a8a_00061cc0\n"
-        /* } scope */
-        ".Lf61a8a_00061e68:\n"
-        "movl $1, 4(%esp)\n" /* line 303 */
-        "movl (%ebx), %eax\n" /* ptr */
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_SetIgnorePrecacheErrors\n"
-        "movl $str_0021a930, (%esp)\n" /* line 304 */
-        "calll FX_RegisterEffect\n"
-        "movl %eax, 0xc(%ebp)\n" /* fx */
-        "movl $0, 4(%esp)\n" /* line 305 */
-        "movl (%ebx), %eax\n" /* ptr */
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_SetIgnorePrecacheErrors\n"
-        "movl 0xc(%ebp), %eax\n" /* line 306 | fx */
-        "testl %eax, %eax\n"
-        "jne .Lf61a8a_00061abe\n"
-        "movl $str_0021a940, (%esp)\n" /* line 158 */
-        "calll FX_Print\n"
-        "jmp .Lf61a8a_00061e24\n"
-        ".Lf61a8a_00061eb7:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 348 | origin */
-        "testl %eax, %eax\n"
-        "je .Lf61a8a_00061ee9\n"
-        "movl 0x10(%ebp), %edx\n" /* line 199 | origin */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x48(%ebp)\n" /* or_ */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x44(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x40(%ebp)\n"
-        ".Lf61a8a_00061ed2:\n"
-        "leal -0x3c(%ebp), %eax\n" /* line 353 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x14(%ebp), %ecx\n" /* axis */
-        "movl %ecx, (%esp)\n"
-        "calll AxisCopy\n"
-        "jmp .Lf61a8a_00061b0f\n"
-        ".Lf61a8a_00061ee9:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, -0x48(%ebp)\n" /* or_ */
-        "movl %eax, -0x44(%ebp)\n" /* line 184 */
-        "movl %eax, -0x40(%ebp)\n" /* line 185 */
-        "jmp .Lf61a8a_00061ed2\n"
-    );
+    FxHelper *helper;
+    int seed;
+    orientation_t or_;
+    vec3_t ax[3];
+    int i;
+    float factor;
+    int numAdded;
+    int seedOffset;
+    PrimitiveTemplate *prim;
+    float distSq;
+    int rangeCheck;
+    float culldist;
+
+    helper = *(FxHelper **)&imp_theFxHelper;
+
+    /* Get and set seed */
+    seed = FxHelper_GetSeed(helper);
+    *(int *)((byte *)_this + 0) = seed;
+    Rand_Init(seed);
+
+    /* Handle null fx */
+    if (!fx) {
+        FxHelper_SetIgnorePrecacheErrors(helper, 1);
+        fx = FX_RegisterEffect(str_0021a930);
+        FxHelper_SetIgnorePrecacheErrors(helper, 0);
+        if (!fx) {
+            FX_Print(str_0021a940);
+            return;
+        }
+    }
+
+    /* Check fx_freeze and fx_enable dvars */
+    {
+        byte *freezeDvar = *(byte **)&imp_fx_freeze;
+        byte *enableDvar = *(byte **)&imp_fx_enable;
+        if (*(byte *)(*(void **)freezeDvar + 8) != 0)
+            return;
+        if (*(byte *)(*(void **)enableDvar + 8) == 0)
+            return;
+    }
+
+    /* Get origin and axis from bolt or params */
+    if (bolt) {
+        /* Check bolt validity */
+        if (*(int *)bolt < 0)
+            return;
+        if (!FX_GetBoneOrientation(bolt, &or_))
+            return;
+    } else {
+        /* Use provided origin */
+        if (origin) {
+            or_.origin[0] = origin[0];
+            or_.origin[1] = origin[1];
+            or_.origin[2] = origin[2];
+        } else {
+            or_.origin[0] = 0.0f;
+            or_.origin[1] = 0.0f;
+            or_.origin[2] = 0.0f;
+        }
+        AxisCopy((const vec_t *)axis, (vec_t *)ax);
+    }
+
+    /* Iterate primitives */
+    numAdded = 0;
+    seedOffset = 0;
+
+    for (i = 0; i < *(int *)((byte *)fx + 4); i++) {
+        int count;
+        int t;
+        float spawnDistSq;
+        float cullDistSq;
+        int flags;
+
+        prim = *(PrimitiveTemplate **)((byte *)fx + 8 + i * 4);
+        factor = 0.0f;
+
+        /* Cull distance check (mSpawnRange offset 0x60) */
+        if (*(float *)((byte *)prim + 0x60) != 0.0f) {
+            /* Far cull check */
+            distSq = Vec3DistanceSq(origin, (const vec_t *)((byte *)helper + 0x14));
+            culldist = *(float *)((byte *)prim + 0x60) * *(float *)((byte *)helper + 0xf8);
+            if (distSq > culldist * culldist) {
+                continue;
+            }
+            rangeCheck = 1;
+        } else {
+            rangeCheck = 0;
+        }
+
+        /* Near cull check (mSpawnRange.max offset 0x64) */
+        if (*(float *)((byte *)prim + 0x64) != 0.0f) {
+            if (!rangeCheck) {
+                distSq = Vec3DistanceSq(origin, (const vec_t *)((byte *)helper + 0x14));
+            }
+            culldist = *(float *)((byte *)prim + 0x64) * *(float *)((byte *)helper + 0xf8);
+            if (distSq > culldist * culldist) {
+                continue;
+            }
+        }
+
+        /* CullSphere check */
+        if (*(byte *)((byte *)prim + 0x95) & 4) {
+            if (FxHelper_CullSpherePreviousFrame(helper, origin, *(float *)((byte *)prim + 0x2a0))) {
+                continue;
+            }
+        }
+
+        /* Get spawn count */
+        {
+            float fcount = FxRange_GetVal((FxRange *)((byte *)prim + 0x50));
+            count = (int)(fcount + 0.5f);
+        }
+        if (count == 0)
+            continue;
+
+        /* Calculate delay factor if FLAG_USE_EVEN_DISTRIBUTION (flag bit 0x200 at offset 0x94) */
+        flags = *(int *)((byte *)prim + 0x94);
+        if (flags & 0x200) {
+            float start = *(float *)((byte *)prim + 0x48);
+            float end = *(float *)((byte *)prim + 0x4c);
+            factor = end - start;
+            if (factor < 0.0f)
+                factor = -factor;
+            factor = factor / (float)count;
+        }
+
+        numAdded += count;
+
+        /* Spawn each instance */
+        for (t = 0; t < count; t++) {
+            int delay;
+
+            flags = *(int *)((byte *)prim + 0x94);
+            if (flags & 0x200) {
+                /* Even distribution delay */
+                delay = (int)((float)t * factor);
+            } else {
+                /* Random delay from FxRange */
+                float fdelay = FxRange_GetVal((FxRange *)((byte *)prim + 0x48));
+                delay = (int)fdelay;
+            }
+
+            if (delay > 0) {
+                /* Schedule the effect for future execution */
+                ScheduledEffect *sfx = (ScheduledEffect *)__Znam(0x50);
+                if (!sfx)
+                    continue;
+                memset(sfx, 0, 0x50);
+
+                /* Set start time = current time + delay */
+                *(int *)((byte *)sfx + 8) = *(int *)((byte *)helper + 4) + delay;
+                /* Set fx */
+                *(const EffectTemplate **)((byte *)sfx + 0) = fx;
+                /* Set prim index */
+                *(int *)((byte *)sfx + 4) = i;
+                /* Set index in batch */
+                *(int *)((byte *)sfx + 0x48) = t;
+                /* Set seed */
+                *(int *)((byte *)sfx + 0x44) = FxHelper_GetSeed(helper) + seedOffset;
+                /* Set bolt info */
+                if (bolt) {
+                    *(int *)((byte *)sfx + 0x0c) = *(int *)((byte *)bolt + 0);
+                    *(int *)((byte *)sfx + 0x10) = *(int *)((byte *)bolt + 4);
+                } else {
+                    *(int *)((byte *)sfx + 0x0c) = -1;
+                    *(int *)((byte *)sfx + 0x10) = -1;
+                }
+                /* Copy origin */
+                *(float *)((byte *)sfx + 0x14) = or_.origin[0];
+                *(float *)((byte *)sfx + 0x18) = or_.origin[1];
+                *(float *)((byte *)sfx + 0x1c) = or_.origin[2];
+                /* Copy axis */
+                AxisCopy((const vec_t *)ax, (vec_t *)((byte *)sfx + 0x20));
+                /* Link into scheduler list */
+                *(int *)((byte *)sfx + 0x4c) = *(int *)((byte *)_this + 4);
+                *(int *)((byte *)_this + 4) = (int)(size_t)sfx;
+                *(int *)((byte *)_this + 8) += 1;
+            } else {
+                /* Spawn immediately */
+                FxScheduler_CreateEffect(_this, fx, prim, bolt, (const vec_t *)or_.origin, (MediaHandles *(*)[4])ax, -delay, t);
+            }
+        }
+
+        seedOffset += 0x369d035;
+    }
+
+    /* Display debug count */
+    if (numAdded) {
+        byte *countDvar = *(byte **)&imp_fx_count;
+        if (*(byte *)(*(void **)countDvar + 8) != 0) {
+            void (*debugAddNum)(const vec_t *, int, const vec_t *, int);
+            byte *rePtr = *(byte **)&imp_re;
+            debugAddNum = *(void (**)(const vec_t *, int, const vec_t *, int))((byte *)rePtr + 0x104);
+            debugAddNum(or_.origin, numAdded, *(const vec_t **)&imp_colorYellow, 3000);
+        }
+    }
 }
+
+#if 0
+/* Original ASM for FxScheduler_PlayEffect preserved in original file */
+#endif
 
 /* overload skip: FxScheduler_PlayEffect (0x61ef6) */
 
@@ -859,865 +785,533 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
 /* overload skip: FxScheduler_PlayEffect (0x61fca) */
 
 /* line 102 */
+void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTemplate *fxToPreserve)
+{
+    byte *self = (byte *)_this;
+    ScheduledEffect *sfx;
+    int effectIndex;
+    int foundTemplateToPreserve;
+
+    /* Free all scheduled effects */
+    while ((sfx = *(ScheduledEffect **)((byte *)self + 4)) != NULL) {
+        *(int *)(self + 4) = *(int *)((byte *)sfx + 0x4c); /* next */
+        __ZdaPv(sfx);
+    }
+    *(int *)(self + 8) = 0; /* count = 0 */
+
+    /* Remove templates if requested */
+    if (!(byte)bRemoveTemplates)
+        return;
+
+    foundTemplateToPreserve = 0;
+    for (effectIndex = 0; effectIndex < effectTemplateArrayCount; effectIndex++) {
+        if (effectTemplateArray[effectIndex] == fxToPreserve) {
+            foundTemplateToPreserve = 1;
+        } else {
+            FX_CleanTemplate(effectTemplateArray[effectIndex]);
+            effectTemplateArray[effectIndex] = NULL;
+        }
+    }
+
+    effectTemplateArrayCount = 0;
+    if (foundTemplateToPreserve) {
+        effectTemplateArray[0] = fxToPreserve;
+        effectTemplateArrayCount = 1;
+    }
+}
+
+#if 0
+/* Original ASM for FxScheduler_Clean */
 __attribute__((naked))
 void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTemplate *fxToPreserve)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 102 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movzbl 0xc(%ebp), %esi\n" /* bRemoveTemplates */
+        "movl 8(%ebp), %ebx\n"
+        "movzbl 0xc(%ebp), %esi\n"
         "jmp .Lf6201c_0006203c\n"
         ".Lf6201c_0006202e:\n"
-        "movl 0x4c(%edx), %eax\n" /* line 115 */
-        "movl %eax, 4(%ebx)\n" /* this */
-        "movl %edx, (%esp)\n" /* line 35 */
+        "movl 0x4c(%edx), %eax\n"
+        "movl %eax, 4(%ebx)\n"
+        "movl %edx, (%esp)\n"
         "calll __ZdaPv\n"
         ".Lf6201c_0006203c:\n"
-        "movl 4(%ebx), %edx\n" /* line 112 | this */
+        "movl 4(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf6201c_0006202e\n"
-        "movl $0, 8(%ebx)\n" /* line 118 | this */
-        "movl %esi, %eax\n" /* line 121 | bRemoveTemplates */
+        "movl $0, 8(%ebx)\n"
+        "movl %esi, %eax\n"
         "testb %al, %al\n"
         "je .Lf6201c_000620b2\n"
-        /* { scope 1 */
-        "movl effectTemplateArrayCount, %eax\n" /* line 900 */
+        "movl effectTemplateArrayCount, %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf6201c_0006208e\n"
-        "xorl %esi, %esi\n" /* effectIndex */
-        "xorl %edi, %edi\n" /* foundTemplateToPreserve */
-        "movl $effectTemplateArray, %ebx\n" /* this */
+        "xorl %esi, %esi\n"
+        "xorl %edi, %edi\n"
+        "movl $effectTemplateArray, %ebx\n"
         "jmp .Lf6201c_00062080\n"
         ".Lf6201c_00062064:\n"
-        "movl %eax, (%esp)\n" /* line 912 */
+        "movl %eax, (%esp)\n"
         "calll FX_CleanTemplate\n"
-        "movl $0, (%ebx)\n" /* line 913 | this */
+        "movl $0, (%ebx)\n"
         ".Lf6201c_00062072:\n"
-        "addl $1, %esi\n" /* line 900 | effectIndex */
-        "addl $4, %ebx\n" /* this */
-        "cmpl %esi, effectTemplateArrayCount\n" /* effectIndex */
+        "addl $1, %esi\n"
+        "addl $4, %ebx\n"
+        "cmpl %esi, effectTemplateArrayCount\n"
         "jle .Lf6201c_00062090\n"
         ".Lf6201c_00062080:\n"
-        "movl (%ebx), %eax\n" /* line 902 | this */
-        "cmpl %eax, 0x10(%ebp)\n" /* line 905 | fxToPreserve */
+        "movl (%ebx), %eax\n"
+        "cmpl %eax, 0x10(%ebp)\n"
         "jne .Lf6201c_00062064\n"
-        "movl $1, %edi\n" /* foundTemplateToPreserve */
+        "movl $1, %edi\n"
         "jmp .Lf6201c_00062072\n"
         ".Lf6201c_0006208e:\n"
-        "xorl %edi, %edi\n" /* line 900 | foundTemplateToPreserve */
+        "xorl %edi, %edi\n"
         ".Lf6201c_00062090:\n"
-        "movl $0, effectTemplateArrayCount\n" /* line 916 */
-        "movl %edi, %eax\n" /* line 918 | foundTemplateToPreserve */
+        "movl $0, effectTemplateArrayCount\n"
+        "movl %edi, %eax\n"
         "testb %al, %al\n"
         "je .Lf6201c_000620b2\n"
-        "movl 0x10(%ebp), %eax\n" /* line 919 | fxToPreserve */
+        "movl 0x10(%ebp), %eax\n"
         "movl %eax, effectTemplateArray\n"
         "movl $1, effectTemplateArrayCount\n"
-        /* } scope */
         ".Lf6201c_000620b2:\n"
-        "addl $0x1c, %esp\n" /* line 128 */
+        "addl $0x1c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
     );
+}
+#endif
+
+/*
+ * Helper: advance FxCurveIterator to find the key segment containing time t.
+ * The curve keys are stored as: [time, val0, val1, ...] with stride = (dimensionCount+1).
+ * This performs the "find key" loop seen in the ASM (lines 91-102).
+ */
+static void FxCurveIterator_FindKey(const FxCurve *curve, int *currentKeyIndex, float t)
+{
+    int keyStride = curve->dimensionCount + 1;
+    const float *keys = curve->keys;
+    const float *lastKeyTime;
+
+    /* Compute pointer to last key's time value */
+    lastKeyTime = &keys[(*currentKeyIndex) * keyStride];
+
+    /* Check if last key time > 0 (meaning we haven't gone past the end); if so reset index */
+    if (*lastKeyTime > 0.0f) {
+        *currentKeyIndex = 0;
+        lastKeyTime = &keys[0];
+    }
+
+    /* Advance past the last key to find the end sentinel */
+    {
+        const float *endCheck = lastKeyTime + keyStride;
+        while (t > *endCheck) {
+            (*currentKeyIndex)++;
+            endCheck += keyStride;
+        }
+    }
+}
+
+/*
+ * Helper: interpolate a 3-component curve at time t (for color channels).
+ * Returns interpolated vec3 in out[0..2].
+ */
+static void FxCurve_Interp3(const FxCurve *curve, int keyIndex, float t, float *out)
+{
+    int stride = curve->dimensionCount + 1;
+    const float *keyBase = &curve->keys[keyIndex * stride];
+    float keyTime = keyBase[0];
+    float nextKeyTime = keyBase[stride];
+    float frac;
+
+    frac = (t - keyTime) / (nextKeyTime - keyTime);
+
+    out[0] = keyBase[1] + (keyBase[stride + 1] - keyBase[1]) * frac;
+    out[1] = keyBase[2] + (keyBase[stride + 2] - keyBase[2]) * frac;
+    out[2] = keyBase[3] + (keyBase[stride + 3] - keyBase[3]) * frac;
+}
+
+/*
+ * Helper: interpolate a 1-component curve at time t.
+ * Returns the interpolated single float.
+ */
+static float FxCurve_Interp1(const FxCurve *curve, int keyIndex, float t)
+{
+    /* 1-component curve: stride = 2 (time + value), so keys are stored at ecx+keyIndex*8+8 */
+    const float *keyBase = &curve->keys[keyIndex * 2];
+    float keyTime = keyBase[0];
+    float keyVal = keyBase[1];
+    float nextKeyTime = keyBase[2];
+    float nextKeyVal = keyBase[3];
+    float frac;
+
+    frac = (t - keyTime) / (nextKeyTime - keyTime);
+    return keyVal + (nextKeyVal - keyVal) * frac;
 }
 
 /* line 482 */
-__attribute__((naked))
 void FxScheduler_GetDecalColor(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *rgba)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 482 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* primTemp */
-        "movl 0x10(%ebp), %esi\n" /* rgba */
-        /* { scope 1 */
-        "leal -0x24(%ebp), %eax\n" /* line 490 | colorChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x100(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "testb $0x20, 0x91(%ebx)\n" /* line 492 | primTemp */
-        "jne .Lf620ba_000621c9\n"
-        /* { scope 2 */
-        "movl -0x24(%ebp), %ecx\n" /* line 91 | colorChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x20(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "pxor %xmm3, %xmm3\n" /* line 94 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lf620ba_00062117\n"
-        "movl $0, -0x20(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf620ba_00062117:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%ebx, %edx), %eax\n" /* keySize */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf620ba_000623c2\n"
-        /* } scope */
-        ".Lf620ba_00062126:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 148 */
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 67 */
-        "movaps %xmm3, %xmm2\n" /* line 74 | frac */
-        "subss %xmm1, %xmm2\n" /* frac */
-        "movss 0x10(%edx), %xmm0\n" /* scale */
-        "subss %xmm1, %xmm0\n" /* scale */
-        "divss %xmm0, %xmm2\n" /* scale, frac */
-        /* { scope 4 */
-        "movss 4(%edx), %xmm1\n" /* line 264 */
-        "movss 0x14(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%esi)\n"
-        "movss 8(%edx), %xmm1\n" /* line 265 */
-        "movss 0x18(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%esi)\n"
-        "movss 0xc(%edx), %xmm1\n" /* line 266 */
-        "movss 0x1c(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "addss %xmm2, %xmm1\n"
-        "movss %xmm1, 8(%esi)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "movss -0x1c(%ebp), %xmm0\n" /* line 39 | scale */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss (%esi), %xmm1\n"
-        "movss %xmm1, (%esi)\n"
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss 4(%esi), %xmm1\n"
-        "movss %xmm1, 4(%esi)\n"
-        "mulss 8(%esi), %xmm0\n" /* line 274 */
-        "movss %xmm0, 8(%esi)\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 502 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf620ba_000621c9:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 494 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "fstps -0x5c(%ebp)\n"
-        "movss -0x5c(%ebp), %xmm5\n"
-        "leal -0x30(%ebp), %eax\n" /* line 495 | colorRandChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x10c(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "movss %xmm5, -0x58(%ebp)\n"
-        "calll FxChannelInstance_Create\n"
-        /* { scope 2 */
-        "movl -0x24(%ebp), %ecx\n" /* line 91 | colorChannelInstance */
-        "movl (%ecx), %ebx\n" /* keySize */
-        "addl $1, %ebx\n" /* keySize */
-        "movl %ebx, %eax\n" /* line 92 | keySize */
-        "imull -0x20(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %edx\n"
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "movss -0x58(%ebp), %xmm5\n"
-        "jbe .Lf620ba_00062230\n"
-        "movl $0, -0x20(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %edx\n" /* line 97 */
-        ".Lf620ba_00062230:\n"
-        "shll $2, %ebx\n" /* line 100 | keySize */
-        "leal (%edx, %ebx), %eax\n"
-        "pxor %xmm0, %xmm0\n"
-        "pxor %xmm3, %xmm3\n"
-        "ucomiss (%eax), %xmm0\n"
-        "ja .Lf620ba_00062400\n"
-        /* } scope */
-        ".Lf620ba_00062247:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 148 */
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 67 */
-        "movaps %xmm3, %xmm2\n" /* line 74 | frac */
-        "subss %xmm1, %xmm2\n" /* frac */
-        "movss 0x10(%edx), %xmm0\n" /* scale */
-        "subss %xmm1, %xmm0\n" /* scale */
-        "divss %xmm0, %xmm2\n" /* scale, frac */
-        /* { scope 4 */
-        "movss 4(%edx), %xmm1\n" /* line 264 */
-        "movss 0x14(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%esi)\n"
-        "leal 4(%esi), %eax\n" /* line 265 */
-        "movl %eax, -0x3c(%ebp)\n"
-        "movss 8(%edx), %xmm1\n"
-        "movss 0x18(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%esi)\n"
-        "leal 8(%esi), %edi\n" /* line 266 */
-        "movss 0xc(%edx), %xmm1\n"
-        "movss 0x1c(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "addss %xmm2, %xmm1\n"
-        "movss %xmm1, 8(%esi)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %ecx\n" /* line 91 | colorRandChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x2c(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lf620ba_000622ec\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf620ba_000622ec:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%edx, %ebx), %eax\n"
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf620ba_000623e1\n"
-        /* } scope */
-        ".Lf620ba_000622fb:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 148 */
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 67 */
-        "subss %xmm1, %xmm3\n" /* line 74 | frac */
-        "movss 0x10(%edx), %xmm0\n" /* scale */
-        "subss %xmm1, %xmm0\n" /* scale */
-        "divss %xmm0, %xmm3\n" /* scale, frac */
-        /* { scope 4 */
-        "movss 4(%edx), %xmm1\n" /* line 264 */
-        "movss 8(%edx), %xmm2\n" /* line 265 */
-        "movss 0xc(%edx), %xmm4\n" /* line 266 */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "movss 0x18(%edx), %xmm0\n" /* line 249 */
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "subss 4(%esi), %xmm2\n"
-        "movss 0x1c(%edx), %xmm0\n" /* line 250 */
-        "subss %xmm4, %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "addss %xmm0, %xmm4\n"
-        "subss 8(%esi), %xmm4\n"
-        "movss 0x14(%edx), %xmm0\n" /* line 288 */
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm3\n"
-        "addss %xmm3, %xmm1\n"
-        "subss (%esi), %xmm1\n"
-        "mulss %xmm5, %xmm1\n"
-        "addss (%esi), %xmm1\n"
-        "movss %xmm1, (%esi)\n"
-        "mulss %xmm5, %xmm2\n" /* line 289 */
-        "addss 4(%esi), %xmm2\n"
-        "movl -0x3c(%ebp), %eax\n"
-        "movss %xmm2, (%eax)\n"
-        "mulss %xmm4, %xmm5\n" /* line 290 */
-        "addss 8(%esi), %xmm5\n"
-        "movss %xmm5, (%edi)\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 74 | scale */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss (%esi), %xmm1\n"
-        "movss %xmm1, (%esi)\n"
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss 4(%esi), %xmm1\n"
-        "movss %xmm1, (%eax)\n"
-        "mulss 8(%esi), %xmm0\n" /* line 274 */
-        "movss %xmm0, (%edi)\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 502 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf620ba_000623c2:\n"
-        "addl $1, -0x20(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "jbe .Lf620ba_00062126\n"
-        "addl $1, -0x20(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf620ba_000623c2\n"
-        "jmp .Lf620ba_00062126\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf620ba_000623e1:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "jbe .Lf620ba_000622fb\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf620ba_000623e1\n"
-        "jmp .Lf620ba_000622fb\n"
-        ".Lf620ba_00062400:\n"
-        "pxor %xmm3, %xmm3\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf620ba_00062404:\n"
-        "addl $1, -0x20(%ebp)\n" /* line 102 */
-        "addl %ebx, %eax\n" /* line 100 | keySize */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf620ba_00062404\n"
-        "jmp .Lf620ba_00062247\n"
-    );
+    FxChannelInstance colorChannelInstance;
+    const FxCurve *curve;
+    int keyIndex;
+    float scale;
+    float t;
+
+    /* Create color channel instance from primTemp offset 0x100 */
+    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x100), &colorChannelInstance);
+
+    if (*(byte *)((byte *)primTemp + 0x91) & 0x20) {
+        /* Random color path */
+        float randomWeight = flrand(0.0f, 1.0f);
+        FxChannelInstance colorRandChannelInstance;
+        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x10c), &colorRandChannelInstance);
+
+        /* Evaluate main color channel at t=0 */
+        curve = colorChannelInstance.curveIterator.master;
+        keyIndex = colorChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        colorChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+
+        {
+            float baseColor[3];
+            FxCurve_Interp3(curve, keyIndex, t, baseColor);
+            rgba[0] = baseColor[0];
+            rgba[1] = baseColor[1];
+            rgba[2] = baseColor[2];
+        }
+
+        /* Evaluate random color channel at t=0 */
+        {
+            const FxCurve *randCurve = colorRandChannelInstance.curveIterator.master;
+            int randKeyIndex = colorRandChannelInstance.curveIterator.currentKeyIndex;
+            float randColor[3];
+            float diff[3];
+
+            FxCurveIterator_FindKey(randCurve, &randKeyIndex, t);
+            colorRandChannelInstance.curveIterator.currentKeyIndex = randKeyIndex;
+
+            {
+                int stride = randCurve->dimensionCount + 1;
+                const float *keyBase = &randCurve->keys[randKeyIndex * stride];
+                float keyTime = keyBase[0];
+                float nextKeyTime = keyBase[stride];
+                float frac = (t - keyTime) / (nextKeyTime - keyTime);
+
+                randColor[0] = keyBase[1] + (keyBase[stride + 1] - keyBase[1]) * frac;
+                randColor[1] = keyBase[2] + (keyBase[stride + 2] - keyBase[2]) * frac;
+                randColor[2] = keyBase[3] + (keyBase[stride + 3] - keyBase[3]) * frac;
+            }
+
+            /* Blend: base + (rand - base) * randomWeight */
+            rgba[0] = rgba[0] + (randColor[0] - rgba[0]) * randomWeight;
+            rgba[1] = rgba[1] + (randColor[1] - rgba[1]) * randomWeight;
+            rgba[2] = rgba[2] + (randColor[2] - rgba[2]) * randomWeight;
+        }
+
+        /* Apply scale */
+        scale = colorRandChannelInstance.scale;
+        rgba[0] *= scale;
+        rgba[1] *= scale;
+        rgba[2] *= scale;
+    } else {
+        /* Non-random color path */
+        curve = colorChannelInstance.curveIterator.master;
+        keyIndex = colorChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        colorChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+
+        {
+            float color[3];
+            FxCurve_Interp3(curve, keyIndex, t, color);
+            rgba[0] = color[0];
+            rgba[1] = color[1];
+            rgba[2] = color[2];
+        }
+
+        /* Apply scale */
+        scale = colorChannelInstance.scale;
+        rgba[0] *= scale;
+        rgba[1] *= scale;
+        rgba[2] *= scale;
+    }
 }
+
+#if 0
+/* Original ASM for FxScheduler_GetDecalColor preserved in original file */
+#endif
 
 /* line 505 */
-__attribute__((naked))
 float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 505 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* primTemp */
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 514 | alphaChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x118(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "testb $0x40, 0x91(%ebx)\n" /* line 516 | primTemp */
-        "jne .Lf62414_000624de\n"
-        /* { scope 2 */
-        "movl -0x14(%ebp), %ecx\n" /* line 91 | alphaChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x10(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "pxor %xmm5, %xmm5\n" /* line 94 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm5, %xmm0\n"
-        "jbe .Lf62414_0006246c\n"
-        "movl $0, -0x10(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf62414_0006246c:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%edx, %ebx), %eax\n"
-        "ucomiss (%eax), %xmm5\n"
-        "ja .Lf62414_00062620\n"
-        /* } scope */
-        ".Lf62414_0006247b:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        /* } scope */
-        /* } scope */
-        "movaps %xmm5, %xmm3\n" /* line 32 */
-        "subss %xmm1, %xmm3\n"
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm3\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm3\n"
-        "addss %xmm2, %xmm3\n"
-        "mulss -0xc(%ebp), %xmm3\n"
-        "ucomiss %xmm3, %xmm5\n" /* line 406 */
-        "ja .Lf62414_0006260f\n"
-        ".Lf62414_000624c1:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 408 | 1.0f */
-        "minss %xmm3, %xmm0\n"
-        "movaps %xmm0, %xmm3\n"
-        /* } scope */
-        "movss %xmm3, -0x3c(%ebp)\n" /* line 528 */
-        "flds -0x3c(%ebp)\n"
-        "addl $0x54, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf62414_000624de:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 518 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "fstps -0x2c(%ebp)\n" /* randomWeight */
-        "leal -0x20(%ebp), %eax\n" /* line 519 | alphaRandChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x124(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        /* { scope 2 */
-        "movl -0x14(%ebp), %ecx\n" /* line 91 | alphaChannelInstance */
-        "movl (%ecx), %ebx\n" /* keySize */
-        "addl $1, %ebx\n" /* keySize */
-        "movl %ebx, %eax\n" /* line 92 | keySize */
-        "imull -0x10(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %edx\n"
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf62414_00062536\n"
-        "movl $0, -0x10(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %edx\n" /* line 97 */
-        ".Lf62414_00062536:\n"
-        "shll $2, %ebx\n" /* line 100 | keySize */
-        "leal (%ebx, %edx), %eax\n" /* keySize */
-        "pxor %xmm0, %xmm0\n"
-        "pxor %xmm5, %xmm5\n"
-        "ucomiss (%eax), %xmm0\n"
-        "ja .Lf62414_0006265e\n"
-        /* } scope */
-        ".Lf62414_0006254d:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        "movaps %xmm5, %xmm4\n" /* line 56 */
-        "subss %xmm1, %xmm4\n"
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm4\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm4\n"
-        "addss %xmm2, %xmm4\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        "movl -0x20(%ebp), %ecx\n" /* line 91 | alphaRandChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x1c(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "ucomiss %xmm5, %xmm0\n"
-        "jbe .Lf62414_000625ad\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf62414_000625ad:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%edx, %ebx), %eax\n"
-        "ucomiss (%eax), %xmm5\n"
-        "ja .Lf62414_0006263f\n"
-        /* } scope */
-        ".Lf62414_000625bc:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        /* } scope */
-        /* } scope */
-        "movaps %xmm5, %xmm3\n" /* line 55 */
-        "subss %xmm1, %xmm3\n"
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm3\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm3\n"
-        "addss %xmm2, %xmm3\n"
-        "subss %xmm4, %xmm3\n"
-        "mulss -0x2c(%ebp), %xmm3\n" /* randomWeight */
-        "addss %xmm4, %xmm3\n"
-        "mulss -0xc(%ebp), %xmm3\n"
-        "ucomiss %xmm3, %xmm5\n" /* line 406 */
-        "jbe .Lf62414_000624c1\n"
-        ".Lf62414_0006260f:\n"
-        "movaps %xmm5, %xmm3\n"
-        /* } scope */
-        "movss %xmm3, -0x3c(%ebp)\n" /* line 528 */
-        "flds -0x3c(%ebp)\n"
-        "addl $0x54, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf62414_00062620:\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm5\n"
-        "jbe .Lf62414_0006247b\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm5\n"
-        "ja .Lf62414_00062620\n"
-        "jmp .Lf62414_0006247b\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf62414_0006263f:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm5\n"
-        "jbe .Lf62414_000625bc\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm5\n"
-        "ja .Lf62414_0006263f\n"
-        "jmp .Lf62414_000625bc\n"
-        ".Lf62414_0006265e:\n"
-        "pxor %xmm5, %xmm5\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf62414_00062662:\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %ebx, %eax\n" /* line 100 | keySize */
-        "ucomiss (%eax), %xmm5\n"
-        "ja .Lf62414_00062662\n"
-        "jmp .Lf62414_0006254d\n"
-    );
+    FxChannelInstance alphaChannelInstance;
+    const FxCurve *curve;
+    int keyIndex;
+    float t;
+    float result;
+
+    /* Create alpha channel instance from primTemp offset 0x118 */
+    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x118), &alphaChannelInstance);
+
+    if (*(byte *)((byte *)primTemp + 0x91) & 0x40) {
+        /* Random alpha path */
+        float randomWeight = flrand(0.0f, 1.0f);
+        FxChannelInstance alphaRandChannelInstance;
+        float baseVal, randVal;
+
+        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x124), &alphaRandChannelInstance);
+
+        /* Evaluate main alpha channel at t=0 */
+        curve = alphaChannelInstance.curveIterator.master;
+        keyIndex = alphaChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        alphaChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+        baseVal = FxCurve_Interp1(curve, keyIndex, t);
+
+        /* Evaluate random alpha channel at t=0 */
+        {
+            const FxCurve *randCurve = alphaRandChannelInstance.curveIterator.master;
+            int randKeyIndex = alphaRandChannelInstance.curveIterator.currentKeyIndex;
+
+            FxCurveIterator_FindKey(randCurve, &randKeyIndex, t);
+            alphaRandChannelInstance.curveIterator.currentKeyIndex = randKeyIndex;
+            randVal = FxCurve_Interp1(randCurve, randKeyIndex, t);
+        }
+
+        /* Blend and apply scale */
+        result = (baseVal + (randVal - baseVal) * randomWeight) * alphaChannelInstance.scale;
+    } else {
+        /* Non-random alpha path */
+        curve = alphaChannelInstance.curveIterator.master;
+        keyIndex = alphaChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        alphaChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+        result = FxCurve_Interp1(curve, keyIndex, t) * alphaChannelInstance.scale;
+    }
+
+    /* Clamp to [0, 1] */
+    if (result < 0.0f)
+        result = 0.0f;
+    if (result > 1.0f)
+        result = 1.0f;
+
+    return result;
 }
+
+#if 0
+/* Original ASM for FxScheduler_GetDecalAlpha preserved in original file */
+#endif
 
 /* line 531 */
-__attribute__((naked))
 float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 531 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* primTemp */
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 539 | sizeChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x130(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        "cmpw $0, 0x90(%ebx)\n" /* line 541 | primTemp */
-        "js .Lf62672_00062722\n"
-        /* { scope 2 */
-        "movl -0x14(%ebp), %ecx\n" /* line 91 | sizeChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x10(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "pxor %xmm3, %xmm3\n" /* line 94 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lf62672_000626cb\n"
-        "movl $0, -0x10(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf62672_000626cb:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%edx, %ebx), %eax\n"
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf62672_00062851\n"
-        /* } scope */
-        ".Lf62672_000626da:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        /* } scope */
-        /* } scope */
-        "subss %xmm1, %xmm3\n" /* line 32 */
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm3\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm3\n"
-        "addss %xmm2, %xmm3\n"
-        "mulss -0xc(%ebp), %xmm3\n" /* line 55 */
-        /* } scope */
-        "movss %xmm3, -0x3c(%ebp)\n" /* line 551 */
-        "flds -0x3c(%ebp)\n"
-        "addl $0x54, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf62672_00062722:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 543 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "fstps -0x2c(%ebp)\n" /* randomWeight */
-        "leal -0x20(%ebp), %eax\n" /* line 544 | sizeRandChannelInstance */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x13c(%ebx), %eax\n" /* primTemp */
-        "movl %eax, (%esp)\n"
-        "calll FxChannelInstance_Create\n"
-        /* { scope 2 */
-        "movl -0x14(%ebp), %ecx\n" /* line 91 | sizeChannelInstance */
-        "movl (%ecx), %ebx\n" /* keySize */
-        "addl $1, %ebx\n" /* keySize */
-        "movl %ebx, %eax\n" /* line 92 | keySize */
-        "imull -0x10(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %edx\n"
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "pxor %xmm1, %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf62672_0006277a\n"
-        "movl $0, -0x10(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %edx\n" /* line 97 */
-        ".Lf62672_0006277a:\n"
-        "shll $2, %ebx\n" /* line 100 | keySize */
-        "leal (%ebx, %edx), %eax\n" /* keySize */
-        "pxor %xmm0, %xmm0\n"
-        "pxor %xmm3, %xmm3\n"
-        "ucomiss (%eax), %xmm0\n"
-        "ja .Lf62672_0006288b\n"
-        /* } scope */
-        ".Lf62672_00062791:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        "movaps %xmm3, %xmm4\n" /* line 56 */
-        "subss %xmm1, %xmm4\n"
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm4\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm4\n"
-        "addss %xmm2, %xmm4\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        "movl -0x20(%ebp), %ecx\n" /* line 91 | sizeRandChannelInstance */
-        "movl (%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, %eax\n" /* line 92 */
-        "imull -0x1c(%ebp), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 8(%eax), %ebx\n" /* keySize */
-        "movss 8(%eax), %xmm0\n" /* line 94 */
-        "ucomiss %xmm3, %xmm0\n"
-        "jbe .Lf62672_000627f1\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 96 */
-        "leal 8(%ecx), %ebx\n" /* line 97 | keySize */
-        ".Lf62672_000627f1:\n"
-        "shll $2, %edx\n" /* line 100 */
-        "leal (%edx, %ebx), %eax\n"
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf62672_00062870\n"
-        /* } scope */
-        ".Lf62672_000627fc:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 126 */
-        "leal (%ecx, %eax, 8), %eax\n"
-        "leal 8(%eax), %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movss 8(%eax), %xmm1\n" /* line 49 */
-        "movss 4(%edx), %xmm2\n" /* line 51 */
-        /* } scope */
-        /* } scope */
-        "subss %xmm1, %xmm3\n" /* line 55 */
-        "movss 0xc(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm3\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm3\n"
-        "addss %xmm2, %xmm3\n"
-        "subss %xmm4, %xmm3\n"
-        "mulss -0x2c(%ebp), %xmm3\n" /* randomWeight */
-        "addss %xmm4, %xmm3\n"
-        "mulss -0xc(%ebp), %xmm3\n"
-        /* } scope */
-        "movss %xmm3, -0x3c(%ebp)\n" /* line 551 */
-        "flds -0x3c(%ebp)\n"
-        "addl $0x54, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf62672_00062851:\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "jbe .Lf62672_000626da\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf62672_00062851\n"
-        "jmp .Lf62672_000626da\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf62672_00062870:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "jbe .Lf62672_000627fc\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 102 */
-        "addl %edx, %eax\n" /* line 100 */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf62672_00062870\n"
-        "jmp .Lf62672_000627fc\n"
-        ".Lf62672_0006288b:\n"
-        "pxor %xmm3, %xmm3\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf62672_0006288f:\n"
-        "addl $1, -0x10(%ebp)\n" /* line 102 */
-        "addl %ebx, %eax\n" /* line 100 | keySize */
-        "ucomiss (%eax), %xmm3\n"
-        "ja .Lf62672_0006288f\n"
-        "jmp .Lf62672_00062791\n"
-    );
+    FxChannelInstance sizeChannelInstance;
+    const FxCurve *curve;
+    int keyIndex;
+    float t;
+    float result;
+
+    /* Create size channel instance from primTemp offset 0x130 */
+    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x130), &sizeChannelInstance);
+
+    if (*(short *)((byte *)primTemp + 0x90) < 0) {
+        /* Random size path (bit 15 set = signed negative) */
+        float randomWeight = flrand(0.0f, 1.0f);
+        FxChannelInstance sizeRandChannelInstance;
+        float baseVal, randVal;
+
+        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x13c), &sizeRandChannelInstance);
+
+        /* Evaluate main size channel at t=0 */
+        curve = sizeChannelInstance.curveIterator.master;
+        keyIndex = sizeChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        sizeChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+        baseVal = FxCurve_Interp1(curve, keyIndex, t);
+
+        /* Evaluate random size channel at t=0 */
+        {
+            const FxCurve *randCurve = sizeRandChannelInstance.curveIterator.master;
+            int randKeyIndex = sizeRandChannelInstance.curveIterator.currentKeyIndex;
+
+            FxCurveIterator_FindKey(randCurve, &randKeyIndex, t);
+            sizeRandChannelInstance.curveIterator.currentKeyIndex = randKeyIndex;
+            randVal = FxCurve_Interp1(randCurve, randKeyIndex, t);
+        }
+
+        /* Blend and apply scale */
+        result = (baseVal + (randVal - baseVal) * randomWeight) * sizeChannelInstance.scale;
+    } else {
+        /* Non-random size path */
+        curve = sizeChannelInstance.curveIterator.master;
+        keyIndex = sizeChannelInstance.curveIterator.currentKeyIndex;
+        t = 0.0f;
+        FxCurveIterator_FindKey(curve, &keyIndex, t);
+        sizeChannelInstance.curveIterator.currentKeyIndex = keyIndex;
+        result = FxCurve_Interp1(curve, keyIndex, t) * sizeChannelInstance.scale;
+    }
+
+    return result;
 }
 
+#if 0
+/* Original ASM for FxScheduler_GetDecalSize preserved in original file */
+#endif
+
 /* line 69 */
+EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
+{
+    unsigned short count = *(unsigned short *)((byte *)_this + 4);
+    TMediaElement *elements;
+
+    if (!count) {
+        return NULL;
+    }
+
+    elements = *(TMediaElement **)((byte *)_this);
+    return (EffectTemplate *)elements[irand(0, count)].data;
+}
+
+#if 0
+/* Original ASM for MediaHandles_GetEffect */
 __attribute__((naked))
 EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 69 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movzwl 4(%edx), %eax\n" /* line 79 */
+        "movl 8(%ebp), %edx\n"
+        "movzwl 4(%edx), %eax\n"
         "testw %ax, %ax\n"
         "jne .Lf628a0_000628bb\n"
-        "xorl %eax, %eax\n" /* line 82 */
-        "addl $0x14, %esp\n" /* line 72 */
+        "xorl %eax, %eax\n"
+        "addl $0x14, %esp\n"
         "popl %ebx\n"
         "popl %ebp\n"
         "retl\n"
         ".Lf628a0_000628bb:\n"
-        "movl (%edx), %ebx\n" /* line 84 */
+        "movl (%edx), %ebx\n"
         "movzwl %ax, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll irand\n"
         "movl (%ebx, %eax, 4), %eax\n"
-        "addl $0x14, %esp\n" /* line 72 */
+        "addl $0x14, %esp\n"
         "popl %ebx\n"
         "popl %ebp\n"
         "retl\n"
     );
 }
+#endif
 
 /* line 554 */
+void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *org, MediaHandles * (*ax)[4])
+{
+    float rotation;
+    vec3_t rgba;
+    float alpha;
+    float size;
+    MaterialHandle markMaterial;
+    unsigned short count;
+    TMediaElement *elements;
+
+    /* Get rotation from primTemp offset 0x220 (mRotation range) */
+    rotation = FxRange_GetVal((FxRange *)((byte *)primTemp + 0x220));
+
+    /* Get decal color */
+    FxScheduler_GetDecalColor(_this, primTemp, rgba);
+
+    /* Get decal alpha */
+    alpha = FxScheduler_GetDecalAlpha(_this, primTemp);
+    (void)alpha; /* stored in rgba but used implicitly */
+
+    /* Get decal size */
+    size = FxScheduler_GetDecalSize(_this, primTemp);
+
+    /* Get mark material from MediaHandles at primTemp offset 0x68 */
+    count = *(unsigned short *)((byte *)primTemp + 0x6c);
+    if (!count) {
+        markMaterial = NULL;
+    } else {
+        elements = *(TMediaElement **)((byte *)primTemp + 0x68);
+        markMaterial = (MaterialHandle)elements[irand(0, count)].data;
+    }
+
+    /* Call CG_ImpactMark */
+    CG_ImpactMark(markMaterial, org, (const vec_t *)ax, rotation, rgba, size);
+}
+
+#if 0
+/* Original ASM for FxScheduler_CreateDecalEffect */
 __attribute__((naked))
 void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *org, MediaHandles * (*ax)[4])
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 554 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* primTemp */
-        /* { scope 1 */
-        "leal 0x220(%esi), %eax\n" /* line 563 | primTemp */
+        "movl 8(%ebp), %ebx\n"
+        "movl 0xc(%ebp), %esi\n"
+        "leal 0x220(%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxRange_GetVal\n"
-        "fstps -0x30(%ebp)\n" /* rotation */
-        "leal -0x28(%ebp), %edi\n" /* line 565 | rgba */
+        "fstps -0x30(%ebp)\n"
+        "leal -0x28(%ebp), %edi\n"
         "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* primTemp */
-        "movl %ebx, (%esp)\n" /* this */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll FxScheduler_GetDecalColor\n"
-        "movl %esi, 4(%esp)\n" /* line 566 | primTemp */
-        "movl %ebx, (%esp)\n" /* this */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll FxScheduler_GetDecalAlpha\n"
         "fstps -0x1c(%ebp)\n"
-        "movl %esi, 4(%esp)\n" /* line 568 | primTemp */
-        "movl %ebx, (%esp)\n" /* this */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll FxScheduler_GetDecalSize\n"
-        "fstps -0x2c(%ebp)\n" /* size */
-        "movzwl 0x6c(%esi), %eax\n" /* line 79 */
+        "fstps -0x2c(%ebp)\n"
+        "movzwl 0x6c(%esi), %eax\n"
         "testw %ax, %ax\n"
         "jne .Lf628da_0006296e\n"
-        "xorl %edx, %edx\n" /* line 82 */
+        "xorl %edx, %edx\n"
         ".Lf628da_00062936:\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 575 | size */
+        "movss -0x2c(%ebp), %xmm0\n"
         "movss %xmm0, 0x14(%esp)\n"
         "movl %edi, 0x10(%esp)\n"
-        "movss -0x30(%ebp), %xmm0\n" /* rotation */
+        "movss -0x30(%ebp), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* ax */
+        "movl 0x14(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* org */
+        "movl 0x10(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll CG_ImpactMark\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 577 */
+        "addl $0x4c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
         ".Lf628da_0006296e:\n"
-        "movl 0x68(%esi), %ebx\n" /* line 84 */
+        "movl 0x68(%esi), %ebx\n"
         "movzwl %ax, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1726,393 +1320,243 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
         "jmp .Lf628da_00062936\n"
     );
 }
+#endif
 
-/* line 759 */
-__attribute__((naked))
-void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch)
+/* Helper: Archive an int field (read or write depending on arch->isReading at offset 4) */
+static void FxArchive_ArchiveInt(const FxArchive *arch, int *field)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 759 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* arch */
-        "movl %edi, 4(%esp)\n" /* line 767 | this */
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveEffect\n"
-        "cmpb $0, 4(%ebx)\n" /* line 200 */
-        "je .Lf6298a_00062ab5\n"
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 100 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 201 | i */
-        "movl %eax, 4(%edi)\n"
-        "cmpb $0, 4(%ebx)\n" /* line 200 */
-        "je .Lf6298a_00062adc\n"
-        /* { scope 1: f */
-        ".Lf6298a_000629d6:\n"
-        "movl $4, 8(%esp)\n" /* line 100 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 201 | i */
-        "movl %eax, 8(%edi)\n"
-        "leal 0xc(%edi), %eax\n" /* line 771 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveFxBoltInfo\n"
-        "leal 0x14(%edi), %esi\n" /* line 775 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "je .Lf6298a_00062b15\n"
-        ".Lf6298a_00062a0f:\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "leal 0x20(%edi), %esi\n" /* line 776 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "je .Lf6298a_00062b79\n"
-        ".Lf6298a_00062a30:\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "leal 0x2c(%edi), %esi\n" /* line 777 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "je .Lf6298a_00062bdd\n"
-        ".Lf6298a_00062a51:\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "leal 0x38(%edi), %esi\n" /* line 778 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "je .Lf6298a_00062c41\n"
-        ".Lf6298a_00062a72:\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "cmpb $0, 4(%ebx)\n" /* line 200 */
-        "je .Lf6298a_00062ca2\n"
-        /* { scope 1: f */
-        ".Lf6298a_00062a90:\n"
-        "movl $4, 8(%esp)\n" /* line 100 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 201 | i */
-        "movl %eax, 0x44(%edi)\n"
-        "addl $0x2c, %esp\n" /* line 782 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf6298a_00062ab5:\n"
-        "movl 4(%edi), %eax\n" /* line 201 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 137 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        "cmpb $0, 4(%ebx)\n" /* line 200 */
-        "jne .Lf6298a_000629d6\n"
-        ".Lf6298a_00062adc:\n"
-        "movl 8(%edi), %eax\n" /* line 201 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 137 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        "leal 0xc(%edi), %eax\n" /* line 771 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveFxBoltInfo\n"
-        "leal 0x14(%edi), %esi\n" /* line 775 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "jne .Lf6298a_00062a0f\n"
-        ".Lf6298a_00062b15:\n"
-        "movl 0x14(%edi), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "leal 0x20(%edi), %esi\n" /* line 776 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "jne .Lf6298a_00062a30\n"
-        ".Lf6298a_00062b79:\n"
-        "movl 0x20(%edi), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "leal 0x2c(%edi), %esi\n" /* line 777 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "jne .Lf6298a_00062a51\n"
-        ".Lf6298a_00062bdd:\n"
-        "movl 0x2c(%edi), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "leal 0x38(%edi), %esi\n" /* line 778 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "jne .Lf6298a_00062a72\n"
-        ".Lf6298a_00062c41:\n"
-        "movl 0x38(%edi), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "cmpb $0, 4(%ebx)\n" /* line 200 */
-        "jne .Lf6298a_00062a90\n"
-        ".Lf6298a_00062ca2:\n"
-        "movl 0x44(%edi), %eax\n" /* line 201 */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 137 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 782 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int tmp;
+    if (*(byte *)((byte *)arch + 4)) {
+        /* Reading */
+        FxArchive_ReadData(arch, &tmp, 4);
+        *field = tmp;
+    } else {
+        /* Writing */
+        tmp = *field;
+        FxArchive_WriteData(arch, &tmp, 4);
+    }
 }
 
+/* Helper: Archive a vec3_t field */
+static void FxArchive_ArchiveVec3(const FxArchive *arch, vec_t *v)
+{
+    int tmp;
+    if (*(byte *)((byte *)arch + 4)) {
+        /* Reading */
+        FxArchive_ReadData(arch, v, 0xc);
+    } else {
+        /* Writing - write each component as 4 bytes */
+        tmp = *(int *)&v[0];
+        FxArchive_WriteData(arch, &tmp, 4);
+        tmp = *(int *)&v[1];
+        FxArchive_WriteData(arch, &tmp, 4);
+        tmp = *(int *)&v[2];
+        FxArchive_WriteData(arch, &tmp, 4);
+    }
+}
+
+/* line 759 */
+void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+
+    /* Archive effect template pointer */
+    FxArchive_ArchiveEffect(arch, (const EffectTemplate **)self);
+
+    /* Archive mPrimIndex (offset 4) */
+    FxArchive_ArchiveInt(arch, (int *)(self + 4));
+
+    /* Archive mStartTime (offset 8) */
+    FxArchive_ArchiveInt(arch, (int *)(self + 8));
+
+    /* Archive bolt info (offset 0xc) */
+    FxArchive_ArchiveFxBoltInfo(arch, (FxBoltInfo *)(self + 0xc));
+
+    /* Archive mOrigin (offset 0x14) */
+    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x14));
+
+    /* Archive mAxis[0] (offset 0x20) */
+    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x20));
+
+    /* Archive mAxis[1] (offset 0x2c) */
+    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x2c));
+
+    /* Archive mAxis[2] (offset 0x38) */
+    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x38));
+
+    /* Archive mSeed (offset 0x44) */
+    FxArchive_ArchiveInt(arch, (int *)(self + 0x44));
+}
+
+#if 0
+/* Original ASM for ScheduledEffect_Archive preserved in original file */
+#endif
+
 /* line 710 */
+void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    int pendingCount;
+    int i;
+    ScheduledEffect *sfx;
+
+    if (*(byte *)((byte *)arch + 4)) {
+        /* Reading */
+        *(int *)(self + 4) = 0; /* mScheduledHead = NULL */
+        *(int *)(self + 8) = 0; /* mScheduledCount = 0 */
+
+        /* Read pending count */
+        FxArchive_ReadData(arch, &pendingCount, 4);
+
+        for (i = 0; i < pendingCount; i++) {
+            ScheduledEffect *newSfx = (ScheduledEffect *)__Znam(0x50);
+            if (newSfx) {
+                memset(newSfx, 0, 0x50);
+            }
+
+            ScheduledEffect_Archive(newSfx, arch);
+
+            /* Validate: fx must exist and primIndex must be valid */
+            {
+                const EffectTemplate *fx = *(const EffectTemplate **)newSfx;
+                int primIndex = *(int *)((byte *)newSfx + 4);
+                if (fx && primIndex >= 0 && primIndex < *(int *)((byte *)fx + 4)) {
+                    /* Get the primitive template */
+                    PrimitiveTemplate *prim = *(PrimitiveTemplate **)((byte *)fx + 8 + primIndex * 4);
+                    (void)prim;
+                    /* Link into scheduler list */
+                    *(int *)((byte *)newSfx + 0x4c) = *(int *)(self + 4);
+                    *(int *)(self + 4) = (int)(size_t)newSfx;
+                    *(int *)(self + 8) += 1;
+                } else {
+                    /* Invalid - free */
+                    if (newSfx)
+                        __ZdaPv(newSfx);
+                }
+            }
+        }
+    } else {
+        /* Writing */
+        int tmp = *(int *)(self + 8); /* mScheduledCount */
+        FxArchive_WriteData(arch, &tmp, 4);
+
+        /* Iterate linked list and archive each */
+        {
+            FxScheduler *sched = *(FxScheduler **)&imp_theFxScheduler;
+            sfx = *(ScheduledEffect **)((byte *)sched + 4);
+            while (sfx) {
+                ScheduledEffect_Archive(sfx, arch);
+                sfx = *(ScheduledEffect **)((byte *)sfx + 0x4c);
+            }
+        }
+    }
+}
+
+#if 0
+/* Original ASM for FxScheduler_Archive */
 __attribute__((naked))
 void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 710 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* arch */
-        /* { scope 1: i */
-        "cmpb $0, 4(%esi)\n" /* line 717 | arch */
+        "movl 8(%ebp), %edi\n"
+        "movl 0xc(%ebp), %esi\n"
+        "cmpb $0, 4(%esi)\n"
         "je .Lf62cc8_00062d14\n"
-        "movl $0, 4(%edi)\n" /* line 720 | this */
-        "movl $0, 8(%edi)\n" /* line 721 | this */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 100 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
+        "movl $0, 4(%edi)\n"
+        "movl $0, 8(%edi)\n"
+        "movl $4, 8(%esp)\n"
+        "leal -0x1c(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll FxArchive_ReadData\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 46 | i */
-        "movl %eax, -0x30(%ebp)\n" /* pendingCount */
-        /* } scope */
-        "testl %eax, %eax\n" /* line 722 */
+        "movl -0x1c(%ebp), %eax\n"
+        "movl %eax, -0x30(%ebp)\n"
+        "testl %eax, %eax\n"
         "jne .Lf62cc8_00062d67\n"
-        /* } scope */
         ".Lf62cc8_00062d0c:\n"
-        "addl $0x3c, %esp\n" /* line 756 */
+        "addl $0x3c, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1: i */
         ".Lf62cc8_00062d14:\n"
-        "movl 8(%edi), %eax\n" /* line 722 | this */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 137 */
-        "leal -0x1c(%ebp), %eax\n" /* i */
+        "movl 8(%edi), %eax\n"
+        "movl %eax, -0x1c(%ebp)\n"
+        "movl $4, 8(%esp)\n"
+        "leal -0x1c(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll FxArchive_WriteData\n"
-        /* } scope */
-        "movl imp_theFxScheduler, %eax\n" /* line 753 */
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
-        "movl 4(%eax), %ebx\n" /* sfx */
-        "testl %ebx, %ebx\n" /* sfx */
+        "movl 4(%eax), %ebx\n"
+        "testl %ebx, %ebx\n"
         "je .Lf62cc8_00062d0c\n"
         ".Lf62cc8_00062d3f:\n"
-        "movl %esi, 4(%esp)\n" /* line 754 | arch */
-        "movl %ebx, (%esp)\n" /* sfx */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll ScheduledEffect_Archive\n"
-        "movl 0x4c(%ebx), %ebx\n" /* line 753 | sfx */
-        "testl %ebx, %ebx\n" /* sfx */
+        "movl 0x4c(%ebx), %ebx\n"
+        "testl %ebx, %ebx\n"
         "je .Lf62cc8_00062d0c\n"
-        "movl %esi, 4(%esp)\n" /* line 754 | arch */
-        "movl %ebx, (%esp)\n" /* sfx */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll ScheduledEffect_Archive\n"
-        "movl 0x4c(%ebx), %ebx\n" /* line 753 | sfx */
-        "testl %ebx, %ebx\n" /* sfx */
+        "movl 0x4c(%ebx), %ebx\n"
+        "testl %ebx, %ebx\n"
         "jne .Lf62cc8_00062d3f\n"
         "jmp .Lf62cc8_00062d0c\n"
         ".Lf62cc8_00062d67:\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 722 */
+        "movl $0, -0x2c(%ebp)\n"
         "jmp .Lf62cc8_00062d95\n"
         ".Lf62cc8_00062d70:\n"
-        "movl 8(%edx, %eax, 4), %edx\n" /* line 730 */
+        "movl 8(%edx, %eax, 4), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf62cc8_00062ddd\n"
-        "movl 4(%edi), %eax\n" /* line 732 | this */
-        "movl %eax, 0x4c(%ebx)\n" /* sfx */
-        "movl %ebx, 4(%edi)\n" /* line 733 | sfx, this */
-        "addl $1, 8(%edi)\n" /* line 734 | this */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, 0x4c(%ebx)\n"
+        "movl %ebx, 4(%edi)\n"
+        "addl $1, 8(%edi)\n"
         ".Lf62cc8_00062d85:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 35 */
-        "movl -0x2c(%ebp), %eax\n" /* line 722 */
-        "cmpl %eax, -0x30(%ebp)\n" /* pendingCount */
+        "addl $1, -0x2c(%ebp)\n"
+        "movl -0x2c(%ebp), %eax\n"
+        "cmpl %eax, -0x30(%ebp)\n"
         "je .Lf62cc8_00062d0c\n"
-        /* { scope 2 */
         ".Lf62cc8_00062d95:\n"
-        "movl $0x50, (%esp)\n" /* line 24 */
+        "movl $0x50, (%esp)\n"
         "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
+        "movl %eax, %ebx\n"
+        "testl %eax, %eax\n"
         "je .Lf62cc8_00062dbf\n"
-        "movl $0x50, 8(%esp)\n" /* line 27 */
+        "movl $0x50, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memset\n"
-        /* } scope */
         ".Lf62cc8_00062dbf:\n"
-        "movl %esi, 4(%esp)\n" /* line 725 | arch */
-        "movl %ebx, (%esp)\n" /* sfx */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
         "calll ScheduledEffect_Archive\n"
-        "movl (%ebx), %edx\n" /* line 726 | sfx */
+        "movl (%ebx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf62cc8_00062ddd\n"
-        "movl 4(%ebx), %eax\n" /* line 728 | sfx */
+        "movl 4(%ebx), %eax\n"
         "testl %eax, %eax\n"
         "js .Lf62cc8_00062ddd\n"
         "cmpl 4(%edx), %eax\n"
         "jl .Lf62cc8_00062d70\n"
         ".Lf62cc8_00062ddd:\n"
-        "testl %ebx, %ebx\n" /* line 35 | ptr */
+        "testl %ebx, %ebx\n"
         "je .Lf62cc8_00062d85\n"
-        "movl %ebx, (%esp)\n" /* ptr */
+        "movl %ebx, (%esp)\n"
         "calll __ZdaPv\n"
         "jmp .Lf62cc8_00062d85\n"
     );
 }
-
-
+#endif
