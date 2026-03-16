@@ -1809,102 +1809,68 @@ void FX_DrawAll(void)
 }
 
 /* line 1557 */
+/* FX_SetMaterialAndSequenceParams — register convention: eax=primTemp, edx=particle, ecx=killTime, stack: indexInBatch */
+extern void *MediaHandles_GetHandle(void *mediaHandles);
+extern int FxHelper_GetMaterialSubimageCount(void *helper, void *material);
+extern int irand(int min, int max);
+static void FX_SetMaterialAndSequenceParams_impl(byte *primTemp, byte *particle, int killTime, int indexInBatch)
+{
+    void *material = MediaHandles_GetHandle(primTemp + 0x68);
+    int startFrame = 0;
+    float frameRate = 0.0f;
+
+    if (material) {
+        int subimageCount = FxHelper_GetMaterialSubimageCount(theFxHelper, material);
+        if (subimageCount == 1) {
+            startFrame = 0;
+            frameRate = 0.0f;
+        } else {
+            /* Determine start frame based on sequence mode */
+            int seqMode = *(int *)(primTemp + 0x288);
+            if (seqMode == 0) {
+                startFrame = *(int *)(primTemp + 0x28c) - 1;
+            } else if (seqMode == 1) {
+                startFrame = irand(0, subimageCount);
+            } else if (seqMode == 2) {
+                startFrame = indexInBatch;
+            } else {
+                startFrame = 0;
+            }
+            /* Determine frame rate */
+            int rateMode = *(int *)(primTemp + 0x290);
+            if (rateMode == 0) {
+                frameRate = *(float *)(primTemp + 0x294) / 1000.0f;
+            } else if (rateMode == 1) {
+                frameRate = (float)subimageCount / (float)killTime;
+            } else {
+                frameRate = 0.0f;
+            }
+        }
+    }
+
+    *(int *)(particle + 0x108) = startFrame;
+    *(float *)(particle + 0x10c) = frameRate;
+    *(int *)(particle + 0x110) = *(int *)(primTemp + 0x298);
+    *(int *)(particle + 0x114) = *(int *)(primTemp + 0x29c);
+    *(void **)(particle + 0x40) = material;
+    *(int *)(particle + 0xb0) = 0;
+
+    if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
+        *(int *)(particle + 0xb0) = -1;
+}
+
 static __attribute__((naked))
 void FX_SetMaterialAndSequenceParams(const int killTime, int indexInBatch)
 {
+    (void)killTime; (void)indexInBatch;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1557 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %esi\n" /* primTemp */
-        "movl %edx, %ebx\n" /* particle */
-        "movl %ecx, -0x20(%ebp)\n"
-        /* { scope 1 */
-        "leal 0x68(%eax), %eax\n" /* line 1568 */
-        "movl %eax, (%esp)\n"
-        "calll MediaHandles_GetHandle\n"
-        "movl %eax, %edi\n"
-        "testl %eax, %eax\n" /* line 1570 */
-        "je .Lf5ac64_0005ad35\n"
-        "movl %eax, 4(%esp)\n" /* line 1577 */
-        "movl theFxHelper, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_GetMaterialSubimageCount\n"
-        "movl %eax, -0x1c(%ebp)\n" /* subimageCount */
-        "cmpl $1, %eax\n" /* line 1580 */
-        "je .Lf5ac64_0005ad5b\n"
-        "movl 0x288(%esi), %edx\n" /* line 1589 | primTemp */
-        "testl %edx, %edx\n"
-        "jne .Lf5ac64_0005ad48\n"
-        "movl 0x28c(%esi), %eax\n" /* line 1591 | primTemp */
-        "subl $1, %eax\n"
-        ".Lf5ac64_0005acbd:\n"
-        "movl 0x290(%esi), %edx\n" /* line 1607 | primTemp */
-        "testl %edx, %edx\n"
-        "jne .Lf5ac64_0005ad3d\n"
-        "movss 0x294(%esi), %xmm1\n" /* line 1609 | primTemp */
-        "divss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
-        ".Lf5ac64_0005acd7:\n"
-        "movl %eax, 0x108(%ebx)\n" /* line 386 */
-        "movss %xmm1, 0x10c(%ebx)\n" /* line 387 */
-        "movl 0x298(%esi), %eax\n" /* line 388 */
-        "movl %eax, 0x110(%ebx)\n"
-        "movl 0x29c(%esi), %eax\n" /* line 389 */
-        "movl %eax, 0x114(%ebx)\n"
-        "movl %edi, 0x40(%ebx)\n" /* line 381 */
-        "movl $0, 0xb0(%ebx)\n" /* line 1551 */
-        "testl %edi, %edi\n" /* line 1552 */
-        "je .Lf5ac64_0005ad2d\n"
-        "movl %edi, 4(%esp)\n"
-        "movl theFxHelper, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_IsMaterialRefractive\n"
-        "testb %al, %al\n"
-        "je .Lf5ac64_0005ad2d\n"
-        "movl $0xffffffff, 0xb0(%ebx)\n" /* line 1553 */
-        /* } scope */
-        ".Lf5ac64_0005ad2d:\n"
-        "addl $0x2c, %esp\n" /* line 1633 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl 4(%esp)\n"
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll FX_SetMaterialAndSequenceParams_impl\n"
+        "addl $16, %esp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lf5ac64_0005ad35:\n"
-        "xorl %eax, %eax\n" /* line 1570 */
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf5ac64_0005acd7\n"
-        ".Lf5ac64_0005ad3d:\n"
-        "subl $1, %edx\n" /* line 1611 */
-        "je .Lf5ac64_0005ad66\n"
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf5ac64_0005acd7\n"
-        ".Lf5ac64_0005ad48:\n"
-        "cmpl $1, %edx\n" /* line 1593 */
-        "je .Lf5ac64_0005ad79\n"
-        "xorl %eax, %eax\n" /* line 1597 */
-        "cmpl $2, %edx\n"
-        "cmovel 8(%ebp), %eax\n" /* indexInBatch */
-        "jmp .Lf5ac64_0005acbd\n"
-        ".Lf5ac64_0005ad5b:\n"
-        "xorb %al, %al\n" /* line 1580 */
-        "pxor %xmm1, %xmm1\n"
-        "jmp .Lf5ac64_0005acd7\n"
-        ".Lf5ac64_0005ad66:\n"
-        "cvtsi2ssl -0x1c(%ebp), %xmm1\n" /* line 1613 | subimageCount */
-        "cvtsi2ssl -0x20(%ebp), %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "jmp .Lf5ac64_0005acd7\n"
-        ".Lf5ac64_0005ad79:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1595 | subimageCount */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll irand\n"
-        "jmp .Lf5ac64_0005acbd\n"
     );
 }
 
@@ -3543,136 +3509,72 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
     );
 }
 
-/* line 2234 */
-__attribute__((naked))
+/* FX_UpdateScheduledEffectsNonBolt — update non-bolt effects: expire dead, cull visible */
+extern void *imp_fx_enable;
+extern void *imp_fx_camera_valid;
+extern void *imp_fx_cull;
 void FX_UpdateScheduledEffectsNonBolt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2234 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl imp_fx_enable, %eax\n" /* line 2237 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf5c012_0005c165\n"
-        "movl $0, cullEffectCountNonBolt\n" /* line 2241 */
-        "movl $0, visibleEffectCountNonBolt\n" /* line 2242 */
-        /* { scope 1 */
-        "movl privateEffectActiveCountNonBolt, %ecx\n" /* line 1184 */
-        "movl %ecx, initialEffectActiveCountNonBolt\n"
-        "xorl %edi, %edi\n" /* index0 */
-        ".Lf5c012_0005c04e:\n"
-        "movl %ecx, %edx\n" /* line 1187 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jge .Lf5c012_0005c0d0\n"
-        ".Lf5c012_0005c054:\n"
-        "leal (, %edi, 4), %ebx\n" /* line 1189 | effect */
-        "movl effectListNonBolt, %eax\n"
-        "movl (%ebx, %eax), %edx\n" /* effect */
-        "movl theFxHelper, %eax\n" /* line 1191 */
-        "movl 4(%eax), %eax\n"
-        "cmpl 0xbc(%edx), %eax\n"
-        "jle .Lf5c012_0005c16d\n"
-        /* { scope 2 */
-        "andl $0xfffffbff, 0xa8(%edx)\n" /* line 201 */
-        /* } scope */
-        ".Lf5c012_0005c081:\n"
-        "movl effectListNonBolt, %eax\n" /* line 432 */
-        "leal (%ebx, %eax), %edx\n"
-        "movl (%edx), %ebx\n"
-        "movl privateEffectActiveCountNonBolt, %ecx\n" /* line 435 */
-        "subl $1, %ecx\n"
-        "movl %ecx, privateEffectActiveCountNonBolt\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl (%edx), %esi\n" /* line 394 | swapCache */
-        "shll $2, %ecx\n" /* line 395 */
-        "movl (%eax, %ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl effectListNonBolt, %eax\n" /* line 396 */
-        "movl %esi, (%ecx, %eax)\n" /* swapCache */
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 403 */
-        "movl %ebx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "testb $0x10, 0xa9(%ebx)\n" /* line 404 */
-        "je .Lf5c012_0005c0c4\n"
-        "subl $1, effectBlockSightCount\n" /* line 409 */
-        ".Lf5c012_0005c0c4:\n"
-        "movl privateEffectActiveCountNonBolt, %ecx\n"
-        /* } scope */
-        "movl %ecx, %edx\n" /* line 1187 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jl .Lf5c012_0005c054\n"
-        /* } scope */
-        ".Lf5c012_0005c0d0:\n"
-        "movl imp_fx_camera_valid, %eax\n" /* line 1220 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf5c012_0005c165\n"
-        "movl cullEffectCountNonBolt, %edi\n" /* line 1224 | index0 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jge .Lf5c012_0005c15f\n"
-        "leal (, %edi, 4), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf5c012_0005c0fa\n"
-        ".Lf5c012_0005c0f7:\n"
-        "movl -0x1c(%ebp), %edx\n"
-        ".Lf5c012_0005c0fa:\n"
-        "movl effectListNonBolt, %eax\n" /* line 1226 */
-        "movl (%eax, %edx), %esi\n" /* swapCache */
-        "movl imp_fx_cull, %edx\n" /* line 1230 */
-        "movl (%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf5c012_0005c11c\n"
-        "movl (%esi), %eax\n" /* line 1233 | swapCache */
-        "movl %esi, (%esp)\n" /* swapCache */
-        "calll *0x10(%eax)\n"
-        "testb %al, %al\n"
-        "jne .Lf5c012_0005c14e\n"
-        ".Lf5c012_0005c11c:\n"
-        "movl visibleEffectCountNonBolt, %ebx\n" /* line 1237 | effect */
-        "movl %esi, visibleEffectsNonBolt(, %ebx, 8)\n" /* swapCache */
-        "movl theFxHelper, %eax\n" /* line 1238 */
-        "addl $0x14, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x7c(%esi), %eax\n" /* swapCache */
-        "movl %eax, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps visibleEffectsNonBolt+4(, %ebx, 8)\n"
-        "addl $1, visibleEffectCountNonBolt\n" /* line 1239 */
-        ".Lf5c012_0005c14e:\n"
-        "addl $1, %edi\n" /* line 1224 | index0 */
-        "movl privateEffectActiveCountNonBolt, %edx\n"
-        "addl $4, -0x1c(%ebp)\n"
-        "cmpl %edx, %edi\n" /* index0 */
-        "jl .Lf5c012_0005c0f7\n"
-        ".Lf5c012_0005c15f:\n"
-        "movl %edx, cullEffectCountNonBolt\n" /* line 1242 */
-        ".Lf5c012_0005c165:\n"
-        "addl $0x2c, %esp\n" /* line 2249 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5c012_0005c16d:\n"
-        "movl (%edx), %eax\n" /* line 1201 */
-        "movl %edx, (%esp)\n"
-        "calll *0xc(%eax)\n"
-        "testb %al, %al\n" /* line 1203 */
-        "je .Lf5c012_0005c081\n"
-        "addl $1, %edi\n" /* line 1209 | index0 */
-        "movl privateEffectActiveCountNonBolt, %ecx\n"
-        "jmp .Lf5c012_0005c04e\n"
-    );
+    typedef void (*UpdateFn)(void *);
+    typedef Bool (*CullFn)(void *);
+    int i;
+
+    if (!*(byte *)(*(int *)imp_fx_enable + 8))
+        return;
+
+    cullEffectCountNonBolt = 0;
+    visibleEffectCountNonBolt = 0;
+
+    int count = privateEffectActiveCountNonBolt;
+    initialEffectActiveCountNonBolt = count;
+
+    /* Phase 1: Update effects — expire dead ones */
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            /* Effect expired — clear flag and remove */
+            *(int *)(eff + 0xa8) &= ~0x400;
+            /* Swap with last and destroy */
+            byte **slot = (byte **)effectListNonBolt + i;
+            byte *dead = *slot;
+            count--;
+            privateEffectActiveCountNonBolt = count;
+            byte *last = ((byte **)effectListNonBolt)[count];
+            *slot = last;
+            ((byte **)effectListNonBolt)[count] = dead;
+            /* Call vtable[2] (Die/cleanup) */
+            ((UpdateFn)(*(void ***)dead)[2])(dead);
+            if (*(byte *)(dead + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountNonBolt;
+        } else {
+            /* Effect alive — call vtable[3] (Update) */
+            Bool alive = ((CullFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue; /* update failed, re-check same index */
+            i++;
+            count = privateEffectActiveCountNonBolt;
+        }
+    }
+
+    /* Phase 2: Visibility culling */
+    if (!*(int *)imp_fx_camera_valid)
+        return;
+
+    for (i = cullEffectCountNonBolt; i < privateEffectActiveCountNonBolt; i++) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        if (*(byte *)(*(int *)imp_fx_cull + 8)) {
+            Bool culled = ((CullFn)(*(void ***)eff)[4])(eff);
+            if (culled) continue;
+        }
+        int idx = visibleEffectCountNonBolt;
+        ((void **)visibleEffectsNonBolt)[idx * 2] = eff;
+        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        *(float *)((byte *)visibleEffectsNonBolt + idx * 8 + 4) = dist;
+        visibleEffectCountNonBolt++;
+    }
+    cullEffectCountNonBolt = privateEffectActiveCountNonBolt;
 }
 
 /* line 2252 */
