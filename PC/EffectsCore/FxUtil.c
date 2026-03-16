@@ -2623,9 +2623,73 @@ void FX_AddCylinder_original(EffectPrimitive *prim, vec3_t *ax, const vec_t *ori
 }
 #endif
 
-/* line 1701 */
-__attribute__((naked))
+/* FX_AddLine — allocate Line, add to system, calc origin+endpoint, set material+flags */
+extern void Line_Line(void *line);
+extern void Particle_SetAxis(void *particle, vec3_t *ax);
+extern void FX_CalcOrigin2(const void *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax);
+extern void OrientationPosFromWorldPos(void *orient, vec_t *worldPos, vec_t *localPos);
+extern void *MediaHandles_GetHandle(void *mediaHandles);
 void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
+{
+    (void)lateTime; (void)indexInBatch;
+    byte *p = (byte *)__Znam(0x258);
+    if (p) memset(p, 0, 0x258);
+    Line_Line(p);
+    if (!p) return;
+
+    int added;
+    __asm__ __volatile__ ("movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+
+    /* Calc origin */
+    vec3_t newOrigin;
+    __asm__ __volatile__ (
+        "pushl %2\n" "movl %1, %%edx\n" "movl %0, %%eax\n"
+        "calll FX_CalcOriginAndAxis\n" "addl $4, %%esp\n"
+        : : "g"(prim), "g"(&newOrigin), "g"(ax) : "eax", "ecx", "edx", "memory");
+
+    Particle_SetAxis(p, ax);
+
+    /* Calc second endpoint */
+    byte *primTemp = *(byte **)((byte *)prim + 4);
+    vec3_t org2;
+    FX_CalcOrigin2(primTemp, newOrigin, org2, origin, ax);
+
+    /* Get material */
+    void *material = MediaHandles_GetHandle(primTemp + 0x68);
+
+    /* Copy endpoint — transform via bolt if present */
+    void *bolt = *(void **)((byte *)prim + 8);
+    if (bolt) {
+        void *orient = FxBoltFrame_GetOrientation(bolt);
+        vec3_t localEnd;
+        OrientationPosFromWorldPos(orient, org2, localEnd);
+        *(float *)(p + 0x24c) = localEnd[0]; *(float *)(p + 0x250) = localEnd[1]; *(float *)(p + 0x254) = localEnd[2];
+    } else {
+        *(float *)(p + 0x24c) = org2[0]; *(float *)(p + 0x250) = org2[1]; *(float *)(p + 0x254) = org2[2];
+    }
+
+    /* Copy origin */
+    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(void **)(p + 0x40) = material;
+
+    /* Random weights based on flags */
+    int flags = *(int *)(primTemp + 0x90);
+    if (flags & 0x2000) *(float *)(p + 0x118) = flrand(0.0f, 1.0f);
+    if (flags & 0x4000) *(float *)(p + 0x11c) = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) *(float *)(p + 0x120) = flrand(0.0f, 1.0f);
+    if (flags & 0x10000) *(float *)(p + 0x124) = flrand(0.0f, 1.0f);
+
+    /* Refractive check */
+    *(int *)(p + 0xb0) = 0;
+    if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
+        *(int *)(p + 0xb0) = -1;
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_AddLine_asm(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1701 */
@@ -2834,6 +2898,7 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "calll __Unwind_Resume\n"
     );
 }
+#endif
 
 /* FX_AddParticle — allocate Particle, add to system, init, set material, apply late time */
 extern void Particle_Particle(void *particle);
