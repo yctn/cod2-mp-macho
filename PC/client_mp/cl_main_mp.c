@@ -26,6 +26,120 @@ extern void MSG_WriteReliableCommandToBuffer(const char *cmd, char *buf, int buf
 extern void FS_Write(const void *buffer, int len, int f);
 extern void CL_ShutdownCGame(void);
 extern void CL_ShutdownUI(void);
+extern void Dvar_SetInt(const dvar_t *dvar, int value);
+extern void Dvar_SetBool(const dvar_t *dvar, int value);
+extern void Dvar_SetString(const dvar_t *dvar, const char *value);
+extern void UI_SetMap(const char *mapname, const char *gametype);
+extern void SCR_UpdateScreenInternal(void);
+extern void SetScreenScaling(int *width, int *height, float, float, int, int);
+extern void SND_Init(void);
+extern void SND_StopSounds(int);
+extern void SND_FadeAllSounds(float, float);
+extern void SND_Shutdown(void);
+extern void SND_Save(void *memFile);
+extern void SND_Restore(void *memFile);
+extern void SND_SaveListeners(void *listeners);
+extern void SND_RestoreListeners(void *listeners);
+extern void SND_DisconnectListener(void);
+extern void CL_InitUI(void);
+extern void Sys_LoadingKeepAlive(void);
+extern void SCR_Init(void);
+extern void SCR_StopCinematic(void);
+extern void Con_Init(void);
+extern void Con_Close(void);
+extern void CL_InitInput(void);
+extern void CL_ShutdownInput(void);
+extern void CL_RconInit(void);
+extern void CL_ClearMutedList(void);
+extern void CL_SetADS(int);
+extern void CL_SetCGameTime(void);
+extern void CL_SendCmd(void);
+extern void CL_WritePacket(void);
+extern void CL_UpdateColor(void);
+extern void CL_InitCGame(void);
+extern void UI_CloseAll(void);
+extern void UI_DrawConnectScreen(void);
+extern void Cbuf_Execute(void);
+extern void Cbuf_ExecuteText(int, const char *);
+extern void Com_DPrintf(const char *fmt, ...);
+extern void Com_PrintMessage(int, const char *);
+extern void Com_Restart(void);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int defaultValue, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int defaultValue, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float defaultValue, float min, float max, int flags);
+extern const dvar_t *Dvar_RegisterString_mac(const char *name, const char *defaultValue, int flags);
+extern int Dvar_GetBool(const char *name);
+extern void Cmd_AddCommand(const char *name, void (*cmd)(void));
+extern void Cmd_RemoveCommand(const char *name);
+extern void Cmd_SetAutoComplete(const char *cmd, const char *dir, const char *ext);
+extern char *Cmd_Args(int start);
+extern int atoi(const char *);
+extern double atof(const char *);
+extern int I_stricmp(const char *a, const char *b);
+extern int I_strncmp(const char *a, const char *b, int n);
+extern void Info_SetValueForKey(char *s, const char *key, const char *value);
+extern const char *Info_ValueForKey(const char *s, const char *key);
+extern void Com_Memset(void *dest, int c, int count);
+extern int NET_CompareAdr(int t1, int a1, int p1, int t2, int a2, int p2);
+extern int NET_CompareBaseAdr(int t1, int a1, int p1, int t2, int a2, int p2);
+extern const char *NET_AdrToString(int type, int addr, int port);
+extern int NET_StringToAdr(const char *s, void *a);
+extern void NET_OutOfBandPrint(int sock, int type, int addr, int port, const char *data);
+extern void NET_OutOfBandData(int sock, int type, int addr, int port, const char *data, int len);
+extern int Sys_IsLANAddress(int type, int addr, int port);
+extern int Sys_Milliseconds(void);
+extern int Sys_MillisecondsRaw(void);
+extern void srand(unsigned int seed);
+extern int FS_FileExists(const char *path);
+extern int FS_FOpenFileWrite(const char *path);
+extern int FS_FOpenFileRead(const char *path, int *file, int uniqueFILE);
+extern int FS_Read(void *buffer, int len, int f);
+extern int FS_ConditionalRestart(int checksumFeed);
+extern void FS_Restart(int checksumFeed);
+extern const char *FS_ReferencedIwdPureChecksums(void);
+extern int FS_CompareIwds(char *buf, int bufLen, int flag);
+extern void FS_ShiftStr(const char *name, int shift);
+extern void MSG_Init(void *msg, void *data, int length);
+extern void MSG_WriteLong(void *msg, int value);
+extern void MSG_WriteShort(void *msg, int value);
+extern void MSG_WriteByte(void *msg, int value);
+extern void MSG_WriteBigString(void *msg, const char *s);
+extern void MSG_WriteDeltaEntity(void *msg, void *from, void *to, int force);
+extern int MSG_ReadLong(msg_t *msg);
+extern const char *MSG_ReadStringLine(msg_t *msg);
+extern const char *MSG_ReadBigString(msg_t *msg);
+extern void MSG_BeginReading(msg_t *msg);
+extern int MSG_WriteBitsCompress(void *src, void *dst, int len);
+extern void CL_SetServerInfoByAddress(int type, int addr, int port, const char *info, int ping);
+extern void Netchan_Setup(int sock, void *chan, int type, int addr, int port, int qport);
+extern int Netchan_Process(void *chan, msg_t *msg);
+extern void CL_Netchan_AddOOBProfilePacket(int size);
+extern void CL_Netchan_Decode(void *data, int len);
+extern void CL_Netchan_SendOOBPacket(int len, const char *data, int type, int addr, int port);
+extern int CL_CDKeyValidate(void *cdkey, void *checksum);
+extern void CL_ServerInfoPacket(int type, int addr, int port, msg_t *msg, int time);
+extern void CL_ServerStatusResponse(int type, int addr, int port, msg_t *msg);
+extern void CL_ServersResponsePacket(int type, int addr, int port, msg_t *msg);
+extern const char *CL_GetConfigString(int index);
+extern void CL_ParseServerMessage(msg_t *msg);
+extern void CL_ArchiveClientState(void *memFile);
+extern void LargeLocal_LargeLocal(void *ll, int size);
+extern void *LargeLocal_GetBuf(void *ll);
+extern void ZN10LargeLocalD1Ev(void *ll);
+extern void Cmd_TokenizeString(const char *text);
+extern refexport_t GetRefAPI(int apiVersion, void *ri);
+extern void MemFile_InitForWriting(void *mf, void *buf, int size, int flag);
+extern void MemFile_InitForReading(void *mf, void *buf, int size);
+extern void *Z_MallocInternal(int size);
+extern void *Z_VirtualAllocInternal(int size);
+extern void Z_VirtualFreeInternal(void *ptr);
+extern void CG_CalculateFPS(void);
+extern void Voice_GetLocalVoiceData(void *dest);
+extern void Voice_Playback(void);
+extern void SEH_UpdateLanguageInfo(void);
+extern void SEH_LocalizeTextMessage(const char *ref, const char *defaultText, int flags);
+extern char *strchr(const char *, int);
+extern float floorf(float);
 
 extern refexport_t re; /* 0x0 */
 extern const clientActive_t * cl; /* 0x0 */
@@ -111,7 +225,7 @@ void CL_VoiceTransmit(void);
 Bool Voice_SendVoiceData(void);
 void CL_SyncGpu(void);
 void CL_SetRecommended_f(void);
-void CL_RefPrintf(int print_level, const char *fmt);
+void CL_RefPrintf(int print_level, const char *fmt, ...);
 void CL_ShutdownRef(void);
 void CL_InitRenderer(void);
 void CL_StartHunkUsers(void);
@@ -470,58 +584,22 @@ Bool CL_IsPlayerTalking(int clientIndex)
 }
 
 /* line 4736 */
-__attribute__((naked))
 void CL_SetupForNewServerMap(const char *pszMapName, const char *pszGametype)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4736 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* pszMapName */
-        "movl 0xc(%ebp), %esi\n" /* pszGametype */
-        "movl %esi, 8(%esp)\n" /* line 4738 | pszGametype */
-        "movl %edi, 4(%esp)\n" /* pszMapName */
-        "movl $str_002a8c14, (%esp)\n" /* "Server changing map %s, gametype %s
-" */
-        "calll Com_Printf\n"
-        "movl $0x40, 8(%esp)\n" /* line 4740 */
-        "movl %edi, 4(%esp)\n" /* pszMapName */
-        "movl imp_legacyHacks, %ebx\n"
-        "movl (%ebx), %eax\n"
-        "addl $0x5c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $0x40, 8(%esp)\n" /* line 4741 */
-        "movl %esi, 4(%esp)\n" /* pszGametype */
-        "movl (%ebx), %eax\n"
-        "addl $0x9c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl (%ebx), %eax\n" /* line 4742 */
-        "movb $0, 0xdc(%eax)\n"
-        "movl imp_com_sv_running, %eax\n" /* line 4745 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf147e0e_00147e9f\n"
-        "movl $0, 4(%esp)\n" /* line 4748 */
-        "movl imp_com_expectedHunkUsage, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movb $1, g_waitingForServer\n" /* line 4750 */
-        ".Lf147e0e_00147e9f:\n"
-        "movl %esi, 4(%esp)\n" /* line 4753 | pszGametype */
-        "movl %edi, (%esp)\n" /* pszMapName */
-        "calll UI_SetMap\n"
-        "addl $0x1c, %esp\n" /* line 4755 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp SCR_UpdateScreenInternal\n" /* line 4754 */
-    );
+    byte *hacks = *(byte **)imp_legacyHacks;
+
+    Com_Printf("Server changing map %s, gametype %s\n", pszMapName, pszGametype);
+    I_strncpyz((char *)(hacks + 0x5c), pszMapName, 0x40);
+    I_strncpyz((char *)(hacks + 0x9c), pszGametype, 0x40);
+    *(byte *)(hacks + 0xdc) = 0;
+
+    if (!(*(const dvar_t **)imp_com_sv_running)->current.enabled) {
+        Dvar_SetInt(*(const dvar_t **)imp_com_expectedHunkUsage, 0);
+        g_waitingForServer = 1;
+    }
+
+    UI_SetMap(pszMapName, pszGametype);
+    SCR_UpdateScreenInternal();
 }
 
 /* line 2894 */
@@ -586,81 +664,22 @@ void CL_SetRecommended_f(void)
 }
 
 /* line 3181 */
-__attribute__((naked))
-void CL_RefPrintf(int print_level, const char *fmt)
+void CL_RefPrintf(int print_level, const char *fmt, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3181 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1020, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* print_level */
-        /* { scope 1 */
-        "leal 0x10(%ebp), %eax\n" /* line 3186 */
-        "movl %eax, -0xc(%ebp)\n" /* argptr */
-        "movl %eax, 0xc(%esp)\n" /* line 3187 */
-        "movl 0xc(%ebp), %eax\n" /* fmt */
-        "movl %eax, 8(%esp)\n"
-        "movl $__mh_execute_header, 4(%esp)\n"
-        "leal -0x100c(%ebp), %esi\n" /* msg */
-        "movl %esi, (%esp)\n"
-        "calll vsnprintf\n"
-        "testl %ebx, %ebx\n" /* line 3190 | print_level */
-        "je .Lf147f9a_00147fec\n"
-        "cmpl $2, %ebx\n" /* line 3192 | print_level */
-        "je .Lf147f9a_00148020\n"
-        "cmpl $3, %ebx\n" /* line 3194 | print_level */
-        "je .Lf147f9a_0014803a\n"
-        "subl $1, %ebx\n" /* line 3196 | print_level */
-        "je .Lf147f9a_00148006\n"
-        /* } scope */
-        ".Lf147f9a_00147fe2:\n"
-        "addl $0x1020, %esp\n" /* line 3198 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147f9a_00147fec:\n"
-        "movl %esi, 4(%esp)\n" /* line 3191 */
-        "movl $str_00216058, (%esp)\n" /* "%s" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x1020, %esp\n" /* line 3198 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147f9a_00148006:\n"
-        "movl %esi, 4(%esp)\n" /* line 3197 */
-        "movl $str_002a8c64, (%esp)\n" /* "^1%s" */
-        "calll Com_DPrintf\n"
-        /* } scope */
-        "addl $0x1020, %esp\n" /* line 3198 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147f9a_00148020:\n"
-        "movl %esi, 4(%esp)\n" /* line 3193 */
-        "movl $str_002a8c5c, (%esp)\n" /* "^3%s" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x1020, %esp\n" /* line 3198 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf147f9a_0014803a:\n"
-        "movl %esi, 4(%esp)\n" /* line 3195 */
-        "movl $str_002a8c64, (%esp)\n" /* "^1%s" */
-        "calll Com_Printf\n"
-        "jmp .Lf147f9a_00147fe2\n"
-    );
+    char msg[4096];
+    __builtin_va_list argptr;
+
+    __builtin_va_start(argptr, fmt);
+    vsnprintf(msg, sizeof(msg), fmt, argptr);
+    __builtin_va_end(argptr);
+
+    switch (print_level) {
+        case 0: Com_Printf("%s", msg); break;
+        case 1: Com_DPrintf("^1%s", msg); break;
+        case 2: Com_Printf("^3%s", msg); break;
+        case 3: Com_Printf("^1%s", msg); break;
+        default: break;
+    }
 }
 
 /* line 3206 */
@@ -683,104 +702,57 @@ void CL_ShutdownRef(void)
 }
 
 /* line 3236 */
-__attribute__((naked))
 void CL_InitRenderer(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3236 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $cls+0x2a0a64, (%esp)\n" /* line 3240 */
-        "calll *re+4\n"
-        "movl cls+0x2a0a68, %eax\n" /* line 3244 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl cls+0x2a0a64, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3f800000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SetScreenScaling\n"
-        "movl $3, 8(%esp)\n" /* line 3247 */
-        "movl $3, 4(%esp)\n"
-        "movl $str_00224184, (%esp)\n" /* "white" */
-        "calll *re+16\n"
-        "movl %eax, cls+0x2a0a58\n"
-        "movl $3, 8(%esp)\n" /* line 3248 */
-        "movl $3, 4(%esp)\n"
-        "movl $str_002a8c6c, (%esp)\n" /* "console" */
-        "calll *re+16\n"
-        "movl %eax, cls+0x2a0a5c\n"
-        "movl $3, 4(%esp)\n" /* line 3249 */
-        "movl $str_002a8c74, (%esp)\n" /* "fonts/consoleFont" */
-        "calll *re+224\n"
-        "movl %eax, cls+0x2a0a60\n"
-        "movl cls+0x2a0a64, %ecx\n" /* line 3250 */
-        "subl $0x20, %ecx\n"
-        "movl imp_g_console_field_width, %eax\n"
-        "movl %ecx, (%eax)\n"
-        "movl imp_g_consoleField, %edx\n" /* line 3251 */
-        "movl %ecx, 0xc(%edx)\n"
-        "movl imp_g_console_char_height, %eax\n" /* line 3252 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0x10(%edx)\n"
-        "movl $1, 0x14(%edx)\n" /* line 3253 */
-        "leave\n" /* line 3257 */
-        "jmp StatMon_Reset\n" /* line 3256 */
-    );
+    int fieldWidth;
+
+    /* re.BeginRegistration */
+    ((void (*)(int *))*(int *)((char *)&re + 4))((int *)((char *)&cls + 0x2a0a64));
+    SetScreenScaling((int *)((char *)&cls + 0x2a0a64), (int *)((char *)&cls + 0x2a0a68), 1.0f, 1.0f, 0, 0);
+
+    /* cls.charSetShader = re.RegisterShaderNoMip("white", 3, 3) */
+    *(int *)((char *)&cls + 0x2a0a58) = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("white", 3, 3);
+    /* cls.whiteShader = re.RegisterShaderNoMip("console", 3, 3) */
+    *(int *)((char *)&cls + 0x2a0a5c) = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("console", 3, 3);
+    /* cls.consoleFont = re.RegisterFont("fonts/consoleFont", 3) */
+    *(int *)((char *)&cls + 0x2a0a60) = ((int (*)(const char *, int))*(int *)((char *)&re + 224))("fonts/consoleFont", 3);
+
+    fieldWidth = *(int *)((char *)&cls + 0x2a0a64) - 0x20;
+    *(int *)imp_g_console_field_width = fieldWidth;
+
+    *(int *)(*(int *)imp_g_consoleField + 0xc) = fieldWidth;
+    *(int *)(*(int *)imp_g_consoleField + 0x10) = *(int *)imp_g_console_char_height;
+    *(int *)(*(int *)imp_g_consoleField + 0x14) = 1;
+
+    StatMon_Reset();
 }
 
 /* line 3342 */
-__attribute__((naked))
 void CL_StartHunkUsers(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3342 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "movl imp_legacyHacks, %eax\n" /* line 3346 */
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf148166_0014819f\n"
-        "movl cls+268, %eax\n" /* line 3349 */
-        "testl %eax, %eax\n"
-        "je .Lf148166_001481d6\n"
-        "movl cls+264, %eax\n" /* line 3356 */
-        "testl %eax, %eax\n"
-        "je .Lf148166_001481b7\n"
-        ".Lf148166_0014818c:\n"
-        "movl cls+272, %eax\n" /* line 3363 */
-        "testl %eax, %eax\n"
-        "je .Lf148166_001481a1\n"
-        ".Lf148166_00148195:\n"
-        "movl $1, cls+4\n" /* line 3382 */
-        ".Lf148166_0014819f:\n"
-        "leave\n" /* line 3383 */
-        "retl\n"
-        ".Lf148166_001481a1:\n"
-        "calll CL_InitUI\n" /* line 3365 */
-        "calll Sys_LoadingKeepAlive\n" /* line 3366 */
-        "movl $1, cls+4\n" /* line 3382 */
-        "jmp .Lf148166_0014819f\n"
-        ".Lf148166_001481b7:\n"
-        "movl $1, cls+264\n" /* line 3358 */
-        "calll CL_InitRenderer\n" /* line 3359 */
-        "calll Sys_LoadingKeepAlive\n" /* line 3360 */
-        "movl cls+272, %eax\n" /* line 3363 */
-        "testl %eax, %eax\n"
-        "jne .Lf148166_00148195\n"
-        "jmp .Lf148166_001481a1\n"
-        ".Lf148166_001481d6:\n"
-        "movl $1, cls+268\n" /* line 3351 */
-        "calll SND_Init\n" /* line 3352 */
-        "calll Sys_LoadingKeepAlive\n" /* line 3353 */
-        "movl cls+264, %eax\n" /* line 3356 */
-        "testl %eax, %eax\n"
-        "jne .Lf148166_0014818c\n"
-        "jmp .Lf148166_001481b7\n"
-    );
+    byte *hacks = *(byte **)imp_legacyHacks;
+
+    if (!*(int *)(hacks + 4))
+        return;
+
+    if (!*(int *)((char *)&cls + 268)) {
+        *(int *)((char *)&cls + 268) = 1;
+        SND_Init();
+        Sys_LoadingKeepAlive();
+    }
+
+    if (!*(int *)((char *)&cls + 264)) {
+        *(int *)((char *)&cls + 264) = 1;
+        CL_InitRenderer();
+        Sys_LoadingKeepAlive();
+    }
+
+    if (!*(int *)((char *)&cls + 272)) {
+        CL_InitUI();
+        Sys_LoadingKeepAlive();
+    }
+
+    *(int *)((char *)&cls + 4) = 1;
 }
 
 /* line 3386 */
@@ -1098,565 +1070,153 @@ void CL_ToggleMenu_f(void)
 }
 
 /* line 3911 */
-__attribute__((naked))
 void CL_OpenScriptMenu_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3911 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 3918 */
-        "cmpl $3, %eax\n"
-        "je .Lf148802_00148835\n"
-        "movl $str_002a8cbc, (%esp)\n" /* line 3920 */
-        "calll Com_Printf\n"
-        "movl $str_002a8d00, (%esp)\n" /* line 3921 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf148802_0014882d:\n"
-        "addl $0x1c, %esp\n" /* line 3955 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf148802_00148835:\n"
-        "movl imp_legacyHacks, %eax\n" /* line 3925 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 0x4ed(%eax)\n"
-        "je .Lf148802_0014882d\n"
-        "movl cls+272, %ecx\n" /* line 3928 */
-        "testl %ecx, %ecx\n"
-        "je .Lf148802_0014882d\n"
-        "movl $1, (%esp)\n" /* line 3931 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %esi\n" /* parentMenuName */
-        "movl $2, (%esp)\n" /* line 3932 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %edi\n" /* menuResponse */
-        "testl %esi, %esi\n" /* line 3935 | parentMenuName */
-        "je .Lf148802_0014882d\n"
-        "testl %eax, %eax\n"
-        "je .Lf148802_0014882d\n"
-        "xorl %ebx, %ebx\n" /* menuIndex */
-        "jmp .Lf148802_0014887f\n"
-        ".Lf148802_00148877:\n"
-        "addl $1, %ebx\n" /* line 3938 | menuIndex */
-        "cmpl $0x20, %ebx\n" /* menuIndex */
-        "je .Lf148802_001488de\n"
-        ".Lf148802_0014887f:\n"
-        "leal 0x4de(%ebx), %eax\n" /* line 3940 | menuIndex */
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "cmpb $0, (%eax)\n" /* line 3941 */
-        "je .Lf148802_00148877\n"
-        "movl %eax, 4(%esp)\n" /* line 3944 */
-        "movl %esi, (%esp)\n" /* parentMenuName */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf148802_00148877\n"
-        ".Lf148802_001488a2:\n"
-        "movl $str_002a8d30, (%esp)\n" /* line 3953 */
-        "calll Dvar_GetInt\n"
-        "movl %edi, 0xc(%esp)\n" /* menuResponse */
-        "movl %ebx, 8(%esp)\n" /* menuIndex */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a8d3c, (%esp)\n" /* "cmd mr %i %i %s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 3955 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf148802_001488de:\n"
-        "movl $0xffffffff, %ebx\n" /* line 3938 | menuIndex */
-        "jmp .Lf148802_001488a2\n"
-    );
+    char *parentMenuName, *menuResponse;
+    const char *configStr;
+    int menuIndex;
+
+    if (Cmd_Argc() != 3) {
+        Com_Printf(str_002a8cbc);
+        Com_Printf(str_002a8d00);
+        return;
+    }
+
+    if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed))
+        return;
+    if (!*(int *)((char *)&cls + 272))
+        return;
+
+    parentMenuName = Cmd_Argv(1);
+    menuResponse = Cmd_Argv(2);
+
+    if (!parentMenuName || !menuResponse)
+        return;
+
+    menuIndex = -1;
+    for (int i = 0; i < 0x20; i++) {
+        configStr = CL_GetConfigString(0x4de + i);
+        if (!*configStr)
+            continue;
+        if (I_stricmp(parentMenuName, configStr) == 0) {
+            menuIndex = i;
+            break;
+        }
+    }
+
+    Cbuf_ExecuteText(2, va("cmd mr %i %i %s\n", Dvar_GetInt(str_002a8d30), menuIndex, menuResponse));
 }
 
 /* line 3970 */
-__attribute__((naked))
 void CL_InitOnceForAllClients(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3970 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "calll Sys_MillisecondsRaw\n" /* line 3972 */
-        "movl %eax, (%esp)\n"
-        "calll srand\n"
-        "calll Con_Init\n" /* line 3974 */
-        "calll CL_InitInput\n" /* line 3976 */
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 3981 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8d50, (%esp)\n" /* "cl_noprint" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_noprint\n"
-        "movl $0x1003, 8(%esp)\n" /* line 3991 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8d5c, (%esp)\n" /* "cl_voice" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_voice\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 3997 */
-        "movl $0x45610000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x43480000, %ebx\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002a8d68, (%esp)\n" /* "cl_timeout" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, cl_timeout\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4000 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $str_002a8d74, (%esp)\n" /* "cl_connectTimeout" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, cl_connectTimeout\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4002 */
-        "movl $4, 0xc(%esp)\n"
-        "movl $0xfffffffe, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8d88, (%esp)\n" /* "cl_shownet" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, cl_shownet\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4003 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8d94, (%esp)\n" /* "cl_shownuments" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_shownuments\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4004 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8da4, (%esp)\n" /* "cl_showServerCommands" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_showServerCommands\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4005 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8dbc, (%esp)\n" /* "cl_showSend" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_showSend\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4006 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8dc8, (%esp)\n" /* "cl_showTimeDelta" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_showTimeDelta\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4007 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8ddc, (%esp)\n" /* "cl_freezeDemo" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_freezeDemo\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4008 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002a8dec, (%esp)\n" /* "activeAction" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, cl_activeAction\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4010 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8dfc, (%esp)\n" /* "cl_avidemo" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, cl_avidemo\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4011 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8e08, (%esp)\n" /* "cl_forceavidemo" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_forceavidemo\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4013 */
-        "movl $0x7f7fffff, %ebx\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "movl $0xff7fffff, %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x430c0000, %esi\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8e18, (%esp)\n" /* "cl_yawspeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl imp_cl_yawspeed, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4014 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8e24, (%esp)\n" /* "cl_pitchspeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl imp_cl_pitchspeed, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4015 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3fc00000, 4(%esp)\n"
-        "movl $str_002a8e34, (%esp)\n" /* "cl_anglespeedkey" */
-        "calll Dvar_RegisterFloat\n"
-        "movl imp_cl_anglespeedkey, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4017 */
-        "movl $0x64, 0xc(%esp)\n"
-        "movl $0xf, 8(%esp)\n"
-        "movl $0x1e, 4(%esp)\n"
-        "movl $str_002a8e48, (%esp)\n" /* "cl_maxpackets" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, cl_maxpackets\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4018 */
-        "movl $5, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8e58, (%esp)\n" /* "cl_packetdup" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, cl_packetdup\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4020 */
-        "movl $0x42c80000, 0xc(%esp)\n"
-        "movl $0x3c23d70a, 8(%esp)\n"
-        "movl $0x40a00000, 4(%esp)\n"
-        "movl $str_002a8e68, (%esp)\n" /* "sensitivity" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, cl_sensitivity\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4021 */
-        "movl $0x42c80000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8e74, (%esp)\n" /* "cl_mouseAccel" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, cl_mouseAccel\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4022 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8e84, (%esp)\n" /* "cl_freelook" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_freelook\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4024 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8e90, (%esp)\n" /* "cl_showmouserate" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_showMouseRate\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4027 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8ea4, (%esp)\n" /* "cl_allowDownload" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_allowDownload\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4031 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8eb8, (%esp)\n" /* "cl_talking" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl imp_cl_talking, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4034 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8ec4, (%esp)\n" /* "r_inGameVideo" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_inGameVideo\n"
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4036 */
-        "movl $0xe10, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x2ee, 4(%esp)\n"
-        "movl $str_002a8ed4, (%esp)\n" /* "cl_serverStatusResendTime" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, cl_serverStatusResendTime\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4038 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8ef0, (%esp)\n" /* "cl_bypassMouseInput" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl imp_cl_bypassMouseInput, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4040 */
-        "movl $0x3f800000, %edi\n"
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0xbf800000, %ebx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3cb43958, %esi\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8f04, (%esp)\n" /* "m_pitch" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, m_pitch\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4041 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8f0c, (%esp)\n" /* "m_yaw" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, m_yaw\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4042 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x3e800000, %esi\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8f14, (%esp)\n" /* "m_forward" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, m_forward\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4043 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a8f20, (%esp)\n" /* "m_side" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, m_side\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4044 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8f28, (%esp)\n" /* "m_filter" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, m_filter\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4049 */
-        "movl $0x40a00000, 0xc(%esp)\n"
-        "movl $0x38d1b717, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $str_002a8f34, (%esp)\n" /* "input_viewSensitivity" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, input_viewSensitivity\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4050 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8f4c, (%esp)\n" /* "cg_drawCrosshair" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl imp_cg_drawCrosshair, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl $0x1040, 8(%esp)\n" /* line 4056 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002a8f60, (%esp)\n" /* "cl_motdString" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, cl_motdString\n"
-        "movl $0x1040, 8(%esp)\n" /* line 4058 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8f70, (%esp)\n" /* "cl_ingame" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, cl_ingame\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 4060 */
-        "movl $0x7d0, 0xc(%esp)\n"
-        "movl $0x14, 8(%esp)\n"
-        "movl $0x320, 4(%esp)\n"
-        "movl $str_002a8f7c, (%esp)\n" /* "cl_maxPing" */
-        "calll Dvar_RegisterInt\n"
-        "movl $0x1003, 8(%esp)\n" /* line 4068 */
-        "movl $str_002a8f88, 4(%esp)\n" /* "Unknown Soldier" */
-        "movl $str_002194b4, (%esp)\n" /* "name" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, name\n"
-        "movl $0x1003, 0x10(%esp)\n" /* line 4069 */
-        "movl $0x61a8, 0xc(%esp)\n"
-        "movl $0x3e8, 8(%esp)\n"
-        "movl $0x1388, 4(%esp)\n"
-        "movl $str_002a8c54, (%esp)\n" /* "rate" */
-        "calll Dvar_RegisterInt\n"
-        "movl $0x1003, 0x10(%esp)\n" /* line 4072 */
-        "movl $0x1e, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0x14, 4(%esp)\n"
-        "movl $str_002a8f98, (%esp)\n" /* "snaps" */
-        "calll Dvar_RegisterInt\n"
-        "movl $0x1002, 8(%esp)\n" /* line 4074 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002a8fa0, (%esp)\n" /* "password" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4076 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8fac, (%esp)\n" /* "fx_enable" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_enable\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4077 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8fb8, (%esp)\n" /* "fx_draw" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_draw\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4078 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8fc0, (%esp)\n" /* "fx_cull" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_cull\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4079 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_00223858, (%esp)\n" /* "fx_sort" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_sort\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4080 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8fc8, (%esp)\n" /* "fx_freeze" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_freeze\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4081 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8fd4, (%esp)\n" /* "fx_debug" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_debug\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 4082 */
-        "movl $0x42c80000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8fe0, (%esp)\n" /* "fx_debugBolt" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, fx_debugBolt\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4083 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a8ff0, (%esp)\n" /* "fx_count" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_count\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 4084 */
-        "movl $0x447a0000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42a00000, 4(%esp)\n"
-        "movl $str_002a8ffc, (%esp)\n" /* "fx_visMinTraceDist" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, fx_visMinTraceDist\n"
-        "movl $0x1080, 8(%esp)\n" /* line 4085 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002a9010, (%esp)\n" /* "fx_profile" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, fx_profile\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 4087 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002a901c, (%esp)\n" /* "nextdemo" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, nextdemo\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4090 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a9028, (%esp)\n" /* "hud_enable" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 4092 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a892c, (%esp)\n" /* "cg_blood" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl $CL_ForwardToServer_f, 4(%esp)\n" /* line 4118 */
-        "movl $str_002a9034, (%esp)\n" /* "cmd" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Configstrings_f, 4(%esp)\n" /* line 4119 */
-        "movl $str_002a9038, (%esp)\n" /* "configstrings" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Clientinfo_f, 4(%esp)\n" /* line 4120 */
-        "movl $str_002a9048, (%esp)\n" /* "clientinfo" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Vid_Restart_f, 4(%esp)\n" /* line 4122 */
-        "movl $str_002a9054, (%esp)\n" /* "vid_restart" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Snd_Restart_f, 4(%esp)\n" /* line 4125 */
-        "movl $str_002a9060, (%esp)\n" /* "snd_restart" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Disconnect_f, 4(%esp)\n" /* line 4127 */
-        "movl $str_00228e90, (%esp)\n" /* "disconnect" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Record_f, 4(%esp)\n" /* line 4129 */
-        "movl $str_002a906c, (%esp)\n" /* "record" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_StopRecord_f, 4(%esp)\n" /* line 4130 */
-        "movl $str_002a9074, (%esp)\n" /* "stoprecord" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_PlayDemo_f, 4(%esp)\n" /* line 4131 */
-        "movl $str_002a9080, (%esp)\n" /* "demo" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_PlayDemo_f, 4(%esp)\n" /* line 4132 */
-        "movl $str_002a9088, (%esp)\n" /* "timedemo" */
-        "calll Cmd_AddCommand\n"
-        "movl $str_002a9094, 8(%esp)\n" /* line 4134 */
-        "movl $str_002a909c, 4(%esp)\n" /* "demos" */
-        "movl $str_002a9080, (%esp)\n" /* "demo" */
-        "calll Cmd_SetAutoComplete\n"
-        "movl $str_002a9094, 8(%esp)\n" /* line 4135 */
-        "movl $str_002a909c, 4(%esp)\n" /* "demos" */
-        "movl $str_002a9088, (%esp)\n" /* "timedemo" */
-        "calll Cmd_SetAutoComplete\n"
-        "movl imp_CL_PlayCinematic_f, %eax\n" /* line 4137 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a90a4, (%esp)\n" /* "cinematic" */
-        "calll Cmd_AddCommand\n"
-        "movl $str_00216ce4, 8(%esp)\n" /* line 4142 */
-        "movl $str_002a90b0, 4(%esp)\n" /* "video" */
-        "movl $str_002a90a4, (%esp)\n" /* "cinematic" */
-        "calll Cmd_SetAutoComplete\n"
-        "movl $CL_PlayLogo_f, 4(%esp)\n" /* line 4145 */
-        "movl $str_002a90b8, (%esp)\n" /* "logo" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_Connect_f, %eax\n" /* line 4146 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a90c0, (%esp)\n" /* "connect" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Reconnect_f, 4(%esp)\n" /* line 4147 */
-        "movl $str_002a90c8, (%esp)\n" /* "reconnect" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_LocalServers_f, 4(%esp)\n" /* line 4148 */
-        "movl $str_002a90d4, (%esp)\n" /* "localservers" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_GlobalServers_f, %eax\n" /* line 4150 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a90e4, (%esp)\n" /* "globalservers" */
-        "calll Cmd_AddCommand\n"
-        "calll CL_RconInit\n" /* line 4153 */
-        "movl imp_CL_Rcon_f, %eax\n" /* line 4154 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a6fbc, (%esp)\n" /* "rcon" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_Ping_f, %eax\n" /* line 4157 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a90f4, (%esp)\n" /* "ping" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_ServerStatus_f, %eax\n" /* line 4158 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a90fc, (%esp)\n" /* "serverstatus" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_ToggleMenu_f, 4(%esp)\n" /* line 4161 */
-        "movl $str_002a910c, (%esp)\n" /* "toggleMenu" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_Setenv_f, 4(%esp)\n" /* line 4162 */
-        "movl $str_002a9118, (%esp)\n" /* "setenv" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_ShowIP_f, 4(%esp)\n" /* line 4163 */
-        "movl $str_002a9120, (%esp)\n" /* "showip" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_OpenedIWDList_f, 4(%esp)\n" /* line 4166 */
-        "movl $str_002a9128, (%esp)\n" /* "fs_openedList" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_ReferencedIWDList_f, 4(%esp)\n" /* line 4167 */
-        "movl $str_002a9138, (%esp)\n" /* "fs_referencedList" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_UpdateLevelHunkUsage, %eax\n" /* line 4171 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a914c, (%esp)\n" /* "updatehunkusage" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_SCR_UpdateScreen, %eax\n" /* line 4173 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a915c, (%esp)\n" /* "updatescreen" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_startSingleplayer_f, 4(%esp)\n" /* line 4175 */
-        "movl $str_002a916c, (%esp)\n" /* "startSingleplayer" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_SetRecommended_f, 4(%esp)\n" /* line 4178 */
-        "movl $str_002a9180, (%esp)\n" /* "setRecommended" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_CL_CubemapShot_f, %eax\n" /* line 4187 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a9190, (%esp)\n" /* "cubemapShot" */
-        "calll Cmd_AddCommand\n"
-        "movl $CL_OpenScriptMenu_f, 4(%esp)\n" /* line 4191 */
-        "movl $str_002a919c, (%esp)\n" /* "openScriptMenu" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_Com_WriteLocalizedSoundAliasFiles, %eax\n" /* line 4195 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a91ac, (%esp)\n" /* "localizeSoundAliasFiles" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_UI_OpenMenu_f, %eax\n" /* line 4198 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a91c4, (%esp)\n" /* "openmenu" */
-        "calll Cmd_AddCommand\n"
-        "movl imp_UI_CloseMenu_f, %eax\n" /* line 4199 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a91d0, (%esp)\n" /* "closemenu" */
-        "calll Cmd_AddCommand\n"
-        "calll CL_InitRef\n" /* line 4215 */
-        "addl $0x2c, %esp\n" /* line 4218 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp SCR_Init\n" /* line 4217 */
-    );
+    srand(Sys_MillisecondsRaw());
+    Con_Init();
+    CL_InitInput();
+
+    cl_noprint = Dvar_RegisterBool_mac("cl_noprint", 0, 0);
+    cl_voice = Dvar_RegisterBool_mac("cl_voice", 1, 0x1003);
+    cl_timeout = Dvar_RegisterFloat("cl_timeout", 200.0f, 0.0f, 3600.0f, 0);
+    cl_connectTimeout = Dvar_RegisterFloat("cl_connectTimeout", 200.0f, 0.0f, 3600.0f, 0);
+    cl_shownet = Dvar_RegisterInt("cl_shownet", 0, -2, 4, 0);
+    cl_shownuments = Dvar_RegisterBool_mac("cl_shownuments", 0, 0);
+    cl_showServerCommands = Dvar_RegisterBool_mac("cl_showServerCommands", 0, 0);
+    cl_showSend = Dvar_RegisterBool_mac("cl_showSend", 0, 0);
+    cl_showTimeDelta = Dvar_RegisterBool_mac("cl_showTimeDelta", 0, 0);
+    cl_freezeDemo = Dvar_RegisterBool_mac("cl_freezeDemo", 0, 0);
+    cl_activeAction = Dvar_RegisterString_mac("activeAction", str_002157b8, 0);
+    cl_avidemo = Dvar_RegisterInt("cl_avidemo", 0, 0, 0x7fffffff, 0);
+    cl_forceavidemo = Dvar_RegisterBool_mac("cl_forceavidemo", 0, 0);
+
+    { /* Use union to convert hex float constants */
+        union { int i; float f; } flt_max = {0x7f7fffff}, flt_nmax = {0xff7fffff};
+        *(const dvar_t **)imp_cl_yawspeed = Dvar_RegisterFloat("cl_yawspeed", 140.0f, flt_nmax.f, flt_max.f, 0x1001);
+        *(const dvar_t **)imp_cl_pitchspeed = Dvar_RegisterFloat("cl_pitchspeed", 140.0f, flt_nmax.f, flt_max.f, 0x1001);
+        *(const dvar_t **)imp_cl_anglespeedkey = Dvar_RegisterFloat("cl_anglespeedkey", 1.5f, 0.0f, flt_max.f, 0);
+    }
+
+    cl_maxpackets = Dvar_RegisterInt("cl_maxpackets", 30, 15, 100, 0x1001);
+    cl_packetdup = Dvar_RegisterInt("cl_packetdup", 1, 0, 5, 0x1001);
+    cl_sensitivity = Dvar_RegisterFloat("sensitivity", 5.0f, 0.01f, 100.0f, 0x1001);
+    cl_mouseAccel = Dvar_RegisterFloat("cl_mouseAccel", 0.0f, 0.0f, 100.0f, 0x1001);
+    cl_freelook = Dvar_RegisterBool_mac("cl_freelook", 1, 0x1001);
+    cl_showMouseRate = Dvar_RegisterBool_mac("cl_showmouserate", 0, 0);
+    cl_allowDownload = Dvar_RegisterBool_mac("cl_allowDownload", 1, 0x1001);
+    *(const dvar_t **)imp_cl_talking = Dvar_RegisterBool_mac("cl_talking", 0, 0);
+    cl_inGameVideo = Dvar_RegisterBool_mac("r_inGameVideo", 1, 0x1001);
+    cl_serverStatusResendTime = Dvar_RegisterInt("cl_serverStatusResendTime", 750, 0, 3600, 0);
+    *(const dvar_t **)imp_cl_bypassMouseInput = Dvar_RegisterBool_mac("cl_bypassMouseInput", 0, 0);
+
+    m_pitch = Dvar_RegisterFloat("m_pitch", 0.022f, -1.0f, 1.0f, 0x1001);
+    m_yaw = Dvar_RegisterFloat("m_yaw", 0.022f, -1.0f, 1.0f, 0x1001);
+    m_forward = Dvar_RegisterFloat("m_forward", 0.25f, -1.0f, 1.0f, 0x1001);
+    m_side = Dvar_RegisterFloat("m_side", 0.25f, -1.0f, 1.0f, 0x1001);
+    m_filter = Dvar_RegisterBool_mac("m_filter", 0, 0x1001);
+    input_viewSensitivity = Dvar_RegisterFloat("input_viewSensitivity", 1.0f, 0.0001f, 5.0f, 0x1001);
+    *(const dvar_t **)imp_cg_drawCrosshair = Dvar_RegisterBool_mac("cg_drawCrosshair", 1, 0x1001);
+    cl_motdString = Dvar_RegisterString_mac("cl_motdString", str_002157b8, 0x1040);
+    cl_ingame = Dvar_RegisterBool_mac("cl_ingame", 0, 0x1040);
+    Dvar_RegisterInt("cl_maxPing", 800, 20, 2000, 0x1001);
+    name = Dvar_RegisterString_mac("name", "Unknown Soldier", 0x1003);
+    Dvar_RegisterInt("rate", 5000, 1000, 25000, 0x1003);
+    Dvar_RegisterInt("snaps", 20, 1, 30, 0x1003);
+    Dvar_RegisterString_mac("password", str_002157b8, 0x1002);
+
+    fx_enable = Dvar_RegisterBool_mac("fx_enable", 1, 0x1080);
+    fx_draw = Dvar_RegisterBool_mac("fx_draw", 1, 0x1080);
+    fx_cull = Dvar_RegisterBool_mac("fx_cull", 1, 0);
+    fx_sort = Dvar_RegisterBool_mac("fx_sort", 1, 0);
+    fx_freeze = Dvar_RegisterBool_mac("fx_freeze", 0, 0x1080);
+    fx_debug = Dvar_RegisterBool_mac("fx_debug", 0, 0x1080);
+    fx_debugBolt = Dvar_RegisterFloat("fx_debugBolt", 0.0f, 0.0f, 100.0f, 0x1080);
+    fx_count = Dvar_RegisterBool_mac("fx_count", 0, 0x1080);
+    fx_visMinTraceDist = Dvar_RegisterFloat("fx_visMinTraceDist", 80.0f, 0.0f, 1000.0f, 0x1080);
+    fx_profile = Dvar_RegisterBool_mac("fx_profile", 0, 0x1080);
+    nextdemo = Dvar_RegisterString_mac("nextdemo", str_002157b8, 0);
+    Dvar_RegisterBool_mac("hud_enable", 1, 0x1001);
+    Dvar_RegisterBool_mac("cg_blood", 1, 0x1001);
+
+    /* Register commands */
+    Cmd_AddCommand("cmd", CL_ForwardToServer_f);
+    Cmd_AddCommand("configstrings", CL_Configstrings_f);
+    Cmd_AddCommand("clientinfo", CL_Clientinfo_f);
+    Cmd_AddCommand("vid_restart", CL_Vid_Restart_f);
+    Cmd_AddCommand("snd_restart", CL_Snd_Restart_f);
+    Cmd_AddCommand("disconnect", CL_Disconnect_f);
+    Cmd_AddCommand("record", CL_Record_f);
+    Cmd_AddCommand("stoprecord", CL_StopRecord_f);
+    Cmd_AddCommand("demo", CL_PlayDemo_f);
+    Cmd_AddCommand("timedemo", CL_PlayDemo_f);
+    Cmd_SetAutoComplete("demo", "demos", str_002a9094);
+    Cmd_SetAutoComplete("timedemo", "demos", str_002a9094);
+    Cmd_AddCommand("cinematic", *(void (**)(void))imp_CL_PlayCinematic_f);
+    Cmd_SetAutoComplete("cinematic", "video", str_00216ce4);
+    Cmd_AddCommand("logo", CL_PlayLogo_f);
+    Cmd_AddCommand("connect", *(void (**)(void))imp_CL_Connect_f);
+    Cmd_AddCommand("reconnect", CL_Reconnect_f);
+    Cmd_AddCommand("localservers", CL_LocalServers_f);
+    Cmd_AddCommand("globalservers", *(void (**)(void))imp_CL_GlobalServers_f);
+    CL_RconInit();
+    Cmd_AddCommand("rcon", *(void (**)(void))imp_CL_Rcon_f);
+    Cmd_AddCommand("ping", *(void (**)(void))imp_CL_Ping_f);
+    Cmd_AddCommand("serverstatus", *(void (**)(void))imp_CL_ServerStatus_f);
+    Cmd_AddCommand("toggleMenu", CL_ToggleMenu_f);
+    Cmd_AddCommand("setenv", CL_Setenv_f);
+    Cmd_AddCommand("showip", CL_ShowIP_f);
+    Cmd_AddCommand("fs_openedList", CL_OpenedIWDList_f);
+    Cmd_AddCommand("fs_referencedList", CL_ReferencedIWDList_f);
+    Cmd_AddCommand("updatehunkusage", *(void (**)(void))imp_CL_UpdateLevelHunkUsage);
+    Cmd_AddCommand("updatescreen", *(void (**)(void))imp_SCR_UpdateScreen);
+    Cmd_AddCommand("startSingleplayer", CL_startSingleplayer_f);
+    Cmd_AddCommand("setRecommended", CL_SetRecommended_f);
+    Cmd_AddCommand("cubemapShot", *(void (**)(void))imp_CL_CubemapShot_f);
+    Cmd_AddCommand("openScriptMenu", CL_OpenScriptMenu_f);
+    Cmd_AddCommand("localizeSoundAliasFiles", *(void (**)(void))imp_Com_WriteLocalizedSoundAliasFiles);
+    Cmd_AddCommand("openmenu", *(void (**)(void))imp_UI_OpenMenu_f);
+    Cmd_AddCommand("closemenu", *(void (**)(void))imp_UI_CloseMenu_f);
+
+    CL_InitRef();
+    SCR_Init();
 }
 
 /* line 4937 */
@@ -1954,39 +1514,24 @@ void CL_FlushDebugData(qboolean fromServer)
 }
 
 /* line 4909 */
-__attribute__((naked))
 void CL_UpdateDebugData(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4909 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl cls+264, %eax\n" /* line 4911 */
-        "testl %eax, %eax\n"
-        "je .Lf149844_0014989d\n"
-        "movl cls+0x2a0a98, %edx\n" /* line 4914 */
-        "testl %edx, %edx\n"
-        "je .Lf149844_00149878\n"
-        "movl cls+0x2a0a90, %eax\n" /* line 4919 */
-        "movl %eax, 8(%esp)\n"
-        "movl cls+0x2a0a94, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *re+252\n"
-        ".Lf149844_00149878:\n"
-        "movl cls+0x2a0aa8, %edx\n" /* line 4922 */
-        "testl %edx, %edx\n"
-        "je .Lf149844_0014989d\n"
-        "movl cls+0x2a0aa0, %eax\n" /* line 4927 */
-        "movl %eax, 8(%esp)\n"
-        "movl cls+0x2a0aa4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *re+256\n"
-        ".Lf149844_0014989d:\n"
-        "leave\n" /* line 4929 */
-        "retl\n"
-    );
+    byte *c = (byte *)&cls;
+
+    if (!*(int *)(c + 264))
+        return;
+
+    if (*(int *)(c + 0x2a0a98)) {
+        /* re.AddDebugString */
+        ((void (*)(void *, int, int))*(int *)((char *)&re + 252))(
+            *(void **)(c + 0x2a0a98), *(int *)(c + 0x2a0a94), *(int *)(c + 0x2a0a90));
+    }
+
+    if (*(int *)(c + 0x2a0aa8)) {
+        /* re.AddDebugLine */
+        ((void (*)(void *, int, int))*(int *)((char *)&re + 256))(
+            *(void **)(c + 0x2a0aa8), *(int *)(c + 0x2a0aa4), *(int *)(c + 0x2a0aa0));
+    }
 }
 
 /* line 4991 */
@@ -2355,46 +1900,21 @@ void CL_ShutdownHunkUsers(void)
 }
 
 /* line 2705 */
-__attribute__((naked))
 void CL_InitLoad(const char *mapname, const char *gametype)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2705 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* mapname */
-        "movl 0xc(%ebp), %ebx\n" /* gametype */
-        "movl imp_legacyHacks, %eax\n" /* line 2707 */
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf149eb4_00149ed7\n"
-        "addl $0x10, %esp\n" /* line 2719 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf149eb4_00149ed7:\n"
-        "movl $0, 4(%esp)\n" /* line 2711 */
-        "movl imp_com_expectedHunkUsage, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl %ebx, 4(%esp)\n" /* line 2714 | gametype */
-        "movl %esi, (%esp)\n" /* mapname */
-        "calll UI_SetMap\n"
-        "movl clc, %edx\n" /* line 2717 */
-        "xorl %eax, %eax\n"
-        "cmpl $5, (%edx)\n"
-        "setge %al\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl %eax, (%edx)\n"
-        "addl $0x10, %esp\n" /* line 2719 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp SCR_UpdateScreenInternal\n" /* line 2718 */
-    );
+    byte *cc;
+
+    if (!*(int *)(*(byte **)imp_legacyHacks + 4))
+        return;
+
+    Dvar_SetInt(*(const dvar_t **)imp_com_expectedHunkUsage, 0);
+    UI_SetMap(mapname, gametype);
+
+    /* Set connstate: if >= 5, set to 5; else set to 0 */
+    cc = *(byte **)imp_clc;
+    *(int *)cc = (*(int *)cc >= 5) ? 5 : 0;
+
+    SCR_UpdateScreenInternal();
 }
 
 /* line 3781 */
@@ -2501,36 +2021,20 @@ void CL_DrawLogo(void)
 }
 
 /* line 3873 */
-__attribute__((naked))
 void CL_StopLogoOrCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3873 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "cmpl $1, clientConnections\n" /* line 3880 */
-        "je .Lf14a0c0_0014a10c\n"
-        "movl $0, clientConnections\n" /* line 3826 */
-        ".Lf14a0c0_0014a0d9:\n"
-        "movl $0, (%esp)\n" /* line 3885 */
-        "calll SND_StopSounds\n"
-        "movl clc, %eax\n" /* line 3886 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf14a0c0_0014a0fe\n"
-        "movl $1, (%esp)\n" /* line 3887 */
-        "calll UI_SetActiveMenu\n"
-        "leave\n" /* line 3890 */
-        "retl\n"
-        ".Lf14a0c0_0014a0fe:\n"
-        "movl $0, (%esp)\n" /* line 3889 */
-        "calll UI_SetActiveMenu\n"
-        "leave\n" /* line 3890 */
-        "retl\n"
-        ".Lf14a0c0_0014a10c:\n"
-        "calll SCR_StopCinematic\n" /* line 3881 */
-        "jmp .Lf14a0c0_0014a0d9\n"
-    );
+    if (*(int *)&clientConnections[0] == 1) {
+        SCR_StopCinematic();
+    } else {
+        *(int *)&clientConnections[0] = 0;
+    }
+
+    SND_StopSounds(0);
+
+    if (**(int **)imp_clc)
+        UI_SetActiveMenu(0);
+    else
+        UI_SetActiveMenu(1);
 }
 
 /* line 4804 */
@@ -3525,59 +3029,37 @@ void CL_RunOncePerClientFrame(int msec)
 }
 
 /* line 2911 */
-__attribute__((naked))
 int Client_SendVoiceData(int bytes, char *enc_buffer)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2911 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* bytes */
-        "testl %esi, %esi\n" /* line 2913 | bytes */
-        "jle .Lf14ae54_0014aeed\n"
-        "movl cl, %ecx\n" /* line 2915 */
-        "movl 0x179c0c(%ecx), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $8, %eax\n"
-        "leal (%ecx, %eax), %ecx\n"
-        "leal 0x1791e8(%ecx, %edx, 4), %edx\n"
-        "movl %esi, 8(%esp)\n" /* bytes */
-        "movl 0xc(%ebp), %eax\n" /* enc_buffer */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "movl cl, %ebx\n" /* line 2916 */
-        "movl 0x179c0c(%ebx), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $8, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %esi, 0x1791e4(%eax, %ebx)\n" /* bytes */
-        "movl 0x179c0c(%ebx), %edx\n" /* line 2917 */
-        "addl $1, %edx\n"
-        "movl %edx, 0x179c0c(%ebx)\n"
-        "testl %edx, %edx\n" /* line 2896 */
-        "jle .Lf14ae54_0014aeed\n"
-        "movl 0x26f0(%ebx), %eax\n" /* line 2899 */
-        "subl 0x179c10(%ebx), %eax\n"
-        "cmpl $0xc7, %eax\n"
-        "jg .Lf14ae54_0014aed2\n"
-        "cmpl $9, %edx\n"
-        "jle .Lf14ae54_0014aeed\n"
-        ".Lf14ae54_0014aed2:\n"
-        "calll CL_WriteVoicePacket\n" /* line 2903 */
-        "movl $0, 0x179c0c(%ebx)\n" /* line 2905 */
-        "movl 0x26f0(%ebx), %eax\n" /* line 2906 */
-        "movl %eax, 0x179c10(%ebx)\n"
-        ".Lf14ae54_0014aeed:\n"
-        "movl %esi, %eax\n" /* line 2922 | bytes */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *c;
+    int voiceIdx, newIdx;
+
+    if (bytes > 0) {
+        c = *(byte **)imp_cl;
+        voiceIdx = *(int *)(c + 0x179c0c);
+
+        /* Copy voice data: dest = cl + voiceIdx*256 + voiceIdx*4 + 0x1791e8 */
+        memcpy(c + (voiceIdx << 8) + (voiceIdx * 4) + 0x1791e8, enc_buffer, bytes);
+
+        /* Store size */
+        *(int *)(c + (voiceIdx << 8) + (voiceIdx * 4) + 0x1791e4) = bytes;
+
+        /* Increment voice packet count */
+        newIdx = voiceIdx + 1;
+        *(int *)(c + 0x179c0c) = newIdx;
+
+        /* CL_VoiceTransmit inline */
+        if (newIdx > 0) {
+            if (*(int *)(c + 0x26f0) - *(int *)(c + 0x179c10) > 199 || newIdx > 9) {
+                CL_WriteVoicePacket();
+                c = *(byte **)imp_cl;
+                *(int *)(c + 0x179c0c) = 0;
+                *(int *)(c + 0x179c10) = *(int *)(c + 0x26f0);
+            }
+        }
+    }
+
+    return bytes;
 }
 
 /* line 2482 */
@@ -4457,40 +3939,27 @@ void CL_Init(void)
 }
 
 /* line 1139 */
-__attribute__((naked))
 void CL_ShutdownAll(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1139 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl re+328, %eax\n" /* line 1141 */
-        "testl %eax, %eax\n"
-        "je .Lf14bbfc_0014bc0d\n"
-        "calll *%eax\n" /* line 1142 */
-        ".Lf14bbfc_0014bc0d:\n"
-        "movl cls+4, %ecx\n" /* line 1108 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf14bbfc_0014bc35\n"
-        ".Lf14bbfc_0014bc17:\n"
-        "movl re, %eax\n" /* line 1147 */
-        "testl %eax, %eax\n"
-        "je .Lf14bbfc_0014bc29\n"
-        "movl $0, (%esp)\n" /* line 1149 */
-        "calll *%eax\n"
-        ".Lf14bbfc_0014bc29:\n"
-        "movl $0, cls+264\n" /* line 1156 */
-        "leave\n" /* line 1157 */
-        "retl\n"
-        ".Lf14bbfc_0014bc35:\n"
-        "calll CL_ShutdownCGame\n" /* line 1115 */
-        "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, cls+0x2a0a58\n" /* line 3267 */
-        "movl $0, cls+0x2a0a5c\n" /* line 3268 */
-        "movl $0, cls+0x2a0a60\n" /* line 3269 */
-        "movl $0, cls+4\n" /* line 1130 */
-        "jmp .Lf14bbfc_0014bc17\n"
-    );
+    void (*shutdownInput)(void) = *(void (**)(void))((char *)&re + 328);
+    void (*shutdown)(int) = *(void (**)(int))&re;
+
+    if (shutdownInput)
+        shutdownInput();
+
+    if (*(int *)((char *)&cls + 4)) {
+        CL_ShutdownCGame();
+        CL_ShutdownUI();
+        *(int *)((char *)&cls + 0x2a0a58) = 0;
+        *(int *)((char *)&cls + 0x2a0a5c) = 0;
+        *(int *)((char *)&cls + 0x2a0a60) = 0;
+        *(int *)((char *)&cls + 4) = 0;
+    }
+
+    if (shutdown)
+        shutdown(0);
+
+    *(int *)((char *)&cls + 264) = 0;
 }
 
 /* line 3062 */
@@ -5290,47 +4759,20 @@ void CL_Shutdown(void)
 }
 
 /* line 1721 */
-__attribute__((naked))
 void CL_Disconnect_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1721 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "calll SCR_StopCinematic\n" /* line 1725 */
-        "movl clc, %eax\n" /* line 1727 */
-        "movl (%eax), %ebx\n"
-        "calll CL_Disconnect\n" /* line 1729 */
-        "cmpl $2, %ebx\n" /* line 1731 */
-        "ja .Lf14c892_0014c8b5\n"
-        ".Lf14c892_0014c8af:\n"
-        "addl $0x14, %esp\n" /* line 1735 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14c892_0014c8b5:\n"
-        "calll Sys_IsMainThread\n" /* line 468 */
-        "testb %al, %al\n"
-        "jne .Lf14c892_0014c8d8\n"
-        ".Lf14c892_0014c8be:\n"
-        "movl $str_002a97a4, 4(%esp)\n" /* line 1733 */
-        "movl $3, (%esp)\n"
-        "calll Com_Error\n"
-        "addl $0x14, %esp\n" /* line 1735 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14c892_0014c8d8:\n"
-        "calll UI_IsFullscreen\n" /* line 471 */
-        "testl %eax, %eax\n"
-        "jne .Lf14c892_0014c8be\n"
-        "cmpb $0, clients\n" /* line 476 */
-        "je .Lf14c892_0014c8be\n"
-        "cmpl $2, clientConnections\n"
-        "jle .Lf14c892_0014c8be\n"
-        "jmp .Lf14c892_0014c8af\n"
-    );
+    int prevState;
+
+    SCR_StopCinematic();
+    prevState = **(int **)imp_clc;
+    CL_Disconnect();
+
+    if (prevState > 2) {
+        /* CL_AllLocalClientsDisconnected check */
+        if (Sys_IsMainThread() && !UI_IsFullscreen() && *(byte *)&clients[0] != 0 && *(int *)&clientConnections[0] > 2)
+            return;
+        Com_Error(3, str_002a97a4);
+    }
 }
 
 /* line 1183 */

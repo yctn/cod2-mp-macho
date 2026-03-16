@@ -40,6 +40,14 @@ extern void MSG_WriteString(msg_t *msg, const char *s);
 extern void MSG_WriteShort(msg_t *msg, int c);
 extern void MSG_WriteByte(msg_t *msg, int c);
 extern void MSG_WriteData(msg_t *buf, const void *data, int length);
+extern void MSG_WriteLong(msg_t *msg, int c);
+extern void MSG_WriteBits(msg_t *msg, int value, int bits);
+extern int MSG_WriteBitsCompress(const byte *datasrc, byte *buffdest, int bytecount);
+extern void MSG_SetDefaultUserCmd(void *from, void *to);
+extern void MSG_WriteDeltaUsercmdKey(msg_t *msg, int key, void *from, void *to);
+extern int Com_HashKey(const char *string, int maxlen);
+extern void CL_Netchan_Transmit(void *chan, byte *data, int length);
+extern void CL_Netchan_TransmitNextFragment(void *chan);
 extern void NET_OutOfBandVoiceData(netsrc_t sock, netadr_t adr, byte *format, int len);
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
@@ -917,304 +925,193 @@ void CL_WriteVoicePacket(void)
 }
 
 /* line 1533 */
-__attribute__((naked))
 void CL_WritePacket(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1533 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x806c, %esp\n"
-        /* { scope 1 */
-        "movl imp_clc, %edi\n" /* line 1547 | compressedSize */
-        "movl (%edi), %esi\n" /* compressedSize, i */
-        "movl 0x407a0(%esi), %eax\n" /* i */
-        "testl %eax, %eax\n"
-        "jne .Lf185fe2_0018627d\n"
-        "movl (%esi), %eax\n" /* i */
-        "cmpl $1, %eax\n"
-        "je .Lf185fe2_0018627d\n"
-        "cmpl $2, %eax\n"
-        "je .Lf185fe2_0018627d\n"
-        "leal -0x4c(%ebp), %eax\n" /* line 1552 | nullcmd */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_cl, %eax\n"
-        "movl (%eax), %ebx\n" /* cmd */
-        "leal 0x34(%ebx), %eax\n" /* cmd */
-        "movl %eax, (%esp)\n"
-        "calll MSG_SetDefaultUserCmd\n"
-        "movl $0x4000, 8(%esp)\n" /* line 1556 */
-        "leal -0x404c(%ebp), %eax\n" /* data */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_Init\n"
-        "movl 0x8628(%ebx), %eax\n" /* line 1560 | cmd */
-        /* DEBUG: print serverId being written */
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "pushl %eax\n"
-        "pushl %eax\n"
-        "pushl $.Lclwp_fmt\n"
-        "calll CL_WritePacketDbg\n"
-        "addl $8, %esp\n"
-        "popl %eax\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteByte\n"
-        "movl 0x20138(%esi), %eax\n" /* line 1565 | i */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteLong\n"
-        "movl 0x2013c(%esi), %eax\n" /* line 1568 | i */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteLong\n"
-        "movl %esi, %ebx\n" /* line 1571 | i, cmd */
-        "movl 0x134(%esi), %esi\n" /* i */
-        "addl $1, %esi\n" /* i */
-        "cmpl 0x130(%ebx), %esi\n" /* cmd, i */
-        "jle .Lf185fe2_00186288\n"
-        ".Lf185fe2_001860a4:\n"
-        "movl imp_cl, %eax\n" /* line 1582 */
-        "movl (%eax), %ecx\n"
-        "movl imp_cl_packetdup, %eax\n"
-        "movl (%eax), %edx\n"
-        "movl 0x407c8(%ebx), %eax\n" /* cmd */
-        "subl 8(%edx), %eax\n"
-        "subl $1, %eax\n"
-        "andl $0x1f, %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x4945c(%ecx), %edi\n" /* compressedSize */
-        "subl 0x49460(%ecx, %eax, 4), %edi\n" /* compressedSize */
-        "cmpl $0x20, %edi\n" /* line 1583 | compressedSize */
-        "jg .Lf185fe2_00186365\n"
-        "testl %edi, %edi\n" /* line 1588 | compressedSize */
-        "jle .Lf185fe2_00186405\n"
-        ".Lf185fe2_001860e2:\n"
-        "movl imp_cl_showSend, %eax\n" /* line 1590 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf185fe2_0018637b\n"
-        ".Lf185fe2_001860f3:\n"
-        "movl imp_cl_nodelta, %eax\n" /* line 1596 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf185fe2_00186112\n"
-        "movl imp_cl, %eax\n"
-        "movl (%eax), %edx\n"
-        "movl 0x18(%edx), %ebx\n" /* cmd */
-        "testl %ebx, %ebx\n" /* cmd */
-        "jne .Lf185fe2_0018630c\n"
-        ".Lf185fe2_00186112:\n"
-        "movl $3, 8(%esp)\n" /* line 1598 */
-        "movl $1, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteBits\n"
-        ".Lf185fe2_0018612d:\n"
-        "movl %edi, 4(%esp)\n" /* line 1606 | compressedSize */
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteByte\n"
-        "movl imp_clc, %eax\n" /* line 1609 */
-        "movl (%eax), %edx\n"
-        "movl 0x20138(%edx), %eax\n" /* line 1611 */
-        "movl %eax, -0x8060(%ebp)\n"
-        "movl 0x12c(%edx), %eax\n"
-        "xorl %eax, -0x8060(%ebp)\n"
-        "movl $0x20, 4(%esp)\n" /* line 1613 */
-        "movl 0x2013c(%edx), %eax\n"
-        "andl $0x7f, %eax\n"
-        "shll $0xa, %eax\n"
-        "leal 0x20144(%eax, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_HashKey\n"
-        "xorl %eax, -0x8060(%ebp)\n"
-        "testl %edi, %edi\n" /* line 1623 | compressedSize */
-        "jg .Lf185fe2_00186390\n"
-        "leal -0x4c(%ebp), %edx\n" /* nullcmd */
-        "movl %edx, -0x805c(%ebp)\n"
-        ".Lf185fe2_00186195:\n"
-        "movl $3, 8(%esp)\n" /* line 1632 */
-        "movl $3, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteBits\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 1635 */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x804c(%ebp)\n" /* compressedBuf */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, -0x8048(%ebp)\n"
-        "movzbl 8(%edx), %eax\n"
-        "movb %al, -0x8044(%ebp)\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1636 */
-        "subl $9, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x8043(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "addl $9, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteBitsCompress\n"
-        "leal 9(%eax), %edi\n" /* compressedSize */
-        "movl imp_clc, %edx\n" /* line 1641 */
-        "movl (%edx), %esi\n" /* i */
-        "movl 0x407c8(%esi), %eax\n" /* i */
-        "andl $0x1f, %eax\n"
-        "movl imp_cl, %edx\n" /* line 1642 */
-        "movl (%edx), %ebx\n" /* cmd */
-        "leal (%eax, %eax, 2), %eax\n"
-        "leal (%ebx, %eax, 4), %eax\n" /* cmd */
-        "movl imp_cls, %ecx\n"
-        "movl 0x118(%ecx), %edx\n"
-        "movl %edx, 0x49468(%eax)\n"
-        "movl -0x805c(%ebp), %edx\n" /* line 1643 */
-        "movl (%edx), %edx\n"
-        "movl %edx, 0x49464(%eax)\n"
-        "movl 0x4945c(%ebx), %edx\n" /* line 1644 | cmd */
-        "movl %edx, 0x49460(%eax)\n"
-        "movl 0x118(%ecx), %eax\n" /* line 1645 */
-        "movl %eax, 0xc(%esi)\n" /* i */
-        "movl imp_cl_showSend, %eax\n" /* line 1647 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf185fe2_00186350\n"
-        ".Lf185fe2_00186255:\n"
-        "movl %edi, 8(%esp)\n" /* line 1652 | compressedSize */
-        "leal -0x804c(%ebp), %eax\n" /* compressedBuf */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x407c8(%esi), %eax\n" /* i */
-        "movl %eax, (%esp)\n"
-        "calll CL_Netchan_Transmit\n"
-        "movl %esi, %eax\n" /* line 1657 | i */
-        "movl 0x447f0(%esi), %edx\n" /* i */
-        "testl %edx, %edx\n"
-        "jne .Lf185fe2_001862e2\n"
-        /* } scope */
-        ".Lf185fe2_0018627d:\n"
-        "addl $0x806c, %esp\n" /* line 1661 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf185fe2_00186288:\n"
-        "movl $3, 8(%esp)\n" /* line 1573 */
-        "movl $2, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteBits\n"
-        "movl %esi, 4(%esp)\n" /* line 1574 | i */
-        "leal -0x30(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteLong\n"
-        "movl %esi, %eax\n" /* line 1575 | i */
-        "andl $0x7f, %eax\n"
-        "shll $0xa, %eax\n"
-        "movl (%edi), %ebx\n" /* compressedSize, cmd */
-        "leal 0x138(%eax, %ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteString\n"
-        "addl $1, %esi\n" /* line 1571 | i */
-        "cmpl 0x130(%ebx), %esi\n" /* cmd, i */
-        "jle .Lf185fe2_00186288\n"
-        "jmp .Lf185fe2_001860a4\n"
-        ".Lf185fe2_001862e2:\n"
-        "movl imp_clc, %ebx\n" /* cmd */
-        ".Lf185fe2_001862e8:\n"
-        "addl $0x407c8, %eax\n" /* line 1659 */
-        "movl %eax, (%esp)\n"
-        "calll CL_Netchan_TransmitNextFragment\n"
-        "movl (%ebx), %eax\n" /* line 1657 | cmd */
-        "movl 0x447f0(%eax), %edi\n" /* compressedSize */
-        "testl %edi, %edi\n" /* compressedSize */
-        "jne .Lf185fe2_001862e8\n"
-        /* } scope */
-        "addl $0x806c, %esp\n" /* line 1661 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf185fe2_0018630c:\n"
-        "movl imp_clc, %eax\n" /* line 1596 */
-        "movl (%eax), %eax\n"
-        "movl 0x407a8(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf185fe2_00186112\n"
-        "movl 0x20138(%eax), %eax\n"
-        "cmpl 0x24(%edx), %eax\n"
-        "jne .Lf185fe2_00186112\n"
-        "movl $3, 8(%esp)\n" /* line 1602 */
-        "movl $0, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteBits\n"
-        "jmp .Lf185fe2_0018612d\n"
-        ".Lf185fe2_00186350:\n"
-        "movl %edi, 4(%esp)\n" /* line 1649 | compressedSize */
-        "movl $str_00217fac, (%esp)\n" /* "%i " */
-        "calll Com_Printf\n"
-        "jmp .Lf185fe2_00186255\n"
-        ".Lf185fe2_00186365:\n"
-        "movl $str_002af63c, (%esp)\n" /* line 1586 */
-        "calll Com_Printf\n"
-        "movl $0x20, %edi\n" /* compressedSize */
-        "jmp .Lf185fe2_001860e2\n"
-        ".Lf185fe2_0018637b:\n"
-        "movl %edi, 4(%esp)\n" /* line 1592 | compressedSize */
-        "movl $str_002af654, (%esp)\n" /* "(%i)" */
-        "calll Com_Printf\n"
-        "jmp .Lf185fe2_001860f3\n"
-        ".Lf185fe2_00186390:\n"
-        "leal -0x4c(%ebp), %ecx\n" /* line 1623 | nullcmd */
-        "xorl %esi, %esi\n" /* i */
-        "movl imp_cl, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x8064(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf185fe2_001863ac\n"
-        ".Lf185fe2_001863a6:\n"
-        "movl -0x8064(%ebp), %edx\n"
-        ".Lf185fe2_001863ac:\n"
-        "movl 0x4945c(%edx), %eax\n" /* line 1626 */
-        "subl %edi, %eax\n" /* compressedSize */
-        "leal 1(%esi, %eax), %eax\n" /* i */
-        "andl $0x7f, %eax\n"
-        "leal (, %eax, 4), %edx\n"
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl -0x8064(%ebp), %edx\n"
-        "leal 0x4865c(%eax, %edx), %ebx\n" /* cmd */
-        "movl %ebx, 0xc(%esp)\n" /* line 1627 | cmd */
-        "movl %ecx, 8(%esp)\n"
-        "movl -0x8060(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* buf */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteDeltaUsercmdKey\n"
-        "addl $1, %esi\n" /* line 1623 | i */
-        "movl %ebx, %ecx\n" /* cmd */
-        "cmpl %edi, %esi\n" /* compressedSize, i */
-        "jne .Lf185fe2_001863a6\n"
-        "movl %ebx, -0x805c(%ebp)\n" /* cmd */
-        "jmp .Lf185fe2_00186195\n"
-        ".Lf185fe2_00186405:\n"
-        "leal -0x4c(%ebp), %eax\n" /* line 1588 | nullcmd */
-        "movl %eax, -0x805c(%ebp)\n"
-        "jmp .Lf185fe2_00186195\n"
-    );
+    byte *clc_ptr;
+    byte *cl_ptr;
+    msg_t buf;
+    byte data[0x4000];
+    usercmd_t nullcmd;
+    byte compressedBuf[0x4000];
+    int compressedSize;
+    int i;
+    int key;
+    usercmd_t *lastCmd;
+
+    clc_ptr = *(byte **)imp_clc;
+
+    /* early out if demo playing or not connected */
+    if (*(int *)(clc_ptr + 0x407a0))
+        return;
+    if (*(int *)clc_ptr == 1 || *(int *)clc_ptr == 2)
+        return;
+
+    cl_ptr = *(byte **)imp_cl;
+
+    /* set default usercmd into nullcmd */
+    MSG_SetDefaultUserCmd((void *)(cl_ptr + 0x34), (void *)&nullcmd);
+
+    /* init message buffer */
+    MSG_Init(&buf, data, 0x4000);
+
+    /* write server id */
+    {
+        int serverId = *(int *)(cl_ptr + 0x8628);
+        CL_WritePacketDbg("[CL_WritePacket] serverId=%d\n", serverId);
+        MSG_WriteByte(&buf, serverId);
+    }
+
+    /* write server message sequence and command number */
+    MSG_WriteLong(&buf, *(int *)(clc_ptr + 0x20138));
+    MSG_WriteLong(&buf, *(int *)(clc_ptr + 0x2013c));
+
+    /* write reliable commands */
+    i = *(int *)(clc_ptr + 0x134) + 1;
+    while (i <= *(int *)(clc_ptr + 0x130))
+    {
+        MSG_WriteBits(&buf, 2, 3);
+        MSG_WriteLong(&buf, i);
+        {
+            int idx = (i & 0x7f) << 10;
+            MSG_WriteString(&buf, (const char *)(clc_ptr + 0x138 + idx));
+        }
+        i++;
+    }
+
+    /* compute count of user commands to send */
+    {
+        byte *cl2 = *(byte **)imp_cl;
+        const dvar_t *packetdup = *(const dvar_t **)imp_cl_packetdup;
+        int cmdNum = *(int *)(clc_ptr + 0x407c8);
+        int dupIdx = (cmdNum - *(int *)((byte *)packetdup + 8) - 1) & 0x1f;
+        compressedSize = *(int *)(cl2 + 0x4945c) - *(int *)(cl2 + 0x49460 + dupIdx * 12);
+    }
+
+    if (compressedSize > 0x20)
+    {
+        Com_Printf((const char *)str_002af63c);
+        compressedSize = 0x20;
+    }
+
+    if (compressedSize <= 0)
+    {
+        lastCmd = &nullcmd;
+        goto write_footer;
+    }
+
+    /* show send debug */
+    {
+        const dvar_t *showSend = *(const dvar_t **)imp_cl_showSend;
+        if (*(byte *)((byte *)showSend + 8))
+        {
+            Com_Printf((const char *)str_002af654, compressedSize);
+        }
+    }
+
+    /* write delta bit: check if we can delta compress */
+    {
+        const dvar_t *nodelta = *(const dvar_t **)imp_cl_nodelta;
+        byte *cl3 = *(byte **)imp_cl;
+        int snap = *(int *)(cl3 + 0x18);
+
+        if (*(byte *)((byte *)nodelta + 8) || !snap)
+        {
+            goto write_nodelta;
+        }
+        else
+        {
+            byte *clc2 = *(byte **)imp_clc;
+            if (*(int *)(clc2 + 0x407a8) || *(int *)(clc2 + 0x20138) != *(int *)((byte *)cl3 + 0x18 + 0xc))
+            {
+                goto write_nodelta;
+            }
+            /* delta from old snapshot */
+            MSG_WriteBits(&buf, 0, 3);
+        }
+    }
+
+    goto write_cmdcount;
+
+write_nodelta:
+    MSG_WriteBits(&buf, 1, 3);
+
+write_cmdcount:
+    MSG_WriteByte(&buf, compressedSize);
+
+    /* compute key for delta encoding */
+    {
+        byte *clc3 = *(byte **)imp_clc;
+        key = *(int *)(clc3 + 0x20138);
+        key ^= *(int *)(clc3 + 0x12c);
+        {
+            int seqIdx = (*(int *)(clc3 + 0x2013c) & 0x7f) << 10;
+            key ^= Com_HashKey((const char *)(clc3 + 0x20144 + seqIdx), 0x20);
+        }
+    }
+
+    /* write delta user commands */
+    if (compressedSize > 0)
+    {
+        usercmd_t *prevCmd = &nullcmd;
+        byte *cl4 = *(byte **)imp_cl;
+        for (i = 0; i != compressedSize; i++)
+        {
+            int idx = (*(int *)(cl4 + 0x4945c) - compressedSize + 1 + i) & 0x7f;
+            /* idx * 28 = idx * 32 - idx * 4 */
+            usercmd_t *curCmd = (usercmd_t *)(cl4 + 0x4865c + idx * 28);
+            MSG_WriteDeltaUsercmdKey(&buf, key, (void *)prevCmd, (void *)curCmd);
+            prevCmd = curCmd;
+        }
+        lastCmd = prevCmd;
+    }
+    else
+    {
+        lastCmd = &nullcmd;
+    }
+
+write_footer:
+    /* write end marker */
+    MSG_WriteBits(&buf, 3, 3);
+
+    /* copy first 9 bytes of msg data, then compress the rest */
+    {
+        byte *msgData = buf.data;
+        memcpy(compressedBuf, msgData, 9);
+        compressedSize = 9 + MSG_WriteBitsCompress(msgData + 9, compressedBuf + 9, buf.cursize - 9);
+    }
+
+    /* update packet history */
+    {
+        byte *clc4 = *(byte **)imp_clc;
+        byte *cl5 = *(byte **)imp_cl;
+        int slot = *(int *)(clc4 + 0x407c8) & 0x1f;
+        byte *entry = cl5 + slot * 12;
+        byte *cls_ptr = (byte *)imp_cls;
+        *(int *)(entry + 0x49468) = *(int *)(cls_ptr + 0x118);
+        *(int *)(entry + 0x49464) = *(int *)lastCmd;
+        *(int *)(entry + 0x49460) = *(int *)(cl5 + 0x4945c);
+        *(int *)(clc4 + 0xc) = *(int *)(cls_ptr + 0x118);
+
+        {
+            const dvar_t *showSend2 = *(const dvar_t **)imp_cl_showSend;
+            if (*(byte *)((byte *)showSend2 + 8))
+            {
+                Com_Printf((const char *)str_00217fac, compressedSize);
+            }
+        }
+
+        /* transmit */
+        CL_Netchan_Transmit((void *)(clc4 + 0x407c8), compressedBuf, compressedSize);
+
+        /* send remaining fragments */
+        if (*(int *)(clc4 + 0x447f0))
+        {
+            do
+            {
+                CL_Netchan_TransmitNextFragment((void *)(clc4 + 0x407c8));
+            } while (*(int *)(*(byte **)imp_clc + 0x447f0));
+        }
+    }
 }
 
 /* line 1730 */

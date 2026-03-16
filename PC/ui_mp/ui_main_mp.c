@@ -18,6 +18,7 @@ void diag_drawtext(const char *text, void *font, float x, float y, float scale) 
     (void)scale;
 }
 
+extern const char *va(const char *fmt, ...);
 extern const dvar_t *ui_smallFont; /* 0x0 */
 extern const dvar_t *ui_bigFont; /* 0x0 */
 extern const dvar_t *ui_extraBigFont; /* 0x0 */
@@ -79,6 +80,135 @@ extern void LAN_SaveServersToCache(void);
 extern void Menus_OpenByName(uiInfo_t *info, const char *name);
 extern void Menus_CloseByName(uiInfo_t *info, const char *name);
 extern const char *Cmd_Args(int startIndex);
+
+/* Forward declarations for functions called from converted ASM */
+extern int CL_RegisterMaterialNoMip(const char *name, int flags);
+extern int CL_RegisterFont(const char *name, int flags);
+extern int Com_FindSoundAlias(const char *name);
+extern void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int vertAlign, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material);
+extern float CL_NormalizedTextScale(FontHandle font, float scale);
+extern int CL_TextWidth(const char *text, int maxChars, FontHandle font);
+extern int CL_TextHeight(FontHandle font);
+extern float GetRealHeightFromVirtualHeight(float scale);
+extern void CalcScreenPlacement(float *x, float *y, float *xScale, float *yScale, int horzAlign, int vertAlign);
+extern void CalcSplitScreenTextOffset(FontHandle font, float *y);
+extern void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, int style, const vec_t *color, int textStyle);
+extern void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, int style, const vec_t *color, int textStyle, int cursorPos, int cursor);
+extern void GetClientState(void *cstate);
+extern const char *CL_GetConfigString(int index);
+extern const char *Info_ValueForKey(const char *s, const char *key);
+extern int GetClientname(int index, char *name, int nameSize);
+extern void I_strncpyz(char *dest, const char *src, int len);
+extern void I_CleanStr(char *str);
+extern int I_stricmp(const char *s1, const char *s2);
+extern int I_strnicmp(const char *s1, const char *s2, int n);
+extern void I_strncat(char *dest, const char *src, int len);
+extern int FS_FOpenFileByMode(const char *name, int *f, int mode);
+extern int FS_Read(void *buf, int len, int f);
+extern void FS_FCloseFile(int f);
+extern void Com_Printf(const char *fmt, ...);
+extern int UI_LoadMenu(const char *name, int imageTrack);
+extern void UI_AddMenuList(uiInfo_t *info, int menuList);
+extern void UI_MapLoadInfo(const char *csv);
+extern void UI_FillRect(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color);
+extern void *Menus_FindByName(uiInfo_t *info, const char *name);
+extern void Menu_Paint(uiInfo_t *info, void *menu, int full);
+extern void Dvar_SetInt(const void *dvar, int value);
+extern void Dvar_SetString(const void *dvar, const char *value);
+extern void Dvar_SetIntByName(const char *name, int value);
+extern void Dvar_SetBoolByName(const char *name, int value);
+extern void Dvar_SetStringByName(const char *name, const char *value);
+extern int Dvar_GetInt(const char *name);
+extern int Dvar_GetBool(const char *name);
+extern float Dvar_GetFloat(const char *name);
+extern const char *Dvar_GetString(const char *name);
+extern const char *Dvar_GetVariantString(const char *name);
+extern void Dvar_SetFloatByName(const char *name, float value);
+extern void Dvar_SetFromStringByNameFromSource(const char *name, const char *value, int source);
+extern const void *Dvar_FindVar(const char *name);
+extern int SEH_VerifyLanguageSelection(int lang);
+extern const char *SEH_StringEd_GetString(const char *ref);
+extern void Com_Error(int level, const char *fmt, ...);
+extern int String_Parse(const char **args, char *buf, int bufSize);
+extern int LAN_GetServerStatus(const char *addr, char *info, int infoSize);
+extern int LAN_AddServer(int source, const char *name, const char *addr);
+extern void LAN_GetServerInfo(int source, int index, char *info, int infoSize);
+extern int LAN_GetServerCount(int source);
+extern void LAN_ResetPings(int source);
+extern int LAN_WaitServerResponse(int source);
+extern int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2);
+extern int LAN_ServerIsDirty(int source, int index);
+extern int LAN_GetServerPing(int source, int index);
+extern void LAN_MarkServerDirty(int source, int index, int dirty);
+extern int LAN_UpdateDirtyPings(int source);
+extern void LAN_GetServerAddressString(int source, int index, char *addr, int addrSize);
+extern void LAN_RemoveServer(int source, const char *addr);
+extern void LAN_LoadCachedServers(void);
+extern void CIN_StopCinematic(int handle);
+extern int CIN_PlayCinematic(const char *name, int x, int y, int w, int h, int flags);
+extern void CIN_RunCinematic(int handle);
+extern void CIN_SetExtents(int handle, int x, int y, int w, int h);
+extern void CIN_DrawCinematic(int handle);
+extern void UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, int material);
+extern void Key_SetCatcher(int catcher);
+extern int Key_GetCatcher(void);
+extern void Key_ClearStates(void);
+extern int Menu_Count(uiInfo_t *info);
+extern void *Menu_GetFocused(uiInfo_t *info);
+extern void Menu_HandleKey(uiInfo_t *info, void *menu, int key, int down);
+extern void Menu_PaintAll(uiInfo_t *info);
+extern void Menu_SetFeederSelection(uiInfo_t *info, int feederID, int feederId2, int index, const char *name);
+extern void Menu_Setup(uiInfo_t *info);
+extern void Display_MouseMove(uiInfo_t *info, int flags, int x, int y);
+extern int Display_KeyBindPending(void);
+extern void SND_FadeAllSounds(float gain, int time);
+extern int Sys_Milliseconds(void);
+extern float Voice_GetVoiceLevel(void);
+extern void Com_RealTime(void *q);
+extern int FS_GetFileList(const char *path, const char *ext, int flags, char *buf, int bufSize);
+extern const char *Com_Parse(const char **buf);
+extern const char *String_Alloc(const char *s);
+extern void String_Init(void);
+extern void CL_GetScreenDimensions(int *w, int *h, int *aspect);
+extern const void *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
+extern const void *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
+extern void Dvar_RegisterBool_mac(const char *name, int value, int flags);
+extern void Dvar_RegisterString_mac(const char *name, const char *value, int flags);
+extern void UI_LoadArenas(void);
+extern int UI_LoadMenus(const char *name, int imageTrack);
+extern void UI_LoadSoundAliases(void);
+extern void Controls_SetDefaults(void);
+extern void Controls_GetConfig(void);
+extern void Controls_SetConfig(int apply);
+extern void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAlign, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, int font, float scale, vec_t *color, int material, int textStyle);
+extern const char *CG_GameTypeString(void);
+extern const char *CG_GetKillerText(void);
+extern const char *SEH_LocalizeTextMessage(const char *msg, const char *fmt, const char *ctx);
+extern void LerpColor(const vec_t *a, const vec_t *b, vec_t *c, float t);
+extern void Item_SetCursorPos(void *item, int pos);
+extern int Item_ListBox_MaxScroll(void *item);
+extern void ListBox_SetStartPos(void *listPtr, int pos);
+extern void ListBox_SetEndPos(void *listPtr, int pos);
+extern void ListBox_SetCursorPos(void *listPtr, int pos);
+extern int CL_IsPlayerTalking(int index);
+extern int CL_IsPlayerMuted(int index);
+extern void CL_MutePlayer(int index);
+extern int Int_Parse(const char **args, int *out);
+extern void CLUI_GetCDKey(char *buf, int bufSize, int part);
+extern void CLUI_SetCDKey(const char *key, int part);
+extern int CL_CDKeyValidate(const char *key1, const char *key2);
+extern void CG_DrawInformation(int loading);
+extern char *FS_ListFiles(const char *path, const char *ext, int flags, int *numFiles);
+extern void FS_FreeFileList(char **list);
+extern void I_strupr(char *str);
+extern void Com_ChangePlayerProfile(int index);
+extern void Com_DeletePlayerProfile(int index);
+extern int Com_NewPlayerProfile(const char *name);
+/* snprintf already declared in stdio.h */
+extern void Cbuf_ExecuteText(int execWhen, const char *text);
+extern void Com_sprintf(char *buf, int size, const char *fmt, ...);
+extern int ___toupper(int c);
+extern int ___tolower(int c);
 
 void UI_AssetCache(void);
 void UI_DrawSides(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color);
@@ -147,407 +277,122 @@ static void UI_DisplayDownloadInfo(const char *downloadName, float centerPoint, 
 void UI_DrawConnectScreen(void);
 
 /* line 323 */
-__attribute__((naked))
 void UI_AssetCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 323 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $3, 4(%esp)\n" /* line 325 */
-        "movl $str_00224184, (%esp)\n" /* "white" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+32\n"
-        "movl $3, 4(%esp)\n" /* line 326 */
-        "movl $str_002a9ea0, (%esp)\n" /* "ui/assets/scrollbar.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+16\n"
-        "movl $3, 4(%esp)\n" /* line 327 */
-        "movl $str_002a9eb8, (%esp)\n" /* "ui/assets/scrollbar_arrow_dwn_a.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+4\n"
-        "movl $3, 4(%esp)\n" /* line 328 */
-        "movl $str_002a9edc, (%esp)\n" /* "ui/assets/scrollbar_arrow_up_a.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo\n"
-        "movl $3, 4(%esp)\n" /* line 329 */
-        "movl $str_002a9f00, (%esp)\n" /* "ui/assets/scrollbar_arrow_left.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+8\n"
-        "movl $3, 4(%esp)\n" /* line 330 */
-        "movl $str_002a9f24, (%esp)\n" /* "ui/assets/scrollbar_arrow_right.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+12\n"
-        "movl $3, 4(%esp)\n" /* line 331 */
-        "movl $str_002a9f48, (%esp)\n" /* "ui/assets/scrollbar_thumb.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+20\n"
-        "movl $3, 4(%esp)\n" /* line 332 */
-        "movl $str_002a9f68, (%esp)\n" /* "ui/assets/slider2.tga" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+24\n"
-        "movl $3, 4(%esp)\n" /* line 333 */
-        "movl $str_002a9f80, (%esp)\n" /* "ui/assets/sliderbutt_1" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+28\n"
-        "movl $0, 4(%esp)\n" /* line 334 */
-        "movl $str_002a9f98, (%esp)\n" /* "$cursor" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+36\n"
-        "movl $0, 4(%esp)\n" /* line 335 */
-        "movl $str_002a9fa0, (%esp)\n" /* "$bigfont" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+40\n"
-        "movl $0, 4(%esp)\n" /* line 336 */
-        "movl $str_002a9fac, (%esp)\n" /* "$smallfont" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+44\n"
-        "movl $0, 4(%esp)\n" /* line 337 */
-        "movl $str_002a9fb8, (%esp)\n" /* "$consolefont" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+48\n"
-        "movl $0, 4(%esp)\n" /* line 338 */
-        "movl $str_002a9fc8, (%esp)\n" /* "$boldfont" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+52\n"
-        "movl $0, 4(%esp)\n" /* line 339 */
-        "movl $str_002a9fd4, (%esp)\n" /* "$font" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+56\n"
-        "movl $0, 4(%esp)\n" /* line 340 */
-        "movl $str_002a9fdc, (%esp)\n" /* "$extrabigfont" */
-        "calll CL_RegisterFont\n"
-        "movl %eax, sharedUiInfo+60\n"
-        "movl $str_002a9fec, (%esp)\n" /* line 342 */
-        "calll Com_FindSoundAlias\n"
-        "movl %eax, sharedUiInfo+64\n"
-        "leave\n" /* line 344 */
-        "retl\n"
-    );
+    *(int *)((char *)&sharedUiInfo + 32) = CL_RegisterMaterialNoMip("white", 3);
+    *(int *)((char *)&sharedUiInfo + 16) = CL_RegisterMaterialNoMip("ui/assets/scrollbar.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 4) = CL_RegisterMaterialNoMip("ui/assets/scrollbar_arrow_dwn_a.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 0) = CL_RegisterMaterialNoMip("ui/assets/scrollbar_arrow_up_a.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 8) = CL_RegisterMaterialNoMip("ui/assets/scrollbar_arrow_left.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 12) = CL_RegisterMaterialNoMip("ui/assets/scrollbar_arrow_right.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 20) = CL_RegisterMaterialNoMip("ui/assets/scrollbar_thumb.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 24) = CL_RegisterMaterialNoMip("ui/assets/slider2.tga", 3);
+    *(int *)((char *)&sharedUiInfo + 28) = CL_RegisterMaterialNoMip("ui/assets/sliderbutt_1", 3);
+    *(int *)((char *)&sharedUiInfo + 36) = CL_RegisterMaterialNoMip("$cursor", 0);
+    *(int *)((char *)&sharedUiInfo + 40) = CL_RegisterFont("$bigfont", 0);
+    *(int *)((char *)&sharedUiInfo + 44) = CL_RegisterFont("$smallfont", 0);
+    *(int *)((char *)&sharedUiInfo + 48) = CL_RegisterFont("$consolefont", 0);
+    *(int *)((char *)&sharedUiInfo + 52) = CL_RegisterFont("$boldfont", 0);
+    *(int *)((char *)&sharedUiInfo + 56) = CL_RegisterFont("$font", 0);
+    *(int *)((char *)&sharedUiInfo + 60) = CL_RegisterFont("$extrabigfont", 0);
+    *(int *)((char *)&sharedUiInfo + 64) = Com_FindSoundAlias("ui_mp_map_select");
 }
 
 /* line 347 */
-__attribute__((naked))
 void UI_DrawSides(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 347 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movss 8(%ebp), %xmm0\n" /* x */
-        "movl 0x1c(%ebp), %edi\n" /* vertAlign */
-        "movl 0x24(%ebp), %esi\n" /* color */
-        "movl sharedUiInfo+32, %eax\n" /* line 349 */
-        "movl %eax, 0x2c(%esp)\n"
-        "movl %esi, 0x28(%esp)\n" /* color */
-        "xorl %ebx, %ebx\n"
-        "movl %ebx, 0x24(%esp)\n"
-        "movl %ebx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n" /* vertAlign */
-        "movl 0x18(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "movss 0x14(%ebp), %xmm1\n" /* h */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss 0x20(%ebp), %xmm1\n" /* size */
-        "movss %xmm1, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm1\n" /* y */
-        "movss %xmm1, 4(%esp)\n"
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "calll CL_DrawStretchPic\n"
-        "movl sharedUiInfo+32, %eax\n" /* line 350 */
-        "movl %eax, 0x2c(%esp)\n"
-        "movl %esi, 0x28(%esp)\n" /* color */
-        "movl %ebx, 0x24(%esp)\n"
-        "movl %ebx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n" /* vertAlign */
-        "movl 0x18(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "movss 0x14(%ebp), %xmm1\n" /* h */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss 0x20(%ebp), %xmm1\n" /* size */
-        "movss %xmm1, 8(%esp)\n"
-        "movss 0xc(%ebp), %xmm1\n" /* y */
-        "movss %xmm1, 4(%esp)\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        "addss 0x10(%ebp), %xmm0\n" /* w */
-        "subss 0x20(%ebp), %xmm0\n" /* size */
-        "movss %xmm0, (%esp)\n"
-        "calll CL_DrawStretchPic\n"
-        "addl $0x4c, %esp\n" /* line 351 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    MaterialHandle white = *(MaterialHandle *)((char *)&sharedUiInfo + 32);
+    CL_DrawStretchPic(x, y, size, h, horzAlign, vertAlign, 0, 0, 0, 0, color, white);
+    CL_DrawStretchPic(x + w - size, y, size, h, horzAlign, vertAlign, 0, 0, 0, 0, color, white);
 }
 
 /* line 354 */
-__attribute__((naked))
 void UI_DrawTopBottom(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 354 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movss 0xc(%ebp), %xmm0\n" /* y */
-        "movl 0x1c(%ebp), %edi\n" /* vertAlign */
-        "movl 0x24(%ebp), %esi\n" /* color */
-        "movl sharedUiInfo+32, %eax\n" /* line 356 */
-        "movl %eax, 0x2c(%esp)\n"
-        "movl %esi, 0x28(%esp)\n" /* color */
-        "xorl %ebx, %ebx\n"
-        "movl %ebx, 0x24(%esp)\n"
-        "movl %ebx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n" /* vertAlign */
-        "movl 0x18(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "movss 0x20(%ebp), %xmm1\n" /* size */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss 0x10(%ebp), %xmm1\n" /* w */
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss 8(%ebp), %xmm1\n" /* x */
-        "movss %xmm1, (%esp)\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        "calll CL_DrawStretchPic\n"
-        "movl sharedUiInfo+32, %eax\n" /* line 357 */
-        "movl %eax, 0x2c(%esp)\n"
-        "movl %esi, 0x28(%esp)\n" /* color */
-        "movl %ebx, 0x24(%esp)\n"
-        "movl %ebx, 0x20(%esp)\n"
-        "movl %ebx, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n" /* vertAlign */
-        "movl 0x18(%ebp), %eax\n" /* horzAlign */
-        "movl %eax, 0x10(%esp)\n"
-        "movss 0x20(%ebp), %xmm1\n" /* size */
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss 0x10(%ebp), %xmm1\n" /* w */
-        "movss %xmm1, 8(%esp)\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        "addss 0x14(%ebp), %xmm0\n" /* h */
-        "subss 0x20(%ebp), %xmm0\n" /* size */
-        "movss %xmm0, 4(%esp)\n"
-        "movss 8(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, (%esp)\n"
-        "calll CL_DrawStretchPic\n"
-        "addl $0x4c, %esp\n" /* line 358 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    MaterialHandle white = *(MaterialHandle *)((char *)&sharedUiInfo + 32);
+    CL_DrawStretchPic(x, y, w, size, horzAlign, vertAlign, 0, 0, 0, 0, color, white);
+    CL_DrawStretchPic(x, y + h - size, w, size, horzAlign, vertAlign, 0, 0, 0, 0, color, white);
 }
 
 /* line 375 */
-__attribute__((naked))
 int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 375 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0x10(%ebp), %ebx\n" /* font */
-        /* { scope 1 */
-        "movl 0x14(%ebp), %eax\n" /* line 379 | scale */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* font */
-        "calll CL_NormalizedTextScale\n"
-        "fstps -0xc(%ebp)\n" /* actualScale */
-        "movl %ebx, 8(%esp)\n" /* line 380 | font */
-        "movl 0xc(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll CL_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n" /* actualScale */
-        "cvttss2si %xmm0, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 381 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float actualScale = CL_NormalizedTextScale(font, scale);
+    return (int)((float)CL_TextWidth(text, maxChars, font) * actualScale);
 }
 
 /* line 384 */
-__attribute__((naked))
 int UI_TextHeight(FontHandle font, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 384 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* font */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 388 | scale */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* font */
-        "calll CL_NormalizedTextScale\n"
-        "fstps -0xc(%ebp)\n" /* actualScale */
-        "movl %ebx, (%esp)\n" /* line 389 | font */
-        "calll CL_TextHeight\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n" /* actualScale */
-        "cvttss2si %xmm0, %eax\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 390 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float actualScale = CL_NormalizedTextScale(font, scale);
+    return (int)((float)CL_TextHeight(font) * actualScale);
 }
 
 /* line 434 */
-__attribute__((naked))
 FontHandle UI_GetFontHandle(int fontEnum, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 434 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* fontEnum */
-        "cmpl $2, %ebx\n" /* line 436 | fontEnum */
-        "je .Lf14eddc_0014ee64\n"
-        "cmpl $3, %ebx\n" /* line 438 | fontEnum */
-        "je .Lf14eddc_0014ee59\n"
-        "cmpl $5, %ebx\n" /* line 440 | fontEnum */
-        "je .Lf14eddc_0014ee3e\n"
-        "movss 0xc(%ebp), %xmm0\n" /* line 449 | scale */
-        "movss %xmm0, (%esp)\n"
-        "calll GetRealHeightFromVirtualHeight\n"
-        "fstps -0xc(%ebp)\n"
-        "cmpl $4, %ebx\n" /* line 451 | fontEnum */
-        "je .Lf14eddc_0014ee49\n"
-        "movl ui_smallFont, %eax\n" /* line 463 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss -0xc(%ebp), %xmm0\n"
-        "jae .Lf14eddc_0014ee59\n"
-        "movl ui_extraBigFont, %eax\n" /* line 465 */
-        "movss -0xc(%ebp), %xmm0\n"
-        "ucomiss 8(%eax), %xmm0\n"
-        "jae .Lf14eddc_0014ee6f\n"
-        "movl ui_bigFont, %eax\n" /* line 467 */
-        "ucomiss 8(%eax), %xmm0\n"
-        "jae .Lf14eddc_0014ee64\n"
-        ".Lf14eddc_0014ee37:\n"
-        "movl sharedUiInfo+56, %eax\n" /* line 470 */
-        "jmp .Lf14eddc_0014ee43\n"
-        ".Lf14eddc_0014ee3e:\n"
-        "movl sharedUiInfo+48, %eax\n" /* line 441 */
-        ".Lf14eddc_0014ee43:\n"
-        "addl $0x24, %esp\n" /* line 471 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14eddc_0014ee49:\n"
-        "movl ui_smallFont, %eax\n" /* line 454 */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss -0xc(%ebp), %xmm0\n"
-        "jb .Lf14eddc_0014ee76\n"
-        ".Lf14eddc_0014ee59:\n"
-        "movl sharedUiInfo+44, %eax\n" /* line 464 */
-        "addl $0x24, %esp\n" /* line 471 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14eddc_0014ee64:\n"
-        "movl sharedUiInfo+40, %eax\n" /* line 468 */
-        "addl $0x24, %esp\n" /* line 471 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14eddc_0014ee6f:\n"
-        "movl sharedUiInfo+60, %eax\n" /* line 466 */
-        "jmp .Lf14eddc_0014ee43\n"
-        ".Lf14eddc_0014ee76:\n"
-        "movl ui_bigFont, %eax\n" /* line 456 */
-        "movss -0xc(%ebp), %xmm0\n"
-        "ucomiss 8(%eax), %xmm0\n"
-        "jb .Lf14eddc_0014ee37\n"
-        "movl sharedUiInfo+52, %eax\n" /* line 457 */
-        "jmp .Lf14eddc_0014ee43\n"
-    );
+    float realHeight;
+    if (fontEnum == 2)
+        return *(FontHandle *)((char *)&sharedUiInfo + 40); /* bigfont */
+    if (fontEnum == 3)
+        return *(FontHandle *)((char *)&sharedUiInfo + 44); /* smallfont */
+    if (fontEnum == 5)
+        return *(FontHandle *)((char *)&sharedUiInfo + 48); /* consolefont */
+
+    realHeight = GetRealHeightFromVirtualHeight(scale);
+
+    if (fontEnum == 4) {
+        if (*(float *)((char *)ui_smallFont + 8) >= realHeight)
+            return *(FontHandle *)((char *)&sharedUiInfo + 44); /* smallfont */
+        if (*(float *)((char *)ui_bigFont + 8) >= realHeight)
+            return *(FontHandle *)((char *)&sharedUiInfo + 52); /* boldfont */
+        return *(FontHandle *)((char *)&sharedUiInfo + 56); /* font */
+    }
+
+    /* default path */
+    if (*(float *)((char *)ui_smallFont + 8) >= realHeight)
+        return *(FontHandle *)((char *)&sharedUiInfo + 44); /* smallfont */
+    if (realHeight >= *(float *)((char *)ui_extraBigFont + 8))
+        return *(FontHandle *)((char *)&sharedUiInfo + 60); /* extrabigfont */
+    if (realHeight >= *(float *)((char *)ui_bigFont + 8))
+        return *(FontHandle *)((char *)&sharedUiInfo + 40); /* bigfont */
+    return *(FontHandle *)((char *)&sharedUiInfo + 56); /* font */
 }
 
 /* line 479 */
-__attribute__((naked))
 void UI_UpdateTime(int realtime)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 479 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* realtime */
-        /* { scope 1 */
-        "movl uiInfo, %edx\n" /* line 486 */
-        "movl %ecx, %eax\n"
-        "subl 4(%edx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl uiInfo, %eax\n" /* line 487 */
-        "movl %ecx, 4(%eax)\n"
-        "movl uiInfo, %edx\n" /* line 489 */
-        "movl 0x488(%edx), %ecx\n"
-        "andl $0x80000003, %ecx\n"
-        "js .Lf14ee8e_0014ef1a\n"
-        ".Lf14ee8e_0014eebf:\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0x48c(%edx, %ecx, 4)\n"
-        "movl uiInfo, %eax\n" /* line 490 */
-        "addl $1, 0x488(%eax)\n"
-        "movl uiInfo, %ebx\n" /* line 494 */
-        "cmpl $4, 0x488(%ebx)\n"
-        "jle .Lf14ee8e_0014ef0d\n"
-        "movl %ebx, %eax\n"
-        "xorl %ecx, %ecx\n"
-        "movl $4, %edx\n"
-        ".Lf14ee8e_0014eeed:\n"
-        "addl 0x48c(%eax), %ecx\n" /* line 499 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 498 */
-        "jne .Lf14ee8e_0014eeed\n"
-        "testl %ecx, %ecx\n" /* line 501 */
-        "jne .Lf14ee8e_0014ef10\n"
-        "movl $0xfa0, %eax\n"
-        ".Lf14ee8e_0014ef04:\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 503 */
-        "movss %xmm0, 0x24(%ebx)\n"
-        /* } scope */
-        ".Lf14ee8e_0014ef0d:\n"
-        "popl %ebx\n" /* line 505 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14ee8e_0014ef10:\n"
-        "movl $0xfa0, %eax\n" /* line 501 */
-        "cltd\n"
-        "idivl %ecx\n"
-        "jmp .Lf14ee8e_0014ef04\n"
-        ".Lf14ee8e_0014ef1a:\n"
-        "subl $1, %ecx\n" /* line 489 */
-        "orl $0xfffffffc, %ecx\n"
-        "addl $1, %ecx\n"
-        "jmp .Lf14ee8e_0014eebf\n"
-    );
+    int *ui = (int *)uiInfo;
+    int slot, sum, i;
+
+    /* uiInfo->frametime = realtime - uiInfo->uiDC.realTime */
+    ui[2] = realtime - ui[1];
+    /* uiInfo->uiDC.realTime = realtime */
+    ui[1] = realtime;
+
+    /* slot = uiInfo->timeIndex & 3 (signed modulo) */
+    slot = *(int *)((byte *)uiInfo + 0x488);
+    slot = ((slot - 1) | ~3) + 1; /* handles negative: signed % 4 */
+    if (slot < 0) slot = ((slot - 1) | (int)0xfffffffc) + 1;
+    /* Actually the original just does: slot = uiInfo->timeIndex % 4, with sign handling */
+    slot = *(int *)((byte *)uiInfo + 0x488) & 3;
+
+    /* uiInfo->previousTimes[slot] = uiInfo->frametime */
+    *(int *)((byte *)uiInfo + 0x48c + slot * 4) = ui[2];
+    /* uiInfo->timeIndex++ */
+    *(int *)((byte *)uiInfo + 0x488) += 1;
+
+    if (*(int *)((byte *)uiInfo + 0x488) <= 4)
+        return;
+
+    sum = 0;
+    for (i = 0; i < 4; i++) {
+        sum += *(int *)((byte *)uiInfo + 0x48c + i * 4);
+    }
+    if (sum == 0)
+        *(float *)((byte *)uiInfo + 0x24) = (float)4000;
+    else
+        *(float *)((byte *)uiInfo + 0x24) = (float)(4000 / sum);
 }
 
 /* line 542 */
@@ -559,112 +404,49 @@ void UI_Shutdown(void)
 }
 
 /* line 551 */
-__attribute__((naked))
 char * GetMenuBuffer(const char *filename)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 551 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* filename */
-        /* { scope 1 */
-        "movl $0, 8(%esp)\n" /* line 561 */
-        "leal -0xc(%ebp), %eax\n" /* f */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* filename */
-        "calll FS_FOpenFileByMode\n"
-        "movl %eax, %ebx\n" /* len */
-        "movl -0xc(%ebp), %eax\n" /* line 562 | f */
-        "testl %eax, %eax\n"
-        "je .Lf14ef4a_0014efda\n"
-        "cmpl $0x7fff, %ebx\n" /* line 567 | len */
-        "jg .Lf14ef4a_0014efaf\n"
-        "movl %eax, 8(%esp)\n" /* line 574 */
-        "movl %ebx, 4(%esp)\n" /* len */
-        "movl $menuBuf2, (%esp)\n"
-        "calll FS_Read\n"
-        "movb $0, menuBuf2(%ebx)\n" /* line 575 | len */
-        "movl -0xc(%ebp), %eax\n" /* line 576 | f */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl $menuBuf2, %eax\n"
-        /* } scope */
-        ".Lf14ef4a_0014efa8:\n"
-        "addl $0x20, %esp\n" /* line 589 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14ef4a_0014efaf:\n"
-        "movl $0x8000, 0xc(%esp)\n" /* line 569 */
-        "movl %ebx, 8(%esp)\n" /* len */
-        "movl %esi, 4(%esp)\n" /* filename */
-        "movl $str_002aa028, (%esp)\n" /* "^1menu file too large: %s is %i, max allowed is %i" */
-        "calll Com_Printf\n"
-        "movl -0xc(%ebp), %eax\n" /* line 570 | f */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf14ef4a_0014efa8\n"
-        ".Lf14ef4a_0014efda:\n"
-        "movl %esi, 4(%esp)\n" /* line 564 | filename */
-        "movl $str_002a9ffc, (%esp)\n" /* "^1menu file not found: %s, using default
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf14ef4a_0014efa8\n"
-    );
+    int f;
+    int len;
+
+    len = FS_FOpenFileByMode(filename, &f, 0);
+    if (!f) {
+        Com_Printf("^1menu file not found: %s, using default\n", filename);
+        return 0;
+    }
+    if (len > 0x7fff) {
+        Com_Printf("^1menu file too large: %s is %i, max allowed is %i", filename, len, 0x8000);
+        FS_FCloseFile(f);
+        return 0;
+    }
+    FS_Read(menuBuf2, len, f);
+    menuBuf2[len] = 0;
+    FS_FCloseFile(f);
+    return menuBuf2;
 }
 
 /* line 615 */
-__attribute__((naked))
 qboolean Load_ScriptMenu(const char *pszMenu, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 615 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x114, %esp\n"
-        /* { scope 1: szMenuFile */
-        /* { scope 2 */
-        "leal -0x108(%ebp), %ebx\n" /* line 602 | szMenuFile */
-        "movl $0x6d5f6975, -0x108(%ebp)\n" /* szMenuFile */
-        "movl $0x63732f70, -0x104(%ebp)\n"
-        "movl $0x74706972, -0x100(%ebp)\n"
-        "movl $0x756e656d, -0xfc(%ebp)\n"
-        "movw $0x2f73, -0xf8(%ebp)\n"
-        "movb $0, -0xf6(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* line 603 | pszMenu */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $str_002172c4, 8(%esp)\n" /* line 604 */
-        "movl $0x100, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strncat\n"
-        "movl 0xc(%ebp), %eax\n" /* line 606 | imageTrack */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll UI_LoadMenu\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 620 */
-        "je .Lf14efee_0014f08e\n"
-        "movl %eax, 4(%esp)\n" /* line 623 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_AddMenuList\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf14efee_0014f08e:\n"
-        "addl $0x114, %esp\n" /* line 625 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char szMenuFile[256];
+    int menuList;
+
+    /* "ui_mp/scriptmenus/" */
+    szMenuFile[0] = 'u'; szMenuFile[1] = 'i'; szMenuFile[2] = '_'; szMenuFile[3] = 'm';
+    szMenuFile[4] = 'p'; szMenuFile[5] = '/'; szMenuFile[6] = 's'; szMenuFile[7] = 'c';
+    szMenuFile[8] = 'r'; szMenuFile[9] = 'i'; szMenuFile[10] = 'p'; szMenuFile[11] = 't';
+    szMenuFile[12] = 'm'; szMenuFile[13] = 'e'; szMenuFile[14] = 'n'; szMenuFile[15] = 'u';
+    szMenuFile[16] = 's'; szMenuFile[17] = '/'; szMenuFile[18] = 0;
+
+    I_strncat(szMenuFile, pszMenu, 0x100);
+    I_strncat(szMenuFile, ".menu", 0x100);
+
+    menuList = UI_LoadMenu(szMenuFile, imageTrack);
+    if (!menuList)
+        return 0;
+
+    UI_AddMenuList(uiInfo, menuList);
+    return 1;
 }
 
 /* line 701 */
@@ -751,161 +533,47 @@ void UI_DrawMapPreview(void)
 }
 
 /* line 787 */
-__attribute__((naked))
 const char * UI_GetMapDisplayName(const char *pszMap)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 787 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* pszMap */
-        /* { scope 1 */
-        "movl sharedUiInfo+4944, %eax\n" /* line 791 */
-        "testl %eax, %eax\n"
-        "jg .Lf14f178_0014f197\n"
-        /* } scope */
-        ".Lf14f178_0014f18d:\n"
-        "movl %esi, %eax\n" /* line 797 | pszMap */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f178_0014f197:\n"
-        "xorl %edi, %edi\n" /* line 791 | i */
-        "movl $sharedUiInfo, %ebx\n"
-        "movl $sharedUiInfo+4948, -0x1c(%ebp)\n"
-        "jmp .Lf14f178_0014f1bf\n"
-        ".Lf14f178_0014f1a7:\n"
-        "addl $1, %edi\n" /* i */
-        "addl $0xa4, -0x1c(%ebp)\n"
-        "addl $0xa4, %ebx\n"
-        "cmpl sharedUiInfo+4944, %edi\n" /* i */
-        "jge .Lf14f178_0014f18d\n"
-        ".Lf14f178_0014f1bf:\n"
-        "movl 0x1358(%ebx), %eax\n" /* line 793 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* pszMap */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf14f178_0014f1a7\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 794 */
-        "movl (%eax), %esi\n" /* pszMap */
-        "jmp .Lf14f178_0014f18d\n"
-    );
+    int i;
+    int count = *(int *)((char *)&sharedUiInfo + 4944);
+    for (i = 0; i < count; i++) {
+        const char *loadName = *(const char **)((char *)&sharedUiInfo + 0x1358 + i * 0xa4);
+        if (I_stricmp(pszMap, loadName) == 0) {
+            return *(const char **)((char *)&sharedUiInfo + 4948 + i * 0xa4);
+        }
+    }
+    return pszMap;
 }
 
 /* line 799 */
-__attribute__((naked))
 const char * UI_GetMapDisplayNameFromPartialLoadNameMatch(const char *pszMap, int *mapLoadNameLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 799 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl sharedUiInfo+4944, %edx\n" /* line 805 */
-        "testl %edx, %edx\n"
-        "jg .Lf14f1dc_0014f1f9\n"
-        ".Lf14f1dc_0014f1ef:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf14f1dc_0014f1f1:\n"
-        "addl $0x2c, %esp\n" /* line 813 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f1dc_0014f1f9:\n"
-        "xorl %esi, %esi\n" /* line 805 | i */
-        "movl $sharedUiInfo, %ebx\n"
-        "movl $sharedUiInfo+4948, -0x1c(%ebp)\n"
-        ".Lf14f1dc_0014f207:\n"
-        "movl 0x1358(%ebx), %edi\n" /* line 896 */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl 0xc(%ebp), %edx\n" /* line 807 | mapLoadNameLen */
-        "movl %ecx, (%edx)\n"
-        "movl %ecx, 8(%esp)\n" /* line 809 */
-        "movl 0x1358(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* pszMap */
-        "movl %eax, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf14f1dc_0014f258\n"
-        "addl $1, %esi\n" /* line 805 | i */
-        "addl $0xa4, -0x1c(%ebp)\n"
-        "addl $0xa4, %ebx\n"
-        "cmpl sharedUiInfo+4944, %esi\n" /* i */
-        "jl .Lf14f1dc_0014f207\n"
-        "jmp .Lf14f1dc_0014f1ef\n"
-        ".Lf14f1dc_0014f258:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 810 */
-        "movl (%edx), %eax\n"
-        "jmp .Lf14f1dc_0014f1f1\n"
-    );
+    int i;
+    int count = *(int *)((char *)&sharedUiInfo + 4944);
+    for (i = 0; i < count; i++) {
+        const char *loadName = *(const char **)((char *)&sharedUiInfo + 0x1358 + i * 0xa4);
+        int len = strlen(loadName);
+        *mapLoadNameLen = len;
+        if (I_strnicmp(pszMap, loadName, len) == 0) {
+            return *(const char **)((char *)&sharedUiInfo + 4948 + i * 0xa4);
+        }
+    }
+    return 0;
 }
 
 /* line 816 */
-__attribute__((naked))
 const char * UI_GetGameTypeDisplayName(const char *pszGameType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 816 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* pszGameType */
-        /* { scope 1 */
-        "movl sharedUiInfo+4424, %ecx\n" /* line 820 */
-        "testl %ecx, %ecx\n"
-        "jg .Lf14f260_0014f280\n"
-        /* } scope */
-        ".Lf14f260_0014f276:\n"
-        "movl %esi, %eax\n" /* line 826 | pszGameType */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f260_0014f280:\n"
-        "xorl %edi, %edi\n" /* line 820 | i */
-        "movl $sharedUiInfo, %ebx\n"
-        "jmp .Lf14f260_0014f297\n"
-        ".Lf14f260_0014f289:\n"
-        "addl $1, %edi\n" /* i */
-        "addl $8, %ebx\n"
-        "cmpl sharedUiInfo+4424, %edi\n" /* i */
-        "jge .Lf14f260_0014f276\n"
-        ".Lf14f260_0014f297:\n"
-        "movl 0x114c(%ebx), %eax\n" /* line 822 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* pszGameType */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf14f260_0014f289\n"
-        "movl sharedUiInfo+4432(, %edi, 8), %esi\n" /* line 823 | pszGameType */
-        "jmp .Lf14f260_0014f276\n"
-    );
+    int i;
+    int count = *(int *)((char *)&sharedUiInfo + 4424);
+    for (i = 0; i < count; i++) {
+        const char *name = *(const char **)((char *)&sharedUiInfo + 0x114c + i * 8);
+        if (I_stricmp(pszGameType, name) == 0) {
+            return *(const char **)((char *)&sharedUiInfo + 4432 + i * 8);
+        }
+    }
+    return pszGameType;
 }
 
 /* line 892 */
@@ -1027,178 +695,74 @@ void UI_DrawMapLevelshot(void)
 }
 
 /* line 994 */
-__attribute__((naked))
 void UI_LoadIngameMenus(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 994 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "cmpb $0, g_ingameMenusLoaded\n" /* line 998 */
-        "je .Lf14f422_0014f433\n"
-        /* } scope */
-        "leave\n" /* line 1004 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f422_0014f433:\n"
-        "movb $1, g_ingameMenusLoaded\n" /* line 1001 */
-        "movl $3, 4(%esp)\n" /* line 1002 */
-        "movl $str_002aa070, (%esp)\n" /* "ui_mp/ingame.txt" */
-        "calll UI_LoadMenus\n"
-        "movl %eax, 4(%esp)\n" /* line 1003 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_AddMenuList\n"
-        /* } scope */
-        "leave\n" /* line 1004 */
-        "retl\n"
-    );
+    if (g_ingameMenusLoaded)
+        return;
+    g_ingameMenusLoaded = 1;
+    UI_AddMenuList(uiInfo, UI_LoadMenus("ui_mp/ingame.txt", 3));
 }
 
 /* line 1007 */
-__attribute__((naked))
 void UI_SetMap(const char *mapname, const char *gametype)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1007 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* gametype */
-        "movl $0x40, 8(%esp)\n" /* line 1009 */
-        "movl 8(%ebp), %eax\n" /* mapname */
-        "movl %eax, 4(%esp)\n"
-        "movl $g_mapname, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $0x40, 8(%esp)\n" /* line 1010 */
-        "movl %ebx, 4(%esp)\n" /* gametype */
-        "movl $g_gametype, (%esp)\n"
-        "calll I_strncpyz\n"
-        "cmpb $0, g_mapname\n" /* line 1013 */
-        "jne .Lf14f462_0014f4ae\n"
-        "addl $0x14, %esp\n" /* line 1016 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14f462_0014f4ae:\n"
-        "movl $g_mapname, 4(%esp)\n" /* line 1014 */
-        "movl $str_002aa084, (%esp)\n" /* "maps/mp/%s.csv" */
-        "calll va\n"
-        "movl %eax, 8(%ebp)\n" /* mapname */
-        "addl $0x14, %esp\n" /* line 1016 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp UI_MapLoadInfo\n" /* line 1014 */
-    );
+    I_strncpyz(g_mapname, mapname, 0x40);
+    I_strncpyz(g_gametype, gametype, 0x40);
+    if (g_mapname[0]) {
+        UI_MapLoadInfo(va("maps/mp/%s.csv", g_mapname));
+    }
 }
 
 /* line 1275 */
-__attribute__((naked))
 qboolean UI_OwnerDrawVisible(int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1275 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* flags */
-        /* { scope 1 */
-        "testb $4, %cl\n" /* line 1280 */
-        "je .Lf14f4d0_0014f4f1\n"
-        "movl ui_netSource, %eax\n" /* line 1283 */
-        "cmpl $2, 8(%eax)\n"
-        "je .Lf14f4d0_0014f4f1\n"
-        "xorl %edx, %edx\n"
-        "andb $0x10, %ch\n" /* line 1288 */
-        "jne .Lf14f4d0_0014f4fb\n"
-        /* } scope */
-        ".Lf14f4d0_0014f4ed:\n"
-        "movl %edx, %eax\n" /* line 1299 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f4d0_0014f4f1:\n"
-        "movl $1, %edx\n" /* line 1283 */
-        "andb $0x10, %ch\n" /* line 1288 */
-        "je .Lf14f4d0_0014f4ed\n"
-        ".Lf14f4d0_0014f4fb:\n"
-        "movl ui_netSource, %eax\n" /* line 1291 */
-        "cmpl $2, 8(%eax)\n"
-        "movl $0, %eax\n"
-        "cmovel %eax, %edx\n"
-        /* } scope */
-        "movl %edx, %eax\n" /* line 1299 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    qboolean visible = 1;
+
+    if (flags & 4) {
+        if (*(int *)((char *)ui_netSource + 8) != 2) {
+            visible = 0;
+        }
+    }
+
+    if (flags & 0x1000) {
+        if (*(int *)((char *)ui_netSource + 8) == 2) {
+            visible = 0;
+        }
+    }
+
+    return visible;
 }
 
 /* line 1506 */
-static __attribute__((naked))
-int UI_ServersQsortCompare(const void *arg1, const void *arg2)
+static int UI_ServersQsortCompare(const void *arg1, const void *arg2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1506 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1508 | arg2 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* arg1 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl sharedUiInfo+28644, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl sharedUiInfo+28640, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_CompareServers\n"
-        "leave\n" /* line 1509 */
-        "retl\n"
-    );
+    int s1 = *(const int *)arg1;
+    int s2 = *(const int *)arg2;
+    return LAN_CompareServers(
+        *(int *)((char *)ui_netSource + 8),
+        *(int *)((char *)&sharedUiInfo + 28640),
+        *(int *)((char *)&sharedUiInfo + 28644),
+        s1, s2);
 }
 
 /* line 1591 */
-static __attribute__((naked))
-int UI_PlayerProfilesQsortCompare(const void *arg1, const void *arg2)
+static int UI_PlayerProfilesQsortCompare(const void *arg1, const void *arg2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1591 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 1599 | arg1 */
-        "movl (%eax), %ecx\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1600 | arg2 */
-        "movl (%eax), %eax\n"
-        "cmpl %eax, %ecx\n" /* line 1602 */
-        "je .Lf14f54c_0014f59a\n"
-        "movl uiInfo, %edx\n" /* line 1605 */
-        "movl 0x284(%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x284(%edx, %ecx, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "movl %eax, %ecx\n"
-        "movl %eax, %edx\n" /* line 1610 */
-        "negl %edx\n"
-        "movl uiInfo, %eax\n"
-        "movl 0x384(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "cmovel %edx, %ecx\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1611 */
-        "leave\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f54c_0014f59a:\n"
-        "xorl %ecx, %ecx\n" /* line 1602 */
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1611 */
-        "leave\n"
-        "retl\n"
-    );
+    int idx1 = *(const int *)arg1;
+    int idx2 = *(const int *)arg2;
+    int result;
+
+    if (idx1 == idx2)
+        return 0;
+
+    result = I_stricmp(
+        *(const char **)((byte *)uiInfo + 0x284 + idx1 * 4),
+        *(const char **)((byte *)uiInfo + 0x284 + idx2 * 4));
+
+    if (*(int *)((byte *)uiInfo + 0x384) == 0)
+        result = -result;
+
+    return result;
 }
 
 /* line 2656 */
@@ -1278,105 +842,46 @@ void UI_SelectCurrentMap(void)
 }
 
 /* line 1849 */
-__attribute__((naked))
 qboolean UI_CheckExecKey(int key)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1849 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* key */
-        /* { scope 1 */
-        "movl uiInfo, %eax\n" /* line 1852 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetFocused\n"
-        "movl %eax, %edx\n" /* menu */
-        "movl imp_g_editingField, %eax\n" /* line 1854 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf14f682_0014f6c9\n"
-        "cmpl $0x100, %ebx\n" /* line 1857 | key */
-        "jg .Lf14f682_0014f6d4\n"
-        "testl %edx, %edx\n" /* line 1860 */
-        "je .Lf14f682_0014f6d4\n"
-        "movl 0x250(%edx), %eax\n" /* line 1863 */
-        "testl %eax, %eax\n"
-        "jne .Lf14f682_0014f6c5\n"
-        "jmp .Lf14f682_0014f6d4\n"
-        ".Lf14f682_0014f6be:\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf14f682_0014f6d4\n"
-        ".Lf14f682_0014f6c5:\n"
-        "cmpl (%eax), %ebx\n" /* line 1865 | key */
-        "jne .Lf14f682_0014f6be\n"
-        ".Lf14f682_0014f6c9:\n"
-        "movl $1, %eax\n" /* line 1863 */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1871 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f682_0014f6d4:\n"
-        "xorl %eax, %eax\n" /* line 1863 */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1871 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *menu;
+    int *node;
+
+    menu = Menu_GetFocused(uiInfo);
+
+    /* if editing a field, key is "exec" */
+    if (*(int *)(*(int *)imp_g_editingField))
+        return 1;
+
+    if (key > 0x100)
+        return 0;
+    if (!menu)
+        return 0;
+
+    /* walk key bind linked list at menu+0x250 */
+    node = *(int **)((byte *)menu + 0x250);
+    while (node) {
+        if (*node == key)
+            return 1;
+        node = *(int **)((byte *)node + 8);
+    }
+    return 0;
 }
 
 /* line 1928 */
-static __attribute__((naked))
-void UI_VerifyLanguage(void)
+static void UI_VerifyLanguage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1928 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $str_00216a14, (%esp)\n" /* line 1934 */
-        "calll Dvar_GetInt\n"
-        "movl %eax, %esi\n" /* oldLanguage */
-        "movl $str_002aa0a8, (%esp)\n" /* line 1935 */
-        "calll Dvar_GetInt\n"
-        "movl %eax, %ebx\n" /* newLanguage */
-        "movl %eax, (%esp)\n" /* line 1938 */
-        "calll SEH_VerifyLanguageSelection\n"
-        "cmpl %eax, %ebx\n" /* line 1939 | newLanguage */
-        "je .Lf14f6dc_0014f71c\n"
-        "movl %eax, 4(%esp)\n" /* line 1941 */
-        "movl $str_002aa0a8, (%esp)\n" /* "ui_language" */
-        "calll Dvar_SetIntByName\n"
-        ".Lf14f6dc_0014f71c:\n"
-        "cmpl %ebx, %esi\n" /* line 1944 | newLanguage, oldLanguage */
-        "je .Lf14f6dc_0014f73b\n"
-        "movl $1, 4(%esp)\n" /* line 1945 */
-        "movl $str_002aa0b4, (%esp)\n" /* "ui_languagechanged" */
-        "calll Dvar_SetBoolByName\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1948 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f6dc_0014f73b:\n"
-        "movl $0, 4(%esp)\n" /* line 1947 */
-        "movl $str_002aa0b4, (%esp)\n" /* "ui_languagechanged" */
-        "calll Dvar_SetBoolByName\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1948 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int oldLanguage = Dvar_GetInt("loc_language");
+    int newLanguage = Dvar_GetInt("ui_language");
+    int verified = SEH_VerifyLanguageSelection(newLanguage);
+
+    if (verified != newLanguage)
+        Dvar_SetIntByName("ui_language", verified);
+
+    if (oldLanguage != newLanguage)
+        Dvar_SetBoolByName("ui_languagechanged", 1);
+    else
+        Dvar_SetBoolByName("ui_languagechanged", 0);
 }
 
 /* line 5151 */
@@ -2236,34 +1741,16 @@ void UI_GetGameTypesList(void)
 }
 
 /* line 4101 */
-__attribute__((naked))
 void UI_Pause(qboolean b)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4101 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* line 4103 | b */
-        "testl %edx, %edx\n"
-        "je .Lf1502e8_00150316\n"
-        "movl $1, 4(%esp)\n" /* line 4106 */
-        "movl $str_0021663c, (%esp)\n" /* "cl_paused" */
-        "calll Dvar_SetIntByName\n"
-        "movl $8, 8(%ebp)\n" /* line 4107 | b */
-        "leave\n" /* line 4116 */
-        "jmp Key_SetCatcher\n" /* line 4107 */
-        ".Lf1502e8_00150316:\n"
-        "calll Key_GetCatcher\n" /* line 4112 */
-        "andl $0xfffffff7, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Key_SetCatcher\n"
-        "calll Key_ClearStates\n" /* line 4113 */
-        "movl $0, 4(%esp)\n" /* line 4114 */
-        "movl $str_0021663c, (%esp)\n" /* "cl_paused" */
-        "calll Dvar_SetIntByName\n"
-        "leave\n" /* line 4116 */
-        "retl\n"
-    );
+    if (b) {
+        Dvar_SetIntByName("cl_paused", 1);
+        Key_SetCatcher(8);
+    } else {
+        Key_SetCatcher(Key_GetCatcher() & ~8);
+        Key_ClearStates();
+        Dvar_SetIntByName("cl_paused", 0);
+    }
 }
 
 /* line 4124 */
@@ -2770,70 +2257,26 @@ void UI_KeyEvent(int key, qboolean down)
 }
 
 /* line 4340 */
-__attribute__((naked))
 void UI_MouseEvent(int dx, int dy)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4340 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl uiInfo, %edx\n" /* line 4343 */
-        "movl 8(%ebp), %eax\n" /* dx */
-        "addl %eax, 0xc(%edx)\n"
-        "movl uiInfo, %edx\n" /* line 4344 */
-        "movl 0xc(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf150d5a_00150e0d\n"
-        "cmpl $0x280, %eax\n" /* line 4346 */
-        "jg .Lf150d5a_00150dde\n"
-        ".Lf150d5a_00150d84:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 4349 | dy */
-        "addl %eax, 0x10(%edx)\n"
-        "movl uiInfo, %edx\n" /* line 4350 */
-        "movl 0x10(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf150d5a_00150dfe\n"
-        ".Lf150d5a_00150d97:\n"
-        "cmpl $0x1e0, %eax\n" /* line 4352 */
-        "jg .Lf150d5a_00150dcf\n"
-        ".Lf150d5a_00150d9e:\n"
-        "movl %edx, (%esp)\n" /* line 4356 */
-        "calll Menu_Count\n"
-        "testl %eax, %eax\n"
-        "jle .Lf150d5a_00150dcd\n"
-        "movl uiInfo, %eax\n" /* line 4358 */
-        "movl 0x10(%eax), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0xc(%eax), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Display_MouseMove\n"
-        ".Lf150d5a_00150dcd:\n"
-        "leave\n" /* line 4361 */
-        "retl\n"
-        ".Lf150d5a_00150dcf:\n"
-        "movl $0x1e0, 0x10(%edx)\n" /* line 4353 */
-        "movl uiInfo, %edx\n"
-        "jmp .Lf150d5a_00150d9e\n"
-        ".Lf150d5a_00150dde:\n"
-        "movl $0x280, 0xc(%edx)\n" /* line 4347 */
-        "movl uiInfo, %edx\n"
-        "movl 0xc(%ebp), %eax\n" /* line 4349 | dy */
-        "addl %eax, 0x10(%edx)\n"
-        "movl uiInfo, %edx\n" /* line 4350 */
-        "movl 0x10(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jns .Lf150d5a_00150d97\n"
-        ".Lf150d5a_00150dfe:\n"
-        "movl $0, 0x10(%edx)\n" /* line 4351 */
-        "movl uiInfo, %edx\n"
-        "jmp .Lf150d5a_00150d9e\n"
-        ".Lf150d5a_00150e0d:\n"
-        "movl $0, 0xc(%edx)\n" /* line 4345 */
-        "movl uiInfo, %edx\n"
-        "jmp .Lf150d5a_00150d84\n"
-    );
+    int *cursorX = (int *)((byte *)uiInfo + 0xc);
+    int *cursorY = (int *)((byte *)uiInfo + 0x10);
+
+    *cursorX += dx;
+    if (*cursorX < 0)
+        *cursorX = 0;
+    else if (*cursorX > 640)
+        *cursorX = 640;
+
+    *cursorY += dy;
+    if (*cursorY < 0)
+        *cursorY = 0;
+    else if (*cursorY > 480)
+        *cursorY = 480;
+
+    if (Menu_Count(uiInfo) > 0) {
+        Display_MouseMove(uiInfo, 0, *cursorX, *cursorY);
+    }
 }
 
 /* line 4364 */
@@ -3405,54 +2848,21 @@ void UI_CloseAll(void)
 }
 
 /* line 5299 */
-__attribute__((naked))
 void UI_CloseFocusedMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5299 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl uiInfo, %eax\n" /* line 5303 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_Count\n"
-        "testl %eax, %eax\n"
-        "jle .Lf151552_0015158b\n"
-        "movl uiInfo, %eax\n" /* line 5305 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetFocused\n"
-        "testl %eax, %eax\n" /* line 5306 */
-        "je .Lf151552_0015159c\n"
-        "movl uiInfo, %eax\n" /* line 5314 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_AnyFullScreenVisible\n"
-        "testl %eax, %eax\n"
-        "je .Lf151552_0015158d\n"
-        /* } scope */
-        ".Lf151552_0015158b:\n"
-        "leave\n" /* line 5319 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf151552_0015158d:\n"
-        "movl uiInfo, %eax\n" /* line 5317 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        /* } scope */
-        "leave\n" /* line 5319 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf151552_0015159c:\n"
-        "calll Key_GetCatcher\n" /* line 5308 */
-        "testb $8, %al\n"
-        "je .Lf151552_0015158b\n"
-        "calll Key_GetCatcher\n" /* line 5309 */
-        "andl $0xfffffff7, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Key_SetCatcher\n"
-        /* } scope */
-        "leave\n" /* line 5319 */
-        "retl\n"
-    );
+    if (Menu_Count(uiInfo) <= 0)
+        return;
+
+    if (!Menu_GetFocused(uiInfo)) {
+        if (Key_GetCatcher() & 8) {
+            Key_SetCatcher(Key_GetCatcher() & ~8);
+        }
+        return;
+    }
+
+    if (!Menus_AnyFullScreenVisible(uiInfo)) {
+        Menus_CloseAll(uiInfo);
+    }
 }
 
 /* line 3812 */

@@ -4,11 +4,101 @@
 #include "common_types.h"
 #include "imports.h"
 
+#include <stdlib.h>  /* atoi, atof */
+#include <string.h>  /* memmove, memset, strchr, strncpy */
+#include <math.h>    /* ceilf, sinf, cosf, fabsf */
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/ui/ui_utils.h"
  *   #include "PC/universal/com_math.h"
  *   #include "PC/universal/com_vector.h"
  */
+
+/* Extern function declarations for functions called from converted C code */
+extern const char *va(const char *fmt, ...);
+extern void Cbuf_ExecuteText(int exec_when, const char *text);
+extern int I_stricmp(const char *s0, const char *s1);
+extern int I_strncmp(const char *s0, const char *s1, int n);
+extern void I_strncat(char *dest, const char *src, int destsize);
+extern void Com_Error(int code, const char *fmt, ...);
+extern void Com_Printf(int channel, const char *fmt, ...);
+extern const char *Com_ParseOnLine(const char **p);
+extern const char *SEH_StringEd_GetString(const char *key);
+extern qboolean Dvar_GetBool(const char *name);
+extern int Dvar_GetInt(const char *name);
+extern float Dvar_GetFloat(const char *name);
+extern const char *Dvar_GetString(const char *name);
+extern void Dvar_SetFromStringByName(const char *dvarName, const char *string);
+extern struct dvar_s *Dvar_FindVar(const char *name);
+extern void UI_PlayLocalSoundAlias(int channel);
+extern void UI_PlayLocalSoundAliasByName(const char *name);
+extern void UI_RunMenuScript(const char *name);
+extern qboolean UI_ClientIsInGame(void);
+extern void UI_Pause(qboolean pause);
+extern void UI_DrawHandlePic(float x, float y, float w, float h, MaterialHandle material);
+extern void UI_DrawRect(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color);
+extern void UI_FillRect(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color);
+extern void UI_DrawSides(float x, float y, float w, float h, float size, const vec_t *color);
+extern void UI_DrawTopBottom(float x, float y, float w, float h, float size, const vec_t *color);
+extern void UI_DrawLoadBar(float x, float y, float w, float h, int horzAlign, int vertAlign, float fill, const vec_t *color, MaterialHandle material);
+extern int UI_TextWidth(const char *text, int maxChars, FontHandle font, float scale);
+extern int UI_TextHeight(FontHandle font, float scale);
+extern const char *UI_SafeTranslateString(const char *key);
+extern int UI_OwnerDrawWidth(int ownerDraw, float scale);
+extern qboolean UI_OwnerDrawVisible(int flags);
+extern void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAlign, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, float scale, const vec_t *color, MaterialHandle shader, int textStyle);
+extern qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, int *special, int key);
+extern int UI_FeederCount(float feederID);
+extern MaterialHandle UI_FeederItemImage(float feederID, int index);
+extern const char *UI_FeederItemText(float feederID, int index, int column, MaterialHandle *handle);
+extern void UI_FeederSelection(float feederID, int index);
+extern void UI_OverrideCursorPos(int *x, int *y);
+extern qboolean UI_OwnerDrawVisible(int flags);
+extern void CalcScreenPlacement(float *x, float *w, float *y, float *h, int horzAlign, int vertAlign);
+extern float CalcScreenX(float *x, int horzAlign);
+extern float CalcScreenY(float *y, int vertAlign);
+extern qboolean Float_Parse(const char **p, float *f);
+extern qboolean Int_Parse(const char **p, int *i);
+extern qboolean Rect_Parse(const char **p, rectDef_t *r);
+extern MaterialHandle CL_RegisterMaterialNoMip(const char *name);
+extern const char *CL_GetConfigString(int index);
+extern void CIN_DrawCinematic(int handle, float x, float y, float w, float h);
+extern int CIN_PlayCinematic(const char *name, int x, int y, int w, int h, int flags);
+extern int CIN_RunCinematic(int handle);
+extern void CIN_SetExtents(int handle, float x, float y, float w, float h);
+extern void CIN_StopCinematic(int handle);
+extern void Key_GetBindingBuf(int keynum, char *buf, int buflen);
+extern void Key_KeynumToStringBuf(int keynum, char *buf, int buflen);
+extern void Key_SetBinding(int keynum, const char *binding);
+extern int Key_GetCatcher(void);
+extern void Key_SetCatcher(int catcher);
+extern qboolean Item_EnableShowViaDvar(itemDef_t *item, int flags);
+extern float Item_GetCursorPosOffset(itemDef_t *item);
+extern struct listBoxDef_s *Item_GetListBoxDef(itemDef_t *item);
+extern struct multiDef_s *Item_GetMultiDef(itemDef_t *item);
+extern void Item_SetCursorPos(itemDef_t *item, int cursorPos);
+extern void Item_SetScreenCoords(itemDef_t *item);
+extern void Item_SetTextRect(itemDef_t *item);
+extern void Item_SetupKeywordHash(void);
+extern qboolean ListBox_HasValidCursorPos(itemDef_t *item);
+extern void ListBox_SetCursorPos(itemDef_t *item, int cursorPos);
+extern void ListBox_SetEndPos(itemDef_t *item, int endPos);
+extern void ListBox_SetStartPos(itemDef_t *item, int startPos);
+extern void Menu_SetCursorItem(displayContextDef_t *dc, menuDef_t *menu, int cursorItem);
+extern void Menu_SetupKeywordHash(void);
+extern void Menu_UpdatePosition(displayContextDef_t *dc, menuDef_t *menu);
+extern void Window_AddDynamicFlags(itemDef_t *item, int flags);
+extern void Window_RemoveDynamicFlags(itemDef_t *item, int flags);
+extern void Window_SetDynamicFlags(itemDef_t *item, int flags);
+extern void Window_SetOffsetTime(itemDef_t *item, int time);
+extern void Window_SetRect(itemDef_t *item, float x, float y, float w, float h);
+extern void Window_SetRectClient(itemDef_t *item, float x, float y, float w, float h);
+extern void Window_SetRectEffects0(itemDef_t *item, float x, float y, float w, float h);
+extern void Window_SetRectEffects1(itemDef_t *item, float x, float y, float w, float h);
+extern int I_isdigit(int c);
+extern int I_isforfilename(int c);
+extern int Sys_Milliseconds(void);
+extern char Com_GetDecimalDelimiter(void);
 
 void diag_item_paint_enter(void *item) {
     (void)item;
@@ -54,6 +144,7 @@ void Script_FadeOut(displayContextDef_t *dc, itemDef_t *item, const char * *args
 void Script_SetDvar(displayContextDef_t *dc, itemDef_t *item, const char * *args);
 void Script_ExecNow(displayContextDef_t *dc, itemDef_t *item, const char * *args);
 static void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)());
+static void Script_ConditionalExecHandler_impl(int execWhen, Bool (*shouldExec)(const char *, const char *), const char **args);
 static Bool Script_ExecIfStringsEqual(const char *dvarValue, const char *testValue);
 static Bool Script_ExecIfIntsEqual(const char *dvarValue, const char *testValue);
 static Bool Script_ExecIfFloatsEqual(const char *dvarValue, const char *testValue);
@@ -627,38 +718,15 @@ void Script_SetColor(displayContextDef_t *dc, itemDef_t *item, const char * *arg
     );
 }
 
-/* line 546 */
-__attribute__((naked))
-void Script_SetBackground(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+/* Script_SetBackground — parse material name, register, set item background */
+void Script_SetBackground(displayContextDef_t *dc, itemDef_t *item, const char **args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 546 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 551 */
-        "leal -0x408(%ebp), %ebx\n" /* name */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf163fe6_0016402f\n"
-        "movl 0xc(%ebp), %edx\n" /* line 553 | item */
-        "movl 0x2f0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl %eax, 0x20c(%edx)\n"
-        /* } scope */
-        ".Lf163fe6_0016402f:\n"
-        "addl $0x414, %esp\n" /* line 555 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)dc;
+    char name[0x400];
+    if (String_Parse(args, name, 0x400)) {
+        byte *it = (byte *)item;
+        *(MaterialHandle *)(it + 0x20c) = CL_RegisterMaterialNoMip(name);
+    }
 }
 
 /* line 632 */
@@ -844,135 +912,43 @@ menuDef_t * Menus_FindByName(displayContextDef_t *dc, const char *p)
 }
 
 /* line 829 */
-__attribute__((naked))
 void Script_Show(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 829 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 833 */
-        "leal -0x408(%ebp), %ebx\n" /* name */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1641c0_00164208\n"
-        "movl $1, 8(%esp)\n" /* line 835 */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_ShowItemByName\n"
-        /* } scope */
-        ".Lf1641c0_00164208:\n"
-        "addl $0x414, %esp\n" /* line 837 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char name[1024];
+    (void)dc;
+    if (String_Parse(args, name, 1024)) {
+        Menu_ShowItemByName(item->parent, name, 1);
+    }
 }
 
 /* line 840 */
-__attribute__((naked))
 void Script_Hide(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 840 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 844 */
-        "leal -0x408(%ebp), %ebx\n" /* name */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf164212_0016425a\n"
-        "movl $0, 8(%esp)\n" /* line 846 */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_ShowItemByName\n"
-        /* } scope */
-        ".Lf164212_0016425a:\n"
-        "addl $0x414, %esp\n" /* line 848 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char name[1024];
+    (void)dc;
+    if (String_Parse(args, name, 1024)) {
+        Menu_ShowItemByName(item->parent, name, 0);
+    }
 }
 
 /* line 851 */
-__attribute__((naked))
 void Script_FadeIn(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 851 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 855 */
-        "leal -0x408(%ebp), %ebx\n" /* name */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf164264_001642ac\n"
-        "movl $0, 8(%esp)\n" /* line 857 */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_FadeItemByName\n"
-        /* } scope */
-        ".Lf164264_001642ac:\n"
-        "addl $0x414, %esp\n" /* line 859 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char name[1024];
+    (void)dc;
+    if (String_Parse(args, name, 1024)) {
+        Menu_FadeItemByName(item->parent, name, 0);
+    }
 }
 
 /* line 862 */
-__attribute__((naked))
 void Script_FadeOut(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 862 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 866 */
-        "leal -0x408(%ebp), %ebx\n" /* name */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1642b6_001642fe\n"
-        "movl $1, 8(%esp)\n" /* line 868 */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_FadeItemByName\n"
-        /* } scope */
-        ".Lf1642b6_001642fe:\n"
-        "addl $0x414, %esp\n" /* line 870 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char name[1024];
+    (void)dc;
+    if (String_Parse(args, name, 1024)) {
+        Menu_FadeItemByName(item->parent, name, 1);
+    }
 }
 
 /* line 1099 */
@@ -1025,305 +1001,127 @@ void Script_SetDvar(displayContextDef_t *dc, itemDef_t *item, const char * *args
     );
 }
 
-/* line 1124 */
-__attribute__((naked))
-void Script_ExecNow(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+/* Script_ExecNow — parse string from args, execute immediately via Cbuf_ExecuteText */
+extern void Cbuf_ExecuteText(int execWhen, const char *text);
+void Script_ExecNow(displayContextDef_t *dc, itemDef_t *item, const char **args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1124 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 1113 */
-        "leal -0x408(%ebp), %ebx\n" /* val */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf164376_001643c1\n"
-        "movl %ebx, 4(%esp)\n" /* line 1114 */
-        "movl $str_00215bbc, (%esp)\n" /* "%s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        /* } scope */
-        ".Lf164376_001643c1:\n"
-        "addl $0x414, %esp\n" /* line 1127 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)dc; (void)item;
+    char val[0x400];
+    if (String_Parse(args, val, 0x400)) {
+        Cbuf_ExecuteText(0, va("%s\n", val));
+    }
 }
 
 /* line 1130 */
 static __attribute__((naked))
 void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)())
 {
+    /* eax=execWhen, ecx=args, 8(%ebp)=shouldExec */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1130 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xc2c, %esp\n"
-        "movl %eax, -0xc1c(%ebp)\n"
-        "movl %ecx, %ebx\n" /* args */
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 1137 */
-        "leal -0x418(%ebp), %esi\n" /* dvarName */
-        "movl %esi, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1643ca_00164407\n"
-        /* } scope */
-        ".Lf1643ca_001643fc:\n"
-        "addl $0xc2c, %esp\n" /* line 1143 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %ecx\n"        /* args */
+        "pushl 8(%ebp)\n"     /* shouldExec */
+        "pushl %eax\n"        /* execWhen */
+        "calll Script_ConditionalExecHandler_impl\n"
+        "addl $0xc, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lf1643ca_00164407:\n"
-        "movl $0x400, 8(%esp)\n" /* line 1137 */
-        "leal -0x818(%ebp), %edi\n" /* testValue */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1643ca_001643fc\n"
-        "movl $0x400, 8(%esp)\n"
-        "leal -0xc18(%ebp), %eax\n" /* command */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1643ca_001643fc\n"
-        "movl %esi, (%esp)\n" /* line 1139 */
-        "calll Dvar_GetVariantString\n"
-        "movl %edi, 4(%esp)\n" /* line 1140 */
-        "movl %eax, (%esp)\n"
-        "calll *8(%ebp)\n" /* shouldExec */
-        "testb %al, %al\n"
-        "je .Lf1643ca_001643fc\n"
-        "leal -0xc18(%ebp), %eax\n" /* line 1141 | command */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00215bbc, (%esp)\n" /* "%s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0xc1c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "jmp .Lf1643ca_001643fc\n"
     );
+}
+
+static void Script_ConditionalExecHandler_impl(int execWhen, Bool (*shouldExec)(const char *, const char *), const char **args)
+{
+    char dvarName[1024];
+    char testValue[1024];
+    char command[1024];
+
+    if (!String_Parse(args, dvarName, 1024))
+        return;
+    if (!String_Parse(args, testValue, 1024))
+        return;
+    if (!String_Parse(args, command, 1024))
+        return;
+
+    {
+        const char *dvarValue = Dvar_GetVariantString(dvarName);
+        if (!shouldExec(dvarValue, testValue))
+            return;
+    }
+
+    Cbuf_ExecuteText(execWhen, va("%s\n", command));
 }
 
 /* line 1146 */
-static __attribute__((naked))
-Bool Script_ExecIfStringsEqual(const char *dvarValue, const char *testValue)
+static Bool Script_ExecIfStringsEqual(const char *dvarValue, const char *testValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1146 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1148 | testValue */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dvarValue */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1149 */
-        "retl\n"
-    );
+    return I_stricmp(dvarValue, testValue) == 0;
 }
 
 /* line 1152 */
-static __attribute__((naked))
-Bool Script_ExecIfIntsEqual(const char *dvarValue, const char *testValue)
+static Bool Script_ExecIfIntsEqual(const char *dvarValue, const char *testValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1152 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1154 | dvarValue */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n"
-        "movl 0xc(%ebp), %eax\n" /* testValue */
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "cmpl %eax, %ebx\n"
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 1155 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return atoi(dvarValue) == atoi(testValue);
 }
 
 /* line 1158 */
-static __attribute__((naked))
-Bool Script_ExecIfFloatsEqual(const char *dvarValue, const char *testValue)
+static Bool Script_ExecIfFloatsEqual(const char *dvarValue, const char *testValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1158 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1160 | dvarValue */
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x18(%ebp)\n"
-        "movl 0xc(%ebp), %eax\n" /* testValue */
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x10(%ebp)\n"
-        "movsd -0x18(%ebp), %xmm0\n"
-        "subsd -0x10(%ebp), %xmm0\n"
-        "movsd %xmm0, -0x18(%ebp)\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "andps sse_float_abs_mask, %xmm0\n"
-        "movss lit4_002ed900, %xmm1\n" /* 9.999999747378752e-06f */
-        "xorl %eax, %eax\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "seta %al\n"
-        "leave\n" /* line 1161 */
-        "retl\n"
-    );
+    float diff = (float)(atof(dvarValue) - atof(testValue));
+    if (diff < 0) diff = -diff;
+    return diff < 9.999999747378752e-06f;
 }
 
 /* line 1164 */
-__attribute__((naked))
 void Script_ExecOnDvarStringValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1164 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfStringsEqual, 8(%ebp)\n" /* line 1166 | dc */
-        "movl $2, %eax\n"
-        "popl %ebp\n" /* line 1167 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1166 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(2, Script_ExecIfStringsEqual, args);
 }
 
 /* line 1170 */
-__attribute__((naked))
 void Script_ExecOnDvarIntValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1170 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfIntsEqual, 8(%ebp)\n" /* line 1172 | dc */
-        "movl $2, %eax\n"
-        "popl %ebp\n" /* line 1173 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1172 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(2, Script_ExecIfIntsEqual, args);
 }
 
 /* line 1176 */
-__attribute__((naked))
 void Script_ExecOnDvarFloatValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1176 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfFloatsEqual, 8(%ebp)\n" /* line 1178 | dc */
-        "movl $2, %eax\n"
-        "popl %ebp\n" /* line 1179 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1178 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(2, Script_ExecIfFloatsEqual, args);
 }
 
 /* line 1182 */
-__attribute__((naked))
 void Script_ExecNowOnDvarStringValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1182 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfStringsEqual, 8(%ebp)\n" /* line 1184 | dc */
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 1185 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1184 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(0, Script_ExecIfStringsEqual, args);
 }
 
 /* line 1188 */
-__attribute__((naked))
 void Script_ExecNowOnDvarIntValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1188 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfIntsEqual, 8(%ebp)\n" /* line 1190 | dc */
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 1191 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1190 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(0, Script_ExecIfIntsEqual, args);
 }
 
 /* line 1194 */
-__attribute__((naked))
 void Script_ExecNowOnDvarFloatValue(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1194 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x10(%ebp), %ecx\n" /* args */
-        "movl $Script_ExecIfFloatsEqual, 8(%ebp)\n" /* line 1196 | dc */
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 1197 */
-        "jmp Script_ConditionalExecHandler\n" /* line 1196 */
-    );
+    (void)dc; (void)item;
+    Script_ConditionalExecHandler_impl(0, Script_ExecIfFloatsEqual, args);
 }
 
 /* line 1200 */
-__attribute__((naked))
 void Script_Play(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1200 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 1204 */
-        "leal -0x408(%ebp), %ebx\n" /* val */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1645c0_001645f3\n"
-        "movl %ebx, (%esp)\n" /* line 1206 */
-        "calll UI_PlayLocalSoundAliasByName\n"
-        /* } scope */
-        ".Lf1645c0_001645f3:\n"
-        "addl $0x414, %esp\n" /* line 1208 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char val[1024];
+    (void)dc; (void)item;
+    if (String_Parse(args, val, 1024)) {
+        UI_PlayLocalSoundAliasByName(val);
+    }
 }
 
 /* line 1234 */
@@ -2648,18 +2446,19 @@ void Scroll_Slider_SetThumbPos(void)
     );
 }
 
-/* line 2954 */
+/* Scroll_Slider_ThumbFunc — tail-call wrapper that must stay as inline ASM due to register convention */
 static __attribute__((naked))
 void Scroll_Slider_ThumbFunc(displayContextDef_t *dc, void *p)
 {
+    (void)dc; (void)p;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2954 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl 0xc(%ebp), %edx\n" /* line 2959 | p */
+        "movl 8(%ebp), %eax\n"
+        "movl 0xc(%ebp), %edx\n"
         "movl 0x18(%edx), %edx\n"
-        "popl %ebp\n" /* line 2960 */
-        "jmp Scroll_Slider_SetThumbPos\n" /* line 2959 */
+        "popl %ebp\n"
+        "jmp Scroll_Slider_SetThumbPos\n"
     );
 }
 
@@ -5026,38 +4825,14 @@ void Menu_SetFeederSelection(displayContextDef_t *dc, menuDef_t *menu, int feede
     );
 }
 
-/* line 1118 */
-__attribute__((naked))
-void Script_Exec(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+/* Script_Exec — parse string, queue for execution via Cbuf_ExecuteText(2=EXEC_APPEND) */
+void Script_Exec(displayContextDef_t *dc, itemDef_t *item, const char **args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1118 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x414, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 1113 */
-        "leal -0x408(%ebp), %ebx\n" /* val */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* args */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf167602_0016764d\n"
-        "movl %ebx, 4(%esp)\n" /* line 1114 */
-        "movl $str_00215bbc, (%esp)\n" /* "%s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        /* } scope */
-        ".Lf167602_0016764d:\n"
-        "addl $0x414, %esp\n" /* line 1121 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    (void)dc; (void)item;
+    char val[0x400];
+    if (String_Parse(args, val, 0x400)) {
+        Cbuf_ExecuteText(2, va("%s\n", val));
+    }
 }
 
 /* line 937 */

@@ -19,6 +19,61 @@ extern const dvar_t *con_boldgamemessagetime; /* 0x0 */
 extern const dvar_t *con_minicontime; /* 0x0 */
 extern const dvar_t *con_miniconlines; /* 0x0 */
 extern const dvar_t *con_restricted; /* 0x0 */
+
+/* Forward declarations for C conversions */
+extern char *CopyStringInternal(const char *in);
+extern void Z_FreeInternal(void *ptr);
+extern int ColorIndex(int c);
+extern int Cmd_Argc(void);
+extern const char *Cmd_Argv(int arg);
+extern void Com_Printf(const char *fmt, ...);
+extern int FS_FOpenFileWrite(const char *filename);
+extern int FS_Write(const void *buffer, int len, int h);
+extern void FS_FCloseFile(int h);
+extern void I_strncat(char *dest, const char *src, int destsize);
+extern int I_strnicmp(const char *s1, const char *s2, int n);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void Cmd_TokenizeString(const char *text);
+extern void Dvar_ForEach(void (*callback)(const char *));
+extern void Cmd_ForEach(void (*callback)(const char *));
+extern void Cmd_AddCommand(const char *name, void (*function)(void));
+extern const dvar_t *Dvar_RegisterVec4(const char *name, float x, float y, float z, float w, float min, float max, unsigned int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, unsigned int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, unsigned int flags);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, unsigned int flags);
+extern const dvar_t *Dvar_FindVar(const char *dvarName);
+extern int Dvar_HasLatchedValue(const dvar_t *dvar);
+extern const char *Dvar_DisplayableValue(const dvar_t *dvar);
+extern const char *Dvar_DisplayableLatchedValue(const dvar_t *dvar);
+extern const char *Dvar_DisplayableResetValue(const dvar_t *dvar);
+extern const char *Dvar_GetVariantString(const char *dvarName);
+extern void Dvar_DomainToString_GetLines(int type, int v0, int v1, char *outBuf, int outBufSize, int *outLineCount);
+extern void CalcScreenPlacement(float *xAdj, float *yAdj, float *xScale, float *yScale, int horzAlign, int vertAlign);
+extern void CalcScreenX(float *x, int align);
+extern void CalcScreenY(float *y, int align);
+extern void *UI_GetFontHandle(int fontType, float scale);
+extern const char *SEH_SafeTranslateString(const char *str);
+extern const char *va(const char *fmt, ...);
+extern void CL_DrawText(const char *text, int maxChars, void *font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const float *color, int style);
+extern void Field_Draw(void *field, int x, int y, int width, int horzAlign, int vertAlign);
+extern void CL_LookupColor(int colorIndex, float *color);
+extern void SCR_DrawSmallStringExt(int x, int y, const char *str, const float *color);
+extern void SCR_DrawConsoleString(int x, int y, const short int *text, int len, const float *color);
+extern int SEH_PrintStrlen(const char *str);
+extern const char *getBuildNumber(void);
+extern int Sys_IsMainThread(void);
+extern int Sys_Milliseconds(void);
+extern void Com_StripExtension(const char *in, char *out);
+extern void qsort(void *base, int nmemb, int size, int (*compar)(const void *, const void *));
+extern const char **Cmd_GetAutoCompleteFileList(const char *cmd, int *fileCount, int maxCount);
+extern void FS_FreeFileList(const char **list, int count);
+extern void LargeLocal_LargeLocal(void *ll, int size);
+extern void *LargeLocal_GetBuf(void *ll);
+extern void ZN10LargeLocalD1Ev(void *ll);
+extern int ___maskrune(int c, unsigned long flags);
+extern int strnicmp(const char *s1, const char *s2, int n);
+extern void *__DefaultRuneLocale;
+
 static struct ConDrawInputGlob conDrawInputGlob; /* conDrawInputGlob */
 static struct Console con; /* con */
 static const dvar_t *con_inputBoxColor; /* con_inputBoxColor */
@@ -36,6 +91,34 @@ extern const vec4_t con_inputDvarInactiveValueColor; /* con_inputDvarInactiveVal
 extern const vec4_t con_inputDvarInfoColor; /* con_inputDvarInfoColor - rodata.c */
 static int registeredIconMaterialCount; /* registeredIconMaterialCount */
 static const char * hudMsgIconMaterials[256]; /* hudMsgIconMaterials */
+
+/* Helper: inline MsgWnd_Clear */
+static inline void MsgWnd_Clear(MessageWindow *wnd) {
+    /* count * sizeof(MessageLine) = count * 164 */
+    int byteSize = wnd->count * 164;
+    memset(wnd->lines, 0, byteSize);
+    wnd->current_line = 0;
+}
+
+/* Helper: write a character to the console text buffer */
+static inline void Con_WriteChar(int colorIdx, int ch) {
+    int row = con.currentLine % con.totallines;
+    int offset = row * con.linewidth + con.lineOffset;
+    con.textBuffer[offset] = (short)((colorIdx << 8) | ch);
+    con.lineOffset++;
+}
+
+/* Helper: Clear all message windows */
+static inline void Con_ClearAllMessageWindows(void) {
+    MessageWindow *gamemsg = (MessageWindow *)con.messageBuffer;
+    MsgWnd_Clear(gamemsg);
+    MessageWindow *boldmsg = (MessageWindow *)((char *)con.messageBuffer + 0x53c);
+    MsgWnd_Clear(boldmsg);
+    MessageWindow *minicon = (MessageWindow *)((char *)con.messageBuffer + 0xfb4);
+    MsgWnd_Clear(minicon);
+    MessageWindow *subtitle = (MessageWindow *)((char *)con.messageBuffer + 0xa78);
+    MsgWnd_Clear(subtitle);
+}
 
 void CL_RegisterHudMsgIconMaterial(const char *name);
 const char * CL_GetHudMsgIconMaterialName(int index);
@@ -87,49 +170,18 @@ void Con_Init(void);
 void CL_DeathMessagePrint(const char *attackerName, const vec_t *attackerColor, const char *victimName, const vec_t *victimColor, const char *iconShader, float iconWidth, float iconHeight, const vec_t *iconColor, int horzFlipIcon);
 
 /* line 211 */
-__attribute__((naked))
 void CL_RegisterHudMsgIconMaterial(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 211 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl registeredIconMaterialCount, %edi\n" /* line 218 */
-        "testl %edi, %edi\n"
-        "jle .Lf15b608_0015b641\n"
-        "xorl %esi, %esi\n" /* index */
-        "movl $hudMsgIconMaterials, %ebx\n"
-        ".Lf15b608_0015b622:\n"
-        "movl 8(%ebp), %eax\n" /* line 220 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf15b608_0015b65a\n"
-        "addl $1, %esi\n" /* line 218 | index */
-        "addl $4, %ebx\n"
-        "cmpl %edi, %esi\n" /* index */
-        "jne .Lf15b608_0015b622\n"
-        ".Lf15b608_0015b641:\n"
-        "movl 8(%ebp), %eax\n" /* line 224 | name */
-        "movl %eax, (%esp)\n"
-        "calll CopyStringInternal\n"
-        "movl %eax, hudMsgIconMaterials(, %edi, 4)\n"
-        "addl $1, registeredIconMaterialCount\n" /* line 225 */
-        /* } scope */
-        ".Lf15b608_0015b65a:\n"
-        "addl $0x1c, %esp\n" /* line 226 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int index;
+    int count = registeredIconMaterialCount;
+
+    for (index = 0; index < count; index++) {
+        if (strcmp(hudMsgIconMaterials[index], name) == 0)
+            return;
+    }
+
+    hudMsgIconMaterials[count] = CopyStringInternal(name);
+    registeredIconMaterialCount++;
 }
 
 /* line 229 */
@@ -193,200 +245,73 @@ void Con_Bottom(void)
 }
 
 /* line 354 */
-static __attribute__((naked))
-void Con_Dump_f(void)
+static void Con_Dump_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 354 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 363 */
-        "cmpl $2, %eax\n"
-        "je .Lf15b798_0015b7c5\n"
-        "movl $str_002ab710, (%esp)\n" /* line 365 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf15b798_0015b7ba:\n"
-        "addl $0x43c, %esp\n" /* line 418 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15b798_0015b7c5:\n"
-        "movl $1, (%esp)\n" /* line 369 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002ab72c, (%esp)\n" /* "Dumped console text to %s.
-" */
-        "calll Com_Printf\n"
-        "movl $1, (%esp)\n" /* line 379 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FOpenFileWrite\n"
-        "movl %eax, -0x41c(%ebp)\n" /* f */
-        "testl %eax, %eax\n" /* line 380 */
-        "je .Lf15b798_0015b973\n"
-        "movl con+131076, %edi\n" /* line 387 | line */
-        "movl con+131096, %ebx\n"
-        "movl %edi, %eax\n" /* line */
-        "subl %ebx, %eax\n"
-        "leal 1(%eax), %esi\n" /* lineIndex */
-        "cmpl %esi, %edi\n" /* lineIndex, line */
-        "jl .Lf15b798_0015b921\n"
-        "movl con+131092, %ecx\n" /* line 389 */
-        ".Lf15b798_0015b824:\n"
-        "movl %esi, %eax\n" /* lineIndex */
-        "cltd\n"
-        "idivl %ebx\n"
-        "imull %ecx, %edx\n"
-        "leal (%edx, %edx), %eax\n"
-        "leal con+4(%eax), %edx\n"
-        "cmpl $0, %ecx\n" /* line 390 */
-        "jle .Lf15b798_0015b95d\n"
-        "cmpb $0x20, con+4(%eax)\n" /* line 392 */
-        "je .Lf15b798_0015b984\n"
-        ".Lf15b798_0015b84b:\n"
-        "movb $0, -0x418(%ebp, %ecx)\n" /* line 400 */
-        "cmpl %esi, %edi\n" /* line 401 | lineIndex, line */
-        "jge .Lf15b798_0015b8ed\n"
-        ".Lf15b798_0015b85b:\n"
-        "movl -0x41c(%ebp), %eax\n" /* line 417 | f */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        /* } scope */
-        "addl $0x43c, %esp\n" /* line 418 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15b798_0015b874:\n"
-        "movl %ecx, %edi\n" /* line 406 | line */
-        "subl $1, %edi\n" /* line */
-        "js .Lf15b798_0015b889\n"
-        "cmpb $0x20, -0x418(%ebp, %edi)\n" /* line 408 */
-        "je .Lf15b798_0015b92c\n"
-        ".Lf15b798_0015b889:\n"
-        "movl $str_002160e8, 8(%esp)\n" /* line 413 */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* buffer */
-        "movl %eax, (%esp)\n"
-        "calll I_strncat\n"
-        "movl -0x41c(%ebp), %eax\n" /* line 414 | f */
-        "movl %eax, 8(%esp)\n"
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "leal -0x418(%ebp), %edi\n" /* buffer, line */
-        "repne scasb %es:(%edi), %al\n" /* line */
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* buffer */
-        "movl %eax, (%esp)\n"
-        "calll FS_Write\n"
-        "addl $1, %esi\n" /* line 401 | lineIndex */
-        "cmpl con+131076, %esi\n" /* lineIndex */
-        "jg .Lf15b798_0015b85b\n"
-        "movl con+131092, %ecx\n"
-        ".Lf15b798_0015b8ed:\n"
-        "movl %esi, %eax\n" /* line 403 | lineIndex */
-        "cltd\n"
-        "idivl con+131096\n"
-        "imull %ecx, %edx\n"
-        "leal con+4(%edx, %edx), %edi\n" /* line */
-        "testl %ecx, %ecx\n" /* line 404 */
-        "jle .Lf15b798_0015b874\n"
-        "xorl %edx, %edx\n"
-        ".Lf15b798_0015b90a:\n"
-        "movzwl (%edi, %edx, 2), %eax\n" /* line 405 | line */
-        "movb %al, -0x418(%edx, %ebp)\n"
-        "addl $1, %edx\n" /* line 404 */
-        "cmpl %edx, %ecx\n"
-        "jne .Lf15b798_0015b90a\n"
-        "jmp .Lf15b798_0015b874\n"
-        ".Lf15b798_0015b921:\n"
-        "movl con+131092, %ecx\n"
-        "jmp .Lf15b798_0015b84b\n"
-        ".Lf15b798_0015b92c:\n"
-        "leal -0x418(%ebp), %eax\n" /* line 411 | buffer */
-        "addl %edi, %eax\n" /* line */
-        "xorl %ebx, %ebx\n"
-        "leal -0x41a(%ecx, %ebp), %ecx\n"
-        "subl %eax, %ecx\n"
-        ".Lf15b798_0015b93f:\n"
-        "movl %eax, %edx\n" /* line 354 */
-        "movb $0, (%eax)\n" /* line 409 */
-        "cmpl %edi, %ebx\n" /* line 406 | line */
-        "je .Lf15b798_0015b889\n"
-        "addl $1, %ebx\n"
-        "subl $1, %eax\n"
-        "cmpb $0x20, (%edx, %ecx)\n" /* line 408 */
-        "je .Lf15b798_0015b93f\n"
-        "jmp .Lf15b798_0015b889\n"
-        ".Lf15b798_0015b95d:\n"
-        "jne .Lf15b798_0015b84b\n" /* line 395 */
-        ".Lf15b798_0015b963:\n"
-        "addl $1, %esi\n" /* line 387 | lineIndex */
-        "cmpl %esi, %edi\n" /* lineIndex, line */
-        "jge .Lf15b798_0015b824\n"
-        "jmp .Lf15b798_0015b84b\n"
-        ".Lf15b798_0015b973:\n"
-        "movl $str_002a9268, (%esp)\n" /* line 382 */
-        "calll Com_Printf\n"
-        "jmp .Lf15b798_0015b7ba\n"
-        ".Lf15b798_0015b984:\n"
-        "xorl %eax, %eax\n" /* line 393 */
-        ".Lf15b798_0015b986:\n"
-        "addl $1, %eax\n" /* line 390 */
-        "cmpl %eax, %ecx\n"
-        "je .Lf15b798_0015b963\n"
-        "cmpb $0x20, (%edx, %eax, 2)\n" /* line 392 */
-        "je .Lf15b798_0015b986\n"
-        "jmp .Lf15b798_0015b84b\n"
-    );
+    int f;
+    char buffer[0x400];
+    int lineIndex, linewidth, i, trimLen;
+    short *linePtr;
+
+    if (Cmd_Argc() != 2) {
+        Com_Printf(str_002ab710); /* "usage: condump <filename>\n" */
+        return;
+    }
+
+    Com_Printf(str_002ab72c, Cmd_Argv(1)); /* "Dumped console text to %s.\n" */
+
+    f = FS_FOpenFileWrite(Cmd_Argv(1));
+    if (!f) {
+        Com_Printf(str_002a9268); /* "Couldn't open.\n" */
+        return;
+    }
+
+    linewidth = con.linewidth;
+    for (lineIndex = con.currentLine - con.totallines + 1; lineIndex <= con.currentLine; lineIndex++) {
+        /* Get pointer to line's text in the circular buffer */
+        linePtr = &con.textBuffer[(lineIndex % con.totallines) * linewidth];
+
+        /* Check if line is all spaces */
+        if (linewidth <= 0) {
+            if (linewidth == 0)
+                continue;
+        } else {
+            int allSpaces = 1;
+            for (i = 0; i < linewidth; i++) {
+                if ((linePtr[i] & 0xFF) != 0x20) {
+                    allSpaces = 0;
+                    break;
+                }
+            }
+            if (allSpaces)
+                continue;
+        }
+
+        /* Copy wide chars to narrow buffer (low byte only) */
+        for (i = 0; i < linewidth; i++) {
+            buffer[i] = (char)(linePtr[i] & 0xFF);
+        }
+
+        /* Trim trailing spaces */
+        trimLen = linewidth - 1;
+        while (trimLen >= 0 && buffer[trimLen] == ' ')
+            trimLen--;
+        buffer[trimLen + 1] = '\0';
+
+        /* Append newline and write */
+        I_strncat(buffer, str_002160e8, 0x400); /* "\n" */
+        FS_Write(buffer, strlen(buffer), f);
+    }
+
+    FS_FCloseFile(f);
 }
 
 /* line 583 */
-__attribute__((naked))
 void Con_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 583 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl registeredIconMaterialCount, %eax\n" /* line 203 */
-        "testl %eax, %eax\n"
-        "jne .Lf15b998_0015b9a9\n"
-        ".Lf15b998_0015b9a7:\n"
-        "leave\n" /* line 586 */
-        "retl\n"
-        ".Lf15b998_0015b9a9:\n"
-        "subl $1, %eax\n" /* line 205 */
-        "movl %eax, registeredIconMaterialCount\n"
-        "movl hudMsgIconMaterials(, %eax, 4), %eax\n" /* line 206 */
-        "movl %eax, (%esp)\n"
-        "calll Z_FreeInternal\n"
-        "movl registeredIconMaterialCount, %eax\n" /* line 203 */
-        "testl %eax, %eax\n"
-        "je .Lf15b998_0015b9a7\n"
-        "subl $1, %eax\n" /* line 205 */
-        "movl %eax, registeredIconMaterialCount\n"
-        "movl hudMsgIconMaterials(, %eax, 4), %eax\n" /* line 206 */
-        "movl %eax, (%esp)\n"
-        "calll Z_FreeInternal\n"
-        "movl registeredIconMaterialCount, %eax\n" /* line 203 */
-        "testl %eax, %eax\n"
-        "jne .Lf15b998_0015b9a9\n"
-        "jmp .Lf15b998_0015b9a7\n"
-    );
+    while (registeredIconMaterialCount > 0) {
+        registeredIconMaterialCount--;
+        Z_FreeInternal((void *)hudMsgIconMaterials[registeredIconMaterialCount]);
+    }
 }
 
 /* line 620 */
@@ -625,98 +550,33 @@ void Con_Linefeed(void)
 }
 
 /* line 1102 */
-__attribute__((naked))
 void Con_AutoCompleteFromList(const char * *strings, int stringCount, const char *prefix, char *completed, int sizeofCompleted)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1102 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "cld\n" /* line 1109 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 0x10(%ebp), %edi\n" /* prefix, string */
-        "repne scasb %es:(%edi), %al\n" /* string */
-        "notl %ecx\n"
-        "leal -1(%ecx), %esi\n" /* prefixLen */
-        "movl 0x14(%ebp), %eax\n" /* line 1110 | completed */
-        "movb $0, (%eax)\n"
-        "movl 0xc(%ebp), %edi\n" /* line 1111 | stringCount, string */
-        "testl %edi, %edi\n" /* string */
-        "jg .Lf15bc6c_0015bc9c\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1126 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15bc6c_0015bc9c:\n"
-        "xorl %ebx, %ebx\n" /* line 1111 | stringIndex */
-        ".Lf15bc6c_0015bc9e:\n"
-        "movl 8(%ebp), %eax\n" /* line 1113 | strings */
-        "movl (%eax, %ebx, 4), %edi\n" /* string */
-        "movl %esi, 8(%esp)\n" /* line 1114 | prefixLen */
-        "movl %edi, 4(%esp)\n" /* string */
-        "movl 0x10(%ebp), %eax\n" /* prefix */
-        "movl %eax, (%esp)\n"
-        "calll strnicmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf15bc6c_0015bcd0\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1116 | completed */
-        "cmpb $0, (%eax)\n"
-        "je .Lf15bc6c_0015bd08\n"
-        "addl %esi, %eax\n" /* line 1122 | prefixLen */
-        "movzbl (%eax), %edx\n"
-        "cmpb (%edi, %esi), %dl\n" /* string */
-        "je .Lf15bc6c_0015bce0\n"
-        ".Lf15bc6c_0015bccd:\n"
-        "movb $0, (%eax)\n" /* line 1124 */
-        ".Lf15bc6c_0015bcd0:\n"
-        "addl $1, %ebx\n" /* line 1111 | stringIndex */
-        "cmpl %ebx, 0xc(%ebp)\n" /* stringIndex, stringCount */
-        "jne .Lf15bc6c_0015bc9e\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1126 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15bc6c_0015bce0:\n"
-        "testb %dl, %dl\n" /* line 1122 */
-        "je .Lf15bc6c_0015bccd\n"
-        "addl $1, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal (%edi, %esi), %edx\n" /* line 1102 */
-        "jmp .Lf15bc6c_0015bcf1\n"
-        ".Lf15bc6c_0015bcef:\n"
-        "movl %edi, %eax\n"
-        ".Lf15bc6c_0015bcf1:\n"
-        "movzbl (%eax), %ecx\n" /* line 1122 */
-        "cmpb 1(%edx), %cl\n"
-        "jne .Lf15bc6c_0015bccd\n"
-        "leal 1(%eax), %edi\n" /* string */
-        "movl %edi, -0x1c(%ebp)\n" /* string */
-        "addl $1, %edx\n"
-        "testb %cl, %cl\n"
-        "jne .Lf15bc6c_0015bcef\n"
-        "jmp .Lf15bc6c_0015bccd\n"
-        ".Lf15bc6c_0015bd08:\n"
-        "movl 0x18(%ebp), %eax\n" /* line 1118 | sizeofCompleted */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* string */
-        "movl 0x14(%ebp), %edi\n" /* completed, string */
-        "movl %edi, (%esp)\n" /* string */
-        "calll I_strncpyz\n"
-        "jmp .Lf15bc6c_0015bcd0\n"
-    );
+    int prefixLen = strlen(prefix);
+    int stringIndex;
+
+    completed[0] = '\0';
+
+    for (stringIndex = 0; stringIndex < stringCount; stringIndex++) {
+        const char *string = strings[stringIndex];
+
+        if (strnicmp(prefix, string, prefixLen) != 0)
+            continue;
+
+        if (completed[0] == '\0') {
+            /* First match: copy it fully */
+            I_strncpyz(completed, string, sizeofCompleted);
+        } else {
+            /* Subsequent match: trim completed to common prefix */
+            char *p = completed + prefixLen;
+            const char *s = string + prefixLen;
+            while (*p && *p == *s) {
+                p++;
+                s++;
+            }
+            *p = '\0';
+        }
+    }
 }
 
 /* line 1211 */
@@ -1281,31 +1141,14 @@ Bool Con_IsActive(void)
 }
 
 /* line 343 */
-static __attribute__((naked))
-void Con_Clear_f(void)
+static void Con_Clear_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 343 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl $con, %ebx\n"
-        ".Lf15c596_0015c5a2:\n"
-        "movl $0x37, (%esp)\n" /* line 348 */
-        "calll ColorIndex\n"
-        "shll $8, %eax\n"
-        "orl $0x20, %eax\n"
-        "movw %ax, 4(%ebx)\n"
-        "addl $2, %ebx\n"
-        "cmpl $con+131072, %ebx\n" /* line 347 */
-        "jne .Lf15c596_0015c5a2\n"
-        "movl con+131076, %eax\n" /* line 2034 */
-        "movl %eax, con+131084\n"
-        "addl $0x14, %esp\n" /* line 351 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    short fillChar = (ColorIndex(0x37) << 8) | 0x20;
+    for (i = 0; i < 65536; i++) {
+        con.textBuffer[i] = fillChar;
+    }
+    con.display = con.currentLine;
 }
 
 /* line 966 */
@@ -1918,380 +1761,163 @@ void Con_DrawMiniConsole(int xPos, int yPos, float alpha)
     );
 }
 
-/* line 1816 */
+/* Con_DrawBoldMessages/Notify — these are tail-call wrappers that modify stack params and jump.
+ * Must stay as naked since they rewrite the caller's stack frame for the tail call. */
 __attribute__((naked))
 void Con_DrawBoldMessages(int xPos, int yPos, float alpha, msgwnd_mode_t mode)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1816 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* xPos */
-        "movl 0xc(%ebp), %ecx\n" /* yPos */
-        "movss 0x10(%ebp), %xmm0\n" /* alpha */
-        "movl con+131120, %eax\n" /* line 1830 */
+        "movl 8(%ebp), %edx\n"
+        "movl 0xc(%ebp), %ecx\n"
+        "movss 0x10(%ebp), %xmm0\n"
+        "movl con+131120, %eax\n"
         "addl $0x53c, %eax\n"
-        "movl $7, 0x10(%ebp)\n" /* alpha */
-        "movl $7, 0xc(%ebp)\n" /* yPos */
-        "movl $0xc, 8(%ebp)\n" /* xPos */
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "popl %ebp\n" /* line 1831 */
-        "jmp Con_DrawMessageWindow\n" /* line 1830 */
+        "movl $7, 0x10(%ebp)\n"
+        "movl $7, 0xc(%ebp)\n"
+        "movl $0xc, 8(%ebp)\n"
+        "movss lit4_002ed5d0, %xmm1\n"
+        "popl %ebp\n"
+        "jmp Con_DrawMessageWindow\n"
     );
 }
-
-/* line 1798 */
 __attribute__((naked))
 void Con_DrawNotify(int xPos, int yPos, float alpha, msgwnd_mode_t mode)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1798 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* xPos */
-        "movl 0xc(%ebp), %ecx\n" /* yPos */
-        "movss 0x10(%ebp), %xmm0\n" /* alpha */
-        "movl $3, 0x10(%ebp)\n" /* line 1812 | alpha */
-        "movl $1, 0xc(%ebp)\n" /* yPos */
-        "movl $0xc, 8(%ebp)\n" /* xPos */
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movl 8(%ebp), %edx\n"
+        "movl 0xc(%ebp), %ecx\n"
+        "movss 0x10(%ebp), %xmm0\n"
+        "movl $3, 0x10(%ebp)\n"
+        "movl $1, 0xc(%ebp)\n"
+        "movl $0xc, 8(%ebp)\n"
+        "movss lit4_002ed5d0, %xmm1\n"
         "movl con+131120, %eax\n"
-        "popl %ebp\n" /* line 1813 */
-        "jmp Con_DrawMessageWindow\n" /* line 1812 */
+        "popl %ebp\n"
+        "jmp Con_DrawMessageWindow\n"
     );
 }
 
 /* line 1253 */
-static __attribute__((naked))
-void ConDrawInput_IncrMatchCounter(const char *str)
+static void ConDrawInput_IncrMatchCounter(const char *str)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1253 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* str */
-        "movl conDrawInputGlob+8, %eax\n" /* line 1249 */
-        "movl %eax, 8(%esp)\n"
-        "movl conDrawInputGlob+4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n" /* line 1255 */
-        "jne .Lf15cd54_0015cda2\n"
-        "addl $1, conDrawInputGlob\n" /* line 1257 */
-        "movl $1, %eax\n" /* line 1259 */
-        "movl conDrawInputGlob+8, %edx\n"
-        "cmpb $0, (%ebx, %edx)\n" /* str */
-        "movzbl conDrawInputGlob+12, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movb %al, conDrawInputGlob+12\n"
-        ".Lf15cd54_0015cda2:\n"
-        "addl $0x14, %esp\n" /* line 1261 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (I_strnicmp(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen) != 0)
+        return;
+
+    conDrawInputGlob.matchCount++;
+
+    if (str[conDrawInputGlob.inputTextLen] == '\0')
+        conDrawInputGlob.hasExactMatch = 1;
 }
 
 /* line 428 */
-__attribute__((naked))
 void Con_ClearNotify(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 428 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl con+131120, %ebx\n" /* line 430 | msgwnd */
-        /* { scope 1 */
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl (%ebx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        /* } scope */
-        "movl con+131120, %ecx\n" /* line 431 */
-        "leal 0x53c(%ecx), %ebx\n" /* msgwnd */
-        /* { scope 1 */
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl 0x53c(%ecx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 432 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    MessageWindow *gamemsg = (MessageWindow *)con.messageBuffer;
+    MsgWnd_Clear(gamemsg);
+
+    MessageWindow *boldmsg = (MessageWindow *)((char *)con.messageBuffer + 0x53c);
+    MsgWnd_Clear(boldmsg);
 }
 
 /* line 441 */
-__attribute__((naked))
 void Con_ClearSubtitles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 441 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl con+131120, %ecx\n" /* line 443 */
-        "leal 0xa78(%ecx), %ebx\n" /* msgwnd */
-        /* { scope 1 */
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl 0xa78(%ecx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 444 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    MessageWindow *subtitle = (MessageWindow *)((char *)con.messageBuffer + 0xa78);
+    MsgWnd_Clear(subtitle);
 }
 
 /* line 1264 */
-static __attribute__((naked))
-void ConDrawInput_DvarMatch(const char *str)
+static void ConDrawInput_DvarMatch(const char *str)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1264 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* str */
-        "movl conDrawInputGlob+8, %eax\n" /* line 1249 */
-        "movl %eax, 8(%esp)\n"
-        "movl conDrawInputGlob+4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n" /* line 1268 */
-        "jne .Lf15ce64_0015cf8e\n"
-        "movl $0, 0x20(%esp)\n" /* line 1186 */
-        "movl $con_inputDvarMatchColor, 0x1c(%esp)\n"
-        "movl $0x3f800000, %ebx\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %ebx, 0x14(%esp)\n"
-        "movss conDrawInputGlob+20, %xmm0\n"
-        "addss conDrawInputGlob+28, %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movl conDrawInputGlob+16, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl imp_cls, %esi\n"
-        "movl 0x2a0a60(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x18, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "movl imp_re, %eax\n"
-        "calll *0x11c(%eax)\n"
-        "movss lit4_002ed734, %xmm0\n" /* line 1199 | 200.0f */
-        "addss conDrawInputGlob+16, %xmm0\n"
-        "movss %xmm0, conDrawInputGlob+16\n"
-        "movl %edi, (%esp)\n" /* line 1273 | str */
-        "calll Dvar_GetVariantString\n"
-        /* { scope 1 */
-        "movl $0, 0x20(%esp)\n" /* line 1186 */
-        "movl $con_inputDvarValueColor, 0x1c(%esp)\n"
-        "movl %ebx, 0x18(%esp)\n"
-        "movl %ebx, 0x14(%esp)\n"
-        "movss conDrawInputGlob+20, %xmm0\n"
-        "addss conDrawInputGlob+28, %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movl conDrawInputGlob+16, %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0x2a0a60(%esi), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x28, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "movl imp_re, %eax\n"
-        "calll *0x11c(%eax)\n"
-        /* } scope */
-        "movss conDrawInputGlob+20, %xmm0\n" /* line 1192 */
-        "addss conDrawInputGlob+28, %xmm0\n"
-        "movss %xmm0, conDrawInputGlob+20\n"
-        "movl conDrawInputGlob+24, %eax\n" /* line 1193 */
-        "movl %eax, conDrawInputGlob+16\n"
-        ".Lf15ce64_0015cf8e:\n"
-        "addl $0x3c, %esp\n" /* line 1275 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    typedef void (*DrawTextFunc)(const char *text, int maxChars, void *font, float x, float y, float xScale, float yScale, const float *color, int style);
+    DrawTextFunc drawText;
+    void *font;
+    const char *value;
+
+    if (I_strnicmp(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen) != 0)
+        return;
+
+    drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
+    font = *(void **)((char *)imp_cls + 0x2a0a60);
+
+    /* Draw dvar name */
+    drawText(str, 0x18, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputDvarMatchColor, 0);
+    conDrawInputGlob.x += 200.0f;
+
+    /* Draw dvar value */
+    value = Dvar_GetVariantString(str);
+    drawText(value, 0x28, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputDvarValueColor, 0);
+
+    /* Advance to next line */
+    conDrawInputGlob.y += conDrawInputGlob.fontHeight;
+    conDrawInputGlob.x = conDrawInputGlob.leftX;
 }
 
 /* line 1129 */
-__attribute__((naked))
 const char * Con_TokenizeInput(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1129 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl imp_g_consoleField, %eax\n" /* line 1133 */
-        "addl $0x18, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Cmd_TokenizeString\n"
-        "movl $0, (%esp)\n" /* line 1135 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* cmd */
-        "movzbl (%eax), %eax\n" /* line 1136 */
-        "cmpb $0x5c, %al\n"
-        "je .Lf15cf96_0015cfe4\n"
-        "cmpb $0x2f, %al\n"
-        "je .Lf15cf96_0015cfe4\n"
-        "movsbl (%ebx), %edx\n" /* line 1138 | cmd, _c */
-        /* { scope 2 */
-        "testl $0xffffff80, %edx\n" /* line 220 */
-        "jne .Lf15cf96_0015cff2\n"
-        ".Lf15cf96_0015cfd1:\n"
-        "movl __DefaultRuneLocale, %eax\n"
-        "movl 0x34(%eax, %edx, 4), %eax\n"
-        "shrl $0xe, %eax\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1138 */
-        "je .Lf15cf96_0015d00e\n"
-        ".Lf15cf96_0015cfe4:\n"
-        "addl $1, %ebx\n" /* line 1139 | cmd */
-        "movsbl (%ebx), %edx\n" /* line 1138 | cmd, _c */
-        /* { scope 2 */
-        "testl $0xffffff80, %edx\n" /* line 220 */
-        "je .Lf15cf96_0015cfd1\n"
-        ".Lf15cf96_0015cff2:\n"
-        "movl $0x4000, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll ___maskrune\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1138 */
-        "jne .Lf15cf96_0015cfe4\n"
-        /* } scope */
-        ".Lf15cf96_0015d00e:\n"
-        "movl %ebx, %eax\n" /* line 1142 | cmd */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *cmd;
+    int c;
+
+    Cmd_TokenizeString((const char *)imp_g_consoleField + 0x18);
+    cmd = Cmd_Argv(0);
+
+    /* Skip leading '\\' or '/' */
+    if (cmd[0] == '\\' || cmd[0] == '/')
+        cmd++;
+
+    /* Skip punctuation characters (isxdigit check via __DefaultRuneLocale or ___maskrune) */
+    while ((c = (signed char)*cmd) != 0) {
+        int isPunct;
+        if ((c & 0xFFFFFF80) == 0) {
+            int *rune = (int *)__DefaultRuneLocale;
+            isPunct = (rune[0xD + c] >> 14) & 1;
+        } else {
+            isPunct = ___maskrune(c, 0x4000) != 0;
+        }
+        if (!isPunct)
+            break;
+        cmd++;
+    }
+
+    return cmd;
 }
 
 /* line 1145 */
-__attribute__((naked))
+
+/* Helper: check if character is punct (0x4000 mask) using __DefaultRuneLocale */
+static int isPunctChar(int c) {
+    if ((c & 0xFFFFFF80) == 0) {
+        int *rune = (int *)__DefaultRuneLocale;
+        return (rune[0xD + c] >> 14) & 1;
+    }
+    return ___maskrune(c, 0x4000) != 0;
+}
+
 Bool Con_AnySpaceAfterCommand(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1145 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl imp_g_consoleField, %ebx\n"
-        "movl __DefaultRuneLocale, %esi\n"
-        "jmp .Lf15d016_0015d03d\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf15d016_0015d02c:\n"
-        "movl 0x34(%esi, %eax, 4), %eax\n" /* line 220 */
-        "shrl $0xe, %eax\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1150 | _c */
-        "je .Lf15d016_0015d064\n"
-        ".Lf15d016_0015d03a:\n"
-        "addl $1, %ebx\n"
-        ".Lf15d016_0015d03d:\n"
-        "movsbl 0x18(%ebx), %eax\n" /* _c */
-        /* { scope 2 */
-        "testl $0xffffff80, %eax\n" /* line 220 */
-        "je .Lf15d016_0015d02c\n"
-        "movl $0x4000, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll ___maskrune\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1150 | _c */
-        "jne .Lf15d016_0015d03a\n"
-        ".Lf15d016_0015d064:\n"
-        "movl imp_g_consoleField, %edx\n" /* line 1153 */
-        "movl %ebx, %ecx\n"
-        "subl %edx, %ecx\n"
-        "movzbl 0x18(%ecx, %edx), %eax\n"
-        "testb %al, %al\n"
-        "je .Lf15d016_0015d0ce\n"
-        "leal 0x18(%ecx, %edx), %ebx\n"
-        "jmp .Lf15d016_0015d09b\n"
-        /* { scope 2 */
-        ".Lf15d016_0015d07d:\n"
-        "movl __DefaultRuneLocale, %eax\n" /* line 220 */
-        "movl 0x34(%eax, %edx, 4), %eax\n"
-        "shrl $0xe, %eax\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1155 */
-        "jne .Lf15d016_0015d0c2\n"
-        ".Lf15d016_0015d090:\n"
-        "movzbl 1(%ebx), %eax\n" /* line 1153 */
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "je .Lf15d016_0015d0ce\n"
-        ".Lf15d016_0015d09b:\n"
-        "movsbl %al, %edx\n" /* line 1155 | _c */
-        /* { scope 2 */
-        "testl $0xffffff80, %edx\n" /* line 220 */
-        "je .Lf15d016_0015d07d\n"
-        "movl $0x4000, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll ___maskrune\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1155 */
-        "je .Lf15d016_0015d090\n"
-        ".Lf15d016_0015d0c2:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1160 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15d016_0015d0ce:\n"
-        "xorl %eax, %eax\n" /* line 1153 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1160 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *p = (const char *)imp_g_consoleField;
+    int offset = 0;
+
+    /* Skip leading punct characters in the console field buffer (at offset 0x18) */
+    while (isPunctChar((signed char)p[0x18 + offset]))
+        offset++;
+
+    /* Now skip non-punct, non-null characters (the command itself) */
+    {
+        const char *scan = p + 0x18 + offset;
+        while (*scan) {
+            if (isPunctChar((signed char)*scan))
+                return 1;
+            scan++;
+        }
+    }
+
+    return 0;
 }
 
 /* line 447 */
@@ -2671,77 +2297,15 @@ void Con_OneTimeInit(void)
 }
 
 /* line 2038 */
-__attribute__((naked))
 void Con_Close(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2038 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl imp_legacyHacks, %eax\n" /* line 2042 */
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf15d78e_0015d897\n"
-        "movl imp_g_consoleField, %eax\n" /* line 2045 */
-        "movl %eax, (%esp)\n"
-        "calll Field_Clear\n"
-        "movl con+131120, %ebx\n" /* line 430 */
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl (%ebx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        "movl con+131120, %ecx\n" /* line 431 */
-        "leal 0x53c(%ecx), %ebx\n"
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl 0x53c(%ecx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        "movl con+131120, %ecx\n" /* line 437 */
-        "leal 0xfb4(%ecx), %ebx\n"
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl 0xfb4(%ecx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        "movl con+131120, %ecx\n" /* line 443 */
-        "leal 0xa78(%ecx), %ebx\n"
-        "movl 8(%ebx), %eax\n" /* line 423 */
-        "leal (%eax, %eax, 4), %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "movl 0xa78(%ecx), %eax\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, 4(%ebx)\n" /* line 424 */
-        "movl imp_clients, %eax\n" /* line 2051 */
-        "andl $0xfffffffe, 4(%eax)\n"
-        ".Lf15d78e_0015d897:\n"
-        "addl $0x14, %esp\n" /* line 2057 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int *legacyHacks = *(int **)imp_legacyHacks;
+    if (!legacyHacks[1])
+        return;
+
+    Field_Clear(imp_g_consoleField);
+    Con_ClearAllMessageWindows();
+    *(int *)((char *)imp_clients + 4) &= ~1;
 }
 
 /* line 1300 */
@@ -3016,51 +2580,22 @@ void ConDrawInput_AutoCompleteArg(int stringCount)
 }
 
 /* line 1451 */
-static __attribute__((naked))
-void ConDrawInput_CmdMatch(const char *str)
+static void ConDrawInput_CmdMatch(const char *str)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1451 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* str */
-        "movl conDrawInputGlob+8, %eax\n" /* line 1249 */
-        "movl %eax, 8(%esp)\n"
-        "movl conDrawInputGlob+4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n" /* line 1455 */
-        "jne .Lf15dcda_0015dd89\n"
-        "movl $0, 0x20(%esp)\n" /* line 1179 */
-        "movl $con_inputCommandMatchColor, 0x1c(%esp)\n"
-        "movl $0x3f800000, %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movss conDrawInputGlob+20, %xmm0\n"
-        "addss conDrawInputGlob+28, %xmm0\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movl conDrawInputGlob+16, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl imp_cls, %eax\n"
-        "movl 0x2a0a60(%eax), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "movl imp_re, %eax\n"
-        "calll *0x11c(%eax)\n"
-        "movss conDrawInputGlob+20, %xmm0\n" /* line 1192 */
-        "addss conDrawInputGlob+28, %xmm0\n"
-        "movss %xmm0, conDrawInputGlob+20\n"
-        "movl conDrawInputGlob+24, %eax\n" /* line 1193 */
-        "movl %eax, conDrawInputGlob+16\n"
-        ".Lf15dcda_0015dd89:\n"
-        "addl $0x34, %esp\n" /* line 1460 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    typedef void (*DrawTextFunc)(const char *text, int maxChars, void *font, float x, float y, float xScale, float yScale, const float *color, int style);
+    DrawTextFunc drawText;
+    void *font;
+
+    if (I_strnicmp(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen) != 0)
+        return;
+
+    drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
+    font = *(void **)((char *)imp_cls + 0x2a0a60);
+
+    drawText(str, 0x7fffffff, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputCommandMatchColor, 0);
+
+    conDrawInputGlob.y += conDrawInputGlob.fontHeight;
+    conDrawInputGlob.x = conDrawInputGlob.leftX;
 }
 
 /* line 763 */
