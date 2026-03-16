@@ -1472,9 +1472,67 @@ void ZN6EffectD1Ev(void) /* Effect_~Effect */
     );
 }
 
-/* line 132 */
+/* FxBoltFramePtr_Archive — serialize bolt frame ptr: entity+bone IDs, acquire on read, release temp */
+void FxBoltFramePtr_Archive(const FxBoltFramePtr *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+
+    if (*(byte *)(a + 4)) {
+        /* Reading */
+        int entity, bone;
+        FxArchive_ReadData(arch, &entity, 4);
+        if (entity < 0) {
+            /* No bolt — release current and set NULL */
+            FxBoltFrame_ReleaseHelper(*(byte **)self);
+            *(byte **)self = NULL;
+            return;
+        }
+        FxArchive_ReadData(arch, &bone, 4);
+        /* Acquire bolt frame for entity+bone */
+        byte boltInfo[8];
+        *(int *)boltInfo = entity;
+        *(int *)(boltInfo + 4) = bone;
+        byte *acquired = NULL;
+        /* Call FxBoltFrame_Acquire which returns struct by value */
+        __asm__ __volatile__ (
+            "leal %1, %%eax\n"
+            "pushl %%eax\n"
+            "leal %2, %%eax\n"
+            "pushl %%eax\n"
+            "calll FxBoltFrame_Acquire\n"
+            "addl $4, %%esp\n"
+            "movl (%0), %%eax\n"
+            : : "r"(&acquired), "m"(boltInfo), "m"(acquired)
+            : "eax", "ecx", "edx", "memory"
+        );
+        /* Assign to this with refcount (use Effect_SetBoltFrame pattern) */
+        byte *oldBf = *(byte **)self;
+        byte *newBf = acquired;
+        if (oldBf != newBf) {
+            if (oldBf) FxBoltFrame_ReleaseHelper(oldBf);
+            *(byte **)self = NULL;
+            if (newBf) { *(int *)newBf += 1; *(byte **)self = newBf; }
+        }
+        /* Release the temp acquired frame */
+        if (newBf) FxBoltFrame_ReleaseHelper(newBf);
+    } else {
+        /* Writing */
+        byte *bf = *(byte **)self;
+        if (!bf) {
+            int neg = -1;
+            FxArchive_WriteData(arch, &neg, 4);
+        } else {
+            int entity = *(int *)(bf + 0x3c);
+            int bone = *(int *)(bf + 0x40);
+            FxArchive_WriteData(arch, &entity, 4);
+            FxArchive_WriteData(arch, &bone, 4);
+        }
+    }
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void FxBoltFramePtr_Archive(const FxBoltFramePtr * _this, FxArchive *arch)
+void FxBoltFramePtr_Archive_asm(const FxBoltFramePtr * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 132 */
@@ -1691,6 +1749,7 @@ void FxBoltFramePtr_Archive(const FxBoltFramePtr * _this, FxArchive *arch)
         "jmp .Lfa2086_000a221a\n"
     );
 }
+#endif
 
 /* line 182 */
 /* Effect D0 destructor — cleanup bolt frame + delete this */
@@ -2092,9 +2151,54 @@ Bool Flash_Update(const Flash * _this)
     return 1;
 }
 
-/* line 880 */
+/* Particle_IntegrateVelocity — integrate velocity curve over normDuration, 3 axes, optional blend+transform */
+extern float FxCurve_Integrate(void *curve, float normDuration);
+static float IntegrateChannel(byte *self, int curveOff, int blendCurveOff, float blendFactor, int scaleOff, float normDuration, int useBlend)
+{
+    float val;
+    if (useBlend) {
+        float v0 = FxCurve_Integrate(*(void **)(self + curveOff), normDuration);
+        float v1 = FxCurve_Integrate(*(void **)(self + blendCurveOff), normDuration);
+        val = v0 + (v1 - v0) * blendFactor;
+    } else {
+        val = FxCurve_Integrate(*(void **)(self + curveOff), normDuration);
+    }
+    return val * *(float *)(self + scaleOff);
+}
+void Particle_IntegrateVelocity(const Particle *_this, float normDuration, vec_t *outVector)
+{
+    byte *self = (byte *)_this;
+    int useBlend = (*(byte *)(self + 0xaa) & 8) != 0;
+    float vx, vy, vz;
+
+    if (useBlend) {
+        vx = IntegrateChannel(self, 0x1bc, 0x1e0, *(float *)(self + 0x12c), 0x1bc + 8, normDuration, 1);
+        vy = IntegrateChannel(self, 0x1c8, 0x1ec, *(float *)(self + 0x130), 0x1c8 + 8, normDuration, 1);
+        vz = IntegrateChannel(self, 0x1d4, 0x1f8, *(float *)(self + 0x134), 0x1d4 + 8, normDuration, 1);
+    } else {
+        vx = IntegrateChannel(self, 0x1bc, 0, 0, 0x1bc + 8, normDuration, 0);
+        vy = IntegrateChannel(self, 0x1c8, 0, 0, 0x1c8 + 8, normDuration, 0);
+        vz = IntegrateChannel(self, 0x1d4, 0, 0, 0x1d4 + 8, normDuration, 0);
+    }
+
+    /* Optional axis transform (if NOT flag bit 5) */
+    if (!(*(byte *)(self + 0xaa) & 0x20)) {
+        AxisTransformVector(self + 0xd0, vx, vy, vz, outVector);
+    } else {
+        outVector[0] = vx;
+        outVector[1] = vy;
+        outVector[2] = vz;
+    }
+
+    /* Scale by lifetime in seconds */
+    float lifetimeSec = (float)(*(int *)(self + 0xbc) - *(int *)(self + 0xb8)) * 0.001f;
+    outVector[0] *= lifetimeSec;
+    outVector[1] *= lifetimeSec;
+    outVector[2] *= lifetimeSec;
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Particle_IntegrateVelocity(const Particle * _this, float normDuration, vec_t *outVector)
+void Particle_IntegrateVelocity_asm(const Particle * _this, float normDuration, vec_t *outVector)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 880 */
@@ -2263,10 +2367,36 @@ void Particle_IntegrateVelocity(const Particle * _this, float normDuration, vec_
         "jmp .Lfa27b8_000a2947\n"
     );
 }
+#endif
 
-/* line 906 */
-__attribute__((naked))
-void Particle_IntegrateVelocity2(const Particle * _this, float normDuration, vec_t *outVector)
+/* line 906 — Particle_IntegrateVelocity2 — same pattern as IntegrateVelocity but different channel offsets */
+void Particle_IntegrateVelocity2(const Particle *_this, float normDuration, vec_t *outVector)
+{
+    byte *self = (byte *)_this;
+    int useBlend = (*(byte *)(self + 0xaa) & 8) != 0;
+    float vx, vy, vz;
+
+    /* Velocity2 channels are at offsets 0x204, 0x210, 0x21c with blend variants at 0x228, 0x234, 0x240 */
+    if (useBlend) {
+        vx = IntegrateChannel(self, 0x204, 0x228, *(float *)(self + 0x138), 0x204 + 8, normDuration, 1);
+        vy = IntegrateChannel(self, 0x210, 0x234, *(float *)(self + 0x13c), 0x210 + 8, normDuration, 1);
+        vz = IntegrateChannel(self, 0x21c, 0x240, *(float *)(self + 0x140), 0x21c + 8, normDuration, 1);
+    } else {
+        vx = IntegrateChannel(self, 0x204, 0, 0, 0x204 + 8, normDuration, 0);
+        vy = IntegrateChannel(self, 0x210, 0, 0, 0x210 + 8, normDuration, 0);
+        vz = IntegrateChannel(self, 0x21c, 0, 0, 0x21c + 8, normDuration, 0);
+    }
+
+    if (!(*(byte *)(self + 0xaa) & 0x20)) {
+        AxisTransformVector(self + 0xd0, vx, vy, vz, outVector);
+    } else {
+        outVector[0] = vx; outVector[1] = vy; outVector[2] = vz;
+    }
+
+    float lifetimeSec = (float)(*(int *)(self + 0xbc) - *(int *)(self + 0xb8)) * 0.001f;
+    outVector[0] *= lifetimeSec; outVector[1] *= lifetimeSec; outVector[2] *= lifetimeSec;
+}
+#if 0 /* Original IntegrateVelocity2 ASM */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 906 */
@@ -2435,6 +2565,7 @@ void Particle_IntegrateVelocity2(const Particle * _this, float normDuration, vec
         "jmp .Lfa2a5c_000a2beb\n"
     );
 }
+#endif
 
 /* Particle_IntegrateTotalVelocity — integrate vel1 + vel2 + gravity over duration */
 void Particle_IntegrateTotalVelocity(const Particle *_this, int duration, vec_t *outVector)
@@ -9445,9 +9576,65 @@ Bool Particle_Update(const Particle * _this, const Particle * _this_1, const Clo
     );
 }
 
-/* line 285 */
+/* Effect_Archive — serialize all Effect base fields */
+extern void FxArchive_ArchiveEffect(void *arch, void *effectPtr);
+extern void FxArchive_ArchiveMaterial(void *arch, void *materialPtr);
+extern void FxArchive_ArchiveModel(void *arch, void *modelPtr);
+extern void FxArchive_ArchiveFxGfxEntity(void *arch, void *entityPtr);
+extern void FX_SetSortGroup(void *effect);
+extern int FX_GetCluster(const vec_t *origin);
+
+static void ArchiveInt(void *arch, byte *self, int offset)
+{
+    byte *a = (byte *)arch;
+    if (*(byte *)(a + 4)) { /* isReading */
+        int v; FxArchive_ReadData(arch, &v, 4); *(int *)(self + offset) = v;
+    } else {
+        int v = *(int *)(self + offset); FxArchive_WriteData(arch, &v, 4);
+    }
+}
+static void ArchiveVec3(void *arch, byte *self, int offset)
+{
+    byte *a = (byte *)arch;
+    if (*(byte *)(a + 4)) {
+        FxArchive_ReadData(arch, self + offset, 0xc);
+    } else {
+        float f;
+        f = *(float *)(self + offset); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + offset + 4); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + offset + 8); FxArchive_WriteData(arch, &f, 4);
+    }
+}
+
+void Effect_Archive(const Effect *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+
+    ArchiveVec3(arch, self, 0x04);    /* origin */
+    ArchiveInt(arch, self, 0xb8);     /* startTime */
+    ArchiveInt(arch, self, 0xbc);     /* killTime */
+    ArchiveInt(arch, self, 0xa8);     /* flags */
+    ArchiveInt(arch, self, 0x10);     /* field_0x10 */
+    ArchiveVec3(arch, self, 0x14);    /* axis row 0 */
+    ArchiveVec3(arch, self, 0x20);    /* axis row 1 */
+    FxArchive_ArchiveEffect(arch, self + 0x2c);  /* deathEffect */
+    FxArchive_ArchiveEffect(arch, self + 0x30);  /* emitEffect */
+    FxArchive_ArchiveFxGfxEntity(arch, self + 0x40); /* gfxEntity */
+    FxArchive_ArchiveEffect(arch, self + 0x34);  /* impactEffect */
+    ArchiveInt(arch, self, 0x38);     /* field_0x38 */
+    FxArchive_ArchiveMaterial(arch, self + 0x40); /* material (uses same offset as gfxEntity — shared union?) */
+    FxArchive_ArchiveModel(arch, self + 0xb4);   /* model */
+    FxBoltFramePtr_Archive((const FxBoltFramePtr *)(self + 0xc0), arch);   /* boltFrame */
+
+    if (*(byte *)(a + 4)) { /* isReading: post-load setup */
+        *(int *)(self + 0xac) = FX_GetCluster((vec_t *)(self + 0x7c));
+        FX_SetSortGroup(self);
+    }
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Effect_Archive(const Effect * _this, FxArchive *arch)
+void Effect_Archive_asm(const Effect * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 285 */
@@ -9741,6 +9928,7 @@ void Effect_Archive(const Effect * _this, FxArchive *arch)
         "jmp .Lfa88b2_000a8a2c\n"
     );
 }
+#endif
 
 /* Light_Archive — Effect_Archive + 4 channels + 2 floats (0xc4, 0xc8) */
 void Light_Archive(const Light *_this, FxArchive *arch)
@@ -9767,9 +9955,31 @@ void Flash_Archive(const Flash * _this, FxArchive *arch)
     Light_Archive((const Light *)_this, arch);
 }
 
-/* line 1166 */
+/* Particle_Archive — Effect_Archive + 13 int/float fields + 22 ChannelInstances */
+void Particle_Archive(const Particle *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    Effect_Archive((const Effect *)_this, arch);
+    /* Archive individual fields */
+    static const int intOffsets[] = {
+        0x100, 0x104, 0x108, 0x10c, 0x110, 0x114, 0x118, 0x11c,
+        0x120, 0x124, 0x128, 0x12c, 0x138, -1
+    };
+    int i;
+    for (i = 0; intOffsets[i] >= 0; i++)
+        ArchiveInt(arch, self, intOffsets[i]);
+    /* Archive 22 ChannelInstances */
+    static const int chOffsets[] = {
+        0x144, 0x150, 0x15c, 0x168, 0x174, 0x180, 0x18c, 0x198,
+        0x1a4, 0x1b0, 0x1bc, 0x1c8, 0x1d4, 0x1e0, 0x1ec, 0x1f8,
+        0x204, 0x210, 0x21c, 0x228, 0x234, 0x240, -1
+    };
+    for (i = 0; chOffsets[i] >= 0; i++)
+        FxArchive_ArchiveChannelInstance(arch, self + chOffsets[i]);
+}
+#if 0 /* Original ASM (608 lines) */
 __attribute__((naked))
-void Particle_Archive(const Particle * _this, FxArchive *arch)
+void Particle_Archive_asm(const Particle * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1166 */
@@ -10377,6 +10587,7 @@ void Particle_Archive(const Particle * _this, FxArchive *arch)
         "jmp .Lfa8d78_000a902e\n"
     );
 }
+#endif
 
 /* OrientedParticle_Archive — serialize normal vec3 at offset 0x24c */
 extern void FxArchive_ReadData(void *arch, void *data, int size);
@@ -10618,9 +10829,27 @@ void Cylinder_Archive(const Cylinder * _this, FxArchive *arch)
     Tail_Archive((const Tail *)_this, arch);
 }
 
-/* line 2104 */
+/* Emitter_Archive — Particle_Archive + 3 vec3s + several ints + effect ref + model ref + flags */
+void Emitter_Archive(const Emitter *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    Particle_Archive((const Particle *)_this, arch);
+    ArchiveVec3(arch, self, 0x24c);   /* emitter axis[0] or position */
+    ArchiveVec3(arch, self, 0x258);   /* emitter axis[1] */
+    ArchiveVec3(arch, self, 0x264);   /* emitter axis[2] */
+    ArchiveInt(arch, self, 0x270);
+    ArchiveInt(arch, self, 0x274);
+    ArchiveInt(arch, self, 0x278);
+    ArchiveInt(arch, self, 0xa8);     /* flags */
+    FxArchive_ArchiveEffect(arch, self + 0x284);  /* emit effect template */
+    ArchiveInt(arch, self, 0x290);
+    ArchiveInt(arch, self, 0x294);
+    ArchiveInt(arch, self, 0x298);
+    ArchiveInt(arch, self, 0xb4);
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Emitter_Archive(const Emitter * _this, FxArchive *arch)
+void Emitter_Archive_asm(const Emitter * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2104 */
@@ -10962,6 +11191,7 @@ void Emitter_Archive(const Emitter * _this, FxArchive *arch)
         "retl\n"
     );
 }
+#endif
 
 /* line 1732 */
 /* Cylinder D0 destructor — cleanup bolt frame + delete this */
