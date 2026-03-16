@@ -2383,17 +2383,17 @@ void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
     if (!light) return;
 
     /* FX_AddPrimitive: register eax=prim, edx=particle, ecx=origin */
-    Bool added;
+    int added;
     __asm__ __volatile__ (
         "movl %3, %%ecx\n"
         "movl %2, %%edx\n"
         "movl %1, %%eax\n"
         "calll FX_AddPrimitive\n"
         "movl %%eax, %0\n"
-        : "=r"(added) : "g"(prim), "g"(light), "g"(origin)
-        : "eax", "ecx", "edx", "memory"
+        : "=r"(added) : "r"(prim), "r"(light), "r"(origin)
+        : "ecx", "edx", "memory"
     );
-    if (!added) {
+    if (!(byte)added) {
         typedef void (*Fn)(void *); ((Fn)(*(void ***)light)[1])(light);
         return;
     }
@@ -2770,123 +2770,53 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
     );
 }
 
-/* line 1674 */
-__attribute__((naked))
+/* FX_AddParticle — allocate Particle, add to system, init, set material, apply late time */
+extern void Particle_Particle(void *particle);
+extern void Particle_IntegrateTotalVelocity(void *particle, int time, vec_t *velSum);
 void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
+    byte *p = (byte *)__Znam(0x24c);
+    if (p) memset(p, 0, 0x24c);
+    Particle_Particle(p);
+    if (!p) return;
+
+    /* FX_AddPrimitive: eax=prim, edx=particle, ecx=origin */
+    int added;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1674 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %esi\n" /* prim */
-        /* { scope 1: velSum */
-        /* { scope 2 */
-        "movl $0x24c, (%esp)\n" /* line 24 */
-        "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
-        "je .Lf5b7f6_0005b82b\n"
-        "movl $0x24c, 8(%esp)\n" /* line 27 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        ".Lf5b7f6_0005b82b:\n"
-        "movl %ebx, (%esp)\n" /* line 1682 | ptr */
-        "calll Particle_Particle\n"
-        "testl %ebx, %ebx\n" /* line 1683 | ptr */
-        "je .Lf5b7f6_0005b907\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1686 | origin */
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* prim */
-        "calll FX_AddPrimitive\n"
-        "testb %al, %al\n" /* line 1687 */
-        "je .Lf5b7f6_0005b90e\n"
-        "leal -0x14(%ebp), %ecx\n" /* line 1693 | newOrigin */
-        "movl 0x18(%ebp), %eax\n" /* indexInBatch */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* ax */
-        "movl %edx, 4(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* origin */
-        "movl %eax, (%esp)\n"
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* prim */
-        "calll FX_InitParticle\n"
-        "movl 0xbc(%ebx), %ecx\n" /* line 1694 | ptr */
-        "subl 0xb8(%ebx), %ecx\n" /* ptr */
-        "movl 4(%esi), %eax\n" /* prim */
-        "movl 0x18(%ebp), %edx\n" /* indexInBatch */
-        "movl %edx, (%esp)\n"
-        "movl %ebx, %edx\n" /* ptr */
-        "calll FX_SetMaterialAndSequenceParams\n"
-        /* { scope 2 */
-        "movl 0x14(%ebp), %esi\n" /* line 1472 | lateTime */
-        "testl %esi, %esi\n"
-        "jle .Lf5b7f6_0005b8f2\n"
-        "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
-        "leal -0x20(%ebp), %eax\n" /* line 1476 | velSum */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* lateTime */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* ptr */
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll Particle_IntegrateTotalVelocity\n"
-        /* { scope 3 */
-        "movss -0x38(%ebp), %xmm1\n" /* line 288 */
-        "movaps %xmm1, %xmm0\n"
-        "mulss -0x20(%ebp), %xmm0\n" /* velSum */
-        "addss -0x14(%ebp), %xmm0\n" /* newOrigin */
-        "movss %xmm0, -0x14(%ebp)\n" /* newOrigin */
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss -0x10(%ebp), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "mulss -0x18(%ebp), %xmm1\n" /* line 290 */
-        "addss -0xc(%ebp), %xmm1\n"
-        "movss %xmm1, -0xc(%ebp)\n"
-        /* } scope */
-        /* } scope */
-        ".Lf5b7f6_0005b8f2:\n"
-        "leal 4(%ebx), %edx\n" /* line 208 | ptr, to */
-        /* { scope 2 */
-        "movl -0x14(%ebp), %eax\n" /* line 199 | newOrigin */
-        "movl %eax, 4(%ebx)\n" /* ptr */
-        "movl -0x10(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        /* } scope */
-        ".Lf5b7f6_0005b907:\n"
-        "addl $0x40, %esp\n" /* line 1698 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: velSum */
-        ".Lf5b7f6_0005b90e:\n"
-        "movl (%ebx), %eax\n" /* line 1689 | ptr */
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll *4(%eax)\n"
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 1698 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %esi\n" /* prim */
-        /* { scope 1: velSum */
-        "testl %ebx, %ebx\n" /* line 35 | ptr */
-        "je .Lf5b7f6_0005b92b\n"
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll __ZdaPv\n"
-        ".Lf5b7f6_0005b92b:\n"
-        "movl %esi, (%esp)\n"
-        "calll __Unwind_Resume\n"
+        "movl %3, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
+        : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory"
     );
+    if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
+
+    /* FX_InitParticle: eax=prim, edx=particle, ecx=newOrigin, stack: origin, ax, indexInBatch */
+    vec3_t newOrigin;
+    __asm__ __volatile__ (
+        "pushl %5\n" "pushl %4\n" "pushl %3\n"
+        "leal %0, %%ecx\n" "movl %2, %%edx\n" "movl %1, %%eax\n"
+        "calll FX_InitParticle\n" "addl $12, %%esp\n"
+        : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
+        : "eax", "ecx", "edx", "memory"
+    );
+
+    /* FX_SetMaterialAndSequenceParams: eax=primTemp, edx=particle, ecx=killTime, stack: indexInBatch */
+    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
+
+    /* Late time velocity integration */
+    if (lateTime > 0) {
+        float dt = (float)lateTime * 0.001f;
+        vec3_t velSum;
+        Particle_IntegrateTotalVelocity(p, lateTime, velSum);
+        newOrigin[0] += velSum[0] * dt;
+        newOrigin[1] += velSum[1] * dt;
+        newOrigin[2] += velSum[2] * dt;
+    }
+
+    /* Copy newOrigin to particle origin at offset 4 */
+    *(float *)(p + 4) = newOrigin[0];
+    *(float *)(p + 8) = newOrigin[1];
+    *(float *)(p + 0xc) = newOrigin[2];
 }
 
 /* line 1768 */
@@ -3520,132 +3450,60 @@ void FX_UpdateScheduledEffectsNonBolt(void)
     cullEffectCountNonBolt = privateEffectActiveCountNonBolt;
 }
 
-/* line 2252 */
-__attribute__((naked))
+/* FX_UpdateScheduledEffectsBolt — update bolt effects: expire dead, cull visible */
 void FX_UpdateScheduledEffectsBolt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2252 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl imp_fx_enable, %eax\n" /* line 2255 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf5c18c_0005c2ce\n"
-        "movl $0, cullEffectCountBolt\n" /* line 2259 */
-        "movl $0, visibleEffectCountBolt\n" /* line 2260 */
-        /* { scope 1 */
-        "movl privateEffectActiveCountBolt, %ecx\n" /* line 1117 */
-        "movl %ecx, initialEffectActiveCountBolt\n"
-        "xorl %edi, %edi\n" /* index0 */
-        ".Lf5c18c_0005c1c8:\n"
-        "movl %ecx, %eax\n" /* line 1120 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jge .Lf5c18c_0005c24a\n"
-        ".Lf5c18c_0005c1ce:\n"
-        "leal (, %edi, 4), %ebx\n" /* line 1122 | effect */
-        "movl effectListBolt, %eax\n"
-        "movl (%ebx, %eax), %edx\n" /* effect */
-        "movl theFxHelper, %eax\n" /* line 1124 */
-        "movl 4(%eax), %eax\n"
-        "cmpl 0xbc(%edx), %eax\n"
-        "jle .Lf5c18c_0005c2d6\n"
-        /* { scope 2 */
-        "andl $0xfffffbff, 0xa8(%edx)\n" /* line 201 */
-        /* } scope */
-        ".Lf5c18c_0005c1fb:\n"
-        "movl effectListBolt, %eax\n" /* line 419 */
-        "leal (%ebx, %eax), %edx\n"
-        "movl (%edx), %ebx\n"
-        "movl privateEffectActiveCountBolt, %ecx\n" /* line 422 */
-        "subl $1, %ecx\n"
-        "movl %ecx, privateEffectActiveCountBolt\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl (%edx), %esi\n" /* line 384 | swapCache */
-        "shll $2, %ecx\n" /* line 385 */
-        "movl (%eax, %ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl effectListBolt, %eax\n" /* line 386 */
-        "movl %esi, (%ecx, %eax)\n" /* swapCache */
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 403 */
-        "movl %ebx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "testb $0x10, 0xa9(%ebx)\n" /* line 404 */
-        "je .Lf5c18c_0005c23e\n"
-        "subl $1, effectBlockSightCount\n" /* line 409 */
-        ".Lf5c18c_0005c23e:\n"
-        "movl privateEffectActiveCountBolt, %ecx\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 1120 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jl .Lf5c18c_0005c1ce\n"
-        /* } scope */
-        ".Lf5c18c_0005c24a:\n"
-        "movl cullEffectCountBolt, %edi\n" /* line 1156 | index0 */
-        "cmpl %ecx, %edi\n" /* index0 */
-        "jge .Lf5c18c_0005c2c9\n"
-        "leal (, %edi, 4), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf5c18c_0005c265\n"
-        ".Lf5c18c_0005c262:\n"
-        "movl -0x1c(%ebp), %edx\n"
-        ".Lf5c18c_0005c265:\n"
-        "movl effectListBolt, %eax\n" /* line 1158 */
-        "movl (%eax, %edx), %esi\n" /* swapCache */
-        "movl imp_fx_cull, %edx\n" /* line 1162 */
-        "movl (%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf5c18c_0005c287\n"
-        "movl (%esi), %eax\n" /* line 1165 | swapCache */
-        "movl %esi, (%esp)\n" /* swapCache */
-        "calll *0x10(%eax)\n"
-        "testb %al, %al\n"
-        "jne .Lf5c18c_0005c2b9\n"
-        ".Lf5c18c_0005c287:\n"
-        "movl visibleEffectCountBolt, %ebx\n" /* line 1169 | effect */
-        "movl %esi, visibleEffectsBolt(, %ebx, 8)\n" /* swapCache */
-        "movl theFxHelper, %eax\n" /* line 1170 */
-        "addl $0x14, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x7c(%esi), %eax\n" /* swapCache */
-        "movl %eax, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps visibleEffectsBolt+4(, %ebx, 8)\n"
-        "addl $1, visibleEffectCountBolt\n" /* line 1171 */
-        ".Lf5c18c_0005c2b9:\n"
-        "addl $1, %edi\n" /* line 1156 | index0 */
-        "movl privateEffectActiveCountBolt, %eax\n"
-        "addl $4, -0x1c(%ebp)\n"
-        "cmpl %eax, %edi\n" /* index0 */
-        "jl .Lf5c18c_0005c262\n"
-        ".Lf5c18c_0005c2c9:\n"
-        "movl %eax, cullEffectCountBolt\n" /* line 1174 */
-        ".Lf5c18c_0005c2ce:\n"
-        "addl $0x2c, %esp\n" /* line 2267 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5c18c_0005c2d6:\n"
-        "movl (%edx), %eax\n" /* line 1134 */
-        "movl %edx, (%esp)\n"
-        "calll *0xc(%eax)\n"
-        "testb %al, %al\n" /* line 1136 */
-        "je .Lf5c18c_0005c1fb\n"
-        "addl $1, %edi\n" /* line 1142 | index0 */
-        "movl privateEffectActiveCountBolt, %ecx\n"
-        "jmp .Lf5c18c_0005c1c8\n"
-    );
+    typedef void (*UpdateFn)(void *);
+    typedef Bool (*CullFn)(void *);
+    int i, count;
+
+    if (!*(byte *)(*(int *)imp_fx_enable + 8))
+        return;
+
+    cullEffectCountBolt = 0;
+    visibleEffectCountBolt = 0;
+
+    count = privateEffectActiveCountBolt;
+    initialEffectActiveCountBolt = count;
+
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            *(int *)(eff + 0xa8) &= ~0x400;
+            byte **slot = (byte **)effectListBolt + i;
+            byte *dead = *slot;
+            count--;
+            privateEffectActiveCountBolt = count;
+            byte *last = ((byte **)effectListBolt)[count];
+            *slot = last;
+            ((byte **)effectListBolt)[count] = dead;
+            ((UpdateFn)(*(void ***)dead)[2])(dead);
+            if (*(byte *)(dead + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountBolt;
+        } else {
+            Bool alive = ((CullFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue;
+            i++;
+            count = privateEffectActiveCountBolt;
+        }
+    }
+
+    for (i = cullEffectCountBolt; i < privateEffectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        if (*(byte *)(*(int *)imp_fx_cull + 8)) {
+            Bool culled = ((CullFn)(*(void ***)eff)[4])(eff);
+            if (culled) continue;
+        }
+        int idx = visibleEffectCountBolt;
+        ((void **)visibleEffectsBolt)[idx * 2] = eff;
+        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        *(float *)((byte *)visibleEffectsBolt + idx * 8 + 4) = dist;
+        visibleEffectCountBolt++;
+    }
+    cullEffectCountBolt = privateEffectActiveCountBolt;
 }
 
 /* line 1034 */
