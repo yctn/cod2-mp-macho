@@ -450,7 +450,7 @@ extern void Wavelet_DecompressLevel(const byte *src, int offset, void *decode);
 extern int Image_CubemapFace(int faceIndex);
 extern void *__Znam(unsigned int size); /* operator new[] */
 extern void __ZdaPv(void *ptr); /* operator delete[] */
-static jpeg_alloc Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
+static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
     const byte *data, D3DFORMAT format, int bytesPerPixel)
 {
     int width = *(short *)(fileHeader + 6);
