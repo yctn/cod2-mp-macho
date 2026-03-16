@@ -2626,9 +2626,7 @@ void FX_AddCylinder_original(EffectPrimitive *prim, vec3_t *ax, const vec_t *ori
 /* FX_AddLine — allocate Line, add to system, calc origin+endpoint, set material+flags */
 extern void Line_Line(void *line);
 extern void Particle_SetAxis(void *particle, vec3_t *ax);
-extern void FX_CalcOrigin2(const void *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax);
 extern void OrientationPosFromWorldPos(void *orient, vec_t *worldPos, vec_t *localPos);
-extern void *MediaHandles_GetHandle(void *mediaHandles);
 void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
     (void)lateTime; (void)indexInBatch;
@@ -2655,7 +2653,7 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
     /* Calc second endpoint */
     byte *primTemp = *(byte **)((byte *)prim + 4);
     vec3_t org2;
-    FX_CalcOrigin2(primTemp, newOrigin, org2, origin, ax);
+    FX_CalcOrigin2((const PrimitiveTemplate *)primTemp, newOrigin, org2, origin, ax);
 
     /* Get material */
     void *material = MediaHandles_GetHandle(primTemp + 0x68);
