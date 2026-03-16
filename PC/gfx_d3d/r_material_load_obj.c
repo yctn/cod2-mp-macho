@@ -1599,7 +1599,11 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
     );
 }
 
-/* line 2317 */
+/* line 2317 — Shader argument binder: iterates pixel+vertex shader parameters,
+ * resolves each to code constant/sampler/literal sources, validates argument counts,
+ * builds sorted MaterialShaderArgument array for runtime binding.
+ * Register convention: eax=text, edx=techFlags, ecx=argCount, stack=args.
+ * 842 lines — the largest material parsing function after FinishLoadingInstance. */
 static __attribute__((naked))
 Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *techFlags, short unsigned int *argCount, MaterialShaderArgument * *args)
 {
@@ -2521,9 +2525,15 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
 }
 
 /* line 1141 */
+/* line 1141 — State map rule set parser: reads condition→action rule pairs from text.
+ * Each rule has: condition (test source against value) → action (set state bits).
+ * Parses "default:" fallback and multiple "condition == value:" cases.
+ * Register convention: eax=text, edx=ruleSetName, ecx=stateSet, stack=ruleSet.
+ * 421 lines of text parsing with Material_ParseRuleSetConditionTest dispatch. */
 static __attribute__((naked))
 Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const MtlStateMapBitGroup *stateSet, const MaterialStateMapRuleSet * *ruleSet)
 {
+    (void)text; (void)ruleSetName; (void)stateSet; (void)ruleSet;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1141 */
         "movl %esp, %ebp\n"
@@ -3276,7 +3286,10 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
     );
 }
 
-/* line 2299 */
+/* line 2299 — Shader loader: reads D3DX shader from cached text, compiles via D3DXCompileShader
+ * or loads pre-compiled binary, creates IDirect3DPixelShader9/IDirect3DVertexShader9.
+ * Register convention: eax=text, edx=shaderType.
+ * 553 lines of shader compilation with include handler, error reporting, caching. */
 static __attribute__((naked))
 MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
 {
@@ -3833,7 +3846,12 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
     );
 }
 
-/* line 3407 */
+/* line 3407 — Material instance finalizer: the main material compilation orchestrator.
+ * Parses technique set from text, iterates each technique type, loads passes with
+ * shaders/state maps/texture states, builds vertex declarations, validates arguments.
+ * Register convention: eax=text, edx=material, ecx=imageTrack.
+ * 1660 lines — the LARGEST material function, orchestrating the full compilation pipeline:
+ * technique iteration → pass loading → shader compilation → argument binding → validation. */
 static __attribute__((naked))
 Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
 {
