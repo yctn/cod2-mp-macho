@@ -2017,48 +2017,11 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
 /* line 1439 — D3D shader technique application: iterates technique passes,
  * sets vertex declarations, pixel/vertex shaders, sampler states, render states,
  * code textures/constants, then issues DrawIndexedPrimitive calls.
- * Original: 1836 lines of ASM — the largest single function in the codebase.
- * Uses register calling convention: eax=vertDeclType, edx=args, ecx=stateOverride. */
-static void RB_DrawSingleTechnique_impl(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride);
+ * 1836 lines of ASM — the largest function in the codebase.
+ * MUST remain naked: register calling convention (eax=vertDeclType, edx=args, ecx=stateOverride)
+ * and 30+ D3D COM vtable calls with complex state management make C conversion impractical. */
 static __attribute__((naked))
 void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride)
-{
-    (void)vertDeclType; (void)args; (void)stateOverride;
-    /* Trampoline: marshal register args to stack for _impl */
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %ecx\n"
-        "pushl %edx\n"
-        "pushl %eax\n"
-        "calll RB_DrawSingleTechnique_impl\n"
-        "addl $12, %esp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
-
-/* The _impl delegates to the original ASM via inline asm since the technique
- * application involves complex D3D state machine logic with 30+ vtable calls */
-static void RB_DrawSingleTechnique_impl(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride)
-{
-    /* This function's core logic involves:
-     * 1. Get technique from material's technique set
-     * 2. For each pass in technique:
-     *    a. Set vertex declaration (D3D SetVertexDeclaration)
-     *    b. Set pixel shader (D3D SetPixelShader)
-     *    c. Set vertex shader (D3D SetVertexShader)
-     *    d. Apply per-pass render state bits
-     *    e. Bind code textures (from backEnd state)
-     *    f. Set pixel/vertex shader constants
-     *    g. Set sampler states
-     *    h. Bind vertex streams
-     *    i. DrawIndexedPrimitive
-     * The full implementation is in the #if 0 ASM block below (1836 lines). */
-    (void)vertDeclType; (void)args; (void)stateOverride;
-}
-
-#if 0 /* original naked (1836 lines) — replaced above with trampoline + stub */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1439 */
@@ -3894,8 +3857,6 @@ static void RB_DrawSingleTechnique_impl(MaterialVertexDeclType vertDeclType, con
         ".text\n"
     );
 }
-#endif /* original naked RB_DrawSingleTechnique */
-
 /* line 1556 */
 void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args)
 {
