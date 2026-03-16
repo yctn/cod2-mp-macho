@@ -903,9 +903,52 @@ void Particle_SetAxis(const Particle * _this, vec3_t *ax)
     }
 }
 
-/* line 2285 */
+/* Flash_Draw — evaluate color, set position to camera+forward*8, submit as light entity */
+extern float floorf(float x);
+static int FloatToByte(float f)
+{
+    int v = (int)floorf(f * 255.0f + 0.5f);
+    if (v < 0) v = 0;
+    if (v > 255) v = 255;
+    return v;
+}
+void Flash_Draw(const Flash *_this)
+{
+    byte *self = (byte *)_this;
+
+    /* Evaluate 3 color channels from offsets 0x6c/0x70/0x74, clamp [0,1] */
+    float color[4];
+    int i;
+    for (i = 0; i < 3; i++) {
+        float v = *(float *)(self + 0x6c + i * 4);
+        if (v < 0.0f) v = 0.0f;
+        if (v > 1.0f) v = 1.0f;
+        color[i] = v;
+    }
+    color[3] = 1.0f; /* alpha */
+
+    /* Convert to RGBA bytes at offset 0x90 */
+    *(byte *)(self + 0x90) = (byte)FloatToByte(color[0]);
+    *(byte *)(self + 0x91) = (byte)FloatToByte(color[1]);
+    *(byte *)(self + 0x92) = (byte)FloatToByte(color[2]);
+    *(byte *)(self + 0x93) = (byte)FloatToByte(color[3]);
+
+    /* Set origin to camera position + forward * 8 */
+    byte *helper = *(byte **)imp_theFxHelper;
+    *(float *)(self + 0x7c) = *(float *)(helper + 0x14) + *(float *)(helper + 0x20) * 8.0f;
+    *(float *)(self + 0x80) = *(float *)(helper + 0x18) + *(float *)(helper + 0x24) * 8.0f;
+    *(float *)(self + 0x84) = *(float *)(helper + 0x1c) + *(float *)(helper + 0x28) * 8.0f;
+
+    /* Set radius */
+    *(float *)(self + 0x88) = 12.0f;
+    *(float *)(self + 0x8c) = 12.0f;
+
+    /* Submit as light entity (reType=4) via register convention */
+    FX_AddFxToScene_impl(self, 4);
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Flash_Draw(const Flash * _this)
+void Flash_Draw_asm(const Flash * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2285 */
@@ -1095,6 +1138,7 @@ void Flash_Draw(const Flash * _this)
         "jmp .Lfa1522_000a15f5\n"
     );
 }
+#endif
 
 /* FxBoltFrame_Acquire — find or create bolt frame for bolt info. Returns struct by value via hidden ptr.
  * Hidden return ptr at 8(%ebp), bolt at 0xc(%ebp). Uses retl $4 (struct return convention). */

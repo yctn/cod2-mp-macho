@@ -827,8 +827,67 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
 }
 
 /* line 636 */
-__attribute__((naked))
+/* FX_GetServerVisibility — ray vs effect visibility spheres, returns accumulated visibility */
+extern void *imp_fx_visMinTraceDist;
+extern float Vec3Normalize(vec_t *v);
 float FX_GetServerVisibility(const vec_t *start, const vec_t *end)
+{
+    int count = g_effectVisArrayCount;
+    if (count == 0)
+        return 1.0f;
+
+    /* Compute ray direction and length */
+    vec3_t dir;
+    dir[0] = end[0] - start[0];
+    dir[1] = end[1] - start[1];
+    dir[2] = end[2] - start[2];
+    float len = Vec3Normalize(dir);
+
+    /* Check minimum trace distance */
+    float minDist = *(float *)(*(byte *)imp_fx_visMinTraceDist + 8);
+    if (len < minDist)
+        return 1.0f;
+
+    float halfLen = len * 0.5f;
+    float visibility = 1.0f;
+
+    /* Test each visibility sphere */
+    byte *visArray = (byte *)g_effectVisArray;
+    int i;
+    for (i = 0; i < count; i++) {
+        byte *vis = visArray + i * 0x14;
+        /* Project vis center onto ray */
+        float dx = *(float *)(vis + 0) - start[0];
+        float dy = *(float *)(vis + 4) - start[1];
+        float dz = *(float *)(vis + 8) - start[2];
+        float t = dx * dir[0] + dy * dir[1] + dz * dir[2];
+
+        /* Check if projection is within ray bounds (within halfLen of center) */
+        float absDist = t - halfLen;
+        if (absDist < 0) absDist = -absDist;
+        if (absDist > halfLen)
+            continue;
+
+        /* Compute closest point on ray */
+        vec3_t projPt;
+        projPt[0] = start[0] + dir[0] * t;
+        projPt[1] = start[1] + dir[1] * t;
+        projPt[2] = start[2] + dir[2] * t;
+
+        /* Check distance to sphere */
+        float distSq = Vec3DistanceSq((const vec_t *)vis, projPt);
+        float radiusSq = *(float *)(vis + 12);
+        if (distSq >= radiusSq)
+            continue;
+
+        /* Apply visibility attenuation */
+        visibility *= *(float *)(vis + 16);
+    }
+    return visibility;
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+float FX_GetServerVisibility_asm(const vec_t *start, const vec_t *end)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 636 */
@@ -945,6 +1004,7 @@ float FX_GetServerVisibility(const vec_t *start, const vec_t *end)
         "jmp .Lf59e2e_00059ecc\n"
     );
 }
+#endif
 
 /* line 1303 */
 static __attribute__((naked))
@@ -3553,9 +3613,83 @@ void FX_UpdateScheduledEffectsBolt(void)
     cullEffectCountBolt = privateEffectActiveCountBolt;
 }
 
-/* line 1034 */
-__attribute__((naked))
+/* FX_UpdateAllBolt — phase 1: expire dead effects, phase 2: cleanup clusters, destroy removed effects */
+static void FX_RemoveCluster(int clusterId)
+{
+    byte *clusters = (byte *)effectClusters;
+    int lastIdx = effectClusterCount - 1;
+    effectClusterCount = lastIdx;
+    if (clusterId != lastIdx) {
+        /* Swap last cluster into the removed slot */
+        memcpy(clusters + clusterId * 16, clusters + lastIdx * 16, 16);
+        /* Remap all effects that referenced the moved cluster */
+        int i;
+        for (i = 0; i < effectActiveCountBolt; i++) {
+            byte *eff = ((byte **)effectListBolt)[i];
+            if (*(int *)(eff + 0xac) == lastIdx)
+                *(int *)(eff + 0xac) = clusterId;
+        }
+        for (i = 0; i < effectActiveCountNonBolt; i++) {
+            byte *eff = ((byte **)effectListNonBolt)[i];
+            if (*(int *)(eff + 0xac) == lastIdx)
+                *(int *)(eff + 0xac) = clusterId;
+        }
+    }
+}
 void FX_UpdateAllBolt(void)
+{
+    typedef void (*VtFn)(void *);
+    typedef Bool (*UpdateFn)(void *);
+    int i, count;
+
+    /* Phase 1: expire dead effects */
+    count = effectActiveCountBolt;
+    privateEffectActiveCountBolt = count;
+    initialEffectActiveCountBolt = count;
+
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            *(int *)(eff + 0xa8) &= ~0x400;
+            /* Swap-remove and destroy */
+            byte *dead = eff;
+            count--;
+            privateEffectActiveCountBolt = count;
+            byte *last = ((byte **)effectListBolt)[count];
+            ((byte **)effectListBolt)[i] = last;
+            ((byte **)effectListBolt)[count] = dead;
+            ((VtFn)(*(void ***)dead)[2])(dead); /* Die */
+            if (*(byte *)(dead + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountBolt;
+        } else {
+            Bool alive = ((UpdateFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue;
+            i++;
+            count = privateEffectActiveCountBolt;
+        }
+    }
+
+    /* Phase 2: cleanup removed effects — destroy, remove clusters, update counts */
+    for (i = count; i < initialEffectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0) {
+            FX_RemoveCluster(clusterId);
+        }
+        ((VtFn)(*(void ***)eff)[1])(eff); /* Delete */
+        effectActiveCountBolt--;
+        ((byte **)effectListBolt)[i] = ((byte **)effectListBolt)[effectActiveCountBolt];
+        effectActiveCount--;
+    }
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_UpdateAllBolt_asm(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1034 */
@@ -3723,6 +3857,7 @@ void FX_UpdateAllBolt(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 759 */
 __attribute__((naked))
@@ -4013,9 +4148,57 @@ void FX_Rewind(int time)
     );
 }
 
-/* line 1072 */
-__attribute__((naked))
+/* FX_UpdateAllNonBolt — same as UpdateAllBolt but for non-bolt effects */
 void FX_UpdateAllNonBolt(void)
+{
+    typedef void (*VtFn)(void *);
+    typedef Bool (*UpdateFn)(void *);
+    int i, count;
+
+    count = effectActiveCountNonBolt;
+    privateEffectActiveCountNonBolt = count;
+    initialEffectActiveCountNonBolt = count;
+
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int curTime = *(int *)((byte *)theFxHelper + 4);
+        if (curTime > *(int *)(eff + 0xbc)) {
+            *(int *)(eff + 0xa8) &= ~0x400;
+            byte *dead = eff;
+            count--;
+            privateEffectActiveCountNonBolt = count;
+            byte *last = ((byte **)effectListNonBolt)[count];
+            ((byte **)effectListNonBolt)[i] = last;
+            ((byte **)effectListNonBolt)[count] = dead;
+            ((VtFn)(*(void ***)dead)[2])(dead);
+            if (*(byte *)(dead + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountNonBolt;
+        } else {
+            Bool alive = ((UpdateFn)(*(void ***)eff)[3])(eff);
+            if (!alive) continue;
+            i++;
+            count = privateEffectActiveCountNonBolt;
+        }
+    }
+
+    for (i = count; i < initialEffectActiveCountNonBolt; i++) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0)
+            FX_RemoveCluster(clusterId);
+        ((VtFn)(*(void ***)eff)[1])(eff);
+        effectActiveCountNonBolt--;
+        ((byte **)effectListNonBolt)[i] = ((byte **)effectListNonBolt)[effectActiveCountNonBolt];
+        effectActiveCount--;
+    }
+}
+#if 0 /* Original ASM */
+__attribute__((naked))
+void FX_UpdateAllNonBolt_asm(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1072 */
@@ -4183,6 +4366,7 @@ void FX_UpdateAllNonBolt(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 2270 */
 __attribute__((naked))
