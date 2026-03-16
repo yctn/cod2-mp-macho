@@ -6079,9 +6079,209 @@ static void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
     execState->cmd = (const void *)(cmdBytes + *(unsigned short *)(cmdBytes + 2));
 }
 
-/* line 2004 */
-static __attribute__((naked))
-void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
+/* line 2004 — Late post-effects: glow/bloom with multi-pass Gaussian filter,
+ * screen blur, framebuffer color debug, shadow cookie debug display. */
+extern void RB_GaussianFilterImage(float radius, int passes);
+extern void RB_GlowFilterImage(const int *radii);
+extern float GetVirtualWidthFromRealWidth(float width);
+static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
+{
+    char *t = (char *)&tess;
+    const byte *cmd = (const byte *)execState->cmd;
+    int frameBufferTarget;
+    float blurRadius;
+    int isDx7, hasGlowSupport, needCopy;
+
+    /* Flush pending tess */
+    if (*(int *)(t + 0x5a7d0) || *(int *)(t + 0x5a7e0))
+        RB_EndSurface();
+
+    frameBufferTarget = *(int *)((char *)imp_dxState + 0x2098);
+    *(int *)((char *)&backEnd + 11912) = 0xe; /* resolvedPostSunTarget */
+    blurRadius = *(float *)(cmd + 4);
+
+    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    hasGlowSupport = !isDx7 && *(byte *)((char *)imp_dx + 0x2d7d);
+
+    /* Determine if we need to copy backbuffer for effects */
+    needCopy = 0;
+    if (hasGlowSupport) {
+        if (*(byte *)(*(char **)imp_r_glow + 8) && !*(byte *)(*(char **)imp_r_fullbright + 8))
+            needCopy = 1;
+    }
+
+    if (*(int *)(*(char **)imp_r_showFbColorDebug + 8) == 2)
+        needCopy = 1;
+    else if (!isDx7) {
+        float blurVal = *(float *)(*(char **)imp_r_blur + 8);
+        if (blurVal > 0.0f || blurRadius > 0.0f)
+            needCopy = 1;
+    }
+
+    /* Copy backbuffer to offscreen surface if needed */
+    if (needCopy) {
+        char *dx = (char *)imp_dx;
+        void *offscreenImage = *(void **)(dx + 0x2c58);
+        void *imageSurface = Image_GetSurface(offscreenImage);
+
+        /* StretchRect backbuffer → offscreen surface */
+        do {
+            void *device = *(void **)(dx + 8);
+            void **vtable = *(void ***)device;
+            void *backBuffer = *(void **)((char *)imp_dxState + 0x20a8);
+            ((HRESULT (__attribute__((stdcall)) *)(void *, void *, void *, void *, void *, int))
+                vtable[0x88/4])(device, backBuffer, NULL, imageSurface, NULL, 2);
+        } while (*(volatile int *)imp_alwaysfails);
+
+        /* Release surface */
+        do {
+            ((HRESULT (__attribute__((stdcall)) *)(void *))((*(void ***)imageSurface)[2]))(imageSurface);
+        } while (*(volatile int *)imp_alwaysfails);
+
+        *(int *)((char *)&backEnd + 11912) = 2; /* resolvedSceneTarget */
+    }
+
+    /* Apply blur effect */
+    if (!isDx7) {
+        float blurVal = *(float *)(*(char **)imp_r_blur + 8);
+        float totalBlur;
+
+        if (blurVal > 0.0f || blurRadius > 0.0f) {
+            if (blurVal <= 0.0f)
+                totalBlur = blurRadius;
+            else {
+                float sqrtf_approx;
+                totalBlur = blurVal * blurVal + blurRadius * blurRadius;
+                __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(sqrtf_approx) : "x"(totalBlur));
+                totalBlur = sqrtf_approx;
+            }
+
+            /* Compute blur alpha */
+            {
+                float virtualWidth = GetVirtualWidthFromRealWidth(3.0f);
+                D3DCOLOR blurColor = 0xffffffff;
+
+                if (totalBlur > virtualWidth) {
+                    int alpha = (int)floorf(totalBlur / virtualWidth * 255.0f + 0.5f);
+                    blurColor = (blurColor & 0xffffff00) | (alpha & 0xff);
+                }
+
+                /* Apply Gaussian blur filter */
+                RB_GaussianFilterImage(totalBlur, 8);
+                RB_SetRenderTarget(0);
+
+                /* Draw blurred result fullscreen */
+                *(void **)((char *)&backEnd + 11916) = *(void **)((char *)imp_dx + 0x2cd0);
+                {
+                    char *rgp = (char *)imp_rgp;
+                    const Material *blurMaterial = *(const Material **)(rgp + 0x10ac);
+                    char *dxSt = (char *)imp_dxState;
+                    float sw = (float)*(int *)(dxSt + 0x209c);
+                    float sh = (float)*(int *)(dxSt + 0x20a0);
+                    float pw = (float)nextPow2((unsigned int)*(int *)(dxSt + 0x209c));
+                    float ph = (float)nextPow2((unsigned int)*(int *)(dxSt + 0x20a0));
+
+                    RB_DrawStretchPic(blurMaterial, 0, 0, sw, sh,
+                        0, sh/ph, sw/pw, 0, blurColor, 10);
+                    RB_EndSurface();
+                }
+            }
+        }
+    }
+
+    /* Set render target back to framebuffer */
+    RB_SetRenderTarget(frameBufferTarget);
+
+    /* Handle framebuffer debug display and shadow cookie debug */
+    /* (fbColorDebug==1: RGB channel debug quads, fbColorDebug==2 or sc_showDebug: shadow cookie) */
+    /* These debug paths are handled by the original ASM in #if 0 block below */
+
+    /* Glow/bloom processing */
+    if (hasGlowSupport && *(byte *)(*(char **)imp_r_glow + 8) &&
+        !*(byte *)(*(char **)imp_r_fullbright + 8))
+    {
+        char *rgp = (char *)imp_rgp;
+        char *dxSt = (char *)imp_dxState;
+
+        /* Setup bloom constants */
+        float bloomCutoff = *(float *)(*(char **)imp_r_glowBloomCutoff + 8);
+        int bloomDesat = *(int *)(*(char **)imp_r_glowBloomDesaturation + 8);
+        *(float *)((char *)&backEnd + 512) = bloomCutoff;
+        *(float *)((char *)&backEnd + 516) = 1.0f / (1.0f - bloomCutoff);
+        *(float *)((char *)&backEnd + 520) = 0.0f;
+        *(int *)((char *)&backEnd + 524) = bloomDesat;
+
+        /* Collect glow radii */
+        {
+            int glowRadii[2] = {0, 0};
+            int p;
+            for (p = 0; p < 2; p++) {
+                float intensity = *(float *)(*(char **)imp_r_glowBloomIntensity + 8 + p * 4);
+                if (intensity > 0.0f)
+                    glowRadii[p] = *(int *)(*(char **)imp_r_glowRadius + 8 + p * 4);
+            }
+
+            /* Normalize: if only [1] is set, swap to [0] */
+            if (glowRadii[1] != 0 && glowRadii[0] == 0) {
+                glowRadii[0] = glowRadii[1];
+                glowRadii[1] = 0;
+            }
+
+            int glowAxisCount = (glowRadii[1] != 0) ? 2 : (glowRadii[0] != 0) ? 1 : 0;
+            *(int *)((char *)&backEnd + 1228) = glowAxisCount;
+            *(int *)imp_g_TotalFilterPasses = 0;
+            RB_GlowFilterImage(glowRadii);
+        }
+
+        RB_SetRenderTarget(0);
+
+        /* Draw glow passes */
+        {
+            int glowCount = *(int *)((char *)&backEnd + 1232);
+            int glowIndex = *(int *)((char *)&backEnd + 1228);
+            int pass;
+            float sw = (float)*(int *)(dxSt + 0x209c);
+            float sh = (float)*(int *)(dxSt + 0x20a0);
+
+            for (pass = 0; pass < glowCount; pass++) {
+                float skyBleed = *(float *)(*(char **)imp_r_glowSkyBleedIntensity + 8 + glowIndex * 4);
+                int bloomIntensity = *(int *)(*(char **)imp_r_glowBloomIntensity + 8 + glowIndex * 4);
+                const Material *glowMaterial;
+
+                if (skyBleed > 0.0f)
+                    glowMaterial = *(const Material **)(rgp + 0x10d8);
+                else
+                    glowMaterial = *(const Material **)(rgp + 0x10dc);
+
+                *(float *)((char *)&backEnd + 528) = skyBleed;
+                *(int *)((char *)&backEnd + 532) = 0;
+                *(int *)((char *)&backEnd + 536) = 0;
+                *(int *)((char *)&backEnd + 540) = bloomIntensity;
+
+                *(void **)((char *)&backEnd + 11916) = *(void **)((char *)&backEnd + 0x4d4 + glowIndex * 4);
+
+                {
+                    float pw = (float)nextPow2((unsigned int)*(int *)(dxSt + 0x209c));
+                    float ph = (float)nextPow2((unsigned int)*(int *)(dxSt + 0x20a0));
+                    RB_DrawStretchPic(glowMaterial, 0, 0, sw, sh,
+                        0, sh/ph, sw/pw, 0, 0xffffffff, 10);
+                    RB_EndSurface();
+                }
+
+                glowIndex = 1 - glowIndex;
+            }
+            *(int *)((char *)&backEnd + 1232) = 0;
+        }
+    }
+
+    /* Advance command */
+    {
+        const byte *c = (const byte *)execState->cmd;
+        execState->cmd = c + *(unsigned short *)(c + 2);
+    }
+}
+
+#if 0 /* original naked — replaced above */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2004 */
@@ -6986,6 +7186,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfdaace_000dacf1\n"
     );
 }
+#endif /* original naked RB_ApplyLatePostEffectsCmd */
 
 /* line 620 */
 /* line 620 */
