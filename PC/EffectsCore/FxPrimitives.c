@@ -196,53 +196,34 @@ void FxBoltFrame_Release(const FxBoltFrame * _this)
 }
 
 /* line 88 */
-__attribute__((naked))
+extern int FX_GetBoneOrientation(int *boltInfo, orientation_t *orient);
 const orientation_t * FxBoltFrame_GetOrientation(const FxBoltFrame * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 88 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0x3c(%esi), %eax\n" /* line 90 | this */
-        "testl %eax, %eax\n"
-        "js .Lfa05be_000a0617\n"
-        "movl imp_cl, %eax\n" /* line 94 */
-        "movl (%eax), %eax\n"
-        "movl 0x864c(%eax), %eax\n"
-        "cmpl %eax, 4(%esi)\n" /* this */
-        "je .Lfa05be_000a0604\n"
-        "movl %eax, 4(%esi)\n" /* line 96 | this */
-        "leal 8(%esi), %ebx\n" /* line 102 | this */
-        "movl %ebx, 4(%esp)\n"
-        "leal 0x3c(%esi), %eax\n" /* this */
-        "movl %eax, (%esp)\n"
-        "calll FX_GetBoneOrientation\n"
-        "testb %al, %al\n"
-        "je .Lfa05be_000a0609\n"
-        ".Lfa05be_000a05fb:\n"
-        "movl %ebx, %eax\n" /* line 111 */
-        "addl $0x10, %esp\n" /* line 112 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa05be_000a0604:\n"
-        "leal 8(%esi), %ebx\n" /* this */
-        "jmp .Lfa05be_000a05fb\n"
-        ".Lfa05be_000a0609:\n"
-        "movl $0xffffffff, 0x3c(%esi)\n" /* line 105 | this */
-        "movl $0xffffffff, 0x40(%esi)\n" /* line 106 | this */
-        ".Lfa05be_000a0617:\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 112 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *cl_ptr;
+    int serverTime;
+    orientation_t *orient = (orientation_t *)(p + 8);
+
+    /* line 90: if bone index < 0, return NULL */
+    if (*(int *)(p + 0x3c) < 0)
+        return (const orientation_t *)0;
+
+    /* line 94: check if server time changed */
+    cl_ptr = *(byte **)imp_cl;
+    serverTime = *(int *)(cl_ptr + 0x864c);
+    if (serverTime != *(int *)(p + 4)) {
+        /* line 96: update cached time */
+        *(int *)(p + 4) = serverTime;
+        /* line 102: try to get bone orientation */
+        if (!FX_GetBoneOrientation((int *)(p + 0x3c), orient)) {
+            /* line 105-106: invalidate */
+            *(int *)(p + 0x3c) = -1;
+            *(int *)(p + 0x40) = -1;
+            return (const orientation_t *)0;
+        }
+    }
+
+    return orient;
 }
 
 /* line 165 */
@@ -431,31 +412,18 @@ void Light_CreateChannelInstances(const Light * _this, const PrimitiveTemplate *
 }
 
 /* line 2158 */
-__attribute__((naked))
+extern void FxHelper_AddLightToScene(void *helper, float *origin, float radius, float r, float g, float b);
 void Light_Draw(const Light * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2158 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x74(%eax), %edx\n" /* line 2160 */
-        "movl %edx, 0x14(%esp)\n"
-        "movl 0x70(%eax), %edx\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl 0x6c(%eax), %edx\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl 0x88(%eax), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "addl $0x7c, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl imp_theFxHelper, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_AddLightToScene\n"
-        "leave\n" /* line 2161 */
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    /* line 2160: args are helper, origin(0x7c), radius(0x88), rgb(0x6c,0x70,0x74) */
+    FxHelper_AddLightToScene(helper,
+        (float *)(p + 0x7c),
+        *(float *)(p + 0x88),
+        *(float *)(p + 0x6c),
+        *(float *)(p + 0x70),
+        *(float *)(p + 0x74));
 }
 
 /* line 2214 */
@@ -465,78 +433,45 @@ unsigned char Light_TypeID(const Light * _this)
 }
 
 /* line 2264 */
-__attribute__((naked))
+/* line 2264 */
+extern float Vec3Normalize(float *v);
 void Flash_Init(const Flash * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2264 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "leal 4(%esi), %ecx\n" /* this */
-        "movl imp_theFxHelper, %ebx\n"
-        "movl (%ebx), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "movss 4(%esi), %xmm0\n" /* line 248 */
-        "subss 0x14(%eax), %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* dif */
-        "movss 4(%ecx), %xmm0\n" /* line 249 */
-        "subss 4(%edx), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "movss 8(%ecx), %xmm0\n" /* line 250 */
-        "subss 8(%edx), %xmm0\n"
-        "movss %xmm0, -0xc(%ebp)\n"
-        /* } scope */
-        "leal -0x14(%ebp), %eax\n" /* line 2270 | dif */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstps -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm2\n"
-        "movl (%ebx), %eax\n"
-        "leal 0x20(%eax), %edx\n"
-        /* { scope 2 */
-        "movss -0x14(%ebp), %xmm1\n" /* line 304 | dif */
-        "mulss 0x20(%eax), %xmm1\n"
-        "movss -0x10(%ebp), %xmm0\n"
-        "mulss 4(%edx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0xc(%ebp), %xmm0\n"
-        "mulss 8(%edx), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        /* } scope */
-        "ucomiss lit4_002ed804, %xmm2\n" /* line 2274 | 600.0f */
-        "ja .Lfa0ac2_000a0ba5\n"
-        "ucomiss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "jae .Lfa0ac2_000a0b76\n"
-        "jp .Lfa0ac2_000a0b76\n"
-        "ucomiss lit4_002ed798, %xmm2\n" /* 100.0f */
-        "ja .Lfa0ac2_000a0ba5\n"
-        "ucomiss lit4_002ed798, %xmm2\n" /* line 2276 | 100.0f */
-        "ja .Lfa0ac2_000a0b76\n"
-        "jp .Lfa0ac2_000a0b76\n"
-        "addss lit4_002ed808, %xmm1\n" /* line 2277 | 1.100000023841858f */
-        ".Lfa0ac2_000a0b76:\n"
-        "mulss %xmm2, %xmm2\n" /* line 2281 */
-        "divss lit4_002ed80c, %xmm2\n" /* -360000.0f */
-        "addss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "mulss %xmm2, %xmm1\n"
-        "mulss 0xd4(%esi), %xmm1\n" /* this */
-        "movss %xmm1, 0xd4(%esi)\n" /* this */
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 2282 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa0ac2_000a0ba5:\n"
-        "pxor %xmm1, %xmm1\n" /* line 2277 */
-        "jmp .Lfa0ac2_000a0b76\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    float dif[3];
+    float dist, dot, falloff;
+    float *camOrigin, *camDir;
+
+    /* line 2266: dif = this->origin - camera origin */
+    camOrigin = (float *)(helper + 0x14);
+    dif[0] = *(float *)(p + 4) - camOrigin[0];
+    dif[1] = *(float *)(p + 8) - camOrigin[1];
+    dif[2] = *(float *)(p + 0xc) - camOrigin[2];
+
+    /* line 2270: normalize dif, get distance */
+    dist = Vec3Normalize(dif);
+
+    /* dot product with camera direction */
+    camDir = (float *)(helper + 0x20);
+    dot = dif[0] * camDir[0] + dif[1] * camDir[1] + dif[2] * camDir[2];
+
+    /* line 2274-2277: visibility based on distance and angle */
+    if (dist > 600.0f) {
+        dot = 0.0f;
+    } else if (dot < 0.5f) {
+        if (dist > 100.0f)
+            dot = 0.0f;
+        else if (dist <= 100.0f)
+            dot += 1.100000023841858f;
+    }
+
+    /* line 2281: distance falloff */
+    falloff = dist * dist / (-360000.0f) + 1.0f;
+    dot *= falloff;
+
+    /* Apply to flash intensity at offset 0xd4 */
+    *(float *)(p + 0xd4) *= dot;
 }
 
 /* line 2305 */
@@ -551,46 +486,30 @@ static void GLOBAL__I__ZN11FxBoltFrame12g_mFrameListE(void) /* global constructo
 }
 
 /* line 563 */
-__attribute__((naked))
 void Particle_AddVisibility(const Particle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 563 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        /* { scope 1 */
-        "movl imp_g_effectVisArrayCount, %esi\n" /* line 570 */
-        "movl (%esi), %eax\n"
-        "leal (%eax, %eax, 4), %ecx\n"
-        "movl imp_g_effectVisArray, %edx\n"
-        "leal (%edx, %ecx, 4), %ecx\n"
-        "addl $1, %eax\n" /* line 571 */
-        "movl %eax, (%esi)\n"
-        "leal 0x7c(%ebx), %edx\n" /* line 573 | this, from */
-        /* { scope 2 */
-        "movl 0x7c(%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%ecx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movss 0x88(%ebx), %xmm0\n" /* line 574 | this */
-        "mulss %xmm0, %xmm0\n"
-        "movss %xmm0, 0xc(%ecx)\n"
-        "movzbl 0x93(%ebx), %eax\n" /* line 575 | this */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss lit4_002ed810, %xmm0\n" /* -0.003921568859368563f */
-        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, 0x10(%ecx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 576 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    int *countPtr = *(int **)imp_g_effectVisArrayCount;
+    byte *visArray = *(byte **)imp_g_effectVisArray;
+    int idx = *countPtr;
+    byte *entry = visArray + idx * 20; /* 5 floats = 20 bytes per entry */
+    float radius, alpha;
+
+    /* line 571: increment count */
+    *countPtr = idx + 1;
+
+    /* line 573: copy origin vec3 */
+    *(int *)(entry + 0) = *(int *)(p + 0x7c);
+    *(int *)(entry + 4) = *(int *)(p + 0x80);
+    *(int *)(entry + 8) = *(int *)(p + 0x84);
+
+    /* line 574: radius squared */
+    radius = *(float *)(p + 0x88);
+    *(float *)(entry + 12) = radius * radius;
+
+    /* line 575: visibility from alpha byte */
+    alpha = (float)(*(unsigned char *)(p + 0x93));
+    *(float *)(entry + 16) = alpha * (-0.003921568859368563f) + 1.0f;
 }
 
 /* line 329 */
@@ -775,406 +694,141 @@ void Particle_Draw(const Particle * _this)
 }
 
 /* line 227 */
-__attribute__((naked))
 Bool Effect_Update(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 227 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0xb8(%ecx), %edx\n" /* line 232 */
-        "movl imp_theFxHelper, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "cmpl %eax, %edx\n"
-        "jg .Lfa0df4_000a0e58\n"
-        "subl %edx, %eax\n" /* line 239 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movl 0xbc(%ecx), %eax\n"
-        "subl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x3c(%ecx)\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lfa0df4_000a0e3b\n"
-        "movss %xmm1, 0x3c(%ecx)\n" /* line 242 */
-        ".Lfa0df4_000a0e3b:\n"
-        "pxor %xmm0, %xmm0\n" /* line 243 */
-        "ucomiss 0x3c(%ecx), %xmm0\n"
-        "ja .Lfa0df4_000a0e4c\n"
-        "movl $1, %eax\n" /* line 244 */
-        ".Lfa0df4_000a0e4a:\n"
-        "popl %ebp\n" /* line 247 */
-        "retl\n"
-        ".Lfa0df4_000a0e4c:\n"
-        "movss %xmm0, 0x3c(%ecx)\n" /* line 244 */
-        "movl $1, %eax\n"
-        "jmp .Lfa0df4_000a0e4a\n"
-        ".Lfa0df4_000a0e58:\n"
-        "xorl %eax, %eax\n" /* line 232 */
-        "popl %ebp\n" /* line 247 */
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int startTime = *(int *)(p + 0xb8);
+    int curTime = *(int *)(helper + 4);
+    int endTime;
+    float normDuration;
+
+    /* line 232: if start time > current time, not started yet */
+    if (startTime > curTime)
+        return 0;
+
+    /* line 239: compute normalized duration */
+    endTime = *(int *)(p + 0xbc);
+    normDuration = (float)(curTime - startTime) / (float)(endTime - startTime);
+    *(float *)(p + 0x3c) = normDuration;
+
+    /* line 241: clamp to 1.0 */
+    if (normDuration > 1.0f)
+        *(float *)(p + 0x3c) = 1.0f;
+
+    /* line 243: clamp to 0.0 */
+    if (0.0f > *(float *)(p + 0x3c))
+        *(float *)(p + 0x3c) = 0.0f;
+
+    return 1;
 }
 
 /* line 395 */
-__attribute__((naked))
+extern unsigned char FxHelper_CullSphere(void *helper, float *origin, float radius, int cullType);
 Bool Particle_Cull(const Particle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 395 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "testb $2, 0xab(%edx)\n" /* line 220 */
-        "je .Lfa0e5c_000a0eb1\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 221 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        /* { scope 1 */
-        "movl %eax, %ebx\n" /* line 154 */
-        "subl $5, %ebx\n"
-        "js .Lfa0e5c_000a0e89\n"
-        "movl $5, %eax\n"
-        /* } scope */
-        ".Lfa0e5c_000a0e89:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 397 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 398 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa0e5c_000a0eb1:\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 223 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n" /* line 397 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 398 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    /* line 220: if flags & 2, cap cull type at 5 */
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    return (Bool)FxHelper_CullSphere(helper, (float *)(p + 0x7c), *(float *)(p + 0x88), cullType);
 }
 
 /* line 1270 */
-__attribute__((naked))
 Bool OrientedParticle_Cull(const OrientedParticle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1270 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "testb $2, 0xab(%edx)\n" /* line 220 */
-        "je .Lfa0ee8_000a0f3d\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 221 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        /* { scope 1 */
-        "movl %eax, %ebx\n" /* line 154 */
-        "subl $5, %ebx\n"
-        "js .Lfa0ee8_000a0f15\n"
-        "movl $5, %eax\n"
-        /* } scope */
-        ".Lfa0ee8_000a0f15:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 1272 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 1273 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa0ee8_000a0f3d:\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 223 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n" /* line 1272 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 1273 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    return (Bool)FxHelper_CullSphere(helper, (float *)(p + 0x7c), *(float *)(p + 0x88), cullType);
 }
 
 /* line 1357 */
-__attribute__((naked))
 Bool Cloud_Cull(const Cloud * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1357 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "testb $2, 0xab(%edx)\n" /* line 220 */
-        "je .Lfa0f74_000a0ffd\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 221 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        /* { scope 1 */
-        "movl %eax, %ebx\n" /* line 154 */
-        "subl $5, %ebx\n"
-        "js .Lfa0f74_000a0fa1\n"
-        "movl $5, %eax\n"
-        /* } scope */
-        ".Lfa0f74_000a0fa1:\n"
-        "movss 0x98(%edx), %xmm3\n" /* line 1359 */
-        "movss 0x8c(%edx), %xmm2\n"
-        "movss 0x88(%edx), %xmm1\n"
-        /* { scope 1 */
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss %xmm2, %xmm0\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpltss lit4_002ed5e8, %xmm0\n" /* 0.0f */
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movl %eax, 0xc(%esp)\n" /* line 1359 */
-        "addss %xmm3, %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 1360 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa0f74_000a0ffd:\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 223 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        "jmp .Lfa0f74_000a0fa1\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    float halfLen, height, radius, cullRadius;
+
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+
+    /* line 1359: compute cull radius = max(radius, height) + halfLen */
+    halfLen = *(float *)(p + 0x98);
+    height = *(float *)(p + 0x8c);
+    radius = *(float *)(p + 0x88);
+    cullRadius = (radius - height < 0.0f ? height : radius) + halfLen;
+
+    return (Bool)FxHelper_CullSphere(helper, (float *)(p + 0x7c), cullRadius, cullType);
 }
 
 /* line 1514 */
-__attribute__((naked))
+extern unsigned char FxHelper_CullCylinder(void *helper, float *origin1, float *origin2, float radius1, float radius2, int cullType);
 Bool Line_Cull(const Line * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1514 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "testb $2, 0xab(%ecx)\n" /* line 220 */
-        "je .Lfa100e_000a1071\n"
-        "movl imp_theFxHelper, %ebx\n" /* line 221 */
-        "movl (%ebx), %eax\n"
-        "movl 0x80(%eax), %edx\n"
-        /* { scope 1 */
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $5, %eax\n"
-        "js .Lfa100e_000a103b\n"
-        "movl $5, %edx\n"
-        /* } scope */
-        ".Lfa100e_000a103b:\n"
-        "movl 0x88(%ecx), %eax\n" /* line 1516 */
-        "movl %edx, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x9c(%ecx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%ecx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullCylinder\n"
-        "movzbl %al, %eax\n"
-        "addl $0x24, %esp\n" /* line 1517 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa100e_000a1071:\n"
-        "movl imp_theFxHelper, %ebx\n" /* line 223 */
-        "movl (%ebx), %eax\n"
-        "movl 0x80(%eax), %edx\n"
-        "jmp .Lfa100e_000a103b\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    float radius;
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    radius = *(float *)(p + 0x88);
+    return (Bool)FxHelper_CullCylinder(helper, (float *)(p + 0x7c), (float *)(p + 0x9c), radius, radius, cullType);
 }
 
 /* line 1596 */
-__attribute__((naked))
 Bool Tail_Cull(const Tail * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1596 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "testb $2, 0xab(%ecx)\n" /* line 220 */
-        "je .Lfa1082_000a10e5\n"
-        "movl imp_theFxHelper, %ebx\n" /* line 221 */
-        "movl (%ebx), %eax\n"
-        "movl 0x80(%eax), %edx\n"
-        /* { scope 1 */
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $5, %eax\n"
-        "js .Lfa1082_000a10af\n"
-        "movl $5, %edx\n"
-        /* } scope */
-        ".Lfa1082_000a10af:\n"
-        "movl 0x88(%ecx), %eax\n" /* line 1598 */
-        "movl %edx, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x9c(%ecx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%ecx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullCylinder\n"
-        "movzbl %al, %eax\n"
-        "addl $0x24, %esp\n" /* line 1599 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa1082_000a10e5:\n"
-        "movl imp_theFxHelper, %ebx\n" /* line 223 */
-        "movl (%ebx), %eax\n"
-        "movl 0x80(%eax), %edx\n"
-        "jmp .Lfa1082_000a10af\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    float radius;
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    radius = *(float *)(p + 0x88);
+    return (Bool)FxHelper_CullCylinder(helper, (float *)(p + 0x7c), (float *)(p + 0x9c), radius, radius, cullType);
 }
 
 /* line 1737 */
-__attribute__((naked))
 Bool Cylinder_Cull(const Cylinder * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1737 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "testb $2, 0xab(%edx)\n" /* line 220 */
-        "je .Lfa10f6_000a115f\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 221 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        /* { scope 1 */
-        "movl %eax, %ebx\n" /* line 154 */
-        "subl $5, %ebx\n"
-        "js .Lfa10f6_000a1123\n"
-        "movl $5, %eax\n"
-        /* } scope */
-        ".Lfa10f6_000a1123:\n"
-        "movl %eax, 0x14(%esp)\n" /* line 1739 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x8c(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x9c(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullCylinder\n"
-        "movzbl %al, %eax\n"
-        "addl $0x24, %esp\n" /* line 1740 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa10f6_000a115f:\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 223 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        "jmp .Lfa10f6_000a1123\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    return (Bool)FxHelper_CullCylinder(helper, (float *)(p + 0x7c), (float *)(p + 0x9c),
+        *(float *)(p + 0x88), *(float *)(p + 0x8c), cullType);
 }
 
 /* line 2152 */
-__attribute__((naked))
 Bool Light_Cull(const Light * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2152 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "testb $2, 0xab(%edx)\n" /* line 220 */
-        "je .Lfa1170_000a11c5\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 221 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        /* { scope 1 */
-        "movl %eax, %ebx\n" /* line 154 */
-        "subl $5, %ebx\n"
-        "js .Lfa1170_000a119d\n"
-        "movl $5, %eax\n"
-        /* } scope */
-        ".Lfa1170_000a119d:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 2154 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 2155 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa1170_000a11c5:\n"
-        "movl imp_theFxHelper, %ecx\n" /* line 223 */
-        "movl (%ecx), %eax\n"
-        "movl 0x80(%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n" /* line 2154 */
-        "movl 0x88(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x7c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "movzbl %al, %eax\n"
-        "addl $0x14, %esp\n" /* line 2155 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int cullType = *(int *)(helper + 0x80);
+    if (*(byte *)(p + 0xab) & 2) {
+        if (cullType >= 5)
+            cullType = 5;
+    }
+    return (Bool)FxHelper_CullSphere(helper, (float *)(p + 0x7c), *(float *)(p + 0x88), cullType);
 }
 
 /* line 509 */
@@ -1186,80 +840,40 @@ void Particle_SetRandomVelocityWeights(const Particle * _this, float weight1, fl
 }
 
 /* line 535 */
-__attribute__((naked))
+extern float Vec3DistanceSq(float *a, float *b);
 float Particle_GetVisibility(const Particle * _this, const vec_t *start, const vec_t *dir, float halfLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 535 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x44, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* start */
-        "movl 0x10(%ebp), %eax\n" /* dir */
-        "movss 0x14(%ebp), %xmm1\n" /* halfLen */
-        /* { scope 1 */
-        "leal 0x7c(%ebx), %edx\n" /* line 544 | this */
-        "movss (%ecx), %xmm4\n" /* line 248 */
-        "movss (%eax), %xmm3\n" /* line 304 */
-        "movss 0x7c(%ebx), %xmm2\n"
-        "subss %xmm4, %xmm2\n"
-        "mulss %xmm3, %xmm2\n"
-        "movss 4(%edx), %xmm0\n"
-        "subss 4(%ecx), %xmm0\n"
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movss 8(%edx), %xmm0\n"
-        "subss 8(%ecx), %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n" /* line 547 */
-        "subss %xmm1, %xmm0\n"
-        "andps CorrectSolidDeltas+5376, %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lfa1220_000a129c\n"
-        ".Lfa1220_000a1286:\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* line 554 | 1.0f */
-        /* } scope */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 558 */
-        "flds -0x2c(%ebp)\n"
-        "addl $0x44, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa1220_000a129c:\n"
-        "mulss %xmm2, %xmm3\n" /* line 288 */
-        "addss %xmm3, %xmm4\n"
-        "movss %xmm4, -0x14(%ebp)\n" /* projPt */
-        "movaps %xmm2, %xmm0\n" /* line 289 */
-        "mulss 4(%eax), %xmm0\n"
-        "addss 4(%ecx), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "mulss 8(%eax), %xmm2\n" /* line 290 */
-        "addss 8(%ecx), %xmm2\n"
-        "movss %xmm2, -0xc(%ebp)\n"
-        "leal -0x14(%ebp), %eax\n" /* line 552 | projPt */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps -0x1c(%ebp)\n" /* distSq */
-        "movss 0x88(%ebx), %xmm0\n" /* line 554 | this */
-        "mulss %xmm0, %xmm0\n"
-        "ucomiss -0x1c(%ebp), %xmm0\n" /* distSq */
-        "jbe .Lfa1220_000a1286\n"
-        "movzbl 0x93(%ebx), %eax\n" /* line 555 | this */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss lit4_002ed810, %xmm0\n" /* -0.003921568859368563f */
-        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        /* } scope */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 558 */
-        "flds -0x2c(%ebp)\n"
-        "addl $0x44, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    float *origin = (float *)(p + 0x7c);
+    float *s = (float *)start;
+    float *d = (float *)dir;
+    float dot, absDist, projPt[3], distSq, radiusSq;
+
+    /* line 544: dot = (origin - start) . dir */
+    dot = (origin[0] - s[0]) * d[0] + (origin[1] - s[1]) * d[1] + (origin[2] - s[2]) * d[2];
+
+    /* line 547: check if abs(dot - halfLen) > halfLen => outside segment */
+    absDist = dot - halfLen;
+    if (absDist < 0.0f) absDist = -absDist;
+    if (absDist > halfLen)
+        return 1.0f;
+
+    /* line 288-290: project point along ray */
+    projPt[0] = s[0] + d[0] * dot;
+    projPt[1] = s[1] + d[1] * dot;
+    projPt[2] = s[2] + d[2] * dot;
+
+    /* line 552: compute distance squared from origin to projected point */
+    distSq = Vec3DistanceSq(origin, projPt);
+
+    /* line 554: if distance > radius, return 1.0 (fully visible) */
+    radiusSq = *(float *)(p + 0x88);
+    radiusSq *= radiusSq;
+    if (radiusSq <= distSq)
+        return 1.0f;
+
+    /* line 555: return alpha-based visibility */
+    return (float)(*(unsigned char *)(p + 0x93)) * (-0.003921568859368563f) + 1.0f;
 }
 
 /* line 1225 */
@@ -1303,89 +917,43 @@ void Light_FixupArchiveLoad(const Light * _this, const PrimitiveTemplate *primTe
 }
 
 /* line 456 */
-__attribute__((naked))
 void Particle_SetAxis(const Particle * _this, vec3_t *ax)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 456 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %ecx\n" /* ax */
-        "leal 0xd0(%esi), %edx\n" /* line 462 | this */
-        "testl %ecx, %ecx\n" /* line 207 */
-        "je .Lfa1468_000a14d9\n"
-        "movl (%ecx), %eax\n" /* line 199 */
-        "movl %eax, 0xd0(%esi)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        "leal 0xdc(%esi), %edx\n" /* line 463 | this */
-        "movl %ecx, %ebx\n" /* line 207 */
-        "addl $0xc, %ebx\n"
-        "je .Lfa1468_000a14f4\n"
-        /* { scope 1 */
-        ".Lfa1468_000a149e:\n"
-        "movl 0xc(%ecx), %eax\n" /* line 199 */
-        "movl %eax, 0xdc(%esi)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0xe8(%esi), %edx\n" /* line 464 | this */
-        "movl %ecx, %ebx\n" /* line 207 */
-        "addl $0x18, %ebx\n"
-        "je .Lfa1468_000a150f\n"
-        /* { scope 1 */
-        ".Lfa1468_000a14c0:\n"
-        "movl 0x18(%ecx), %eax\n" /* line 199 */
-        "movl %eax, 0xe8(%esi)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 465 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa1468_000a14d9:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, 0xd0(%esi)\n"
-        "movl %eax, 4(%edx)\n" /* line 184 */
-        "movl %eax, 8(%edx)\n" /* line 185 */
-        /* } scope */
-        "leal 0xdc(%esi), %edx\n" /* line 463 | this */
-        "movl %ecx, %ebx\n" /* line 207 */
-        "addl $0xc, %ebx\n"
-        "jne .Lfa1468_000a149e\n"
-        /* { scope 1 */
-        ".Lfa1468_000a14f4:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, 0xdc(%esi)\n"
-        "movl %eax, 4(%edx)\n" /* line 184 */
-        "movl %eax, 8(%edx)\n" /* line 185 */
-        /* } scope */
-        "leal 0xe8(%esi), %edx\n" /* line 464 | this */
-        "movl %ecx, %ebx\n" /* line 207 */
-        "addl $0x18, %ebx\n"
-        "jne .Lfa1468_000a14c0\n"
-        /* { scope 1 */
-        ".Lfa1468_000a150f:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, 0xe8(%esi)\n"
-        "movl %eax, 4(%edx)\n" /* line 184 */
-        "movl %eax, 8(%edx)\n" /* line 185 */
-        /* } scope */
-        "popl %ebx\n" /* line 465 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *p = (byte *)_this;
+    float *src = (float *)ax;
+
+    /* line 462: axis[0] at offset 0xd0 */
+    if (ax) {
+        *(float *)(p + 0xd0) = src[0];
+        *(float *)(p + 0xd4) = src[1];
+        *(float *)(p + 0xd8) = src[2];
+    } else {
+        *(float *)(p + 0xd0) = 0.0f;
+        *(float *)(p + 0xd4) = 0.0f;
+        *(float *)(p + 0xd8) = 0.0f;
+    }
+
+    /* line 463: axis[1] at offset 0xdc */
+    if (ax) {
+        *(float *)(p + 0xdc) = src[3];
+        *(float *)(p + 0xe0) = src[4];
+        *(float *)(p + 0xe4) = src[5];
+    } else {
+        *(float *)(p + 0xdc) = 0.0f;
+        *(float *)(p + 0xe0) = 0.0f;
+        *(float *)(p + 0xe4) = 0.0f;
+    }
+
+    /* line 464: axis[2] at offset 0xe8 */
+    if (ax) {
+        *(float *)(p + 0xe8) = src[6];
+        *(float *)(p + 0xec) = src[7];
+        *(float *)(p + 0xf0) = src[8];
+    } else {
+        *(float *)(p + 0xe8) = 0.0f;
+        *(float *)(p + 0xec) = 0.0f;
+        *(float *)(p + 0xf0) = 0.0f;
+    }
 }
 
 /* line 2285 */
@@ -1846,127 +1414,27 @@ void Tail_CalcNewEndpoint(const Tail * _this, const orientation_t *or_)
 }
 
 /* line 1486 */
-__attribute__((naked))
 void Cloud_FixupArchiveLoad(const Cloud * _this, const PrimitiveTemplate *primTemplate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1486 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %eax\n" /* primTemplate */
-        "movl 0x100(%eax), %ecx\n" /* line 1231 */
-        "movl %ecx, 0x144(%edx)\n"
-        "movl 0x10c(%eax), %ecx\n" /* line 1232 */
-        "movl %ecx, 0x150(%edx)\n"
-        "movl 0x118(%eax), %ecx\n" /* line 1233 */
-        "movl %ecx, 0x15c(%edx)\n"
-        "movl 0x124(%eax), %ecx\n" /* line 1234 */
-        "movl %ecx, 0x168(%edx)\n"
-        "movl 0x130(%eax), %ecx\n" /* line 1235 */
-        "movl %ecx, 0x174(%edx)\n"
-        "movl 0x13c(%eax), %ecx\n" /* line 1236 */
-        "movl %ecx, 0x180(%edx)\n"
-        "movl 0x148(%eax), %ecx\n" /* line 1237 */
-        "movl %ecx, 0x18c(%edx)\n"
-        "movl 0x154(%eax), %ecx\n" /* line 1238 */
-        "movl %ecx, 0x198(%edx)\n"
-        "movl 0x178(%eax), %ecx\n" /* line 1239 */
-        "movl %ecx, 0x1a4(%edx)\n"
-        "movl 0x184(%eax), %ecx\n" /* line 1240 */
-        "movl %ecx, 0x1b0(%edx)\n"
-        "movl 0x190(%eax), %ecx\n" /* line 1242 */
-        "movl %ecx, 0x1bc(%edx)\n"
-        "movl 0x19c(%eax), %ecx\n" /* line 1243 */
-        "movl %ecx, 0x1c8(%edx)\n"
-        "movl 0x1a8(%eax), %ecx\n" /* line 1244 */
-        "movl %ecx, 0x1d4(%edx)\n"
-        "movl 0x1b4(%eax), %ecx\n" /* line 1245 */
-        "movl %ecx, 0x1e0(%edx)\n"
-        "movl 0x1c0(%eax), %ecx\n" /* line 1246 */
-        "movl %ecx, 0x1ec(%edx)\n"
-        "movl 0x1cc(%eax), %ecx\n" /* line 1247 */
-        "movl %ecx, 0x1f8(%edx)\n"
-        "movl 0x1d8(%eax), %ecx\n" /* line 1249 */
-        "movl %ecx, 0x204(%edx)\n"
-        "movl 0x1e4(%eax), %ecx\n" /* line 1250 */
-        "movl %ecx, 0x210(%edx)\n"
-        "movl 0x1f0(%eax), %ecx\n" /* line 1251 */
-        "movl %ecx, 0x21c(%edx)\n"
-        "movl 0x1fc(%eax), %ecx\n" /* line 1252 */
-        "movl %ecx, 0x228(%edx)\n"
-        "movl 0x208(%eax), %ecx\n" /* line 1253 */
-        "movl %ecx, 0x234(%edx)\n"
-        "movl 0x214(%eax), %ecx\n" /* line 1254 */
-        "movl %ecx, 0x240(%edx)\n"
-        "movl 0x160(%eax), %ecx\n" /* line 1492 */
-        "movl %ecx, 0x264(%edx)\n"
-        "movl 0x16c(%eax), %eax\n" /* line 1493 */
-        "movl %eax, 0x270(%edx)\n"
-        "popl %ebp\n" /* line 1494 */
-        "retl\n"
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemplate;
+    /* Particle base fixup (lines 1231-1254) */
+    Particle_FixupArchiveLoad((const Particle *)_this, primTemplate);
+    /* Cloud-specific channels */
+    *(int *)(t + 0x264) = *(int *)(p + 0x160); /* line 1492 */
+    *(int *)(t + 0x270) = *(int *)(p + 0x16c); /* line 1493 */
 }
 
 /* line 1714 */
-__attribute__((naked))
 void Tail_FixupArchiveLoad(const Tail * _this, const PrimitiveTemplate *primTemplate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1714 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl 0xc(%ebp), %eax\n" /* primTemplate */
-        "movl 0x100(%eax), %ecx\n" /* line 1231 */
-        "movl %ecx, 0x144(%edx)\n"
-        "movl 0x10c(%eax), %ecx\n" /* line 1232 */
-        "movl %ecx, 0x150(%edx)\n"
-        "movl 0x118(%eax), %ecx\n" /* line 1233 */
-        "movl %ecx, 0x15c(%edx)\n"
-        "movl 0x124(%eax), %ecx\n" /* line 1234 */
-        "movl %ecx, 0x168(%edx)\n"
-        "movl 0x130(%eax), %ecx\n" /* line 1235 */
-        "movl %ecx, 0x174(%edx)\n"
-        "movl 0x13c(%eax), %ecx\n" /* line 1236 */
-        "movl %ecx, 0x180(%edx)\n"
-        "movl 0x148(%eax), %ecx\n" /* line 1237 */
-        "movl %ecx, 0x18c(%edx)\n"
-        "movl 0x154(%eax), %ecx\n" /* line 1238 */
-        "movl %ecx, 0x198(%edx)\n"
-        "movl 0x178(%eax), %ecx\n" /* line 1239 */
-        "movl %ecx, 0x1a4(%edx)\n"
-        "movl 0x184(%eax), %ecx\n" /* line 1240 */
-        "movl %ecx, 0x1b0(%edx)\n"
-        "movl 0x190(%eax), %ecx\n" /* line 1242 */
-        "movl %ecx, 0x1bc(%edx)\n"
-        "movl 0x19c(%eax), %ecx\n" /* line 1243 */
-        "movl %ecx, 0x1c8(%edx)\n"
-        "movl 0x1a8(%eax), %ecx\n" /* line 1244 */
-        "movl %ecx, 0x1d4(%edx)\n"
-        "movl 0x1b4(%eax), %ecx\n" /* line 1245 */
-        "movl %ecx, 0x1e0(%edx)\n"
-        "movl 0x1c0(%eax), %ecx\n" /* line 1246 */
-        "movl %ecx, 0x1ec(%edx)\n"
-        "movl 0x1cc(%eax), %ecx\n" /* line 1247 */
-        "movl %ecx, 0x1f8(%edx)\n"
-        "movl 0x1d8(%eax), %ecx\n" /* line 1249 */
-        "movl %ecx, 0x204(%edx)\n"
-        "movl 0x1e4(%eax), %ecx\n" /* line 1250 */
-        "movl %ecx, 0x210(%edx)\n"
-        "movl 0x1f0(%eax), %ecx\n" /* line 1251 */
-        "movl %ecx, 0x21c(%edx)\n"
-        "movl 0x1fc(%eax), %ecx\n" /* line 1252 */
-        "movl %ecx, 0x228(%edx)\n"
-        "movl 0x208(%eax), %ecx\n" /* line 1253 */
-        "movl %ecx, 0x234(%edx)\n"
-        "movl 0x214(%eax), %ecx\n" /* line 1254 */
-        "movl %ecx, 0x240(%edx)\n"
-        "movl 0x160(%eax), %ecx\n" /* line 1720 */
-        "movl %ecx, 0x260(%edx)\n"
-        "movl 0x16c(%eax), %eax\n" /* line 1721 */
-        "movl %eax, 0x26c(%edx)\n"
-        "popl %ebp\n" /* line 1722 */
-        "retl\n"
-    );
+    byte *t = (byte *)_this;
+    byte *p = (byte *)primTemplate;
+    /* Particle base fixup (lines 1231-1254) */
+    Particle_FixupArchiveLoad((const Particle *)_this, primTemplate);
+    /* Tail-specific channels */
+    *(int *)(t + 0x260) = *(int *)(p + 0x160); /* line 1720 */
+    *(int *)(t + 0x26c) = *(int *)(p + 0x16c); /* line 1721 */
 }
 
 /* line 2199 */

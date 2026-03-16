@@ -41,6 +41,9 @@ extern double atof(const char *s);
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
+#include <strings.h>
+
+extern int stricmp(const char *s1, const char *s2);
 
 void FxRange_SetRange(const FxRange * _this, float min, float max);
 void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this);
