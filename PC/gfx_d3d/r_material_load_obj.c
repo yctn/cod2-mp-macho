@@ -100,8 +100,9 @@ static Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap);
 static MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType);
 static Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack);
 Material * Material_Load(const char *name, int imageTrack);
-void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void); /* void std___adjust_heap<GfxCachedShaderText*, int, GfxCachedShaderText, unsigned char (*)(GfxCachedShaderText const&, GfxCachedShaderText const&)> */
-void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /* void std___introsort_loop<GfxCachedShaderText*, int, unsigned char (*)(GfxCachedShaderText const&, GfxCachedShaderText const&)> */
+typedef unsigned char (*GfxCachedShaderTextCompFunc)(const GfxCachedShaderText *, const GfxCachedShaderText *);
+void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(GfxCachedShaderText *first, int holeIndex, int len, GfxCachedShaderText value, GfxCachedShaderTextCompFunc comp);
+void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(GfxCachedShaderText *first, GfxCachedShaderText *last, int depth_limit, GfxCachedShaderTextCompFunc comp);
 
 /* line 907 */
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data)
@@ -5369,9 +5370,34 @@ Material * Material_Load(const char *name, int imageTrack)
     return (Material *)mtlData;
 }
 
-/* line 273 */
-__attribute__((naked))
-void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void) /* void std___adjust_heap<GfxCachedShaderText*, int, GfxCachedShaderText, unsigned char (*)(GfxCachedShaderText const&, GfxCachedShaderText const&)> */
+/* std::__adjust_heap for GfxCachedShaderText* — heap sift-down + push-up (12-byte elements) */
+void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
+    GfxCachedShaderText *first, int holeIndex, int len, GfxCachedShaderText value, GfxCachedShaderTextCompFunc comp)
+{
+    int topIndex = holeIndex;
+    int secondChild = 2 * holeIndex + 2;
+    while (secondChild < len) {
+        if (comp(&first[secondChild], &first[secondChild - 1]))
+            secondChild--;
+        first[holeIndex] = first[secondChild];
+        holeIndex = secondChild;
+        secondChild = 2 * secondChild + 2;
+    }
+    if (secondChild == len) {
+        first[holeIndex] = first[len - 1];
+        holeIndex = len - 1;
+    }
+    while (holeIndex > topIndex) {
+        int parent = (holeIndex - 1) / 2;
+        if (!comp(&first[parent], &value))
+            break;
+        first[holeIndex] = first[parent];
+        holeIndex = parent;
+    }
+    first[holeIndex] = value;
+}
+
+#if 0 /* original naked */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 273 */
@@ -5538,10 +5564,60 @@ void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(v
         "jmp .Lf2c0032_002c0099\n"
     );
 }
+#endif /* original naked adjust_heap GfxCachedShaderText */
 
-/* line 2514 */
-__attribute__((naked))
-void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(void) /* void std___introsort_loop<GfxCachedShaderText*, int, unsigned char (*)(GfxCachedShaderText const&, GfxCachedShaderText const&)> */
+/* std::__introsort_loop for GfxCachedShaderText* — introsort with heapsort fallback (12-byte elements) */
+void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(
+    GfxCachedShaderText *first, GfxCachedShaderText *last, int depth_limit, GfxCachedShaderTextCompFunc comp)
+{
+    while ((char *)last - (char *)first > 12 * 16) {
+        if (depth_limit == 0) {
+            int n = (int)(last - first);
+            int half = (n - 2) / 2;
+            int i;
+            GfxCachedShaderText *end;
+            for (i = half; i >= 0; i--)
+                ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(first, i, n, first[i], comp);
+            for (end = last - 1; end - first > 0; end--) {
+                GfxCachedShaderText value = *end;
+                *end = *first;
+                ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(first, 0, (int)(end - first), value, comp);
+            }
+            return;
+        }
+        depth_limit--;
+        {
+            int n = (int)(last - first);
+            GfxCachedShaderText *midPtr = first + n / 2;
+            GfxCachedShaderText *pivotPtr;
+            GfxCachedShaderText pivot;
+            GfxCachedShaderText *lo, *hi;
+            if (comp(first, midPtr)) {
+                if (comp(midPtr, last - 1)) pivotPtr = midPtr;
+                else if (comp(first, last - 1)) pivotPtr = last - 1;
+                else pivotPtr = first;
+            } else {
+                if (comp(first, last - 1)) pivotPtr = first;
+                else if (comp(last - 1, midPtr)) pivotPtr = midPtr;
+                else pivotPtr = last - 1;
+            }
+            pivot = *pivotPtr;
+            lo = first; hi = last;
+            for (;;) {
+                while (!comp(&pivot, lo)) lo++;
+                hi--;
+                while (!comp(hi, &pivot)) hi--;
+                if (lo >= hi) break;
+                { GfxCachedShaderText tmp = *lo; *lo = *hi; *hi = tmp; }
+                lo++;
+            }
+            ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(lo, last, depth_limit, comp);
+            last = lo;
+        }
+    }
+}
+
+#if 0 /* original naked introsort GfxCachedShaderText */
 {
     __asm__ __volatile__ (
         ".Lf2c01bc_002c01bc:\n"
@@ -5836,4 +5912,5 @@ void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(void
         "jmp .Lf2c01bc_002c039d\n"
     );
 }
+#endif /* original naked introsort GfxCachedShaderText */
 
