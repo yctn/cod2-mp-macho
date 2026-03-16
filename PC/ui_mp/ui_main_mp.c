@@ -648,50 +648,19 @@ void UI_BuildPlayerList(void)
     );
 }
 
-/* line 974 */
-__attribute__((naked))
+/* UI_DrawMapLevelshot — draw map preview or black rect */
 void UI_DrawMapLevelshot(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 974 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "cmpb $0, g_mapname\n" /* line 978 */
-        "je .Lf14f398_0014f3e9\n"
-        "movl $str_002a90c0, 4(%esp)\n" /* line 979 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_FindByName\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 983 */
-        "je .Lf14f398_0014f3e9\n"
-        "movl uiInfo, %eax\n" /* line 989 */
-        "movl $0, 0x28(%eax)\n"
-        "movl $1, 8(%esp)\n" /* line 990 */
-        "movl %edx, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_Paint\n"
-        /* } scope */
-        "leave\n" /* line 991 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f398_0014f3e9:\n"
-        "movl imp_colorBlack, %eax\n" /* line 985 */
-        "movl %eax, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0x43f00000, 0xc(%esp)\n"
-        "movl $0x44200000, 8(%esp)\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_FillRect\n"
-        /* } scope */
-        "leave\n" /* line 991 */
-        "retl\n"
-    );
+    if (g_mapname[0]) {
+        void *menu = Menus_FindByName(uiInfo, "connect_levelshot");
+        if (menu) {
+            *(int *)((byte *)uiInfo + 0x28) = 0;
+            Menu_Paint(uiInfo, menu, 1);
+            return;
+        }
+    }
+    /* No map — draw black rect (480x640) */
+    UI_FillRect(0, 0, 640.0f, 480.0f, 0, 0, (const vec_t *)imp_colorBlack);
 }
 
 /* line 994 */

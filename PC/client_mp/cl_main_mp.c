@@ -3832,70 +3832,58 @@ Bool CL_PacketEvent_real(netadr_t from, msg_t *msg, int time)
     );
 }
 
-/* line 4225 */
-__attribute__((naked))
+/* CL_Init — initialize client: clear state, reset connections, init subsystems */
+extern void Com_ClientDObjClearAllSkel(void);
+extern void CL_ClearMutedList(void);
+extern void Cbuf_Execute(void);
+extern void CL_SetADS(int ads);
+extern void *imp_legacyHacks;
 void CL_Init(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4225 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl $str_002a964c, (%esp)\n" /* line 4227 */
-        "calll Com_Printf\n"
-        "movl cl, %ebx\n" /* line 1353 */
-        "movzbl 9(%ebx), %esi\n"
-        "movzbl 0xa(%ebx), %edi\n" /* line 1354 */
-        "movl 4(%ebx), %eax\n" /* line 1355 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movzbl 8(%ebx), %eax\n" /* line 1356 */
-        "movb %al, -0x1a(%ebp)\n"
-        "movzbl (%ebx), %eax\n" /* line 1357 */
-        "movb %al, -0x19(%ebp)\n"
-        "movl $0x179c14, 8(%esp)\n" /* line 1359 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll memset\n"
-        "movl %esi, %eax\n" /* line 1361 */
-        "movb %al, 9(%ebx)\n"
-        "movl %edi, %eax\n" /* line 1362 */
-        "movb %al, 0xa(%ebx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 1363 */
-        "movl %eax, 4(%ebx)\n"
-        "movzbl -0x1a(%ebp), %eax\n" /* line 1364 */
-        "movb %al, 8(%ebx)\n"
-        "movzbl -0x19(%ebp), %eax\n" /* line 1365 */
-        "movb %al, (%ebx)\n"
-        "calll Com_ClientDObjClearAllSkel\n" /* line 1367 */
-        "calll CL_ClearMutedList\n" /* line 4236 */
-        "movl $0, 0x179c0c(%ebx)\n" /* line 4237 */
-        "movl clc, %eax\n" /* line 4240 */
-        "movl $0, (%eax)\n"
-        "movl $0, cls+280\n" /* line 4242 */
-        "movb $1, (%ebx)\n" /* line 4244 */
-        "movl imp_legacyHacks, %ebx\n" /* line 4246 */
-        "movl (%ebx), %eax\n"
-        "movb $0, 0x5c(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 4247 */
-        "movb $0, 0x9c(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 4248 */
-        "movb $0, 0xdc(%eax)\n"
-        "calll Cbuf_Execute\n" /* line 4250 */
-        "movl (%ebx), %eax\n" /* line 4252 */
-        "movl $1, 4(%eax)\n"
-        "movl $0, (%esp)\n" /* line 4254 */
-        "calll CL_SetADS\n"
-        "movl $str_002a9670, (%esp)\n" /* line 4256 */
-        "calll Com_Printf\n"
-        "addl $0x2c, %esp\n" /* line 4257 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Com_Printf("CL_Init\n");
+
+    /* Save fields that survive the memset */
+    byte *c = (byte *)&cl;
+    byte saved9 = c[9];
+    byte savedA = c[0xa];
+    int saved4 = *(int *)(c + 4);
+    byte saved8 = c[8];
+    byte saved0 = c[0];
+
+    /* Clear client state */
+    memset(c, 0, 0x179c14);
+
+    /* Restore preserved fields */
+    c[9] = saved9;
+    c[0xa] = savedA;
+    *(int *)(c + 4) = saved4;
+    c[8] = saved8;
+    c[0] = saved0;
+
+    Com_ClientDObjClearAllSkel();
+    CL_ClearMutedList();
+    *(int *)(c + 0x179c0c) = 0;
+
+    /* Reset connection state */
+    *(int *)(byte *)&clc = 0;
+    *(int *)((byte *)&cls + 280) = 0;
+
+    /* Set initialized flag */
+    c[0] = 1;
+
+    /* Clear legacy hack flags */
+    byte **lh = (byte **)imp_legacyHacks;
+    (*lh)[0x5c] = 0;
+    (*lh)[0x9c] = 0;
+    (*lh)[0xdc] = 0;
+
+    Cbuf_Execute();
+
+    /* Set active flag */
+    *(int *)(*lh + 4) = 1;
+    CL_SetADS(0);
+
+    Com_Printf("CL_InitDone\n");
 }
 
 /* line 1139 */
