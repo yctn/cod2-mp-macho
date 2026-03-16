@@ -2009,9 +2009,112 @@ void FX_AddDecal(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
     FxScheduler_CreateDecalEffect(*(void **)imp_theFxScheduler, *(void **)((byte *)prim + 4), newOrigin, ax);
 }
 
-/* line 1246 */
-__attribute__((naked))
+/* FX_DrawAll — cull, sort, draw all visible effects */
+extern void *imp_fx_sort;
+extern void *imp_fx_draw;
+extern void *imp_fx_debug;
+extern void FX_Print(const char *fmt, ...);
+extern void qsort(void *base, int nmemb, int size, void *cmp);
+extern int CompareSortedClusters(const void *a, const void *b);
 void FX_DrawAll(void)
+{
+    typedef void (*DrawFn)(void *);
+    typedef Bool (*CullFn)(void *);
+    int i;
+
+    /* Phase 1: Cull non-bolt effects that haven't been culled yet */
+    if (*(int *)imp_fx_camera_valid) {
+        for (i = cullEffectCountNonBolt; i < privateEffectActiveCountNonBolt; i++) {
+            byte *eff = ((byte **)effectListNonBolt)[i];
+            if (*(byte *)(*(int *)imp_fx_cull + 8)) {
+                if (((CullFn)(*(void ***)eff)[4])(eff)) continue;
+            }
+            int idx = visibleEffectCountNonBolt;
+            ((void **)visibleEffectsNonBolt)[idx * 2] = eff;
+            float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+            *(float *)((byte *)visibleEffectsNonBolt + idx * 8 + 4) = dist;
+            visibleEffectCountNonBolt++;
+        }
+        cullEffectCountNonBolt = privateEffectActiveCountNonBolt;
+    }
+
+    /* Phase 2: Cull bolt effects */
+    for (i = cullEffectCountBolt; i < privateEffectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        if (*(byte *)(*(int *)imp_fx_cull + 8)) {
+            if (((CullFn)(*(void ***)eff)[4])(eff)) continue;
+        }
+        int idx = visibleEffectCountBolt;
+        ((void **)visibleEffectsBolt)[idx * 2] = eff;
+        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        *(float *)((byte *)visibleEffectsBolt + idx * 8 + 4) = dist;
+        visibleEffectCountBolt++;
+    }
+    cullEffectCountBolt = privateEffectActiveCountBolt;
+
+    /* Merge bolt visible into non-bolt visible array */
+    for (i = 0; i < visibleEffectCountBolt; i++) {
+        int dst = visibleEffectCountNonBolt;
+        ((void **)visibleEffectsNonBolt)[dst * 2] = ((void **)visibleEffectsBolt)[i * 2];
+        *(float *)((byte *)visibleEffectsNonBolt + dst * 8 + 4) = *(float *)((byte *)visibleEffectsBolt + i * 8 + 4);
+        visibleEffectCountNonBolt++;
+    }
+
+    /* Phase 3: Update visibility for sight-blocking effects */
+    g_effectVisArrayCount = 0;
+    if (effectBlockSightCount > 0) {
+        for (i = 0; i < effectActiveCountNonBolt; i++) {
+            byte *eff = ((byte **)effectListNonBolt)[i];
+            if (*(byte *)(eff + 0xa9) & 0x10)
+                ((DrawFn)(*(void ***)eff)[7])(eff); /* AddVisibility */
+        }
+        for (i = 0; i < effectActiveCountBolt; i++) {
+            byte *eff = ((byte **)effectListBolt)[i];
+            if (*(byte *)(eff + 0xa9) & 0x10)
+                ((DrawFn)(*(void ***)eff)[7])(eff);
+        }
+    }
+
+    /* Phase 4: Sort effects by cluster distance */
+    if (*(byte *)(*(int *)imp_fx_sort + 8)) {
+        int effectCount = visibleEffectCountNonBolt;
+        /* Build sorted cluster array */
+        byte sortedClusters[1800 * 8]; /* {clusterId, distSq} pairs */
+        for (i = 0; i < effectClusterCount; i++) {
+            *(int *)(sortedClusters + i * 8) = i;
+            float dist = Vec3DistanceSq((vec_t *)((byte *)effectClusters + i * 16), (vec_t *)((byte *)theFxHelper + 0x14));
+            *(float *)(sortedClusters + i * 8 + 4) = dist;
+        }
+        qsort(sortedClusters, effectClusterCount, 8, CompareSortedClusters);
+        /* Build sortOrder lookup */
+        int sortOrder[1800];
+        for (i = 0; i < effectClusterCount; i++) {
+            int cid = *(int *)(sortedClusters + i * 8);
+            sortOrder[cid] = i;
+        }
+        clusterSort = sortOrder;
+        qsort(visibleEffectsNonBolt, effectCount, 8, CompareSortedEffects);
+        clusterSort = NULL;
+    }
+
+    /* Phase 5: Draw visible effects */
+    if (*(byte *)(*(int *)imp_fx_draw + 8)) {
+        for (i = 0; i < visibleEffectCountNonBolt; i++) {
+            byte *eff = ((byte **)visibleEffectsNonBolt)[i * 2];
+            ((DrawFn)(*(void ***)eff)[5])(eff); /* Draw */
+        }
+    }
+
+    /* Phase 6: Debug display */
+    if (*(byte *)(*(int *)imp_fx_debug + 8)) {
+        FX_Print("Active    FX: %i\n", effectActiveCount);
+        FX_Print("Drawn     FX: %i\n", visibleEffectCountNonBolt);
+        FX_Print("Scheduled FX: %i\n", *(int *)(*(byte **)imp_theFxScheduler + 8));
+    }
+}
+#if 0 /* Original ASM (280 lines) */
+__attribute__((naked))
+void FX_DrawAll_asm(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1246 */
@@ -2291,6 +2394,7 @@ void FX_DrawAll(void)
         "jmp .Lf5a8bc_0005aa05\n"
     );
 }
+#endif
 
 /* line 1557 */
 /* FX_SetMaterialAndSequenceParams — register convention: eax=primTemp, edx=particle, ecx=killTime, stack: indexInBatch */
@@ -4532,9 +4636,92 @@ void FX_UpdateAllBolt_asm(void)
 }
 #endif
 
-/* line 759 */
-__attribute__((naked))
+/* FX_Rewind — remove effects that start after the given time, for save/load rewind */
 void FX_Rewind(int time)
+{
+    typedef void (*VtFn)(void *);
+    int i, count;
+
+    /* Phase 1: Bolt effects — remove those starting after 'time' */
+    count = effectActiveCountBolt;
+    privateEffectActiveCountBolt = count;
+    initialEffectActiveCountBolt = count;
+
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        if (time < *(int *)(eff + 0xb8)) {
+            /* Effect starts after rewind time — remove it */
+            count--;
+            privateEffectActiveCountBolt = count;
+            byte **slot = (byte **)effectListBolt + i;
+            byte *removed = *slot;
+            *slot = ((byte **)effectListBolt)[count];
+            ((byte **)effectListBolt)[count] = removed;
+            if (*(byte *)(removed + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountBolt;
+        } else {
+            i++;
+            count = privateEffectActiveCountBolt;
+        }
+    }
+
+    /* Phase 2: Cleanup removed bolt effects */
+    for (i = count; i < initialEffectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0)
+            FX_RemoveCluster(clusterId);
+        ((VtFn)(*(void ***)eff)[1])(eff);
+        effectActiveCountBolt--;
+        ((byte **)effectListBolt)[i] = ((byte **)effectListBolt)[effectActiveCountBolt];
+        effectActiveCount--;
+    }
+
+    /* Phase 3: Non-bolt effects — same pattern */
+    count = effectActiveCountNonBolt;
+    privateEffectActiveCountNonBolt = count;
+    initialEffectActiveCountNonBolt = count;
+
+    i = 0;
+    while (i < count) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        if (time < *(int *)(eff + 0xb8)) {
+            count--;
+            privateEffectActiveCountNonBolt = count;
+            byte **slot = (byte **)effectListNonBolt + i;
+            byte *removed = *slot;
+            *slot = ((byte **)effectListNonBolt)[count];
+            ((byte **)effectListNonBolt)[count] = removed;
+            if (*(byte *)(removed + 0xa9) & 0x10)
+                effectBlockSightCount--;
+            count = privateEffectActiveCountNonBolt;
+        } else {
+            i++;
+            count = privateEffectActiveCountNonBolt;
+        }
+    }
+
+    /* Phase 4: Cleanup removed non-bolt effects */
+    for (i = count; i < initialEffectActiveCountNonBolt; i++) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        int clusterId = *(int *)(eff + 0xac);
+        byte *cluster = (byte *)effectClusters + clusterId * 16;
+        *(int *)(cluster + 0xc) -= 1;
+        if (*(int *)(cluster + 0xc) <= 0)
+            FX_RemoveCluster(clusterId);
+        ((VtFn)(*(void ***)eff)[1])(eff);
+        effectActiveCountNonBolt--;
+        ((byte **)effectListNonBolt)[i] = ((byte **)effectListNonBolt)[effectActiveCountNonBolt];
+        effectActiveCount--;
+    }
+}
+#if 0 /* Original ASM (286 lines) */
+__attribute__((naked))
+void FX_Rewind_asm(int time)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 759 */
@@ -4820,6 +5007,7 @@ void FX_Rewind(int time)
         "retl\n"
     );
 }
+#endif
 
 /* FX_UpdateAllNonBolt — same as UpdateAllBolt but for non-bolt effects */
 void FX_UpdateAllNonBolt(void)
@@ -5567,9 +5755,118 @@ void FX_DrawScheduledEffects(void)
     );
 }
 
-/* line 874 */
-__attribute__((naked))
+/* FX_Restore — restore effects from save file: clean, read archive, reconstruct effect list */
+extern void FxArchive_FxArchive(void *arch);
+extern void FxArchive_BeginReading(void *arch, void *memFile);
+extern void FxHelper_Archive(void *helper, void *arch);
+extern void FxScheduler_Archive(void *scheduler, void *arch);
+extern void Line_Line(void *line);
+extern void Tail_Tail(void *tail);
+extern void Emitter_Emitter(void *emitter);
 int FX_Restore(MemoryFile *memFile)
+{
+    typedef void (*VtFn)(void *);
+    typedef void (*ArchFn)(void *, void *);
+    typedef void (*FixupFn)(void *, void *);
+    int i;
+    byte arch[16]; /* FxArchive struct */
+
+    FxArchive_FxArchive(arch);
+
+    /* Delete all existing effects */
+    for (i = 0; i < effectActiveCountBolt; i++) {
+        byte *eff = ((byte **)effectListBolt)[i];
+        if (eff) ((VtFn)(*(void ***)eff)[1])(eff);
+    }
+    for (i = 0; i < effectActiveCountNonBolt; i++) {
+        byte *eff = ((byte **)effectListNonBolt)[i];
+        if (eff) ((VtFn)(*(void ***)eff)[1])(eff);
+    }
+    effectActiveCountBolt = 0;
+    effectActiveCountNonBolt = 0;
+    effectActiveCount = 0;
+    effectBlockSightCount = 0;
+    effectClusterCount = 0;
+
+    void **schedulerPtr = (void **)imp_theFxScheduler;
+    if (*schedulerPtr)
+        FxScheduler_Clean(*schedulerPtr, 0, 0);
+
+    /* Begin reading from memFile */
+    FxArchive_BeginReading(arch, memFile);
+    FxHelper_Archive(theFxHelper, arch);
+    FxScheduler_Archive(*schedulerPtr, arch);
+
+    /* Read effects loop */
+    for (;;) {
+        byte effectType;
+        FxArchive_ReadData(arch, &effectType, 1);
+        if (effectType == 0) break;
+
+        int size;
+        FxArchive_ReadData(arch, &size, 4);
+
+        if (effectType > 12) continue; /* invalid type, skip */
+
+        /* Allocate effect based on type */
+        static const int sizes[] = { 0, 0x24c, 0xfc, 0x258, 0x278, 0x278, 0x27c, 0x258, 0x278, 0x29c, 0x258, 0x278, 0xfc };
+        static const char *ctors[] = { NULL, "Particle", "Light", "Line", "Tail", "Cylinder", "Cloud", "OrientedParticle", "Tail", "Emitter", "Line", "Cylinder", "Flash" };
+        (void)ctors;
+
+        int allocSize = (effectType <= 12) ? sizes[effectType] : 0;
+        if (allocSize == 0) continue;
+
+        byte *eff = (byte *)__Znam(allocSize);
+        if (eff) memset(eff, 0, allocSize);
+
+        /* Call constructor based on type */
+        switch (effectType) {
+            case 1: Particle_Particle(eff); break;
+            case 2: case 12: Light_Light(eff); break;
+            case 3: case 10: Line_Line(eff); break;
+            case 4: case 8: Tail_Tail(eff); break;
+            case 5: case 11: Cylinder_Cylinder(eff); break;
+            case 6: Cloud_Cloud(eff); break;
+            case 7: OrientedParticle_OrientedParticle(eff); break;
+            case 9: Emitter_Emitter(eff); break;
+        }
+
+        /* Archive (read) the effect */
+        ((ArchFn)(*(void ***)eff)[10])(eff, arch); /* vtable[10] = Archive */
+
+        /* Get primTemplate from effect template */
+        byte *fxTemplate = *(byte **)(eff + 0x34);
+        int primIdx = *(int *)(eff + 0x38);
+        byte *primTemp = NULL;
+        if (fxTemplate && primIdx < *(int *)(fxTemplate + 4))
+            primTemp = *(byte **)(fxTemplate + 8 + primIdx * 4);
+
+        if (!primTemp) continue;
+
+        /* Call FixupArchiveLoad (vtable[11]) */
+        ((FixupFn)(*(void ***)eff)[11])(eff, primTemp);
+
+        if (*(byte *)(eff + 0xa9) & 0x10)
+            effectBlockSightCount++;
+
+        /* Add to bolt or non-bolt list */
+        if (*(byte **)(eff + 0xc0)) {
+            ((byte **)effectListBolt)[effectActiveCountBolt] = eff;
+            effectActiveCountBolt++;
+        } else {
+            ((byte **)effectListNonBolt)[effectActiveCountNonBolt] = eff;
+            effectActiveCountNonBolt++;
+        }
+        effectActiveCount++;
+    }
+
+    /* Close archive */
+    int bytesRead = *(int *)(arch + 0); /* assume first field is bytes read */
+    return bytesRead;
+}
+#if 0 /* Original ASM (342 lines) */
+__attribute__((naked))
+int FX_Restore_asm(MemoryFile *memFile)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 874 */
@@ -5911,6 +6208,7 @@ int FX_Restore(MemoryFile *memFile)
         ".text\n"
     );
 }
+#endif
 
 /* FX_Init — initialize or reinitialize the effects system */
 extern void *Z_MallocInternal(int size);
