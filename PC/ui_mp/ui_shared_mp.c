@@ -1355,467 +1355,208 @@ compute:;
     ((void (*)(void *, void *))Item_SetTextRect)(item, newRect);
 }
 
-/* line 3827 */
-__attribute__((naked))
+/* Item_Text_AutoWrapped_Paint — auto word-wrap text and paint line by line */
 void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3827 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x49c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* item */
-        "movl 0xc(%ebp), %ebx\n" /* textPtr */
-        /* { scope 1 */
-        "movl 0x28c(%esi), %eax\n" /* line 3711 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x27c(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, -0x43c(%ebp)\n" /* font */
-        "movl 0x28c(%esi), %eax\n" /* line 3843 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x43c(%ebp), %eax\n" /* font */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextHeight\n"
-        "movl %eax, -0x458(%ebp)\n" /* height */
-        "movl 0x28c(%esi), %eax\n" /* line 3845 | item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x43c(%ebp), %edx\n" /* font */
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* p */
-        "calll UI_TextWidth\n"
-        "movl %eax, -0x450(%ebp)\n" /* textWidth */
-        "movss 8(%esi), %xmm0\n" /* line 3847 | item */
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
-        "jp .Lf165850_001658d8\n"
-        "je .Lf165850_001658e5\n"
-        ".Lf165850_001658d8:\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf165850_00165c10\n"
-        ".Lf165850_001658e5:\n"
-        "cvttss2si %xmm0, %edx\n" /* line 3859 */
-        "movl %edx, -0x444(%ebp)\n" /* iTargetLineWidth */
-        ".Lf165850_001658ef:\n"
-        "movss 0x288(%esi), %xmm0\n" /* line 3862 | item */
-        "movss %xmm0, -0x440(%ebp)\n" /* y */
-        "movb $0, -0x430(%ebp)\n" /* line 3864 | buff */
-        "testl %ebx, %ebx\n" /* line 3868 | p */
-        "je .Lf165850_00165b83\n"
-        "movl $0, -0x45c(%ebp)\n" /* newLinePtr */
-        "movl $0, -0x454(%ebp)\n" /* len */
-        "movl $0, -0x44c(%ebp)\n" /* newLine */
-        "movl $0, -0x448(%ebp)\n" /* newLineWidth */
-        "leal 0x210(%esi), %edi\n" /* item */
-        "movl -0x458(%ebp), %eax\n" /* height */
-        "addl $5, %eax\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        "movss %xmm2, -0x464(%ebp)\n"
-        "jmp .Lf165850_00165999\n"
-        ".Lf165850_00165953:\n"
-        "cmpb $0x20, %al\n" /* line 3877 */
-        "je .Lf165850_00165be6\n"
-        ".Lf165850_0016595b:\n"
-        "movl -0x454(%ebp), %edx\n" /* line 3907 | len */
-        "movb %al, -0x430(%ebp, %edx)\n"
-        "addl $1, %edx\n"
-        "movl %edx, -0x454(%ebp)\n" /* len */
-        "addl $1, %ebx\n" /* p */
-        "movl %edx, %eax\n" /* line 3909 */
-        "subl $1, %eax\n"
-        "cmpb $0xd, -0x430(%ebp, %eax)\n"
-        "je .Lf165850_00165bfd\n"
-        "movl %edx, %eax\n"
-        ".Lf165850_00165989:\n"
-        "movb $0, -0x430(%ebp, %eax)\n" /* line 3912 */
-        "testl %ebx, %ebx\n" /* line 3868 | p */
-        "je .Lf165850_00165b83\n"
-        ".Lf165850_00165999:\n"
-        "movzbl (%ebx), %eax\n" /* line 3870 | p */
-        "cmpb $0x20, %al\n"
-        "je .Lf165850_001659ac\n"
-        "cmpb $9, %al\n"
-        "je .Lf165850_001659ac\n"
-        "cmpb $0xa, %al\n"
-        "je .Lf165850_001659ac\n"
-        "testb %al, %al\n"
-        "jne .Lf165850_001659cd\n"
-        ".Lf165850_001659ac:\n"
-        "leal 1(%ebx), %eax\n" /* line 3873 | p */
-        "movl %eax, -0x45c(%ebp)\n" /* newLinePtr */
-        "movl -0x454(%ebp), %edx\n" /* len */
-        "movl %edx, -0x44c(%ebp)\n" /* newLine */
-        "movl -0x450(%ebp), %eax\n" /* textWidth */
-        "movl %eax, -0x448(%ebp)\n" /* newLineWidth */
-        ".Lf165850_001659cd:\n"
-        "movl 0x28c(%esi), %eax\n" /* line 3876 | item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x43c(%ebp), %edx\n" /* font */
-        "movl %edx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x430(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "movl %eax, -0x450(%ebp)\n" /* textWidth */
-        "movl -0x44c(%ebp), %edx\n" /* line 3877 | newLine */
-        "testl %edx, %edx\n"
-        "je .Lf165850_00165a11\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "ucomiss 8(%esi), %xmm0\n" /* item */
-        "ja .Lf165850_00165a20\n"
-        ".Lf165850_00165a11:\n"
-        "movzbl (%ebx), %eax\n" /* p */
-        "cmpb $0xa, %al\n"
-        "je .Lf165850_00165a20\n"
-        "testb %al, %al\n"
-        "jne .Lf165850_00165953\n"
-        ".Lf165850_00165a20:\n"
-        "movl -0x454(%ebp), %eax\n" /* line 3879 | len */
-        "testl %eax, %eax\n"
-        "je .Lf165850_00165b3a\n"
-        "movl 0x210(%esi), %eax\n" /* line 3882 | item */
-        "movl %eax, -0x30(%ebp)\n" /* newTextRect */
-        "movl 4(%edi), %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%edi), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0xc(%edi), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x10(%edi), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x14(%edi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x280(%esi), %eax\n" /* line 3883 | item */
-        "cmpl $1, %eax\n"
-        "je .Lf165850_00165b9d\n"
-        "cmpl $2, %eax\n" /* line 3885 */
-        "je .Lf165850_00165bc8\n"
-        "movss 0x284(%esi), %xmm1\n" /* line 3888 | item */
-        "movss %xmm1, -0x30(%ebp)\n" /* newTextRect */
-        ".Lf165850_00165a7a:\n"
-        "movss -0x440(%ebp), %xmm0\n" /* line 3890 | y */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movl 0xd4(%esi), %eax\n" /* line 3698 */
-        "testl %eax, %eax\n"
-        "je .Lf165850_00165b8e\n"
-        "movss -0x30(%ebp), %xmm1\n" /* line 3700 | newTextRect */
-        "addss 0xe0(%esi), %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n" /* newTextRect */
-        "addss 0xe0(%esi), %xmm0\n" /* line 3701 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        ".Lf165850_00165ab4:\n"
-        "addss (%esi), %xmm1\n" /* line 3704 */
-        "movss %xmm1, -0x30(%ebp)\n" /* newTextRect */
-        "addss 4(%esi), %xmm0\n" /* line 3705 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 3892 | newTextRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* item */
-        "calll Item_SetTextRect\n"
-        "movl -0x44c(%ebp), %eax\n" /* line 3894 | newLine */
-        "movb $0, -0x430(%ebp, %eax)\n"
-        "movl 0x290(%esi), %eax\n" /* line 3895 | item */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* color */
-        "movl %edx, 0x20(%esp)\n"
-        "movl 0x28c(%esi), %eax\n" /* item */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x14(%esi), %eax\n" /* item */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%esi), %eax\n" /* item */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 4(%edi), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%edi), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x43c(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "leal -0x430(%ebp), %edx\n" /* buff */
-        "movl %edx, (%esp)\n"
-        "calll UI_DrawText\n"
-        ".Lf165850_00165b3a:\n"
-        "cmpb $0, (%ebx)\n" /* line 3897 | p */
-        "je .Lf165850_00165b83\n"
-        "movss -0x440(%ebp), %xmm0\n" /* line 3900 | y */
-        "addss -0x464(%ebp), %xmm0\n"
-        "movss %xmm0, -0x440(%ebp)\n" /* y */
-        "movl -0x45c(%ebp), %ebx\n" /* newLinePtr, p */
-        "movl $0, -0x454(%ebp)\n" /* len */
-        "movl $0, -0x44c(%ebp)\n" /* newLine */
-        "movl $0, -0x448(%ebp)\n" /* newLineWidth */
-        "testl %ebx, %ebx\n" /* line 3868 | p */
-        "jne .Lf165850_00165999\n"
-        /* } scope */
-        ".Lf165850_00165b83:\n"
-        "addl $0x49c, %esp\n" /* line 3914 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf165850_00165b8e:\n"
-        "movss -0x30(%ebp), %xmm1\n" /* newTextRect */
-        "movss -0x2c(%ebp), %xmm0\n"
-        "jmp .Lf165850_00165ab4\n"
-        /* { scope 1 */
-        ".Lf165850_00165b9d:\n"
-        "movl -0x448(%ebp), %eax\n" /* line 3884 | newLineWidth */
-        "shrl $0x1f, %eax\n"
-        "addl -0x448(%ebp), %eax\n" /* newLineWidth */
-        "sarl $1, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x284(%esi), %xmm0\n" /* item */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* newTextRect */
-        "jmp .Lf165850_00165a7a\n"
-        ".Lf165850_00165bc8:\n"
-        "cvtsi2ssl -0x448(%ebp), %xmm1\n" /* line 3886 | newLineWidth */
-        "movss 0x284(%esi), %xmm0\n" /* item */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* newTextRect */
-        "jmp .Lf165850_00165a7a\n"
-        ".Lf165850_00165be6:\n"
-        "movl -0x450(%ebp), %edx\n" /* line 3877 | textWidth */
-        "cmpl %edx, -0x444(%ebp)\n" /* iTargetLineWidth */
-        "jge .Lf165850_0016595b\n"
-        "jmp .Lf165850_00165a20\n"
-        ".Lf165850_00165bfd:\n"
-        "movb $0x20, -0x430(%ebp, %eax)\n" /* line 3910 */
-        "movl -0x454(%ebp), %eax\n" /* len */
-        "jmp .Lf165850_00165989\n"
-        ".Lf165850_00165c10:\n"
-        "movaps %xmm1, %xmm2\n" /* line 3852 */
-        "divss %xmm0, %xmm2\n"
-        "movss %xmm2, (%esp)\n"
-        "movss %xmm1, -0x478(%ebp)\n"
-        "calll ceilf\n"
-        "fstps -0x460(%ebp)\n"
-        "cvttss2si -0x460(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x478(%ebp), %xmm1\n"
-        "divss %xmm0, %xmm1\n"
-        "cvttss2si %xmm1, %eax\n"
-        "movl %eax, -0x444(%ebp)\n" /* iTargetLineWidth */
-        "jmp .Lf165850_001658ef\n"
-    );
+    byte *it = (byte *)item;
+    char buff[0x400];
+    FontHandle font = UI_GetFontHandle(*(int *)(it + 0x27c), *(float *)(it + 0x28c));
+    float scale = *(float *)(it + 0x28c);
+    int height = UI_TextHeight(font, scale);
+    int textWidth = UI_TextWidth(textPtr, 0, font, scale);
+    int style = *(int *)(it + 0x290);
+    int horzAlign = *(int *)(it + 0x10);
+    int vertAlign = *(int *)(it + 0x14);
+    byte *textRect = it + 0x210;
+    float lineHeight;
+    int iTargetLineWidth;
+    float y;
+    int len, newLine, newLineWidth;
+    const char *newLinePtr;
+    const char *p;
+
+    /* Determine target line width */
+    float itemW = *(float *)(it + 8);
+    if (itemW != 0.0f && (float)textWidth > itemW) {
+        /* Text wider than item — compute number of lines and split evenly */
+        int numLines = (int)ceilf((float)textWidth / itemW);
+        iTargetLineWidth = (int)((float)textWidth / (float)numLines);
+    } else {
+        iTargetLineWidth = (int)itemW;
+    }
+
+    y = *(float *)(it + 0x288);
+    buff[0] = '\0';
+    lineHeight = (float)(height + 5);
+
+    if (!textPtr) return;
+
+    len = 0;
+    newLine = 0;
+    newLineWidth = 0;
+    newLinePtr = NULL;
+    p = textPtr;
+
+    while (p) {
+        unsigned char ch = *p;
+        /* At word boundaries, save break point */
+        if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\0') {
+            newLinePtr = p + 1;
+            newLine = len;
+            newLineWidth = textWidth;
+        }
+
+        /* Compute running text width */
+        textWidth = UI_TextWidth(buff, 0, font, scale);
+
+        /* Check if we need to break */
+        int shouldBreak = 0;
+        if (newLine) {
+            if ((float)textWidth > *(float *)(it + 8))
+                shouldBreak = 1;
+        }
+        if (ch == '\n' || ch == '\0')
+            shouldBreak = 1;
+        /* Also break on space if past target width */
+        if (ch == ' ' && textWidth >= iTargetLineWidth)
+            shouldBreak = 1;
+
+        if (shouldBreak) {
+            if (len > 0) {
+                /* Build text rect for this line */
+                float newTextRect[6];
+                newTextRect[0] = *(float *)textRect;
+                newTextRect[1] = *(float *)(textRect + 4);
+                newTextRect[2] = *(float *)(textRect + 8);
+                newTextRect[3] = *(float *)(textRect + 0xc);
+                *(int *)&newTextRect[4] = *(int *)(textRect + 0x10);
+                *(int *)&newTextRect[5] = *(int *)(textRect + 0x14);
+
+                /* Compute x alignment */
+                int alignment = *(int *)(it + 0x280);
+                if (alignment == 1) {
+                    newTextRect[0] = *(float *)(it + 0x284) - (float)(newLineWidth / 2);
+                } else if (alignment == 2) {
+                    newTextRect[0] = *(float *)(it + 0x284) + *(float *)(textRect + 8) - (float)newLineWidth;
+                } else {
+                    newTextRect[0] = *(float *)(it + 0x284);
+                }
+                newTextRect[1] = y;
+
+                /* Add border offset */
+                if (*(int *)(it + 0xd4)) {
+                    newTextRect[0] += *(float *)(it + 0xe0);
+                    newTextRect[1] += *(float *)(it + 0xe0);
+                }
+                newTextRect[0] += *(float *)it;
+                newTextRect[1] += *(float *)(it + 4);
+
+                ((void (*)(void *, void *))Item_SetTextRect)(item, newTextRect);
+
+                buff[newLine] = '\0';
+                UI_DrawText(buff, 0x7fffffff, font,
+                    *(float *)textRect, *(float *)(textRect + 4),
+                    horzAlign, vertAlign, scale, color, style);
+            }
+
+            if (*p == '\0') break;
+
+            y += lineHeight;
+            p = newLinePtr;
+            len = 0;
+            newLine = 0;
+            newLineWidth = 0;
+            if (!p) break;
+            continue;
+        }
+
+        /* Append character to buffer */
+        buff[len] = ch;
+        len++;
+        p++;
+        /* Replace \r with space */
+        if (len > 0 && buff[len - 1] == '\r')
+            buff[len - 1] = ' ';
+        buff[len] = '\0';
+    }
 }
 
-/* line 3917 */
-__attribute__((naked))
+/* Item_Text_Wrapped_Paint — paint text with \r line breaks, per-line alignment */
 void Item_Text_Wrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3917 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x46c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "movl 0xc(%ebp), %esi\n" /* textPtr */
-        /* { scope 1 */
-        "movl 0x28c(%ebx), %eax\n" /* line 3711 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x27c(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_GetFontHandle\n"
-        "movl %eax, -0x438(%ebp)\n" /* font */
-        "movl 0x28c(%ebx), %eax\n" /* line 3928 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextHeight\n"
-        "movl %eax, %edi\n" /* height */
-        "leal 0x210(%ebx), %eax\n" /* line 99 */
-        "movl %eax, -0x434(%ebp)\n" /* textRect */
-        "movss 4(%eax), %xmm0\n" /* line 3932 */
-        "movss %xmm0, -0x43c(%ebp)\n" /* y */
-        "movl $0xd, 4(%esp)\n" /* line 3934 */
-        "movl %esi, (%esp)\n" /* textPtr */
-        "calll strchr\n"
-        "movl %eax, -0x440(%ebp)\n" /* p */
-        "testl %eax, %eax\n" /* line 3935 */
-        "je .Lf165c56_00165cdc\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf165c56_00165d62\n"
-        ".Lf165c56_00165cdc:\n"
-        "movl %esi, %edi\n" /* textPtr, height */
-        ".Lf165c56_00165cde:\n"
-        "movl 0x280(%ebx), %eax\n" /* line 3953 | item */
-        "cmpl $1, %eax\n"
-        "je .Lf165c56_00165f3e\n"
-        "cmpl $2, %eax\n" /* line 3955 */
-        "je .Lf165c56_00165fa9\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3958 | textRect */
-        "movss (%eax), %xmm0\n"
-        ".Lf165c56_00165d00:\n"
-        "movl 0x290(%ebx), %eax\n" /* line 3959 | item */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* color */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* item */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* item */
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0x43c(%ebp), %xmm1\n" /* y */
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* height */
-        "calll UI_DrawText\n"
-        /* } scope */
-        "addl $0x46c, %esp\n" /* line 3960 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf165c56_00165d62:\n"
-        "leal 5(%edi), %eax\n" /* line 3935 | height */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x430(%ebp)\n"
-        "movl %esi, %edi\n" /* textPtr, height */
-        "jmp .Lf165c56_00165e34\n"
-        ".Lf165c56_00165d78:\n"
-        "cmpl $2, %eax\n" /* line 3942 */
-        "je .Lf165c56_00165edd\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3945 | textRect */
-        "movss (%eax), %xmm0\n"
-        ".Lf165c56_00165d8b:\n"
-        "movl 0x290(%ebx), %eax\n" /* line 3947 | item */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* color */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* item */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* item */
-        "movl %eax, 0x14(%esp)\n"
-        "movss -0x43c(%ebp), %xmm1\n" /* y */
-        "movss %xmm1, 0x10(%esp)\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawText\n"
-        "movss -0x43c(%ebp), %xmm0\n" /* line 3948 | y */
-        "addss -0x430(%ebp), %xmm0\n"
-        "movss %xmm0, -0x43c(%ebp)\n" /* y */
-        "leal 1(%edi, %esi), %edi\n" /* line 3949 | height */
-        "movl -0x440(%ebp), %eax\n" /* line 3950 | p */
-        "addl $1, %eax\n"
-        "movl $0xd, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll strchr\n"
-        "movl %eax, -0x440(%ebp)\n" /* p */
-        "testl %eax, %eax\n" /* line 3935 */
-        "je .Lf165c56_00165cde\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf165c56_00165cde\n"
-        ".Lf165c56_00165e34:\n"
-        "movl -0x440(%ebp), %esi\n" /* line 3937 | p, textPtr */
-        "subl %edi, %esi\n" /* height, textPtr */
-        "leal 1(%esi), %eax\n" /* textPtr */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* height */
-        "leal -0x418(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll strncpy\n"
-        "movb $0, -0x418(%ebp, %esi)\n" /* line 3938 */
-        "movl 0x280(%ebx), %eax\n" /* line 3940 | item */
-        "cmpl $1, %eax\n"
-        "jne .Lf165c56_00165d78\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3941 | textRect */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, -0x420(%ebp)\n"
-        "movss 8(%eax), %xmm1\n"
-        "movss %xmm1, -0x428(%ebp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x428(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "addss -0x420(%ebp), %xmm0\n"
-        "jmp .Lf165c56_00165d8b\n"
-        ".Lf165c56_00165edd:\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3943 | textRect */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, -0x41c(%ebp)\n"
-        "addss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x41c(%ebp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x418(%ebp), %eax\n" /* buff */
-        "movl %eax, (%esp)\n"
-        "calll UI_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x41c(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "jmp .Lf165c56_00165d8b\n"
-        ".Lf165c56_00165f3e:\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3954 | textRect */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, -0x424(%ebp)\n"
-        "movss 8(%eax), %xmm1\n"
-        "movss %xmm1, -0x42c(%ebp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* height */
-        "calll UI_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x42c(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
-        "addss -0x424(%ebp), %xmm0\n"
-        "jmp .Lf165c56_00165d00\n"
-        ".Lf165c56_00165fa9:\n"
-        "movl -0x434(%ebp), %eax\n" /* line 3956 | textRect */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, -0x444(%ebp)\n"
-        "addss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x444(%ebp)\n"
-        "movl 0x28c(%ebx), %eax\n" /* item */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x438(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* height */
-        "calll UI_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x444(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "jmp .Lf165c56_00165d00\n"
-    );
+    byte *it = (byte *)item;
+    char buff[0x400];
+    FontHandle font = UI_GetFontHandle(*(int *)(it + 0x27c), *(float *)(it + 0x28c));
+    int height = UI_TextHeight(font, *(float *)(it + 0x28c));
+    float scale = *(float *)(it + 0x28c);
+    int style = *(int *)(it + 0x290);
+    int horzAlign = *(int *)(it + 0x10);
+    int vertAlign = *(int *)(it + 0x14);
+    byte *textRect = it + 0x210;
+    float y = *(float *)(textRect + 4);
+    float lineHeight = (float)(height + 5);
+
+    const char *p = strchr(textPtr, 0x0d);
+    if (!p || p[0] == '\0') {
+        /* No line breaks — draw entire text with alignment */
+        float x;
+        int alignment = *(int *)(it + 0x280);
+        if (alignment == 1) {
+            int tw = UI_TextWidth(textPtr, 0, font, scale);
+            x = *(float *)textRect + (*(float *)(textRect + 8) - (float)tw) * 0.5f;
+        } else if (alignment == 2) {
+            int tw = UI_TextWidth(textPtr, 0, font, scale);
+            x = *(float *)textRect + *(float *)(textRect + 8) - (float)tw;
+        } else {
+            x = *(float *)textRect;
+        }
+        UI_DrawText(textPtr, 0x7fffffff, font, x, y, horzAlign, vertAlign, scale, color, style);
+        return;
+    }
+
+    /* Multi-line: split on \r and draw each line */
+    const char *lineStart = textPtr;
+    while (p && p[0] != '\0') {
+        int lineLen = (int)(p - lineStart);
+        strncpy(buff, lineStart, lineLen + 1);
+        buff[lineLen] = '\0';
+
+        /* Compute x based on alignment */
+        float x;
+        int alignment = *(int *)(it + 0x280);
+        if (alignment == 1) {
+            int tw = UI_TextWidth(buff, 0, font, scale);
+            x = *(float *)textRect + (*(float *)(textRect + 8) - (float)tw) * 0.5f;
+        } else if (alignment == 2) {
+            int tw = UI_TextWidth(buff, 0, font, scale);
+            x = *(float *)textRect + *(float *)(textRect + 8) - (float)tw;
+        } else {
+            x = *(float *)textRect;
+        }
+
+        UI_DrawText(buff, 0x7fffffff, font, x, y, horzAlign, vertAlign, scale, color, style);
+        y += lineHeight;
+        lineStart = p + 1 + lineLen + 1 - (lineLen + 1); /* Actually: lineStart = p + 1 */
+        lineStart = p + 1;
+
+        p = strchr(lineStart, 0x0d);
+        if (!p || p[0] == '\0')
+            break;
+    }
+
+    /* Draw remaining text after last \r */
+    float x;
+    int alignment = *(int *)(it + 0x280);
+    if (alignment == 1) {
+        int tw = UI_TextWidth(lineStart, 0, font, scale);
+        x = *(float *)textRect + (*(float *)(textRect + 8) - (float)tw) * 0.5f;
+    } else if (alignment == 2) {
+        int tw = UI_TextWidth(lineStart, 0, font, scale);
+        x = *(float *)textRect + *(float *)(textRect + 8) - (float)tw;
+    } else {
+        x = *(float *)textRect;
+    }
+    UI_DrawText(lineStart, 0x7fffffff, font, x, y, horzAlign, vertAlign, scale, color, style);
 }
 
 /* line 4837 */
