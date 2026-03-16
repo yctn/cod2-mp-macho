@@ -3079,9 +3079,72 @@ void Tail_InitEndPoint(const Tail * _this)
     );
 }
 
-/* line 2164 */
+/* Light_Update — normTime computation, bolt orientation, radius eval, RGB update */
+Bool Light_Update(const Light *_this)
+{
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    /* Get bolt orientation */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    /* World position from bolt or direct */
+    if (orient) {
+        OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+    } else {
+        *(float *)(self + 0x7c) = *(float *)(self + 4);
+        *(float *)(self + 0x80) = *(float *)(self + 8);
+        *(float *)(self + 0x84) = *(float *)(self + 0xc);
+    }
+
+    /* Evaluate radius curve */
+    float radius;
+    if (*(byte *)(self + 0xa9) & 0x10) {
+        float bf = *(float *)(self + 0xc8);
+        float v0 = EvalCurve1(self + 0xe4, normTime);
+        float v1 = EvalCurve1(self + 0xf0, normTime);
+        radius = (v0 + (v1 - v0) * bf) * *(float *)(self + 0xe4 + 8);
+    } else {
+        radius = EvalCurve1(self + 0xe4, normTime) * *(float *)(self + 0xe4 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+    *(float *)(self + 0x8c) = radius;
+
+    if (radius == 0.0f) {
+        *(int *)(self + 0xa8) |= 0x01000000;
+        return 1;
+    }
+
+    /* Update RGB */
+    Light_UpdateRGB(_this, NULL);
+    return 1;
+}
+#if 0 /* Original ASM (296 lines) */
 __attribute__((naked))
-Bool Light_Update(const Light * _this)
+Bool Light_Update_asm(const Light * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2164 */
@@ -3377,6 +3440,7 @@ Bool Light_Update(const Light * _this)
         "jmp .Lfa32cc_000a3546\n"
     );
 }
+#endif
 
 /* line 782 */
 __attribute__((naked))
@@ -9547,9 +9611,105 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
     );
 }
 
-/* line 410 */
+/* Particle_Update — core particle tick: normTime, origin update, radius eval, RGB/alpha update */
+extern void OrientationPosToWorldPos(void *orient, vec_t *localPos, vec_t *worldPos);
+Bool Particle_Update(const Particle *_this, const Particle *_this_1, const Cloud *_this_2)
+{
+    (void)_this_1; (void)_this_2;
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime)
+        return 0; /* not started yet */
+
+    /* Compute normalized time */
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f)
+        return 0;
+
+    /* Get bolt orientation if present */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        /* Get cached orientation from bolt frame */
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int cachedTime = *(int *)(boltFrame + 4);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (cachedTime != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                Bool ok = FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8));
+                if (!ok) { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    /* Update origin */
+    if (!Particle_UpdateOrigin(_this, (const orientation_t *)orient))
+        return 0;
+
+    /* If has bolt, transform to world space */
+    if (orient) {
+        vec3_t worldPos;
+        OrientationPosToWorldPos(orient, (vec_t *)(self + 4), worldPos);
+        *(float *)(self + 0x7c) = worldPos[0];
+        *(float *)(self + 0x80) = worldPos[1];
+        *(float *)(self + 0x84) = worldPos[2];
+    } else {
+        *(float *)(self + 0x7c) = *(float *)(self + 4);
+        *(float *)(self + 0x80) = *(float *)(self + 8);
+        *(float *)(self + 0x84) = *(float *)(self + 0xc);
+    }
+
+    /* Evaluate radius (1-component curve with blend) */
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        /* Blend path */
+        float blendFactor = *(float *)(self + 0x120);
+        float v0 = EvalCurve1(self + 0x174, normTime);
+        float v1 = EvalCurve1(self + 0x180, normTime);
+        radius = (v0 + (v1 - v0) * blendFactor) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+
+    if (radius == 0.0f) {
+        *(int *)(self + 0xa8) |= 0x01000000; /* mark for removal */
+        return 1;
+    }
+
+    /* Check sequence params */
+    if (*(byte *)(self + 0x104)) {
+        if (*(byte *)(self + 0xaa) & 1) {
+            /* TODO: evaluate rotation curve — complex, skip for now */
+        }
+    }
+
+    /* Evaluate rotation */
+    float rotation;
+    if (*(byte *)(self + 0xaa) & 1) {
+        rotation = EvalCurve1(self + 0x18c, normTime) * *(float *)(self + 0x18c + 8);
+    } else {
+        rotation = 0.0f;
+    }
+    *(float *)(self + 0x8c) = rotation;
+
+    /* Update RGB and Alpha */
+    Particle_UpdateRGB(_this);
+    Particle_UpdateAlpha(_this);
+
+    return 1;
+}
+#if 0 /* Original ASM (209 lines) */
 __attribute__((naked))
-Bool Particle_Update(const Particle * _this, const Particle * _this_1, const Cloud * _this_2)
+Bool Particle_Update_asm(const Particle * _this, const Particle * _this_1, const Cloud * _this_2)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 410 */
@@ -9758,6 +9918,7 @@ Bool Particle_Update(const Particle * _this, const Particle * _this_1, const Clo
         "subss %xmm1, %xmm0\n"
     );
 }
+#endif
 
 /* Effect_Archive — serialize all Effect base fields */
 extern void FxArchive_ArchiveEffect(void *arch, void *effectPtr);
