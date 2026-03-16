@@ -1066,10 +1066,14 @@ Bool Material_ParseVector(int elemCount)
     );
 }
 
-/* line 2659 */
+/* line 2659 — Dx7 texture stage state parser: reads textureFunction/alphaFunction tokens
+ * from material text, validates against function table, builds texture stage bits.
+ * Register convention: eax=text, edx=samplerIndex, ecx=validTest, stack=texStageBits.
+ * 416 lines of token parsing with string comparisons and bit manipulation. */
 static __attribute__((naked))
 Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits)
 {
+    (void)samplerIndex; (void)validTest; (void)texStageBits;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2659 */
         "movl %esp, %ebp\n"
