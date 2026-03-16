@@ -443,8 +443,104 @@ jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader,
 }
 
 /* line 102 */
+/* line 102 — Wavelet image decompression: iterates mip levels from bottom to top,
+ * decompresses each face via Wavelet_DecompressLevel, uploads to D3D texture.
+ * Register convention: eax=image, edx=fileHeader, ecx=data, stack=format,bytesPerPixel. */
+extern void Wavelet_DecompressLevel(const byte *src, int offset, void *decode);
+extern int Image_CubemapFace(int faceIndex);
+extern void *__Znam(unsigned int size); /* operator new[] */
+extern void __ZdaPv(void *ptr); /* operator delete[] */
+static jpeg_alloc Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
+    const byte *data, D3DFORMAT format, int bytesPerPixel)
+{
+    int width = *(short *)(fileHeader + 6);
+    int height = *(short *)(fileHeader + 8);
+    int depth = *(short *)(fileHeader + 10);
+    int mipmapCount = *(byte *)(fileHeader + 5);
+    int isCubemap = (*(int *)image == 5);
+    int faceCount = isCubemap ? 6 : 1;
+    int pixelStride = (bytesPerPixel == 3) ? 4 : bytesPerPixel;
+    int startLevel;
+    int totalSize = width * height * pixelStride;
+    void *hunkBufs[6];
+    int hunkOffsets[6];
+    short decode[2] = {0, 0};
+    int i, level, face;
+
+    Image_Setup(image, width, height, depth, mipmapCount, 0, format);
+
+    /* Compute starting mip level */
+    if (*(byte *)(fileHeader + 5) & 2) {
+        startLevel = 0;
+    } else {
+        int maxDim = 1, levels = 1;
+        while (maxDim < width || maxDim < height || maxDim < depth) {
+            maxDim *= 2;
+            levels++;
+        }
+        startLevel = levels - 1;
+    }
+
+    /* Allocate temp buffers for each face */
+    for (i = 0; i < faceCount; i++) {
+        hunkBufs[i] = Hunk_AllocateTempMemoryInternal(totalSize);
+        hunkOffsets[i] = 0;
+    }
+
+    /* Process mip levels from bottom to top */
+    for (level = startLevel; level >= mipmapCount; level--) {
+        int mipW = width >> level; if (mipW < 1) mipW = 1;
+        int mipH = height >> level; if (mipH < 1) mipH = 1;
+        int sizeForLevel = mipW * mipH * pixelStride;
+
+        for (face = 0; face < faceCount; face++) {
+            int offset = totalSize + hunkOffsets[face] - sizeForLevel;
+            hunkOffsets[face] = offset;
+
+            Wavelet_DecompressLevel(data, offset, decode);
+
+            /* Allocate temp, copy decompressed data */
+            int allocSize = (sizeForLevel / 4) * 4;
+            void *pTemp = __Znam(allocSize);
+            memcpy(pTemp, (void *)(intptr_t)offset, sizeForLevel);
+
+            /* Upload to texture */
+            int cubeFace = Image_CubemapFace(face);
+            Image_UploadData(image, format, cubeFace, level - mipmapCount, (const byte *)pTemp);
+
+            if (pTemp)
+                __ZdaPv(pTemp);
+        }
+    }
+
+    /* Free hunk allocations */
+    for (i = faceCount - 1; i >= 0; i--)
+        Hunk_FreeTempMemory(hunkBufs[i]);
+
+    return;
+}
+
+/* Naked trampoline: eax=image, edx=fileHeader, ecx=data, stack=format,bytesPerPixel */
 static __attribute__((naked))
 jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel)
+{
+    (void)image; (void)data; (void)format; (void)bytesPerPixel;
+    __asm__ __volatile__ (
+        "pushl %ebp\n"
+        "movl %esp, %ebp\n"
+        "pushl 0xc(%ebp)\n"    /* bytesPerPixel */
+        "pushl 8(%ebp)\n"      /* format */
+        "pushl %ecx\n"         /* data */
+        "pushl %edx\n"         /* fileHeader */
+        "pushl %eax\n"         /* image */
+        "calll Image_LoadWavelet_impl\n"
+        "addl $20, %esp\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+#if 0 /* original naked (253 lines) */
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 102 */
@@ -698,6 +794,7 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "jmp .Lffcbcc_000fcc93\n"
     );
 }
+#endif /* original naked Image_LoadWavelet */
 
 /* line 320 */
 /* Helper: call naked Image_LoadWavelet with register calling convention */
