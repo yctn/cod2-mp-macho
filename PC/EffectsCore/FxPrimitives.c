@@ -171,52 +171,10 @@ static void FxBoltFrame_ReleaseHelper(byte *boltFrame)
 }
 
 /* line 69 */
-__attribute__((naked))
-void FxBoltFrame_Release(const FxBoltFrame * _this)
+/* FxBoltFrame_Release — decrement refcount, free if zero */
+void FxBoltFrame_Release(const FxBoltFrame *_this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 69 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movl (%edx), %eax\n" /* line 71 */
-        "subl $1, %eax\n"
-        "movl %eax, (%edx)\n"
-        "testl %eax, %eax\n" /* line 72 */
-        "jne .Lfa0570_000a05ae\n"
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 75 */
-        "testl %eax, %eax\n"
-        "je .Lfa0570_000a05a1\n"
-        "cmpl %eax, %edx\n" /* line 77 */
-        "je .Lfa0570_000a05b0\n"
-        ".Lfa0570_000a058e:\n"
-        "leal 0x38(%eax), %ecx\n" /* line 75 */
-        "movl 0x38(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfa0570_000a05a1\n"
-        "cmpl %edx, %eax\n" /* line 77 */
-        "jne .Lfa0570_000a058e\n"
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        ".Lfa0570_000a05a1:\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "je .Lfa0570_000a05ae\n"
-        "movl %edx, 8(%ebp)\n" /* this */
-        /* } scope */
-        "popl %ebp\n" /* line 85 */
-        /* { scope 1 */
-        "jmp __ZdaPv\n" /* line 35 */
-        /* } scope */
-        ".Lfa0570_000a05ae:\n"
-        "popl %ebp\n" /* line 85 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa0570_000a05b0:\n"
-        "movl $__ZN11FxBoltFrame12g_mFrameListE, %ecx\n" /* line 77 */
-        "movl 0x38(%edx), %eax\n" /* line 79 */
-        "movl %eax, (%ecx)\n"
-        "jmp .Lfa0570_000a05a1\n"
-    );
+    FxBoltFrame_ReleaseHelper((byte *)_this);
 }
 
 /* line 88 */
@@ -10740,113 +10698,60 @@ void Particle_Archive(const Particle * _this, FxArchive *arch)
     );
 }
 
-/* line 1329 */
-__attribute__((naked))
-void OrientedParticle_Archive(const OrientedParticle * _this, FxArchive *arch)
+/* OrientedParticle_Archive — serialize normal vec3 at offset 0x24c */
+extern void FxArchive_ReadData(void *arch, void *data, int size);
+extern void FxArchive_WriteData(void *arch, void *data, int size);
+void OrientedParticle_Archive(const OrientedParticle *_this, FxArchive *arch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1329 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %edi\n" /* arch */
-        "movl %edi, 4(%esp)\n" /* line 1333 | arch */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Archive\n"
-        "leal 0x24c(%ebx), %esi\n" /* line 1335 | this, v */
-        "cmpb $0, 4(%edi)\n" /* line 227 */
-        "je .Lfa95ce_000a9611\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "addl $0x2c, %esp\n" /* line 1336 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa95ce_000a9611:\n"
-        "movl 0x24c(%ebx), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %ebx\n" /* f */
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1336 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+    Particle_Archive((const Particle *)_this, arch);
+    if (*(byte *)(a + 4)) { /* isReading */
+        FxArchive_ReadData(arch, self + 0x24c, 0xc);
+    } else {
+        float f;
+        f = *(float *)(self + 0x24c); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x250); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x254); FxArchive_WriteData(arch, &f, 4);
+    }
 }
 
-/* line 1472 */
+/* Cloud_Archive — serialize vec3, 2 channel instances, float, byte */
+void Cloud_Archive(const Cloud *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+    Particle_Archive((const Particle *)_this, arch);
+    /* Vec3 at 0x24c */
+    if (*(byte *)(a + 4)) {
+        FxArchive_ReadData(arch, self + 0x24c, 0xc);
+    } else {
+        float f;
+        f = *(float *)(self + 0x24c); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x250); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x254); FxArchive_WriteData(arch, &f, 4);
+    }
+    /* Two ChannelInstances */
+    FxArchive_ArchiveChannelInstance(arch, self + 0x264);
+    FxArchive_ArchiveChannelInstance(arch, self + 0x270);
+    /* Float at 0x260 */
+    if (*(byte *)(a + 4)) {
+        float f; FxArchive_ReadData(arch, &f, 4); *(float *)(self + 0x260) = f;
+    } else {
+        float f = *(float *)(self + 0x260); FxArchive_WriteData(arch, &f, 4);
+    }
+    /* Byte at 0x25c */
+    if (*(byte *)(a + 4)) {
+        byte b; FxArchive_ReadData(arch, &b, 1); *(byte *)(self + 0x25c) = b;
+    } else {
+        byte b = *(byte *)(self + 0x25c); FxArchive_WriteData(arch, &b, 1);
+    }
+}
+#if 0 /* Original ASM — partial preserved */
 __attribute__((naked))
-void Cloud_Archive(const Cloud * _this, FxArchive *arch)
+void Cloud_Archive_asm(const Cloud * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1472 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %esi\n" /* arch */
-        "movl %esi, 4(%esp)\n" /* line 1476 | arch */
-        "movl %edi, (%esp)\n" /* this */
-        "calll Particle_Archive\n"
-        "leal 0x24c(%edi), %ebx\n" /* line 1478 | this, v */
-        "cmpb $0, 4(%esi)\n" /* line 227 */
-        "je .Lfa966e_000a972e\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        ".Lfa966e_000a96ad:\n"
-        "leal 0x264(%edi), %eax\n" /* line 1479 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "leal 0x270(%edi), %eax\n" /* line 1480 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "cmpb $0, 4(%esi)\n" /* line 213 */
-        "je .Lfa966e_000a97b6\n"
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 108 */
-        "leal -0x1c(%ebp), %eax\n" /* f */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
         "movl -0x1c(%ebp), %eax\n" /* line 214 | f */
         "movl %eax, 0x260(%edi)\n"
         ".Lfa966e_000a96fb:\n"
@@ -10926,122 +10831,55 @@ void Cloud_Archive(const Cloud * _this, FxArchive *arch)
         "jmp .Lfa966e_000a96fb\n"
     );
 }
+#endif
 
-/* line 1567 */
-__attribute__((naked))
-void Line_Archive(const Line * _this, FxArchive *arch)
+/* Line_Archive — serialize normal vec3 at offset 0x24c (same as OrientedParticle) */
+void Line_Archive(const Line *_this, FxArchive *arch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1567 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0xc(%ebp), %edi\n" /* arch */
-        "movl %edi, 4(%esp)\n" /* line 1571 | arch */
-        "movl %ebx, (%esp)\n" /* this */
-        "calll Particle_Archive\n"
-        "leal 0x24c(%ebx), %esi\n" /* line 1573 | this, v */
-        "cmpb $0, 4(%edi)\n" /* line 227 */
-        "je .Lfa97dc_000a981f\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "addl $0x2c, %esp\n" /* line 1574 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa97dc_000a981f:\n"
-        "movl 0x24c(%ebx), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* { scope 1: f */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n" /* line 144 */
-        "leal -0x1c(%ebp), %ebx\n" /* f */
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 4(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl 8(%esi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* f */
-        /* } scope */
-        /* { scope 2 */
-        "movl $4, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 1574 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+    Particle_Archive((const Particle *)_this, arch);
+    if (*(byte *)(a + 4)) {
+        FxArchive_ReadData(arch, self + 0x24c, 0xc);
+    } else {
+        float f;
+        f = *(float *)(self + 0x24c); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x250); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x254); FxArchive_WriteData(arch, &f, 4);
+    }
 }
 
-/* line 1699 */
+/* Tail_Archive — serialize vec3 at 0x24c, two ChannelInstances, float at 0x25c */
+extern void FxArchive_ArchiveChannelInstance(void *arch, void *channelInst);
+void Tail_Archive(const Tail *_this, FxArchive *arch)
+{
+    byte *self = (byte *)_this;
+    byte *a = (byte *)arch;
+    Particle_Archive((const Particle *)_this, arch);
+    /* Vec3 at 0x24c */
+    if (*(byte *)(a + 4)) {
+        FxArchive_ReadData(arch, self + 0x24c, 0xc);
+    } else {
+        float f;
+        f = *(float *)(self + 0x24c); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x250); FxArchive_WriteData(arch, &f, 4);
+        f = *(float *)(self + 0x254); FxArchive_WriteData(arch, &f, 4);
+    }
+    /* Two ChannelInstances */
+    FxArchive_ArchiveChannelInstance(arch, self + 0x260);
+    FxArchive_ArchiveChannelInstance(arch, self + 0x26c);
+    /* Float at 0x25c */
+    if (*(byte *)(a + 4)) {
+        float f; FxArchive_ReadData(arch, &f, 4); *(float *)(self + 0x25c) = f;
+    } else {
+        float f = *(float *)(self + 0x25c); FxArchive_WriteData(arch, &f, 4);
+    }
+}
+#if 0 /* Original ASM — partial, rest is below */
 __attribute__((naked))
-void Tail_Archive(const Tail * _this, FxArchive *arch)
+void Tail_Archive_asm(const Tail * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1699 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %ebx\n" /* arch */
-        "movl %ebx, 4(%esp)\n" /* line 1703 | arch */
-        "movl %edi, (%esp)\n" /* this */
-        "calll Particle_Archive\n"
-        "leal 0x24c(%edi), %esi\n" /* line 1705 | this, v */
-        "cmpb $0, 4(%ebx)\n" /* line 227 */
-        "je .Lfa987c_000a990d\n"
-        "movl $0xc, 8(%esp)\n" /* line 115 */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        ".Lfa987c_000a98b7:\n"
-        "leal 0x260(%edi), %eax\n" /* line 1707 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "leal 0x26c(%edi), %eax\n" /* line 1708 | this */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arch */
-        "calll FxArchive_ArchiveChannelInstance\n"
-        "cmpb $0, 4(%ebx)\n" /* line 213 */
-        "je .Lfa987c_000a996c\n"
-        /* { scope 1: f */
-        "movl $4, 8(%esp)\n" /* line 108 */
-        "leal -0x1c(%ebp), %eax\n" /* f */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 214 | f */
-        "movl %eax, 0x25c(%edi)\n"
-        "addl $0x2c, %esp\n" /* line 1711 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
         ".Lfa987c_000a990d:\n"
         "movl 0x24c(%edi), %eax\n" /* line 115 */
         "movl %eax, -0x1c(%ebp)\n" /* f */
@@ -11091,6 +10929,7 @@ void Tail_Archive(const Tail * _this, FxArchive *arch)
         "retl\n"
     );
 }
+#endif
 
 /* line 1794 */
 
