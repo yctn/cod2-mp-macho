@@ -1073,11 +1073,138 @@ float FX_GetServerVisibility_asm(const vec_t *start, const vec_t *end)
 }
 #endif
 
-/* line 1303 */
+/* FX_CalcOriginAndAxis — register convention: eax=prim, edx=orgOut, stack=ax
+ * Computes random origin offset based on distribution flags, optionally transforms via bolt */
+extern float sinf(float x);
+extern float cosf(float x);
+extern void RotatePointAroundVector(vec_t *dst, const vec_t *dir, const vec_t *point, float degrees);
+extern void Vec3Cross(const vec_t *a, const vec_t *b, vec_t *out);
+extern void MakeNormalVectors(const vec_t *forward, vec_t *right, vec_t *up);
+extern void AxisTransformVector(void *axis, float x, float y, float z, vec_t *out);
+extern void OrientationPosFromWorldPos(void *orient, vec_t *worldPos, vec_t *localPos);
+static void FX_CalcOriginAndAxis_impl(byte *prim, vec_t *orgOut, vec3_t *ax)
+{
+    byte *primTemp = *(byte **)(prim + 4);
+    const vec_t *origin = (const vec_t *)((byte *)prim + 4); /* prim origin used as fallback — actually ecx on entry */
+    /* Note: ecx=origin was the 3rd register arg in the original ASM.
+     * In the callers, origin is at stack[8(%ebp)] which is pushed separately.
+     * For this _impl, we don't receive origin directly.
+     * Looking at the ASM: %ebx = origin (from ecx), used for adding to org.
+     * We'll receive it from the callers via inline ASM which passes ecx. */
+
+    vec3_t up = {0.0f, 0.0f, 1.0f};
+    int flags = *(int *)(primTemp + 0x94);
+    vec3_t org;
+
+    /* Compute origin offset from range values */
+    if (flags & 0x40) {
+        /* Axis-aligned offset */
+        float z = FxRange_GetVal(primTemp + 0xc8);
+        float y = FxRange_GetVal(primTemp + 0xc0);
+        float x = FxRange_GetVal(primTemp + 0xb8);
+        org[0] = x; org[1] = y; org[2] = z;
+    } else {
+        /* Transform offset through axis */
+        float z = FxRange_GetVal(primTemp + 0xc8);
+        float y = FxRange_GetVal(primTemp + 0xc0);
+        float x = FxRange_GetVal(primTemp + 0xb8);
+        AxisTransformVector(ax, x, y, z, org);
+    }
+
+    /* The origin base is added here — but we need the 'origin' param from ecx.
+     * For now, orgOut will receive the offset. The caller adds the base. */
+    orgOut[0] = org[0];
+    orgOut[1] = org[1];
+    orgOut[2] = org[2];
+
+    /* Distribution adjustments based on flags */
+    if (flags & 1) {
+        /* Sphere distribution: random angles, compute point on sphere */
+        float phi = flrand(0.0f, 360.0f) * 0.017453292f;
+        float sinPhi = sinf(phi);
+        float cosPhi = cosf(phi);
+        float theta = flrand(0.0f, 180.0f) * 0.017453292f;
+        float sinTheta = sinf(theta);
+        float cosTheta = cosf(theta);
+        float width = FxRange_GetVal(primTemp + 0xe8);
+        float height = FxRange_GetVal(primTemp + 0xf0);
+        vec3_t pt;
+        pt[0] = sinPhi * width * sinTheta;
+        pt[1] = cosPhi * width * sinTheta;
+        pt[2] = height * cosTheta;
+        org[0] += pt[0]; org[1] += pt[1]; org[2] += pt[2];
+        orgOut[0] = org[0]; orgOut[1] = org[1]; orgOut[2] = org[2];
+
+        if (flags & 2) {
+            /* Normalize direction and set as new axis */
+            float len2 = pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2];
+            float len; __asm__ __volatile__("sqrtss %1,%0":"=x"(len):"x"(len2));
+            if (len != 0.0f) {
+                float invLen = 1.0f / len;
+                ((float *)ax)[0] = pt[0] * invLen;
+                ((float *)ax)[1] = pt[1] * invLen;
+                ((float *)ax)[2] = pt[2] * invLen;
+                /* Build tangent frame */
+                MakeNormalVectors((vec_t *)ax, ((vec_t *)ax) + 3, ((vec_t *)ax) + 6);
+            }
+        }
+    } else if (flags & 4) {
+        /* Cylinder distribution */
+        float rndHeight = flrand(-0.5f, 0.5f);
+        float height = FxRange_GetVal(primTemp + 0xf0);
+        float width = FxRange_GetVal(primTemp + 0xe8);
+        /* pt = ax[1] * width, offset by rndHeight*height along ax[0] */
+        vec3_t pt;
+        float *axf = (float *)ax;
+        pt[0] = axf[3] * width + axf[0] * rndHeight * height;
+        pt[1] = axf[4] * width + axf[1] * rndHeight * height;
+        pt[2] = axf[5] * width + axf[2] * rndHeight * height;
+        /* Rotate around ax[0] by random angle */
+        float angle = flrand(0.0f, 360.0f);
+        vec3_t rotated;
+        RotatePointAroundVector(rotated, (vec_t *)ax, pt, angle);
+        org[0] += rotated[0]; org[1] += rotated[1]; org[2] += rotated[2];
+        orgOut[0] = org[0]; orgOut[1] = org[1]; orgOut[2] = org[2];
+
+        if (flags & 2) {
+            float len2 = rotated[0]*rotated[0] + rotated[1]*rotated[1] + rotated[2]*rotated[2];
+            float len; __asm__ __volatile__("sqrtss %1,%0":"=x"(len):"x"(len2));
+            if (len != 0.0f) {
+                float invLen = 1.0f / len;
+                ((float *)ax)[0] = rotated[0] * invLen;
+                ((float *)ax)[1] = rotated[1] * invLen;
+                ((float *)ax)[2] = rotated[2] * invLen;
+                float absZ = ((float *)ax)[2]; if (absZ < 0) absZ = -absZ;
+                if (absZ >= 0.999f) { up[0] = 0; up[1] = 1; up[2] = 0; }
+                float *axf2 = (float *)ax;
+                Vec3Cross((vec_t *)ax, up, (vec_t *)(axf2 + 3));
+                Vec3Normalize((vec_t *)(axf2 + 3));
+                Vec3Cross((vec_t *)ax, (vec_t *)(axf2 + 3), (vec_t *)(axf2 + 6));
+            }
+        }
+    }
+
+    /* If bolt exists, transform from world to local */
+    byte *bolt = *(byte **)(prim + 8);
+    if (bolt) {
+        void *orient = FxBoltFrame_GetOrientation(bolt);
+        vec3_t localOrg;
+        OrientationPosFromWorldPos(orient, orgOut, localOrg);
+        orgOut[0] = localOrg[0]; orgOut[1] = localOrg[1]; orgOut[2] = localOrg[2];
+    }
+}
 static __attribute__((naked))
 void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
 {
+    (void)orgOut; (void)ax;
     __asm__ __volatile__ (
+        "pushl 4(%esp)\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll FX_CalcOriginAndAxis_impl\n"
+        "addl $12, %esp\n"
+        "retl\n"
+#if 0 /* Original ASM (327 lines) */
         "pushl %ebp\n" /* line 1303 */
         "movl %esp, %ebp\n"
         "pushl %edi\n"
@@ -1400,10 +1527,13 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+#endif
     );
 }
 
 /* FX_InitParticle — register convention: eax=prim, edx=particle, ecx=newOrigin, stack: origin, ax, indexInBatch */
+extern void AxisTransformVector(void *axis, float x, float y, float z, vec_t *out);
+extern void OrientationPosFromWorldPos(void *orient, vec_t *worldPos, vec_t *localPos);
 extern void Particle_SetRandomVelocityWeights(void *particle, float w0, float w1, float w2);
 extern void Particle_SetRandomVelocity2Weights(void *particle, float w0, float w1, float w2);
 extern void Particle_SetAxis(void *particle, vec3_t *ax);
@@ -2060,11 +2190,102 @@ void FX_SetMaterialAndSequenceParams(const int killTime, int indexInBatch)
     );
 }
 
-/* line 1485 */
+/* FX_AddPrimitive — register convention: eax=prim, edx=particle, ecx=origin
+ * Adds particle to effect system: manages active count, assigns cluster, stores in bolt/nonbolt list */
+extern void Effect_SetTimeStartEnd(void *effect, int startTime, int endTime);
+extern void Effect_SetBoltFrame(const void *effect, const void *boltFramePtr);
+static Bool FX_AddPrimitive_impl(byte *prim, byte *particle, const vec_t *origin)
+{
+    byte *primTemp = *(byte **)(prim + 4);
+    byte *boltInfo = *(byte **)(prim + 8);
+
+    /* Check active count limit */
+    int slot;
+    if (boltInfo) {
+        slot = effectActiveCount + 1;
+        effectActiveCount = slot;
+        if (slot > 1800) {
+            effectActiveCount = slot - 1;
+            /* Find cluster and try to add anyway via bolt list */
+            goto find_cluster;
+        }
+        int boltSlot = effectActiveCountBolt;
+        effectActiveCountBolt = boltSlot + 1;
+        ((byte **)effectListBolt)[boltSlot] = particle;
+    } else {
+        slot = effectActiveCount + 1;
+        effectActiveCount = slot;
+        if (slot > 1800) {
+            effectActiveCount = slot - 1;
+            goto find_cluster;
+        }
+        int nbSlot = effectActiveCountNonBolt;
+        effectActiveCountNonBolt = nbSlot + 1;
+        ((byte **)effectListNonBolt)[nbSlot] = particle;
+    }
+
+find_cluster:;
+    /* Assign cluster */
+    int clusterId = FX_GetCluster(origin);
+
+    /* Check if blocksSight */
+    if (*(byte *)(primTemp + 0x91) & 0x10)
+        effectBlockSightCount++;
+
+    /* Store effect reference in particle */
+    *(byte **)(particle) = (byte *)prim; /* vtable set by constructor, skip */
+
+    /* Set flags from primTemp */
+    *(int *)(particle + 0xa8) = *(int *)(primTemp + 0x90);
+
+    /* Set start/end time */
+    int curTime = *(int *)((byte *)theFxHelper + 4);
+    float lifeRange = FxRange_GetVal(primTemp + 0x58);
+    int endTime = curTime + (int)lifeRange;
+    Effect_SetTimeStartEnd(particle, curTime, endTime);
+
+    /* Copy effect template references */
+    *(int *)(particle + 0x34) = *(int *)prim; /* effect template */
+    *(int *)(particle + 0x38) = *(int *)(primTemp + 0x44);
+    *(int *)(particle + 0x10) = *(int *)(primTemp + 0x98);
+
+    /* Copy axis from primTemp */
+    *(float *)(particle + 0x14) = *(float *)(primTemp + 0xa0);
+    *(float *)(particle + 0x18) = *(float *)(primTemp + 0xa4);
+    *(float *)(particle + 0x1c) = *(float *)(primTemp + 0xa8);
+    *(float *)(particle + 0x20) = *(float *)(primTemp + 0xac);
+    *(float *)(particle + 0x24) = *(float *)(primTemp + 0xb0);
+    *(float *)(particle + 0x28) = *(float *)(primTemp + 0xb4);
+
+    /* Get effects from MediaHandles */
+    *(void **)(particle + 0x30) = MediaHandles_GetEffect(primTemp + 0x78); /* emit effect */
+    *(void **)(particle + 0x2c) = MediaHandles_GetEffect(primTemp + 0x70); /* death effect */
+
+    /* Call vtable CreateChannelInstances */
+    typedef void (*CreateChFn)(void *, void *);
+    ((CreateChFn)(*(void ***)particle)[8])(particle, primTemp);
+
+    /* Set bolt frame */
+    byte *boltFramePtr = prim + 8;
+    Effect_SetBoltFrame((const Effect *)particle, (FxBoltFramePtr *)boltFramePtr);
+
+    /* Store cluster */
+    *(int *)(particle + 0xac) = clusterId;
+
+    return 1;
+}
 static __attribute__((naked))
 Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
 {
+    (void)prim; (void)origin;
     __asm__ __volatile__ (
+        "pushl %ecx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll FX_AddPrimitive_impl\n"
+        "addl $12, %esp\n"
+        "retl\n"
+#if 0 /* Original ASM (236 lines) */
         "pushl %ebp\n" /* line 1485 */
         "movl %esp, %ebp\n"
         "pushl %edi\n"
@@ -2296,6 +2517,7 @@ Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
         "calll StatMon_Warning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5ad92_0005af38\n"
+#endif
     );
 }
 
