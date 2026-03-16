@@ -3480,9 +3480,49 @@ Bool Light_Update_asm(const Light * _this)
 }
 #endif
 
-/* line 782 */
+/* Particle_CalcVelocityValue — evaluate 3-component velocity curve at normTime, optional blend + axis transform */
+/* Uses FxCurve channels at offsets: X=0x1bc, Y=0x1c8, Z=0x1d4 (source0) and X=0x1e0, Y=0x1ec, Z=0x1f8 (source1) */
+/* Blend factors at 0x12c (X), 0x130 (Y), 0x134 (Z). Scale at channelInst+8. */
+void Particle_CalcVelocityValue(const Particle *_this, float normTime, vec_t *outVector, const orientation_t *or_)
+{
+    byte *self = (byte *)_this;
+    float vx, vy, vz;
+
+    if (*(byte *)(self + 0xaa) & 8) {
+        /* Blend path: interpolate between source0 and source1 for each axis */
+        float bfx = *(float *)(self + 0x12c);
+        float v0x = EvalCurve1(self + 0x1bc, normTime);
+        float v1x = EvalCurve1(self + 0x1e0, normTime);
+        vx = (v0x + (v1x - v0x) * bfx) * *(float *)(self + 0x1bc + 8);
+
+        float bfy = *(float *)(self + 0x130);
+        float v0y = EvalCurve1(self + 0x1c8, normTime);
+        float v1y = EvalCurve1(self + 0x1ec, normTime);
+        vy = (v0y + (v1y - v0y) * bfy) * *(float *)(self + 0x1c8 + 8);
+
+        float bfz = *(float *)(self + 0x134);
+        float v0z = EvalCurve1(self + 0x1d4, normTime);
+        float v1z = EvalCurve1(self + 0x1f8, normTime);
+        vz = (v0z + (v1z - v0z) * bfz) * *(float *)(self + 0x1d4 + 8);
+    } else {
+        /* Direct path: single source per axis */
+        vx = EvalCurve1(self + 0x1bc, normTime) * *(float *)(self + 0x1bc + 8);
+        vy = EvalCurve1(self + 0x1c8, normTime) * *(float *)(self + 0x1c8 + 8);
+        vz = EvalCurve1(self + 0x1d4, normTime) * *(float *)(self + 0x1d4 + 8);
+    }
+
+    /* Optional axis transform (if NOT flag bit 5 at 0xaa) */
+    if (!(*(byte *)(self + 0xaa) & 0x20)) {
+        AxisTransformVector(self + 0xd0, vx, vy, vz, outVector);
+    } else {
+        outVector[0] = vx;
+        outVector[1] = vy;
+        outVector[2] = vz;
+    }
+}
+#if 0 /* Original ASM (675 lines) */
 __attribute__((naked))
-void Particle_CalcVelocityValue(const Particle * _this, float normTime, vec_t *outVector, const orientation_t *or_)
+void Particle_CalcVelocityValue_asm(const Particle * _this, float normTime, vec_t *outVector, const orientation_t *or_)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 782 */
@@ -4157,8 +4197,45 @@ void Particle_CalcVelocityValue(const Particle * _this, float normTime, vec_t *o
         "jmp .Lfa361a_000a3a68\n"
     );
 }
+#endif
 
-/* line 816 */
+/* line 816 — Particle_CalcVelocity2Value: same as CalcVelocityValue but for secondary velocity channels */
+/* Channels: X=0x204, Y=0x210, Z=0x21c (source0) and X=0x228, Y=0x234, Z=0x240 (source1) */
+/* Blend factors at 0x138 (X), 0x13c (Y), 0x140 (Z) */
+void Particle_CalcVelocity2Value(const Particle *_this, float normTime, vec_t *outVector, const orientation_t *or_)
+{
+    (void)or_;
+    byte *self = (byte *)_this;
+    float vx, vy, vz;
+
+    if (*(byte *)(self + 0xaa) & 8) {
+        float bfx = *(float *)(self + 0x138);
+        float v0x = EvalCurve1(self + 0x204, normTime);
+        float v1x = EvalCurve1(self + 0x228, normTime);
+        vx = (v0x + (v1x - v0x) * bfx) * *(float *)(self + 0x204 + 8);
+
+        float bfy = *(float *)(self + 0x13c);
+        float v0y = EvalCurve1(self + 0x210, normTime);
+        float v1y = EvalCurve1(self + 0x234, normTime);
+        vy = (v0y + (v1y - v0y) * bfy) * *(float *)(self + 0x210 + 8);
+
+        float bfz = *(float *)(self + 0x140);
+        float v0z = EvalCurve1(self + 0x21c, normTime);
+        float v1z = EvalCurve1(self + 0x240, normTime);
+        vz = (v0z + (v1z - v0z) * bfz) * *(float *)(self + 0x21c + 8);
+    } else {
+        vx = EvalCurve1(self + 0x204, normTime) * *(float *)(self + 0x204 + 8);
+        vy = EvalCurve1(self + 0x210, normTime) * *(float *)(self + 0x210 + 8);
+        vz = EvalCurve1(self + 0x21c, normTime) * *(float *)(self + 0x21c + 8);
+    }
+
+    if (!(*(byte *)(self + 0xaa) & 0x20)) {
+        AxisTransformVector(self + 0xd0, vx, vy, vz, outVector);
+    } else {
+        outVector[0] = vx; outVector[1] = vy; outVector[2] = vz;
+    }
+}
+#if 0 /* Original ASM (675 lines) */
 __attribute__((naked))
 void Particle_CalcVelocity2Value(const Particle * _this, float normTime, vec_t *outVector, const orientation_t *or_)
 {
@@ -4835,6 +4912,7 @@ void Particle_CalcVelocity2Value(const Particle * _this, float normTime, vec_t *
         "jmp .Lfa3dbe_000a420c\n"
     );
 }
+#endif
 
 /* Particle_GetTotalVelocity — compute total velocity (vel1 + vel2 + gravity + impact offset) at normTime */
 void Particle_GetTotalVelocity(const Particle *_this, float normTime, vec_t *outVector, const orientation_t *or_)
