@@ -5989,291 +5989,119 @@ static void Scroll_ListBox_AutoFunc(displayContextDef_t *dc, void *p)
     }
 }
 
-/* line 4728 */
-__attribute__((naked))
+/* Item_Bind_HandleKey — handle key binding: enter bind mode, assign/clear keys */
+extern const char str_002157b8[]; /* empty string */
 qboolean Item_Bind_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4728 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* key */
-        /* { scope 1: name */
-        "movl g_waitingForKey, %edi\n" /* line 4733 | id */
-        "testl %edi, %edi\n" /* id */
-        "jne .Lf16bd06_0016bd42\n"
-        "movl 0x14(%ebp), %ebx\n" /* line 4735 | down */
-        "testl %ebx, %ebx\n"
-        "je .Lf16bd06_0016bd38\n"
-        "cmpl $0xd, %esi\n" /* key */
-        "je .Lf16bd06_0016bfa3\n"
-        "cmpl $0xc8, %esi\n" /* key */
-        "je .Lf16bd06_0016bed9\n"
-        ".Lf16bd06_0016bd38:\n"
-        "xorl %eax, %eax\n" /* line 4833 */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 4834 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: name */
-        ".Lf16bd06_0016bd42:\n"
-        "movl g_bindItem, %ecx\n" /* line 4744 */
-        "testl %ecx, %ecx\n"
-        "je .Lf16bd06_0016bd38\n"
-        "testl $0x400, %esi\n" /* line 4747 | key */
-        "jne .Lf16bd06_0016becc\n"
-        "cmpl $0x60, %esi\n" /* line 4750 | key */
-        "je .Lf16bd06_0016becc\n"
-        "cmpl $0x7f, %esi\n" /* key */
-        "je .Lf16bd06_0016bfc2\n"
-        "cmpl $0x1b, %esi\n" /* key */
-        "je .Lf16bd06_0016beb5\n"
-        "cmpl $-1, %esi\n" /* line 4778 | key */
-        "je .Lf16bd06_0016bdb8\n"
-        ".Lf16bd06_0016bd78:\n"
-        "movl $g_bindings, %edx\n"
-        "jmp .Lf16bd06_0016bd8f\n"
-        ".Lf16bd06_0016bd7f:\n"
-        "cmpl %esi, 0xc(%edx)\n" /* line 4785 | key */
-        "je .Lf16bd06_0016bda0\n"
-        ".Lf16bd06_0016bd84:\n"
-        "addl $0x14, %edx\n" /* line 4788 */
-        "cmpl $updateScreenCalled, %edx\n" /* line 4780 */
-        "je .Lf16bd06_0016bdb8\n"
-        ".Lf16bd06_0016bd8f:\n"
-        "cmpl %esi, 0x10(%edx)\n" /* line 4782 | key */
-        "jne .Lf16bd06_0016bd7f\n"
-        "movl $0xffffffff, 0x10(%edx)\n" /* line 4783 */
-        "cmpl %esi, 0xc(%edx)\n" /* line 4785 | key */
-        "jne .Lf16bd06_0016bd84\n"
-        ".Lf16bd06_0016bda0:\n"
-        "movl 0x10(%edx), %eax\n" /* line 4787 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl $0xffffffff, 0x10(%edx)\n" /* line 4788 */
-        "addl $0x14, %edx\n"
-        "cmpl $updateScreenCalled, %edx\n" /* line 4780 */
-        "jne .Lf16bd06_0016bd8f\n"
-        ".Lf16bd06_0016bdb8:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 4793 | item */
-        "movl 0x2c0(%eax), %eax\n"
-        "movl %eax, -0x3c(%ebp)\n" /* name */
-        "xorl %edi, %edi\n" /* name */
-        "movl $g_bindings, %ebx\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf16bd06_0016bde1\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16bd06_0016bdcf:\n"
-        "addl $1, %edi\n" /* line 4406 */
-        "addl $0x14, %ebx\n"
-        "cmpl $0x38, %edi\n"
-        "je .Lf16bd06_0016be63\n"
-        "movl -0x3c(%ebp), %edx\n" /* name */
-        ".Lf16bd06_0016bde1:\n"
-        "movl (%ebx), %eax\n" /* line 4408 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16bd06_0016bdcf\n"
-        /* } scope */
-        "cmpl $-1, %edi\n" /* line 4795 | name */
-        "je .Lf16bd06_0016be63\n"
-        "cmpl $-1, %esi\n" /* line 4797 | key */
-        "je .Lf16bd06_0016c015\n"
-        "leal (%edi, %edi, 4), %eax\n" /* line 4810 | name */
-        "shll $2, %eax\n"
-        "movl g_bindings+12(%eax), %edx\n"
-        "cmpl $-1, %edx\n"
-        "je .Lf16bd06_0016c000\n"
-        "cmpl %esi, %edx\n" /* line 4814 | key */
-        "je .Lf16bd06_0016be27\n"
-        "cmpl $-1, g_bindings+16(%eax)\n"
-        "je .Lf16bd06_0016c072\n"
-        ".Lf16bd06_0016be27:\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 4820 */
-        "movl %edx, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 4821 */
-        "leal (%edi, %edi, 4), %ebx\n" /* name */
-        "shll $2, %ebx\n"
-        "movl g_bindings+16(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl %esi, g_bindings+12(%ebx)\n" /* line 4822 | key */
-        "movl $0xffffffff, g_bindings+16(%ebx)\n" /* line 4823 */
-        ".Lf16bd06_0016be63:\n"
-        "movl $g_bindings+12, %ebx\n"
-        "movl $szShotName+8, %esi\n" /* key */
-        ".Lf16bd06_0016be6d:\n"
-        "movl (%ebx), %edx\n" /* line 4357 */
-        "cmpl $-1, %edx\n"
-        "je .Lf16bd06_0016be9a\n"
-        "movl -0xc(%ebx), %eax\n" /* line 4359 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl 4(%ebx), %edx\n" /* line 4361 */
-        "cmpl $-1, %edx\n"
-        "je .Lf16bd06_0016be9a\n"
-        "movl -0xc(%ebx), %eax\n" /* line 4362 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Key_SetBinding\n"
-        ".Lf16bd06_0016be9a:\n"
-        "addl $0x14, %ebx\n"
-        "cmpl %ebx, %esi\n" /* line 4355 */
-        "jne .Lf16bd06_0016be6d\n"
-        "movl $str_002ac244, 4(%esp)\n" /* line 4371 */
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        ".Lf16bd06_0016beb5:\n"
-        "movl $0, g_waitingForKey\n" /* line 4832 */
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 4834 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: name */
-        ".Lf16bd06_0016becc:\n"
-        "movl $1, %eax\n" /* line 4833 */
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 4834 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: name */
-        ".Lf16bd06_0016bed9:\n"
-        "movl 8(%ebp), %eax\n" /* line 2274 | dc */
-        "cvtsi2ssl 0x10(%eax), %xmm1\n" /* y */
-        "cvtsi2ssl 0xc(%eax), %xmm0\n" /* x */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "movl 0xc(%ebp), %edx\n" /* line 417 | item */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%edx), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%edx), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss %xmm0, -0x1c(%ebp)\n" /* line 422 | compareX */
-        "movss %xmm1, -0x20(%ebp)\n" /* line 423 | compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0xc(%ebp), %edx\n" /* line 428 | item */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16bd06_0016bd38\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16bd06_0016bd38\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16bd06_0016bd38\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16bd06_0016bd38\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16bd06_0016bfa3:\n"
-        "movl $1, g_waitingForKey\n" /* line 4737 */
-        "movl 0xc(%ebp), %eax\n" /* line 4738 | item */
-        "movl %eax, g_bindItem\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 4834 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: name */
-        ".Lf16bd06_0016bfc2:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 4757 | item */
-        "movl 0x2c0(%edx), %edi\n" /* name */
-        "xorl %esi, %esi\n" /* key */
-        "movl $g_bindings, %ebx\n"
-        "jmp .Lf16bd06_0016bfdf\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16bd06_0016bfd4:\n"
-        "addl $1, %esi\n" /* line 4406 */
-        "addl $0x14, %ebx\n"
-        "cmpl $0x38, %esi\n"
-        "je .Lf16bd06_0016c00b\n"
-        ".Lf16bd06_0016bfdf:\n"
-        "movl (%ebx), %eax\n" /* line 4408 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16bd06_0016bfd4\n"
-        /* } scope */
-        "addl $1, %esi\n" /* line 4758 | key */
-        "je .Lf16bd06_0016c00b\n"
-        "movl $0xffffffff, %esi\n" /* key */
-        "jmp .Lf16bd06_0016bdb8\n"
-        ".Lf16bd06_0016c000:\n"
-        "movl %esi, g_bindings+12(%eax)\n" /* line 4812 | key */
-        "jmp .Lf16bd06_0016be63\n"
-        ".Lf16bd06_0016c00b:\n"
-        "movl $0x7f, %esi\n" /* line 4778 | key */
-        "jmp .Lf16bd06_0016bd78\n"
-        ".Lf16bd06_0016c015:\n"
-        "leal (%edi, %edi, 4), %eax\n" /* line 4799 | name */
-        "leal (, %eax, 4), %ebx\n"
-        "movl g_bindings+12(%ebx), %eax\n"
-        "cmpl $-1, %eax\n"
-        "je .Lf16bd06_0016c044\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 4801 */
-        "movl %eax, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl $0xffffffff, g_bindings+12(%ebx)\n" /* line 4802 */
-        ".Lf16bd06_0016c044:\n"
-        "movl g_bindings+16(%ebx), %eax\n" /* line 4804 */
-        "cmpl $-1, %eax\n"
-        "je .Lf16bd06_0016be63\n"
-        "movl $str_002157b8, 4(%esp)\n" /* line 4806 */
-        "movl %eax, (%esp)\n"
-        "calll Key_SetBinding\n"
-        "movl $0xffffffff, g_bindings+16(%ebx)\n" /* line 4807 */
-        "jmp .Lf16bd06_0016be63\n"
-        ".Lf16bd06_0016c072:\n"
-        "movl %esi, g_bindings+16(%eax)\n" /* line 4816 | key */
-        "jmp .Lf16bd06_0016be63\n"
-    );
+    byte *it = (byte *)item;
+    int i;
+
+    if (!g_waitingForKey) {
+        /* Not waiting for key — check if we should enter bind mode */
+        if (!down) return 0;
+        if (key == 0xd) goto enter_bind; /* Enter key */
+        if (key == 0xc8) {
+            /* Mouse click — check if within item rect */
+            byte *d = (byte *)dc;
+            float cx = (float)*(int *)(d + 0xc);
+            float cy = (float)*(int *)(d + 0x10);
+            float rx = *(float *)it, ry = *(float *)(it + 4);
+            float rw = *(float *)(it + 8), rh = *(float *)(it + 0xc);
+            CalcScreenX(&cx, 4);
+            CalcScreenY(&cy, 4);
+            CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(it + 0x10), *(int *)(it + 0x14));
+            if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh)
+                return 0;
+enter_bind:
+            g_waitingForKey = 1;
+            g_bindItem = item;
+            return 1;
+        }
+        return 0;
+    }
+
+    /* Waiting for key — process the incoming key */
+    if (!g_bindItem) return 0;
+
+    /* Modifier keys or backtick — consume but don't bind */
+    if ((key & 0x400) || key == 0x60)
+        return 1;
+
+    /* Delete key — unbind the command */
+    if (key == 0x7f) {
+        const char *dvarName = *(const char **)(it + 0x2c0);
+        /* Find binding index */
+        for (i = 0; i < 0x38; i++) {
+            if (I_stricmp(dvarName, *(const char **)((byte *)g_bindings + i * 0x14)) == 0)
+                break;
+        }
+        if (i < 0x38) {
+            /* Unbind both keys */
+            int idx = i * 0x14;
+            int key1 = *(int *)((byte *)g_bindings + idx + 12);
+            if (key1 != -1) {
+                Key_SetBinding(key1, str_002157b8);
+                *(int *)((byte *)g_bindings + idx + 12) = -1;
+            }
+            int key2 = *(int *)((byte *)g_bindings + idx + 16);
+            if (key2 != -1) {
+                Key_SetBinding(key2, str_002157b8);
+                *(int *)((byte *)g_bindings + idx + 16) = -1;
+            }
+        }
+        Controls_SetConfig(0);
+        g_waitingForKey = 0;
+        g_bindItem = NULL;
+        return 1;
+    }
+
+    /* Escape — cancel bind */
+    if (key == 0x1b) {
+        g_waitingForKey = 0;
+        g_bindItem = NULL;
+        return 1;
+    }
+
+    /* Regular key — unbind old instances and assign new binding */
+    if (key != -1) {
+        /* Walk g_bindings and remove this key from any existing bindings */
+        byte *entry = (byte *)g_bindings;
+        while (entry != (byte *)updateScreenCalled) {
+            if (*(int *)(entry + 0x10) == key) {
+                *(int *)(entry + 0x10) = -1;
+            }
+            if (*(int *)(entry + 0xc) == key) {
+                /* Shift key2 to key1, clear key2 */
+                *(int *)(entry + 0xc) = *(int *)(entry + 0x10);
+                *(int *)(entry + 0x10) = -1;
+            }
+            entry += 0x14;
+        }
+    }
+
+    /* Find binding entry for this item's dvar */
+    const char *bindName = *(const char **)(it + 0x2c0);
+    int bindIdx = -1;
+    for (i = 0; i < 0x38; i++) {
+        if (I_stricmp(bindName, *(const char **)((byte *)g_bindings + i * 0x14)) == 0) {
+            bindIdx = i;
+            break;
+        }
+    }
+
+    if (bindIdx >= 0 && key != -1) {
+        int offset = bindIdx * 0x14;
+        if (*(int *)((byte *)g_bindings + offset + 12) == -1) {
+            *(int *)((byte *)g_bindings + offset + 12) = key;
+        } else {
+            *(int *)((byte *)g_bindings + offset + 16) = key;
+        }
+    }
+
+    Controls_SetConfig(0);
+    g_waitingForKey = 0;
+    g_bindItem = NULL;
+    return 1;
 }
 
 /* line 3069 */
