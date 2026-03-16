@@ -9062,483 +9062,155 @@ void Menu_PaintAll(displayContextDef_t *dc)
     }
 }
 
-/* line 3336 */
-__attribute__((naked))
+/* Menus_HandleOOBClick — handle click outside focused menu: find target menu, re-focus, dispatch */
 void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3336 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x35c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* menu */
-        /* { scope 1: item */
-        "testl %ebx, %ebx\n" /* line 3342 | menu */
-        "je .Lf16f5ce_0016fb16\n"
-        "movl 0x14(%ebp), %eax\n" /* line 3348 | down */
-        "testl %eax, %eax\n"
-        "jne .Lf16f5ce_0016fcb8\n"
-        ".Lf16f5ce_0016f5f0:\n"
-        "movl 8(%ebp), %edx\n" /* line 3354 | dc */
-        "movl 0x270(%edx), %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, -0x33c(%ebp)\n" /* i */
-        "js .Lf16f5ce_0016fd22\n"
-        ".Lf16f5ce_0016f608:\n"
-        "leal 0x230(%edx, %ecx, 4), %esi\n"
-        "movl %ecx, -0x31c(%ebp)\n"
-        "jmp .Lf16f5ce_0016f62e\n"
-        ".Lf16f5ce_0016f617:\n"
-        "subl $1, -0x31c(%ebp)\n"
-        "subl $4, %esi\n"
-        "cmpl $-1, -0x31c(%ebp)\n"
-        "je .Lf16f5ce_0016fb21\n"
-        ".Lf16f5ce_0016f62e:\n"
-        "movl 8(%ebp), %eax\n" /* line 3356 | dc */
-        "cvtsi2ssl 0x10(%eax), %xmm0\n"
-        "movss %xmm0, -0x330(%ebp)\n" /* y */
-        "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, -0x32c(%ebp)\n" /* x */
-        "movl (%esi), %ebx\n" /* menu */
-        /* { scope 2: compareRect, compareX, compareY, i */
-        "testl %ebx, %ebx\n" /* line 5753 | menu */
-        "je .Lf16f5ce_0016f617\n"
-        "testl $0x4004, 0xe8(%ebx)\n" /* menu */
-        "je .Lf16f5ce_0016f617\n"
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        "movl (%ebx), %eax\n" /* line 417 */
-        "movl %eax, -0x314(%ebp)\n" /* compareRect */
-        "movl 4(%ebx), %eax\n" /* line 418 */
-        "movl %eax, -0x310(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 419 */
-        "movl %eax, -0x30c(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 420 */
-        "movl %eax, -0x308(%ebp)\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* line 422 | compareX */
-        "movss -0x330(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %edx\n" /* compareY */
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%ebx), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x308(%ebp), %ecx\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "leal -0x30c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x310(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x314(%ebp), %ecx\n" /* compareRect */
-        "movl %ecx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x314(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f617\n"
-        "addss -0x30c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f617\n"
-        "movss -0x310(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f617\n"
-        "addss -0x308(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f617\n"
-        /* } scope */
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        "movl 0x218(%ebx), %eax\n" /* line 5759 | menu */
-        "testl %eax, %eax\n"
-        "jle .Lf16f5ce_0016f617\n"
-        "movl $0, -0x334(%ebp)\n" /* i */
-        "jmp .Lf16f5ce_0016f773\n"
-        ".Lf16f5ce_0016f75a:\n"
-        "addl $1, -0x334(%ebp)\n" /* i */
-        "movl -0x334(%ebp), %eax\n" /* i */
-        "cmpl %eax, 0x218(%ebx)\n" /* menu */
-        "jle .Lf16f5ce_0016f617\n"
-        /* } scope */
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        ".Lf16f5ce_0016f773:\n"
-        "movl -0x334(%ebp), %eax\n" /* line 430 | i */
-        "shll $2, %eax\n"
-        "movl %eax, -0x338(%ebp)\n"
-        /* } scope */
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        "movl 0x27c(%ebx), %eax\n" /* line 5764 | menu */
-        "movl -0x338(%ebp), %edx\n"
-        "movl (%edx, %eax), %edi\n" /* window */
-        "testl $0x4004, 0xe8(%edi)\n" /* line 5765 | window */
-        "je .Lf16f5ce_0016f75a\n"
-        "movl 0xe4(%edi), %ecx\n" /* line 5770 | window */
-        "andl $0x100000, %ecx\n"
-        "movl %ecx, -0x340(%ebp)\n"
-        "jne .Lf16f5ce_0016f75a\n"
-        /* { scope 4: compareRect, compareX, compareY */
-        "movl (%edi), %eax\n" /* line 417 */
-        "movl %eax, -0x314(%ebp)\n" /* compareRect */
-        "movl 4(%edi), %eax\n" /* line 418 */
-        "movl %eax, -0x310(%ebp)\n"
-        "movl 8(%edi), %eax\n" /* line 419 */
-        "movl %eax, -0x30c(%ebp)\n"
-        "movl 0xc(%edi), %eax\n" /* line 420 */
-        "movl %eax, -0x308(%ebp)\n"
-        "movss -0x32c(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movss -0x330(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %edx\n" /* compareX */
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%edi), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edi), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x308(%ebp), %ecx\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "leal -0x30c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x310(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x314(%ebp), %ecx\n" /* compareRect */
-        "movl %ecx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x314(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "addss -0x30c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "movss -0x310(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "addss -0x308(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        /* } scope */
-        "movl 0x27c(%ebx), %eax\n" /* line 5777 | menu */
-        "movl -0x338(%ebp), %ecx\n"
-        "movl (%ecx, %eax), %edx\n"
-        "movl 0x270(%edx), %edi\n" /* line 5779 | window */
-        "testl %edi, %edi\n" /* window */
-        "jne .Lf16f5ce_0016fa3c\n"
-        "movl 0x294(%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf16f5ce_0016fa3c\n"
-        /* { scope 4: compareRect, compareX, compareY */
-        "movl $rect, %edi\n" /* line 3383 | window */
-        "cld\n"
-        "movl $6, %ecx\n"
-        "movl -0x340(%ebp), %eax\n"
-        "rep stosl %eax, %es:(%edi)\n" /* window */
-        "movl 0x210(%edx), %eax\n" /* line 3387 */
-        "movl %eax, rect\n"
-        "movl 0x214(%edx), %eax\n"
-        "movl %eax, rect+4\n"
-        "movl 0x218(%edx), %eax\n"
-        "movl %eax, rect+8\n"
-        "movl 0x21c(%edx), %eax\n"
-        "movl %eax, rect+12\n"
-        "movl 0x220(%edx), %eax\n"
-        "movl %eax, rect+16\n"
-        "movl 0x224(%edx), %eax\n"
-        "movl %eax, rect+20\n"
-        "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss rect+8, %xmm0\n"
-        "jp .Lf16f5ce_0016f92f\n"
-        "je .Lf16f5ce_0016fd29\n"
-        ".Lf16f5ce_0016f92f:\n"
-        "movss rect+4, %xmm0\n" /* line 3390 */
-        "subss rect+12, %xmm0\n"
-        "movss %xmm0, rect+4\n"
-        /* } scope */
-        /* { scope 4: compareRect, compareX, compareY */
-        /* { scope 5 */
-        ".Lf16f5ce_0016f947:\n"
-        "movl rect, %eax\n" /* line 417 */
-        "movl %eax, -0x314(%ebp)\n" /* compareRect */
-        "movss %xmm0, -0x310(%ebp)\n" /* line 418 */
-        "movl rect+8, %eax\n" /* line 419 */
-        "movl %eax, -0x30c(%ebp)\n"
-        "movl rect+12, %eax\n" /* line 420 */
-        "movl %eax, -0x308(%ebp)\n"
-        "movss -0x32c(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movss -0x330(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %edx\n" /* compareY */
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl rect+20, %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl rect+16, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x308(%ebp), %ecx\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "leal -0x30c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x310(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x314(%ebp), %ecx\n" /* compareRect */
-        "movl %ecx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x314(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "addss -0x30c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "movss -0x310(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        "addss -0x308(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16f5ce_0016f75a\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lf16f5ce_0016fa3c:\n"
-        "movl 8(%ebp), %eax\n" /* line 3358 | dc */
-        "movl 0x270(%eax), %edi\n" /* window */
-        "movl %edi, %eax\n" /* window */
-        "subl $1, %eax\n"
-        "js .Lf16f5ce_0016fa74\n"
-        "movl 8(%ebp), %edx\n" /* dc */
-        "leal 0x230(%edx, %eax, 4), %esi\n"
-        "xorl %ebx, %ebx\n" /* menu */
-        ".Lf16f5ce_0016fa58:\n"
-        "movl $2, 4(%esp)\n" /* line 3359 */
-        "movl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Window_RemoveDynamicFlags\n"
-        "addl $1, %ebx\n" /* menu */
-        "subl $4, %esi\n"
-        "cmpl %ebx, %edi\n" /* line 3358 | menu, window */
-        "jne .Lf16f5ce_0016fa58\n"
-        ".Lf16f5ce_0016fa74:\n"
-        "movl $6, 4(%esp)\n" /* line 3360 */
-        "movl -0x31c(%ebp), %edx\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl 0x230(%ecx, %edx, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl 8(%ebp), %edx\n" /* line 3362 | dc */
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Display_MouseMove\n"
-        "movl 8(%ebp), %ecx\n" /* line 3363 | dc */
-        "cvtsi2ssl 0x10(%ecx), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0xc(%ecx), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl -0x31c(%ebp), %edx\n"
-        "movl 0x230(%ecx, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll Menu_HandleMouseMove\n"
-        "movl 0x14(%ebp), %ecx\n" /* line 3365 | down */
-        "movl %ecx, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* key */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x31c(%ebp), %edx\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl 0x230(%ecx, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll Menu_HandleKey\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "jmp .Lf16f5ce_0016fb24\n"
-        /* } scope */
-        ".Lf16f5ce_0016fb16:\n"
-        "addl $0x35c, %esp\n" /* line 3374 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf16f5ce_0016fb21:\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        /* { scope 1: item */
-        /* { scope 2: compareRect, compareX, compareY, i */
-        ".Lf16f5ce_0016fb24:\n"
-        "movl 0x22c(%eax), %esi\n" /* line 3324 */
-        "testl %esi, %esi\n"
-        "jg .Lf16f5ce_0016fc87\n"
-        /* } scope */
-        ".Lf16f5ce_0016fb32:\n"
-        "movl $0, (%esp)\n" /* line 3371 */
-        "calll UI_Pause\n"
-        /* { scope 2: compareRect, compareX, compareY, i */
-        ".Lf16f5ce_0016fb3e:\n"
-        "movl 8(%ebp), %edx\n" /* line 3258 | dc */
-        "movl 0x270(%edx), %edx\n"
-        "movl %edx, -0x344(%ebp)\n"
-        "movl %edx, %eax\n"
-        "subl $1, %eax\n"
-        "js .Lf16f5ce_0016fb16\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "leal 0x230(%ecx, %eax, 4), %eax\n"
-        "movl %eax, -0x320(%ebp)\n"
-        "movl $0, -0x324(%ebp)\n"
-        ".Lf16f5ce_0016fb6e:\n"
-        "movl (%eax), %ebx\n" /* line 3259 | menu */
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        "testl %ebx, %ebx\n" /* line 3237 */
-        "je .Lf16f5ce_0016fc2f\n"
-        /* { scope 4: compareRect, compareX, compareY */
-        "cmpl $5, 0xd0(%ebx)\n" /* line 3227 */
-        "je .Lf16f5ce_0016fc62\n"
-        ".Lf16f5ce_0016fb85:\n"
-        "movl 0x218(%ebx), %edx\n" /* line 3242 */
-        "testl %edx, %edx\n"
-        "jle .Lf16f5ce_0016fc2f\n"
-        "movl $0, -0x328(%ebp)\n" /* i */
-        "movl -0x328(%ebp), %esi\n" /* i */
-        "jmp .Lf16f5ce_0016fbc7\n"
-        ".Lf16f5ce_0016fba5:\n"
-        "movl %edi, %eax\n"
-        ".Lf16f5ce_0016fba7:\n"
-        "cmpl $8, 0x270(%eax)\n" /* line 3245 */
-        "je .Lf16f5ce_0016fc0a\n"
-        ".Lf16f5ce_0016fbb0:\n"
-        "addl $1, -0x328(%ebp)\n" /* line 3242 | i */
-        "movl -0x328(%ebp), %edx\n" /* i */
-        "cmpl 0x218(%ebx), %edx\n"
-        "jge .Lf16f5ce_0016fc2f\n"
-        ".Lf16f5ce_0016fbc5:\n"
-        "movl %edx, %esi\n"
-        ".Lf16f5ce_0016fbc7:\n"
-        "shll $2, %esi\n"
-        "movl 0x27c(%ebx), %eax\n" /* line 3244 */
-        "movl (%eax, %esi), %edi\n" /* window */
-        /* { scope 5 */
-        "cmpl $5, 0xd0(%edi)\n" /* line 3227 */
-        "jne .Lf16f5ce_0016fba5\n"
-        "movl 0xcc(%edi), %edx\n"
-        "testl %edx, %edx\n"
-        "js .Lf16f5ce_0016fc5a\n"
-        "movl %edx, (%esp)\n" /* line 3229 */
-        "calll CIN_StopCinematic\n"
-        "movl $0xffffffff, 0xcc(%edi)\n" /* line 3230 */
-        "movl 0x27c(%ebx), %eax\n"
-        "movl (%eax, %esi), %eax\n"
-        /* } scope */
-        "cmpl $8, 0x270(%eax)\n" /* line 3245 */
-        "jne .Lf16f5ce_0016fbb0\n"
-        ".Lf16f5ce_0016fc0a:\n"
-        "movl 0xd8(%eax), %eax\n" /* line 3247 */
-        "negl %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CIN_StopCinematic\n"
-        "addl $1, -0x328(%ebp)\n" /* line 3242 | i */
-        "movl -0x328(%ebp), %edx\n" /* i */
-        "cmpl 0x218(%ebx), %edx\n"
-        "jl .Lf16f5ce_0016fbc5\n"
-        ".Lf16f5ce_0016fc2f:\n"
-        "addl $1, -0x324(%ebp)\n"
-        "subl $4, -0x320(%ebp)\n"
-        /* } scope */
-        /* } scope */
-        "movl -0x344(%ebp), %ecx\n" /* line 3258 */
-        "cmpl %ecx, -0x324(%ebp)\n"
-        "je .Lf16f5ce_0016fb16\n"
-        "movl -0x320(%ebp), %eax\n"
-        "jmp .Lf16f5ce_0016fb6e\n"
-        ".Lf16f5ce_0016fc5a:\n"
-        "movl (%eax, %esi), %eax\n"
-        "jmp .Lf16f5ce_0016fba7\n"
-        /* { scope 3: compareRect, compareX, compareY, y, ... */
-        /* { scope 4: compareRect, compareX, compareY */
-        ".Lf16f5ce_0016fc62:\n"
-        "movl 0xcc(%ebx), %eax\n" /* line 3227 */
-        "testl %eax, %eax\n"
-        "js .Lf16f5ce_0016fb85\n"
-        "movl %eax, (%esp)\n" /* line 3229 */
-        "calll CIN_StopCinematic\n"
-        "movl $0xffffffff, 0xcc(%ebx)\n" /* line 3230 */
-        "jmp .Lf16f5ce_0016fb85\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY, i */
-        ".Lf16f5ce_0016fc87:\n"
-        "movl %eax, %edx\n" /* line 3324 */
-        "xorl %ebx, %ebx\n" /* count */
-        "xorl %ecx, %ecx\n"
-        ".Lf16f5ce_0016fc8d:\n"
-        "movl 0x2c(%edx), %eax\n" /* line 3326 */
-        "movl 0xe8(%eax), %eax\n"
-        "andl $0x4004, %eax\n"
-        "cmpl $1, %eax\n" /* line 3328 */
-        "sbbl $-1, %ebx\n" /* count */
-        "addl $1, %ecx\n" /* line 3324 */
-        "addl $4, %edx\n"
-        "cmpl %ecx, %esi\n"
-        "jne .Lf16f5ce_0016fc8d\n"
-        /* } scope */
-        "testl %ebx, %ebx\n" /* line 3370 | menu */
-        "jne .Lf16f5ce_0016fb3e\n"
-        "jmp .Lf16f5ce_0016fb32\n"
-        ".Lf16f5ce_0016fcb8:\n"
-        "testb $2, 0xe7(%ebx)\n" /* line 3348 | menu */
-        "je .Lf16f5ce_0016f5f0\n"
-        "testb $4, 0xe8(%ebx)\n" /* line 769 */
-        "je .Lf16f5ce_0016fcfa\n"
-        "movl 0x248(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf16f5ce_0016fcfa\n"
-        /* { scope 2: compareRect, compareX, compareY, i */
-        "movl %ebx, -0x78(%ebp)\n" /* line 773 */
-        "movl 0x248(%ebx), %eax\n" /* line 774 */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x314(%ebp), %eax\n" /* compareRect */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        /* } scope */
-        ".Lf16f5ce_0016fcfa:\n"
-        "movl $6, 4(%esp)\n" /* line 3351 */
-        "movl %ebx, (%esp)\n" /* menu */
-        "calll Window_RemoveDynamicFlags\n"
-        "movl 8(%ebp), %edx\n" /* line 3354 | dc */
-        "movl 0x270(%edx), %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, -0x33c(%ebp)\n" /* i */
-        "jns .Lf16f5ce_0016f608\n"
-        ".Lf16f5ce_0016fd22:\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf16f5ce_0016fb24\n"
-        ".Lf16f5ce_0016fd29:\n"
-        "movss rect+4, %xmm0\n"
-        "jmp .Lf16f5ce_0016f947\n"
-    );
+    byte *d = (byte *)dc;
+    byte *m = (byte *)menu;
+    int i, j, k;
+
+    if (!menu) return;
+
+    /* If down and menu has closeOnOOB flag, close it first */
+    if (down) {
+        if (*(byte *)(m + 0xe7) & 2) {
+            /* Run onClose script if visible */
+            if ((*(byte *)(m + 0xe8) & 4) && *(void **)(m + 0x248)) {
+                byte tempItem[0x2a0];
+                *(void **)&tempItem[0x29c] = menu;
+                Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(m + 0x248));
+            }
+            Window_RemoveDynamicFlags((void *)menu, 6);
+        }
+        /* Fall through to check_open_menus */
+    }
+
+    /* Iterate open menus from end to find which one cursor is in */
+    int openCount = *(int *)(d + 0x270);
+    float cx = (float)*(int *)(d + 0xc);
+    float cy = (float)*(int *)(d + 0x10);
+    int targetIdx = -1;
+
+    for (i = openCount - 1; i >= 0; i--) {
+        byte *openMenu = *(byte **)(d + 0x230 + i * 4);
+        if (!openMenu) continue;
+        if ((*(int *)(openMenu + 0xe8) & 0x4004) == 0) continue;
+
+        /* Hit-test menu rect */
+        float rx = *(float *)openMenu, ry = *(float *)(openMenu + 4);
+        float rw = *(float *)(openMenu + 8), rh = *(float *)(openMenu + 0xc);
+        float testX = cx, testY = cy;
+        CalcScreenX(&testX, 4);
+        CalcScreenY(&testY, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(openMenu + 0x10), *(int *)(openMenu + 0x14));
+        if (testX < rx || testX > rx + rw || testY < ry || testY > ry + rh)
+            continue;
+
+        /* Cursor is inside this menu — check items */
+        int itemCount = *(int *)(openMenu + 0x218);
+        if (itemCount <= 0) continue;
+
+        for (j = 0; j < itemCount; j++) {
+            byte *item = *(byte **)(*(byte **)(openMenu + 0x27c) + j * 4);
+            if ((*(int *)(item + 0xe8) & 0x4004) == 0) continue;
+            if (*(int *)(item + 0xe4) & 0x100000) continue;
+
+            /* Hit-test item rect */
+            float irx = *(float *)item, iry = *(float *)(item + 4);
+            float irw = *(float *)(item + 8), irh = *(float *)(item + 0xc);
+            float itx = cx, ity = cy;
+            CalcScreenX(&itx, 4);
+            CalcScreenY(&ity, 4);
+            CalcScreenPlacement(&irx, &irw, &iry, &irh, *(int *)(item + 0x10), *(int *)(item + 0x14));
+            if (itx < irx || itx > irx + irw || ity < iry || ity > iry + irh)
+                continue;
+
+            /* Check text rect if item has type and text */
+            int itemType = *(int *)(item + 0x270);
+            if (itemType != 0 && *(int *)(item + 0x294)) {
+                /* Build text rect and hit-test */
+                int textBuf[6];
+                memset(textBuf, 0, 24);
+                *(float *)&textBuf[0] = *(float *)(item + 0x210);
+                *(float *)&textBuf[1] = *(float *)(item + 0x214);
+                *(float *)&textBuf[2] = *(float *)(item + 0x218);
+                *(float *)&textBuf[3] = *(float *)(item + 0x21c);
+                textBuf[4] = *(int *)(item + 0x220);
+                textBuf[5] = *(int *)(item + 0x224);
+                float trY = *(float *)&textBuf[1];
+                if (*(float *)&textBuf[2] != 0.0f)
+                    trY -= *(float *)&textBuf[3];
+                float trx2 = *(float *)&textBuf[0], trw2 = *(float *)&textBuf[2];
+                float try2 = trY, trh2 = *(float *)&textBuf[3];
+                float ttx = cx, tty = cy;
+                CalcScreenX(&ttx, 4);
+                CalcScreenY(&tty, 4);
+                CalcScreenPlacement(&trx2, &trw2, &try2, &trh2, textBuf[4], textBuf[5]);
+                if (ttx < trx2 || ttx > trx2 + trw2 || tty < try2 || tty > try2 + trh2)
+                    continue;
+            }
+
+            targetIdx = i;
+            goto found;
+        }
+    }
+
+    /* No target found */
+    goto count_visible;
+
+found:;
+    /* Re-focus the target menu */
+    openCount = *(int *)(d + 0x270);
+    for (i = openCount - 1; i >= 0; i--)
+        Window_RemoveDynamicFlags(*(void **)(d + 0x230 + i * 4), 2);
+
+    Window_AddDynamicFlags(*(void **)(d + 0x230 + targetIdx * 4), 6);
+    Display_MouseMove(dc, NULL, *(int *)(d + 0xc), *(int *)(d + 0x10));
+    Menu_HandleMouseMove(dc, *(menuDef_t **)(d + 0x230 + targetIdx * 4), (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10));
+    Menu_HandleKey(dc, *(menuDef_t **)(d + 0x230 + targetIdx * 4), key, down);
+
+count_visible:;
+    /* Count visible menus */
+    int menuCount = *(int *)(d + 0x22c);
+    int visCount = 0;
+    for (i = 0; i < menuCount; i++) {
+        byte *cm = *(byte **)(d + 0x2c + i * 4);
+        if ((*(int *)(cm + 0xe8) & 0x4004) != 0)
+            visCount++;
+    }
+
+    if (visCount > 0) {
+        UI_Pause(0);
+        /* Stop all cinematics in open menus */
+        openCount = *(int *)(d + 0x270);
+        for (i = openCount - 1; i >= 0; i--) {
+            byte *openMenu = *(byte **)(d + 0x230 + i * 4);
+            if (!openMenu) continue;
+            /* Stop cinematic on menu if borderStyle == 5 */
+            if (*(int *)(openMenu + 0xd0) == 5) {
+                int cinHandle = *(int *)(openMenu + 0xcc);
+                if (cinHandle >= 0) {
+                    CIN_StopCinematic(cinHandle);
+                    *(int *)(openMenu + 0xcc) = -1;
+                }
+            }
+            /* Stop cinematics on items */
+            int ic = *(int *)(openMenu + 0x218);
+            for (j = 0; j < ic; j++) {
+                byte *item = *(byte **)(*(byte **)(openMenu + 0x27c) + j * 4);
+                if (*(int *)(item + 0xd0) == 5) {
+                    int ch = *(int *)(item + 0xcc);
+                    if (ch >= 0) {
+                        CIN_StopCinematic(ch);
+                        *(int *)(item + 0xcc) = -1;
+                    }
+                    item = *(byte **)(*(byte **)(openMenu + 0x27c) + j * 4);
+                }
+                if (*(int *)(item + 0x270) == 8)
+                    CIN_StopCinematic(-*(int *)(item + 0xd8));
+            }
+        }
+    } else {
+        UI_Pause(0);
+    }
 }
