@@ -4238,705 +4238,118 @@ void Script_SetFocus(displayContextDef_t *dc, itemDef_t *item, const char * *arg
     }
 }
 
-/* line 1659 */
-__attribute__((naked))
+/* Item_ListBox_OverLB — determine which scrollbar region the cursor is over */
 int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1659 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        /* { scope 1: compareRect, compareX, compareY */
-        "movl 0x2d8(%ebx), %eax\n" /* line 1668 | item */
-        "movl %eax, (%esp)\n"
-        "calll UI_FeederCount\n"
-        "movl %ebx, (%esp)\n" /* line 1669 | item */
-        "calll Item_GetListBoxDef\n"
-        "testl %eax, %eax\n" /* line 1670 */
-        "je .Lf16a482_0016a838\n"
-        "movl 0x10(%ebx), %edi\n" /* line 1674 | item */
-        "movl 0x14(%ebx), %esi\n" /* line 1675 | item */
-        "testb $0x20, 0xe6(%ebx)\n" /* line 1676 | item */
-        "jne .Lf16a482_0016a842\n"
-        "movss (%ebx), %xmm0\n" /* line 1714 | item */
-        "movss %xmm0, -0x44(%ebp)\n"
-        "addss 8(%ebx), %xmm0\n" /* item */
-        "movss %xmm0, -0x44(%ebp)\n"
-        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
-        "movss -0x44(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movl 4(%ebx), %eax\n" /* line 1715 | item */
-        /* { scope 2 */
-        "movss %xmm1, -0x38(%ebp)\n" /* line 417 | compareRect */
-        "movl %eax, -0x34(%ebp)\n" /* line 418 */
-        "movss %xmm0, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm2\n" /* line 422 | x */
-        "movss %xmm2, -0x20(%ebp)\n" /* compareX */
-        "movss 0x10(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a57c\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf16a482_0016ac1e\n"
-        /* } scope */
-        ".Lf16a482_0016a57c:\n"
-        "movss 4(%ebx), %xmm0\n" /* line 1721 | item */
-        "addss 0xc(%ebx), %xmm0\n" /* item */
-        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "subss %xmm1, %xmm0\n"
-        /* { scope 2 */
-        "movss -0x44(%ebp), %xmm2\n" /* line 417 */
-        "movss %xmm2, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm0, -0x34(%ebp)\n" /* line 418 */
-        "movss %xmm1, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm1\n" /* line 423 | y */
-        "movss %xmm1, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016ab81\n"
-        /* } scope */
-        ".Lf16a482_0016a620:\n"
-        "movl %ebx, (%esp)\n" /* line 1726 | item */
-        "calll Item_ListBox_ThumbPosition\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n" /* thumbstart */
-        /* { scope 2 */
-        "movss -0x44(%ebp), %xmm1\n" /* line 417 */
-        "movss %xmm1, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm0, -0x34(%ebp)\n" /* line 418 */
-        "movl $0x41800000, %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl %eax, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm2\n" /* line 422 | x */
-        "movss %xmm2, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a6d9\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a6d9\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016ac74\n"
-        /* } scope */
-        ".Lf16a482_0016a6d9:\n"
-        "movss lit4_002ed6a8, %xmm0\n" /* line 1732 | 16.0f */
-        "movss 4(%ebx), %xmm1\n" /* item */
-        "addss %xmm0, %xmm1\n"
-        /* { scope 2 */
-        "movss -0x44(%ebp), %xmm2\n" /* line 417 */
-        "movss %xmm2, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm1, -0x34(%ebp)\n" /* line 418 */
-        "movss %xmm0, -0x30(%ebp)\n" /* line 419 */
-        "movss -0x48(%ebp), %xmm0\n" /* line 420 | thumbstart */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movss 0x10(%ebp), %xmm1\n" /* line 423 | y */
-        "movss %xmm1, -0x1c(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016abba\n"
-        /* } scope */
-        ".Lf16a482_0016a781:\n"
-        "movss 4(%ebx), %xmm1\n" /* line 1739 | item */
-        "addss 0xc(%ebx), %xmm1\n" /* item */
-        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
-        "subss %xmm0, %xmm1\n"
-        /* { scope 2 */
-        "movss -0x44(%ebp), %xmm2\n" /* line 417 */
-        "movss %xmm2, -0x38(%ebp)\n" /* compareRect */
-        "movss -0x48(%ebp), %xmm2\n" /* line 418 | thumbstart */
-        "addss %xmm0, %xmm2\n"
-        ".Lf16a482_0016a7aa:\n"
-        "movss %xmm2, -0x34(%ebp)\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm1\n" /* line 423 | y */
-        "movss %xmm1, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a838\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf16a482_0016abf3\n"
-        ".Lf16a482_0016a838:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16a482_0016a83a:\n"
-        "addl $0x5c, %esp\n" /* line 1746 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf16a482_0016a842:\n"
-        "movss 4(%ebx), %xmm0\n" /* line 1680 | item */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "addss 0xc(%ebx), %xmm0\n" /* item */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
-        "movss -0x3c(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x3c(%ebp)\n"
-        /* { scope 2 */
-        "movl (%ebx), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm1, -0x34(%ebp)\n" /* line 418 */
-        "movss %xmm0, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm2\n" /* line 422 | x */
-        "movss %xmm2, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a8ff\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf16a482_0016ac49\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016a8ff:\n"
-        "movss (%ebx), %xmm0\n" /* line 417 */
-        "addss 8(%ebx), %xmm0\n"
-        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x38(%ebp)\n" /* compareRect */
-        "movss -0x3c(%ebp), %xmm0\n" /* line 418 */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "movss %xmm1, -0x30(%ebp)\n" /* line 419 */
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm1\n" /* line 422 | x */
-        "movss %xmm1, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm2\n" /* line 423 | y */
-        "movss %xmm2, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016ab48\n"
-        /* } scope */
-        ".Lf16a482_0016a9a2:\n"
-        "movl %ebx, (%esp)\n" /* line 1693 | item */
-        "calll Item_ListBox_ThumbPosition\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x40(%ebp)\n"
-        /* { scope 2 */
-        "movss %xmm0, -0x38(%ebp)\n" /* line 417 | compareRect */
-        "movss -0x3c(%ebp), %xmm1\n" /* line 418 */
-        "movss %xmm1, -0x34(%ebp)\n"
-        "movl $0x41800000, %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl %eax, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm2\n" /* line 422 | x */
-        "movss %xmm2, -0x1c(%ebp)\n" /* compareY */
-        "movss 0x10(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016aa5b\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016aa5b\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016ac8c\n"
-        /* } scope */
-        ".Lf16a482_0016aa5b:\n"
-        "movss lit4_002ed6a8, %xmm1\n" /* line 1699 | 16.0f */
-        "movss (%ebx), %xmm0\n" /* item */
-        "addss %xmm1, %xmm0\n"
-        /* { scope 2 */
-        "movss %xmm0, -0x38(%ebp)\n" /* line 417 | compareRect */
-        "movss -0x3c(%ebp), %xmm2\n" /* line 418 */
-        "movss %xmm2, -0x34(%ebp)\n"
-        "movss -0x40(%ebp), %xmm2\n" /* line 419 */
-        "subss %xmm0, %xmm2\n"
-        "movss %xmm2, -0x30(%ebp)\n"
-        "movss %xmm1, -0x2c(%ebp)\n" /* line 420 */
-        "movss 0xc(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareX */
-        "movss 0x10(%ebp), %xmm1\n" /* line 423 | y */
-        "movss %xmm1, -0x1c(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %esi, 0x14(%esp)\n" /* line 428 */
-        "movl %edi, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %eax\n" /* compareRect */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016ab1b\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016ab1b\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jae .Lf16a482_0016aca4\n"
-        /* } scope */
-        ".Lf16a482_0016ab1b:\n"
-        "movss (%ebx), %xmm0\n" /* line 1706 | item */
-        "addss 8(%ebx), %xmm0\n" /* item */
-        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "subss %xmm1, %xmm0\n"
-        /* { scope 2 */
-        "movss -0x40(%ebp), %xmm2\n" /* line 417 */
-        "addss %xmm1, %xmm2\n"
-        "movss %xmm2, -0x38(%ebp)\n" /* compareRect */
-        "movss -0x3c(%ebp), %xmm2\n" /* line 418 */
-        "jmp .Lf16a482_0016a7aa\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ab48:\n"
-        "addss -0x30(%ebp), %xmm0\n" /* line 430 */
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a9a2\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a9a2\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a9a2\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x200, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ab81:\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a620\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a620\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a620\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x200, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016abba:\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a781\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a781\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a781\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x800, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        ".Lf16a482_0016abf3:\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a838\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a838\n"
-        "movl $__mh_execute_header, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ac1e:\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a57c\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a57c\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x100, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ac49:\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16a482_0016a8ff\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a8ff\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x100, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ac74:\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016a6d9\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x400, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016ac8c:\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016aa5b\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x400, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16a482_0016aca4:\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16a482_0016ab1b\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl $0x800, %eax\n"
-        "jmp .Lf16a482_0016a83a\n"
-    );
-}
-
-/* Item_ListBox_MouseEnter — handle mouse enter for listbox: update cursor from mouse position */
-void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
-{
     byte *it = (byte *)item;
-    byte *listPtr = (byte *)Item_GetListBoxDef(item);
-    if (!listPtr) return;
-
-    Window_RemoveDynamicFlags((void *)it, 0x1f00);
-    int overLB = Item_ListBox_OverLB(item, x, y);
-    Window_AddDynamicFlags((void *)it, overLB);
-
     int horzAlign = *(int *)(it + 0x10);
     int vertAlign = *(int *)(it + 0x14);
 
+    UI_FeederCount(*(int *)(it + 0x2d8));
+    if (!Item_GetListBoxDef(item)) return 0;
+
     if (*(byte *)(it + 0xe6) & 0x20) {
-        /* Horizontal listbox */
-        if (*(int *)(it + 0xe8) & 0x1f00) return;
-        if (*(int *)(listPtr + 0x3c) == 1) {
-            /* Single-column horizontal */
-            float itemX = *(float *)it;
-            float itemY = *(float *)(it + 4);
-            float rectW = *(float *)(it + 0xc) - 16.0f;
-            int headerH = *(int *)(listPtr + 0x20);
-            float rectH = *(float *)(it + 8) - (float)headerH;
-            /* Hit test */
-            float cx = x, cy = y;
-            float rx = itemX, ry = itemY, rw = rectH, rh = rectW;
-            CalcScreenX(&cx, 4);
-            CalcScreenY(&cy, 4);
-            CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
-            if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh) return;
-            int cursorPos = (int)((x - itemX) / *(float *)(listPtr + 0x34)) + *(int *)listPtr;
-            ListBox_SetCursorPos((itemDef_t *)listPtr, cursorPos);
-            if (*(int *)(listPtr + 0x24) >= *(int *)(listPtr + 0x10))
-                ListBox_SetCursorPos((itemDef_t *)listPtr, *(int *)(listPtr + 0x10));
-        }
-    } else {
-        /* Vertical listbox */
-        if (*(int *)(it + 0xe8) & 0x1f00) return;
+        /* Horizontal listbox — scrollbar is on the right side */
+        float scrollX = *(float *)it + *(float *)(it + 8) - 16.0f;
         float itemY = *(float *)(it + 4);
-        float rectW = *(float *)(it + 8) - 16.0f;
-        int headerH = *(int *)(listPtr + 0x20);
-        float rectH = *(float *)(it + 0xc) - (float)headerH;
-        /* Hit test */
+
+        /* Down scroll button (bottom-right) */
+        float rx = scrollX, ry = itemY, rw = 16.0f, rh = 16.0f;
         float cx = x, cy = y;
-        float rx = *(float *)it, ry = itemY, rw = rectW, rh = rectH;
-        CalcScreenX(&cx, 4);
-        CalcScreenY(&cy, 4);
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
         CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
-        if (cx < rx || cx > rx + rw || cy < ry || cy > ry + rh) return;
-        int cursorPos = (int)((y - 2.0f - itemY) / *(float *)(listPtr + 0x38)) + *(int *)listPtr;
-        ListBox_SetCursorPos((itemDef_t *)listPtr, cursorPos);
-        if (*(int *)(listPtr + 0x24) > *(int *)(listPtr + 0x10))
-            ListBox_SetCursorPos((itemDef_t *)listPtr, *(int *)(listPtr + 0x10));
-    }
-}
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x200;
 
-/* Item_MouseEnter — handle mouse enter/exit for an item with rect hit test */
-void Item_MouseEnter(displayContextDef_t *dc, itemDef_t *item, float x, float y)
-{
-    byte *it = (byte *)item;
-    byte *parent;
-    int flags;
-    int horzAlign, vertAlign;
-    qboolean inside;
+        /* Up scroll button (top-right) */
+        float endY = itemY + *(float *)(it + 0xc) - 16.0f;
+        rx = scrollX; ry = endY; rw = 16.0f; rh = 16.0f;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x100;
 
-    if (!item) return;
+        /* Thumb position */
+        int thumbPos = Item_ListBox_ThumbPosition(item);
+        /* Thumb rect */
+        rx = scrollX; ry = (float)thumbPos; rw = 16.0f; rh = 16.0f;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x800;
 
-    parent = *(byte **)(it + 0x29c);
-    if (!parent) return;
+        /* Page down area (between down button and thumb) */
+        rx = scrollX; ry = itemY + 16.0f + 1.0f;
+        rw = 16.0f; rh = (float)thumbPos - ry;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x400;
 
-    /* Get textRect from parent+0x210 */
-    float textX = *(float *)(parent + 0x210);
-    float textY = *(float *)(parent + 4);
-    float textH = *(float *)(parent + 0xc) - textY; /* h - y offset? Actually from ASM */
-    horzAlign = *(int *)(parent + 0x10);
-    vertAlign = *(int *)(parent + 0x14);
-
-    /* Read from item->0x210 = textRect */
-    textX = *(int *)(it + 0x210);
-
-    /* Dvar show checks */
-    int dvarFlags = *(int *)(it + 0x2d0);
-    if (dvarFlags & 3) {
-        if (!Item_EnableShowViaDvar((itemDef_t *)it, 1))
-            return;
-        dvarFlags = *(int *)(it + 0x2d0);
-    }
-    if (dvarFlags & 0xc) {
-        if (!Item_EnableShowViaDvar((itemDef_t *)it, 4))
-            return;
-    }
-
-    flags = *(int *)(it + 0xe8);
-
-    /* Hit test: check if (x,y) is inside item rect */
-    float rx = *(float *)it, ry = *(float *)(it + 4);
-    float rw = *(float *)(it + 8), rh = *(float *)(it + 0xc);
-    float cx = x, cy = y;
-    CalcScreenX(&cx, 4);
-    CalcScreenY(&cy, 4);
-    CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(it + 0x10), *(int *)(it + 0x14));
-
-    inside = (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh);
-
-    if (inside) {
-        /* Mouse is inside item */
-        if (!(flags & 0x40)) {
-            /* Not yet focused — run mouseEnterText script, add focus flag */
-            Item_RunScript(dc, item, *(const char **)(it + 0x2a0));
-            Window_AddDynamicFlags((void *)it, 0x40);
-        }
-        /* Check hover flag */
-        if (!(flags & 1)) {
-            /* Run mouseEnter script, add hover flag */
-            Item_RunScript(dc, item, *(const char **)(it + 0x2a8));
-            Window_AddDynamicFlags((void *)it, 1);
-        }
+        /* Page up area (between thumb and up button) */
+        float thumbEnd = (float)thumbPos + 16.0f + 1.0f;
+        rx = scrollX; ry = thumbEnd;
+        rw = 16.0f; rh = endY - thumbEnd;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x400;
     } else {
-        /* Mouse is outside item */
-        if (flags & 0x40) {
-            /* Was focused — run onFocusLost script, remove focus */
-            Item_RunScript(dc, item, *(const char **)(it + 0x2a4));
-            Window_RemoveDynamicFlags((void *)it, 0x40);
-        }
-        if (!(flags & 1)) {
-            /* Not hovered — run mouseEnter script, add hover */
-            Item_RunScript(dc, item, *(const char **)(it + 0x2a8));
-            Window_AddDynamicFlags((void *)it, 1);
-        }
+        /* Vertical listbox — scrollbar is on the right side */
+        float scrollX = *(float *)it + *(float *)(it + 8) - 16.0f;
+        float itemY = *(float *)(it + 4);
+
+        /* Up scroll button (top-right) */
+        float rx = scrollX, ry = itemY, rw = 16.0f, rh = 16.0f;
+        float cx = x, cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x100;
+
+        /* Down scroll button (bottom-right) */
+        float endY = itemY + *(float *)(it + 0xc) - 16.0f;
+        rx = scrollX; ry = endY; rw = 16.0f; rh = 16.0f;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x200;
+
+        /* Thumb */
+        int thumbPos = Item_ListBox_ThumbPosition(item);
+        rx = scrollX; ry = (float)thumbPos; rw = 16.0f; rh = 16.0f;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x800;
+
+        /* Page up area */
+        rx = scrollX; ry = itemY + 16.0f + 1.0f;
+        rw = 16.0f; rh = (float)thumbPos - ry;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x400;
+
+        /* Page down area */
+        float thumbEnd = (float)thumbPos + 16.0f + 1.0f;
+        rx = scrollX; ry = thumbEnd;
+        rw = 16.0f; rh = endY - thumbEnd;
+        cx = x; cy = y;
+        CalcScreenX(&cx, 4); CalcScreenY(&cy, 4);
+        CalcScreenPlacement(&rx, &rw, &ry, &rh, horzAlign, vertAlign);
+        if (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh)
+            return 0x400;
     }
 
-    /* If listbox type (6), handle listbox mouse enter */
-    if (*(int *)(it + 0x270) == 6) {
-        Item_ListBox_MouseEnter(item, x, y);
-    }
+    return 0;
 }
 
 /* line 1928 */
