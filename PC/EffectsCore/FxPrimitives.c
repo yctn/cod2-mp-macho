@@ -8515,9 +8515,82 @@ Bool Line_Update_asm(const Line * _this)
 }
 #endif
 
-/* line 1418 */
+/* line 1418 — Cloud_Update converted to C */
+Bool Cloud_Update(const Cloud *_this)
+{
+    /* Cloud follows Particle_Update + height/density channel eval + cloud-specific endpoint */
+    byte *self = (byte *)_this;
+    int startTime = *(int *)(self + 0xb8);
+    int killTime = *(int *)(self + 0xbc);
+    int curTime = *(int *)(*(byte **)imp_theFxHelper + 4);
+
+    if (startTime > curTime) return 0;
+    float normTime = (float)(curTime - startTime) / (float)(killTime - startTime);
+    if (normTime > 1.0f) normTime = 1.0f;
+    *(float *)(self + 0x3c) = normTime;
+    if (normTime < 0.0f) return 0;
+
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0) orient = boltFrame + 8;
+        }
+    }
+
+    if (!Particle_UpdateOrigin((const Particle *)_this, (const orientation_t *)orient)) return 0;
+
+    if (orient) OrientationPosToWorldPos(orient, (vec_t *)(self + 4), (vec_t *)(self + 0x7c));
+    else { *(float *)(self + 0x7c) = *(float *)(self + 4); *(float *)(self + 0x80) = *(float *)(self + 8); *(float *)(self + 0x84) = *(float *)(self + 0xc); }
+
+    /* Evaluate radius */
+    float radius;
+    if (*(short *)(self + 0xa8) < 0) {
+        float bf = *(float *)(self + 0x120);
+        radius = (EvalCurve1(self + 0x174, normTime) + (EvalCurve1(self + 0x180, normTime) - EvalCurve1(self + 0x174, normTime)) * bf) * *(float *)(self + 0x174 + 8);
+    } else {
+        radius = EvalCurve1(self + 0x174, normTime) * *(float *)(self + 0x174 + 8);
+    }
+    *(float *)(self + 0x88) = radius;
+    if (radius == 0.0f) { *(int *)(self + 0xa8) |= 0x01000000; return 1; }
+
+    /* Cloud-specific: height channel at 0x264/0x270 */
+    float height;
+    if (*(byte *)(self + 0xaa) & 2) {
+        float bf = *(float *)(self + 0x25c); /* cloud blend factor from 0x260 random weight */
+        height = (EvalCurve1(self + 0x264, normTime) + (EvalCurve1(self + 0x270, normTime) - EvalCurve1(self + 0x264, normTime)) * bf) * *(float *)(self + 0x264 + 8);
+    } else {
+        height = EvalCurve1(self + 0x264, normTime) * *(float *)(self + 0x264 + 8);
+    }
+    *(float *)(self + 0x8c) = height;
+    if (height == 0.0f) { *(int *)(self + 0xa8) |= 0x01000000; return 1; }
+
+    /* Rotation */
+    if (*(byte *)(self + 0xaa) & 1) {
+        float rot;
+        if (*(byte *)(self + 0xaa) & 0x10) {
+            float bf = *(float *)(self + 0x128);
+            rot = (EvalCurve1(self + 0x18c, normTime) + (EvalCurve1(self + 0x198, normTime) - EvalCurve1(self + 0x18c, normTime)) * bf) * *(float *)(self + 0x18c + 8);
+        } else {
+            rot = EvalCurve1(self + 0x18c, normTime) * *(float *)(self + 0x18c + 8);
+        }
+        *(float *)(self + 0x94) = rot;
+    }
+
+    Particle_UpdateRGB((const Particle *)_this);
+    Particle_UpdateAlpha((const Particle *)_this);
+    return 1;
+}
+#if 0 /* Original ASM (907 lines) */
 __attribute__((naked))
-Bool Cloud_Update(const Cloud * _this)
+Bool Cloud_Update_asm(const Cloud * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1418 */
@@ -9424,9 +9497,9 @@ Bool Cloud_Update(const Cloud * _this)
         "jmp .Lfa6d3c_000a6f8c\n"
     );
 }
+#endif
 
-/* line 1282 */
-__attribute__((naked))
+/* line 1282 — OrientedParticle_Update converted to C */
 Bool OrientedParticle_Update(const OrientedParticle *_this)
 {
     /* Same as Particle_Update + normal vector transform to world (0x24c → orient transform → 0x9c) */
