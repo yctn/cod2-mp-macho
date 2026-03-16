@@ -2846,9 +2846,46 @@ void ZN5LightD0Ev(void) /* Light_~Light */
     );
 }
 
-/* line 1589 */
+/* Tail_InitEndPoint — evaluate tail length curve(s) at normTime, store in endLength at 0x258, call CalcNewEndpoint */
+void Tail_InitEndPoint(const Tail *_this)
+{
+    byte *self = (byte *)_this;
+    float normTime = *(float *)(self + 0x3c);
+
+    /* Evaluate tail length curve (1-component, optional blend) */
+    float tailLen;
+    if (*(byte *)(self + 0xaa) & 2) {
+        float blendFactor = *(float *)(self + 0x25c);
+        float v0 = EvalCurve1(self + 0x260, normTime);
+        float v1 = EvalCurve1(self + 0x26c, normTime);
+        tailLen = (v0 + (v1 - v0) * blendFactor) * *(float *)(self + 0x260 + 8);
+    } else {
+        tailLen = EvalCurve1(self + 0x260, normTime) * *(float *)(self + 0x260 + 8);
+    }
+    *(float *)(self + 0x258) = tailLen;
+
+    /* Get bolt orientation for CalcNewEndpoint */
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx >= 0) {
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            if (*(int *)(boltFrame + 4) != clTime) {
+                *(int *)(boltFrame + 4) = clTime;
+                if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
+                    { *(int *)(boltFrame + 0x3c) = -1; *(int *)(boltFrame + 0x40) = -1; }
+            }
+            if (*(int *)(boltFrame + 0x3c) >= 0)
+                orient = boltFrame + 8;
+        }
+    }
+
+    Tail_CalcNewEndpoint(_this, (const orientation_t *)orient);
+}
+#if 0 /* Original ASM (230 lines) */
 __attribute__((naked))
-void Tail_InitEndPoint(const Tail * _this)
+void Tail_InitEndPoint_asm(const Tail * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1589 */
@@ -3078,6 +3115,7 @@ void Tail_InitEndPoint(const Tail * _this)
         "jmp .Lfa3030_000a3174\n"
     );
 }
+#endif
 
 /* Light_Update — normTime computation, bolt orientation, radius eval, RGB update */
 Bool Light_Update(const Light *_this)
@@ -5425,9 +5463,108 @@ void Particle_ApplyImpact_asm(const Particle * _this, const orientation_t *or_, 
 }
 #endif
 
-/* line 677 */
+/* Particle_UpdateOrigin — integrate velocity, trace collision, apply impact, update position */
+extern void FxHelper_Trace(void *helper, void *trace, vec_t *start, vec_t *mins, vec_t *maxs, vec_t *end, int contents, int mask);
+extern void *imp_vec3_origin;
+Bool Particle_UpdateOrigin(const Particle *_this, const orientation_t *or_)
+{
+    byte *self = (byte *)_this;
+
+    /* Check locked flag */
+    if (*(byte *)(self + 0xab) & 1)
+        return 1;
+
+    /* Get frame time */
+    byte *helper = *(byte **)imp_theFxHelper;
+    int frameTimeMs = *(int *)(helper + 0xc);
+    if (frameTimeMs == 0)
+        return 1;
+
+    float ftime = (float)frameTimeMs * 0.001f;
+    int startTime = *(int *)(self + 0xb8);
+    float age = (float)(*(int *)(helper + 4) - startTime) * 0.001f;
+    float lifeTime = (float)(*(int *)(self + 0xbc) - startTime) * 0.001f;
+    float normTime = age / lifeTime;
+    if (normTime > 1.0f) normTime = 1.0f;
+
+    /* Get total velocity at normTime */
+    vec3_t velocity;
+    Particle_GetTotalVelocity(_this, normTime, velocity, or_);
+
+    /* Compute new origin = old + velocity * ftime */
+    float *origin = (float *)(self + 4);
+    vec3_t new_origin;
+    new_origin[0] = origin[0] + velocity[0] * ftime;
+    new_origin[1] = origin[1] + velocity[1] * ftime;
+    new_origin[2] = origin[2] + velocity[2] * ftime;
+
+    /* Check for collision trace */
+    int flags = *(int *)(self + 0xa8);
+    if (flags & 0x20) {
+        vec3_t start_pt, end_pt;
+
+        if (or_) {
+            OrientationPosToWorldPos((void *)or_, origin, start_pt);
+            OrientationPosToWorldPos((void *)or_, new_origin, end_pt);
+        } else {
+            start_pt[0] = origin[0]; start_pt[1] = origin[1]; start_pt[2] = origin[2];
+            end_pt[0] = new_origin[0]; end_pt[1] = new_origin[1]; end_pt[2] = new_origin[2];
+        }
+
+        /* Do trace */
+        byte trace[0x44];
+        vec3_t *mins, *maxs;
+        if (flags & 0x40) {
+            mins = (vec3_t *)(self + 0x14);
+            maxs = (vec3_t *)(self + 0x20);
+        } else {
+            mins = (vec3_t *)imp_vec3_origin;
+            maxs = mins;
+        }
+        FxHelper_Trace(helper, trace, start_pt, (vec_t *)mins, (vec_t *)maxs, end_pt, -1, 1);
+
+        /* Check trace result */
+        float fraction = *(float *)trace;
+        if (fraction < 1.0f) {
+            /* Hit something */
+            if (flags & 0x800) {
+                /* Death effect at impact point */
+                vec3_t endpos;
+                endpos[0] = start_pt[0] + (end_pt[0] - start_pt[0]) * fraction;
+                endpos[1] = start_pt[1] + (end_pt[1] - start_pt[1]) * fraction;
+                endpos[2] = start_pt[2] + (end_pt[2] - start_pt[2]) * fraction;
+                FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, *(void **)(self + 0x2c), endpos, (vec_t *)(trace + 0x24));
+            }
+
+            if (flags & 0x400) {
+                /* Kill on impact */
+                return 0;
+            }
+
+            /* Apply impact (bounce) */
+            float newFtime = ftime * fraction;
+            float newAge = age + newFtime;
+            float newNormTime = newAge / lifeTime;
+            if (newNormTime > 1.0f) newNormTime = 1.0f;
+            Particle_ApplyImpact(_this, or_, newNormTime, velocity, fraction, (vec_t *)(trace + 0x24));
+
+            /* Interpolate position by fraction */
+            origin[0] = origin[0] + (new_origin[0] - origin[0]) * fraction;
+            origin[1] = origin[1] + (new_origin[1] - origin[1]) * fraction;
+            origin[2] = origin[2] + (new_origin[2] - origin[2]) * fraction;
+            return 1;
+        }
+    }
+
+    /* No collision — just copy new origin */
+    origin[0] = new_origin[0];
+    origin[1] = new_origin[1];
+    origin[2] = new_origin[2];
+    return 1;
+}
+#if 0 /* Original ASM (263 lines) */
 __attribute__((naked))
-Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
+Bool Particle_UpdateOrigin_asm(const Particle * _this, const orientation_t *or_)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 677 */
@@ -5690,6 +5827,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "jmp .Lfa4ef4_000a5114\n"
     );
 }
+#endif
 
 /* line 1833 */
 __attribute__((naked))
