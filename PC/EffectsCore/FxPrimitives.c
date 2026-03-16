@@ -148,6 +148,7 @@ void ZN5FlashD1Ev(void); /* Flash_~Flash */
 
 /* Shared helper: release bolt frame reference, free if refcount reaches 0 */
 extern void __ZdaPv(void *ptr);
+extern void *__Znam(int size);
 extern void FxArchive_ReadData(void *arch, void *data, int size);
 extern void FxArchive_WriteData(void *arch, void *data, int size);
 extern void FxArchive_ArchiveChannelInstance(void *arch, void *channelInst);
@@ -498,90 +499,48 @@ void Particle_AddVisibility(const Particle * _this)
 }
 
 /* line 329 */
+/* FX_AddFxToScene — build refEntity and submit to scene. Register: eax=effect, edx=reType */
+extern void AxisCopy(const vec_t *src, vec_t *dst);
+extern void FxHelper_AddFxToScene(void *helper, void *ent, int sortGroup);
+static void FX_AddFxToScene_impl(byte *effect, int reType)
+{
+    byte ent[0x74];
+    memset(ent, 0, 0x74);
+    *(int *)(ent + 0x00) = reType;                       /* ent.reType */
+    *(int *)(ent + 0x54) = *(int *)(effect + 0x40);      /* ent.hModel (material) */
+    *(int *)(ent + 0x6c) = *(int *)(effect + 0x44);      /* ent.customShader */
+    AxisCopy((vec_t *)(effect + 0x48), (vec_t *)(ent + 0x14)); /* ent.axis */
+    /* Copy origin */
+    *(float *)(ent + 0x3c) = *(float *)(effect + 0x7c);
+    *(float *)(ent + 0x40) = *(float *)(effect + 0x80);
+    *(float *)(ent + 0x44) = *(float *)(effect + 0x84);
+    /* Copy additional fields */
+    *(int *)(ent + 0x64) = *(int *)(effect + 0x88);      /* radius */
+    *(int *)(ent + 0x68) = *(int *)(effect + 0x8c);      /* rotation */
+    *(byte *)(ent + 0x58) = *(byte *)(effect + 0x90);     /* shaderRGBA[0] */
+    *(byte *)(ent + 0x59) = *(byte *)(effect + 0x91);     /* shaderRGBA[1] */
+    *(byte *)(ent + 0x5a) = *(byte *)(effect + 0x92);     /* shaderRGBA[2] */
+    *(byte *)(ent + 0x5b) = *(byte *)(effect + 0x93);     /* shaderRGBA[3] */
+    *(int *)(ent + 0x60) = *(int *)(effect + 0x94);       /* shaderTexCoord */
+    *(int *)(ent + 0x38) = *(int *)(effect + 0x98);       /* frame */
+    /* Copy oldorigin */
+    *(float *)(ent + 0x48) = *(float *)(effect + 0x9c);
+    *(float *)(ent + 0x4c) = *(float *)(effect + 0xa0);
+    *(float *)(ent + 0x50) = *(float *)(effect + 0xa4);
+    /* Flags */
+    int flags = *(int *)(effect + 0xa8);
+    if (flags & 1) *(int *)(ent + 0x04) |= 8;
+    if (flags & 0x4000000) *(int *)(ent + 0x04) |= 0x80;
+    FxHelper_AddFxToScene(*(void **)imp_theFxHelper, ent, *(int *)(effect + 0xb4));
+}
 static __attribute__((naked))
 void FX_AddFxToScene(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 329 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movl %eax, %esi\n" /* effect */
-        "movl %edx, %ebx\n" /* reType */
-        /* { scope 1 */
-        "leal -0x8c(%ebp), %edi\n" /* line 333 | ent */
-        "movl $0x74, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll memset\n"
-        "movl %ebx, -0x8c(%ebp)\n" /* line 335 | reType, ent */
-        "movl 0x40(%esi), %eax\n" /* line 337 | effect */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 0x44(%esi), %eax\n" /* line 338 | effect */
-        "movl %eax, -0x20(%ebp)\n"
-        "leal -0x78(%ebp), %eax\n" /* line 339 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x48(%esi), %eax\n" /* effect */
-        "movl %eax, (%esp)\n"
-        "calll AxisCopy\n"
-        "leal 0x7c(%esi), %edx\n" /* effect */
-        /* { scope 2 */
-        "movl 0x7c(%esi), %eax\n" /* line 199 */
-        "movl %eax, -0x50(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x4c(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x48(%ebp)\n"
-        /* } scope */
-        "movl 0x88(%esi), %eax\n" /* line 341 | effect */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0x8c(%esi), %eax\n" /* line 342 | effect */
-        "movl %eax, -0x24(%ebp)\n"
-        "movzbl 0x90(%esi), %eax\n" /* line 343 | effect */
-        "movb %al, -0x34(%ebp)\n"
-        "movzbl 0x91(%esi), %eax\n" /* line 344 | effect */
-        "movb %al, -0x33(%ebp)\n"
-        "movzbl 0x92(%esi), %eax\n" /* line 345 | effect */
-        "movb %al, -0x32(%ebp)\n"
-        "movzbl 0x93(%esi), %eax\n" /* line 346 | effect */
-        "movb %al, -0x31(%ebp)\n"
-        "movl 0x94(%esi), %eax\n" /* line 347 | effect */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x98(%esi), %eax\n" /* line 348 | effect */
-        "movl %eax, -0x54(%ebp)\n"
-        "leal 0x9c(%esi), %edx\n" /* effect */
-        /* { scope 2 */
-        "movl 0x9c(%esi), %eax\n" /* line 199 */
-        "movl %eax, -0x44(%ebp)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x3c(%ebp)\n"
-        /* } scope */
-        "movl 0xa8(%esi), %eax\n" /* line 351 | effect */
-        "testb $1, %al\n"
-        "je .Lfa0c28_000a0d07\n"
-        "orl $8, -0x88(%ebp)\n" /* line 352 */
-        ".Lfa0c28_000a0d07:\n"
-        "testl $0x4000000, %eax\n" /* line 353 */
-        "je .Lfa0c28_000a0d18\n"
-        "orl $0x80, -0x88(%ebp)\n" /* line 354 */
-        ".Lfa0c28_000a0d18:\n"
-        "movl 0xb4(%esi), %eax\n" /* line 356 | effect */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl imp_theFxHelper, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_AddFxToScene\n"
-        /* } scope */
-        "addl $0x9c, %esp\n" /* line 357 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll FX_AddFxToScene_impl\n"
+        "addl $8, %esp\n"
         "retl\n"
     );
 }
@@ -1134,77 +1093,44 @@ void Flash_Draw(const Flash * _this)
     );
 }
 
-/* line 55 */
+/* FxBoltFrame_Acquire — find or create bolt frame for bolt info. Returns struct by value via hidden ptr.
+ * Hidden return ptr at 8(%ebp), bolt at 0xc(%ebp). Uses retl $4 (struct return convention). */
+static void FxBoltFrame_Acquire_impl(byte *retPtr, byte *bolt)
+{
+    /* Search existing bolt frames for matching entity+bone */
+    byte *frame = __ZN11FxBoltFrame12g_mFrameListE;
+    int entity = *(int *)bolt;
+    int bone = *(int *)(bolt + 4);
+    while (frame) {
+        if (*(int *)(frame + 0x3c) == entity && *(int *)(frame + 0x40) == bone) {
+            *(int *)frame += 1; /* addref */
+            *(byte **)retPtr = frame;
+            return;
+        }
+        frame = *(byte **)(frame + 0x38);
+    }
+    /* Not found — allocate new bolt frame */
+    byte *newFrame = (byte *)__Znam(0x44);
+    if (newFrame) memset(newFrame, 0, 0x44);
+    *(int *)newFrame = 0;       /* refCount */
+    *(int *)(newFrame + 4) = 0; /* lastTime */
+    *(int *)(newFrame + 0x3c) = entity;
+    *(int *)(newFrame + 0x40) = bone;
+    *(byte **)(newFrame + 0x38) = __ZN11FxBoltFrame12g_mFrameListE;
+    __ZN11FxBoltFrame12g_mFrameListE = newFrame;
+    *(int *)newFrame += 1; /* addref */
+    *(byte **)retPtr = newFrame;
+}
 __attribute__((naked))
 const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt)
 {
+    (void)bolt;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 55 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n"
-        "movl 0xc(%ebp), %esi\n" /* bolt */
-        /* { scope 1 */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %edx\n" /* line 59 */
-        "testl %edx, %edx\n"
-        "je .Lfa175e_000a17a0\n"
-        "movl (%esi), %ecx\n" /* line 61 | bolt */
-        "jmp .Lfa175e_000a1782\n"
-        ".Lfa175e_000a177b:\n"
-        "movl 0x38(%edx), %edx\n" /* line 59 */
-        "testl %edx, %edx\n"
-        "je .Lfa175e_000a17a0\n"
-        ".Lfa175e_000a1782:\n"
-        "cmpl %ecx, 0x3c(%edx)\n" /* line 61 */
-        "jne .Lfa175e_000a177b\n"
-        "movl 0x40(%edx), %eax\n"
-        "cmpl 4(%esi), %eax\n" /* bolt */
-        "jne .Lfa175e_000a177b\n"
-        "addl $1, (%edx)\n" /* line 39 */
-        "movl %edx, (%edi)\n" /* line 59 */
-        /* } scope */
-        "movl %edi, %eax\n" /* line 66 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl $4\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfa175e_000a17a0:\n"
-        "movl $0x44, (%esp)\n" /* line 24 */
-        "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
-        "je .Lfa175e_000a17ca\n"
-        "movl $0x44, 8(%esp)\n" /* line 27 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        ".Lfa175e_000a17ca:\n"
-        "movl $0, (%ebx)\n" /* line 117 | ptr */
-        "movl $0, 4(%ebx)\n" /* line 119 | ptr */
-        "movl (%esi), %eax\n" /* line 123 | bolt */
-        "movl 4(%esi), %edx\n" /* bolt */
-        "movl %eax, 0x3c(%ebx)\n" /* ptr */
-        "movl %edx, 0x40(%ebx)\n" /* ptr */
-        "movl __ZN11FxBoltFrame12g_mFrameListE, %eax\n" /* line 125 */
-        "movl %eax, 0x38(%ebx)\n" /* ptr */
-        "movl %ebx, __ZN11FxBoltFrame12g_mFrameListE\n" /* line 126 | ptr */
-        "addl $1, (%ebx)\n" /* line 39 | ptr */
-        "movl %ebx, (%edi)\n" /* line 59 | ptr */
-        /* } scope */
-        "movl %edi, %eax\n" /* line 66 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
+        "pushl 0xc(%esp)\n"
+        "pushl 0xc(%esp)\n"
+        "calll FxBoltFrame_Acquire_impl\n"
+        "addl $8, %esp\n"
+        "movl 4(%esp), %eax\n"
         "retl $4\n"
     );
 }
@@ -2561,84 +2487,32 @@ void Particle_IntegrateVelocity2(const Particle * _this, float normDuration, vec
     );
 }
 
-/* line 942 */
-__attribute__((naked))
-void Particle_IntegrateTotalVelocity(const Particle * _this, int duration, vec_t *outVector)
+/* Particle_IntegrateTotalVelocity — integrate vel1 + vel2 + gravity over duration */
+void Particle_IntegrateTotalVelocity(const Particle *_this, int duration, vec_t *outVector)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 942 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* duration */
-        "movl 0x10(%ebp), %ebx\n" /* outVector */
-        /* { scope 1 */
-        "movl 0xbc(%esi), %eax\n" /* line 222 */
-        "subl 0xb8(%esi), %eax\n"
-        "cmpl %edx, %eax\n" /* line 955 */
-        "jle .Lfa2d00_000a2df1\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x2c(%ebp), %xmm1\n"
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n" /* normDuration */
-        "movaps %xmm1, %xmm0\n"
-        ".Lfa2d00_000a2d43:\n"
-        "leal -0x14(%ebp), %eax\n" /* line 958 | velocitySum */
-        "movl %eax, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* this */
-        "calll Particle_IntegrateVelocity\n"
-        "leal -0x20(%ebp), %eax\n" /* line 959 | velocity2Sum */
-        "movl %eax, 8(%esp)\n"
-        "movss -0x30(%ebp), %xmm1\n" /* normDuration */
-        "movss %xmm1, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* this */
-        "calll Particle_IntegrateVelocity2\n"
-        "movss -0x2c(%ebp), %xmm2\n" /* line 938 */
-        "mulss 0xf4(%esi), %xmm2\n"
-        "movss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
-        "mulss %xmm1, %xmm2\n"
-        "mulss -0x2c(%ebp), %xmm1\n" /* line 961 | scale */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm3\n" /* line 272 */
-        "mulss lit4_002ed5e8, %xmm3\n" /* 0.0f */
-        /* } scope */
-        "movss -0x14(%ebp), %xmm0\n" /* line 240 | velocitySum */
-        "addss -0x20(%ebp), %xmm0\n" /* velocity2Sum */
-        "movss %xmm0, (%ebx)\n"
-        "movss -0x10(%ebp), %xmm0\n" /* line 241 */
-        "addss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%ebx)\n"
-        "movss -0xc(%ebp), %xmm0\n" /* line 242 */
-        "addss -0x18(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%ebx)\n"
-        "movaps %xmm3, %xmm0\n" /* line 240 */
-        "addss (%ebx), %xmm0\n"
-        "movss %xmm0, (%ebx)\n"
-        "addss 4(%ebx), %xmm3\n" /* line 241 */
-        "movss %xmm3, 4(%ebx)\n"
-        "mulss %xmm1, %xmm2\n" /* line 242 */
-        "addss 8(%ebx), %xmm2\n"
-        "movss %xmm2, 8(%ebx)\n"
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 965 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa2d00_000a2df1:\n"
-        "cvtsi2ssl %edx, %xmm0\n" /* line 955 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "movss %xmm1, -0x30(%ebp)\n" /* normDuration */
-        "movaps %xmm1, %xmm0\n"
-        "jmp .Lfa2d00_000a2d43\n"
-    );
+    byte *self = (byte *)_this;
+    int lifetime = *(int *)(self + 0xbc) - *(int *)(self + 0xb8);
+    float durationF = (float)duration;
+    float normDuration;
+    if (lifetime > duration) {
+        normDuration = durationF / (float)lifetime;
+    } else {
+        normDuration = 1.0f;
+    }
+    vec3_t velocitySum, velocity2Sum;
+    Particle_IntegrateVelocity(_this, normDuration, velocitySum);
+    Particle_IntegrateVelocity2(_this, normDuration, velocity2Sum);
+
+    /* Gravity: gravityScale * duration_ms * 0.001 * duration_ms * 0.001 * {0, 0, gravity} */
+    float gravityAccum = durationF * *(float *)(self + 0xf4) * 0.001f;
+    float scale = durationF * 0.001f;
+    float gravX = scale * 0.0f; /* gravity is only in Z */
+    float gravY = scale * 0.0f;
+    float gravZ = scale * gravityAccum;
+
+    outVector[0] = velocitySum[0] + velocity2Sum[0] + gravX;
+    outVector[1] = velocitySum[1] + velocity2Sum[1] + gravY;
+    outVector[2] = velocitySum[2] + velocity2Sum[2] + gravZ;
 }
 
 /* line 360 */
@@ -5086,84 +4960,38 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
     );
 }
 
-/* line 968 */
-__attribute__((naked))
-void Particle_GetTotalVelocityAtTime0(const Particle * _this, vec_t *outVector)
+/* Particle_GetTotalVelocityAtTime0 — get velocity at t=0 using bolt orientation if available */
+extern void *imp_cl;
+void Particle_GetTotalVelocityAtTime0(const Particle *_this, vec_t *outVector)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 968 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        /* { scope 1 */
-        "movl 0xc0(%edi), %ebx\n" /* line 972 | this */
-        "testl %ebx, %ebx\n"
-        "je .Lfa4c8a_000a4d2b\n"
-        "movl 0xc0(%edi), %ebx\n" /* line 101 */
-        /* { scope 2 */
-        "movl 0x3c(%ebx), %ecx\n" /* line 90 */
-        "testl %ecx, %ecx\n"
-        "js .Lfa4c8a_000a4cea\n"
-        "movl imp_cl, %eax\n" /* line 94 */
-        "movl (%eax), %eax\n"
-        "movl 0x864c(%eax), %eax\n"
-        "cmpl %eax, 4(%ebx)\n"
-        "je .Lfa4c8a_000a4cff\n"
-        "movl %eax, 4(%ebx)\n" /* line 96 */
-        "leal 8(%ebx), %esi\n" /* line 102 */
-        "movl %esi, 4(%esp)\n"
-        "leal 0x3c(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_GetBoneOrientation\n"
-        "testb %al, %al\n"
-        "jne .Lfa4c8a_000a4d02\n"
-        "movl $0xffffffff, 0x3c(%ebx)\n" /* line 105 */
-        "movl $0xffffffff, 0x40(%ebx)\n" /* line 106 */
-        /* } scope */
-        ".Lfa4c8a_000a4cea:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl 0xc(%ebp), %edx\n" /* outVector */
-        "movl %eax, (%edx)\n"
-        "movl %eax, 4(%edx)\n" /* line 184 */
-        "movl %eax, 8(%edx)\n" /* line 185 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 985 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfa4c8a_000a4cff:\n"
-        "leal 8(%ebx), %esi\n" /* this */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfa4c8a_000a4d02:\n"
-        "movl %esi, %eax\n" /* line 111 */
-        /* } scope */
-        "testl %esi, %esi\n" /* line 975 */
-        "je .Lfa4c8a_000a4cea\n"
-        ".Lfa4c8a_000a4d08:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 984 */
-        "movl 0xc(%ebp), %eax\n" /* outVector */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* this */
-        "calll Particle_GetTotalVelocity\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 985 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfa4c8a_000a4d2b:\n"
-        "xorl %eax, %eax\n" /* line 978 */
-        "jmp .Lfa4c8a_000a4d08\n"
-    );
+    byte *self = (byte *)_this;
+    byte *boltFrame = *(byte **)(self + 0xc0);
+    void *orient = NULL;
+
+    if (boltFrame) {
+        int boneIdx = *(int *)(boltFrame + 0x3c);
+        if (boneIdx < 0) {
+            outVector[0] = outVector[1] = outVector[2] = 0.0f;
+            return;
+        }
+        int curTime = *(int *)(*(int *)imp_cl + 0x864c);
+        if (curTime != *(int *)(boltFrame + 4)) {
+            *(int *)(boltFrame + 4) = curTime;
+            Bool ok = FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8));
+            if (!ok) {
+                *(int *)(boltFrame + 0x3c) = -1;
+                *(int *)(boltFrame + 0x40) = -1;
+                outVector[0] = outVector[1] = outVector[2] = 0.0f;
+                return;
+            }
+        }
+        orient = boltFrame + 8;
+        if (!orient) {
+            outVector[0] = outVector[1] = outVector[2] = 0.0f;
+            return;
+        }
+    }
+    Particle_GetTotalVelocity(_this, 0.0f, outVector, (const orientation_t *)orient);
 }
 
 /* line 621 */
