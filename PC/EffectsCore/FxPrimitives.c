@@ -2277,6 +2277,7 @@ void Particle_UpdateRGB_asm(const Particle * _this)
         "jmp .Lfa236e_000a259a\n"
     );
 }
+#endif
 
 /* line 2251 */
 Bool Flash_Update(const Flash * _this)
