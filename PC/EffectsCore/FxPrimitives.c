@@ -1296,9 +1296,89 @@ void Tail_FixupArchiveLoad(const Tail * _this, const PrimitiveTemplate *primTemp
     *(int *)(t + 0x26c) = *(int *)(p + 0x16c); /* line 1721 */
 }
 
-/* line 2199 */
+/* Shared: evaluate a 1-component FxCurve at normTime. Advances key index in channelInst. */
+static float EvalCurve1(byte *channelInst, float normTime)
+{
+    byte *curve = *(byte **)channelInst;
+    int numKeys = *(int *)curve;
+    int componentCount = numKeys + 1;
+    int keyIdx = *(int *)(channelInst + 4);
+
+    /* Key data starts at curve+8, each key has (componentCount) floats: time + values */
+    byte *keys = curve + 8;
+    int keyStride = componentCount * 4;
+
+    /* Advance key index if needed */
+    while (*(float *)(keys + (keyIdx + 1) * keyStride) < normTime && keyIdx < *(int *)curve)
+        keyIdx++;
+    *(int *)(channelInst + 4) = keyIdx;
+
+    /* Interpolate between key[keyIdx] and key[keyIdx+1] */
+    byte *k0 = keys + keyIdx * keyStride;
+    byte *k1 = k0 + keyStride;
+    float t0 = *(float *)k0;
+    float t1 = *(float *)k1;
+    float frac = (t1 != t0) ? (normTime - t0) / (t1 - t0) : 0.0f;
+    float v0 = *(float *)(k0 + 4);
+    float v1 = *(float *)(k1 + 4);
+    return v0 + (v1 - v0) * frac;
+}
+
+/* Shared: evaluate 3-component FxCurve at normTime */
+static void EvalCurve3(byte *channelInst, float normTime, float *out)
+{
+    byte *curve = *(byte **)channelInst;
+    int componentCount = *(int *)curve + 1;
+    int keyIdx = *(int *)(channelInst + 4);
+    byte *keys = curve + 8;
+    int keyStride = componentCount * 4;
+
+    while (*(float *)(keys + (keyIdx + 1) * keyStride) < normTime)
+        keyIdx++;
+    *(int *)(channelInst + 4) = keyIdx;
+
+    byte *k0 = keys + keyIdx * keyStride;
+    byte *k1 = k0 + keyStride;
+    float t0 = *(float *)k0;
+    float t1 = *(float *)k1;
+    float frac = (t1 != t0) ? (normTime - t0) / (t1 - t0) : 0.0f;
+
+    out[0] = *(float *)(k0 + 4) + (*(float *)(k1 + 4) - *(float *)(k0 + 4)) * frac;
+    out[1] = *(float *)(k0 + 8) + (*(float *)(k1 + 8) - *(float *)(k0 + 8)) * frac;
+    out[2] = *(float *)(k0 + 12) + (*(float *)(k1 + 12) - *(float *)(k0 + 12)) * frac;
+}
+
+/* Light_UpdateRGB — evaluate RGB curve(s) at normTime, apply blend and scale */
+void Light_UpdateRGB(const Light *_this, const Light *_this_1)
+{
+    (void)_this_1;
+    byte *self = (byte *)_this;
+    float normTime = *(float *)(self + 0x3c);
+    float *rgb = (float *)(self + 0x6c);
+
+    if (*(byte *)(self + 0xa9) & 0x20) {
+        /* Blend path: interpolate between two curve sources */
+        float blendFactor = *(float *)(self + 0xc4);
+        float val0[3], val1[3];
+        EvalCurve3(self + 0xcc, normTime, val0);
+        EvalCurve3(self + 0xd8, normTime, val1);
+        float scale = *(float *)(self + 0xcc + 8);
+        rgb[0] = (val0[0] + (val1[0] - val0[0]) * blendFactor) * scale;
+        rgb[1] = (val0[1] + (val1[1] - val0[1]) * blendFactor) * scale;
+        rgb[2] = (val0[2] + (val1[2] - val0[2]) * blendFactor) * scale;
+    } else {
+        /* Simple path: single curve source */
+        float val[3];
+        EvalCurve3(self + 0xcc, normTime, val);
+        float scale = *(float *)(self + 0xcc + 8);
+        rgb[0] = val[0] * scale;
+        rgb[1] = val[1] * scale;
+        rgb[2] = val[2] * scale;
+    }
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Light_UpdateRGB(const Light * _this, const Light * _this_1)
+void Light_UpdateRGB_asm(const Light * _this, const Light * _this_1)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2199 */
@@ -1497,6 +1577,7 @@ void Light_UpdateRGB(const Light * _this, const Light * _this_1)
         "ja 0xa1fe0\n"
     );
 }
+#endif
 
 /* line 182 */
 /* Effect D1 destructor — cleanup bolt frame */
@@ -1851,9 +1932,39 @@ void Effect_SetBoltFrame(const Effect *_this, FxBoltFramePtr *boltFrame)
     }
 }
 
-/* line 1041 */
+/* Particle_UpdateRGB — evaluate 3-component RGB curve, convert to RGBA bytes */
+void Particle_UpdateRGB(const Particle *_this)
+{
+    byte *self = (byte *)_this;
+    float normTime = *(float *)(self + 0x3c);
+    float rgb[3];
+
+    if (*(byte *)(self + 0xa9) & 0x20) {
+        /* Blend path */
+        float blendFactor = *(float *)(self + 0x118);
+        float v0[3], v1[3];
+        EvalCurve3(self + 0x144, normTime, v0);
+        EvalCurve3(self + 0x150, normTime, v1);
+        float scale = *(float *)(self + 0x144 + 8);
+        rgb[0] = (v0[0] + (v1[0] - v0[0]) * blendFactor) * scale;
+        rgb[1] = (v0[1] + (v1[1] - v0[1]) * blendFactor) * scale;
+        rgb[2] = (v0[2] + (v1[2] - v0[2]) * blendFactor) * scale;
+    } else {
+        EvalCurve3(self + 0x144, normTime, rgb);
+        float scale = *(float *)(self + 0x144 + 8);
+        rgb[0] *= scale;
+        rgb[1] *= scale;
+        rgb[2] *= scale;
+    }
+
+    /* Convert to bytes at offset 0x90 */
+    *(byte *)(self + 0x90) = (byte)FloatToByte(rgb[0]);
+    *(byte *)(self + 0x91) = (byte)FloatToByte(rgb[1]);
+    *(byte *)(self + 0x92) = (byte)FloatToByte(rgb[2]);
+}
+#if 0 /* Original ASM (313 lines) */
 __attribute__((naked))
-void Particle_UpdateRGB(const Particle * _this)
+void Particle_UpdateRGB_asm(const Particle * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1041 */
@@ -5963,9 +6074,35 @@ Bool Emitter_Update(const Emitter * _this)
     );
 }
 
-/* line 1058 */
+/* Particle_UpdateAlpha — evaluate alpha channel at normTime, apply to particle */
+void Particle_UpdateAlpha(const Particle *_this)
+{
+    byte *self = (byte *)_this;
+    float normTime = *(float *)(self + 0x3c);
+    float alpha;
+
+    if (*(byte *)(self + 0xa9) & 0x40) {
+        /* Blend path */
+        float blendFactor = *(float *)(self + 0x11c);
+        float v0 = EvalCurve1(self + 0x15c, normTime);
+        float v1 = EvalCurve1(self + 0x168, normTime);
+        alpha = v0 + (v1 - v0) * blendFactor;
+    } else {
+        alpha = EvalCurve1(self + 0x15c, normTime);
+    }
+    alpha *= *(float *)(self + 0x15c + 8); /* scale */
+
+    /* Clamp and convert to byte */
+    if (alpha < 0.0f) alpha = 0.0f;
+    if (alpha > 1.0f) alpha = 1.0f;
+    int a = (int)floorf(alpha * 255.0f + 0.5f);
+    if (a < 0) a = 0;
+    if (a > 255) a = 255;
+    *(byte *)(self + 0x93) = (byte)a;
+}
+#if 0 /* Original ASM */
 __attribute__((naked))
-void Particle_UpdateAlpha(const Particle * _this)
+void Particle_UpdateAlpha_asm(const Particle * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1058 */
@@ -6227,6 +6364,7 @@ void Particle_UpdateAlpha(const Particle * _this)
         "jmp .Lfa587c_000a59fb\n"
     );
 }
+#endif
 
 /* line 1749 */
 __attribute__((naked))
