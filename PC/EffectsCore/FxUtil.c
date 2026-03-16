@@ -2370,112 +2370,55 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
 }
 
 /* line 1978 */
-__attribute__((naked))
+/* FX_AddLight — allocate Light, add to effect system, set origin + random weights */
+extern void Light_Light(void *light);
+extern float flrand(float min, float max);
+extern void *__Znam(int size);
 void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const int lateTime, const int indexInBatch)
 {
+    (void)lateTime; (void)indexInBatch;
+    byte *light = (byte *)__Znam(0xfc);
+    if (light) memset(light, 0, 0xfc);
+    Light_Light(light);
+    if (!light) return;
+
+    /* FX_AddPrimitive: register eax=prim, edx=particle, ecx=origin */
+    Bool added;
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1978 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %esi\n" /* prim */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl $0xfc, (%esp)\n" /* line 24 */
-        "calll __Znam\n"
-        "movl %eax, %ebx\n" /* ptr */
-        "testl %eax, %eax\n" /* line 25 */
-        "je .Lf5b306_0005b33b\n"
-        "movl $0xfc, 8(%esp)\n" /* line 27 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        /* } scope */
-        ".Lf5b306_0005b33b:\n"
-        "movl %ebx, (%esp)\n" /* line 1987 | ptr */
-        "calll Light_Light\n"
-        "testl %ebx, %ebx\n" /* line 1988 | ptr */
-        "je .Lf5b306_0005b392\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1991 | origin */
-        "movl %ebx, %edx\n" /* ptr */
-        "movl %esi, %eax\n" /* primTemp */
+        "movl %3, %%ecx\n"
+        "movl %2, %%edx\n"
+        "movl %1, %%eax\n"
         "calll FX_AddPrimitive\n"
-        "testb %al, %al\n" /* line 1992 */
-        "je .Lf5b306_0005b399\n"
-        "leal -0x14(%ebp), %edx\n" /* line 1998 | newOrigin */
-        "movl 0xc(%ebp), %eax\n" /* ax */
-        "movl %eax, (%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* origin */
-        "movl %esi, %eax\n" /* primTemp */
-        "calll FX_CalcOriginAndAxis\n"
-        "leal 4(%ebx), %edx\n" /* line 208 | ptr, to */
-        /* { scope 2 */
-        "movl -0x14(%ebp), %eax\n" /* line 199 | newOrigin */
-        "movl %eax, 4(%ebx)\n" /* ptr */
-        "movl -0x10(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 4(%esi), %esi\n" /* line 2002 | primTemp */
-        "movl 0x90(%esi), %eax\n" /* line 2006 | primTemp */
-        "testb $0x20, %ah\n"
-        "jne .Lf5b306_0005b3c9\n"
-        ".Lf5b306_0005b38d:\n"
-        "testw %ax, %ax\n" /* line 2008 */
-        "js .Lf5b306_0005b3a8\n"
-        /* } scope */
-        ".Lf5b306_0005b392:\n"
-        "addl $0x20, %esp\n" /* line 2010 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5b306_0005b399:\n"
-        "movl (%ebx), %eax\n" /* line 1994 | ptr */
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll *4(%eax)\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 2010 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5b306_0005b3a8:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 2009 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        /* { scope 2 */
-        "fstps 0xc8(%ebx)\n" /* line 262 | ptr */
-        /* } scope */
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 2010 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5b306_0005b3c9:\n"
-        "movl $0x3f800000, 4(%esp)\n" /* line 2007 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        /* { scope 2 */
-        "fstps 0xc4(%ebx)\n" /* line 261 | ptr */
-        "movl 0x90(%esi), %eax\n"
-        "jmp .Lf5b306_0005b38d\n"
-        "movl %eax, %esi\n"
-        /* } scope */
-        "testl %ebx, %ebx\n" /* line 35 | ptr */
-        "je .Lf5b306_0005b3f9\n"
-        "movl %ebx, (%esp)\n" /* ptr */
-        "calll __ZdaPv\n"
-        ".Lf5b306_0005b3f9:\n"
-        "movl %esi, (%esp)\n"
-        "calll __Unwind_Resume\n"
+        "movl %%eax, %0\n"
+        : "=r"(added) : "g"(prim), "g"(light), "g"(origin)
+        : "eax", "ecx", "edx", "memory"
     );
+    if (!added) {
+        typedef void (*Fn)(void *); ((Fn)(*(void ***)light)[1])(light);
+        return;
+    }
+
+    /* FX_CalcOriginAndAxis: eax=prim, edx=orgOut, stack=ax */
+    vec3_t newOrigin;
+    __asm__ __volatile__ (
+        "pushl %2\n"
+        "movl %1, %%edx\n"
+        "movl %0, %%eax\n"
+        "calll FX_CalcOriginAndAxis\n"
+        "addl $4, %%esp\n"
+        : : "g"(prim), "g"(&newOrigin), "g"(ax)
+        : "eax", "ecx", "edx", "memory"
+    );
+    *(float *)(light + 4) = newOrigin[0];
+    *(float *)(light + 8) = newOrigin[1];
+    *(float *)(light + 0xc) = newOrigin[2];
+
+    byte *primTemp = *(byte **)((byte *)prim + 4);
+    int flags = *(int *)(primTemp + 0x90);
+    if (flags & 0x2000) /* bit 13 */
+        *(float *)(light + 0xc4) = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) /* bit 15 */
+        *(float *)(light + 0xc8) = flrand(0.0f, 1.0f);
 }
 
 /* line 1802 */
