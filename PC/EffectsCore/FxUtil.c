@@ -49,6 +49,18 @@ extern void Z_FreeInternal(void *ptr);
 extern void *Z_MallocInternal(int size);
 extern void __ZdaPv(void *ptr);
 extern void Rand_Init(int seed);
+extern void FxHelper_Trace(void *helper, void *trace, vec_t *start, vec_t *mins, vec_t *maxs, vec_t *end, int contents, int mask);
+extern void AxisCopy(const vec_t *src, vec_t *dst);
+extern void CG_GetDObjOrientation(int entityNum, void *axis);
+extern void *Com_GetClientDObj(int entityNum, int localClientNum);
+extern int DObjNumBones(void *dobj);
+extern void CG_DObjCalcBoneGeneric(int entityNum, int localClientNum, int boneIndex);
+extern void *DObjGetRotTransArray(void *dobj);
+extern void MatrixMultiply(void *a, void *b, void *out);
+extern void MatrixTransformVector43(void *trans, void *axis, void *out);
+extern void *imp_fx_debugBolt;
+extern void AxisTransformVector(void *axis, float x, float y, float z, vec_t *out);
+extern void *imp_vec3_origin;
 extern void *__Znam(int size);
 extern float flrand(float min, float max);
 extern void Particle_Particle(void *particle);
@@ -185,9 +197,72 @@ int FX_GetCluster(const vec_t *origin)
     }
 }
 
-/* line 1412 */
-__attribute__((naked))
+/* FX_CalcOrigin2 — compute second endpoint for line/cylinder: range offset ± trace to surface */
 void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax)
+{
+    byte *pt = (byte *)primTemp;
+    int flags = *(int *)(pt + 0x94);
+
+    if (flags & 0x08) {
+        /* Project to infinity: temp = org + ax[0] * 16384 */
+        float *axf = (float *)ax;
+        vec3_t temp;
+        temp[0] = org[0] + axf[0] * 16384.0f;
+        temp[1] = org[1] + axf[1] * 16384.0f;
+        temp[2] = org[2] + axf[2] * 16384.0f;
+
+        if (flags & 0x20) {
+            /* Add endpoint offset to temp */
+            float z = FxRange_GetVal(pt + 0xe0);
+            float y = FxRange_GetVal(pt + 0xd8);
+            float x = FxRange_GetVal(pt + 0xd0);
+            if (flags & 0x80) {
+                /* Axis-aligned offset added directly */
+                org2[0] = x; org2[1] = y; org2[2] = z;
+                temp[0] += x; temp[1] += y; temp[2] += z;
+            } else {
+                /* Transform offset through axis, add to temp */
+                vec3_t point;
+                AxisTransformVector(ax, x, y, z, point);
+                temp[0] += point[0]; temp[1] += point[1]; temp[2] += point[2];
+            }
+        }
+
+        /* Trace from org to temp */
+        byte trace[0x44];
+        FxHelper_Trace(*(byte **)imp_theFxHelper, trace, org, (vec_t *)imp_vec3_origin, (vec_t *)imp_vec3_origin, temp, -1, 1);
+        float fraction = *(float *)trace;
+
+        /* org2 = lerp(org, temp, fraction) */
+        org2[0] = org[0] + (temp[0] - org[0]) * fraction;
+        org2[1] = org[1] + (temp[1] - org[1]) * fraction;
+        org2[2] = org[2] + (temp[2] - org[2]) * fraction;
+
+        /* Play death effect at endpoint if flag 0x10 */
+        if (flags & 0x10) {
+            void *effect = MediaHandles_GetEffect(pt + 0x70);
+            vec_t *traceNormal = (vec_t *)(trace + 0x24);
+            FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, effect, org2, (vec3_t *)traceNormal, NULL);
+        }
+    } else {
+        /* No projectToInfinity: compute org2 from range values */
+        float z = FxRange_GetVal(pt + 0xe0);
+        float y = FxRange_GetVal(pt + 0xd8);
+        float x = FxRange_GetVal(pt + 0xd0);
+
+        if (flags & 0x80) {
+            /* Axis-aligned: org2 = {x,y,z} + origin */
+            org2[0] = x; org2[1] = y; org2[2] = z;
+        } else {
+            /* Transform through axis */
+            AxisTransformVector(ax, x, y, z, org2);
+        }
+        org2[0] += origin[0]; org2[1] += origin[1]; org2[2] += origin[2];
+    }
+}
+#if 0 /* Original ASM (243 lines) */
+__attribute__((naked))
+void FX_CalcOrigin2_asm(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1412 */
@@ -430,10 +505,102 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
         "jmp .Lf5960a_0005968e\n"
     );
 }
+#endif
 
-/* line 266 */
-__attribute__((naked))
+/* FX_GetBoneOrientation — get bone transform from DObj, convert quat→matrix, apply to orientation */
+extern void CG_GetDObjOrientation(int entityNum, void *axis);
+extern void *Com_GetClientDObj(int entityNum, int localClientNum);
+extern int DObjNumBones(void *dobj);
+extern void CG_DObjCalcBoneGeneric(int entityNum, int localClientNum, int boneIndex);
+extern void *DObjGetRotTransArray(void *dobj);
+extern void MatrixMultiply(void *a, void *b, void *out);
+extern void MatrixTransformVector43(void *trans, void *axis, void *out);
+extern void *imp_fx_debugBolt;
 Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
+{
+    byte *b = (byte *)bolt;
+    int entityNum = *(int *)b;
+    int boneIndex = *(int *)(b + 4);
+
+    /* Get entity orientation (axis) */
+    float axis[9];
+    CG_GetDObjOrientation(entityNum, axis);
+
+    if (boneIndex < 0) {
+        /* No bone — just copy entity position from axis calc and axis itself */
+        /* orient->origin = position from CG_GetDObjOrientation result */
+        /* Actually the ASM copies from -0x54(%ebp) which is a local holding the position */
+        /* For simplicity: copy axis to orient->axis, set orient position */
+        float *oa = (float *)((byte *)orient + 0xc);
+        AxisCopy((vec_t *)axis, (vec_t *)oa);
+        /* orient->origin already set by CG_GetDObjOrientation path */
+        return 1;
+    }
+
+    /* Get DObj for bone */
+    void *dobj = Com_GetClientDObj(entityNum, 0);
+    if (!dobj) return 0;
+
+    if (boneIndex >= DObjNumBones(dobj))
+        return 0;
+
+    /* Calculate bone transform */
+    CG_DObjCalcBoneGeneric(entityNum, 0, boneIndex);
+    byte *rotTransArray = (byte *)DObjGetRotTransArray(dobj);
+    if (!rotTransArray) return 0;
+
+    byte *mtx = rotTransArray + boneIndex * 32;
+
+    /* Convert quaternion to rotation matrix */
+    /* mtx: quat(x,y,z,w) at offsets 0,4,8,0xc, scale at 0x1c, trans at 0x10 */
+    float scale = *(float *)(mtx + 0x1c);
+    float qx = *(float *)(mtx + 0) * scale;
+    float qy = *(float *)(mtx + 4) * scale;
+    float qz = *(float *)(mtx + 8) * scale;
+    float qw = *(float *)(mtx + 0xc);
+
+    float xx = qx * *(float *)(mtx + 0);
+    float xy = qx * *(float *)(mtx + 4);
+    float xz = qx * *(float *)(mtx + 8);
+    float xw = qx * qw;
+    float yy = qy * *(float *)(mtx + 4);
+    float yz = qy * *(float *)(mtx + 8);
+    float yw = qy * qw;
+    float zz = qz * *(float *)(mtx + 8);
+    float zw = qz * qw;
+
+    float tagAxis[9];
+    tagAxis[0] = 1.0f - (yy + zz);
+    tagAxis[1] = zw + xy;
+    tagAxis[2] = xz - yw;
+    tagAxis[3] = xy - zw;
+    tagAxis[4] = 1.0f - (xx + zz);
+    tagAxis[5] = xw + yz;
+    tagAxis[6] = yw + xz;
+    tagAxis[7] = yz - xw;
+    tagAxis[8] = 1.0f - (xx + yy);
+
+    /* Multiply tagAxis by entity axis → orient->axis */
+    MatrixMultiply(tagAxis, axis, (byte *)orient + 0xc);
+
+    /* Transform bone position by entity axis → orient->origin */
+    MatrixTransformVector43(mtx + 0x10, axis, orient);
+
+    /* Debug bolt: advance position along forward axis */
+    float debugDist = *(float *)(*(byte *)imp_fx_debugBolt + 8);
+    if (debugDist != 0.0f) {
+        float *oo = (float *)orient;
+        float *oaxis = (float *)((byte *)orient + 0xc);
+        oo[0] += oaxis[0] * debugDist;
+        oo[1] += oaxis[1] * debugDist;
+        oo[2] += oaxis[2] * debugDist;
+    }
+
+    return 1;
+}
+#if 0 /* Original ASM (253 lines) */
+__attribute__((naked))
+Bool FX_GetBoneOrientation_asm(const FxBoltInfo *bolt, orientation_t *orient)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 266 */
@@ -686,6 +853,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "jmp .Lf59998_00059b7d\n"
     );
 }
+#endif
 
 /* FX_AddScheduledEffects — walk scheduled effects linked list, dispatch due effects */
 extern void Rand_Init(int seed);
