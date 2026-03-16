@@ -1225,100 +1225,55 @@ const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt)
 }
 
 /* line 371 */
-__attribute__((naked))
+extern float flrand(float min, float max);
+extern void FxScheduler_PlayEffect(void *scheduler, void *fx, float *origin, float *dir);
 void Particle_Die(const Particle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 371 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* this */
-        /* { scope 1: z */
-        "movl 0xa8(%esi), %eax\n" /* line 376 | this */
-        "testb $2, %ah\n"
-        "je .Lfa1802_000a18ef\n"
-        "testb $4, %ah\n"
-        "jne .Lfa1802_000a18ef\n"
-        "movl 0x30(%esi), %edx\n" /* line 379 | this */
-        "testl %edx, %edx\n"
-        "je .Lfa1802_000a18ef\n"
-        "movl $0x3f800000, %edi\n" /* line 381 */
-        "movl %edi, 4(%esp)\n"
-        "movl $0xbf800000, %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll flrand\n"
-        "fstps -0x2c(%ebp)\n" /* z */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll flrand\n"
-        "fstps -0x4c(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm1\n" /* y */
-        "movl %edi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "movss %xmm1, -0x48(%ebp)\n" /* y */
-        "calll flrand\n"
-        "fstps -0x4c(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm2\n" /* x */
-        /* { scope 2 */
-        "movss %xmm2, -0x24(%ebp)\n" /* line 191 | norm */
-        "movss -0x48(%ebp), %xmm1\n" /* line 192 */
-        "movss %xmm1, -0x20(%ebp)\n"
-        "movss -0x2c(%ebp), %xmm0\n" /* line 193 | z */
-        "movss %xmm0, -0x1c(%ebp)\n"
-        /* } scope */
-        "movaps %xmm2, %xmm0\n" /* line 81 */
-        "mulss %xmm2, %xmm0\n"
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movss -0x2c(%ebp), %xmm1\n" /* z */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "sqrtss %xmm0, %xmm1\n"
-        "cvtss2sd %xmm1, %xmm0\n" /* line 384 */
-        "ucomisd lit8_00307cc0, %xmm0\n" /* 1e-06 */
-        "jae .Lfa1802_000a18f7\n"
-        "jp .Lfa1802_000a18f7\n"
-        "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, -0x24(%ebp)\n" /* norm */
-        "movl %eax, -0x20(%ebp)\n" /* line 192 */
-        "movl %edi, -0x1c(%ebp)\n" /* line 193 */
-        ".Lfa1802_000a18cb:\n"
-        "leal -0x24(%ebp), %eax\n" /* line 389 | norm */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 4(%esi), %eax\n" /* this */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x30(%esi), %eax\n" /* this */
-        "movl %eax, 4(%esp)\n"
-        "movl imp_theFxScheduler, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxScheduler_PlayEffect\n"
-        /* } scope */
-        ".Lfa1802_000a18ef:\n"
-        "addl $0x5c, %esp\n" /* line 392 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: z */
-        ".Lfa1802_000a18f7:\n"
-        "movl %edi, -0x4c(%ebp)\n" /* line 387 */
-        "movss -0x4c(%ebp), %xmm0\n" /* scale */
-        "divss %xmm1, %xmm0\n" /* scale */
-        /* { scope 2 */
-        "mulss %xmm0, %xmm2\n" /* line 272 */
-        "movss %xmm2, -0x24(%ebp)\n" /* norm */
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, -0x20(%ebp)\n"
-        "mulss -0x1c(%ebp), %xmm0\n" /* line 274 */
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "jmp .Lfa1802_000a18cb\n"
-    );
+    byte *p = (byte *)_this;
+    int flags;
+    float x, y, z, lenSq, len, scale;
+    float norm[3];
+    void *scheduler;
+
+    /* line 376: check death effect flags */
+    flags = *(int *)(p + 0xa8);
+    if (!(flags & 0x200))  /* testb $2, %ah  => bit 9 of flags */
+        return;
+    if (flags & 0x400)     /* testb $4, %ah  => bit 10 */
+        return;
+
+    /* line 379: check if death effect template exists */
+    if (*(void **)(p + 0x30) == 0)
+        return;
+
+    /* line 381: generate random direction */
+    z = flrand(-1.0f, 1.0f);
+    y = flrand(-1.0f, 1.0f);
+    x = flrand(-1.0f, 1.0f);
+
+    /* Set up normal vector */
+    norm[0] = x;
+    norm[1] = y;
+    norm[2] = z;
+
+    /* line 384: normalize - check length */
+    lenSq = x * x + y * y + z * z;
+    len = __builtin_sqrtf(lenSq);
+    if ((double)len >= 1e-06) {
+        /* line 387: scale to unit length */
+        scale = 1.0f / len;
+        norm[0] *= scale;
+        norm[1] *= scale;
+        norm[2] *= scale;
+    } else {
+        norm[0] = 0.0f;
+        norm[1] = 0.0f;
+        norm[2] = 1.0f;
+    }
+
+    /* line 389: play death effect */
+    scheduler = *(void **)imp_theFxScheduler;
+    FxScheduler_PlayEffect(scheduler, *(void **)(p + 0x30), (float *)(p + 4), norm);
 }
 
 /* line 1665 */
@@ -2359,52 +2314,31 @@ void Particle_UpdateRGB(const Particle * _this)
 }
 
 /* line 2251 */
-__attribute__((naked))
 Bool Flash_Update(const Flash * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2251 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* this */
-        "movl 0xb8(%ecx), %edx\n" /* line 232 */
-        "movl imp_theFxHelper, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "cmpl %eax, %edx\n"
-        "jle .Lfa273c_000a275d\n"
-        "xorl %eax, %eax\n" /* line 2253 */
-        "leave\n" /* line 2261 */
-        "retl\n"
-        ".Lfa273c_000a275d:\n"
-        "subl %edx, %eax\n" /* line 239 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movl 0xbc(%ecx), %eax\n"
-        "subl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x3c(%ecx)\n"
-        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lfa273c_000a278a\n"
-        "movss %xmm1, 0x3c(%ecx)\n" /* line 242 */
-        ".Lfa273c_000a278a:\n"
-        "pxor %xmm0, %xmm0\n" /* line 243 */
-        "ucomiss 0x3c(%ecx), %xmm0\n"
-        "ja .Lfa273c_000a27a3\n"
-        "movl %ecx, (%esp)\n" /* line 2257 */
-        "calll Light_UpdateRGB\n"
-        "movl $1, %eax\n"
-        ".Lfa273c_000a27a1:\n"
-        "leave\n" /* line 2261 */
-        "retl\n"
-        ".Lfa273c_000a27a3:\n"
-        "movss %xmm0, 0x3c(%ecx)\n" /* line 244 */
-        "movl %ecx, (%esp)\n" /* line 2257 */
-        "calll Light_UpdateRGB\n"
-        "movl $1, %eax\n"
-        "jmp .Lfa273c_000a27a1\n"
-    );
+    byte *p = (byte *)_this;
+    byte *helper = *(byte **)imp_theFxHelper;
+    int startTime = *(int *)(p + 0xb8);
+    int curTime = *(int *)(helper + 4);
+    int endTime;
+    float normDuration;
+
+    if (startTime > curTime)
+        return 0;
+
+    endTime = *(int *)(p + 0xbc);
+    normDuration = (float)(curTime - startTime) / (float)(endTime - startTime);
+    *(float *)(p + 0x3c) = normDuration;
+
+    if (normDuration > 1.0f)
+        *(float *)(p + 0x3c) = 1.0f;
+
+    if (0.0f > *(float *)(p + 0x3c))
+        *(float *)(p + 0x3c) = 0.0f;
+
+    /* line 2257: update RGB */
+    Light_UpdateRGB((const Light *)_this, (const Light *)_this);
+    return 1;
 }
 
 /* line 880 */
