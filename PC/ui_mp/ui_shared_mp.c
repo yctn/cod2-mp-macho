@@ -2912,6 +2912,195 @@ void Script_InGameClose(displayContextDef_t *dc, itemDef_t *item, const char * *
     Menus_CloseByName(dc, name);
 }
 
+/* Menus_Open — add menu to open stack, run onOpen script, stop cinematics, dispatch mouse */
+void Menus_Open(displayContextDef_t *dc, menuDef_t *menu)
+{
+    byte *d = (byte *)dc;
+    byte *m = (byte *)menu;
+    int openCount, i, j;
+    byte tempItem[0x2a0];
+
+    /* Remove focus flag from all currently open menus */
+    openCount = *(int *)(d + 0x270);
+    for (i = openCount - 1; i >= 0; i--)
+        Window_RemoveDynamicFlags(*(void **)(d + 0x230 + i * 4), 2);
+    openCount = *(int *)(d + 0x270);
+
+    /* If menu is already in the open list, remove it first */
+    int removeIdx = -1;
+    for (i = openCount - 1; i >= 0; i--) {
+        if (*(void **)(d + 0x230 + i * 4) == menu) { removeIdx = i; break; }
+    }
+    if (removeIdx >= 0) {
+        *(int *)(d + 0x270) = openCount - 1;
+        for (i = removeIdx; i < *(int *)(d + 0x270); i++)
+            *(void **)(d + 0x230 + i * 4) = *(void **)(d + 0x230 + (i + 1) * 4);
+    }
+    if (*(int *)(d + 0x270) == 0x10)
+        Com_Error(1, "\x15Too many menus opened");
+    int idx = *(int *)(d + 0x270);
+    *(void **)(d + 0x230 + idx * 4) = menu;
+    *(int *)(d + 0x270) = idx + 1;
+    Window_AddDynamicFlags((void *)menu, 6);
+    if (*(void **)(m + 0x244)) {
+        *(void **)&tempItem[0x29c] = menu;
+        Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(m + 0x244));
+    }
+    if (*(void **)(m + 0x254))
+        UI_PlayLocalSoundAliasByName(*(const char **)(m + 0x254));
+    openCount = *(int *)(d + 0x270);
+    for (i = openCount - 1; i >= 0; i--) {
+        byte *om = *(byte **)(d + 0x230 + i * 4);
+        if (!om) continue;
+        if (*(int *)(om + 0xd0) == 5) {
+            int ch = *(int *)(om + 0xcc);
+            if (ch >= 0) { CIN_StopCinematic(ch); *(int *)(om + 0xcc) = -1; }
+        }
+        for (j = 0; j < *(int *)(om + 0x218); j++) {
+            byte *it = *(byte **)(*(byte **)(om + 0x27c) + j * 4);
+            if (*(int *)(it + 0xd0) == 5) {
+                int ch = *(int *)(it + 0xcc);
+                if (ch >= 0) { CIN_StopCinematic(ch); *(int *)(it + 0xcc) = -1; }
+                it = *(byte **)(*(byte **)(om + 0x27c) + j * 4);
+            }
+            if (*(int *)(it + 0x270) == 8)
+                CIN_StopCinematic(-*(int *)(it + 0xd8));
+        }
+    }
+    Display_MouseMove(dc, NULL, *(int *)(d + 0xc), *(int *)(d + 0x10));
+}
+
+/* Menus_OpenByName — find menu by name and open it */
+qboolean Menus_OpenByName(displayContextDef_t *dc, const char *p)
+{
+    menuDef_t *menu = Menus_FindByName(dc, p);
+    if (menu) { Menus_Open(dc, menu); return 1; }
+    return 0;
+}
+
+/* Script_Open — parse menu name, find and open it */
+void Script_Open(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+{
+    char name[0x400]; (void)item;
+    if (!String_Parse(args, name, 0x400)) return;
+    Menus_OpenByName(dc, name);
+}
+
+/* Script_OpenForGameType — open menu named with gametype dvar substitution */
+void Script_OpenForGameType(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+{
+    char name[0x400];
+    if (!String_Parse(args, name, 0x400)) return;
+    const char *p = va(name, Dvar_GetString(*(const char **)((byte *)item + 0x2c0)));
+    Menus_OpenByName(dc, p);
+}
+
+/* Script_InGameOpen — open menu by name only if in-game */
+void Script_InGameOpen(displayContextDef_t *dc, itemDef_t *item, const char * *args)
+{
+    char name[0x400]; (void)item;
+    if (!String_Parse(args, name, 0x400)) return;
+    if (!UI_ClientIsInGame()) return;
+    Menus_OpenByName(dc, name);
+}
+
+/* Display_MouseMove — handle mouse movement: reposition menu or dispatch to open menus */
+qboolean Display_MouseMove(displayContextDef_t *dc, void *p, int x, int y)
+{
+    byte *d = (byte *)dc;
+    if (p) {
+        byte *menu = (byte *)p;
+        rectDef_t newRect = *(rectDef_t *)menu;
+        newRect.x += (float)x; newRect.y += (float)y;
+        ((void (*)(void *, void *))Window_SetRect)(p, &newRect);
+        ((void (*)(void *))Menu_UpdatePosition)(p);
+        return 1;
+    }
+    int openCount = *(int *)(d + 0x270);
+    int i = openCount - 1;
+    if (i < 0) return 1;
+    int startIdx = i;
+    for (; i >= 0; i--) {
+        byte *menu = *(byte **)(d + 0x230 + i * 4);
+        int flags = *(int *)(menu + 0xe8);
+        if ((flags & 4) && (flags & 2)) {
+            if (*(byte *)(menu + 0xe7) & 1) {
+                Menu_HandleMouseMove(dc, (menuDef_t *)menu, (float)x, (float)y);
+                return 1;
+            }
+            startIdx = i; break;
+        }
+    }
+    for (i = 0; i <= startIdx; i++) {
+        byte *menu = *(byte **)(d + 0x230 + (startIdx - i) * 4);
+        if (Menu_HandleMouseMove(dc, (menuDef_t *)menu, (float)x, (float)y)) return 1;
+    }
+    return 1;
+}
+
+/* Menu_SetNextCursorItem — advance cursor to next focusable item, wrapping */
+itemDef_t * Menu_SetNextCursorItem(displayContextDef_t *dc, menuDef_t *menu)
+{
+    byte *m = (byte *)menu; byte *d = (byte *)dc;
+    int oldCursor = *(int *)(m + 0x220); int wrapped = 0; int cursor;
+    if (oldCursor == -1) { ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0); wrapped = 1; }
+    for (;;) {
+        cursor = *(int *)(m + 0x220);
+        if (cursor >= *(int *)(m + 0x218)) {
+            if (wrapped) return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0); wrapped = 1; cursor = *(int *)(m + 0x220);
+        } else {
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor + 1); cursor = *(int *)(m + 0x220);
+            if (cursor >= *(int *)(m + 0x218)) {
+                if (wrapped) return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0); wrapped = 1; cursor = *(int *)(m + 0x220);
+            }
+        }
+        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
+            cursor = *(int *)(m + 0x220);
+            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
+            cursor = *(int *)(m + 0x220);
+            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        }
+    }
+    ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor); return NULL;
+}
+
+/* Menu_SetPrevCursorItem — move cursor to previous focusable item, wrapping */
+itemDef_t * Menu_SetPrevCursorItem(displayContextDef_t *dc, menuDef_t *menu)
+{
+    byte *m = (byte *)menu; byte *d = (byte *)dc;
+    int oldCursor = *(int *)(m + 0x220); int wrapped = 0; int cursor;
+    if (oldCursor < 0) { ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1); wrapped = 1; }
+    for (;;) {
+        cursor = *(int *)(m + 0x220);
+        if (cursor <= -1) {
+            if (wrapped) goto fail;
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1); wrapped = 1;
+            cursor = *(int *)(m + 0x220); if (cursor < 0) goto fail;
+        } else {
+            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor - 1); cursor = *(int *)(m + 0x220);
+            if (cursor < 0) {
+                if (wrapped) goto try_focus;
+                ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1); wrapped = 1;
+                cursor = *(int *)(m + 0x220); if (cursor < 0) goto fail;
+            }
+        }
+try_focus:;
+        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
+            cursor = *(int *)(m + 0x220);
+            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
+            cursor = *(int *)(m + 0x220);
+            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
+        }
+    }
+fail: ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor); return NULL;
+}
+
 /* Item_TextColor — compute text color for an item: fade/pulse/focus/disable logic */
 void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
 {
@@ -6197,700 +6386,118 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
     );
 }
 
-/* line 5487 */
-__attribute__((naked))
+/* Menu_HandleMouseMove — handle mouse movement over menu items: hit test, focus, enter/leave */
+static qboolean Rect_ContainsPoint(byte *item, float x, float y)
+{
+    float rx = *(float *)item, ry = *(float *)(item + 4);
+    float rw = *(float *)(item + 8), rh = *(float *)(item + 0xc);
+    float cx = x, cy = y;
+    CalcScreenX(&cx, 4);
+    CalcScreenY(&cy, 4);
+    CalcScreenPlacement(&rx, &rw, &ry, &rh, *(int *)(item + 0x10), *(int *)(item + 0x14));
+    return (cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh);
+}
+
 qboolean Menu_HandleMouseMove(displayContextDef_t *dc, menuDef_t *menu, float x, float y)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5487 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        "movl 0xc(%ebp), %eax\n" /* line 5494 | menu */
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016c926\n"
-        "movl 0xc(%ebp), %eax\n" /* line 5497 | menu */
-        "testl $0x4004, 0xe8(%eax)\n"
-        "je .Lf16c8fe_0016c926\n"
-        "movl itemCapture, %eax\n" /* line 5500 */
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016c930\n"
-        /* { scope 2 */
-        ".Lf16c8fe_0016c926:\n"
-        "xorl %eax, %eax\n" /* line 386 */
-        /* } scope */
-        /* } scope */
-        ".Lf16c8fe_0016c928:\n"
-        "addl $0x6c, %esp\n" /* line 5576 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: compareRect, compareX, compareY */
-        ".Lf16c8fe_0016c930:\n"
-        "movl g_waitingForKey, %eax\n" /* line 5503 */
-        "testl %eax, %eax\n"
-        "jne .Lf16c8fe_0016c926\n"
-        "movl g_editingField, %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16c8fe_0016c926\n"
-        "movl $0, -0x44(%ebp)\n" /* focusSet */
-        "movl $0, -0x40(%ebp)\n" /* focusItem */
-        "movl $0, -0x48(%ebp)\n" /* pass */
-        ".Lf16c8fe_0016c957:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 5510 | menu */
-        "movl 0x218(%edx), %edx\n"
-        "movl %edx, -0x4c(%ebp)\n"
-        "movl %edx, %eax\n"
-        "subl $1, %eax\n"
-        "js .Lf16c8fe_0016cca6\n"
-        "leal (, %eax, 4), %esi\n" /* line 5487 | i */
-        "movl $0, -0x3c(%ebp)\n"
-        ".Lf16c8fe_0016c97c:\n"
-        "movl 0xc(%ebp), %edi\n" /* line 5515 | menu */
-        "movl 0x27c(%edi), %eax\n"
-        "movl (%esi, %eax), %edx\n" /* i */
-        "testl $0x4004, 0xe8(%edx)\n"
-        "je .Lf16c8fe_0016cc93\n"
-        "testb $3, 0x2d0(%edx)\n" /* line 5519 */
-        "jne .Lf16c8fe_0016cdf8\n"
-        ".Lf16c8fe_0016c9a5:\n"
-        "movl (%esi, %eax), %edx\n" /* line 5522 | i */
-        "testb $0xc, 0x2d0(%edx)\n"
-        "jne .Lf16c8fe_0016ce1b\n"
-        "movl %edx, %ebx\n" /* overItem */
-        ".Lf16c8fe_0016c9b7:\n"
-        "movl 0xe8(%ebx), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16c8fe_0016c9d3\n"
-        "testb $2, %al\n" /* line 5525 */
-        "je .Lf16c8fe_0016c9d3\n"
-        "movl -0x40(%ebp), %edi\n" /* focusItem */
-        "testl %edi, %edi\n"
-        "movl -0x40(%ebp), %eax\n" /* focusItem */
-        "cmovel %ebx, %eax\n" /* overItem */
-        "movl %eax, -0x40(%ebp)\n" /* focusItem */
-        /* { scope 2 */
-        ".Lf16c8fe_0016c9d3:\n"
-        "movl (%ebx), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%ebx), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %edx\n" /* compareY */
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%ebx), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %edi\n"
-        "movl %edi, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x38(%ebp), %edi\n" /* compareRect */
-        "movl %edi, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cc7a\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c8fe_0016cc7a\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cc7a\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c8fe_0016cc7a\n"
-        /* } scope */
-        "cmpl $1, -0x48(%ebp)\n" /* line 5530 | pass */
-        "jne .Lf16c8fe_0016cc93\n"
-        "movl 0xc(%ebp), %edx\n" /* line 5532 | menu */
-        "movl 0x27c(%edx), %eax\n"
-        "movl (%esi, %eax), %ebx\n" /* i, overItem */
-        "movl 0x270(%ebx), %ecx\n" /* line 5533 | overItem */
-        "testl %ecx, %ecx\n"
-        "jne .Lf16c8fe_0016cc0f\n"
-        "movl 0x294(%ebx), %edx\n" /* overItem */
-        "testl %edx, %edx\n"
-        "je .Lf16c8fe_0016cc0f\n"
-        "movl $rect, %edx\n" /* line 3383 */
-        "cld\n"
-        "movl $6, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl 0x210(%ebx), %eax\n" /* line 3387 */
-        "movl %eax, rect\n"
-        "movl 0x214(%ebx), %eax\n"
-        "movl %eax, rect+4\n"
-        "movl 0x218(%ebx), %eax\n"
-        "movl %eax, rect+8\n"
-        "movl 0x21c(%ebx), %eax\n"
-        "movl %eax, rect+12\n"
-        "movl 0x220(%ebx), %eax\n"
-        "movl %eax, rect+16\n"
-        "movl 0x224(%ebx), %eax\n"
-        "movl %eax, rect+20\n"
-        "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss rect+8, %xmm0\n"
-        "jp .Lf16c8fe_0016cb2c\n"
-        "je .Lf16c8fe_0016ce86\n"
-        ".Lf16c8fe_0016cb2c:\n"
-        "movss rect+4, %xmm0\n" /* line 3390 */
-        "subss rect+12, %xmm0\n"
-        "movss %xmm0, rect+4\n"
-        /* { scope 2 */
-        ".Lf16c8fe_0016cb44:\n"
-        "movl rect, %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm0, -0x34(%ebp)\n" /* line 418 */
-        "movl rect+8, %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl rect+12, %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %edx\n" /* compareX */
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl rect+20, %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl rect+16, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x2c(%ebp), %edi\n"
-        "movl %edi, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x38(%ebp), %edi\n" /* compareRect */
-        "movl %edi, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cc93\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c8fe_0016cc93\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cc93\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c8fe_0016cc93\n"
-        /* } scope */
-        ".Lf16c8fe_0016cc0f:\n"
-        "movl 0xe8(%ebx), %eax\n" /* line 405 */
-        "testb $4, %al\n"
-        "je .Lf16c8fe_0016cc93\n"
-        "testb $0x10, %al\n"
-        "jne .Lf16c8fe_0016cc93\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 5543 | y */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* overItem */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_MouseEnter\n"
-        "movl -0x44(%ebp), %eax\n" /* line 5547 | focusSet */
-        "testl %eax, %eax\n"
-        "jne .Lf16c8fe_0016cc93\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 5549 | y */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* overItem */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_SetFocus\n"
-        "movl %eax, -0x44(%ebp)\n" /* focusSet */
-        "testl %eax, %eax\n" /* line 5551 */
-        "je .Lf16c8fe_0016cc93\n"
-        "movl %ebx, -0x40(%ebp)\n" /* overItem, focusItem */
-        "jmp .Lf16c8fe_0016cc93\n"
-        ".Lf16c8fe_0016cc7a:\n"
-        "movl 0xc(%ebp), %edi\n" /* line 5557 | menu */
-        "movl 0x27c(%edi), %eax\n"
-        "movl (%esi, %eax), %eax\n" /* i */
-        "testb $1, 0xe8(%eax)\n"
-        "jne .Lf16c8fe_0016ce44\n"
-        /* { scope 2 */
-        ".Lf16c8fe_0016cc93:\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 1916 */
-        "subl $4, %esi\n" /* i */
-        /* } scope */
-        "movl -0x4c(%ebp), %eax\n" /* line 5510 */
-        "cmpl %eax, -0x3c(%ebp)\n"
-        "jne .Lf16c8fe_0016c97c\n"
-        ".Lf16c8fe_0016cca6:\n"
-        "addl $1, -0x48(%ebp)\n" /* line 5508 | pass */
-        "cmpl $2, -0x48(%ebp)\n" /* pass */
-        "jne .Lf16c8fe_0016c957\n"
-        "movl -0x44(%ebp), %eax\n" /* line 5566 | focusSet */
-        "testl %eax, %eax\n"
-        "jne .Lf16c8fe_0016ce7c\n"
-        "movl -0x40(%ebp), %eax\n" /* focusItem */
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016c926\n"
-        /* { scope 2 */
-        "movl -0x40(%ebp), %edx\n" /* line 417 | focusItem */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%edx), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%edx), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movss 0x14(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl -0x40(%ebp), %edx\n" /* line 428 | focusItem */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cd85\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c8fe_0016cd85\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c8fe_0016cd85\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf16c8fe_0016c926\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16c8fe_0016cd85:\n"
-        "movl 0xc(%ebp), %edi\n" /* line 386 | menu */
-        "movl 0x218(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf16c8fe_0016c926\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl 0xc(%ebp), %edi\n" /* menu */
-        "jmp .Lf16c8fe_0016cd9f\n"
-        ".Lf16c8fe_0016cd9d:\n"
-        "movl %edx, %edi\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf16c8fe_0016cd9f:\n"
-        "leal (, %esi, 4), %ebx\n" /* line 430 */
-        /* } scope */
-        /* { scope 2 */
-        "movl $2, 4(%esp)\n" /* line 392 */
-        "movl 0x27c(%edi), %eax\n"
-        "movl (%ebx, %eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Window_RemoveDynamicFlags\n"
-        "movl 0x27c(%edi), %eax\n" /* line 393 */
-        "movl (%ebx, %eax), %edx\n"
-        "movl 0x2bc(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016cde5\n"
-        "movl %eax, 8(%esp)\n" /* line 395 */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        ".Lf16c8fe_0016cde5:\n"
-        "addl $1, %esi\n" /* line 386 | i */
-        "movl 0xc(%ebp), %edx\n" /* menu */
-        "cmpl 0x218(%edx), %esi\n" /* i */
-        "jl .Lf16c8fe_0016cd9d\n"
-        "jmp .Lf16c8fe_0016c926\n"
-        /* } scope */
-        ".Lf16c8fe_0016cdf8:\n"
-        "movl $1, 4(%esp)\n" /* line 5519 */
-        "movl %edx, (%esp)\n"
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016cc93\n"
-        "movl 0x27c(%edi), %eax\n"
-        "jmp .Lf16c8fe_0016c9a5\n"
-        ".Lf16c8fe_0016ce1b:\n"
-        "movl $4, 4(%esp)\n" /* line 5522 */
-        "movl %edx, (%esp)\n"
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "je .Lf16c8fe_0016cc93\n"
-        "movl 0xc(%ebp), %edx\n" /* menu */
-        "movl 0x27c(%edx), %eax\n"
-        "movl (%esi, %eax), %ebx\n" /* i, overItem */
-        "jmp .Lf16c8fe_0016c9b7\n"
-        ".Lf16c8fe_0016ce44:\n"
-        "movl %eax, 4(%esp)\n" /* line 5559 */
-        "movl 8(%ebp), %edx\n" /* dc */
-        "movl %edx, (%esp)\n"
-        "calll Item_MouseLeave\n"
-        "movl 0xc(%ebp), %edi\n" /* line 5560 | menu */
-        "movl 0x27c(%edi), %eax\n" /* item */
-        "movl (%esi, %eax), %eax\n" /* i, item */
-        /* { scope 2 */
-        "testl %eax, %eax\n" /* line 1908 */
-        "je .Lf16c8fe_0016cc93\n"
-        "movl $1, 4(%esp)\n" /* line 1916 */
-        "movl %eax, (%esp)\n"
-        "calll Window_RemoveDynamicFlags\n"
-        "jmp .Lf16c8fe_0016cc93\n"
-        /* } scope */
-        ".Lf16c8fe_0016ce7c:\n"
-        "movl $1, %eax\n" /* line 5566 */
-        "jmp .Lf16c8fe_0016c928\n"
-        ".Lf16c8fe_0016ce86:\n"
-        "movss rect+4, %xmm0\n"
-        "jmp .Lf16c8fe_0016cb44\n"
-    );
-}
-
-/* Display_MouseMove — handle mouse movement: reposition menu or dispatch to open menus */
-qboolean Display_MouseMove(displayContextDef_t *dc, void *p, int x, int y)
-{
-    byte *d = (byte *)dc;
-
-    if (p) {
-        /* Reposition the menu by adding x/y offset */
-        byte *menu = (byte *)p;
-        rectDef_t newRect = *(rectDef_t *)menu;
-        newRect.x += (float)x;
-        newRect.y += (float)y;
-        ((void (*)(void *, void *))Window_SetRect)(p, &newRect);
-        ((void (*)(void *))Menu_UpdatePosition)(p);
-        return 1;
-    }
-
-    /* Find topmost visible+focused menu */
-    int openCount = *(int *)(d + 0x270);
-    int i = openCount - 1;
-    if (i < 0)
-        return 1;
-
-    byte *focusedMenu = NULL;
-    int startIdx = i;
-    for (; i >= 0; i--) {
-        byte *menu = *(byte **)(d + 0x230 + i * 4);
-        int flags = *(int *)(menu + 0xe8);
-        if ((flags & 4) && (flags & 2)) {
-            /* Found focused menu */
-            if (*(byte *)(menu + 0xe7) & 1) {
-                /* Menu is draggable — handle directly */
-                Menu_HandleMouseMove(dc, (menuDef_t *)menu, (float)x, (float)y);
-                return 1;
-            }
-            startIdx = i;
-            break;
-        }
-    }
-
-    /* Iterate open menus from startIdx backwards, dispatch mouse move */
-    float fx = (float)x, fy = (float)y;
-    for (i = 0; i <= startIdx; i++) {
-        byte *menu = *(byte **)(d + 0x230 + (startIdx - i) * 4);
-        if (Menu_HandleMouseMove(dc, (menuDef_t *)menu, fx, fy))
-            return 1;
-    }
-
-    return 1;
-}
-
-/* Menus_Open — add menu to open stack, run onOpen script, stop cinematics, dispatch mouse */
-void Menus_Open(displayContextDef_t *dc, menuDef_t *menu)
-{
-    byte *d = (byte *)dc;
     byte *m = (byte *)menu;
-    int openCount, i, j;
-    byte tempItem[0x2a0];
+    int i, pass;
+    qboolean focusSet = 0;
+    void *focusItem = NULL;
 
-    /* Remove focus flag from all currently open menus */
-    openCount = *(int *)(d + 0x270);
-    for (i = openCount - 1; i >= 0; i--)
-        Window_RemoveDynamicFlags(*(void **)(d + 0x230 + i * 4), 2);
+    if (!menu) return 0;
+    if ((*(int *)(m + 0xe8) & 0x4004) == 0) return 0;
+    if (itemCapture) return 0;
+    if (g_waitingForKey || g_editingField) return 0;
 
-    openCount = *(int *)(d + 0x270);
+    /* Two-pass item scan: pass 0 = basic rect, pass 1 = text rect */
+    for (pass = 0; pass < 2; pass++) {
+        int itemCount = *(int *)(m + 0x218);
+        for (i = itemCount - 1; i >= 0; i--) {
+            byte *it = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
 
-    /* If menu is already in the open list, remove it first */
-    int removeIdx = -1;
-    for (i = openCount - 1; i >= 0; i--) {
-        if (*(void **)(d + 0x230 + i * 4) == menu) {
-            removeIdx = i;
-            break;
-        }
-    }
-    if (removeIdx >= 0) {
-        *(int *)(d + 0x270) = openCount - 1;
-        /* Compact array */
-        for (i = removeIdx; i < *(int *)(d + 0x270); i++)
-            *(void **)(d + 0x230 + i * 4) = *(void **)(d + 0x230 + (i + 1) * 4);
-    }
+            if ((*(int *)(it + 0xe8) & 0x4004) == 0) goto next_item;
 
-    /* Check max open menus */
-    if (*(int *)(d + 0x270) == 0x10)
-        Com_Error(1, "\x15Too many menus opened");
-
-    /* Add menu to open stack */
-    int idx = *(int *)(d + 0x270);
-    *(void **)(d + 0x230 + idx * 4) = menu;
-    *(int *)(d + 0x270) = idx + 1;
-
-    /* Set visible+focused flags */
-    Window_AddDynamicFlags((void *)menu, 6);
-
-    /* Run onOpen script */
-    if (*(void **)(m + 0x244)) {
-        *(void **)&tempItem[0x29c] = menu;
-        Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(m + 0x244));
-    }
-
-    /* Play open sound */
-    if (*(void **)(m + 0x254))
-        UI_PlayLocalSoundAliasByName(*(const char **)(m + 0x254));
-
-    /* Stop all cinematics in open menus */
-    openCount = *(int *)(d + 0x270);
-    for (i = openCount - 1; i >= 0; i--) {
-        byte *openMenu = *(byte **)(d + 0x230 + i * 4);
-        if (!openMenu) continue;
-
-        /* Stop cinematic on menu itself if borderStyle == 5 */
-        if (*(int *)(openMenu + 0xd0) == 5) {
-            int cinHandle = *(int *)(openMenu + 0xcc);
-            if (cinHandle >= 0) {
-                CIN_StopCinematic(cinHandle);
-                *(int *)(openMenu + 0xcc) = -1;
+            /* Dvar show checks */
+            if (*(byte *)(it + 0x2d0) & 3) {
+                if (!Item_EnableShowViaDvar((itemDef_t *)it, 1)) goto next_item;
+                it = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
             }
-        }
+            if (*(byte *)(it + 0x2d0) & 0xc) {
+                if (!Item_EnableShowViaDvar((itemDef_t *)it, 4)) goto next_item;
+                it = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+            }
 
-        /* Stop cinematics on all items */
-        int itemCount = *(int *)(openMenu + 0x218);
-        for (j = 0; j < itemCount; j++) {
-            byte *item = *(byte **)(*(byte **)(openMenu + 0x27c) + j * 4);
-            if (*(int *)(item + 0xd0) == 5) {
-                int cinHandle = *(int *)(item + 0xcc);
-                if (cinHandle >= 0) {
-                    CIN_StopCinematic(cinHandle);
-                    *(int *)(item + 0xcc) = -1;
+            byte *overItem = it;
+            int flags = *(int *)(overItem + 0xe8);
+            if ((flags & 4) && (flags & 2) && !focusItem)
+                focusItem = overItem;
+
+            /* Hit test item rect */
+            if (!Rect_ContainsPoint(overItem, x, y)) {
+                byte *orig = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+                if (*(byte *)(orig + 0xe8) & 1) {
+                    Item_MouseLeave(dc, (itemDef_t *)orig);
+                    orig = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+                    if (orig) Window_RemoveDynamicFlags((void *)orig, 1);
                 }
-                item = *(byte **)(*(byte **)(openMenu + 0x27c) + j * 4);
+                goto next_item;
             }
-            if (*(int *)(item + 0x270) == 8) {
-                CIN_StopCinematic(-*(int *)(item + 0xd8));
+
+            if (pass == 1) {
+                overItem = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+                int itemType = *(int *)(overItem + 0x270);
+                if (itemType == 0 && *(int *)(overItem + 0x294)) {
+                    int textBuf[6];
+                    memset(textBuf, 0, 24);
+                    textBuf[0] = *(int *)(overItem + 0x210);
+                    textBuf[1] = *(int *)(overItem + 0x214);
+                    textBuf[2] = *(int *)(overItem + 0x218);
+                    textBuf[3] = *(int *)(overItem + 0x21c);
+                    textBuf[4] = *(int *)(overItem + 0x220);
+                    textBuf[5] = *(int *)(overItem + 0x224);
+                    if (*(float *)&textBuf[2] != 0.0f)
+                        *(float *)&textBuf[1] -= *(float *)&textBuf[3];
+                    float trx = *(float *)&textBuf[0], try_ = *(float *)&textBuf[1];
+                    float trw = *(float *)&textBuf[2], trh = *(float *)&textBuf[3];
+                    float tcx = x, tcy = y;
+                    CalcScreenX(&tcx, 4);
+                    CalcScreenY(&tcy, 4);
+                    CalcScreenPlacement(&trx, &trw, &try_, &trh, textBuf[4], textBuf[5]);
+                    if (tcx < trx || tcx > trx + trw || tcy < try_ || tcy > try_ + trh)
+                        goto next_item;
+                }
+
+                if (!(*(byte *)(overItem + 0xe8) & 4)) goto next_item;
+                if (*(byte *)(overItem + 0xe8) & 0x10) goto next_item;
+
+                Item_MouseEnter(dc, (itemDef_t *)overItem, x, y);
+                if (!focusSet) {
+                    if (Item_SetFocus(dc, (itemDef_t *)overItem, x, y)) {
+                        focusSet = 1;
+                        focusItem = overItem;
+                    }
+                }
+            }
+next_item:;
+        }
+    }
+
+    if (focusSet) return 1;
+
+    if (focusItem) {
+        if (!Rect_ContainsPoint((byte *)focusItem, x, y)) {
+            int itemCount = *(int *)(m + 0x218);
+            for (i = 0; i < itemCount; i++) {
+                byte *it = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+                Window_RemoveDynamicFlags((void *)it, 2);
+                if (*(void **)(it + 0x2bc))
+                    Item_RunScript(dc, (itemDef_t *)it, *(const char **)(it + 0x2bc));
             }
         }
     }
 
-    /* Dispatch mouse move */
-    Display_MouseMove(dc, NULL, *(int *)(d + 0xc), *(int *)(d + 0x10));
-}
-
-/* Menus_OpenByName — find menu by name and open it */
-qboolean Menus_OpenByName(displayContextDef_t *dc, const char *p)
-{
-    menuDef_t *menu = Menus_FindByName(dc, p);
-    if (menu) {
-        Menus_Open(dc, menu);
-        return 1;
-    }
     return 0;
-}
-
-/* Script_Open — parse menu name, find and open it */
-void Script_Open(displayContextDef_t *dc, itemDef_t *item, const char * *args)
-{
-    char name[0x400];
-    (void)item;
-    if (!String_Parse(args, name, 0x400))
-        return;
-    Menus_OpenByName(dc, name);
-}
-
-/* Script_OpenForGameType — open menu named with gametype dvar substitution */
-void Script_OpenForGameType(displayContextDef_t *dc, itemDef_t *item, const char * *args)
-{
-    char name[0x400];
-    if (!String_Parse(args, name, 0x400))
-        return;
-    const char *p = va(name, Dvar_GetString(*(const char **)((byte *)item + 0x2c0)));
-    Menus_OpenByName(dc, p);
-}
-
-/* Script_InGameOpen — open menu by name only if in-game */
-void Script_InGameOpen(displayContextDef_t *dc, itemDef_t *item, const char * *args)
-{
-    char name[0x400];
-    (void)item;
-    if (!String_Parse(args, name, 0x400))
-        return;
-    if (!UI_ClientIsInGame())
-        return;
-    Menus_OpenByName(dc, name);
-}
-
-/* Menu_SetNextCursorItem — advance cursor to next focusable item, wrapping */
-itemDef_t * Menu_SetNextCursorItem(displayContextDef_t *dc, menuDef_t *menu)
-{
-    byte *m = (byte *)menu;
-    byte *d = (byte *)dc;
-    int oldCursor = *(int *)(m + 0x220);
-    int wrapped = 0;
-    int cursor;
-
-    if (oldCursor == -1) {
-        /* cursor unset, start from 0 */
-        ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
-        wrapped = 1;
-    }
-
-    for (;;) {
-        cursor = *(int *)(m + 0x220);
-        if (cursor >= *(int *)(m + 0x218)) {
-            /* Past end */
-            if (wrapped) {
-                /* Already wrapped, return old cursor item */
-                return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
-            }
-            ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
-            wrapped = 1;
-            cursor = *(int *)(m + 0x220);
-        } else {
-            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor + 1);
-            cursor = *(int *)(m + 0x220);
-            if (cursor >= *(int *)(m + 0x218)) {
-                if (wrapped) {
-                    return *(itemDef_t **)(*(byte **)(m + 0x27c) + oldCursor * 4);
-                }
-                ((void (*)(void *, int))Menu_SetCursorItem)(menu, 0);
-                wrapped = 1;
-                cursor = *(int *)(m + 0x220);
-            }
-        }
-
-        /* Try to focus current item */
-        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
-            /* Success — trigger mouse move and return */
-            cursor = *(int *)(m + 0x220);
-            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
-            cursor = *(int *)(m + 0x220);
-            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-        }
-    }
-
-    /* Unreachable — restore old cursor */
-    ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor);
-    return NULL;
-}
-
-/* Menu_SetPrevCursorItem — move cursor to previous focusable item, wrapping */
-itemDef_t * Menu_SetPrevCursorItem(displayContextDef_t *dc, menuDef_t *menu)
-{
-    byte *m = (byte *)menu;
-    byte *d = (byte *)dc;
-    int oldCursor = *(int *)(m + 0x220);
-    int wrapped = 0;
-    int cursor;
-
-    if (oldCursor < 0) {
-        /* cursor unset, start from end */
-        ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
-        wrapped = 1;
-    }
-
-    for (;;) {
-        cursor = *(int *)(m + 0x220);
-        if (cursor <= -1) {
-            /* Past beginning */
-            if (wrapped)
-                goto fail;
-            ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
-            wrapped = 1;
-            cursor = *(int *)(m + 0x220);
-            if (cursor < 0)
-                goto fail;
-        } else {
-            ((void (*)(void *, int))Menu_SetCursorItem)(menu, cursor - 1);
-            cursor = *(int *)(m + 0x220);
-            if (cursor < 0) {
-                if (wrapped)
-                    goto try_focus;
-                ((void (*)(void *, int))Menu_SetCursorItem)(menu, *(int *)(m + 0x218) - 1);
-                wrapped = 1;
-                cursor = *(int *)(m + 0x220);
-                if (cursor < 0)
-                    goto fail;
-            }
-        }
-
-try_focus:;
-        /* Try to focus current item */
-        itemDef_t *item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-        if (Item_SetFocus(dc, item, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10))) {
-            /* Success — trigger mouse move and return */
-            cursor = *(int *)(m + 0x220);
-            item = *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-            Menu_HandleMouseMove(dc, menu, *(float *)item + 1.0f, *((float *)item + 1) + 1.0f);
-            cursor = *(int *)(m + 0x220);
-            return *(itemDef_t **)(*(byte **)(m + 0x27c) + cursor * 4);
-        }
-    }
-
-fail:
-    ((void (*)(void *, int))Menu_SetCursorItem)(menu, oldCursor);
-    return NULL;
 }
 
 /* Item_TextField_HandleKey — full text field editor: char input, delete, cursor, tab */
