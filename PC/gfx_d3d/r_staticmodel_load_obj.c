@@ -347,9 +347,15 @@ int R_AddStaticModelToAabbTree_r(GfxWorld *world, int smodelIndex)
 }
 
 /* line 334 */
+/* line 334 — Recursive BSP filter: places static model instance into appropriate cells
+ * by traversing BSP tree nodes. For axial planes, splits bounds and recurses on children.
+ * Register convention: eax=world, edx=node, ecx=smodelInst, stack=mins,maxs.
+ * Algorithm: node.childIndex == -2 → axial split; >= 0 → leaf cell (add to AABB tree);
+ * < 0 → null. Uses BoxOnPlaneSide for plane classification. */
 static __attribute__((naked))
 int R_FilterStaticModelIntoCells_r(GfxStaticModelInstance *smodelInst, const vec_t *mins, const vec_t *maxs)
 {
+    (void)smodelInst; (void)mins; (void)maxs;
     __asm__ __volatile__ (
         ".Lf1076c8_001076c8:\n"
         "pushl %ebp\n" /* line 334 */
