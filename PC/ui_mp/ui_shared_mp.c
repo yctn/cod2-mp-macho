@@ -896,166 +896,76 @@ void Item_MouseLeave(displayContextDef_t *dc, itemDef_t *item)
     Window_RemoveDynamicFlags((void *)item, 0x300);
 }
 
-/* line 1597 */
-__attribute__((naked))
+/* Item_Slider_ThumbPosition — compute slider thumb x position from dvar value */
 float Item_Slider_ThumbPosition(itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1597 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 1602 | item */
-        "calll Item_GetEditFieldDef\n"
-        "movl %eax, %esi\n" /* editDef */
-        "pxor %xmm1, %xmm1\n" /* line 1604 */
-        "testl %eax, %eax\n"
-        "je .Lf164dae_00164e4a\n"
-        "movl 0x294(%ebx), %eax\n" /* line 1607 | item */
-        "testl %eax, %eax\n"
-        "je .Lf164dae_00164e6a\n"
-        "movss 0x210(%ebx), %xmm3\n" /* line 1610 | item */
-        "addss 0x218(%ebx), %xmm3\n" /* item */
-        "addss lit4_002ed740, %xmm3\n" /* 8.0f */
-        ".Lf164dae_00164df1:\n"
-        "movl 0x2c0(%ebx), %eax\n" /* line 1623 | item */
-        "movl %eax, (%esp)\n"
-        "movss %xmm3, -0x18(%ebp)\n"
-        "calll Dvar_GetFloat\n"
-        "fstps -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm1\n"
-        "movss (%esi), %xmm2\n" /* line 1624 | editDef */
-        "ucomiss %xmm1, %xmm2\n"
-        "movss -0x18(%ebp), %xmm3\n"
-        "jbe .Lf164dae_00164e59\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 4(%esi), %xmm0\n" /* editDef */
-        ".Lf164dae_00164e22:\n"
-        "subss %xmm2, %xmm1\n" /* line 1630 */
-        "subss %xmm2, %xmm0\n" /* line 1631 */
-        "divss %xmm0, %xmm1\n"
-        "mulss lit4_002ed904, %xmm1\n" /* line 1633 | 84.0f */
-        "addss lit4_002ed6d4, %xmm1\n" /* 5.0f */
-        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
-        "addss %xmm3, %xmm1\n"
-        /* } scope */
-        ".Lf164dae_00164e4a:\n"
-        "movss %xmm1, -0x1c(%ebp)\n" /* line 1635 */
-        "flds -0x1c(%ebp)\n"
-        "addl $0x30, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164dae_00164e59:\n"
-        "movss 4(%esi), %xmm0\n" /* line 1626 | editDef */
-        "movaps %xmm0, %xmm4\n"
-        "minss %xmm1, %xmm4\n"
-        "movaps %xmm4, %xmm1\n"
-        "jmp .Lf164dae_00164e22\n"
-        ".Lf164dae_00164e6a:\n"
-        "movss (%ebx), %xmm3\n" /* line 1615 | item */
-        "jmp .Lf164dae_00164df1\n"
-    );
+    byte *it = (byte *)item;
+    editFieldDef_t *editDef = Item_GetEditFieldDef(item);
+    float baseX, value, minVal, maxVal;
+
+    if (!editDef)
+        return 0.0f;
+
+    if (*(int *)(it + 0x294))
+        baseX = *(float *)(it + 0x210) + *(float *)(it + 0x218) + 8.0f;
+    else
+        baseX = *(float *)it;
+
+    value = Dvar_GetFloat(*(const char **)(it + 0x2c0));
+    minVal = *(float *)editDef;
+    maxVal = *((float *)editDef + 1);
+
+    if (value < minVal)
+        value = minVal;
+    else if (value > maxVal)
+        value = maxVal;
+
+    return baseX + 1.0f + 5.0f + ((value - minVal) / (maxVal - minVal)) * 84.0f;
 }
 
-/* line 3405 */
-__attribute__((naked))
+/* Menu_CheckOnKey — check if key matches any menu or item onKey handler */
 qboolean Menu_CheckOnKey(displayContextDef_t *dc, menuDef_t *menu, int key)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3405 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x31c, %esp\n"
-        "movl 0x10(%ebp), %edi\n" /* key */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 3412 | menu */
-        "movl 0x250(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf164e70_00164ecd\n"
-        "cmpl %edi, (%eax)\n" /* line 3414 | key */
-        "je .Lf164e70_00164e9b\n"
-        ".Lf164e70_00164e90:\n"
-        "movl 8(%eax), %eax\n" /* line 3412 */
-        "testl %eax, %eax\n"
-        "je .Lf164e70_00164ecd\n"
-        "cmpl (%eax), %edi\n" /* line 3414 | key */
-        "jne .Lf164e70_00164e90\n"
-        ".Lf164e70_00164e9b:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 3434 | menu */
-        "movl %edx, -0x70(%ebp)\n"
-        "movl 4(%eax), %eax\n" /* line 3435 */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x30c(%ebp), %eax\n" /* it */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_RunScript\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x31c, %esp\n" /* line 3441 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf164e70_00164ecd:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 3421 | menu */
-        "movl 0x218(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lf164e70_00164f35\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl 0xc(%ebp), %edx\n" /* menu */
-        ".Lf164e70_00164edf:\n"
-        "movl 0x27c(%edx), %eax\n" /* line 3423 */
-        "movl (%eax, %esi, 4), %ebx\n" /* item */
-        "testb $4, 0xe8(%ebx)\n" /* line 3425 | item */
-        "je .Lf164e70_00164f2a\n"
-        "testb $0xc, 0x2d0(%ebx)\n" /* line 3427 | item */
-        "jne .Lf164e70_00164f13\n"
-        ".Lf164e70_00164efa:\n"
-        "movl 0x2c8(%ebx), %eax\n" /* line 3430 | item */
-        "testl %eax, %eax\n"
-        "jne .Lf164e70_00164f0d\n"
-        "jmp .Lf164e70_00164f27\n"
-        ".Lf164e70_00164f06:\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf164e70_00164f27\n"
-        ".Lf164e70_00164f0d:\n"
-        "cmpl (%eax), %edi\n" /* line 3432 | key */
-        "jne .Lf164e70_00164f06\n"
-        "jmp .Lf164e70_00164e9b\n"
-        ".Lf164e70_00164f13:\n"
-        "movl $4, 4(%esp)\n" /* line 3427 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "jne .Lf164e70_00164efa\n"
-        ".Lf164e70_00164f27:\n"
-        "movl 0xc(%ebp), %edx\n" /* menu */
-        ".Lf164e70_00164f2a:\n"
-        "addl $1, %esi\n" /* line 3421 | i */
-        "cmpl %esi, 0x218(%edx)\n" /* i */
-        "jg .Lf164e70_00164edf\n"
-        ".Lf164e70_00164f35:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x31c, %esp\n" /* line 3441 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *m = (byte *)menu;
+    byte tempItem[0x2a0];
+    int i;
+
+    /* Check menu-level onKey list at offset 0x250 */
+    byte *node = *(byte **)(m + 0x250);
+    while (node) {
+        if (*(int *)node == key) {
+            *(void **)&tempItem[0x29c] = menu;
+            Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(node + 4));
+            return 1;
+        }
+        node = *(byte **)(node + 8);
+    }
+
+    /* Check per-item onKey lists */
+    int itemCount = *(int *)(m + 0x218);
+    for (i = 0; i < itemCount; i++) {
+        byte *item = *(byte **)(*(byte **)(m + 0x27c) + i * 4);
+
+        if (!(*(byte *)(item + 0xe8) & 4))
+            continue;
+
+        if (*(byte *)(item + 0x2d0) & 0xc) {
+            if (!Item_EnableShowViaDvar((itemDef_t *)item, 4))
+                continue;
+        }
+
+        node = *(byte **)(item + 0x2c8);
+        while (node) {
+            if (*(int *)node == key) {
+                *(void **)&tempItem[0x29c] = menu;
+                Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(node + 4));
+                return 1;
+            }
+            node = *(byte **)(node + 8);
+        }
+    }
+
+    return 0;
 }
 
 /* Menus_AnyFullScreenVisible — check if any visible menu has fullscreen flag + material */
@@ -1106,168 +1016,59 @@ int Item_ListBox_MaxScroll(itemDef_t *item)
     return (maxScroll >= 0) ? maxScroll : 0;
 }
 
-/* line 1512 */
-__attribute__((naked))
+/* Item_ListBox_ThumbPosition — compute listbox thumb position from scroll state */
 int Item_ListBox_ThumbPosition(itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1512 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 1517 | item */
-        "calll Item_GetListBoxDef\n"
-        "movl %eax, %esi\n" /* listPtr */
-        "testl %eax, %eax\n" /* line 1519 */
-        "je .Lf165044_00165125\n"
-        "movl %ebx, (%esp)\n" /* line 1522 | item */
-        "calll Item_ListBox_MaxScroll\n"
-        "testb $0x20, 0xe6(%ebx)\n" /* line 1524 | item */
-        "je .Lf165044_001650cd\n"
-        "movss 8(%ebx), %xmm0\n" /* line 1526 | item */
-        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "testl %eax, %eax\n" /* line 1527 */
-        "jle .Lf165044_0016512e\n"
-        "movss lit4_002ed6a8, %xmm2\n" /* line 1529 | 16.0f */
-        "movaps %xmm0, %xmm1\n"
-        "subss %xmm2, %xmm1\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        ".Lf165044_001650a6:\n"
-        "cvtsi2ssl (%esi), %xmm0\n" /* line 1536 | listPtr */
-        "mulss %xmm0, %xmm1\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "addss (%ebx), %xmm0\n" /* item */
-        "addss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "cvttss2si %xmm1, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1552 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf165044_001650cd:\n"
-        "movss 0xc(%ebx), %xmm0\n" /* line 1540 | item */
-        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "testl %eax, %eax\n" /* line 1541 */
-        "jle .Lf165044_0016513f\n"
-        "movss lit4_002ed6a8, %xmm2\n" /* line 1543 | 16.0f */
-        "movaps %xmm0, %xmm1\n"
-        "subss %xmm2, %xmm1\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        ".Lf165044_001650fd:\n"
-        "cvtsi2ssl (%esi), %xmm0\n" /* line 1550 | listPtr */
-        "mulss %xmm0, %xmm1\n"
-        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "addss 4(%ebx), %xmm0\n" /* item */
-        "addss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "cvttss2si %xmm1, %eax\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1552 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf165044_00165125:\n"
-        "xorl %eax, %eax\n" /* line 1519 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 1552 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf165044_0016512e:\n"
-        "pxor %xmm1, %xmm1\n" /* line 1527 */
-        "movss lit4_002ed6a8, %xmm2\n" /* 16.0f */
-        "jmp .Lf165044_001650a6\n"
-        ".Lf165044_0016513f:\n"
-        "pxor %xmm1, %xmm1\n" /* line 1541 */
-        "movss lit4_002ed6a8, %xmm2\n" /* 16.0f */
-        "jmp .Lf165044_001650fd\n"
-    );
+    byte *it = (byte *)item;
+    byte *listPtr = (byte *)Item_GetListBoxDef(item);
+    int maxScroll, startPos;
+    float scrollArea, ratio;
+
+    if (!listPtr)
+        return 0;
+
+    maxScroll = Item_ListBox_MaxScroll(item);
+    startPos = *(int *)listPtr;
+
+    if (*(byte *)(it + 0xe6) & 0x20) {
+        /* Horizontal */
+        scrollArea = *(float *)(it + 8) - 32.0f - 2.0f;
+        ratio = (maxScroll > 0) ? (scrollArea - 16.0f) / (float)maxScroll : 0.0f;
+        return (int)(ratio * (float)startPos + *(float *)it + 1.0f + 16.0f);
+    } else {
+        /* Vertical */
+        scrollArea = *(float *)(it + 0xc) - 32.0f - 2.0f;
+        ratio = (maxScroll > 0) ? (scrollArea - 16.0f) / (float)maxScroll : 0.0f;
+        return (int)(ratio * (float)startPos + *(float *)(it + 4) + 1.0f + 16.0f);
+    }
 }
 
-/* line 1555 */
-__attribute__((naked))
+/* Item_ListBox_ThumbDrawPosition — thumb draw position, clamped to drag cursor */
 int Item_ListBox_ThumbDrawPosition(displayContextDef_t *dc, itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1555 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl 0xc(%ebp), %eax\n" /* item */
-        /* { scope 1 */
-        "movl itemCapture, %edx\n" /* line 1560 */
-        "cmpl %eax, %edx\n"
-        "je .Lf16514e_0016516c\n"
-        "movl %eax, 8(%ebp)\n" /* line 1592 | dc */
-        /* } scope */
-        "popl %ebx\n" /* line 1594 */
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Item_ListBox_ThumbPosition\n" /* line 1592 */
-        ".Lf16514e_0016516c:\n"
-        "testb $0x20, 0xe6(%eax)\n" /* line 1563 */
-        "je .Lf16514e_001651c0\n"
-        "movss (%eax), %xmm1\n" /* line 1565 */
-        "movaps %xmm1, %xmm0\n" /* line 1566 */
-        "addss 8(%eax), %xmm0\n"
-        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
-        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "subss %xmm2, %xmm0\n"
-        "cvttss2si %xmm0, %ebx\n" /* max */
-        "movl 0xc(%ecx), %ecx\n" /* line 1567 */
-        "addss lit4_002ed6a8, %xmm1\n" /* line 1580 | 16.0f */
-        "addss %xmm2, %xmm1\n"
-        "cvttss2si %xmm1, %eax\n"
-        "addl $8, %eax\n"
-        "cmpl %eax, %ecx\n"
-        "jl .Lf16514e_001651ff\n"
-        ".Lf16514e_001651b3:\n"
-        "leal 8(%ebx), %eax\n" /* max */
-        "cmpl %eax, %ecx\n"
-        "jg .Lf16514e_001651ff\n"
-        "leal -8(%ecx), %eax\n" /* line 1582 */
-        /* } scope */
-        "popl %ebx\n" /* line 1594 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16514e_001651c0:\n"
-        "movss 4(%eax), %xmm1\n" /* line 1578 */
-        "movaps %xmm1, %xmm0\n" /* line 1579 */
-        "addss 0xc(%eax), %xmm0\n"
-        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
-        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
-        "subss %xmm2, %xmm0\n"
-        "cvttss2si %xmm0, %ebx\n" /* max */
-        "movl 0x10(%ecx), %ecx\n" /* line 1580 */
-        "addss lit4_002ed6a8, %xmm1\n" /* 16.0f */
-        "addss %xmm2, %xmm1\n"
-        "cvttss2si %xmm1, %eax\n"
-        "addl $8, %eax\n"
-        "cmpl %eax, %ecx\n"
-        "jge .Lf16514e_001651b3\n"
-        ".Lf16514e_001651ff:\n"
-        "movl %edx, 8(%ebp)\n" /* line 1586 | dc */
-        /* } scope */
-        "popl %ebx\n" /* line 1594 */
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Item_ListBox_ThumbPosition\n" /* line 1586 */
-    );
+    byte *it = (byte *)item;
+    byte *d = (byte *)dc;
+
+    if ((itemDef_t *)item != itemCapture)
+        return Item_ListBox_ThumbPosition(item);
+
+    if (*(byte *)(it + 0xe6) & 0x20) {
+        /* Horizontal */
+        int max = (int)(*(float *)it + *(float *)(it + 8) - 32.0f - 1.0f);
+        int cursor = *(int *)(d + 0xc);
+        int minPos = (int)(*(float *)it + 16.0f + 1.0f) + 8;
+        if (cursor < minPos || cursor > max + 8)
+            return Item_ListBox_ThumbPosition((itemDef_t *)itemCapture);
+        return cursor - 8;
+    } else {
+        /* Vertical */
+        int max = (int)(*(float *)(it + 4) + *(float *)(it + 0xc) - 32.0f - 1.0f);
+        int cursor = *(int *)(d + 0x10);
+        int minPos = (int)(*(float *)(it + 4) + 16.0f + 1.0f) + 8;
+        if (cursor < minPos || cursor > max + 8)
+            return Item_ListBox_ThumbPosition((itemDef_t *)itemCapture);
+        return cursor - 8;
+    }
 }
 
 /* line 2908 */
@@ -2934,129 +2735,51 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
     );
 }
 
-/* line 579 */
-__attribute__((naked))
+/* Script_SetItemColor — parse item group name, color target, 4 floats, apply to matching items */
 void Script_SetItemColor(displayContextDef_t *dc, itemDef_t *item, const char * *args)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 579 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x84c, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* args */
-        /* { scope 1: count */
-        "movl $0x400, 8(%esp)\n" /* line 588 */
-        "leal -0x42c(%ebp), %eax\n" /* itemname */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "jne .Lf166c62_00166c9a\n"
-        /* } scope */
-        ".Lf166c62_00166c8f:\n"
-        "addl $0x84c, %esp\n" /* line 629 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: count */
-        ".Lf166c62_00166c9a:\n"
-        "movl $0x400, 8(%esp)\n" /* line 588 */
-        "leal -0x82c(%ebp), %edx\n" /* name */
-        "movl %edx, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf166c62_00166c8f\n"
-        /* { scope 2: f */
-        "leal -0x42c(%ebp), %eax\n" /* line 592 | itemname */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_ItemsMatchingGroup\n"
-        "movl %eax, -0x83c(%ebp)\n" /* count */
-        "movl $1, %ebx\n" /* out */
-        "leal -0x1c(%ebp), %edi\n" /* f, j */
-        /* { scope 3 */
-        ".Lf166c62_00166ce1:\n"
-        "movl %edi, 4(%esp)\n" /* line 115 */
-        "movl %esi, (%esp)\n"
-        "calll Float_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf166c62_00166c8f\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 119 | f */
-        "movl %eax, -0x30(%ebp, %ebx, 4)\n"
-        "addl $1, %ebx\n"
-        "cmpl $5, %ebx\n" /* line 113 */
-        "jne .Lf166c62_00166ce1\n"
-        /* } scope */
-        "movl -0x83c(%ebp), %edi\n" /* line 599 | count, j */
-        "testl %edi, %edi\n" /* j */
-        "jle .Lf166c62_00166c8f\n"
-        /* { scope 3 */
-        "xorl %edi, %edi\n" /* line 113 */
-        /* } scope */
-        ".Lf166c62_00166d0c:\n"
-        "leal -0x42c(%ebp), %eax\n" /* line 601 | itemname */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* j */
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl 0x29c(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetMatchingItemByNumber\n"
-        "movl %eax, %esi\n" /* item2 */
-        "testl %eax, %eax\n" /* line 602 */
-        "je .Lf166c62_00166d6d\n"
-        "movl $str_002ac220, 4(%esp)\n" /* line 605 */
-        "leal -0x82c(%ebp), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf166c62_00166d7d\n"
-        "leal 0x1dc(%esi), %ebx\n" /* line 607 | item2, out */
-        ".Lf166c62_00166d51:\n"
-        "testl %ebx, %ebx\n" /* line 619 | out */
-        "je .Lf166c62_00166d6d\n"
-        "movl %ebx, %edx\n" /* out */
-        "movl $1, %ecx\n"
-        ".Lf166c62_00166d5c:\n"
-        "movl -0x30(%ebp, %ecx, 4), %eax\n" /* line 623 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $5, %ecx\n" /* line 621 */
-        "jne .Lf166c62_00166d5c\n"
-        ".Lf166c62_00166d6d:\n"
-        "addl $1, %edi\n" /* line 599 | j */
-        "cmpl %edi, -0x83c(%ebp)\n" /* j, count */
-        "jne .Lf166c62_00166d0c\n"
-        "jmp .Lf166c62_00166c8f\n"
-        ".Lf166c62_00166d7d:\n"
-        "movl $str_002ac22c, 4(%esp)\n" /* line 609 */
-        "leal -0x82c(%ebp), %edx\n" /* name */
-        "movl %edx, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf166c62_00166db9\n"
-        "movl $str_002ac238, 4(%esp)\n" /* line 614 */
-        "leal -0x82c(%ebp), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf166c62_00166d6d\n"
-        "leal 0x1ec(%esi), %ebx\n" /* line 616 | item2, out */
-        "jmp .Lf166c62_00166d51\n"
-        ".Lf166c62_00166db9:\n"
-        "leal 0x1cc(%esi), %ebx\n" /* line 611 | item2, out */
-        "movl $0x10000, 4(%esp)\n" /* line 612 */
-        "movl %esi, (%esp)\n" /* item2 */
-        "calll Window_AddDynamicFlags\n"
-        "jmp .Lf166c62_00166d51\n"
-    );
+    char itemname[0x400];
+    char name[0x400];
+    float color[4];
+    float f;
+    int count, i, j;
+    (void)dc;
+
+    if (!String_Parse(args, itemname, 0x400))
+        return;
+    if (!String_Parse(args, name, 0x400))
+        return;
+
+    menuDef_t *parent = *(menuDef_t **)((byte *)item + 0x29c);
+    count = Menu_ItemsMatchingGroup(parent, itemname);
+
+    for (j = 0; j < 4; j++) {
+        if (!Float_Parse(args, &f))
+            return;
+        color[j] = f;
+    }
+
+    for (i = 0; i < count; i++) {
+        byte *item2 = (byte *)Menu_GetMatchingItemByNumber(parent, i, itemname);
+        if (!item2) continue;
+
+        float *out = NULL;
+        if (I_stricmp(name, "backcolor") == 0) {
+            out = (float *)(item2 + 0x1dc);
+        } else if (I_stricmp(name, "forecolor") == 0) {
+            out = (float *)(item2 + 0x1cc);
+            Window_AddDynamicFlags((void *)item2, 0x10000);
+        } else if (I_stricmp(name, "bordercolor") == 0) {
+            out = (float *)(item2 + 0x1ec);
+        }
+
+        if (out) {
+            out[0] = color[0];
+            out[1] = color[1];
+            out[2] = color[2];
+            out[3] = color[3];
+        }
+    }
 }
 
 /* line 209 */
@@ -3500,151 +3223,48 @@ void Script_Exec(displayContextDef_t *dc, itemDef_t *item, const char **args)
     }
 }
 
-/* line 937 */
-__attribute__((naked))
+/* Menu_TransitionItemByName — set transition animation on matching items */
 void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFrom, rectDef_t rectTo, int time, float amt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 937 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 943 | p */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_ItemsMatchingGroup\n"
-        "movl %eax, %edi\n" /* count */
-        "testl %eax, %eax\n" /* line 945 */
-        "jg .Lf167656_0016767f\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 966 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf167656_0016767f:\n"
-        "xorl %esi, %esi\n" /* line 945 | i */
-        ".Lf167656_00167681:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 947 | p */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetMatchingItemByNumber\n"
-        "movl %eax, %ebx\n" /* item */
-        "testl %eax, %eax\n" /* line 948 */
-        "je .Lf167656_0016780a\n"
-        "movl $0x84, 4(%esp)\n" /* line 950 */
-        "movl %eax, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl 0x40(%ebp), %eax\n" /* line 951 | time */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetOffsetTime\n"
-        "leal 0x10(%ebp), %eax\n" /* line 952 | rectFrom */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetRectClient\n"
-        "leal 0x28(%ebp), %eax\n" /* line 953 | rectTo */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetRectEffects0\n"
-        "movl 0x158(%ebx), %eax\n" /* line 956 | item */
-        "movl %eax, -0x30(%ebp)\n" /* newRect */
-        "movl 0x15c(%ebx), %eax\n" /* item */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x160(%ebx), %eax\n" /* item */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0x164(%ebx), %eax\n" /* item */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x168(%ebx), %eax\n" /* item */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x16c(%ebx), %eax\n" /* item */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss 0x28(%ebp), %xmm0\n" /* line 957 | rectTo */
-        "subss 0x10(%ebp), %xmm0\n" /* rectFrom */
-        "cvttss2si %xmm0, %eax\n"
-        "movl %eax, %edx\n"
-        "negl %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x44(%ebp), %xmm0\n" /* amt */
-        "movss %xmm0, -0x30(%ebp)\n" /* newRect */
-        "movss 0x2c(%ebp), %xmm0\n" /* line 958 */
-        "subss 0x14(%ebp), %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "movl %eax, %edx\n"
-        "negl %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x44(%ebp), %xmm0\n" /* amt */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 0x30(%ebp), %xmm0\n" /* line 959 */
-        "subss 0x18(%ebp), %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "movl %eax, %edx\n"
-        "negl %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x44(%ebp), %xmm0\n" /* amt */
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movss 0x34(%ebp), %xmm0\n" /* line 960 */
-        "subss 0x1c(%ebp), %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "movl %eax, %edx\n"
-        "negl %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x44(%ebp), %xmm0\n" /* amt */
-        "movss %xmm0, -0x24(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 961 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetRectEffects1\n"
-        /* { scope 2 */
-        "movl 0x29c(%ebx), %edx\n" /* line 355 */
-        "testl %edx, %edx\n"
-        "je .Lf167656_0016780a\n"
-        "movss (%edx), %xmm2\n" /* line 363 */
-        "movss 4(%edx), %xmm1\n" /* line 364 */
-        "movl 0xd4(%edx), %ecx\n" /* line 366 */
-        "testl %ecx, %ecx\n"
-        "je .Lf167656_001677e8\n"
-        "movss 0xe0(%edx), %xmm0\n" /* line 368 */
-        "addss %xmm0, %xmm2\n"
-        "addss %xmm0, %xmm1\n" /* line 369 */
-        ".Lf167656_001677e8:\n"
-        "movl 0x14(%edx), %eax\n" /* line 372 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll Item_SetScreenCoords\n"
-        /* } scope */
-        ".Lf167656_0016780a:\n"
-        "addl $1, %esi\n" /* line 945 | i */
-        "cmpl %esi, %edi\n" /* i, count */
-        "jne .Lf167656_00167681\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 966 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int count = Menu_ItemsMatchingGroup(menu, p);
+    int i;
+
+    for (i = 0; i < count; i++) {
+        byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
+        if (!item) continue;
+
+        Window_AddDynamicFlags((void *)item, 0x84);
+        Window_SetOffsetTime((itemDef_t *)item, time);
+        ((void (*)(void *, void *))Window_SetRectClient)(item, &rectFrom);
+        ((void (*)(void *, void *))Window_SetRectEffects0)(item, &rectTo);
+
+        /* Compute step rect: copy item rect at 0x158, override first 4 floats with step values */
+        rectDef_t newRect = *(rectDef_t *)(item + 0x158);
+        int dx = (int)(rectTo.x - rectFrom.x);
+        newRect.x = (float)(dx < 0 ? -dx : dx) / amt;
+        int dy = (int)(rectTo.y - rectFrom.y);
+        newRect.y = (float)(dy < 0 ? -dy : dy) / amt;
+        int dw = (int)(rectTo.w - rectFrom.w);
+        newRect.w = (float)(dw < 0 ? -dw : dw) / amt;
+        int dh = (int)(rectTo.h - rectFrom.h);
+        newRect.h = (float)(dh < 0 ? -dh : dh) / amt;
+
+        ((void (*)(void *, void *))Window_SetRectEffects1)(item, &newRect);
+
+        /* Update screen coords from parent */
+        byte *parent = *(byte **)(item + 0x29c);
+        if (parent) {
+            float px = *(float *)parent;
+            float py = *(float *)(parent + 4);
+            if (*(int *)(parent + 0xd4)) {
+                float borderSize = *(float *)(parent + 0xe0);
+                px += borderSize;
+                py += borderSize;
+            }
+            ((void (*)(void *, float, float, int, int))Item_SetScreenCoords)(
+                item, px, py, *(int *)(parent + 0x10), *(int *)(parent + 0x14));
+        }
+    }
 }
 
 /* Script_Transition — parse transition params and apply to item's parent menu */
@@ -3665,127 +3285,47 @@ void Script_Transition(displayContextDef_t *dc, itemDef_t *item, const char * *a
     Menu_TransitionItemByName(*(menuDef_t **)((byte *)item + 0x29c), name, rectFrom, rectTo, time, amt);
 }
 
-/* line 986 */
-__attribute__((naked))
+/* Menu_OrbitItemByName — set orbit animation on matching items */
 void Menu_OrbitItemByName(menuDef_t *menu, const char *p, float x, float y, float cx, float cy, int time)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 986 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 993 | p */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_ItemsMatchingGroup\n"
-        "movl %eax, %edi\n" /* count */
-        "testl %eax, %eax\n" /* line 995 */
-        "jg .Lf16795a_00167983\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1018 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16795a_00167983:\n"
-        "xorl %esi, %esi\n" /* line 995 | i */
-        ".Lf16795a_00167985:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 997 | p */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetMatchingItemByNumber\n"
-        "movl %eax, %ebx\n" /* item */
-        "testl %eax, %eax\n" /* line 998 */
-        "je .Lf16795a_00167ab3\n"
-        "movl $0x2004, 4(%esp)\n" /* line 1000 */
-        "movl %eax, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl 0x20(%ebp), %eax\n" /* line 1001 | time */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetOffsetTime\n"
-        "movl 0xf8(%ebx), %eax\n" /* line 1004 | item */
-        "movl %eax, -0x30(%ebp)\n" /* newRect */
-        "movl 0xfc(%ebx), %eax\n" /* item */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x100(%ebx), %eax\n" /* item */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0x104(%ebx), %eax\n" /* item */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x108(%ebx), %eax\n" /* item */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x10c(%ebx), %eax\n" /* item */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 1005 | cx */
-        "movss %xmm0, -0x30(%ebp)\n" /* newRect */
-        "movss 0x1c(%ebp), %xmm0\n" /* line 1006 | cy */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 1007 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetRectEffects0\n"
-        "movl 0x60(%ebx), %eax\n" /* line 1010 | item */
-        "movl %eax, -0x30(%ebp)\n" /* newRect */
-        "movl 0x64(%ebx), %eax\n" /* item */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x68(%ebx), %eax\n" /* item */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl 0x6c(%ebx), %eax\n" /* item */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x70(%ebx), %eax\n" /* item */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x74(%ebx), %eax\n" /* item */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 1011 | x */
-        "movss %xmm0, -0x30(%ebp)\n" /* newRect */
-        "movss 0x14(%ebp), %xmm0\n" /* line 1012 | y */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 1013 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_SetRectClient\n"
-        /* { scope 2 */
-        "movl 0x29c(%ebx), %edx\n" /* line 355 */
-        "testl %edx, %edx\n"
-        "je .Lf16795a_00167ab3\n"
-        "movss (%edx), %xmm2\n" /* line 363 */
-        "movss 4(%edx), %xmm1\n" /* line 364 */
-        "movl 0xd4(%edx), %eax\n" /* line 366 */
-        "testl %eax, %eax\n"
-        "je .Lf16795a_00167a91\n"
-        "movss 0xe0(%edx), %xmm0\n" /* line 368 */
-        "addss %xmm0, %xmm2\n"
-        "addss %xmm0, %xmm1\n" /* line 369 */
-        ".Lf16795a_00167a91:\n"
-        "movl 0x14(%edx), %eax\n" /* line 372 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll Item_SetScreenCoords\n"
-        /* } scope */
-        ".Lf16795a_00167ab3:\n"
-        "addl $1, %esi\n" /* line 995 | i */
-        "cmpl %esi, %edi\n" /* i, count */
-        "jne .Lf16795a_00167985\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1018 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int count = Menu_ItemsMatchingGroup(menu, p);
+    int i;
+
+    for (i = 0; i < count; i++) {
+        byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
+        if (!item) continue;
+
+        Window_AddDynamicFlags((void *)item, 0x2004);
+        Window_SetOffsetTime((itemDef_t *)item, time);
+
+        /* Set effects0 rect: copy item rect at 0xf8 but override x/y with cx/cy */
+        rectDef_t newRect;
+        newRect = *(rectDef_t *)(item + 0xf8);
+        newRect.x = cx;
+        newRect.y = cy;
+        /* Window_SetRectEffects0 takes (item, rectDef_t*) in the binary */
+        ((void (*)(void *, void *))Window_SetRectEffects0)(item, &newRect);
+
+        /* Set client rect: copy item rect at 0x60 but override x/y with x/y args */
+        newRect = *(rectDef_t *)(item + 0x60);
+        newRect.x = x;
+        newRect.y = y;
+        ((void (*)(void *, void *))Window_SetRectClient)(item, &newRect);
+
+        /* Update screen coords from parent */
+        byte *parent = *(byte **)(item + 0x29c);
+        if (parent) {
+            float px = *(float *)parent;
+            float py = *(float *)(parent + 4);
+            if (*(int *)(parent + 0xd4))  {
+                float borderSize = *(float *)(parent + 0xe0);
+                px += borderSize;
+                py += borderSize;
+            }
+            ((void (*)(void *, float, float, int, int))Item_SetScreenCoords)(
+                item, px, py, *(int *)(parent + 0x10), *(int *)(parent + 0x14));
+        }
+    }
 }
 
 /* Script_Orbit — parse orbit params and apply to item's parent menu */
