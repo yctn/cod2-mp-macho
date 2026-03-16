@@ -963,6 +963,10 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
 }
 
 /* line 1151 */
+/* line 1151 — Entity tessellation: 6-way jump table for types 4-9.
+ * This function MUST remain naked because it uses a jump table with rodata labels
+ * that cannot be referenced from C code. 1299 lines of entity-type-specific
+ * billboard/line quad generation. */
 __attribute__((naked))
 void RB_TessEntity(const GfxEntity *re)
 {
@@ -2263,7 +2267,6 @@ void RB_TessEntity(const GfxEntity *re)
         ".text\n"
     );
 }
-
 /* line 1193 */
 void RB_TessBackEndEntity(const surfaceType_t *surfType)
 {
