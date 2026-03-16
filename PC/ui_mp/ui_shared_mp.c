@@ -697,136 +697,43 @@ void Script_SetBackground(displayContextDef_t *dc, itemDef_t *item, const char *
     }
 }
 
-/* line 632 */
-__attribute__((naked))
+/* Menu_ShowItemByName — show/hide matching items by group name */
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 632 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 636 | p */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_ItemsMatchingGroup\n"
-        "movl %eax, %edi\n" /* count */
-        "testl %eax, %eax\n" /* line 638 */
-        "jg .Lf16403a_00164063\n"
-        /* } scope */
-        ".Lf16403a_0016405b:\n"
-        "addl $0x1c, %esp\n" /* line 659 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16403a_00164063:\n"
-        "xorl %esi, %esi\n" /* line 638 | i */
-        "jmp .Lf16403a_0016407e\n"
-        ".Lf16403a_00164067:\n"
-        "movl $4, 4(%esp)\n" /* line 645 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        ".Lf16403a_00164077:\n"
-        "addl $1, %esi\n" /* line 638 | i */
-        "cmpl %esi, %edi\n" /* i, count */
-        "je .Lf16403a_0016405b\n"
-        ".Lf16403a_0016407e:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 640 | p */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetMatchingItemByNumber\n"
-        "movl %eax, %ebx\n" /* item */
-        "testl %eax, %eax\n" /* line 641 */
-        "je .Lf16403a_00164077\n"
-        "movl 0x10(%ebp), %eax\n" /* line 643 | bShow */
-        "testl %eax, %eax\n"
-        "jne .Lf16403a_00164067\n"
-        "movl $4, 4(%esp)\n" /* line 649 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        "movl 0xcc(%ebx), %eax\n" /* line 651 | item */
-        "testl %eax, %eax\n"
-        "js .Lf16403a_00164077\n"
-        "movl %eax, (%esp)\n" /* line 653 */
-        "calll CIN_StopCinematic\n"
-        "movl $0xffffffff, 0xcc(%ebx)\n" /* line 654 | item */
-        "jmp .Lf16403a_00164077\n"
-    );
+    int count = Menu_ItemsMatchingGroup(menu, p);
+    int i;
+    for (i = 0; i < count; i++) {
+        byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
+        if (!item) continue;
+        if (bShow) {
+            Window_AddDynamicFlags(item, 4);
+        } else {
+            Window_RemoveDynamicFlags(item, 4);
+            int cinHandle = *(int *)(item + 0xcc);
+            if (cinHandle >= 0) {
+                CIN_StopCinematic(cinHandle);
+                *(int *)(item + 0xcc) = -1;
+            }
+        }
+    }
 }
 
-/* line 662 */
-__attribute__((naked))
+/* Menu_FadeItemByName — set fade in/out flags on matching items */
 void Menu_FadeItemByName(menuDef_t *menu, const char *p, qboolean fadeOut)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 662 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 666 | p */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_ItemsMatchingGroup\n"
-        "movl %eax, %edi\n" /* count */
-        "testl %eax, %eax\n" /* line 668 */
-        "jg .Lf1640d0_001640f9\n"
-        /* } scope */
-        ".Lf1640d0_001640f1:\n"
-        "addl $0x1c, %esp\n" /* line 685 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1640d0_001640f9:\n"
-        "xorl %esi, %esi\n" /* line 668 | i */
-        "jmp .Lf1640d0_00164124\n"
-        ".Lf1640d0_001640fd:\n"
-        "movl $0x14, 4(%esp)\n" /* line 675 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "movl $0x20, 4(%esp)\n" /* line 676 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        ".Lf1640d0_0016411d:\n"
-        "addl $1, %esi\n" /* line 668 | i */
-        "cmpl %esi, %edi\n" /* i, count */
-        "je .Lf1640d0_001640f1\n"
-        ".Lf1640d0_00164124:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 670 | p */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl 8(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetMatchingItemByNumber\n"
-        "movl %eax, %ebx\n" /* item */
-        "testl %eax, %eax\n" /* line 671 */
-        "je .Lf1640d0_0016411d\n"
-        "movl 0x10(%ebp), %eax\n" /* line 673 | fadeOut */
-        "testl %eax, %eax\n"
-        "jne .Lf1640d0_001640fd\n"
-        "movl $0x24, 4(%esp)\n" /* line 680 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_AddDynamicFlags\n"
-        "movl $0x10, 4(%esp)\n" /* line 681 */
-        "movl %ebx, (%esp)\n" /* item */
-        "calll Window_RemoveDynamicFlags\n"
-        "jmp .Lf1640d0_0016411d\n"
-    );
+    int count = Menu_ItemsMatchingGroup(menu, p);
+    int i;
+    for (i = 0; i < count; i++) {
+        byte *item = (byte *)Menu_GetMatchingItemByNumber(menu, i, p);
+        if (!item) continue;
+        if (fadeOut) {
+            Window_AddDynamicFlags(item, 0x14);  /* fade out + visible */
+            Window_RemoveDynamicFlags(item, 0x20);
+        } else {
+            Window_AddDynamicFlags(item, 0x24);  /* fade in + visible */
+            Window_RemoveDynamicFlags(item, 0x10);
+        }
+    }
 }
 
 /* line 752 */
