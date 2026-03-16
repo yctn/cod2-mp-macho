@@ -963,13 +963,22 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
 }
 
 /* line 1151 */
-/* line 1151 — Entity tessellation: 6-way jump table for types 4-9.
- * This function MUST remain naked because it uses a jump table with rodata labels
- * that cannot be referenced from C code. 1299 lines of entity-type-specific
- * billboard/line quad generation. */
+/* line 1151 — Entity tessellation: 6-way jump table dispatching types 4-9
+ * (sprite, oriented sprite, beam, rail core, rail rings, lightning).
+ * Each type generates billboard/line quads with type-specific vertex layouts.
+ * Uses computed jump table (.Ljt_ffc70_0) in .rodata — cannot convert to C
+ * because C has no way to generate/reference rodata jump table labels.
+ * Algorithm per type:
+ *   Type 4 (sprite): billboard quad from entity origin, radius, rotation; world→clip transform
+ *   Type 5 (oriented sprite): same as sprite but uses entity axis for orientation
+ *   Type 6 (beam): line quad between entity origin and endpos
+ *   Type 7 (rail core): segmented line strip with per-segment quads
+ *   Type 8 (rail rings): ring sprites along rail path
+ *   Type 9 (lightning): segmented line with random jitter offsets */
 __attribute__((naked))
 void RB_TessEntity(const GfxEntity *re)
 {
+    (void)re;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1151 */
         "movl %esp, %ebp\n"
