@@ -1616,7 +1616,7 @@ void UI_Init(void)
     ui_playerProfileNameNew = Dvar_RegisterString_mac("ui_playerProfileNameNew", str_002157b8, 0x1000);
 
     /* initialize legacy hacks state */
-    legacyBase = *(byte **)imp_legacyHacksArray;
+    legacyBase = (byte *)imp_legacyHacksArray;
     *(byte *)(legacyBase + 0x2e4) = 0;
     *(int *)(legacyBase + 0x3e4) = -1;
     *(byte *)(legacyBase + 0x1de) = 0;

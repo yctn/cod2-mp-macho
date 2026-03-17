@@ -1241,13 +1241,13 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
     }
 
     /* Phase 5: FFT init */
-    FFT_Init((void *)((char *)&rg + 9488), (void *)((char *)&rg + 11536));
+    FFT_Init((void *)((char *)&rg + 11536), (void *)((char *)&rg + 9488));
 
-    /* Phase 6: Shader include handler setup */
+    /* Phase 6: DObjCreate for default world model */
     {
         int args[3] = {0, 0, 0};
         ((void (*)(void *, int, void *, void *, int))*(void **)((char *)&ri + 476))(
-            args, 1, (void *)((char *)&rg + 12564), NULL, 0);
+            args, 1, NULL, (void *)((char *)&rg + 12564), 0);
         *(void **)((char *)&rg + 12560) = (void *)((char *)&rg + 12564);
     }
 

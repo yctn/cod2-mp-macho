@@ -488,9 +488,9 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
     int pixelStride = (bytesPerPixel == 3) ? 4 : bytesPerPixel;
     int startLevel;
     int totalSize = width * height * pixelStride;
-    void *hunkBufs[6];
-    int hunkOffsets[6];
-    short decode[2] = {0, 0};
+    byte *hunkBufs[6];
+    byte *hunkAddrs[6]; /* absolute address: hunkBufs[face] + current offset */
+    WaveletDecode decode;
     int i, level, face;
 
     Image_Setup(image, width, height, depth, mipmapCount, 0, format);
@@ -507,28 +507,45 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
         startLevel = levels - 1;
     }
 
+    /* Initialize decode state */
+    decode.value = 0;
+    decode.bit = 0;
+    decode.data = data;
+    decode.width = width;
+    decode.height = height;
+    decode.channels = bytesPerPixel;
+    decode.bpp = pixelStride;
+    decode.mipLevel = startLevel;
+    decode.dataInitialized = 0;
+
     /* Allocate temp buffers for each face */
     for (i = 0; i < faceCount; i++) {
-        hunkBufs[i] = Hunk_AllocateTempMemoryInternal(totalSize);
-        hunkOffsets[i] = 0;
+        hunkBufs[i] = (byte *)Hunk_AllocateTempMemoryInternal(totalSize);
+        hunkAddrs[i] = 0; /* will be computed as absolute addresses */
     }
 
     /* Process mip levels from bottom to top */
-    for (level = startLevel; level >= mipmapCount; level--) {
+    for (level = startLevel; level >= mipmapCount; level--, decode.mipLevel = level) {
         int mipW = width >> level; if (mipW < 1) mipW = 1;
         int mipH = height >> level; if (mipH < 1) mipH = 1;
         int sizeForLevel = mipW * mipH * pixelStride;
 
-        for (face = 0; face < faceCount; face++) {
-            int offset = totalSize + hunkOffsets[face] - sizeForLevel;
-            hunkOffsets[face] = offset;
+        if (faceCount <= 0)
+            continue;
 
-            Wavelet_DecompressLevel(data, offset, decode);
+        int allocSize = (sizeForLevel / 4) * 4;
+
+        for (face = 0; face < faceCount; face++) {
+            /* Compute new destination address in hunk buffer */
+            byte *oldAddr = hunkAddrs[face];
+            byte *newAddr = hunkBufs[face] + totalSize - sizeForLevel;
+            hunkAddrs[face] = newAddr;
+
+            Wavelet_DecompressLevel((byte *)oldAddr, newAddr, &decode);
 
             /* Allocate temp, copy decompressed data */
-            int allocSize = (sizeForLevel / 4) * 4;
             void *pTemp = __Znam(allocSize);
-            memcpy(pTemp, (void *)(intptr_t)offset, sizeForLevel);
+            memcpy(pTemp, newAddr, sizeForLevel);
 
             /* Upload to texture */
             int cubeFace = Image_CubemapFace(face);

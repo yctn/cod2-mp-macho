@@ -720,9 +720,9 @@ void CL_InitRenderer(void)
     fieldWidth = *(int *)((char *)&cls + 0x2a0a64) - 0x20;
     *(int *)imp_g_console_field_width = fieldWidth;
 
-    *(int *)(*(int *)imp_g_consoleField + 0xc) = fieldWidth;
-    *(int *)(*(int *)imp_g_consoleField + 0x10) = *(int *)imp_g_console_char_height;
-    *(int *)(*(int *)imp_g_consoleField + 0x14) = 1;
+    *(int *)((char *)imp_g_consoleField + 0xc) = fieldWidth;
+    *(int *)((char *)imp_g_consoleField + 0x10) = *(int *)imp_g_console_char_height;
+    *(int *)((char *)imp_g_consoleField + 0x14) = 1;
 
     StatMon_Reset();
 }

@@ -100,7 +100,7 @@ _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTra
 void Material_ReloadAll(void);
 void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl);
 void R_Cmd_ReloadMaterialTextures(void);
-_ValueType Material_Duplicate(_ValueType mtlCopy, const char *name);
+MaterialHandle Material_Duplicate(MaterialHandle mtlCopy, const char *name);
 MaterialHandle Material_Register(const char *name, int imageTrack);
 MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack);
 void Material_Init(void);
@@ -1343,7 +1343,7 @@ void R_Cmd_ReloadMaterialTextures(void)
 }
 
 /* line 920 */
-_ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
+MaterialHandle Material_Duplicate(MaterialHandle mtlCopy, const char *name)
 {
     byte *rg = (byte *)imp_rg;
     byte *rgp;
@@ -1354,7 +1354,6 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
     void *(*hunkAlloc)(int);
     char *nameDst;
     int count;
-    _ValueType result;
 
     /* Search for existing material with this name */
     existing = *(byte **)(rg + 0x28 + hash * 4);
@@ -1362,11 +1361,10 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         if (strcmp(*(const char **)existing, name) == 0) {
             /* Found — overwrite with new data, preserve name pointer */
             char *savedName = *(char **)existing;
-            memcpy(existing, (void *)*(int *)&mtlCopy, 0x44);
+            memcpy(existing, (void *)mtlCopy, 0x44);
             *(char **)existing = savedName;
             *(int *)imp_rgp = 1; /* rgp->needsSort = true */
-            *(void **)&result = existing;
-            return result;
+            return (MaterialHandle)existing;
         }
         hash = (hash + 1) & 0x3ff;
         rg = (byte *)imp_rg;
@@ -1379,7 +1377,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
     material = (byte *)hunkAlloc(0x44 + nameLen);
 
     /* Copy material struct from source */
-    memcpy(material, (void *)*(int *)&mtlCopy, 0x44);
+    memcpy(material, (void *)mtlCopy, 0x44);
 
     /* Name stored after struct, set name pointer */
     nameDst = (char *)(material + 0x44);
@@ -1401,8 +1399,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
     if (count == 0x400)
         R_Error(0, "Too many unique materials (%i or more)\n", 0x400);
 
-    *(void **)&result = material;
-    return result;
+    return (MaterialHandle)material;
 }
 
 /* line 1019 */
@@ -1439,10 +1436,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
             R_Error(0, "No default material loaded for %s fallback", name);
 
         Com_Printf("^3WARNING: Could not find material '%s'\n", name);
-        {
-            _ValueType dup = Material_Duplicate(*(_ValueType *)(rgp + 0x102c), name);
-            return *(MaterialHandle *)&dup;
-        }
+        return Material_Duplicate(*(MaterialHandle *)(rgp + 0x102c), name);
     }
 
     /* Register new material */
