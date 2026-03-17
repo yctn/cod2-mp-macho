@@ -3455,7 +3455,7 @@ qboolean Item_SetFocus(displayContextDef_t *dc, itemDef_t *item, float x, float 
     byte *d = (byte *)dc;
     int i;
 
-    int defaultSound = *(int *)(*(byte *)imp_sharedUiInfo + 0x40);
+    int defaultSound = *(int *)((byte *)imp_sharedUiInfo + 0x40);
 
     /* Validation */
     if (!item) return 0;
