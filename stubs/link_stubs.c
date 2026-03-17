@@ -623,3 +623,10 @@ char voice_freq_ptr[64] __attribute__((aligned(4))) = {0};
 char voice_maxframe_ptr[64] __attribute__((aligned(4))) = {0};
 char voice_scale_ptr[64] __attribute__((aligned(4))) = {0};
 char WaitNextEvent[64] __attribute__((aligned(4))) = {0};
+
+/* Stubs for symbols referenced by CDirect3D.o (Mac D3D wrapper) */
+int GetHighAndLowIndices(void) { return 0; }
+int g_High = 0;
+int g_Low = 0;
+int g_special = 0;
+int D3DXGetShaderConstantTable(const void *function, void **constantTable) { (void)function; if (constantTable) *constantTable = 0; return 0x80004005; /* E_FAIL */ }
