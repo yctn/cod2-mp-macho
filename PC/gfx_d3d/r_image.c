@@ -102,6 +102,7 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
 
     /* IDirect3DDevice9::CreateTexture — vtable 0x5C */
     device = *(void **)((char *)imp_dx + 8);
+    if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
         device, (unsigned short)width, (unsigned short)height,
@@ -131,6 +132,7 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
 
     /* IDirect3DDevice9::CreateVolumeTexture — vtable 0x60 */
     device = *(void **)((char *)imp_dx + 8);
+    if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x60 / 4]))(
         device, (unsigned short)width, (unsigned short)height, (unsigned short)depth,
@@ -170,6 +172,7 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
 
     /* IDirect3DDevice9::CreateCubeTexture — vtable 0x64 */
     device = *(void **)(dx + 8);
+    if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x64 / 4]))(
         device, (unsigned short)edgeLen, actualMipCount, 0, imageFormat, memPool,
@@ -1446,6 +1449,7 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_RENDERTARGET(1), Pool=D3DPOOL_DEFAULT(0) */
     device = *(void **)((char *)imp_dx + 8);
+    if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
         device, w, h, 1, 1, imageFormat, 0, (void **)(img + 4), NULL);
@@ -1476,6 +1480,7 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_DYNAMIC(0x200), Pool=D3DPOOL_SYSTEMMEM(2) */
     device = *(void **)((char *)imp_dx + 8);
+    if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
         device, w, h, 1, 0x200, imageFormat, 2, (void **)(img + 4), NULL);

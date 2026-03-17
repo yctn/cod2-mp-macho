@@ -178,3 +178,23 @@ int aglGetInteger(AGLContext ctx, GLenum pname, GLint *params)
 {
     if (params) *params = 0; return 1;
 }
+
+/* Fake D3D9 device for startup without real GPU.
+   85+ vtable entries — each is a no-op returning S_OK (0). */
+static int fake_d3d_noop(void) { return 0; }
+static void *fake_d3d_vtable[128]; /* all entries = fake_d3d_noop */
+static void *fake_d3d_device_storage[4]; /* device obj: vtable ptr + padding */
+
+__attribute__((constructor)) static void init_fake_d3d_device(void) {
+    int i;
+    for (i = 0; i < 128; i++)
+        fake_d3d_vtable[i] = (void *)fake_d3d_noop;
+    fake_d3d_device_storage[0] = (void *)fake_d3d_vtable;
+    
+    /* Set dx+8 = fake device pointer if dx+8 is null */
+    extern void *imp_dx;
+    void *dx = imp_dx;
+    if (dx && *(void **)((char *)dx + 8) == 0) {
+        *(void **)((char *)dx + 8) = (void *)fake_d3d_device_storage;
+    }
+}

@@ -3991,15 +3991,15 @@ void CL_Init(void)
 {
     Com_Printf("CL_Init\n");
 
-    /* Save fields that survive the memset */
-    byte *c = (byte *)&cl;
+    /* Save fields that survive the memset — cl is a pointer to the buffer */
+    byte *c = *(byte **)&cl;
     byte saved9 = c[9];
     byte savedA = c[0xa];
     int saved4 = *(int *)(c + 4);
     byte saved8 = c[8];
     byte saved0 = c[0];
 
-    /* Clear client state */
+    /* Clear client state buffer (not the cl pointer itself) */
     memset(c, 0, 0x179c14);
 
     /* Restore preserved fields */

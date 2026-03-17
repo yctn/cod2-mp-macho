@@ -167,8 +167,7 @@ extern unsigned char cg_weaponsArray[];
 void *cg_weapons __attribute__((aligned(4))) = (void *)cg_weaponsArray;
 char cg_xanimInfo[64] __attribute__((aligned(4))) = {0};
 extern unsigned char clients[];
-/* cl is accessed as a 0x179c14 (1,531,924) byte struct via &cl */
-char cl[0x17a000] __attribute__((aligned(16))) = {0};
+void *cl __attribute__((aligned(4))) = (void *)clients;
 extern unsigned char clientConnections[];
 void *clc __attribute__((aligned(4))) = (void *)clientConnections;
 /* clc_ptr, clc_ptr_195ee8c: aliases for imp_clc — defined in import_pointers.S */
