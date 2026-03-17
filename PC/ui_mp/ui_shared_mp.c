@@ -5997,5 +5997,4 @@ static void Scroll_Slider_SetThumbPos_impl(byte *dc, byte *item)
         Dvar_SetFromStringByName(*(const char **)(item + 0x2c0), valStr);
     }
 }
-static void Scroll_Slider_SetThumbPos(void) { }
 #endif

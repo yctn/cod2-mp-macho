@@ -173,7 +173,6 @@ static void CG_PlayADSAnim_impl(void *pAnimTree, int animIndex)
     XAnimSetTime(pAnimTree, 0x15, adsProgress);
     XAnimSetTime(pAnimTree, 0x16, 1.0f - adsProgress);
 }
-static void CG_PlayADSAnim(void) { }
 #endif
 
 /* line 311 */

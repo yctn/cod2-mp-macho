@@ -8770,5 +8770,17 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
 }
 
 #else
-int BG_FindWeaponIndexForName(const char *name) { return 0; }
+int BG_FindWeaponIndexForName(const char *name)
+{
+    extern int bg_iNumWeapons;
+    extern void *bg_weaponDefs[];
+    extern int I_stricmp(const char *, const char *);
+    int weapIndex;
+    for (weapIndex = 1; weapIndex <= bg_iNumWeapons; weapIndex++) {
+        const char *defName = *(const char **)bg_weaponDefs[weapIndex];
+        if (I_stricmp(name, defName) == 0)
+            return weapIndex;
+    }
+    return 0;
+}
 #endif

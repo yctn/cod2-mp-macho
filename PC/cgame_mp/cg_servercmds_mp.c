@@ -2056,5 +2056,4 @@ zero_out:
     *(int *)(cgs_p + 0xba14) = 0;
 }
 
-static void CG_AddToTeamChat(void) { }
 #endif

@@ -422,7 +422,6 @@ static qboolean BG_CheckProneTurned_impl(byte *ps, int handler, float newProneYa
         proneFeetDist                              /* prone_feet_dist */
     );
 }
-static qboolean BG_CheckProneTurned(void) { return 0; }
 #endif
 
 /* line 2723 */
