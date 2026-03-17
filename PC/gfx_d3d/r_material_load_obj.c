@@ -347,69 +347,13 @@ void Material_PreLoadAllShaderText(void)
     {
         GfxCachedShaderText *entry = cache;
         for (i = 0; i < fileCountRoot; i++) {
-            const char *filename = shaderListRoot[i];
-            char path[256];
-            void *fileData;
-            int fileLen;
-
-            /* Build path: materials/shaders/<filename> */
-            sprintf(path, "materials/shaders/%s", filename);
-
-            /* Strip extension for name */
-            entry->name = (const char *)Hunk_AllocInternal((int)strlen(filename) + 1);
-            {
-                char *dst = (char *)entry->name;
-                const char *src = filename;
-                while (*src && *src != '.') *dst++ = *src++;
-                *dst = '\0';
-            }
-
-            fileLen = FS_ReadFile(path, &fileData);
-            if (fileLen > 0) {
-                entry->text = (const char *)Hunk_AllocInternal(fileLen + 1);
-                memcpy((void *)entry->text, fileData, fileLen);
-                ((char *)entry->text)[fileLen] = '\0';
-                entry->textSize = fileLen;
-                FS_FreeFile(fileData);
-            } else {
-                entry->text = "";
-                entry->textSize = 0;
-            }
+            Material_PreLoadSingleShaderText_impl(shaderListRoot[i], "", entry);
             entry++;
         }
 
         /* Load lib shader files */
         for (i = 0; i < fileCountLib; i++) {
-            const char *filename = shaderListLib[i];
-            char path[256];
-            void *fileData;
-            int fileLen;
-
-            sprintf(path, "materials/shaders/lib/%s", filename);
-
-            /* Name includes "lib/" prefix */
-            {
-                int nameLen = (int)strlen(filename) + 5; /* "lib/" + name + null */
-                entry->name = (const char *)Hunk_AllocInternal(nameLen);
-                char *dst = (char *)entry->name;
-                memcpy(dst, "lib/", 4);
-                dst += 4;
-                const char *src = filename;
-                while (*src && *src != '.') *dst++ = *src++;
-                *dst = '\0';
-            }
-
-            fileLen = FS_ReadFile(path, &fileData);
-            if (fileLen > 0) {
-                entry->text = (const char *)Hunk_AllocInternal(fileLen + 1);
-                memcpy((void *)entry->text, fileData, fileLen);
-                ((char *)entry->text)[fileLen] = '\0';
-                entry->textSize = fileLen;
-                FS_FreeFile(fileData);
-            } else {
-                entry->text = "";
-                entry->textSize = 0;
-            }
+            Material_PreLoadSingleShaderText_impl(shaderListLib[i], "lib/", entry);
             entry++;
         }
     }
@@ -1861,7 +1805,13 @@ static Bool Material_SetPassShaderArguments_impl(const char **text, const byte *
     if (constantCount == 0) {
         *args = NULL;
         if (!Com_MatchToken(text, "{", 1)) goto fail;
-        if (!Com_MatchToken(text, "}", 1)) goto fail;
+        /* Stub shaders: skip all constant definitions until closing brace */
+        { const char *tok;
+          for (;;) {
+              tok = Com_Parse(text);
+              if (tok[0] == '\0' || tok[0] == '}') break;
+          }
+        }
         goto succeed;
     }
 

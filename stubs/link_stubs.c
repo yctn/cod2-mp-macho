@@ -634,7 +634,20 @@ int GetHighAndLowIndices(void) { return 0; }
 int g_High = 0;
 int g_Low = 0;
 int g_special = 0;
-int D3DXGetShaderConstantTable(const void *function, void **constantTable) { (void)function; if (constantTable) *constantTable = 0; return 0x80004005; /* E_FAIL */ }
+extern void *vtbl_CD3DXConstantTable[];
+int D3DXGetShaderConstantTable(const void *function, void **constantTable) {
+    (void)function;
+    if (constantTable) {
+        /* Allocate a CD3DXConstantTable with a zeroed data buffer (0 constants at offset 0xC) */
+        void **ct = (void **)calloc(1, 16);
+        ct[0] = vtbl_CD3DXConstantTable; /* vtable */
+        ct[1] = (void *)1;              /* refCount */
+        ct[2] = calloc(1, 32);          /* data — zeroed, so constantCount at offset 0xC = 0 */
+        ct[3] = (void *)32;             /* size */
+        *constantTable = ct;
+    }
+    return 0;
+}
 
 /* Globals for draw-call tracking (rb_backend.c / agl_stubs.c) */
 int g_dip_vs_null = 0;
