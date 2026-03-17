@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/q_shared.h"
@@ -172,8 +173,8 @@ extern void String_Init(void);
 extern void CL_GetScreenDimensions(int *w, int *h, int *aspect);
 extern const void *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
 extern const void *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
-extern void Dvar_RegisterBool_mac(const char *name, int value, int flags);
-extern void Dvar_RegisterString_mac(const char *name, const char *value, int flags);
+extern const void *Dvar_RegisterBool_mac(const char *name, int value, int flags);
+extern const void *Dvar_RegisterString_mac(const char *name, const char *value, int flags);
 extern void UI_LoadArenas(void);
 extern int UI_LoadMenus(const char *name, int imageTrack);
 extern void UI_LoadSoundAliases(void);
@@ -1550,385 +1551,138 @@ void UI_CloseMenu_f(void)
 }
 
 /* line 4148 */
-__attribute__((naked))
 void UI_Init(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4148 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl uiInfo, %eax\n" /* line 4154 */
-        "movl $0, (%eax)\n"
-        "movb $0, g_ingameMenusLoaded\n" /* line 4155 */
-        "calll UI_LoadSoundAliases\n" /* line 4162 */
-        "movl $0x1001, 8(%esp)\n" /* line 197 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa3b8, (%esp)\n" /* "g_allowvote" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 199 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a81f4, (%esp)\n" /* "cg_brass" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 200 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002a8200, (%esp)\n" /* "cg_marks" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 202 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3c4, (%esp)\n" /* "server1" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 203 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3cc, (%esp)\n" /* "server2" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 204 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3d4, (%esp)\n" /* "server3" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 205 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3dc, (%esp)\n" /* "server4" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 206 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3e4, (%esp)\n" /* "server5" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 207 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3ec, (%esp)\n" /* "server6" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 208 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3f4, (%esp)\n" /* "server7" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 209 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa3fc, (%esp)\n" /* "server8" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 210 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa404, (%esp)\n" /* "server9" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 211 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa40c, (%esp)\n" /* "server10" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 212 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa418, (%esp)\n" /* "server11" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 213 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa424, (%esp)\n" /* "server12" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 214 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa430, (%esp)\n" /* "server13" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 215 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa43c, (%esp)\n" /* "server14" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 216 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa448, (%esp)\n" /* "server15" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 8(%esp)\n" /* line 217 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa454, (%esp)\n" /* "server16" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 219 */
-        "movl $2, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa460, (%esp)\n" /* "ui_netSource" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_netSource\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 220 */
-        "movl $0x3f800000, %ebx\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "xorl %edi, %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x3e800000, 4(%esp)\n"
-        "movl $str_002aa470, (%esp)\n" /* "ui_smallFont" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, ui_smallFont\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 221 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x3ecccccd, 4(%esp)\n"
-        "movl $str_002aa480, (%esp)\n" /* "ui_bigFont" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, ui_bigFont\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 222 */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x3f0ccccd, 4(%esp)\n"
-        "movl $str_002aa48c, (%esp)\n" /* "ui_extraBigFont" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, ui_extraBigFont\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 225 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa49c, (%esp)\n" /* "ui_currentMap" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_currentMap\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 235 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl $str_002aa4ac, (%esp)\n" /* "ui_gametype" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_gametype\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 237 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa4b8, (%esp)\n" /* "ui_joinGametype" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_joinGameType\n"
-        "movl $0x1001, 8(%esp)\n" /* line 238 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa4c8, (%esp)\n" /* "ui_netGametypeName" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, ui_netGameTypeName\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 240 */
-        "movl $2, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa4dc, (%esp)\n" /* "ui_dedicated" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_dedicated\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 242 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa4ec, (%esp)\n" /* "ui_currentNetMap" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_currentNetMap\n"
-        "movl $0x1001, 8(%esp)\n" /* line 244 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa500, (%esp)\n" /* "ui_browserShowFull" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowFull\n"
-        "movl $0x1001, 8(%esp)\n" /* line 245 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa514, (%esp)\n" /* "ui_browserShowEmpty" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowEmpty\n"
-        "movl $0x1001, 8(%esp)\n" /* line 246 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa528, (%esp)\n" /* "ui_browserShowPassword" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowPassword\n"
-        "movl $0x1001, 8(%esp)\n" /* line 247 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa540, (%esp)\n" /* "ui_browserShowNoPassword" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowNoPassword\n"
-        "movl $0x1001, 8(%esp)\n" /* line 248 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa55c, (%esp)\n" /* "ui_browserShowPure" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowPure\n"
-        "movl $0x1001, 8(%esp)\n" /* line 249 */
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa570, (%esp)\n" /* "ui_browserShowDedicated" */
-        "calll Dvar_RegisterBool_mac\n"
-        "movl %eax, ui_browserShowDedicated\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 250 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0xffffffff, 8(%esp)\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl $str_002aa588, (%esp)\n" /* "ui_browserMod" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_browserMod\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 252 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0x80000000, 8(%esp)\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl $str_002aa598, (%esp)\n" /* "ui_browserFriendlyfire" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_browserFriendlyfire\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 253 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0x80000000, 8(%esp)\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl $str_002aa5b0, (%esp)\n" /* "ui_browserKillcam" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_browserKillcam\n"
-        "movl $0x1001, 0x10(%esp)\n" /* line 260 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1b58, 4(%esp)\n"
-        "movl $str_002aa5c4, (%esp)\n" /* "ui_serverStatusTimeOut" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_serverStatusTimeOut\n"
-        "movl $0x1040, 0x10(%esp)\n" /* line 264 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0x80000000, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa5dc, (%esp)\n" /* "ui_playerProfileCount" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_playerProfileCount\n"
-        "movl $0x1040, 8(%esp)\n" /* line 265 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa5f4, (%esp)\n" /* "ui_playerProfileSelected" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, ui_playerProfileSelected\n"
-        "movl $__mh_execute_header, 8(%esp)\n" /* line 266 */
-        "movl $str_002157b8, 4(%esp)\n"
-        "movl $str_002aa610, (%esp)\n" /* "ui_playerProfileNameNew" */
-        "calll Dvar_RegisterString_mac\n"
-        "movl %eax, ui_playerProfileNameNew\n"
-        "movl imp_legacyHacksArray, %eax\n" /* line 4169 */
-        "movb $0, 0x2e4(%eax)\n"
-        "movl $0xffffffff, 0x3e4(%eax)\n" /* line 4170 */
-        "movb $0, 0x1de(%eax)\n" /* line 4171 */
-        "movl $0xffffffff, 0x2e0(%eax)\n" /* line 4172 */
-        "movb $1, 0x4ed(%eax)\n" /* line 4173 */
-        "movb $0, 0x3e8(%eax)\n" /* line 4174 */
-        "movl $0xffffffff, 0x4e8(%eax)\n" /* line 4175 */
-        "movb $0, 0x4ec(%eax)\n" /* line 4176 */
-        "calll String_Init\n" /* line 4179 */
-        "movl uiInfo, %eax\n" /* line 4180 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_Setup\n"
-        "movl uiInfo, %eax\n" /* line 4183 */
-        "leal 0x20(%eax), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "leal 0x1c(%eax), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "addl $0x18, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetScreenDimensions\n"
-        "movl uiInfo, %esi\n" /* line 4186 */
-        "movl 0x18(%esi), %ebx\n"
-        "movl 0x1c(%esi), %ecx\n"
-        "movl %ebx, %eax\n"
-        "shll $5, %eax\n"
-        "movl %ebx, %edx\n"
-        "shll $9, %edx\n"
-        "subl %eax, %edx\n"
-        "leal (%ecx, %ecx, 4), %eax\n"
-        "shll $7, %eax\n"
-        "cmpl %eax, %edx\n"
-        "jle .Lf15038e_00150c27\n"
-        "cvtsi2ssl %ebx, %xmm1\n" /* line 4189 */
-        "cvtsi2ssl %ecx, %xmm0\n"
-        "mulss lit4_002ed8bc, %xmm0\n" /* -1.3333333730697632f */
-        "addss %xmm0, %xmm1\n"
-        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
-        "movss %xmm1, (%esi)\n"
-        ".Lf15038e_00150a44:\n"
-        "calll Sys_Milliseconds\n" /* line 4197 */
-        "calll UI_GetGameTypesList\n" /* line 4199 */
-        "movl $0x1001, 0x10(%esp)\n" /* line 4203 */
-        "movl sharedUiInfo+4424, %eax\n"
-        "subl $1, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $str_002aa628, (%esp)\n" /* "ui_netGametype" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, ui_netGameType\n"
-        "calll UI_LoadArenas\n" /* line 4206 */
-        "movl $3, 4(%esp)\n" /* line 4217 */
-        "movl $str_002aa638, (%esp)\n" /* "ui_mp/menus.txt" */
-        "calll UI_LoadMenus\n"
-        "movl %eax, 4(%esp)\n" /* line 4218 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_AddMenuList\n"
-        "cmpb $0, g_mapname\n" /* line 4222 */
-        "jne .Lf15038e_00150c2e\n"
-        ".Lf15038e_00150aba:\n"
-        "calll UI_AssetCache\n" /* line 4226 */
-        "movl uiInfo, %eax\n" /* line 4228 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl $3, 4(%esp)\n" /* line 4231 */
-        "movl $str_002aa648, (%esp)\n" /* "server_hardware_unknown" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25940\n"
-        "movl $3, 4(%esp)\n" /* line 4232 */
-        "movl $str_002aa660, (%esp)\n" /* "server_hardware_linux_dedicated" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25944\n"
-        "movl $3, 4(%esp)\n" /* line 4233 */
-        "movl $str_002aa680, (%esp)\n" /* "server_hardware_win_dedicated" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25948\n"
-        "movl $3, 4(%esp)\n" /* line 4234 */
-        "movl $str_002aa6a0, (%esp)\n" /* "server_hardware_mac_dedicated" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25952\n"
-        "movl $3, 4(%esp)\n" /* line 4236 */
-        "movl $str_002aa6c0, (%esp)\n" /* "server_hardware_win_listen" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25960\n"
-        "movl $3, 4(%esp)\n" /* line 4237 */
-        "movl $str_002aa6dc, (%esp)\n" /* "server_hardware_mac_listen" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+25964\n"
-        "calll LAN_LoadCachedServers\n" /* line 4247 */
-        "cmpl $9, sharedUiInfo+28640\n" /* line 1522 */
-        "je .Lf15038e_00150b9f\n"
-        "movl $9, sharedUiInfo+28640\n" /* line 1528 */
-        "movl $UI_ServersQsortCompare, 0xc(%esp)\n" /* line 1529 */
-        "movl $4, 8(%esp)\n"
-        "movl sharedUiInfo+108660, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $sharedUiInfo+28660, (%esp)\n"
-        "calll qsort\n"
-        ".Lf15038e_00150b9f:\n"
-        "movl $str_002a8f04, (%esp)\n" /* line 4251 */
-        "calll Dvar_GetFloat\n"
-        "fstps -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "xorl %eax, %eax\n"
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
-        "setb %al\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa6f8, (%esp)\n" /* "ui_mousePitch" */
-        "calll Dvar_SetBoolByName\n"
-        "movl $0xffffffff, sharedUiInfo+108684\n" /* line 4253 */
-        "movl $0xffffffff, sharedUiInfo+27524\n" /* line 4254 */
-        "movl ui_netGameType, %eax\n" /* line 4262 */
-        "movl 8(%eax), %eax\n"
-        "movl sharedUiInfo+4428(, %eax, 8), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netGameTypeName, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetString\n"
-        "movl $0x1040, 8(%esp)\n" /* line 4265 */
-        "movl $1, 4(%esp)\n"
-        "movl $str_002aa708, (%esp)\n" /* "ui_multiplayer" */
-        "calll Dvar_RegisterBool_mac\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 4266 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf15038e_00150c27:\n"
-        "movl %edi, (%esi)\n" /* line 4194 */
-        "jmp .Lf15038e_00150a44\n"
-        ".Lf15038e_00150c2e:\n"
-        "movl $g_mapname, 4(%esp)\n" /* line 4223 */
-        "movl $str_002aa084, (%esp)\n" /* "maps/mp/%s.csv" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_MapLoadInfo\n"
-        "jmp .Lf15038e_00150aba\n"
-    );
+    byte *legacyBase;
+    int width, height;
+    int menuList;
+    int netGameTypeIdx;
+    float mPitch;
+
+    *(int *)uiInfo = 0;
+    g_ingameMenusLoaded = 0;
+
+    UI_LoadSoundAliases();
+
+    /* register dvars */
+    Dvar_RegisterBool_mac("g_allowvote", 1, 0x1001);
+    Dvar_RegisterBool_mac("cg_brass", 1, 0x1001);
+    Dvar_RegisterBool_mac("cg_marks", 1, 0x1001);
+
+    Dvar_RegisterString_mac("server1", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server2", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server3", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server4", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server5", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server6", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server7", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server8", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server9", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server10", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server11", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server12", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server13", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server14", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server15", str_002157b8, 0x1001);
+    Dvar_RegisterString_mac("server16", str_002157b8, 0x1001);
+
+    ui_netSource = Dvar_RegisterInt("ui_netSource", 0, 0, 2, 0x1001);
+    ui_smallFont = Dvar_RegisterFloat("ui_smallFont", 0.25f, 0.0f, 1.0f, 0x1001);
+    ui_bigFont = Dvar_RegisterFloat("ui_bigFont", 0.4f, 0.0f, 1.0f, 0x1001);
+    ui_extraBigFont = Dvar_RegisterFloat("ui_extraBigFont", 0.55f, 0.0f, 1.0f, 0x1001);
+    ui_currentMap = Dvar_RegisterInt("ui_currentMap", 0, 0, 0x7fffffff, 0x1001);
+    ui_gametype = Dvar_RegisterInt("ui_gametype", 3, 0, 0x7fffffff, 0x1001);
+    ui_joinGameType = Dvar_RegisterInt("ui_joinGametype", 0, 0, 0x7fffffff, 0x1001);
+    ui_netGameTypeName = Dvar_RegisterString_mac("ui_netGametypeName", str_002157b8, 0x1001);
+    ui_dedicated = Dvar_RegisterInt("ui_dedicated", 0, 0, 2, 0x1001);
+    ui_currentNetMap = Dvar_RegisterInt("ui_currentNetMap", 0, 0, 0x7fffffff, 0x1001);
+    ui_browserShowFull = Dvar_RegisterBool_mac("ui_browserShowFull", 1, 0x1001);
+    ui_browserShowEmpty = Dvar_RegisterBool_mac("ui_browserShowEmpty", 1, 0x1001);
+    ui_browserShowPassword = Dvar_RegisterBool_mac("ui_browserShowPassword", 1, 0x1001);
+    ui_browserShowNoPassword = Dvar_RegisterBool_mac("ui_browserShowNoPassword", 1, 0x1001);
+    ui_browserShowPure = Dvar_RegisterBool_mac("ui_browserShowPure", 1, 0x1001);
+    ui_browserShowDedicated = Dvar_RegisterBool_mac("ui_browserShowDedicated", 0, 0x1001);
+    ui_browserMod = Dvar_RegisterInt("ui_browserMod", -1, -1, 0x7fffffff, 0x1001);
+    ui_browserFriendlyfire = Dvar_RegisterInt("ui_browserFriendlyfire", -1, (int)0x80000000, 0x7fffffff, 0x1001);
+    ui_browserKillcam = Dvar_RegisterInt("ui_browserKillcam", -1, (int)0x80000000, 0x7fffffff, 0x1001);
+    ui_serverStatusTimeOut = Dvar_RegisterInt("ui_serverStatusTimeOut", 7000, 0, 0x7fffffff, 0x1001);
+    ui_playerProfileCount = Dvar_RegisterInt("ui_playerProfileCount", 0, (int)0x80000000, 0x7fffffff, 0x1040);
+    ui_playerProfileSelected = Dvar_RegisterString_mac("ui_playerProfileSelected", str_002157b8, 0x1040);
+    ui_playerProfileNameNew = Dvar_RegisterString_mac("ui_playerProfileNameNew", str_002157b8, 0x1000);
+
+    /* initialize legacy hacks state */
+    legacyBase = *(byte **)imp_legacyHacksArray;
+    *(byte *)(legacyBase + 0x2e4) = 0;
+    *(int *)(legacyBase + 0x3e4) = -1;
+    *(byte *)(legacyBase + 0x1de) = 0;
+    *(int *)(legacyBase + 0x2e0) = -1;
+    *(byte *)(legacyBase + 0x4ed) = 1;
+    *(byte *)(legacyBase + 0x3e8) = 0;
+    *(int *)(legacyBase + 0x4e8) = -1;
+    *(byte *)(legacyBase + 0x4ec) = 0;
+
+    String_Init();
+    Menu_Setup(uiInfo);
+
+    /* get screen dimensions */
+    CL_GetScreenDimensions((int *)((byte *)uiInfo + 0x18), (int *)((byte *)uiInfo + 0x1c), (int *)((byte *)uiInfo + 0x20));
+
+    width = *(int *)((byte *)uiInfo + 0x18);
+    height = *(int *)((byte *)uiInfo + 0x1c);
+
+    /* widescreen check: width*480 > height*640 */
+    if (width * 480 > height * 640) {
+        /* calculate horizontal offset for widescreen */
+        *(float *)uiInfo = ((float)width + (float)height * -1.3333333730697632f) * 0.5f;
+    } else {
+        *(int *)uiInfo = 0;
+    }
+
+    Sys_Milliseconds();
+    UI_GetGameTypesList();
+
+    ui_netGameType = Dvar_RegisterInt("ui_netGametype", 0, 0, *(int *)((byte *)&sharedUiInfo + 4424) - 1, 0x1001);
+
+    UI_LoadArenas();
+
+    menuList = UI_LoadMenus("ui_mp/menus.txt", 3);
+    UI_AddMenuList(uiInfo, menuList);
+
+    if (g_mapname[0] != '\0') {
+        UI_MapLoadInfo(va("maps/mp/%s.csv", g_mapname));
+    }
+
+    UI_AssetCache();
+    Menus_CloseAll(uiInfo);
+
+    /* register server hardware icons */
+    *(int *)((byte *)&sharedUiInfo + 25940) = CL_RegisterMaterialNoMip("server_hardware_unknown", 3);
+    *(int *)((byte *)&sharedUiInfo + 25944) = CL_RegisterMaterialNoMip("server_hardware_linux_dedicated", 3);
+    *(int *)((byte *)&sharedUiInfo + 25948) = CL_RegisterMaterialNoMip("server_hardware_win_dedicated", 3);
+    *(int *)((byte *)&sharedUiInfo + 25952) = CL_RegisterMaterialNoMip("server_hardware_mac_dedicated", 3);
+    *(int *)((byte *)&sharedUiInfo + 25960) = CL_RegisterMaterialNoMip("server_hardware_win_listen", 3);
+    *(int *)((byte *)&sharedUiInfo + 25964) = CL_RegisterMaterialNoMip("server_hardware_mac_listen", 3);
+
+    LAN_LoadCachedServers();
+
+    /* sort servers if sort key changed */
+    if (*(int *)((byte *)&sharedUiInfo + 28640) != 9) {
+        *(int *)((byte *)&sharedUiInfo + 28640) = 9;
+        qsort((byte *)&sharedUiInfo + 28660, *(int *)((byte *)&sharedUiInfo + 108660), 4, UI_ServersQsortCompare);
+    }
+
+    /* set mouse pitch */
+    mPitch = Dvar_GetFloat("m_pitch");
+    Dvar_SetBoolByName("ui_mousePitch", mPitch < 0.0f ? 1 : 0);
+
+    *(int *)((byte *)&sharedUiInfo + 108684) = -1;
+    *(int *)((byte *)&sharedUiInfo + 27524) = -1;
+
+    /* set net game type name dvar */
+    netGameTypeIdx = *(int *)((byte *)ui_netGameType + 8);
+    Dvar_SetString(ui_netGameTypeName, *(const char **)((byte *)&sharedUiInfo + 4428 + netGameTypeIdx * 8));
+
+    Dvar_RegisterBool_mac("ui_multiplayer", 1, 0x1040);
 }
 
 /* line 4274 */
@@ -2001,244 +1755,133 @@ uiMenuCommand_t UI_GetActiveMenu(void)
 }
 
 /* line 4386 */
-__attribute__((naked))
 qboolean UI_SetActiveMenu(int menu)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4386 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* menu */
-        /* { scope 1 */
-        "movl uiInfo, %eax\n" /* line 4396 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_Count\n"
-        "testl %eax, %eax\n"
-        "jle .Lf150e32_00150e67\n"
-        "leal -9(%ebx), %eax\n" /* line 4403 | menu */
-        "cmpl $1, %eax\n"
-        "jbe .Lf150e32_00150e62\n"
-        "movl uiInfo, %eax\n" /* line 4404 */
-        "movl %ebx, 0x49c(%eax)\n" /* menu */
-        ".Lf150e32_00150e62:\n"
-        "cmpl $0xb, %ebx\n" /* line 4406 | menu */
-        "jbe .Lf150e32_00150e71\n"
-        ".Lf150e32_00150e67:\n"
-        "xorl %eax, %eax\n" /* line 4634 */
-        /* } scope */
-        ".Lf150e32_00150e69:\n"
-        "addl $0x1c, %esp\n" /* line 4643 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf150e32_00150e71:\n"
-        "jmpl *.Ljt_150e32_0(, %ebx, 4)\n" /* line 4406 */
-        ".Lf150e32_00150e78:\n"
-        "calll Key_GetCatcher\n" /* line 4409 */
-        "andl $0xfffffff7, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Key_SetCatcher\n"
-        "movl $0, 4(%esp)\n" /* line 4410 */
-        "movl $str_0021663c, (%esp)\n" /* "cl_paused" */
-        "calll Dvar_SetIntByName\n"
-        "movl uiInfo, %eax\n" /* line 4411 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_00150eb0:\n"
-        "movl $8, (%esp)\n" /* line 4629 */
-        "calll Key_SetCatcher\n"
-        "movl $str_002aa750, 4(%esp)\n" /* line 4630 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        ".Lf150e32_00150ed1:\n"
-        "movl $0x3e8, 4(%esp)\n" /* line 4633 */
-        "movl $0x3f800000, (%esp)\n"
-        "calll SND_FadeAllSounds\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        /* { scope 2 */
-        ".Lf150e32_00150eef:\n"
-        "movl uiInfo, %eax\n" /* line 4474 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetFocused\n"
-        "movl %eax, %edx\n" /* pFocus */
-        "testl %eax, %eax\n" /* line 4477 */
-        "je .Lf150e32_00150f1b\n"
-        "movl uiInfo, %eax\n"
-        "movl 0x49c(%eax), %eax\n"
-        "cmpl $9, %eax\n"
-        "je .Lf150e32_00150f1b\n"
-        "cmpl $0xa, %eax\n"
-        "jne .Lf150e32_00150e67\n"
-        ".Lf150e32_00150f1b:\n"
-        "movl imp_legacyHacks, %esi\n" /* line 4481 */
-        "movl (%esi), %edi\n" /* buf */
-        "addl $0x2e4, %edi\n" /* buf */
-        "testl %edx, %edx\n" /* line 4482 */
-        "je .Lf150e32_00150f47\n"
-        "movl %edi, 4(%esp)\n" /* buf */
-        "movl 0xc0(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf150e32_001510e6\n"
-        ".Lf150e32_00150f47:\n"
-        "movl uiInfo, %eax\n" /* line 4485 */
-        "movl $9, 0x49c(%eax)\n"
-        "cmpl $0xa, %ebx\n" /* line 4487 | menu */
-        "je .Lf150e32_00151177\n"
-        ".Lf150e32_00150f5f:\n"
-        "movl $8, (%esp)\n" /* line 4498 */
-        "calll Key_SetCatcher\n"
-        "movl uiInfo, %eax\n" /* line 4499 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl %edi, 4(%esp)\n" /* line 4502 | buf */
-        "movl (%esi), %eax\n"
-        "addl $0x1de, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl (%esi), %edx\n" /* line 4503 */
-        "movl 0x3e4(%edx), %eax\n"
-        "movl %eax, 0x2e0(%edx)\n"
-        "movl (%esi), %eax\n" /* line 4504 */
-        "movb $0, 0x2e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 4505 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 4507 */
-        "addl $0x1de, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        /* } scope */
-        ".Lf150e32_00150fd0:\n"
-        "movl uiInfo, %eax\n" /* line 4456 */
-        "movl $0x27f, 0xc(%eax)\n"
-        "movl uiInfo, %eax\n" /* line 4457 */
-        "movl $0x1df, 0x10(%eax)\n"
-        "movl $8, (%esp)\n" /* line 4458 */
-        "calll Key_SetCatcher\n"
-        "movl imp_cl, %eax\n" /* line 4459 */
-        "movl (%eax), %eax\n"
-        "movb $1, 8(%eax)\n"
-        "movl uiInfo, %eax\n" /* line 4460 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl $str_002aa740, 4(%esp)\n" /* line 4461 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_0015102b:\n"
-        "movl $8, (%esp)\n" /* line 4431 */
-        "calll Key_SetCatcher\n"
-        "movl $str_002aa728, 4(%esp)\n" /* line 4432 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_00151056:\n"
-        "movl $8, (%esp)\n" /* line 4442 */
-        "calll Key_SetCatcher\n"
-        "movl $str_002aa738, 4(%esp)\n" /* line 4443 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_00151081:\n"
-        "movl $8, (%esp)\n" /* line 4437 */
-        "calll Key_SetCatcher\n"
-        "movl $str_002aa730, 4(%esp)\n" /* line 4438 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_001510ac:\n"
-        "movl $8, (%esp)\n" /* line 4448 */
-        "calll Key_SetCatcher\n"
-        "movl uiInfo, %eax\n" /* line 4449 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl imp_cg, %eax\n" /* line 4450 */
-        "movl (%eax), %eax\n"
-        "addl $0x2adfc, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "testl %eax, %eax\n"
-        "je .Lf150e32_00151158\n"
-        ".Lf150e32_001510e6:\n"
-        "movl $1, %eax\n" /* line 4634 */
-        "jmp .Lf150e32_00150e69\n"
-        ".Lf150e32_001510f0:\n"
-        "movl $8, (%esp)\n" /* line 4415 */
-        "calll Key_SetCatcher\n"
-        "movl $str_00216f3c, 4(%esp)\n" /* line 4416 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $str_0021605c, (%esp)\n" /* line 4417 */
-        "calll Dvar_GetString\n"
-        "cmpb $0, (%eax)\n" /* line 4419 */
-        "je .Lf150e32_00150ed1\n"
-        "movl $str_00222924, 4(%esp)\n" /* ";" */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf150e32_00150ed1\n"
-        "movl $str_002aa718, 4(%esp)\n" /* line 4420 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "jmp .Lf150e32_00150ed1\n"
-        ".Lf150e32_00151158:\n"
-        "movl $str_00216f3c, 4(%esp)\n" /* line 4451 */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf150e32_00150e69\n"
-        /* { scope 2 */
-        ".Lf150e32_00151177:\n"
-        "movl uiInfo, %eax\n" /* line 4490 */
-        "movl $0x27f, 0xc(%eax)\n"
-        "movl uiInfo, %eax\n" /* line 4491 */
-        "movl $0x1df, 0x10(%eax)\n"
-        "jmp .Lf150e32_00150f5f\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_150e32_0:\n"
-        ".long .Lf150e32_00150e78\n"
-        ".long .Lf150e32_001510f0\n"
-        ".long .Lf150e32_001510ac\n"
-        ".long .Lf150e32_00151081\n"
-        ".long .Lf150e32_00151056\n"
-        ".long .Lf150e32_0015102b\n"
-        ".long .Lf150e32_00150e67\n"
-        ".long .Lf150e32_00150e67\n"
-        ".long .Lf150e32_00150fd0\n"
-        ".long .Lf150e32_00150eef\n"
-        ".long .Lf150e32_00150eef\n"
-        ".long .Lf150e32_00150eb0\n"
-        ".text\n"
-    );
+    byte *legacyBase;
+    void *pFocus;
+    const char *errorMsg;
+
+    if (Menu_Count(uiInfo) <= 0)
+        return 0;
+
+    /* don't overwrite activeMenu for values 9 or 10 */
+    if (menu != 9 && menu != 10)
+        *(int *)((byte *)uiInfo + 0x49c) = menu;
+
+    if ((unsigned)menu > 11)
+        return 0;
+
+    switch (menu) {
+    case 0: /* UIMENU_NONE */
+        Key_SetCatcher(Key_GetCatcher() & ~8);
+        Dvar_SetIntByName("cl_paused", 0);
+        Menus_CloseAll(uiInfo);
+        return 1;
+
+    case 1: /* UIMENU_MAIN */
+        Key_SetCatcher(8);
+        Menus_OpenByName(uiInfo, "main");
+        errorMsg = Dvar_GetString("com_errorMessage");
+        if (errorMsg[0] != '\0' && I_stricmp(errorMsg, ";") != 0) {
+            Menus_OpenByName(uiInfo, "error_popmenu");
+        }
+        SND_FadeAllSounds(1.0f, 1000);
+        return 1;
+
+    case 2: /* UIMENU_INGAME */
+        {
+            int opened;
+            const char *cgMenuName = (const char *)(*(byte **)imp_cg + 0x2adfc);
+            Key_SetCatcher(8);
+            Menus_CloseAll(uiInfo);
+            /* Menus_OpenByName actually returns success in eax despite void decl */
+            __asm__ __volatile__ (
+                "movl %1, 4(%%esp)\n"
+                "movl %2, (%%esp)\n"
+                "calll Menus_OpenByName\n"
+                "movl %%eax, %0\n"
+                : "=r"(opened)
+                : "r"(cgMenuName), "r"(uiInfo)
+                : "eax", "ecx", "edx", "memory"
+            );
+            if (!opened) {
+                Menus_OpenByName(uiInfo, "main");
+            }
+        }
+        return 1;
+
+    case 3: /* needcd */
+        Key_SetCatcher(8);
+        Menus_OpenByName(uiInfo, "needcd");
+        return 1;
+
+    case 4: /* badcd */
+        Key_SetCatcher(8);
+        Menus_OpenByName(uiInfo, "badcd");
+        return 1;
+
+    case 5: /* team */
+        Key_SetCatcher(8);
+        Menus_OpenByName(uiInfo, "team");
+        return 1;
+
+    case 6:
+    case 7:
+        return 0;
+
+    case 8: /* quickmessage */
+        *(int *)((byte *)uiInfo + 0xc) = 0x27f;
+        *(int *)((byte *)uiInfo + 0x10) = 0x1df;
+        Key_SetCatcher(8);
+        *(byte *)(*(byte **)imp_cl + 8) = 1;
+        Menus_CloseAll(uiInfo);
+        Menus_OpenByName(uiInfo, "quickmessage");
+        return 1;
+
+    case 9:
+    case 10: /* ingame menu with legacy hacks */
+        pFocus = Menu_GetFocused(uiInfo);
+        if (pFocus) {
+            int activeMenu = *(int *)((byte *)uiInfo + 0x49c);
+            if (activeMenu != 9 && activeMenu != 10)
+                return 0;
+        }
+
+        legacyBase = *(byte **)imp_legacyHacks;
+
+        if (pFocus) {
+            /* check if focused menu name matches buf */
+            if (I_stricmp(*(const char **)((byte *)pFocus + 0xc0), (const char *)(legacyBase + 0x2e4)) == 0)
+                return 1;
+        }
+
+        *(int *)((byte *)uiInfo + 0x49c) = 9;
+
+        if (menu == 10) {
+            *(int *)((byte *)uiInfo + 0xc) = 0x27f;
+            *(int *)((byte *)uiInfo + 0x10) = 0x1df;
+        }
+
+        Key_SetCatcher(8);
+        Menus_CloseAll(uiInfo);
+
+        /* copy buf to secondary location, save/clear state */
+        strcpy((char *)(legacyBase + 0x1de), (const char *)(legacyBase + 0x2e4));
+        *(int *)(legacyBase + 0x2e0) = *(int *)(legacyBase + 0x3e4);
+        *(byte *)(legacyBase + 0x2e4) = 0;
+        *(int *)(legacyBase + 0x3e4) = -1;
+
+        Menus_OpenByName(uiInfo, (const char *)(legacyBase + 0x1de));
+        return 1;
+
+    case 11: /* player_profile */
+        Key_SetCatcher(8);
+        Menus_OpenByName(uiInfo, "player_profile");
+        SND_FadeAllSounds(1.0f, 1000);
+        return 1;
+    }
+
+    return 0;
 }
 
 /* line 4646 */
@@ -2558,79 +2201,48 @@ Bool UI_DrawRecordLevel(rectDef_t *rect)
 }
 
 /* line 3786 */
-__attribute__((naked))
 MaterialHandle UI_FeederItemImage(const float feederID, int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3786 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movss 8(%ebp), %xmm0\n" /* line 3789 | feederID */
-        "ucomiss lit4_002ed608, %xmm0\n" /* 4.0f */
-        "je .Lf1518b2_001518cf\n"
-        /* { scope 1 */
-        ".Lf1518b2_001518c7:\n"
-        "xorl %eax, %eax\n" /* line 3801 */
-        /* } scope */
-        ".Lf1518b2_001518c9:\n"
-        "addl $0x14, %esp\n" /* line 3807 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1518b2_001518cf:\n"
-        "jp .Lf1518b2_001518c7\n" /* line 3789 */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl sharedUiInfo+4944, %ecx\n" /* line 3511 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1518b2_00151901\n"
-        /* } scope */
-        /* } scope */
-        "xorl %ebx, %ebx\n" /* line 3789 | c */
-        "xorl %edx, %edx\n"
-        "movl $sharedUiInfo, %eax\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1518b2_001518e4:\n"
-        "cmpl $0, 0x13f4(%eax)\n" /* line 3513 */
-        "je .Lf1518b2_001518f5\n"
-        "cmpl 0xc(%ebp), %ebx\n" /* line 3515 | index, c */
-        "je .Lf1518b2_00151926\n"
-        "addl $1, %ebx\n" /* line 3522 | c */
-        ".Lf1518b2_001518f5:\n"
-        "addl $1, %edx\n" /* line 3511 */
-        "addl $0xa4, %eax\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf1518b2_001518e4\n"
-        /* } scope */
-        ".Lf1518b2_00151901:\n"
-        "xorl %edx, %edx\n" /* line 3795 */
-        ".Lf1518b2_00151903:\n"
-        "cmpl %edx, %ecx\n"
-        "jle .Lf1518b2_001518c7\n"
-        "leal (%edx, %edx, 4), %eax\n" /* line 3797 */
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (, %eax, 4), %ebx\n" /* c */
-        "movl sharedUiInfo+5104(%ebx), %eax\n" /* c */
-        "testl %eax, %eax\n"
-        "je .Lf1518b2_0015192c\n"
-        ".Lf1518b2_0015191e:\n"
-        "movl sharedUiInfo+5104(%ebx), %eax\n" /* line 3801 | c */
-        "jmp .Lf1518b2_001518c9\n"
-        ".Lf1518b2_00151926:\n"
-        "testl %edx, %edx\n" /* line 3795 */
-        "js .Lf1518b2_001518c7\n"
-        "jmp .Lf1518b2_00151903\n"
-        ".Lf1518b2_0015192c:\n"
-        "movl $3, 4(%esp)\n" /* line 3799 */
-        "movl sharedUiInfo+4956(%ebx), %eax\n" /* c */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $sharedUiInfo+5088, %edx\n"
-        "movl %eax, 0x10(%ebx, %edx)\n" /* c */
-        "jmp .Lf1518b2_0015191e\n"
-    );
+    int numMaps, c, i, mapIndex;
+    int byteOff;
+    byte *base;
+
+    if (feederID != 4.0f)
+        return 0;
+
+    numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+    mapIndex = -1;
+
+    if (numMaps > 0) {
+        c = 0;
+        for (i = 0; i < numMaps; i++) {
+            if (*(int *)((byte *)&sharedUiInfo + 0x13f4 + i * 0xa4) != 0) {
+                if (c == index) {
+                    mapIndex = i;
+                    break;
+                }
+                c++;
+            }
+        }
+    }
+
+    /* if no match found, default to entry 0 */
+    if (mapIndex < 0)
+        mapIndex = 0;
+
+    if (numMaps <= mapIndex)
+        return 0;
+
+    byteOff = mapIndex * 0xa4;
+
+    /* check if material handle is cached */
+    if (*(int *)((byte *)&sharedUiInfo + 5104 + byteOff) == 0) {
+        /* register the material from the name string */
+        const char *name = *(const char **)((byte *)&sharedUiInfo + 4956 + byteOff);
+        *(int *)((byte *)&sharedUiInfo + 5104 + byteOff) = CL_RegisterMaterialNoMip(name, 3);
+    }
+
+    return *(MaterialHandle *)((byte *)&sharedUiInfo + 5104 + byteOff);
 }
 
 /* line 393 */
@@ -2947,1031 +2559,485 @@ void UI_StartServerRefresh(qboolean full)
     );
 }
 
-/* line 2836 */
-static __attribute__((naked))
-void UI_BuildServerDisplayList(qboolean force)
+/* Helper: insert server index into sorted display list at given position */
+static void UI_InsertServerAtPosition(int serverIndex, int position)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2836 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* force */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 2846 | clients */
-        "jne .Lf151d58_00151e72\n"
-        "movl uiInfo, %eax\n"
-        "movl 4(%eax), %eax\n"
-        "cmpl sharedUiInfo+108672, %eax\n"
-        "jle .Lf151d58_00151e67\n"
-        ".Lf151d58_00151d83:\n"
-        "xorl %ebx, %ebx\n" /* line 2850 | clients */
-        ".Lf151d58_00151d85:\n"
-        "movl $str_002a8f60, (%esp)\n" /* line 2854 */
-        "calll Dvar_GetString\n"
-        "movl $0x400, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $sharedUiInfo+108712, (%esp)\n"
-        "calll I_strncpyz\n"
-        "xorl %esi, %esi\n" /* line 2855 | i */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "movl $sharedUiInfo+108712, %edi\n" /* len */
-        "movl %esi, %eax\n" /* i */
-        "repne scasb %es:(%edi), %al\n" /* len */
-        "notl %ecx\n"
-        "movl %ecx, %eax\n" /* line 2856 */
-        "subl $1, %eax\n"
-        "je .Lf151d58_00151ec7\n"
-        ".Lf151d58_00151dc7:\n"
-        "cmpl sharedUiInfo+108688, %eax\n" /* line 2861 */
-        "je .Lf151d58_00151dde\n"
-        "movl %eax, sharedUiInfo+108688\n" /* line 2863 */
-        "movl $0xffffffff, sharedUiInfo+108692\n" /* line 2864 */
-        ".Lf151d58_00151dde:\n"
-        "testl %ebx, %ebx\n" /* line 2867 | clients */
-        "jne .Lf151d58_00151f14\n"
-        ".Lf151d58_00151de6:\n"
-        "movl ui_netSource, %eax\n" /* line 2879 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "movl %eax, -0x428(%ebp)\n" /* count */
-        "movl ui_netSource, %eax\n" /* line 2880 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_WaitServerResponse\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151d58_00151e80\n"
-        "movl ui_netSource, %edx\n"
-        "movl 8(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151d58_00151e27\n"
-        "movl -0x428(%ebp), %eax\n" /* count */
-        "testl %eax, %eax\n"
-        "je .Lf151d58_00151e86\n"
-        ".Lf151d58_00151e27:\n"
-        "movl $UI_ServersQsortCompare, 0xc(%esp)\n" /* line 1529 */
-        "movl $4, 8(%esp)\n"
-        "movl sharedUiInfo+108660, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $sharedUiInfo+28660, (%esp)\n"
-        "calll qsort\n"
-        "movl -0x428(%ebp), %ecx\n" /* line 2894 | count */
-        "testl %ecx, %ecx\n"
-        "jg .Lf151d58_00151fa2\n"
-        ".Lf151d58_00151e5a:\n"
-        "movl uiInfo, %eax\n" /* line 3037 */
-        "movl 4(%eax), %eax\n"
-        "movl %eax, sharedUiInfo+28632\n"
-        /* } scope */
-        ".Lf151d58_00151e67:\n"
-        "addl $0x43c, %esp\n" /* line 3038 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf151d58_00151e72:\n"
-        "cmpl $2, %ebx\n" /* line 2850 | clients */
-        "jne .Lf151d58_00151d85\n"
-        "jmp .Lf151d58_00151d83\n"
-        ".Lf151d58_00151e80:\n"
-        "movl ui_netSource, %edx\n"
-        ".Lf151d58_00151e86:\n"
-        "movl $0, sharedUiInfo+108660\n" /* line 2825 */
-        "movl $0, sharedUiInfo+108668\n" /* line 2826 */
-        "movl 8(%edx), %eax\n" /* line 2827 */
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "movl %eax, sharedUiInfo+108664\n"
-        "movl uiInfo, %eax\n" /* line 2884 */
-        "movl 4(%eax), %eax\n"
-        "addl $0x1f4, %eax\n"
-        "movl %eax, sharedUiInfo+108672\n"
-        /* } scope */
-        "addl $0x43c, %esp\n" /* line 3038 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf151d58_00151ec7:\n"
-        "movl $str_002aa83c, (%esp)\n" /* line 2858 */
-        "calll UI_SafeTranslateString\n"
-        "movl $str_002167d8, 8(%esp)\n" /* "1.3" */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa850, (%esp)\n" /* "%s - %s" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $sharedUiInfo+108712, (%esp)\n"
-        "calll strcpy\n"
-        "cld\n" /* line 2859 */
-        "movl $0xffffffff, %ecx\n"
-        "movl $sharedUiInfo+108712, %edi\n" /* len */
-        "movl %esi, %eax\n" /* i */
-        "repne scasb %es:(%edi), %al\n" /* len */
-        "notl %ecx\n"
-        "leal -1(%ecx), %eax\n"
-        "jmp .Lf151d58_00151dc7\n"
-        ".Lf151d58_00151f14:\n"
-        "movl $0, numclean\n" /* line 2869 */
-        "movl $0, sharedUiInfo+108660\n" /* line 2825 */
-        "movl $0, sharedUiInfo+108668\n" /* line 2826 */
-        "movl ui_netSource, %eax\n" /* line 2827 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "movl %eax, sharedUiInfo+108664\n"
-        "movl sharedUiInfo+28656, %eax\n" /* line 2872 */
-        "testl %eax, %eax\n"
-        "js .Lf151d58_00151f7d\n"
-        "movl $0, 0x10(%esp)\n" /* line 2873 */
-        "movl $0, 0xc(%esp)\n"
-        "movl $2, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_SetFeederSelection\n"
-        ".Lf151d58_00151f7d:\n"
-        "movl $1, 8(%esp)\n" /* line 2875 */
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_MarkServerDirty\n"
-        "jmp .Lf151d58_00151de6\n"
-        ".Lf151d58_00151fa2:\n"
-        "xorl %esi, %esi\n" /* line 2885 | i */
-        "jmp .Lf151d58_00151fb5\n"
-        ".Lf151d58_00151fa6:\n"
-        "addl $1, %esi\n" /* line 2894 | i */
-        "cmpl %esi, -0x428(%ebp)\n" /* i, count */
-        "je .Lf151d58_00151e5a\n"
-        ".Lf151d58_00151fb5:\n"
-        "movl %esi, 4(%esp)\n" /* line 2897 | i */
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_ServerIsDirty\n"
-        "testl %eax, %eax\n"
-        "je .Lf151d58_00151fa6\n"
-        "movl %esi, 4(%esp)\n" /* line 2902 | i */
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerPing\n"
-        "movl %eax, -0x424(%ebp)\n" /* ping */
-        "testl %eax, %eax\n" /* line 2903 */
-        "jle .Lf151d58_0015227d\n"
-        "movl ui_netSource, %edx\n"
-        ".Lf151d58_00151ff5:\n"
-        "movl $0x400, 0xc(%esp)\n" /* line 2905 */
-        "leal -0x418(%ebp), %ecx\n" /* info */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl 8(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerInfo\n"
-        "movl $str_002a8a54, 4(%esp)\n" /* line 2907 */
-        "leal -0x418(%ebp), %eax\n" /* info */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* clients */
-        "addl %eax, sharedUiInfo+108668\n" /* line 2908 */
-        "movl $str_002aa858, 4(%esp)\n" /* line 2911 */
-        "leal -0x418(%ebp), %edx\n" /* info */
-        "movl %edx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl $0xf, 8(%esp)\n"
-        "movl $str_002aa860, 4(%esp)\n" /* "000.000.000.000" */
-        "movl %eax, (%esp)\n"
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf151d58_00152105\n"
-        "movl ui_browserShowEmpty, %eax\n" /* line 2918 */
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf151d58_00152085\n"
-        "testl %ebx, %ebx\n" /* line 2920 | clients */
-        "je .Lf151d58_00152105\n"
-        ".Lf151d58_00152085:\n"
-        "movl ui_browserShowFull, %eax\n" /* line 2927 */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf151d58_00152292\n"
-        ".Lf151d58_00152094:\n"
-        "movl ui_browserShowPassword, %eax\n" /* line 2937 */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf151d58_001522bd\n"
-        ".Lf151d58_001520a3:\n"
-        "movl ui_browserShowNoPassword, %eax\n" /* line 2946 */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf151d58_001522e8\n"
-        ".Lf151d58_001520b2:\n"
-        "movl ui_browserShowPure, %eax\n" /* line 2955 */
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf151d58_00152313\n"
-        ".Lf151d58_001520c1:\n"
-        "movl ui_browserShowDedicated, %eax\n" /* line 2964 */
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf151d58_0015233e\n"
-        ".Lf151d58_001520d0:\n"
-        "movl ui_browserMod, %eax\n" /* line 2974 */
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf151d58_00152126\n"
-        "movl $str_002a9cf4, 4(%esp)\n" /* line 2976 */
-        "leal -0x418(%ebp), %edx\n" /* info */
-        "movl %edx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl ui_browserMod, %edx\n"
-        "cmpl 8(%edx), %eax\n"
-        "je .Lf151d58_00152126\n"
-        ".Lf151d58_00152105:\n"
-        "movl $0, 8(%esp)\n" /* line 3014 */
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_MarkServerDirty\n"
-        "jmp .Lf151d58_00151fa6\n"
-        ".Lf151d58_00152126:\n"
-        "movl ui_browserFriendlyfire, %eax\n" /* line 2983 */
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf151d58_0015215b\n"
-        "movl $str_002aa87c, 4(%esp)\n" /* line 2985 */
-        "leal -0x418(%ebp), %ecx\n" /* info */
-        "movl %ecx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl ui_browserFriendlyfire, %edx\n"
-        "cmpl 8(%edx), %eax\n"
-        "jne .Lf151d58_00152105\n"
-        ".Lf151d58_0015215b:\n"
-        "movl ui_browserKillcam, %eax\n" /* line 2992 */
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf151d58_00152194\n"
-        "movl $str_002aa880, 4(%esp)\n" /* line 2994 */
-        "leal -0x418(%ebp), %eax\n" /* info */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl ui_browserKillcam, %edx\n"
-        "cmpl 8(%edx), %eax\n"
-        "jne .Lf151d58_00152105\n"
-        ".Lf151d58_00152194:\n"
-        "movl ui_joinGameType, %eax\n" /* line 3001 */
-        "movl 8(%eax), %edx\n"
-        "movl sharedUiInfo+4692(, %edx, 8), %eax\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf151d58_0015242e\n"
-        ".Lf151d58_001521ac:\n"
-        "movl ui_serverFilterType, %eax\n" /* line 3010 */
-        "testl %eax, %eax\n"
-        "jle .Lf151d58_001521e6\n"
-        "movl serverFilters+4(, %eax, 8), %ebx\n" /* line 3012 | clients */
-        "movl $str_002aa890, 4(%esp)\n" /* "game" */
-        "leal -0x418(%ebp), %ecx\n" /* info */
-        "movl %ecx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %ebx, 4(%esp)\n" /* clients */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151d58_00152105\n"
-        ".Lf151d58_001521e6:\n"
-        "movl ui_netSource, %edx\n" /* line 3022 */
-        "cmpl $2, 8(%edx)\n"
-        "je .Lf151d58_00152473\n"
-        ".Lf151d58_001521f6:\n"
-        "movl sharedUiInfo+108660, %ebx\n" /* clients */
-        /* { scope 2: position */
-        ".Lf151d58_001521fc:\n"
-        "movl %ebx, %edi\n" /* line 2780 | j, len */
-        "testl %ebx, %ebx\n" /* line 2784 | j */
-        "jle .Lf151d58_00152464\n"
-        "movl $0, -0x420(%ebp)\n" /* position */
-        "jmp .Lf151d58_0015222e\n"
-        ".Lf151d58_00152212:\n"
-        "subl %ebx, %edi\n" /* line 2802 | j, len */
-        "movl -0x41c(%ebp), %ecx\n"
-        "movl %ecx, -0x420(%ebp)\n" /* position */
-        ".Lf151d58_00152220:\n"
-        "testl %ebx, %ebx\n" /* line 2784 | j */
-        "jle .Lf151d58_0015236d\n"
-        "movl ui_netSource, %edx\n"
-        ".Lf151d58_0015222e:\n"
-        "movl %edi, %ebx\n" /* line 2786 | len, j */
-        "sarl $1, %ebx\n" /* j */
-        "movl -0x420(%ebp), %eax\n" /* line 2788 | position */
-        "addl %ebx, %eax\n" /* j */
-        "movl %eax, -0x41c(%ebp)\n"
-        "movl sharedUiInfo+28660(, %eax, 4), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl sharedUiInfo+28644, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl sharedUiInfo+28640, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_CompareServers\n"
-        "movl %eax, %edx\n"
-        "cmpl $0, %eax\n" /* line 2793 */
-        "je .Lf151d58_001524ec\n"
-        "jg .Lf151d58_00152212\n" /* line 2799 */
-        "subl %ebx, %edi\n" /* line 2807 | j, len */
-        "jmp .Lf151d58_00152220\n"
-        /* } scope */
-        ".Lf151d58_0015227d:\n"
-        "movl ui_netSource, %edx\n" /* line 2903 */
-        "cmpl $2, 8(%edx)\n"
-        "jne .Lf151d58_00151fa6\n"
-        "jmp .Lf151d58_00151ff5\n"
-        ".Lf151d58_00152292:\n"
-        "movl $str_002a70dc, 4(%esp)\n" /* line 2929 */
-        "leal -0x418(%ebp), %ecx\n" /* info */
-        "movl %ecx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "cmpl %eax, %ebx\n" /* line 2930 | clients */
-        "jne .Lf151d58_00152094\n"
-        "jmp .Lf151d58_00152105\n"
-        ".Lf151d58_001522bd:\n"
-        "movl $str_002a9af0, 4(%esp)\n" /* line 2939 */
-        "leal -0x418(%ebp), %eax\n" /* info */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "testl %eax, %eax\n"
-        "je .Lf151d58_001520a3\n"
-        "jmp .Lf151d58_00152105\n"
-        ".Lf151d58_001522e8:\n"
-        "movl $str_002a9af0, 4(%esp)\n" /* line 2948 */
-        "leal -0x418(%ebp), %edx\n" /* info */
-        "movl %edx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151d58_001520b2\n"
-        "jmp .Lf151d58_00152105\n"
-        ".Lf151d58_00152313:\n"
-        "movl $str_002aa870, 4(%esp)\n" /* line 2957 */
-        "leal -0x418(%ebp), %ecx\n" /* info */
-        "movl %ecx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151d58_001520c1\n"
-        "jmp .Lf151d58_00152105\n"
-        ".Lf151d58_0015233e:\n"
-        "movl $str_002aa878, 4(%esp)\n" /* line 2966 */
-        "leal -0x418(%ebp), %eax\n" /* info */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "subl $1, %eax\n" /* line 2967 */
-        "cmpl $2, %eax\n"
-        "jbe .Lf151d58_001520d0\n"
-        "jmp .Lf151d58_00152105\n"
-        /* { scope 2: position */
-        ".Lf151d58_0015236d:\n"
-        "movl -0x420(%ebp), %eax\n" /* line 2812 | position */
-        "addl $1, %eax\n"
-        "subl $1, %edx\n"
-        "cmovll -0x420(%ebp), %eax\n" /* position */
-        "movl %eax, -0x420(%ebp)\n" /* position */
-        /* { scope 3 */
-        /* { scope 4 */
-        "testl %eax, %eax\n" /* line 2724 */
-        "js .Lf151d58_001523f8\n"
-        "movl sharedUiInfo+108660, %ebx\n"
-        ".Lf151d58_00152390:\n"
-        "cmpl -0x420(%ebp), %ebx\n" /* position */
-        "jl .Lf151d58_001523f8\n"
-        "movl sharedUiInfo+28656, %eax\n" /* line 2729 */
-        "cmpl -0x420(%ebp), %eax\n" /* position */
-        "jl .Lf151d58_001523b1\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf151d58_001523b1\n"
-        "addl $1, %eax\n" /* line 2730 */
-        "movl %eax, sharedUiInfo+28656\n"
-        ".Lf151d58_001523b1:\n"
-        "leal 1(%ebx), %ecx\n" /* line 2732 */
-        "movl %ecx, sharedUiInfo+108660\n"
-        "cmpl -0x420(%ebp), %ecx\n" /* line 2734 | position */
-        "jle .Lf151d58_001523eb\n"
-        "leal 0x6fe0(, %ebx, 4), %eax\n" /* line 2836 */
-        "leal sharedUiInfo+20(%eax), %edx\n"
-        "leal sharedUiInfo+28660(, %ecx, 4), %ebx\n" /* force */
-        "subl %edx, %ebx\n" /* force */
-        ".Lf151d58_001523d8:\n"
-        "subl $1, %ecx\n" /* line 2736 */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%ebx, %edx)\n"
-        "subl $4, %edx\n"
-        "cmpl -0x420(%ebp), %ecx\n" /* line 2734 | position */
-        "jg .Lf151d58_001523d8\n"
-        ".Lf151d58_001523eb:\n"
-        "movl -0x420(%ebp), %eax\n" /* line 2738 | position */
-        "movl %esi, sharedUiInfo+28660(, %eax, 4)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lf151d58_001523f8:\n"
-        "movl -0x424(%ebp), %ebx\n" /* line 3029 | ping, clients */
-        "testl %ebx, %ebx\n" /* clients */
-        "jle .Lf151d58_00151fa6\n"
-        "movl $0, 8(%esp)\n" /* line 3031 */
-        "movl %esi, 4(%esp)\n" /* i */
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_MarkServerDirty\n"
-        "addl $1, numclean\n" /* line 3032 */
-        "jmp .Lf151d58_00151fa6\n"
-        ".Lf151d58_0015242e:\n"
-        "movl sharedUiInfo+4688(, %edx, 8), %ebx\n" /* line 3003 | clients */
-        "movl $str_002aa884, 4(%esp)\n" /* "gametype" */
-        "leal -0x418(%ebp), %edx\n" /* info */
-        "movl %edx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %ebx, 4(%esp)\n" /* clients */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf151d58_001521ac\n"
-        "jmp .Lf151d58_00152105\n"
-        /* { scope 2: position */
-        ".Lf151d58_00152464:\n"
-        "movl $0, -0x420(%ebp)\n" /* line 2784 | position */
-        "jmp .Lf151d58_00152390\n"
-        /* } scope */
-        /* { scope 2: position */
-        ".Lf151d58_00152473:\n"
-        "movl sharedUiInfo+108660, %ebx\n" /* line 2753 | j */
-        "testl %ebx, %ebx\n" /* j */
-        "jle .Lf151d58_001521fc\n"
-        "cmpl %esi, sharedUiInfo+28660\n" /* line 2755 */
-        "je .Lf151d58_0015257a\n"
-        "xorl %edi, %edi\n" /* line 2758 */
-        "movl $sharedUiInfo, %ecx\n"
-        ".Lf151d58_00152494:\n"
-        "addl $1, %edi\n" /* line 2753 */
-        "cmpl %edi, %ebx\n" /* j */
-        "je .Lf151d58_001521fc\n"
-        "movl 0x6ff8(%ecx), %eax\n" /* line 2755 */
-        "addl $4, %ecx\n"
-        "cmpl %eax, %esi\n"
-        "jne .Lf151d58_00152494\n"
-        ".Lf151d58_001524ac:\n"
-        "leal -1(%ebx), %eax\n" /* line 2757 | j */
-        "movl %eax, sharedUiInfo+108660\n"
-        "cmpl %eax, %edi\n" /* line 2758 */
-        "jge .Lf151d58_00152573\n"
-        "leal 0x6fe4(, %edi, 4), %eax\n" /* line 2836 */
-        "leal sharedUiInfo+20(%eax), %ecx\n"
-        "movl %edi, %ebx\n" /* len, force */
-        "leal sharedUiInfo+28660(, %edi, 4), %edi\n" /* len */
-        "subl %ecx, %edi\n" /* len */
-        ".Lf151d58_001524d4:\n"
-        "addl $1, %ebx\n" /* line 2760 | j */
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%edi, %ecx)\n"
-        "addl $4, %ecx\n"
-        "cmpl %ebx, sharedUiInfo+108660\n" /* line 2758 | j */
-        "jg .Lf151d58_001524d4\n"
-        "jmp .Lf151d58_001521f6\n"
-        /* } scope */
-        /* { scope 2: position */
-        /* { scope 3 */
-        ".Lf151d58_001524ec:\n"
-        "movl -0x41c(%ebp), %edi\n" /* line 2724 */
-        "testl %edi, %edi\n"
-        "js .Lf151d58_001523f8\n"
-        "movl sharedUiInfo+108660, %ebx\n"
-        "cmpl -0x41c(%ebp), %ebx\n"
-        "jl .Lf151d58_001523f8\n"
-        "movl sharedUiInfo+28656, %eax\n" /* line 2729 */
-        "cmpl -0x41c(%ebp), %eax\n"
-        "jl .Lf151d58_00152525\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf151d58_00152525\n"
-        "addl $1, %eax\n" /* line 2730 */
-        "movl %eax, sharedUiInfo+28656\n"
-        ".Lf151d58_00152525:\n"
-        "leal 1(%ebx), %ecx\n" /* line 2732 */
-        "movl %ecx, sharedUiInfo+108660\n"
-        "cmpl -0x41c(%ebp), %ecx\n" /* line 2734 */
-        "jle .Lf151d58_0015255f\n"
-        "leal 0x6fe0(, %ebx, 4), %eax\n" /* line 2836 */
-        "leal sharedUiInfo+20(%eax), %edx\n"
-        "leal sharedUiInfo+28660(, %ecx, 4), %ebx\n" /* force */
-        "subl %edx, %ebx\n" /* force */
-        ".Lf151d58_0015254c:\n"
-        "subl $1, %ecx\n" /* line 2736 */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%ebx, %edx)\n"
-        "subl $4, %edx\n"
-        "cmpl -0x41c(%ebp), %ecx\n" /* line 2734 */
-        "jg .Lf151d58_0015254c\n"
-        ".Lf151d58_0015255f:\n"
-        "movl $sharedUiInfo+28640, %eax\n" /* line 2738 */
-        "movl -0x41c(%ebp), %edx\n"
-        "movl %esi, 0x14(%eax, %edx, 4)\n"
-        "jmp .Lf151d58_001523f8\n"
-        ".Lf151d58_00152573:\n"
-        "movl %eax, %ebx\n"
-        "jmp .Lf151d58_001521fc\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: position */
-        ".Lf151d58_0015257a:\n"
-        "xorl %edi, %edi\n" /* line 2755 */
-        "jmp .Lf151d58_001524ac\n"
-    );
+    int numServers = *(int *)((byte *)&sharedUiInfo + 108660);
+    int *displayServers = (int *)((byte *)&sharedUiInfo + 28660);
+    int *selectedServer = (int *)((byte *)&sharedUiInfo + 28656);
+    int j;
+
+    if (position < 0 || numServers < position)
+        return;
+
+    if (*selectedServer >= position && numServers != 0)
+        *selectedServer += 1;
+
+    numServers++;
+    *(int *)((byte *)&sharedUiInfo + 108660) = numServers;
+
+    for (j = numServers - 1; j > position; j--)
+        displayServers[j] = displayServers[j - 1];
+
+    displayServers[position] = serverIndex;
+}
+
+/* Helper: remove duplicate server from favorites list */
+static void UI_RemoveDuplicateFromFavorites(int serverIndex)
+{
+    int numServers = *(int *)((byte *)&sharedUiInfo + 108660);
+    int *displayServers = (int *)((byte *)&sharedUiInfo + 28660);
+    int i, j;
+
+    if (numServers <= 0)
+        return;
+
+    for (i = 0; i < numServers; i++) {
+        if (displayServers[i] == serverIndex)
+            break;
+    }
+    if (i >= numServers)
+        return;
+
+    numServers--;
+    *(int *)((byte *)&sharedUiInfo + 108660) = numServers;
+
+    for (j = i; j < numServers; j++)
+        displayServers[j] = displayServers[j + 1];
+}
+
+/* Helper: binary search insert into sorted server display list */
+static void UI_BinaryInsertServer(int serverIndex)
+{
+    int numDisplay = *(int *)((byte *)&sharedUiInfo + 108660);
+    int *displayServers = (int *)((byte *)&sharedUiInfo + 28660);
+    int lo, hi, mid, testIdx, cmp, position, lastCmp;
+    int source = *(int *)((byte *)ui_netSource + 8);
+    int sortKey = *(int *)((byte *)&sharedUiInfo + 28640);
+    int sortDir = *(int *)((byte *)&sharedUiInfo + 28644);
+
+    lo = 0;
+    hi = numDisplay;
+    position = 0;
+    lastCmp = 0;
+
+    while (hi > 0) {
+        mid = hi / 2;
+        testIdx = lo + mid;
+
+        cmp = LAN_CompareServers(source, sortKey, sortDir, serverIndex, displayServers[testIdx]);
+        lastCmp = cmp;
+
+        if (cmp == 0) {
+            UI_InsertServerAtPosition(serverIndex, testIdx);
+            return;
+        } else if (cmp > 0) {
+            hi -= mid;
+            position = testIdx + 1;
+            lo = position;
+            hi--;
+        } else {
+            hi -= mid;
+        }
+    }
+
+    /* adjust final position based on last comparison */
+    if (lastCmp >= 0)
+        position = lo + 1;
+    else
+        position = lo;
+
+    UI_InsertServerAtPosition(serverIndex, position);
+}
+
+/* line 2836 */
+static void UI_BuildServerDisplayList(qboolean force)
+{
+    char info_buf[0x400];
+    int count, i, clients, ping;
+    int netSource;
+
+    /* check if we should update */
+    if (!force) {
+        if (*(int *)((byte *)uiInfo + 4) <= *(int *)((byte *)&sharedUiInfo + 108672))
+            return;
+    } else if (force == 2) {
+        /* force == 2 treated same as force */
+    }
+
+    clients = 0;
+
+    /* get MOTD string */
+    {
+        const char *motdString = Dvar_GetString("cl_motdString");
+        int motdLen;
+        I_strncpyz((char *)((byte *)&sharedUiInfo + 108712), motdString, 0x400);
+        motdLen = strlen((const char *)((byte *)&sharedUiInfo + 108712));
+
+        if (motdLen == 0) {
+            const char *translated = UI_SafeTranslateString("EXE_COD_MULTIPLAYER");
+            strcpy((char *)((byte *)&sharedUiInfo + 108712), va("%s - %s", translated, "1.3"));
+            motdLen = strlen((const char *)((byte *)&sharedUiInfo + 108712));
+        }
+
+        if (motdLen != *(int *)((byte *)&sharedUiInfo + 108688)) {
+            *(int *)((byte *)&sharedUiInfo + 108688) = motdLen;
+            *(int *)((byte *)&sharedUiInfo + 108692) = -1;
+        }
+    }
+
+    if (force) {
+        numclean = 0;
+        *(int *)((byte *)&sharedUiInfo + 108660) = 0;
+        *(int *)((byte *)&sharedUiInfo + 108668) = 0;
+        netSource = *(int *)((byte *)ui_netSource + 8);
+        *(int *)((byte *)&sharedUiInfo + 108664) = LAN_GetServerCount(netSource);
+
+        if (*(int *)((byte *)&sharedUiInfo + 28656) >= 0) {
+            Menu_SetFeederSelection(uiInfo, 0, 2, 0, 0);
+        }
+
+        LAN_MarkServerDirty(*(int *)((byte *)ui_netSource + 8), -1, 1);
+    }
+
+    netSource = *(int *)((byte *)ui_netSource + 8);
+    count = LAN_GetServerCount(netSource);
+
+    if (LAN_WaitServerResponse(netSource) || (netSource == 0 && count == 0)) {
+        *(int *)((byte *)&sharedUiInfo + 108660) = 0;
+        *(int *)((byte *)&sharedUiInfo + 108668) = 0;
+        *(int *)((byte *)&sharedUiInfo + 108664) = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8));
+        *(int *)((byte *)&sharedUiInfo + 108672) = *(int *)((byte *)uiInfo + 4) + 500;
+        return;
+    }
+
+    /* sort */
+    qsort((byte *)&sharedUiInfo + 28660, *(int *)((byte *)&sharedUiInfo + 108660), 4, UI_ServersQsortCompare);
+
+    for (i = 0; i < count; i++) {
+        if (!LAN_ServerIsDirty(*(int *)((byte *)ui_netSource + 8), i))
+            continue;
+
+        ping = LAN_GetServerPing(*(int *)((byte *)ui_netSource + 8), i);
+
+        if (ping <= 0 && *(int *)((byte *)ui_netSource + 8) != 2)
+            continue;
+
+        LAN_GetServerInfo(*(int *)((byte *)ui_netSource + 8), i, info_buf, 0x400);
+
+        clients = atoi(Info_ValueForKey(info_buf, "clients"));
+        *(int *)((byte *)&sharedUiInfo + 108668) += clients;
+
+        /* address filter */
+        if (I_strnicmp(Info_ValueForKey(info_buf, "addr"), "000.000.000.000", 15) == 0)
+            goto reject;
+
+        /* show empty filter */
+        if (!*(byte *)((byte *)ui_browserShowEmpty + 8) && clients == 0)
+            goto reject;
+
+        /* show full filter */
+        if (!*(byte *)((byte *)ui_browserShowFull + 8)) {
+            if (clients == atoi(Info_ValueForKey(info_buf, "sv_maxclients")))
+                goto reject;
+        }
+
+        /* show password filter */
+        if (!*(byte *)((byte *)ui_browserShowPassword + 8)) {
+            if (atoi(Info_ValueForKey(info_buf, "pswrd")) != 0)
+                goto reject;
+        }
+
+        /* show no password filter */
+        if (!*(byte *)((byte *)ui_browserShowNoPassword + 8)) {
+            if (atoi(Info_ValueForKey(info_buf, "pswrd")) == 0)
+                goto reject;
+        }
+
+        /* show pure filter */
+        if (*(byte *)((byte *)ui_browserShowPure + 8)) {
+            if (atoi(Info_ValueForKey(info_buf, "pure")) == 0)
+                goto reject;
+        }
+
+        /* show dedicated filter */
+        if (*(byte *)((byte *)ui_browserShowDedicated + 8)) {
+            if ((unsigned)(atoi(Info_ValueForKey(info_buf, "hw")) - 1) > 2)
+                goto reject;
+        }
+
+        /* mod filter */
+        if (*(int *)((byte *)ui_browserMod + 8) >= 0) {
+            if (atoi(Info_ValueForKey(info_buf, "mod")) != *(int *)((byte *)ui_browserMod + 8))
+                goto reject;
+        }
+
+        /* friendly fire filter */
+        if (*(int *)((byte *)ui_browserFriendlyfire + 8) >= 0) {
+            if (atoi(Info_ValueForKey(info_buf, "ff")) != *(int *)((byte *)ui_browserFriendlyfire + 8))
+                goto reject;
+        }
+
+        /* killcam filter */
+        if (*(int *)((byte *)ui_browserKillcam + 8) >= 0) {
+            if (atoi(Info_ValueForKey(info_buf, "kc")) != *(int *)((byte *)ui_browserKillcam + 8))
+                goto reject;
+        }
+
+        /* game type filter */
+        {
+            int joinGTIdx = *(int *)((byte *)ui_joinGameType + 8);
+            const char *joinGTName = *(const char **)((byte *)&sharedUiInfo + 4692 + joinGTIdx * 8);
+            if (joinGTName[0] != '\0') {
+                const char *joinGTShort = *(const char **)((byte *)&sharedUiInfo + 4688 + joinGTIdx * 8);
+                if (I_stricmp(Info_ValueForKey(info_buf, "gametype"), joinGTShort) != 0)
+                    goto reject;
+            }
+        }
+
+        /* server filter type */
+        if (ui_serverFilterType > 0) {
+            const char *filterBaseName = *(const char **)((byte *)serverFilters + ui_serverFilterType * 8 + 4);
+            if (I_stricmp(Info_ValueForKey(info_buf, "game"), filterBaseName) != 0)
+                goto reject;
+        }
+
+        /* favorites: remove duplicate */
+        if (*(int *)((byte *)ui_netSource + 8) == 2) {
+            UI_RemoveDuplicateFromFavorites(i);
+        }
+
+        /* binary insert into sorted position */
+        UI_BinaryInsertServer(i);
+
+        /* mark clean if ping > 0 */
+        if (ping > 0) {
+            LAN_MarkServerDirty(*(int *)((byte *)ui_netSource + 8), i, 0);
+            numclean++;
+        }
+        continue;
+
+reject:
+        LAN_MarkServerDirty(*(int *)((byte *)ui_netSource + 8), i, 0);
+    }
+
+    *(int *)((byte *)&sharedUiInfo + 28632) = *(int *)((byte *)uiInfo + 4);
+}
+
+
+/* Helper: check if key is an action key (mouse1/mouse2/enter/0xBF) */
+static int UI_IsActionKey(int key)
+{
+    return (key == 0xc8 || key == 0xc9 || key == 0xd || key == 0xbf);
+}
+
+/* Helper: update map visibility flags based on game type index */
+static int UI_UpdateMapVisibility(int listIndex)
+{
+    int numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+    int i, visCount = 0;
+    byte *p = (byte *)&sharedUiInfo;
+
+    for (i = 0; i < numMaps; i++) {
+        *(int *)(p + 0x13f4 + i * 0xa4) = 0;
+        if ((*(int *)(p + 0x1368 + i * 0xa4) >> listIndex) & 1) {
+            visCount++;
+            *(int *)(p + 0x13f4 + i * 0xa4) = 1;
+        }
+    }
+    return visCount;
+}
+
+/* Helper: find first visible map and select it */
+static void UI_SelectFirstVisibleMap(int currentMapIdx)
+{
+    int numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+    int i, firstVisible = -1;
+    byte *p = (byte *)&sharedUiInfo;
+
+    /* check if current map is still visible */
+    if (currentMapIdx >= 0 && currentMapIdx < numMaps) {
+        int off = currentMapIdx * 0xa4;
+        if (*(int *)(p + 5108 + off) != 0) {
+            /* map is still visible - find its list index */
+            int listIdx = 0;
+            for (i = 0; i < numMaps; i++) {
+                if (*(int *)(p + 0x13f4 + i * 0xa4) != 0) {
+                    if (i == currentMapIdx)
+                        break;
+                    listIdx++;
+                }
+            }
+            if (i >= numMaps)
+                listIdx = 0;
+
+            Menu_SetFeederSelection(uiInfo, 0, 4, listIdx, "createserver_maps");
+            UI_SelectCurrentMap();
+            return;
+        }
+    }
+
+    /* find first visible map */
+    if (numMaps > 0) {
+        if (*(int *)(p + 5108) != 0) {
+            firstVisible = 0;
+        } else {
+            for (i = 1; i < numMaps; i++) {
+                if (*(int *)(p + 0x1498 + (i - 1) * 0xa4) != 0) {
+                    firstVisible = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (firstVisible >= 0) {
+        Menu_SetFeederSelection(uiInfo, 0, 4, 0, "createserver_maps");
+        Dvar_SetInt(ui_currentNetMap, firstVisible);
+    }
+
+    UI_SelectCurrentMap();
 }
 
 /* line 1475 */
-__attribute__((naked))
 qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1475 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1478 | ownerDraw */
-        "subl $0xcd, %eax\n"
-        "cmpl $0x30, %eax\n"
-        "ja .Lf152582_001525c7\n"
-        "jmpl *.Ljt_152582_0(, %eax, 4)\n"
-        /* { scope 1 */
-        ".Lf152582_0015259f:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1307 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf152582_0015287d\n"
-        "cmpl $0xd, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_0015287d\n"
-        "cmpl $0xbf, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_0015287d\n"
-        /* } scope */
-        ".Lf152582_001525c7:\n"
-        "xorl %eax, %eax\n" /* line 1467 */
-        ".Lf152582_001525c9:\n"
-        "addl $0x3c, %esp\n" /* line 1498 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf152582_001525d1:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1392 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf152582_001525ed\n"
-        "cmpl $0xd, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_001525ed\n"
-        "cmpl $0xbf, 0x14(%ebp)\n" /* key */
-        "jne .Lf152582_001525c7\n"
-        ".Lf152582_001525ed:\n"
-        "cmpl $0xc9, 0x14(%ebp)\n" /* line 1394 | key */
-        "je .Lf152582_001529a8\n"
-        "movl ui_joinGameType, %ecx\n" /* line 1401 */
-        "movl 8(%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "cmpl sharedUiInfo+4684, %edx\n" /* line 1402 */
-        "movl $0, %eax\n"
-        "cmovel %eax, %edx\n"
-        ".Lf152582_00152614:\n"
-        "movl %edx, 4(%esp)\n" /* line 1406 */
-        "movl %ecx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl $1, (%esp)\n" /* line 1407 */
-        "calll UI_BuildServerDisplayList\n"
-        "movl $1, %eax\n"
-        "jmp .Lf152582_001525c9\n"
-        /* } scope */
-        ".Lf152582_00152633:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1447 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf152582_00152653\n"
-        "cmpl $0xd, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_00152653\n"
-        "cmpl $0xbf, 0x14(%ebp)\n" /* key */
-        "jne .Lf152582_001525c7\n"
-        ".Lf152582_00152653:\n"
-        "cmpl $0xc9, 0x14(%ebp)\n" /* line 1450 | key */
-        "je .Lf152582_00152996\n"
-        "movl ui_serverFilterType, %eax\n" /* line 1456 */
-        "addl $1, %eax\n"
-        "movl %eax, ui_serverFilterType\n"
-        ".Lf152582_0015266d:\n"
-        "cmpl $0, %eax\n" /* line 1459 */
-        "jle .Lf152582_00152a8e\n"
-        ".Lf152582_00152676:\n"
-        "movl $0, ui_serverFilterType\n" /* line 1465 */
-        ".Lf152582_00152680:\n"
-        "movl $1, (%esp)\n" /* line 1467 */
-        "calll UI_BuildServerDisplayList\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf152582_001525c9\n"
-        /* { scope 1 */
-        ".Lf152582_00152693:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1352 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf152582_001526b3\n"
-        "cmpl $0xd, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_001526b3\n"
-        "cmpl $0xbf, 0x14(%ebp)\n" /* key */
-        "jne .Lf152582_001525c7\n"
-        ".Lf152582_001526b3:\n"
-        "cmpl $0xc9, 0x14(%ebp)\n" /* line 1355 | key */
-        "je .Lf152582_001529c2\n"
-        "movl ui_netGameType, %ecx\n" /* line 1362 */
-        "movl 8(%ecx), %edx\n"
-        "addl $1, %edx\n"
-        "cmpl sharedUiInfo+4424, %edx\n" /* line 1363 */
-        "movl $0, %eax\n"
-        "cmovel %eax, %edx\n"
-        ".Lf152582_001526da:\n"
-        "movl %edx, 4(%esp)\n" /* line 1367 */
-        "movl %ecx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl ui_netGameType, %eax\n" /* line 1368 */
-        "movl 8(%eax), %eax\n"
-        "movl sharedUiInfo+4428(, %eax, 8), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netGameTypeName, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetString\n"
-        "movl ui_netGameType, %eax\n" /* line 2634 */
-        "movl 8(%eax), %esi\n" /* listIndex */
-        "movl sharedUiInfo+4944, %ecx\n" /* line 2636 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf152582_00152754\n"
-        "xorl %ebx, %ebx\n" /* nextNetSource */
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf152582_0015271f:\n"
-        "movl $0, 0x13f4(%edx)\n" /* line 2638 */
-        "movl 0x1368(%edx), %eax\n" /* line 2639 */
-        "movl %esi, %ecx\n" /* listIndex */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lf152582_00152741\n"
-        "movl $1, 0x13f4(%edx)\n" /* line 2642 */
-        ".Lf152582_00152741:\n"
-        "addl $1, %ebx\n" /* line 2636 | nextNetSource */
-        "movl sharedUiInfo+4944, %ecx\n"
-        "addl $0xa4, %edx\n"
-        "cmpl %ecx, %ebx\n" /* nextNetSource */
-        "jl .Lf152582_0015271f\n"
-        ".Lf152582_00152754:\n"
-        "movl ui_currentNetMap, %eax\n" /* line 1371 */
-        "movl 8(%eax), %ebx\n"
-        "leal (%ebx, %ebx, 4), %eax\n"
-        "leal (%ebx, %eax, 8), %eax\n"
-        "movl sharedUiInfo+5108(, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf152582_001529f6\n"
-        "testl %ecx, %ecx\n" /* line 2599 */
-        "jle .Lf152582_001527df\n"
-        "movl sharedUiInfo+5108, %edx\n" /* line 2601 */
-        "testl %edx, %edx\n"
-        "jne .Lf152582_00152aa8\n"
-        "xorl %ebx, %ebx\n" /* line 2604 | nextNetSource */
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf152582_0015278a:\n"
-        "addl $1, %ebx\n" /* line 2599 | nextNetSource */
-        "cmpl %ebx, %ecx\n" /* nextNetSource */
-        "je .Lf152582_001527df\n"
-        "movl 0x1498(%edx), %eax\n" /* line 2601 */
-        "addl $0xa4, %edx\n"
-        "testl %eax, %eax\n"
-        "je .Lf152582_0015278a\n"
-        ".Lf152582_001527a1:\n"
-        "movl $str_002aa094, 0x10(%esp)\n" /* line 2603 */
-        "movl $0, 0xc(%esp)\n"
-        "movl $4, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_SetFeederSelection\n"
-        "movl %ebx, 4(%esp)\n" /* line 2604 | nextNetSource */
-        "movl ui_currentNetMap, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        ".Lf152582_001527df:\n"
-        "calll UI_SelectCurrentMap\n" /* line 1380 */
-        ".Lf152582_001527e4:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf152582_001527e9:\n"
-        "addl $0x3c, %esp\n" /* line 1498 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf152582_001527f1:\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1418 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf152582_00152811\n"
-        "cmpl $0xd, 0x14(%ebp)\n" /* key */
-        "je .Lf152582_00152811\n"
-        "cmpl $0xbf, 0x14(%ebp)\n" /* key */
-        "jne .Lf152582_001525c7\n"
-        ".Lf152582_00152811:\n"
-        "cmpl $0xc9, 0x14(%ebp)\n" /* line 1420 | key */
-        "je .Lf152582_001529dc\n"
-        "movl ui_netSource, %eax\n" /* line 1427 */
-        "movl 8(%eax), %ebx\n" /* nextNetSource */
-        "addl $1, %ebx\n" /* nextNetSource */
-        "cmpl $3, %ebx\n" /* line 1428 | nextNetSource */
-        "movl $0, %eax\n"
-        "cmovel %eax, %ebx\n" /* nextNetSource */
-        ".Lf152582_00152834:\n"
-        "movl $1, (%esp)\n" /* line 1432 */
-        "calll UI_BuildServerDisplayList\n"
-        "movl %ebx, 4(%esp)\n" /* line 1433 | nextNetSource */
-        "movl ui_netSource, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl ui_netSource, %eax\n" /* line 1434 */
-        "cmpl $1, 8(%eax)\n"
-        "je .Lf152582_001525c7\n"
-        "movl $1, %eax\n" /* line 1436 */
-        "calll UI_StartServerRefresh\n"
-        "movl $1, (%esp)\n" /* line 1437 */
-        "calll UI_BuildServerDisplayList\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf152582_001525c9\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_0015287d:\n"
-        "movl ui_netGameType, %eax\n" /* line 2634 */
-        "movl 8(%eax), %esi\n" /* listIndex */
-        "movl sharedUiInfo+4944, %eax\n" /* line 2636 */
-        "testl %eax, %eax\n"
-        "jle .Lf152582_0015298f\n"
-        "xorl %ebx, %ebx\n" /* nextNetSource */
-        "xorl %edi, %edi\n"
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf152582_0015289b:\n"
-        "movl $0, 0x13f4(%edx)\n" /* line 2638 */
-        "movl 0x1368(%edx), %eax\n" /* line 2639 */
-        "movl %esi, %ecx\n" /* listIndex */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lf152582_001528c0\n"
-        "addl $1, %edi\n" /* line 2641 */
-        "movl $1, 0x13f4(%edx)\n" /* line 2642 */
-        ".Lf152582_001528c0:\n"
-        "addl $1, %ebx\n" /* line 2636 | nextNetSource */
-        "addl $0xa4, %edx\n"
-        "cmpl %ebx, sharedUiInfo+4944\n" /* nextNetSource */
-        "jg .Lf152582_0015289b\n"
-        ".Lf152582_001528d1:\n"
-        "cmpl $0xc9, 0x14(%ebp)\n" /* line 1312 | key */
-        "je .Lf152582_00152a67\n"
-        "movl ui_gametype, %edx\n" /* line 1326 */
-        "movl 8(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "cmpl sharedUiInfo+4424, %eax\n" /* line 1327 */
-        "jge .Lf152582_00152a5d\n"
-        "cmpl $2, %eax\n" /* line 1331 */
-        "je .Lf152582_00152aa1\n"
-        ".Lf152582_001528ff:\n"
-        "movl %eax, 4(%esp)\n" /* line 1337 */
-        "movl %edx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl ui_netGameType, %eax\n" /* line 2634 */
-        "movl 8(%eax), %esi\n" /* listIndex */
-        "movl sharedUiInfo+4944, %eax\n" /* line 2636 */
-        "testl %eax, %eax\n"
-        "jle .Lf152582_00152a56\n"
-        "movl $0, -0x1c(%ebp)\n"
-        "xorl %ebx, %ebx\n" /* nextNetSource */
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf152582_0015292e:\n"
-        "movl $0, 0x13f4(%edx)\n" /* line 2638 */
-        "movl 0x1368(%edx), %eax\n" /* line 2639 */
-        "movl %esi, %ecx\n" /* listIndex */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lf152582_00152953\n"
-        "addl $1, %ebx\n" /* line 2641 | nextNetSource */
-        "movl $1, 0x13f4(%edx)\n" /* line 2642 */
-        ".Lf152582_00152953:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 2636 */
-        "addl $0xa4, %edx\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "cmpl %eax, sharedUiInfo+4944\n"
-        "jg .Lf152582_0015292e\n"
-        ".Lf152582_00152968:\n"
-        "cmpl %ebx, %edi\n" /* line 1338 */
-        "je .Lf152582_001527e4\n"
-        "movl $0, 4(%esp)\n" /* line 1340 */
-        "movl ui_currentMap, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        /* } scope */
-        /* { scope 1 */
-        "movl $1, %eax\n" /* line 1380 */
-        "jmp .Lf152582_001527e9\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_0015298f:\n"
-        "xorl %edi, %edi\n" /* line 2636 */
-        "jmp .Lf152582_001528d1\n"
-        /* } scope */
-        ".Lf152582_00152996:\n"
-        "movl ui_serverFilterType, %eax\n" /* line 1452 */
-        "subl $1, %eax\n"
-        "movl %eax, ui_serverFilterType\n"
-        "jmp .Lf152582_0015266d\n"
-        /* { scope 1 */
-        ".Lf152582_001529a8:\n"
-        "movl ui_joinGameType, %ecx\n" /* line 1396 */
-        "movl 8(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "cmovel sharedUiInfo+4684, %eax\n"
-        "leal -1(%eax), %edx\n" /* line 1397 */
-        "jmp .Lf152582_00152614\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_001529c2:\n"
-        "movl ui_netGameType, %ecx\n" /* line 1357 */
-        "movl 8(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "cmovel sharedUiInfo+4424, %eax\n"
-        "leal -1(%eax), %edx\n" /* line 1358 */
-        "jmp .Lf152582_001526da\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_001529dc:\n"
-        "movl ui_netSource, %eax\n" /* line 1422 */
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf152582_00152a99\n"
-        "movl $2, %ebx\n" /* nextNetSource */
-        "jmp .Lf152582_00152834\n"
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf152582_001529f6:\n"
-        "testl %ecx, %ecx\n" /* line 3536 */
-        "jle .Lf152582_00152a21\n"
-        /* } scope */
-        /* } scope */
-        "xorl %esi, %esi\n" /* line 2599 */
-        "xorl %eax, %eax\n"
-        "movl $sharedUiInfo, %edx\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf152582_00152a03:\n"
-        "movl 0x13f4(%edx), %edi\n" /* line 3538 */
-        "testl %edi, %edi\n"
-        "je .Lf152582_00152a14\n"
-        "cmpl %ebx, %eax\n" /* line 3540 | nextNetSource */
-        "je .Lf152582_00152a23\n"
-        "addl $1, %esi\n" /* line 3546 | listIndex */
-        ".Lf152582_00152a14:\n"
-        "addl $1, %eax\n" /* line 3536 */
-        "addl $0xa4, %edx\n"
-        "cmpl %eax, %ecx\n"
-        "jne .Lf152582_00152a03\n"
-        ".Lf152582_00152a21:\n"
-        "xorl %esi, %esi\n" /* listIndex */
-        /* } scope */
-        ".Lf152582_00152a23:\n"
-        "movl $str_002aa094, 0x10(%esp)\n" /* line 2617 */
-        "movl %esi, 0xc(%esp)\n" /* listIndex */
-        "movl $4, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_SetFeederSelection\n"
-        /* } scope */
-        "calll UI_SelectCurrentMap\n" /* line 1380 */
-        "jmp .Lf152582_001527e4\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_00152a56:\n"
-        "xorl %ebx, %ebx\n" /* line 2636 | nextNetSource */
-        "jmp .Lf152582_00152968\n"
-        ".Lf152582_00152a5d:\n"
-        "movl $1, %eax\n" /* line 1331 */
-        "jmp .Lf152582_001528ff\n"
-        ".Lf152582_00152a67:\n"
-        "movl ui_gametype, %edx\n" /* line 1314 */
-        "movl 8(%edx), %eax\n"
-        "subl $1, %eax\n"
-        "cmpl $2, %eax\n" /* line 1315 */
-        "je .Lf152582_00152a5d\n"
-        "cmpl $1, %eax\n" /* line 1319 */
-        "jg .Lf152582_001528ff\n"
-        "movl sharedUiInfo+4424, %eax\n" /* line 1321 */
-        "subl $1, %eax\n"
-        "jmp .Lf152582_001528ff\n"
-        /* } scope */
-        ".Lf152582_00152a8e:\n"
-        "jge .Lf152582_00152680\n" /* line 1463 */
-        "jmp .Lf152582_00152676\n"
-        /* { scope 1 */
-        ".Lf152582_00152a99:\n"
-        "leal -1(%eax), %ebx\n" /* line 1422 | nextNetSource */
-        "jmp .Lf152582_00152834\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_00152aa1:\n"
-        "movb $3, %al\n" /* line 1331 */
-        "jmp .Lf152582_001528ff\n"
-        /* } scope */
-        /* { scope 1 */
-        ".Lf152582_00152aa8:\n"
-        "xorl %ebx, %ebx\n" /* line 2601 | nextNetSource */
-        "jmp .Lf152582_001527a1\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_152582_0:\n"
-        ".long .Lf152582_0015259f\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001527f1\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_00152633\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_00152693\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525c7\n"
-        ".long .Lf152582_001525d1\n"
-        ".text\n"
-    );
+    int idx;
+
+    idx = ownerDraw - 0xcd;
+    if ((unsigned)idx > 0x30)
+        return 0;
+
+    switch (ownerDraw) {
+    case 0xcd: /* 205: map preview */
+        if (!UI_IsActionKey(key))
+            return 0;
+        {
+            int listIndex = *(int *)((byte *)ui_netGameType + 8);
+            int oldVisCount = UI_UpdateMapVisibility(listIndex);
+            int newGT, newVisCount;
+
+            if (key == 0xc9) {
+                /* prev game type */
+                newGT = *(int *)((byte *)ui_gametype + 8) - 1;
+                if (newGT == 2) newGT = 1;
+                else if (newGT <= 1) newGT = *(int *)((byte *)&sharedUiInfo + 4424) - 1;
+            } else {
+                /* next game type */
+                newGT = *(int *)((byte *)ui_gametype + 8) + 1;
+                if (newGT >= *(int *)((byte *)&sharedUiInfo + 4424)) newGT = 1;
+                else if (newGT == 2) newGT = 3;
+            }
+
+            Dvar_SetInt(ui_gametype, newGT);
+            listIndex = *(int *)((byte *)ui_netGameType + 8);
+            newVisCount = UI_UpdateMapVisibility(listIndex);
+
+            if (newVisCount != oldVisCount) {
+                Dvar_SetInt(ui_currentMap, 0);
+            }
+        }
+        return 1;
+
+    case 0xdc: /* 220: net source */
+        if (!UI_IsActionKey(key))
+            return 0;
+        {
+            int nextNetSource;
+            if (key == 0xc9) {
+                /* prev */
+                int cur = *(int *)((byte *)ui_netSource + 8);
+                nextNetSource = (cur == 0) ? 2 : cur - 1;
+            } else {
+                /* next */
+                nextNetSource = *(int *)((byte *)ui_netSource + 8) + 1;
+                if (nextNetSource == 3) nextNetSource = 0;
+            }
+
+            UI_BuildServerDisplayList(1);
+            Dvar_SetInt(ui_netSource, nextNetSource);
+            if (*(int *)((byte *)ui_netSource + 8) != 1) {
+                __asm__ __volatile__ (
+                    "movl $1, %%eax\n"
+                    "calll UI_StartServerRefresh\n"
+                    :
+                    :
+                    : "eax", "ecx", "edx", "memory"
+                );
+                UI_BuildServerDisplayList(1);
+            }
+        }
+        return 0;
+
+    case 0xde: /* 222: server filter */
+        if (!UI_IsActionKey(key))
+            return 0;
+        {
+            int filterType;
+            if (key == 0xc9)
+                filterType = ui_serverFilterType - 1;
+            else
+                filterType = ui_serverFilterType + 1;
+
+            ui_serverFilterType = filterType;
+
+            if (filterType > 0 || filterType < 0)
+                ui_serverFilterType = 0;
+
+            UI_BuildServerDisplayList(1);
+        }
+        return 0;
+
+    case 0xf4: /* 244: net game type */
+        if (!UI_IsActionKey(key))
+            return 0;
+        {
+            int newVal;
+            if (key == 0xc9) {
+                /* prev */
+                int cur = *(int *)((byte *)ui_netGameType + 8);
+                newVal = (cur == 0) ? *(int *)((byte *)&sharedUiInfo + 4424) : cur;
+                newVal--;
+            } else {
+                /* next */
+                newVal = *(int *)((byte *)ui_netGameType + 8) + 1;
+                if (newVal == *(int *)((byte *)&sharedUiInfo + 4424)) newVal = 0;
+            }
+
+            Dvar_SetInt(ui_netGameType, newVal);
+            Dvar_SetString(ui_netGameTypeName, *(const char **)((byte *)&sharedUiInfo + 4428 + *(int *)((byte *)ui_netGameType + 8) * 8));
+
+            UI_UpdateMapVisibility(*(int *)((byte *)ui_netGameType + 8));
+            UI_SelectFirstVisibleMap(*(int *)((byte *)ui_currentNetMap + 8));
+        }
+        return 1;
+
+    case 0xfd: /* 253: join game type */
+        if (!UI_IsActionKey(key))
+            return 0;
+        {
+            int newVal;
+            if (key == 0xc9) {
+                /* prev */
+                int cur = *(int *)((byte *)ui_joinGameType + 8);
+                newVal = (cur == 0) ? *(int *)((byte *)&sharedUiInfo + 4684) : cur;
+                newVal--;
+            } else {
+                /* next */
+                newVal = *(int *)((byte *)ui_joinGameType + 8) + 1;
+                if (newVal == *(int *)((byte *)&sharedUiInfo + 4684)) newVal = 0;
+            }
+
+            Dvar_SetInt(ui_joinGameType, newVal);
+            UI_BuildServerDisplayList(1);
+        }
+        return 1;
+
+    default:
+        return 0;
+    }
 }
+
 
 /* line 3567 */
 __attribute__((naked))
@@ -5225,366 +4291,214 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
     );
 }
 
-/* line 3271 */
-static __attribute__((naked))
-void UI_BuildFindPlayerList(void)
+/* Case-insensitive substring search: returns 1 if charset found in str */
+static int UI_StrContains(const char *str, const char *charset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3271 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x118c, %esp\n"
-        /* { scope 1: charset, str */
-        "movl uiInfo, %edx\n" /* line 3279 */
-        "movl 0x10a4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf153c3a_00153c5b\n"
-        "cmpl 4(%edx), %eax\n"
-        "jle .Lf153c3a_00153c66\n"
-        /* } scope */
-        ".Lf153c3a_00153c5b:\n"
-        "addl $0x118c, %esp\n" /* line 3379 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: charset, str */
-        ".Lf153c3a_00153c66:\n"
-        "movl ui_netSource, %eax\n" /* line 2016 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "cmpl sharedUiInfo+108664, %eax\n" /* line 2017 */
-        "je .Lf153c3a_00153c91\n"
-        "movl %eax, sharedUiInfo+108664\n" /* line 2019 */
-        "movl sharedUiInfo+108660, %ebx\n" /* line 2020 */
-        "testl %ebx, %ebx\n"
-        "jne .Lf153c3a_00154150\n"
-        ".Lf153c3a_00153c91:\n"
-        "movl $0, -0x1168(%ebp)\n" /* line 2023 | i */
-        "movl $sharedUiInfo, -0x1150(%ebp)\n"
-        "movl $sharedUiInfo+113204, -0x116c(%ebp)\n"
-        "movl $sharedUiInfo+113140, -0x1170(%ebp)\n"
-        "movl $sharedUiInfo+113204, -0x1174(%ebp)\n"
-        "jmp .Lf153c3a_00153d59\n"
-        ".Lf153c3a_00153cc8:\n"
-        "xorl %edx, %edx\n" /* line 3336 */
-        "movl -0x1170(%ebp), %eax\n"
-        "calll UI_GetServerStatusInfo\n"
-        "movl -0x114c(%ebp), %ecx\n" /* line 3338 */
-        "movl $0, (%ecx)\n"
-        "movl ui_netSource, %eax\n" /* line 2016 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "cmpl sharedUiInfo+108664, %eax\n" /* line 2017 */
-        "je .Lf153c3a_00153d0c\n"
-        "movl %eax, sharedUiInfo+108664\n" /* line 2019 */
-        "movl sharedUiInfo+108660, %ebx\n" /* line 2020 */
-        "testl %ebx, %ebx\n"
-        "jne .Lf153c3a_00154071\n"
-        ".Lf153c3a_00153d0c:\n"
-        "movl sharedUiInfo+113136, %eax\n" /* line 3342 */
-        "cmpl sharedUiInfo+108660, %eax\n"
-        "jl .Lf153c3a_00153f74\n"
-        ".Lf153c3a_00153d1d:\n"
-        "addl $1, -0x1168(%ebp)\n" /* line 3284 | i */
-        "addl $0x8c, -0x1174(%ebp)\n"
-        "addl $0x8c, -0x1170(%ebp)\n"
-        "addl $0x8c, -0x116c(%ebp)\n"
-        "addl $0x8c, -0x1150(%ebp)\n"
-        "cmpl $0x10, -0x1168(%ebp)\n" /* i */
-        "je .Lf153c3a_0015408c\n"
-        ".Lf153c3a_00153d59:\n"
-        "movl -0x1150(%ebp), %eax\n" /* line 3271 */
-        "addl $0x1ba7c, %eax\n"
-        "movl %eax, -0x114c(%ebp)\n"
-        "movl -0x1150(%ebp), %edx\n" /* line 3287 */
-        "movl 0x1ba7c(%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf153c3a_00153cc8\n"
-        "leal -0x1140(%ebp), %edx\n" /* line 3290 | info */
-        "movl -0x1170(%ebp), %eax\n"
-        "calll UI_GetServerStatusInfo\n"
-        "testl %eax, %eax\n"
-        "je .Lf153c3a_00153f35\n"
-        "movl numFound, %eax\n" /* line 3293 */
-        "addl $1, %eax\n"
-        "movl %eax, numFound\n"
-        "movl -0x440(%ebp), %edx\n" /* line 3295 */
-        "testl %edx, %edx\n"
-        "jle .Lf153c3a_00153eee\n"
-        "movl $0, -0x1164(%ebp)\n" /* j */
-        "leal -0x1140(%ebp), %ecx\n" /* info */
-        "movl %ecx, -0x1154(%ebp)\n"
-        "movl %ecx, %edx\n"
-        "jmp .Lf153c3a_00153df2\n"
-        ".Lf153c3a_00153dcc:\n"
-        "addl $1, -0x1164(%ebp)\n" /* j */
-        "addl $0x10, -0x1154(%ebp)\n"
-        "movl -0x1164(%ebp), %edx\n" /* j */
-        "cmpl -0x440(%ebp), %edx\n"
-        "jge .Lf153c3a_00153ee9\n"
-        "movl -0x1154(%ebp), %edx\n"
-        ".Lf153c3a_00153df2:\n"
-        "movl 0x48(%edx), %eax\n" /* line 3298 */
-        "testl %eax, %eax\n"
-        "je .Lf153c3a_00153dcc\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf153c3a_00153dcc\n"
-        "movl $0x22, 8(%esp)\n" /* line 3303 */
-        "movl 0x4c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3a(%ebp), %ecx\n" /* name */
-        "movl %ecx, (%esp)\n"
-        "calll I_strncpyz\n"
-        "leal -0x3a(%ebp), %eax\n" /* line 3304 | name */
-        "movl %eax, (%esp)\n"
-        "calll I_CleanStr\n"
-        "movl uiInfo, %edx\n" /* line 3306 */
-        "addl $0x4a0, %edx\n"
-        "movl %edx, -0x1160(%ebp)\n" /* charset */
-        /* { scope 2: i */
-        /* { scope 3 */
-        "cmpb $0, -0x3a(%ebp)\n" /* line 3251 | name */
-        "je .Lf153c3a_00153dcc\n"
-        "leal -0x3a(%ebp), %ecx\n" /* name */
-        "movl %ecx, -0x115c(%ebp)\n" /* str */
-        "jmp .Lf153c3a_00153e6e\n"
-        ".Lf153c3a_00153e46:\n"
-        "xorl %eax, %eax\n" /* line 3253 */
-        ".Lf153c3a_00153e48:\n"
-        "movl -0x1160(%ebp), %ecx\n" /* line 3258 | charset */
-        "cmpb $0, (%ecx, %eax)\n"
-        "je .Lf153c3a_00154130\n"
-        ".Lf153c3a_00153e58:\n"
-        "addl $1, -0x115c(%ebp)\n" /* line 3260 | str */
-        "movl -0x115c(%ebp), %eax\n" /* line 3251 | str */
-        "cmpb $0, (%eax)\n"
-        "je .Lf153c3a_00153dcc\n"
-        ".Lf153c3a_00153e6e:\n"
-        "movl -0x1160(%ebp), %edx\n" /* line 3253 | charset */
-        "movzbl (%edx), %eax\n"
-        "testb %al, %al\n"
-        "je .Lf153c3a_00154122\n"
-        "movl -0x115c(%ebp), %ecx\n" /* str */
-        "cmpb $0, (%ecx)\n"
-        "je .Lf153c3a_00153e46\n"
-        "movl %ecx, %esi\n"
-        "movl $0, -0x1158(%ebp)\n" /* i */
-        "xorl %edi, %edi\n"
-        "jmp .Lf153c3a_00153ec6\n"
-        ".Lf153c3a_00153e9a:\n"
-        "addl $1, -0x1158(%ebp)\n" /* i */
-        "movl -0x1158(%ebp), %edi\n" /* i */
-        "movl -0x1160(%ebp), %edx\n" /* charset */
-        "movzbl (%edx, %edi), %eax\n"
-        "testb %al, %al\n"
-        "je .Lf153c3a_00154130\n"
-        "movl -0x115c(%ebp), %esi\n" /* str */
-        "addl %edi, %esi\n"
-        "cmpb $0, (%esi)\n"
-        "je .Lf153c3a_00153e58\n"
-        ".Lf153c3a_00153ec6:\n"
-        "movsbl %al, %eax\n" /* line 3255 */
-        "movl %eax, (%esp)\n"
-        "calll ___toupper\n"
-        "movl %eax, %ebx\n"
-        "movsbl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ___toupper\n"
-        "cmpl %eax, %ebx\n"
-        "je .Lf153c3a_00153e9a\n"
-        "movl %edi, %eax\n" /* line 3253 */
-        "jmp .Lf153c3a_00153e48\n"
-        ".Lf153c3a_00153ee9:\n"
-        "movl numFound, %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lf153c3a_00153eee:\n"
-        "movl uiInfo, %edx\n" /* line 3323 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl sharedUiInfo+113136, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002aa978, 8(%esp)\n" /* "searching %d/%d..." */
-        "movl $0x40, 4(%esp)\n"
-        "movl 0x10a0(%edx), %eax\n"
-        "shll $6, %eax\n"
-        "leal 0xc60(%eax, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl -0x114c(%ebp), %ecx\n" /* line 3325 */
-        "movl $0, (%ecx)\n"
-        ".Lf153c3a_00153f35:\n"
-        "movl -0x114c(%ebp), %eax\n" /* line 3329 */
-        "movl (%eax), %esi\n"
-        "testl %esi, %esi\n"
-        "je .Lf153c3a_00153cc8\n"
-        "movl uiInfo, %eax\n"
-        "movl 4(%eax), %eax\n"
-        "movl ui_serverStatusTimeOut, %edx\n"
-        "subl 8(%edx), %eax\n"
-        "movl -0x1150(%ebp), %edx\n"
-        "cmpl %eax, 0x1ba74(%edx)\n"
-        "jge .Lf153c3a_00153d1d\n"
-        "addl $1, numTimeOuts\n" /* line 3333 */
-        "jmp .Lf153c3a_00153cc8\n"
-        ".Lf153c3a_00153f74:\n"
-        "movl uiInfo, %eax\n" /* line 3344 */
-        "movl 4(%eax), %eax\n"
-        "movl -0x1150(%ebp), %edx\n"
-        "movl %eax, 0x1ba74(%edx)\n"
-        "movl $0x40, 0xc(%esp)\n" /* line 3345 */
-        "movl -0x1170(%ebp), %ecx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl sharedUiInfo+113136, %eax\n"
-        "movl sharedUiInfo+28660(, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerAddressString\n"
-        "movl $0x400, 0xc(%esp)\n" /* line 3346 */
-        "leal -0x43a(%ebp), %ebx\n" /* infoString */
-        "movl %ebx, 8(%esp)\n"
-        "movl sharedUiInfo+113136, %eax\n"
-        "movl sharedUiInfo+28660(, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerInfo\n"
-        "movl $str_002aa89c, 4(%esp)\n" /* line 3347 */
-        "movl %ebx, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl $0x40, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x116c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl -0x114c(%ebp), %edx\n" /* line 3348 */
-        "movl $1, (%edx)\n"
-        "movl sharedUiInfo+113136, %edx\n" /* line 3349 */
-        "addl $1, %edx\n"
-        "movl %edx, sharedUiInfo+113136\n"
-        "movl uiInfo, %ecx\n" /* line 3350 */
-        "movl numFound, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %edx, 0xc(%esp)\n"
-        "movl $str_002aa978, 8(%esp)\n" /* "searching %d/%d..." */
-        "movl $0x40, 4(%esp)\n"
-        "movl 0x10a0(%ecx), %eax\n"
-        "shll $6, %eax\n"
-        "leal 0xc60(%eax, %ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "jmp .Lf153c3a_00153d1d\n"
-        ".Lf153c3a_00154071:\n"
-        "movl $0xffffffff, sharedUiInfo+28656\n" /* line 2022 */
-        "movl $1, (%esp)\n" /* line 2023 */
-        "calll UI_BuildServerDisplayList\n"
-        "jmp .Lf153c3a_00153d0c\n"
-        ".Lf153c3a_0015408c:\n"
-        "movl $sharedUiInfo, %eax\n" /* line 3284 */
-        "movl $sharedUiInfo+2240, %edx\n"
-        ".Lf153c3a_00154096:\n"
-        "movl 0x1ba7c(%eax), %ecx\n" /* line 3356 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf153c3a_001541d0\n"
-        "addl $0x8c, %eax\n" /* line 3358 */
-        "cmpl %eax, %edx\n" /* line 3354 */
-        "jne .Lf153c3a_00154096\n"
-        "movl uiInfo, %esi\n" /* line 3369 */
-        "movl 0x10a0(%esi), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf153c3a_001541ed\n"
-        "leal 0x4a0(%esi), %ecx\n" /* line 3375 */
-        "movl $str_002157b8, %edx\n"
-        "cmpl $2, %ebx\n"
-        "movl $str_002aa9a0, %eax\n" /* "s" */
-        "cmovnel %eax, %edx\n"
-        "leal -1(%ebx), %eax\n"
-        "movl %ecx, 0x14(%esp)\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_002aa9a4, 8(%esp)\n" /* "%d server%s found with player %s" */
-        "movl $0x40, 4(%esp)\n"
-        "shll $6, %eax\n"
-        "leal 0xca0(%eax, %esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        ".Lf153c3a_00154108:\n"
-        "movl uiInfo, %eax\n" /* line 3377 */
-        "movl $0, 0x10a4(%eax)\n"
-        /* } scope */
-        "addl $0x118c, %esp\n" /* line 3379 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: charset, str */
-        ".Lf153c3a_00154122:\n"
-        "movl -0x115c(%ebp), %edi\n" /* line 3306 | str */
-        "testl %edi, %edi\n"
-        "je .Lf153c3a_00153dcc\n"
-        ".Lf153c3a_00154130:\n"
-        "movl uiInfo, %edx\n" /* line 3309 */
-        "movl 0x10a0(%edx), %eax\n"
-        "cmpl $0xe, %eax\n"
-        "jle .Lf153c3a_0015416b\n"
-        "movl sharedUiInfo+108660, %eax\n" /* line 3319 */
-        "movl %eax, sharedUiInfo+113136\n"
-        "jmp .Lf153c3a_00153dcc\n"
-        ".Lf153c3a_00154150:\n"
-        "movl $0xffffffff, sharedUiInfo+28656\n" /* line 2022 */
-        "movl $1, (%esp)\n" /* line 2023 */
-        "calll UI_BuildServerDisplayList\n"
-        "jmp .Lf153c3a_00153c91\n"
-        ".Lf153c3a_0015416b:\n"
-        "movl $0x40, 8(%esp)\n" /* line 3312 */
-        "movl -0x1170(%ebp), %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "shll $6, %eax\n"
-        "leal 0x860(%eax, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl uiInfo, %edx\n" /* line 3313 */
-        "movl $0x40, 8(%esp)\n"
-        "movl -0x1174(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10a0(%edx), %eax\n"
-        "shll $6, %eax\n"
-        "leal 0xc60(%eax, %edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl uiInfo, %eax\n" /* line 3314 */
-        "addl $1, 0x10a0(%eax)\n"
-        "jmp .Lf153c3a_00153dcc\n"
-        ".Lf153c3a_001541d0:\n"
-        "movl uiInfo, %edx\n" /* line 3364 */
-        "movl 4(%edx), %eax\n"
-        "addl $0x19, %eax\n"
-        "movl %eax, 0x10a4(%edx)\n"
-        /* } scope */
-        "addl $0x118c, %esp\n" /* line 3379 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: charset, str */
-        ".Lf153c3a_001541ed:\n"
-        "movl $str_002aa98c, 8(%esp)\n" /* line 3371 */
-        "movl $0x40, 4(%esp)\n"
-        "leal 0xc60(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "jmp .Lf153c3a_00154108\n"
-    );
+    const char *s;
+    int ci, si, k;
+
+    if (!charset[0])
+        return str ? 1 : 0;
+
+    for (s = str; *s; s++) {
+        for (k = 0; charset[k]; k++) {
+            if (s[k] == '\0')
+                return 0;
+            if (___toupper((signed char)charset[k]) != ___toupper((signed char)s[k]))
+                break;
+        }
+        if (!charset[k])
+            return 1; /* full match */
+    }
+    return 0;
+}
+
+/* Inline server count update (shared code pattern) */
+static void UI_UpdateServerCount(void)
+{
+    int serverCount = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8));
+    if (serverCount != *(int *)((byte *)&sharedUiInfo + 108664)) {
+        *(int *)((byte *)&sharedUiInfo + 108664) = serverCount;
+        if (*(int *)((byte *)&sharedUiInfo + 108660) != 0) {
+            *(int *)((byte *)&sharedUiInfo + 28656) = -1;
+            UI_BuildServerDisplayList(1);
+        }
+    }
+}
+
+/* line 3271 */
+static void UI_BuildFindPlayerList(void)
+{
+    serverStatusInfo_t info;
+    char infoString[0x400];
+    char name[0x22];
+    int i, j, statusResult;
+    int *pendingFlag;
+    byte *serverAddr;
+    byte *hostName;
+    byte *hostName2;
+    byte *slotBase;
+    int nextRefresh;
+    const char *charset;
+    int numResults;
+
+    nextRefresh = *(int *)((byte *)uiInfo + 0x10a4);
+    if (!nextRefresh)
+        return;
+    if (nextRefresh > *(int *)((byte *)uiInfo + 4))
+        return;
+
+    /* inline server count update */
+    UI_UpdateServerCount();
+
+    for (i = 0; i < 16; i++) {
+        slotBase = (byte *)&sharedUiInfo + i * 0x8c;
+        serverAddr = (byte *)&sharedUiInfo + 113140 + i * 0x8c;
+        hostName = (byte *)&sharedUiInfo + 113204 + i * 0x8c;
+        hostName2 = (byte *)&sharedUiInfo + 113204 + i * 0x8c;
+        pendingFlag = (int *)((byte *)&sharedUiInfo + 0x1ba7c + i * 0x8c);
+
+        if (!*pendingFlag) {
+            /* not pending: clear and update */
+            __asm__ __volatile__ (
+                "xorl %%edx, %%edx\n"
+                "movl %0, %%eax\n"
+                "calll UI_GetServerStatusInfo\n"
+                :
+                : "r"(serverAddr)
+                : "eax", "ecx", "edx", "memory"
+            );
+            *pendingFlag = 0;
+
+            /* inline server count update */
+            UI_UpdateServerCount();
+
+            if (*(int *)((byte *)&sharedUiInfo + 113136) < *(int *)((byte *)&sharedUiInfo + 108660)) {
+                /* need to fetch next server */
+                int curServer = *(int *)((byte *)&sharedUiInfo + 113136);
+                int dispServer;
+
+                /* set timestamp */
+                *(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) = *(int *)((byte *)uiInfo + 4);
+
+                /* get server address string */
+                dispServer = *(int *)((byte *)&sharedUiInfo + 28660 + curServer * 4);
+                LAN_GetServerAddressString(*(int *)((byte *)ui_netSource + 8), dispServer, (char *)serverAddr, 0x40);
+
+                /* get server info */
+                LAN_GetServerInfo(*(int *)((byte *)ui_netSource + 8), dispServer, infoString, 0x400);
+
+                /* extract hostname */
+                I_strncpyz((char *)hostName, Info_ValueForKey(infoString, "hostname"), 0x40);
+
+                /* mark as pending */
+                *pendingFlag = 1;
+
+                /* advance to next server */
+                curServer++;
+                *(int *)((byte *)&sharedUiInfo + 113136) = curServer;
+
+                /* update status string */
+                numResults = *(int *)((byte *)uiInfo + 0x10a0);
+                Com_sprintf((char *)((byte *)uiInfo + 0xc60 + numResults * 64), 0x40, "searching %d/%d...", curServer, numFound);
+            }
+            continue;
+        }
+
+        /* slot is pending: try to get server status */
+        __asm__ __volatile__ (
+            "movl %1, %%edx\n"
+            "movl %2, %%eax\n"
+            "calll UI_GetServerStatusInfo\n"
+            "movl %%eax, %0\n"
+            : "=r"(statusResult)
+            : "r"(&info), "r"(serverAddr)
+            : "eax", "ecx", "edx", "memory"
+        );
+
+        if (!statusResult) {
+            /* check if pending flag is still set and not timed out */
+            if (!*pendingFlag)
+                continue; /* retry */
+
+            {
+                int timeoutVal = *(int *)((byte *)uiInfo + 4) - *(int *)((byte *)ui_serverStatusTimeOut + 8);
+                if (*(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) >= timeoutVal)
+                    continue; /* still within timeout */
+            }
+            numTimeOuts++;
+            continue; /* retry */
+        }
+
+        /* got server status - search for player */
+        numFound++;
+
+        if (info.numLines > 0) {
+            for (j = 0; j < info.numLines; j++) {
+                if (!info.lines[j][2] || info.lines[j][2][0] == '\0')
+                    continue;
+
+                I_strncpyz(name, info.lines[j][3], 0x22);
+                I_CleanStr(name);
+
+                charset = (const char *)((byte *)uiInfo + 0x4a0);
+
+                if (name[0] == '\0')
+                    continue;
+
+                if (UI_StrContains(name, charset)) {
+                    /* found a match */
+                    numResults = *(int *)((byte *)uiInfo + 0x10a0);
+                    if (numResults > 14) {
+                        /* too many results, set num to max */
+                        *(int *)((byte *)&sharedUiInfo + 113136) = *(int *)((byte *)&sharedUiInfo + 108660);
+                        continue;
+                    }
+
+                    /* store result: server address and host name */
+                    I_strncpyz((char *)((byte *)uiInfo + 0x860 + numResults * 64), (const char *)serverAddr, 0x40);
+                    I_strncpyz((char *)((byte *)uiInfo + 0xc60 + numResults * 64), (const char *)hostName2, 0x40);
+                    *(int *)((byte *)uiInfo + 0x10a0) += 1;
+                    continue;
+                }
+            }
+        }
+
+        /* update searching status */
+        Com_sprintf((char *)((byte *)uiInfo + 0xc60 + *(int *)((byte *)uiInfo + 0x10a0) * 64), 0x40, "searching %d/%d...", *(int *)((byte *)&sharedUiInfo + 113136), numFound);
+        *pendingFlag = 0;
+
+        /* check if still pending and not timed out */
+        if (!*pendingFlag)
+            continue; /* retry - slot cleared */
+
+        {
+            int timeoutVal = *(int *)((byte *)uiInfo + 4) - *(int *)((byte *)ui_serverStatusTimeOut + 8);
+            if (*(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) >= timeoutVal)
+                continue;
+        }
+        numTimeOuts++;
+        /* retry */
+    }
+
+    /* all 16 slots processed: check if any still pending */
+    for (i = 0; i < 16; i++) {
+        if (*(int *)((byte *)&sharedUiInfo + 0x1ba7c + i * 0x8c) != 0) {
+            /* still pending - schedule next check */
+            *(int *)((byte *)uiInfo + 0x10a4) = *(int *)((byte *)uiInfo + 4) + 25;
+            return;
+        }
+    }
+
+    /* all done */
+    numResults = *(int *)((byte *)uiInfo + 0x10a0);
+    if (numResults == 0) {
+        Com_sprintf((char *)((byte *)uiInfo + 0xc60), 0x40, "no servers found");
+    } else {
+        const char *plural = (numResults == 2) ? str_002157b8 : "s";
+        Com_sprintf((char *)((byte *)uiInfo + 0xca0 + (numResults - 1) * 64), 0x40, "%d server%s found with player %s", numResults - 1, plural, (const char *)((byte *)uiInfo + 0x4a0));
+    }
+    *(int *)((byte *)uiInfo + 0x10a4) = 0;
 }
 
 /* line 3388 */
