@@ -1893,5 +1893,168 @@ void CG_ExecuteNewServerCommands(int latestSequence)
     }
 }
 #else
+static void CG_AddToTeamChat_impl(const char *str)
+{
+    byte *cgs_p;
+    byte *cg_p;
+    int chatHeight;
+    int chatCount;
+    int row;
+    char *dst;
+    int len;
+    int lastcolor;
+    char *ls;
+    const char *p;
+
+    /* line 547: get chat height dvar */
+    chatHeight = *(int *)(*(byte **)imp_cg_chatHeight + 8);
+    if (chatHeight == 0)
+        goto zero_out;
+
+    if (*(int *)(*(byte **)imp_cg_chatTime + 8) <= 0)
+        goto zero_out;
+
+    /* line 557: compute destination row */
+    cgs_p = *(byte **)imp_cgs;
+    chatCount = *(int *)(cgs_p + 0xba14);
+    row = chatCount % chatHeight;
+
+    /* Each row is at cgs + 0xb170 + row * (16 + 256 - 16 + 1...) */
+    /* Row size: row * 0x10 + row * 0x100 - row = row * (0x10 + 0x100 - 1) = row * 0x10f */
+    /* Actually from asm: offset = row * 16 + row * 256 - row = row * 271 = row * 0x10f */
+    dst = (char *)(cgs_p + 0xb170 + row * 0x10f);
+
+    /* line 558 */
+    dst[0xc] = '\0';
+
+    len = 0;
+    lastcolor = 0x37; /* '7' */
+    ls = NULL;
+    p = str;
+    dst = (char *)(cgs_p + 0xb170 + row * 0x10f + 0xc);
+
+    while (*p != '\0') {
+        char ch;
+        const char *savedp;
+
+        /* line 565 */
+        if (len > 0x59) {
+            /* line 567: line too long, wrap */
+            if (ls != NULL) {
+                /* line 569-571: back up to last space */
+                int backDist = (int)(dst - ls);
+                p = p - backDist + 1;
+                dst = ls;
+            }
+
+            /* line 573: null terminate */
+            *dst = '\0';
+
+            /* line 575: advance to next row */
+            cgs_p = *(byte **)imp_cgs;
+            chatCount = *(int *)(cgs_p + 0xba14);
+            {
+                int r = chatCount % chatHeight;
+                cg_p = *(byte **)imp_cg;
+                *(int *)(cgs_p + 0xb9f4 + r * 4) = *(int *)(cg_p + 0x25bb0);
+            }
+
+            /* line 577 */
+            chatCount += 1;
+            *(int *)(cgs_p + 0xba14) = chatCount;
+
+            /* line 578: new row */
+            row = chatCount % chatHeight;
+            dst = (char *)(cgs_p + 0xb170 + row * 0x10f + 0xc);
+
+            /* line 580: prepend color code */
+            *dst++ = '^';
+            *dst++ = (char)(lastcolor & 0xff);
+
+            if (p == NULL) {
+                /* line 591: null str edge case */
+                ls = NULL;
+                len = 1;
+                /* go to end check */
+                ch = '\0';
+                goto check_space;
+            }
+            len = 0;
+            ls = NULL;
+
+            if (*p == '^')
+                goto handle_caret;
+
+            goto copy_char;
+        }
+
+        savedp = p;
+
+        /* line 586: check for caret color code */
+        if (*p == '^') {
+handle_caret:
+            p++;
+            ch = *(savedp + 1);
+            if (ch == '\0' || ch == '^' || ch <= '/' || ch > '9') {
+                /* not a valid color code, just advance len */
+                len++;
+                ch = *savedp;
+                goto check_space;
+            }
+            /* line 588-590: valid color code */
+            *dst++ = '^';
+            lastcolor = (signed char)ch;
+            *dst++ = ch;
+            p = savedp + 2;
+            continue;
+        }
+
+copy_char:
+        /* line 565 */
+        savedp = p;
+        p++;
+        len++;
+
+check_space:
+        /* line 593: track last space */
+        ch = *savedp;
+        if (ch == ' ')
+            ls = dst;
+
+        /* line 597 */
+        *dst++ = ch;
+        continue;
+    }
+
+    /* line 600: null terminate */
+    *dst = '\0';
+
+    /* line 602: record timestamp */
+    cgs_p = *(byte **)imp_cgs;
+    chatCount = *(int *)(cgs_p + 0xba14);
+    {
+        int r = chatCount % chatHeight;
+        cg_p = *(byte **)imp_cg;
+        *(int *)(cgs_p + 0xb9f4 + r * 4) = *(int *)(cg_p + 0x25bb0);
+    }
+
+    /* line 603 */
+    chatCount += 1;
+    *(int *)(cgs_p + 0xba14) = chatCount;
+
+    /* line 605 */
+    if (chatHeight < chatCount - *(int *)(cgs_p + 0xba18)) {
+        /* line 606 */
+        *(int *)(cgs_p + 0xba18) = chatCount - chatHeight;
+    }
+    return;
+
+zero_out:
+    /* line 551 */
+    cgs_p = *(byte **)imp_cgs;
+    *(int *)(cgs_p + 0xba18) = 0;
+    *(int *)(cgs_p + 0xba14) = 0;
+}
+
 static void CG_AddToTeamChat(void) { }
 #endif

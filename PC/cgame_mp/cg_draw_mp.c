@@ -32,6 +32,11 @@ extern int CL_GetCurrentCmdNumber(void);
 extern int CL_GetKeyCatchers(void);
 extern qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
 extern Bool CL_IsRenderingSplitScreen(void);
+extern void CL_SetUserCmdAimValues(const vec_t *angles);
+extern void CL_SetUserCmdValue(int weapon, int offHandIndex, float sensitivity);
+extern void CL_RenderScene(const void *refdef);
+extern void CG_DrawShellShockSavedScreenBlend(float r, float g, float b);
+extern void CG_TileClear(void);
 extern const char *UI_SafeTranslateString(const char *ref);
 extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
 extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
@@ -68,6 +73,17 @@ extern float Vec3Distance(const vec_t *v1, const vec_t *v2);
 extern float crandom(void);
 extern double sin(double);
 extern double tan(double);
+
+/* Externs for CG_CheckTimedMenus */
+extern void Menus_CloseByName(void *dc, const char *name);
+extern void *Menus_FindByName(void *dc, const char *name);
+extern void Window_AddDynamicFlags(void *window, int flags);
+extern void Window_RemoveDynamicFlags(void *window, int flags);
+extern void CG_MenuShowNotify(int menuToShow);
+extern float CG_CalcPlayerHealth(void);
+extern Bool CG_CheckPlayerForLowAmmo(void);
+extern Bool CG_CheckPlayerForLowClip(void);
+extern int CL_GetLocalClientActiveCount(void);
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -980,7 +996,287 @@ unsigned int CG_CheckTimedMenus(void)
     );
 }
 #else
-unsigned int CG_CheckTimedMenus(void) { return 0; }
+unsigned int CG_CheckTimedMenus(void)
+{
+    byte *cg;
+    int serverTime;
+    int timedMenuTime;
+    usercmd_t prevCmd;
+    usercmd_t curCmd;
+    usercmd_t prevCopy;
+    usercmd_t curCopy;
+    int cmdNum;
+    int buttonBits;
+    int buttonChanged;
+    int hasChange;
+    float health;
+    float fadeVal;
+    int showTime;
+    void *menu;
+
+    /* line 2414: check timed close menu */
+    cg = *(byte **)imp_cg;
+    timedMenuTime = *(int *)(cg + 0x2be4c);
+    if (timedMenuTime != 0) {
+        serverTime = *(int *)(cg + 0x25bb0);
+        if (serverTime - timedMenuTime > 2500) {
+            /* line 2420 */
+            Menus_CloseByName(*(void **)imp_cgDC, (const char *)str_002b701c);
+            *(int *)(cg + 0x2be4c) = 0;
+        }
+    }
+
+    /* line 2231: get user cmds for button change detection */
+    cmdNum = CL_GetCurrentCmdNumber();
+    if (cmdNum <= 1)
+        goto after_buttons;
+
+    /* line 2236-2237 */
+    CL_GetUserCmd(cmdNum - 1, &prevCmd);
+    CL_GetUserCmd(cmdNum, &curCmd);
+
+    /* line 2238: extract button bits */
+    buttonBits = *(int *)((byte *)&curCmd + 4);
+    buttonChanged = buttonBits ^ *(int *)((byte *)&prevCmd + 4);
+
+    /* line 2240: copy both usercmds for memcmp */
+    memcpy(&prevCopy, &prevCmd, sizeof(usercmd_t));
+    memcpy(&curCopy, &curCmd, sizeof(usercmd_t));
+
+    /* line 2136: compare first 12 bytes (movement fields) */
+    if (memcmp(&prevCopy, &curCopy, 12) != 0) {
+        hasChange = 1;
+    } else {
+        /* line 2140: check if buttons changed */
+        if (*(unsigned short *)((byte *)&curCopy + 0x10) != 0) {
+            hasChange = 1;
+        } else {
+            hasChange = 0;
+        }
+    }
+
+    /* line 2186: fire button check */
+    if (buttonBits & 0x1) {
+        cg = *(byte **)imp_cg;
+        if (!(*(int *)(cg + 0x25c64) & 0x300)) {
+            /* line 2197 */
+            CG_MenuShowNotify(1);
+            hasChange = 1;
+            buttonBits = *(int *)((byte *)&curCmd + 4);
+        }
+    }
+
+    /* line 2169: use button check */
+    if (buttonBits & 0x30) {
+        byte *cg2 = *(byte **)imp_cg;
+        if (!(*(byte *)(cg2 + 0x25bd0) & 0x4)) {
+            byte *weapDef = *(byte **)(cg2 + 0x20);
+            if (!(*(byte *)(weapDef + 0x5a4) & 0x2)) {
+                if (!(*(int *)(cg2 + 0x25c64) & 0x300)) {
+                    /* line 2197 */
+                    CG_MenuShowNotify(1);
+                    hasChange = 1;
+                    buttonBits = *(int *)((byte *)&curCmd + 4);
+                }
+            }
+        }
+    }
+
+    /* line 2206: weapon switch buttons */
+    if (buttonBits & 0x30000) {
+        /* line 2208 */
+        CG_MenuShowNotify(4);
+        hasChange = 1;
+        buttonBits = *(int *)((byte *)&curCmd + 4);
+    }
+
+    /* line 2149: stance buttons (new pressed) */
+    if (buttonChanged & 0x2300) {
+        /* line 2151 */
+        CG_MenuShowNotify(3);
+        goto do_notify2;
+    }
+
+    /* line 2154: stance buttons (held) */
+    if (buttonBits & 0x2300) {
+        /* line 2156 */
+        CG_MenuShowNotify(3);
+    }
+
+    /* line 2255 */
+    if (!hasChange) {
+        if (!(buttonChanged & 0xffffd4ff))
+            goto after_buttons;
+    }
+
+do_notify2:
+    /* line 2259 */
+    CG_MenuShowNotify(2);
+
+after_buttons:
+    /* line 2268 */
+    health = CG_CalcPlayerHealth();
+    {
+        float threshold = *(float *)(*(byte **)imp_hud_health_startpulse_injured + 8);
+        if (threshold <= health) {
+            /* line 2270: not injured enough, show health menu */
+            CG_MenuShowNotify(0);
+        }
+    }
+
+    /* line 2272: health bar fade */
+    fadeVal = *(float *)(*(byte **)imp_hud_fade_healthbar + 8);
+    if (fadeVal != 0.0f) {
+        cg = *(byte **)imp_cg;
+        showTime = *(int *)(cg + 0x2c5c4);
+        if (showTime != 0) {
+            serverTime = *(int *)(cg + 0x25bb0);
+            if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
+                /* line 2277 */
+                if (CL_GetLocalClientActiveCount() == 1) {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7028);
+                } else {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7030);
+                }
+                /* line 2281 */
+                if (menu)
+                    Window_RemoveDynamicFlags(menu, 4);
+                /* line 2283 */
+                cg = *(byte **)imp_cg;
+                *(int *)(cg + 0x2c5c4) = 0;
+            }
+        }
+    }
+
+    /* line 2294: low ammo check */
+    if (CG_CheckPlayerForLowAmmo() || CG_CheckPlayerForLowClip()) {
+        /* line 2296 */
+        CG_MenuShowNotify(1);
+    }
+
+    /* line 2298: ammo display fade */
+    fadeVal = *(float *)(*(byte **)imp_hud_fade_ammodisplay + 8);
+    if (fadeVal != 0.0f) {
+        cg = *(byte **)imp_cg;
+        showTime = *(int *)(cg + 0x2c5c8);
+        if (showTime != 0) {
+            serverTime = *(int *)(cg + 0x25bb0);
+            if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
+                /* line 2303 */
+                if (CL_GetLocalClientActiveCount() == 1) {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b5978);
+                } else {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b703c);
+                }
+                /* line 2307 */
+                if (menu)
+                    Window_RemoveDynamicFlags(menu, 4);
+                /* line 2309 */
+                cg = *(byte **)imp_cg;
+                *(int *)(cg + 0x2c5c8) = 0;
+            }
+        }
+    }
+
+    /* line 2320: compass fade */
+    fadeVal = *(float *)(*(byte **)imp_hud_fade_compass + 8);
+    if (fadeVal != 0.0f) {
+        cg = *(byte **)imp_cg;
+        showTime = *(int *)(cg + 0x2c5c0);
+        if (showTime != 0) {
+            serverTime = *(int *)(cg + 0x25bb0);
+            if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
+                /* line 2325 */
+                if (CL_GetLocalClientActiveCount() == 1) {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002a79e0);
+                } else {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002a79e8);
+                }
+                /* line 2329 */
+                if (menu)
+                    Window_RemoveDynamicFlags(menu, 4);
+                /* line 2331 */
+                cg = *(byte **)imp_cg;
+                *(int *)(cg + 0x2c5c0) = 0;
+            }
+        }
+    }
+
+    /* line 2342: ADS / binocular check */
+    {
+        cg = *(byte **)imp_cg;
+        int ps_eFlags = *(int *)(*(byte **)(cg + 0x24) + 0xac);
+        if ((ps_eFlags & 0x8) && (ps_eFlags & 0x100)) {
+            /* line 2345 */
+            CG_MenuShowNotify(3);
+        } else if ((ps_eFlags & 0x4) && (ps_eFlags & 0x200)) {
+            /* line 2345 */
+            CG_MenuShowNotify(3);
+        }
+    }
+
+    /* line 2347: stance fade */
+    fadeVal = *(float *)(*(byte **)imp_hud_fade_stance + 8);
+    if (fadeVal != 0.0f) {
+        cg = *(byte **)imp_cg;
+        showTime = *(int *)(cg + 0x2c5cc);
+        if (showTime != 0) {
+            serverTime = *(int *)(cg + 0x25bb0);
+            if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
+                /* line 2354 */
+                if (CL_GetLocalClientActiveCount() == 1) {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_00221984);
+                } else {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b704c);
+                }
+                /* line 2359 */
+                if (menu)
+                    Window_RemoveDynamicFlags(menu, 4);
+                /* line 2361 */
+                cg = *(byte **)imp_cg;
+                *(int *)(cg + 0x2c5cc) = 0;
+            }
+        }
+    }
+
+    /* line 2373: offhand fade */
+    fadeVal = *(float *)(*(byte **)imp_hud_fade_offhand + 8);
+    if (fadeVal != 0.0f) {
+        cg = *(byte **)imp_cg;
+        showTime = *(int *)(cg + 0x2c5d0);
+        if (showTime != 0) {
+            serverTime = *(int *)(cg + 0x25bb0);
+            if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
+                /* line 2378 */
+                if (CL_GetLocalClientActiveCount() == 1) {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7058);
+                } else {
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7064);
+                }
+                /* line 2382 */
+                if (menu)
+                    Window_RemoveDynamicFlags(menu, 4);
+                /* line 2384 */
+                cg = *(byte **)imp_cg;
+                *(int *)(cg + 0x2c5d0) = 0;
+            }
+        }
+    }
+
+    /* line 2396: scoreboard */
+    if (CG_ScoreboardDisplayed()) {
+        cg = *(byte **)imp_cg;
+        serverTime = *(int *)(cg + 0x25bb0);
+        if (serverTime - *(int *)(cg + 0x2b538) > 100) {
+            /* line 2401 */
+            menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7074);
+            if (menu)
+                Window_RemoveDynamicFlags(menu, 4);
+        }
+    }
+
+    return 0;
+}
 #endif
 
 /* line 2507 */
@@ -1266,7 +1562,46 @@ unsigned int CG_DrawActive(void)
     );
 }
 #else
-unsigned int CG_DrawActive(void) { return 0; }
+unsigned int CG_DrawActive(void) {
+    byte *cg = (byte *)*(void **)imp_cg;
+    float sensitivity;
+    float angles[3];
+
+    /* Copy viewModelAngle to viewAngle backup */
+    *(int *)(cg + 0x285b8) = *(int *)(cg + 0x25bb0);
+    *(int *)(cg + 0x285c4) = 0;
+
+    /* Compute sensitivity with shellshock modifier */
+    sensitivity = *(float *)(cg + 0x2a5f8);
+    {
+        float shellshockSensitivity = *(float *)(cg + 0x2cce8);
+        if (shellshockSensitivity != 0.0f)
+            sensitivity *= shellshockSensitivity;
+    }
+
+    /* Compute combined aim angles = gunAngles + cmdAngles */
+    angles[0] = *(float *)(cg + 0x2c03c) + *(float *)(cg + 0x2c048);
+    angles[1] = *(float *)(cg + 0x2c040) + *(float *)(cg + 0x2c04c);
+    angles[2] = *(float *)(cg + 0x2c044) + *(float *)(cg + 0x2c050);
+
+    CL_SetUserCmdAimValues(angles);
+    CL_SetUserCmdValue(*(int *)(cg + 0x2be50), *(int *)(cg + 0x2be70), sensitivity);
+
+    /* Render the scene */
+    CL_RenderScene((void *)(cg + 0x28570));
+
+    /* If not split screen, draw shellshock saved screen blend */
+    if (!CL_IsRenderingSplitScreen()) {
+        CG_DrawShellShockSavedScreenBlend(
+            *(float *)(cg + 0x2ccd8),
+            *(float *)(cg + 0x2ccdc),
+            *(float *)(cg + 0x2cce0)
+        );
+    }
+
+    CG_TileClear();
+    return 0;
+}
 #endif
 
 /* line 549 */

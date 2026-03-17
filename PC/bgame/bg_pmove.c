@@ -3,12 +3,20 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  *   #include "PC/universal/com_math.h"
  *   #include "PC/universal/q_shared.h"
  */
+
+extern float AngleDelta(float angle1, float angle2);
+extern float AngleNormalize360Accurate(float angle);
+extern qboolean BG_CheckProne(int passEntityNum, const vec_t *vPos, const float fSize, const float fHeight, const float fYaw, float *pfTorsoHeight, float *pfTorsoPitch, float *pfWaistPitch, const qboolean bAlreadyProne, const qboolean bOnGround, vec_t *vGroundNormal, int handler, proneCheckType_t proneCheckType, float prone_feet_dist);
+extern float Vec3Normalize(vec_t *v);
+extern float Vec2Normalize(vec_t *v);
+extern void Com_Printf(const char *fmt, ...);
 
 extern pmoveHandler_t pmoveHandlers[2]; /* 0x0 */
 extern viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* viewLerp_StandCrouch */
@@ -384,8 +392,36 @@ qboolean BG_CheckProneTurned(void)
     );
 }
 #else
-/* NOTE: BG_CheckProneTurned uses register calling convention on x86:
-   eax=ps, edx=handler, xmm0=newProneYaw. Only called from asm. */
+/* Register-convention: eax=ps, edx=handler, xmm0=newProneYaw.
+   Only called from asm in x86 mode. In Emscripten, callers use _impl directly. */
+static qboolean BG_CheckProneTurned_impl(byte *ps, int handler, float newProneYaw)
+{
+    float oldProneYaw = *(float *)(ps + 0xec);
+    float delta = AngleDelta(newProneYaw, oldProneYaw);
+    float absDelta = (float)fabs(delta);
+    float t = absDelta / 240.0f;
+    float scale = 1.0f - t;
+    float adjustedYaw = newProneYaw - (delta * scale);
+    float normalizedYaw = AngleNormalize360Accurate(adjustedYaw);
+    float proneFeetDist = t * 45.0f + scale * 66.0f;
+
+    return BG_CheckProne(
+        *(int *)(ps + 0xcc),                       /* passEntityNum */
+        (const vec_t *)(ps + 0x14),                /* vPos */
+        *(float *)(ps + 0x578),                    /* fSize */
+        30.0f,                                     /* fHeight */
+        normalizedYaw,                             /* fYaw */
+        (float *)(ps + 0x5a8),                     /* pfTorsoHeight */
+        (float *)(ps + 0x5ac),                     /* pfTorsoPitch */
+        (float *)(ps + 0x5b0),                     /* pfWaistPitch */
+        1,                                         /* bAlreadyProne */
+        *(int *)(ps + 0x60) != 0x3ff ? 1 : 0,     /* bOnGround */
+        NULL,                                      /* vGroundNormal */
+        (unsigned char)handler,                    /* handler */
+        0,                                         /* proneCheckType */
+        proneFeetDist                              /* prone_feet_dist */
+    );
+}
 static qboolean BG_CheckProneTurned(void) { return 0; }
 #endif
 

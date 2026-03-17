@@ -1048,7 +1048,151 @@ void CL_InitRef(void)
     );
 }
 #else
-void CL_InitRef(void) { }
+void CL_InitRef(void) {
+    refimport_t ri_local;
+    void *ret;
+
+    Com_Printf("----- Initializing Renderer ----\n");
+
+    /* Fill refimport function pointer table */
+    ri_local.Cmd_AddCommand = *(void **)imp_Cmd_AddCommand;
+    ri_local.Cmd_RemoveCommand = *(void **)imp_Cmd_RemoveCommand;
+    ri_local.Cmd_Argc = *(void **)imp_Cmd_Argc;
+    ri_local.Cmd_Argv = *(void **)imp_Cmd_Argv;
+    ri_local.Cbuf_ExecuteText = *(void **)imp_Cbuf_ExecuteText;
+    ri_local.Printf = (void *)CL_RefPrintf;
+    ri_local.Error = *(void **)imp_Com_Error;
+    ri_local.Milliseconds = (void *)CL_ScaledMilliseconds;
+    ri_local.Hunk_AllocInternal = *(void **)imp_Hunk_AllocInternal;
+    ri_local.Hunk_AllocateTempMemoryInternal = *(void **)imp_Hunk_AllocateTempMemoryInternal;
+    ri_local.Z_MallocInternal = *(void **)imp_Z_MallocInternal;
+    ri_local.Z_FreeInternal = *(void **)imp_Z_FreeInternal;
+    ri_local.Hunk_AllocAlignInternal = *(void **)imp_Hunk_AllocAlignInternal;
+    ri_local.Z_VirtualReserveInternal = *(void **)imp_Z_VirtualReserveInternal;
+    ri_local.Z_VirtualCommitInternal = *(void **)imp_Z_VirtualCommitInternal;
+    ri_local.Z_VirtualDecommitInternal = *(void **)imp_Z_VirtualDecommitInternal;
+    ri_local.Z_VirtualFreeInternal = *(void **)imp_Z_VirtualFreeInternal;
+    ri_local.Hunk_FreeTempMemory = *(void **)imp_Hunk_FreeTempMemory;
+    ri_local.Hunk_AllocateTempMemoryHighInternal = *(void **)imp_Hunk_AllocateTempMemoryHighInternal;
+    ri_local.Hunk_ClearTempMemory = *(void **)imp_Hunk_ClearTempMemory;
+    ri_local.Hunk_ClearTempMemoryHigh = *(void **)imp_Hunk_ClearTempMemoryHigh;
+    ri_local.Sys_DirectXFatalError = *(void **)imp_Sys_DirectXFatalError;
+    ri_local.Sys_ShowSplashWindow = *(void **)imp_Sys_ShowSplashWindow;
+    ri_local.Sys_HideSplashWindow = *(void **)imp_Sys_HideSplashWindow;
+    ri_local.Sys_LoadingKeepAlive = *(void **)imp_Sys_LoadingKeepAlive;
+    ri_local.FS_ReadFile = *(void **)imp_FS_ReadFile;
+    ri_local.FS_FreeFile = *(void **)imp_FS_FreeFile;
+    ri_local.FS_FOpenFileRead = *(void **)imp_FS_FOpenFileRead;
+    ri_local.FS_WriteFile = *(void **)imp_FS_WriteFile;
+    ri_local.FS_FreeFileList = *(void **)imp_FS_FreeFileList;
+    ri_local.FS_ListFiles = *(void **)imp_FS_ListFiles;
+    ri_local.FS_FileExists = *(void **)imp_FS_FileExists;
+    ri_local.FS_FOpenFileByMode = *(void **)imp_FS_FOpenFileByMode;
+    ri_local.FS_FCloseFile = *(void **)imp_FS_FCloseFile;
+    ri_local.FS_Read = *(void **)imp_FS_Read;
+    ri_local.FS_Write = *(void **)imp_FS_Write;
+    ri_local.CM_SaveLump = *(void **)imp_CM_SaveLump;
+    ri_local.CM_BoxTrace = *(void **)imp_CM_BoxTrace;
+    ri_local.CM_BoxSightTrace = *(void **)imp_CM_BoxSightTrace;
+    ri_local.Dvar_RegisterBool = *(void **)imp_Dvar_RegisterBool;
+    ri_local.Dvar_RegisterInt = *(void **)imp_Dvar_RegisterInt;
+    ri_local.Dvar_RegisterFloat = *(void **)imp_Dvar_RegisterFloat;
+    ri_local.Dvar_RegisterString = *(void **)imp_Dvar_RegisterString;
+    ri_local.Dvar_RegisterEnum = *(void **)imp_Dvar_RegisterEnum;
+    ri_local.Dvar_RegisterColor = *(void **)imp_Dvar_RegisterColor;
+    ri_local.Dvar_RegisterVec2 = *(void **)imp_Dvar_RegisterVec2;
+    ri_local.Dvar_RegisterVec3 = *(void **)imp_Dvar_RegisterVec3;
+    ri_local.Dvar_RegisterVec4 = *(void **)imp_Dvar_RegisterVec4;
+    ri_local.Dvar_ClearModified = *(void **)imp_Dvar_ClearModified;
+    ri_local.Dvar_SetModified = *(void **)imp_Dvar_SetModified;
+    ri_local.Dvar_UpdateEnumDomain = *(void **)imp_Dvar_UpdateEnumDomain;
+    ri_local.Dvar_UnregisterSystem = *(void **)imp_Dvar_UnregisterSystem;
+    ri_local.Dvar_ChangeResetValue = *(void **)imp_Dvar_ChangeResetValue;
+    ri_local.Dvar_IsAtDefaultValue = *(void **)imp_Dvar_IsAtDefaultValue;
+    ri_local.Dvar_SetBool = *(void **)imp_Dvar_SetBool;
+    ri_local.Dvar_SetInt = *(void **)imp_Dvar_SetInt;
+    ri_local.Dvar_SetFloat = *(void **)imp_Dvar_SetFloat;
+    ri_local.Dvar_SetString = *(void **)imp_Dvar_SetString;
+    ri_local.Dvar_SetColor = *(void **)imp_Dvar_SetColor;
+    ri_local.Dvar_SetVec2 = *(void **)imp_Dvar_SetVec2;
+    ri_local.Dvar_SetVec3 = *(void **)imp_Dvar_SetVec3;
+    ri_local.Dvar_SetVec4 = *(void **)imp_Dvar_SetVec4;
+    ri_local.Dvar_SetFromString = *(void **)imp_Dvar_SetFromString;
+    ri_local.Dvar_SetBoolByName = *(void **)imp_Dvar_SetBoolByName;
+    ri_local.Dvar_SetIntByName = *(void **)imp_Dvar_SetIntByName;
+    ri_local.Dvar_SetFloatByName = *(void **)imp_Dvar_SetFloatByName;
+    ri_local.Dvar_SetStringByName = *(void **)imp_Dvar_SetStringByName;
+    ri_local.Dvar_SetColorByName = *(void **)imp_Dvar_SetColorByName;
+    ri_local.Dvar_SetVec2ByName = *(void **)imp_Dvar_SetVec2ByName;
+    ri_local.Dvar_SetVec3ByName = *(void **)imp_Dvar_SetVec3ByName;
+    ri_local.Dvar_SetVec4ByName = *(void **)imp_Dvar_SetVec4ByName;
+    ri_local.Dvar_SetFromStringByName = *(void **)imp_Dvar_SetFromStringByName;
+    ri_local.Dvar_GetBool = *(void **)imp_Dvar_GetBool;
+    ri_local.Dvar_GetInt = *(void **)imp_Dvar_GetInt;
+    ri_local.Dvar_GetFloat = *(void **)imp_Dvar_GetFloat;
+    ri_local.Dvar_GetString = *(void **)imp_Dvar_GetString;
+    ri_local.Dvar_GetVariantString = *(void **)imp_Dvar_GetVariantString;
+    ri_local.Dvar_EnumToString = *(void **)imp_Dvar_EnumToString;
+    ri_local.Dvar_Reset = *(void **)imp_Dvar_Reset;
+    ri_local.Com_SaveDvarsToBuffer = *(void **)imp_Com_SaveDvarsToBuffer;
+    ri_local.Com_LoadDvarsFromBuffer = *(void **)imp_Com_LoadDvarsFromBuffer;
+    ri_local.Com_GetBsp = *(void **)imp_Com_GetBsp;
+    ri_local.SEH_ReadCharFromString = *(void **)imp_SEH_ReadCharFromString;
+    ri_local.CL_UpdateDebugData = (void *)CL_UpdateDebugData;
+    ri_local.CL_FlushDebugData = (void *)CL_FlushDebugData;
+    ri_local.StatMon_Warning = *(void **)imp_StatMon_Warning;
+    ri_local.XModelPrecache = *(void **)imp_XModelPrecache;
+    ri_local.XModelGetSurfaces = *(void **)imp_XModelGetSurfaces;
+    ri_local.XModelBad = *(void **)imp_XModelBad;
+    ri_local.Hunk_OverrideDataForFile = *(void **)imp_Hunk_OverrideDataForFile;
+    ri_local.XModelGetNumLods = *(void **)imp_XModelGetNumLods;
+    ri_local.XModelSetTestLods = *(void **)imp_XModelSetTestLods;
+    ri_local.XModelGetLodForDist = *(void **)imp_XModelGetLodForDist;
+    ri_local.XModelGetLodOutDist = *(void **)imp_XModelGetLodOutDist;
+    ri_local.XModelGetSurfaceName = *(void **)imp_XModelGetSurfaceName;
+    ri_local.XModelGetName = *(void **)imp_XModelGetName;
+    ri_local.XModelGetFlags = *(void **)imp_XModelGetFlags;
+    ri_local.XModelNumBones = *(void **)imp_XModelNumBones;
+    ri_local.XModelGetSkins = *(void **)imp_XModelGetSkins;
+    ri_local.XModelGetMemUsage = *(void **)imp_XModelGetMemUsage;
+    ri_local.XModelGetLodName = *(void **)imp_XModelGetLodName;
+    ri_local.XModelGetBasePose = *(void **)imp_XModelGetBasePose;
+    ri_local.XModelGetBasePoseBone = *(void **)imp_XModelGetBasePoseBone;
+    ri_local.DObjBad = *(void **)imp_DObjBad;
+    ri_local.DObjGetBounds = *(void **)imp_DObjGetBounds;
+    ri_local.DObjGetSurface = *(void **)imp_DObjGetSurface;
+    ri_local.DObjGetNumModels = *(void **)imp_DObjGetNumModels;
+    ri_local.DObjGetNumSurfaces = *(void **)imp_DObjGetNumSurfaces;
+    ri_local.DObjGetSurfaces = *(void **)imp_DObjGetSurfaces;
+    ri_local.DObjGetModel = *(void **)imp_DObjGetModel;
+    ri_local.DObjGetSurfaceName = *(void **)imp_DObjGetSurfaceName;
+    ri_local.DObjCreate = *(void **)imp_DObjCreate;
+    ri_local.DObjGetAllocSkelSize = *(void **)imp_DObjGetAllocSkelSize;
+    ri_local.DObjCreateSkel = *(void **)imp_DObjCreateSkel;
+    ri_local.DObjCalcAnim = *(void **)imp_DObjCalcAnim;
+    ri_local.DObjCalcSkel = *(void **)imp_DObjCalcSkel;
+    ri_local.DObjGetRotTransArray = *(void **)imp_DObjGetRotTransArray;
+    ri_local.DObjSkelAreBonesUpToDate = *(void **)imp_DObjSkelAreBonesUpToDate;
+    ri_local.DObjGetMatOffset = *(void **)imp_DObjGetMatOffset;
+    ri_local.DObjNumBones = *(void **)imp_DObjNumBones;
+    ri_local.DObjGetBoneInfo = *(void **)imp_DObjGetBoneInfo;
+    ri_local.DObjGetLodForDist = *(void **)imp_DObjGetLodForDist;
+    ri_local.DObjGetLodOutDist = *(void **)imp_DObjGetLodOutDist;
+    ri_local.DObjCompleteHierarchyBits = *(void **)imp_DObjCompleteHierarchyBits;
+    ri_local.DObjSetModel = *(void **)imp_DObjSetModel;
+    ri_local.CIN_UploadCinematic = *(void **)imp_CIN_UploadCinematic;
+    ri_local.CIN_PlayCinematic = *(void **)imp_CIN_PlayCinematic;
+    ri_local.CIN_RunCinematic = *(void **)imp_CIN_RunCinematic;
+    ri_local.CG_DObjCalcPose = *(void **)imp_CG_DObjCalcPose;
+    ri_local.CL_GetHudMsgIconMaterialName = *(void **)imp_CL_GetHudMsgIconMaterialName;
+
+    /* Call GetRefAPI to get refexport table */
+    ret = ((void *(*)(int, void *))GetRefAPI)(0x3b, &ri_local);
+    memcpy(&re, ret, 0x160);
+
+    /* Reset cl_paused dvar */
+    Dvar_SetInt(*(void **)imp_cl_paused, 0);
+}
 #endif
 
 /* line 3739 */
@@ -5724,5 +5868,37 @@ WARNING: You are missing some files referenced by the serve" */
     );
 }
 #else
-void CL_GetPing(int n, char *buf, int buflen, int *pingtime) { }
+void CL_GetPing(int n, char *buf, int buflen, int *pingtime) {
+    ping_t *ping = &cl_pinglist[n];
+    int time;
+    const char *adrStr;
+
+    /* Check if ping slot is active (port != 0) */
+    if (ping->adr.port == 0) {
+        buf[0] = '\0';
+        *pingtime = 0;
+        return;
+    }
+
+    /* Get address string */
+    adrStr = NET_AdrToString(ping->adr.type, *(int *)ping->adr.ip, ping->adr.port);
+    I_strncpyz(buf, adrStr, buflen);
+
+    /* Get ping time */
+    time = ping->time;
+    if (time == 0) {
+        /* Compute elapsed time */
+        int maxPing;
+        time = Sys_Milliseconds() - ping->start;
+        maxPing = Dvar_GetInt("cl_maxPing");
+        if (maxPing <= 99)
+            maxPing = 100;
+        if (maxPing > time)
+            time = 0;
+    }
+
+    /* Set server info */
+    CL_SetServerInfoByAddress(ping->adr.type, *(int *)ping->adr.ip, ping->adr.port, ping->info, ping->time);
+    *pingtime = time;
+}
 #endif

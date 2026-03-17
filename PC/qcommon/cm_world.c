@@ -2657,5 +2657,180 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
 }
 
 #else
-void CM_UnlinkEntity(svEntity_t *ent) { }
+
+extern gentity_t *SV_GEntityForSvEntity(svEntity_t *svEnt);
+
+/*
+ * CM_UnlinkEntity: removes an entity from the collision world spatial partition.
+ *
+ * cm_world layout:
+ *   offset 0:  vec3_t mins (12 bytes)
+ *   offset 12: vec3_t maxs (12 bytes)
+ *   offset 24: Bool lockTree (4 bytes... but freeHead at 26 means it's 2 bytes padding)
+ *   offset 26: unsigned short freeHead
+ *   offset 28: worldSector_t sectors[1024]  (each 24 bytes)
+ *
+ * worldSector_t layout (24 bytes):
+ *   offset 0:  int contentsStaticModels
+ *   offset 4:  int contentsEntities
+ *   offset 8:  unsigned short entities       (linked list head, 1-based svEntity index)
+ *   offset 10: unsigned short staticModels
+ *   offset 12: float dist
+ *   offset 16: unsigned short axis
+ *   offset 18: unsigned short parent/nextFree
+ *   offset 20: unsigned short child[0]
+ *   offset 22: unsigned short child[1]
+ *
+ * svEntity_t is accessed at: (byte *)imp_sv + 0x22a4 + entityIndex * 372
+ * where entityIndex is from the u16 linked list (1-based, 0 = end).
+ * svEntity_t layout:
+ *   offset 0: unsigned short worldSector
+ *   offset 2: unsigned short nextEntityInWorldSector
+ */
+void CM_UnlinkEntity(svEntity_t *ent)
+{
+    byte *entRaw = (byte *)ent;
+    unsigned short nodeIndex;
+    byte *node; /* worldSector_t pointer */
+
+    nodeIndex = *(unsigned short *)(entRaw + 0);
+    if (nodeIndex == 0)
+        return;
+
+    /* Get sector node */
+    {
+        unsigned int idx = (unsigned int)nodeIndex;
+        node = (byte *)&cm_world + 28 + idx * 24;
+    }
+
+    /* Clear entity's worldSector field */
+    *(unsigned short *)(entRaw + 0) = 0;
+
+    /* Remove entity from the sector's entity linked list */
+    {
+        unsigned short headEntIdx = *(unsigned short *)(node + 8);
+        unsigned int ei = (unsigned int)headEntIdx;
+        byte *sv = (byte *)imp_sv;
+        byte *cur = sv + 0x22a4 + ei * 372;
+
+        if (cur == entRaw) {
+            /* Entity is the head: replace head with entity's next */
+            *(unsigned short *)(node + 8) = *(unsigned short *)(entRaw + 2);
+        } else {
+            /* Walk the linked list to find the predecessor */
+            while (1) {
+                unsigned short nextIdx = *(unsigned short *)(cur + 2);
+                unsigned int ni = (unsigned int)nextIdx;
+                byte *next = sv + 0x22a4 + ni * 372;
+                if (next == entRaw) {
+                    /* Unlink: predecessor's next = entity's next */
+                    *(unsigned short *)(cur + 2) = *(unsigned short *)(entRaw + 2);
+                    break;
+                }
+                cur = next;
+                sv = (byte *)imp_sv;
+            }
+        }
+    }
+
+    /* Walk up the tree, updating contents and potentially freeing empty nodes */
+    /* Check if node has become empty:
+     * 32-bit read at offset 8 checks entities(u16) + staticModels(u16) combined
+     * 32-bit read at offset 0x14 checks child[0](u16) + child[1](u16) combined */
+check_empty:
+    if (*(int *)(node + 8) != 0)
+        goto update_contents;
+
+    if (*(int *)(node + 0x14) != 0)
+        goto update_contents;
+
+    /* Node is empty: contents = 0 */
+    *(int *)(node + 4) = 0;
+
+    /* Check parent */
+    {
+        unsigned short parentIdx = *(unsigned short *)(node + 0x12);
+        if (parentIdx == 0)
+            goto update_contents;
+
+        /* Free this node: put on free list */
+        {
+            unsigned short oldFreeHead = *(unsigned short *)((byte *)&cm_world + 26);
+            *(unsigned short *)(node + 0x12) = oldFreeHead;
+            *(unsigned short *)((byte *)&cm_world + 26) = nodeIndex;
+        }
+
+        /* Get parent node */
+        {
+            unsigned int pi = (unsigned int)parentIdx;
+            byte *parentNode = (byte *)&cm_world + 28 + pi * 24;
+
+            /* Update parent's child pointer: if we were child[0], clear child[0]; else clear child[1] */
+            if (*(unsigned short *)(parentNode + 0x14) == nodeIndex) {
+                *(unsigned short *)(parentNode + 0x14) = 0;
+            } else {
+                *(unsigned short *)(parentNode + 0x16) = 0;
+            }
+
+            nodeIndex = parentIdx;
+            node = parentNode;
+        }
+    }
+
+    /* Check if this parent node also became empty */
+    if (*(int *)(node + 8) == 0)
+        goto check_empty;
+
+update_contents:
+    /* Recompute contents by OR-ing children's contents and all entities in linked list */
+    {
+        unsigned short child0Idx = *(unsigned short *)(node + 0x14);
+        unsigned short child1Idx = *(unsigned short *)(node + 0x16);
+        int contents;
+
+        /* OR children contents */
+        {
+            unsigned int c0 = (unsigned int)child0Idx;
+            unsigned int c1 = (unsigned int)child1Idx;
+            contents = *(int *)((byte *)&cm_world + 32 + c0 * 24);
+            contents |= *(int *)((byte *)&cm_world + 32 + c1 * 24);
+        }
+
+        /* OR entity contents from linked list */
+        {
+            unsigned short entIdx = *(unsigned short *)(node + 8);
+            if (entIdx != 0) {
+                byte *sv = (byte *)imp_sv;
+                byte *svEnt = sv + 0x22a4 + (unsigned int)entIdx * 372;
+
+                while (1) {
+                    gentity_t *gent = SV_GEntityForSvEntity((svEntity_t *)svEnt);
+                    contents |= *(int *)((byte *)gent + 0x11c);
+                    unsigned short nextIdx = *(unsigned short *)(svEnt + 2);
+                    if (nextIdx == 0)
+                        break;
+                    {
+                        unsigned int ni = (unsigned int)nextIdx;
+                        svEnt = (byte *)imp_sv + 0x229c + ni * 372 + 8;
+                    }
+                }
+            }
+        }
+
+        /* Store updated contents */
+        *(int *)(node + 4) = contents;
+
+        /* Walk up to parent and continue updating */
+        {
+            unsigned short parentIdx = *(unsigned short *)(node + 0x12);
+            if (parentIdx == 0)
+                return;
+            {
+                unsigned int pi = (unsigned int)parentIdx;
+                node = (byte *)&cm_world + 28 + pi * 24;
+                goto update_contents;
+            }
+        }
+    }
+}
 #endif

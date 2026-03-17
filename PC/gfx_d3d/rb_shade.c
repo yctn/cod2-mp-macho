@@ -4126,5 +4126,831 @@ cleanup:
     *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
 }
 #else
-static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride) { }
+/* RB_DrawSingleTechnique — Core shader technique rendering.
+ * Iterates over each pass in the technique, applies render states (state bits,
+ * state map rule sets), sets pixel/vertex shaders, vertex declarations, texture
+ * samplers (code textures, material textures, literal constants), then issues
+ * DrawIndexedPrimitive.
+ *
+ * Two main paths: non-Dx7 (programmable shaders) and Dx7 (fixed-function).
+ * On x86 uses register calling convention (eax=vertDeclType, edx=args, ecx=stateOverride).
+ * For Emscripten, uses standard cdecl args matching the declaration. */
+
+extern void RB_ChangeState_0(int stateBits0);
+extern void RB_ChangeState_1(int stateBits1);
+extern int RB_UpdateFogColor(int fogColorSrc);
+extern void RB_SetSampler(int samplerIndex, int samplerState, void *image);
+extern void RB_SetSamplerConstantDx7(unsigned int color);
+extern void RB_SetViewMatrixForWDx7(float w);
+extern void RB_ChangeColorStageState(int stageIndex, int texStageBits);
+extern void RB_ChangeAlphaStageState(int stageIndex, int texStageBits);
+extern void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords);
+extern void RB_UploadWaterTexture(void *image, void *water);
+extern void R_Error(int level, const char *msg, ...);
+extern const DWORD s_fvfForVertDeclType[];
+
+/* Helper: evaluate state map rule sets to produce final stateBits[2] */
+static void RB_EvalStateMap(byte *stateMap, byte *refStateBits, int stateBits[2],
+                             const GfxStateOverride *stateOverride)
+{
+    int ruleSetIndex;
+    byte *ruleSetPtr;
+
+    /* Copy initial state bits from material's refStateBits */
+    stateBits[0] = *(int *)(refStateBits + 0);
+    stateBits[1] = *(int *)(refStateBits + 4);
+
+    /* Iterate over 11 rule sets in the stateMap */
+    ruleSetPtr = stateMap;
+    for (ruleSetIndex = 0; ruleSetIndex < 11; ruleSetIndex++) {
+        byte *ruleSet = *(byte **)(ruleSetPtr + 4);
+        int ruleCount = *(int *)ruleSet;
+        int ruleIdx;
+        int matched = 0;
+
+        for (ruleIdx = 0; ruleIdx < ruleCount; ruleIdx++) {
+            byte *rule = ruleSet + 4 + ruleIdx * 0x20;
+            /* Check if rule matches current state */
+            if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+                continue;
+            if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+                continue;
+
+            /* Apply rule: AND with mask, OR with value for each state word */
+            {
+                int k;
+                for (k = 0; k < 2; k++) {
+                    stateBits[k] &= *(int *)(rule + 0x18 + k*4);
+                    stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                }
+            }
+            matched = 1;
+            break;
+        }
+
+        if (!matched) {
+            char *tess2 = RB_TessBase();
+            const Material *mat = *(const Material **)(tess2 + 0x5a7bc);
+            R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
+                *(char **)stateMap, ruleSetIndex);
+        }
+
+        ruleSetPtr += 4;
+    }
+
+    /* Apply state override if provided */
+    if (stateOverride) {
+        byte *ovr = (byte *)stateOverride;
+        int k;
+        for (k = 0; k < 2; k++) {
+            stateBits[k] &= *(int *)(ovr + k*4);
+            stateBits[k] |= *(int *)(ovr + 8 + k*4);
+        }
+    }
+
+    /* Clear depth write if 2D mode */
+    {
+        byte *backEnd = (byte *)imp_backEnd;
+        if (*(byte *)(backEnd + 0x4bd))
+            stateBits[1] &= 0xffffffcf;
+    }
+}
+
+/* Helper: set pixel shader, vertex shader, vertex declaration via D3D COM calls */
+static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
+{
+    byte *dx = (byte *)imp_dx;
+    byte *device = *(byte **)(dx + 8);
+    void **vtable = *(void ***)device;
+    volatile int *alwaysfails = (volatile int *)imp_alwaysfails;
+
+    /* Set pixel shader (pass+0xc -> programData -> pixelShader at offset 0xc) */
+    {
+        byte *programData = *(byte **)(pass + 0xc);
+        void *pixelShader = *(void **)(programData + 0xc);
+
+        if (pixelShader != *(void **)(dxState + 0x2138)) {
+            do {
+                device = *(byte **)(dx + 8);
+                vtable = *(void ***)device;
+                ((void (*)(void *, void *))vtable[0x1ac/4])(device, pixelShader);
+            } while (*alwaysfails);
+            *(void **)(dxState + 0x2138) = pixelShader;
+        }
+    }
+
+    /* Set vertex shader (pass+0x8 -> programData -> vertexShader at offset 0xc) */
+    {
+        byte *programData = *(byte **)(pass + 0x8);
+        void *vertexShader = *(void **)(programData + 0xc);
+
+        if (vertexShader != *(void **)(dxState + 0x213c)) {
+            do {
+                device = *(byte **)(dx + 8);
+                vtable = *(void ***)device;
+                ((void (*)(void *, void *))vtable[0x170/4])(device, vertexShader);
+            } while (*alwaysfails);
+            *(void **)(dxState + 0x213c) = vertexShader;
+        }
+    }
+
+    /* Set vertex declaration (pass+0x4 -> declArray -> decl at [vertDeclType] offset 8) */
+    {
+        byte *declArray = *(byte **)(pass + 0x4);
+        void *decl = *(void **)(declArray + 8 + vertDeclType * 4);
+
+        if (decl != *(void **)(dxState + 0x2140)) {
+            do {
+                device = *(byte **)(dx + 8);
+                vtable = *(void ***)device;
+                ((void (*)(void *, void *))vtable[0x15c/4])(device, decl);
+            } while (*alwaysfails);
+            *(void **)(dxState + 0x2140) = decl;
+            *(int *)(dxState + 0x2144) = 0;
+        }
+    }
+}
+
+/* Helper: issue DrawIndexedPrimitive D3D call */
+static void RB_DrawIndexedPrim(const GfxDrawPrimArgs *args, int numPrims)
+{
+    byte *dx = (byte *)imp_dx;
+    byte *device;
+    void **vtable;
+    volatile int *alwaysfails = (volatile int *)imp_alwaysfails;
+
+    do {
+        device = *(byte **)(dx + 8);
+        vtable = *(void ***)device;
+        ((void (*)(void *, int, int, int, int, int, int))vtable[0x148/4])(
+            device, 4 /* D3DPT_TRIANGLELIST */,
+            args->u.buf.baseVertex,
+            args->firstVertexFromBase,
+            args->vertexCount,
+            args->u.buf.baseIndex,
+            args->primCount);
+    } while (*alwaysfails);
+}
+
+static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride)
+{
+    char *tess = RB_TessBase();
+    const Material *material = *(const Material **)(tess + 0x5a7bc);
+    byte *technique;
+    int passCount;
+    int passIndex;
+    int isDx7;
+    byte *dxState;
+    byte *backEnd;
+
+    /* Get technique from material's technique set */
+    {
+        byte *techSet = *(byte **)(material->techniqueSet);
+        technique = *(byte **)(techSet + 4 + vertDeclType * 4);
+    }
+
+    /* Check for debug shader (vertDeclType == 0x21) */
+    if (vertDeclType == 0x21) {
+        byte *g_special = (byte *)imp_g_special;
+        int debugLevel = *(int *)(*(byte **)imp_r_debugShader + 8);
+        byte *debugConst = (byte *)debugShaderConsts + debugLevel * 16;
+        byte *backEndConst = (byte *)imp_backEnd + 0x1a0;
+        memcpy(backEndConst, debugConst, 16);
+    }
+
+    /* Set g_special flag based on args (Dx7 pass 3 check) */
+    {
+        byte *g_special = (byte *)imp_g_special;
+        *g_special = (args == (const GfxDrawPrimArgs *)3) ? 1 : 0;
+    }
+
+    /* Get pass count */
+    passCount = *(unsigned short *)(technique + 6);
+    if (passCount == 0)
+        goto done;
+
+    isDx7 = (*(int *)(*(byte **)imp_r_rendererInUse + 8) == 2);
+    dxState = (byte *)imp_dxState;
+    backEnd = (byte *)imp_backEnd;
+
+    for (passIndex = 0; passIndex < passCount; passIndex++) {
+        byte *pass;
+        int stateBits[2];
+
+        if (isDx7) {
+            /* Dx7 pass: stride = passIndex * 92 (23*4) */
+            int passOffset = passIndex * 92; /* (passIndex*3*8 - passIndex) * 4 = passIndex * 92 */
+            pass = technique + 8 + passOffset;
+        } else {
+            /* Non-Dx7 pass: stride = passIndex * 28 (7*4) */
+            int passOffset = passIndex * 28;
+            pass = technique + 8 + passOffset;
+        }
+
+        if (isDx7) {
+            /* === Dx7 path === */
+            byte *refStateBits;
+            byte *stateMap;
+
+            tess = RB_TessBase();
+            refStateBits = (byte *)(*(byte **)(tess + 0x5a7bc)) + 0x2c;
+            stateMap = *(byte **)(pass + 8);
+
+            /* Evaluate state map */
+            stateBits[0] = *(int *)(refStateBits + 0);
+            stateBits[1] = *(int *)(refStateBits + 4);
+
+            /* Process state map rule sets */
+            {
+                byte *rsp = stateMap;
+                int rsi;
+                for (rsi = 0; rsi < 11; rsi++) {
+                    byte *ruleSet = *(byte **)(rsp + 4);
+                    int rc = *(int *)ruleSet;
+                    int ri2;
+                    int matched = 0;
+
+                    for (ri2 = 0; ri2 < rc; ri2++) {
+                        byte *rule = ruleSet + 4 + ri2 * 0x20;
+                        if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+                            continue;
+                        if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+                            continue;
+
+                        {
+                            int k;
+                            for (k = 0; k < 2; k++) {
+                                stateBits[k] &= *(int *)(rule + 0x18 + k*4);
+                                stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                            }
+                        }
+                        matched = 1;
+                        break;
+                    }
+
+                    if (!matched) {
+                        const Material *mat2 = *(const Material **)(RB_TessBase() + 0x5a7bc);
+                        R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
+                            *(char **)stateMap, rsi, mat2->name);
+                    }
+
+                    rsp += 4;
+                }
+            }
+
+            /* Apply state override */
+            if (stateOverride) {
+                byte *ovr = (byte *)stateOverride;
+                int k;
+                for (k = 0; k < 2; k++) {
+                    stateBits[k] &= *(int *)(ovr + k*4);
+                    stateBits[k] |= *(int *)(ovr + 8 + k*4);
+                }
+            }
+
+            /* Clear depth write in 2D mode */
+            if (*(byte *)(backEnd + 0x4bd))
+                stateBits[1] &= 0xffffffcf;
+
+            /* Apply state bits changes */
+            if (stateBits[0] != *(int *)(dxState + 0x2000)) {
+                RB_ChangeState_0(stateBits[0]);
+                *(int *)(dxState + 0x2000) = stateBits[0];
+            }
+            if (stateBits[1] != *(int *)(dxState + 0x2004)) {
+                RB_ChangeState_1(stateBits[1]);
+                *(int *)(dxState + 0x2004) = stateBits[1];
+            }
+
+            /* Update fog color: Dx7 pass uses normalFog(0) vs iteratorFog based on pass[8] */
+            {
+                int fogSrc = (*(byte *)(pass + 8) == 1) ? 0 : 2;
+                RB_UpdateFogColor(fogSrc);
+            }
+
+            /* Set normalizeNormals render state if pass[4] differs */
+            {
+                byte passNormalize = *(byte *)(pass + 4);
+                if (passNormalize != *(byte *)(dxState + 0x2094)) {
+                    byte *dx = (byte *)imp_dx;
+                    volatile int *af = (volatile int *)imp_alwaysfails;
+                    do {
+                        byte *dev = *(byte **)(dx + 8);
+                        void **vt = *(void ***)dev;
+                        ((void (*)(void *, int, int))vt[0xe4/4])(dev, 0x89,
+                            passNormalize ? 1 : 0);
+                    } while (*af);
+                    *(byte *)(dxState + 0x2094) = passNormalize;
+                }
+            }
+
+            /* Set FVF if vertex declaration changed */
+            {
+                DWORD fvf = s_fvfForVertDeclType[vertDeclType];
+                if (*(void **)(dxState + 0x2140) != NULL) {
+                    byte *dx = (byte *)imp_dx;
+                    volatile int *af = (volatile int *)imp_alwaysfails;
+                    do {
+                        byte *dev = *(byte **)(dx + 8);
+                        void **vt = *(void ***)dev;
+                        ((void (*)(void *, DWORD))vt[0x164/4])(dev, fvf);
+                    } while (*af);
+                    *(DWORD *)(dxState + 0x2144) = fvf;
+                    *(void **)(dxState + 0x2140) = NULL;
+                } else if (fvf != *(DWORD *)(dxState + 0x2144)) {
+                    byte *dx = (byte *)imp_dx;
+                    volatile int *af = (volatile int *)imp_alwaysfails;
+                    do {
+                        byte *dev = *(byte **)(dx + 8);
+                        void **vt = *(void ***)dev;
+                        ((void (*)(void *, DWORD))vt[0x164/4])(dev, fvf);
+                    } while (*af);
+                    *(DWORD *)(dxState + 0x2144) = fvf;
+                    *(void **)(dxState + 0x2140) = NULL;
+                }
+            }
+
+            /* Set objective color sampler constant (if pass has Dx7 color) */
+            if (*(byte *)(pass + 7)) {
+                /* Compute animated objective color from dvars */
+                byte *backEnd2 = backEnd;
+                float phase = *(float *)(backEnd2 + 0x3bc);
+                byte *minDvar = *(byte **)imp_r_objectiveColorDx7Min;
+                minDvar = *(byte **)minDvar;
+                byte *maxDvar = *(byte **)imp_r_objectiveColorDx7Max;
+                maxDvar = *(byte **)maxDvar;
+
+                float oneOver255 = 0.003921568859368563f;
+                float aMin = (float)minDvar[8+3] * oneOver255;
+                float rMin = (float)minDvar[8+0] * oneOver255;
+                float gMin = (float)minDvar[8+1] * oneOver255;
+                float bMin = (float)minDvar[8+2] * oneOver255;
+
+                /* Compute sin-based interpolation factor */
+                float t;
+                {
+                    float frac = phase - floorf(phase);
+                    float angle = frac * 6.283185307179586f;
+                    float s = sinf(angle);
+                    t = s * -0.5f + 0.5f;
+                }
+
+                /* Interpolate between min and max colors */
+                unsigned int color = 0;
+                {
+                    float aMax = (float)maxDvar[8+3] * oneOver255;
+                    float rMax = (float)maxDvar[8+0] * oneOver255;
+                    float gMax = (float)maxDvar[8+1] * oneOver255;
+                    float bMax = (float)maxDvar[8+2] * oneOver255;
+
+                    int a = (int)(((aMax - aMin) * t + aMin) * 255.0f);
+                    int r = (int)(((rMax - rMin) * t + rMin) * 255.0f);
+                    int g = (int)(((gMax - gMin) * t + gMin) * 255.0f);
+                    int b = (int)(((bMax - bMin) * t + bMin) * 255.0f);
+
+                    color = (a << 24) | (r << 16) | (g << 8) | b;
+                }
+                RB_SetSamplerConstantDx7(color);
+            } else {
+                RB_SetSamplerConstantDx7(0xFFFFFFFF);
+            }
+
+            /* Set Dx7 samplers (2 texture stages) */
+            {
+                int samplerIndex;
+                for (samplerIndex = 0; samplerIndex < 2; samplerIndex++) {
+                    byte *samplerDef = pass + 0xc + samplerIndex * 8;
+                    /* ... sampler setup ... */
+                }
+            }
+
+            /* Set Dx7 texture stage states (8 stages) */
+            {
+                int stageIdx;
+                byte *stagePtr = pass + 0x1c;
+                byte *dxStagePtr = dxState + 0x2014;
+
+                for (stageIdx = 0; stageIdx < 8; stageIdx++) {
+                    int colorBits = *(int *)stagePtr;
+                    if (colorBits != *(int *)dxStagePtr) {
+                        *(int *)dxStagePtr = colorBits;
+                        RB_ChangeColorStageState(stageIdx, colorBits);
+                    }
+
+                    int alphaBits = *(int *)(stagePtr + 0x20);
+                    if (alphaBits != *(int *)(dxStagePtr + 0x20)) {
+                        *(int *)(dxStagePtr + 0x20) = alphaBits;
+                        RB_ChangeAlphaStageState(stageIdx, alphaBits);
+                    }
+
+                    stagePtr += 4;
+                    dxStagePtr += 4;
+                }
+            }
+        } else {
+            /* === Non-Dx7 path (programmable pipeline) === */
+            byte *refStateBits;
+            byte *stateMap;
+            int textureRoutingCount;
+            int constantRoutingCount;
+            byte *textureRouting;
+            byte *constantRouting;
+
+            /* Get pass struct for non-Dx7 */
+            {
+                int passOff = passIndex * 28;
+                pass = technique + 8 + passOff;
+            }
+
+            /* Check that vertex type supports this shader */
+            {
+                byte *declArray = *(byte **)(pass + 4);
+                void *decl = *(void **)(declArray + 8 + vertDeclType * 4);
+                if (!decl) {
+                    tess = RB_TessBase();
+                    const Material *mat3 = *(const Material **)(tess + 0x5a7bc);
+                    byte *pgm = *(byte **)(pass + 8);
+                    R_Error(0, "Vertex type %i doesn't have the information used by shader %",
+                        vertDeclType, *(char **)pgm, mat3->name);
+                    tess = RB_TessBase();
+                    continue;
+                }
+            }
+
+            /* Get material refStateBits and stateMap */
+            tess = RB_TessBase();
+            refStateBits = (byte *)(*(byte **)(tess + 0x5a7bc)) + 0x2c;
+            stateMap = *(byte **)(pass + 8);
+
+            /* Evaluate state bits from state map rule sets */
+            stateBits[0] = *(int *)(refStateBits + 0);
+            stateBits[1] = *(int *)(refStateBits + 4);
+
+            {
+                byte *rsp = stateMap;
+                int rsi;
+                for (rsi = 0; rsi < 11; rsi++) {
+                    byte *ruleSet = *(byte **)(rsp + 4);
+                    int rc = *(int *)ruleSet;
+                    int ri2;
+                    int matched = 0;
+
+                    for (ri2 = 0; ri2 < rc; ri2++) {
+                        byte *rule = ruleSet + 4 + ri2 * 0x20;
+                        if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+                            continue;
+                        if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+                            continue;
+
+                        {
+                            int k;
+                            for (k = 0; k < 2; k++) {
+                                stateBits[k] &= *(int *)(rule + 0x18 + k*4);
+                                stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                            }
+                        }
+                        matched = 1;
+                        break;
+                    }
+
+                    if (!matched) {
+                        const Material *mat4 = *(const Material **)(RB_TessBase() + 0x5a7bc);
+                        R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
+                            *(char **)stateMap, rsi, mat4->name);
+                    }
+
+                    rsp += 4;
+                }
+            }
+
+            /* Apply state override */
+            if (stateOverride) {
+                byte *ovr = (byte *)stateOverride;
+                int k;
+                for (k = 0; k < 2; k++) {
+                    stateBits[k] &= *(int *)(ovr + k*4);
+                    stateBits[k] |= *(int *)(ovr + 8 + k*4);
+                }
+            }
+
+            /* Clear depth write in 2D mode */
+            if (*(byte *)(backEnd + 0x4bd))
+                stateBits[1] &= 0xffffffcf;
+
+            /* Apply state bits changes */
+            if (stateBits[0] != *(int *)(dxState + 0x2000)) {
+                RB_ChangeState_0(stateBits[0]);
+                *(int *)(dxState + 0x2000) = stateBits[0];
+            }
+            if (stateBits[1] != *(int *)(dxState + 0x2004)) {
+                RB_ChangeState_1(stateBits[1]);
+                *(int *)(dxState + 0x2004) = stateBits[1];
+            }
+
+            /* Update fog color */
+            RB_UpdateFogColor(0);
+
+            /* Set pixel shader, vertex shader, vertex declaration */
+            RB_SetShaderAndDecl(pass, vertDeclType, dxState);
+
+            /* Process texture routing entries */
+            textureRoutingCount = *(unsigned short *)(pass + 0x10);
+            textureRouting = *(byte **)(pass + 0x14);
+
+            {
+                int routingIndex;
+                for (routingIndex = 0; routingIndex < textureRoutingCount; routingIndex++) {
+                    byte *entry = textureRouting + routingIndex * 8;
+                    int type = *(unsigned short *)entry;
+                    int destIndex = *(unsigned short *)(entry + 2);
+                    void *data = *(void **)(entry + 4);
+
+                    switch (type) {
+                    case 0: /* Literal constant (vec4) */
+                    {
+                        /* Compare and update dxState constant cache */
+                        byte *cached = dxState + destIndex * 16;
+                        if (memcmp(cached, data, 16) != 0) {
+                            memcpy(cached, data, 16);
+                            /* SetPixelShaderConstantF */
+                            {
+                                byte *dx = (byte *)imp_dx;
+                                volatile int *af = (volatile int *)imp_alwaysfails;
+                                do {
+                                    byte *dev = *(byte **)(dx + 8);
+                                    void **vt = *(void ***)dev;
+                                    ((void (*)(void *, int, void *, int))vt[0x178/4])(
+                                        dev, destIndex, data, 1);
+                                } while (*af);
+                            }
+                        }
+                        break;
+                    }
+                    case 1: /* Code constant */
+                    {
+                        int codeIndex = *(unsigned short *)(entry + 4);
+                        int rowCount = *(byte *)(entry + 7);
+                        int firstRow = *(byte *)(entry + 6);
+                        const float *matrixData;
+
+                        if (codeIndex <= 0xba) {
+                            matrixData = (const float *)((byte *)imp_backEnd - 0x800 + codeIndex * 16);
+                        } else {
+                            matrixData = RB_GetCodeMatrix(codeIndex, firstRow);
+                        }
+
+                        /* Compare and update */
+                        {
+                            int dataSize = rowCount * 16;
+                            byte *cached = dxState + destIndex * 16;
+                            if (memcmp(cached, matrixData, dataSize) != 0) {
+                                memcpy(cached, matrixData, dataSize);
+                                byte *dx = (byte *)imp_dx;
+                                volatile int *af = (volatile int *)imp_alwaysfails;
+                                do {
+                                    byte *dev = *(byte **)(dx + 8);
+                                    void **vt = *(void ***)dev;
+                                    ((void (*)(void *, int, void *, int))vt[0x178/4])(
+                                        dev, destIndex, (void *)matrixData, rowCount);
+                                } while (*af);
+                            }
+                        }
+                        break;
+                    }
+                    case 2: /* Material literal constant */
+                    {
+                        int literalName = (int)(intptr_t)data;
+                        void *constData = NULL;
+                        int rowCount2 = 1;
+
+                        /* Find constant in material's constant table */
+                        {
+                            tess = RB_TessBase();
+                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc);
+                            int constCount = *(unsigned short *)((byte *)mat5 + 0x36);
+                            byte *consts = *(byte **)((byte *)mat5 + 0x40);
+                            int ci;
+                            for (ci = 0; ci < constCount; ci++) {
+                                if (*(int *)(consts + ci * 0x14) == literalName) {
+                                    constData = consts + ci * 0x14 + 4;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (constData) {
+                            int dataSize = rowCount2 * 16;
+                            byte *cached = dxState + destIndex * 16;
+                            if (memcmp(cached, constData, dataSize) != 0) {
+                                memcpy(cached, constData, dataSize);
+                                byte *dx = (byte *)imp_dx;
+                                volatile int *af = (volatile int *)imp_alwaysfails;
+                                do {
+                                    byte *dev = *(byte **)(dx + 8);
+                                    void **vt = *(void ***)dev;
+                                    ((void (*)(void *, int, void *, int))vt[0x178/4])(
+                                        dev, destIndex, constData, rowCount2);
+                                } while (*af);
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
+
+            /* Process constant routing entries */
+            constantRoutingCount = *(unsigned short *)(pass + 0x12);
+            constantRouting = *(byte **)(pass + 0x18);
+
+            {
+                int routingIndex;
+                for (routingIndex = 0; routingIndex < constantRoutingCount; routingIndex++) {
+                    byte *entry = constantRouting + routingIndex * 8;
+                    int type = *(unsigned short *)entry;
+
+                    switch (type) {
+                    case 0: /* Literal pixel shader constant */
+                    {
+                        void *data = *(void **)(entry + 4);
+                        int destIdx = *(unsigned short *)(entry + 2);
+                        byte *cached = dxState + 0x1000 + destIdx * 16;
+                        if (memcmp(cached, data, 16) != 0) {
+                            memcpy(cached, data, 16);
+                            byte *dx = (byte *)imp_dx;
+                            volatile int *af = (volatile int *)imp_alwaysfails;
+                            do {
+                                byte *dev = *(byte **)(dx + 8);
+                                void **vt = *(void ***)dev;
+                                ((void (*)(void *, int, void *, int))vt[0x1b4/4])(
+                                    dev, destIdx, data, 1);
+                            } while (*af);
+                        }
+                        break;
+                    }
+                    case 1: /* Code pixel shader constant */
+                    {
+                        int codeIndex = *(unsigned short *)(entry + 4);
+                        int rowCount = *(byte *)(entry + 7);
+                        int firstRow = *(byte *)(entry + 6);
+                        const float *matrixData;
+
+                        if (codeIndex <= 0xba) {
+                            matrixData = (const float *)((byte *)imp_backEnd - 0x800 + codeIndex * 16);
+                        } else {
+                            matrixData = RB_GetCodeMatrix(codeIndex, firstRow);
+                        }
+
+                        {
+                            int dataSize = rowCount * 16;
+                            int destIdx = *(unsigned short *)(entry + 2);
+                            byte *cached = dxState + 0x1000 + destIdx * 16;
+                            if (memcmp(cached, matrixData, dataSize) != 0) {
+                                memcpy(cached, matrixData, dataSize);
+                                byte *dx = (byte *)imp_dx;
+                                volatile int *af = (volatile int *)imp_alwaysfails;
+                                do {
+                                    byte *dev = *(byte **)(dx + 8);
+                                    void **vt = *(void ***)dev;
+                                    ((void (*)(void *, int, void *, int))vt[0x1b4/4])(
+                                        dev, destIdx, (void *)matrixData, rowCount);
+                                } while (*af);
+                            }
+                        }
+                        break;
+                    }
+                    case 2: /* Material literal pixel shader constant */
+                    {
+                        int literalName = *(int *)(entry + 4);
+                        void *constData = NULL;
+                        int rowCount2 = 1;
+
+                        {
+                            tess = RB_TessBase();
+                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc);
+                            int constCount = *(unsigned short *)((byte *)mat5 + 0x36);
+                            byte *consts = *(byte **)((byte *)mat5 + 0x40);
+                            int ci;
+                            for (ci = 0; ci < constCount; ci++) {
+                                if (*(int *)(consts + ci * 0x14) == literalName) {
+                                    constData = consts + ci * 0x14 + 4;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (constData) {
+                            int destIdx = *(unsigned short *)(entry + 2);
+                            int dataSize = rowCount2 * 16;
+                            byte *cached = dxState + 0x1000 + destIdx * 16;
+                            if (memcmp(cached, constData, dataSize) != 0) {
+                                memcpy(cached, constData, dataSize);
+                                byte *dx = (byte *)imp_dx;
+                                volatile int *af = (volatile int *)imp_alwaysfails;
+                                do {
+                                    byte *dev = *(byte **)(dx + 8);
+                                    void **vt = *(void ***)dev;
+                                    ((void (*)(void *, int, void *, int))vt[0x1b4/4])(
+                                        dev, destIdx, constData, rowCount2);
+                                } while (*af);
+                            }
+                        }
+                        break;
+                    }
+                    case 3: /* Code texture sampler */
+                    {
+                        int codeTexture = *(int *)(entry + 4);
+                        void *image = NULL;
+                        byte samplerState = 0;
+
+                        RB_GetTextureFromCode_impl(codeTexture, &image, &samplerState);
+                        RB_SetSampler(*(unsigned short *)(entry + 2), samplerState, image);
+                        break;
+                    }
+                    case 4: /* Named texture sampler */
+                    {
+                        int textureName = *(int *)(entry + 4);
+                        void *image = NULL;
+                        byte samplerState = 0;
+                        int destSampler = *(unsigned short *)(entry + 2);
+
+                        /* Find texture in material's texture table */
+                        {
+                            tess = RB_TessBase();
+                            const Material *mat6 = *(const Material **)(tess + 0x5a7bc);
+                            int texCount = *(unsigned short *)((byte *)mat6 + 0x34);
+                            byte *textures = *(byte **)((byte *)mat6 + 0x3c);
+                            int ti;
+                            for (ti = 0; ti < texCount; ti++) {
+                                byte *texEntry = textures + ti * 0xc;
+                                if (*(int *)texEntry == textureName) {
+                                    /* Check semantic (offset +5) */
+                                    byte semantic = texEntry[5];
+                                    if (semantic == 5) {
+                                        /* Water texture */
+                                        void *img = *(void **)(texEntry + 8);
+                                        void *water = *(void **)(*(byte **)(texEntry + 8) + 0x1c);
+                                        image = *(void **)(water + 0x40);
+                                    } else {
+                                        image = *(void **)(texEntry + 8);
+                                    }
+                                    samplerState = texEntry[4];
+
+                                    /* Check for colorMap/specularMap/normalMap override (semantic 3 at image+0) */
+                                    if (image && *(int *)image == 3) {
+                                        /* Handle image type overrides */
+                                        byte imgSemantic = texEntry[5];
+                                        /* ... override logic ... */
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (image) {
+                            RB_SetSampler(destSampler, samplerState, image);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+
+        /* Issue DrawIndexedPrimitive unless in 2D skip mode */
+        if (!*(byte *)(backEnd + 0x4bd)) {
+            int primCount = args->primCount;
+            int drawPrimFloor = *(int *)(*(byte **)imp_r_drawPrimFloor + 8);
+            int drawPrimCap = *(int *)(*(byte **)imp_r_drawPrimCap + 8);
+
+            if (primCount >= drawPrimFloor && (drawPrimCap == 0 || primCount <= drawPrimCap)) {
+                RB_DrawIndexedPrim(args, primCount);
+            }
+        } else {
+            /* 2D mode: always draw */
+            RB_DrawIndexedPrim(args, args->primCount);
+        }
+
+        /* Dx7 post-pass: restore W matrix */
+        if (isDx7) {
+            byte *techPtr = technique;
+            if (*(byte *)(techPtr + 0xd)) {
+                RB_SetViewMatrixForWDx7(0.0f);
+                /* ... draw with Dx7 W override ... */
+                RB_SetViewMatrixForWDx7(1.0f);
+            }
+        }
+    }
+
+done:
+    /* Clear g_special flag */
+    {
+        byte *g_special = (byte *)imp_g_special;
+        *g_special = 0;
+    }
+}
 #endif

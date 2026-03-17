@@ -234,7 +234,67 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
     );
 }
 #else
-int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum0, int passEntityNum1, int contentmask) { return 0; }
+int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum0, int passEntityNum1, int contentmask) {
+    /* CM_BoxSightTrace: world BSP sight trace */
+    *hitNum = CM_BoxSightTrace(*hitNum, start, end, mins, maxs, 0, contentmask);
+    if (*hitNum)
+        return 0; /* hit something */
+
+    /* Check if extents are non-zero */
+    {
+        float extentSum = (maxs[0] - mins[0]) + (maxs[1] - mins[1]) + (maxs[2] - mins[2]);
+        if (extentSum == 0.0f) {
+            /* Point sight trace */
+            sightpointtrace_t clip;
+            clip.start[0] = start[0];
+            clip.start[1] = start[1];
+            clip.start[2] = start[2];
+            clip.end[0] = end[0];
+            clip.end[1] = end[1];
+            clip.end[2] = end[2];
+            clip.passEntityNum[0] = passEntityNum0;
+            clip.passEntityNum[1] = passEntityNum1;
+            clip.contentmask = contentmask;
+            *hitNum = CM_PointSightTraceToEntities(&clip);
+        } else {
+            /* Box sight trace with computed half-extents and midpoints */
+            sightclip_t clip;
+            float halfX = (maxs[0] - mins[0]) * 0.5f;
+            float halfY = (maxs[1] - mins[1]) * 0.5f;
+            float halfZ = (maxs[2] - mins[2]) * 0.5f;
+            float midX = (maxs[0] + mins[0]) * 0.5f;
+            float midY = (maxs[1] + mins[1]) * 0.5f;
+            float midZ = (maxs[2] + mins[2]) * 0.5f;
+
+            /* mins = -halfExtent */
+            clip.mins[0] = -halfX;
+            clip.mins[1] = -halfY;
+            clip.mins[2] = -halfZ;
+            /* maxs = halfExtent */
+            clip.maxs[0] = halfX;
+            clip.maxs[1] = halfY;
+            clip.maxs[2] = halfZ;
+            /* outerSize = halfExtent + 1.0 */
+            clip.outerSize[0] = halfX + 1.0f;
+            clip.outerSize[1] = halfY + 1.0f;
+            clip.outerSize[2] = halfZ + 1.0f;
+            /* start = world_start + midpoint */
+            clip.start[0] = midX + start[0];
+            clip.start[1] = midY + start[1];
+            clip.start[2] = midZ + start[2];
+            /* end = world_end + midpoint */
+            clip.end[0] = midX + end[0];
+            clip.end[1] = midY + end[1];
+            clip.end[2] = midZ + end[2];
+            clip.passEntityNum[0] = passEntityNum0;
+            clip.passEntityNum[1] = passEntityNum1;
+            clip.contentmask = contentmask;
+            *hitNum = CM_ClipSightTraceToEntities(&clip);
+        }
+    }
+
+    return 0;
+}
 #endif
 
 /* line 604 */
@@ -2009,5 +2069,170 @@ int SV_PointContents(const vec_t *p, int passEntityNum, int contentmask)
 }
 
 #else
-int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask, qboolean locational, unsigned char *priorityMap, qboolean staticmodels) { return 0; }
+/*
+ * SV_Trace: core server trace through world BSP + entities.
+ *
+ * 1. CM_BoxTrace against world geometry
+ * 2. Set entityNum in result (0x3ff = no hit, 0x3fe = world hit)
+ * 3. Optional CM_PointTraceStaticModels pass
+ * 4. Entity trace: point or box depending on extents
+ *
+ * Stack layout for point trace clip (pointtrace_t):
+ *   -0x6c: clip.start[0..2]   (extents/start at clip+0)
+ *   -0x60: clip.end[0..2]
+ *   -0x48: clip.passEntityNum
+ *   -0x44: clip.passEntityNum2 (ownerNum)
+ *   -0x40: clip.contentmask
+ *   -0x3c: clip.locational
+ *   -0x38: clip.priorityMap
+ *   CM_CalcTraceEntents called with &clip
+ *   CM_PointTraceToEntities(&clip, results)
+ *
+ * Stack layout for box trace clip (moveclip_t):
+ *   -0x6c: clip.mins[0..2]    (negated half-extent)
+ *   -0x60: clip.maxs[0..2]    (half-extent)
+ *   -0x54: clip.outerSize[0..2] (half-extent + 1.0)
+ *   -0x48: clip.start[0..2]   (midpoint + start)
+ *   -0x3c: clip.end[0..2]     (midpoint + end)
+ *   -0x24: clip.passEntityNum
+ *   -0x20: clip.passEntityNum2 (ownerNum)
+ *   -0x1c: clip.contentmask
+ *   CM_CalcTraceEntents called with &clip.start (extents ptr)
+ *   CM_ClipMoveToEntities(&clip, results)
+ */
+int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask, qboolean locational, unsigned char *priorityMap, qboolean staticmodels)
+{
+    /* 1. World BSP trace */
+    CM_BoxTrace(results, start, end, mins, maxs, 0, contentmask);
+
+    /* 2. Set entityNum: if fraction == 1.0 => 0x3ff (ENTITYNUM_NONE), else 0x3fe (ENTITYNUM_WORLD) */
+    {
+        float fraction = *(float *)results;
+        int isOne = (fraction == 1.0f) ? 1 : 0;
+        *(unsigned short *)((byte *)results + 0x1c) = (unsigned short)(isOne + 0x3fe);
+    }
+
+    /* 3. Early out if fraction is 0.0 */
+    if (*(float *)results == 0.0f)
+        return 0;
+
+    /* 4. Static models trace (optional) */
+    if (staticmodels) {
+        CM_PointTraceStaticModels(results, start, end, contentmask);
+        if (*(float *)results == 0.0f)
+            return 0;
+    }
+
+    /* 5. Entity trace */
+    {
+        float extentSum = (maxs[0] - mins[0]) + (maxs[1] - mins[1]) + (maxs[2] - mins[2]);
+
+        if (extentSum == 0.0f) {
+            /* Point trace path */
+            byte clip[0x50]; /* pointtrace_t - sized from stack layout */
+            int ownerNum;
+
+            /* Copy start/end */
+            *(float *)(clip + 0x00) = start[0];
+            *(float *)(clip + 0x04) = start[1];
+            *(float *)(clip + 0x08) = start[2];
+            *(float *)(clip + 0x0c) = end[0];
+            *(float *)(clip + 0x10) = end[1];
+            *(float *)(clip + 0x14) = end[2];
+
+            /* Calculate trace extents */
+            CM_CalcTraceEntents((const void *)clip);
+
+            /* Set passEntityNum */
+            *(int *)(clip + 0x24) = passEntityNum;
+
+            /* Set locational */
+            *(int *)(clip + 0x30) = locational;
+
+            /* Set priorityMap */
+            *(int *)(clip + 0x34) = (int)(intptr_t)priorityMap;
+
+            /* Look up ownerNum */
+            if (passEntityNum == 0x3ff) {
+                ownerNum = -1;
+            } else {
+                gentity_t *passEnt = SV_GentityNum(passEntityNum);
+                ownerNum = *(int *)((byte *)passEnt + 0x150);
+                if (ownerNum == 0x3ff)
+                    ownerNum = -1;
+            }
+            *(int *)(clip + 0x28) = ownerNum;
+
+            /* Set contentmask */
+            *(int *)(clip + 0x2c) = contentmask;
+
+            /* Call CM_PointTraceToEntities */
+            CM_PointTraceToEntities((const pointtrace_t *)clip, results);
+        } else {
+            /* Box trace path */
+            byte clip[0x70]; /* moveclip_t - sized from stack layout */
+            int ownerNum;
+            float halfX, halfY, halfZ;
+            float midX, midY, midZ;
+
+            halfX = (maxs[0] - mins[0]) * 0.5f;
+            halfY = (maxs[1] - mins[1]) * 0.5f;
+            halfZ = (maxs[2] - mins[2]) * 0.5f;
+
+            midX = (maxs[0] + mins[0]) * 0.5f;
+            midY = (maxs[1] + mins[1]) * 0.5f;
+            midZ = (maxs[2] + mins[2]) * 0.5f;
+
+            /* Set contentmask */
+            *(int *)(clip + 0x50) = contentmask;
+
+            /* Set passEntityNum */
+            *(int *)(clip + 0x48) = passEntityNum;
+
+            /* Look up ownerNum */
+            if (passEntityNum == 0x3ff) {
+                ownerNum = -1;
+            } else {
+                gentity_t *passEnt = SV_GentityNum(passEntityNum);
+                ownerNum = *(int *)((byte *)passEnt + 0x150);
+                if (ownerNum == 0x3ff)
+                    ownerNum = -1;
+            }
+            *(int *)(clip + 0x4c) = ownerNum;
+
+            /* mins = -halfExtent */
+            *(float *)(clip + 0x00) = -halfX;
+            *(float *)(clip + 0x04) = -halfY;
+            *(float *)(clip + 0x08) = -halfZ;
+
+            /* maxs = halfExtent */
+            *(float *)(clip + 0x0c) = halfX;
+            *(float *)(clip + 0x10) = halfY;
+            *(float *)(clip + 0x14) = halfZ;
+
+            /* outerSize = halfExtent + 1.0 */
+            *(float *)(clip + 0x18) = halfX + 1.0f;
+            *(float *)(clip + 0x1c) = halfY + 1.0f;
+            *(float *)(clip + 0x20) = halfZ + 1.0f;
+
+            /* start = midpoint + start */
+            *(float *)(clip + 0x24) = midX + start[0];
+            *(float *)(clip + 0x28) = midY + start[1];
+            *(float *)(clip + 0x2c) = midZ + start[2];
+
+            /* end = midpoint + end */
+            *(float *)(clip + 0x30) = midX + end[0];
+            *(float *)(clip + 0x34) = midY + end[1];
+            *(float *)(clip + 0x38) = midZ + end[2];
+
+            /* Calculate trace extents */
+            CM_CalcTraceEntents((const void *)(clip + 0x24));
+
+            /* Call CM_ClipMoveToEntities */
+            CM_ClipMoveToEntities((const moveclip_t *)clip, results);
+        }
+    }
+
+    return 0;
+}
 #endif

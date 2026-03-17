@@ -182,9 +182,16 @@ typedef const char *(__attribute_regparm__(3) *DvarDomainToStringRegparmFn)(
 typedef DvarValue (__attribute_regparm__(3) *DvarStringToValueRegparmFn)(
     int type, uint32_t domainLo, uint32_t domainHi, const char *string);
 
+static const dvar_t *Dvar_RegisterVariant_impl(
+    const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain);
+
 static const dvar_t *Dvar_RegisterVariantReg(const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain)
 {
+#ifndef __EMSCRIPTEN__
     return ((DvarRegisterVariantRegparmFn)Dvar_RegisterVariant)(dvarName, type, flags, value, domain);
+#else
+    return Dvar_RegisterVariant_impl(dvarName, type, flags, value, domain);
+#endif
 }
 
 static void Dvar_SetVariantReg(const dvar_t *dvar, DvarValue value, DvarSetSource source)
@@ -3162,5 +3169,358 @@ void Dvar_SetFromStringByName(const char *dvarName, const char *string)
     Dvar_SetFromStringByNameFromSource(dvarName, string, 0);
 }
 #else
-static const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned int flags, DvarValue value, DvarLimits domain) { return 0; }
+static unsigned char Dvar_HashName(const char *name)
+{
+    int hash;
+    const char *p;
+    int i;
+
+    if (!name) {
+        Com_Error(1, (const char *)str_00219550);
+    }
+
+    p = name;
+    if (*p == '\0')
+        return 0;
+
+    hash = 0;
+    i = 0x77;
+    while (*p) {
+        int ch = ___tolower((signed char)*p);
+        hash += ch * i;
+        i++;
+        p++;
+    }
+    return (unsigned char)hash;
+}
+
+static const char *Dvar_ConvertStringValue(const char *value, int type)
+{
+    int len;
+    unsigned char ch;
+
+    if (value == NULL || *value == '\0') {
+        return (const char *)str_002157b8;
+    }
+
+    ch = *(unsigned char *)(value + 1);
+    if (ch == '\0') {
+        /* single char: check if digit */
+        unsigned char first = *(unsigned char *)value;
+        if ((unsigned char)(first - '0') <= 9) {
+            /* Return digit string from lookup table */
+            return (const char *)((byte *)__ZZN16CStringEdPackage9ParseLineEPKchE5C_208 + 1024 + (signed char)first * 2);
+        }
+        return CopyStringInternal(value);
+    }
+
+    if (*(unsigned char *)value == 'o') {
+        if (ch == 'n') {
+            /* "on" */
+            if (*(unsigned char *)(value + 2) == '\0') {
+                return dvarOnOffStrings[1];
+            }
+            return CopyStringInternal(value);
+        } else if (ch == 'f') {
+            /* "off" */
+            if (*(unsigned char *)(value + 2) == 'f' && *(unsigned char *)(value + 3) == '\0') {
+                return dvarOnOffStrings[0];
+            }
+            return CopyStringInternal(value);
+        }
+    }
+
+    return CopyStringInternal(value);
+}
+
+static const dvar_t *Dvar_RegisterVariant_impl(
+    const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain)
+{
+    unsigned char hash;
+    dvar_t *dvar;
+    dvar_t *existing;
+    dvar_t **prev;
+    int newType;
+
+    /* line 68: null name check */
+    if (!dvarName) {
+        Com_Error(1, (const char *)str_00219550);
+    }
+
+    /* Compute hash */
+    hash = Dvar_HashName(dvarName);
+
+    /* line 1054: search hash table for existing dvar */
+    existing = dvarHashTable[hash];
+    while (existing) {
+        if (I_stricmp(dvarName, *(const char **)existing) == 0) {
+            goto found_existing;
+        }
+        existing = *(dvar_t **)((byte *)existing + 0x20);
+    }
+
+    /* NOT FOUND: create new dvar */
+    goto create_new;
+
+found_existing:
+    /* line 1708: dvar already exists */
+    {
+        unsigned short oldFlags = *(unsigned short *)((byte *)existing + 4);
+        unsigned short newFlags = (unsigned short)flags;
+
+        /* line 1580: check if flag update types differ */
+        if ((oldFlags ^ newFlags) & 0x7000) {
+            /* line 1513: check old READONLY flag */
+            if (oldFlags & 0x4000) {
+                if (newFlags & 0x4000) {
+                    /* both external: go to line 1815 */
+                    goto check_flags;
+                }
+                /* line 1522: unregister */
+                ((DvarPerformUnregistrationRegparmFn)Dvar_PerformUnregistration)(existing);
+                /* line 145: free old name */
+                Z_FreeInternal(*(char **)existing);
+                /* line 1525 */
+                *(const char **)existing = dvarName;
+                /* line 1526 */
+                *(unsigned short *)((byte *)existing + 4) &= ~0x4000;
+
+                /* line 1528 */
+                {
+                    DvarValue *valuePtr = (DvarValue *)&value;
+                    DvarLimits *domainPtr = (DvarLimits *)&domain;
+                    ((void (*)(dvar_t *, const char *, int, unsigned short, DvarValue *, DvarLimits *))Dvar_MakeExplicitType)(
+                        existing, dvarName, type, (unsigned short)flags, valuePtr, domainPtr);
+                }
+                oldFlags = *(unsigned short *)((byte *)existing + 4);
+                goto check_flags_cont;
+            } else {
+                if (newFlags & 0x4000) {
+                    goto check_flags;
+                }
+                /* line 1534-1541 */
+                if (flags & __mh_execute_header) {
+                    if (!(oldFlags & 0x1000)) {
+                        /* line 1540 */
+                        *(const char **)existing = dvarName;
+                        /* line 1541 */
+                        if (*(byte *)((byte *)existing + 6) == 6) {
+                            /* line 1542: update enum domain */
+                            *(int *)((byte *)existing + 0x14) = *(int *)((byte *)&domain);
+                            *(int *)((byte *)existing + 0x18) = *(int *)((byte *)&domain + 4);
+                        }
+                    }
+                }
+                goto check_flags;
+            }
+
+check_flags_cont:
+            if (flags & __mh_execute_header) {
+                if (!(oldFlags & 0x1000)) {
+                    *(const char **)existing = dvarName;
+                    if (*(byte *)((byte *)existing + 6) == 6) {
+                        *(int *)((byte *)existing + 0x14) = *(int *)((byte *)&domain);
+                        *(int *)((byte *)existing + 0x18) = *(int *)((byte *)&domain + 4);
+                    }
+                }
+            }
+        }
+
+check_flags:
+        /* line 1586: check READONLY flag mismatch */
+        if ((oldFlags & 0x4000) && type != *(byte *)((byte *)existing + 6)) {
+            /* line 1589: type mismatch, call MakeExplicitType */
+            ((void (*)(dvar_t *, const char *, int, unsigned short, DvarValue *, DvarLimits *))Dvar_MakeExplicitType)(
+                existing, dvarName, type, (unsigned short)flags, (DvarValue *)&value, (DvarLimits *)&domain);
+        }
+
+        /* line 1595: merge flags */
+        *(unsigned short *)((byte *)existing + 4) |= (unsigned short)flags;
+
+        /* line 1597: cheat enforcement */
+        if (*(unsigned short *)((byte *)existing + 4) & 0x80) {
+            if (dvar_cheats && *(byte *)((byte *)dvar_cheats + 8) == 0) {
+                /* line 1599: set to reset value */
+                {
+                    DvarValue resetVal = *(DvarValue *)((byte *)existing + 0x10);
+                    ((DvarSetVariantRegparmFn)Dvar_SetVariant)(existing, resetVal, 0);
+                }
+                {
+                    DvarValue resetVal = *(DvarValue *)((byte *)existing + 0x10);
+                    ((DvarUpdateResetValueRegparmFn)Dvar_SetLatchedValue)(existing, resetVal);
+                }
+            }
+        }
+
+        /* line 1603: check LATCH flag */
+        if (*(unsigned short *)((byte *)existing + 4) & 0x20) {
+            /* line 1553: set variant from latched */
+            DvarValue latchedVal = *(DvarValue *)((byte *)existing + 0xc);
+            ((DvarSetVariantRegparmFn)Dvar_SetVariant)(existing, latchedVal, 0);
+        }
+
+        return existing;
+    }
+
+create_new:
+    /* line 1712 */
+    newType = type;
+
+    /* line 1622: check dvar count limit */
+    if (dvarCount > 0x4ff) {
+        Com_Error(0, "Can't create dvar '%s': %i dvars already exist", dvarName, 0x500);
+    }
+
+    /* line 1630: allocate from pool */
+    dvar = &dvarPool[dvarCount];
+    dvarCount++;
+
+    /* line 1632: set type */
+    *(byte *)((byte *)dvar + 6) = (byte)newType;
+
+    /* line 1633: check EXTERNAL flag */
+    if (flags & 0x4000) {
+        /* line 1634: copy name string */
+        *(const char **)dvar = CopyStringInternal(dvarName);
+    } else {
+        /* line 1636: direct pointer */
+        *(const char **)dvar = dvarName;
+    }
+
+    /* line 1637: set value based on type */
+    if (newType == DVAR_TYPE_VEC3) {
+        /* line 125-127: allocate vec3 storage (3 components * 3 copies = 9 floats * 4 = 36) */
+        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int allocSize = numComponents * 3 * 4;
+        float *mem = (float *)Z_MallocInternal(allocSize);
+        *(float **)((byte *)dvar + 8) = mem;
+        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
+        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+
+        /* Copy vec3 value to all three (current, latched, reset) */
+        {
+            float *src = (float *)&value;
+            mem[0] = src[0];
+            mem[1] = src[1];
+            mem[2] = src[2];
+
+            float *latched = *(float **)((byte *)dvar + 0xc);
+            latched[0] = src[0];
+            latched[1] = src[1];
+            latched[2] = src[2];
+
+            float *reset = *(float **)((byte *)dvar + 0x10);
+            reset[0] = src[0];
+            reset[1] = src[1];
+            reset[2] = src[2];
+        }
+    } else if (newType == DVAR_TYPE_VEC2) {
+        /* line 125-127 */
+        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int allocSize = numComponents * 3 * 4;
+        float *mem = (float *)Z_MallocInternal(allocSize);
+        *(float **)((byte *)dvar + 8) = mem;
+        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
+        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+
+        /* Copy vec2 value */
+        {
+            float *src = (float *)&value;
+            mem[0] = src[0];
+            mem[1] = src[1];
+
+            float *latched = *(float **)((byte *)dvar + 0xc);
+            latched[0] = src[0];
+            latched[1] = src[1];
+
+            float *reset = *(float **)((byte *)dvar + 0x10);
+            reset[0] = src[0];
+            reset[1] = src[1];
+        }
+    } else if (newType == DVAR_TYPE_VEC4) {
+        /* line 125-127 */
+        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int allocSize = numComponents * 3 * 4;
+        float *mem = (float *)Z_MallocInternal(allocSize);
+        *(float **)((byte *)dvar + 8) = mem;
+        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
+        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+
+        /* Copy vec4 value */
+        {
+            float *src = (float *)&value;
+            mem[0] = src[0];
+            mem[1] = src[1];
+            mem[2] = src[2];
+            mem[3] = src[3];
+
+            float *latched = *(float **)((byte *)dvar + 0xc);
+            latched[0] = src[0];
+            latched[1] = src[1];
+            latched[2] = src[2];
+            latched[3] = src[3];
+
+            float *reset = *(float **)((byte *)dvar + 0x10);
+            reset[0] = src[0];
+            reset[1] = src[1];
+            reset[2] = src[2];
+            reset[3] = src[3];
+        }
+    } else if (newType == DVAR_TYPE_STRING) {
+        /* line 155-173: string dvar */
+        const char *strVal = Dvar_ConvertStringValue(*(const char **)&value, newType);
+        *(const char **)((byte *)dvar + 8) = strVal;
+        *(const char **)((byte *)dvar + 0xc) = strVal;
+        *(const char **)((byte *)dvar + 0x10) = strVal;
+    } else {
+        /* line 1668-1670: simple value types (bool, int, float, enum, color) */
+        int val = *(int *)&value;
+        *(int *)((byte *)dvar + 8) = val;
+        *(int *)((byte *)dvar + 0xc) = val;
+        *(int *)((byte *)dvar + 0x10) = val;
+    }
+
+    /* line 1673: set domain */
+    *(int *)((byte *)dvar + 0x14) = *(int *)((byte *)&domain);
+    *(int *)((byte *)dvar + 0x18) = *(int *)((byte *)&domain + 4);
+
+    /* line 1674: clear modified */
+    *(byte *)((byte *)dvar + 7) = 0;
+
+    /* line 1677-1683: insert into sorted list */
+    {
+        dvar_t **prevPtr = &sortedDvars;
+        dvar_t *cur = sortedDvars;
+
+        while (cur) {
+            if (stricmp(*(const char **)dvar, *(const char **)cur) < 0)
+                break;
+            prevPtr = (dvar_t **)((byte *)cur + 0x1c);
+            cur = *(dvar_t **)((byte *)cur + 0x1c);
+        }
+
+        *(dvar_t **)((byte *)dvar + 0x1c) = *prevPtr;
+        *prevPtr = dvar;
+    }
+
+    /* line 1685 */
+    *(unsigned short *)((byte *)dvar + 4) = (unsigned short)flags;
+
+    /* line 1688-1689: insert into hash table */
+    {
+        unsigned char h = Dvar_HashName(dvarName);
+        *(dvar_t **)((byte *)dvar + 0x20) = dvarHashTable[h];
+        dvarHashTable[h] = dvar;
+    }
+
+    /* line 1694 */
+    return dvar;
+}
+
+static const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned int flags, DvarValue value, DvarLimits domain)
+{
+    /* This function is only called via regparm(3) trampoline in non-Emscripten builds.
+       In Emscripten, Dvar_RegisterVariantReg calls Dvar_RegisterVariant_impl directly. */
+    return NULL;
+}
 #endif

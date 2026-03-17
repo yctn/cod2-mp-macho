@@ -2142,5 +2142,381 @@ void R_FlushStaticModelCache(void)
     }
 }
 #else
-void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers) { }
+/* R_SkinStaticModelCachedCmd — Static model cached skinning.
+ * Builds bone rotation matrix from entity quaternion, transforms vertices
+ * through bone matrix, writes to cached vertex buffer.
+ * Two paths: non-Dx7 (stride 0x40) and Dx7 (stride 0x18).
+ * Non-Dx7 path also computes per-vertex lighting from entity lights. */
+extern void AxisTransformVector(const void *matrix, float x, float y, float z, vec_t *out);
+extern float Vec3NormalizeTo(const vec_t *v, vec_t *out);
+extern int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Material *material, D3DLIGHT9 *lights, int maxLights);
+extern void R_FatalLockError(HRESULT hr);
+extern void *CColorConverter_GetColorConverter(int mode);
+extern int XSurfaceGetBoneOffset(void *surface);
+extern float floorf(float x);
+
+void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers)
+{
+    byte *cached;
+    byte *xsurf;
+    byte *smodelInst;
+    int smodelIndex;
+    int isDx7;
+    float boneMatrix[16]; /* 4x4 rotation+translation matrix */
+    float useAxis[12];    /* 3x3 axis for vertex transform */
+    float normAxis[9];    /* 3x3 normalized axis for normal transform */
+    int vertCount;
+    int baseVertIndex;
+    byte *skinVerts;
+    byte *pSrc;
+    byte *pDst;
+    void *bufferData;
+    void *colorConverter;
+    short baseLightingCoords[2];
+    int i;
+    HRESULT hr;
+
+    /* Extract fields from skinCmd */
+    cached = *(byte **)skinCmd;                     /* skinCmd->cached */
+    xsurf = *(byte **)(cached + 8);                 /* cached->xsurf */
+    smodelIndex = *((int *)skinCmd + 1);             /* skinCmd->smodelIndex */
+
+    /* Get smodelInst from rgp */
+    {
+        byte *rgp = (byte *)imp_rgp;
+        byte *world = *(byte **)(rgp + 0x109c);
+        smodelInst = *(byte **)(world + 0xf8) + smodelIndex * 96;
+    }
+
+    /* Get bone offset for this surface */
+    {
+        byte *ri_ptr = (byte *)imp_ri;
+        void *(*getBoneData)(int, int);
+        byte *boneData;
+        int boneOffset;
+
+        getBoneData = *(void *(**)(int, int))(ri_ptr + 0x1a4);
+        boneOffset = XSurfaceGetBoneOffset(xsurf);
+        boneData = (byte *)getBoneData(*(int *)(smodelInst + 0x10), boneOffset);
+
+        /* Build bone rotation matrix from quaternion at boneData */
+        {
+            float *q = (float *)boneData;
+            float w2 = q[7]; /* transWeight at offset 0x1c */
+            float x2 = w2 * q[0], y2 = w2 * q[1], z2 = w2 * q[2];
+            float xx = x2 * q[0], xy = x2 * q[1], xz = x2 * q[2], xw = x2 * q[3];
+            float yy = y2 * q[1], yz = y2 * q[2], yw = y2 * q[3];
+            float zz = z2 * q[2], zw = z2 * q[3];
+
+            boneMatrix[0]  = 1.0f - (yy + zz);
+            boneMatrix[1]  = zw + xy;
+            boneMatrix[2]  = xz - yw;
+            boneMatrix[3]  = 0;
+            boneMatrix[4]  = xy - zw;
+            boneMatrix[5]  = 1.0f - (xx + zz);
+            boneMatrix[6]  = xw + yz;
+            boneMatrix[7]  = 0;
+            boneMatrix[8]  = xz + yw;
+            boneMatrix[9]  = yz - xw;
+            boneMatrix[10] = 1.0f - (xx + yy);
+            boneMatrix[11] = 0;
+            /* Translation from boneData+0x10 */
+            boneMatrix[12] = q[4]; /* trans[0] */
+            boneMatrix[13] = q[5]; /* trans[1] */
+            boneMatrix[14] = q[6]; /* trans[2] */
+            boneMatrix[15] = 1.0f;
+        }
+    }
+
+    /* R_GetRigidTransform: compute useAxis (3x4 transform matrix) */
+    {
+        extern void R_GetRigidTransform(const float *boneMatrix, const float *origin,
+            const float *axis, float scale, float *outAxis);
+        R_GetRigidTransform(boneMatrix, (float *)(smodelInst + 4),
+            (float *)(smodelInst + 0x2c), *(float *)(smodelInst + 0x50), useAxis);
+    }
+
+    /* Normalize useAxis rows into normAxis */
+    Vec3NormalizeTo(useAxis + 0, normAxis + 0);
+    Vec3NormalizeTo(useAxis + 3, normAxis + 3);
+    Vec3NormalizeTo(useAxis + 6, normAxis + 6);
+
+    /* Get vertex info */
+    {
+        byte *xsurfPtr = xsurf;
+        vertCount = (int)(*(short *)(xsurfPtr + 2));
+        baseVertIndex = *(int *)cached;
+    }
+
+    /* Get source vertex data */
+    skinVerts = *(byte **)(xsurf + 0xc);
+
+    /* Check renderer type for Dx7 vs non-Dx7 path */
+    isDx7 = (*(int *)(*(byte **)imp_r_rendererInUse + 8) == 2);
+
+    if (!isDx7) {
+        /* Non-Dx7 path: stride 0x40, includes lighting */
+        pSrc = (byte *)skinBuffers + 0x2000;
+
+        /* Compute base lighting coordinates */
+        {
+            byte *rgp2 = (byte *)imp_rgp;
+            byte *world2 = *(byte **)(rgp2 + 0x109c);
+            float *blc = (float *)(*(byte **)(world2 + 0xf8) + smodelIndex * 96 + 0x54);
+            float val;
+
+            val = blc[0] * 32768.0f + 0.5f;
+            baseLightingCoords[0] = (short)(int)floorf(val);
+            val = blc[1] * 32768.0f + 0.5f;
+            baseLightingCoords[1] = (short)(int)floorf(val);
+        }
+
+        /* Transform vertices: position through useAxis, normal through normAxis */
+        if (vertCount > 0) {
+            byte *src = pSrc;
+            byte *dst = pSrc; /* writes back in-place into skinBuffers */
+
+            for (i = 0; i < vertCount; i++) {
+                float *srcPos = (float *)(skinVerts + i * 0x40 + 0x30);
+                float *dstVert = (float *)(src + i * 0x40);
+
+                /* Transform position: pos = useAxis * srcPos + translation */
+                dstVert[0] = srcPos[0] * useAxis[0] + srcPos[1] * useAxis[3] + srcPos[2] * useAxis[6] + useAxis[9];
+                dstVert[1] = srcPos[0] * useAxis[1] + srcPos[1] * useAxis[4] + srcPos[2] * useAxis[7] + useAxis[10];
+                dstVert[2] = srcPos[0] * useAxis[2] + srcPos[1] * useAxis[5] + srcPos[2] * useAxis[8] + useAxis[11];
+
+                /* Transform normal through normAxis */
+                {
+                    float nx = *(float *)(skinVerts + i * 0x40 + 0);
+                    float ny = *(float *)(skinVerts + i * 0x40 + 4);
+                    float nz = *(float *)(skinVerts + i * 0x40 + 8);
+                    float *dstNorm = (float *)(dst + i * 0x40 + 0xc);
+                    AxisTransformVector(normAxis, nx, ny, nz, dstNorm);
+                }
+
+                /* Copy color bytes */
+                {
+                    byte *srcColor = skinVerts + i * 0x40 + 0xc;
+                    byte *dstColor = dst + i * 0x40 + 0x18;
+                    dstColor[0] = srcColor[3];
+                    dstColor[1] = srcColor[0];
+                    dstColor[2] = srcColor[1];
+                    dstColor[3] = srcColor[2];
+                }
+
+                /* Copy texcoords */
+                *(int *)(dst + i * 0x40 + 0x1c) = *(int *)(skinVerts + i * 0x40 + 0x1c);
+                *(int *)(dst + i * 0x40 + 0x20) = *(int *)(skinVerts + i * 0x40 + 0x2c);
+
+                /* Store base lighting coords */
+                *(short *)(dst + i * 0x40 + 0x24) = baseLightingCoords[0];
+                *(short *)(dst + i * 0x40 + 0x26) = baseLightingCoords[1];
+
+                /* Transform tangent through normAxis */
+                {
+                    float tx = *(float *)(skinVerts + i * 0x40 + 0x10);
+                    float ty = *(float *)(skinVerts + i * 0x40 + 0x14);
+                    float tz = *(float *)(skinVerts + i * 0x40 + 0x18);
+                    AxisTransformVector(normAxis, tx, ty, tz, (float *)(dst + i * 0x40 + 0x28));
+                }
+
+                /* Transform binormal through normAxis */
+                {
+                    float bx = *(float *)(skinVerts + i * 0x40 + 0x20);
+                    float by = *(float *)(skinVerts + i * 0x40 + 0x24);
+                    float bz = *(float *)(skinVerts + i * 0x40 + 0x28);
+                    AxisTransformVector(normAxis, bx, by, bz, (float *)(dst + i * 0x40 + 0x34));
+                }
+            }
+        }
+
+        /* Lock vertex buffer and copy data */
+        {
+            byte *dx = (byte *)imp_dx;
+            byte *vb = *(byte **)(dx + 0x2dc4);
+            void **vtable = *(void ***)vb;
+            int lockSize = vertCount * 0x40;
+            int lockOffset = baseVertIndex * 0x40;
+
+            hr = ((int (*)(void *, int, int, void **, int))vtable[0x2c/4])(
+                vb, lockOffset, lockSize, &bufferData, 0x1001);
+            if (hr < 0) {
+                R_FatalLockError(hr);
+            }
+
+            /* Copy transformed vertices to VB via color converter */
+            colorConverter = CColorConverter_GetColorConverter(0);
+
+            if (vertCount > 0) {
+                byte *src2 = pSrc;
+                byte *dst2 = (byte *)bufferData;
+
+                for (i = 0; i < vertCount; i++) {
+                    /* Copy position (12 bytes) */
+                    memcpy(dst2, src2, 12);
+                    /* Convert color */
+                    {
+                        void **ccvt = *(void ***)colorConverter;
+                        ((void (*)(void *, void *, void *))ccvt[0])(colorConverter,
+                            dst2 + 0x18, src2 + 0x18);
+                    }
+                    /* Copy remaining vertex data */
+                    memcpy(dst2 + 0xc, src2 + 0xc, 8);
+                    memcpy(dst2 + 0x10, src2 + 0x10, 8);
+                    memcpy(dst2 + 0x24, src2 + 0x24, 4);
+                    memcpy(dst2 + 0x26, src2 + 0x26, 2);
+                    memcpy(dst2 + 0x28, src2 + 0x28, 12);
+                    memcpy(dst2 + 0x34, src2 + 0x34, 12);
+
+                    src2 += 0x40;
+                    dst2 += 0x40;
+                }
+            }
+
+            /* Unlock VB */
+            do {
+                vtable = *(void ***)vb;
+                ((void (*)(void *))vtable[0x30/4])(vb);
+            } while (*(volatile int *)imp_alwaysfails != 0);
+        }
+    } else {
+        /* Dx7 path: stride 0x18, simpler vertex layout */
+        D3DLIGHT9 lights[8];
+        int lightCount;
+
+        pSrc = (byte *)skinBuffers + 0x2000;
+
+        /* Derive entity lights for Dx7 */
+        {
+            byte *rgp3 = (byte *)imp_rgp;
+            byte *world3 = *(byte **)(rgp3 + 0x109c);
+            float *sunVisPtr = *(float **)(world3 + 0x130);
+            byte *lightingColors = *(byte **)(world3 + 0x12c);
+
+            lightCount = RB_DeriveEntityLights(
+                (vec4_t *)(lightingColors + smodelIndex * 96),
+                sunVisPtr[smodelIndex],
+                NULL, lights, 8);
+        }
+
+        /* Transform vertices: position + normal, then compute Dx7 lighting color */
+        if (vertCount > 0) {
+            byte *pSrcDx7 = (byte *)skinBuffers + 0x200c;
+            byte *srcVert = skinVerts + 0xc;
+
+            for (i = 0; i < vertCount; i++) {
+                float *srcPos = (float *)(skinVerts + i * 0x40 + 0x30);
+                float normal[3];
+                float dstPos[3];
+
+                /* Transform position */
+                dstPos[0] = srcPos[0] * useAxis[0] + srcPos[1] * useAxis[3] + srcPos[2] * useAxis[6] + useAxis[9];
+                dstPos[1] = srcPos[0] * useAxis[1] + srcPos[1] * useAxis[4] + srcPos[2] * useAxis[7] + useAxis[10];
+                dstPos[2] = srcPos[0] * useAxis[2] + srcPos[1] * useAxis[5] + srcPos[2] * useAxis[8] + useAxis[11];
+
+                *(float *)(pSrcDx7 + i * 0x18 - 0xc) = dstPos[0];
+                *(float *)(pSrcDx7 + i * 0x18 - 8) = dstPos[1];
+                *(float *)(pSrcDx7 + i * 0x18 - 4) = dstPos[2];
+
+                /* Transform normal */
+                {
+                    float nx = *(float *)(skinVerts + i * 0x40 + 0);
+                    float ny = *(float *)(skinVerts + i * 0x40 + 4);
+                    float nz = *(float *)(skinVerts + i * 0x40 + 8);
+                    AxisTransformVector(normAxis, nx, ny, nz, normal);
+                }
+
+                /* Copy texcoords */
+                *(int *)(pSrcDx7 + i * 0x18 + 4) = *(int *)(skinVerts + i * 0x40 + 0x1c);
+                *(int *)(pSrcDx7 + i * 0x18 + 8) = *(int *)(skinVerts + i * 0x40 + 0x2c);
+
+                /* Compute lighting color from entity lights */
+                {
+                    float r = 0.0f, g = 0.0f, b = 0.0f;
+                    int li;
+
+                    for (li = 0; li < lightCount; li++) {
+                        float *lightData = (float *)&lights[li];
+                        float dot = normal[0] * lightData[0x1c/4] +
+                                    normal[1] * lightData[0x20/4] +
+                                    normal[2] * lightData[0x24/4];
+                        /* Negate and clamp */
+                        dot = -dot; /* xorps with sign bit */
+                        if (dot > 0.0f) {
+                            r += dot * lightData[-0x20/4];
+                            g += dot * lightData[-0x1c/4];
+                            b += dot * lightData[-0x18/4];
+                        }
+                    }
+
+                    /* Quantize and clamp to [0, 255] */
+                    {
+                        byte *srcColor = skinVerts + i * 0x40 + 0xc;
+                        byte *dstColor = pSrcDx7 + i * 0x18;
+                        float oneOver255 = 0.003921568859368563f;
+                        int ch;
+
+                        ch = (int)floorf(r * (float)srcColor[2] * oneOver255 * 255.0f + 0.5f);
+                        if (ch > 255) ch = 255; if (ch < 0) ch = 0;
+                        dstColor[0] = (byte)ch;
+
+                        ch = (int)floorf(b * (float)srcColor[1] * oneOver255 * 255.0f + 0.5f);
+                        if (ch > 255) ch = 255; if (ch < 0) ch = 0;
+                        dstColor[1] = (byte)ch;
+
+                        ch = (int)floorf(g * (float)srcColor[0] * oneOver255 * 255.0f + 0.5f);
+                        if (ch > 255) ch = 255; if (ch < 0) ch = 0;
+                        dstColor[2] = (byte)ch;
+
+                        ch = (int)floorf((float)srcColor[3] * oneOver255 * 255.0f + 0.5f);
+                        if (ch > 255) ch = 255; if (ch < 0) ch = 0;
+                        dstColor[3] = (byte)ch;
+                    }
+                }
+            }
+        }
+
+        /* Lock VB and copy Dx7 vertices */
+        {
+            byte *dx = (byte *)imp_dx;
+            byte *vb = *(byte **)(dx + 0x2dc4);
+            void **vtable = *(void ***)vb;
+            int lockSize = vertCount * 0x18;
+            int lockOffset = baseVertIndex * 0x18;
+
+            hr = ((int (*)(void *, int, int, void **, int))vtable[0x2c/4])(
+                vb, lockOffset, lockSize, &bufferData, 0x1001);
+            if (hr < 0) {
+                R_FatalLockError(hr);
+            }
+
+            pSrc = (byte *)skinBuffers + 0x2000;
+            pDst = (byte *)bufferData;
+            colorConverter = CColorConverter_GetColorConverter(0);
+
+            if (vertCount > 0) {
+                for (i = 0; i < vertCount; i++) {
+                    /* Copy position (12 bytes) */
+                    memcpy(pDst, pSrc, 12);
+                    /* Convert color */
+                    {
+                        void **ccvt = *(void ***)colorConverter;
+                        ((void (*)(void *, void *, void *))ccvt[0])(colorConverter,
+                            pDst + 0xc, pSrc + 0xc);
+                    }
+                    /* Copy texcoords (8 bytes) */
+                    memcpy(pDst + 0x10, pSrc + 0x10, 8);
+                    pSrc += 0x18;
+                    pDst += 0x18;
+                }
+            }
+
+            /* Unlock VB */
+            do {
+                vtable = *(void ***)vb;
+                ((void (*)(void *))vtable[0x30/4])(vb);
+            } while (*(volatile int *)imp_alwaysfails != 0);
+        }
+    }
+}
 #endif

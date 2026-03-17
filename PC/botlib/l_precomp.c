@@ -7,6 +7,10 @@
 #include <stdarg.h>
 
 extern void Com_Printf(const char *fmt, ...);
+extern void FreeMemory(void *ptr);
+extern void FreeScript(void *script);
+extern int PS_ReadToken(void *script, token_t *token);
+extern int EndOfScript(void *script);
 
 extern int numtokens; /* 0x0 */
 extern define_t *globaldefines; /* 0x0 */
@@ -442,7 +446,28 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line)
     );
 }
 #else
-int PC_SourceFileAndLine(int handle, char *filename, int *line) { return 0; }
+int PC_SourceFileAndLine(int handle, char *filename, int *line) {
+    source_t *source;
+    byte *scriptstack;
+
+    if ((unsigned)(handle - 1) > 0x3e)
+        return 0;
+    source = sourceFiles[handle];
+    if (!source)
+        return 0;
+
+    scriptstack = *(byte **)((byte *)source + 0x84);
+    if (scriptstack) {
+        /* scriptstack has filename at offset 0, line at offset 0x5c */
+        strcpy(filename, (const char *)scriptstack);
+        *line = *(int *)(scriptstack + 0x5c);
+    } else {
+        /* source itself has filename at offset 0 */
+        strcpy(filename, (const char *)source);
+        *line = 0;
+    }
+    return 1;
+}
 #endif
 
 /* line 180 */
@@ -6336,5 +6361,53 @@ int PC_DollarDirective_evalint(source_t *source)
     );
 }
 #else
-int PC_ReadSourceToken(source_t *source, token_t *token) { return 0; }
+int PC_ReadSourceToken(source_t *source, token_t *token) {
+    byte *src = (byte *)source;
+    byte *tok;
+    byte *script;
+    byte *indent;
+
+    for (;;) {
+        /* Check for queued tokens */
+        tok = *(byte **)(src + 0x88); /* source->tokens */
+        if (tok) {
+            memcpy(token, tok, 0x440);
+            *(byte **)(src + 0x88) = *(byte **)(tok + 0x430); /* token->next */
+            FreeMemory(tok);
+            numtokens--;
+            return 1;
+        }
+
+        /* Try reading from current script */
+        if (PS_ReadToken(*(void **)(src + 0x84), token))
+            return 1;
+
+        /* Read failed: check if end of script */
+        if (EndOfScript(*(void **)(src + 0x84))) {
+            /* Check indentstack for unmatched #if directives */
+            indent = *(byte **)(src + 0x94);
+            if (indent && *(void **)(indent + 8) == *(void **)(src + 0x84)) {
+                SourceWarning(source, "#if directive not terminated");
+                /* Free matching indent entries */
+                while ((indent = *(byte **)(src + 0x94)) != NULL) {
+                    if (*(void **)(indent + 8) != *(void **)(src + 0x84))
+                        break;
+                    *(byte **)(src + 0x94) = *(byte **)(indent + 0xc); /* indent->next */
+                    *(int *)(src + 0x98) -= *(int *)(indent + 4); /* source->skip -= indent->skip */
+                    FreeMemory(indent);
+                }
+            }
+        }
+
+        /* Try to pop to next script in chain */
+        script = *(byte **)(src + 0x84); /* source->scriptstack */
+        {
+            byte *nextScript = *(byte **)(script + 0x4c0); /* scriptstack->next */
+            if (!nextScript)
+                return 0; /* no more scripts */
+            *(byte **)(src + 0x84) = nextScript;
+            FreeScript(script);
+        }
+    }
+}
 #endif

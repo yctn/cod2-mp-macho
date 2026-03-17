@@ -20,6 +20,15 @@ extern void CL_SwitchToLocalClient(int localClientNum);
 extern void Z_FreeInternal(void *ptr);
 extern void UI_KeyEvent(int key, int down);
 
+/* Externs for Field_Draw */
+extern FontHandle UI_GetFontHandle(int fontEnum, float scale);
+extern void CL_DrawTextWithCursor(const char *text, int maxChars, void *font, float x, float y, int horzAlign, int vertAlign, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor);
+extern float GetRealWidthFromVirtualWidth(float w);
+extern float GetRealHeightFromVirtualHeight(float h);
+extern float GetVirtualWidthFromRealWidth(float w);
+extern float GetVirtualHeightFromRealHeight(float h);
+extern int SEH_PrintStrlen(const char *str);
+
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
 extern qboolean *chat_team; /* 0x0 */
@@ -293,7 +302,98 @@ void Field_AdjustScroll(field_t *edit)
     );
 }
 #else
-void Field_AdjustScroll(field_t *edit) { }
+void Field_AdjustScroll(field_t *edit) {
+    typedef float (*GetFontHeightFn)(FontHandle font, float scale);
+    typedef int (*TextWidthFn)(const char *text, int limit, FontHandle font);
+    float fontScale, lineWidth, actualScale;
+    FontHandle font;
+    const char *bufStart;
+    int scroll;
+
+    fontScale = edit->charHeight / 48.0f;
+    lineWidth = (float)edit->widthInPixels;
+
+    if (edit->fixedSize) {
+        fontScale = GetVirtualWidthFromRealWidth(fontScale);
+        lineWidth = GetVirtualHeightFromRealHeight(lineWidth);
+        font = *(FontHandle *)((byte *)imp_cls + 0x2a0a60);
+    } else {
+        font = UI_GetFontHandle(0, fontScale);
+    }
+
+    actualScale = ((GetFontHeightFn)(*(void **)((byte *)imp_re + 0x110)))(font, fontScale);
+    bufStart = edit->buffer;
+
+    {
+        int totalWidth = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart, 0, font);
+        float totalWidthScaled = (float)totalWidth * actualScale;
+        if (totalWidthScaled < lineWidth) {
+            edit->scroll = 0;
+            edit->drawWidth = SEH_PrintStrlen(bufStart);
+            return;
+        }
+    }
+
+    if (lineWidth <= 0.0f) {
+        scroll = edit->scroll;
+        goto compute_visible;
+    }
+
+    scroll = edit->scroll;
+    while (scroll > 0) {
+        int endWidth = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll - 1, 0, font);
+        float endWidthScaled = (float)endWidth * actualScale;
+        if (endWidthScaled >= lineWidth)
+            break;
+        scroll--;
+        edit->scroll = scroll;
+    }
+
+compute_visible:
+    {
+        int textLen, textLenFromScroll;
+        float scrolledWidth, cursorWidth, diff;
+
+        textLen = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll, 0, font);
+        textLenFromScroll = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + edit->cursor, 0, font);
+
+        scrolledWidth = (float)textLen * actualScale;
+        cursorWidth = (float)textLenFromScroll * actualScale;
+        diff = scrolledWidth - cursorWidth;
+
+        if (diff < 0.0f) {
+            if (edit->scroll > 0) {
+                edit->scroll--;
+                scroll = edit->scroll;
+                goto compute_visible;
+            }
+            if (cursorWidth < lineWidth)
+                goto compute_drawWidth;
+        } else if (diff >= lineWidth) {
+            edit->scroll++;
+            scroll = edit->scroll;
+            goto compute_visible;
+        }
+
+compute_drawWidth:
+        {
+            int len = (int)strlen(bufStart + scroll);
+            int visChars = edit->cursor - scroll;
+            edit->drawWidth = visChars;
+
+            if (lineWidth > 0.0f && visChars < len) {
+                while (visChars < len) {
+                    int w = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll, visChars + 1, font);
+                    float wScaled = (float)w * actualScale;
+                    if (wScaled >= lineWidth)
+                        break;
+                    visChars++;
+                    edit->drawWidth = visChars;
+                }
+            }
+        }
+    }
+}
 #endif
 
 /* line 1158 */
@@ -2426,5 +2526,109 @@ void Key_ClearStates(void)
     }
 }
 #else
-void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qboolean showCursor) { }
+void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qboolean showCursor)
+{
+    vec4_t vColor;
+    char str[0x400];
+    int cursorPos;
+    void *font;
+    int fontStyle;
+    float xScale;
+    float yScale;
+    float xAdj;
+    float yAdj;
+    int cursorChar;
+    int drawWidth;
+    float rawScale;
+
+    /* line 396 */
+    vColor[0] = 1.0f;
+    vColor[1] = 1.0f;
+    vColor[2] = 1.0f;
+    vColor[3] = 1.0f;
+
+    /* line 398: copy visible portion of edit buffer */
+    I_strncpyz(str, (const char *)((byte *)edit + 0x18 + *(int *)((byte *)edit + 4)), 0x100 - *(int *)((byte *)edit + 4));
+
+    /* line 400 */
+    cursorPos = *(int *)((byte *)edit) - *(int *)((byte *)edit + 4);
+
+    /* line 402: check if the field has a font scale set */
+    if (*(int *)((byte *)edit + 0x14) != 0) {
+        /* line 404: use cls font */
+        font = *(void **)(*(byte **)imp_cls + 0x2a0a60);
+
+        /* line 409: overstrike mode */
+        if (*(int *)*key_overstrikeMode) {
+            fontStyle = 0;
+            xScale = 1.0f;
+            yScale = 1.0f;
+            cursorChar = 0x5f; /* '_' */
+        } else {
+            fontStyle = 0;
+            xScale = 1.0f;
+            yScale = 1.0f;
+            cursorChar = 0x7c; /* '|' */
+        }
+    } else {
+        /* line 416: compute scale from edit->pixelWidth */
+        rawScale = *(float *)((byte *)edit + 0x10) / 48.0f;
+
+        /* line 417 */
+        font = (void *)UI_GetFontHandle(0, rawScale);
+
+        /* line 418: re.GetFontYSize */
+        {
+            typedef float (*GetFontYSizeFn)(void *font, float scale);
+            float fontYSize;
+            GetFontYSizeFn fn = (GetFontYSizeFn)(*(void **)(*(byte **)imp_re + 0x110));
+            fontYSize = fn(font, rawScale);
+            (void)fontYSize; /* used below */
+
+            /* line 419: check if vertAlign == 5 */
+            if (vertAlign == 5) {
+                /* line 420: convert virtual to real width/height */
+                typedef float (*ConvertFn)(float val);
+                ConvertFn getRealW = (ConvertFn)GetRealWidthFromVirtualWidth;
+                ConvertFn getRealH = (ConvertFn)GetRealHeightFromVirtualHeight;
+                xScale = getRealW(fontYSize);
+                yScale = getRealH(fontYSize);
+            } else {
+                xScale = fontYSize;
+                yScale = fontYSize;
+            }
+        }
+
+        /* line 429: overstrike mode for UI path */
+        if (*(int *)*key_overstrikeMode) {
+            fontStyle = 3;
+            cursorChar = 0x5f; /* '_' */
+        } else {
+            fontStyle = 3;
+            cursorChar = 0x7c; /* '|' */
+        }
+    }
+
+    /* line 435 */
+    xAdj = (float)x;
+
+    /* line 436: re.R_GetFontHeight */
+    {
+        typedef int (*GetFontHeightFn)(void *font);
+        GetFontHeightFn fn = (GetFontHeightFn)(*(void **)(*(byte **)imp_re + 0x118));
+        int fontHeight = fn(font);
+        yAdj = (float)y + (float)fontHeight * yScale;
+    }
+
+    /* line 438 */
+    drawWidth = *(int *)((byte *)edit + 8);
+    if (drawWidth == 0)
+        *(int *)((byte *)edit + 8) = 0x100;
+
+    /* line 442: draw text with cursor */
+    CL_DrawTextWithCursor(str, *(int *)((byte *)edit + 8), font,
+                          xAdj, yAdj, horzAlign, vertAlign,
+                          xScale, yScale,
+                          vColor, fontStyle, cursorPos, cursorChar);
+}
 #endif

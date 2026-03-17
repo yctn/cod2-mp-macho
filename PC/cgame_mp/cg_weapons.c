@@ -12,6 +12,7 @@
 extern vec3_t ejectBrassCasingOrigin; /* 0x0 */
 extern int removeMeWhenMPStopsCrashingInHere; /* 0x0 */
 extern void *BG_GetWeaponDef(int weapIndex);
+extern void CG_SetWeaponDefToDefaultWeapon(int weaponNum);
 extern void SCR_UpdateScreen(void);
 extern struct XAnim_s *XAnimCreateAnims(const char *debugName, int size, void *Alloc);
 extern void XAnimBlend(struct XAnim_s *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags);
@@ -19,7 +20,7 @@ extern void XAnimPrecache(const char *name, void *Alloc);
 extern void XAnimCreate(struct XAnim_s *anims, unsigned int animIndex, const char *name);
 extern void *XAnimCreateTree(void *anims, void *Alloc);
 extern void XAnimClearTreeGoalWeights(void *tree, int animIndex, int recursive);
-extern void XAnimSetGoalWeight(void *tree, int animIndex, float goalWeight, int bRestart, float goalTime, int notifyType, int notifyClient, int bReset);
+extern int XAnimSetGoalWeight(void *tree, unsigned int animIndex, float goalWeight, float goalTime, float rate, unsigned int notifyName, unsigned int notifyType, int bRestart);
 extern void XAnimSetTime(void *tree, int animIndex, float time);
 extern int XAnimIsLooped(struct XAnim_s *anims, int animIndex);
 extern int XAnimGetLengthMsec(struct XAnim_s *anims, int animIndex);
@@ -149,6 +150,29 @@ void CG_PlayADSAnim(void)
     );
 }
 #else
+/* Register-convention: edx=pAnimTree, ecx=animIndex.
+   In Emscripten, callers use _impl directly. */
+static void CG_PlayADSAnim_impl(void *pAnimTree, int animIndex)
+{
+    byte *cg;
+    float adsProgress;
+
+    if (animIndex == 0x15) {
+        /* ADS in: set 0x15 to weight 1.0 with notify; clear 0x16 */
+        XAnimSetGoalWeight(pAnimTree, 0x15, 1.0f, 0.5f, 0.0f, 0, 1, 0);
+        XAnimSetGoalWeight(pAnimTree, 0x16, 0.0f, 0.5f, 0.0f, 0, 0, 0);
+    } else {
+        /* ADS out: clear 0x15; set 0x16 to weight 1.0 with notify */
+        XAnimSetGoalWeight(pAnimTree, 0x15, 0.0f, 0.5f, 0.0f, 0, 0, 0);
+        XAnimSetGoalWeight(pAnimTree, 0x16, 1.0f, 0.5f, 0.0f, 0, 1, 0);
+    }
+
+    /* Set anim times based on ADS progress */
+    cg = (byte *)*(void **)imp_cg;
+    adsProgress = *(float *)(cg + 0x25ca0);
+    XAnimSetTime(pAnimTree, 0x15, adsProgress);
+    XAnimSetTime(pAnimTree, 0x16, 1.0f - adsProgress);
+}
 static void CG_PlayADSAnim(void) { }
 #endif
 
@@ -7067,5 +7091,33 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
 }
 
 #else
-void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) { }
+void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
+    byte *weapDef;
+    char modelFile[80]; /* 0x58 bytes local */
+    const char *handModel;
+    const char *viewModel;
+
+    CG_SetWeaponDefToDefaultWeapon(weaponNum);
+    weapDef = (byte *)BG_GetWeaponDef(weaponNum);
+    Com_Printf("WARNING: gun and/or hand model file for weapon [%s] could not be found\n",
+               *(const char **)(weapDef + 4));
+
+    handModel = *(const char **)(weapDef + 0xc);
+    if (!handModel || handModel[0] == '\0') {
+        Com_Error(1, "could not find default weapon model");
+    } else {
+        viewModel = *(const char **)(weapDef + 0x10);
+        if (!viewModel || viewModel[0] == '\0') {
+            Com_Error(1, "could not find default weapon model");
+        }
+    }
+
+    viewModel = *(const char **)(weapDef + 0x10);
+    sprintf(modelFile, "%s%s", "xmodel/", viewModel);
+    *(void **)dobjModels = CL_RegisterModel(modelFile);
+
+    handModel = *(const char **)(weapDef + 0xc);
+    sprintf(modelFile, "%s%s", "xmodel/", handModel);
+    *(void **)((byte *)dobjModels + 0xc) = CL_RegisterModel(modelFile);
+}
 #endif

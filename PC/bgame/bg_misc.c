@@ -1789,5 +1789,241 @@ qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime
     return 1;
 }
 #else
-void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean snap, int handler) { }
+void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean snap, int handler)
+{
+    byte *psb = (byte *)ps;
+    byte *sb = (byte *)s;
+    int eFlags;
+    int i;
+    int stance;
+    int eventSequence;
+    int eventOld;
+    int event;
+    int evIdx;
+    float lerpFrac;
+    int lerpTime;
+    int elapsed;
+
+    /* line 828-829: s->eType from ps->pm_type */
+    {
+        int pmFlags = *(int *)(psb + 0xc);
+        int val = pmFlags & 0xc00000;
+        int eType;
+        if (val != 0) {
+            eType = 1;
+        } else {
+            eType = 5;
+        }
+        *(int *)(sb + 4) = eType;
+    }
+
+    /* line 836 */
+    *(int *)(sb + 0xc) = 1;
+
+    /* line 837: VectorCopy(ps->origin, s->pos.trBase) */
+    *(int *)(sb + 0x18) = *(int *)(psb + 0x14);
+    *(int *)(sb + 0x1c) = *(int *)(psb + 0x18);
+    *(int *)(sb + 0x20) = *(int *)(psb + 0x1c);
+
+    /* line 840: snap */
+    if (snap) {
+        /* line 841: truncate to int and back to float */
+        *(float *)(sb + 0x18) = (float)(int)*(float *)(sb + 0x18);
+        *(float *)(sb + 0x1c) = (float)(int)*(float *)(sb + 0x1c);
+        *(float *)(sb + 0x20) = (float)(int)*(float *)(sb + 0x20);
+    }
+
+    /* line 844 */
+    *(int *)(sb + 0x30) = 1;
+
+    /* line 845: VectorCopy(ps->viewangles, s->apos.trBase) */
+    *(int *)(sb + 0x3c) = *(int *)(psb + 0xe8);
+    *(int *)(sb + 0x40) = *(int *)(psb + 0xec);
+    *(int *)(sb + 0x44) = *(int *)(psb + 0xf0);
+
+    /* line 848: snap angles */
+    if (snap) {
+        *(float *)(sb + 0x3c) = (float)(int)*(float *)(sb + 0x3c);
+        *(float *)(sb + 0x40) = (float)(int)*(float *)(sb + 0x40);
+        *(float *)(sb + 0x44) = (float)(int)*(float *)(sb + 0x44);
+    }
+
+    /* line 853: s->leanf = (float)ps->viewHeightTarget */
+    *(float *)(sb + 0x6c) = (float)*(int *)(psb + 0x9c);
+
+    /* line 856 */
+    *(int *)(sb + 0xcc) = *(int *)(psb + 0x7c);
+    /* line 857 */
+    *(int *)(sb + 0xd0) = *(int *)(psb + 0x84);
+
+    /* line 859 */
+    *(int *)(sb + 0x90) = *(int *)(psb + 0xcc);
+
+    /* line 863 */
+    eFlags = *(int *)(psb + 0xa0);
+    *(int *)(sb + 8) = eFlags;
+
+    /* line 867: check for melee */
+    if (eFlags & 0x300) {
+        /* line 868 */
+        *(int *)(sb + 0x74) = *(int *)(psb + 0x594);
+    }
+
+    /* line 870 */
+    if (*(int *)(psb + 4) > 5) {
+        /* line 871 */
+        eFlags = *(int *)(sb + 8);
+        eFlags |= 0x20000;
+        *(int *)(sb + 8) = eFlags;
+    } else {
+        /* line 873 */
+        eFlags = *(int *)(sb + 8);
+        eFlags &= ~0x20000;
+        *(int *)(sb + 8) = eFlags;
+    }
+
+    /* line 876: check pm_flags crouch bit */
+    if (*(int *)(psb + 0xc) & 0x40) {
+        /* line 877 */
+        eFlags |= 0x40000;
+        *(int *)(sb + 8) = eFlags;
+    } else {
+        /* line 879 */
+        eFlags &= ~0x40000;
+        *(int *)(sb + 8) = eFlags;
+    }
+
+    /* line 882 */
+    *(int *)(sb + 0xd4) = *(int *)(psb + 0x4c);
+
+    /* line 885 */
+    stance = PM_GetEffectiveStance(ps);
+
+    if (stance == 1) {
+        /* line 890: view height lerp */
+        int viewHeightLerpTarget = *(int *)(psb + 0xfc);
+        if (viewHeightLerpTarget != 0) {
+            /* line 892 */
+            lerpTime = PM_GetViewHeightLerpTime(ps, *(int *)(psb + 0x104), *(int *)(psb + 0x100));
+            /* line 893 */
+            elapsed = *(int *)(psb) - *(int *)(psb + 0xfc);
+            lerpFrac = (float)elapsed / (float)lerpTime;
+
+            /* line 894 */
+            if (lerpFrac < 0.0f) {
+                lerpFrac = 0.0f;
+            } else {
+                /* line 896 */
+                if (1.0f < lerpFrac) {
+                    lerpFrac = 1.0f;
+                }
+            }
+
+            /* line 898 */
+            if (*(int *)(psb + 0x104) != 0) {
+                /* going down: lerpFrac stays */
+            } else {
+                /* line 899: going up: invert */
+                lerpFrac = 1.0f - lerpFrac;
+            }
+        } else {
+            lerpFrac = 1.0f;
+        }
+
+        /* line 906 */
+        *(float *)(sb + 0xe4) = lerpFrac * *(float *)(psb + 0x5a8);
+        /* line 907 */
+        *(float *)(sb + 0xe8) = AngleNormalize180(*(float *)(psb + 0x5ac)) * lerpFrac;
+        /* line 908 */
+        *(float *)(sb + 0xec) = AngleNormalize180(*(float *)(psb + 0x5b0)) * lerpFrac;
+    } else {
+        /* line 912-914 */
+        *(int *)(sb + 0xe4) = 0;
+        *(int *)(sb + 0xe8) = 0;
+        *(int *)(sb + 0xec) = 0;
+    }
+
+    /* line 918: event handling */
+    eventOld = *(int *)(psb + 0x5cc);
+    eventSequence = *(int *)(psb + 0xa4);
+
+    if (eventOld < eventSequence) {
+        /* line 922 */
+        if (eventSequence - eventOld > 4) {
+            /* line 923: too many events, skip */
+            eventOld = eventSequence - 4;
+            *(int *)(psb + 0x5cc) = eventOld;
+        }
+
+        /* line 927: copy first old event */
+        {
+            int idx = eventOld & 3;
+            *(int *)(sb + 0xa0) = (unsigned char)*(int *)(psb + 0xb8 + idx * 4);
+            *(int *)(psb + 0x5cc) = eventOld + 1;
+        }
+    } else {
+        /* line 932 */
+        *(int *)(sb + 0xa0) = 0;
+    }
+
+    /* line 939: copy events to entityState */
+    i = *(int *)(psb + 0xc8);
+    if (i != *(int *)(psb + 0xa4)) {
+        byte handlerIdx = (unsigned char)handler;
+        byte *handlerTable = *(byte **)imp_pmoveHandlers + handlerIdx * 12;
+
+        while (i != *(int *)(psb + 0xa4)) {
+            int slot = i & 3;
+            event = (unsigned char)*(int *)(psb + 0xa8 + slot * 4);
+
+            /* line 947-949: call pmoveHandler event callback if present */
+            {
+                void (*eventCallback)(int, int) = *(void (**)(int, int))(handlerTable + 8);
+                if (eventCallback) {
+                    eventCallback(*(int *)(sb), event & 0xff);
+                }
+            }
+
+            /* line 955: check if this is a single-client event (0x8c) or in list */
+            if ((event & 0xff) == 0x8c) {
+                /* single client event, skip copy */
+            } else {
+                /* line 953-956: search singleClientEvents list */
+                int j = 0;
+                int found = 0;
+                while (singleClientEvents[j + 1] > 0) {
+                    j++;
+                    if (singleClientEvents[j] == (event & 0xff)) {
+                        found = 1;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    /* line 958: check flag */
+                    if (singleClientEvents[j] < 0) {
+                        /* line 961: copy event to entityState */
+                        int seqOut = *(int *)(sb + 0xa4);
+                        int outSlot = seqOut & 3;
+                        *(int *)(sb + 0xa8 + outSlot * 4) = event & 0xff;
+                        /* line 962: copy event parm */
+                        *(int *)(sb + 0xb8 + outSlot * 4) = (unsigned char)*(int *)(psb + 0xb8 + slot * 4);
+                        /* line 963 */
+                        *(int *)(sb + 0xa4) = seqOut + 1;
+                    }
+                }
+            }
+
+            i++;
+        }
+    }
+
+    /* line 965: sync event sequence */
+    *(int *)(psb + 0xc8) = i;
+
+    /* line 967 */
+    *(int *)(sb + 0xc8) = (unsigned char)*(byte *)(psb + 0xd4);
+    /* line 968 */
+    *(int *)(sb + 0x7c) = (unsigned short)*(short *)(psb + 0x60);
+}
 #endif

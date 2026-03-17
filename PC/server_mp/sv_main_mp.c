@@ -2659,5 +2659,280 @@ long int SV_Frame(int msec)
 }
 
 #else
-long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd) { return 0; }
+
+extern void Com_Printf(const char *fmt, ...);
+extern void SV_DelayDropClient(client_t *cl, const char *reason);
+extern void NET_OutOfBandPrint(int sock, ...);
+extern char *va(const char *fmt, ...);
+extern void MSG_WriteReliableCommandToBuffer(const char *cmd, char *buf, int bufSize);
+
+/*
+ * SV_AddServerCommand: adds a reliable command to the server command buffer.
+ *
+ * client_t field offsets:
+ *   0x00000: state (int)
+ *   0x20810: reliableAck (int)
+ *   0x20814: reliableSequence (int)
+ *   0x765f4: netchanState or similar (int) - if non-zero, return immediately
+ *   0x6e5c4: netchan net address (3 ints at +0, +4, +8)
+ *
+ * Command entry layout (at (idx & 0x7f) * 0x408 + client_base):
+ *   +0x40c: command string start (0x400 bytes for string)
+ *   +0x80c: server time (int)
+ *   +0x810: command type (int)
+ *
+ * svs+4: svs.time
+ */
+long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd)
+{
+    byte *cl = (byte *)client;
+    int i;
+    int reliableSequence;
+
+    /* Check netchanState */
+    if (*(int *)(cl + 0x765f4) != 0)
+        return 0;
+
+    reliableSequence = *(int *)(cl + 0x20814);
+    i = reliableSequence;
+
+    /* Check if too many unacknowledged commands */
+    if (i - *(int *)(cl + 0x20810) > 0x3f) {
+        /* Compress: remove acknowledged commands by shifting buffer down */
+        int toIndex;
+        int from = *(int *)(cl + 0x20814) + 1;
+
+        toIndex = from;
+        while (from <= reliableSequence) {
+            int fromSlot = from & 0x7f;
+            int fromOff = fromSlot * 0x408;
+            int entryType = *(int *)(cl + 0x810 + fromOff);
+
+            if (entryType == 0) {
+                /* Empty entry, skip */
+                from++;
+                continue;
+            }
+
+            {
+                int toSlot = toIndex & 0x7f;
+
+                if (toSlot != fromSlot) {
+                    int toOff = toSlot * 0x408;
+                    /* Copy the entry */
+                    memcpy(cl + 0x40c + toOff, cl + 0x40c + fromOff, 0x408);
+                }
+            }
+            toIndex++;
+            from++;
+        }
+        reliableSequence = toIndex - 1;
+        *(int *)(cl + 0x20814) = reliableSequence;
+    }
+
+    /* If type != 0, try to deduplicate (find matching command) */
+    if (type != 0) {
+        int from;
+        int foundIdx = -1;
+
+        from = *(int *)(cl + 0x20814) + 1;
+        while (from <= i) {
+            int slot = from & 0x7f;
+            int off = slot * 0x408;
+            int entryType = *(int *)(cl + 0x810 + off);
+
+            if (entryType == 0) {
+                from++;
+                continue;
+            }
+
+            /* Check if first char matches */
+            {
+                char firstChar = cmd[0];
+                if (*(char *)(cl + 0x40c + off) != firstChar) {
+                    from++;
+                    continue;
+                }
+
+                /* Check if command is dedup-eligible based on first character */
+                /* Characters 'C'(0x43), 'D'(0x44), 'q'(0x71), 'r'(0x72), 'v'(0x76), 'w'(0x77), 'x'(0x78), 'y'(0x79) are eligible for dedup,
+                 * BUT 'x'(0x78), 'y'(0x79), 'z'(0x7a) always skip (force no-dedup).
+                 * For 'v'(0x76) and 'w'(0x77), also eligible for dedup. */
+                /* Actually, looking at the jump table more carefully:
+                 * 'x'-'z' (0x78-0x7a) = offset 0x35-0x37 from 'C' -> always skip dedup
+                 * So these characters simply cause "continue" */
+                if (firstChar == 'x' || firstChar == 'y' || firstChar == 'z') {
+                    from++;
+                    continue;
+                }
+
+                /* For eligible chars, compare the rest of the command.
+                 * The jump table has two categories:
+                 * Category 1 (direct match): 'C','D','q','r' -- go to string match check
+                 * Category 2 (partial match): 'v','w' -- compare from 3rd character onwards
+                 * All other characters: continue (no dedup) */
+                {
+                    int eligible = 0;
+                    int partialMatch = 0;
+
+                    switch (firstChar) {
+                        case 'C': case 'D':
+                        case 'q': case 'r':
+                        case 'v': case 'w':
+                            eligible = 1;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (!eligible) {
+                        from++;
+                        continue;
+                    }
+
+                    if (firstChar == 'v' || firstChar == 'w') {
+                        partialMatch = 1;
+                    }
+
+                    if (partialMatch) {
+                        /* Compare from offset 2: cmd[2..] vs entry[2..], skipping spaces */
+                        const char *str1 = cmd + 2;
+                        const char *str2 = (const char *)(cl + 0x40c + off + 2);
+                        int matched = 1;
+
+                        while (1) {
+                            char c1 = *str1;
+                            char c2 = *str2;
+
+                            if (c1 == '\0') {
+                                /* Check if str2 is also end or space */
+                                if (c2 == '\0' || c2 == ' ')
+                                    break; /* match */
+                                matched = 0;
+                                break;
+                            }
+                            if (c2 == '\0') {
+                                if (c1 == ' ')
+                                    break; /* match */
+                                matched = 0;
+                                break;
+                            }
+                            if (c1 == ' ') {
+                                if (c2 == '\0' || c2 == ' ')
+                                    break; /* match */
+                                matched = 0;
+                                break;
+                            }
+                            if (c2 == ' ') {
+                                if (c1 == '\0' || c1 == ' ')
+                                    break;
+                                matched = 0;
+                                break;
+                            }
+                            if (c1 != c2) {
+                                matched = 0;
+                                break;
+                            }
+                            str1++;
+                            str2++;
+                        }
+
+                        if (!matched) {
+                            from++;
+                            continue;
+                        }
+                    } else {
+                        /* Full match: compare cmd+1 vs entry+1 (using strcmp) */
+                        char *entryStr = (char *)(cl + 0x40c + off + 1);
+                        if (strcmp(cmd + 1, entryStr) != 0) {
+                            from++;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            /* Found a duplicate */
+            foundIdx = from;
+
+            /* Compact: shift commands from foundIdx+1..reliableSequence down */
+            if (foundIdx >= 0) {
+                int fromCmd = foundIdx + 1;
+                int toCmd = foundIdx;
+
+                if (fromCmd <= reliableSequence) {
+                    while (fromCmd <= *(int *)(cl + 0x20814)) {
+                        int fromSlot2 = fromCmd & 0x7f;
+                        int toSlot2 = toCmd & 0x7f;
+                        int fromOff2 = fromSlot2 * 0x408;
+                        int toOff2 = toSlot2 * 0x408;
+
+                        memcpy(cl + 0x40c + toOff2, cl + 0x40c + fromOff2, 0x408);
+                        fromCmd++;
+                        toCmd++;
+                    }
+                }
+
+                reliableSequence = *(int *)(cl + 0x20814);
+                i = reliableSequence;
+            }
+            break;
+        }
+    }
+
+    /* Check if buffer overflow */
+    if (i - *(int *)(cl + 0x20810) == 0x81) {
+        /* Overflow: dump pending commands and disconnect */
+        int dumpFrom;
+
+        Com_Printf(str_002ab3d4); /* "===== pending server commands =====\n" */
+
+        dumpFrom = *(int *)(cl + 0x20810) + 1;
+        while (dumpFrom <= *(int *)(cl + 0x20814)) {
+            int dumpSlot = dumpFrom & 0x7f;
+            int dumpOff = dumpSlot * 0x408;
+            Com_Printf(str_002ab3fc, dumpFrom, *(int *)(cl + 0x80c + dumpOff),
+                        (char *)(cl + 0x40c + dumpOff));
+            dumpFrom++;
+        }
+
+        /* Send current command info */
+        Com_Printf(str_002ab3fc, i, *(int *)((byte *)&svs + 4), cmd);
+
+        /* Send disconnect to client via OOB */
+        {
+            int a = *(int *)(cl + 0x6e5c4);
+            int b = *(int *)(cl + 0x6e5c8);
+            int c = *(int *)(cl + 0x6e5cc);
+            NET_OutOfBandPrint(1, a, b, c, str_00228e90); /* "disconnect" */
+        }
+
+        /* Delay-drop the client */
+        SV_DelayDropClient(client, str_002ab410); /* "EXE_SERVERCOMMANDOVERFLOW" */
+
+        /* Replace command with overflow indicator */
+        cmd = va(str_002ab42c, 0x77); /* "%c \"EXE_SERVERCOMMANDOVERFLOW\"" */
+        type = 1;
+        i = *(int *)(cl + 0x20814);
+    }
+
+    /* Write the new command */
+    {
+        int newSeq = i + 1;
+        *(int *)(cl + 0x20814) = newSeq;
+        i = newSeq;
+    }
+
+    {
+        int slot = i & 0x7f;
+        int off = slot * 0x408;
+
+        MSG_WriteReliableCommandToBuffer(cmd, (char *)(cl + 0x40c + off), 0x400);
+
+        *(int *)(cl + 0x80c + off) = *(int *)((byte *)&svs + 4);
+        *(int *)(cl + 0x810 + off) = type;
+    }
+
+    return 0;
+}
 #endif

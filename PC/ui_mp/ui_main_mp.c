@@ -4746,7 +4746,9 @@ void UI_BuildServerStatus(void)
     );
 }
 #else
-static void UI_BuildServerStatus(void) { }
+/* Register-convention trampoline: eax=force.
+   In Emscripten mode, callers call _impl directly. */
+static void UI_BuildServerStatus(void) { UI_BuildServerStatus_impl(0); }
 #endif
 
 /* line 513 */
@@ -4884,7 +4886,92 @@ void UI_Refresh(void)
     );
 }
 #else
-void UI_Refresh(void) { }
+void UI_Refresh(void) {
+    int netSource;
+    int serverCount;
+    int needRebuild;
+
+    if (Menu_Count(uiInfo) <= 0)
+        return;
+
+    Menu_PaintAll(uiInfo);
+
+    /* Check if server browser is active */
+    if (!*(int *)((byte *)&sharedUiInfo + 28652))
+        goto after_browser;
+
+    /* UI_FeederUpdateServerBrowser logic (lines 5027-5077) */
+    netSource = *(int *)((byte *)ui_netSource + 8);
+    if (netSource == 2) {
+        needRebuild = 0;
+    } else if (netSource == 0) {
+        if (LAN_GetServerCount(0) == 0) {
+            needRebuild = 1;
+        } else {
+            needRebuild = 0;
+        }
+    } else {
+        if (LAN_WaitServerResponse(netSource)) {
+            needRebuild = 1;
+        } else {
+            needRebuild = 0;
+        }
+    }
+
+    /* Check if time hasn't passed the refresh interval */
+    if (*(int *)((byte *)uiInfo + 4) < *(int *)((byte *)&sharedUiInfo + 28632)) {
+        if (needRebuild)
+            goto after_browser;
+    }
+
+    /* UI_UpdateServerCountInfo (lines 2016-2023) */
+    serverCount = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8));
+    if (serverCount != *(int *)((byte *)&sharedUiInfo + 108664)) {
+        *(int *)((byte *)&sharedUiInfo + 108664) = serverCount;
+        if (*(int *)((byte *)&sharedUiInfo + 108660)) {
+            *(int *)((byte *)&sharedUiInfo + 28656) = -1;
+            UI_BuildServerDisplayList(1);
+        }
+    }
+
+    /* LAN_UpdateDirtyPings (line 5061) */
+    if (LAN_UpdateDirtyPings(*(int *)((byte *)ui_netSource + 8))) {
+        *(int *)((byte *)&sharedUiInfo + 28632) = *(int *)((byte *)uiInfo + 4) + 1000;
+    } else {
+        if (needRebuild)
+            goto rebuild;
+
+        UI_BuildServerDisplayList(2);
+
+        /* Print server listing stats (lines 5002-5012) */
+        if (*(int *)((byte *)&sharedUiInfo + 28652)) {
+            int filtered;
+            *(int *)((byte *)&sharedUiInfo + 28652) = 0;
+            Com_Printf("%d servers listed in browser with %d players.\n",
+                       *(int *)((byte *)&sharedUiInfo + 108660),
+                       *(int *)((byte *)&sharedUiInfo + 108668));
+            filtered = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8)) - *(int *)((byte *)&sharedUiInfo + 108660);
+            if (filtered > 0)
+                Com_Printf("%d servers not listed (filtered out by game browser settings)\n", filtered);
+        }
+    }
+
+rebuild:
+    UI_BuildServerDisplayList(0);
+
+after_browser:
+    /* Common path: build status, find player, draw cursor */
+    UI_BuildServerStatus_impl(0);
+    UI_BuildFindPlayerList();
+
+    /* Draw cursor */
+    {
+        byte *edx = (byte *)uiInfo;
+        float x = (float)(*(int *)(edx + 0xc) - 16);
+        float y = (float)(*(int *)(edx + 0x10) - 16);
+        UI_DrawHandlePic(x, y, 32.0f, 32.0f, 4, 4, 0, *(int *)((byte *)&sharedUiInfo + 36));
+    }
+}
 #endif
 
 /* line 2141 */

@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -4323,5 +4324,179 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
 }
 
 #else
-static int CM_TestInLeafBrushNode_r(void) { return 0; }
+/* CM_TestInLeafBrushNode_r: register calling convention (eax=tw, edx=node, ecx=trace)
+ * Recursive collision test against brush node tree.
+ *
+ * Node layout (cLeafBrushNode_t, 20 bytes):
+ *   byte  0:   axis
+ *   short 2:   leafBrushCount (<0 = has children, 0 = leaf with dist test, >0 = brush list)
+ *   int   4:   contents
+ *   float 8:   dist (when leafBrushCount<=0) / ptr to brush indices (when >0)
+ *   u16  0x10: childOffset[0]
+ *   u16  0x12: childOffset[1]
+ *   0x14: next node (stride 20)
+ */
+static void __attribute_regparm__(3) CM_TestInLeafBrushNode_r_impl(byte *tw, byte *node, byte *trace)
+{
+    int k;
+
+top:
+    /* Check contents mask */
+    if (!(*(int *)(tw + 0x80) & *(int *)(node + 4)))
+        return;
+
+    {
+        short leafBrushCount = *(short *)(node + 2);
+
+        if (leafBrushCount == 0) {
+            goto leaf_dist_test;
+        }
+
+        if (leafBrushCount > 0) {
+            /* Brush list node */
+            if (leafBrushCount <= 0)
+                return;
+
+            for (k = 0; k < (int)leafBrushCount; k++) {
+                if (!(*(int *)(tw + 0x80) & *(int *)(node + 4)))
+                    continue;
+
+                {
+                    /* Get brush pointer: node+8 is pointer to unsigned short array of brush indices */
+                    unsigned short *brushIndices = *(unsigned short **)(node + 8);
+                    unsigned int brushIdx = brushIndices[k];
+                    /* brush = cm->brushes + brushIdx * 48 */
+                    byte *cm = (byte *)imp_cm;
+                    byte *brush = *(byte **)(cm + 0x80) + brushIdx * 48;
+
+                    /* Check contents */
+                    if (!(*(int *)(tw + 0x80) & *(int *)(brush + 0xc)))
+                        goto next_brush;
+
+                    /* AABB overlap test: tw->bounds[0] vs brush maxs, brush mins vs tw->bounds[1] */
+                    if (*(float *)(tw + 0x68) > *(float *)(brush + 0x10))
+                        goto next_brush;
+                    if (*(float *)(tw + 0x6c) > *(float *)(brush + 0x14))
+                        goto next_brush;
+                    if (*(float *)(tw + 0x70) > *(float *)(brush + 0x18))
+                        goto next_brush;
+                    if (*(float *)(brush + 0x00) > *(float *)(tw + 0x74))
+                        goto next_brush;
+                    if (*(float *)(brush + 0x04) > *(float *)(tw + 0x78))
+                        goto next_brush;
+                    if (*(float *)(brush + 0x08) > *(float *)(tw + 0x7c))
+                        goto next_brush;
+
+                    {
+                        /* Side/plane tests */
+                        byte *sidesPtr = *(byte **)(brush + 0x20);
+                        int sideCount = *(int *)(brush + 0x1c);
+                        int j;
+
+                        if (sideCount == 0)
+                            goto hit;
+
+                        {
+                            float tw_radius_z = *(float *)(tw + 0x90);
+                            float tw_offset = *(float *)(tw + 0x8c);
+                            float tw_x = *(float *)(tw + 0x0);
+                            float tw_y = *(float *)(tw + 0x4);
+                            float tw_z = *(float *)(tw + 0x8);
+
+                            /* Test first plane */
+                            {
+                                byte *plane = *(byte **)(sidesPtr);
+                                float dot = tw_x * *(float *)(plane + 0)
+                                          + tw_y * *(float *)(plane + 4)
+                                          + tw_z * *(float *)(plane + 8);
+                                float absNz = fabsf(tw_radius_z * *(float *)(plane + 8));
+                                float threshold = tw_offset + *(float *)(plane + 0xc) + absNz;
+                                float dist = dot - threshold;
+                                if (dist > 0.0f)
+                                    goto next_brush;
+                            }
+
+                            /* Test remaining planes */
+                            for (j = 0; j < sideCount - 1; j++) {
+                                byte *plane = *(byte **)(sidesPtr + (j + 1) * 8);
+                                float dot = tw_x * *(float *)(plane + 0)
+                                          + tw_y * *(float *)(plane + 4)
+                                          + tw_z * *(float *)(plane + 8);
+                                float absNz = fabsf(tw_radius_z * *(float *)(plane + 8));
+                                float threshold = tw_offset + *(float *)(plane + 0xc) + absNz;
+                                float dist = dot - threshold;
+                                if (dist > 0.0f)
+                                    goto next_brush;
+                            }
+                        }
+
+                    hit:
+                        /* Hit: set trace results */
+                        *(byte *)(trace + 0x22) = 1;
+                        *(byte *)(trace + 0x23) = 1;
+                        *(int *)(trace + 0x00) = 0;
+                        *(int *)(trace + 0x14) = *(int *)(brush + 0xc);
+                    }
+
+                next_brush:
+                    if (*(byte *)(trace + 0x22) != 0)
+                        return;
+                }
+            }
+            return;
+        }
+
+        /* leafBrushCount < 0: has children */
+        /* Recurse into first child (node + 0x14) */
+        CM_TestInLeafBrushNode_r_impl(tw, node + 0x14, trace);
+        if (*(byte *)(trace + 0x22) != 0)
+            return;
+    }
+
+leaf_dist_test:
+    {
+        unsigned int axis = *(unsigned char *)(node + 0);
+        float dist = *(float *)(node + 8);
+        float tw_min = *(float *)(tw + 0x68 + axis * 4);
+
+        if (tw_min > dist) {
+            /* Go to child[0] and loop */
+            unsigned short childOff = *(unsigned short *)(node + 0x10);
+            node = node + childOff * 20;
+            /* Check contents and continue */
+            if (!(*(int *)(tw + 0x80) & *(int *)(node + 4)))
+                return;
+            goto top;
+        }
+
+        {
+            float tw_max = *(float *)(tw + 0x74 + axis * 4);
+
+            if (tw_max >= dist) {
+                /* Straddles: recurse into child[0], then fall through to child[1] */
+                unsigned short childOff0 = *(unsigned short *)(node + 0x10);
+                byte *child0 = node + childOff0 * 20;
+                CM_TestInLeafBrushNode_r_impl(tw, child0, trace);
+                if (*(byte *)(trace + 0x22) != 0)
+                    return;
+            }
+
+            /* Go to child[1] and loop */
+            {
+                unsigned short childOff1 = *(unsigned short *)(node + 0x12);
+                node = node + childOff1 * 20;
+                goto top;
+            }
+        }
+    }
+}
+
+static int CM_TestInLeafBrushNode_r(void)
+{
+    /* Register calling convention trampoline - this is called from other naked asm functions
+     * with eax=tw, edx=node, ecx=trace. In the #else (Emscripten) build,
+     * the callers would also be converted to C, so we just declare this as a stub.
+     * The _impl version is what gets called. */
+    return 0;
+}
 #endif

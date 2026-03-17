@@ -521,7 +521,9 @@ void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)())
     );
 }
 #else
-static void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)()) { }
+/* Register-convention trampoline: eax=execWhen, ecx=args, 8(%ebp)=shouldExec.
+   In Emscripten mode, stub is never called - callers use _impl directly. */
+static void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)()) { (void)execWhen; (void)shouldExec; }
 #endif
 
 static void Script_ConditionalExecHandler_impl(int execWhen, Bool (*shouldExec)(const char *, const char *), const char **args)
@@ -5940,5 +5942,60 @@ count_visible:;
     }
 }
 #else
+/* Register-convention: eax=dc, edx=item. In Emscripten, callers use wrapper. */
+static void Scroll_Slider_SetThumbPos_impl(byte *dc, byte *item)
+{
+    byte *editDef;
+    float rightEdge;
+    float cursorx;
+    float usableStart, usableWidth;
+    float yIgnored, hIgnored;
+    float thumbPos, thumbFrac;
+    float minVal, maxVal;
+
+    editDef = (byte *)Item_GetEditFieldDef((itemDef_t *)item);
+    if (!editDef)
+        return;
+
+    /* Compute right edge of slider */
+    if (*(int *)(item + 0x294)) {
+        /* item has rect offset: item->rect.x + item->rect.w + 8.0f */
+        rightEdge = *(float *)(item + 0x210) + *(float *)(item + 0x218) + 8.0f;
+    } else {
+        /* item->rect.x */
+        rightEdge = *(float *)item;
+    }
+
+    /* Get cursor screen position */
+    cursorx = (float)*(int *)(dc + 0xc);
+    CalcScreenX(&cursorx, 4);
+
+    /* Compute usable slider area */
+    usableStart = rightEdge + 5.0f + 1.0f;
+    usableWidth = 84.0f; /* 0x42a80000 */
+    yIgnored = 0.0f;
+    hIgnored = 0.0f;
+
+    CalcScreenPlacement(&usableStart, &yIgnored, &usableWidth, &hIgnored,
+                        *(int *)(item + 0x10), *(int *)(item + 0x14));
+
+    /* Clamp cursor position to usable range */
+    thumbPos = cursorx - usableStart;
+    if (thumbPos < 0.0f)
+        thumbPos = 0.0f;
+    else if (thumbPos > usableWidth)
+        thumbPos = usableWidth;
+
+    thumbFrac = thumbPos / usableWidth;
+
+    /* Compute value from fraction */
+    minVal = *(float *)(editDef + 0);
+    maxVal = *(float *)(editDef + 4);
+    {
+        float value = minVal + (maxVal - minVal) * thumbFrac;
+        const char *valStr = va("%g", (double)value);
+        Dvar_SetFromStringByName(*(const char **)(item + 0x2c0), valStr);
+    }
+}
 static void Scroll_Slider_SetThumbPos(void) { }
 #endif

@@ -554,6 +554,8 @@ void FX_AddFxToScene(void)
 #endif
 }
 #else
+/* Register-convention trampoline: never called directly in Emscripten mode.
+   Callers already have #else branches that call FX_AddFxToScene_impl directly. */
 static void FX_AddFxToScene(void) { }
 #endif
 

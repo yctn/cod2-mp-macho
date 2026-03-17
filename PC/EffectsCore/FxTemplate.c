@@ -1780,5 +1780,50 @@ Bool PrimitiveTemplate_ParsePrimitive(const PrimitiveTemplate * _this, GPGroup *
 #if 0 /* Original ASM for PrimitiveTemplate_ParsePrimitive */
 #endif
 #else
-Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const char *val, int *groupFlags, const PrimitiveTemplate * _this_3, const char *flag, const FxFlagEntry *flagEntries, int flagEntryCount) { return 0; }
+Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const char *val, int *groupFlags, const PrimitiveTemplate * _this_3, const char *flag, const FxFlagEntry *flagEntries, int flagEntryCount)
+{
+    byte *thisPtr = (byte *)_this;
+    char flags_buf[0x80]; /* 4 tokens * 0x20 each */
+    char token0[0x20], token1[0x20], token2[0x20], token3[0x20];
+    int v; /* number of tokens parsed */
+    int i, j;
+    int found;
+
+    /* line 353: copy static flag buffer template (128 bytes of zeroed names) */
+    memcpy(flags_buf, (const void *)__ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C_148, 0x80);
+
+    /* line 359: parse up to 4 space-separated flag names from val */
+    v = sscanf(val, "%s %s %s %s", flags_buf, flags_buf + 0x20, flags_buf + 0x40, flags_buf + 0x60);
+
+    if (v <= 0)
+        return 1;
+
+    /* Reset groupFlags */
+    *groupFlags = 0;
+
+    /* For each parsed token, match against flagEntries */
+    for (i = 0; i < v; i++) {
+        const char *tok = flags_buf + i * 0x20;
+        if (*tok == '\0')
+            continue;
+
+        found = 0;
+        for (j = 0; j < flagEntryCount; j++) {
+            if (stricmp(flagEntries[j].flag, tok) == 0) {
+                /* OR in both mask words */
+                *(unsigned int *)(thisPtr + 0x90) |= flagEntries[j].masks[0];
+                *(unsigned int *)(thisPtr + 0x94) |= flagEntries[j].masks[1];
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            FX_Print("FxTemplate: Unknown flag '%s'\n", tok);
+            return 0;
+        }
+    }
+
+    return 1;
+}
 #endif
