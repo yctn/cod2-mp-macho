@@ -61,21 +61,22 @@ UINT CDirect3D_GetAdapterModeCount(const void *_this, UINT Adapter, D3DFORMAT Fo
 
 HRESULT CDirect3D_EnumAdapterModes(const void *_this, UINT Adapter, D3DFORMAT Format, UINT Mode, D3DDISPLAYMODE *pMode)
 {
+    /* D3DDISPLAYMODE layout: Width(+0), Height(+4), RefreshRate(+8), Format(+12)
+       (common_types.h has wrong field names due to decompiler artifact) */
+    int *p = (int *)pMode;
     (void)_this; (void)Adapter; (void)Format; (void)Mode;
-    pMode->Width = 1024;
-    pMode->Height = 768;
-    pMode->RefreshRate = 60;
-    pMode->Format = 22; /* D3DFMT_X8R8G8B8 */
+    p[0] = 1024;  /* Width */
+    p[1] = 768;   /* Height */
+    p[2] = 60;    /* RefreshRate */
+    p[3] = 22;    /* D3DFMT_X8R8G8B8 */
     return 0;
 }
 
 HRESULT CDirect3D_GetAdapterDisplayMode(const void *_this, UINT Adapter, D3DDISPLAYMODE *pMode)
 {
+    int *p = (int *)pMode;
     (void)_this; (void)Adapter;
-    pMode->Width = 1024;
-    pMode->Height = 768;
-    pMode->RefreshRate = 60;
-    pMode->Format = 22;
+    p[0] = 1024; p[1] = 768; p[2] = 60; p[3] = 22;
     return 0;
 }
 
