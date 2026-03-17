@@ -1042,7 +1042,7 @@ void Dvar_Shutdown(void)
             Z_FreeInternal(dvar->current.vector);
         }
 
-        if (dvar->flags & 0x40) {
+        if (dvar->flags & 0x4000) {
             Z_FreeInternal((void *)dvar->name);
         }
     }

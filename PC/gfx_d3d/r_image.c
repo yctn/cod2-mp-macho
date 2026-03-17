@@ -447,7 +447,8 @@ void Image_Release(GfxImage *image)
     texture = *(void **)(img + 4);
     if (texture) {
         vtable = *(void ***)texture;
-        ((ULONG (*)(void *))(vtable[8 / 4]))(texture); /* Release — vtable 0x08 */
+        if (vtable && vtable[8 / 4])
+            ((ULONG (*)(void *))(vtable[8 / 4]))(texture); /* Release — vtable 0x08 */
         *(void **)(img + 4) = NULL;
         *(int *)(img + 0x10) = 0;
         *(int *)(img + 0x14) = 0;
@@ -1580,8 +1581,7 @@ void R_ShutdownImages(void)
                 void *texture = *(void **)(img + 4);
                 if (texture) {
                     void **vtable = *(void ***)texture;
-                    /* fix #153: skip Release if vtable entry is NULL */
-                    if (vtable[8 / 4]) {
+                    if (vtable && vtable[8 / 4]) {
                         ((ULONG (*)(void *))(vtable[8 / 4]))(texture);
                         *(void **)(img + 4) = NULL;
                         *(int *)(img + 0x10) = 0;

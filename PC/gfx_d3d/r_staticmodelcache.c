@@ -1809,7 +1809,8 @@ release_vb:
         do {
             vb = *(void **)((byte *)imp_dx + 0x2dc4);
             vtable = *(void ***)vb;
-            ((int (*)(void *))vtable[8 / 4])(vb);
+            if (vtable && vtable[8 / 4])
+                ((int (*)(void *))vtable[8 / 4])(vb);
             *(void **)((byte *)imp_dx + 0x2dc4) = NULL;
         } while (*(volatile int *)imp_alwaysfails != 0);
     }

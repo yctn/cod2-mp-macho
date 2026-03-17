@@ -272,32 +272,17 @@ void Material_ReleaseAll(void)
 
     RB_ReleaseVertexDecl();
 
-    /* Release technique COM objects: 32 entries of 24 bytes, 4 COM ptrs each at offset +8 */
+    /* Release technique COM objects — skip vtable Release on Linux (no real COM) */
     for (outer = materialGlobals + 4; outer < materialGlobals + 772; outer += 24) {
         byte *slot = outer;
         for (j = 0; j < 4; j++) {
             void **pObj = (void **)(slot + 8);
-            if (*pObj) {
-                do {
-                    obj = *pObj;
-                    vtable = *(void ***)obj;
-                    ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
-                    *pObj = NULL;
-                } while (*(volatile int *)imp_alwaysfails);
-            }
+            *pObj = NULL;
             slot += 4;
         }
     }
 
-    /* Release shader COM objects: 256 entries */
-    for (i = 0; i < 256; i++) {
-        void *shader = *(void **)(materialGlobals + 0x259c + i * 4);
-        if (shader) {
-            obj = *(void **)((byte *)shader + 0xc);
-            vtable = *(void ***)obj;
-            ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
-        }
-    }
+    /* Release shader COM objects — skip vtable Release on Linux (no real COM) */
 }
 
 /* line 1538 */
@@ -595,19 +580,12 @@ void Material_Shutdown(void)
 
     RB_ReleaseVertexDecl();
 
-    /* Release technique COM objects */
+    /* Release technique COM objects — skip vtable Release on Linux (no real COM) */
     for (outer = materialGlobals + 4; outer < materialGlobals + 772; outer += 24) {
         byte *slot = outer;
         for (j = 0; j < 4; j++) {
             void **pObj = (void **)(slot + 8);
-            if (*pObj) {
-                do {
-                    obj = *pObj;
-                    vtable = *(void ***)obj;
-                    ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
-                    *pObj = NULL;
-                } while (*(volatile int *)imp_alwaysfails);
-            }
+            *pObj = NULL;
             slot += 4;
         }
     }
@@ -615,15 +593,7 @@ void Material_Shutdown(void)
     memset(materialGlobals + 4, 0, 0x300);
     *(int *)materialGlobals = 0;
 
-    /* Release shader COM objects */
-    for (i = 0; i < 256; i++) {
-        void *shader = *(void **)(materialGlobals + 0x259c + i * 4);
-        if (shader) {
-            obj = *(void **)((byte *)shader + 0xc);
-            vtable = *(void ***)obj;
-            ((ULONG (*)(void *))(vtable[8 / 4]))(obj);
-        }
-    }
+    /* Release shader COM objects — skip vtable Release on Linux (no real COM) */
 
     /* Clear all hash tables */
     for (i = 0; i < 256; i++)
