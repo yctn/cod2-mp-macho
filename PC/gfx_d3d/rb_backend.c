@@ -507,6 +507,8 @@ static void RB_EndFrame_real(void)
 
     /* IDirect3DDevice9::Present(NULL, NULL, NULL, NULL) — vtable offset 0x44 */
     device = *(void **)(dx + 8);
+    if (!device)
+        goto skip_present;
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, void *, void *, void *, void *))(vtable[0x44 / 4]))(device, NULL, NULL, NULL, NULL);
 
@@ -518,9 +520,11 @@ static void RB_EndFrame_real(void)
         R_FlushStaticModelCache();
     }
 
+skip_present:
     /* Reset index buffer lock position */
     dx = (char *)imp_dx;
-    *(int *)*(void **)(dx + 0x2d8c) = 0;
+    if (*(void **)(dx + 0x2d8c))
+        *(int *)*(void **)(dx + 0x2d8c) = 0;
 
     /* backEnd.in2d = false */
     *(byte *)((char *)&backEnd + 1213) = 0;

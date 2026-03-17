@@ -289,6 +289,9 @@ void R_LockSkinnedCache(GfxLockType lockType)
     DWORD lockFlags;
     HRESULT hr;
 
+    if (!vb)
+        return;
+
     /* D3DLOCK_NOOVERWRITE(0x1000) if GPU sync active or lockType!=0, else D3DLOCK_DISCARD(0x2000) */
     if (*(int *)(dx + 0x2c20) != 0 || lockType != 0)
         lockFlags = 0x1000;

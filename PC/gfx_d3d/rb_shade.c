@@ -95,6 +95,9 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
     void *bufferData;
     HRESULT hr;
 
+    if (!lockState)
+        return 0;
+
     /* Check if new data fits; overflow means we need to wrap to beginning */
     overflow = (*(int *)lockState + indexDataSize) > *(int *)(lockState + 4);
     if (overflow)
@@ -552,8 +555,14 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
     char *dx = (char *)imp_dx;
     int totalSize = stride * vertexCount;
     int *lockSlot = *(int **)(dx + 0x2db4);
-    IDirect3DVertexBuffer9 *dxVb = *(IDirect3DVertexBuffer9 **)(lockSlot + 2); /* lockSlot[8] = VB ptr */
-    int writeOffset = lockSlot[0];
+    IDirect3DVertexBuffer9 *dxVb;
+    int writeOffset;
+
+    if (!lockSlot)
+        return;
+
+    dxVb = *(IDirect3DVertexBuffer9 **)(lockSlot + 2); /* lockSlot[8] = VB ptr */
+    writeOffset = lockSlot[0];
     DWORD lockFlags;
     byte *bufferData;
     HRESULT hr;
@@ -4102,6 +4111,8 @@ void RB_EndSurface(void)
     {
         char *dx = (char *)imp_dx;
         int *lockSlot = *(int **)(dx + 0x2db4);
+        if (!lockSlot)
+            goto cleanup;
         int needed = *(int *)(tess + 0x5a7d4) * vertexStride + lockSlot[0];
         if (needed > lockSlot[1])
             lockSlot[0] = 0;
