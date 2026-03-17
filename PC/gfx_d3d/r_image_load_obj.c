@@ -191,7 +191,7 @@ jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeade
         "retl $8\n"
     );
 #else
-    /* x86 asm not available */
+    (void)image; (void)fileHeader; (void)data; (void)format; (void)bytesPerPixel;
 #endif
 }
 #endif
@@ -463,7 +463,7 @@ jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader,
         "retl $8\n"
     );
 #else
-    /* x86 asm not available */
+    (void)image; (void)fileHeader; (void)data; (void)format; (void)bytesPerBlock;
 #endif
 }
 #endif
@@ -573,7 +573,7 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    (void)image; (void)data; (void)format; (void)bytesPerPixel;
 #endif
 }
 #endif
@@ -851,7 +851,7 @@ static void Image_LoadWavelet_call(GfxImage *image, const void *fileHeader, cons
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    Image_LoadWavelet_impl(image, (const byte *)fileHeader, data, format, bytesPerPixel);
 #endif
 }
 

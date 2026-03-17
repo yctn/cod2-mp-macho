@@ -348,17 +348,13 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
         {
             int uiStarted;
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl imp_cls, %%eax\n"
                 "movl 0x110(%%eax), %%eax\n"
                 : "=a"(uiStarted) :: "memory"
             );
 #else
-    uiStarted = 0;
-#endif
-#else
-            uiStarted = 0;
+            uiStarted = *(int *)((byte *)imp_cls + 0x110);
 #endif
             if (uiStarted) {
                 if (!UI_AnyFullScreenMenuVisible()) {
@@ -366,17 +362,13 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
                     UI_SetActiveMenu(1);
                 }
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl imp_cls, %%eax\n"
                     "movl 0x110(%%eax), %%eax\n"
                     : "=a"(uiStarted) :: "memory"
                 );
 #else
-    uiStarted = 0;
-#endif
-#else
-            uiStarted = 0; /* inline asm not available */
+                uiStarted = *(int *)((byte *)imp_cls + 0x110);
 #endif
                 if (uiStarted) {
                     com_errorEntered = 0;
@@ -1328,13 +1320,9 @@ static void Com_ErrorCleanup(void)
     {
         void *re;
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
 #else
-    re = 0;
-#endif
-#else
-            re = 0; /* inline asm not available */
+        re = imp_re;
 #endif
         {
             void (*fn)(void) = *(void(**)(void))((char*)re + 0x14c);
@@ -1359,17 +1347,13 @@ static void Com_ErrorCleanup(void)
         }
     } else {
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl imp_cls, %%eax\n"
             "movl 0x110(%%eax), %%eax\n"
             : "=a"(rendererStarted) :: "memory"
         );
 #else
-    rendererStarted = 0;
-#endif
-#else
-            rendererStarted = 0; /* inline asm not available */
+        rendererStarted = *(int *)((byte *)imp_cls + 0x110);
 #endif
         if (rendererStarted)
             UI_SetActiveMenu(0);
@@ -1388,13 +1372,9 @@ static void Com_ErrorCleanup(void)
     {
         void *re;
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
 #else
-    re = 0;
-#endif
-#else
-            re = 0; /* inline asm not available */
+        re = imp_re;
 #endif
         {
             void (*fn)(void) = *(void(**)(void))((char*)re + 0xe4);
@@ -1429,7 +1409,7 @@ static void Com_ErrorCleanup(void)
         ::: "eax", "memory"
     );
 #else
-    /* x86 asm */
+    *(byte *)imp_updateScreenCalled = 0;
 #endif
 
     if (errorcode == 2) {
@@ -1443,17 +1423,13 @@ static void Com_ErrorCleanup(void)
     Com_Printf("********************\nERROR: %s\n********************\n", com_errorMessage);
     if (errorcode == 1) {
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl imp_cls, %%eax\n"
             "movl 0x110(%%eax), %%eax\n"
             : "=a"(rendererStarted) :: "memory"
         );
 #else
-    rendererStarted = 0;
-#endif
-#else
-            rendererStarted = 0; /* inline asm not available */
+        rendererStarted = *(int *)((byte *)imp_cls + 0x110);
 #endif
         if (rendererStarted && !com_fixedConsolePosition)
             CL_ConsoleFixPosition();
@@ -2120,7 +2096,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         ::: "eax", "memory"
     );
 #else
-    /* x86 asm */
+    *(int *)((byte *)(*(void **)imp_legacyHacks) + 4) = 0;
 #endif
 
     com_introPlayed = Dvar_RegisterBool("com_introPlayed", 0, 0x1001);
@@ -2165,7 +2141,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         ::: "eax", "memory"
     );
 #else
-    /* x86 asm */
+    *(int *)imp_dvar_modifiedFlags &= 0xfffffffe;
 #endif
     com_codeTimeScale = 1.0f;
 
@@ -2255,13 +2231,9 @@ void Com_Init_Try_Block_Function(char *commandLine)
             {
                 char *cls_ptr;
 #ifndef __EMSCRIPTEN__
-#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ ("movl imp_cls, %%eax\n" : "=a"(cls_ptr) :: "memory");
 #else
-    cls_ptr = 0;
-#endif
-#else
-            cls_ptr = 0; /* inline asm not available */
+                cls_ptr = (char *)imp_cls;
 #endif
                 *(int *)(cls_ptr + 0x108) = 1; /* rendererStarted */
                 CL_InitRenderer();

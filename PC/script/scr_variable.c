@@ -14261,5 +14261,18 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
 }
 
 #else
-static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2) { return 0; }
+static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2) {
+    int count1 = *(int *)((byte *)info1 + 0x80);
+    int count2 = *(int *)((byte *)info2 + 0x80);
+    int i;
+
+    if (count1 <= 0 || count2 <= 0)
+        return count1 - count2;
+
+    for (i = 0; i < count1 && i < count2; i++) {
+        if (info1[i] != info2[i])
+            return info1[i] - info2[i];
+    }
+    return count1 - count2;
+}
 #endif

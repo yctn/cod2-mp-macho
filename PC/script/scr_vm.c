@@ -21,6 +21,13 @@ extern unsigned char scrVmGlob[]; /* scrVmGlob - BSS */
 extern void FreeValue(unsigned int value);
 extern void Var_Shutdown(void);
 extern void SL_Shutdown(void);
+extern void Scr_RemoveThreadNotifyName(unsigned int startLocalId);
+extern void RemoveObjectVariable(unsigned int parentId, unsigned int id);
+extern unsigned int GetArraySize(unsigned int id);
+extern void RemoveVariable(unsigned int parentId, unsigned int value);
+extern unsigned int FindObject(unsigned int id);
+extern unsigned int FindVariable(unsigned int parentId, unsigned int value);
+extern unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId);
 
 void Scr_ClearErrorMessage(void);
 void Scr_Settings(int developer, int developer_script, int abort_on_error);
@@ -29,7 +36,11 @@ void Scr_Abort(void);
 void Scr_SetLoading(int bLoading);
 unsigned int Scr_GetNumScriptThreads(void);
 void Scr_ResetTimeout(void);
+#ifdef __EMSCRIPTEN__
+static void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int startLocalId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue);
+#else
 static void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue);
+#endif
 void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId);
 static VariableStackBuffer * VM_ArchiveStack(int size, VariableValue *top, unsigned int localVarCount, unsigned int *pLocalId);
 static void VM_TerminateStack(unsigned int endLocalId, unsigned int startLocalId, VariableStackBuffer *stackValue);
@@ -216,7 +227,16 @@ void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notify
     );
 }
 #else
-static void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue) { }
+static void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int startLocalId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue) {
+    Scr_RemoveThreadNotifyName(startLocalId);
+    RemoveObjectVariable(notifyNameListId, startLocalId);
+    if (GetArraySize(notifyNameListId))
+        return;
+    RemoveVariable(notifyListId, stringValue);
+    if (GetArraySize(notifyListId))
+        return;
+    RemoveVariable(notifyListOwnerId, 0x1fffe);
+}
 #endif
 
 /* line 2640 */
@@ -9843,5 +9863,10 @@ void Scr_AddVector(const float *value)
 }
 
 #else
-void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId) { }
+void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId) {
+    unsigned int notifyListId = FindObject(FindVariable(notifyListOwnerId, 0x1fffe));
+    unsigned int stringValue = (unsigned short)Scr_GetThreadNotifyName(startLocalId);
+    unsigned int notifyNameListId = FindObject(FindVariable(notifyListId, stringValue));
+    VM_CancelNotifyInternal(notifyListOwnerId, startLocalId, notifyListId, notifyNameListId, stringValue);
+}
 #endif

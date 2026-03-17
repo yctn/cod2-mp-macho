@@ -28,6 +28,12 @@ void I_strncpyz(char *dest, const char *src, int destsize);
 void I_strlwr(char *str);
 void *CL_RegisterMaterialNoMip(const char *name, int imageTrack);
 void *UI_Alloc(int size, int align);
+extern int FS_ReadFile(const char *filename, void **buffer);
+extern void FS_FreeFile(void *buffer);
+extern void Com_SetCSV(int csv);
+extern const char *Com_ParseOnLine(const char **data_p);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern void CL_Material_Duplicate(int material, const char *name);
 void Window_SetRect(menuDef_t *menu, rectDef_t *rect);
 void Menu_UpdatePosition(menuDef_t *menu);
 void Item_InitControls(const char (*item)[4]);
@@ -8058,5 +8064,54 @@ MenuList * UI_LoadMenu(const char *menuFile, int imageTrack)
     return UI_MenuList();
 }
 #else
-void UI_MapLoadInfo(const char *filename) { }
+void UI_MapLoadInfo(const char *filename) {
+    void *loadfile;
+    const char *parse;
+    const char *token;
+    char key[256];
+    char name[64];
+    int tokenLen;
+    int material;
+    const char *value;
+
+    if (!filename[0])
+        return;
+
+    if (FS_ReadFile(filename, &loadfile) < 0) {
+        Com_Printf((const char *)str_002b4034, filename);
+        return;
+    }
+
+    parse = (const char *)loadfile;
+    Com_BeginParseSession(filename);
+    Com_SetCSV(1);
+
+    for (;;) {
+        token = Com_Parse(&parse);
+        if (!token[0])
+            break;
+
+        tokenLen = strlen(token);
+        if (tokenLen + 1 > 255) {
+            Com_EndParseSession();
+            Com_Error(1, (const char *)str_002b4058, key, tokenLen, 255);
+        }
+
+        memcpy(key, token, tokenLen + 1);
+
+        value = Com_ParseOnLine(&parse);
+        if (!value[0]) {
+            Com_EndParseSession();
+            Com_Error(1, (const char *)str_002b407c, key, filename);
+        }
+
+        material = (int)CL_RegisterMaterialNoMip(value, 3);
+        Com_sprintf(name, 64, (const char *)str_002b409c, key);
+        I_strlwr(name);
+        CL_Material_Duplicate(material, name);
+    }
+
+    Com_EndParseSession();
+    FS_FreeFile(loadfile);
+}
 #endif

@@ -118,7 +118,42 @@ void BG_ClearWeaponDef(void)
     );
 }
 #else
-void BG_ClearWeaponDef(void) { }
+void BG_ClearWeaponDef(void) {
+    WeaponDef *defaultDef;
+    byte *itemList;
+    byte *end;
+
+    /* Load the default weapon definition */
+    defaultDef = (WeaponDef *)BG_LoadDefaultWeaponDef();
+
+    /* Initialize weapon defs array with the default */
+    bg_weaponDefs[0] = defaultDef;
+
+    /* Initialize ammo types */
+    bg_weapAmmoTypes[0] = defaultDef;
+    bg_iNumAmmoTypes = 1;
+
+    /* Initialize shared ammo caps */
+    bg_sharedAmmoCaps[0] = defaultDef;
+    bg_iNumSharedAmmoCaps = 1;
+
+    /* Initialize weapon clips */
+    bg_weapClips[0] = defaultDef;
+    bg_iNumWeapClips = 1;
+
+    /* Clear giTag (offset 0x48) for all items in bg_itemlist.
+       Each item is 0x2c (44) bytes, 0x1600/0x2c = 128 items. */
+    itemList = (byte *)(*(void **)imp_bg_itemlist);
+    end = itemList + 0x1600;
+    while (itemList != end) {
+        *(int *)(itemList + 0x48) = 0;
+        itemList += 0x2c;
+    }
+
+    /* Load player animation types and weapon strings */
+    BG_LoadPlayerAnimTypes();
+    BG_InitWeaponStrings();
+}
 #endif
 
 /* line 558 */

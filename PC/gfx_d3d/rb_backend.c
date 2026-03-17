@@ -195,6 +195,7 @@ extern Glyph *R_GetCharacterGlyph(FontHandle font, int charCode);
 extern void RB_ChangedWorldMatrix(float worldScale);
 extern void RB_SetMatricesForView(const void *viewParms);
 extern float floorf(float x);
+extern float sqrtf(float x);
 extern float sinf(float x);
 extern float cosf(float x);
 extern double pow(double base, double exponent);
@@ -960,7 +961,7 @@ void RB_EndBenchmarkGpu(void)
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -1041,7 +1042,7 @@ void RB_BeginBenchmarkGpu(void)
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -4315,7 +4316,7 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -4590,7 +4591,7 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -6111,7 +6112,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -6160,7 +6161,9 @@ static void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
         : "memory", "xmm0", "xmm1", "xmm2", "xmm3"
     );
 #else
-    /* x86 asm not available */
+    /* style/color locals are swapped due to x86 register convention reordering:
+     * 'style' actually holds the color value, 'color' holds the style value */
+    RB_DrawTextWithCursor_impl(text, maxChars, (FontHandle)(intptr_t)font, x, y, xScale, yScale, *(GfxColor *)&style, color, cursorPos, cursor);
 #endif
 
     /* Advance command pointer */
@@ -6244,7 +6247,7 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
 #ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(sqrtf_approx) : "x"(totalBlur));
 #else
-    sqrtf_approx = 0;
+                sqrtf_approx = sqrtf(totalBlur);
 #endif
                 totalBlur = sqrtf_approx;
             }

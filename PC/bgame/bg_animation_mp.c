@@ -112,7 +112,15 @@ void BG_AnimParseError(const char *msg)
     );
 }
 #else
-void BG_AnimParseError(const char *msg) { }
+void BG_AnimParseError(const char *msg) {
+    /* The native build treats msg as a printf format string with variadic args.
+       Under Emscripten, callers are also stubbed, so just pass msg directly. */
+    if (globalFilename) {
+        Com_Error(1, "%s: (%s, line %i)", msg, globalFilename, Com_GetCurrentParseLine() + 1);
+    } else {
+        Com_Error(1, "%s", msg);
+    }
+}
 #endif
 
 void BG_LoadWeaponStrings(void);
@@ -6241,5 +6249,156 @@ int BG_AnimScriptAnimation(playerState_t *ps, aistateEnum_t state, scriptAnimMov
 }
 
 #else
-int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int forceDuration, qboolean setTimer, qboolean isContinue, qboolean force, playerState_t *ps_7, scriptAnimEventTypes_t event) { return 0; }
+int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int forceDuration, qboolean setTimer, qboolean isContinue, qboolean force, playerState_t *ps_7, scriptAnimEventTypes_t event) {
+    int duration;
+    int wasSet = 0;
+    int oldAnim, toggleBit;
+
+    /* Compute duration: use forceDuration if nonzero, otherwise look up from script data */
+    if (forceDuration) {
+        duration = forceDuration;
+    } else {
+        /* animNum*3*32 = animNum*96 byte offset into globalScriptData, field at +0x48 is duration */
+        duration = *(int *)((byte *)globalScriptData + animNum * 96 + 0x48) + 0x32;
+    }
+
+    /* Handle legs animation (bodyPart == 1 LEGS or bodyPart == 3 BOTH) */
+    if (bodyPart == 3 || bodyPart == 1) {
+        int legsTimer = *(int *)((byte *)ps + 0x78);
+        if (legsTimer <= 0x31 || force) {
+            /* Timer allows setting or force override */
+            oldAnim = *(int *)((byte *)ps + 0x7c);
+            if (!isContinue || (oldAnim & ~0x200) != animNum) {
+                /* Toggle bit 9 from old anim, combine with new animNum */
+                toggleBit = (oldAnim & 0x200) ^ 0x200;
+                *(int *)((byte *)ps + 0x88) = duration;
+                *(int *)((byte *)ps + 0x7c) = animNum | toggleBit;
+                if (setTimer)
+                    *(int *)((byte *)ps + 0x78) = duration;
+                wasSet = 1;
+            }
+        }
+        /* If bodyPart == 3, fall through to torso with animNum = 0 */
+        if (bodyPart == 3)
+            animNum = 0;
+    }
+
+    /* Handle torso animation (bodyPart == 2 TORSO or bodyPart == 3 BOTH) */
+    if (bodyPart == 2 || bodyPart == 3) {
+        int torsoTimer = *(int *)((byte *)ps + 0x80);
+        if (torsoTimer <= 0x31 || force) {
+            oldAnim = *(int *)((byte *)ps + 0x84);
+            if (!isContinue || (oldAnim & ~0x200) != animNum) {
+                toggleBit = (oldAnim & 0x200) ^ 0x200;
+                *(int *)((byte *)ps + 0x84) = animNum | toggleBit;
+                if (setTimer)
+                    *(int *)((byte *)ps + 0x80) = duration;
+                *(int *)((byte *)ps + 0x8c) = duration;
+                wasSet = 1;
+            }
+        }
+    }
+
+    if (!wasSet)
+        return -1;
+    return duration;
+}
+
+int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean isContinue, qboolean force) {
+    int client;
+    byte *scriptEntry;
+    int numItems;
+    byte *ci;
+    int i;
+    int *ppScriptItem;
+
+    /* line 2120: if event != 1 (not JUMP), check weapon state */
+    if ((int)event != 1) {
+        if (*(int *)((byte *)ps + 4) > 5)
+            return -1;
+    }
+
+    /* line 2123: look up event script table
+       event * 512 + event * 4 = event * 516, plus 0x37560 offset */
+    scriptEntry = (byte *)globalScriptData + (int)event * 516 + 0x37560;
+
+    /* line 2124: numItems at offset 4 */
+    numItems = *(int *)(scriptEntry + 4);
+    if (numItems == 0)
+        return -1;
+
+    /* line 2129: client index from ps+0xcc */
+    client = *(int *)((byte *)ps + 0xcc);
+
+    /* Compute ci pointer: bgs + 0xb3bfc + client * 1208
+       (client*5 → *16 → -client*5 → *2+client → *8 = client*(5*16-5)*2+client)*8 = client*1208) */
+    {
+        int tmp1 = client * 5;
+        int tmp2 = tmp1 * 16 - tmp1; /* client * 75 */
+        int tmp3 = client + tmp2 * 2; /* client * 151 */
+        ci = (byte *)bgs + 0xb3bfc + tmp3 * 8;
+    }
+
+    /* line 1796: ppScriptItem starts at scriptEntry + 8 */
+    ppScriptItem = (int *)(scriptEntry + 8);
+
+    /* Iterate over script items */
+    for (i = 0; i < numItems; i++) {
+        byte *scriptItem = (byte *)(*(ppScriptItem + i));
+        int numConds = *(int *)scriptItem;
+        byte *cond = scriptItem + 4;
+        int j;
+        int allMatch = 1;
+
+        /* Check all conditions for this script item */
+        for (j = 0; j < numConds; j++, cond += 12) {
+            int condType = *(int *)cond;
+            int testType = *(int *)((byte *)animConditionsTable + condType * 8);
+
+            if (testType == 0) {
+                /* Mask check: condition passes if either mask pair has matching bits */
+                int mask1 = *(int *)(ci + 0x45c + condType * 8);
+                if (mask1 & *(int *)(cond + 4))
+                    continue; /* condition matched */
+                {
+                    int mask2 = *(int *)(ci + 0x460 + condType * 8);
+                    if (mask2 & *(int *)(cond + 8))
+                        continue; /* condition matched */
+                }
+                /* Neither mask matched — condition failed */
+                allMatch = 0;
+                break;
+            } else if (testType == 1) {
+                /* Exact match: condition passes if values are equal */
+                int val = *(int *)(ci + 0x45c + condType * 8);
+                if (val == *(int *)(cond + 4))
+                    continue; /* condition matched */
+                /* Not equal — condition failed */
+                allMatch = 0;
+                break;
+            }
+            /* testType > 1: condition is skipped (auto-pass) */
+        }
+
+        if (!allMatch)
+            continue; /* try next script item */
+
+        /* All conditions passed — execute a random command from this item */
+        {
+            int numCommands = *(int *)(scriptItem + 0x70);
+            int randIdx;
+            byte *scriptCommand;
+
+            if (numCommands == 0)
+                return -1;
+
+            randIdx = rand() % numCommands;
+            scriptCommand = scriptItem + 0x74 + randIdx * 16;
+
+            return BG_ExecuteCommand(ps, (animScriptCommand_t *)scriptCommand, 1, isContinue, force);
+        }
+    }
+
+    return -1;
+}
 #endif

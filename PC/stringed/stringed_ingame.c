@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <ctype.h>
 
 extern CStringEdPackage *TheStringPackage; /* 0x0 */
 static char sString[64]; /* sString */
@@ -217,7 +218,76 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
     );
 }
 #else
-qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * *psParsePos, char *psDest) { return 0; }
+qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * *psParsePos, char *psDest) {
+    const char *p = *psParsePos;
+    const char *nl;
+    int len, i;
+
+    if (!*p)
+        return 0;
+
+    nl = strchr(p, '\n');
+    if (nl) {
+        int charsToCopy = nl - p;
+        strncpy(psDest, p, charsToCopy);
+        psDest[charsToCopy] = '\0';
+        *psParsePos = p + charsToCopy;
+        /* skip newline-like characters */
+        while (**psParsePos && strchr((const char *)str_00218068, **psParsePos)) {
+            (*psParsePos)++;
+        }
+    } else {
+        strcpy(psDest, p);
+        *psParsePos = p + strlen(p);
+    }
+
+    if (!psDest[0])
+        return 1;
+
+    /* strip trailing whitespace */
+    len = strlen(psDest);
+    for (i = len - 2; i >= 0; i--) {
+        if (!isspace((unsigned char)psDest[i]))
+            break;
+        psDest[i] = '\0';
+    }
+
+    /* strip // comments respecting double-quote escaping */
+    {
+        char *s = psDest;
+        for (;;) {
+            char *comment = strstr(s, (const char *)str_00218064);
+            int quoteCount = 0;
+            if (!comment)
+                return 1;
+
+            /* count double quotes before the comment */
+            for (i = 0; i < (int)(comment - s); i++) {
+                if (s[i] == '"')
+                    quoteCount++;
+            }
+
+            if (quoteCount & 1) {
+                /* odd number of quotes means // is inside a string */
+                s = comment + 1;
+                continue;
+            }
+
+            *comment = '\0';
+            if (!*s)
+                return 1;
+
+            /* strip trailing whitespace after removing comment */
+            len = strlen(s);
+            for (i = len - 2; i >= 0; i--) {
+                if (!isspace((unsigned char)s[i]))
+                    break;
+                s[i] = '\0';
+            }
+            return 1;
+        }
+    }
+}
 #endif
 
 /* line 298 */

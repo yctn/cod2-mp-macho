@@ -3481,5 +3481,48 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
     );
 }
 #else
-void RegisterItem(int iItemIndex, qboolean bUpdateCS) { }
+extern void Scr_Error(const char *msg);
+extern const char *va(const char *fmt, ...);
+extern int G_ModelIndex(const char *name);
+
+void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
+    byte *item;
+    const char *name;
+
+    /* Already registered? */
+    if (itemRegistered[iItemIndex])
+        return;
+
+    /* If not initializing, check if the item has a valid classname */
+    if (!*(int *)((byte *)imp_level + 0x1c)) {
+        /* item = bg_itemlist + iItemIndex * 44 */
+        item = (byte *)imp_bg_itemlist + iItemIndex * 44;
+        name = *(const char **)(item + 0x14);
+        if (!name || *name == '\0') {
+            name = str_002b4984; /* "" or unknown */
+        }
+        Scr_Error(va(str_002b4990, name));
+    }
+
+    /* Mark as registered */
+    itemRegistered[iItemIndex] = 1;
+
+    /* item = bg_itemlist + iItemIndex * 44 */
+    item = (byte *)imp_bg_itemlist + iItemIndex * 44;
+
+    /* Register world model if present */
+    if (*(const char **)(item + 8)) {
+        G_ModelIndex(*(const char **)(item + 8));
+    }
+
+    /* Register view model if present */
+    if (*(const char **)(item + 0xc)) {
+        G_ModelIndex(*(const char **)(item + 0xc));
+    }
+
+    /* If bUpdateCS, set level flag */
+    if (bUpdateCS) {
+        *(int *)((byte *)imp_level + 0x3600) = 1;
+    }
+}
 #endif

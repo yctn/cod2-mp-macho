@@ -13,6 +13,8 @@ static char string_00f10c60[1024]; /* string */
 static struct huffman_t msgHuff; /* msgHuff */
 static qboolean msgInit; /* msgInit */
 extern unsigned int kbitmask[33]; /* kbitmask */
+extern void Com_Printf(const char *fmt, ...);
+extern int I_CleanChar(int ch);
 
 #define PSF(x) #x, __builtin_offsetof(playerState_t, x)
 #define CSF(x) #x, __builtin_offsetof(clientState_t, x)
@@ -8712,5 +8714,35 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
     );
 }
 #else
-void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, int iBufferSize) { }
+void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, int iBufferSize) {
+    int len = strlen(pszCommand);
+    int i;
+
+    if (len >= iBufferSize) {
+        Com_Printf((const char *)str_002ad8b0, len, iBufferSize, pszCommand);
+    }
+
+    if (len == 0) {
+        Com_Printf((const char *)str_002ad8fc);
+    }
+
+    if (iBufferSize <= 0) {
+        pszBuffer[iBufferSize - 1] = '\0';
+        return;
+    }
+
+    for (i = 0; i < iBufferSize; i++) {
+        char ch = pszCommand[i];
+        if (!ch) {
+            pszBuffer[i] = '\0';
+            return;
+        }
+        ch = (char)I_CleanChar((int)(signed char)ch);
+        if (ch == '%')
+            ch = '.';
+        pszBuffer[i] = ch;
+    }
+
+    pszBuffer[iBufferSize - 1] = '\0';
+}
 #endif

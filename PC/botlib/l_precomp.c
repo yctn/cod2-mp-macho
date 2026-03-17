@@ -4,6 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 #include <string.h>
+#include <stdarg.h>
+
+extern void Com_Printf(const char *fmt, ...);
 
 extern int numtokens; /* 0x0 */
 extern define_t *globaldefines; /* 0x0 */
@@ -11,8 +14,8 @@ extern directive_t directives[20]; /* 0x0 */
 extern directive_t dollardirectives[20]; /* 0x0 */
 extern source_t * sourceFiles[64]; /* 0x0 */
 
-void SourceError(source_t *source, char *str);
-void SourceWarning(source_t *source, char *str);
+void SourceError(source_t *source, char *str, ...);
+void SourceWarning(source_t *source, char *str, ...);
 int PC_StringizeTokens(token_t *tokens, token_t *token);
 int PC_OperatorPriority(int op);
 int PC_Directive_line(source_t *source);
@@ -56,7 +59,7 @@ void StripDoubleQuotes(char *string);
 /* line 35 */
 #ifndef __EMSCRIPTEN__
 __attribute__((naked))
-void SourceError(source_t *source, char *str)
+void SourceError(source_t *source, char *str, ...)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 35 */
@@ -90,13 +93,23 @@ void SourceError(source_t *source, char *str)
     );
 }
 #else
-void SourceError(source_t *source, char *str) { }
+void SourceError(source_t *source, char *str, ...) {
+    char text[1024];
+    va_list ap;
+    va_start(ap, str);
+    vsnprintf(text, 0x400, str, ap);
+    va_end(ap);
+    {
+        byte *scriptfile = *(byte **)((byte *)source + 0x84);
+        Com_Printf((const char *)str_002220ac, scriptfile, *(int *)(scriptfile + 0x5c), text);
+    }
+}
 #endif
 
 /* line 53 */
 #ifndef __EMSCRIPTEN__
 __attribute__((naked))
-void SourceWarning(source_t *source, char *str)
+void SourceWarning(source_t *source, char *str, ...)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 53 */
@@ -130,7 +143,17 @@ void SourceWarning(source_t *source, char *str)
     );
 }
 #else
-void SourceWarning(source_t *source, char *str) { }
+void SourceWarning(source_t *source, char *str, ...) {
+    char text[1024];
+    va_list ap;
+    va_start(ap, str);
+    vsnprintf(text, 0x400, str, ap);
+    va_end(ap);
+    {
+        byte *scriptfile = *(byte **)((byte *)source + 0x84);
+        Com_Printf((const char *)str_002220cc, scriptfile, *(int *)(scriptfile + 0x5c), text);
+    }
+}
 #endif
 
 /* line 348 */
@@ -203,7 +226,29 @@ int PC_StringizeTokens(token_t *tokens, token_t *token)
     );
 }
 #else
-int PC_StringizeTokens(token_t *tokens, token_t *token) { return 0; }
+int PC_StringizeTokens(token_t *tokens, token_t *token) {
+    byte *t;
+    int len;
+
+    *(int *)((byte *)token + 0x400) = 1;
+    *(int *)((byte *)token + 0x420) = 0;
+    *(int *)((byte *)token + 0x424) = 0;
+    *(char *)token = '\0';
+
+    len = strlen((char *)token);
+    *((char *)token + len) = '"';
+    *((char *)token + len + 1) = '\0';
+
+    for (t = (byte *)tokens; t; t = *(byte **)(t + 0x430)) {
+        len = strlen((char *)token);
+        strncat((char *)token, (char *)t, 0x400 - len);
+    }
+
+    len = strlen((char *)token);
+    strncat((char *)token, (const char *)str_00222120, 0x401 - len);
+
+    return 1;
+}
 #endif
 
 /* line 1490 */
@@ -317,7 +362,18 @@ int PC_OperatorPriority(int op)
     );
 }
 #else
-int PC_OperatorPriority(int op) { return 0; }
+int PC_OperatorPriority(int op) {
+    static const int priorities[] = {
+    /*  5 */ 7,  6,  12, 12, 11, 11, 0,  0,  0,  0,
+    /* 15 */ 0,  0,  0,  0,  0,  0,  13, 13, 0,  0,
+    /* 25 */ 0,  15, 15, 15, 14, 14, 0,  10, 8,  9,
+    /* 35 */ 16, 16, 12, 12, 0,  0,  0,  5,  5
+    };
+    int idx = op - 5;
+    if (idx < 0 || idx > 38)
+        return 0;
+    return priorities[idx];
+}
 #endif
 
 /* line 2312 */

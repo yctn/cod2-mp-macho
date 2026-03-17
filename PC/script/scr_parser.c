@@ -7,6 +7,9 @@
 extern struct scrParserPub_t scrParserPub; /* 0x0 */
 extern struct scrParserGlob_t scrParserGlob; /* 0x0 */
 
+extern void * Z_MallocInternal(int size);
+extern void Z_FreeInternal(void *ptr);
+
 void Scr_InitOpcodeLookup(void);
 void Scr_ShutdownOpcodeLookup(void);
 void AddOpcodePos(unsigned int sourcePos, int type);
@@ -66,7 +69,24 @@ void Scr_InitOpcodeLookup(void)
     );
 }
 #else
-void Scr_InitOpcodeLookup(void) { }
+void Scr_InitOpcodeLookup(void) {
+    if (!*(unsigned char *)((byte *)imp_scrVarPub + 0xa))
+        return;
+
+    *(int *)((byte *)&scrParserGlob + 44) = -1;
+    *(int *)((byte *)&scrParserGlob + 4) = 0x10000;
+    *(int *)((byte *)&scrParserGlob + 8) = 0;
+    *(void **)&scrParserGlob = Z_MallocInternal(0x140000);
+    memset(*(void **)&scrParserGlob, 0, *(int *)((byte *)&scrParserGlob + 4) * 20);
+    *(int *)((byte *)&scrParserGlob + 16) = 0x10000;
+    *(int *)((byte *)&scrParserGlob + 20) = 0;
+    *(void **)((byte *)&scrParserGlob + 12) = Z_MallocInternal(0x80000);
+    *(int *)((byte *)&scrParserGlob + 28) = 0;
+    *(int *)((byte *)&scrParserGlob + 32) = 0;
+    *(int *)((byte *)&scrParserGlob + 24) = 0x10;
+    *(int *)((byte *)&scrParserPub + 4) = 0;
+    *(void **)&scrParserPub = Z_MallocInternal(0x180);
+}
 #endif
 
 /* line 92 */
@@ -1361,5 +1381,46 @@ void CompileError2(const char *codePos, const char *msg)
 }
 
 #else
-void Scr_ShutdownOpcodeLookup(void) { }
+void Scr_ShutdownOpcodeLookup(void) {
+    int i;
+
+    if (*(void **)&scrParserGlob) {
+        Z_FreeInternal(*(void **)&scrParserGlob);
+        *(void **)&scrParserGlob = 0;
+    }
+
+    if (*(void **)((byte *)&scrParserGlob + 12)) {
+        Z_FreeInternal(*(void **)((byte *)&scrParserGlob + 12));
+        *(void **)((byte *)&scrParserGlob + 12) = 0;
+    }
+
+    if (*(void **)&scrParserPub) {
+        unsigned int count = *(unsigned int *)((byte *)&scrParserPub + 4);
+        if (count > 0) {
+            byte *base = *(byte **)&scrParserPub;
+            for (i = 0; i < (int)count; i++) {
+                int idx = i;
+                idx = idx * 3;
+                void *entry = *(void **)(base + idx * 8 + 4);
+                Z_FreeInternal(entry);
+            }
+        }
+        Z_FreeInternal(*(void **)&scrParserPub);
+        *(void **)&scrParserPub = 0;
+    }
+
+    if (*(void **)((byte *)&scrParserGlob + 36)) {
+        int entryCount = *(int *)((byte *)&scrParserGlob + 40);
+        if (entryCount > 0) {
+            byte *entries = *(byte **)((byte *)&scrParserGlob + 36);
+            for (i = 0; i < entryCount; i++) {
+                void *entry = *(void **)(entries + i * 8);
+                if (entry)
+                    Z_FreeInternal(entry);
+            }
+        }
+        Z_FreeInternal(*(void **)((byte *)&scrParserGlob + 36));
+        *(void **)((byte *)&scrParserGlob + 36) = 0;
+    }
+}
 #endif

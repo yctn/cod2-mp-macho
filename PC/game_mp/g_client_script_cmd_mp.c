@@ -5549,5 +5549,48 @@ static const BuiltinMethodDef player_methods[] __attribute__((used)) = {
     {0, 0, 0},
 };
 #else
-void PlayerCmd_takeWeapon(struct scr_entref_t entref) { }
+extern void Scr_ObjectError(const char *msg);
+extern const char *va(const char *fmt, ...);
+extern const char *Scr_GetString(unsigned int index);
+extern int G_GetWeaponIndexForName(const char *name);
+extern int BG_AmmoForWeapon(int weaponIndex);
+extern int BG_ClipForWeapon(int weaponIndex);
+extern void BG_TakePlayerWeapon(void *ps, int weaponIndex);
+
+void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
+    unsigned short entnum;
+    unsigned short classnum;
+    gentity_t *pSelf;
+    const char *weaponName;
+    int iWeaponIndex;
+    void *client;
+    int ammoIndex;
+    int clipIndex;
+
+    entnum = entref.entnum;
+    classnum = entref.classnum;
+
+    if (classnum != 0) {
+        Scr_ObjectError(str_002b21c8);
+        pSelf = NULL;
+    } else {
+        pSelf = (gentity_t *)((byte *)imp_g_entities + (unsigned int)entnum * 0x230);
+        if (*(int *)((byte *)pSelf + 0x158) == 0) {
+            Scr_ObjectError(va(str_002b5dd4, (int)entnum));
+        }
+    }
+
+    weaponName = (const char *)Scr_GetString(0);
+    iWeaponIndex = G_GetWeaponIndexForName(weaponName);
+
+    client = *(void **)((byte *)pSelf + 0x158);
+    ammoIndex = BG_AmmoForWeapon(iWeaponIndex);
+    *(int *)((byte *)client + 0x144 + ammoIndex * 4) = 0;
+
+    client = *(void **)((byte *)pSelf + 0x158);
+    clipIndex = BG_ClipForWeapon(iWeaponIndex);
+    *(int *)((byte *)client + 0x344 + clipIndex * 4) = 0;
+
+    BG_TakePlayerWeapon(*(void **)((byte *)pSelf + 0x158), iWeaponIndex);
+}
 #endif

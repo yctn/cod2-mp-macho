@@ -1179,7 +1179,7 @@ qboolean G_EntDetach(gentity_t *ent, const char *modelName, unsigned int tagName
                 : "c"(i)
             );
 #else
-    /* x86 asm not available */
+            if (i) rotmask = (int)(((unsigned int)rotmask << i) | ((unsigned int)rotmask >> (32 - i)));
 #endif
             ENT_IGNORECOLLISION(ent) &= (byte)rotmask;
         }

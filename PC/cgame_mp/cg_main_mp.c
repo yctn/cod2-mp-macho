@@ -48,6 +48,26 @@ extern unsigned int Scr_ShutdownGameStrings(void);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void * Hunk_AllocInternal(int size);
 extern void CL_ConsolePrint(int channel, const char *msg, int duration, int width);
+extern void SCR_UpdateScreen(void);
+extern void Com_Printf(const char *fmt, ...);
+extern void FX_InitSystem(int maxEffects);
+extern void FX_CreateDefaultEffect(void);
+extern void CG_LoadingString(const char *str);
+extern int CL_RegisterMaterial(const char *name, int flags);
+extern int CL_RegisterMaterialNoMip(const char *name, int flags);
+extern void CG_RegisterScoreboardGraphics(void);
+extern void CG_RegisterItems(void);
+extern int CM_NumInlineModels(void);
+extern int CL_RegisterInlineModel(int index);
+extern void CL_ModelBounds(int model, float *mins, float *maxs);
+extern int FX_RegisterEffect(const char *name);
+extern void CG_SetShellShockParmsFromDvars(byte *parms);
+extern int CG_LoadShellShockDvars(const char *name);
+extern void Com_Error(int code, const char *fmt, ...);
+extern int CG_RegisterImpactEffects(const char *mapname);
+extern void Controls_GetConfig(void);
+extern int GetKeyBindingLocalizedString(const char *binding, char *buf);
+extern const char *UI_SafeTranslateString(const char *key);
 extern void AnglesToAxis(const vec_t *angles, vec3_t *axis);
 extern void Cmd_ArgvBuffer(int arg, char *buffer, int bufferLength);
 
@@ -653,7 +673,171 @@ void CG_RegisterGraphics(const char *mapname)
     );
 }
 #else
-static void CG_RegisterGraphics(const char *mapname) { }
+static void CG_RegisterGraphics(const char *mapname)
+{
+    byte *cgsPtr;
+    int i;
+    int numInlineModels;
+    const char *modelName;
+    const char *shellshock;
+    float localMins[3], localMaxs[3];
+
+    /* line 866 */
+    SCR_UpdateScreen();
+
+    /* line 868 */
+    Com_Printf((const char *)str_002a754c);
+
+    /* line 869 */
+    FX_InitSystem(1);
+
+    /* line 871 */
+    FX_CreateDefaultEffect();
+
+    /* line 873 */
+    Com_Printf((const char *)str_002a7580);
+
+    /* line 875 */
+    CG_LoadingString((const char *)str_002a75b4);
+
+    /* line 877 */
+    cgsPtr = (byte *)cgs;
+    *(int *)(cgsPtr + 0xba40) = CL_RegisterMaterial((const char *)str_002a75c0, 7);  /* lagometer */
+    *(int *)(cgsPtr + 0xba34) = CL_RegisterMaterial((const char *)str_002a75cc, 7);  /* headicondisconnected */
+    *(int *)(cgsPtr + 0xba38) = CL_RegisterMaterial((const char *)str_002a75e4, 7);  /* headiconyouinkillcam */
+    CL_RegisterMaterial((const char *)str_002a75fc, 7);  /* killiconmelee */
+    CL_RegisterMaterial((const char *)str_002a760c, 7);  /* killiconsuicide */
+    CL_RegisterMaterial((const char *)str_002a761c, 7);  /* killiconfalling */
+    CL_RegisterMaterial((const char *)str_002a762c, 7);  /* killiconcrush */
+    CL_RegisterMaterial((const char *)str_002a763c, 7);  /* killicondied */
+    *(int *)(cgsPtr + 0xba3c) = CL_RegisterMaterial((const char *)str_002a764c, 6);  /* gfx/misc/tracer */
+    *(int *)(cgsPtr + 0xba4c) = CL_RegisterMaterial((const char *)str_002a765c, 7);  /* gfx/icons/hint_usable */
+    *(int *)(cgsPtr + 0xba50) = CL_RegisterMaterial((const char *)str_002a7674, 7);  /* hint_health */
+    *(int *)(cgsPtr + 0xba54) = CL_RegisterMaterial((const char *)str_002a7680, 7);  /* hint_friendly */
+    *(int *)(cgsPtr + 0xbc58) = CL_RegisterMaterial((const char *)str_002a7690, 7);  /* stance_stand */
+    *(int *)(cgsPtr + 0xbc5c) = CL_RegisterMaterial((const char *)str_002a76a0, 7);  /* stance_crouch */
+    *(int *)(cgsPtr + 0xbc60) = CL_RegisterMaterial((const char *)str_002a76b0, 7);  /* stance_prone */
+    *(int *)(cgsPtr + 0xbc64) = CL_RegisterMaterial((const char *)str_002a76c0, 7);  /* stance_flash */
+    *(int *)(cgsPtr + 0xbc68) = CL_RegisterMaterial((const char *)str_002a76d0, 7);  /* objective */
+    *(int *)(cgsPtr + 0xbc6c) = CL_RegisterMaterial((const char *)str_002a76dc, 7);  /* objective_friendly */
+    *(int *)(cgsPtr + 0xbc70) = CL_RegisterMaterial((const char *)str_002a76f0, 7);  /* objective_friendly_chat */
+    *(int *)(cgsPtr + 0xbc74) = CL_RegisterMaterial((const char *)str_002a7708, 7);  /* hit_direction */
+    *(int *)(cgsPtr + 0xbc78) = CL_RegisterMaterial((const char *)str_002a7718, 7);  /* hint_mantle */
+    *(int *)(cgsPtr + 0xc1d4) = CL_RegisterMaterialNoMip((const char *)str_002a7724, 7);  /* ui/assets/checkbox_clear */
+    *(int *)(cgsPtr + 0xc1d8) = CL_RegisterMaterialNoMip((const char *)str_002a7740, 7);  /* ui/assets/checkbox_checked */
+    *(int *)(cgsPtr + 0xc1dc) = CL_RegisterMaterialNoMip((const char *)str_002a775c, 7);  /* ui/assets/checkbox_fail */
+    *(int *)(cgsPtr + 0xc1e0) = CL_RegisterMaterialNoMip((const char *)str_002a7774, 7);  /* compassping_friendlyfiring */
+    *(int *)(cgsPtr + 0xc1e4) = CL_RegisterMaterialNoMip((const char *)str_002a7790, 7);  /* compassping_friendlyyelling */
+    *(int *)(cgsPtr + 0xc1e8) = CL_RegisterMaterialNoMip((const char *)str_002a77ac, 7);  /* compassping_enemyfiring */
+    *(int *)(cgsPtr + 0xc1ec) = CL_RegisterMaterialNoMip((const char *)str_002a77c4, 7);  /* compassping_enemyyelling */
+    *(int *)(cgsPtr + 0xc1f0) = CL_RegisterMaterialNoMip((const char *)str_002a77e0, 7);  /* compassping_grenade */
+    *(int *)(cgsPtr + 0xc1f4) = CL_RegisterMaterialNoMip((const char *)str_002a77f4, 7);  /* compassping_explosion */
+    *(int *)(cgsPtr + 0xc1f8) = CL_RegisterMaterialNoMip((const char *)str_002a780c, 7);  /* hud_grenadeicon */
+    *(int *)(cgsPtr + 0xc1fc) = CL_RegisterMaterialNoMip((const char *)str_002a781c, 7);  /* hud_grenadepointer */
+    *(int *)(cgsPtr + 0xba28) = CL_RegisterMaterial((const char *)str_002a7830, 7);  /* hudcolorbar */
+
+    /* line 930 */
+    CG_LoadingString((const char *)str_002a783c);
+
+    /* line 934 */
+    *(int *)(cgsPtr + 0xba2c) = CL_RegisterMaterial((const char *)str_002a7848, 7);  /* headiconvoicechat */
+    *(int *)(cgsPtr + 0xba30) = CL_RegisterMaterial((const char *)str_002a785c, 7);  /* headicontalkballoon */
+
+    /* line 937 */
+    CG_RegisterScoreboardGraphics();
+
+    /* line 939 */
+    memset((void *)cg_items, 0, 0x2400);
+    /* line 940 */
+    memset((void *)cg_weapons, 0, 0xda00);
+
+    /* line 943 */
+    CG_LoadingString((const char *)str_002a7870);
+    /* line 944 */
+    CG_RegisterItems();
+
+    /* line 946 */
+    CG_LoadingString((const char *)str_002a787c);
+
+    /* line 949 */
+    numInlineModels = CM_NumInlineModels();
+    *(int *)(cgsPtr + 0x7188) = numInlineModels;
+
+    /* line 950-961: register inline models */
+    if (numInlineModels - 1 > 0) {
+        int baseIdx = 3;
+        for (i = 1; i < numInlineModels; i++) {
+            int j;
+            *(int *)(cgsPtr + 0x718c + i * 4) = CL_RegisterInlineModel(i);
+            CL_ModelBounds(*(int *)(cgsPtr + 0x718c + i * 4), localMins, localMaxs);
+            for (j = 0; j < 3; j++) {
+                float center = (float)((double)localMins[j] + (double)(localMaxs[j] - localMins[j]) * 0.5);
+                *(float *)(cgsPtr + 0x8188 + (baseIdx + j) * 4) = center;
+            }
+            baseIdx += 3;
+        }
+    }
+
+    /* line 963 */
+    CG_LoadingString((const char *)str_002a7890);
+
+    /* line 966-976: register server models */
+    for (i = 1; i < 0x100; i++) {
+        modelName = CL_GetConfigString(0x14e + i);
+        if (*(const char *)modelName == '\0')
+            continue;
+        SCR_UpdateScreen();
+        *(int *)((byte *)cgs + 0x63c0 + i * 4) = (int)CL_RegisterModel(modelName);
+    }
+
+    /* line 980-987: register effects */
+    for (i = 1; i < 0x40; i++) {
+        const char *fxName = CL_GetConfigString(0x34e + i);
+        if (*fxName == '\0')
+            continue;
+        *(int *)((byte *)cgs + 0x67c0 + i * 4) = FX_RegisterEffect(fxName);
+    }
+
+    /* line 990 */
+    cgsPtr = (byte *)cgs;
+    *(int *)(cgsPtr + 0x68c0) = FX_RegisterEffect((const char *)str_002a78a4);
+
+    /* line 993-1003: register shellshocks */
+    {
+        byte *ssPtr = cgsPtr + 0x6948;
+        for (i = 1; i < 0x10; i++) {
+            shellshock = CL_GetConfigString(0x48e + i);
+            if (*shellshock == '\0')
+                break;
+            if (!CG_LoadShellShockDvars(shellshock)) {
+                Com_Error(1, (const char *)str_002a78c8, shellshock);
+            }
+            CG_SetShellShockParmsFromDvars(ssPtr);
+            ssPtr += 0x84;
+        }
+    }
+
+    /* line 1005 */
+    if (!CG_LoadShellShockDvars((const char *)str_002a78fc)) {
+        Com_Error(1, (const char *)str_002a7908);
+    }
+
+    /* line 1007 */
+    cgsPtr = (byte *)cgs;
+    CG_SetShellShockParmsFromDvars(cgsPtr + 0x7104);
+
+    /* line 1027 */
+    *(int *)(cgsPtr + 0xc200) = CG_RegisterImpactEffects(mapname);
+    if (!*(int *)(cgsPtr + 0xc200)) {
+        Com_Error(1, (const char *)str_002a7938);
+    }
+
+    /* line 1030 */
+    *(int *)(cgsPtr + 0xc204) = FX_RegisterEffect((const char *)str_002a7980);
+
+    /* line 1032 */
+    CG_LoadingString((const char *)str_002a79a4);
+}
 #endif
 
 /* line 1043 */
@@ -818,6 +1002,89 @@ Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
         "jmp .Lf144488_00144572\n"
     );
 }
+#else
+static Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
+{
+    char srcString[0x100];
+    char directive[0x100];
+    char keyBinding[0x100];
+    char *pFound;
+    char *pEnd;
+    int directiveLen;
+    int bindingLen;
+    int newStringLen;
+    int beginLen;
+    int endLen;
+    char *dst;
+
+    /* line 1311: copy dstString to srcString */
+    memcpy(srcString, dstString, *dstLen);
+    srcString[*dstLen] = '\0';
+
+    /* line 1314: search for "[{" from searchPos */
+    pFound = (char *)strstr(srcString + *searchPos, (const char *)str_002a79bc);
+    if (!pFound)
+        return 0;
+
+    /* line 1318: search for "}]" */
+    pEnd = (char *)strstr(pFound, (const char *)str_002a79c0);
+    if (!pEnd)
+        return 0;
+
+    /* line 1327-1329: compute directive length (excluding "[{" and "}]") */
+    directiveLen = (int)(pEnd - pFound) - 2;
+    if (directiveLen == 0)
+        return 0;
+
+    /* line 1337 */
+    Controls_GetConfig();
+
+    /* line 1338: copy directive text */
+    memcpy(directive, pFound + 2, directiveLen);
+    directive[directiveLen] = '\0';
+
+    /* line 1341: get key binding */
+    if (!GetKeyBindingLocalizedString(directive, keyBinding)) {
+        /* line 1342: fallback to "KEY_UNBOUND" */
+        I_strncpyz(keyBinding, UI_SafeTranslateString((const char *)str_002a79c4), 0x100);
+    }
+
+    /* line 1344: compute strlen of keyBinding using inline repne scasb equivalent */
+    {
+        int len = 0;
+        while (keyBinding[len] != '\0') len++;
+        bindingLen = len;
+    }
+
+    /* line 1346: compute newStringLen */
+    newStringLen = *dstLen - directiveLen + bindingLen - 4;
+
+    /* line 1348: check overflow */
+    if (*dstLen - directiveLen + bindingLen - 3 > 0x100)
+        return 0;
+
+    /* line 1357: compute beginLen = offset of "[{" in srcString */
+    beginLen = (int)(pFound - srcString);
+
+    /* line 1358-1360: write binding into dstString at beginLen */
+    dst = dstString + beginLen;
+    memcpy(dst, keyBinding, bindingLen);
+    dst += bindingLen;
+
+    /* line 1364-1366: compute and copy end portion */
+    endLen = newStringLen - beginLen - bindingLen;
+    memcpy(dst, pEnd + 2, endLen);
+    dst[endLen] = '\0';
+
+    /* line 1368: update searchPos */
+    *searchPos = bindingLen + beginLen;
+
+    /* line 1369: update dstLen */
+    *dstLen = newStringLen;
+
+    return 1;
+}
+#endif
 
 static void CG_LocalizeHudElemString(const char *message, const char *messageType, char *hudElemString)
 {
@@ -1072,6 +1339,7 @@ void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient)
 }
 
 /* line 1461 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CG_PlaySmokeGrenadesAtTime(int gametime)
 {
@@ -3026,6 +3294,4 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "jmp .Lf145828_001474d2\n"
     );
 }
-#else
-static Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString) { return 0; }
 #endif

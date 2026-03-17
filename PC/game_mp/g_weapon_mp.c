@@ -239,7 +239,83 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
     );
 }
 #else
-void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms *wp) { }
+#include <math.h>
+extern float randomf(void);
+extern float Vec3Normalize(vec3_t v);
+extern void *fire_rocket(gentity_t *ent, vec_t *start, vec_t *dir);
+extern void *fire_grenade(gentity_t *ent, vec_t *start, vec_t *vel, int grenType, int fuseTime);
+extern void AngleVectors(vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
+extern void G_GetPlayerViewOrigin(gentity_t *ent, vec_t *origin);
+extern void G_LocationalTrace(void *results, const vec_t *start, const vec_t *end, int passEntityNum, int contentmask, unsigned char *priorityMap);
+extern void G_CheckHitTriggerDamage(gentity_t *attacker, vec_t *start, vec_t *end, int damage, int mod);
+extern void *G_TempEntity(vec_t *origin, int event);
+extern int DirToByte(vec_t *dir);
+extern void G_Damage(gentity_t *target, gentity_t *inflictor, gentity_t *attacker, void *dir, vec_t *point, int damage, int dflags, int mod, int hitLoc, int timeOffset);
+extern void G_GetPlayerViewDirection(gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up);
+extern void *BG_GetWeaponDef(int weaponIndex);
+extern int rand(void);
+
+void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms *wp) {
+    float fAimOffset;
+    float r1, r2;
+    float angle;
+    float cosVal, sinVal;
+    float rightScale, upScale;
+    vec3_t dir;
+    vec3_t launchpos;
+    gentity_t *missile;
+    gclient_t *client;
+    double angRad;
+
+    /* Convert spread to aim offset */
+    angRad = (double)spread * 0.017453292519943295;
+    fAimOffset = (float)tan(angRad);
+    fAimOffset *= 16.0f;
+
+    /* Random angle and radius */
+    r1 = (float)randomf(); /* random [0,1] */
+    r2 = (float)randomf(); /* random [0,1] */
+    angle = r1 * 360.0f;
+    angle = (float)((double)angle * 0.017453292519943295);
+
+    cosVal = cosf(angle);
+    rightScale = r2 * cosVal * fAimOffset;
+    sinVal = sinf(angle);
+    upScale = r2 * sinVal * fAimOffset;
+
+    /* dir = forward * 16 */
+    dir[0] = *(float *)((byte *)wp + 0) * 16.0f;
+    dir[1] = *(float *)((byte *)wp + 4) * 16.0f;
+    dir[2] = *(float *)((byte *)wp + 8) * 16.0f;
+
+    /* dir += right * rightScale */
+    dir[0] += rightScale * *(float *)((byte *)wp + 0xc);
+    dir[1] += rightScale * *(float *)((byte *)wp + 0x10);
+    dir[2] += rightScale * *(float *)((byte *)wp + 0x14);
+
+    /* dir += up * upScale */
+    dir[0] += upScale * *(float *)((byte *)wp + 0x18);
+    dir[1] += upScale * *(float *)((byte *)wp + 0x1c);
+    dir[2] += upScale * *(float *)((byte *)wp + 0x20);
+
+    Vec3Normalize(dir);
+
+    /* Copy launch position */
+    launchpos[0] = *(float *)((byte *)wp + 0x24);
+    launchpos[1] = *(float *)((byte *)wp + 0x28);
+    launchpos[2] = *(float *)((byte *)wp + 0x2c);
+
+    missile = (gentity_t *)fire_rocket((gentity_t *)ent, launchpos, dir);
+
+    /* Kick back */
+    client = *(gclient_t **)((byte *)ent + 0x158);
+    if (client) {
+        float *vel = (float *)((byte *)client + 0x20);
+        vel[0] += *(float *)((byte *)wp + 0) * -64.0f;
+        vel[1] += *(float *)((byte *)wp + 4) * -64.0f;
+        vel[2] += *(float *)((byte *)wp + 8) * -64.0f;
+    }
+}
 #endif
 
 /* line 615 */
@@ -323,7 +399,48 @@ int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms 
     );
 }
 #else
-int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms *wp) { return 0; }
+int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms *wp) {
+    vec3_t vTossVel;
+    float scale;
+    int fuseTime;
+    gentity_t *m;
+    gclient_t *client;
+    float dot;
+    float *forward;
+    void *weapDef;
+
+    /* Get weapon def for projectile speed/up-velocity */
+    weapDef = *(void **)((byte *)wp + 0x3c);
+    scale = (float)*(int *)((byte *)weapDef + 0x384);
+
+    /* vTossVel = forward * scale */
+    vTossVel[0] = *(float *)((byte *)wp + 0) * scale;
+    vTossVel[1] = *(float *)((byte *)wp + 4) * scale;
+    vTossVel[2] = *(float *)((byte *)wp + 8) * scale;
+
+    /* Add upward velocity component */
+    vTossVel[2] += (float)*(int *)((byte *)weapDef + 0x388);
+
+    /* Get fuse time */
+    fuseTime = *(int *)((byte *)weapDef + 0x248);
+
+    /* Fire the grenade */
+    m = (gentity_t *)fire_grenade((gentity_t *)ent, (float *)((byte *)wp + 0x24), vTossVel, grenType, fuseTime);
+
+    /* Normalize toss velocity */
+    Vec3Normalize(vTossVel);
+
+    /* Add velocity dot product to missile origin */
+    client = *(gclient_t **)((byte *)ent + 0x158);
+    forward = (float *)((byte *)client + 0x20);
+    dot = vTossVel[0] * forward[0] + vTossVel[1] * forward[1] + vTossVel[2] * forward[2];
+
+    *(float *)((byte *)m + 0x24) += vTossVel[0] * dot;
+    *(float *)((byte *)m + 0x28) += vTossVel[1] * dot;
+    *(float *)((byte *)m + 0x2c) += vTossVel[2] * dot;
+
+    return (int)m;
+}
 #endif
 
 /* line 797 */
@@ -388,7 +505,39 @@ void G_UseOffHand(gentity_s (*ent)[16])
     );
 }
 #else
-void G_UseOffHand(gentity_s (*ent)[16]) { }
+void G_UseOffHand(gentity_s (*ent)[16]) {
+    vec3_t viewang;
+    vec3_t forward, right, up;
+    vec3_t muzzlePoint;
+    weaponParms wp;
+    gclient_t *client;
+    int weaponIndex;
+    void *weapDef;
+
+    client = *(gclient_t **)((byte *)ent + 0x158);
+
+    /* Get current off-hand weapon index */
+    weaponIndex = *(int *)((byte *)client + 0xd0);
+    weapDef = BG_GetWeaponDef(weaponIndex);
+
+    /* Get view angles from client */
+    viewang[0] = *(float *)((byte *)client + 0xe8);
+    viewang[1] = *(float *)((byte *)client + 0xec);
+    viewang[2] = *(float *)((byte *)client + 0xf0);
+
+    /* Override pitch/yaw with view command angles */
+    viewang[0] = *(float *)((byte *)client + 0x27d8);
+    viewang[1] = *(float *)((byte *)client + 0x27dc);
+
+    /* Build direction vectors */
+    AngleVectors(viewang, (float *)&wp, right, up);
+
+    /* Get muzzle origin */
+    G_GetPlayerViewOrigin((gentity_t *)ent, muzzlePoint);
+
+    /* Fire grenade launcher with off-hand weapon */
+    weapon_grenadelauncher_fire(ent, *(int *)((byte *)client + 0xd0), &wp);
+}
 #endif
 
 /* line 41 */
@@ -566,7 +715,72 @@ Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range,
     );
 }
 #else
-static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range, float width, float height, trace_t *trace, vec_t *endPos) { return 0; }
+static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range, float width, float height, trace_t *trace, vec_t *endPos) {
+    int numTraces;
+    int traceIndex;
+    vec3_t end;
+    float widthScale, heightScale;
+    float fraction;
+    float *origin;
+    float *forward;
+    float *right;
+    float *up;
+
+    if (width > 0.0f || height > 0.0f) {
+        numTraces = 5;
+    } else {
+        numTraces = 1;
+    }
+
+    origin = (float *)((byte *)wp + 0x24);
+    forward = (float *)((byte *)wp + 0);
+    right = (float *)((byte *)wp + 0xc);
+    up = (float *)((byte *)wp + 0x18);
+
+    for (traceIndex = 0; traceIndex < numTraces; traceIndex++) {
+        /* end = origin + forward * range */
+        end[0] = forward[0] * range + origin[0];
+        end[1] = forward[1] * range + origin[1];
+        end[2] = forward[2] * range + origin[2];
+
+        /* Add right offset */
+        widthScale = width * ((float *)&traceOffsets)[traceIndex * 2];
+        end[0] += right[0] * widthScale;
+        end[1] += right[1] * widthScale;
+        end[2] += right[2] * widthScale;
+
+        /* Add up offset */
+        heightScale = height * ((float *)&traceOffsets)[traceIndex * 2 + 1];
+        end[0] += up[0] * heightScale;
+        end[1] += up[1] * heightScale;
+        end[2] += up[2] * heightScale;
+
+        /* Do the trace */
+        G_LocationalTrace(trace, origin, end, *(int *)ent, 0x2802831, (unsigned char *)imp_bulletPriorityMap);
+
+        /* Compute hit position via interpolation */
+        fraction = *(float *)trace;
+        endPos[0] = origin[0] + (end[0] - origin[0]) * fraction;
+        endPos[1] = origin[1] + (end[1] - origin[1]) * fraction;
+        endPos[2] = origin[2] + (end[2] - origin[2]) * fraction;
+
+        /* First trace also checks trigger damage */
+        if (traceIndex == 0) {
+            G_CheckHitTriggerDamage((gentity_t *)ent, origin, endPos, damage, 7);
+        }
+
+        /* Check for entity hit (not pass-through and fraction < 1.0) */
+        if (*(int *)((byte *)trace + 0x10) & 0x10) {
+            /* startsolid - skip */
+        } else if (*(float *)trace == 1.0f) {
+            /* Complete miss - skip */
+        } else {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 #endif
 
 /* line 102 */
@@ -1859,5 +2073,61 @@ qboolean G_GivePlayerWeapon(playerState_t *pPS, int iWeaponIndex)
 }
 
 #else
-void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float width, float height) { }
+void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float width, float height) {
+    int damage;
+    trace_t tr;
+    vec3_t endpos;
+    gentity_t *traceEnt;
+    gentity_t *tent;
+    int traceEntNum;
+    int weaponIndex;
+
+    /* Get melee damage from weapon def */
+    weaponIndex = *(int *)((byte *)ent + 0xc8);
+    damage = *(int *)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1f4);
+
+    if (!Melee_Trace(ent, wp, damage, range, width, height, &tr, endpos))
+        return;
+
+    /* Get trace entity */
+    traceEntNum = *(unsigned short *)((byte *)&tr + 0x20);
+    traceEnt = (gentity_t *)((byte *)imp_g_entities + traceEntNum * 0x230);
+
+    /* Create temp entity for melee effect */
+    if (*(gclient_t **)((byte *)traceEnt + 0x158) != NULL) {
+        /* Hit a player - blood effect */
+        tent = (gentity_t *)G_TempEntity(endpos, 0xad);
+    } else {
+        /* Hit world/object - impact effect */
+        tent = (gentity_t *)G_TempEntity(endpos, 0xae);
+    }
+
+    /* Set tent fields */
+    *(int *)((byte *)tent + 0x74) = traceEntNum;
+
+    /* DirToByte from trace normal */
+    {
+        int dirByte = DirToByte((float *)((byte *)&tr + 0x14));
+        *(int *)((byte *)tent + 0xa0) = (unsigned char)dirByte;
+    }
+
+    /* Copy weapon index */
+    *(int *)((byte *)tent + 0xc8) = *(int *)((byte *)ent + 0xc8);
+
+    /* Check if hit world entity */
+    if (traceEntNum == 0x3fe)
+        return;
+
+    /* Check if trace entity takes damage */
+    if (!*(byte *)((byte *)traceEnt + 0x161))
+        return;
+
+    /* Apply damage */
+    {
+        int locBits = *(unsigned short *)((byte *)&tr + 0x24);
+        int randVal = rand();
+        int dmg = damage + (randVal % 5);
+        G_Damage(traceEnt, (gentity_t *)ent, (gentity_t *)ent, wp, endpos, dmg, 7, 0, locBits, 0);
+    }
+}
 #endif

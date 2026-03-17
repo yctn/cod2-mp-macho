@@ -85,7 +85,13 @@ void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mi
     );
 }
 #else
-void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask) { }
+void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask) {
+    /* Look up the trace handler from pmoveHandlers[pm->handler].trace and tail-call it.
+       pm->handler is at offset 0xe4 (byte field). */
+    unsigned char handlerByte = *(unsigned char *)((byte *)pm + 0xe4);
+    pmove_trace handler = pmoveHandlers[handlerByte].trace;
+    handler(results, start, mins, maxs, end, passEntityNum, contentMask);
+}
 #endif
 
 /* line 294 */
@@ -142,7 +148,31 @@ void PM_AddTouchEnt(pmove_t *pm, int entityNum)
     );
 }
 #else
-void PM_AddTouchEnt(pmove_t *pm, int entityNum) { }
+void PM_AddTouchEnt(pmove_t *pm, int entityNum) {
+    int numtouch;
+    int i;
+
+    /* ENTITYNUM_WORLD = 0x3fe */
+    if (entityNum == 0x3fe)
+        return;
+
+    /* pm->numtouch is at offset 0x40, pm->touchents[] starts at offset 0x44 */
+    numtouch = *(int *)((byte *)pm + 0x40);
+
+    /* MAX_TOUCHENTS = 32 */
+    if (numtouch == 0x20)
+        return;
+
+    /* Check if entityNum is already in the touch list */
+    for (i = 0; i < numtouch; i++) {
+        if (*(int *)((byte *)pm + 0x44 + i * 4) == entityNum)
+            return;
+    }
+
+    /* Add the entity */
+    *(int *)((byte *)pm + 0x44 + numtouch * 4) = entityNum;
+    *(int *)((byte *)pm + 0x40) = numtouch + 1;
+}
 #endif
 
 void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerState_t *ps);
@@ -201,7 +231,21 @@ int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDow
     );
 }
 #else
-int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDown) { return 0; }
+int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDown) {
+    /* iTarget 0xb (11 = prone height) always returns 400ms */
+    if (iTarget == 0xb)
+        return 0x190; /* 400 */
+
+    /* iTarget 0x28 (40 = stand height): if going down returns 200ms, else 400ms */
+    if (iTarget == 0x28) {
+        if (bDown)
+            return 0xc8; /* 200 */
+        return 0x190; /* 400 */
+    }
+
+    /* Default: 200ms */
+    return 0xc8; /* 200 */
+}
 #endif
 
 /* line 3954 */
@@ -249,7 +293,22 @@ float BG_GetSpeed(const playerState_t *ps, int time)
     );
 }
 #else
-float BG_GetSpeed(const playerState_t *ps, int time) { return 0.0f; }
+float BG_GetSpeed(const playerState_t *ps, int time) {
+    /* ps+0xc flags: bit 5 (0x20) = noclip/moving */
+    if (*(int *)((byte *)ps + 0xc) & 0x20) {
+        /* Check if enough time has passed since ps+0x70 */
+        int elapsed = time - *(int *)((byte *)ps + 0x70);
+        if (elapsed > 0x1f3) /* 499 */
+            return *(float *)((byte *)ps + 0x28); /* return ps->velocity[2] */
+        return 0.0f;
+    }
+    /* Compute 2D speed: sqrt(vx*vx + vy*vy) */
+    {
+        float vx = *(float *)((byte *)ps + 0x20);
+        float vy = *(float *)((byte *)ps + 0x24);
+        return sqrtf(vx * vx + vy * vy);
+    }
+}
 #endif
 
 /* line 3530 */
@@ -325,6 +384,8 @@ qboolean BG_CheckProneTurned(void)
     );
 }
 #else
+/* NOTE: BG_CheckProneTurned uses register calling convention on x86:
+   eax=ps, edx=handler, xmm0=newProneYaw. Only called from asm. */
 static qboolean BG_CheckProneTurned(void) { return 0; }
 #endif
 
@@ -370,7 +431,32 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm)
     );
 }
 #else
-qboolean PM_ShouldMakeFootsteps(pmove_t *pm) { return 0; }
+qboolean PM_ShouldMakeFootsteps(pmove_t *pm) {
+    playerState_t *ps = *(playerState_t **)pm; /* pm->ps at offset 0 */
+    int flags, hasSprintFlag, stance;
+
+    flags = *(int *)((byte *)ps + 0xc);
+    hasSprintFlag = flags & 0x100;
+
+    /* Check stance: offset 0xf4 in ps */
+    stance = *(int *)((byte *)ps + 0xf4);
+    if (stance == 0x28)  /* stand height (40) */
+        return 0;
+    if (stance == 0xb)   /* prone height (11) */
+        return 0;
+
+    /* Check sprint flag */
+    if (hasSprintFlag)
+        return 0;
+
+    /* Compare pm->xyspeed (offset 0xdc) with footsteps threshold dvar */
+    {
+        void *threshDvar = *(void **)imp_player_footstepsThreshhold;
+        float threshold = *(float *)((byte *)threshDvar + 8);
+        float xyspeed = *(float *)((byte *)pm + 0xdc);
+        return xyspeed >= threshold;
+    }
+}
 #endif
 
 /* line 330 */
@@ -418,7 +504,28 @@ void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out)
     );
 }
 #else
-void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out) { }
+void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out) {
+    float dot, scale, overbounce;
+
+    /* DotProduct(in, normal) */
+    dot = in[0] * normal[0] + in[1] * normal[1] + in[2] * normal[2];
+
+    /* Compute scale with overbounce:
+       scale = dot + fabs(dot) * (-0.001f)
+       overbounce = -scale */
+    {
+        float absDot = dot;
+        if (absDot < 0.0f)
+            absDot = -absDot;
+        scale = dot + absDot * (-0.001f);
+    }
+    overbounce = -scale;
+
+    /* out = in + normal * overbounce */
+    out[0] = in[0] + normal[0] * overbounce;
+    out[1] = in[1] + normal[1] * overbounce;
+    out[2] = in[2] + normal[2] * overbounce;
+}
 #endif
 
 /* line 478 */
@@ -9029,5 +9136,124 @@ void Pmove(pmove_t *pm)
 }
 
 #else
-static void PM_Accelerate(pml_t *pml) { }
+/* NOTE: PM_Accelerate uses register calling convention on x86:
+   eax=ps, edx=pml, ecx=wishdir, xmm0=wishspeed, xmm1=accel.
+   The prototype here doesn't match. Under Emscripten, callers (also in asm)
+   are not compiled, so this stub is never called. The _impl below contains
+   the faithful C logic for reference/future use. */
+static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishdir, float wishspeed, float accel) {
+    float addspeed, accelspeed, currentspeed;
+    vec_t *velocity;
+
+    /* ps+0xc flags: bit 5 (0x20) = noclip/spectator */
+    if (*(int *)((byte *)ps + 0xc) & 0x20) {
+        /* Noclip/spectator acceleration: direct velocity push */
+        float pushDir[3], pushLen, push;
+
+        /* wishvel = wishdir * wishspeed */
+        pushDir[0] = wishspeed * wishdir[0] - *(float *)((byte *)ps + 0x20);
+        pushDir[1] = wishspeed * wishdir[1] - *(float *)((byte *)ps + 0x24);
+        pushDir[2] = wishspeed * wishdir[2] - *(float *)((byte *)ps + 0x28);
+
+        pushLen = Vec3Normalize(pushDir);
+
+        /* push = min(pushLen, accel * pml->frametime * wishspeed) */
+        push = accel * *(float *)((byte *)pml + 0x24) * wishspeed;
+        if (pushLen < push)
+            push = pushLen;
+
+        /* velocity += pushDir * push */
+        *(float *)((byte *)ps + 0x20) += pushDir[0] * push;
+        *(float *)((byte *)ps + 0x24) += pushDir[1] * push;
+        *(float *)((byte *)ps + 0x28) += pushDir[2] * push;
+        return;
+    }
+
+    /* Normal acceleration */
+    velocity = (vec_t *)((byte *)ps + 0x20);
+
+    /* currentspeed = DotProduct(velocity, wishdir) */
+    currentspeed = velocity[0] * wishdir[0] + velocity[1] * wishdir[1] + velocity[2] * wishdir[2];
+
+    /* addspeed = wishspeed - currentspeed */
+    addspeed = wishspeed - currentspeed;
+    if (addspeed <= 0.0f)
+        return;
+
+    /* accelspeed = accel * max(wishspeed, stopspeed) * frametime */
+    {
+        float stopspeed_val = *(float *)((byte *)(*(void **)imp_stopspeed) + 8);
+        float maxspd = wishspeed;
+        if (stopspeed_val > maxspd)
+            maxspd = stopspeed_val;
+        accelspeed = accel * *(float *)((byte *)pml + 0x24) * maxspd;
+    }
+
+    /* Clamp accelspeed to addspeed */
+    if (accelspeed > addspeed)
+        accelspeed = addspeed;
+
+    /* Inertia check: if not noclip mode 2 */
+    if (*(int *)((byte *)ps + 4) != 2) {
+        float inertiaMax_val = *(float *)((byte *)(*(void **)imp_inertiaMax) + 8);
+        if (accelspeed > inertiaMax_val) {
+            /* Check if direction change is significant */
+            float oldVel[2], newVel[2], dot;
+
+            oldVel[0] = *(float *)((byte *)ps + 0x2c);
+            oldVel[1] = *(float *)((byte *)ps + 0x30);
+
+            /* Check if old velocity magnitude is significant */
+            {
+                double mag2 = (double)(oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]);
+                if (mag2 < 0.0001) {
+                    /* Small velocity, just use inertiaMax */
+                    accelspeed = inertiaMax_val;
+                    goto apply;
+                }
+            }
+
+            /* Compute new velocity direction */
+            newVel[0] = accelspeed * wishdir[0] + velocity[0];
+            newVel[1] = accelspeed * wishdir[1] + velocity[1];
+
+            Vec2Normalize(oldVel);
+            Vec2Normalize(newVel);
+
+            /* dot = DotProduct2D(oldVel, newVel) */
+            dot = oldVel[0] * newVel[0] + oldVel[1] * newVel[1];
+
+            {
+                float inertiaAngle_val = *(float *)((byte *)(*(void **)imp_inertiaAngle) + 8);
+                if (dot >= inertiaAngle_val) {
+                    /* Direction change within tolerance */
+                    goto apply;
+                }
+            }
+
+            /* Direction change too large, clamp to inertiaMax */
+            if (*(byte *)((byte *)(*(void **)imp_inertiaDebug) + 8)) {
+                Com_Printf("angle is %f (oldVel is (%f,%f), vel is (%f, %f))\n",
+                    (double)dot, (double)oldVel[0], (double)oldVel[1],
+                    (double)newVel[0], (double)newVel[1]);
+                Com_Printf("clamping acceleration from %f to %f\n",
+                    (double)accelspeed,
+                    (double)*(float *)((byte *)(*(void **)imp_inertiaMax) + 8));
+            }
+            accelspeed = *(float *)((byte *)(*(void **)imp_inertiaMax) + 8);
+        }
+    }
+
+apply:
+    /* Apply acceleration: velocity += wishdir * accelspeed */
+    velocity[0] += wishdir[0] * accelspeed;
+    velocity[1] += wishdir[1] * accelspeed;
+    velocity[2] += wishdir[2] * accelspeed;
+}
+
+static void PM_Accelerate(pml_t *pml) {
+    /* Register-convention stub: not callable from standard C.
+       See PM_Accelerate_impl for the actual algorithm. */
+    (void)pml;
+}
 #endif

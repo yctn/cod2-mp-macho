@@ -11,6 +11,32 @@
 
 extern vec3_t ejectBrassCasingOrigin; /* 0x0 */
 extern int removeMeWhenMPStopsCrashingInHere; /* 0x0 */
+extern void *BG_GetWeaponDef(int weapIndex);
+extern void SCR_UpdateScreen(void);
+extern struct XAnim_s *XAnimCreateAnims(const char *debugName, int size, void *Alloc);
+extern void XAnimBlend(struct XAnim_s *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags);
+extern void XAnimPrecache(const char *name, void *Alloc);
+extern void XAnimCreate(struct XAnim_s *anims, unsigned int animIndex, const char *name);
+extern void *XAnimCreateTree(void *anims, void *Alloc);
+extern void XAnimClearTreeGoalWeights(void *tree, int animIndex, int recursive);
+extern void XAnimSetGoalWeight(void *tree, int animIndex, float goalWeight, int bRestart, float goalTime, int notifyType, int notifyClient, int bReset);
+extern void XAnimSetTime(void *tree, int animIndex, float time);
+extern int XAnimIsLooped(struct XAnim_s *anims, int animIndex);
+extern int XAnimGetLengthMsec(struct XAnim_s *anims, int animIndex);
+extern int XModelBad(void *model);
+extern void *Com_GetClientDObj(int entityNum, int localClientNum);
+extern void DObjUpdateClientInfo(struct DObj_s *obj, float timescale);
+extern void Com_Error(int code, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern int CL_RegisterMaterial(const char *name, int flags);
+extern int CL_RegisterMaterialNoMip(const char *name, int flags);
+extern struct XModel *CL_RegisterModel(const char *name);
+extern int FX_RegisterEffect(const char *name);
+extern void *Com_FindSoundAlias(const char *name);
+extern const char *SEH_StringEd_GetString(const char *str);
+extern int Com_ClientDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void CL_RegisterHudMsgIconMaterial(const char *name);
 static const int iSlotPreferenceOrder[2]; /* iSlotPreferenceOrder */
 extern weapSlot_t (*s_barrelTags[4])[64]; /* s_barrelTags */
 
@@ -898,6 +924,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
 }
 
 /* line 396 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CG_RegisterWeapon(int weaponNum)
 {
@@ -1841,6 +1868,503 @@ void CG_RegisterWeapon(int weaponNum)
         "jmp .Lf1d5ef8_001d6d22\n"
     );
 }
+#else
+void CG_RegisterWeapon(int weaponNum)
+{
+    byte *weapDef;
+    byte *weapInfo;
+    byte *itemInfo;
+    struct XAnim_s *pAnims;
+    void *pAnimTree;
+    char szModelFile[64];
+    int dobjHandle;
+    int i;
+    float rate;
+    byte dobjModels[16 * 4]; /* DObjModel_s array, 4 entries x 16 bytes each */
+
+    /* line 411 */
+    removeMeWhenMPStopsCrashingInHere = weaponNum;
+
+    /* line 414 */
+    if (weaponNum == 0)
+        return;
+
+    /* line 424: compute weapInfo pointer = cg_weapons + weaponNum * 0x1b4 */
+    {
+        byte *cg_weap_base = *(byte **)imp_cg_weapons;
+        weapInfo = cg_weap_base + weaponNum * 0x1b4;
+    }
+
+    /* line 425 */
+    weapDef = (byte *)BG_GetWeaponDef(weaponNum);
+
+    /* line 427: check if already registered */
+    if (*(int *)(weapInfo + 0xa8) != 0)
+        return;
+
+    /* line 430 */
+    SCR_UpdateScreen();
+
+    /* line 432 */
+    memset(weapInfo, 0, 0x1b4);
+    /* line 433 */
+    *(int *)(weapInfo + 0xa8) = 1;
+
+    /* line 436: itemInfo = bg_itemlist + weaponNum * 0x2c */
+    {
+        byte *bg_items = (byte *)*(int *)imp_bg_itemlist;
+        *(int *)(weapInfo + 0xac) = (int)(bg_items + weaponNum * 0x2c);
+    }
+
+    /* line 438: itemInfo = cg_items + weaponNum * 0x24 */
+    {
+        byte *cg_itm = *(byte **)imp_cg_items;
+        itemInfo = cg_itm + weaponNum * 0x24;
+    }
+
+    /* line 440 */
+    CG_RegisterItemVisuals(weaponNum);
+
+    /* line 442 */
+    *(int *)(weapInfo + 0xa0) = -1;
+
+    /* line 444: check if viewmodel hand model is specified */
+    if (*(char *)*(int *)(weapDef + 0xc) == '\0')
+        goto after_viewmodel;
+
+    /* line 447: check if hand model name is set */
+    if (*(int *)(weapDef + 0x10) == 0 || *(char *)*(int *)(weapDef + 0x10) == '\0') {
+        Com_Error(1, (const char *)str_002b7be8, *(char **)(weapDef + 4));
+    }
+
+    /* line 450-453: init dobjModels */
+    *(int *)(dobjModels + 0x00) = 0; /* model */
+    *(int *)(dobjModels + 0x04) = 0; /* boneName for slot 0 */
+    *(int *)(dobjModels + 0x08) = (int)str_002b6e38; /* boneName for slot 0 */
+    *(int *)(dobjModels + 0x0c) = 0; /* ignoreCollision for slot 0 */
+
+    /* line 456: build hand model path */
+    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, *(char **)(weapDef + 0x10));
+    *(int *)(dobjModels + 0x00) = (int)CL_RegisterModel(szModelFile);
+
+    /* line 460: build viewmodel path */
+    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, *(char **)(weapDef + 0xc));
+    *(int *)(dobjModels + 0x10) = (int)CL_RegisterModel(szModelFile);
+
+    /* line 463: check if models are bad */
+    if (XModelBad(*(void **)(dobjModels + 0x00)) || XModelBad(*(void **)(dobjModels + 0x10))) {
+        CG_Weapons_SetToDefault(weaponNum, (weaponInfo_s (*)[4])dobjModels);
+    }
+
+    /* line 467: check if idle anim specified */
+    if (*(int *)(weapDef + 0x18) == 0 || *(char *)*(int *)(weapDef + 0x18) == '\0') {
+        Com_Error(1, (const char *)str_002b7c20, *(char **)(weapDef + 4));
+    }
+
+    /* line 471: create anim tree */
+    pAnims = XAnimCreateAnims((const char *)str_002b7c54, 0x17, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
+
+    /* line 475: blend root */
+    XAnimBlend(pAnims, 0, (const char *)str_0021df18, 1, 0x16, 0);
+
+    /* line 478-496: create anims for each weapon anim slot */
+    {
+        byte *animPtr = weapDef;
+        i = 1;
+        while (i < 0x17) {
+            const char *animName = *(const char **)(animPtr + 0x18);
+            if (*animName != '\0') {
+                XAnimPrecache(animName, (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+                XAnimCreate(pAnims, i, animName);
+            } else {
+                /* line 492: use default idle anim */
+                XAnimPrecache(*(const char **)(weapDef + 0x18), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+                XAnimCreate(pAnims, i, *(const char **)(weapDef + 0x18));
+            }
+            i++;
+            animPtr += 4;
+        }
+    }
+
+    /* line 499: create anim tree */
+    pAnimTree = XAnimCreateTree((void *)pAnims, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
+
+    /* line 503 */
+    *(int *)(weapInfo + 0xa4) = (int)pAnimTree;
+
+    /* line 506-507: set rate = 1.0 for all 0x17 anims */
+    {
+        byte *ratePtr = weapInfo;
+        int count = 0x17;
+        while (count > 0) {
+            *(int *)(ratePtr + 4) = 0x3f800000; /* 1.0f */
+            ratePtr += 4;
+            count--;
+        }
+    }
+
+    /* line 510-512: compute fire rate */
+    {
+        float fireRate = 0.0f;
+        if (*(int *)(weapDef + 0x210) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 4);
+            fireRate = (float)msec / (float)*(int *)(weapDef + 0x210);
+        }
+        *(float *)(weapInfo + 0x14) = fireRate;
+    }
+
+    /* line 515-517: melee rate */
+    {
+        float meleeRate = 0.0f;
+        if (*(int *)(weapDef + 0x214) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 7);
+            meleeRate = (float)msec / (float)*(int *)(weapDef + 0x214);
+        }
+        *(float *)(weapInfo + 0x20) = meleeRate;
+    }
+
+    /* line 520-522 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x218) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 8);
+            r = (float)msec / (float)*(int *)(weapDef + 0x218);
+        }
+        *(float *)(weapInfo + 0x24) = r;
+    }
+
+    /* line 525-527 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x21c) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 9);
+            r = (float)msec / (float)*(int *)(weapDef + 0x21c);
+        }
+        *(float *)(weapInfo + 0x28) = r;
+    }
+
+    /* line 530-532 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x224) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xa);
+            r = (float)msec / (float)*(int *)(weapDef + 0x224);
+        }
+        *(float *)(weapInfo + 0x2c) = r;
+    }
+
+    /* line 535-537 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x218) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xb);
+            r = (float)msec / (float)*(int *)(weapDef + 0x218);
+        }
+        *(float *)(weapInfo + 0x30) = r;
+    }
+
+    /* line 540-542 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x234) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xc);
+            r = (float)msec / (float)*(int *)(weapDef + 0x234);
+        }
+        *(float *)(weapInfo + 0x34) = r;
+    }
+
+    /* line 545-547 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x230) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xd);
+            r = (float)msec / (float)*(int *)(weapDef + 0x230);
+        }
+        *(float *)(weapInfo + 0x38) = r;
+    }
+
+    /* line 550-552 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x23c) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xe);
+            r = (float)msec / (float)*(int *)(weapDef + 0x23c);
+        }
+        *(float *)(weapInfo + 0x3c) = r;
+    }
+
+    /* line 555-557 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x238) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0xf);
+            r = (float)msec / (float)*(int *)(weapDef + 0x238);
+        }
+        *(float *)(weapInfo + 0x40) = r;
+    }
+
+    /* line 560-562 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x244) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0x10);
+            r = (float)msec / (float)*(int *)(weapDef + 0x244);
+        }
+        *(float *)(weapInfo + 0x44) = r;
+    }
+
+    /* line 565-567 */
+    {
+        float r = 0.0f;
+        if (*(int *)(weapDef + 0x240) > 0) {
+            int msec = XAnimGetLengthMsec(pAnims, 0x11);
+            r = (float)msec / (float)*(int *)(weapDef + 0x240);
+        }
+        *(float *)(weapInfo + 0x48) = r;
+    }
+
+    /* line 570: check if ADS fire anim (0x15) is looped */
+    if (*(char *)*(int *)(weapDef + 0x68) != '\0') {
+        if (XAnimIsLooped(pAnims, 0x15)) {
+            Com_Error(1, (const char *)str_002b7c60, *(char **)(weapDef + 0x68));
+        }
+    }
+
+    /* line 573: check if ADS up anim (0x16) is looped */
+    if (*(char *)*(int *)(weapDef + 0x6c) != '\0') {
+        if (XAnimIsLooped(pAnims, 0x16)) {
+            Com_Error(1, (const char *)str_002b7c60, *(char **)(weapDef + 0x6c));
+        }
+    }
+
+    /* line 581: create DObj */
+    dobjHandle = weaponNum + 0x400;
+    Com_ClientDObjCreate((DObjModel_s *)dobjModels, 2, (struct XAnimTree_s *)pAnimTree, dobjHandle);
+
+    /* line 582 */
+    *(int *)(weapInfo + 0x00) = (int)Com_GetClientDObj(dobjHandle, 0);
+
+    /* line 584 */
+    I_strncpyz((char *)(weapInfo + 0x60), *(const char **)(weapDef + 0x10), 0x40);
+
+    /* line 587 */
+    XAnimClearTreeGoalWeights(pAnimTree, 0, 0);
+
+    /* line 588: set goal weight for idle anim */
+    {
+        float w_1f = 1.0f;
+        XAnimSetGoalWeight(pAnimTree, 0, w_1f, 0, *(float *)(weapInfo + 4), 0, 0, 1);
+    }
+
+    /* line 589: set goal weight for second anim */
+    {
+        float w_1f = 1.0f;
+        XAnimSetGoalWeight(pAnimTree, 1, w_1f, 0, *(float *)(weapInfo + 8), 0, 0, 1);
+    }
+
+    /* line 591: if ADS up anim exists */
+    if (*(char *)*(int *)(weapDef + 0x6c) != '\0') {
+        /* line 593 */
+        float w_1f = 1.0f;
+        XAnimSetGoalWeight(pAnimTree, 0x16, w_1f, 0, 0, 0, 0, 1);
+        /* line 594 */
+        XAnimSetTime(pAnimTree, 0x16, w_1f);
+    }
+
+    /* line 597: update client info with timescale 0.05 */
+    DObjUpdateClientInfo(*(struct DObj_s **)(weapInfo + 0x00), 0.05f);
+
+after_viewmodel:
+    /* line 601: register world model */
+    if (*(char *)*(int *)(weapDef + 0x1b4) != '\0') {
+        *(int *)(weapInfo + 0xbc) = (int)CL_RegisterModel(*(const char **)(weapDef + 0x1b4));
+        /* line 607 */
+        if (*(char *)*(int *)(weapDef + 0x1b4) != '\0' && *(int *)(weapInfo + 0xbc) == 0) {
+            Com_Printf((const char *)str_002b7c94, *(char **)(weapDef + 0x1b4));
+        }
+    }
+
+    /* line 610: register ammo counter material */
+    if (*(char *)*(int *)(weapDef + 0x118) != '\0') {
+        *(int *)(weapInfo + 0x178) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x118), 7);
+    }
+
+    /* line 612: register ammo counter clip material */
+    if (*(char *)*(int *)(weapDef + 0x11c) != '\0') {
+        *(int *)(weapInfo + 0x17c) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x11c), 7);
+    }
+
+    /* line 614: register overlay material */
+    if (*(char *)*(int *)(weapDef + 0x274) != '\0') {
+        *(int *)(weapInfo + 0x180) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x274), 7);
+    }
+
+    /* line 617: register flash effect */
+    if (*(char *)*(int *)(weapDef + 0x90) != '\0') {
+        *(int *)(weapInfo + 0xc0) = FX_RegisterEffect(*(const char **)(weapDef + 0x90));
+    }
+
+    /* line 619: register ads flash effect */
+    if (*(char *)*(int *)(weapDef + 0x94) != '\0') {
+        *(int *)(weapInfo + 0xc4) = FX_RegisterEffect(*(const char **)(weapDef + 0x94));
+    }
+
+    /* line 623-638: register sound aliases */
+    *(int *)(weapInfo + 0xd4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa0));
+    *(int *)(weapInfo + 0xd8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa4));
+    *(int *)(weapInfo + 0xdc) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa8));
+    *(int *)(weapInfo + 0xe0) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xac));
+    *(int *)(weapInfo + 0xe4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc0));
+    *(int *)(weapInfo + 0xe8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc4));
+    *(int *)(weapInfo + 0xec) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc8));
+    *(int *)(weapInfo + 0xf0) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xcc));
+    *(int *)(weapInfo + 0xf4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd0));
+    *(int *)(weapInfo + 0xf8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd4));
+    *(int *)(weapInfo + 0xfc) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd8));
+    *(int *)(weapInfo + 0x100) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xdc));
+    *(int *)(weapInfo + 0x104) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe0));
+    *(int *)(weapInfo + 0x108) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe4));
+    *(int *)(weapInfo + 0x10c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe8));
+    *(int *)(weapInfo + 0x110) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xec));
+    *(int *)(weapInfo + 0x114) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf0));
+
+    /* line 640: last fire sound */
+    *(int *)(weapInfo + 0x118) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf4));
+    if (*(int *)(weapInfo + 0x118) == 0) {
+        /* line 642: fallback */
+        *(int *)(weapInfo + 0x118) = (int)Com_FindSoundAlias((const char *)str_002b7cc4);
+    }
+
+    /* line 643-644 */
+    *(int *)(weapInfo + 0x11c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf8));
+    *(int *)(weapInfo + 0x120) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xfc));
+    if (*(int *)(weapInfo + 0x120) == 0) {
+        /* line 646: fallback */
+        *(int *)(weapInfo + 0x120) = (int)Com_FindSoundAlias((const char *)str_002b7cd0);
+    }
+
+    /* line 647-650 */
+    *(int *)(weapInfo + 0x124) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x100));
+    *(int *)(weapInfo + 0x128) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x104));
+    *(int *)(weapInfo + 0x12c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x108));
+    *(int *)(weapInfo + 0x130) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x10c));
+
+    /* line 652: pickup sound */
+    if (*(int *)(itemInfo + 0x1c) == 0) {
+        *(int *)(itemInfo + 0x1c) = (int)Com_FindSoundAlias((const char *)str_002b7ce0);
+    }
+
+    /* line 654 */
+    *(int *)(itemInfo + 0x20) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x9c));
+    if (*(int *)(itemInfo + 0x20) == 0) {
+        *(int *)(itemInfo + 0x20) = (int)Com_FindSoundAlias((const char *)str_002b7cec);
+    }
+
+    /* line 658: register shell eject effect */
+    if (*(char *)*(int *)(weapDef + 0x110) != '\0') {
+        *(int *)(weapInfo + 0x15c) = FX_RegisterEffect(*(const char **)(weapDef + 0x110));
+    }
+
+    /* line 661: register second shell eject effect */
+    if (*(char *)*(int *)(weapDef + 0x114) != '\0') {
+        *(int *)(weapInfo + 0x160) = FX_RegisterEffect(*(const char **)(weapDef + 0x114));
+    } else {
+        /* line 664: copy first to second */
+        *(int *)(weapInfo + 0x160) = *(int *)(weapInfo + 0x15c);
+    }
+
+    /* line 666: register projectile model */
+    if (*(char *)*(int *)(weapDef + 0x38c) != '\0') {
+        *(int *)(weapInfo + 0x140) = (int)CL_RegisterModel(*(const char **)(weapDef + 0x38c));
+        if (*(int *)(weapInfo + 0x140) == 0) {
+            Com_Error(1, (const char *)str_002b7d00, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x1b4));
+        }
+    }
+
+    /* line 673: register projectile trail effect */
+    if (*(char *)*(int *)(weapDef + 0x394) != '\0') {
+        *(int *)(weapInfo + 0x164) = FX_RegisterEffect(*(const char **)(weapDef + 0x394));
+    }
+
+    /* line 675: register projectile impact sound */
+    *(int *)(weapInfo + 0x168) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x398));
+
+    /* line 676: register turret overheat effect */
+    if (*(char *)*(int *)(weapDef + 0x458) != '\0') {
+        *(int *)(weapInfo + 0x16c) = FX_RegisterEffect(*(const char **)(weapDef + 0x458));
+    }
+
+    /* line 678: turret barrel spin speed */
+    *(float *)(weapInfo + 0x148) = (float)*(int *)(weapDef + 0x45c);
+
+    /* line 680: register weapon icon material */
+    if (*(char *)*(int *)(weapDef + 0x1b8) != '\0') {
+        *(int *)(weapInfo + 0x138) = CL_RegisterMaterial(*(const char **)(weapDef + 0x1b8), 7);
+        /* line 683 */
+        {
+            byte *cgsPtr = *(byte **)imp_cgs;
+            *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(weapInfo + 0x138);
+        }
+    } else {
+        /* line 688: use hint_usable as fallback icon */
+        byte *cgsPtr = *(byte **)imp_cgs;
+        *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(cgsPtr + 0xba4c);
+    }
+
+    /* line 691: register kill icon */
+    if (*(char *)*(int *)(weapDef + 0x34c) != '\0') {
+        CL_RegisterMaterial(*(const char **)(weapDef + 0x34c), 7);
+        CL_RegisterHudMsgIconMaterial(*(const char **)(weapDef + 0x34c));
+    }
+
+    /* line 697: register ammo icon */
+    if (*(char *)*(int *)(weapDef + 0x1bc) != '\0') {
+        *(int *)(weapInfo + 0x13c) = CL_RegisterMaterial(*(const char **)(weapDef + 0x1bc), 7);
+    }
+
+    /* line 702: translate display name */
+    *(int *)(weapInfo + 0xb0) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 4));
+    if (*(int *)(weapInfo + 0xb0) == 0) {
+        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
+            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
+                Com_Error(6, (const char *)str_002b7d3c, *(char **)(weapDef + 0x00), *(char **)(weapDef + 4));
+            } else {
+                Com_Printf((const char *)str_002b7d70, *(char **)(weapDef + 0x00), *(char **)(weapDef + 4));
+            }
+        }
+        /* line 712 */
+        *(int *)(weapInfo + 0xb0) = *(int *)(weapDef + 4);
+    }
+
+    /* line 715: translate mode name */
+    *(int *)(weapInfo + 0xb4) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 0x70));
+    if (*(int *)(weapInfo + 0xb4) == 0) {
+        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
+            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
+                Com_Error(6, (const char *)str_002b7db0, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x70));
+            } else {
+                Com_Printf((const char *)str_002b7de0, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x70));
+            }
+        }
+        /* line 725 */
+        *(int *)(weapInfo + 0xb4) = *(int *)(weapDef + 0x70);
+    }
+
+    /* line 728: translate AI overlay description */
+    *(int *)(weapInfo + 0xb8) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 8));
+    if (*(int *)(weapInfo + 0xb8) == 0) {
+        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
+            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
+                Com_Error(6, (const char *)str_002b7e1c, *(char **)(weapDef + 0x00), *(char **)(weapDef + 8));
+            } else {
+                Com_Printf((const char *)str_002b7e58, *(char **)(weapDef + 0x00), *(char **)(weapDef + 8));
+            }
+        }
+        /* line 738 */
+        *(int *)(weapInfo + 0xb8) = *(int *)(weapDef + 8);
+    }
+}
+#endif
 
 /* line 843 */
 __attribute__((naked))

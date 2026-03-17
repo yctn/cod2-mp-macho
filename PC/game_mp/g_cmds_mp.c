@@ -3271,5 +3271,63 @@ void ClientCommand(int clientNum)
     );
 }
 #else
-qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) { return 0; }
+extern void Com_Error(int code, const char *fmt, ...);
+extern int SV_GetArchivedClientInfo(int clientNum, void *cmd, void *ps, void *cs);
+extern qboolean G_ClientCanSpectateTeam(gclient_t *client, int team);
+
+qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
+    int clientnum;
+    int original;
+    gclient_t *client;
+    playerState_t ps;
+    clientState_t cs;
+    int maxclients;
+
+    if (dir != 1 && dir != -1) {
+        Com_Error(1, str_002b3724, dir);
+    }
+
+    client = *(gclient_t **)((byte *)ent + 0x158);
+    /* Check session state == 2 (spectating) */
+    if (*(int *)((byte *)client + 0x26a8) != 2)
+        return 0;
+
+    /* Check forceSpectatorClient >= 0 */
+    if (*(int *)((byte *)client + 0x26ac) >= 0)
+        return 0;
+
+    /* Get spectatorClient */
+    clientnum = *(int *)((byte *)client + 0x27a8);
+    if (clientnum < 0)
+        clientnum = 0;
+
+    original = clientnum;
+
+    for (;;) {
+        clientnum += dir;
+
+        maxclients = *(int *)((byte *)imp_level + 0x1e4);
+        if (clientnum >= maxclients) {
+            clientnum = 0;
+        }
+        if (clientnum == -1) {
+            clientnum = maxclients - 1;
+        }
+
+        /* Try to get archived client info */
+        client = *(gclient_t **)((byte *)ent + 0x158);
+        if (SV_GetArchivedClientInfo(clientnum, (byte *)client + 0x26b4, &ps, &cs)) {
+            /* Check if we can spectate this team */
+            if (G_ClientCanSpectateTeam(*(gclient_t **)((byte *)ent + 0x158), *(int *)((byte *)&cs + 4))) {
+                /* Set spectatorClient and session state */
+                *(int *)((byte *)(*(gclient_t **)((byte *)ent + 0x158)) + 0x27a8) = clientnum;
+                *(int *)((byte *)(*(gclient_t **)((byte *)ent + 0x158)) + 0x26a8) = 2;
+                return 1;
+            }
+        }
+
+        if (clientnum == original)
+            return 0;
+    }
+}
 #endif

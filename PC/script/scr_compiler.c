@@ -10,6 +10,11 @@
 
 extern struct scrCompilePub_t scrCompilePub; /* 0x0 */
 extern void Z_FreeInternal(void *ptr);
+extern unsigned int FindVariable(unsigned int parentId, unsigned int value);
+extern int Scr_EvalVariable(unsigned int id);
+extern int GetVariableValueAddress(unsigned int id);
+extern int GetVarType(unsigned int id);
+extern void CompileError2(int codePos, const char *msg);
 extern unsigned char scrCompileGlob[];
 extern void DumpCompiledObject(const char *label, unsigned int compiledObj);
 static const char str_dbg_before_lt[] = "before-LinkThread";
@@ -12466,5 +12471,48 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
 }
 
 #else
-static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]) { return 0; }
+static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]) {
+    /* Note: in native code, ecx=allowFarCall is a hidden register param.
+       In the Emscripten path this function is not called, so allowFarCall is unused. */
+    unsigned int varId;
+    int count, i;
+    int allowFarCall = 0;
+
+    varId = FindVariable(threadId, 0);
+    if (!varId)
+        return 0;
+
+    count = Scr_EvalVariable(varId);
+    if (count <= 0)
+        return 0;
+
+    for (i = 0; i < count; i++) {
+        unsigned int valueId = FindVariable(threadId, i + 2);
+        int *value = (int *)GetVariableValueAddress(valueId);
+        int type = GetVarType(valueId);
+        int posType = ((int *)pos)[1];
+
+        if (posType == 0xc) {
+            if (type == 7) {
+                CompileError2(*value, (const char *)str_0021d718);
+                continue;
+            }
+        } else {
+            if (!posType) {
+                CompileError2(*value, (const char *)str_0021d75c);
+                continue;
+            }
+            if (!allowFarCall) {
+                int *target = (int *)*value;
+                if (*target == 1) {
+                    CompileError2(*value, (const char *)str_0021d75c);
+                    continue;
+                }
+            }
+        }
+
+        *(int *)*value = *(int *)pos;
+    }
+    return 0;
+}
 #endif

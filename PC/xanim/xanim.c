@@ -17,6 +17,11 @@ static int g_notifyListSize; /* g_notifyListSize */
 static Bool g_anim_developer; /* g_anim_developer */
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
+extern unsigned int SL_GetString_(const char *str, int user, int type);
+extern void SL_RemoveRefToStringOfLen(unsigned int stringValue, int len);
+extern void * Z_MallocInternal(int size);
+extern qboolean Hunk_DataOnHunk(void *data);
+extern void Hunk_AddData(int type, void *data, void *alloc);
 
 void XAnimInit(void);
 void XAnimShutdown(void);
@@ -155,7 +160,19 @@ void XAnimInit(void)
     );
 }
 #else
-void XAnimInit(void) { }
+void XAnimInit(void) {
+    int i;
+    for (i = 0; i < 4096; i++) {
+        *(unsigned short *)((byte *)&g_xAnimInfo[i] + 8) = (unsigned short)((i + 4095) % 4096);
+        *(unsigned short *)((byte *)&g_xAnimInfo[i] + 0xa) = (unsigned short)((i + 1) % 4096);
+    }
+    *(int *)((byte *)&g_xAnimInfo[0] + 12) = 0;
+    *(int *)((byte *)&g_xAnimInfo[0] + 16) = 0;
+    *(unsigned short *)((byte *)&g_xAnimInfo[0] + 20) = 0;
+    *(unsigned short *)((byte *)&g_xAnimInfo[0] + 22) = 0;
+    g_end = SL_GetString_(str_00217830, 0, 3);
+    g_anim_developer = *(int *)(*(byte **)imp_com_developer + 8) != 0;
+}
 #endif
 
 /* line 155 */
@@ -240,7 +257,25 @@ void XAnimFree(XAnimParts *parts)
     );
 }
 #else
-void XAnimFree(XAnimParts *parts) { }
+void XAnimFree(XAnimParts *parts) {
+    unsigned short *boneNames = *(unsigned short **)((byte *)parts + 0x10);
+    int boneCount = *(short *)((byte *)parts + 0xe);
+    int i;
+
+    if (boneCount > 0) {
+        for (i = 0; i < boneCount; i++) {
+            SL_RemoveRefToString(boneNames[i]);
+        }
+    }
+
+    if (*(unsigned char *)((byte *)parts + 0xc)) {
+        byte *notify = *(byte **)((byte *)parts + 0x1c);
+        int notifyCount = *(unsigned char *)((byte *)parts + 0xc);
+        for (i = 0; i < notifyCount; i++) {
+            SL_RemoveRefToString(*(unsigned short *)(notify + i * 8));
+        }
+    }
+}
 #endif
 
 /* line 307 */
@@ -308,7 +343,25 @@ void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned
     );
 }
 #else
-void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags) { }
+void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags) {
+    byte *base = (byte *)anims;
+    unsigned int j;
+
+    *(unsigned short *)(base + animIndex * 8 + 0xc) = (unsigned short)num;
+    *(unsigned short *)(base + animIndex * 8 + 0x10) = (unsigned short)flags;
+    *(unsigned short *)(base + animIndex * 8 + 0x12) = (unsigned short)children;
+
+    for (j = 0; j < num; j++) {
+        *(unsigned short *)(base + (children + j) * 8 + 0xe) = (unsigned short)animIndex;
+    }
+
+    if (*(char **)(base + 8)) {
+        int len = strlen(name) + 1;
+        char *nameCopy = (char *)Z_MallocInternal(len);
+        strcpy(nameCopy, name);
+        (*(char ***)(base + 8))[animIndex] = nameCopy;
+    }
+}
 #endif
 
 /* line 339 */
@@ -14415,5 +14468,21 @@ int DObjUpdateServerInfo(DObj *obj, float dtime, int bNotify)
 }
 
 #else
-XAnim * XAnimCreateAnims(const char *debugName, int size, Alloc_t Alloc) { return 0; }
+XAnim * XAnimCreateAnims(const char *debugName, int size, Alloc_t Alloc) {
+    XAnim *anims = (XAnim *)Alloc(0xc + size * 8);
+    *(int *)((byte *)anims + 4) = size;
+
+    if (g_anim_developer) {
+        int len = strlen(debugName) + 1;
+        char *nameCopy = (char *)Z_MallocInternal(len);
+        strcpy(nameCopy, debugName);
+        *(char **)anims = nameCopy;
+        *(char **)((byte *)anims + 8) = (char *)Z_MallocInternal(size * 4);
+    }
+
+    if (Hunk_DataOnHunk(anims)) {
+        Hunk_AddData(6, anims, (void *)Alloc);
+    }
+    return anims;
+}
 #endif

@@ -421,7 +421,28 @@ unsigned int print(void)
     );
 }
 #else
-unsigned int print(void) { return 0; }
+extern int Scr_GetNumParam(void);
+extern const char *Scr_GetDebugString(unsigned int index);
+extern void SV_SetConfigstring(int index, const char *val);
+extern void SV_GetConfigstring(int index, char *buf, int size);
+extern int G_ShaderIndex(const char *name);
+
+unsigned int print(void) {
+    int num;
+    int i;
+
+    if (*(byte *)(*(int *)(*(int *)imp_g_NoScriptSpam) + 8))
+        return 0;
+
+    num = Scr_GetNumParam();
+    if (num <= 0)
+        return 0;
+
+    for (i = 0; i < num; i++) {
+        Com_Printf("%s", Scr_GetDebugString(i));
+    }
+    return 0;
+}
 #endif
 
 /* line 623 */
@@ -690,7 +711,30 @@ qboolean G_GetHintStringIndex(int *piIndex, const char *pszString)
     );
 }
 #else
-qboolean G_GetHintStringIndex(int *piIndex, const char *pszString) { return 0; }
+qboolean G_GetHintStringIndex(int *piIndex, const char *pszString) {
+    int i;
+    char szConfigString[0x400];
+
+    for (i = 0; i < 0x20; i++) {
+        int csIndex = 0x4fe + i;
+        SV_GetConfigstring(csIndex, szConfigString, 0x400);
+        if (szConfigString[0] == '\0') {
+            /* Empty slot - use it */
+            SV_SetConfigstring(csIndex, pszString);
+            *piIndex = i;
+            return 1;
+        }
+        if (strcmp(pszString, szConfigString) == 0) {
+            /* Already exists */
+            *piIndex = i;
+            return 1;
+        }
+    }
+
+    /* No free slot */
+    *piIndex = -1;
+    return 0;
+}
 #endif
 
 /* line 2109 */
@@ -764,7 +808,28 @@ unsigned int SetObjectiveIcon(void)
     );
 }
 #else
-unsigned int SetObjectiveIcon(void) { return 0; }
+static void SetObjectiveIcon_impl(byte *obj, int paramNum) {
+    const char *shaderName;
+    int i;
+    unsigned char ch;
+
+    shaderName = (const char *)Scr_GetString(paramNum);
+    ch = (unsigned char)shaderName[0];
+    if (ch != '\0') {
+        for (i = 0; shaderName[i] != '\0'; i++) {
+            ch = (unsigned char)shaderName[i];
+            /* Check printable ASCII range: 0x20..0x7e */
+            if ((unsigned char)(ch - 0x20) > 0x5e) {
+                Scr_ParamError(3, va("Illegal character '%c'(ascii %i) in objective icon name: %s\n", (int)(signed char)ch, (int)(unsigned char)ch, shaderName));
+            }
+        }
+        if (i > 0x3f) {
+            Scr_ParamError(3, va("Objective icon name is too long (> %i): %s\n", 0x3f, shaderName));
+        }
+    }
+    *(int *)(obj + 0x18) = G_ShaderIndex(shaderName);
+}
+unsigned int SetObjectiveIcon(void) { return 0; /* naked caller only */ }
 #endif
 
 /* line 2232 */
@@ -804,7 +869,20 @@ unsigned int Scr_Objective_Icon(void)
     );
 }
 #else
-unsigned int Scr_Objective_Icon(void) { return 0; }
+unsigned int Scr_Objective_Icon(void) {
+    int objIndex;
+    byte *obj;
+
+    objIndex = Scr_GetInt(0);
+    if ((unsigned int)objIndex > 0xf) {
+        Scr_ParamError(0, va("index %i is an illegal objective index. Valid indexes are 0 to %i\n", objIndex, 0xf));
+    }
+
+    /* obj = &level.objectives[objIndex], each 0x1c bytes, base at level+0x24 */
+    obj = (byte *)imp_level + 0x24 + objIndex * 0x1c;
+    SetObjectiveIcon_impl(obj, 1);
+    return 0;
+}
 #endif
 
 /* line 2274 */
@@ -12107,5 +12185,39 @@ unsigned int GScr_LoadScripts(void)
 }
 
 #else
-unsigned int Scr_Objective_OnEntity(void) { return 0; }
+unsigned int Scr_Objective_OnEntity(void) {
+    int objIndex;
+    byte *obj;
+    int oldEntityNum;
+    gentity_t *oldEnt;
+    gentity_t *newEnt;
+
+    objIndex = Scr_GetInt(0);
+    if ((unsigned int)objIndex > 0xf) {
+        Scr_ParamError(0, va("index %i is an illegal objective index. Valid indexes are 0 to %i\n", objIndex, 0xf));
+    }
+
+    /* obj = &level.objectives[objIndex], each 0x1c bytes, base at level+0x24 */
+    obj = (byte *)imp_level + 0x24 + objIndex * 0x1c;
+
+    /* Clear old entity's objective flag */
+    oldEntityNum = *(int *)(obj + 0x10);
+    if (oldEntityNum != 0x3ff) {
+        oldEnt = (gentity_t *)((byte *)imp_g_entities + oldEntityNum * 0x230);
+        if (*(byte *)((byte *)oldEnt + 0xfc)) {
+            /* Clear EF_OBJECTIVE flag (0x10) */
+            *(byte *)((byte *)oldEnt + 0xf2) &= ~0x10;
+        }
+        *(int *)(obj + 0x10) = 0x3ff;
+    }
+
+    /* Set new entity */
+    newEnt = Scr_GetEntity(1);
+    /* Set EF_OBJECTIVE flag */
+    *(byte *)((byte *)newEnt + 0xf2) |= 0x10;
+    /* Store entity number */
+    *(int *)(obj + 0x10) = *(int *)newEnt;
+
+    return 0;
+}
 #endif

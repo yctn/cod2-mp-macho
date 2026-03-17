@@ -550,7 +550,7 @@ void FX_AddFxToScene(void)
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifndef __EMSCRIPTEN__ provides C stub */
 #endif
 }
 #else
@@ -576,7 +576,7 @@ void Emitter_Draw(const Emitter * _this)
         : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl(p, 1);
 #endif
 }
 
@@ -592,7 +592,7 @@ void Cylinder_Draw(const Cylinder * _this)
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl((byte *)_this, 9);
 #endif
 }
 
@@ -607,7 +607,7 @@ void Tail_Draw(const Tail * _this)
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl((byte *)_this, 8);
 #endif
 }
 
@@ -622,7 +622,7 @@ void Line_Draw(const Line * _this)
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl((byte *)_this, 8);
 #endif
 }
 
@@ -637,7 +637,7 @@ void Cloud_Draw(const Cloud * _this)
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl((byte *)_this, 6);
 #endif
 }
 
@@ -652,7 +652,7 @@ void OrientedParticle_Draw(const OrientedParticle * _this)
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl((byte *)_this, 7);
 #endif
 }
 
@@ -673,7 +673,7 @@ void Particle_Draw(const Particle * _this)
         : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_AddFxToScene_impl(p, 4);
 #endif
 }
 
@@ -1294,7 +1294,7 @@ void Tail_CalcNewEndpoint(const Tail *_this, const orientation_t *or_)
 #ifndef __EMSCRIPTEN__
     __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(len) : "x"(lenSq));
 #else
-    len = 0;
+    len = sqrtf(lenSq);
 #endif
     if (len <= 0.0f) return;
 
@@ -1646,7 +1646,7 @@ void ZN6EffectD1Ev(void) /* Effect_~Effect */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -1686,7 +1686,7 @@ void FxBoltFramePtr_Archive(const FxBoltFramePtr *_this, FxArchive *arch)
             : "eax", "ecx", "edx", "memory"
         );
 #else
-    /* x86 asm not available */
+        FxBoltFrame_Acquire_impl((byte *)&acquired, boltInfo);
 #endif
         /* Assign to this with refcount (use Effect_SetBoltFrame pattern) */
         byte *oldBf = *(byte **)self;
@@ -1952,7 +1952,7 @@ void ZN6EffectD0Ev(void) /* Effect_~Effect */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -2842,7 +2842,7 @@ void ZN8ParticleD1Ev(void) /* Particle_~Particle */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -2865,7 +2865,7 @@ void ZN8ParticleD0Ev(void) /* Particle_~Particle */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -2896,7 +2896,7 @@ void ZN5LightD1Ev(void) /* Light_~Light */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -2919,7 +2919,7 @@ void ZN5LightD0Ev(void) /* Light_~Light */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12426,7 +12426,7 @@ void ZN8CylinderD0Ev(void) /* Cylinder_~Cylinder */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12448,7 +12448,7 @@ void ZN8CylinderD1Ev(void) /* Cylinder_~Cylinder */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12486,7 +12486,7 @@ void ZN16OrientedParticleD1Ev(void) /* OrientedParticle_~OrientedParticle */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12509,7 +12509,7 @@ void ZN16OrientedParticleD0Ev(void) /* OrientedParticle_~OrientedParticle */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12546,7 +12546,7 @@ void ZN5CloudD1Ev(void) /* Cloud_~Cloud */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12569,7 +12569,7 @@ void ZN5CloudD0Ev(void) /* Cloud_~Cloud */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12599,7 +12599,7 @@ void ZN4LineD1Ev(void) /* Line_~Line */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12622,7 +12622,7 @@ void ZN4LineD0Ev(void) /* Line_~Line */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12652,7 +12652,7 @@ void ZN4TailD1Ev(void) /* Tail_~Tail */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12675,7 +12675,7 @@ void ZN4TailD0Ev(void) /* Tail_~Tail */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12705,7 +12705,7 @@ void ZN7EmitterD1Ev(void) /* Emitter_~Emitter */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12728,7 +12728,7 @@ void ZN7EmitterD0Ev(void) /* Emitter_~Emitter */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12768,7 +12768,7 @@ void ZN5FlashD0Ev(void) /* Flash_~Flash */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }
 
@@ -12790,6 +12790,6 @@ void ZN5FlashD1Ev(void) /* Flash_~Flash */
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* naked trampoline — not callable under WASM */
 #endif
 }

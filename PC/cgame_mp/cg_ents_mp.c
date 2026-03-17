@@ -10,6 +10,17 @@
 
 extern void DObjUpdateClientInfo(struct DObj_s *obj, float timescale);
 extern void * MT_Alloc(int size, int type);
+extern void *BG_GetWeaponDef(int weapIndex);
+extern struct XAnim_s *XAnimCreateAnims(const char *debugName, int size, void *Alloc);
+extern void XAnimBlend(struct XAnim_s *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags);
+extern void XAnimPrecache(const char *name, void *Alloc);
+extern void XAnimCreate(struct XAnim_s *anims, unsigned int animIndex, const char *name);
+extern void *Com_GetClientDObj(int entityNum, int localClientNum);
+extern float AngleSubtract(float a1, float a2);
+extern float LerpAngle(float from, float to, float frac);
+extern void DObjSetControlTagAngles(void *obj, int *partBits, unsigned int tagName, float *angles);
+extern void *DObjGetTree(void *obj);
+extern void XAnimSetCompleteGoalWeightKnobAll(void *tree, int animIndex, float goalWeight, float goalTime, float rate, int notifyType, int notifyClient);
 
 extern const int boxVerts[24][3]; /* boxVerts */
 
@@ -102,7 +113,35 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
     );
 }
 #else
-struct XAnim_s * CG_GetMG42Anims(centity_t *cent) { return 0; }
+struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
+{
+    void *weapDef;
+    struct XAnim_s *pAnims;
+
+    /* line 259: get weapon def from cent->currentState.weapon (offset 0x1b8) */
+    weapDef = BG_GetWeaponDef(*(int *)((byte *)cent + 0x1b8));
+
+    /* line 261: create anim tree with 3 slots, name "MG42" */
+    pAnims = XAnimCreateAnims((const char *)str_002abcf4, 3, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
+
+    /* line 265: blend root node: index 0, name "root", children 1, num 2, flags 0 */
+    XAnimBlend(pAnims, 0, (const char *)str_0021df18, 1, 2, 0);
+
+    /* line 269: precache first anim (weapDef+0x18) */
+    XAnimPrecache(*(const char **)((byte *)weapDef + 0x18), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+
+    /* line 271: create anim at index 1 */
+    XAnimCreate(pAnims, 1, *(const char **)((byte *)weapDef + 0x18));
+
+    /* line 275: precache second anim (weapDef+0x20) */
+    XAnimPrecache(*(const char **)((byte *)weapDef + 0x20), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+
+    /* line 277: create anim at index 2 */
+    XAnimCreate(pAnims, 2, *(const char **)((byte *)weapDef + 0x20));
+
+    /* line 280 */
+    return pAnims;
+}
 #endif
 
 /* line 288 */
@@ -2699,5 +2738,84 @@ long unsigned int CG_AddPacketEntities(void)
 }
 
 #else
-static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits) { return 0; }
+static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
+{
+    byte *cg_s;
+    byte *ps;
+    byte *s1;
+    byte *obj;
+    float angles[3];
+    byte *scr;
+    struct XAnim_s *tree;
+    int animIndex;
+
+    s1 = (byte *)cent + 0xf0;
+
+    /* line 301 */
+    cg_s = *(byte **)imp_cg;
+    ps = cg_s + 0x25bc4;
+
+    /* line 303: get DObj for this entity */
+    obj = (byte *)Com_GetClientDObj(*(int *)(s1 + 0x00), *(int *)((byte *)cent + 0x220));
+
+    /* line 306: check if player state flags & 0x300 set */
+    if ((*(int *)(ps + 0xa0) & 0x300) && *(int *)(ps + 0x594) == *(int *)(s1 + 0x00)) {
+        /* line 308: player is using this MG42 - use AngleSubtract from viewangles */
+        angles[0] = AngleSubtract(*(float *)(cg_s + 0x285c8), *(float *)((byte *)cent + 0x1f8));
+        angles[1] = AngleSubtract(*(float *)(cg_s + 0x285cc), *(float *)((byte *)cent + 0x1fc));
+        angles[2] = 0.0f;
+    } else {
+        /* line 314: not our MG42 - lerp angles from entity state */
+        angles[0] = LerpAngle(*(int *)(s1 + 0x68), *(int *)(s1 + 0x68), *(int *)(cg_s + 0x25ba8));
+        angles[1] = LerpAngle(*(int *)(s1 + 0x6c), *(int *)(s1 + 0x6c), *(int *)(cg_s + 0x25ba8));
+        angles[2] = 0.0f;
+    }
+
+    /* line 319: set tag_turret control tag angles */
+    scr = *(byte **)imp_scr_const;
+    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0x9e), angles);
+
+    /* line 320: set tag_turret_pitch control tag angles */
+    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0xa0), angles);
+
+    /* line 322: lerp barrel angle */
+    cg_s = *(byte **)imp_cg;
+    angles[0] = LerpAngle(*(int *)(s1 + 0x70), *(int *)(s1 + 0x70), *(int *)(cg_s + 0x25ba8));
+    angles[1] = 0.0f;
+
+    /* line 325: set tag_barrel control tag angles */
+    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0x8c), angles);
+
+    /* line 327: get anim tree */
+    tree = (struct XAnim_s *)DObjGetTree(obj);
+
+    /* line 330-335: determine anim index based on player state */
+    if (*(int *)(cg_s + 0x25c64) & 0x300) {
+        if (*(int *)(cg_s + 0x26158) == *(int *)(s1 + 0x00)) {
+            animIndex = 1;
+        } else {
+            if (*(byte *)((byte *)cent + 0xf8) & 0x40) {
+                animIndex = 2;
+            } else {
+                animIndex = 1;
+            }
+        }
+    } else {
+        if (*(byte *)((byte *)cent + 0xf8) & 0x40) {
+            animIndex = 2;
+        } else {
+            animIndex = 1;
+        }
+    }
+
+    /* line 337: XAnimSetCompleteGoalWeightKnobAll(tree, animIndex, 1.0f, 0.1f, 1.0f, 0, 0) */
+    {
+        float goalWeight = 1.0f;     /* 0x3f800000 */
+        float goalTime = 0.1f;       /* 0x3dcccccd */
+        float rate = 1.0f;           /* 0x3f800000 */
+        XAnimSetCompleteGoalWeightKnobAll(tree, animIndex, goalWeight, goalTime, rate, 0, 0);
+    }
+
+    return 0;
+}
 #endif

@@ -2975,5 +2975,72 @@ void ClientEndFrame(gentity_t *ent)
 }
 
 #else
-void ClientImpacts(gentity_t *ent, pmove_t *pm) { }
+
+void ClientImpacts(gentity_t *ent, pmove_t *pm) {
+    int i, j;
+    gentity_t *other;
+    void (*entTouch)(gentity_t *, gentity_t *, int);
+    void (*otherTouch)(gentity_t *, gentity_t *, int);
+    int numtouch;
+    int *touchents;
+    int entityNum;
+    int duplicate;
+
+    /* Get entTouch handler: entityHandlers[ent->handler].touch at offset 0xc in 40-byte entries */
+    entTouch = (void (*)(gentity_t *, gentity_t *, int))
+        *(void **)((byte *)imp_entityHandlers + *(unsigned char *)((byte *)ent + 0x166) * 40 + 0xc);
+
+    numtouch = *(int *)((byte *)pm + 0x40);
+    if (numtouch <= 0)
+        return;
+
+    touchents = (int *)((byte *)pm + 0x44);
+    entityNum = touchents[0];
+
+    for (i = 0; ; ) {
+        /* Compute other entity pointer: entityNum * 0x230 + g_entities */
+        other = (gentity_t *)((byte *)imp_g_entities + entityNum * 0x230);
+
+        /* Notify scripts about the touch event */
+        if (((int (*)(int))Scr_IsSystemActive)(1)) {
+            Scr_AddEntity(other);
+            Scr_Notify(ent, (int)*(unsigned short *)((byte *)imp_scr_const + 0x52), 1);
+            Scr_AddEntity(ent);
+            Scr_Notify(other, (int)*(unsigned short *)((byte *)imp_scr_const + 0x52), 1);
+        }
+
+        /* Call other entity's touch handler */
+        otherTouch = (void (*)(gentity_t *, gentity_t *, int))
+            *(void **)((byte *)imp_entityHandlers + *(unsigned char *)((byte *)other + 0x166) * 40 + 0xc);
+        if (otherTouch) {
+            otherTouch(other, ent, 1);
+        }
+
+        /* Call this entity's touch handler */
+        if (entTouch) {
+            entTouch(ent, other, 1);
+        }
+
+next_iteration:
+        i++;
+        if (i >= *(int *)((byte *)pm + 0x40))
+            break;
+
+        /* Duplicate check: scan previous entries */
+        entityNum = touchents[i];
+
+        if (i > 0) {
+            /* Check against all previous entries */
+            duplicate = 0;
+            for (j = 0; j < i; j++) {
+                if (touchents[j] == entityNum) {
+                    duplicate = 1;
+                    break;
+                }
+            }
+            if (duplicate)
+                goto next_iteration;
+        }
+    }
+}
 #endif

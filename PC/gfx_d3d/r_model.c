@@ -402,7 +402,8 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "retl $8\n"
     );
 #else
-    /* x86 asm */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
+    (void)surfaces; (void)partBits; (void)lods;
 #endif
 }
 #endif
@@ -593,7 +594,7 @@ void R_XModelDebugBoxes(void)
         "retl\n"
     );
 #else
-    /* x86 asm */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -679,7 +680,7 @@ void R_XModelDebugAxes(void)
         "retl\n"
     );
 #else
-    /* x86 asm */
+    /* dead code — outer #ifdef __EMSCRIPTEN__ provides C version */
 #endif
 }
 #endif
@@ -747,7 +748,8 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                 : "eax", "ecx", "edx", "memory"
             );
 #else
-    /* x86 asm */
+            R_XModelDebugBoxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
+            R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
 #endif
         }
         goto set_origin_bounds;
@@ -771,7 +773,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
             : "eax", "ecx", "edx", "memory"
         );
 #else
-    /* x86 asm */
+        surfCount = R_GetSurfaceData_impl((const byte *)ent, obj, surfaces, partBits, lods);
 #endif
         if (surfCount == 0)
             goto set_origin_bounds;
@@ -1594,7 +1596,8 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                 : "eax", "ecx", "edx", "memory"
             );
 #else
-    /* x86 asm */
+            R_XModelDebugBoxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
+            R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
 #endif
         }
         *(int *)(se + 0xc) = 4;
@@ -1620,7 +1623,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
             : "eax", "ecx", "edx", "memory"
         );
 #else
-    /* x86 asm */
+        sc = R_GetSurfaceData_impl((const byte *)ent, obj, surfaces, partBits, lods);
 #endif
         surfaceCount = sc;
     }
@@ -1714,7 +1717,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     : "eax", "ecx", "edx", "memory"
                 );
 #else
-    /* x86 asm */
+                R_XModelDebugBoxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
 #endif
                 xdebugDvar = *(char **)imp_r_xdebug;
             }
@@ -1729,7 +1732,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     : "eax", "ecx", "edx", "memory"
                 );
 #else
-    /* x86 asm */
+                R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
 #endif
             }
         }
@@ -2444,7 +2447,8 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                 : "eax", "ecx", "edx", "memory"
             );
 #else
-    /* x86 asm */
+            R_XModelDebugBoxes_impl((const byte *)sceneEnt, (const byte *)ent, defaultObj);
+            R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, defaultObj);
 #endif
         }
         *(int *)(se + 0xc) = 4; return;
@@ -2531,7 +2535,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                     : "eax", "ecx", "edx", "memory"
                 );
 #else
-    /* x86 asm */
+                R_XModelDebugBoxes_impl((const byte *)sceneEnt, (const byte *)ent, defaultObj);
 #endif
             }
             if (*(int *)(*(char **)imp_r_xdebug + 8) & 2) {
@@ -2543,7 +2547,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                     : "eax", "ecx", "edx", "memory"
                 );
 #else
-    /* x86 asm */
+                R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, defaultObj);
 #endif
             }
         }
@@ -3595,7 +3599,8 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
                 : : [surf]"r"(surfPos), [bone]"r"(boneMatrix) : "eax", "ecx", "edx", "memory"
             );
 #else
-    /* x86 asm */
+            R_SkinXSurfaceSkinned(boneMatrix);
+            (void)surfPos;
 #endif
             surfPos = (const surfaceType_t *)((const byte *)surfPos + 16);
         } else if (surfType == 5) {
@@ -3899,7 +3904,8 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
                 : "ecx", "memory"
             );
 #else
-    /* x86 asm */
+            R_SkinXSurfaceSkinned((const DObjSkelMat *)mtx);
+            (void)surf;
 #endif
         }
     }

@@ -43,6 +43,13 @@ extern const char *Dvar_GetString(const char *name);
 extern const char *va(const char *fmt, ...);
 extern void Com_Error(int code, const char *fmt, ...);
 extern void Z_FreeInternal(void *ptr);
+extern const dvar_t *Dvar_RegisterInt(const char *dvarName, int value, int min, int max, unsigned short flags);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *dvarName, int value, unsigned short flags);
+extern const dvar_t *Dvar_RegisterString_mac(const char *dvarName, const char *value, unsigned short flags);
+extern const char *Sys_DefaultCDPath(void);
+extern const char *Sys_DefaultInstallPath(void);
+extern const char *Sys_DefaultHomePath(void);
+extern void Com_Printf(const char *fmt, ...);
 
 static qboolean bLanguagesListed; /* bLanguagesListed */
 
@@ -270,7 +277,33 @@ fileHandle_t FS_HandleForFile(qboolean streamThread)
     );
 }
 #else
-fileHandle_t FS_HandleForFile(qboolean streamThread) { return 0; }
+fileHandle_t FS_HandleForFile(qboolean streamThread) {
+    int first, count, i;
+
+    if (streamThread) {
+        first = 61;
+        count = 13;
+    } else {
+        first = 1;
+        count = 60;
+    }
+
+    if (!*(int *)((byte *)&fsh[first])) {
+        return first;
+    }
+
+    for (i = 1; i < count; i++) {
+        if (!*(int *)((byte *)&fsh[first + i])) {
+            return first + i;
+        }
+    }
+
+    for (i = 1; i < 74; i++) {
+        Com_Printf((const char *)str_00216c70, i, (byte *)fsh + i * 0x11c + 28);
+    }
+    Com_Error(1, (const char *)str_00216c80);
+    return -1;
+}
 #endif
 
 /* line 538 */
@@ -489,7 +522,31 @@ Bool FS_RegisterDvars(void)
     );
 }
 #else
-Bool FS_RegisterDvars(void) { return 0; }
+Bool FS_RegisterDvars(void) {
+    const char *homePath;
+
+    if (fs_debug)
+        return 0;
+
+    fs_debug = Dvar_RegisterInt(str_00216d08, 0, 0, 2, 0x1000);
+    fs_copyfiles = Dvar_RegisterBool_mac(str_00216d14, 0, 0x1010);
+    fs_cdpath = Dvar_RegisterString_mac(str_00216d24, Sys_DefaultCDPath(), 0x1010);
+    fs_basepath = Dvar_RegisterString_mac(str_00216d30, Sys_DefaultInstallPath(), 0x1010);
+    fs_basegame = Dvar_RegisterString_mac(str_00216d3c, (const char *)str_002157b8, 0x1010);
+    fs_useOldAssets = Dvar_RegisterBool_mac(str_00216d48, 0, 0x1000);
+
+    homePath = Sys_DefaultHomePath();
+    if (!homePath || !homePath[0]) {
+        homePath = *(const char **)(*(byte **)&fs_basepath + 8);
+    }
+
+    fs_homepath = Dvar_RegisterString_mac(str_00216d58, homePath, 0x1010);
+    fs_gameDirVar = Dvar_RegisterString_mac(str_00216d64, (const char *)str_002157b8, 0x101c);
+    fs_restrict = Dvar_RegisterBool_mac(str_00216d6c, 0, 0x1010);
+    fs_ignoreLocalized = Dvar_RegisterBool_mac(str_00216d78, 0, 0x10a0);
+
+    return 1;
+}
 #endif
 
 /* line 3726 */

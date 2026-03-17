@@ -18,6 +18,9 @@ extern int SV_Cmd_Argc(void);
 extern const char *SV_Cmd_Argv(int arg);
 extern void SV_BanClient(void *cl);
 extern void SV_UnbanClient(const char *name);
+extern int I_stricmp(const char *s0, const char *s1);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern char *I_CleanStr(char *string);
 
 static qboolean initialized; /* initialized */
 
@@ -1651,5 +1654,40 @@ short int SV_MapRotate_f(void)
 }
 
 #else
-static client_t * SV_GetPlayerByName(void) { return 0; }
+static client_t * SV_GetPlayerByName(void) {
+    const char *s;
+    byte *cl;
+    int i, maxclients;
+    char cleanName[64];
+
+    if (!*(unsigned char *)(*(byte **)imp_com_sv_running + 8))
+        return 0;
+
+    if (SV_Cmd_Argc() - 1 <= 0) {
+        Com_Printf((const char *)str_002ac3e4);
+        return 0;
+    }
+
+    s = SV_Cmd_Argv(1);
+    cl = *(byte **)(*(byte **)imp_svs + 0xc);
+    maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
+
+    for (i = 0; i < maxclients; i++) {
+        if (!*(int *)cl)
+            goto next;
+
+        if (I_stricmp((char *)cl + 0x20c48, s) == 0)
+            return (client_t *)cl;
+
+        I_strncpyz(cleanName, (char *)cl + 0x20c48, 64);
+        I_CleanStr(cleanName);
+        if (I_stricmp(cleanName, s) == 0)
+            return (client_t *)cl;
+next:
+        cl += 0x78f0c;
+    }
+
+    Com_Printf((const char *)str_002ac3fc, s);
+    return 0;
+}
 #endif

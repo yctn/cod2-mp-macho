@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
@@ -35,6 +36,8 @@ extern void CL_FX_AdjustCamera(void *refdef);
 extern void FX_AdjustTime(int serverTime);
 extern int CG_PointContents(const vec_t *point, int passEntityNum, int contentmask);
 extern void CG_PredictPlayerState(void);
+extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
+extern void CG_TraceCapsule(trace_t *result, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int skipNumber, int mask);
 
 void CG_FxRestart(void);
 void CG_FxTest(void);
@@ -423,8 +426,152 @@ void CG_OffsetThirdPersonView(void)
         "jmp .Lf1d128e_001d14ba\n"
     );
 }
+#else
+static void CG_OffsetThirdPersonView(void)
+{
+    byte *cg_s;
+    byte *origin;     /* cg_s + 0x28588 */
+    byte *viewAngles; /* cg_s + 0x285c8 */
+    float focusAngles[3];
+    float forward[3], right[3], up[3];
+    float focusPoint[3];
+    float view[3];
+    float trace_fraction; /* trace.fraction */
+    byte trace[64]; /* trace_t - only need fraction at offset 0 */
+    float scale;
+    float dist2d;
+    float dz;
+    double angle;
+
+    /* line 139 */
+    cg_s = *(byte **)imp_cg;
+    origin = cg_s + 0x28588;
+    viewAngles = cg_s + 0x285c8;
+
+    /* Add predicted error to z */
+    *(float *)(origin + 8) += *(float *)(cg_s + 0x25cbc);
+
+    /* Copy view angles to focusAngles */
+    focusAngles[0] = *(float *)(viewAngles + 0);
+    focusAngles[1] = *(float *)(viewAngles + 4);
+    focusAngles[2] = *(float *)(viewAngles + 8);
+
+    /* line 144: if pm_type > 5 */
+    if (*(int *)(cg_s + 0x25bc8) > 5) {
+        /* line 146-147 */
+        focusAngles[1] = (float)*(int *)(cg_s + 0x25cf4);
+        *(float *)(viewAngles + 4) = (float)*(int *)(cg_s + 0x25cf4);
+    }
+
+    /* line 152: clamp focusAngles[0] to min(45.0f, focusAngles[0]) */
+    if (focusAngles[0] < 45.0f) {
+        /* keep focusAngles[0] */
+    } else {
+        focusAngles[0] = 45.0f;
+    }
+
+    /* line 154: AngleVectors(focusAngles, forward, NULL, NULL) */
+    AngleVectors(focusAngles, forward, (void *)0, (void *)0);
+
+    /* line 156-160: compute focus point = origin + forward*512 */
+    focusPoint[0] = forward[0] * 512.0f + *(float *)(origin + 0);
+    focusPoint[1] = forward[1] * 512.0f + *(float *)(origin + 4);
+    focusPoint[2] = forward[2] * 512.0f + *(float *)(origin + 8);
+
+    /* Copy origin to view, add 8.0 to z */
+    view[0] = *(float *)(origin + 0);
+    view[1] = *(float *)(origin + 4);
+    view[2] = *(float *)(origin + 8) + 8.0f;
+
+    /* line 162: halve viewAngles pitch */
+    *(float *)(viewAngles + 0) *= 0.5f;
+
+    /* line 163: subtract cg_thirdPersonAngle from viewAngles yaw */
+    {
+        byte *dvar = *(byte **)imp_cg_thirdPersonAngle;
+        *(float *)(viewAngles + 4) -= *(float *)((byte *)dvar + 8);
+    }
+
+    /* line 165: AngleVectors(viewAngles, forward, right, up) */
+    AngleVectors((float *)viewAngles, forward, right, up);
+
+    /* line 167: get range and negate */
+    {
+        byte *dvar = *(byte **)imp_cg_thirdPersonRange;
+        scale = *(float *)((byte *)dvar + 8);
+    }
+    /* xorps colorWhiteFaded+64 negates the float (0x80000000 sign bit) */
+    {
+        union { float f; unsigned int u; } conv;
+        conv.f = scale;
+        conv.u ^= 0x80000000u;
+        scale = conv.f;
+    }
+
+    /* VectorMA: view += scale * forward */
+    view[0] += scale * forward[0];
+    view[1] += scale * forward[1];
+    view[2] += scale * forward[2];
+
+    /* line 172: first trace from origin to view */
+    CG_TraceCapsule((trace_t *)trace, (const vec_t *)origin, (const vec_t *)&mins, (const vec_t *)&maxs,
+                    (const vec_t *)view, *(int *)(cg_s + 0x25c90), 0x811);
+
+    trace_fraction = *(float *)trace;
+
+    if (trace_fraction != 1.0f) {
+        /* trace didn't make it all the way - interpolate */
+        /* VectorLerp: view = origin + fraction * (view - origin) */
+        view[0] = *(float *)(origin + 0) + trace_fraction * (view[0] - *(float *)(origin + 0));
+        view[1] = *(float *)(origin + 4) + trace_fraction * (view[1] - *(float *)(origin + 4));
+        {
+            float newZ = *(float *)(origin + 8) + trace_fraction * (view[2] - *(float *)(origin + 8));
+            /* line 177: add (1-fraction)*32 to z */
+            view[2] = newZ + (1.0f - trace_fraction) * 32.0f;
+        }
+
+        /* line 181: second trace */
+        CG_TraceCapsule((trace_t *)trace, (const vec_t *)origin, (const vec_t *)&mins, (const vec_t *)&maxs,
+                        (const vec_t *)view, *(int *)(cg_s + 0x25c90), 0x811);
+        trace_fraction = *(float *)trace;
+
+        /* VectorLerp again */
+        view[0] = *(float *)(origin + 0) + trace_fraction * (view[0] - *(float *)(origin + 0));
+        view[1] = *(float *)(origin + 4) + trace_fraction * (view[1] - *(float *)(origin + 4));
+        view[2] = *(float *)(origin + 8) + trace_fraction * (view[2] - *(float *)(origin + 8));
+    }
+
+    /* line 185: copy view back to origin */
+    cg_s = *(byte **)imp_cg;
+    origin = cg_s + 0x28588;
+    *(float *)(origin + 0) = view[0];
+    *(float *)(origin + 4) = view[1];
+    *(float *)(origin + 8) = view[2];
+
+    /* line 248-250: compute delta from focusPoint to new origin */
+    {
+        float dx = focusPoint[0] - *(float *)(origin + 0);
+        float dy = focusPoint[1] - *(float *)(origin + 4);
+        dz = focusPoint[2] - *(float *)(origin + 8);
+
+        /* line 81: compute 2D distance */
+        dist2d = dx * dx + dy * dy;
+        dist2d = __builtin_sqrtf(dist2d);
+
+        /* line 190: clamp dist2d to min 1.0 */
+        if (dist2d < 1.0f) {
+            dist2d = 1.0;
+        }
+
+        /* line 194: compute pitch from atan2 */
+        angle = atan2((double)dz, (double)dist2d);
+        *(float *)(cg_s + 0x285c8) = (float)(angle * -57.29577951308232);
+    }
+}
+#endif
 
 /* line 686 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_CalcViewValues(void)
 {
@@ -1268,6 +1415,7 @@ void CG_CalcViewValues(void)
         ".text\n"
     );
 }
+#endif
 
 void CG_InitView(void)
 {
@@ -1298,6 +1446,7 @@ void CG_InitView(void)
 }
 
 /* line 935 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubemapShot, int cubemapSize, qboolean renderScreen)
 {
@@ -1915,6 +2064,4 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "jmp .Lf1d25bc_001d2e41\n"
     );
 }
-#else
-static void CG_OffsetThirdPersonView(void) { }
 #endif

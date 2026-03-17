@@ -1090,7 +1090,281 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     );
 }
 #else
-int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist) { return 0; }
+extern const dvar_t *Dvar_RegisterString_mac(const char *name, int def, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int def, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int def, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, int def, int min, int max, int flags);
+extern void Swap_Init(void);
+extern void G_ProcessIPBans(void);
+extern void G_SetupWeaponDef(void);
+extern void BG_RegisterDvars(void);
+extern void Rand_Init(int seed);
+extern int FS_FOpenFileByMode(const char *filename, int *handle, int mode);
+extern void SV_GetServerinfo(const char *key, char *value, int size);
+extern void SV_LocateGameData(void *clients, int numClients, int clientSize, void *entities);
+extern void G_SpawnEntitiesFromString(void *entities, int maxEntities, int entitySize);
+extern void Scr_BeginLoadScripts(void);
+extern void GScr_LoadScripts(int inst);
+extern void GScr_LoadConsts(void);
+extern void Scr_BeginLoadAnimScripts(void);
+extern void GScr_LoadAnimScripts(void);
+extern void Scr_EndLoadAnimScripts(void);
+extern void Scr_FreeEntityList(void);
+extern void Scr_InitSystem(void);
+extern void Scr_SetLoading(int loading);
+extern void Scr_AllocGameVariable(void);
+extern void G_LoadStructs(void);
+extern void Scr_LoadLevel(void);
+extern void Scr_LoadGameType(void);
+extern void Scr_StartupGameType(void);
+extern void RestoreBody(void);
+extern void ClientUserinfoChanged(int clientNum, gentity_t *ent, gclient_t *client);
+extern void G_InitTurrets(void);
+extern int SV_GetBrushModelCount(void);
+extern void G_SpawnTriggerHurt(int numBrushModels);
+extern void GScr_PostResetTimeout(void);
+extern void CheckTeamStatus(void);
+extern void DeathmatchScoreboardMessage(gentity_t *ent);
+extern const char *SL_ConvertToString(unsigned short index);
+extern void Dvar_SetBool(const dvar_t *dvar, int value);
+extern void SaveRegisteredWeapons(void);
+extern void SaveRegisteredItems(void);
+extern void SV_DObjDisplayAnim(gentity_t *ent);
+extern void SV_DObjInitServerTime(gentity_t *ent, float dt);
+extern int G_DObjUpdateServerTime(gentity_t *ent, int bNotify);
+extern void Scr_RunCurrentThreads(void);
+extern void Scr_IncTime(void);
+extern void Com_Memcpy(void *dst, const void *src, int size);
+extern int stricmp(const char *s1, const char *s2);
+extern void ClientEndFrame(gentity_t *ent);
+extern void HudElem_UpdateClient(gclient_t *client, int clientNum, int which);
+extern unsigned char scrVarPub[];
+extern unsigned char scrVmPub[];
+extern void Scr_AddEntity(void *ent);
+extern void Scr_Notify(void *ent, int stringValue, unsigned int paramcount);
+
+static void G_RegisterDvars_impl(void) {
+    g_gametype = Dvar_RegisterString_mac("g_gametype", 0, 0, 2, 0x1040);
+    g_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1040);
+    g_cheats = Dvar_RegisterBool_mac("sv_cheats", 0, 0, 0, 0);
+    g_maxclients = Dvar_RegisterInt("sv_maxclients", 0, 0, 0x40, 0x1040);
+    g_password = Dvar_RegisterString_mac("g_password", 0, 0, 0, 0x1040);
+    g_gravity = Dvar_RegisterInt("g_gravity", 0x320, 0, 0x320, 0x800);
+    g_speed = Dvar_RegisterInt("g_speed", 0xbe, 0, 0xc8, 0x800);
+    g_knockback = Dvar_RegisterInt("g_knockback", 0x3e8, 0, 0x3e8, 0x800);
+    g_useholdtime = Dvar_RegisterInt("g_useholdtime", 0, 0, 0, 0);
+    g_useholdspawndelay = Dvar_RegisterInt("g_useholdspawndelay", 0, 0, 0, 0);
+    g_inactivity = Dvar_RegisterInt("g_inactivity", 0, 0, 0, 0x800);
+    g_debugDamage = Dvar_RegisterInt("g_debugDamage", 0, 0, 0, 0x800);
+    g_debugBullets = Dvar_RegisterInt("g_debugBullets", 0, 0, 0, 0x800);
+    g_weaponAmmoPools = Dvar_RegisterInt("g_weaponAmmoPools", 0, 0, 0, 0x800);
+    g_maxDroppedWeapons = Dvar_RegisterInt("g_maxDroppedWeapons", 0x10, 0, 0x10, 0x800);
+    g_synchronousClients = Dvar_RegisterBool_mac("g_synchronousClients", 0, 0, 0, 0x800);
+    g_motd = Dvar_RegisterString_mac("g_motd", 0, 0, 0, 0x800);
+    g_allowVote = Dvar_RegisterBool_mac("g_allowVote", 1, 0, 0, 0);
+    g_dropForwardSpeed = Dvar_RegisterFloat("g_dropForwardSpeed", 0, 0, 0, 0x800);
+    g_dropUpSpeedBase = Dvar_RegisterFloat("g_dropUpSpeedBase", 0, 0, 0, 0x800);
+    g_dropUpSpeedRand = Dvar_RegisterFloat("g_dropUpSpeedRand", 0, 0, 0, 0x800);
+    g_clonePlayerMaxVelocity = Dvar_RegisterFloat("g_clonePlayerMaxVelocity", 0, 0, 0, 0x800);
+    voice_localEcho = Dvar_RegisterBool_mac("voice_localEcho", 0, 0, 0, 0x800);
+    voice_global = Dvar_RegisterBool_mac("voice_global", 0, 0, 0, 0);
+    voice_deadChat = Dvar_RegisterBool_mac("voice_deadChat", 0, 0, 0, 0);
+    g_voiceChatTalkingDuration = Dvar_RegisterFloat("g_voiceChatTalkingDuration", 0, 0, 0, 0);
+    g_deadChat = Dvar_RegisterBool_mac("g_deadChat", 0, 0, 0, 0);
+    g_banIPs = Dvar_RegisterString_mac("g_banIPs", 0, 0, 0, 0);
+    g_smoothClients = Dvar_RegisterBool_mac("g_smoothClients", 1, 0, 0, 0);
+    g_NoScriptSpam = Dvar_RegisterBool_mac("g_NoScriptSpam", 0, 0, 0, 0);
+    g_debugLocDamage = Dvar_RegisterInt("g_debugLocDamage", 0, 0, 0, 0x800);
+    g_friendlyfireDist = Dvar_RegisterFloat("g_friendlyfireDist", 0, 0, 0, 0x800);
+    g_friendlyNameDist = Dvar_RegisterFloat("g_friendlyNameDist", 0, 0, 0, 0x800);
+    player_meleeRange = Dvar_RegisterInt("player_meleeRange", 0, 0, 0, 0);
+    player_meleeWidth = Dvar_RegisterFloat("player_meleeWidth", 0, 0, 0, 0);
+    player_meleeHeight = Dvar_RegisterFloat("player_meleeHeight", 0, 0, 0, 0);
+    g_antilag = Dvar_RegisterBool_mac("g_antilag", 1, 0, 0, 0);
+    g_oldVoting = Dvar_RegisterBool_mac("g_oldVoting", 1, 0, 0, 0);
+    g_playerCollisionEjectSpeed = Dvar_RegisterInt("g_playerCollisionEjectSpeed", 0, 0, 0, 0x800);
+    g_mantleBlockTimeBuffer = Dvar_RegisterInt("g_mantleBlockTimeBuffer", 0, 0, 0, 0x800);
+    g_log = Dvar_RegisterString_mac("g_log", 0, 0, 0, 0);
+    g_logSync = Dvar_RegisterBool_mac("g_logSync", 0, 0, 0, 0);
+    g_listEntity = Dvar_RegisterBool_mac("g_listEntity", 0, 0, 0, 0);
+    g_ScoresBanner_Allies = Dvar_RegisterString_mac("g_ScoresBanner_Allies", 0, 0, 0, 0);
+    g_ScoresBanner_Axis = Dvar_RegisterString_mac("g_ScoresBanner_Axis", 0, 0, 0, 0);
+    g_ScoresBanner_None = Dvar_RegisterString_mac("g_ScoresBanner_None", 0, 0, 0, 0);
+    g_ScoresBanner_Spectators = Dvar_RegisterString_mac("g_ScoresBanner_Spectators", 0, 0, 0, 0);
+    g_TeamName_Allies = Dvar_RegisterString_mac("g_TeamName_Allies", 0, 0, 0, 0);
+    g_TeamName_Axis = Dvar_RegisterString_mac("g_TeamName_Axis", 0, 0, 0, 0);
+    g_TeamColor_Allies = Dvar_RegisterString_mac("g_TeamColor_Allies", 0, 0, 0, 0);
+    g_TeamColor_Axis = Dvar_RegisterString_mac("g_TeamColor_Axis", 0, 0, 0, 0);
+    g_voteAbstainWeight = Dvar_RegisterFloat("g_voteAbstainWeight", 0, 0, 0, 0);
+    g_dumpAnims = Dvar_RegisterInt("g_dumpAnims", -1, 0, 0, 0x800);
+}
+
+static void G_SetGametypeTeamFlags(int *teamFlags, const char *gametype) {
+    /* Check gametype and set team flags */
+    if (stricmp(gametype, "dm") == 0) {
+        teamFlags[3] = 1;
+        teamFlags[2] = 1;
+    } else if (stricmp(gametype, "tdm") == 0) {
+        teamFlags[3] = 1;
+        teamFlags[2] = 1;
+    } else if (stricmp(gametype, "sd") == 0) {
+        teamFlags[3] = 1;
+        teamFlags[2] = 1;
+    } else if (stricmp(gametype, "ctf") == 0) {
+        teamFlags[3] = 1;
+        teamFlags[2] = 1;
+    } else if (stricmp(gametype, "hq") == 0) {
+        teamFlags[3] = 1;
+        teamFlags[2] = 1;
+    }
+    teamFlags[0] = 0;
+}
+
+int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist) {
+    char info[0x800];
+    int i;
+    int *teamFlags;
+    const char *logFile;
+    gclient_t *cl;
+
+    Com_Printf("------- Game Initialization -------\n");
+    Com_Printf("gamename: %s\n", "Call of Duty 2");
+    Com_Printf("gamedate: %s\n", __DATE__);
+
+    Swap_Init();
+
+    memset(&level, 0, 0x3624);
+    level.initializing = 1;
+    *(int *)((byte *)&level + 492) = levelTime;
+    *(int *)((byte *)&level + 504) = levelTime;
+    *(int *)((byte *)&level + 13828) = -1;
+    *(void **)((byte *)&level + 4) = (void *)g_entities;
+    *(void **)((byte *)&level + 0) = (void *)g_clients;
+
+    G_InitDbgPrint("[G_InitGame] level.clients=%p\n", *(void **)&level);
+
+    srand(randomSeed);
+    Rand_Init(randomSeed);
+    G_SetupWeaponDef();
+    G_RegisterDvars_impl();
+    BG_RegisterDvars();
+
+    teamFlags = (int *)((byte *)&level + 520);
+
+    if (!restart || !savepersist) {
+        /* Set gametype team flags */
+        G_SetGametypeTeamFlags(teamFlags, (const char *)g_gametype->current.integer);
+    }
+
+    G_ProcessIPBans();
+
+    /* Setup bgs function pointers */
+    *(void **)((byte *)&level_bgs + 736236) = imp_SV_XModelGet;
+    *(void **)((byte *)&level_bgs + 736240) = (void *)G_CreateDObj;
+    *(void **)((byte *)&level_bgs + 736244) = imp_Com_SafeServerDObjFree;
+    *(void **)((byte *)&level_bgs + 736248) = (void *)Hunk_AllocXAnimServer;
+    *(int *)((byte *)&level_bgs + 736232) = 1;
+
+    /* Log file setup */
+    logFile = (const char *)*(int *)((byte *)g_log + 8);
+    if (*logFile != '\0') {
+        if (*(byte *)((byte *)g_logSync + 8)) {
+            FS_FOpenFileByMode(logFile, (int *)((byte *)&level + 24), 3);
+        } else {
+            FS_FOpenFileByMode(logFile, (int *)((byte *)&level + 24), 1);
+        }
+        G_LogPrintf("------------------------------------------------------------\n");
+        G_LogPrintf("------------------------------------------------------------\n");
+        SV_GetServerinfo("sv_mapname", (char *)((byte *)&level_bgs + 813548), 0x400);
+        G_LogPrintf("InitGame: %s\n", (char *)((byte *)&level_bgs + 813548));
+    } else {
+        *(int *)((byte *)&level + 24) = -1;
+        Com_Printf("Not logging to disk.\n");
+    }
+
+    /* Initialize scrVarPub */
+    {
+        int *p = Hunk_AllocLowInternal(0);
+        *(void **)&scrVarPub = (void *)p;
+        *(byte *)p = 0;
+    }
+
+    SV_LocateGameData((void *)g_clients, 0x400, 0xa04, (void *)g_entities);
+    G_SpawnEntitiesFromString((void *)g_entities, 0x400, 0x230);
+    DBG_PrintFreeVars(str_dbg_spawn);
+    level.initializing = 0;
+
+    Com_Printf("%i+%i entity slots, %i+%i client slots\n",
+        *(int *)((byte *)&level + 12), *(int *)((byte *)&level + 16),
+        *(int *)((byte *)&level + 484), 0);
+
+    /* Log gametype */
+    G_LogPrintf("gametype: %s\n", (const char *)*(int *)((byte *)g_gametype + 8));
+
+    G_InitTurrets();
+    G_SpawnTriggerHurt(SV_GetBrushModelCount() + 1);
+    GScr_PostResetTimeout();
+    G_SetupWeaponDef();
+    Scr_BeginLoadScripts();
+    GScr_LoadScripts(1);
+    DBG_PrintFreeVars(str_dbg_load);
+    GScr_LoadConsts();
+    Scr_FreeScripts(1);
+    Scr_BeginLoadAnimScripts();
+    GScr_LoadAnimScripts();
+    Scr_EndLoadAnimScripts();
+    G_RegisterDvars_impl();
+
+    Com_Printf(str_dbg_vmtop_fmt, *(void **)((byte *)&scrVmPub + 16));
+    Scr_FreeEntityList();
+    Scr_InitSystem();
+    Com_Printf(str_dbg_ff_trace, *(void **)((byte *)&scrVmPub + 12));
+    Scr_SetLoading(1);
+    Scr_AllocGameVariable();
+    Com_Printf(str_dbg_ff_agv, *(void **)((byte *)&scrVmPub + 12));
+    G_LoadStructs();
+    Com_Printf(str_dbg_ff_gls, *(void **)((byte *)&scrVmPub + 12));
+
+    /* Script init */
+    level.initializing = 1;
+    Scr_LoadLevel();
+    Com_Printf(str_dbg_ff_before, *(void **)((byte *)&scrVmPub + 12));
+    Scr_LoadGameType();
+    Com_Printf(str_dbg_ff_after_load, *(void **)((byte *)&scrVmPub + 12));
+    Scr_StartupGameType();
+    Com_Printf(str_dbg_ff_after_startup, *(void **)((byte *)&scrVmPub + 12));
+
+    if (restart && !savepersist) {
+        RestoreBody();
+    }
+
+    /* Update connected clients' userinfo */
+    for (i = 0; i < g_maxclients->current.integer; i++) {
+        cl = (gclient_t *)((byte *)*(void **)&level + (unsigned int)i * 0x28a4);
+        if (*(int *)((byte *)cl + 0x26c4) == 2) {
+            /* ClientUserinfoChanged(clientNum, ent, client) */
+            ClientUserinfoChanged(i,
+                (gentity_t *)((byte *)g_entities + (unsigned int)i * 0x230),
+                cl);
+        }
+    }
+
+    /* Reset team flags */
+    *(int *)((byte *)&level + 520) = 0;
+
+    /* Password notice for dedicated servers */
+    if (g_dedicated->current.integer > 0) {
+        const char *pw = (const char *)*(int *)((byte *)g_password + 8);
+        if (*pw != '\0') {
+            Com_sprintf(info, sizeof(info), "password: %s\n", pw);
+        }
+    }
+
+    CalculateRanks();
+    level.initializing = 0;
+
+    return 0;
+}
 #endif
 
 /* line 1202 */
@@ -1779,5 +2053,272 @@ int G_RunFrame(int levelTime)
     );
 }
 #else
-int G_RunFrame(int levelTime) { return 0; }
+int G_RunFrame(int levelTime) {
+    int i, j;
+    unsigned char entIndex[0x400];
+    unsigned char index;
+    int bMoreTriggered;
+    int triggerCount;
+    gentity_t *entPtr;
+    byte *triggerInfo;
+    unsigned short entNum, otherNum;
+    int entGenCount, otherGenCount;
+    int savedTriggerCount;
+    byte *lvl = (byte *)&level;
+
+    /* Update level timing */
+    *(int *)(lvl + 488) += 1; /* framenum */
+    *(int *)(lvl + 496) = *(int *)(lvl + 492); /* previousTime = time */
+    *(int *)(lvl + 492) = levelTime; /* time = levelTime */
+    *(int *)(lvl + 500) = levelTime - *(int *)(lvl + 496); /* frametime */
+
+    *(int *)((byte *)&level_bgs + 736220) = levelTime;
+    *(int *)((byte *)&level_bgs + 736224) = levelTime;
+    *(int *)((byte *)&level_bgs + 736228) = *(int *)(lvl + 500);
+
+    *(void **)imp_bgs = (void *)&level_bgs;
+
+    /* SV_DObjInitServerTime for active entities */
+    for (i = 0; i < *(int *)(lvl + 12); i++) {
+        entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
+        if (*(byte *)((byte *)entPtr + 0xfc)) {
+            float dt = (float)*(int *)(lvl + 500) * 0.001f;
+            SV_DObjInitServerTime(entPtr, dt);
+        }
+    }
+
+    /* Clear entIndex */
+    memset(entIndex, 0, 0x400);
+
+    /* Copy trigger info to backup */
+    triggerCount = *(int *)(lvl + 13800);
+    Com_Memcpy((void *)(lvl + 10728), (void *)(lvl + 7656), triggerCount * 12);
+    *(int *)(lvl + 13804) = triggerCount;
+    *(int *)(lvl + 13800) = 0;
+
+    index = 0;
+
+    /* Process triggers repeatedly until no more are fired */
+    do {
+        index += 1;
+        savedTriggerCount = *(int *)(lvl + 13804);
+        bMoreTriggered = 0;
+
+        if (savedTriggerCount <= 0) {
+            /* No triggers pending */
+        } else {
+            j = 0;
+            triggerInfo = lvl + 10728;
+            while (j < *(int *)(lvl + 13804)) {
+                entNum = *(unsigned short *)(triggerInfo);
+                entPtr = (gentity_t *)((byte *)g_entities + (unsigned int)entNum * 0x230);
+                /* Check generation counts match */
+                if (*(int *)((byte *)entPtr + 0x228) != *(int *)(triggerInfo + 4)) {
+                    /* Generation mismatch - remove this trigger */
+                    int last = *(int *)(lvl + 13804) - 1;
+                    *(int *)(lvl + 13804) = last;
+                    j--;
+                    triggerInfo -= 12;
+                    /* Copy last entry over current */
+                    *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
+                    *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
+                    *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                } else {
+                    /* Check other entity generation */
+                    otherNum = *(unsigned short *)(triggerInfo + 2);
+                    gentity_t *otherEnt = (gentity_t *)((byte *)g_entities + (unsigned int)otherNum * 0x230);
+                    if (*(int *)((byte *)otherEnt + 0x228) != *(int *)(triggerInfo + 8)) {
+                        /* Other entity generation mismatch - remove */
+                        int last = *(int *)(lvl + 13804) - 1;
+                        *(int *)(lvl + 13804) = last;
+                        j--;
+                        triggerInfo -= 12;
+                        *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
+                        *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
+                        *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                    } else {
+                        /* Check if already processed this frame */
+                        if (entIndex[entNum] != index) {
+                            /* Fire trigger */
+                            entIndex[entNum] = index;
+                            Scr_AddEntity(otherEnt);
+                            Scr_Notify(entPtr, (int)*(unsigned short *)((byte *)imp_scr_const + 0x54), 1);
+                            /* Remove this trigger entry */
+                            {
+                                int last = *(int *)(lvl + 13804) - 1;
+                                *(int *)(lvl + 13804) = last;
+                                j--;
+                                triggerInfo -= 12;
+                                *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
+                                *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
+                                *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                            }
+                        } else {
+                            bMoreTriggered = 1;
+                        }
+                    }
+                }
+                j++;
+                triggerInfo += 12;
+            }
+        }
+
+        Scr_RunCurrentThreads();
+    } while (bMoreTriggered);
+
+    /* G_DObjUpdateServerTime loop */
+    for (i = 0; i < *(int *)(lvl + 12); i++) {
+        entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
+        if (!*(byte *)((byte *)entPtr + 0xfc))
+            continue;
+        if (*(byte *)((byte *)entPtr + 0xfc + 0x78 + 1) & 0x20)
+            continue;
+        while (1) {
+            if (!G_DObjUpdateServerTime(entPtr, 1))
+                break;
+            Scr_RunCurrentThreads();
+            if (!*(byte *)((byte *)entPtr + 0xfc))
+                break;
+            if (*(byte *)((byte *)entPtr + 0xfc + 0x78 + 1) & 0x20)
+                break;
+        }
+    }
+
+    Scr_IncTime();
+
+    /* Run frame for entities */
+    *(int *)(lvl + 13828) = 0;
+    for (i = 0; i < *(int *)(lvl + 12); i++) {
+        entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
+        if (*(byte *)((byte *)entPtr + 0xfc)) {
+            /* If entity has a parent (tagInfo->parent), run parent first */
+            void *tagInfo = *(void **)((byte *)entPtr + 0xfc + 0x10c);
+            if (tagInfo) {
+                gentity_t *parent = *(gentity_t **)tagInfo;
+                G_RunFrameForEntity(parent);
+            }
+            G_RunFrameForEntity(entPtr);
+        }
+        *(int *)(lvl + 13828) = i + 1;
+    }
+    *(int *)(lvl + 13828) = -1;
+
+    /* Update objective data for connected clients */
+    {
+        int numClients = *(int *)(lvl + 484);
+        for (i = 0; i < numClients; i++) {
+            byte *ent2 = (byte *)(*(void **)(lvl + 4)) + (unsigned int)i * 0x230;
+            if (!*(byte *)(ent2 + 0xfc))
+                continue;
+            gclient_t *cli = *(gclient_t **)((byte *)ent2 + 0x158);
+            int lastObjId = *(int *)((byte *)cli + 0x274c);
+            byte *srcBase = lvl + 36;
+            byte *dstBase = (byte *)cli;
+            byte *levelEnd = lvl + 484;
+            byte *src = srcBase;
+            byte *dst = dstBase;
+            while (src < levelEnd) {
+                int srcKey = *(int *)src;
+                if (srcKey == 0 || *(int *)(src + 0x14) == 0) {
+                    if (srcKey != 0 && *(int *)(src + 0x14) == lastObjId) {
+                        /* Copy 28 bytes of objective data */
+                        int k;
+                        for (k = 0; k < 7; k++) {
+                            *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4);
+                        }
+                    } else {
+                        *(int *)(dst + 0x5e4) = 0;
+                    }
+                } else {
+                    /* Copy 28 bytes */
+                    int k;
+                    for (k = 0; k < 7; k++) {
+                        *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4);
+                    }
+                }
+                src += 0x1c;
+                dst += 0x1c;
+            }
+        }
+    }
+
+    /* HudElem updates */
+    {
+        int numClients = *(int *)(lvl + 484);
+        for (i = 0; i < numClients; i++) {
+            byte *ent2 = (byte *)(*(void **)(lvl + 4)) + (unsigned int)i * 0x230;
+            if (!*(byte *)(ent2 + 0xfc))
+                continue;
+            HudElem_UpdateClient(*(gclient_t **)((byte *)ent2 + 0x158),
+                                 *(int *)ent2, 3);
+        }
+    }
+
+    /* ClientEndFrame for active clients */
+    {
+        int numClients = *(int *)(lvl + 484);
+        for (i = 0; i < numClients; i++) {
+            entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
+            if (*(byte *)((byte *)entPtr + 0xfc)) {
+                ClientEndFrame(entPtr);
+            }
+        }
+    }
+
+    CheckTeamStatus();
+
+    /* Vote checking */
+    if (*(byte *)((byte *)g_oldVoting + 8)) {
+        CheckVote();
+    }
+
+    /* DeathmatchScoreboardMessage for spectators */
+    if (*(int *)(lvl + 528)) {
+        int numClients = *(int *)(lvl + 484);
+        int foundAny = 0;
+        for (i = 0; i < numClients; i++) {
+            gclient_t *cl2 = (gclient_t *)((byte *)(*(void **)lvl) + (unsigned int)i * 0x28a4);
+            if (*(int *)((byte *)cl2 + 0x26c4) != 2)
+                continue;
+            if (*(int *)((byte *)cl2 + 4) != 5)
+                continue;
+            DeathmatchScoreboardMessage((gentity_t *)((byte *)g_entities + i * 0x230));
+            foundAny = 1;
+        }
+        if (!foundAny || numClients <= 0) {
+            *(int *)(lvl + 528) = 0;
+        }
+    }
+
+    /* List entities debug */
+    if (*(byte *)((byte *)g_listEntity + 8)) {
+        for (i = 0; i < 0x400; i++) {
+            entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
+            Com_Printf("%4i: %s\n", i,
+                (const char *)SL_ConvertToString(*(unsigned short *)((byte *)entPtr + 0x168)));
+        }
+        Dvar_SetBool(g_listEntity, 0);
+    }
+
+    /* Save weapons/items if flagged */
+    if (*(int *)(lvl + 13820)) {
+        SaveRegisteredWeapons();
+    }
+    if (*(int *)(lvl + 13824)) {
+        SaveRegisteredItems();
+    }
+
+    /* Dump anims */
+    if (*(int *)((byte *)g_dumpAnims + 8) >= 0) {
+        Com_Printf("---------- Animtree dump ----------\n");
+        {
+            int animIdx = *(int *)((byte *)g_dumpAnims + 8);
+            entPtr = (gentity_t *)((byte *)(*(void **)(lvl + 4)) + animIdx * 0x230);
+            SV_DObjDisplayAnim(entPtr);
+        }
+    }
+
+    *(void **)imp_bgs = NULL;
+    return 0;
+}
 #endif

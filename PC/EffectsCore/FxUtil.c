@@ -1749,7 +1749,7 @@ static void FX_InitParticle_impl(byte *prim, byte *particle, vec_t *newOrigin, c
         "calll FX_CalcOriginAndAxis\n" "addl $4, %%esp\n"
         : : "g"(prim), "g"(newOrigin), "g"(ax) : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl(prim, newOrigin, ax);
 #endif
     Particle_SetAxis(particle, ax);
 
@@ -1976,7 +1976,7 @@ void FX_AddCameraShake(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, c
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
     byte *primTemp = *(byte **)((byte *)prim + 4);
     float duration = FxRange_GetVal(primTemp + 0x58);
@@ -2004,7 +2004,7 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
     byte *primTemp = *(byte **)(p + 4);
     void *bolt = *(void **)(p + 8);
@@ -2037,7 +2037,7 @@ void FX_AddDecal(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
     FxScheduler_CreateDecalEffect(*(void **)imp_theFxScheduler, *(void **)((byte *)prim + 4), newOrigin, ax);
 }
@@ -2496,7 +2496,8 @@ void FX_SetMaterialAndSequenceParams(const int killTime, int indexInBatch)
         "retl\n"
     );
 #else
-    /* x86 asm not available */
+    /* dead code — outer #ifndef __EMSCRIPTEN__ provides C stub */
+    (void)killTime; (void)indexInBatch;
 #endif
 }
 #else
@@ -2852,7 +2853,7 @@ void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
     vec3_t newOrigin;
@@ -2863,7 +2864,7 @@ void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
         : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     byte *primTemp = *(byte **)((byte *)prim + 4);
     int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
@@ -2898,7 +2899,7 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) {
         /* Call destructor via vtable[1] */
@@ -3086,7 +3087,7 @@ void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         : "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, light, (const vec_t *)origin);
 #endif
     if (!(byte)added) {
         typedef void (*Fn)(void *); ((Fn)(*(void ***)light)[1])(light);
@@ -3106,7 +3107,7 @@ void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
     *(float *)(light + 4) = newOrigin[0];
     *(float *)(light + 8) = newOrigin[1];
@@ -3137,7 +3138,7 @@ void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
     vec3_t newOrigin;
@@ -3148,7 +3149,7 @@ void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
         : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
     FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
@@ -3324,7 +3325,7 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
 
@@ -3336,7 +3337,7 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "calll FX_CalcOriginAndAxis\n" "addl $4, %%esp\n"
         : : "g"(prim), "g"(&newOrigin), "g"(ax) : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
 
     Particle_SetAxis(p, ax);
@@ -3608,7 +3609,7 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
 
@@ -3623,7 +3624,7 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         : "eax", "ecx", "edx", "memory"
     );
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
 
     /* FX_SetMaterialAndSequenceParams: eax=primTemp, edx=particle, ecx=killTime, stack: indexInBatch */
@@ -3661,7 +3662,7 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
     vec3_t newOrigin;
@@ -3672,7 +3673,7 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
         : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
     FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
@@ -3852,7 +3853,7 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
     vec3_t newOrigin;
@@ -3863,7 +3864,7 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
         : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
         : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     byte *primTemp = *(byte **)((byte *)prim + 4);
     if (lateTime > 0) {
@@ -4182,7 +4183,7 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
         "calll FX_AddPrimitive\n" "movl %%eax, %0\n"
         : "=r"(added) : "r"(prim), "r"(p), "r"(origin) : "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    added = FX_AddPrimitive_impl((byte *)prim, (byte *)p, (const vec_t *)origin);
 #endif
     if (!(byte)added) { typedef void (*Fn)(void *); ((Fn)(*(void ***)p)[1])(p); return; }
     vec3_t newOrigin;
@@ -4193,7 +4194,7 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
         : "=m"(newOrigin) : "g"(prim), "g"(p), "g"(origin), "g"(ax), "g"(indexInBatch)
         : "eax", "ecx", "edx", "memory");
 #else
-    /* x86 asm not available */
+    FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
     FX_SetMaterialAndSequenceParams_impl(*(byte **)((byte *)prim + 4), p, killTime, indexInBatch);
