@@ -2,6 +2,7 @@
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/gfx_d3d/rb_shade.cpp */
 
 #include "common_types.h"
+#include <math.h>
 #include "imports.h"
 
 /* Original includes (from N_BINCL debug info):
@@ -4391,7 +4392,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     if (!matched) {
                         const Material *mat2 = *(const Material **)(RB_TessBase() + 0x5a7bc);
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
-                            *(char **)stateMap, rsi, mat2->name);
+                            *(char **)stateMap, rsi, mat2->info.name);
                     }
 
                     rsp += 4;
@@ -4571,7 +4572,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     const Material *mat3 = *(const Material **)(tess + 0x5a7bc);
                     byte *pgm = *(byte **)(pass + 8);
                     R_Error(0, "Vertex type %i doesn't have the information used by shader %",
-                        vertDeclType, *(char **)pgm, mat3->name);
+                        vertDeclType, *(char **)pgm, mat3->info.name);
                     tess = RB_TessBase();
                     continue;
                 }
@@ -4616,7 +4617,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     if (!matched) {
                         const Material *mat4 = *(const Material **)(RB_TessBase() + 0x5a7bc);
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
-                            *(char **)stateMap, rsi, mat4->name);
+                            *(char **)stateMap, rsi, mat4->info.name);
                     }
 
                     rsp += 4;

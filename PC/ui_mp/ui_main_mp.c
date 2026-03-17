@@ -225,7 +225,7 @@ void UI_UpdateTime(int realtime);
 void UI_Shutdown(void);
 char * GetMenuBuffer(const char *filename);
 qboolean Load_ScriptMenu(const char *pszMenu, int imageTrack);
-static void UI_DrawMapPreview(void);
+static void UI_DrawMapPreview(const rectDef_t *rect, const vec_t *color, int net);
 const char * UI_GetMapDisplayName(const char *pszMap);
 const char * UI_GetMapDisplayNameFromPartialLoadNameMatch(const char *pszMap, int *mapLoadNameLen);
 const char * UI_GetGameTypeDisplayName(const char *pszGameType);
@@ -457,7 +457,7 @@ qboolean Load_ScriptMenu(const char *pszMenu, int imageTrack)
 /* line 701 */
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
-void UI_DrawMapPreview(void)
+void UI_DrawMapPreview(const rectDef_t *rect, const vec_t *color, int net)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 701 */
@@ -3408,16 +3408,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
 
     case 206: /* map preview (net) */
     {
-        __asm__ __volatile__ (
-            "movss %0, %%xmm0\n"
-            "movl %1, %%edx\n"
-            "movl $1, %%ecx\n"
-            "movl %2, %%eax\n"
-            "calll UI_DrawMapPreview\n"
-            :
-            : "m"(scale), "r"(color), "r"(rect)
-            : "eax", "ecx", "edx", "memory"
-        );
+        UI_DrawMapPreview((const rectDef_t *)rect, color, 1);
         return;
     }
 
@@ -3455,16 +3446,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
 
     case 244: /* map preview (non-net) */
     {
-        __asm__ __volatile__ (
-            "movss %0, %%xmm0\n"
-            "movl %1, %%edx\n"
-            "xorl %%ecx, %%ecx\n"
-            "movl %2, %%eax\n"
-            "calll UI_DrawMapPreview\n"
-            :
-            : "m"(scale), "r"(color), "r"(rect)
-            : "eax", "ecx", "edx", "memory"
-        );
+        UI_DrawMapPreview((const rectDef_t *)rect, color, 0);
         return;
     }
 
@@ -3631,16 +3613,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
 
     case 254: /* map preview (same as 206) */
     {
-        __asm__ __volatile__ (
-            "movss %0, %%xmm0\n"
-            "movl %1, %%edx\n"
-            "movl $1, %%ecx\n"
-            "movl %2, %%eax\n"
-            "calll UI_DrawMapPreview\n"
-            :
-            : "m"(scale), "r"(color), "r"(rect)
-            : "eax", "ecx", "edx", "memory"
-        );
+        UI_DrawMapPreview((const rectDef_t *)rect, color, 1);
         return;
     }
 
@@ -8202,5 +8175,42 @@ check_connection_state:
     }
 }
 #else
-static void UI_DrawMapPreview(void) { }
+static void UI_DrawMapPreview(const rectDef_t *rect, const vec_t *color, int net)
+{
+    int map;
+    int mapCount;
+    int material;
+
+    /* line 703: get the current map index based on net/local mode */
+    if (net) {
+        map = *(int *)((byte *)ui_currentNetMap + 8);
+    } else {
+        map = *(int *)((byte *)ui_currentMap + 8);
+    }
+
+    /* line 705: validate map index */
+    mapCount = *(int *)((char *)&sharedUiInfo + 4944);
+    if (map < 0 || map >= mapCount) {
+        /* line 707-710: reset the appropriate dvar to 0 and use map 0 */
+        if (net) {
+            Dvar_SetInt(ui_currentNetMap, 0);
+        } else {
+            Dvar_SetInt(ui_currentMap, 0);
+        }
+        map = 0;
+    }
+
+    /* line 714: look up the map preview material from the map list */
+    material = *(int *)((char *)&sharedUiInfo + 5104 + map * 164);
+
+    /* line 720: fall back to unknown map image if no material */
+    if (!material) {
+        material = CL_RegisterMaterialNoMip("menu/art/unknownmap", 3);
+    }
+
+    /* draw the map preview image */
+    UI_DrawHandlePic(rect->x, rect->y, rect->w, rect->h,
+                     rect->horzAlign, rect->vertAlign,
+                     color, material);
+}
 #endif

@@ -21,6 +21,9 @@ static int bg_iNumWeapClips; /* bg_iNumWeapClips */
 
 void BG_ShutdownWeaponDefFiles(void);
 WeaponDef * BG_GetWeaponDef(int iWeapon);
+extern void *BG_LoadDefaultWeaponDef(void);
+extern void BG_LoadPlayerAnimTypes(void);
+extern void BG_InitWeaponStrings(void);
 void BG_ClearWeaponDef(void);
 int BG_GetNumWeapons(void);
 int BG_GetAmmoTypeMax(int iAmmoIndex);
@@ -8773,7 +8776,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
 int BG_FindWeaponIndexForName(const char *name)
 {
     extern int bg_iNumWeapons;
-    extern void *bg_weaponDefs[];
+    extern WeaponDef *bg_weaponDefs[128];
     extern int I_stricmp(const char *, const char *);
     int weapIndex;
     for (weapIndex = 1; weapIndex <= bg_iNumWeapons; weapIndex++) {

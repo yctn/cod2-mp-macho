@@ -4614,5 +4614,56 @@ gentity_t * SV_AddTestClient(void)
 }
 
 #else
-void SV_AuthorizeRequest(struct netadr_t from, int challenge) { }
+extern const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, int flags);
+extern const char *NET_AdrToString(netadr_t adr);
+extern char *va(const char *fmt, ...);
+extern Bool Dvar_GetBool(const char *dvarName);
+extern void NET_OutOfBandPrint(int sock, netadr_t adr, const char *data);
+
+static const dvar_t * Dvar_RegisterString_mac_sv(const char *name, const char *value, int flags) {
+    return Dvar_RegisterString(name, value ? value : "", flags);
+}
+
+/* line 138 */
+void SV_AuthorizeRequest(struct netadr_t from, int challenge)
+{
+    char game[0x400];
+    extern void *imp_svs;
+    char *svs = (char *)imp_svs;
+
+    /* line 146 */
+    if (*(int *)(svs + 0xa068) == 1) {
+        return;
+    }
+
+    /* line 149 */
+    game[0] = '\0';
+
+    /* line 150 */
+    const dvar_t *fs_game = Dvar_RegisterString_mac_sv((const char *)str_00216d64, (const char *)str_002157b8, 0x101c);
+
+    /* line 151 */
+    if (fs_game) {
+        const char *val = *(const char **)((char *)fs_game + 8);
+        if (val[0] != '\0') {
+            /* line 152 */
+            strcpy(game, val);
+        }
+    }
+
+    /* line 154 */
+    Com_DPrintf((const char *)str_002adef4, NET_AdrToString(from));
+
+    /* line 155 */
+    Bool allowAnon = Dvar_GetBool((const char *)str_002a718c);
+
+    /* line 158 */
+    const char *s = va((const char *)str_002adf14, challenge,
+        (unsigned int)from.ip[0], (unsigned int)from.ip[1],
+        (unsigned int)from.ip[2], (unsigned int)from.ip[3],
+        game, (int)(unsigned char)allowAnon);
+
+    /* line 159 */
+    NET_OutOfBandPrint(1, *(netadr_t *)(svs + 0xa068), s);
+}
 #endif

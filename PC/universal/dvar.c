@@ -2156,7 +2156,7 @@ const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned int fla
         "movzwl 4(%edi), %edx\n"
         /* } scope */
         ".Lf54550_000549c0:\n"
-        "andl $__mh_execute_header, %esi\n" /* line 1538 */
+        "andl $0x1000, %esi\n" /* line 1538 */
         "je .Lf54550_00054815\n"
         "testb $0x10, %dh\n"
         "jne .Lf54550_00054815\n"
@@ -3208,8 +3208,11 @@ static const char *Dvar_ConvertStringValue(const char *value, int type)
         /* single char: check if digit */
         unsigned char first = *(unsigned char *)value;
         if ((unsigned char)(first - '0') <= 9) {
-            /* Return digit string from lookup table */
-            return (const char *)((byte *)__ZZN16CStringEdPackage9ParseLineEPKchE5C_208 + 1024 + (signed char)first * 2);
+            /* Return digit string: "0", "1", ..., "9" */
+            {
+                static const char * const digit_strs[] = {"0","1","2","3","4","5","6","7","8","9"};
+                return digit_strs[first - '0'];
+            }
         }
         return CopyStringInternal(value);
     }
@@ -3299,7 +3302,7 @@ found_existing:
                     goto check_flags;
                 }
                 /* line 1534-1541 */
-                if (flags & __mh_execute_header) {
+                if (flags & 0x1000) {
                     if (!(oldFlags & 0x1000)) {
                         /* line 1540 */
                         *(const char **)existing = dvarName;
@@ -3315,7 +3318,7 @@ found_existing:
             }
 
 check_flags_cont:
-            if (flags & __mh_execute_header) {
+            if (flags & 0x1000) {
                 if (!(oldFlags & 0x1000)) {
                     *(const char **)existing = dvarName;
                     if (*(byte *)((byte *)existing + 6) == 6) {

@@ -1737,7 +1737,7 @@ after_load:
     /* line 1075: register snd_list command */
     if (*(short *)((byte *)&g_sa) == 0) {
         /* line 1076 */
-        Cmd_AddCommand("snd_list", Com_SoundList_f);
+        Cmd_AddCommand("snd_list", (void (*)(void))Com_SoundList_f);
     }
 
     /* line 1081 */
@@ -1753,7 +1753,8 @@ after_load:
             if (*(byte *)((byte *)snd_errorOnMissing_dvar + 8) != 0) {
                 /* line 1089 */
                 int errCode = (system != 0) ? 1 : 0;
-                Com_Error(errCode, "%s", va("%i sound file(s) are missing or in a bad format\n", missCount));
+                { extern const char *va(const char *fmt, ...);
+                Com_Error(errCode, "%s", va("%i sound file(s) are missing or in a bad format\n", missCount)); }
             }
         }
     }

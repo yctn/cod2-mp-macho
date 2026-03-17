@@ -14,6 +14,9 @@ extern const char * g_pszSndAliasKeyNames[24]; /* g_pszSndAliasKeyNames */
 extern const char * g_pszChannelNames[11]; /* g_pszChannelNames */
 
 extern int I_stricmp(const char *s0, const char *s1);
+extern void Com_Printf(const char *fmt, ...);
+
+static snd_alias_build_t * Com_SortTempSoundAliases_r_impl(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(snd_alias_build_t *, snd_alias_build_t *), int isRemovingDups);
 
 void Com_InitSoundAlias(void);
 static void Com_RefreshVolumeModGroups_f(void);
@@ -51,196 +54,179 @@ static int AliasNameCompare(snd_alias_build_t *pFrontList, snd_alias_build_t *pB
 }
 
 /* line 1024 */
+/* Recursive merge sort for sound alias linked lists.
+ * Splits the list in half, recursively sorts both halves, then merges.
+ * When isRemovingDups is set, duplicates (same test() result AND same iSequence)
+ * are resolved by I_stricmp on szSourceFile: true duplicates (same file) print
+ * an error and both are dropped; otherwise the lesser-sorted-file entry is dropped.
+ */
+static snd_alias_build_t * Com_SortTempSoundAliases_r_impl(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(snd_alias_build_t *, snd_alias_build_t *), int isRemovingDups)
+{
+    snd_alias_build_t *pSplitPoint;
+    snd_alias_build_t *pFrontList;
+    snd_alias_build_t *pBackList;
+    snd_alias_build_t *result;
+    snd_alias_build_t **ppListPos;
+    int iFrontCount;
+    int iBackCount;
+    int count;
+    int cmp;
+    int i;
+
+    count = *piAliasCount;
+
+    /* Base case: single element */
+    if (count == 1)
+    {
+        pAliasList->pNext = 0;
+        return pAliasList;
+    }
+
+    /* Split the list in half */
+    iFrontCount = count / 2;
+    iBackCount = count - iFrontCount;
+
+    /* Walk to the split point */
+    pSplitPoint = pAliasList;
+    for (i = 0; i < iFrontCount; i++)
+    {
+        pSplitPoint = (snd_alias_build_t *)(uintptr_t)pSplitPoint->pNext;
+    }
+
+    /* Recursively sort both halves */
+    pFrontList = Com_SortTempSoundAliases_r_impl(pAliasList, &iFrontCount, test, isRemovingDups);
+    pBackList = Com_SortTempSoundAliases_r_impl(pSplitPoint, &iBackCount, test, isRemovingDups);
+
+    /* Merge the two sorted halves */
+    *piAliasCount = 0;
+    result = NULL;
+    ppListPos = &result;
+
+    for (;;)
+    {
+        if (isRemovingDups)
+        {
+            /* Duplicate-removing merge path */
+            if (iFrontCount <= 0)
+                goto front_exhausted;
+            if (iBackCount <= 0)
+                goto back_exhausted;
+
+            cmp = test(pFrontList, pBackList);
+
+            if (cmp == 0)
+            {
+                /* Same sort key -- check iSequence tie-break */
+                cmp = pFrontList->iSequence - pBackList->iSequence;
+
+                if (cmp == 0)
+                {
+                    /* Same sort key AND same iSequence -- compare source files */
+                    cmp = I_stricmp((const char *)pFrontList, (const char *)pBackList);
+
+                    if (cmp == 0)
+                    {
+                        /* True duplicate from same file -- print error, skip both */
+                        Com_Printf(str_0021ec34, (const char *)pFrontList, (const char *)pFrontList + 0x40);
+                        pFrontList = (snd_alias_build_t *)(uintptr_t)pFrontList->pNext;
+                        iFrontCount--;
+                        pBackList = (snd_alias_build_t *)(uintptr_t)pBackList->pNext;
+                        iBackCount--;
+                        continue;
+                    }
+                    else if (cmp < 0)
+                    {
+                        /* Different files, front sorts first -- drop front (keep back) */
+                        pFrontList = (snd_alias_build_t *)(uintptr_t)pFrontList->pNext;
+                        iFrontCount--;
+                        continue;
+                    }
+                    else
+                    {
+                        /* Different files, back sorts first -- drop back (keep front) */
+                        pBackList = (snd_alias_build_t *)(uintptr_t)pBackList->pNext;
+                        iBackCount--;
+                        continue;
+                    }
+                }
+            }
+
+            /* Non-duplicate: pick the lesser element */
+            if (cmp > 0)
+            {
+                *ppListPos = pBackList;
+                pBackList = (snd_alias_build_t *)(uintptr_t)pBackList->pNext;
+                iBackCount--;
+            }
+            else
+            {
+                *ppListPos = pFrontList;
+                pFrontList = (snd_alias_build_t *)(uintptr_t)pFrontList->pNext;
+                iFrontCount--;
+            }
+        }
+        else
+        {
+            /* Simple merge path (no duplicate removal) */
+            if (iFrontCount <= 0)
+                goto front_exhausted;
+            if (iBackCount <= 0)
+                goto back_exhausted;
+
+            cmp = test(pFrontList, pBackList);
+
+            if (cmp > 0)
+            {
+                *ppListPos = pBackList;
+                pBackList = (snd_alias_build_t *)(uintptr_t)pBackList->pNext;
+                iBackCount--;
+            }
+            else
+            {
+                *ppListPos = pFrontList;
+                pFrontList = (snd_alias_build_t *)(uintptr_t)pFrontList->pNext;
+                iFrontCount--;
+            }
+        }
+
+        (*piAliasCount)++;
+        ppListPos = (snd_alias_build_t **)&((*ppListPos)->pNext);
+    }
+
+back_exhausted:
+    /* Front list has remaining elements */
+    *ppListPos = pFrontList;
+    *piAliasCount += iFrontCount;
+    return result;
+
+front_exhausted:
+    /* Back list has remaining elements */
+    *ppListPos = pBackList;
+    *piAliasCount += iBackCount;
+    return result;
+}
+
 #ifndef __EMSCRIPTEN__
+/* x86 trampoline: eax=pAliasList, edx=piAliasCount, ecx=test, 8(%ebp)=isRemovingDups -> cdecl _impl */
 static __attribute__((naked))
 snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(), int isRemovingDups)
 {
     __asm__ __volatile__ (
-        ".Lfb6fd4_000b6fd4:\n"
-        "pushl %ebp\n" /* line 1024 */
+        "pushl %ebp\n"
         "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl %edx, -0x30(%ebp)\n"
-        "movl %ecx, -0x34(%ebp)\n"
-        "movzbl 8(%ebp), %eax\n" /* isRemovingDups */
-        "movb %al, -0x35(%ebp)\n" /* isRemovingDups */
-        /* { scope 1 */
-        "movl (%edx), %ecx\n" /* line 1036 */
-        "cmpl $1, %ecx\n"
-        "je .Lfb6fd4_000b7167\n"
-        "movl %ecx, %eax\n" /* line 1043 */
-        "shrl $0x1f, %eax\n"
-        "addl %ecx, %eax\n"
-        "sarl $1, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* iFrontCount */
-        "subl %eax, %ecx\n" /* line 1044 */
-        "movl %ecx, -0x20(%ebp)\n" /* iBackCount */
-        "movl -0x2c(%ebp), %edi\n" /* line 1045 | pBackList */
-        "testl %eax, %eax\n"
-        "jg .Lfb6fd4_000b710c\n"
-        "movl %edi, %esi\n" /* pBackList, ppListPos */
-        ".Lfb6fd4_000b7016:\n"
-        "movzbl -0x35(%ebp), %ebx\n" /* line 1049 | isRemovingDups */
-        "leal -0x1c(%ebp), %edx\n" /* iFrontCount */
-        "movl %ebx, (%esp)\n"
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %edi, %eax\n" /* pBackList */
-        "calll Com_SortTempSoundAliases_r\n"
-        "movl %eax, %edi\n" /* pBackList */
-        "leal -0x20(%ebp), %edx\n" /* line 1050 | iBackCount */
-        "movl %ebx, (%esp)\n"
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %esi, %eax\n" /* ppListPos */
-        "calll Com_SortTempSoundAliases_r\n"
-        "movl %eax, %ebx\n"
-        "movl -0x30(%ebp), %edx\n" /* line 1053 */
-        "movl $0, (%edx)\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 1054 */
-        "leal -0x2c(%ebp), %esi\n" /* ppListPos */
-        "movl -0x1c(%ebp), %edx\n" /* iFrontCount */
-        ".Lfb6fd4_000b7054:\n"
-        "cmpb $0, -0x35(%ebp)\n" /* isRemovingDups */
-        "jne .Lfb6fd4_000b70ca\n"
-        "jmp .Lfb6fd4_000b7079\n"
-        ".Lfb6fd4_000b705c:\n"
-        "movl %ebx, (%esi)\n" /* line 1103 | ppListPos */
-        "movl 0x150(%ebx), %ebx\n" /* line 1104 */
-        "subl $1, -0x20(%ebp)\n" /* line 1105 | iBackCount */
-        "movl -0x1c(%ebp), %edx\n" /* iFrontCount */
-        ".Lfb6fd4_000b706b:\n"
-        "movl -0x30(%ebp), %eax\n" /* line 1108 */
-        "addl $1, (%eax)\n"
-        "movl (%esi), %esi\n" /* line 1109 | ppListPos */
-        "addl $0x150, %esi\n" /* ppListPos */
-        ".Lfb6fd4_000b7079:\n"
-        "testl %edx, %edx\n" /* line 1056 */
-        "je .Lfb6fd4_000b7147\n"
-        "movl -0x20(%ebp), %ecx\n" /* iBackCount */
-        "testl %ecx, %ecx\n"
-        "je .Lfb6fd4_000b715e\n"
-        "movl %ebx, 4(%esp)\n" /* line 1058 */
-        "movl %edi, (%esp)\n" /* pBackList */
-        "calll *-0x34(%ebp)\n"
-        "testl %eax, %eax\n" /* line 1095 */
-        "jg .Lfb6fd4_000b705c\n"
-        "movl %edi, (%esi)\n" /* line 1097 | pBackList, ppListPos */
-        "movl 0x150(%edi), %edi\n" /* line 1098 | pBackList */
-        "movl -0x1c(%ebp), %edx\n" /* line 1099 | iFrontCount */
-        "subl $1, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* iFrontCount */
-        "jmp .Lfb6fd4_000b706b\n"
-        ".Lfb6fd4_000b70ad:\n"
-        "movl %ebx, (%esi)\n" /* line 1103 | ppListPos */
-        "movl 0x150(%ebx), %ebx\n" /* line 1104 */
-        "subl $1, -0x20(%ebp)\n" /* line 1105 | iBackCount */
-        "movl -0x1c(%ebp), %edx\n" /* iFrontCount */
-        ".Lfb6fd4_000b70bc:\n"
-        "movl -0x30(%ebp), %eax\n" /* line 1108 */
-        "addl $1, (%eax)\n"
-        "movl (%esi), %esi\n" /* line 1109 | ppListPos */
-        "addl $0x150, %esi\n" /* ppListPos */
-        ".Lfb6fd4_000b70ca:\n"
-        "testl %edx, %edx\n" /* line 1056 */
-        "je .Lfb6fd4_000b7147\n"
-        "movl -0x20(%ebp), %eax\n" /* iBackCount */
-        "testl %eax, %eax\n"
-        "je .Lfb6fd4_000b715e\n"
-        "movl %ebx, 4(%esp)\n" /* line 1058 */
-        "movl %edi, (%esp)\n" /* pBackList */
-        "calll *-0x34(%ebp)\n"
-        "testl %eax, %eax\n" /* line 1062 */
-        "jne .Lfb6fd4_000b70f5\n"
-        "movl 0xc4(%edi), %eax\n" /* line 1064 | pBackList */
-        "subl 0xc4(%ebx), %eax\n" /* line 1065 */
-        "je .Lfb6fd4_000b7122\n"
-        ".Lfb6fd4_000b70f5:\n"
-        "testl %eax, %eax\n" /* line 1095 */
-        "jg .Lfb6fd4_000b70ad\n"
-        "movl %edi, (%esi)\n" /* line 1097 | pBackList, ppListPos */
-        "movl 0x150(%edi), %edi\n" /* line 1098 | pBackList */
-        "movl -0x1c(%ebp), %edx\n" /* line 1099 | iFrontCount */
-        "subl $1, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* iFrontCount */
-        "jmp .Lfb6fd4_000b70bc\n"
-        ".Lfb6fd4_000b710c:\n"
-        "movl %edi, %esi\n" /* line 1045 | pBackList, ppListPos */
-        "xorl %edx, %edx\n"
-        ".Lfb6fd4_000b7110:\n"
-        "addl $1, %edx\n"
-        "movl 0x150(%esi), %esi\n" /* ppListPos */
-        "cmpl %edx, %eax\n"
-        "jne .Lfb6fd4_000b7110\n"
-        "jmp .Lfb6fd4_000b7016\n"
-        ".Lfb6fd4_000b7122:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1068 */
-        "movl %edi, (%esp)\n" /* pBackList */
-        "calll I_stricmp\n"
-        "cmpl $0, %eax\n" /* line 1069 */
-        "je .Lfb6fd4_000b717f\n"
-        "jl .Lfb6fd4_000b71b4\n" /* line 1080 */
-        "movl 0x150(%ebx), %ebx\n" /* line 1087 */
-        "subl $1, -0x20(%ebp)\n" /* line 1088 | iBackCount */
-        "movl -0x1c(%ebp), %edx\n" /* iFrontCount */
-        "jmp .Lfb6fd4_000b7054\n"
-        ".Lfb6fd4_000b7147:\n"
-        "movl %ebx, (%esi)\n" /* line 1120 | ppListPos */
-        "movl -0x30(%ebp), %edx\n" /* line 1121 */
-        "movl (%edx), %eax\n"
-        "addl -0x20(%ebp), %eax\n" /* iBackCount */
-        "movl %eax, (%edx)\n"
-        ".Lfb6fd4_000b7153:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 1124 */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1125 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
+        "pushl %eax\n"                /* save pAliasList temporarily */
+        "movzbl 8(%ebp), %eax\n"     /* isRemovingDups (byte from stack) */
+        "pushl %eax\n"                /* 4th arg: isRemovingDups */
+        "pushl %ecx\n"                /* 3rd arg: test */
+        "pushl %edx\n"                /* 2nd arg: piAliasCount */
+        "pushl -4(%ebp)\n"            /* 1st arg: pAliasList (saved above) */
+        "calll Com_SortTempSoundAliases_r_impl\n"
+        "movl %ebp, %esp\n"
         "popl %ebp\n"
         "retl\n"
-        /* { scope 1 */
-        ".Lfb6fd4_000b715e:\n"
-        "movl %edi, (%esi)\n" /* line 1115 | pBackList, ppListPos */
-        "movl -0x30(%ebp), %eax\n" /* line 1116 */
-        "addl %edx, (%eax)\n"
-        "jmp .Lfb6fd4_000b7153\n"
-        ".Lfb6fd4_000b7167:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 1038 */
-        "movl $0, 0x150(%eax)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 1039 */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1125 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfb6fd4_000b717f:\n"
-        "leal 0x40(%edi), %eax\n" /* line 1071 | pBackList */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* pBackList */
-        "movl $str_0021ec34, (%esp)\n" /* "^1ERROR: sound alias file %s: duplicate alias '%s'
-" */
-        "calll Com_Printf\n"
-        "movl 0x150(%edi), %edi\n" /* line 1072 | pBackList */
-        "movl -0x1c(%ebp), %edx\n" /* line 1073 | iFrontCount */
-        "subl $1, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* iFrontCount */
-        "movl 0x150(%ebx), %ebx\n" /* line 1074 */
-        "subl $1, -0x20(%ebp)\n" /* line 1075 | iBackCount */
-        "jmp .Lfb6fd4_000b7054\n"
-        ".Lfb6fd4_000b71b4:\n"
-        "movl 0x150(%edi), %edi\n" /* line 1082 | pBackList */
-        "movl -0x1c(%ebp), %edx\n" /* line 1083 | iFrontCount */
-        "subl $1, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* iFrontCount */
-        "jmp .Lfb6fd4_000b7054\n"
     );
 }
+
 
 /* line 1294 */
 __attribute__((naked))
@@ -4039,5 +4025,8 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
 }
 
 #else
-static snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(), int isRemovingDups) { return 0; }
+static snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(), int isRemovingDups)
+{
+    return Com_SortTempSoundAliases_r_impl(pAliasList, piAliasCount, (int (*)(snd_alias_build_t *, snd_alias_build_t *))test, isRemovingDups);
+}
 #endif

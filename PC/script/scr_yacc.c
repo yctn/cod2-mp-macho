@@ -4645,5 +4645,5 @@ void ScriptParse(sval_t *parseData, int user)
 }
 
 #else
-int yyparse(void) { return 0; }
+#include "yyparse_impl.h"
 #endif

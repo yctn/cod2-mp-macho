@@ -2,6 +2,7 @@
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/gfx_d3d/rb_tess.cpp */
 
 #include "common_types.h"
+#include <math.h>
 #include "imports.h"
 
 /* Original includes (from N_BINCL debug info):

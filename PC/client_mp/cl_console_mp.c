@@ -129,6 +129,7 @@ void Con_Bottom(void);
 static void Con_Dump_f(void);
 void Con_Shutdown(void);
 static void Con_UpdateMessageWindowLine(qboolean linefeed);
+static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean linefeed, int duration);
 static void Con_Linefeed(void);
 void Con_AutoCompleteFromList(const char * *strings, int stringCount, const char *prefix, char *completed, int sizeofCompleted);
 static void ConDraw_Box(float x, float y, float w, float h);
@@ -315,6 +316,97 @@ void Con_Shutdown(void)
 }
 
 /* line 620 */
+/* _impl: register-convention args (eax=msgwnd, edx=linefeed, ecx=duration) → normal C */
+static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean linefeed, int duration)
+{
+    MessageLine *line;
+    int serverTime;
+    int origLinewidth;
+    int copyCount;
+    int textOffset;
+    int charIndex;
+    int i;
+
+    /* line 630: get pointer to current message line */
+    line = &msgwnd->lines[msgwnd->current_line];
+
+    /* line 632: set start time to current server time */
+    serverTime = *(int *)((char *)*(void **)imp_cl + 0x26f0);
+    line->startTime = serverTime;
+
+    /* line 633: set end time = start time + duration */
+    line->endTime = duration + serverTime;
+
+    /* { inlined scope ~line 600: copy console text buffer line into message line } */
+    {
+        origLinewidth = con.linewidth;
+        copyCount = origLinewidth;
+
+        /* clamp copy count to max 78 chars (textBuffer size) */
+        if (origLinewidth >= 79)
+            copyCount = 78;
+
+        /* line 601: compute offset into console text buffer */
+        textOffset = origLinewidth * (con.currentLine % con.totallines);
+
+        /* line 603: copy characters from console text buffer to message line */
+        if (copyCount > 0) {
+            for (charIndex = 0; charIndex < copyCount; charIndex++) {
+                line->textBuffer[charIndex] = con.textBuffer[textOffset + charIndex];
+            }
+        }
+
+        /* line 610-615: pad remaining chars with colored spaces if needed */
+        if (copyCount <= 77) {
+            short fillChar = (short)((ColorIndex(0x37) << 8) | 0x20);
+            while (copyCount < 78) {
+                line->textBuffer[copyCount] = fillChar;
+                copyCount++;
+            }
+        }
+    }
+
+    /* line 637: handle line feed */
+    if (!linefeed)
+        return;
+    if (msgwnd->count <= 0)
+        return;
+
+    /* line 639: advance current line index with wrap-around */
+    msgwnd->current_line = (msgwnd->current_line + 1) % msgwnd->count;
+
+    /* line 642: adjust timing of padding lines so they start fading */
+    if (msgwnd->padding <= 0)
+        return;
+
+    for (i = 0; i < msgwnd->padding; i++) {
+        int lineIdx;
+        MessageLine *otherLine;
+        int endTime;
+        int fadeout;
+        char *cl_ptr;
+        int curTime;
+
+        lineIdx = (i + msgwnd->current_line) % msgwnd->count;
+        otherLine = &msgwnd->lines[lineIdx];
+
+        /* line 648: check if this line's fade period hasn't started yet */
+        endTime = otherLine->endTime;
+        fadeout = msgwnd->fadeout;
+        cl_ptr = (char *)*(void **)imp_cl;
+        curTime = *(int *)(cl_ptr + 0x26f0);
+
+        if (endTime - fadeout > curTime) {
+            /* line 652: compress timing so fade starts now */
+            int lineDuration = endTime - otherLine->startTime;
+            otherLine->startTime = fadeout + (curTime - lineDuration);
+
+            /* line 653: set end time to now + fadeout */
+            otherLine->endTime = *(int *)((char *)*(void **)imp_cl + 0x26f0) + msgwnd->fadeout;
+        }
+    }
+}
+
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void Con_UpdateMessageWindowLine(qboolean linefeed)
@@ -4331,5 +4423,12 @@ void CL_DeathMessagePrint(const char *attackerName, const vec_t *attackerColor, 
     );
 }
 #else
-static void Con_UpdateMessageWindowLine(qboolean linefeed) { }
+/* Clean C version for WASM — callers should use Con_UpdateMessageWindowLine_impl directly.
+ * This wrapper exists to satisfy the forward declaration; the naked callers
+ * (Con_Linefeed, CL_ConsolePrint) pass (msgwnd, linefeed, duration) via registers. */
+static void Con_UpdateMessageWindowLine(qboolean linefeed)
+{
+    (void)linefeed;
+    /* No-op: register-convention callers should call Con_UpdateMessageWindowLine_impl() */
+}
 #endif

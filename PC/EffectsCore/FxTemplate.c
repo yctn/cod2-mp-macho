@@ -1789,8 +1789,8 @@ Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const ch
     int i, j;
     int found;
 
-    /* line 353: copy static flag buffer template (128 bytes of zeroed names) */
-    memcpy(flags_buf, (const void *)__ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C_148, 0x80);
+    /* line 353: zero the flag buffer (128 bytes = 4 tokens * 0x20 each) */
+    memset(flags_buf, 0, 0x80);
 
     /* line 359: parse up to 4 space-separated flag names from val */
     v = sscanf(val, "%s %s %s %s", flags_buf, flags_buf + 0x20, flags_buf + 0x40, flags_buf + 0x60);

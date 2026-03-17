@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
@@ -38,6 +39,8 @@ extern animConditionTable_t animConditionsTable[9]; /* animConditionsTable */
 extern void *(*controller_names[6])(); /* controller_names */
 extern animStringItem_t animParseModesStr[6]; /* animParseModesStr */
 
+extern void Com_Error(int code, const char *fmt, ...);
+extern int Com_GetCurrentParseLine(void);
 void BG_AnimParseError(const char *msg);
 void BG_InitWeaponStrings(void);
 int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int forceDuration, qboolean setTimer, qboolean isContinue, qboolean force, playerState_t *ps_7, scriptAnimEventTypes_t event);

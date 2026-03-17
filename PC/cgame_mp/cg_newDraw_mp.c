@@ -58,6 +58,9 @@ extern int BG_GetAmmoTypeMax(int iAmmoIndex);
 extern qboolean BG_WeaponIsClipOnly(int weapon);
 extern int BG_ClipForWeapon(int weapon);
 extern int BG_GetAmmoClipSize(int iClipIndex);
+extern Bool BG_DoesWeaponNeedSlot(int weapIndex);
+extern int BG_GetEmptySlotForWeapon(const playerState_t *pPS, int iWeaponIndex);
+extern float sinf(float x);
 extern const char *SEH_LocalizeTextMessage(const char *msg, const char *context, int errType);
 extern const char *UI_ReplaceConversionString(const char *sourceString, const char *replaceString);
 extern const char *UI_SafeTranslateString(const char *ref);
@@ -83,7 +86,7 @@ void CG_ResetLowHealthOverlay(void);
 qboolean CG_ServerMaterialName(int index, char *materialName, int maxLen);
 void CG_ApplySplitScreenCompassScale(float *x, float *y, float *w, float *h);
 static const char * CG_GetUseString(void);
-static void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle);
+static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle);
 static void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle);
 const char * CG_GetTranslatedLocationString(int iLocation);
 static void __attribute_regparm__(3) CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle);
@@ -226,7 +229,7 @@ const char * CG_GetUseString(void)
 /* line 1408 */
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
-void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
+void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1408 */
@@ -4241,5 +4244,251 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
     );
 }
 #else
-static void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle) { }
+static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle)
+{
+    byte *cg;
+    byte *cgs;
+    byte *snap;
+    int cursorHintValue;
+    int cursorHintString;
+    MaterialHandle hintIcon;
+    float *fadeColor;
+    float scale;
+    float halfscale;
+    float widthScale;
+    float widthOfs;
+    const char *text;
+    float length;
+    int cursorHintsDvarVal;
+    char binding[0x100];
+
+    /* line 1426: check if cursor hints are enabled */
+    if (!*(int *)((byte *)*(void **)imp_cg_cursorHints + 8))
+        return;
+
+    /* line 1308: check for cursor hint in cg struct */
+    cg = (byte *)*(void **)imp_cg;
+    if (!*(int *)(cg + 0x25bc0)) {
+        /* line 1311: check snapshot for new hint data */
+        snap = *(byte **)(cg + 0x24);
+        if (*(int *)(snap + 0x5a4)) {
+            /* line 1313-1316: copy hint data from snapshot */
+            *(int *)(cg + 0x2bdec) = *(int *)(cg + 0x25bb0); /* hintStartTime = time */
+            *(int *)(cg + 0x2bdf0) = *(int *)((byte *)*(void **)imp_cg_hintFadeTime + 8); /* hintFadeTime = dvar */
+            *(int *)(cg + 0x2bde8) = *(int *)(snap + 0x5a4); /* cursorHintValue */
+            *(int *)(cg + 0x2bdf4) = *(int *)(snap + 0x5a8); /* cursorHintString */
+        }
+        cg = (byte *)*(void **)imp_cg;
+    }
+
+    /* line 1431: get hint icon material */
+    cgs = (byte *)*(void **)imp_cgs;
+    cursorHintValue = *(int *)(cg + 0x2bde8);
+    hintIcon = *(MaterialHandle *)(cgs + 0xba44 + cursorHintValue * 4);
+    if (!hintIcon)
+        return;
+
+    /* line 1436: get fade color */
+    fadeColor = CG_FadeColor(*(int *)(cg + 0x2bdec), *(int *)(cg + 0x2bdf0), 100);
+    if (!fadeColor) {
+        /* line 1439: clear cursor hint on fade out */
+        *(int *)(cg + 0x2bde8) = 0;
+        return;
+    }
+
+    /* line 1443 */
+    Controls_GetConfig();
+
+    /* line 1450: check cursorHints dvar for display mode */
+    cursorHintsDvarVal = *(int *)((byte *)*(void **)imp_cg_cursorHints + 8);
+
+    if (cursorHintsDvarVal == 3) {
+        /* line 1451: pulsing alpha mode */
+        float sinVal = sinf((float)*(int *)(cg + 0x25bb0) / 150.0f);
+        fadeColor[3] *= sinVal * 0.5f + 0.5f;
+        /* reload dvar since cg_cursorHints was read again in ASM */
+        cursorHintsDvarVal = *(int *)((byte *)*(void **)imp_cg_cursorHints + 8);
+    }
+
+    /* line 1454-1465: compute scale and halfscale based on display mode */
+    if (cursorHintsDvarVal <= 2) {
+        if (cursorHintsDvarVal == 2) {
+            /* line 1461: scale from hintStartTime percentage */
+            int startTime = *(int *)(cg + 0x2bdec);
+            scale = (float)(startTime % 1000) / 100.0f;
+        } else {
+            /* line 1463: pulsing scale mode (0 or 1) */
+            float sinVal = sinf((float)*(int *)(cg + 0x25bb0) / 150.0f);
+            scale = (sinVal * 0.5f + 0.5f) * 10.0f;
+        }
+        halfscale = 0.5f * scale;
+    } else {
+        /* line 1456: no scaling (value > 3, or value == 3 after alpha adjustment) */
+        scale = 0.0f;
+        halfscale = 0.0f;
+    }
+
+    /* line 1468: check if this is a weapon hint (cursorHintValue 5-132) */
+    cg = (byte *)*(void **)imp_cg;
+    cursorHintValue = *(int *)(cg + 0x2bde8);
+    text = NULL;
+    widthScale = 1.0f;
+    widthOfs = 0.0f;
+
+    if ((unsigned)(cursorHintValue - 5) <= 0x7f) {
+        /* weapon hint */
+        byte *weapDef;
+        int weapIdx = cursorHintValue - 4;
+
+        weapDef = (byte *)BG_GetWeaponDef(weapIdx);
+
+        /* line 1474: check dual wield flag */
+        if (*(int *)(weapDef + 0x344)) {
+            /* line 1477: dual wield - double width, offset */
+            widthOfs = rect->w * -0.5f;
+            widthScale = 2.0f;
+        }
+
+        /* line 1480: check if weapon type is melee (type == 7) */
+        if (*(int *)(weapDef + 0x7c) == 7) {
+            /* line 1482: melee weapon - use cursorHintString */
+            cg = (byte *)*(void **)imp_cg;
+            cursorHintString = *(int *)(cg + 0x2bdf4);
+            if (cursorHintString >= 0) {
+                text = CG_GetUseString();
+            }
+            /* else no text */
+        } else {
+            /* line 1336: weapon pickup logic */
+            byte *pickupWeapDef;
+            byte *cgPtr;
+
+            cgPtr = (byte *)*(void **)imp_cg;
+            weapIdx = *(int *)(cgPtr + 0x2bde8) - 4;
+            pickupWeapDef = (byte *)BG_GetWeaponDef(weapIdx);
+
+            /* line 1340: get key binding */
+            GetKeyBindingLocalizedString(str_002ac020, binding); /* "+activate" */
+
+            /* line 1344: check if weapon needs a slot */
+            if (BG_DoesWeaponNeedSlot(weapIdx)) {
+                int emptySlot = BG_GetEmptySlotForWeapon((const playerState_t *)(cgPtr + 0x25bc4), weapIdx);
+                if (emptySlot == 0) {
+                    /* no empty slot - check if same weapon type for swap */
+                    byte *currentWeapDef;
+                    int currentWeap = *(int *)(cgPtr + 0x25c98);
+                    currentWeapDef = (byte *)BG_GetWeaponDef(currentWeap);
+
+                    /* line 1346: compare weapon type */
+                    if (*(int *)(currentWeapDef + 0x80) == *(int *)(pickupWeapDef + 0x80)) {
+                        /* line 1348: same type - check if same weapon */
+                        if (*(int *)(cgPtr + 0x25c98) == weapIdx) {
+                            text = NULL; /* same weapon, no text */
+                            goto draw_icon;
+                        }
+                        /* line 1357: different weapon, same type - swap */
+                        text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa94), binding);
+                        goto check_text;
+                    }
+
+                    /* line 1353: different weapon type - check if it's the same slot */
+                    if ((signed char)*(byte *)(cgPtr + 0x26118 + *(int *)(pickupWeapDef + 0x80)) == weapIdx) {
+                        text = NULL; /* same weapon in slot */
+                        goto draw_icon;
+                    }
+
+                    /* line 1357: swap weapons */
+                    text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa94), binding);
+                    goto check_text;
+                }
+            }
+
+            /* line 1361: pick up new weapon (empty slot available or doesn't need slot) */
+            text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa78), binding);
+            goto check_text;
+        }
+    } else {
+        /* non-weapon hint */
+        cursorHintString = *(int *)(cg + 0x2bdf4);
+
+        if (cursorHintString < 0) {
+            /* line 1494: check if hint is health pickup (cursorHintValue == 3) */
+            if (cursorHintValue == 3) {
+                /* line 1496: health pickup hint */
+                GetKeyBindingLocalizedString(str_002ac020, binding); /* "+activate" */
+                text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afaac), binding);
+                widthScale = 1.0f;
+                widthOfs = 0.0f;
+            } else {
+                /* line 1502: no text, just icon */
+                widthScale = 1.0f;
+                widthOfs = 0.0f;
+                text = NULL;
+                goto draw_icon;
+            }
+        } else {
+            /* line 1492: get use string from config */
+            text = CG_GetUseString();
+        }
+    }
+
+check_text:
+    /* line 1502: check if we have text to draw */
+    if (text && *text) {
+        /* line 1504-1510: draw text alongside icon */
+        float textWidth;
+        int textHeight;
+        float textX, textY;
+        float iconW;
+
+        textWidth = (float)UI_TextWidth(text, 0, font, fontscale);
+        textHeight = UI_TextHeight(font, fontscale);
+
+        /* line 1507: compute text position */
+        textX = (widthScale * rect->w + scale + textWidth) * -0.5f;
+        textY = -0.5f * rect->h + rect->y;
+
+        /* line 1510: draw the text */
+        UI_DrawText(
+            text,
+            0x7fffffff,
+            font,
+            textX,
+            rect->y + (float)textHeight * 0.5f,
+            rect->horzAlign,
+            rect->vertAlign,
+            fontscale,
+            fadeColor,
+            textStyle);
+
+        /* line 1511: draw the icon after text */
+        iconW = widthScale * rect->w;
+        UI_DrawHandlePic(
+            textX + textWidth,
+            textY,
+            iconW + scale,
+            scale + rect->h,
+            rect->horzAlign,
+            rect->vertAlign,
+            fadeColor,
+            hintIcon);
+        return;
+    }
+
+draw_icon:
+    /* line 1515-1517: draw icon only (no text) */
+    {
+        float iconW = widthScale * rect->w;
+        float iconX = (rect->w + halfscale + widthOfs) * -0.5f + rect->x;
+        UI_DrawHandlePic(
+            iconX,
+            rect->y - halfscale,
+            iconW + scale,
+            scale + rect->h,
+            rect->horzAlign,
+            rect->vertAlign,
+            fadeColor,
+            hintIcon);
+    }
+}
 #endif
