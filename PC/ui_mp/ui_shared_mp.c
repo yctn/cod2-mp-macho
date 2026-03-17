@@ -662,7 +662,7 @@ void Item_RunScript(displayContextDef_t *dc, itemDef_t *item, const char *s)
     if (!item || !s || s[0] == '\0')
         return;
 
-    I_strncat(script, s, 0x400);
+    I_strncat(script, 0x400, s);
     p = script;
 
     while (String_Parse(&p, command, 0x400)) {
