@@ -25,10 +25,10 @@ void R_StaticModelCacheStats_f(void);
 void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf);
 void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers);
 void R_InitStaticModelCache(void);
-static __attribute__((regparm(3))) void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf);
+static __attribute_regparm__(3) void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf);
 void R_StaticModelCacheFlush_f(void);
 void R_ShutdownStaticModelCache(void);
-static __attribute__((regparm(2))) Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex);
+static __attribute_regparm__(2) Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex);
 GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *staticSurf, const XSurface *xsurf, int smodelIndex, const Material *material);
 void R_FlushStaticModelCache(void);
 
@@ -919,7 +919,7 @@ void R_InitStaticModelCache(void)
  * Original was compiler-unrolled 3-4 levels deep (650 lines ASM → 40 lines C).
  * Traverses binary tree: unlinks leaf surfaces from doubly-linked lists,
  * clears cached surface LOD slot references, updates cache size counters. */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf)
 {
     char *t = (char *)tree;
@@ -1815,7 +1815,7 @@ release_vb:
 }
 
 /* line 220 */
-static __attribute__((regparm(2)))
+static __attribute_regparm__(2)
 Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex)
 {
     static_model_tree_t *tree;

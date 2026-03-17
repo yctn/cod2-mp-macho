@@ -59,9 +59,9 @@ void R_AddXModelSurfaces(int entIndex);
 void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex);
 void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCount, const GfxWorldVertex *verts);
 void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex);
-static void __attribute__((regparm(2))) R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms);
+static void __attribute_regparm__(2) R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms);
 void R_SetLodOrigin(const refdef_t *refdef);
-static void __attribute__((regparm(1))) R_AddClearCommandsForFrameBuffer(int dynamicShadowType);
+static void __attribute_regparm__(1) R_AddClearCommandsForFrameBuffer(int dynamicShadowType);
 void R_RenderScene(const refdef_t *refdef);
 int R_AddStaticModelToScene(int smodelIndex);
 GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, const struct centity_s *cent);
@@ -475,7 +475,7 @@ void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
 }
 
 /* line 1410 */
-static void __attribute__((regparm(2)))
+static void __attribute_regparm__(2)
 R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms)
 {
     float zNear;
@@ -542,7 +542,7 @@ void R_SetLodOrigin(const refdef_t *refdef)
 }
 
 /* line 1030 */
-static void __attribute__((regparm(1)))
+static void __attribute_regparm__(1)
 R_AddClearCommandsForFrameBuffer(int dynamicShadowType)
 {
     int whichToClear;

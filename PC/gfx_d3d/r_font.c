@@ -41,8 +41,8 @@ int R_ShutdownFonts(void);
 float R_NormalizedTextScale(FontHandle font, float scale);
 int R_TextHeight(FontHandle font);
 int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style);
-static const short int * __attribute__((regparm(3))) R_GetConsoleString(const short int *string, int *limit, char *text, vec_t *color, Bool *foundIcon);
-static const short int * __attribute__((regparm(3))) R_GetConsoleIcon(const short int *string, int *maxChars, float *iconWidth, float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip);
+static const short int * __attribute_regparm__(3) R_GetConsoleString(const short int *string, int *limit, char *text, vec_t *color, Bool *foundIcon);
+static const short int * __attribute_regparm__(3) R_GetConsoleIcon(const short int *string, int *maxChars, float *iconWidth, float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip);
 int R_TextWidth(const char *text, int maxChars, FontHandle font);
 int R_ConsoleTextWidth(const short int *string, int maxChars, FontHandle font);
 int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style);
@@ -195,7 +195,7 @@ int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y
 }
 
 /* line 218 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 const short int * R_GetConsoleString(const short int *string, int *limit, char *text, vec_t *color, Bool *foundIcon)
 {
     int currentColor;
@@ -312,7 +312,7 @@ finish:
 }
 
 /* line 303 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float *iconWidth, float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip)
 {
     int i;

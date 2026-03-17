@@ -94,7 +94,7 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 void RB_DecideDefaultSamplerState(void);
 void RB_SetAnisotropy(void);
 void RB_SetAlphaAntiAliasingState(int stateBits0);
-static __attribute__((regparm(3))) void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits);
+static __attribute_regparm__(3) void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits);
 void RB_ChangeAlphaStageState(int stageIndex, int texStageBits);
 void RB_ChangeColorStageState(int stageIndex, int texStageBits);
 void RB_SetSamplerConstantDx7(unsigned int color);
@@ -427,7 +427,7 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
 }
 
 /* line 781 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 void RB_ChangeTextureStageState(int stageIndex, const DxTextureStageEnums *texStageEnums, int texStageBits, int *activeTexStageBits)
 {
     int *activeTexStageState;

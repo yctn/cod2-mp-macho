@@ -9,6 +9,13 @@
 #include <pthread.h>
 #include <stdio.h>
 
+/* Platform compatibility */
+#ifdef __EMSCRIPTEN__
+#define __attribute_regparm__(n) /* regparm is x86-only, no-op on WASM */
+#else
+#define __attribute_regparm__(n) __attribute__((regparm(n)))
+#endif
+
 /* Platform type definitions */
 typedef int BOOL;
 typedef unsigned char byte;

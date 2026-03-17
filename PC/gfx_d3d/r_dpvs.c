@@ -64,10 +64,10 @@ static vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *v
 static vec3_t * R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut);
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
 static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals);
-static __attribute__((regparm(3))) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static __attribute_regparm__(3) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes);
-static __attribute__((regparm(3))) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static __attribute_regparm__(3) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 
 /* Shared helper: test a DpvsPlane against AABB bounds (mins+maxs, 24 bytes).
@@ -629,7 +629,7 @@ static void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, i
 }
 #else
 /* x86 trampoline: regparm(3) eax=smodelIndex, edx=planes, ecx=planeCount, stack=stackLevel → cdecl _impl */
-static __attribute__((naked)) __attribute__((regparm(3)))
+static __attribute__((naked)) __attribute_regparm__(3)
 void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (
@@ -717,7 +717,7 @@ static void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, in
 }
 #else
 /* x86 trampoline: regparm(3) eax=surfIndex, edx=planes, ecx=planeCount, stack=stackLevel → cdecl _impl */
-static __attribute__((naked)) __attribute__((regparm(3)))
+static __attribute__((naked)) __attribute_regparm__(3)
 void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
     __asm__ __volatile__ (

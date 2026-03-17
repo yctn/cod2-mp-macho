@@ -41,7 +41,7 @@ extern GfxCmdArray *s_cmdList; /* s_cmdList */
 extern struct GfxDebugFrameGlob s_debugFrameGlob; /* s_debugFrameGlob */
 
 void R_ShutdownBackendData(void);
-static __attribute__((regparm(3))) void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread);
+static __attribute_regparm__(3) void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread);
 void R_AddFrontendCmd(int type, void *data);
 void R_SyncRenderThread(void);
 GfxViewParms * R_AllocViewParms(void);
@@ -202,7 +202,7 @@ void R_ShutdownBackendData(void)
 }
 
 /* line 253 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
 {
     switch (type) {
