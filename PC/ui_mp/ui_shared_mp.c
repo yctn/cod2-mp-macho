@@ -1915,368 +1915,222 @@ void Script_SetItemColor(displayContextDef_t *dc, itemDef_t *item, const char * 
     }
 }
 
-/* line 209 */
-__attribute__((naked))
-void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, float fadeInAmount, float fadeClamp, float fadeCycle)
+/* Window_Paint — draw window background, border, cinematic, and fade handling */
+void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAmount, float fadeInAmount, float fadeClamp, float fadeCycle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 209 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x40, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* w */
-        /* { scope 1 */
-        "movss 0xc(%ebx), %xmm0\n" /* line 219 | w */
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movss 8(%ebx), %xmm1\n" /* w */
-        "movss %xmm1, -0x24(%ebp)\n"
-        "movss 4(%ebx), %xmm0\n" /* w */
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movss (%ebx), %xmm1\n" /* w */
-        "movss %xmm1, -0x1c(%ebp)\n"
-        "movl debugMode, %esi\n" /* line 221 */
-        "testl %esi, %esi\n"
-        "jne .Lf166dd2_00166f53\n"
-        ".Lf166dd2_00166e12:\n"
-        "testl %ebx, %ebx\n" /* line 227 | w */
-        "je .Lf166dd2_00166ed8\n"
-        "movl 0xd0(%ebx), %eax\n" /* w */
-        "testl %eax, %eax\n"
-        "jne .Lf166dd2_00166edf\n"
-        "movl 0xd4(%ebx), %ecx\n" /* w */
-        "testl %ecx, %ecx\n"
-        "je .Lf166dd2_00166ed8\n"
-        ".Lf166dd2_00166e36:\n"
-        "movss 0xe0(%ebx), %xmm0\n" /* line 234 | w */
-        "movss -0x1c(%ebp), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x1c(%ebp)\n"
-        "movss -0x20(%ebp), %xmm1\n" /* line 235 */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x20(%ebp)\n"
-        "addss lit4_002ed5d0, %xmm0\n" /* line 236 | 1.0f */
-        "movss -0x24(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x24(%ebp)\n"
-        "movss -0x28(%ebp), %xmm1\n" /* line 237 */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x28(%ebp)\n"
-        "cmpl $7, %eax\n" /* line 240 */
-        "ja .Lf166dd2_00166ef2\n"
-        ".Lf166dd2_00166e83:\n"
-        "jmpl *.Ljt_166dd2_0(, %eax, 4)\n"
-        ".Lf166dd2_00166e8a:\n"
-        "cmpl $4, 0xd0(%ebx)\n" /* line 303 | w */
-        "je .Lf166dd2_00166fb2\n"
-        "leal 0x1ec(%ebx), %eax\n" /* line 322 | w */
-        ".Lf166dd2_00166e9d:\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xe0(%ebx), %eax\n" /* w */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0xc(%ebx), %eax\n" /* w */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 8(%ebx), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl 4(%ebx), %eax\n" /* w */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* w */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawRect\n"
-        /* } scope */
-        ".Lf166dd2_00166ed8:\n"
-        "addl $0x40, %esp\n" /* line 345 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf166dd2_00166edf:\n"
-        "movl 0xd4(%ebx), %edx\n" /* line 232 | w */
-        "testl %edx, %edx\n"
-        "jne .Lf166dd2_00166e36\n"
-        "cmpl $7, %eax\n" /* line 240 */
-        "jbe .Lf166dd2_00166e83\n"
-        ".Lf166dd2_00166ef2:\n"
-        "movl 0xd4(%ebx), %eax\n" /* line 299 | w */
-        "cmpl $1, %eax\n"
-        "je .Lf166dd2_00166e8a\n"
-        "cmpl $2, %eax\n" /* line 325 */
-        "je .Lf166dd2_001671bd\n"
-        "cmpl $3, %eax\n" /* line 330 */
-        "jne .Lf166dd2_00166ed8\n"
-        "leal 0x1ec(%ebx), %eax\n" /* line 333 | w */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xe0(%ebx), %eax\n" /* w */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0xc(%ebx), %eax\n" /* w */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 8(%ebx), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl 4(%ebx), %eax\n" /* w */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* w */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawSides\n"
-        /* } scope */
-        "addl $0x40, %esp\n" /* line 345 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf166dd2_00166f53:\n"
-        "movl $0x3f800000, %edx\n" /* line 223 */
-        "movl %edx, -0xc(%ebp)\n"
-        "movl %edx, -0x10(%ebp)\n"
-        "movl %edx, -0x14(%ebp)\n"
-        "movl %edx, -0x18(%ebp)\n" /* color */
-        "leal -0x18(%ebp), %eax\n" /* line 224 | color */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %edx, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movss -0x28(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x24(%ebp), %xmm1\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss -0x1c(%ebp), %xmm1\n"
-        "movss %xmm1, (%esp)\n"
-        "calll UI_DrawRect\n"
-        "jmp .Lf166dd2_00166e12\n"
-        ".Lf166dd2_00166fb2:\n"
-        "movss 0x1ec(%ebx), %xmm0\n" /* line 305 | w */
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
-        "jbe .Lf166dd2_00167224\n"
-        "movl $0x3f800000, -0x18(%ebp)\n" /* line 308 | color */
-        "movl $0x3f000000, %eax\n" /* line 309 */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl %eax, -0x14(%ebp)\n"
-        ".Lf166dd2_00166fd9:\n"
-        "movl $0x3f800000, -0xc(%ebp)\n" /* line 317 */
-        "leal -0x18(%ebp), %eax\n" /* line 318 | color */
-        "jmp .Lf166dd2_00166e9d\n"
-        ".Lf166dd2_00166fe8:\n"
-        "movl 0x20c(%ebx), %eax\n" /* line 291 | w */
-        "testl %eax, %eax\n"
-        "je .Lf166dd2_00166ef2\n"
-        "testb $1, 0xea(%ebx)\n" /* line 293 | w */
-        "jne .Lf166dd2_00167219\n"
-        "xorl %edx, %edx\n"
-        ".Lf166dd2_00167005:\n"
-        "movl %eax, 0x1c(%esp)\n" /* line 294 */
-        "movl %edx, 0x18(%esp)\n"
-        "jmp .Lf166dd2_001670f3\n"
-        ".Lf166dd2_00167012:\n"
-        "testb $1, 0xea(%ebx)\n" /* line 268 | w */
-        "jne .Lf166dd2_0016720e\n"
-        "xorl %edx, %edx\n"
-        ".Lf166dd2_00167021:\n"
-        "movl 0x20c(%ebx), %eax\n" /* line 269 | w */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %edx, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movss -0x28(%ebp), %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss -0x24(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll UI_DrawLoadBar\n"
-        "jmp .Lf166dd2_00166ef2\n"
-        ".Lf166dd2_00167072:\n"
-        "movl 0x20c(%ebx), %eax\n" /* line 244 | w */
-        "testl %eax, %eax\n"
-        "je .Lf166dd2_001672c1\n"
-        "movl 0xe8(%ebx), %edx\n" /* line 80 */
-        "cvttss2si 0x1c(%ebp), %ecx\n" /* line 247 | fadeCycle, offsetTime */
-        /* { scope 2 */
-        "testb $0x30, %dl\n" /* line 179 */
-        "je .Lf166dd2_001670d3\n"
-        "movl 8(%ebp), %esi\n" /* line 181 | dc */
-        "movl 4(%esi), %eax\n"
-        "cmpl 0x1c8(%ebx), %eax\n"
-        "jle .Lf166dd2_001670d3\n"
-        "leal (%ecx, %eax), %eax\n" /* line 183 */
-        "movl %eax, 0x1c8(%ebx)\n"
-        "testb $0x10, %dl\n" /* line 184 */
-        "je .Lf166dd2_0016728d\n"
-        "movss 0x1e8(%ebx), %xmm0\n" /* line 186 */
-        "subss 0x10(%ebp), %xmm0\n" /* fadeAmount */
-        "movss %xmm0, 0x1e8(%ebx)\n"
-        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 187 | 0.0f */
-        "ja .Lf166dd2_001670d3\n"
-        "jp .Lf166dd2_001670d3\n"
-        "andl $0xffffffeb, %edx\n" /* line 189 */
-        /* } scope */
-        ".Lf166dd2_001670d3:\n"
-        "movl %edx, 4(%esp)\n" /* line 248 */
-        "movl %ebx, (%esp)\n" /* w */
-        "calll Window_SetDynamicFlags\n"
-        "movl 0x20c(%ebx), %eax\n" /* line 250 | w */
-        "movl %eax, 0x1c(%esp)\n"
-        "leal 0x1dc(%ebx), %eax\n" /* w */
-        "movl %eax, 0x18(%esp)\n"
-        ".Lf166dd2_001670f3:\n"
-        "movl 0x14(%ebx), %eax\n" /* line 294 | w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movss -0x28(%ebp), %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss -0x24(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        "jmp .Lf166dd2_00166ef2\n"
-        ".Lf166dd2_00167136:\n"
-        "testb $1, 0xea(%ebx)\n" /* line 263 | w */
-        "jne .Lf166dd2_00167203\n"
-        "xorl %edx, %edx\n"
-        ".Lf166dd2_00167145:\n"
-        "movl 0x20c(%ebx), %eax\n" /* line 264 | w */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %edx, 0x18(%esp)\n"
-        "jmp .Lf166dd2_001670f3\n"
-        ".Lf166dd2_00167155:\n"
-        "cmpl $-1, 0xcc(%ebx)\n" /* line 273 | w */
-        "je .Lf166dd2_0016723b\n"
-        "movl 0xcc(%ebx), %eax\n" /* w */
-        ".Lf166dd2_00167168:\n"
-        "testl %eax, %eax\n" /* line 281 */
-        "js .Lf166dd2_00166ef2\n"
-        "movl %eax, (%esp)\n" /* line 283 */
-        "calll CIN_RunCinematic\n"
-        "cvttss2si -0x28(%ebp), %eax\n" /* line 284 */
-        "movl %eax, 0x10(%esp)\n"
-        "cvttss2si -0x24(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "cvttss2si -0x20(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xcc(%ebx), %eax\n" /* w */
-        "movl %eax, (%esp)\n"
-        "calll CIN_SetExtents\n"
-        "movl 0xcc(%ebx), %eax\n" /* line 285 | w */
-        "movl %eax, (%esp)\n"
-        "calll CIN_DrawCinematic\n"
-        "jmp .Lf166dd2_00166ef2\n"
-        ".Lf166dd2_001671bd:\n"
-        "leal 0x1ec(%ebx), %eax\n" /* line 328 | w */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0xe0(%ebx), %eax\n" /* w */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0xc(%ebx), %eax\n" /* w */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 8(%ebx), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl 4(%ebx), %eax\n" /* w */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* w */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawTopBottom\n"
-        "jmp .Lf166dd2_00166ed8\n"
-        ".Lf166dd2_00167203:\n"
-        "leal 0x1cc(%ebx), %edx\n" /* line 263 | w */
-        "jmp .Lf166dd2_00167145\n"
-        ".Lf166dd2_0016720e:\n"
-        "leal 0x1cc(%ebx), %edx\n" /* line 268 | w */
-        "jmp .Lf166dd2_00167021\n"
-        ".Lf166dd2_00167219:\n"
-        "leal 0x1cc(%ebx), %edx\n" /* line 293 | w */
-        "jmp .Lf166dd2_00167005\n"
-        ".Lf166dd2_00167224:\n"
-        "movl $0x3f800000, -0x10(%ebp)\n" /* line 314 */
-        "movl $0x3f000000, %eax\n" /* line 315 */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl %eax, -0x18(%ebp)\n" /* color */
-        "jmp .Lf166dd2_00166fd9\n"
-        ".Lf166dd2_0016723b:\n"
-        "movl $0xa, 0x14(%esp)\n" /* line 275 */
-        "cvttss2si -0x28(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "cvttss2si -0x24(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "cvttss2si -0x20(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc8(%ebx), %eax\n" /* w */
-        "movl %eax, (%esp)\n"
-        "calll CIN_PlayCinematic\n"
-        "movl $0xfffffffe, %edx\n" /* line 278 */
-        "cmpl $-1, %eax\n"
-        "cmovnel %eax, %edx\n"
-        "movl %edx, 0xcc(%ebx)\n" /* w */
-        "movl %edx, %eax\n"
-        "jmp .Lf166dd2_00167168\n"
-        /* { scope 2 */
-        ".Lf166dd2_0016728d:\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 194 | fadeInAmount */
-        "addss 0x1e8(%ebx), %xmm0\n"
-        "movss %xmm0, 0x1e8(%ebx)\n"
-        "ucomiss 0x18(%ebp), %xmm0\n" /* line 195 | fadeClamp */
-        "jb .Lf166dd2_001670d3\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 197 | fadeClamp */
-        "movss %xmm0, 0x1e8(%ebx)\n"
-        "andl $0xffffffdf, %edx\n" /* line 200 */
-        "jmp .Lf166dd2_001670d3\n"
-        /* } scope */
-        ".Lf166dd2_001672c1:\n"
-        "leal 0x1dc(%ebx), %eax\n" /* line 254 | w */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x14(%ebx), %eax\n" /* w */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%ebx), %eax\n" /* w */
-        "movl %eax, 0x10(%esp)\n"
-        "movss -0x28(%ebp), %xmm1\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movss -0x24(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, 4(%esp)\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll UI_FillRect\n"
-        "jmp .Lf166dd2_00166ef2\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_166dd2_0:\n"
-        ".long .Lf166dd2_00166ef2\n"
-        ".long .Lf166dd2_00167072\n"
-        ".long .Lf166dd2_00166ef2\n"
-        ".long .Lf166dd2_00167136\n"
-        ".long .Lf166dd2_00166ef2\n"
-        ".long .Lf166dd2_00167155\n"
-        ".long .Lf166dd2_00166fe8\n"
-        ".long .Lf166dd2_00167012\n"
-        ".text\n"
-    );
+    byte *w = (byte *)w_param;
+    float x, y, ww, hh;
+    float color[4];
+    int borderStyle, borderSizeFlag;
+    int handle;
+
+    /* Load rect from window struct */
+    hh = *(float *)(w + 0x0c);
+    ww = *(float *)(w + 0x08);
+    y  = *(float *)(w + 0x04);
+    x  = *(float *)(w + 0x00);
+
+    /* Debug mode: draw white outline */
+    if (debugMode) {
+        color[0] = 1.0f;
+        color[1] = 1.0f;
+        color[2] = 1.0f;
+        color[3] = 1.0f;
+        UI_DrawRect(x, y, ww, hh,
+            *(int *)(w + 0x10), *(int *)(w + 0x14),
+            1.0f, color);
+    }
+
+    if (!w)
+        return;
+
+    borderStyle = *(int *)(w + 0xd0);
+    borderSizeFlag = *(int *)(w + 0xd4);
+
+    /* Determine whether to adjust rect by border size */
+    if (borderStyle == 0 && borderSizeFlag == 0)
+        return;
+
+    if (borderSizeFlag != 0) {
+        /* Adjust rect inward by border size */
+        float bs = *(float *)(w + 0xe0);
+        x += bs;
+        y += bs;
+        ww -= (bs + 1.0f);
+        hh -= (bs + 1.0f);
+    }
+
+    /* Content drawing based on borderStyle (jump table) */
+    if (borderStyle <= 7) {
+        switch (borderStyle) {
+        case 1: {
+            /* Fade handling + background draw */
+            int background = *(int *)(w + 0x20c);
+            if (background == 0) {
+                /* No background: fill rect with foreColor */
+                UI_FillRect(x, y, ww, hh,
+                    *(int *)(w + 0x10), *(int *)(w + 0x14),
+                    (const vec_t *)(w + 0x1dc));
+                break;
+            }
+
+            /* Fade logic */
+            {
+                int dynFlags = *(int *)(w + 0xe8);
+                int offsetTime = (int)fadeCycle;
+
+                if (dynFlags & 0x30) {
+                    int realtime = *(int *)((byte *)dc + 4);
+                    if (realtime > *(int *)(w + 0x1c8)) {
+                        *(int *)(w + 0x1c8) = realtime + offsetTime;
+                        if (dynFlags & 0x10) {
+                            /* Fading out */
+                            float fadeAlpha = *(float *)(w + 0x1e8) - fadeAmount;
+                            *(float *)(w + 0x1e8) = fadeAlpha;
+                            if (!(fadeAlpha > 0.0f)) {
+                                dynFlags &= 0xffffffeb; /* clear bits 0x10 and 0x04 */
+                            }
+                        } else {
+                            /* Fading in */
+                            float fadeAlpha = *(float *)(w + 0x1e8) + fadeInAmount;
+                            *(float *)(w + 0x1e8) = fadeAlpha;
+                            if (!(fadeAlpha < fadeClamp)) {
+                                *(float *)(w + 0x1e8) = fadeClamp;
+                                dynFlags &= ~0x20; /* clear fade-in bit */
+                            }
+                        }
+                    }
+                }
+
+                Window_SetDynamicFlags((itemDef_t *)w, dynFlags);
+            }
+
+            /* Draw background with foreColor */
+            ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
+                x, y, ww, hh,
+                *(int *)(w + 0x10), *(int *)(w + 0x14),
+                (float *)(w + 0x1dc), *(int *)(w + 0x20c));
+            break;
+        }
+
+        case 3: {
+            /* Draw with tiled flag check */
+            float *fillColor = NULL;
+            if (*(byte *)(w + 0xea) & 1)
+                fillColor = (float *)(w + 0x1cc);
+            ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
+                x, y, ww, hh,
+                *(int *)(w + 0x10), *(int *)(w + 0x14),
+                fillColor, *(int *)(w + 0x20c));
+            break;
+        }
+
+        case 5: {
+            /* Cinematic */
+            handle = *(int *)(w + 0xcc);
+            if (handle == -1) {
+                /* Start cinematic */
+                int result = CIN_PlayCinematic(
+                    *(const char **)(w + 0xc8),
+                    (int)x, (int)y, (int)ww, (int)hh, 0x0a);
+                if (result != -1)
+                    handle = result;
+                else
+                    handle = -2;
+                *(int *)(w + 0xcc) = handle;
+            }
+            if (handle < 0)
+                break;
+            CIN_RunCinematic(handle);
+            ((void (*)(int, int, int, int, int))CIN_SetExtents)(
+                *(int *)(w + 0xcc), (int)x, (int)y, (int)ww, (int)hh);
+            ((void (*)(int, int, int, int, int))CIN_DrawCinematic)(
+                *(int *)(w + 0xcc), (int)x, (int)y, (int)ww, (int)hh);
+            break;
+        }
+
+        case 6: {
+            /* Background pic (no fade) */
+            int background = *(int *)(w + 0x20c);
+            if (background == 0)
+                break;
+            {
+                float *fillColor = NULL;
+                if (*(byte *)(w + 0xea) & 1)
+                    fillColor = (float *)(w + 0x1cc);
+                ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
+                    x, y, ww, hh,
+                    *(int *)(w + 0x10), *(int *)(w + 0x14),
+                    fillColor, background);
+            }
+            break;
+        }
+
+        case 7: {
+            /* Load bar */
+            float *fillColor = NULL;
+            if (*(byte *)(w + 0xea) & 1)
+                fillColor = (float *)(w + 0x1cc);
+            ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawLoadBar)(
+                x, y, ww, hh,
+                *(int *)(w + 0x10), *(int *)(w + 0x14),
+                fillColor, *(int *)(w + 0x20c));
+            break;
+        }
+
+        case 0:
+        case 2:
+        case 4:
+        default:
+            break;
+        }
+    }
+
+    /* Border drawing based on borderSize */
+    borderSizeFlag = *(int *)(w + 0xd4);
+    if (borderSizeFlag == 1) {
+        /* UI_DrawRect border */
+        float *borderColor;
+        if (*(int *)(w + 0xd0) == 4) {
+            /* Shadow style: check borderColor[0] alpha for color selection */
+            if (*(float *)(w + 0x1ec) > 0.0f) {
+                /* Bright shadow */
+                color[0] = 1.0f;
+                color[1] = 0.5f;
+                color[2] = 0.5f;
+            } else {
+                /* Dark shadow */
+                color[0] = 0.5f;
+                color[1] = 0.5f;
+                color[2] = 1.0f;
+            }
+            color[3] = 1.0f;
+            borderColor = color;
+        } else {
+            borderColor = (float *)(w + 0x1ec);
+        }
+        UI_DrawRect(
+            *(float *)(w + 0x00), *(float *)(w + 0x04),
+            *(float *)(w + 0x08), *(float *)(w + 0x0c),
+            *(int *)(w + 0x10), *(int *)(w + 0x14),
+            *(float *)(w + 0xe0), borderColor);
+    } else if (borderSizeFlag == 2) {
+        /* UI_DrawTopBottom */
+        ((void (*)(float, float, float, float, int, int, float, const vec_t *))UI_DrawTopBottom)(
+            *(float *)(w + 0x00), *(float *)(w + 0x04),
+            *(float *)(w + 0x08), *(float *)(w + 0x0c),
+            *(int *)(w + 0x10), *(int *)(w + 0x14),
+            *(float *)(w + 0xe0), (const vec_t *)(w + 0x1ec));
+        return;
+    } else if (borderSizeFlag == 3) {
+        /* UI_DrawSides */
+        ((void (*)(float, float, float, float, int, int, float, const vec_t *))UI_DrawSides)(
+            *(float *)(w + 0x00), *(float *)(w + 0x04),
+            *(float *)(w + 0x08), *(float *)(w + 0x0c),
+            *(int *)(w + 0x10), *(int *)(w + 0x14),
+            *(float *)(w + 0xe0), (const vec_t *)(w + 0x1ec));
+        return;
+    }
 }
 
 /* Menu_Setup — initialize menu system: clear menus, setup keyword hashes, load key bindings */
@@ -4451,631 +4305,274 @@ enter_bind:
     return 1;
 }
 
-/* line 3069 */
-__attribute__((naked))
+/* Item_HandleKey — dispatch key input to item-type-specific handlers */
+/* Handles mouse click capture setup for listbox/slider, type-based dispatch via switch */
+static int Item_HandleKey_RectContainsPoint(byte *it, float cx, float cy)
+{
+    float rx = *(float *)it, ry = *(float *)(it + 4);
+    float rw = *(float *)(it + 8), rh = *(float *)(it + 0xc);
+    CalcScreenX(&cx, 4);
+    CalcScreenY(&cy, 4);
+    CalcScreenPlacement(&rx, &ry, &rw, &rh, *(int *)(it + 0x10), *(int *)(it + 0x14));
+    if (cx >= rx && rx + rw >= cx && cy >= ry && ry + rh >= cy)
+        return 1;
+    return 0;
+}
+
 qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3069 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* item */
-        "movl 0x14(%ebp), %edi\n" /* down */
-        "movl itemCapture, %eax\n" /* line 3071 */
-        "testl %eax, %eax\n"
-        "je .Lf16c07e_0016c0dd\n"
-        "movl $0, itemCapture\n" /* line 3074 */
-        "movl $0, captureFunc\n" /* line 3075 */
-        "movl $0, captureData\n" /* line 3076 */
-        ".Lf16c07e_0016c0b7:\n"
-        "testl %edi, %edi\n" /* line 3084 | down */
-        "je .Lf16c07e_0016c0c9\n"
-        ".Lf16c07e_0016c0bb:\n"
-        "movl 0x270(%esi), %eax\n" /* line 3087 | item */
-        "subl $6, %eax\n"
-        "cmpl $8, %eax\n"
-        "jbe .Lf16c07e_0016c0d6\n"
-        ".Lf16c07e_0016c0c9:\n"
-        "xorl %eax, %eax\n" /* line 3116 */
-        ".Lf16c07e_0016c0cb:\n"
-        "addl $0x8c, %esp\n" /* line 3120 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf16c07e_0016c0d6:\n"
-        "jmpl *.Ljt_16c07e_0(, %eax, 4)\n" /* line 3087 */
-        ".Lf16c07e_0016c0dd:\n"
-        "testl %edi, %edi\n" /* line 3080 | down */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl 0x10(%ebp), %eax\n" /* key */
-        "subl $0xc8, %eax\n"
-        "cmpl $2, %eax\n"
-        "ja .Lf16c07e_0016c0bb\n"
-        /* { scope 1: y, x, enumString, string */
-        "movl 0x270(%esi), %eax\n" /* line 2967 */
-        "cmpl $6, %eax\n"
-        "je .Lf16c07e_0016c4c6\n"
-        "cmpl $0xa, %eax\n"
-        "jne .Lf16c07e_0016c0b7\n"
-        "movl 8(%ebp), %ecx\n" /* line 3004 | dc */
-        "cvtsi2ssl 0x10(%ecx), %xmm0\n"
-        "movss %xmm0, -0x5c(%ebp)\n" /* y */
-        "cvtsi2ssl 0xc(%ecx), %xmm0\n"
-        "movss %xmm0, -0x58(%ebp)\n" /* x */
-        "movl %esi, (%esp)\n" /* line 1644 */
-        "calll Item_Slider_ThumbPosition\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm0\n"
-        "movss 4(%esi), %xmm1\n" /* line 1645 */
-        "subss lit4_002ed62c, %xmm1\n" /* 2.0f */
-        "movl 0x10(%esi), %eax\n" /* line 1648 */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl 0x14(%esi), %ebx\n" /* line 1649 */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "subss lit4_002ed6d4, %xmm0\n" /* line 417 | 5.0f */
-        "movss %xmm0, -0x38(%ebp)\n" /* compareRect */
-        "movss %xmm1, -0x34(%ebp)\n" /* line 418 */
-        "movl $0x41200000, -0x30(%ebp)\n" /* line 419 */
-        "movl $0x41a00000, -0x2c(%ebp)\n" /* line 420 */
-        "movss -0x58(%ebp), %xmm0\n" /* line 422 | x */
-        "movss %xmm0, -0x1c(%ebp)\n" /* compareX */
-        "movss -0x5c(%ebp), %xmm0\n" /* line 423 | y */
-        "movss %xmm0, -0x20(%ebp)\n" /* compareY */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl %ebx, 0x14(%esp)\n" /* line 428 */
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c627\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c627\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c627\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c627\n"
-        "movl $0x400, %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16c07e_0016c20b:\n"
-        "testl %eax, %eax\n" /* line 3005 */
-        "je .Lf16c07e_0016c0bb\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 3007 | key */
-        "movl %ecx, scrollInfo+12\n"
-        "movl %esi, scrollInfo+24\n" /* line 3008 */
-        "movl 8(%ebp), %eax\n" /* line 3009 | dc */
-        "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, scrollInfo+16\n"
-        "cvtsi2ssl 0x10(%eax), %xmm0\n" /* line 3010 */
-        "movss %xmm0, scrollInfo+20\n"
-        "movl $scrollInfo, captureData\n" /* line 3011 */
-        "movl $Scroll_Slider_ThumbFunc, captureFunc\n" /* line 3012 */
-        "movl %esi, itemCapture\n" /* line 3013 */
-        "jmp .Lf16c07e_0016c0bb\n"
-        /* } scope */
-        ".Lf16c07e_0016c25e:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 3114 | down */
-        "movl 0x10(%ebp), %ecx\n" /* key */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_Bind_HandleKey\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        ".Lf16c07e_0016c27d:\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 3106 | key */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_YesNo_HandleKey\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        ".Lf16c07e_0016c298:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 3116 | down */
-        "movl 0x10(%ebp), %ecx\n" /* key */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_Slider_HandleKey\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        ".Lf16c07e_0016c2b7:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 1924 | key */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x2d8(%esi), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xdc(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xd8(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_OwnerDrawHandleKey\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        ".Lf16c07e_0016c2e5:\n"
-        "movl $0, 0x10(%esp)\n" /* line 3104 */
-        "movl %edi, 0xc(%esp)\n" /* down */
-        "movl 0x10(%ebp), %ecx\n" /* key */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_ListBox_HandleKey\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        /* { scope 1: y, x, enumString, string */
-        ".Lf16c07e_0016c30c:\n"
-        "movl 0xe8(%esi), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16c07e_0016c0c9\n"
-        "testb $2, %al\n" /* line 2280 */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl 0x10(%ebp), %eax\n" /* line 2283 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $2, %eax\n"
-        "jbe .Lf16c07e_0016c682\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c333:\n"
-        "movl 0x2ec(%esi), %eax\n" /* line 2410 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "movl %eax, %edi\n" /* enumDvar */
-        "cmpb $6, 6(%eax)\n" /* line 2411 */
-        "je .Lf16c07e_0016c5c8\n"
-        ".Lf16c07e_0016c34d:\n"
-        "xorl %ebx, %ebx\n" /* line 2419 */
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c34f:\n"
-        "movl 0x2ec(%esi), %eax\n" /* line 2331 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "cmpb $6, 6(%eax)\n" /* line 2332 */
-        "je .Lf16c07e_0016c552\n"
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c367:\n"
-        "xorl %edx, %edx\n" /* line 2462 */
-        /* } scope */
-        ".Lf16c07e_0016c369:\n"
-        "cmpl %edx, %ebx\n" /* line 2515 */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl %edx, 4(%esp)\n" /* line 2518 */
-        "movl $str_0021785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "jmp .Lf16c07e_0016c4aa\n"
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        ".Lf16c07e_0016c386:\n"
-        "movl %esi, (%esp)\n" /* line 2478 */
-        "calll Item_GetMultiDef\n"
-        "movl %eax, -0x54(%ebp)\n" /* multiPtr */
-        "testl %eax, %eax\n" /* line 2479 */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl 0xe8(%esi), %eax\n" /* line 143 */
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16c07e_0016c0c9\n"
-        "testb $2, %al\n" /* line 2280 */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl 0x10(%ebp), %eax\n" /* line 2283 | key */
-        "subl $0xc8, %eax\n"
-        "cmpl $2, %eax\n"
-        "jbe .Lf16c07e_0016c762\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c3c0:\n"
-        "movl %esi, (%esp)\n" /* line 2345 */
-        "calll Item_GetMultiDef\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n" /* line 2346 */
-        "je .Lf16c07e_0016c3fb\n"
-        "movl 0x184(%eax), %eax\n" /* line 2349 */
-        "testl %eax, %eax\n"
-        "je .Lf16c07e_0016c84b\n"
-        "movl 0x2c0(%esi), %eax\n" /* line 2351 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, -0x48(%ebp)\n" /* string */
-        "movl 0x180(%ebx), %edi\n" /* line 2352 */
-        "testl %edi, %edi\n"
-        "jg .Lf16c07e_0016c8c0\n"
-        ".Lf16c07e_0016c3fb:\n"
-        "movl $0, -0x3c(%ebp)\n" /* line 2361 */
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c402:\n"
-        "movl %esi, (%esp)\n" /* line 2316 */
-        "calll Item_GetMultiDef\n"
-        "testl %eax, %eax\n" /* line 2317 */
-        "je .Lf16c07e_0016c75b\n"
-        "movl 0x180(%eax), %edx\n" /* line 2319 */
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        "testl %edx, %edx\n" /* line 2457 */
-        "je .Lf16c07e_0016c75b\n"
-        "cmpl $0xc8, 0x10(%ebp)\n" /* line 2459 | key */
-        "je .Lf16c07e_0016c74b\n"
-        "cmpl $0xd, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c74b\n"
-        "cmpl $0xca, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c74b\n"
-        "cmpl $0xa3, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c74b\n"
-        "cmpl $0x9d, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c74b\n"
-        "cmpl $0xc9, 0x10(%ebp)\n" /* line 2461 | key */
-        "je .Lf16c07e_0016c47d\n"
-        "cmpl $0xa4, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c47d\n"
-        "cmpl $0x9c, 0x10(%ebp)\n" /* key */
-        "jne .Lf16c07e_0016c0c9\n"
-        ".Lf16c07e_0016c47d:\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 2462 */
-        "leal -1(%ecx, %edx), %eax\n"
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        /* } scope */
-        ".Lf16c07e_0016c489:\n"
-        "cmpl %edx, -0x3c(%ebp)\n" /* line 2488 */
-        "je .Lf16c07e_0016c0c9\n"
-        "movl -0x54(%ebp), %eax\n" /* line 2491 | multiPtr */
-        "movl 0x184(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf16c07e_0016c82b\n"
-        "movl 0x80(%eax, %edx, 4), %eax\n" /* line 2492 */
-        ".Lf16c07e_0016c4aa:\n"
-        "movl %eax, 4(%esp)\n" /* line 2494 */
-        "movl 0x2c0(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetFromStringByName\n"
-        "movl $1, %eax\n"
-        "jmp .Lf16c07e_0016c0cb\n"
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        ".Lf16c07e_0016c4c6:\n"
-        "movl 8(%ebp), %eax\n" /* line 2977 | dc */
-        "cvtsi2ssl 0x10(%eax), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll Item_ListBox_OverLB\n"
-        "movl %eax, %edx\n"
-        "testb $3, %ah\n" /* line 2978 */
-        "je .Lf16c07e_0016c62e\n"
-        "movl 8(%ebp), %ecx\n" /* line 2980 | dc */
-        "movl 4(%ecx), %eax\n"
-        "addl $0x1f4, %eax\n"
-        "movl %eax, scrollInfo\n"
-        "movl 4(%ecx), %eax\n" /* line 2981 */
-        "addl $0x96, %eax\n"
-        "movl %eax, scrollInfo+4\n"
-        "movl $0x1f4, scrollInfo+8\n" /* line 2982 */
-        "movl 0x10(%ebp), %eax\n" /* line 2983 | key */
-        "movl %eax, scrollInfo+12\n"
-        "shrl $8, %edx\n" /* line 2984 */
-        "andl $1, %edx\n"
-        "movl %edx, scrollInfo+28\n"
-        "movl %esi, scrollInfo+24\n" /* line 2985 */
-        "movl $scrollInfo, captureData\n" /* line 2986 */
-        "movl $Scroll_ListBox_AutoFunc, captureFunc\n" /* line 2987 */
-        "movl %esi, itemCapture\n" /* line 2988 */
-        "jmp .Lf16c07e_0016c0bb\n"
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c552:\n"
-        "movl 0x14(%eax), %edx\n" /* line 2334 */
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        "testl %edx, %edx\n" /* line 2457 */
-        "je .Lf16c07e_0016c367\n"
-        "cmpl $0xc8, 0x10(%ebp)\n" /* line 2459 | key */
-        "je .Lf16c07e_0016c8b3\n"
-        "cmpl $0xd, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c8b3\n"
-        "cmpl $0xca, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c8b3\n"
-        "cmpl $0xa3, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c8b3\n"
-        "cmpl $0x9d, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c8b3\n"
-        "cmpl $0xc9, 0x10(%ebp)\n" /* line 2461 | key */
-        "je .Lf16c07e_0016c5ba\n"
-        "cmpl $0xa4, 0x10(%ebp)\n" /* key */
-        "je .Lf16c07e_0016c5ba\n"
-        "cmpl $0x9c, 0x10(%ebp)\n" /* key */
-        "jne .Lf16c07e_0016c0c9\n"
-        ".Lf16c07e_0016c5ba:\n"
-        "leal -1(%ebx, %edx), %eax\n" /* line 2462 */
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        "jmp .Lf16c07e_0016c369\n"
-        /* } scope */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c5c8:\n"
-        "movl 0x2c0(%esi), %eax\n" /* line 2414 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, -0x44(%ebp)\n" /* enumString */
-        "movl %eax, (%esp)\n" /* line 2415 */
-        "calll atoi\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n" /* line 2416 */
-        "js .Lf16c07e_0016c5f0\n"
-        "cmpl 0x14(%edi), %eax\n" /* enumDvar */
-        "jl .Lf16c07e_0016c34f\n"
-        ".Lf16c07e_0016c5f0:\n"
-        "movl 0x14(%edi), %eax\n" /* line 2419 | enumDvar */
-        "testl %eax, %eax\n"
-        "jle .Lf16c07e_0016c34d\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf16c07e_0016c5fd:\n"
-        "movl 0x18(%edi), %eax\n" /* line 2421 | enumDvar */
-        "movl (%eax, %ebx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x44(%ebp), %eax\n" /* enumString */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf16c07e_0016c34f\n"
-        "addl $1, %ebx\n" /* line 2419 */
-        "cmpl 0x14(%edi), %ebx\n" /* enumDvar */
-        "jl .Lf16c07e_0016c5fd\n"
-        "jmp .Lf16c07e_0016c34d\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        ".Lf16c07e_0016c627:\n"
-        "xorl %eax, %eax\n" /* line 430 */
-        "jmp .Lf16c07e_0016c20b\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16c07e_0016c62e:\n"
-        "andb $4, %dh\n" /* line 2990 */
-        "je .Lf16c07e_0016c0bb\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 2992 | key */
-        "movl %ecx, scrollInfo+12\n"
-        "movl %esi, scrollInfo+24\n" /* line 2993 */
-        "movl 8(%ebp), %eax\n" /* line 2994 | dc */
-        "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, scrollInfo+16\n"
-        "cvtsi2ssl 0x10(%eax), %xmm0\n" /* line 2995 */
-        "movss %xmm0, scrollInfo+20\n"
-        "movl $scrollInfo, captureData\n" /* line 2996 */
-        "movl $Scroll_ListBox_ThumbFunc, captureFunc\n" /* line 2997 */
-        "movl %esi, itemCapture\n" /* line 2998 */
-        "jmp .Lf16c07e_0016c0bb\n"
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        ".Lf16c07e_0016c682:\n"
-        "movl 8(%ebp), %ecx\n" /* line 2274 | dc */
-        "cvtsi2ssl 0x10(%ecx), %xmm1\n" /* y */
-        "cvtsi2ssl 0xc(%ecx), %xmm0\n" /* x */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "movl (%esi), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%esi), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%esi), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%esi), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* line 422 | compareY */
-        "movss %xmm1, -0x1c(%ebp)\n" /* line 423 | compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%esi), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "jmp .Lf16c07e_0016c333\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c74b:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 2460 */
-        "addl $1, %eax\n"
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        "jmp .Lf16c07e_0016c489\n"
-        ".Lf16c07e_0016c75b:\n"
-        "xorl %edx, %edx\n" /* line 2462 */
-        "jmp .Lf16c07e_0016c489\n"
-        /* } scope */
-        ".Lf16c07e_0016c762:\n"
-        "movl 8(%ebp), %ecx\n" /* line 2274 | dc */
-        "cvtsi2ssl 0x10(%ecx), %xmm1\n" /* y */
-        "cvtsi2ssl 0xc(%ecx), %xmm0\n" /* x */
-        /* { scope 2: compareRect, compareX, compareY */
-        /* { scope 3 */
-        "movl (%esi), %eax\n" /* line 417 */
-        "movl %eax, -0x38(%ebp)\n" /* compareRect */
-        "movl 4(%esi), %eax\n" /* line 418 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 8(%esi), %eax\n" /* line 419 */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0xc(%esi), %eax\n" /* line 420 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* line 422 | compareY */
-        "movss %xmm1, -0x1c(%ebp)\n" /* line 423 | compareX */
-        "movl $4, 4(%esp)\n" /* line 426 */
-        "leal -0x20(%ebp), %eax\n" /* compareY */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenX\n"
-        "movl $4, 4(%esp)\n" /* line 427 */
-        "leal -0x1c(%ebp), %eax\n" /* compareX */
-        "movl %eax, (%esp)\n"
-        "calll CalcScreenY\n"
-        "movl 0x14(%esi), %eax\n" /* line 428 */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%esi), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* compareRect */
-        "leal -0x2c(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x34(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CalcScreenPlacement\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 430 | compareRect */
-        "movss -0x20(%ebp), %xmm1\n" /* compareY */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "addss -0x30(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* compareX */
-        "ucomiss %xmm0, %xmm1\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jb .Lf16c07e_0016c0c9\n"
-        "jmp .Lf16c07e_0016c3c0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf16c07e_0016c82b:\n"
-        "cvtss2sd 0x100(%eax, %edx, 4), %xmm0\n" /* line 2494 */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00217c20, (%esp)\n" /* "%g" */
-        "calll va\n"
-        "jmp .Lf16c07e_0016c4aa\n"
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c84b:\n"
-        "movl 0x2c0(%esi), %eax\n" /* line 2360 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x50(%ebp)\n"
-        "cvtsd2ss -0x50(%ebp), %xmm1\n"
-        "movl 0x180(%ebx), %edx\n" /* line 2361 */
-        "testl %edx, %edx\n"
-        "jle .Lf16c07e_0016c3fb\n"
-        "ucomiss 0x100(%ebx), %xmm1\n" /* line 2363 */
-        "jp .Lf16c07e_0016c886\n"
-        "je .Lf16c07e_0016c3fb\n"
-        ".Lf16c07e_0016c886:\n"
-        "movl %ebx, %eax\n"
-        "movl $0, -0x3c(%ebp)\n"
-        ".Lf16c07e_0016c88f:\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 2361 */
-        "cmpl -0x3c(%ebp), %edx\n"
-        "je .Lf16c07e_0016c3fb\n"
-        "movss 0x104(%eax), %xmm0\n" /* line 2363 */
-        "addl $4, %eax\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "jp .Lf16c07e_0016c88f\n"
-        "jne .Lf16c07e_0016c88f\n"
-        "jmp .Lf16c07e_0016c402\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c8b3:\n"
-        "leal 1(%ebx), %eax\n" /* line 2460 */
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        "jmp .Lf16c07e_0016c369\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1: y, x, enumString, string */
-        /* { scope 2: compareRect, compareX, compareY */
-        ".Lf16c07e_0016c8c0:\n"
-        "movl %ebx, %edi\n" /* line 2352 */
-        "movl $0, -0x3c(%ebp)\n"
-        ".Lf16c07e_0016c8c9:\n"
-        "movl 0x80(%edi), %eax\n" /* line 2354 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x48(%ebp), %eax\n" /* string */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf16c07e_0016c402\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 2352 */
-        "addl $4, %edi\n"
-        "movl -0x3c(%ebp), %ecx\n"
-        "cmpl %ecx, 0x180(%ebx)\n"
-        "jg .Lf16c07e_0016c8c9\n"
-        "jmp .Lf16c07e_0016c3fb\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_16c07e_0:\n"
-        ".long .Lf16c07e_0016c2e5\n"
-        ".long .Lf16c07e_0016c0c9\n"
-        ".long .Lf16c07e_0016c2b7\n"
-        ".long .Lf16c07e_0016c0c9\n"
-        ".long .Lf16c07e_0016c298\n"
-        ".long .Lf16c07e_0016c27d\n"
-        ".long .Lf16c07e_0016c386\n"
-        ".long .Lf16c07e_0016c30c\n"
-        ".long .Lf16c07e_0016c25e\n"
-        ".text\n"
-    );
+    byte *it = (byte *)item;
+    byte *d = (byte *)dc;
+
+    /* If there's an active capture, release it */
+    if (itemCapture) {
+        itemCapture = NULL;
+        captureFunc = NULL;
+        captureData = NULL;
+    } else {
+        /* No active capture — handle mouse click setup */
+        if (!down)
+            return 0;
+        if (key >= 0xc8 && key <= 0xca) {
+            int itemType = *(int *)(it + 0x270);
+            if (itemType == 6) {
+                /* Listbox — check scrollbar region */
+                float lbx = (float)*(int *)(d + 0xc);
+                float lby = (float)*(int *)(d + 0x10);
+                int overLB = Item_ListBox_OverLB(item, lbx, lby);
+                if (overLB & 0x300) {
+                    /* Up/down arrow region — auto-scroll */
+                    scrollInfo.nextScrollTime = *(int *)(d + 4) + 500;
+                    scrollInfo.nextAdjustTime = *(int *)(d + 4) + 150;
+                    scrollInfo.adjustValue = 500;
+                    scrollInfo.scrollKey = key;
+                    scrollInfo.scrollDir = (overLB >> 8) & 1;
+                    scrollInfo.item = item;
+                    captureData = &scrollInfo;
+                    captureFunc = Scroll_ListBox_AutoFunc;
+                    itemCapture = item;
+                } else if (overLB & 0x400) {
+                    /* Thumb region — drag scroll */
+                    scrollInfo.scrollKey = key;
+                    scrollInfo.item = item;
+                    scrollInfo.xStart = (float)*(int *)(d + 0xc);
+                    scrollInfo.yStart = (float)*(int *)(d + 0x10);
+                    captureData = &scrollInfo;
+                    captureFunc = Scroll_ListBox_ThumbFunc;
+                    itemCapture = item;
+                }
+                /* Fall through to type switch */
+            } else if (itemType == 0xa) {
+                /* Slider — check thumb hit test */
+                float sy = (float)*(int *)(d + 0x10);
+                float sx = (float)*(int *)(d + 0xc);
+                float thumbX = Item_Slider_ThumbPosition(item);
+                float itemY = *(float *)(it + 4) - 2.0f;
+                int horzAlign = *(int *)(it + 0x10);
+                int vertAlign = *(int *)(it + 0x14);
+
+                float rx = thumbX - 5.0f, ry = itemY;
+                float rw = 10.0f, rh = 20.0f;
+                float cx = sx, cy = sy;
+                CalcScreenX(&cx, 4);
+                CalcScreenY(&cy, 4);
+                CalcScreenPlacement(&rx, &ry, &rw, &rh, horzAlign, vertAlign);
+                int hit = (cx >= rx && rx + rw >= cx && cy >= ry && ry + rh >= cy) ? 0x400 : 0;
+
+                if (hit) {
+                    scrollInfo.scrollKey = key;
+                    scrollInfo.item = item;
+                    scrollInfo.xStart = (float)*(int *)(d + 0xc);
+                    scrollInfo.yStart = (float)*(int *)(d + 0x10);
+                    captureData = &scrollInfo;
+                    captureFunc = Scroll_Slider_ThumbFunc;
+                    itemCapture = item;
+                }
+                /* Fall through to type switch */
+            }
+        }
+    }
+
+    /* Dispatch based on item type */
+    if (!down)
+        return 0;
+
+    switch (*(int *)(it + 0x270)) {
+    case 6: /* ITEM_TYPE_LISTBOX */
+        return Item_ListBox_HandleKey(dc, item, key, down, 0);
+
+    case 8: /* ITEM_TYPE_OWNERDRAW */
+        return UI_OwnerDrawHandleKey(*(int *)(it + 0xd8), *(int *)(it + 0xdc),
+                                     (int *)(it + 0x2d8), key);
+
+    case 0xa: /* ITEM_TYPE_SLIDER */
+        return Item_Slider_HandleKey(dc, item, key, down);
+
+    case 0xb: /* ITEM_TYPE_YESNO */
+        return Item_YesNo_HandleKey(dc, item, key);
+
+    case 0xc: { /* ITEM_TYPE_MULTI */
+        byte *multiPtr = (byte *)Item_GetMultiDef(item);
+        if (!multiPtr)
+            return 0;
+        if (!(*(byte *)(it + 0xe8) & 4))
+            return 0;
+        if (!(*(byte *)(it + 0xe8) & 2))
+            return 0;
+
+        /* Mouse click — check item rect bounds */
+        if (key >= 0xc8 && key <= 0xca) {
+            if (!Item_HandleKey_RectContainsPoint(it, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10)))
+                return 0;
+        }
+
+        /* Get multiDef and find current index */
+        byte *mDef = (byte *)Item_GetMultiDef(item);
+        int current = 0;
+        if (mDef) {
+            int strDef = *(int *)(mDef + 0x184);
+            if (!strDef) {
+                /* Float-based multi */
+                const char *valStr = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+                float curVal = (float)atof(valStr);
+                int count = *(int *)(mDef + 0x180);
+                if (count > 0) {
+                    /* Check if first value matches */
+                    if (curVal != *(float *)(mDef + 0x100)) {
+                        int i;
+                        for (i = 1; i < count; i++) {
+                            if (*(float *)(mDef + 0x100 + i * 4) == curVal) {
+                                current = i;
+                                break;
+                            }
+                        }
+                        /* If no match, current stays 0 */
+                    }
+                }
+            } else {
+                /* String-based multi */
+                const char *string = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+                int count = *(int *)(mDef + 0x180);
+                if (count > 0) {
+                    int i;
+                    for (i = 0; i < count; i++) {
+                        if (I_stricmp(string, *(const char **)(mDef + 0x80 + i * 4)) == 0) {
+                            current = i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Determine new index based on key direction */
+        byte *mDef2 = (byte *)Item_GetMultiDef(item);
+        int totalCount;
+        if (!mDef2)
+            totalCount = 0;
+        else
+            totalCount = *(int *)(mDef2 + 0x180);
+
+        int newIndex;
+        if (!totalCount) {
+            newIndex = 0;
+        } else if (key == 0xc8 || key == 0xd || key == 0xca || key == 0xa3 || key == 0x9d) {
+            /* Forward/right: increment with wrap */
+            newIndex = (current + 1) % totalCount;
+        } else if (key == 0xc9 || key == 0xa4 || key == 0x9c) {
+            /* Back/left: decrement with wrap */
+            newIndex = (current - 1 + totalCount) % totalCount;
+        } else {
+            return 0;
+        }
+
+        if (newIndex == current)
+            return 0;
+
+        /* Set the new dvar value */
+        const char *newVal;
+        if (*(int *)(multiPtr + 0x184)) {
+            /* String-based */
+            newVal = *(const char **)(multiPtr + 0x80 + newIndex * 4);
+        } else {
+            /* Float-based */
+            newVal = va("%g", (double)*(float *)(multiPtr + 0x100 + newIndex * 4));
+        }
+        Dvar_SetFromStringByName(*(const char **)(it + 0x2c0), newVal);
+        return 1;
+    }
+
+    case 0xd: { /* ITEM_TYPE_ENUM_DVAR */
+        if (!(*(byte *)(it + 0xe8) & 4))
+            return 0;
+        if (!(*(byte *)(it + 0xe8) & 2))
+            return 0;
+
+        /* Mouse click — check item rect bounds */
+        if (key >= 0xc8 && key <= 0xca) {
+            if (!Item_HandleKey_RectContainsPoint(it, (float)*(int *)(d + 0xc), (float)*(int *)(d + 0x10)))
+                return 0;
+        }
+
+        /* Get current enum index */
+        struct dvar_s *enumDvar = Dvar_FindVar(*(const char **)(it + 0x2ec));
+        int current = 0;
+        if (*(byte *)((byte *)enumDvar + 6) == 6) {
+            /* Enum dvar type — resolve current index */
+            const char *enumString = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+            current = atoi(enumString);
+            if (current < 0 || current >= *(int *)((byte *)enumDvar + 0x14)) {
+                /* Invalid numeric index — search by string */
+                int numStrings = *(int *)((byte *)enumDvar + 0x14);
+                current = 0;
+                if (numStrings > 0) {
+                    const char **strings = *(const char ***)((byte *)enumDvar + 0x18);
+                    int i;
+                    for (i = 0; i < numStrings; i++) {
+                        if (I_stricmp(enumString, strings[i]) == 0) {
+                            current = i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        /* Get total count */
+        struct dvar_s *dv = Dvar_FindVar(*(const char **)(it + 0x2ec));
+        int totalCount;
+        if (*(byte *)((byte *)dv + 6) == 6)
+            totalCount = *(int *)((byte *)dv + 0x14);
+        else
+            totalCount = 0;
+
+        /* Determine new index based on key direction */
+        int newIndex;
+        if (!totalCount) {
+            newIndex = 0;
+        } else if (key == 0xc8 || key == 0xd || key == 0xca || key == 0xa3 || key == 0x9d) {
+            /* Forward/right: increment with wrap */
+            newIndex = (current + 1) % totalCount;
+        } else if (key == 0xc9 || key == 0xa4 || key == 0x9c) {
+            /* Back/left: decrement with wrap */
+            newIndex = (current - 1 + totalCount) % totalCount;
+        } else {
+            return 0;
+        }
+
+        if (newIndex == current)
+            return 0;
+
+        Dvar_SetFromStringByName(*(const char **)(it + 0x2c0), va("%i", newIndex));
+        return 1;
+    }
+
+    case 0xe: /* ITEM_TYPE_BIND */
+        return Item_Bind_HandleKey(dc, item, key, down);
+
+    default:
+        return 0;
+    }
 }
 
 /* Item_ListBox_MouseEnter — handle mouse enter for listbox: update cursor from mouse position */
@@ -5751,733 +5248,384 @@ done:
     return;
 }
 
-/* line 5107 */
-__attribute__((naked))
+/* Item_Paint — paint an item: visibility checks, fade/slide/orbit animation, type dispatch */
 void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5107 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xac, %esp\n"
-        /* DIAG: trace entry */
-        "movl 0xc(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll diag_item_paint_enter\n"
-        /* { scope 1: color, ry, w, h, ... */
-        "movl 0xc(%ebp), %eax\n" /* line 5118 | item */
-        "movl 0x29c(%eax), %eax\n"
-        "movl %eax, -0x70(%ebp)\n" /* parent */
-        "movl 0xc(%ebp), %edx\n" /* line 5124 | item */
-        "movl 0xe8(%edx), %eax\n"
-        "testb $0x20, %ah\n"
-        "je .Lf16e76c_0016e7a6\n"
-        "movl %edx, %ebx\n" /* enumDvar */
-        "movl 8(%ebp), %ecx\n" /* line 5126 | dc */
-        "movl 4(%ecx), %edx\n"
-        "cmpl 0x1c8(%ebx), %edx\n" /* enumDvar */
-        "jg .Lf16e76c_0016eb19\n"
-        ".Lf16e76c_0016e7a6:\n"
-        "testb %al, %al\n" /* line 5150 */
-        "jns .Lf16e76c_0016e8d4\n"
-        "movl 8(%ebp), %ecx\n" /* line 5152 | dc */
-        "movl 4(%ecx), %eax\n"
-        "movl 0xc(%ebp), %ebx\n" /* item, enumDvar */
-        "cmpl 0x1c8(%ebx), %eax\n" /* enumDvar */
-        "jg .Lf16e76c_0016e98b\n"
-        "movl %ebx, %ecx\n" /* enumDvar */
-        "movl 0xdc(%ecx), %eax\n" /* line 5278 */
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016e8e5\n"
-        ".Lf16e76c_0016e7d3:\n"
-        "movl %eax, (%esp)\n" /* line 5280 */
-        "calll UI_OwnerDrawVisible\n"
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016eafe\n"
-        "movl $4, 4(%esp)\n" /* line 5286 */
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll Window_AddDynamicFlags\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "testb $0xc, 0x2d0(%edx)\n" /* line 5290 */
-        "je .Lf16e76c_0016e8f4\n"
-        ".Lf16e76c_0016e806:\n"
-        "movl $4, 4(%esp)\n" /* line 5292 */
-        "movl %edx, (%esp)\n"
-        "calll Item_EnableShowViaDvar\n"
-        "testl %eax, %eax\n"
-        "jne .Lf16e76c_0016eaf6\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 143 | item */
-        "movl 0xe8(%ecx), %eax\n"
-        "testb $4, %al\n" /* line 155 */
-        "je .Lf16e76c_0016e833\n"
-        "testb $2, %al\n" /* line 5295 */
-        "jne .Lf16e76c_0016eded\n"
-        /* } scope */
-        ".Lf16e76c_0016e833:\n"
-        /* DIAG: item skipped/returned */
-        "movl 0xc(%ebp), %eax\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll diag_item_paint_skip\n"
-        "addl $0xac, %esp\n" /* line 5375 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: color, ry, w, h, ... */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016e83e:\n"
-        "subss 0xc(%ecx), %xmm0\n" /* line 5258 */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5259 */
-        "jbe .Lf16e76c_0016e855\n"
-        "movss %xmm1, -0x34(%ebp)\n" /* line 5261 */
-        ".Lf16e76c_0016e852:\n"
-        "addl $1, %ebx\n" /* line 5262 | done */
-        ".Lf16e76c_0016e855:\n"
-        "leal -0x40(%ebp), %eax\n" /* line 5267 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll Window_SetRectClient\n"
-        /* { scope 3 */
-        "movl 0xc(%ebp), %ecx\n" /* line 355 | item */
-        "movl 0x29c(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf16e76c_0016e8bc\n"
-        "movss (%edx), %xmm2\n" /* line 363 */
-        "movss 4(%edx), %xmm1\n" /* line 364 */
-        "movl 0xd4(%edx), %ecx\n" /* line 366 */
-        "testl %ecx, %ecx\n"
-        "je .Lf16e76c_0016e897\n"
-        "movss 0xe0(%edx), %xmm0\n" /* line 368 */
-        "addss %xmm0, %xmm2\n"
-        "addss %xmm0, %xmm1\n" /* line 369 */
-        ".Lf16e76c_0016e897:\n"
-        "movl 0x14(%edx), %eax\n" /* line 372 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll Item_SetScreenCoords\n"
-        /* } scope */
-        ".Lf16e76c_0016e8bc:\n"
-        "cmpl $4, %ebx\n" /* line 5270 | done */
-        "jne .Lf16e76c_0016e8d4\n"
-        "movl $0x80, 4(%esp)\n" /* line 5272 */
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "movl %edx, (%esp)\n"
-        "calll Window_RemoveDynamicFlags\n"
-        ".Lf16e76c_0016e8d4:\n"
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        /* } scope */
-        "movl 0xdc(%ecx), %eax\n" /* line 5278 */
-        "testl %eax, %eax\n"
-        "jne .Lf16e76c_0016e7d3\n"
-        ".Lf16e76c_0016e8e5:\n"
-        "movl %ecx, %edx\n"
-        ".Lf16e76c_0016e8e7:\n"
-        "testb $0xc, 0x2d0(%edx)\n" /* line 5290 */
-        "jne .Lf16e76c_0016e806\n"
-        ".Lf16e76c_0016e8f4:\n"
-        "movl %edx, %ecx\n"
-        ".Lf16e76c_0016e8f6:\n"
-        "testb $4, 0xe8(%ecx)\n" /* line 5304 */
-        "je .Lf16e76c_0016e833\n"
-        "cmpl $6, 0xd0(%ecx)\n" /* line 5310 */
-        "je .Lf16e76c_0016ed0e\n"
-        ".Lf16e76c_0016e910:\n"
-        /* DIAG: item will be drawn */
-        "movl 0xc(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll diag_item_paint_draw\n"
-        "movl -0x70(%ebp), %eax\n" /* line 5316 | parent */
-        "cvtsi2ssl 0x230(%eax), %xmm0\n"
-        "movss %xmm0, 0x14(%esp)\n"
-        "movl %eax, %edx\n"
-        "movl 0x234(%eax), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x23c(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x238(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %ebx\n" /* dc, done */
-        "movl %ebx, (%esp)\n" /* done */
-        "calll Window_Paint\n"
-        "movl debugMode, %edx\n" /* line 5318 */
-        "testl %edx, %edx\n"
-        "jne .Lf16e76c_0016ea07\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 5329 | item */
-        "cmpl $6, 0xd0(%ecx)\n"
-        "je .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016e971:\n"
-        "cmpl $0x12, 0x270(%ecx)\n" /* line 5332 */
-        "ja .Lf16e76c_0016e833\n"
-        "movl 0x270(%ecx), %eax\n"
-        "jmpl *.Ljt_16e76c_0(, %eax, 4)\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016e98b:\n"
-        "addl 0x1b8(%ebx), %eax\n" /* line 5156 | done */
-        "movl %eax, 0x1c8(%ebx)\n" /* done */
-        "movl %ebx, %edx\n" /* line 67 */
-        "addl $0xf8, %edx\n"
-        "movl %ebx, %ecx\n" /* line 74 */
-        "addl $0x158, %ecx\n"
-        "movl 0x60(%ebx), %eax\n" /* line 5162 | done */
-        "movl %eax, -0x40(%ebp)\n" /* newRect */
-        "movl 0x64(%ebx), %eax\n" /* done */
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl 0x68(%ebx), %eax\n" /* done */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 0x6c(%ebx), %eax\n" /* done */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 0x70(%ebx), %eax\n" /* done */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0x74(%ebx), %eax\n" /* done */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss -0x40(%ebp), %xmm0\n" /* line 5166 | newRect */
-        "movss 0xf8(%ebx), %xmm1\n" /* done */
-        "ucomiss %xmm1, %xmm0\n"
-        "je .Lf16e76c_0016ec8d\n"
-        ".Lf16e76c_0016e9e1:\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5172 */
-        "jbe .Lf16e76c_0016ed3c\n"
-        "addss (%ecx), %xmm0\n" /* line 5174 */
-        "movss %xmm0, -0x40(%ebp)\n" /* newRect */
-        "movss (%edx), %xmm1\n" /* line 5175 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf16e76c_0016ed52\n"
-        ".Lf16e76c_0016ea00:\n"
-        "xorl %ebx, %ebx\n" /* line 5186 | done */
-        "jmp .Lf16e76c_0016ec98\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ea07:\n"
-        "movl $rect, %edi\n" /* line 3383 */
-        "cld\n"
-        "movl $6, %ecx\n"
-        "xorl %eax, %eax\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 3387 | item */
-        "movl 0x210(%edx), %eax\n"
-        "movl %eax, rect\n"
-        "movl 0x214(%edx), %eax\n"
-        "movl %eax, rect+4\n"
-        "movl 0x218(%edx), %eax\n"
-        "movl %eax, rect+8\n"
-        "movl 0x21c(%edx), %eax\n"
-        "movl %eax, rect+12\n"
-        "movl 0x220(%edx), %eax\n"
-        "movl %eax, rect+16\n"
-        "movl 0x224(%edx), %eax\n"
-        "movl %eax, rect+20\n"
-        "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss rect+8, %xmm0\n"
-        "jp .Lf16e76c_0016ea6e\n"
-        "je .Lf16e76c_0016eda6\n"
-        ".Lf16e76c_0016ea6e:\n"
-        "movss rect+4, %xmm0\n" /* line 3390 */
-        "subss rect+12, %xmm0\n"
-        "movss %xmm0, rect+4\n"
-        ".Lf16e76c_0016ea86:\n"
-        "movl $0x3f800000, %edx\n" /* line 5323 */
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl %edx, -0x24(%ebp)\n"
-        "movl $0, -0x20(%ebp)\n" /* line 5324 */
-        "movl $0, -0x28(%ebp)\n" /* color */
-        "leal -0x28(%ebp), %eax\n" /* line 5325 | color */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl %edx, 0x18(%esp)\n"
-        "movl rect+20, %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl rect+16, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl rect+12, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl rect+8, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movl rect, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawRect\n"
-        /* } scope */
-        "movl 0xc(%ebp), %ecx\n" /* line 5329 | item */
-        "cmpl $6, 0xd0(%ecx)\n"
-        "jne .Lf16e76c_0016e971\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016eaf6:\n"
-        "movl 0xc(%ebp), %ecx\n" /* item */
-        "jmp .Lf16e76c_0016e8f6\n"
-        ".Lf16e76c_0016eafe:\n"
-        "movl $4, 4(%esp)\n" /* line 5282 */
-        "movl 0xc(%ebp), %ebx\n" /* item, done */
-        "movl %ebx, (%esp)\n" /* done */
-        "calll Window_RemoveDynamicFlags\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "jmp .Lf16e76c_0016e8e7\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016eb19:\n"
-        "addl 0x1b8(%ebx), %edx\n" /* line 5130 | enumDvar */
-        "movl %edx, 0x1c8(%ebx)\n" /* enumDvar */
-        "movl 0xc(%ebp), %ebx\n" /* line 60 | item */
-        "addl $0x60, %ebx\n"
-        "movl 0xc(%ebp), %edi\n" /* line 67 | item */
-        "addl $0xf8, %edi\n"
-        "movss lit4_002ed5d8, %xmm0\n" /* line 5136 | 0.5f */
-        "movss 8(%ebx), %xmm1\n" /* enumDvar */
-        "mulss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x68(%ebp)\n" /* w */
-        "movss %xmm0, -0x64(%ebp)\n" /* line 5137 | h */
-        "mulss 0xc(%ebx), %xmm0\n" /* enumDvar */
-        "movss %xmm0, -0x64(%ebp)\n" /* h */
-        "movaps %xmm1, %xmm2\n" /* line 5138 */
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "addss 0x60(%eax), %xmm2\n"
-        "subss 0xf8(%eax), %xmm2\n"
-        "addss 4(%ebx), %xmm0\n" /* line 5139 | enumDvar */
-        "movss %xmm0, -0x6c(%ebp)\n" /* ry */
-        "subss 4(%edi), %xmm0\n"
-        "movss %xmm0, -0x6c(%ebp)\n" /* ry */
-        "movl $0x3d567750, %esi\n" /* line 485 */
-        "movl %esi, (%esp)\n"
-        "movss %xmm2, -0x88(%ebp)\n"
-        "calll sinf\n"
-        "fstps -0x74(%ebp)\n"
-        "movl %esi, (%esp)\n" /* line 486 */
-        "calll cosf\n"
-        "fstps -0x8c(%ebp)\n"
-        "movss -0x8c(%ebp), %xmm3\n"
-        "movl 8(%ebx), %eax\n" /* line 5142 | enumDvar */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 0xc(%ebx), %eax\n" /* enumDvar */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 0x10(%ebx), %eax\n" /* enumDvar */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0x14(%ebx), %eax\n" /* enumDvar */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movss -0x88(%ebp), %xmm2\n" /* line 5143 */
-        "movaps %xmm2, %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "movss -0x6c(%ebp), %xmm1\n" /* ry */
-        "mulss -0x74(%ebp), %xmm1\n"
-        "subss %xmm1, %xmm0\n"
-        "movl 0xc(%ebp), %edx\n" /* item */
-        "addss 0xf8(%edx), %xmm0\n"
-        "subss -0x68(%ebp), %xmm0\n" /* w */
-        "movss %xmm0, -0x40(%ebp)\n" /* newRect */
-        "mulss -0x74(%ebp), %xmm2\n" /* line 5144 */
-        "mulss -0x6c(%ebp), %xmm3\n" /* ry */
-        "movss %xmm3, -0x6c(%ebp)\n" /* ry */
-        "addss %xmm3, %xmm2\n"
-        "addss 4(%edi), %xmm2\n"
-        "subss -0x64(%ebp), %xmm2\n" /* h */
-        "movss %xmm2, -0x3c(%ebp)\n"
-        "leal -0x40(%ebp), %eax\n" /* line 5145 | newRect */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetRectClient\n"
-        /* { scope 3 */
-        "movl 0xc(%ebp), %ecx\n" /* line 355 | item */
-        "movl 0x29c(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf16e76c_0016ef8f\n"
-        "movss (%edx), %xmm2\n" /* line 363 */
-        "movss 4(%edx), %xmm1\n" /* line 364 */
-        "movl 0xd4(%edx), %ebx\n" /* line 366 */
-        "testl %ebx, %ebx\n"
-        "je .Lf16e76c_0016ec5d\n"
-        "movss 0xe0(%edx), %xmm0\n" /* line 368 */
-        "addss %xmm0, %xmm2\n"
-        "addss %xmm0, %xmm1\n" /* line 369 */
-        ".Lf16e76c_0016ec5d:\n"
-        "movl 0x14(%edx), %eax\n" /* line 372 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss %xmm2, 4(%esp)\n"
-        "movl 0xc(%ebp), %ebx\n" /* item */
-        "movl %ebx, (%esp)\n"
-        "calll Item_SetScreenCoords\n"
-        "movl 0xe8(%ebx), %eax\n"
-        "jmp .Lf16e76c_0016e7a6\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ec8d:\n"
-        "jp .Lf16e76c_0016e9e1\n" /* line 5166 */
-        ".Lf16e76c_0016ec93:\n"
-        "movl $1, %ebx\n" /* line 5186 | done */
-        ".Lf16e76c_0016ec98:\n"
-        "movss -0x3c(%ebp), %xmm0\n" /* line 5191 */
-        "movss 4(%edx), %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jne .Lf16e76c_0016ed81\n"
-        "jp .Lf16e76c_0016ed81\n"
-        ".Lf16e76c_0016ecb1:\n"
-        "addl $1, %ebx\n" /* line 5212 | done */
-        ".Lf16e76c_0016ecb4:\n"
-        "movss -0x38(%ebp), %xmm0\n" /* line 5216 */
-        "movss 8(%edx), %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jne .Lf16e76c_0016ed5c\n"
-        "jp .Lf16e76c_0016ed5c\n"
-        ".Lf16e76c_0016eccd:\n"
-        "addl $1, %ebx\n" /* line 5237 | done */
-        ".Lf16e76c_0016ecd0:\n"
-        "movss -0x34(%ebp), %xmm0\n" /* line 5241 */
-        "movss 0xc(%edx), %xmm1\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jne .Lf16e76c_0016ece5\n"
-        "jnp .Lf16e76c_0016e852\n"
-        ".Lf16e76c_0016ece5:\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5247 */
-        "jbe .Lf16e76c_0016e83e\n"
-        "addss 0xc(%ecx), %xmm0\n" /* line 5249 */
-        "movss %xmm0, -0x34(%ebp)\n"
-        "ucomiss %xmm1, %xmm0\n" /* line 5250 */
-        "jbe .Lf16e76c_0016e855\n"
-        "movss %xmm1, -0x34(%ebp)\n" /* line 5252 */
-        "addl $1, %ebx\n" /* line 5253 | done */
-        "jmp .Lf16e76c_0016e855\n"
-        /* } scope */
-        ".Lf16e76c_0016ed0e:\n"
-        "movl 0x2f0(%ecx), %ebx\n" /* line 5312 | done */
-        "movl 0x2c0(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetString\n"
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl 0xc(%ebp), %ebx\n" /* item, done */
-        "movl %eax, 0x20c(%ebx)\n" /* done */
-        "jmp .Lf16e76c_0016e910\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ed3c:\n"
-        "subss (%ecx), %xmm0\n" /* line 5183 */
-        "movss %xmm0, -0x40(%ebp)\n" /* newRect */
-        "movss (%edx), %xmm1\n" /* line 5184 */
-        "ucomiss %xmm0, %xmm1\n"
-        "jbe .Lf16e76c_0016ea00\n"
-        ".Lf16e76c_0016ed52:\n"
-        "movss %xmm1, -0x40(%ebp)\n" /* line 5186 | newRect */
-        "jmp .Lf16e76c_0016ec93\n"
-        ".Lf16e76c_0016ed5c:\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5222 */
-        "jbe .Lf16e76c_0016edb3\n"
-        "addss 8(%ecx), %xmm0\n" /* line 5224 */
-        "movss %xmm0, -0x38(%ebp)\n"
-        "ucomiss %xmm1, %xmm0\n" /* line 5225 */
-        "jbe .Lf16e76c_0016ecd0\n"
-        "movss %xmm1, -0x38(%ebp)\n" /* line 5227 */
-        "addl $1, %ebx\n" /* line 5228 | done */
-        "jmp .Lf16e76c_0016ecd0\n"
-        ".Lf16e76c_0016ed81:\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5197 */
-        "jbe .Lf16e76c_0016edd0\n"
-        "addss 4(%ecx), %xmm0\n" /* line 5199 */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "ucomiss %xmm1, %xmm0\n" /* line 5200 */
-        "jbe .Lf16e76c_0016ecb4\n"
-        "movss %xmm1, -0x3c(%ebp)\n" /* line 5202 */
-        "addl $1, %ebx\n" /* line 5203 | done */
-        "jmp .Lf16e76c_0016ecb4\n"
-        ".Lf16e76c_0016eda6:\n"
-        "movss rect+4, %xmm0\n"
-        "jmp .Lf16e76c_0016ea86\n"
-        ".Lf16e76c_0016edb3:\n"
-        "subss 8(%ecx), %xmm0\n" /* line 5233 */
-        "movss %xmm0, -0x38(%ebp)\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5234 */
-        "jbe .Lf16e76c_0016ecd0\n"
-        "movss %xmm1, -0x38(%ebp)\n" /* line 5236 */
-        "jmp .Lf16e76c_0016eccd\n"
-        ".Lf16e76c_0016edd0:\n"
-        "subss 4(%ecx), %xmm0\n" /* line 5208 */
-        "movss %xmm0, -0x3c(%ebp)\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 5209 */
-        "jbe .Lf16e76c_0016ecb4\n"
-        "movss %xmm1, -0x3c(%ebp)\n" /* line 5211 */
-        "jmp .Lf16e76c_0016ecb1\n"
-        /* } scope */
-        ".Lf16e76c_0016eded:\n"
-        "movl $1, 0xc(%esp)\n" /* line 5297 */
-        "movl $0x9b, 8(%esp)\n"
-        "movl -0x70(%ebp), %ebx\n" /* parent, done */
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Menu_HandleKey\n"
-        "movl $0, 0xc(%esp)\n" /* line 5298 */
-        "movl $0x9b, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %edx\n" /* dc */
-        "movl %edx, (%esp)\n"
-        "calll Menu_HandleKey\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ee33:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 5350 | item, done */
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_TextField_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ee4a:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 5367 | item, done */
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_Bind_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ee61:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 5335 | item, done */
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_OwnerDraw_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ee78:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 5355 | item */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl %ecx, (%esp)\n"
-        "calll Item_ListBox_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ee8f:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 5339 | item */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl %ecx, (%esp)\n"
-        "calll Item_Text_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016eea6:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 2436 | item */
-        "movl 0x2ec(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016efe6\n"
-        "movl %eax, (%esp)\n" /* line 2439 */
-        "calll Dvar_FindVar\n"
-        "movl %eax, %ebx\n" /* enumDvar */
-        "cmpb $6, 6(%eax)\n" /* line 2440 */
-        "je .Lf16e76c_0016effa\n"
-        "movl $str_002ac3c8, %ecx\n" /* "<not an enum dvar>" */
-        /* } scope */
-        ".Lf16e76c_0016eed0:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 4176 | item */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "calll Item_List_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016eee0:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 2378 | item */
-        "movl %edx, (%esp)\n"
-        "calll Item_GetMultiDef\n"
-        "movl %eax, %esi\n"
-        "testl %eax, %eax\n" /* line 2379 */
-        "je .Lf16e76c_0016eff0\n"
-        "movl 0x184(%eax), %eax\n" /* line 2382 */
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016ef9a\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 2384 | item */
-        "movl 0x2c0(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, -0x58(%ebp)\n" /* string */
-        "movl 0x180(%esi), %eax\n" /* line 2385 */
-        "testl %eax, %eax\n"
-        "jg .Lf16e76c_0016ef56\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ef21:\n"
-        "movl $str_002157b8, %ecx\n" /* line 2443 */
-        "jmp .Lf16e76c_0016eed0\n"
-        /* } scope */
-        ".Lf16e76c_0016ef28:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 5358 | item, done */
-        "movl %ebx, 4(%esp)\n" /* done */
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl %eax, (%esp)\n"
-        "calll Item_YesNo_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        ".Lf16e76c_0016ef3f:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 5370 | item */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dc */
-        "movl %ecx, (%esp)\n"
-        "calll Item_Slider_Paint\n"
-        "jmp .Lf16e76c_0016e833\n"
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ef56:\n"
-        "movl %esi, %ebx\n" /* line 2385 */
-        "xorl %edi, %edi\n"
-        ".Lf16e76c_0016ef5a:\n"
-        "movl 0x80(%ebx), %eax\n" /* line 2387 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x58(%ebp), %eax\n" /* string */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016f086\n"
-        "addl $1, %edi\n" /* line 2385 */
-        "addl $4, %ebx\n"
-        "cmpl 0x180(%esi), %edi\n"
-        "jl .Lf16e76c_0016ef5a\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        "movl $str_002157b8, %ecx\n" /* line 2443 */
-        "jmp .Lf16e76c_0016eed0\n"
-        ".Lf16e76c_0016ef8f:\n"
-        "movl 0xe8(%ecx), %eax\n"
-        "jmp .Lf16e76c_0016e7a6\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016ef9a:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 2393 | item */
-        "movl 0x2c0(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x60(%ebp)\n"
-        "cvtsd2ss -0x60(%ebp), %xmm1\n"
-        "movl 0x180(%esi), %ecx\n" /* line 2394 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf16e76c_0016ef21\n"
-        "ucomiss 0x100(%esi), %xmm1\n" /* line 2396 */
-        "jne .Lf16e76c_0016f05d\n"
-        "jp .Lf16e76c_0016f05d\n"
-        "xorl %eax, %eax\n"
-        "movl (%esi, %eax, 4), %ecx\n" /* line 2397 */
-        "jmp .Lf16e76c_0016eed0\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016efe6:\n"
-        "movl $str_002ac3b0, %ecx\n" /* line 2436 */
-        "jmp .Lf16e76c_0016eed0\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016eff0:\n"
-        "movl $str_002ac388, %ecx\n" /* line 2379 */
-        "jmp .Lf16e76c_0016eed0\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016effa:\n"
-        "movl 0x14(%eax), %eax\n" /* line 2443 */
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016ef21\n"
-        /* { scope 3 */
-        "movl 0xc(%ebp), %edx\n" /* line 2410 | item */
-        "movl 0x2ec(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "movl %eax, -0x54(%ebp)\n" /* enumDvar */
-        "cmpb $6, 6(%eax)\n" /* line 2411 */
-        "je .Lf16e76c_0016f02c\n"
-        ".Lf16e76c_0016f01f:\n"
-        "xorl %edi, %edi\n" /* line 2419 */
-        /* } scope */
-        ".Lf16e76c_0016f021:\n"
-        "movl 0x18(%ebx), %eax\n" /* line 2448 | enumDvar */
-        "movl (%eax, %edi), %ecx\n"
-        "jmp .Lf16e76c_0016eed0\n"
-        /* { scope 3 */
-        ".Lf16e76c_0016f02c:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 2414 | item */
-        "movl 0x2c0(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, -0x50(%ebp)\n" /* enumString */
-        "movl %eax, (%esp)\n" /* line 2415 */
-        "calll atoi\n"
-        "testl %eax, %eax\n" /* line 2416 */
-        "js .Lf16e76c_0016f08e\n"
-        "movl -0x54(%ebp), %edx\n" /* enumDvar */
-        "cmpl 0x14(%edx), %eax\n"
-        "jge .Lf16e76c_0016f08e\n"
-        "leal (, %eax, 4), %edi\n"
-        "jmp .Lf16e76c_0016f021\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        ".Lf16e76c_0016f05d:\n"
-        "movl %esi, %edx\n" /* line 2396 */
-        "xorl %eax, %eax\n"
-        ".Lf16e76c_0016f061:\n"
-        "addl $1, %eax\n" /* line 2394 */
-        "cmpl %ecx, %eax\n"
-        "je .Lf16e76c_0016ef21\n"
-        "movss 0x104(%edx), %xmm0\n" /* line 2396 */
-        "addl $4, %edx\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "jne .Lf16e76c_0016f061\n"
-        "jp .Lf16e76c_0016f061\n"
-        "movl (%esi, %eax, 4), %ecx\n" /* line 2397 */
-        "jmp .Lf16e76c_0016eed0\n"
-        ".Lf16e76c_0016f086:\n"
-        "movl (%esi, %edi, 4), %ecx\n" /* line 2388 */
-        "jmp .Lf16e76c_0016eed0\n"
-        /* } scope */
-        /* { scope 2: enumDvar, enumString */
-        /* { scope 3 */
-        ".Lf16e76c_0016f08e:\n"
-        "movl -0x54(%ebp), %eax\n" /* line 2419 | enumDvar */
-        "movl 0x14(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf16e76c_0016f01f\n"
-        "movl $0, -0x4c(%ebp)\n"
-        "xorl %esi, %esi\n"
-        ".Lf16e76c_0016f0a1:\n"
-        "movl %esi, %edi\n" /* line 2416 */
-        "movl -0x54(%ebp), %ecx\n" /* line 2421 | enumDvar */
-        "movl 0x18(%ecx), %eax\n"
-        "movl (%eax, %esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x50(%ebp), %eax\n" /* enumString */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf16e76c_0016f021\n"
-        "addl $1, -0x4c(%ebp)\n" /* line 2419 */
-        "addl $4, %esi\n"
-        "movl -0x4c(%ebp), %ecx\n"
-        "movl -0x54(%ebp), %edx\n" /* enumDvar */
-        "cmpl %ecx, 0x14(%edx)\n"
-        "jg .Lf16e76c_0016f0a1\n"
-        "jmp .Lf16e76c_0016f01f\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_16e76c_0:\n"
-        ".long .Lf16e76c_0016ee8f\n"
-        ".long .Lf16e76c_0016ee8f\n"
-        ".long .Lf16e76c_0016e833\n"
-        ".long .Lf16e76c_0016e833\n"
-        ".long .Lf16e76c_0016ee33\n"
-        ".long .Lf16e76c_0016e833\n"
-        ".long .Lf16e76c_0016ee78\n"
-        ".long .Lf16e76c_0016e833\n"
-        ".long .Lf16e76c_0016ee61\n"
-        ".long .Lf16e76c_0016ee33\n"
-        ".long .Lf16e76c_0016ef3f\n"
-        ".long .Lf16e76c_0016ef28\n"
-        ".long .Lf16e76c_0016eee0\n"
-        ".long .Lf16e76c_0016eea6\n"
-        ".long .Lf16e76c_0016ee4a\n"
-        ".long .Lf16e76c_0016e833\n"
-        ".long .Lf16e76c_0016ee33\n"
-        ".long .Lf16e76c_0016ee33\n"
-        ".long .Lf16e76c_0016ee33\n"
-        ".text\n"
-    );
+    byte *it = (byte *)item;
+    byte *parent = *(byte **)(it + 0x29c);
+    int flags;
+    rectDef_t newRect;
+
+    diag_item_paint_enter(item);
+
+    flags = *(int *)(it + 0xe8);
+
+    /* Orbit animation (flag 0x2000) */
+    if (flags & 0x2000) {
+        int dcTime = *(int *)((byte *)dc + 4);
+        if (dcTime > *(int *)(it + 0x1c8)) {
+            /* Update next trigger time */
+            *(int *)(it + 0x1c8) = dcTime + *(int *)(it + 0x1b8);
+
+            /* Compute half-width/half-height */
+            float w = *(float *)(it + 0x68) * 0.5f;
+            float h = *(float *)(it + 0x6c) * 0.5f;
+
+            /* Relative position from rectClient center to rect center */
+            float rx = *(float *)(it + 0x60) + w - *(float *)(it + 0xf8);
+            float ry = *(float *)(it + 0x64) + h - *(float *)(it + 0xfc);
+
+            /* 3-degree rotation */
+            float angle;
+            *(int *)&angle = 0x3d567750; /* ~3 degrees in radians */
+            float sin_a = sinf(angle);
+            float cos_a = cosf(angle);
+
+            /* Copy w/h/align from rect */
+            newRect.w = *(float *)(it + 0x68);
+            newRect.h = *(float *)(it + 0x6c);
+            newRect.horzAlign = *(int *)(it + 0x70);
+            newRect.vertAlign = *(int *)(it + 0x74);
+
+            /* Rotate and offset: newRect.x = rx*cos - ry*sin + rectClient.x - w */
+            newRect.x = rx * cos_a - ry * sin_a + *(float *)(it + 0xf8) - w;
+            /* newRect.y = rx*sin + ry*cos + rectClient.y - h */
+            newRect.y = rx * sin_a + ry * cos_a + *(float *)(it + 0xfc) - h;
+
+            /* Apply new client rect */
+            ((void (*)(void *, void *))Window_SetRectClient)(item, &newRect);
+
+            /* Update screen coords from parent */
+            byte *p = *(byte **)(it + 0x29c);
+            if (p) {
+                float px = *(float *)p;
+                float py = *(float *)(p + 4);
+                if (*(int *)(p + 0xd4)) {
+                    float borderSize = *(float *)(p + 0xe0);
+                    px += borderSize;
+                    py += borderSize;
+                }
+                ((void (*)(void *, float, float, int, int))Item_SetScreenCoords)(
+                    item, px, py, *(int *)(p + 0x10), *(int *)(p + 0x14));
+            }
+
+            /* Re-read flags and re-check */
+            flags = *(int *)(it + 0xe8);
+        }
+    }
+
+    /* Slide animation (flag 0x80) */
+    if (flags & 0x80) {
+        int dcTime = *(int *)((byte *)dc + 4);
+        if (dcTime > *(int *)(it + 0x1c8)) {
+            /* Update next trigger time */
+            *(int *)(it + 0x1c8) = dcTime + *(int *)(it + 0x1b8);
+
+            /* Target = effects0 rect at 0xf8, step = effects1 rect at 0x158 */
+            float *target = (float *)(it + 0xf8);
+            float *step = (float *)(it + 0x158);
+            int done = 0;
+
+            /* Copy current rect to newRect */
+            newRect = *(rectDef_t *)(it + 0x60);
+
+            /* Slide x toward target */
+            if (newRect.x == target[0]) {
+                done++;
+            } else if (target[0] > newRect.x) {
+                newRect.x += step[0];
+                if (newRect.x > target[0]) {
+                    newRect.x = target[0];
+                    done++;
+                }
+            } else {
+                newRect.x -= step[0];
+                if (newRect.x < target[0]) {
+                    newRect.x = target[0];
+                    done++;
+                }
+            }
+
+            /* Slide y toward target */
+            if (newRect.y == target[1]) {
+                done++;
+            } else if (target[1] > newRect.y) {
+                newRect.y += step[1];
+                if (newRect.y > target[1]) {
+                    newRect.y = target[1];
+                    done++;
+                }
+            } else {
+                newRect.y -= step[1];
+                if (newRect.y < target[1]) {
+                    newRect.y = target[1];
+                    done++;
+                }
+            }
+
+            /* Slide w toward target */
+            if (newRect.w == target[2]) {
+                done++;
+            } else if (target[2] > newRect.w) {
+                newRect.w += step[2];
+                if (newRect.w > target[2]) {
+                    newRect.w = target[2];
+                    done++;
+                }
+            } else {
+                newRect.w -= step[2];
+                if (newRect.w < target[2]) {
+                    newRect.w = target[2];
+                    done++;
+                }
+            }
+
+            /* Slide h toward target */
+            if (newRect.h == target[3]) {
+                done++;
+            } else if (target[3] > newRect.h) {
+                newRect.h += step[3];
+                if (newRect.h > target[3]) {
+                    newRect.h = target[3];
+                    done++;
+                }
+            } else {
+                newRect.h -= step[3];
+                if (newRect.h < target[3]) {
+                    newRect.h = target[3];
+                    done++;
+                }
+            }
+
+            /* Apply new client rect */
+            ((void (*)(void *, void *))Window_SetRectClient)(item, &newRect);
+
+            /* Update screen coords from parent */
+            byte *p = *(byte **)(it + 0x29c);
+            if (p) {
+                float px = *(float *)p;
+                float py = *(float *)(p + 4);
+                if (*(int *)(p + 0xd4)) {
+                    float borderSize = *(float *)(p + 0xe0);
+                    px += borderSize;
+                    py += borderSize;
+                }
+                ((void (*)(void *, float, float, int, int))Item_SetScreenCoords)(
+                    item, px, py, *(int *)(p + 0x10), *(int *)(p + 0x14));
+            }
+
+            /* If all 4 coords reached target, remove slide flag */
+            if (done == 4) {
+                Window_RemoveDynamicFlags(item, 0x80);
+            }
+        }
+    }
+
+    /* Owner draw visibility check */
+    {
+        int ownerDraw = *(int *)(it + 0xdc);
+        if (ownerDraw) {
+            if (!UI_OwnerDrawVisible(ownerDraw)) {
+                Window_RemoveDynamicFlags(item, 4);
+            } else {
+                Window_AddDynamicFlags(item, 4);
+            }
+        }
+    }
+
+    /* Dvar show/hide check */
+    if (*(byte *)(it + 0x2d0) & 0xc) {
+        if (!Item_EnableShowViaDvar(item, 4)) {
+            /* Check for auto-action: visible + focused → simulate enter key */
+            flags = *(int *)(it + 0xe8);
+            if ((flags & 4) && (flags & 2)) {
+                Menu_HandleKey(dc, (menuDef_t *)parent, 0x9b, 1);
+                Menu_HandleKey(dc, (menuDef_t *)parent, 0x9b, 0);
+            }
+            diag_item_paint_skip(item, 0);
+            return;
+        }
+    }
+
+    /* Check visible flag */
+    if (!(*(byte *)(it + 0xe8) & 4)) {
+        diag_item_paint_skip(item, 0);
+        return;
+    }
+
+    /* BorderStyle 6: update material from dvar */
+    if (*(int *)(it + 0xd0) == 6) {
+        const char *dvarStr = Dvar_GetString(*(const char **)(it + 0x2c0));
+        *(int *)(it + 0x20c) = (int)CL_RegisterMaterialNoMip(dvarStr);
+    }
+
+    /* Main paint */
+    diag_item_paint_draw(item);
+
+    Window_Paint(dc, (void *)item,
+        *(float *)(parent + 0x238), *(float *)(parent + 0x23c),
+        *(float *)(parent + 0x234), (float)*(int *)(parent + 0x230));
+
+    /* Debug mode: draw textRect outline */
+    if (debugMode) {
+        float adjusted_y;
+        memset(&rect, 0, sizeof(rect));
+        rect.x = *(float *)(it + 0x210);
+        rect.y = *(float *)(it + 0x214);
+        rect.w = *(float *)(it + 0x218);
+        rect.h = *(float *)(it + 0x21c);
+        rect.horzAlign = *(int *)(it + 0x220);
+        rect.vertAlign = *(int *)(it + 0x224);
+
+        if (rect.w != 0.0f) {
+            adjusted_y = rect.y - rect.h;
+        } else {
+            adjusted_y = rect.y;
+        }
+
+        {
+            float color[4] = {0.0f, 1.0f, 0.0f, 1.0f};
+            UI_DrawRect(rect.x, adjusted_y, rect.w, rect.h, rect.horzAlign, rect.vertAlign, 1.0f, color);
+        }
+    }
+
+    /* Skip type dispatch for borderStyle 6 */
+    if (*(int *)(it + 0xd0) == 6) {
+        diag_item_paint_skip(item, 0);
+        return;
+    }
+
+    /* Type dispatch */
+    {
+        int itemType = *(int *)(it + 0x270);
+        switch (itemType) {
+        case 0: /* text */
+        case 1:
+            Item_Text_Paint(dc, item);
+            break;
+        case 4: /* text field */
+        case 9:
+        case 0x10:
+        case 0x11:
+        case 0x12:
+            Item_TextField_Paint(dc, item);
+            break;
+        case 6: /* list box */
+            Item_ListBox_Paint(dc, item);
+            break;
+        case 8: /* owner draw */
+            Item_OwnerDraw_Paint(dc, item);
+            break;
+        case 0xa: /* slider */
+            Item_Slider_Paint(dc, item);
+            break;
+        case 0xb: /* yes/no */
+            Item_YesNo_Paint(dc, item);
+            break;
+        case 0x0c: /* multi */ {
+            const char *text;
+            multiDef_t *multiDef = Item_GetMultiDef(item);
+            if (!multiDef) {
+                text = str_002ac388; /* "<dvarStrList or dvarFloatList not set>" */
+            } else if (multiDef->strDef) {
+                /* String-based multi: match dvar string value to dvarStr entries */
+                const char *value = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+                int j;
+                text = str_002157b8; /* empty string */
+                for (j = 0; j < multiDef->count; j++) {
+                    if (I_stricmp(value, multiDef->dvarStr[j]) == 0) {
+                        text = multiDef->dvarList[j];
+                        break;
+                    }
+                }
+            } else {
+                /* Float-based multi: match dvar float value to dvarValue entries */
+                const char *value = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+                float fval = (float)atof(value);
+                int j;
+                text = str_002157b8; /* empty string */
+                for (j = 0; j < multiDef->count; j++) {
+                    if (fval == multiDef->dvarValue[j]) {
+                        text = multiDef->dvarList[j];
+                        break;
+                    }
+                }
+            }
+            /* Item_List_Paint uses register calling convention: eax=dc, edx=item, ecx=text */
+            __asm__ __volatile__ (
+                "calll Item_List_Paint\n"
+                :
+                : "a"(dc), "d"(item), "c"(text)
+                : "memory", "xmm0", "xmm1", "xmm2", "xmm3"
+            );
+            break;
+        }
+        case 0x0d: /* enum dvar */ {
+            const char *text;
+            const char *enumDvarName = *(const char **)(it + 0x2ec);
+            if (!enumDvarName) {
+                text = str_002ac3b0; /* "<dvarEnumList not set>" */
+            } else {
+                struct dvar_s *dvar = Dvar_FindVar(enumDvarName);
+                if (*(byte *)((byte *)dvar + 6) != 6) {
+                    /* Not an enum dvar */
+                    text = str_002ac3c8; /* "<not an enum dvar>" */
+                } else if (*(int *)((byte *)dvar + 0x14) == 0) {
+                    /* No enum entries */
+                    text = str_002157b8; /* empty string */
+                } else {
+                    /* Try to match by integer index first */
+                    struct dvar_s *dvar2 = Dvar_FindVar(*(const char **)(it + 0x2ec));
+                    if (*(byte *)((byte *)dvar2 + 6) != 6) {
+                        goto enum_not_found;
+                    }
+                    {
+                        const char *enumString = Dvar_GetVariantString(*(const char **)(it + 0x2c0));
+                        int idx = atoi(enumString);
+                        int enumCount = *(int *)((byte *)dvar2 + 0x14);
+                        if (idx >= 0 && idx < enumCount) {
+                            const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                            text = strings[idx];
+                        } else {
+                            /* Try string match */
+                            int j;
+                            text = str_002157b8;
+                            for (j = 0; j < enumCount; j++) {
+                                const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                                if (I_stricmp(enumString, strings[j]) == 0) {
+                                    text = strings[j];
+                                    goto enum_found;
+                                }
+                            }
+                            enum_not_found:
+                            idx = 0;
+                            {
+                                const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                                text = strings[idx];
+                            }
+                        }
+                    }
+                    enum_found:;
+                }
+            }
+            /* Item_List_Paint uses register calling convention: eax=dc, edx=item, ecx=text */
+            __asm__ __volatile__ (
+                "calll Item_List_Paint\n"
+                :
+                : "a"(dc), "d"(item), "c"(text)
+                : "memory", "xmm0", "xmm1", "xmm2", "xmm3"
+            );
+            break;
+        }
+        case 0x0e: /* bind */
+            Item_Bind_Paint(dc, item);
+            break;
+        default:
+            break;
+        }
+    }
+
+    diag_item_paint_skip(item, 0);
 }
 
 /* Menu_Paint — paint a menu: background, window, items, debug rect */
