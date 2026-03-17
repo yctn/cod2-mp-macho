@@ -4014,7 +4014,7 @@ void CL_Init(void)
     *(int *)(c + 0x179c0c) = 0;
 
     /* Reset connection state */
-    *(int *)(byte *)&clc = 0;
+    *(int *)(byte *)clc = 0;
     *(int *)((byte *)&cls + 280) = 0;
 
     /* Set initialized flag */
