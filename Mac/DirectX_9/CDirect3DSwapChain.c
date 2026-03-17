@@ -1,12 +1,10 @@
-/* ASM dump from: CDirect3DSwapChain.cpp */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CDirect3DSwapChain.cpp */
+/* Clean CDirect3DSwapChain implementation for Linux/Emscripten */
+/* Replaces Mac implementation — no x86 asm, no C++ operator delete */
+/* Original: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CDirect3DSwapChain.cpp */
 
 #include "common_types.h"
 #include "imports.h"
-
-/* Original includes (from N_BINCL debug info):
- *   #include "Mac/DirectX 9/CDirect3DSwapChain.h"
- */
+#include <stdlib.h>
 
 typedef struct {
     void **vtable;
@@ -21,7 +19,6 @@ typedef struct {
 } IDirect3DSurface9VTable;
 
 extern void *vtbl_CDirect3DSwapChain[];
-void __ZdlPv(void *ptr);
 
 static IDirect3DSurface9VTable *CDirect3DSwapChain_GetSurfaceVTable(IDirect3DSurface9 *surface)
 {
@@ -46,9 +43,10 @@ static void CDirect3DSwapChain_Destroy(CDirect3DSwapChainImpl *swapChain)
     }
 }
 
+/* Forward declarations */
 ULONG CDirect3DSwapChain_AddRef(const CDirect3DSwapChain * _this);
-void ZN18CDirect3DSwapChainD1Ev(const CDirect3DSwapChain * _this); /* CDirect3DSwapChain_~CDirect3DSwapChain */
-void ZN18CDirect3DSwapChainD0Ev(const CDirect3DSwapChain * _this); /* CDirect3DSwapChain_~CDirect3DSwapChain */
+void ZN18CDirect3DSwapChainD1Ev(const CDirect3DSwapChain * _this);
+void ZN18CDirect3DSwapChainD0Ev(const CDirect3DSwapChain * _this);
 HRESULT CDirect3DSwapChain_QueryInterface(const CDirect3DSwapChain * _this, const IID *iid, LPVOID *ppvObj);
 ULONG CDirect3DSwapChain_Release(const CDirect3DSwapChain * _this);
 HRESULT CDirect3DSwapChain_GetBackBuffer(const CDirect3DSwapChain * _this, UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 * *ppBackBuffer);
@@ -61,6 +59,8 @@ HRESULT CDirect3DSwapChain_GetDisplayMode(const CDirect3DSwapChain * _this, D3DD
 HRESULT CDirect3DSwapChain_GetDevice(const CDirect3DSwapChain * _this, D3DDEVICE_CREATION_PARAMETERS * (*ppDevice)());
 HRESULT CDirect3DSwapChain_GetPresentParameters(const CDirect3DSwapChain * _this, D3DPRESENT_PARAMETERS *pPresentationParameters);
 
+/* --- IUnknown --- */
+
 ULONG CDirect3DSwapChain_AddRef(const CDirect3DSwapChain * _this)
 {
     CDirect3DSwapChainImpl *swapChain;
@@ -68,17 +68,6 @@ ULONG CDirect3DSwapChain_AddRef(const CDirect3DSwapChain * _this)
     swapChain = (CDirect3DSwapChainImpl *)_this;
     ++swapChain->refCount;
     return swapChain->refCount;
-}
-
-void ZN18CDirect3DSwapChainD1Ev(const CDirect3DSwapChain * _this) /* CDirect3DSwapChain_~CDirect3DSwapChain */
-{
-    CDirect3DSwapChain_Destroy((CDirect3DSwapChainImpl *)_this);
-}
-
-void ZN18CDirect3DSwapChainD0Ev(const CDirect3DSwapChain * _this) /* CDirect3DSwapChain_~CDirect3DSwapChain */
-{
-    CDirect3DSwapChain_Destroy((CDirect3DSwapChainImpl *)_this);
-    __ZdlPv((void *)_this);
 }
 
 HRESULT CDirect3DSwapChain_QueryInterface(const CDirect3DSwapChain * _this, const IID *iid, LPVOID *ppvObj)
@@ -104,6 +93,21 @@ ULONG CDirect3DSwapChain_Release(const CDirect3DSwapChain * _this)
     return refCount;
 }
 
+/* --- Destructors --- */
+
+void ZN18CDirect3DSwapChainD1Ev(const CDirect3DSwapChain * _this)
+{
+    CDirect3DSwapChain_Destroy((CDirect3DSwapChainImpl *)_this);
+}
+
+void ZN18CDirect3DSwapChainD0Ev(const CDirect3DSwapChain * _this)
+{
+    CDirect3DSwapChain_Destroy((CDirect3DSwapChainImpl *)_this);
+    free((void *)_this);
+}
+
+/* --- IDirect3DSwapChain9 --- */
+
 HRESULT CDirect3DSwapChain_GetBackBuffer(const CDirect3DSwapChain * _this, UINT BackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 * *ppBackBuffer)
 {
     CDirect3DSwapChainImpl *swapChain;
@@ -126,6 +130,8 @@ int CDirect3DSwapChain_SetBackBuffer(const CDirect3DSwapChain * _this, const IDi
     return (int)CDirect3DSwapChain_SurfaceAddRef(swapChain->backBuffer);
 }
 
+/* --- Constructor --- */
+
 int CDirect3DSwapChain_CDirect3DSwapChain(const CDirect3DSwapChain * _this)
 {
     CDirect3DSwapChainImpl *swapChain;
@@ -136,6 +142,8 @@ int CDirect3DSwapChain_CDirect3DSwapChain(const CDirect3DSwapChain * _this)
     swapChain->refCount = 1;
     return (int)_this;
 }
+
+/* --- Stub methods --- */
 
 HRESULT CDirect3DSwapChain_Present(const CDirect3DSwapChain * _this, const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion, DWORD dwFlags)
 {

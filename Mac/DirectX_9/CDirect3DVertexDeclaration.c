@@ -1,12 +1,11 @@
-/* ASM dump from: CDirect3DVertexDeclaration.cpp */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CDirect3DVertexDeclaration.cpp */
+/* Clean CDirect3DVertexDeclaration implementation for Linux/Emscripten */
+/* Replaces Mac implementation — no x86 asm, no C++ operator new/delete */
+/* Original: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CDirect3DVertexDeclaration.cpp */
 
 #include "common_types.h"
 #include "imports.h"
-
-/* Original includes (from N_BINCL debug info):
- *   #include "Mac/DirectX 9/CDirect3DVertexDeclaration.h"
- */
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct {
     void **vtable;
@@ -16,9 +15,6 @@ typedef struct {
 } CDirect3DVertexDeclarationImpl;
 
 extern void *vtbl_CDirect3DVertexDeclaration[];
-void *__Znam(unsigned int size);
-void __ZdaPv(void *ptr);
-void __ZdlPv(void *ptr);
 
 static UINT32 CDirect3DVertexDeclaration_TypeToken(const D3DVERTEXELEMENT9 *element, UINT32 *currentOffset)
 {
@@ -78,15 +74,18 @@ static UINT32 CDirect3DVertexDeclaration_UsageRegister(const D3DVERTEXELEMENT9 *
     }
 }
 
+/* Forward declarations */
 ULONG CDirect3DVertexDeclaration_AddRef(const CDirect3DVertexDeclaration * _this);
-void ZN26CDirect3DVertexDeclarationD1Ev(const CDirect3DVertexDeclaration * _this); /* CDirect3DVertexDeclaration_~CDirect3DVertexDeclaration */
-void ZN26CDirect3DVertexDeclarationD0Ev(const CDirect3DVertexDeclaration * _this); /* CDirect3DVertexDeclaration_~CDirect3DVertexDeclaration */
+void ZN26CDirect3DVertexDeclarationD1Ev(const CDirect3DVertexDeclaration * _this);
+void ZN26CDirect3DVertexDeclarationD0Ev(const CDirect3DVertexDeclaration * _this);
 HRESULT CDirect3DVertexDeclaration_QueryInterface(const CDirect3DVertexDeclaration * _this, const IID *iid, HRESULT (*ppvObj)());
 ULONG CDirect3DVertexDeclaration_Release(const CDirect3DVertexDeclaration * _this);
 HRESULT CDirect3DVertexDeclaration_GetDeclaration(const CDirect3DVertexDeclaration * _this, LONG (*pElement)(), UINT *pNumElements);
 int CDirect3DVertexDeclaration_GetShaderDeclaration(const CDirect3DVertexDeclaration * _this, const UINT32 * pTokenStream);
 int CDirect3DVertexDeclaration_CDirect3DVertexDeclaration(const CDirect3DVertexDeclaration * _this, const D3DVERTEXELEMENT9 * pVertexElements);
 HRESULT CDirect3DVertexDeclaration_GetDevice(const CDirect3DVertexDeclaration * _this, IDirect3DDevice9 * *ppDevice);
+
+/* --- IUnknown --- */
 
 ULONG CDirect3DVertexDeclaration_AddRef(const CDirect3DVertexDeclaration * _this)
 {
@@ -95,23 +94,6 @@ ULONG CDirect3DVertexDeclaration_AddRef(const CDirect3DVertexDeclaration * _this
     declaration = (CDirect3DVertexDeclarationImpl *)_this;
     ++declaration->refCount;
     return declaration->refCount;
-}
-
-void ZN26CDirect3DVertexDeclarationD1Ev(const CDirect3DVertexDeclaration * _this) /* CDirect3DVertexDeclaration_~CDirect3DVertexDeclaration */
-{
-    CDirect3DVertexDeclarationImpl *declaration;
-
-    declaration = (CDirect3DVertexDeclarationImpl *)_this;
-    declaration->vtable = vtbl_CDirect3DVertexDeclaration;
-    if (declaration->elements) {
-        __ZdaPv(declaration->elements);
-    }
-}
-
-void ZN26CDirect3DVertexDeclarationD0Ev(const CDirect3DVertexDeclaration * _this) /* CDirect3DVertexDeclaration_~CDirect3DVertexDeclaration */
-{
-    ZN26CDirect3DVertexDeclarationD1Ev(_this);
-    __ZdlPv((void *)_this);
 }
 
 HRESULT CDirect3DVertexDeclaration_QueryInterface(const CDirect3DVertexDeclaration * _this, const IID *iid, HRESULT (*ppvObj)())
@@ -136,6 +118,27 @@ ULONG CDirect3DVertexDeclaration_Release(const CDirect3DVertexDeclaration * _thi
 
     return refCount;
 }
+
+/* --- Destructors --- */
+
+void ZN26CDirect3DVertexDeclarationD1Ev(const CDirect3DVertexDeclaration * _this)
+{
+    CDirect3DVertexDeclarationImpl *declaration;
+
+    declaration = (CDirect3DVertexDeclarationImpl *)_this;
+    declaration->vtable = vtbl_CDirect3DVertexDeclaration;
+    if (declaration->elements) {
+        free(declaration->elements);
+    }
+}
+
+void ZN26CDirect3DVertexDeclarationD0Ev(const CDirect3DVertexDeclaration * _this)
+{
+    ZN26CDirect3DVertexDeclarationD1Ev(_this);
+    free((void *)_this);
+}
+
+/* --- IDirect3DVertexDeclaration9 --- */
 
 HRESULT CDirect3DVertexDeclaration_GetDeclaration(const CDirect3DVertexDeclaration * _this, LONG (*pElement)(), UINT *pNumElements)
 {
@@ -221,6 +224,8 @@ int CDirect3DVertexDeclaration_GetShaderDeclaration(const CDirect3DVertexDeclara
     return 0;
 }
 
+/* --- Constructor --- */
+
 int CDirect3DVertexDeclaration_CDirect3DVertexDeclaration(const CDirect3DVertexDeclaration * _this, const D3DVERTEXELEMENT9 * pVertexElements)
 {
     CDirect3DVertexDeclarationImpl *declaration;
@@ -242,13 +247,15 @@ int CDirect3DVertexDeclaration_CDirect3DVertexDeclaration(const CDirect3DVertexD
     ++count;
 
     declaration->elementCount = count;
-    declaration->elements = (D3DVERTEXELEMENT9 *)__Znam(count * sizeof(D3DVERTEXELEMENT9));
+    declaration->elements = (D3DVERTEXELEMENT9 *)malloc(count * sizeof(D3DVERTEXELEMENT9));
     if (declaration->elements) {
         memcpy(declaration->elements, pVertexElements, count * sizeof(D3DVERTEXELEMENT9));
     }
 
     return 0;
 }
+
+/* --- IDirect3DResource9 stubs --- */
 
 HRESULT CDirect3DVertexDeclaration_GetDevice(const CDirect3DVertexDeclaration * _this, IDirect3DDevice9 * *ppDevice)
 {

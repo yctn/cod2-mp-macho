@@ -1,8 +1,17 @@
-/* ASM dump from: CFence.cpp */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CFence.cpp */
+/* Clean CFence implementation for Linux/Emscripten */
+/* Replaces Mac Apple GL fence extension with no-ops */
+/* Original: /Users/kevin/Development/i5works/COD2/Project/Mac/DirectX 9/CFence.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
+#include <string.h>
+
+/*
+ * On Mac, CFence used glGenFencesAPPLE/glSetFenceAPPLE/glTestFenceAPPLE
+ * for GPU synchronization. On Linux/Emscripten, these are not available
+ * and not needed — all fence operations are no-ops.
+ */
 
 typedef struct {
     GLuint *begin;
@@ -17,92 +26,45 @@ typedef struct {
     UINT32 frameCount;
 } CFenceImpl;
 
-extern CFenceUnusedIdsVector CFence_sUnusedFenceIDs __asm__("__ZN6CFence15sUnusedFenceIDsE"); /* 0x0 */
+/* Global: the original used __asm__ label for the mangled name.
+ * We define it here as a regular C global and provide the mangled alias
+ * via the asm name attribute. */
+CFenceUnusedIdsVector CFence_sUnusedFenceIDs __asm__("__ZN6CFence15sUnusedFenceIDsE") = { NULL, NULL, NULL };
 
-void *__Znam(unsigned int size);
-void __ZdaPv(void *ptr);
-void __ZdlPv(void *ptr);
-
-static void CFence_EnsureUnusedIdCapacity(unsigned int additional)
-{
-    unsigned int size;
-    unsigned int capacity;
-    unsigned int newCapacity;
-    GLuint *newIds;
-
-    size = (unsigned int)(CFence_sUnusedFenceIDs.end - CFence_sUnusedFenceIDs.begin);
-    capacity = (unsigned int)(CFence_sUnusedFenceIDs.capacity - CFence_sUnusedFenceIDs.begin);
-
-    if (capacity - size >= additional) {
-        return;
-    }
-
-    newCapacity = capacity ? capacity : 256;
-    while (newCapacity < size + additional) {
-        newCapacity *= 2;
-    }
-
-    newIds = (GLuint *)__Znam(newCapacity * sizeof(GLuint));
-    if (CFence_sUnusedFenceIDs.begin) {
-        memcpy(newIds, CFence_sUnusedFenceIDs.begin, size * sizeof(GLuint));
-        __ZdaPv(CFence_sUnusedFenceIDs.begin);
-    }
-
-    CFence_sUnusedFenceIDs.begin = newIds;
-    CFence_sUnusedFenceIDs.end = newIds + size;
-    CFence_sUnusedFenceIDs.capacity = newIds + newCapacity;
-}
-
+/* Forward declarations */
 void CFence_CFence(const CFence * _this, const void * Start, UINT32 SizeInBytes, UINT32 FrameCount);
 void CFence_Shutdown(void);
-static void __static_initialization_and_destruction_0(int __initialize_p, int __priority);
-static void GLOBAL__D__ZN6CFence15sUnusedFenceIDsE(void); /* global destructors keyed to CFence_sUnusedFenceIDs */
-static void GLOBAL__I__ZN6CFence15sUnusedFenceIDsE(void); /* global constructors keyed to CFence_sUnusedFenceIDs */
-GLuint *ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(CFenceUnusedIdsVector *vec, GLuint *first, GLuint *last); /* std_vector<unsigned long, std_allocator<unsigned long> >_erase */
+GLuint *ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(CFenceUnusedIdsVector *vec, GLuint *first, GLuint *last);
 
-/* line 19 */
+/* --- CFence constructor (no-op) --- */
+
 void CFence_CFence(const CFence * _this, const void * Start, UINT32 SizeInBytes, UINT32 FrameCount)
 {
     CFenceImpl *fence;
-    unsigned int i;
 
     fence = (CFenceImpl *)_this;
     fence->start = Start;
     fence->sizeInBytes = SizeInBytes;
     fence->frameCount = FrameCount;
-
-    if (CFence_sUnusedFenceIDs.end == CFence_sUnusedFenceIDs.begin) {
-        CFence_EnsureUnusedIdCapacity(256);
-
-        for (i = 0; i < 256; ++i) {
-            GLuint newFenceId;
-
-            glGenFencesAPPLE(1, &newFenceId);
-            *CFence_sUnusedFenceIDs.end++ = newFenceId;
-        }
-    }
-
-    fence->id = *--CFence_sUnusedFenceIDs.end;
-    glSetFenceAPPLE(fence->id);
+    fence->id = 0;
+    /* Original: allocated fence IDs from pool, called glSetFenceAPPLE. No-op on Linux/WASM. */
 }
 
-/* line 79 */
+/* --- CFence shutdown (no-op) --- */
+
 void CFence_Shutdown(void)
 {
-    GLuint *id;
-
-    for (id = CFence_sUnusedFenceIDs.begin; id != CFence_sUnusedFenceIDs.end; ++id) {
-        glDeleteFencesAPPLE(1, id);
-    }
-
+    /* Original: iterated all unused fence IDs calling glDeleteFencesAPPLE, then freed vector.
+     * No-op — no GL fence resources to clean up. */
     if (CFence_sUnusedFenceIDs.begin) {
-        __ZdaPv(CFence_sUnusedFenceIDs.begin);
+        free(CFence_sUnusedFenceIDs.begin);
     }
-
     CFence_sUnusedFenceIDs.begin = NULL;
     CFence_sUnusedFenceIDs.end = NULL;
     CFence_sUnusedFenceIDs.capacity = NULL;
 }
+
+/* --- Global constructors/destructors --- */
 
 static void __static_initialization_and_destruction_0(int __initialize_p, int __priority)
 {
@@ -117,29 +79,27 @@ static void __static_initialization_and_destruction_0(int __initialize_p, int __
         return;
     }
 
-    if (__initialize_p != 0) {
-        return;
-    }
-
-    if (CFence_sUnusedFenceIDs.begin) {
-        __ZdlPv(CFence_sUnusedFenceIDs.begin);
+    if (__initialize_p == 0) {
+        if (CFence_sUnusedFenceIDs.begin) {
+            free(CFence_sUnusedFenceIDs.begin);
+            CFence_sUnusedFenceIDs.begin = NULL;
+        }
     }
 }
 
-/* line 105 */
-void GLOBAL__D__ZN6CFence15sUnusedFenceIDsE(void) /* global destructors keyed to CFence_sUnusedFenceIDs */
+void GLOBAL__D__ZN6CFence15sUnusedFenceIDsE(void)
 {
     __static_initialization_and_destruction_0(0, 0xffff);
 }
 
-/* line 104 */
-void GLOBAL__I__ZN6CFence15sUnusedFenceIDsE(void) /* global constructors keyed to CFence_sUnusedFenceIDs */
+void GLOBAL__I__ZN6CFence15sUnusedFenceIDsE(void)
 {
     __static_initialization_and_destruction_0(1, 0xffff);
 }
 
-/* line 122 */
-GLuint *ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(CFenceUnusedIdsVector *vec, GLuint *first, GLuint *last) /* std_vector<unsigned long, std_allocator<unsigned long> >_erase */
+/* --- std::vector erase (utility used by other code) --- */
+
+GLuint *ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(CFenceUnusedIdsVector *vec, GLuint *first, GLuint *last)
 {
     memmove(first, last, (size_t)((char *)vec->end - (char *)last));
     vec->end -= (last - first);
