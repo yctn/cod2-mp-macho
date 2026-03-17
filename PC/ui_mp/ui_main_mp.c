@@ -853,82 +853,41 @@ static void UI_VerifyLanguage(void)
         Dvar_SetBoolByName("ui_languagechanged", 0);
 }
 
-/* line 5151 */
-__attribute__((naked))
+/* UI_SafeTranslateString — translate string reference, with fallback error handling */
+extern void *imp_loc_warnings;
+extern void *imp_loc_warningsAsErrors;
 const char * UI_SafeTranslateString(const char *reference)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5151 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* reference */
-        /* { scope 1 */
-        "cmpb $0x15, (%ebx)\n" /* line 5156 | reference */
-        "je .Lf14f756_0014f777\n"
-        "movl %ebx, (%esp)\n" /* line 5163 | reference */
-        "calll SEH_StringEd_GetString\n"
-        "testl %eax, %eax\n" /* line 5166 */
-        "je .Lf14f756_0014f77a\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 5188 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f756_0014f777:\n"
-        "addl $1, %ebx\n" /* line 5158 | reference */
-        ".Lf14f756_0014f77a:\n"
-        "movl imp_loc_warnings, %eax\n" /* line 5168 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf14f756_0014f834\n"
-        "movl imp_loc_warningsAsErrors, %eax\n" /* line 5170 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf14f756_0014f822\n"
-        "movl %ebx, 8(%esp)\n" /* line 5171 | reference */
-        "movl $str_002aa0c8, 4(%esp)\n" /* "Could not translate string "%s"" */
-        "movl $6, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf14f756_0014f7b4:\n"
-        "movl $0x4e55315e, errorString\n" /* line 5175 */
-        "movl $0x41434f4c, errorString+4\n"
-        "movl $0x455a494c, errorString+8\n"
-        "movl $0x375e2844, errorString+12\n"
-        "movb $0, errorString+16\n"
-        "movl %ebx, 8(%esp)\n" /* line 5176 | reference */
-        "movl $0x400, 4(%esp)\n"
-        "movl $errorString, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $str_00216b78, 8(%esp)\n" /* line 5177 */
-        "movl $0x400, 4(%esp)\n"
-        "movl $errorString, (%esp)\n"
-        "calll I_strncat\n"
-        "movl $errorString, %eax\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 5188 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14f756_0014f822:\n"
-        "movl %ebx, 4(%esp)\n" /* line 5173 | reference */
-        "movl $str_002aa0e8, (%esp)\n" /* "^3WARNING: Could not translate string "%s"
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf14f756_0014f7b4\n"
-        ".Lf14f756_0014f834:\n"
-        "movl %ebx, 4(%esp)\n" /* line 5181 | reference */
-        "movl $errorString, (%esp)\n"
-        "calll strcpy\n"
-        "movl $errorString, %eax\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 5188 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *ref = reference;
+
+    /* Strip 0x15 prefix if present */
+    if (ref[0] == 0x15)
+        ref++;
+
+    /* Try to translate */
+    const char *translated = SEH_StringEd_GetString(ref);
+    if (translated)
+        return translated;
+
+    /* Translation failed — check warning settings */
+    byte *locWarn = *(byte **)imp_loc_warnings;
+    if (*(byte *)(locWarn + 8)) {
+        byte *locErr = *(byte **)imp_loc_warningsAsErrors;
+        if (*(byte *)(locErr + 8)) {
+            Com_Error(6, "Could not translate string \"%s\"", ref);
+        } else {
+            Com_Printf(0, "^3WARNING: Could not translate string \"%s\"\n", ref);
+        }
+        /* Build error string: "^1UNLOCALIZED(^7" + ref + "^1)^7" */
+        strcpy(errorString, "^1UNLOCALIZED(^7");
+        I_strncat(errorString, ref, 0x400);
+        I_strncat(errorString, "^1)^7", 0x400);
+        return errorString;
+    }
+
+    /* No warnings — just return raw reference */
+    strcpy(errorString, ref);
+    return errorString;
 }
 
 /* line 1958 */
@@ -1401,312 +1360,168 @@ int UI_GetServerStatusInfo(serverStatusInfo_t *info)
 }
 
 /* line 3884 */
-__attribute__((naked))
 void UI_FeederSelection(float feederID, int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3884 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movss 8(%ebp), %xmm0\n" /* feederID */
-        "movl 0xc(%ebp), %esi\n" /* index */
-        /* { scope 1 */
-        "ucomiss lit4_002ed608, %xmm0\n" /* line 3895 | 4.0f */
-        "jne .Lf14fee2_0014ff91\n"
-        "jp .Lf14fee2_0014ff91\n"
-        /* { scope 2 */
-        "movl ui_currentNetMap, %eax\n" /* line 3899 */
-        "movl 8(%eax), %eax\n"
-        "leal (%eax, %eax, 4), %edx\n" /* line 3900 */
-        "leal (%eax, %edx, 8), %edx\n"
-        "leal (, %edx, 4), %ebx\n" /* actual */
-        "movl sharedUiInfo+4972(%ebx), %eax\n" /* actual */
-        "testl %eax, %eax\n"
-        "js .Lf14fee2_0014ff39\n"
-        "movl %eax, (%esp)\n" /* line 3902 */
-        "calll CIN_StopCinematic\n"
-        "movl $sharedUiInfo+4960, %eax\n" /* line 3903 */
-        "movl $0xffffffff, 0xc(%ebx, %eax)\n" /* actual */
-        /* { scope 3 */
-        ".Lf14fee2_0014ff39:\n"
-        "movl sharedUiInfo+4944, %ecx\n" /* line 3511 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf14fee2_0014ff68\n"
-        "xorl %edx, %edx\n"
-        "xorl %ebx, %ebx\n"
-        "movl $sharedUiInfo, %eax\n"
-        ".Lf14fee2_0014ff4c:\n"
-        "cmpl $0, 0x13f4(%eax)\n" /* line 3513 */
-        "je .Lf14fee2_0014ff5c\n"
-        "cmpl %esi, %edx\n" /* line 3515 */
-        "je .Lf14fee2_0014ff6a\n"
-        "addl $1, %edx\n" /* line 3522 */
-        ".Lf14fee2_0014ff5c:\n"
-        "addl $1, %ebx\n" /* line 3511 */
-        "addl $0xa4, %eax\n"
-        "cmpl %ecx, %ebx\n"
-        "jne .Lf14fee2_0014ff4c\n"
-        ".Lf14fee2_0014ff68:\n"
-        "xorl %ebx, %ebx\n"
-        /* } scope */
-        ".Lf14fee2_0014ff6a:\n"
-        "movl %ebx, 4(%esp)\n" /* line 3909 | actual */
-        "movl ui_currentMap, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl %ebx, 0xc(%ebp)\n" /* line 3912 | actual, index */
-        "movl ui_currentNetMap, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* feederID */
-        /* } scope */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 3983 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "jmp Dvar_SetInt\n" /* line 3912 */
-        /* } scope */
-        ".Lf14fee2_0014ff91:\n"
-        "ucomiss lit4_002ed62c, %xmm0\n" /* line 3916 | 2.0f */
-        "jne .Lf14fee2_00150047\n"
-        "jp .Lf14fee2_00150047\n"
-        "cmpl $1, sharedUiInfo+108660\n" /* line 3919 */
-        "movl sharedUiInfo+28656, %eax\n"
-        "cmovgel %esi, %eax\n" /* name */
-        "movl %eax, sharedUiInfo+28656\n"
-        "movl $0x400, 0xc(%esp)\n" /* line 3920 */
-        "movl $info, 8(%esp)\n"
-        "movl sharedUiInfo+28660(, %esi, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl ui_netSource, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerInfo\n"
-        "movl $str_002a7124, 4(%esp)\n" /* line 3923 */
-        "movl $info, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa2f0, (%esp)\n" /* "levelshots/%s" */
-        "calll va\n"
-        "movl %eax, %esi\n" /* name */
-        "movzbl (%eax), %eax\n" /* line 3926 */
-        "testb %al, %al\n"
-        "jne .Lf14fee2_00150077\n"
-        ".Lf14fee2_00150010:\n"
-        "movl $3, 4(%esp)\n" /* line 3929 */
-        "movl %esi, (%esp)\n" /* name */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl %eax, sharedUiInfo+108680\n"
-        "movl sharedUiInfo+108684, %eax\n" /* line 3930 */
-        "testl %eax, %eax\n"
-        "js .Lf14fee2_00150040\n"
-        "movl %eax, (%esp)\n" /* line 3932 */
-        "calll CIN_StopCinematic\n"
-        "movl $0xffffffff, sharedUiInfo+108684\n" /* line 3933 */
-        /* } scope */
-        ".Lf14fee2_00150040:\n"
-        "addl $0x10, %esp\n" /* line 3983 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14fee2_00150047:\n"
-        "ucomiss lit4_002ed7fc, %xmm0\n" /* line 3938 | 7.0f */
-        "je .Lf14fee2_00150063\n"
-        ".Lf14fee2_00150050:\n"
-        "ucomiss lit4_002ed728, %xmm0\n" /* line 3955 | 9.0f */
-        "jne .Lf14fee2_00150095\n"
-        "jp .Lf14fee2_00150095\n"
-        "movl %esi, sharedUiInfo+26488\n" /* line 3957 | name */
-        "jmp .Lf14fee2_00150040\n"
-        ".Lf14fee2_00150063:\n"
-        "jp .Lf14fee2_00150050\n" /* line 3938 */
-        ".Lf14fee2_00150065:\n"
-        "movl uiInfo, %eax\n" /* line 3971 */
-        "movl %esi, 0x27c(%eax)\n" /* name */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 3983 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf14fee2_00150077:\n"
-        "movl %esi, %ebx\n" /* line 3926 | name, actual */
-        ".Lf14fee2_00150079:\n"
-        "movsbl %al, %eax\n" /* line 3927 */
-        "movl %eax, (%esp)\n"
-        "calll ___tolower\n"
-        "movb %al, (%ebx)\n" /* actual */
-        "addl $1, %ebx\n" /* line 3926 | actual */
-        "movzbl (%ebx), %eax\n" /* actual */
-        "testb %al, %al\n"
-        "jne .Lf14fee2_00150079\n"
-        "jmp .Lf14fee2_00150010\n"
-        ".Lf14fee2_00150095:\n"
-        "ucomiss lit4_002ed694, %xmm0\n" /* line 3969 | 20.0f */
-        "jne .Lf14fee2_001500a0\n"
-        "jnp .Lf14fee2_00150065\n"
-        ".Lf14fee2_001500a0:\n"
-        "ucomiss lit4_002ed8b8, %xmm0\n" /* line 3976 | 24.0f */
-        "jne .Lf14fee2_00150040\n"
-        "jp .Lf14fee2_00150040\n"
-        "testl %esi, %esi\n" /* line 3978 | name */
-        "js .Lf14fee2_00150040\n"
-        "movl uiInfo, %edx\n"
-        "cmpl 0x280(%edx), %esi\n" /* name */
-        "jge .Lf14fee2_00150040\n"
-        "movl 0x388(%edx, %esi, 4), %eax\n" /* line 3979 */
-        "movl 0x284(%edx, %eax, 4), %eax\n"
-        "movl %eax, 0xc(%ebp)\n" /* index */
-        "movl ui_playerProfileSelected, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* feederID */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 3983 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp Dvar_SetString\n" /* line 3979 */
-    );
+    if (feederID == 4.0f) {
+        /* map selection */
+        int mapVal = *(int *)((byte *)ui_currentNetMap + 8);
+        int offset = mapVal * 164;
+        int cinHandle = *(int *)((byte *)&sharedUiInfo + 4972 + offset);
+        int numMaps, visCount, actual, i;
+
+        if (cinHandle >= 0) {
+            CIN_StopCinematic(cinHandle);
+            *(int *)((byte *)&sharedUiInfo + 4960 + 12 + offset) = -1;
+        }
+
+        /* find actual map index from visible index */
+        numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+        visCount = 0;
+        actual = 0;
+        for (i = 0; i < numMaps; i++) {
+            if (*(int *)((byte *)&sharedUiInfo + i * 0xa4 + 0x13f4) != 0) {
+                if (visCount == index) {
+                    actual = i;
+                    goto map_found;
+                }
+                visCount++;
+            }
+        }
+        actual = 0;
+map_found:
+        Dvar_SetInt(ui_currentMap, actual);
+        Dvar_SetInt(ui_currentNetMap, actual);
+
+    } else if (feederID == 2.0f) {
+        /* server selection */
+        char *name;
+        char *p;
+
+        if (*(int *)((byte *)&sharedUiInfo + 108660) >= 1)
+            *(int *)((byte *)&sharedUiInfo + 28656) = index;
+
+        LAN_GetServerInfo(*(int *)((byte *)ui_netSource + 8),
+                          *(int *)((byte *)&sharedUiInfo + 28660 + index * 4),
+                          info, 0x400);
+        name = (char *)va("levelshots/%s", Info_ValueForKey(info, "mapname"));
+
+        /* lowercase the name */
+        for (p = name; *p; p++)
+            *p = ___tolower((int)(signed char)*p);
+
+        *(int *)((byte *)&sharedUiInfo + 108680) = CL_RegisterMaterialNoMip(name, 3);
+        if (*(int *)((byte *)&sharedUiInfo + 108684) >= 0) {
+            CIN_StopCinematic(*(int *)((byte *)&sharedUiInfo + 108684));
+            *(int *)((byte *)&sharedUiInfo + 108684) = -1;
+        }
+
+    } else if (feederID == 7.0f || feederID == 20.0f) {
+        /* player list selection */
+        *(int *)((byte *)uiInfo + 0x27c) = index;
+
+    } else if (feederID == 9.0f) {
+        *(int *)((byte *)&sharedUiInfo + 26488) = index;
+
+    } else if (feederID == 24.0f) {
+        /* player profile selection */
+        if (index >= 0 && index < *(int *)((byte *)uiInfo + 0x280)) {
+            int sortedIdx = *(int *)((byte *)uiInfo + 0x388 + index * 4);
+            const char *profileName = *(const char **)((byte *)uiInfo + 0x284 + sortedIdx * 4);
+            Dvar_SetString(ui_playerProfileSelected, profileName);
+        }
+    }
 }
 
 /* line 4003 */
-static __attribute__((naked))
-void UI_GetGameTypesList(void)
+static void UI_GetGameTypesList(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4003 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x104c, %esp\n"
-        /* { scope 1 */
-        "movl $0, sharedUiInfo+4424\n" /* line 4017 */
-        "movl $0, sharedUiInfo+4684\n" /* line 4018 */
-        "movl $str_002aa300, (%esp)\n" /* line 4021 */
-        "calll String_Alloc\n"
-        "movl %eax, sharedUiInfo+4688\n"
-        "movl sharedUiInfo+4684, %eax\n" /* line 4022 */
-        "movl $str_002157b8, sharedUiInfo+4692(, %eax, 8)\n"
-        "addl $1, sharedUiInfo+4684\n" /* line 4023 */
-        "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4026 */
-        "leal -0x101c(%ebp), %edi\n" /* szGameTypeList */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $str_002aa304, 4(%esp)\n" /* "gsc" */
-        "movl $str_002aa308, (%esp)\n" /* "maps/mp/gametypes" */
-        "calll FS_GetFileList\n"
-        "movl %eax, -0x1030(%ebp)\n" /* iNumGameTypeScripts */
-        "testl %eax, %eax\n" /* line 4034 */
-        "jg .Lf1500e2_0015018a\n"
-        ".Lf1500e2_00150162:\n"
-        "movl sharedUiInfo+4424, %eax\n" /* line 4093 */
-        "testl %eax, %eax\n"
-        "jne .Lf1500e2_0015017f\n"
-        "movl $str_002aa380, 4(%esp)\n" /* line 4095 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        /* } scope */
-        ".Lf1500e2_0015017f:\n"
-        "addl $0x104c, %esp\n" /* line 4098 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1500e2_0015018a:\n"
-        "movl %edi, %esi\n" /* line 4034 | pszFileName */
-        "movl $0, -0x102c(%ebp)\n" /* i */
-        "jmp .Lf1500e2_001501b1\n"
-        ".Lf1500e2_00150198:\n"
-        "leal 1(%esi, %ebx), %esi\n" /* line 4043 | pszFileName */
-        ".Lf1500e2_0015019c:\n"
-        "addl $1, -0x102c(%ebp)\n" /* line 4034 | i */
-        "movl -0x102c(%ebp), %eax\n" /* i */
-        "cmpl %eax, -0x1030(%ebp)\n" /* iNumGameTypeScripts */
-        "je .Lf1500e2_00150162\n"
-        ".Lf1500e2_001501b1:\n"
-        "cld\n" /* line 4037 */
-        "xorl %eax, %eax\n"
-        "movl $0xffffffff, %ecx\n"
-        "movl %esi, %edi\n" /* pszFileName */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %ebx\n" /* iLen */
-        "cmpb $0x5f, (%esi)\n" /* line 4040 | pszFileName */
-        "je .Lf1500e2_00150198\n"
-        "movl $str_002aa31c, 4(%esp)\n" /* line 4048 */
-        "leal (%esi, %ebx), %eax\n" /* pszFileName */
-        "movl %eax, -0x1034(%ebp)\n"
-        "subl $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1500e2_001501ec\n"
-        "movb $0, -4(%esi, %ebx)\n" /* line 4049 | pszFileName */
-        ".Lf1500e2_001501ec:\n"
-        "movl sharedUiInfo+4424, %ebx\n" /* line 4057 | iLen */
-        "cmpl $0x20, %ebx\n" /* iLen */
-        "je .Lf1500e2_001502cf\n"
-        "cmpl $0x20, sharedUiInfo+4684\n"
-        "je .Lf1500e2_001502cf\n"
-        "movl %esi, (%esp)\n" /* line 4064 | pszFileName */
-        "calll String_Alloc\n"
-        "movl $sharedUiInfo+4416, %edi\n"
-        "movl %eax, 0xc(%edi, %ebx, 8)\n"
-        "movl sharedUiInfo+4424, %eax\n" /* line 4065 */
-        "movl sharedUiInfo+4428(, %eax, 8), %edx\n"
-        "movl sharedUiInfo+4684, %eax\n"
-        "movl %edx, sharedUiInfo+4688(, %eax, 8)\n"
-        "movl %esi, 4(%esp)\n" /* line 4068 | pszFileName */
-        "movl $str_002aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll GetMenuBuffer\n"
-        "movl %eax, -0x1c(%ebp)\n" /* line 4069 | pBuffParse */
-        "testl %eax, %eax\n" /* line 4070 */
-        "je .Lf1500e2_001502a4\n"
-        "leal -0x1c(%ebp), %eax\n" /* line 4077 | pBuffParse */
-        "movl %eax, (%esp)\n"
-        "calll Com_Parse\n"
-        "movl sharedUiInfo+4424, %ebx\n" /* line 4079 | iLen */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl %eax, 0x10(%edi, %ebx, 8)\n"
-        "movl sharedUiInfo+4424, %eax\n" /* line 4080 */
-        "movl sharedUiInfo+4432(, %eax, 8), %ecx\n"
-        "movl sharedUiInfo+4684, %edx\n"
-        "movl $sharedUiInfo+4688, %eax\n"
-        "movl %ecx, 4(%eax, %edx, 8)\n"
-        ".Lf1500e2_00150288:\n"
-        "addl $1, sharedUiInfo+4424\n" /* line 4083 */
-        "addl $1, sharedUiInfo+4684\n" /* line 4084 */
-        "movl -0x1034(%ebp), %esi\n" /* line 4088 | pszFileName */
-        "addl $1, %esi\n" /* pszFileName */
-        "jmp .Lf1500e2_0015019c\n"
-        ".Lf1500e2_001502a4:\n"
-        "movl sharedUiInfo+4424, %edx\n" /* line 4072 */
-        "movl sharedUiInfo+4428(, %edx, 8), %eax\n"
-        "movl %eax, 0x10(%edi, %edx, 8)\n"
-        "movl sharedUiInfo+4424, %eax\n" /* line 4073 */
-        "movl sharedUiInfo+4432(, %eax, 8), %edx\n"
-        "movl sharedUiInfo+4684, %eax\n"
-        "movl %edx, sharedUiInfo+4692(, %eax, 8)\n"
-        "jmp .Lf1500e2_00150288\n"
-        ".Lf1500e2_001502cf:\n"
-        "movl $0x1f, 4(%esp)\n" /* line 4059 */
-        "movl $str_002aa324, (%esp)\n" /* "Too many game type scripts found! Only loading the first %i
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf1500e2_00150162\n"
-    );
+    char szGameTypeList[0x1000];
+    int iNumGameTypeScripts;
+    int i;
+    char *pszFileName;
+    const char *pBuffParse;
+
+    *(int *)((byte *)&sharedUiInfo + 4424) = 0;
+    *(int *)((byte *)&sharedUiInfo + 4684) = 0;
+
+    /* add "All" entry */
+    *(const char **)((byte *)&sharedUiInfo + 4688) = String_Alloc("All");
+    {
+        int idx = *(int *)((byte *)&sharedUiInfo + 4684);
+        *(const char **)((byte *)&sharedUiInfo + 4692 + idx * 8) = str_002157b8;
+    }
+    *(int *)((byte *)&sharedUiInfo + 4684) += 1;
+
+    iNumGameTypeScripts = FS_GetFileList("maps/mp/gametypes", "gsc", 0, szGameTypeList, 0x1000);
+
+    if (iNumGameTypeScripts > 0) {
+        pszFileName = szGameTypeList;
+
+        for (i = 0; i < iNumGameTypeScripts; i++) {
+            int iLen = strlen(pszFileName);
+            char *pszEnd;
+            int numTypes;
+
+            /* skip files starting with _ */
+            if (pszFileName[0] == '_') {
+                pszFileName += iLen + 1;
+                continue;
+            }
+
+            /* strip .gsc extension */
+            pszEnd = pszFileName + iLen;
+            if (I_stricmp(pszEnd - 4, ".gsc") == 0) {
+                pszFileName[iLen - 4] = '\0';
+            }
+
+            numTypes = *(int *)((byte *)&sharedUiInfo + 4424);
+            if (numTypes == 32 || *(int *)((byte *)&sharedUiInfo + 4684) == 32) {
+                Com_Printf("Too many game type scripts found! Only loading the first %i\n", 31);
+                break;
+            }
+
+            /* store game type script name */
+            *(const char **)((byte *)&sharedUiInfo + 4428 + numTypes * 8) = String_Alloc(pszFileName);
+
+            /* copy script name to game type names list */
+            {
+                int gt = *(int *)((byte *)&sharedUiInfo + 4424);
+                const char *scriptName = *(const char **)((byte *)&sharedUiInfo + 4428 + gt * 8);
+                int nameIdx = *(int *)((byte *)&sharedUiInfo + 4684);
+                *(const char **)((byte *)&sharedUiInfo + 4688 + nameIdx * 8) = scriptName;
+            }
+
+            /* parse display name from .txt file */
+            pBuffParse = GetMenuBuffer(va("maps/mp/gametypes/%s.txt", pszFileName));
+            if (pBuffParse) {
+                const char *parsed = Com_Parse(&pBuffParse);
+                int gt2 = *(int *)((byte *)&sharedUiInfo + 4424);
+                *(const char **)((byte *)&sharedUiInfo + 4432 + gt2 * 8) = String_Alloc(parsed);
+                {
+                    const char *displayName = *(const char **)((byte *)&sharedUiInfo + 4432 + *(int *)((byte *)&sharedUiInfo + 4424) * 8);
+                    int nameIdx2 = *(int *)((byte *)&sharedUiInfo + 4684);
+                    *(const char **)((byte *)&sharedUiInfo + 4692 + nameIdx2 * 8) = displayName;
+                }
+            } else {
+                /* no .txt file: copy script name as display name */
+                int gt3 = *(int *)((byte *)&sharedUiInfo + 4424);
+                *(const char **)((byte *)&sharedUiInfo + 4432 + gt3 * 8) = *(const char **)((byte *)&sharedUiInfo + 4428 + gt3 * 8);
+                {
+                    const char *displayName2 = *(const char **)((byte *)&sharedUiInfo + 4432 + *(int *)((byte *)&sharedUiInfo + 4424) * 8);
+                    int nameIdx3 = *(int *)((byte *)&sharedUiInfo + 4684);
+                    *(const char **)((byte *)&sharedUiInfo + 4692 + nameIdx3 * 8) = displayName2;
+                }
+            }
+
+            *(int *)((byte *)&sharedUiInfo + 4424) += 1;
+            *(int *)((byte *)&sharedUiInfo + 4684) += 1;
+            pszFileName = pszEnd + 1;
+        }
+    }
+
+    if (*(int *)((byte *)&sharedUiInfo + 4424) == 0) {
+        Com_Error(0, "\x15No game type scripts found in maps/mp/gametypes folder");
+    }
 }
 
 /* line 4101 */
@@ -2117,107 +1932,38 @@ void UI_Init(void)
 }
 
 /* line 4274 */
-__attribute__((naked))
 void UI_KeyEvent_impl(int key, qboolean down)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4274 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* key */
-        "movl 0xc(%ebp), %edi\n" /* down */
-        /* { scope 1 */
-        "movl uiInfo, %eax\n" /* line 4280 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_Count\n"
-        "testl %eax, %eax\n"
-        "jle .Lf150c50_00150cd6\n"
-        /* { scope 2 */
-        "movl uiInfo, %eax\n" /* line 4282 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetFocused\n"
-        "movl %eax, %ebx\n" /* menu */
-        "testl %eax, %eax\n" /* line 4284 */
-        "je .Lf150c50_00150d0c\n"
-        "movl $str_002a8ef0, (%esp)\n" /* line 4287 */
-        "calll Dvar_GetBool\n"
-        "movl $1, %edx\n" /* line 4288 */
-        "testb %al, %al\n"
-        "cmovel bypassKeyClear, %edx\n"
-        "movl %edx, bypassKeyClear\n"
-        "cmpl $0x1b, %esi\n" /* line 4295 | key */
-        "je .Lf150c50_00150cde\n"
-        ".Lf150c50_00150cac:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 4309 | down */
-        "movl %esi, 8(%esp)\n" /* key */
-        "movl %ebx, 4(%esp)\n" /* menu */
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menu_HandleKey\n"
-        ".Lf150c50_00150cc5:\n"
-        "movl uiInfo, %eax\n" /* line 4312 */
-        "movl %eax, (%esp)\n"
-        "calll Menu_GetFocused\n"
-        "testl %eax, %eax\n" /* line 4313 */
-        "je .Lf150c50_00150d0c\n"
-        /* } scope */
-        /* } scope */
-        ".Lf150c50_00150cd6:\n"
-        "addl $0x1c, %esp\n" /* line 4332 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf150c50_00150cde:\n"
-        "testl %edi, %edi\n" /* line 4295 | down */
-        "je .Lf150c50_00150cac\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_AnyFullScreenVisible\n"
-        "testl %eax, %eax\n"
-        "jne .Lf150c50_00150cac\n"
-        "movl 0x24c(%ebx), %eax\n" /* menu */
-        "testl %eax, %eax\n"
-        "jne .Lf150c50_00150cac\n"
-        "movl uiInfo, %eax\n" /* line 4305 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "jmp .Lf150c50_00150cc5\n"
-        ".Lf150c50_00150d0c:\n"
-        "calll Key_GetCatcher\n" /* line 4317 */
-        "testb $8, %al\n"
-        "je .Lf150c50_00150cd6\n"
-        "calll Key_GetCatcher\n" /* line 4319 */
-        "andl $0xfffffff7, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Key_SetCatcher\n"
-        "movl bypassKeyClear, %ecx\n" /* line 4323 */
-        "testl %ecx, %ecx\n"
-        "je .Lf150c50_00150d53\n"
-        ".Lf150c50_00150d2f:\n"
-        "movl $0, bypassKeyClear\n" /* line 4326 */
-        "movl $0, 0xc(%ebp)\n" /* line 4329 | down */
-        "movl $str_0021663c, 8(%ebp)\n" /* key */
-        /* } scope */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 4332 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "jmp Dvar_SetIntByName\n" /* line 4329 */
-        ".Lf150c50_00150d53:\n"
-        "calll Key_ClearStates\n" /* line 4324 */
-        "jmp .Lf150c50_00150d2f\n"
-    );
+    void *menu;
+
+    if (Menu_Count(uiInfo) <= 0)
+        return;
+
+    menu = Menu_GetFocused(uiInfo);
+    if (menu) {
+        if (Dvar_GetBool("cl_bypassMouseInput"))
+            bypassKeyClear = 1;
+
+        if (key == 0x1b && down && !Menus_AnyFullScreenVisible(uiInfo) && *(int *)((byte *)menu + 0x24c) == 0) {
+            /* ESC on non-fullscreen menu with no parent */
+            Menus_CloseAll(uiInfo);
+        } else {
+            Menu_HandleKey(uiInfo, menu, key, down);
+        }
+
+        if (Menu_GetFocused(uiInfo))
+            return;
+    }
+
+    /* no focused menu */
+    if (!(Key_GetCatcher() & 8))
+        return;
+
+    Key_SetCatcher(Key_GetCatcher() & ~8);
+    if (!bypassKeyClear)
+        Key_ClearStates();
+    bypassKeyClear = 0;
+    Dvar_SetIntByName("cl_paused", 0);
 }
 
 void UI_KeyEvent(int key, qboolean down)
@@ -2635,148 +2381,59 @@ qboolean UI_AnyFullScreenMenuVisible(void)
 }
 
 /* line 5232 */
-__attribute__((naked))
 const char * UI_ReplaceConversions(const char *sourceString, ConversionArguments *arguments)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5232 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        /* { scope 1 */
-        "movl $str_00216c3c, 4(%esp)\n" /* line 5244 */
-        "movl 8(%ebp), %eax\n" /* sourceString */
-        "movl %eax, (%esp)\n"
-        "calll strstr\n"
-        "testl %eax, %eax\n"
-        "je .Lf151340_001514f6\n"
-        "cld\n" /* line 5250 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl 8(%ebp), %edi\n" /* sourceString */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, -0x428(%ebp)\n" /* sourceStringLength */
-        "movl $0x400, 8(%esp)\n" /* line 5254 */
-        "movl $0, 4(%esp)\n"
-        "leal -0x418(%ebp), %edx\n" /* outputString */
-        "movl %edx, (%esp)\n"
-        "calll memset\n"
-        "movl -0x428(%ebp), %eax\n" /* line 5258 | sourceStringLength */
-        "testl %eax, %eax\n"
-        "jg .Lf151340_001513c3\n"
-        ".Lf151340_001513a7:\n"
-        "leal -0x418(%ebp), %ecx\n" /* line 5289 | outputString */
-        "movl %ecx, (%esp)\n"
-        "calll va\n"
-        "movl %eax, 8(%ebp)\n" /* sourceString */
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 5290 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf151340_001513c3:\n"
-        "movl $0, -0x420(%ebp)\n" /* line 5258 | outputStringCounter */
-        "movl $0, -0x424(%ebp)\n" /* index */
-        "movl 8(%ebp), %ebx\n" /* line 5260 | sourceString, argStringIndex */
-        "addl -0x424(%ebp), %ebx\n" /* index, argStringIndex */
-        "movl $2, %ecx\n"
-        "cld\n"
-        "movl %ebx, %esi\n" /* argStringIndex */
-        "movl $str_00216c3c, %edi\n" /* "&&" */
-        "repe cmpsb %es:(%edi), (%esi)\n"
-        "movl $0, %eax\n"
-        "je .Lf151340_00151400\n"
-        "movzbl -1(%esi), %eax\n"
-        "movzbl -1(%edi), %ecx\n"
-        "subl %ecx, %eax\n"
-        ".Lf151340_00151400:\n"
-        "testl %eax, %eax\n"
-        "jne .Lf151340_001514d4\n"
-        ".Lf151340_00151408:\n"
-        "movl 8(%ebp), %ecx\n" /* sourceString */
-        "movl -0x424(%ebp), %edi\n" /* index */
-        "movsbl 2(%ecx, %edi), %edx\n" /* _c */
-        /* { scope 2 */
-        "cmpl $0xff, %edx\n" /* line 231 */
-        "ja .Lf151340_001514d4\n"
-        "movl __DefaultRuneLocale, %eax\n"
-        "testb $4, 0x35(%eax, %edx, 4)\n"
-        "je .Lf151340_001514d4\n"
-        /* } scope */
-        "subl $0x31, %edx\n" /* line 5264 */
-        "movl %edx, -0x41c(%ebp)\n" /* argIndex */
-        "movl 0xc(%ebp), %eax\n" /* line 5272 | arguments */
-        "movl 4(%eax, %edx, 4), %esi\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %esi, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "testl %ecx, %ecx\n" /* line 5273 */
-        "jle .Lf151340_0015148a\n"
-        "leal -0x418(%ebp), %edx\n" /* outputString */
-        "addl -0x420(%ebp), %edx\n" /* outputStringCounter */
-        "xorl %ebx, %ebx\n" /* argStringIndex */
-        "jmp .Lf151340_00151473\n"
-        ".Lf151340_00151466:\n"
-        "movl -0x41c(%ebp), %edi\n" /* argIndex */
-        "movl 0xc(%ebp), %eax\n" /* arguments */
-        "movl 4(%eax, %edi, 4), %esi\n"
-        ".Lf151340_00151473:\n"
-        "movzbl (%ebx, %esi), %eax\n" /* line 5275 | argStringIndex */
-        "movb %al, (%edx)\n"
-        "addl $1, -0x420(%ebp)\n" /* line 5276 | outputStringCounter */
-        "addl $1, %ebx\n" /* line 5273 | argStringIndex */
-        "addl $1, %edx\n"
-        "cmpl %ebx, %ecx\n" /* argStringIndex */
-        "jne .Lf151340_00151466\n"
-        ".Lf151340_0015148a:\n"
-        "addl $3, -0x424(%ebp)\n" /* line 5279 | index */
-        ".Lf151340_00151491:\n"
-        "movl -0x424(%ebp), %edx\n" /* line 5258 | index */
-        "cmpl %edx, -0x428(%ebp)\n" /* sourceStringLength */
-        "jle .Lf151340_001513a7\n"
-        "movl 8(%ebp), %ebx\n" /* line 5260 | sourceString, argStringIndex */
-        "addl -0x424(%ebp), %ebx\n" /* index, argStringIndex */
-        "movl $2, %ecx\n"
-        "cld\n"
-        "movl %ebx, %esi\n" /* argStringIndex */
-        "movl $str_00216c3c, %edi\n" /* "&&" */
-        "repe cmpsb %es:(%edi), (%esi)\n"
-        "movl $0, %eax\n"
-        "je .Lf151340_001514cc\n"
-        "movzbl -1(%esi), %eax\n"
-        "movzbl -1(%edi), %ecx\n"
-        "subl %ecx, %eax\n"
-        ".Lf151340_001514cc:\n"
-        "testl %eax, %eax\n"
-        "je .Lf151340_00151408\n"
-        ".Lf151340_001514d4:\n"
-        "movzbl (%ebx), %eax\n" /* line 5283 | argStringIndex */
-        "movl -0x420(%ebp), %edi\n" /* outputStringCounter */
-        "movb %al, -0x418(%ebp, %edi)\n"
-        "addl $1, %edi\n" /* line 5284 */
-        "movl %edi, -0x420(%ebp)\n" /* outputStringCounter */
-        "addl $1, -0x424(%ebp)\n" /* line 5285 | index */
-        "jmp .Lf151340_00151491\n"
-        ".Lf151340_001514f6:\n"
-        "movl 8(%ebp), %eax\n" /* sourceString */
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 5290 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char outputString[0x400];
+    int sourceStringLength;
+    int index;
+    int outputStringCounter;
+
+    /* if no "&&" in source, return as-is */
+    if (!strstr(sourceString, "&&"))
+        return sourceString;
+
+    sourceStringLength = strlen(sourceString);
+    memset(outputString, 0, 0x400);
+
+    if (sourceStringLength <= 0)
+        return va(outputString);
+
+    outputStringCounter = 0;
+    index = 0;
+
+    while (index < sourceStringLength) {
+        /* check for "&&" at current position */
+        if (sourceString[index] == '&' && sourceString[index + 1] == '&') {
+            /* check if next char is a digit */
+            unsigned int c = (unsigned char)sourceString[index + 2];
+            {
+                /* BSD ctype digit check via __DefaultRuneLocale */
+                extern void *__DefaultRuneLocale;
+                unsigned int *rt = (unsigned int *)__DefaultRuneLocale;
+                if (c <= 0xff && (rt[13 + c] & 4)) {
+                    /* found &&N pattern */
+                    int argIndex = c - '1';
+                    const char *argStr = arguments->args[argIndex];
+                    int argLen = strlen(argStr);
+                    int j;
+
+                    for (j = 0; j < argLen; j++) {
+                        outputString[outputStringCounter] = argStr[j];
+                        outputStringCounter++;
+                    }
+                    index += 3;
+                    continue;
+                }
+            }
+        }
+
+        /* not a conversion, copy character */
+        outputString[outputStringCounter] = sourceString[index];
+        outputStringCounter++;
+        index++;
+    }
+
+    return va(outputString);
 }
 
 /* UI_ReplaceConversionString — build convArgs with 1 replacement string, call UI_ReplaceConversions */
@@ -2814,229 +2471,90 @@ void UI_CloseFocusedMenu(void)
 }
 
 /* line 3812 */
-__attribute__((naked))
 void UI_OverrideCursorPos(rectDef_t (*item)[16])
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3812 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* item */
-        "movss 0x2d8(%edi), %xmm0\n" /* line 3815 | item */
-        "ucomiss lit4_002ed608, %xmm0\n" /* 4.0f */
-        "jne .Lf1515b8_00151625\n"
-        "jp .Lf1515b8_00151625\n"
-        /* { scope 1 */
-        "movl ui_currentNetMap, %eax\n" /* line 3819 */
-        "movl 8(%eax), %esi\n" /* testMapIndex */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl sharedUiInfo+4944, %ebx\n" /* line 3536 */
-        "testl %ebx, %ebx\n"
-        "jle .Lf1515b8_0015160f\n"
-        "xorl %ecx, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf1515b8_001515f2:\n"
-        "cmpl $0, 0x13f4(%edx)\n" /* line 3538 */
-        "je .Lf1515b8_00151602\n"
-        "cmpl %esi, %eax\n" /* line 3540 */
-        "je .Lf1515b8_00151611\n"
-        "addl $1, %ecx\n" /* line 3546 */
-        ".Lf1515b8_00151602:\n"
-        "addl $1, %eax\n" /* line 3536 */
-        "addl $0xa4, %edx\n"
-        "cmpl %eax, %ebx\n"
-        "jne .Lf1515b8_001515f2\n"
-        ".Lf1515b8_0015160f:\n"
-        "xorl %ecx, %ecx\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1515b8_00151611:\n"
-        "movl %ecx, 4(%esp)\n" /* line 3821 */
-        "movl %edi, (%esp)\n" /* item */
-        "calll Item_SetCursorPos\n"
-        /* } scope */
-        ".Lf1515b8_0015161d:\n"
-        "addl $0x1c, %esp\n" /* line 3881 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1515b8_00151625:\n"
-        "ucomiss lit4_002ed62c, %xmm0\n" /* line 3840 | 2.0f */
-        "jne .Lf1515b8_0015161d\n"
-        "jp .Lf1515b8_0015161d\n"
-        /* { scope 1 */
-        "movl 0x2ec(%edi), %esi\n" /* line 3846 | item, listPtr */
-        "movl 0x10(%esi), %eax\n" /* line 3848 | listPtr */
-        "testl %eax, %eax\n"
-        "je .Lf1515b8_001516ca\n"
-        "movl sharedUiInfo+28656, %edx\n" /* line 3863 */
-        "testl %edx, %edx\n"
-        "js .Lf1515b8_0015161d\n"
-        "movl 0x2dc(%edi), %eax\n" /* line 3866 | item */
-        "cmpl (%esi), %eax\n" /* listPtr */
-        "jl .Lf1515b8_0015161d\n"
-        "cmpl 0x10(%esi), %eax\n" /* listPtr */
-        "jg .Lf1515b8_0015161d\n"
-        "movl %edx, %ebx\n" /* line 3869 | delta */
-        "subl %eax, %ebx\n" /* delta */
-        "movl %ebx, %eax\n" /* line 3870 | delta */
-        "addl (%esi), %eax\n" /* listPtr */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetStartPos\n"
-        "movl %ebx, %eax\n" /* line 3871 | delta */
-        "addl 0x10(%esi), %eax\n" /* listPtr */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetEndPos\n"
-        "addl 0x24(%esi), %ebx\n" /* line 3872 | listPtr, delta */
-        "movl %ebx, 4(%esp)\n" /* delta */
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetCursorPos\n"
-        "movl sharedUiInfo+28656, %eax\n" /* line 3873 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* item */
-        "calll Item_SetCursorPos\n"
-        "movl %edi, (%esp)\n" /* line 3875 | item */
-        "calll Item_ListBox_MaxScroll\n"
-        "cmpl (%esi), %eax\n" /* line 3876 | listPtr */
-        "jl .Lf1515b8_001516e2\n"
-        ".Lf1515b8_001516ab:\n"
-        "movl (%esi), %eax\n" /* line 3878 | listPtr */
-        "testl %eax, %eax\n"
-        "jns .Lf1515b8_0015161d\n"
-        "movl $0, 4(%esp)\n" /* line 3879 */
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetStartPos\n"
-        "jmp .Lf1515b8_0015161d\n"
-        ".Lf1515b8_001516ca:\n"
-        "movl $0xffffffff, 4(%esp)\n" /* line 3850 */
-        "movl %edi, (%esp)\n" /* item */
-        "calll Item_SetCursorPos\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 3881 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1515b8_001516e2:\n"
-        "movl %eax, 4(%esp)\n" /* line 3877 */
-        "movl %esi, (%esp)\n" /* listPtr */
-        "calll ListBox_SetStartPos\n"
-        "jmp .Lf1515b8_001516ab\n"
-    );
+    byte *itemPtr = (byte *)item;
+    float feederFloat = *(float *)(itemPtr + 0x2d8);
+
+    if (feederFloat == 4.0f) {
+        int testMapIndex = *(int *)((byte *)ui_currentNetMap + 8);
+        int numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+        int visCount = 0;
+        int i;
+
+        for (i = 0; i < numMaps; i++) {
+            if (*(int *)((byte *)&sharedUiInfo + i * 0xa4 + 0x13f4) != 0) {
+                if (i == testMapIndex)
+                    goto found;
+                visCount++;
+            }
+        }
+        visCount = 0;
+found:
+        Item_SetCursorPos(item, visCount);
+    } else if (feederFloat == 2.0f) {
+        byte *listPtr = *(byte **)(itemPtr + 0x2ec);
+        int endPos = *(int *)(listPtr + 0x10);
+
+        if (endPos == 0) {
+            Item_SetCursorPos(item, -1);
+        } else {
+            int serverIndex = *(int *)((byte *)&sharedUiInfo + 28656);
+            int cursorField = *(int *)(itemPtr + 0x2dc);
+            int startPos_val = *(int *)listPtr;
+            int delta;
+            int maxScroll;
+
+            if (serverIndex < 0)
+                return;
+            if (cursorField < startPos_val)
+                return;
+            if (cursorField > endPos)
+                return;
+
+            delta = serverIndex - cursorField;
+            ListBox_SetStartPos(listPtr, delta + startPos_val);
+            ListBox_SetEndPos(listPtr, delta + endPos);
+            ListBox_SetCursorPos(listPtr, delta + *(int *)(listPtr + 0x24));
+            Item_SetCursorPos(item, *(int *)((byte *)&sharedUiInfo + 28656));
+
+            maxScroll = Item_ListBox_MaxScroll(item);
+            if (maxScroll < *(int *)listPtr) {
+                ListBox_SetStartPos(listPtr, maxScroll);
+            }
+            if (*(int *)listPtr < 0) {
+                ListBox_SetStartPos(listPtr, 0);
+            }
+        }
+    }
 }
 
 /* line 1030 */
-__attribute__((naked))
 Bool UI_DrawRecordLevel(rectDef_t *rect)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1030 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %esi\n" /* rect */
-        /* { scope 1 */
-        "calll Voice_GetVoiceLevel\n" /* line 1036 */
-        "fstps -0xc(%ebp)\n"
-        "movss -0xc(%ebp), %xmm0\n"
-        "pxor %xmm2, %xmm2\n" /* line 1037 */
-        "ucomiss %xmm2, %xmm0\n"
-        "jbe .Lf1516f0_0015177d\n"
-        "movaps %xmm0, %xmm1\n" /* line 1039 */
-        "mulss 8(%esi), %xmm1\n" /* rect */
-        "movss lit4_002ed608, %xmm3\n" /* 4.0f */
-        "subss %xmm3, %xmm1\n"
-        "ucomiss %xmm2, %xmm1\n" /* line 1041 */
-        "jbe .Lf1516f0_0015177d\n"
-        "movl imp_colorWhite, %eax\n" /* line 1042 */
-        "movl %eax, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movss 0xc(%esi), %xmm0\n" /* rect */
-        "subss %xmm3, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss %xmm1, 8(%esp)\n"
-        "movss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss 4(%esi), %xmm1\n" /* rect */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 4(%esp)\n"
-        "addss (%esi), %xmm0\n" /* rect */
-        "movss %xmm0, (%esp)\n"
-        "calll UI_FillRect\n"
-        ".Lf1516f0_0015177d:\n"
-        "movl imp_colorWhite, %ebx\n" /* line 1046 */
-        "movl %ebx, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0x3f800000, 0xc(%esp)\n"
-        "movl 8(%esi), %eax\n" /* rect */
-        "movl %eax, 8(%esp)\n"
-        "movl 4(%esi), %eax\n" /* rect */
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* rect */
-        "movl %eax, (%esp)\n"
-        "calll UI_FillRect\n"
-        "movl %ebx, 0x18(%esp)\n" /* line 1047 */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0x3f800000, 0xc(%esp)\n"
-        "movl 8(%esi), %eax\n" /* rect */
-        "movl %eax, 8(%esp)\n"
-        "movss 4(%esi), %xmm0\n" /* rect */
-        "addss 0xc(%esi), %xmm0\n" /* rect */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* rect */
-        "movl %eax, (%esp)\n"
-        "calll UI_FillRect\n"
-        "movl %ebx, 0x18(%esp)\n" /* line 1048 */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movss 0xc(%esi), %xmm0\n" /* rect */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movss 4(%esi), %xmm0\n" /* rect */
-        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* rect */
-        "movl %eax, (%esp)\n"
-        "calll UI_FillRect\n"
-        "movl %ebx, 0x18(%esp)\n" /* line 1049 */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movss 0xc(%esi), %xmm0\n" /* rect */
-        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl $0x3f800000, 8(%esp)\n"
-        "movss 4(%esi), %xmm0\n" /* rect */
-        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, 4(%esp)\n"
-        "movss (%esi), %xmm0\n" /* rect */
-        "addss 8(%esi), %xmm0\n" /* rect */
-        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, (%esp)\n"
-        "calll UI_FillRect\n"
-        /* } scope */
-        "movl $1, %eax\n" /* line 1051 */
-        "addl $0x30, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float voiceLevel;
+    const vec_t *white;
+
+    voiceLevel = Voice_GetVoiceLevel();
+
+    if (voiceLevel > 0.0f) {
+        float barWidth = voiceLevel * rect->w - 4.0f;
+        if (barWidth > 0.0f) {
+            UI_FillRect(rect->x + 2.0f, rect->y + 2.0f, barWidth, rect->h - 4.0f, 0, 0, (const vec_t *)imp_colorWhite);
+        }
+    }
+
+    white = (const vec_t *)imp_colorWhite;
+    /* top */
+    UI_FillRect(rect->x, rect->y, rect->w, 1.0f, 0, 0, white);
+    /* bottom */
+    UI_FillRect(rect->x, rect->y + rect->h - 1.0f, rect->w, 1.0f, 0, 0, white);
+    /* left */
+    UI_FillRect(rect->x, rect->y + 1.0f, 1.0f, rect->h - 2.0f, 0, 0, white);
+    /* right */
+    UI_FillRect(rect->x + rect->w - 1.0f, rect->y + 1.0f, 1.0f, rect->h - 2.0f, 0, 0, white);
+
+    return 1;
 }
 
 /* line 3786 */
@@ -4922,139 +4440,57 @@ void UI_DrawRect(float x, float y, float width, float height, int horzAlign, int
 }
 
 /* line 829 */
-__attribute__((naked))
 int UI_OwnerDrawWidth(int ownerDraw, FontHandle font, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 829 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* ownerDraw */
-        "movl 0xc(%ebp), %esi\n" /* font */
-        /* { scope 1: actualScale */
-        "cmpl $0xdc, %eax\n" /* line 833 */
-        "je .Lf153106_001531b0\n"
-        "jle .Lf153106_0015318a\n"
-        "cmpl $0xf7, %eax\n"
-        "je .Lf153106_0015326b\n"
-        "cmpl $0xfa, %eax\n"
-        "je .Lf153106_00153252\n"
-        "cmpl $0xde, %eax\n"
-        "jne .Lf153106_00153238\n"
-        "xorl %eax, %eax\n" /* line 857 */
-        "cmpl $2, ui_serverFilterType\n"
-        "cmovbl ui_serverFilterType, %eax\n"
-        "movl %eax, ui_serverFilterType\n"
-        "movl serverFilters(, %eax, 8), %eax\n" /* line 859 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa8dc, (%esp)\n" /* "EXE_SERVERFILTER%s" */
-        "calll va\n"
-        "movl $0, 8(%esp)\n"
-        "movl $str_002aa8f0, 4(%esp)\n" /* "server filter" */
-        "movl %eax, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_0015318a:\n"
-        "cmpl $0x32, %eax\n" /* line 833 */
-        "je .Lf153106_00153292\n"
-        "cmpl $0xcd, %eax\n"
-        "je .Lf153106_00153241\n"
-        "cmpl $0x27, %eax\n"
-        "jne .Lf153106_00153238\n"
-        "calll CG_GameTypeString\n" /* line 836 */
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_001531b0:\n"
-        "movl ui_netSource, %edx\n" /* line 849 */
-        "movl 8(%edx), %eax\n"
-        "cmpl sharedUiInfo+4684, %eax\n"
-        "jg .Lf153106_0015329e\n"
-        ".Lf153106_001531c5:\n"
-        "movl netSources(, %eax, 4), %eax\n" /* line 851 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa8bc, (%esp)\n" /* "EXE_NETSOURCE%s" */
-        "calll va\n"
-        "movl $0, 8(%esp)\n"
-        "movl $str_002aa8d0, 4(%esp)\n" /* "net source" */
-        "movl %eax, (%esp)\n"
-        "calll SEH_LocalizeTextMessage\n"
-        "movl %eax, %ebx\n" /* s */
-        ".Lf153106_001531f6:\n"
-        "testl %ebx, %ebx\n" /* line 879 | s */
-        "je .Lf153106_00153238\n"
-        /* { scope 2 */
-        "movss 0x10(%ebp), %xmm0\n" /* line 379 | scale */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll CL_NormalizedTextScale\n"
-        "fstps -0xc(%ebp)\n" /* actualScale */
-        "movl %esi, 8(%esp)\n" /* line 380 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_TextWidth\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss -0xc(%ebp), %xmm0\n" /* actualScale */
-        "cvttss2si %xmm0, %eax\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 884 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: actualScale */
-        ".Lf153106_00153238:\n"
-        "xorl %eax, %eax\n" /* line 879 */
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 884 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: actualScale */
-        ".Lf153106_00153241:\n"
-        "movl ui_gametype, %eax\n" /* line 845 */
-        "movl 8(%eax), %eax\n"
-        "movl sharedUiInfo+4432(, %eax, 8), %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_00153252:\n"
-        "calll Display_KeyBindPending\n" /* line 864 */
-        "testl %eax, %eax\n"
-        "jne .Lf153106_001532bc\n"
-        "movl $str_002aa90c, (%esp)\n" /* line 870 */
-        "calll UI_SafeTranslateString\n"
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_0015326b:\n"
-        "movl ui_netSource, %eax\n" /* line 875 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002aa7b0, (%esp)\n" /* "ui_lastServerRefresh_%i" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_00153292:\n"
-        "calll CG_GetKillerText\n" /* line 840 */
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-        ".Lf153106_0015329e:\n"
-        "movl $0, 4(%esp)\n" /* line 850 */
-        "movl %edx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl ui_netSource, %edx\n"
-        "movl 8(%edx), %eax\n"
-        "jmp .Lf153106_001531c5\n"
-        ".Lf153106_001532bc:\n"
-        "movl $str_002aa900, (%esp)\n" /* line 866 */
-        "calll UI_SafeTranslateString\n"
-        "movl %eax, %ebx\n" /* s */
-        "jmp .Lf153106_001531f6\n"
-    );
+    const char *s = NULL;
+
+    switch (ownerDraw) {
+    case 0x27: /* 39: game type */
+        s = CG_GameTypeString();
+        break;
+    case 0x32: /* 50: killer text */
+        s = CG_GetKillerText();
+        break;
+    case 0xcd: /* 205: game type name */
+        s = *(const char **)((byte *)&sharedUiInfo + 4432 + *(int *)((byte *)ui_gametype + 8) * 8);
+        break;
+    case 0xdc: { /* 220: net source */
+        int netSrcVal = *(int *)((byte *)ui_netSource + 8);
+        if (netSrcVal > *(int *)((byte *)&sharedUiInfo + 4684)) {
+            Dvar_SetInt(ui_netSource, 0);
+            netSrcVal = *(int *)((byte *)ui_netSource + 8);
+        }
+        s = SEH_LocalizeTextMessage(va("EXE_NETSOURCE\x14%s", netSources[netSrcVal]), "net source", 0);
+        break;
+    }
+    case 0xde: { /* 222: server filter */
+        int filterType = 0;
+        if ((unsigned int)ui_serverFilterType < 2)
+            filterType = ui_serverFilterType;
+        ui_serverFilterType = filterType;
+        s = SEH_LocalizeTextMessage(va("EXE_SERVERFILTER\x14%s", serverFilters[filterType].description), "server filter", 0);
+        break;
+    }
+    case 0xf7: /* 247: last server refresh */
+        s = Dvar_GetVariantString(va("ui_lastServerRefresh_%i", *(int *)((byte *)ui_netSource + 8)));
+        break;
+    case 0xfa: /* 250: key bind pending */
+        if (Display_KeyBindPending())
+            s = UI_SafeTranslateString("EXE_KEYWAIT");
+        else
+            s = UI_SafeTranslateString("EXE_KEYCHANGE");
+        break;
+    default:
+        return 0;
+    }
+
+    if (!s)
+        return 0;
+
+    {
+        float actualScale = CL_NormalizedTextScale(font, scale);
+        return (int)((float)CL_TextWidth(s, 0, font) * actualScale);
+    }
 }
 
 /* line 1190 */
@@ -6152,83 +5588,90 @@ void UI_BuildFindPlayerList(void)
 }
 
 /* line 3388 */
+static void UI_BuildServerStatus_impl(int force)
+{
+    int serverStatusVisible = *(int *)((byte *)uiInfo + 0x10a4);
+
+    if (serverStatusVisible)
+        return;
+
+    if (force) {
+        /* force: reset feeder selection and clear server status */
+        Menu_SetFeederSelection(uiInfo, 0, 0xd, 0, 0);
+        *(int *)((byte *)&sharedUiInfo + 113128) = 0;
+        LAN_GetServerStatus(0, 0, 0);
+    } else {
+        int nextRefresh = *(int *)((byte *)&sharedUiInfo + 113132);
+        if (nextRefresh == 0)
+            return;
+        if (nextRefresh > *(int *)((byte *)uiInfo + 4))
+            return;
+    }
+
+    /* inline server count update (shared with UI_FeederCount) */
+    {
+        int serverCount = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8));
+        if (serverCount != *(int *)((byte *)&sharedUiInfo + 108664)) {
+            *(int *)((byte *)&sharedUiInfo + 108664) = serverCount;
+            if (*(int *)((byte *)&sharedUiInfo + 108660) != 0) {
+                *(int *)((byte *)&sharedUiInfo + 28656) = -1;
+                UI_BuildServerDisplayList(1);
+            }
+        }
+    }
+
+    {
+        int selectedServer = *(int *)((byte *)&sharedUiInfo + 28656);
+        int numServers = *(int *)((byte *)&sharedUiInfo + 108660);
+
+        if (selectedServer < 0)
+            return;
+        if (selectedServer > numServers)
+            return;
+        if (numServers == 0)
+            return;
+
+        /* call UI_GetServerStatusInfo with register args: eax=serverAddress, edx=info */
+        {
+            int result;
+            byte *serverAddress = (byte *)&sharedUiInfo + 109736;
+            byte *statusInfo = (byte *)&sharedUiInfo + 109800;
+            __asm__ __volatile__ (
+                "movl %1, %%edx\n"
+                "movl %2, %%eax\n"
+                "calll UI_GetServerStatusInfo\n"
+                "movl %%eax, %0\n"
+                : "=r"(result)
+                : "r"(statusInfo), "r"(serverAddress)
+                : "eax", "ecx", "edx", "memory"
+            );
+            if (result) {
+                /* success: clear refresh timer and display info */
+                *(int *)((byte *)&sharedUiInfo + 113132) = 0;
+                __asm__ __volatile__ (
+                    "xorl %%edx, %%edx\n"
+                    "movl %0, %%eax\n"
+                    "calll UI_GetServerStatusInfo\n"
+                    :
+                    : "r"(serverAddress)
+                    : "eax", "ecx", "edx", "memory"
+                );
+            } else {
+                /* failed: set retry timer */
+                *(int *)((byte *)&sharedUiInfo + 113132) = *(int *)((byte *)uiInfo + 4) + 500;
+            }
+        }
+    }
+}
+
 static __attribute__((naked))
 void UI_BuildServerStatus(void)
 {
+    /* trampoline: eax = force parameter */
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3388 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl uiInfo, %edx\n" /* line 3391 */
-        "movl 0x10a4(%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf154210_00154279\n"
-        "testl %eax, %eax\n" /* line 3396 | force */
-        "jne .Lf154210_0015427b\n"
-        "movl sharedUiInfo+113132, %eax\n" /* line 3398 | force */
-        "testl %eax, %eax\n" /* force */
-        "je .Lf154210_00154279\n"
-        "cmpl 4(%edx), %eax\n" /* force */
-        "jg .Lf154210_00154279\n"
-        ".Lf154210_00154238:\n"
-        "movl ui_netSource, %eax\n" /* line 2016 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "cmpl sharedUiInfo+108664, %eax\n" /* line 2017 */
-        "je .Lf154210_00154262\n"
-        "movl %eax, sharedUiInfo+108664\n" /* line 2019 */
-        "movl sharedUiInfo+108660, %eax\n" /* line 2020 */
-        "testl %eax, %eax\n"
-        "jne .Lf154210_001542f5\n"
-        ".Lf154210_00154262:\n"
-        "movl sharedUiInfo+28656, %edx\n" /* line 3415 */
-        "testl %edx, %edx\n"
-        "js .Lf154210_00154279\n"
-        "movl sharedUiInfo+108660, %eax\n" /* force */
-        "cmpl %eax, %edx\n" /* force */
-        "jg .Lf154210_00154279\n"
-        "testl %eax, %eax\n" /* force */
-        "jne .Lf154210_001542ce\n"
-        ".Lf154210_00154279:\n"
-        "leave\n" /* line 3430 */
-        "retl\n"
-        ".Lf154210_0015427b:\n"
-        "movl $0, 0x10(%esp)\n" /* line 3405 */
-        "movl $0, 0xc(%esp)\n"
-        "movl $0xd, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Menu_SetFeederSelection\n"
-        "movl $0, sharedUiInfo+113128\n" /* line 3406 */
-        "movl $0, 8(%esp)\n" /* line 3409 */
-        "movl $0, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll LAN_GetServerStatus\n"
-        "jmp .Lf154210_00154238\n"
-        ".Lf154210_001542ce:\n"
-        "movl $sharedUiInfo+109800, %edx\n" /* line 3420 */
-        "movl $sharedUiInfo+109736, %eax\n" /* force */
-        "calll UI_GetServerStatusInfo\n"
-        "testl %eax, %eax\n" /* force */
-        "jne .Lf154210_00154310\n"
-        "movl uiInfo, %eax\n" /* line 3428 | force */
-        "movl 4(%eax), %eax\n" /* force */
-        "addl $0x1f4, %eax\n" /* force */
-        "movl %eax, sharedUiInfo+113132\n" /* force */
-        "leave\n" /* line 3430 */
-        "retl\n"
-        ".Lf154210_001542f5:\n"
-        "movl $0xffffffff, sharedUiInfo+28656\n" /* line 2022 */
-        "movl $1, (%esp)\n" /* line 2023 */
-        "calll UI_BuildServerDisplayList\n"
-        "jmp .Lf154210_00154262\n"
-        ".Lf154210_00154310:\n"
-        "movl $0, sharedUiInfo+113132\n" /* line 3422 */
-        "xorl %edx, %edx\n" /* line 3423 */
-        "movl $sharedUiInfo+109736, %eax\n" /* force */
-        "calll UI_GetServerStatusInfo\n"
-        "leave\n" /* line 3430 */
+        "pushl %eax\n"
+        "calll UI_BuildServerStatus_impl\n"
+        "addl $4, %esp\n"
         "retl\n"
     );
 }
@@ -8257,130 +7700,54 @@ void UI_RunMenuScript(const char * *args)
 }
 
 /* line 3438 */
-__attribute__((naked))
 int UI_FeederCount(float feederID)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3438 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movss 8(%ebp), %xmm0\n" /* feederID */
-        "ucomiss lit4_002ed608, %xmm0\n" /* line 3441 | 4.0f */
-        "jne .Lf156490_00156504\n"
-        "jp .Lf156490_00156504\n"
-        "movl ui_netGameType, %eax\n" /* line 2634 */
-        "movl 8(%eax), %esi\n"
-        "movl sharedUiInfo+4944, %edx\n" /* line 2636 */
-        "testl %edx, %edx\n"
-        "jle .Lf156490_0015651f\n"
-        "xorl %edi, %edi\n"
-        "xorl %ebx, %ebx\n"
-        "movl $sharedUiInfo, %edx\n"
-        ".Lf156490_001564c4:\n"
-        "movl $0, 0x13f4(%edx)\n" /* line 2638 */
-        "movl 0x1368(%edx), %eax\n" /* line 2639 */
-        "movl %esi, %ecx\n"
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "je .Lf156490_001564e9\n"
-        "addl $1, %ebx\n" /* line 2641 */
-        "movl $1, 0x13f4(%edx)\n" /* line 2642 */
-        ".Lf156490_001564e9:\n"
-        "addl $1, %edi\n" /* line 2636 */
-        "addl $0xa4, %edx\n"
-        "cmpl %edi, sharedUiInfo+4944\n"
-        "jg .Lf156490_001564c4\n"
-        "movl %ebx, %eax\n" /* line 3501 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf156490_00156504:\n"
-        "ucomiss lit4_002ed728, %xmm0\n" /* line 3443 | 9.0f */
-        "jne .Lf156490_0015652b\n"
-        "jp .Lf156490_0015652b\n"
-        "movl sharedUiInfo+26484, %ebx\n" /* line 3444 */
-        "movl %ebx, %eax\n" /* line 3501 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf156490_0015651f:\n"
-        "xorl %ebx, %ebx\n" /* line 3497 */
-        ".Lf156490_00156521:\n"
-        "movl %ebx, %eax\n" /* line 3501 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf156490_0015652b:\n"
-        "ucomiss lit4_002ed62c, %xmm0\n" /* line 3446 | 2.0f */
-        "je .Lf156490_00156547\n"
-        ".Lf156490_00156534:\n"
-        "ucomiss lit4_002ed8c0, %xmm0\n" /* line 3452 | 13.0f */
-        "jne .Lf156490_00156577\n"
-        "jp .Lf156490_00156577\n"
-        "movl sharedUiInfo+113128, %ebx\n" /* line 3453 */
-        "jmp .Lf156490_00156521\n"
-        ".Lf156490_00156547:\n"
-        "jp .Lf156490_00156534\n" /* line 3446 */
-        "movl ui_netSource, %eax\n" /* line 2016 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll LAN_GetServerCount\n"
-        "cmpl sharedUiInfo+108664, %eax\n" /* line 2017 */
-        "je .Lf156490_0015656f\n"
-        "movl %eax, sharedUiInfo+108664\n" /* line 2019 */
-        "movl sharedUiInfo+108660, %eax\n" /* line 2020 */
-        "testl %eax, %eax\n"
-        "jne .Lf156490_001565c4\n"
-        ".Lf156490_0015656f:\n"
-        "movl sharedUiInfo+108660, %ebx\n" /* line 3449 */
-        "jmp .Lf156490_00156521\n"
-        ".Lf156490_00156577:\n"
-        "ucomiss lit4_002ed7fc, %xmm0\n" /* line 3455 | 7.0f */
-        "je .Lf156490_001565a6\n"
-        ".Lf156490_00156580:\n"
-        "ucomiss lit4_002ed694, %xmm0\n" /* line 3486 | 20.0f */
-        "jne .Lf156490_0015658b\n"
-        "jnp .Lf156490_001565a8\n"
-        ".Lf156490_0015658b:\n"
-        "ucomiss lit4_002ed8b8, %xmm0\n" /* line 3497 | 24.0f */
-        "jp .Lf156490_0015651f\n"
-        "jne .Lf156490_0015651f\n"
-        "movl uiInfo, %eax\n" /* line 3498 */
-        "movl 0x280(%eax), %ebx\n"
-        "jmp .Lf156490_00156521\n"
-        ".Lf156490_001565a6:\n"
-        "jp .Lf156490_00156580\n" /* line 3455 */
-        ".Lf156490_001565a8:\n"
-        "movl uiInfo, %edx\n" /* line 3488 */
-        "movl 4(%edx), %eax\n"
-        "cmpl 0x278(%edx), %eax\n"
-        "jg .Lf156490_001565dc\n"
-        ".Lf156490_001565b9:\n"
-        "movl sharedUiInfo+68, %ebx\n" /* line 3493 */
-        "jmp .Lf156490_00156521\n"
-        ".Lf156490_001565c4:\n"
-        "movl $0xffffffff, sharedUiInfo+28656\n" /* line 2022 */
-        "movl $1, (%esp)\n" /* line 2023 */
-        "calll UI_BuildServerDisplayList\n"
-        "jmp .Lf156490_0015656f\n"
-        ".Lf156490_001565dc:\n"
-        "addl $0xbb8, %eax\n" /* line 3490 */
-        "movl %eax, 0x278(%edx)\n"
-        "calll UI_BuildPlayerList\n" /* line 3491 */
-        "jmp .Lf156490_001565b9\n"
-    );
+    if (feederID == 4.0f) {
+        /* map list: filter by game type bitmask */
+        int gameType = *(int *)((byte *)ui_netGameType + 8);
+        int numMaps = *(int *)((byte *)&sharedUiInfo + 4944);
+        int count = 0;
+        int i;
+
+        if (numMaps <= 0)
+            return 0;
+
+        for (i = 0; i < numMaps; i++) {
+            byte *entry = (byte *)&sharedUiInfo + i * 0xa4;
+            *(int *)(entry + 0x13f4) = 0;
+            if ((*(int *)(entry + 0x1368) >> gameType) & 1) {
+                count++;
+                *(int *)(entry + 0x13f4) = 1;
+            }
+        }
+        return count;
+    } else if (feederID == 9.0f) {
+        return *(int *)((byte *)&sharedUiInfo + 26484);
+    } else if (feederID == 2.0f) {
+        /* server list count */
+        int serverCount = LAN_GetServerCount(*(int *)((byte *)ui_netSource + 8));
+        if (serverCount != *(int *)((byte *)&sharedUiInfo + 108664)) {
+            *(int *)((byte *)&sharedUiInfo + 108664) = serverCount;
+            if (*(int *)((byte *)&sharedUiInfo + 108660) != 0) {
+                *(int *)((byte *)&sharedUiInfo + 28656) = -1;
+                UI_BuildServerDisplayList(1);
+            }
+        }
+        return *(int *)((byte *)&sharedUiInfo + 108660);
+    } else if (feederID == 13.0f) {
+        return *(int *)((byte *)&sharedUiInfo + 113128);
+    } else if (feederID == 7.0f || feederID == 20.0f) {
+        /* player list count */
+        int curTime = *(int *)((byte *)uiInfo + 4);
+        if (curTime > *(int *)((byte *)uiInfo + 0x278)) {
+            *(int *)((byte *)uiInfo + 0x278) = curTime + 3000;
+            UI_BuildPlayerList();
+        }
+        return *(int *)((byte *)&sharedUiInfo + 68);
+    } else if (feederID == 24.0f) {
+        return *(int *)((byte *)uiInfo + 0x280);
+    }
+    return 0;
 }
 
 /* line 4714 */
