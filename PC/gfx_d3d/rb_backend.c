@@ -323,9 +323,13 @@ void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis);
 void RB_AdaptiveGpuSyncWait(void);
 void RB_AdaptiveGpuSyncTarget(void);
 static void RB_EndBenchmarkGpu_impl(void *time);
+#ifndef __EMSCRIPTEN__
 static void RB_EndBenchmarkGpu(void);
+#endif
 static void RB_BeginBenchmarkGpu_impl(void *time);
+#ifndef __EMSCRIPTEN__
 static void RB_BeginBenchmarkGpu(void);
+#endif
 void RB_Set3D(void);
 static void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState);
 static void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState);
@@ -350,13 +354,17 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
 static float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType);
 void RB_DrawStretchPic(const Material *material, float x, float y, float w, float h, float s0, float t0, float s1, float t1, D3DCOLOR color, GfxPrimStatsTarget statsTarget);
 static void RB_StretchPicCmd(GfxRenderCommandExecState *execState);
+#ifndef __EMSCRIPTEN__
 static float RB_BenchmarkRepeatedCalls(float width, float height);
+#endif
 void RB_ExecuteRenderCommands(const void *data);
 void RB_DrawFullScreenColoredQuad(const Material *material, float s0, float t0, float s1, float t1, D3DCOLOR color);
 static void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState);
 static void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState);
 static void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState);
+#ifndef __EMSCRIPTEN__
 static void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, float xScale, float yScale, const GfxColor color, int style, int cursorPos, int cursor);
+#endif
 static void RB_DrawTextCmd(GfxRenderCommandExecState *execState);
 static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState);
 static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState);
@@ -794,7 +802,11 @@ void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis)
 static inline unsigned int rdtsc_lo(void)
 {
     unsigned int lo;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ ("rdtsc" : "=a"(lo) : : "edx");
+#else
+    lo = 0;
+#endif
     return lo;
 }
 
@@ -937,6 +949,7 @@ static void RB_EndBenchmarkGpu(void *time)
 static __attribute__((naked))
 void RB_EndBenchmarkGpu(void)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -946,6 +959,9 @@ void RB_EndBenchmarkGpu(void)
         "popl %ebp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -1014,6 +1030,7 @@ static void RB_BeginBenchmarkGpu(void *time)
 static __attribute__((naked))
 void RB_BeginBenchmarkGpu(void)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -1023,6 +1040,9 @@ void RB_BeginBenchmarkGpu(void)
         "popl %ebp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -4283,6 +4303,7 @@ static __attribute__((naked))
 float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType)
 {
     (void)material; (void)techType;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -4293,6 +4314,9 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "popl %ebp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -4554,6 +4578,7 @@ static float RB_BenchmarkRepeatedCalls(const Material *material, int iterationCo
 static __attribute__((naked))
 float RB_BenchmarkRepeatedCalls(float width, float height)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "subl $16, %esp\n"
         "movss %xmm1, 12(%esp)\n"
@@ -4564,6 +4589,9 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
         "addl $16, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -4896,7 +4924,11 @@ post_render:
         }
         {
             unsigned int startTsc;
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ ("rdtsc" : "=a"(startTsc) : : "edx");
+#else
+    startTsc = 0;
+#endif
             dx = (char *)imp_dx;
             while (*(byte *)(dx + 0x2d68)) {
                 qboolean finished = glTestFenceAPPLE(g_FenceID) != 0;
@@ -4905,7 +4937,11 @@ post_render:
                 if (finished) { *(byte *)(dx + 0x2d68) = 0; break; }
                 {
                     unsigned int now;
+#ifndef __EMSCRIPTEN__
                     __asm__ __volatile__ ("rdtsc" : "=a"(now) : : "edx");
+#else
+    now = 0;
+#endif
                     if ((int)(now - startTsc) > *(int *)(dx + 0x2d60))
                         break;
                 }
@@ -4913,7 +4949,11 @@ post_render:
             }
             {
                 unsigned int endTsc;
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ ("rdtsc" : "=a"(endTsc) : : "edx");
+#else
+    endTsc = 0;
+#endif
                 int elapsed = (int)(endTsc - startTsc);
                 int scaled = (elapsed * 3 + 3) / 4;
                 if (elapsed <= -1) scaled = (elapsed * 3 + 3) / 4;
@@ -6048,6 +6088,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
 {
     (void)text; (void)maxChars; (void)font; (void)xScale; (void)yScale;
     (void)color; (void)style; (void)cursorPos; (void)cursor;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -6069,6 +6110,9 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "popl %ebp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -6096,6 +6140,7 @@ static void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
     /* Call RB_DrawTextWithCursor with custom register convention:
      * eax=text, edx=maxChars, ecx=font, xmm0=x, xmm1=y, xmm2=xScale, xmm3=yScale,
      * stack: style, color, cursorPos, cursor */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movss %[xScale], %%xmm2\n"
         "movss %[yScale], %%xmm3\n"
@@ -6114,6 +6159,9 @@ static void RB_DrawTextCmd(GfxRenderCommandExecState *execState)
           [cursorPos]"m"(cursorPos), [cursor]"m"(cursor)
         : "memory", "xmm0", "xmm1", "xmm2", "xmm3"
     );
+#else
+    /* x86 asm not available */
+#endif
 
     /* Advance command pointer */
     const byte *cmdBytes = (const byte *)execState->cmd;
@@ -6193,7 +6241,11 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
             else {
                 float sqrtf_approx;
                 totalBlur = blurVal * blurVal + blurRadius * blurRadius;
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(sqrtf_approx) : "x"(totalBlur));
+#else
+    sqrtf_approx = 0;
+#endif
                 totalBlur = sqrtf_approx;
             }
 

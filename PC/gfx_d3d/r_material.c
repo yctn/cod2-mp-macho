@@ -22,6 +22,7 @@ extern const stream_dest_info_t s_streamDestInfo[]; /* s_streamDestInfo — defi
 
 /* s_builtInMaterials + RB_RenderCommandTable must be contiguous in memory.
    Material_Init loops from s_builtInMaterials to RB_RenderCommandTable. */
+#ifndef __EMSCRIPTEN__
 __asm__(
     ".section .data\n"
     ".globl s_builtInMaterials\n"
@@ -60,6 +61,7 @@ __asm__(
     "s_builtInMaterials_end:\n"
     ".previous\n"
 );
+#endif
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);

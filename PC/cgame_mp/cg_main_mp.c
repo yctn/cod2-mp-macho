@@ -31,8 +31,12 @@ extern void XAnimFreeTree(struct XAnimTree_s *tree, void *Free);
 extern int BG_GetNumWeapons(void);
 extern void AxisCopy(vec3_t *in, vec3_t *out);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
+#ifndef __EMSCRIPTEN__
 extern void *memcpy(void *dest, const void *src, unsigned int n);
+#endif
+#ifndef __EMSCRIPTEN__
 extern void *memset(void *s, int c, unsigned int n);
+#endif
 extern void CL_TrackStatistics(trStatistics_t *pStats);
 extern void SND_FadeAllSounds(float volume, int fadetime);
 extern void Mantle_ShutdownAnims(void);

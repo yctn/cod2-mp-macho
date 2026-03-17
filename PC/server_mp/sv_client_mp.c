@@ -12,10 +12,18 @@ extern void Com_DPrintf(const char *fmt, ...);
 extern const char *SV_Cmd_Argv(int arg);
 extern int atoi(const char *s);
 
+#ifndef __EMSCRIPTEN__
 __asm__(".Lsvexec_fmt: .asciz \"[SV_ExecMsg] clServerId=%d svServerId=%d clState=%d\\n\"\n");
+#endif
+#ifndef __EMSCRIPTEN__
 __asm__(".Lsvexec_msgtype_fmt: .asciz \"[SV_ExecMsg] msgType=%d clState=%d\\n\"\n");
+#endif
+#ifndef __EMSCRIPTEN__
 __asm__(".Lsvexec_clicmd_fmt: .asciz \"[SV_ExecMsg] clientCmd seq=%d lastCmd=%d s='%s'\\n\"\n");
+#endif
+#ifndef __EMSCRIPTEN__
 __asm__(".Lsvexec_drop_fmt: .asciz \"[SV_ExecMsg] DROP seq=%d lastCmd=%d\\n\"\n");
+#endif
 static int sv_exec_dbg_count = 0;
 void SV_ExecDbg(const char *fmt, int clSid, int svSid, int clState) {
     if (sv_exec_dbg_count < 20 || (sv_exec_dbg_count % 500 == 0)) {

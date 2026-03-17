@@ -188,7 +188,7 @@ void CL_ParseGamestate(msg_t *msg)
             /* line 666 - configstring */
             i = MSG_ReadShort(msg);
             if (i > 0x7ff) {
-                Com_Error(1, "\x15configstring > MAX_CONFIGSTRINGS");
+                Com_Error(1, "\x15" "configstring > MAX_CONFIGSTRINGS");
             }
 
             /* line 671 */
@@ -213,7 +213,7 @@ void CL_ParseGamestate(msg_t *msg)
             /* line 686 - baseline */
             newnum = MSG_ReadBits(msg, 10);
             if (newnum > 0x3ff) {
-                Com_Error(1, "\x15Baseline number out of range: %i", newnum);
+                Com_Error(1, "\x15" "Baseline number out of range: %i", newnum);
             }
 
             /* line 691 */
@@ -225,7 +225,7 @@ void CL_ParseGamestate(msg_t *msg)
                 newnum);
         } else {
             /* line 697 */
-            Com_Error(1, "\x15CL_ParseGamestate: bad command byte");
+            Com_Error(1, "\x15" "CL_ParseGamestate: bad command byte");
         }
     }
 
@@ -588,7 +588,7 @@ void CL_ParseSnapshot(msg_t *msg)
 
         /* line 175 */
         if (msg->readcount > msg->cursize) {
-            Com_Error(1, "\x15CL_ParsePacketEntities: end of message");
+            Com_Error(1, "\x15" "CL_ParsePacketEntities: end of message");
         }
 
         /* line 180 - copy unchanged old entities before this one */
@@ -725,7 +725,7 @@ void CL_ParseSnapshot(msg_t *msg)
 
         /* line 308 */
         if (msg->readcount > msg->cursize) {
-            Com_Error(1, "\x15CL_ParsePacketClients: end of message");
+            Com_Error(1, "\x15" "CL_ParsePacketClients: end of message");
         }
 
         /* line 313 - copy unchanged old clients before this one */
@@ -1003,7 +1003,7 @@ void CL_ParseServerMessage(msg_t *msg)
             break;
         default:
             /* line 942 */
-            Com_Error(1, "\x15CL_ParseServerMessage: Illegible server message %d\n", cmd);
+            Com_Error(1, "\x15" "CL_ParseServerMessage: Illegible server message %d\n", cmd);
             break;
         }
     }

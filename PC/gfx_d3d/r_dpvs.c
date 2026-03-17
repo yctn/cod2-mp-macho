@@ -57,10 +57,14 @@ void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
 void R_SetCullDist(float dist);
+#ifndef __EMSCRIPTEN__
 static int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs);
+#endif
 static int R_FilterEntityIntoCells_r_impl(mnode_t *node, int entIndex, const vec_t *mins, const vec_t *maxs);
 int R_CellForPoint(const vec_t *origin);
+#ifndef __EMSCRIPTEN__
 static vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut);
+#endif
 static vec3_t * R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut);
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
 static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals);
@@ -138,7 +142,9 @@ static inline void R_DpvsPlaneSetSideBytes(DpvsPlane *plane)
     plane->u.frontal = 0xFF;
 }
 
+#ifndef __EMSCRIPTEN__
 static void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel);
+#endif
 static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, int planeCount, int stackLevel);
 
 /* Shared helper: far-corner test against AABB tree bounds (for plane reduction).
@@ -152,7 +158,9 @@ static inline float R_DpvsPlaneFarBoundsTest(const DpvsPlane *plane, const GfxAa
          + plane->coeffs[2] * *(float *)(tp + 0x1C - plane->side[2])
          + plane->coeffs[3];
 }
+#ifndef __EMSCRIPTEN__
 static int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count);
+#endif
 static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t *v, const GfxCell **list, int count);
 static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount);
 static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, DpvsClipChildren clipChildren);

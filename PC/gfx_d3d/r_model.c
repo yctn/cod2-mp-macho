@@ -72,10 +72,16 @@ void R_LockSkinnedCache(GfxLockType lockType);
 void R_ShutdownModels(void);
 void R_FinishLoadingModels(void);
 void R_DObjGetSurfMaterials(struct DObj_s *obj, int lod, MaterialHandle *matHandleArray);
+#ifndef __EMSCRIPTEN__
 static int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lods);
+#endif
+#ifndef __EMSCRIPTEN__
 static void R_XModelDebugBoxes(void);
+#endif
 static void R_XModelDebugBoxes_impl(const byte *sceneEnt, const byte *ent, const void *obj);
+#ifndef __EMSCRIPTEN__
 static void R_XModelDebugAxes(void);
+#endif
 static void R_XModelDebugAxes_impl(const byte *sceneEnt, const byte *ent, const void *obj);
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long unsigned int (*surface)[32], int surfaceIndex, char *lods, byte *surfPos);
@@ -384,6 +390,7 @@ static int R_GetSurfaceData(const byte *ent, const void *obj, void *surfaces, in
 static __attribute__((naked))
 int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lods)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 0xc(%esp)\n"
         "pushl 0xc(%esp)\n"
@@ -394,6 +401,9 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "addl $20, %esp\n"
         "retl $8\n"
     );
+#else
+    /* x86 asm */
+#endif
 }
 #endif
 
@@ -573,6 +583,7 @@ static void R_XModelDebugBoxes(const byte *sceneEnt, const byte *ent, const void
 static __attribute__((naked))
 void R_XModelDebugBoxes(void)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ecx\n"
         "pushl %edx\n"
@@ -581,6 +592,9 @@ void R_XModelDebugBoxes(void)
         "addl $12, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm */
+#endif
 }
 #endif
 
@@ -655,6 +669,7 @@ static void R_XModelDebugAxes(const byte *sceneEnt, const byte *ent, const void 
 static __attribute__((naked))
 void R_XModelDebugAxes(void)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ecx\n"
         "pushl %edx\n"
@@ -663,6 +678,9 @@ void R_XModelDebugAxes(void)
         "addl $12, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm */
+#endif
 }
 #endif
 
@@ -715,6 +733,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     /* Check for bad DObj */
     if (DObjBad(obj)) {
         if (*(int *)(*(char **)imp_developer + 8)) {
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl %[obj], %%ecx\n"
                 "movl %[ent], %%edx\n"
@@ -727,6 +746,9 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                 : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
                 : "eax", "ecx", "edx", "memory"
             );
+#else
+    /* x86 asm */
+#endif
         }
         goto set_origin_bounds;
     }
@@ -734,6 +756,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     /* Get surface data */
     {
         int surfCount;
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl %[lods], 4(%%esp)\n"
             "movl %[pb], (%%esp)\n"
@@ -747,6 +770,9 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
               [pb]"r"(partBits), [lods]"r"(lods)
             : "eax", "ecx", "edx", "memory"
         );
+#else
+    /* x86 asm */
+#endif
         if (surfCount == 0)
             goto set_origin_bounds;
     }
@@ -1554,6 +1580,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     /* Validate DObj */
     if (DObjBad(obj)) {
         if (*(int *)(*(char **)imp_developer + 8)) {
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl %[obj], %%ecx\n"
                 "movl %[ent], %%edx\n"
@@ -1566,6 +1593,9 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                 : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
                 : "eax", "ecx", "edx", "memory"
             );
+#else
+    /* x86 asm */
+#endif
         }
         *(int *)(se + 0xc) = 4;
         return;
@@ -1575,6 +1605,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     boneCount = DObjNumBones(obj);
     {
         int sc;
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl %[lods], 4(%%esp)\n"
             "movl %[pb], (%%esp)\n"
@@ -1588,6 +1619,9 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
               [pb]"r"(partBits), [lods]"r"(lods)
             : "eax", "ecx", "edx", "memory"
         );
+#else
+    /* x86 asm */
+#endif
         surfaceCount = sc;
     }
     if (surfaceCount == 0) {
@@ -1670,6 +1704,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         int xdebug = *(int *)(xdebugDvar + 8);
         if (xdebug) {
             if (xdebug & 1) {
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl %[obj], %%ecx\n"
                     "movl %[ent], %%edx\n"
@@ -1678,9 +1713,13 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
                     : "eax", "ecx", "edx", "memory"
                 );
+#else
+    /* x86 asm */
+#endif
                 xdebugDvar = *(char **)imp_r_xdebug;
             }
             if (*(int *)(xdebugDvar + 8) & 2) {
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl %[obj], %%ecx\n"
                     "movl %[ent], %%edx\n"
@@ -1689,6 +1728,9 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(obj)
                     : "eax", "ecx", "edx", "memory"
                 );
+#else
+    /* x86 asm */
+#endif
             }
         }
     }
@@ -2392,6 +2434,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             char *rg = (char *)imp_rg;
             void *defaultObj = *(void **)(rg + 0x3110);
             DObjSetModel((struct DObj_s *)defaultObj, model);
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
                 "calll R_XModelDebugBoxes\n"
@@ -2400,6 +2443,9 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                 : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
                 : "eax", "ecx", "edx", "memory"
             );
+#else
+    /* x86 asm */
+#endif
         }
         *(int *)(se + 0xc) = 4; return;
     }
@@ -2477,20 +2523,28 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             void *defaultObj = *(void **)(rg + 0x3110);
             DObjSetModel((struct DObj_s *)defaultObj, model);
             if (xdebug & 1) {
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
                     "calll R_XModelDebugBoxes\n"
                     : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
                     : "eax", "ecx", "edx", "memory"
                 );
+#else
+    /* x86 asm */
+#endif
             }
             if (*(int *)(*(char **)imp_r_xdebug + 8) & 2) {
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl %[obj], %%ecx\n" "movl %[ent], %%edx\n" "movl %[se], %%eax\n"
                     "calll R_XModelDebugAxes\n"
                     : : [se]"m"(sceneEnt), [ent]"m"(ent), [obj]"m"(defaultObj)
                     : "eax", "ecx", "edx", "memory"
                 );
+#else
+    /* x86 asm */
+#endif
             }
         }
     }
@@ -2890,10 +2944,10 @@ void R_SkinSceneEnt(GfxSceneEntity *sceneEnt, GfxEntity *ent)
  *   6. Handle single-bone (rigid) vs multi-bone (weighted) paths
  *   7. Uses SSE for matrix×vector multiplication in non-Dx7 weighted path
  * 594 lines of vertex transformation — performance-critical skinning hot path. */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
 {
-    (void)boneMatrix;
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1735 */
         "movl %esp, %ebp\n"
@@ -3487,6 +3541,9 @@ void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
         "jmp .Lfd2146_000d2862\n"
     );
 }
+#else
+static void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix) { (void)boneMatrix; }
+#endif
 
 /* line 2224 */
 /* line 2224 — XModel skinning: converts bone quaternions to 3x4 matrices,
@@ -3530,12 +3587,16 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
 
         if (surfType == 3) {
             /* Skinned surface */
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl %[surf], %%eax\n"
                 "movl %[bone], %%edx\n"
                 "calll R_SkinXSurfaceSkinned\n"
                 : : [surf]"r"(surfPos), [bone]"r"(boneMatrix) : "eax", "ecx", "edx", "memory"
             );
+#else
+    /* x86 asm */
+#endif
             surfPos = (const surfaceType_t *)((const byte *)surfPos + 16);
         } else if (surfType == 5) {
             /* Static cached surface — skip */
@@ -3830,12 +3891,16 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
             /* Standard skinned surface: call R_SkinXSurfaceSkinned(eax=surfPos, edx=mtx) */
             byte *surf = surfPos;
             surfPos += 0x10;
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "calll R_SkinXSurfaceSkinned\n"
                 :
                 : "a"(surf), "d"(mtx)
                 : "ecx", "memory"
             );
+#else
+    /* x86 asm */
+#endif
         }
     }
 }

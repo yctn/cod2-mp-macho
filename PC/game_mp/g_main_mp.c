@@ -18,7 +18,9 @@ static const char str_dbg_ff_agv[] = "DBG function_frame after Scr_AllocGameVari
 static const char str_dbg_ff_gls[] = "DBG function_frame after G_LoadStructs: %p\n";
 static const char str_dbg_endload[] = "after Scr_EndLoadScripts";
 
+#ifndef __EMSCRIPTEN__
 __asm__(".Lginit_fmt: .asciz \"[G_InitGame] level.clients=%p\\n\"\n");
+#endif
 void G_InitDbgPrint(const char *fmt, void *ptr) {
     fprintf(stderr, fmt, ptr);
 }

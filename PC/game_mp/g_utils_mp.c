@@ -1172,11 +1172,15 @@ qboolean G_EntDetach(gentity_t *ent, const char *modelName, unsigned int tagName
             unsigned char mask = ~(unsigned char)((0xFFFFFFFE << i) | ~(0xFFFFFFFE << i));
             /* Actually from ASM: rol $cl, 0xFFFFFFFE then AND */
             int rotmask = 0xFFFFFFFE;
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__(
                 "roll %%cl, %0\n"
                 : "+r"(rotmask)
                 : "c"(i)
             );
+#else
+    /* x86 asm not available */
+#endif
             ENT_IGNORECOLLISION(ent) &= (byte)rotmask;
         }
 

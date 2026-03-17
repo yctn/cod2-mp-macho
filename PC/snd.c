@@ -135,10 +135,10 @@ void SND_SetListener(int entnum, const vec_t *origin, vec3_t *axis);
 void SND_SetChannelInfo(int index, int entnum, const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, const vec_t *origin, float volume, float pitch, int srcChannelCount, int baserate, int total_msec, int start_msec, int startDelay, int master, snd_alias_system_t system);
 void SND_GetCurrent3DPosition(int entnum, const vec_t *offset, vec_t *pos_out);
 int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info, int maxcount, int *cpu);
-static __attribute__((regparm(3), sseregparm)) int SND_StartAliasStream(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, float volume, float pitch, int timeshift, float fraction, int treatAsMaster, int *pChannel, snd_alias_system_t system);
+static __attribute_regparm__(3) int SND_StartAliasStream(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, float volume, float pitch, int timeshift, float fraction, int treatAsMaster, int *pChannel, snd_alias_system_t system);
 static __attribute_regparm__(2) void SND_SaveChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile);
 void SND_Init(void);
-static __attribute__((regparm(3), sseregparm)) int SND_PlaySoundAlias_Internal(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, int *pChannel, int timeshift, int treatAsMaster, snd_alias_system_t system);
+static __attribute_regparm__(3) int SND_PlaySoundAlias_Internal(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, int *pChannel, int timeshift, int treatAsMaster, snd_alias_system_t system);
 int SND_PlayLocalSoundAliasByName(const char *aliasname, snd_alias_system_t system);
 int SND_PlayLocalSoundAlias(snd_alias_list_t *aliasList, snd_alias_system_t system);
 int SND_PlayBlendedSoundAliases(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float fLerp, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
@@ -816,7 +816,7 @@ int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info, int m
 }
 
 /* line 563 */
-static __attribute__((regparm(3), sseregparm))
+static __attribute_regparm__(3)
 int SND_StartAliasStream(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, float volume, float pitch, int timeshift, float fraction, int treatAsMaster, int *pChannel, snd_alias_system_t system)
 {
     int entchannel;
@@ -1043,7 +1043,7 @@ void SND_Init(void)
 }
 
 /* line 822 */
-static __attribute__((regparm(3), sseregparm))
+static __attribute_regparm__(3)
 int SND_PlaySoundAlias_Internal(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, int *pChannel, int timeshift, int treatAsMaster, snd_alias_system_t system)
 {
     const snd_alias_t *secondaryAlias;

@@ -13,11 +13,17 @@
 extern struct r_globals_load_t rgl; /* 0x0 */
 extern GfxWorld s_world; /* 0x0 */
 
+#ifndef __EMSCRIPTEN__
 static int R_FinishLoadingAabbTrees_r(void);
+#endif
 const char * R_ParseSunLight(SunLightParseParams *params, const char *text);
 snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight);
+#ifndef __EMSCRIPTEN__
 static Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XModel * *model, vec_t *origin);
+#endif
+#ifndef __EMSCRIPTEN__
 static snd_alias_list_t R_SetParentAndCell_r(void);
+#endif
 static void R_SetParentAndCell_r_impl(mnode_t *node, int parent);
 static snd_alias_list_t R_LoadEntities(void);
 static snd_alias_list_t R_LoadNodesAndLeafs(void);
@@ -3100,6 +3106,7 @@ snd_alias_list_t R_LoadCullGroups(void)
  * references, builds GfxSurface array with vertex/index offsets, handles lightmap
  * atlas assignment, and populates draw surface sort keys.
  * 751 lines of BSP lump parsing with material lookup and surface construction. */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
 {
@@ -5550,5 +5557,8 @@ GfxWorld * R_LoadWorldInternal(const char *name)
 }
 
 #else
-static snd_alias_list_t R_LoadEntities(void) { return 0; }
+static snd_alias_list_t R_LoadEntities(void) { snd_alias_list_t r = {0}; return r; }
+#endif
+#else
+static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load) { snd_alias_list_t r = {0}; (void)load; return r; }
 #endif

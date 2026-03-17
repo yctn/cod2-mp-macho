@@ -5,8 +5,12 @@
 #include "imports.h"
 extern float floorf(float x);
 extern float sqrtf(float x);
+#ifndef __EMSCRIPTEN__
 extern void *memcpy(void *dest, const void *src, unsigned int n);
+#endif
+#ifndef __EMSCRIPTEN__
 extern unsigned int strlen(const char *s);
+#endif
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/consumedata.h"

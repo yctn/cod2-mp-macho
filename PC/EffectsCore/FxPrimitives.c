@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/EffectsCore/FxMemMgr.h"
@@ -540,6 +541,7 @@ static void FX_AddFxToScene_impl(byte *effect, int reType)
 static __attribute__((naked))
 void FX_AddFxToScene(void)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %edx\n"
         "pushl %eax\n"
@@ -547,6 +549,9 @@ void FX_AddFxToScene(void)
         "addl $8, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #else
 static void FX_AddFxToScene(void) { }
@@ -563,68 +568,92 @@ void Emitter_Draw(const Emitter * _this)
     if (*(float *)(p + 0x98) == 0.0f)
         return;
     /* FX_AddFxToScene(this, 1) via register convention */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $1, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1743 */
 void Cylinder_Draw(const Cylinder * _this)
 {
     /* FX_AddFxToScene uses register convention: eax=this, edx=reType */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $9, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1613 */
 void Tail_Draw(const Tail * _this)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $8, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1520 */
 void Line_Draw(const Line * _this)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $8, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1389 */
 void Cloud_Draw(const Cloud * _this)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $6, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1276 */
 void OrientedParticle_Draw(const OrientedParticle * _this)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $7, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(_this) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 401 */
@@ -636,12 +665,16 @@ void Particle_Draw(const Particle * _this)
     /* line 403: if both radius and height are zero, skip */
     if (radius == 0.0f && height == 0.0f)
         return;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl %0, %%eax\n"
         "movl $4, %%edx\n"
         "calll FX_AddFxToScene\n"
         : : "g"(p) : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 227 */
@@ -1172,10 +1205,10 @@ static void FxBoltFrame_Acquire_impl(byte *retPtr, byte *bolt)
     *(int *)newFrame += 1; /* addref */
     *(byte **)retPtr = newFrame;
 }
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt)
 {
-    (void)bolt;
     __asm__ __volatile__ (
         "pushl 0xc(%esp)\n"
         "pushl 0xc(%esp)\n"
@@ -1185,6 +1218,14 @@ const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt)
         "retl $4\n"
     );
 }
+#else
+const FxBoltFramePtr FxBoltFrame_Acquire(const FxBoltInfo *bolt)
+{
+    FxBoltFramePtr p = {0};
+    (void)bolt;
+    return p;
+}
+#endif
 
 /* line 371 */
 extern float flrand(float min, float max);
@@ -1250,7 +1291,11 @@ void Tail_CalcNewEndpoint(const Tail *_this, const orientation_t *or_)
     /* Normalize direction */
     float lenSq = dx * dx + dy * dy + dz * dz;
     float len;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ ("sqrtss %1, %0" : "=x"(len) : "x"(lenSq));
+#else
+    len = 0;
+#endif
     if (len <= 0.0f) return;
 
     float invLen = 1.0f / len;
@@ -1593,12 +1638,16 @@ void ZN6EffectD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN6EffectD1Ev(void) /* Effect_~Effect */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN6EffectD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* FxBoltFramePtr_Archive — serialize bolt frame ptr: entity+bone IDs, acquire on read, release temp */
@@ -1624,6 +1673,7 @@ void FxBoltFramePtr_Archive(const FxBoltFramePtr *_this, FxArchive *arch)
         *(int *)(boltInfo + 4) = bone;
         byte *acquired = NULL;
         /* Call FxBoltFrame_Acquire which returns struct by value */
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "leal %1, %%eax\n"
             "pushl %%eax\n"
@@ -1635,6 +1685,9 @@ void FxBoltFramePtr_Archive(const FxBoltFramePtr *_this, FxArchive *arch)
             : : "r"(&acquired), "m"(boltInfo), "m"(acquired)
             : "eax", "ecx", "edx", "memory"
         );
+#else
+    /* x86 asm not available */
+#endif
         /* Assign to this with refcount (use Effect_SetBoltFrame pattern) */
         byte *oldBf = *(byte **)self;
         byte *newBf = acquired;
@@ -1891,12 +1944,16 @@ void ZN6EffectD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN6EffectD0Ev(void) /* Effect_~Effect */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN6EffectD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 269 */
@@ -2777,12 +2834,16 @@ void ZN8ParticleD1Ev_impl(void *_this)
 __attribute__((naked))
 void ZN8ParticleD1Ev(void) /* Particle_~Particle */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN8ParticleD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* Particle D0 destructor — cleanup bolt frame + delete this */
@@ -2796,12 +2857,16 @@ void ZN8ParticleD0Ev_impl(void *_this)
 __attribute__((naked))
 void ZN8ParticleD0Ev(void) /* Particle_~Particle */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN8ParticleD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 2131 */
@@ -2823,12 +2888,16 @@ void ZN5LightD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5LightD1Ev(void) /* Light_~Light */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5LightD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 2136 */
@@ -2842,12 +2911,16 @@ void ZN5LightD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5LightD0Ev(void) /* Light_~Light */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5LightD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* Tail_InitEndPoint — evaluate tail length curve(s) at normTime, store in endLength at 0x258, call CalcNewEndpoint */
@@ -5038,7 +5111,12 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
         float nextFtime;
         if (dF != 0.0f) {
             /* Adaptive: nextFtime based on step/velocity ratio */
-            float sq; __asm__ __volatile__("sqrtss %1,%0":"=x"(sq):"x"(step2 / dF));
+            float sq;
+#ifndef __EMSCRIPTEN__
+            __asm__ __volatile__("sqrtss %1,%0":"=x"(sq):"x"(step2 / dF));
+#else
+            sq = sqrtf(step2 / dF);
+#endif
             nextFtime = sq * ftime;
         } else {
             nextFtime = ftime;
@@ -11908,8 +11986,8 @@ void Tail_Archive_asm(const Tail * _this, FxArchive *arch)
 {
     __asm__ __volatile__ (
         ".Lfa987c_000a990d:\n"
-        "movl 0x24c(%edi), %eax\n" /* line 115 */
-        "movl %eax, -0x1c(%ebp)\n" /* f */
+        "movl 0x24c(%edi), %eax\n"
+        "movl %eax, -0x1c(%ebp)\n"
         /* { scope 1: f */
         /* { scope 2 */
         "movl $4, 8(%esp)\n" /* line 144 */
@@ -12340,12 +12418,16 @@ void ZN8CylinderD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN8CylinderD0Ev(void) /* Cylinder_~Cylinder */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN8CylinderD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1732 */
@@ -12358,12 +12440,16 @@ void ZN8CylinderD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN8CylinderD1Ev(void) /* Cylinder_~Cylinder */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN8CylinderD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1727 */
@@ -12392,12 +12478,16 @@ void ZN16OrientedParticleD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN16OrientedParticleD1Ev(void) /* OrientedParticle_~OrientedParticle */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN16OrientedParticleD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1265 */
@@ -12411,12 +12501,16 @@ void ZN16OrientedParticleD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN16OrientedParticleD0Ev(void) /* OrientedParticle_~OrientedParticle */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN16OrientedParticleD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1341 */
@@ -12444,12 +12538,16 @@ void ZN5CloudD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5CloudD1Ev(void) /* Cloud_~Cloud */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5CloudD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1347 */
@@ -12463,12 +12561,16 @@ void ZN5CloudD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5CloudD0Ev(void) /* Cloud_~Cloud */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5CloudD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1499 */
@@ -12489,12 +12591,16 @@ void ZN4LineD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN4LineD1Ev(void) /* Line_~Line */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN4LineD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1504 */
@@ -12508,12 +12614,16 @@ void ZN4LineD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN4LineD0Ev(void) /* Line_~Line */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN4LineD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1579 */
@@ -12534,12 +12644,16 @@ void ZN4TailD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN4TailD1Ev(void) /* Tail_~Tail */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN4TailD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1584 */
@@ -12553,12 +12667,16 @@ void ZN4TailD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN4TailD0Ev(void) /* Tail_~Tail */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN4TailD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1804 */
@@ -12579,12 +12697,16 @@ void ZN7EmitterD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN7EmitterD1Ev(void) /* Emitter_~Emitter */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN7EmitterD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 1809 */
@@ -12598,12 +12720,16 @@ void ZN7EmitterD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN7EmitterD0Ev(void) /* Emitter_~Emitter */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN7EmitterD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 186 */
@@ -12634,12 +12760,16 @@ void ZN5FlashD0Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5FlashD0Ev(void) /* Flash_~Flash */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5FlashD0Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 282 */
@@ -12652,12 +12782,14 @@ void ZN5FlashD1Ev_impl(void *_this) {
 __attribute__((naked))
 void ZN5FlashD1Ev(void) /* Flash_~Flash */
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 8(%esp)\n"
         "calll ZN5FlashD1Ev_impl\n"
         "addl $4, %esp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
-
-

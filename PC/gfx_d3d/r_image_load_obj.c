@@ -35,7 +35,9 @@ void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int 
 void Image_BuildWaterMap(GfxImage *image);
 static jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel);
 static jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock);
+#ifndef __EMSCRIPTEN__
 static jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel);
+#endif
 jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, const byte *srcData);
 static void Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byte *pixel);
 static void Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, byte *pixel);
@@ -177,6 +179,7 @@ static jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fi
 static __attribute__((naked))
 jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 0xc(%esp)\n"    /* bytesPerPixel */
         "pushl 0xc(%esp)\n"    /* format */
@@ -187,6 +190,9 @@ jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeade
         "addl $20, %esp\n"
         "retl $8\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -445,6 +451,7 @@ static jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *file
 static __attribute__((naked))
 jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl 0xc(%esp)\n"
         "pushl 0xc(%esp)\n"
@@ -455,6 +462,9 @@ jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader,
         "addl $20, %esp\n"
         "retl $8\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -548,6 +558,7 @@ static __attribute__((naked))
 jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel)
 {
     (void)image; (void)data; (void)format; (void)bytesPerPixel;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -561,6 +572,9 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "popl %ebp\n"
         "retl\n"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 #endif
 
@@ -824,6 +838,7 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
 /* Helper: call naked Image_LoadWavelet with register calling convention */
 static void Image_LoadWavelet_call(GfxImage *image, const void *fileHeader, const byte *data, int format, int bytesPerPixel)
 {
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "pushl %4\n"
         "pushl %3\n"
@@ -835,6 +850,9 @@ static void Image_LoadWavelet_call(GfxImage *image, const void *fileHeader, cons
         :: "g"(image), "g"(fileHeader), "g"(data), "g"(format), "g"(bytesPerPixel)
         : "eax", "ecx", "edx", "memory"
     );
+#else
+    /* x86 asm not available */
+#endif
 }
 
 /* line 320 — Dispatch image data to the appropriate loader based on format type. */

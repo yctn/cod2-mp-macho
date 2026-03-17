@@ -63,7 +63,9 @@ static const MtlTextureFunctionDx7 s_textureFuncsDx7[21]; /* s_textureFuncsDx7 �
 static const PassOptionDx7 s_passOptionsDx7[5]; /* s_passOptionsDx7 — unused in DX9 path */
 
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data);
+#ifndef __EMSCRIPTEN__
 static Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);
+#endif
 static Bool Material_ValidatePassArguments_impl(const Material *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);
 static void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, GfxCachedShaderText *cached);
 static void Material_PreLoadSingleShaderText_impl(const char *filename, const char *subdir, GfxCachedShaderText *cached);
@@ -78,7 +80,9 @@ extern void *Hunk_AllocAlignInternal(int size, int align);
 static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, const GfxCachedShaderText *cached1);
 HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeType, LPCSTR filename, LPCVOID parentData, LPCVOID *data, MaterialTechnique * (*byteCount)[4][34]);
 void Material_PreLoadAllShaderText(void);
+#ifndef __EMSCRIPTEN__
 static Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRouting *routing, int offset, const CodeConstantSource *sourceTable, MaterialShaderArgument *arg);
+#endif
 static Bool Material_ParseCodeConstantSource_r_impl(const char **text, const byte *routing, int offset, const CodeConstantSource *sourceTable, byte *arg);
 extern void Com_UngetToken(void);
 extern void *Material_Alloc(int size);
@@ -87,7 +91,9 @@ extern HRESULT D3DXGetShaderConstantTable(const void *function, void **constantT
 extern void *Material_RegisterLiteral(float *literal);
 extern void Com_SkipRestOfLine(const char **text);
 extern void Com_SetScriptWarningPrefix(const char *prefix);
+#ifndef __EMSCRIPTEN__
 static Bool Material_ParseVector(int elemCount);
+#endif
 static Bool Material_ParseVector_impl(const char **text, int elemCount, float *vector);
 /* Forward declarations for the 6 material parsing _impl functions (cdecl convention).
  * These form a call chain: FinishLoadingInstance → LoadPassShader/LoadPassStateMap/
@@ -100,7 +106,9 @@ static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap *
 static MaterialShader *Material_LoadPassShader_impl(const char **text, int shaderType);
 static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int imageTrack);
 
+#ifndef __EMSCRIPTEN__
 static Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits);
+#endif
 static Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg);
 static Bool Material_CodeSamplerSource_r_impl(const char **text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg);
 static Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg);
@@ -109,12 +117,20 @@ extern void Com_ScriptWarning(const char *fmt, ...);
 extern const char *Com_Parse(const char **text);
 extern int Com_ParseInt(const char **text);
 extern const char *Material_RegisterString(const char *string);
+#ifndef __EMSCRIPTEN__
 static Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *techFlags, short unsigned int *argCount, MaterialShaderArgument * *args);
+#endif
+#ifndef __EMSCRIPTEN__
 static MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialStateMapRule *rule);
+#endif
 static MtlParseSuccess Material_ParseRuleSetConditionTest_impl(const char **text, const char *token, MaterialStateMapRule *rule);
 static Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const MtlStateMapBitGroup *stateSet, const MaterialStateMapRuleSet * *ruleSet);
+#ifndef __EMSCRIPTEN__
 static Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap);
+#endif
+#ifndef __EMSCRIPTEN__
 static MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType);
+#endif
 static Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack);
 Material * Material_Load(const char *name, int imageTrack);
 typedef unsigned char (*GfxCachedShaderTextCompFunc)(const GfxCachedShaderText *, const GfxCachedShaderText *);
@@ -4922,7 +4938,11 @@ extern void *Image_Register(const char *name, int semantic, int imageTrack);
 extern void *R_LoadWaterSetup(byte *setupData);
 extern void Com_SetKeepStringQuotes(int value);
 extern void *imp_r_rendererInUse;
+#ifndef __EMSCRIPTEN__
 extern const byte s_techniqueTypeNames[] __asm__("__ZZ29Material_TechniqueTypeForNamePKcE5C.359");
+#else
+extern const byte s_techniqueTypeNames[];
+#endif
 
 static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int imageTrack)
 {
@@ -6973,12 +6993,16 @@ Material * Material_Load(const char *name, int imageTrack)
 
     /* Material_FinishLoadingInstance uses register convention: eax=mtlData, edx=imageTrack */
     Bool result;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "calll Material_FinishLoadingInstance\n"
         : "=a"(result)
         : "a"(mtlData), "d"(imageTrack)
         : "ecx", "memory"
     );
+#else
+    result = Material_FinishLoadingInstance((MaterialObj *)mtlData, imageTrack);
+#endif
 
     if (!result)
         return NULL;

@@ -44,16 +44,26 @@ static inline char *RB_TessBase(void)
 void RB_TessBad(const surfaceType_t *surfType);
 void RB_TessParticleCloud(const GfxEntity *re);
 void RB_TessXModelRigid(const surfaceType_t *surfType);
+#ifndef __EMSCRIPTEN__
 static void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1);
+#endif
+#ifndef __EMSCRIPTEN__
 static void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1);
+#endif
 static void RB_AddQuadStampDx7_impl(const vec_t *origin, const vec_t *left, const vec_t *up, int nativeColor, float s0, float t0, float s1, float t1);
 static void RB_AddQuadStamp_impl(const vec_t *origin, const vec_t *left, const vec_t *up, int nativeColor, float s0, float t0, float s1, float t1);
 static void RB_BuildSprite_impl(const char *re, const float *worldRadius);
 static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
 static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
+#ifndef __EMSCRIPTEN__
 static void RB_BuildSprite(void);
+#endif
+#ifndef __EMSCRIPTEN__
 static void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
+#endif
+#ifndef __EMSCRIPTEN__
 static void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1);
+#endif
 void RB_TessEntity(const GfxEntity *re);
 void RB_TessBackEndEntity(const surfaceType_t *surfType);
 void RB_TessPoly(const surfaceType_t *surfType);

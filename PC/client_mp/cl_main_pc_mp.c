@@ -995,1218 +995,786 @@ int CL_ClearMutedList(void)
 }
 
 /* line 622 */
-__attribute__((naked))
 int CL_GlobalServers_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 622 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x44c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 631 */
-        "cmpl $2, %eax\n"
-        "jle .Lf1609e2_00160b68\n"
-        "movl imp_cls, %ebx\n" /* line 637 | buffptr */
-        "movl 0x4540(%ebx), %eax\n" /* buffptr */
-        "testl %eax, %eax\n"
-        "jle .Lf1609e2_00160a3b\n"
-        "xorl %edi, %edi\n" /* i */
-        ".Lf1609e2_00160a0e:\n"
-        "movl %edi, %eax\n" /* line 639 | i */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edi, 8), %edx\n"
-        "leal 4(%edx, %ebx), %edx\n"
-        "movl $0xffffffff, %eax\n" /* line 642 */
-        "movzbl 0x19(%edx), %ecx\n"
-        "addb $1, %cl\n"
-        "cmovnel %ecx, %eax\n"
-        "movb %al, 0x19(%edx)\n"
-        "addl $1, %edi\n" /* line 637 | i */
-        "cmpl 0x4540(%ebx), %edi\n" /* buffptr, i */
-        "jl .Lf1609e2_00160a0e\n"
-        ".Lf1609e2_00160a3b:\n"
-        "movl $str_002abbf4, (%esp)\n" /* line 645 */
-        "calll Com_Printf\n"
-        "leal -0x30(%ebp), %eax\n" /* line 649 | to */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002a9298, (%esp)\n" /* "cod2master.activision.com" */
-        "calll NET_StringToAdr\n"
-        "movl imp_cls, %eax\n" /* line 650 */
-        "movl $1, 0x453c(%eax)\n"
-        "movl $1, 0x2a0a48(%eax)\n" /* line 651 */
-        "movl $4, -0x30(%ebp)\n" /* line 653 | to */
-        "movw $0xe650, -0x28(%ebp)\n" /* line 654 */
-        "movl $2, (%esp)\n" /* line 656 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002abc1c, 4(%esp)\n" /* "getservers %s" */
-        "leal -0x430(%ebp), %eax\n" /* command */
-        "movl %eax, (%esp)\n"
-        "calll sprintf\n"
-        "cld\n" /* line 659 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "leal -0x430(%ebp), %edi\n" /* command, i */
-        "repne scasb %es:(%edi), %al\n" /* i */
-        "notl %ecx\n"
-        "leal -0x431(%ecx, %ebp), %ebx\n" /* buffptr */
-        "calll Cmd_Argc\n" /* line 660 */
-        "movl %eax, %esi\n" /* count */
-        "cmpl $3, %eax\n" /* line 661 */
-        "jg .Lf1609e2_00160b28\n"
-        "movl $str_00216d6c, (%esp)\n" /* line 665 */
-        "calll Dvar_GetBool\n"
-        "testb %al, %al\n"
-        "jne .Lf1609e2_00160b1a\n"
-        ".Lf1609e2_00160adb:\n"
-        "movl -0x30(%ebp), %ecx\n" /* line 670 | to */
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl -0x28(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal -0x430(%ebp), %ebx\n" /* command, buffptr */
-        "movl %ebx, 0x10(%esp)\n" /* buffptr */
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll NET_OutOfBandPrint\n"
-        /* } scope */
-        "addl $0x44c, %esp\n" /* line 671 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1609e2_00160b1a:\n"
-        "movl $0x6d656420, (%ebx)\n" /* line 667 | buffptr */
-        "movw $0x6f, 4(%ebx)\n" /* buffptr */
-        "jmp .Lf1609e2_00160adb\n"
-        ".Lf1609e2_00160b28:\n"
-        "movl $3, %edi\n" /* line 661 | i */
-        ".Lf1609e2_00160b2d:\n"
-        "movl %edi, (%esp)\n" /* line 662 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002abc2c, 4(%esp)\n" /* " %s" */
-        "movl %ebx, (%esp)\n" /* buffptr */
-        "calll sprintf\n"
-        "addl %eax, %ebx\n" /* buffptr */
-        "addl $1, %edi\n" /* line 661 | i */
-        "cmpl %edi, %esi\n" /* i, count */
-        "jne .Lf1609e2_00160b2d\n"
-        "movl $str_00216d6c, (%esp)\n" /* line 665 */
-        "calll Dvar_GetBool\n"
-        "testb %al, %al\n"
-        "je .Lf1609e2_00160adb\n"
-        "jmp .Lf1609e2_00160b1a\n"
-        ".Lf1609e2_00160b68:\n"
-        "movl $str_002abbb8, (%esp)\n" /* line 633 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x44c, %esp\n" /* line 671 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    netadr_t to;
+    char command[1024];
+    char *buffptr;
+    int i;
+    int count;
+
+    if (Cmd_Argc() <= 2)
+    {
+        Com_Printf((const char *)str_002abbb8); /* "usage: globalservers <master# 0-1> <protocol> [keywords]\n" */
+        return 0;
+    }
+
+    {
+        byte *cls = (byte *)imp_cls;
+        int numglobal = *(int *)(cls + 0x4540);
+
+        /* saturating increment of requestCount for all existing global servers */
+        for (i = 0; i < numglobal; i++)
+        {
+            byte *server = cls + 0x4544 + i * 0x88;
+            byte rc = server[0x19];
+            byte rc1 = (byte)(rc + 1);
+            if (rc1 == 0)
+                server[0x19] = 0xFF;
+            else
+                server[0x19] = rc1;
+        }
+    }
+
+    Com_Printf((const char *)str_002abbf4); /* "Requesting servers from the master...\n" */
+
+    /* resolve master server address */
+    NET_StringToAdr((const char *)str_002a9298, &to); /* "cod2master.activision.com" */
+
+    {
+        byte *cls = (byte *)imp_cls;
+        *(int *)(cls + 0x453c) = 1;    /* pingUpdateSource = 1 */
+        *(int *)(cls + 0x2a0a48) = 1;  /* waitglobalserverresponse = 1 */
+    }
+
+    to.type = 4;            /* NA_IP */
+    to.port = (unsigned short)0xe650;  /* 58960 */
+
+    /* build command string */
+    sprintf(command, (const char *)str_002abc1c, Cmd_Argv(2)); /* "getservers %s" */
+
+    buffptr = command + strlen(command);
+
+    count = Cmd_Argc();
+    if (count > 3)
+    {
+        /* append extra keyword arguments */
+        for (i = 3; i != count; i++)
+        {
+            buffptr += sprintf(buffptr, (const char *)str_002abc2c, Cmd_Argv(i)); /* " %s" */
+        }
+    }
+
+    /* check fs_restrict dvar — if restricted, append " demo" */
+    if (Dvar_GetBool((const char *)str_00216d6c)) /* "fs_restrict" */
+    {
+        *(int *)buffptr = 0x6d656420;         /* " dem" */
+        *(short *)(buffptr + 4) = 0x6f;       /* "o\0" */
+    }
+
+    /* send the request */
+    NET_OutOfBandPrint(1, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), command);
+
+    return 0;
 }
 
 /* line 518 */
-__attribute__((naked))
 int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 518 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x67c, %esp\n"
-        "movl 0x14(%ebp), %ebx\n" /* msg */
-        /* { scope 1: adr */
-        "calll Com_PumpMessageLoop\n" /* line 529 */
-        "movl $str_002abc30, (%esp)\n" /* line 531 */
-        "calll Com_Printf\n"
-        "movl imp_cls, %eax\n" /* line 533 */
-        "movl $0, 0x453c(%eax)\n"
-        "movl 4(%ebx), %esi\n" /* line 537 | msg, buffptr */
-        "movl %esi, %edi\n" /* line 538 | buffptr, buffend */
-        "addl 0xc(%ebx), %edi\n" /* msg, buffend */
-        "movl $0, -0x63c(%ebp)\n" /* numservers */
-        "leal -0x621(%ebp), %eax\n"
-        "movl %eax, -0x62c(%ebp)\n"
-        "leal 1(%esi), %ebx\n" /* line 539 | buffptr, msg */
-        "cmpl %ebx, %edi\n" /* msg, buffend */
-        "ja .Lf160b80_00160bde\n"
-        "jmp .Lf160b80_00160cdc\n"
-        ".Lf160b80_00160bd9:\n"
-        "movl %ebx, %esi\n" /* msg, buffptr */
-        "addl $1, %ebx\n" /* msg */
-        ".Lf160b80_00160bde:\n"
-        "cmpb $0x5c, (%esi)\n" /* line 544 | buffptr */
-        "je .Lf160b80_00160be7\n"
-        "cmpl %ebx, %edi\n" /* line 542 | msg, buffend */
-        "ja .Lf160b80_00160bd9\n"
-        ".Lf160b80_00160be7:\n"
-        "leal -6(%edi), %eax\n" /* line 549 | buffend */
-        "cmpl %eax, %ebx\n" /* msg */
-        "jae .Lf160b80_00160cdc\n"
-        "movzbl 1(%esi), %edx\n" /* line 555 | buffptr */
-        "movb %dl, -0x645(%ebp)\n"
-        "movl -0x62c(%ebp), %ecx\n"
-        "movb %dl, -3(%ecx)\n"
-        "movzbl 1(%ebx), %eax\n" /* line 556 | msg */
-        "movb %al, -0x646(%ebp)\n"
-        "movb %al, -2(%ecx)\n"
-        "movzbl 2(%ebx), %edx\n" /* line 557 | msg */
-        "movb %dl, -0x647(%ebp)\n"
-        "movb %dl, -1(%ecx)\n"
-        "movzbl 3(%ebx), %ecx\n" /* line 558 | msg */
-        "movl -0x62c(%ebp), %eax\n"
-        "movb %cl, (%eax)\n"
-        "movzbw 4(%ebx), %ax\n" /* line 561 | msg */
-        "shll $8, %eax\n"
-        "movl -0x62c(%ebp), %edx\n"
-        "movw %ax, 1(%edx)\n"
-        "addl $7, %esi\n" /* line 562 | buffptr */
-        "movzbw 5(%ebx), %dx\n" /* msg */
-        "addl %edx, %eax\n"
-        /* { scope 2: low */
-        "rolw $8, %ax\n" /* line 46 */
-        /* } scope */
-        "movzwl %ax, %eax\n" /* line 925 | data */
-        "movw %ax, -0x65a(%ebp)\n" /* data */
-        "movl -0x62c(%ebp), %edx\n" /* line 563 */
-        "movw %ax, 1(%edx)\n"
-        "cmpb $0x5c, (%esi)\n" /* line 566 | buffptr */
-        "jne .Lf160b80_00160cdc\n"
-        "movzwl -0x65a(%ebp), %eax\n" /* line 571 */
-        "movl %eax, 0x18(%esp)\n"
-        "movzbl %cl, %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movzbl -0x647(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movzbl -0x646(%ebp), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movzbl -0x645(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x63c(%ebp), %ecx\n" /* numservers */
-        "movl %ecx, 4(%esp)\n"
-        "movl $str_002abc4c, (%esp)\n" /* "server: %d ip: %d.%d.%d.%d:%d
-" */
-        "calll Com_DPrintf\n"
-        "addl $1, -0x63c(%ebp)\n" /* line 573 | numservers */
-        "cmpl $0x100, -0x63c(%ebp)\n" /* line 574 | numservers */
-        "je .Lf160b80_00160cdc\n"
-        "cmpb $0x45, 7(%ebx)\n" /* line 580 | msg */
-        "je .Lf160b80_00160ee7\n"
-        ".Lf160b80_00160cca:\n"
-        "addl $6, -0x62c(%ebp)\n" /* line 582 */
-        "leal 1(%esi), %ebx\n" /* line 539 | buffptr, msg */
-        "cmpl %ebx, %edi\n" /* msg, buffend */
-        "ja .Lf160b80_00160bde\n"
-        ".Lf160b80_00160cdc:\n"
-        "movl imp_cls, %eax\n" /* line 586 */
-        "movl %eax, -0x64c(%ebp)\n"
-        "movl 0x4540(%eax), %edx\n"
-        "movl %edx, -0x640(%ebp)\n" /* count */
-        "movl -0x63c(%ebp), %eax\n" /* line 589 | numservers */
-        "testl %eax, %eax\n"
-        "jle .Lf160b80_00160f00\n"
-        "cmpl $0x4e1f, -0x640(%ebp)\n" /* count */
-        "jg .Lf160b80_00160f00\n"
-        "movl $0, -0x644(%ebp)\n" /* i */
-        "jmp .Lf160b80_00160de5\n"
-        ".Lf160b80_00160d20:\n"
-        "movl -0x640(%ebp), %eax\n" /* line 603 | count */
-        "shll $7, %eax\n"
-        "movl -0x640(%ebp), %ecx\n" /* count */
-        "leal 0x4540(%eax, %ecx, 8), %edx\n"
-        "addl -0x64c(%ebp), %edx\n"
-        "leal 4(%edx), %eax\n"
-        "addl $1, %ecx\n" /* line 604 */
-        "movl %ecx, -0x640(%ebp)\n" /* count */
-        "movzwl -0x632(%ebp), %ecx\n" /* line 445 */
-        "movw %cx, 8(%eax)\n"
-        "movzbl -0x630(%ebp), %ecx\n"
-        "movb %cl, 7(%eax)\n"
-        "movzbl -0x62f(%ebp), %ecx\n"
-        "movb %cl, 6(%eax)\n"
-        "movzbl -0x62e(%ebp), %ecx\n"
-        "movb %cl, 5(%eax)\n"
-        "movzbl -0x62d(%ebp), %ecx\n"
-        "movb %cl, 4(%eax)\n"
-        "movl $4, 4(%edx)\n"
-        "movb $0, 0xd(%eax)\n" /* line 447 */
-        "movb $0, 0x20(%eax)\n" /* line 448 */
-        "movb $0, 0x40(%eax)\n" /* line 449 */
-        "movb $0, 0xe(%eax)\n" /* line 450 */
-        "movw $0, 0x1c(%eax)\n" /* line 451 */
-        "movw $0, 0x1a(%eax)\n" /* line 452 */
-        "movw $0xffff, 0x1e(%eax)\n" /* line 453 */
-        "movb $0, 0x60(%eax)\n" /* line 454 */
-        "movb $0, 0x78(%eax)\n" /* line 455 */
-        "movb $0, 0xc(%eax)\n" /* line 456 */
-        "movb $0, 0x10(%eax)\n" /* line 457 */
-        "movb $1, 0xf(%eax)\n" /* line 458 */
-        "movb $0, 0x19(%eax)\n" /* line 459 */
-        ".Lf160b80_00160dbc:\n"
-        "addl $1, -0x644(%ebp)\n" /* line 589 | i */
-        "movl -0x644(%ebp), %ecx\n" /* i */
-        "cmpl %ecx, -0x63c(%ebp)\n" /* numservers */
-        "je .Lf160b80_00160f00\n"
-        "cmpl $0x4e1f, -0x640(%ebp)\n" /* count */
-        "jg .Lf160b80_00160f00\n"
-        ".Lf160b80_00160de5:\n"
-        "movl -0x644(%ebp), %ecx\n" /* line 591 | i */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal -0x624(%ebp, %eax, 2), %eax\n"
-        "movzbl (%eax), %edx\n" /* line 594 */
-        "movb %dl, -0x62d(%ebp)\n"
-        "movzbl 1(%eax), %ecx\n" /* line 595 */
-        "movb %cl, -0x62e(%ebp)\n"
-        "movzbl 2(%eax), %edx\n" /* line 596 */
-        "movb %dl, -0x62f(%ebp)\n"
-        "movzbl 3(%eax), %ecx\n" /* line 597 */
-        "movb %cl, -0x630(%ebp)\n"
-        "movzwl 4(%eax), %eax\n" /* line 598 */
-        "movw %ax, -0x632(%ebp)\n"
-        "movw %ax, -0x1c(%ebp)\n"
-        "movb %cl, -0x1d(%ebp)\n"
-        "movb %dl, -0x1e(%ebp)\n"
-        "movzbl -0x62e(%ebp), %eax\n"
-        "movb %al, -0x1f(%ebp)\n"
-        "movzbl -0x62d(%ebp), %edx\n"
-        "movb %dl, -0x20(%ebp)\n"
-        "movl $4, -0x24(%ebp)\n" /* adr */
-        /* { scope 2: low */
-        /* { scope 3 */
-        "movl -0x64c(%ebp), %ecx\n" /* line 475 */
-        "movl 0x4540(%ecx), %esi\n" /* high */
-        "testl %esi, %esi\n" /* line 476 | high */
-        "jle .Lf160b80_00160d20\n"
-        "movl $0, -0x638(%ebp)\n" /* low */
-        "jmp .Lf160b80_00160e8e\n"
-        ".Lf160b80_00160e6c:\n"
-        "jle .Lf160b80_00160f60\n" /* line 487 */
-        "addl $1, %ebx\n" /* line 489 */
-        "movl %ebx, -0x638(%ebp)\n" /* low */
-        "cmpl -0x638(%ebp), %esi\n" /* line 476 | low, high */
-        "jle .Lf160b80_00160ed6\n"
-        ".Lf160b80_00160e83:\n"
-        "movl imp_cls, %eax\n"
-        "movl %eax, -0x64c(%ebp)\n"
-        ".Lf160b80_00160e8e:\n"
-        "movl -0x638(%ebp), %edx\n" /* line 478 | low */
-        "addl %esi, %edx\n" /* high */
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "leal (%eax, %edx), %ebx\n"
-        "sarl $1, %ebx\n"
-        "movl %ebx, %edi\n" /* i */
-        "movl %ebx, %eax\n" /* line 479 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %ebx, 8), %eax\n"
-        "movl -0x64c(%ebp), %edx\n"
-        "leal 4(%eax, %edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x24(%ebp), %ecx\n" /* adr */
-        "movl %ecx, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "cmpl $0, %eax\n" /* line 481 */
-        "jge .Lf160b80_00160e6c\n"
-        "movl %ebx, %esi\n" /* line 499 | high */
-        "cmpl -0x638(%ebp), %esi\n" /* line 476 | low, high */
-        "jg .Lf160b80_00160e83\n"
-        ".Lf160b80_00160ed6:\n"
-        "movl imp_cls, %edx\n"
-        "movl %edx, -0x64c(%ebp)\n"
-        "jmp .Lf160b80_00160d20\n"
-        /* } scope */
-        /* } scope */
-        ".Lf160b80_00160ee7:\n"
-        "cmpb $0x4f, 8(%ebx)\n" /* line 580 | msg */
-        "jne .Lf160b80_00160cca\n"
-        "cmpb $0x54, 9(%ebx)\n" /* msg */
-        "jne .Lf160b80_00160cca\n"
-        "jmp .Lf160b80_00160cdc\n"
-        ".Lf160b80_00160f00:\n"
-        "movl -0x640(%ebp), %eax\n" /* line 609 | count */
-        "movl -0x64c(%ebp), %edx\n"
-        "movl %eax, 0x4540(%edx)\n"
-        "movl $CL_CompareAdrSigned, 0xc(%esp)\n" /* line 434 */
-        "movl $0x88, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, %eax\n"
-        "addl $0x4544, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll qsort\n"
-        "movl -0x640(%ebp), %ecx\n" /* line 612 | count */
-        "movl %ecx, 8(%esp)\n"
-        "movl -0x63c(%ebp), %eax\n" /* numservers */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002abc6c, (%esp)\n" /* "%d servers parsed (total %d)
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x67c, %esp\n" /* line 613 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: adr */
-        /* { scope 2: low */
-        /* { scope 3 */
-        ".Lf160b80_00160f60:\n"
-        "subl $1, %edi\n" /* line 493 | i */
-        "js .Lf160b80_00160f8d\n"
-        "movl %edi, %eax\n" /* i */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edi, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "addl $4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* adr */
-        "movl %eax, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "testl %eax, %eax\n"
-        "je .Lf160b80_00160f60\n"
-        ".Lf160b80_00160f8d:\n"
-        "addl $1, %edi\n" /* line 497 | i */
-        "movl imp_cls, %edx\n"
-        "movl %edx, -0x64c(%ebp)\n"
-        "movl %edi, %eax\n" /* i */
-        "shll $7, %eax\n"
-        "leal (%eax, %edi, 8), %eax\n"
-        "addl %edx, %eax\n"
-        "leal 0x4544(%eax), %ecx\n"
-        "movl %ecx, -0x650(%ebp)\n"
-        "leal 0x4540(%eax), %esi\n" /* high */
-        ".Lf160b80_00160fb8:\n"
-        "movzbl -0x1e(%ebp), %edx\n" /* line 501 */
-        "movzbl -0x1f(%ebp), %ecx\n"
-        "movzbl -0x20(%ebp), %ebx\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 445 */
-        "movw %ax, 0xc(%esi)\n"
-        "movzbl -0x1d(%ebp), %eax\n"
-        "movb %al, 0xb(%esi)\n"
-        "movb %dl, 0xa(%esi)\n"
-        "movb %cl, 9(%esi)\n"
-        "movb %bl, 8(%esi)\n"
-        "movl -0x24(%ebp), %eax\n" /* adr */
-        "movl %eax, 4(%esi)\n"
-        "movb $0, 0x11(%esi)\n" /* line 447 */
-        "movb $0, 0x24(%esi)\n" /* line 448 */
-        "movb $0, 0x44(%esi)\n" /* line 449 */
-        "movb $0, 0x12(%esi)\n" /* line 450 */
-        "movw $0, 0x20(%esi)\n" /* line 451 */
-        "movw $0, 0x1e(%esi)\n" /* line 452 */
-        "movw $0xffff, 0x22(%esi)\n" /* line 453 */
-        "movb $0, 0x64(%esi)\n" /* line 454 */
-        "movb $0, 0x7c(%esi)\n" /* line 455 */
-        "movb $0, 0x10(%esi)\n" /* line 456 */
-        "movb $0, 0x14(%esi)\n" /* line 457 */
-        "movb $1, 0x13(%esi)\n" /* line 458 */
-        "movb $0, 0x1d(%esi)\n" /* line 459 */
-        "addl $1, %edi\n" /* line 502 | i */
-        "addl $0x88, %esi\n" /* high */
-        "addl $0x88, -0x650(%ebp)\n"
-        "movl -0x64c(%ebp), %eax\n" /* line 499 */
-        "cmpl 0x4540(%eax), %edi\n" /* i */
-        "jge .Lf160b80_00160dbc\n"
-        "movl -0x650(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x24(%ebp), %ecx\n" /* adr */
-        "movl %ecx, (%esp)\n"
-        "calll NET_CompareAdrSigned\n"
-        "testl %eax, %eax\n"
-        "je .Lf160b80_00160fb8\n"
-        "movl imp_cls, %edx\n"
-        "movl %edx, -0x64c(%ebp)\n"
-        "jmp .Lf160b80_00160dbc\n"
-    );
+    byte *buffptr;
+    byte *buffend;
+    int numservers;
+    byte servers[256][6]; /* ip[4] + port[2] per entry */
+    byte ip[4];
+    unsigned short port;
+    netadr_t adr;
+    int i;
+    int count;
+    byte *cls;
+    int low, high, mid;
+    int compare;
+
+    Com_PumpMessageLoop();
+
+    Com_Printf((const char *)str_002abc30); /* "CL_ServersResponsePacket\n" */
+
+    cls = (byte *)imp_cls;
+    *(int *)(cls + 0x453c) = 0; /* pingUpdateSource = 0 */
+
+    buffptr = msg->data;
+    buffend = msg->data + msg->cursize;
+
+    numservers = 0;
+
+    /* scan forward past prefix to find first backslash separator */
+    while ((unsigned int)(buffptr + 1) < (unsigned int)buffend)
+    {
+        if (*buffptr == '\\')
+            break;
+        buffptr++;
+    }
+
+    /* parse server entries from binary packet */
+    while ((unsigned int)(buffptr + 1) < (unsigned int)(buffend - 6))
+    {
+        /* read 4 IP bytes (offset 1..4 from buffptr) */
+        ip[0] = buffptr[1];
+        ip[1] = buffptr[2];
+        ip[2] = buffptr[3];
+        ip[3] = buffptr[4];
+
+        /* read 2 port bytes (offset 5..6 from buffptr) and byte-swap for storage */
+        {
+            unsigned short portVal;
+            portVal = ((unsigned short)buffptr[5] << 8) | (unsigned short)buffptr[6];
+            /* byte-swap: the asm does rolw $8 to convert to network byte order for netadr_t.port */
+            port = (unsigned short)((portVal >> 8) | (portVal << 8));
+        }
+
+        buffptr += 7;
+
+        /* store in servers array */
+        servers[numservers][0] = ip[0];
+        servers[numservers][1] = ip[1];
+        servers[numservers][2] = ip[2];
+        servers[numservers][3] = ip[3];
+        *(unsigned short *)&servers[numservers][4] = port;
+
+        /* verify next entry starts with backslash */
+        if (*buffptr != '\\')
+            break;
+
+        Com_DPrintf((const char *)str_002abc4c, numservers, ip[0], ip[1], ip[2], ip[3], (int)port);
+            /* "server: %d ip: %d.%d.%d.%d:%d\n" */
+
+        numservers++;
+        if (numservers == 256)
+            break;
+
+        /* check for "EOT" end-of-transmission marker */
+        if (buffptr[1] == 0x45 && buffptr[2] == 0x4f && buffptr[3] == 0x54)
+            break;
+
+        /* advance scan pointer */
+        /* continue to next entry — scan past separator */
+        continue;
+    }
+
+    /* add parsed servers to global server list */
+    cls = (byte *)imp_cls;
+    count = *(int *)(cls + 0x4540); /* numglobalservers */
+
+    for (i = 0; i < numservers && count <= 0x4e1f; i++)
+    {
+        /* extract address from parsed entry */
+        ip[0] = servers[i][0];
+        ip[1] = servers[i][1];
+        ip[2] = servers[i][2];
+        ip[3] = servers[i][3];
+        port = *(unsigned short *)&servers[i][4];
+
+        /* build netadr_t for this server */
+        adr.type = 4; /* NA_IP */
+        adr.ip[0] = ip[0];
+        adr.ip[1] = ip[1];
+        adr.ip[2] = ip[2];
+        adr.ip[3] = ip[3];
+        adr.port = port;
+
+        /* binary search for duplicate in existing globalServers */
+        cls = (byte *)imp_cls;
+        high = *(int *)(cls + 0x4540);
+        if (high > 0)
+        {
+            low = 0;
+            while (low < high)
+            {
+                cls = (byte *)imp_cls;
+                mid = (low + high) / 2;
+                compare = NET_CompareAdrSigned((const int *)&adr, (const int *)(cls + 0x4544 + mid * 0x88));
+                if (compare < 0)
+                {
+                    high = mid;
+                }
+                else if (compare > 0)
+                {
+                    low = mid + 1;
+                }
+                else
+                {
+                    /* found match — walk back to first matching entry */
+                    int j = mid;
+                    while (j - 1 >= 0)
+                    {
+                        if (NET_CompareAdrSigned((const int *)&adr, (const int *)((byte *)imp_cls + 0x4544 + (j - 1) * 0x88)) != 0)
+                            break;
+                        j--;
+                    }
+                    /* overwrite all matching entries starting at j */
+                    {
+                        byte *srvBase;
+                        cls = (byte *)imp_cls;
+                        srvBase = cls + 0x4540 + j * 0x88;
+                        while (1)
+                        {
+                            serverInfo_t *srv = (serverInfo_t *)(srvBase + 4);
+                            srv->adr.type = adr.type;
+                            srv->adr.ip[0] = adr.ip[0];
+                            srv->adr.ip[1] = adr.ip[1];
+                            srv->adr.ip[2] = adr.ip[2];
+                            srv->adr.ip[3] = adr.ip[3];
+                            srv->adr.port = adr.port;
+                            srv->clients = 0;
+                            srv->hostName[0] = '\0';
+                            srv->mapName[0] = '\0';
+                            srv->maxClients = 0;
+                            srv->minPing = 0;
+                            srv->maxPing = 0;
+                            srv->ping = -1;
+                            srv->game[0] = '\0';
+                            srv->gameType[0] = '\0';
+                            srv->netType = 0;
+                            srv->allowAnonymous = 0;
+                            srv->dirty = 1;
+                            srv->requestCount = 0;
+
+                            j++;
+                            srvBase += 0x88;
+                            if (j >= *(int *)((byte *)imp_cls + 0x4540))
+                                break;
+                            if (NET_CompareAdrSigned((const int *)&adr, (const int *)(srvBase + 4)) != 0)
+                            {
+                                cls = (byte *)imp_cls;
+                                break;
+                            }
+                        }
+                    }
+                    goto next_server;
+                }
+            }
+            cls = (byte *)imp_cls;
+        }
+
+        /* no duplicate found — append new server at position count */
+        {
+            serverInfo_t *srv = (serverInfo_t *)(cls + 0x4544 + count * 0x88);
+            srv->adr.type = 4; /* NA_IP */
+            srv->adr.ip[0] = ip[0];
+            srv->adr.ip[1] = ip[1];
+            srv->adr.ip[2] = ip[2];
+            srv->adr.ip[3] = ip[3];
+            srv->adr.port = port;
+            srv->clients = 0;
+            srv->hostName[0] = '\0';
+            srv->mapName[0] = '\0';
+            srv->maxClients = 0;
+            srv->minPing = 0;
+            srv->maxPing = 0;
+            srv->ping = -1;
+            srv->game[0] = '\0';
+            srv->gameType[0] = '\0';
+            srv->netType = 0;
+            srv->allowAnonymous = 0;
+            srv->dirty = 1;
+            srv->requestCount = 0;
+            count++;
+        }
+
+next_server:
+        ;
+    }
+
+    /* update numglobalservers and sort */
+    *(int *)(cls + 0x4540) = count;
+    qsort(cls + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
+
+    Com_Printf((const char *)str_002abc6c, numservers, count);
+        /* "%d servers parsed (total %d)\n" */
+
+    return 0;
 }
 
 /* line 898 */
-__attribute__((naked))
 int CL_Ping_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 898 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 904 */
-        "cmpl $2, %eax\n"
-        "je .Lf16106e_00161095\n"
-        "movl $str_002abc8c, (%esp)\n" /* line 906 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf16106e_0016108d:\n"
-        "addl $0x6c, %esp\n" /* line 928 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16106e_00161095:\n"
-        "leal -0x3c(%ebp), %ebx\n" /* line 910 | to */
-        "movl $0, -0x3c(%ebp)\n" /* to */
-        "movl $0, -0x38(%ebp)\n"
-        "movl $0, -0x34(%ebp)\n"
-        "movl $1, (%esp)\n" /* line 912 */
-        "calll Cmd_Argv\n"
-        "movl %ebx, 4(%esp)\n" /* line 914 */
-        "movl %eax, (%esp)\n"
-        "calll NET_StringToAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf16106e_0016108d\n"
-        "calll Sys_Milliseconds\n" /* line 846 */
-        "movl %eax, %edi\n"
-        "movl imp_cl_pinglist, %ebx\n"
-        "movl %ebx, -0x4c(%ebp)\n"
-        "leal 8(%ebx), %edx\n"
-        "leal 0x4140(%ebx), %esi\n"
-        "jmp .Lf16106e_00161106\n"
-        ".Lf16106e_001610e4:\n"
-        "movl %edi, %eax\n" /* line 856 */
-        "subl 4(%edx), %eax\n"
-        "cmpl $0x1f3, %eax\n"
-        "jg .Lf16106e_0016111a\n"
-        ".Lf16106e_001610f0:\n"
-        "addl $0x414, %ebx\n" /* line 849 */
-        "addl $0x414, %edx\n"
-        "movl %esi, %ecx\n"
-        "cmpl %ebx, %esi\n"
-        "je .Lf16106e_001611ab\n"
-        ".Lf16106e_00161106:\n"
-        "cmpw $0, (%edx)\n" /* line 852 */
-        "je .Lf16106e_0016111a\n"
-        "movl 8(%edx), %eax\n" /* line 854 */
-        "testl %eax, %eax\n"
-        "je .Lf16106e_001610e4\n"
-        "cmpl $0x1f3, %eax\n" /* line 862 */
-        "jle .Lf16106e_001610f0\n"
-        ".Lf16106e_0016111a:\n"
-        "movw $0, 8(%ebx)\n" /* line 870 */
-        ".Lf16106e_00161120:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 921 | to */
-        "movl %eax, (%ebx)\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 4(%ebx)\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, 8(%ebx)\n"
-        "calll Sys_Milliseconds\n" /* line 922 */
-        "movl %eax, 0xc(%ebx)\n"
-        "movl $0, 0x10(%ebx)\n" /* line 923 */
-        "movl (%ebx), %ecx\n" /* line 925 */
-        "movl %ecx, -0x30(%ebp)\n"
-        "movl 4(%ebx), %edx\n"
-        "movl %edx, -0x2c(%ebp)\n"
-        "movl 8(%ebx), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll CL_SetServerInfoByAddress\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 927 | to */
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl -0x38(%ebp), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl $str_002a9420, 0x10(%esp)\n" /* "getinfo xxx" */
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll NET_OutOfBandPrint\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 928 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf16106e_001611ab:\n"
-        "movl -0x4c(%ebp), %ebx\n" /* line 849 */
-        "movl %ebx, %edx\n"
-        "movl $0x80000000, %esi\n"
-        ".Lf16106e_001611b5:\n"
-        "movl %edi, %eax\n" /* line 881 */
-        "subl 0xc(%edx), %eax\n"
-        "cmpl %esi, %eax\n" /* line 882 */
-        "jle .Lf16106e_001611c2\n"
-        "movl %edx, %ebx\n"
-        "movl %eax, %esi\n"
-        ".Lf16106e_001611c2:\n"
-        "addl $0x414, %edx\n" /* line 878 */
-        "cmpl %edx, %ecx\n"
-        "jne .Lf16106e_001611b5\n"
-        "jmp .Lf16106e_00161120\n"
-    );
+    netadr_t to;
+    int now;
+    byte *pinglist;
+    byte *entry;
+    byte *endEntry;
+    byte *bestEntry;
+
+    if (Cmd_Argc() != 2)
+    {
+        Com_Printf((const char *)str_002abc8c); /* "usage: ping [server]\n" */
+        return 0;
+    }
+
+    /* zero out the address */
+    memset(&to, 0, sizeof(netadr_t));
+
+    /* resolve server address */
+    if (!NET_StringToAdr(Cmd_Argv(1), &to))
+        return 0;
+
+    /* CL_GetFreePing — find a free or expired ping slot */
+    now = Sys_Milliseconds();
+    pinglist = (byte *)imp_cl_pinglist;
+    entry = pinglist;
+    endEntry = pinglist + 16 * 0x414;
+
+    while (entry != endEntry)
+    {
+        /* check if port is zero (empty slot) */
+        if (*(unsigned short *)(entry + 8) == 0)
+            goto found_slot;
+
+        /* check if ping time was received */
+        {
+            int pingTime = *(int *)(entry + 0x10);
+            if (pingTime == 0)
+            {
+                /* not yet received — check if timed out (> 499ms) */
+                int elapsed = now - *(int *)(entry + 0xc);
+                if (elapsed > 0x1f3)
+                    goto found_slot;
+            }
+            else if (pingTime > 0x1f3)
+            {
+                /* ping was received but > 499ms — slot can be reused */
+                goto found_slot;
+            }
+        }
+
+        entry += 0x414;
+    }
+
+    /* no free slot found — find oldest entry to reuse */
+    {
+        byte *scan = pinglist;
+        int oldest = (int)0x80000000;
+        bestEntry = pinglist;
+
+        while (scan != endEntry)
+        {
+            int age = now - *(int *)(scan + 0xc);
+            if (age > oldest)
+            {
+                bestEntry = scan;
+                oldest = age;
+            }
+            scan += 0x414;
+        }
+        entry = bestEntry;
+        goto fill_slot;
+    }
+
+found_slot:
+    *(unsigned short *)(entry + 8) = 0; /* clear port */
+
+fill_slot:
+    /* store the address in the ping entry */
+    memcpy(entry, &to, sizeof(netadr_t));
+
+    /* record start time */
+    *(int *)(entry + 0xc) = Sys_Milliseconds();
+    *(int *)(entry + 0x10) = 0; /* no response yet */
+
+    /* update server info */
+    {
+        netadr_t entryAdr;
+        memcpy(&entryAdr, entry, sizeof(netadr_t));
+        CL_SetServerInfoByAddress(entryAdr, NULL, 0);
+    }
+
+    /* send getinfo request */
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002a9420);
+        /* "getinfo xxx" */
+
+    return 0;
 }
 
 /* line 313 */
-__attribute__((naked))
 int CL_Connect_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 313 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1: chs */
-        "calll Cmd_Argc\n" /* line 317 */
-        "cmpl $2, %eax\n"
-        "je .Lf1611d2_001611f9\n"
-        "movl $str_002abca4, (%esp)\n" /* line 319 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1611d2_001611f1:\n"
-        "addl $0x4c, %esp\n" /* line 382 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: chs */
-        ".Lf1611d2_001611f9:\n"
-        "movl $0, (%esp)\n" /* line 323 */
-        "calll SND_StopSounds\n"
-        "movl imp_clc, %eax\n" /* line 326 */
-        "movl (%eax), %eax\n"
-        "movb $0, 0x28(%eax)\n"
-        "movl $1, (%esp)\n" /* line 328 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* server */
-        "movl imp_com_sv_running, %eax\n" /* line 330 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1611d2_0016140a\n"
-        ".Lf1611d2_0016122f:\n"
-        "movl imp_legacyHacks, %edx\n"
-        ".Lf1611d2_00161235:\n"
-        "movl (%edx), %eax\n" /* line 336 */
-        "movb $0, 0x5c(%eax)\n"
-        "movl (%edx), %eax\n" /* line 337 */
-        "movb $0, 0x9c(%eax)\n"
-        "movl $0, (%esp)\n" /* line 339 */
-        "calll SV_Frame\n"
-        "calll CL_Disconnect\n" /* line 341 */
-        "calll Con_Close\n" /* line 342 */
-        "movl $0x100, 8(%esp)\n" /* line 344 */
-        "movl %ebx, 4(%esp)\n" /* server */
-        "movl imp_cls, %esi\n"
-        "addl $8, %esi\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl imp_clc, %eax\n" /* line 346 */
-        "movl (%eax), %ebx\n" /* server */
-        "leal 0x14(%ebx), %eax\n" /* server */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll NET_StringToAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf1611d2_001613f3\n"
-        "cmpw $0, 0x1c(%ebx)\n" /* line 352 | server */
-        "je .Lf1611d2_001613e8\n"
-        ".Lf1611d2_001612a0:\n"
-        "movzwl 0x1c(%ebx), %eax\n" /* line 356 | server */
-        "rolw $8, %ax\n" /* line 925 */
-        "cwtl\n" /* line 356 */
-        "movl %eax, 0x18(%esp)\n"
-        "movzbl 0x1b(%ebx), %eax\n" /* server */
-        "movl %eax, 0x14(%esp)\n"
-        "movzbl 0x1a(%ebx), %eax\n" /* server */
-        "movl %eax, 0x10(%esp)\n"
-        "movzbl 0x19(%ebx), %eax\n" /* server */
-        "movl %eax, 0xc(%esp)\n"
-        "movzbl 0x18(%ebx), %eax\n" /* server */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
-" */
-        "calll Com_Printf\n"
-        "movl 0x14(%ebx), %ecx\n" /* line 359 | server */
-        "movl %ecx, -0x38(%ebp)\n"
-        "movl 0x18(%ebx), %edx\n" /* server */
-        "movl %edx, -0x34(%ebp)\n"
-        "movl 0x1c(%ebx), %eax\n" /* server */
-        "movl %eax, -0x30(%ebp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_IsLocalAddress\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1611d2_00161372\n"
-        "xorl %edx, %edx\n"
-        "movl imp_cl_cdkey, %ecx\n"
-        "leal 0x10(%ecx), %ebx\n" /* server */
-        /* { scope 2 */
-        ".Lf1611d2_0016130e:\n"
-        "movsbl (%ecx), %eax\n" /* line 405 */
-        "xorl %eax, %edx\n"
-        "movl $8, %eax\n"
-        "jmp .Lf1611d2_00161327\n"
-        ".Lf1611d2_0016131a:\n"
-        "shrl $1, %edx\n" /* line 410 */
-        "xorl $0xa001, %edx\n"
-        "subl $1, %eax\n" /* line 407 */
-        "je .Lf1611d2_00161333\n"
-        ".Lf1611d2_00161327:\n"
-        "testb $1, %dl\n" /* line 409 */
-        "jne .Lf1611d2_0016131a\n"
-        "shrl $1, %edx\n" /* line 412 */
-        "subl $1, %eax\n" /* line 407 */
-        "jne .Lf1611d2_00161327\n"
-        ".Lf1611d2_00161333:\n"
-        "addl $1, %ecx\n"
-        "cmpl %ebx, %ecx\n" /* line 403 | server */
-        "jne .Lf1611d2_0016130e\n"
-        "movl %edx, 8(%esp)\n" /* line 416 */
-        "movl $str_00228f18, 4(%esp)\n" /* "%04x" */
-        "leal -0x1d(%ebp), %ebx\n" /* chs, server */
-        "movl %ebx, (%esp)\n" /* server */
-        "calll sprintf\n"
-        "movl $4, 8(%esp)\n" /* line 418 */
-        "movl imp_cl_cdkeychecksum, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* server */
-        "calll I_strnicmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1611d2_0016145b\n"
-        /* } scope */
-        ".Lf1611d2_00161372:\n"
-        "movl imp_clc, %esi\n" /* line 366 */
-        "movl (%esi), %ebx\n" /* server */
-        "movl 0x14(%ebx), %ecx\n" /* server */
-        "movl %ecx, -0x2c(%ebp)\n"
-        "movl 0x18(%ebx), %edx\n" /* server */
-        "movl %edx, -0x28(%ebp)\n"
-        "movl 0x1c(%ebx), %eax\n" /* server */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_IsLocalAddress\n"
-        "testl %eax, %eax\n"
-        "je .Lf1611d2_00161446\n"
-        "movl $4, (%ebx)\n" /* line 367 | server */
-        "movl (%esi), %edx\n"
-        ".Lf1611d2_001613ac:\n"
-        "movl imp_cl, %eax\n" /* line 371 */
-        "movl (%eax), %eax\n"
-        "movl $0, 4(%eax)\n"
-        "movb $0, 8(%eax)\n" /* line 372 */
-        "movl $0xfffe7961, 0x20(%edx)\n" /* line 373 */
-        "movl $0, 0x24(%edx)\n" /* line 374 */
-        "movl imp_g_qport, %eax\n" /* line 377 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "calll UI_CloseAll\n" /* line 380 */
-        "calll SCR_UpdateScreen\n" /* line 381 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 382 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: chs */
-        ".Lf1611d2_001613e8:\n"
-        "movw $0x2071, 0x1c(%ebx)\n" /* line 354 | server */
-        "jmp .Lf1611d2_001612a0\n"
-        ".Lf1611d2_001613f3:\n"
-        "movl $str_002abcc0, (%esp)\n" /* line 348 */
-        "calll Com_Printf\n"
-        "movl $0, (%ebx)\n" /* line 349 | server */
-        "jmp .Lf1611d2_001611f1\n"
-        ".Lf1611d2_0016140a:\n"
-        "movl $str_002a8ab8, %edi\n" /* line 330 */
-        "movl $0xa, %ecx\n"
-        "cld\n"
-        "movl %ebx, %esi\n" /* server */
-        "repe cmpsb %es:(%edi), (%esi)\n"
-        "movl $0, %edx\n"
-        "je .Lf1611d2_0016142a\n"
-        "movzbl -1(%esi), %edx\n"
-        "movzbl -1(%edi), %ecx\n"
-        "subl %ecx, %edx\n"
-        ".Lf1611d2_0016142a:\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1611d2_0016122f\n"
-        "movl imp_legacyHacks, %edx\n" /* line 333 */
-        "movl (%edx), %eax\n"
-        "movb $1, 0xdd(%eax)\n"
-        "jmp .Lf1611d2_00161235\n"
-        ".Lf1611d2_00161446:\n"
-        "movl imp_clc, %edx\n" /* line 369 */
-        "movl (%edx), %eax\n"
-        "movl $3, (%eax)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1611d2_001613ac\n"
-        ".Lf1611d2_0016145b:\n"
-        "movl $str_002a9280, 4(%esp)\n" /* line 361 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1611d2_001611f1\n"
-    );
+    const char *server;
+    byte *clc;
+    byte *cls_servername;
+
+    if (Cmd_Argc() != 2)
+    {
+        Com_Printf((const char *)str_002abca4); /* "usage: connect [server]\n" */
+        return 0;
+    }
+
+    SND_StopSounds(0);
+
+    /* clear server message */
+    clc = *(byte **)imp_clc;
+    *(byte *)(clc + 0x28) = 0; /* serverMessage[0] = 0 */
+
+    server = Cmd_Argv(1);
+
+    /* check if local server is running */
+    {
+        byte *sv_running = *(byte **)imp_com_sv_running;
+        if (*(byte *)(sv_running + 8) != 0)
+        {
+            /* compare server arg with "localhost" (10 chars including null) */
+            if (memcmp(server, (const char *)str_002a8ab8, 10) == 0) /* "localhost" */
+            {
+                /* connecting to localhost while server is running */
+                byte *legacyHacks = *(byte **)imp_legacyHacks;
+                *(byte *)(legacyHacks + 0xdd) = 1;
+            }
+        }
+    }
+
+    {
+        byte *legacyHacks = *(byte **)imp_legacyHacks;
+        *(byte *)(legacyHacks + 0x5c) = 0;
+        legacyHacks = *(byte **)imp_legacyHacks;
+        *(byte *)(legacyHacks + 0x9c) = 0;
+    }
+
+    SV_Frame(0);
+    CL_Disconnect();
+    Con_Close();
+
+    /* copy server name to cls->servername */
+    cls_servername = (byte *)imp_cls + 8;
+    I_strncpyz((char *)cls_servername, server, 0x100);
+
+    /* resolve server address into clc->serverAddress */
+    clc = *(byte **)imp_clc;
+    if (!NET_StringToAdr((const char *)cls_servername, (netadr_t *)(clc + 0x14)))
+    {
+        Com_Printf((const char *)str_002abcc0); /* "Bad server address\n" */
+        *(int *)clc = 0; /* state = 0 */
+        return 0;
+    }
+
+    /* set default port if not specified */
+    if (*(unsigned short *)(clc + 0x1c) == 0)
+    {
+        *(unsigned short *)(clc + 0x1c) = 0x2071; /* 28817 (network byte order) */
+    }
+
+    /* print resolved address */
+    {
+        unsigned short netPort = *(unsigned short *)(clc + 0x1c);
+        /* byte swap port for display */
+        short displayPort = (short)((netPort >> 8) | (netPort << 8));
+        Com_Printf((const char *)str_002a92e0, /* "%s resolved to %i.%i.%i.%i:%i\n" */
+            cls_servername,
+            (int)*(byte *)(clc + 0x18),
+            (int)*(byte *)(clc + 0x19),
+            (int)*(byte *)(clc + 0x1a),
+            (int)*(byte *)(clc + 0x1b),
+            (int)displayPort);
+    }
+
+    /* CD key validation (unless connecting to local address) */
+    if (!NET_IsLocalAddress(*(int *)(clc + 0x14), *(int *)(clc + 0x18), *(int *)(clc + 0x1c)))
+    {
+        /* CRC16 CD key checksum */
+        unsigned int crc = 0;
+        byte *cdkey = (byte *)imp_cl_cdkey;
+        byte *cdkeyEnd = cdkey + 16;
+        char chs[8];
+
+        while (cdkey != cdkeyEnd)
+        {
+            int ch = (signed char)*cdkey;
+            int j;
+            crc ^= (unsigned int)ch;
+            for (j = 8; j != 0; j--)
+            {
+                if (crc & 1)
+                {
+                    crc >>= 1;
+                    crc ^= 0xa001;
+                }
+                else
+                {
+                    crc >>= 1;
+                }
+            }
+            cdkey++;
+        }
+
+        sprintf(chs, (const char *)str_00228f18, crc); /* "%04x" */
+
+        if (I_strnicmp(chs, (const char *)imp_cl_cdkeychecksum, 4) != 0)
+        {
+            Com_Error(1, (const char *)str_002a9280); /* "EXE_ERR_INVALID_CD_KEY" */
+            return 0;
+        }
+    }
+
+    /* set connection state */
+    {
+        byte *clcPtr;
+        clc = *(byte **)imp_clc;
+
+        if (NET_IsLocalAddress(*(int *)(clc + 0x14), *(int *)(clc + 0x18), *(int *)(clc + 0x1c)))
+        {
+            *(int *)clc = 4; /* CA_CHALLENGING (local) */
+        }
+        else
+        {
+            clcPtr = *(byte **)imp_clc;
+            *(int *)clcPtr = 3; /* CA_CONNECTING */
+            clc = clcPtr;
+        }
+    }
+
+    /* initialize client state */
+    {
+        byte *cl = *(byte **)imp_cl;
+        *(int *)(cl + 4) = 0;
+        *(byte *)(cl + 8) = 0;
+    }
+
+    /* set connect time and packet count */
+    *(int *)(clc + 0x20) = (int)0xfffe7961; /* connectTime = large negative (forces immediate connect) */
+    *(int *)(clc + 0x24) = 0;              /* connectPacketCount = 0 */
+
+    /* set qport */
+    *(int *)(clc + 0x04) = *(int *)imp_g_qport; /* clc->qport */
+
+    UI_CloseAll();
+    SCR_UpdateScreen();
+
+    return 0;
 }
 
 /* line 980 */
-__attribute__((naked))
 int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 980 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xac, %esp\n"
-        "movl 8(%ebp), %edx\n" /* serverAddress */
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 987 */
-        "je .Lf161474_001616ef\n"
-        "leal -0x6c(%ebp), %eax\n" /* line 997 | to */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll NET_StringToAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf161474_001616e2\n"
-        "movl -0x64(%ebp), %eax\n" /* line 1001 */
-        "movw %ax, -0x7a(%ebp)\n"
-        "movzbl -0x65(%ebp), %edx\n"
-        "movb %dl, -0x7b(%ebp)\n"
-        "movzbl -0x66(%ebp), %eax\n"
-        "movb %al, -0x7c(%ebp)\n"
-        "movzbl -0x67(%ebp), %edx\n"
-        "movb %dl, -0x7d(%ebp)\n"
-        "movzbl -0x68(%ebp), %eax\n"
-        "movb %al, -0x7e(%ebp)\n"
-        "movl -0x6c(%ebp), %edx\n" /* to */
-        "movl %edx, -0x8c(%ebp)\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl $cl_serverStatusList, %ebx\n" /* oldestTime */
-        /* { scope 2 */
-        ".Lf161474_001614d5:\n"
-        "movl 0x2000(%ebx), %ecx\n" /* line 944 | oldestTime */
-        "movl %ecx, -0x30(%ebp)\n"
-        "movl 0x2004(%ebx), %edx\n" /* oldestTime */
-        "movl %edx, -0x2c(%ebp)\n"
-        "movl 0x2008(%ebx), %edi\n" /* oldestTime */
-        "movl %edi, -0x28(%ebp)\n"
-        "movzwl -0x7a(%ebp), %eax\n"
-        "movw %ax, -0x40(%ebp)\n"
-        "movzbl -0x7b(%ebp), %eax\n"
-        "movb %al, -0x41(%ebp)\n"
-        "movzbl -0x7c(%ebp), %eax\n"
-        "movb %al, -0x42(%ebp)\n"
-        "movzbl -0x7d(%ebp), %eax\n"
-        "movb %al, -0x43(%ebp)\n"
-        "movzbl -0x7e(%ebp), %eax\n"
-        "movb %al, -0x44(%ebp)\n"
-        "movl -0x8c(%ebp), %edi\n"
-        "movl %edi, -0x48(%ebp)\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl 0x2008(%ebx), %eax\n" /* oldestTime */
-        "movl %eax, 0x14(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "movl -0x44(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_CompareAdr\n"
-        "testl %eax, %eax\n"
-        "jne .Lf161474_001615bb\n"
-        "addl $1, %esi\n" /* line 942 | i */
-        "addl $0x2020, %ebx\n" /* oldestTime */
-        "cmpl $0x10, %esi\n" /* i */
-        "jne .Lf161474_001614d5\n"
-        "xorl %edx, %edx\n"
-        "movl $cl_serverStatusList, %eax\n"
-        ".Lf161474_00161562:\n"
-        "movl 0x201c(%eax), %esi\n" /* line 951 | i */
-        "testl %esi, %esi\n" /* i */
-        "jne .Lf161474_0016178b\n"
-        "addl $1, %edx\n" /* line 949 */
-        "addl $0x2020, %eax\n"
-        "cmpl $0x10, %edx\n"
-        "jne .Lf161474_00161562\n"
-        ".Lf161474_0016157d:\n"
-        "xorl %esi, %esi\n" /* i */
-        "jmp .Lf161474_00161593\n"
-        ".Lf161474_00161581:\n"
-        "movl 0x2010(%edx), %eax\n" /* line 960 */
-        "addl $0x2020, %edx\n"
-        "cmpl %eax, %ebx\n" /* oldestTime */
-        "jle .Lf161474_001615b3\n"
-        "movl %ecx, %esi\n" /* i */
-        ".Lf161474_00161593:\n"
-        "movl %esi, %edx\n" /* line 963 | i */
-        "shll $5, %edx\n"
-        "movl %esi, %eax\n" /* i */
-        "shll $0xd, %eax\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl cl_serverStatusList+8208(%eax), %ebx\n" /* oldestTime */
-        "cmpl $-1, %esi\n" /* i */
-        "je .Lf161474_0016157d\n"
-        /* } scope */
-        "leal cl_serverStatusList+8224(%eax), %edx\n" /* line 1042 */
-        "movl %esi, %ecx\n" /* i */
-        /* { scope 2 */
-        ".Lf161474_001615b3:\n"
-        "addl $1, %ecx\n" /* line 958 */
-        "cmpl $0xf, %ecx\n"
-        "jle .Lf161474_00161581\n"
-        ".Lf161474_001615bb:\n"
-        "movl %esi, %eax\n" /* line 946 | i */
-        "shll $5, %eax\n"
-        "shll $0xd, %esi\n" /* i */
-        "leal cl_serverStatusList(%eax, %esi), %esi\n" /* i */
-        "movl %esi, -0x84(%ebp)\n" /* i, serverStatus */
-        /* } scope */
-        ".Lf161474_001615d0:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 1003 | serverStatusString, oldestTime */
-        "testl %ebx, %ebx\n" /* oldestTime */
-        "je .Lf161474_001616d2\n"
-        "movl -0x84(%ebp), %edx\n" /* line 1010 | serverStatus */
-        "movl 0x2000(%edx), %edi\n"
-        "movl %edi, -0x60(%ebp)\n"
-        "movl 0x2004(%edx), %esi\n" /* i */
-        "movl %esi, -0x5c(%ebp)\n" /* i */
-        "movl 0x2008(%edx), %ebx\n" /* oldestTime */
-        "movl %ebx, -0x58(%ebp)\n" /* oldestTime */
-        "movl -0x6c(%ebp), %ecx\n" /* to */
-        "movl %ecx, -0x54(%ebp)\n"
-        "movl -0x68(%ebp), %edx\n"
-        "movl %edx, -0x50(%ebp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n"
-        "movl %edi, 0xc(%esp)\n"
-        "movl %esi, 0x10(%esp)\n" /* i */
-        "movl %ebx, 0x14(%esp)\n" /* oldestTime */
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_CompareAdr\n"
-        "testl %eax, %eax\n"
-        "jne .Lf161474_00161717\n"
-        "movl -0x84(%ebp), %eax\n" /* line 1033 | serverStatus */
-        "movl 0x201c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf161474_001616e2\n"
-        "movl %eax, %edx\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 1035 | to */
-        "movl %eax, 0x2000(%edx)\n"
-        "movl -0x68(%ebp), %eax\n"
-        "movl %eax, 0x2004(%edx)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, 0x2008(%edx)\n"
-        "movl $0, 0x2018(%edx)\n" /* line 1036 */
-        "movl $1, 0x2014(%edx)\n" /* line 1037 */
-        "movl $0, 0x201c(%edx)\n" /* line 1038 */
-        "calll Sys_Milliseconds\n" /* line 1039 */
-        "movl -0x84(%ebp), %edi\n" /* serverStatus */
-        "movl %eax, 0x2010(%edi)\n"
-        "movl $0, 0x200c(%edi)\n" /* line 1040 */
-        "movl -0x6c(%ebp), %ecx\n" /* line 1041 | to */
-        "movl %ecx, -0x3c(%ebp)\n"
-        "movl -0x68(%ebp), %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        ".Lf161474_001616ae:\n"
-        "movl $str_002ab528, 0x10(%esp)\n" /* "getstatus" */
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll NET_OutOfBandPrint\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf161474_001616e4\n"
-        ".Lf161474_001616d2:\n"
-        "movl -0x84(%ebp), %eax\n" /* line 1005 | serverStatus */
-        "movl $1, 0x201c(%eax)\n"
-        ".Lf161474_001616e2:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf161474_001616e4:\n"
-        "addl $0xac, %esp\n" /* line 1045 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf161474_001616ef:\n"
-        "movl $cl_serverStatusList, %eax\n" /* line 987 */
-        "movl $cl_serverStatusList+131584, %edx\n"
-        ".Lf161474_001616f9:\n"
-        "movw $0, 0x2008(%eax)\n" /* line 991 */
-        "movl $1, 0x201c(%eax)\n" /* line 992 */
-        "addl $0x2020, %eax\n"
-        "cmpl %eax, %edx\n" /* line 989 */
-        "jne .Lf161474_001616f9\n"
-        "jmp .Lf161474_001616e2\n"
-        ".Lf161474_00161717:\n"
-        "movl -0x84(%ebp), %edi\n" /* line 1013 | serverStatus */
-        "movl 0x2014(%edi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf161474_001617a5\n"
-        "movl 0x2010(%edi), %ebx\n" /* line 1021 | oldestTime */
-        "calll Sys_Milliseconds\n"
-        "movl imp_cl_serverStatusResendTime, %edx\n"
-        "movl (%edx), %edx\n"
-        "subl 8(%edx), %eax\n"
-        "cmpl %eax, %ebx\n" /* oldestTime */
-        "jge .Lf161474_001616e2\n"
-        "movl $0, 0x2018(%edi)\n" /* line 1023 */
-        "movl $1, 0x2014(%edi)\n" /* line 1024 */
-        "movl $0, 0x201c(%edi)\n" /* line 1025 */
-        "movl $0, 0x200c(%edi)\n" /* line 1026 */
-        "calll Sys_Milliseconds\n" /* line 1027 */
-        "movl %eax, 0x2010(%edi)\n"
-        "movl -0x6c(%ebp), %ecx\n" /* line 1028 | to */
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl -0x68(%ebp), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "movl -0x64(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "jmp .Lf161474_001616ae\n"
-        /* { scope 2 */
-        ".Lf161474_0016178b:\n"
-        "movl %edx, %eax\n" /* line 953 */
-        "shll $5, %eax\n"
-        "shll $0xd, %edx\n"
-        "leal cl_serverStatusList(%eax, %edx), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* serverStatus */
-        "jmp .Lf161474_001615d0\n"
-        /* } scope */
-        ".Lf161474_001617a5:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 1015 | maxLen */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* serverStatusString */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $1, 0x201c(%edi)\n" /* line 1016 */
-        "movl $0, 0x2010(%edi)\n" /* line 1017 */
-        "movl $1, %eax\n"
-        "jmp .Lf161474_001616e4\n"
-    );
+    netadr_t to;
+    byte *serverStatus;
+    int i;
+
+    /* if serverAddress is NULL, reset all server status entries */
+    if (serverAddress == NULL)
+    {
+        byte *entry = (byte *)&cl_serverStatusList[0];
+        byte *end = entry + 16 * 0x2020;
+        while (entry != end)
+        {
+            *(unsigned short *)(entry + 0x2008) = 0; /* clear port */
+            *(int *)(entry + 0x201c) = 1;            /* mark as retrieved */
+            entry += 0x2020;
+        }
+        return 0;
+    }
+
+    /* resolve server address */
+    if (!NET_StringToAdr(serverAddress, &to))
+        return 0;
+
+    /* CL_GetServerStatusList — find matching or free entry */
+    /* first, search for existing entry with matching address */
+    serverStatus = NULL;
+    for (i = 0; i < 16; i++)
+    {
+        byte *entry = (byte *)&cl_serverStatusList[0] + i * 0x2020;
+        netadr_t entryAdr;
+        memcpy(&entryAdr, entry + 0x2000, sizeof(netadr_t));
+        if (NET_CompareAdr(to, entryAdr))
+        {
+            serverStatus = entry;
+            goto found_entry;
+        }
+    }
+
+    /* no match found — search for a free (retrieved) entry */
+    {
+        int idx;
+        byte *entry = (byte *)&cl_serverStatusList[0];
+        for (idx = 0; idx < 16; idx++)
+        {
+            if (*(int *)(entry + 0x201c) != 0) /* retrieved? */
+            {
+                serverStatus = entry;
+                goto found_entry;
+            }
+            entry += 0x2020;
+        }
+    }
+
+    /* no free entry — find oldest entry to reuse */
+    {
+        int bestIdx = 0;
+        int oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + 0x2010);
+        int j;
+
+        for (j = 1; j <= 15; j++)
+        {
+            int entryTime = *(int *)((byte *)&cl_serverStatusList[0] + j * 0x2020 + 0x2010);
+            if (oldestTime > entryTime)
+            {
+                bestIdx = j;
+                oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + bestIdx * 0x2020 + 0x2010);
+            }
+        }
+
+        serverStatus = (byte *)&cl_serverStatusList[0] + bestIdx * 0x2020;
+    }
+
+found_entry:
+
+    /* handle request based on serverStatusString */
+    if (serverStatusString == NULL)
+    {
+        /* no output string requested — just mark entry as retrieved */
+        *(int *)(serverStatus + 0x201c) = 1;
+        return 0;
+    }
+
+    /* check if the entry address matches our target */
+    {
+        netadr_t entryAdr;
+        memcpy(&entryAdr, serverStatus + 0x2000, sizeof(netadr_t));
+        if (NET_CompareAdr(to, entryAdr))
+        {
+            /* address matches — check if pending */
+            if (*(int *)(serverStatus + 0x2014) == 0)
+            {
+                /* not pending — data is ready, copy it out */
+                I_strncpyz(serverStatusString, (char *)serverStatus, maxLen);
+                *(int *)(serverStatus + 0x201c) = 1; /* mark as retrieved */
+                *(int *)(serverStatus + 0x2010) = 0; /* clear start time */
+                return 1;
+            }
+
+            /* pending — check if resend timer expired */
+            {
+                int startTime = *(int *)(serverStatus + 0x2010);
+                int now = Sys_Milliseconds();
+                byte *resendDvar = *(byte **)imp_cl_serverStatusResendTime;
+                int resendTime = *(int *)(resendDvar + 8);
+                if (startTime >= now - resendTime)
+                    return 0; /* still waiting */
+            }
+
+            /* resend timer expired — re-request */
+            *(int *)(serverStatus + 0x2018) = 0; /* print = 0 */
+            *(int *)(serverStatus + 0x2014) = 1; /* pending = 1 */
+            *(int *)(serverStatus + 0x201c) = 0; /* retrieved = 0 */
+            *(int *)(serverStatus + 0x200c) = 0; /* time = 0 */
+            *(int *)(serverStatus + 0x2010) = Sys_Milliseconds();
+
+            /* send getstatus */
+            NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+            return 0;
+        }
+    }
+
+    /* address doesn't match — check if entry has been retrieved */
+    if (*(int *)(serverStatus + 0x201c) == 0)
+        return 0;
+
+    /* re-initialize entry for new address */
+    memcpy(serverStatus + 0x2000, &to, sizeof(netadr_t));
+    *(int *)(serverStatus + 0x2018) = 0; /* print = 0 */
+    *(int *)(serverStatus + 0x2014) = 1; /* pending = 1 */
+    *(int *)(serverStatus + 0x201c) = 0; /* retrieved = 0 */
+    *(int *)(serverStatus + 0x2010) = Sys_Milliseconds();
+    *(int *)(serverStatus + 0x200c) = 0; /* time = 0 */
+
+    /* send getstatus */
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+    return 0;
 }
 
 /* line 1053 */
-__attribute__((naked))
 int CL_ServerStatus_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1053 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        /* { scope 1 */
-        "movl $0xc, 8(%esp)\n" /* line 1059 */
-        "movl $0, 4(%esp)\n"
-        "leal -0x48(%ebp), %ebx\n" /* to */
-        "movl %ebx, (%esp)\n"
-        "calll Com_Memset\n"
-        "calll Cmd_Argc\n" /* line 1061 */
-        "cmpl $2, %eax\n"
-        "je .Lf1617da_001619a7\n"
-        "movl imp_clc, %eax\n" /* line 1063 */
-        "movl (%eax), %eax\n"
-        "cmpl $8, (%eax)\n"
-        "je .Lf1617da_00161838\n"
-        ".Lf1617da_00161818:\n"
-        "movl $str_002a8b24, (%esp)\n" /* line 1065 */
-        "calll Com_Printf\n"
-        "movl $str_002abcd4, (%esp)\n" /* line 1066 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1617da_00161830:\n"
-        "addl $0x7c, %esp\n" /* line 1087 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1617da_00161838:\n"
-        "movl 0x407a0(%eax), %eax\n" /* line 1063 */
-        "testl %eax, %eax\n"
-        "jne .Lf1617da_00161818\n"
-        "movl imp_cls, %eax\n"
-        "addl $8, %eax\n"
-        ".Lf1617da_0016184a:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1076 */
-        "movl %eax, (%esp)\n"
-        "calll NET_StringToAdr\n"
-        "testl %eax, %eax\n"
-        "je .Lf1617da_00161830\n"
-        "movl -0x48(%ebp), %ecx\n" /* line 1081 | to */
-        "movl %ecx, -0x3c(%ebp)\n"
-        "movl -0x44(%ebp), %edx\n"
-        "movl %edx, -0x38(%ebp)\n"
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movl $str_002ab528, 0x10(%esp)\n" /* "getstatus" */
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll NET_OutOfBandPrint\n"
-        "movl -0x40(%ebp), %eax\n" /* line 1083 */
-        "movw %ax, -0x4a(%ebp)\n"
-        "movzbl -0x41(%ebp), %eax\n"
-        "movb %al, -0x4b(%ebp)\n"
-        "movzbl -0x42(%ebp), %eax\n"
-        "movb %al, -0x4c(%ebp)\n"
-        "movzbl -0x43(%ebp), %eax\n"
-        "movb %al, -0x4d(%ebp)\n"
-        "movzbl -0x44(%ebp), %eax\n"
-        "movb %al, -0x4e(%ebp)\n"
-        "movl -0x48(%ebp), %edi\n" /* to */
-        "movl %edi, -0x5c(%ebp)\n"
-        "xorl %esi, %esi\n" /* oldestTime */
-        "movl $cl_serverStatusList, %ebx\n"
-        /* { scope 2 */
-        ".Lf1617da_001618bc:\n"
-        "movl 0x2000(%ebx), %ecx\n" /* line 944 */
-        "movl %ecx, -0x30(%ebp)\n"
-        "movl 0x2004(%ebx), %edx\n"
-        "movl %edx, -0x2c(%ebp)\n"
-        "movl 0x2008(%ebx), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movzwl -0x4a(%ebp), %edi\n"
-        "movw %di, -0x1c(%ebp)\n"
-        "movzbl -0x4b(%ebp), %eax\n"
-        "movb %al, -0x1d(%ebp)\n"
-        "movzbl -0x4c(%ebp), %eax\n"
-        "movb %al, -0x1e(%ebp)\n"
-        "movzbl -0x4d(%ebp), %eax\n"
-        "movb %al, -0x1f(%ebp)\n"
-        "movzbl -0x4e(%ebp), %eax\n"
-        "movb %al, -0x20(%ebp)\n"
-        "movl -0x5c(%ebp), %edi\n"
-        "movl %edi, -0x24(%ebp)\n"
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %edx, 0x10(%esp)\n"
-        "movl 0x2008(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_CompareAdr\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1617da_001619b8\n"
-        "addl $1, %esi\n" /* line 942 | oldestTime */
-        "addl $0x2020, %ebx\n"
-        "cmpl $0x10, %esi\n" /* oldestTime */
-        "jne .Lf1617da_001618bc\n"
-        "xorl %edx, %edx\n"
-        "movl $cl_serverStatusList, %eax\n"
-        ".Lf1617da_0016194a:\n"
-        "movl 0x201c(%eax), %edi\n" /* line 951 */
-        "testl %edi, %edi\n"
-        "jne .Lf1617da_00161a0f\n"
-        "addl $1, %edx\n" /* line 949 */
-        "addl $0x2020, %eax\n"
-        "cmpl $0x10, %edx\n"
-        "jne .Lf1617da_0016194a\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf1617da_00161967:\n"
-        "movl %ebx, %edx\n" /* line 963 */
-        "shll $5, %edx\n"
-        "movl %ebx, %eax\n"
-        "shll $0xd, %eax\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl cl_serverStatusList+8208(%eax), %esi\n" /* oldestTime */
-        "cmpl $-1, %ebx\n"
-        "je .Lf1617da_00161a20\n"
-        /* } scope */
-        "leal cl_serverStatusList+8224(%eax), %edx\n" /* line 1086 */
-        "movl %ebx, %ecx\n"
-        /* { scope 2 */
-        ".Lf1617da_0016198b:\n"
-        "addl $1, %ecx\n" /* line 958 */
-        "cmpl $0xf, %ecx\n"
-        "jg .Lf1617da_001619fe\n"
-        "movl 0x2010(%edx), %eax\n" /* line 960 */
-        "addl $0x2020, %edx\n"
-        "cmpl %eax, %esi\n" /* oldestTime */
-        "jle .Lf1617da_0016198b\n"
-        "movl %ecx, %ebx\n" /* line 949 */
-        "jmp .Lf1617da_00161967\n"
-        /* } scope */
-        ".Lf1617da_001619a7:\n"
-        "movl $1, (%esp)\n" /* line 1073 */
-        "calll Cmd_Argv\n"
-        "jmp .Lf1617da_0016184a\n"
-        /* { scope 2 */
-        ".Lf1617da_001619b8:\n"
-        "movl %esi, %eax\n" /* line 946 | oldestTime */
-        "shll $5, %eax\n"
-        "shll $0xd, %esi\n" /* oldestTime */
-        "leal cl_serverStatusList(%eax, %esi), %edx\n"
-        /* } scope */
-        ".Lf1617da_001619c7:\n"
-        "movl -0x48(%ebp), %eax\n" /* line 1084 | to */
-        "movl %eax, 0x2000(%edx)\n"
-        "movl -0x44(%ebp), %eax\n"
-        "movl %eax, 0x2004(%edx)\n"
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 0x2008(%edx)\n"
-        "movl $1, 0x2018(%edx)\n" /* line 1085 */
-        "movl $1, 0x2014(%edx)\n" /* line 1086 */
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 1087 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1617da_001619fe:\n"
-        "movl %ebx, %eax\n" /* line 968 */
-        "shll $5, %eax\n"
-        "shll $0xd, %ebx\n"
-        "leal cl_serverStatusList(%eax, %ebx), %edx\n"
-        "jmp .Lf1617da_001619c7\n"
-        ".Lf1617da_00161a0f:\n"
-        "movl %edx, %eax\n" /* line 953 */
-        "shll $5, %eax\n"
-        "shll $0xd, %edx\n"
-        "leal cl_serverStatusList(%eax, %edx), %edx\n"
-        "jmp .Lf1617da_001619c7\n"
-        ".Lf1617da_00161a20:\n"
-        "xorl %ecx, %ecx\n" /* line 949 */
-        "movl %ecx, %ebx\n"
-        "jmp .Lf1617da_00161967\n"
-    );
+    netadr_t to;
+    const char *serverAddr;
+    byte *statusEntry;
+    int i;
+
+    Com_Memset(&to, 0, sizeof(netadr_t));
+
+    if (Cmd_Argc() == 2)
+    {
+        /* explicit server address argument */
+        serverAddr = Cmd_Argv(1);
+    }
+    else
+    {
+        /* use current connection */
+        byte *clc = *(byte **)imp_clc;
+        if (*(int *)clc != 8) /* state != CA_ACTIVE */
+            goto not_connected;
+        if (*(int *)(clc + 0x407a0) != 0)
+            goto not_connected;
+
+        serverAddr = (const char *)((byte *)imp_cls + 8); /* cls->servername */
+    }
+
+    /* resolve address */
+    if (!NET_StringToAdr(serverAddr, &to))
+        return 0;
+
+    /* send getstatus request */
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+        /* "getstatus" */
+
+    /* CL_GetServerStatusList — find or allocate entry for this address */
+    /* search for matching address */
+    {
+        byte *entry = (byte *)&cl_serverStatusList[0];
+        for (i = 0; i < 16; i++)
+        {
+            netadr_t entryAdr;
+            memcpy(&entryAdr, entry + 0x2000, sizeof(netadr_t));
+            if (NET_CompareAdr(to, entryAdr))
+            {
+                statusEntry = entry;
+                goto store_entry;
+            }
+            entry += 0x2020;
+        }
+    }
+
+    /* no match — search for free (retrieved) entry */
+    {
+        int idx;
+        byte *entry = (byte *)&cl_serverStatusList[0];
+        for (idx = 0; idx < 16; idx++)
+        {
+            if (*(int *)(entry + 0x201c) != 0)
+            {
+                statusEntry = entry;
+                goto store_entry;
+            }
+            entry += 0x2020;
+        }
+    }
+
+    /* no free entry — find oldest to reuse */
+    {
+        int bestIdx = 0;
+        int oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + 0x2010);
+        int j;
+
+        for (j = 1; j <= 15; j++)
+        {
+            int entryTime = *(int *)((byte *)&cl_serverStatusList[0] + j * 0x2020 + 0x2010);
+            if (oldestTime > entryTime)
+            {
+                bestIdx = j;
+                oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + bestIdx * 0x2020 + 0x2010);
+            }
+        }
+
+        statusEntry = (byte *)&cl_serverStatusList[0] + bestIdx * 0x2020;
+    }
+
+store_entry:
+    /* store address and mark for printing */
+    memcpy(statusEntry + 0x2000, &to, sizeof(netadr_t));
+    *(int *)(statusEntry + 0x2018) = 1; /* print = 1 */
+    *(int *)(statusEntry + 0x2014) = 1; /* pending = 1 */
+
+    return 0;
+
+not_connected:
+    Com_Printf((const char *)str_002a8b24); /* "Not connected to a server.\n" */
+    Com_Printf((const char *)str_002abcd4); /* "Usage: serverstatus [server]\n" */
+    return 0;
 }

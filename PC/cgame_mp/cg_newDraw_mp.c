@@ -86,7 +86,7 @@ static const char * CG_GetUseString(void);
 static void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle);
 static void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontscale, int textStyle);
 const char * CG_GetTranslatedLocationString(int iLocation);
-static void __attribute__((regparm(3), sseregparm)) CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle);
+static void __attribute_regparm__(3) CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle);
 const char * CG_GetKillerText(void);
 const char * CG_GameTypeString(void);
 int CG_KeyInterceptEvent(int key, qboolean down);
@@ -692,7 +692,7 @@ const char * CG_GetTranslatedLocationString(int iLocation)
 }
 
 /* line 1665 */
-static void __attribute__((regparm(3), sseregparm))
+static void __attribute_regparm__(3)
 CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, vec_t *color, MaterialHandle material, int textStyle)
 {
     cgs_t *cgs;

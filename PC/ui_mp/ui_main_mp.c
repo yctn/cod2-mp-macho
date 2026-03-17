@@ -4733,6 +4733,7 @@ static void UI_BuildServerStatus_impl(int force)
     }
 }
 
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void UI_BuildServerStatus(void)
 {
@@ -4744,8 +4745,12 @@ void UI_BuildServerStatus(void)
         "retl\n"
     );
 }
+#else
+static void UI_BuildServerStatus(void) { }
+#endif
 
 /* line 513 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void UI_Refresh(void)
 {
@@ -4878,6 +4883,9 @@ void UI_Refresh(void)
         "jmp .Lf154328_00154461\n"
     );
 }
+#else
+void UI_Refresh(void) { }
+#endif
 
 /* line 2141 */
 void UI_RunMenuScript(const char * *args)

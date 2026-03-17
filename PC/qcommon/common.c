@@ -348,11 +348,15 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
         {
             int uiStarted;
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
                 "movl imp_cls, %%eax\n"
                 "movl 0x110(%%eax), %%eax\n"
                 : "=a"(uiStarted) :: "memory"
             );
+#else
+    uiStarted = 0;
+#endif
 #else
             uiStarted = 0;
 #endif
@@ -362,11 +366,15 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
                     UI_SetActiveMenu(1);
                 }
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ (
                     "movl imp_cls, %%eax\n"
                     "movl 0x110(%%eax), %%eax\n"
                     : "=a"(uiStarted) :: "memory"
                 );
+#else
+    uiStarted = 0;
+#endif
 #else
             uiStarted = 0; /* inline asm not available */
 #endif
@@ -941,7 +949,7 @@ void Com_SetRecommended(qboolean restart)
 
     filesize = FS_ReadFile("configure_mp.csv", &csv);
     if (filesize < 0)
-        Com_Error(0, "EXE_ERR_NOT_FOUND\x15configure_mp.csv");
+        Com_Error(0, "EXE_ERR_NOT_FOUND\x15" "configure_mp.csv");
 
     text = (const char *)csv;
     Com_BeginParseSession("configure_mp.csv");
@@ -975,11 +983,11 @@ void Com_SetRecommended(qboolean restart)
             const char *col2;
 
             if (stricmp(token, "cpu ghz") != 0)
-                Com_Error(0, "\x15configure_mp.csv: \"cpu ghz\" should be the first column\n");
+                Com_Error(0, "\x15" "configure_mp.csv: \"cpu ghz\" should be the first column\n");
 
             col2 = Com_ParseOnLine(&text);
             if (stricmp(col2, "sys mb") != 0)
-                Com_Error(0, "\x15configure_mp.csv: \"sys mb\" should be the second column\n");
+                Com_Error(0, "\x15" "configure_mp.csv: \"sys mb\" should be the second column\n");
 
             dvarCount = Com_GetConfigureDvarNames(&text, dvarNames);
             Com_SkipRestOfLine(&text);
@@ -1135,7 +1143,7 @@ void Com_CheckSetRecommended(void)
         void *csv;
         int filesize = FS_ReadFile("configure_mp.csv", &csv);
         if (filesize < 0)
-            Com_Error(0, "EXE_ERR_NOT_FOUND\x15configure_mp.csv");
+            Com_Error(0, "EXE_ERR_NOT_FOUND\x15" "configure_mp.csv");
         {
             int checksum = 0;
             if (filesize > 0) {
@@ -1320,7 +1328,11 @@ static void Com_ErrorCleanup(void)
     {
         void *re;
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
+#else
+    re = 0;
+#endif
 #else
             re = 0; /* inline asm not available */
 #endif
@@ -1347,11 +1359,15 @@ static void Com_ErrorCleanup(void)
         }
     } else {
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl imp_cls, %%eax\n"
             "movl 0x110(%%eax), %%eax\n"
             : "=a"(rendererStarted) :: "memory"
         );
+#else
+    rendererStarted = 0;
+#endif
 #else
             rendererStarted = 0; /* inline asm not available */
 #endif
@@ -1372,7 +1388,11 @@ static void Com_ErrorCleanup(void)
     {
         void *re;
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
+#else
+    re = 0;
+#endif
 #else
             re = 0; /* inline asm not available */
 #endif
@@ -1402,11 +1422,15 @@ static void Com_ErrorCleanup(void)
     }
 
     /* Clear updateScreenCalled */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl imp_updateScreenCalled, %%eax\n"
         "movb $0, (%%eax)\n"
         ::: "eax", "memory"
     );
+#else
+    /* x86 asm */
+#endif
 
     if (errorcode == 2) {
         Com_ShutdownInternal("Server fatal crashed: %s\n");
@@ -1419,11 +1443,15 @@ static void Com_ErrorCleanup(void)
     Com_Printf("********************\nERROR: %s\n********************\n", com_errorMessage);
     if (errorcode == 1) {
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
         __asm__ __volatile__ (
             "movl imp_cls, %%eax\n"
             "movl 0x110(%%eax), %%eax\n"
             : "=a"(rendererStarted) :: "memory"
         );
+#else
+    rendererStarted = 0;
+#endif
 #else
             rendererStarted = 0; /* inline asm not available */
 #endif
@@ -2084,12 +2112,16 @@ void Com_Init_Try_Block_Function(char *commandLine)
     com_sv_running = Dvar_RegisterBool("sv_running", 0, 0x1040);
 
     /* Clear legacyHacks field */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl imp_legacyHacks, %%eax\n"
         "movl (%%eax), %%eax\n"
         "movl $0, 4(%%eax)\n"
         ::: "eax", "memory"
     );
+#else
+    /* x86 asm */
+#endif
 
     com_introPlayed = Dvar_RegisterBool("com_introPlayed", 0, 0x1001);
     com_animCheck = Dvar_RegisterBool("com_animCheck", 0, 0x1000);
@@ -2126,11 +2158,15 @@ void Com_Init_Try_Block_Function(char *commandLine)
     Com_InitHunkMemory();
 
     /* Clear dvar modified flags bit 0 */
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ (
         "movl imp_dvar_modifiedFlags, %%eax\n"
         "andl $0xfffffffe, (%%eax)\n"
         ::: "eax", "memory"
     );
+#else
+    /* x86 asm */
+#endif
     com_codeTimeScale = 1.0f;
 
     /* Developer commands */
@@ -2219,7 +2255,11 @@ void Com_Init_Try_Block_Function(char *commandLine)
             {
                 char *cls_ptr;
 #ifndef __EMSCRIPTEN__
+#ifndef __EMSCRIPTEN__
                 __asm__ __volatile__ ("movl imp_cls, %%eax\n" : "=a"(cls_ptr) :: "memory");
+#else
+    cls_ptr = 0;
+#endif
 #else
             cls_ptr = 0; /* inline asm not available */
 #endif

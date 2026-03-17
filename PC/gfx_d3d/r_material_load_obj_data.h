@@ -2,6 +2,7 @@
 /* Extracted from original Mach-O binary */
 /* Range: 0x3307a0 - 0x332130 */
 
+#ifndef __EMSCRIPTEN__
 __asm__(
     ".section .rodata\n"
     ".align 4\n"
@@ -1745,3 +1746,4 @@ __asm__(
     ".long 0x00000000\n"
     ".previous\n"
 );
+#endif

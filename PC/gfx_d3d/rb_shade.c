@@ -44,9 +44,13 @@ static inline char *RB_TessBase(void)
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
 int RB_SetIndexData(const r_index_t *indices, int indexCount);
 static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samplerState);
+#ifndef __EMSCRIPTEN__
 static void RB_GetTextureFromCode(void);
+#endif
 static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibility);
+#ifndef __EMSCRIPTEN__
 static void RB_SetEntityHwLightsDx7(void);
+#endif
 void RB_CreateDynamicBuffers(void);
 static void RB_SetupLighting_impl(void);
 static void RB_SetupLighting(void);

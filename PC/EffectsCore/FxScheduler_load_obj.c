@@ -24,7 +24,9 @@ extern void FX_Print(const char *fmt, ...);
 extern void Com_StripExtension(const char *in, char *out);
 extern int strnicmp(const char *s1, const char *s2, int n);
 extern int stricmp(const char *s1, const char *s2);
+#ifndef __EMSCRIPTEN__
 extern void strlwr(char *s);
+#endif
 
 extern byte *fx_developer_check_ptr; /* imp_g_rendererExists */
 

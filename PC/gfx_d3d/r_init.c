@@ -56,7 +56,9 @@ extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern Bool Sys_IsMainThread(void);
 extern void R_SyncRenderThread(void);
 extern void RB_SetGammaRamp(const void *gammaTable);
+#ifndef __EMSCRIPTEN__
 extern int vsnprintf(char *, unsigned int, const char *, va_list);
+#endif
 extern double pow(double, double);
 extern float floorf(float);
 extern void R_EndDrawGroupSection(int section);
@@ -71,7 +73,9 @@ const char * R_ErrorDescription(HRESULT hr);
 static void R_CreateParticleCloudBuffer(void);
 static void R_ReleaseForShutdownOrReset(void);
 static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMODE *mode1);
+#ifndef __EMSCRIPTEN__
 static HRESULT R_CreateDevice(HWND hwnd, DWORD behavior);
+#endif
 void R_UpdateGpuSyncType(void);
 void R_EndRegistration(void);
 static void R_EndView(int viewIndex);

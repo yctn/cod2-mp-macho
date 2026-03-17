@@ -8,7 +8,9 @@ extern void Scr_FreeValue(int value);
 extern void SV_ResetSkeletonCache(void);
 extern void G_RunFrame(int levelTime);
 
+#ifndef __EMSCRIPTEN__
 __asm__(".Lsvpkt_fmt: .asciz \"[SV_PktEvt] netchan=%d clState=%d serverId=%d relAck=%d\\n\"\n");
+#endif
 static int sv_pkt_dbg_count = 0;
 void SV_PktEvtDbg(const char *fmt, int netchanResult, int clState, int serverId, int relAck) {
     if (sv_pkt_dbg_count < 30 || (sv_pkt_dbg_count % 500 == 0)) {
