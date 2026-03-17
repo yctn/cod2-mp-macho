@@ -419,7 +419,9 @@ int UI_PlayLocalSoundAliasByName(const char *aliasname)
 /* line 884 */
 qboolean UI_ClientIsInGame(void)
 {
-    return *(int *)*(void **)imp_clc == 8;
+    void *ptr = *(void **)imp_clc;
+    if (!ptr) return 0;
+    return *(int *)ptr == 8;
 }
 
 /* line 899 */
