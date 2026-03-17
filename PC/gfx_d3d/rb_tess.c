@@ -401,11 +401,18 @@ static void RB_AddQuadStampDx7_impl(const vec_t *origin, const vec_t *left, cons
     *(int *)(tess + 0x5a7d0) = ic + 6;  /* indexCount += 6 */
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_AddQuadStampDx7(const vec_t *origin, const vec_t *left, const vec_t *up,
+                                int nativeColor, float s0, float t0, float s1, float t1)
+{
+    RB_AddQuadStampDx7_impl(origin, left, up, nativeColor, s0, t0, s1, t1);
+}
+#else
+/* x86 trampoline: eax=origin, edx=left, ecx=up, xmm0-3=s0,t0,s1,t1, stack=nativeColor */
 static __attribute__((naked))
 void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1)
 {
-    /* Marshal register args (eax=origin,edx=left,ecx=up,xmm0-3=s0-t1,4(%esp)=nativeColor)
-     * to standard C calling convention for _impl */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -428,6 +435,7 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "retl\n"
     );
 }
+#endif
 
 /* line 138 */
 /* Non-Dx7 vertex layout (64 bytes = 0x40):
@@ -552,11 +560,18 @@ static void RB_AddQuadStamp_impl(const vec_t *origin, const vec_t *left, const v
     *(int *)(tess + 0x5a7d0) = ic + 6;  /* indexCount += 6 */
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_AddQuadStamp(const vec_t *origin, const vec_t *left, const vec_t *up,
+                             int nativeColor, float s0, float t0, float s1, float t1)
+{
+    RB_AddQuadStamp_impl(origin, left, up, nativeColor, s0, t0, s1, t1);
+}
+#else
+/* x86 trampoline: eax=origin, edx=left, ecx=up, xmm0-3=s0,t0,s1,t1, stack=nativeColor */
 static __attribute__((naked))
 void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, float s0, float t0, float s1, float t1)
 {
-    /* Marshal register args (eax=origin,edx=left,ecx=up,xmm0-3=s0-t1,4(%esp)=nativeColor)
-     * to standard C calling convention for _impl */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -579,6 +594,7 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "retl\n"
     );
 }
+#endif
 
 /* Calling convention: eax=re, edx=worldRadius (float[2]) */
 static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
@@ -677,10 +693,17 @@ static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
 }
 
 /* line 299 */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_BuildSprite(const char *re, const float *worldRadius)
+{
+    RB_BuildSprite_impl(re, worldRadius);
+}
+#else
+/* x86 trampoline: eax=re, edx=worldRadius → cdecl _impl */
 static __attribute__((naked))
 void RB_BuildSprite(void)
 {
-    /* Marshal register args (eax=re, edx=worldRadius) to standard C calling convention */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -692,6 +715,7 @@ void RB_BuildSprite(void)
         "retl\n"
     );
 }
+#endif
 
 /* Dx7 line vertex layout: stride = 36 bytes
  *   +0x00: vec3 position
@@ -790,11 +814,19 @@ static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width
 }
 
 /* line 877 */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_AddLineDx7(const vec_t *start, const vec_t *end, float width,
+                           D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
+{
+    RB_AddLineDx7_impl(start, end, width, nativeColor, s0, t0, s1, t1);
+}
+#else
+/* x86 trampoline: eax=start, edx=end, xmm0=width, ecx=nativeColor,
+ * xmm1=s0, xmm2=t0, xmm3=s1, stack=t1 → cdecl _impl */
 static __attribute__((naked))
 void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
-    /* Marshal register args (eax=start,edx=end,xmm0=width,ecx=nativeColor,
-     * xmm1=s0,xmm2=t0,xmm3=s1,4(%esp)=t1) to standard C calling convention */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -817,6 +849,7 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "retl\n"
     );
 }
+#endif
 
 
 /* Non-Dx7 line vertex layout: stride = 64 bytes
@@ -934,11 +967,19 @@ static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width,
 }
 
 /* line 803 */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_AddLine(const vec_t *start, const vec_t *end, float width,
+                        D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
+{
+    RB_AddLine_impl(start, end, width, nativeColor, s0, t0, s1, t1);
+}
+#else
+/* x86 trampoline: eax=start, edx=end, xmm0=width, ecx=nativeColor,
+ * xmm1=s0, xmm2=t0, xmm3=s1, stack=t1 → cdecl _impl */
 static __attribute__((naked))
 void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
-    /* Marshal register args (eax=start,edx=end,xmm0=width,ecx=nativeColor,
-     * xmm1=s0,xmm2=t0,xmm3=s1,4(%esp)=t1) to standard C calling convention */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -961,6 +1002,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "retl\n"
     );
 }
+#endif
 
 /* line 1151 */
 /* line 1151 — Entity tessellation: 6-way jump table dispatching types 4-9

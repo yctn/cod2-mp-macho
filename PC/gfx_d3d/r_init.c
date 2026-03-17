@@ -575,6 +575,14 @@ static HRESULT R_CreateDevice_impl(HWND hwnd, DWORD behavior, void *d3dpp)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static HRESULT R_CreateDevice(HWND hwnd, DWORD behavior, void *d3dpp)
+{
+    return R_CreateDevice_impl(hwnd, behavior, d3dpp);
+}
+#else
+/* x86 trampoline: eax=hwnd, edx=behavior, ecx=d3dpp → cdecl _impl */
 static __attribute__((naked))
 HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
 {
@@ -587,6 +595,7 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {

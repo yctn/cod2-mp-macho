@@ -312,7 +312,14 @@ static int R_FilterEntityIntoCells_r_impl(mnode_t *node, int entIndex, const vec
     return node->cellIndex;
 }
 
-/* Trampoline: marshals register args (eax=node, edx=entIndex, ecx=mins, stack=maxs) to cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static int R_FilterEntityIntoCells_r(mnode_t *node, int entIndex, const vec_t *mins, const vec_t *maxs)
+{
+    return R_FilterEntityIntoCells_r_impl(node, entIndex, mins, maxs);
+}
+#else
+/* x86 trampoline: eax=node, edx=entIndex, ecx=mins, stack=maxs → cdecl _impl */
 static __attribute__((naked))
 int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
 {
@@ -329,6 +336,7 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
         "retl\n"
     );
 }
+#endif
 
 /* line 925 */
 int R_CellForPoint(const vec_t *origin)
@@ -449,7 +457,14 @@ static vec3_t *R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const
     return vertsOut;
 }
 
-/* Trampoline: marshals (eax=vertsIn, edx=vertexCount_ptr, ecx=plane, stack=vertsOut) to cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static vec3_t *R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut)
+{
+    return R_ChopPortalWinding_impl(vertsIn, vertexCount, plane, vertsOut);
+}
+#else
+/* x86 trampoline: eax=vertsIn, edx=vertexCount_ptr, ecx=plane, stack=vertsOut → cdecl _impl */
 static __attribute__((naked))
 vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut)
 {
@@ -466,6 +481,7 @@ vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut
         "retl\n"
     );
 }
+#endif
 
 /* line 247 — R_GetSidePlaneNormals
  * Computes outward-facing side plane normals for a portal winding.
@@ -519,7 +535,14 @@ static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t 
     }
 }
 
-/* Trampoline: marshals (eax=winding, edx=vertexCount, ecx=normals) to cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
+{
+    R_GetSidePlaneNormals_impl(winding, vertexCount, normals);
+}
+#else
+/* x86 trampoline: eax=winding, edx=vertexCount, ecx=normals → cdecl _impl */
 static __attribute__((naked))
 void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
 {
@@ -532,6 +555,7 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
         "retl\n"
     );
 }
+#endif
 
 /* line 1582 — R_AddStaticModelWithCull
  * Adds a static model to the scene after frustum + occluder culling.
@@ -597,7 +621,14 @@ static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *plan
     R_AddXModelSurfaces(entIndex);
 }
 
-/* Trampoline: regparm(3) (eax=smodelIndex, edx=planes, ecx=planeCount, stack=stackLevel) → cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    R_AddStaticModelWithCull_impl(smodelIndex, planes, planeCount, stackLevel);
+}
+#else
+/* x86 trampoline: regparm(3) eax=smodelIndex, edx=planes, ecx=planeCount, stack=stackLevel → cdecl _impl */
 static __attribute__((naked)) __attribute__((regparm(3)))
 void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
@@ -614,6 +645,7 @@ void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int plan
         "retl\n"
     );
 }
+#endif
 
 /* line 600 */
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes)
@@ -677,7 +709,14 @@ static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *plane
     R_AddDrawSurfForSurface(surf, entIndex);
 }
 
-/* Trampoline: regparm(3) (eax=surfIndex, edx=planes, ecx=planeCount, stack=stackLevel) → cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    R_AddWorldSurfaceWithCull_impl(surfIndex, planes, planeCount, stackLevel);
+}
+#else
+/* x86 trampoline: regparm(3) eax=surfIndex, edx=planes, ecx=planeCount, stack=stackLevel → cdecl _impl */
 static __attribute__((naked)) __attribute__((regparm(3)))
 void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
@@ -694,6 +733,7 @@ void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int plane
         "retl\n"
     );
 }
+#endif
 
 /* line 1088 — R_AddAabbTreeSurfaces_r
  * Recursive AABB tree traversal for the DPVS visibility system.
@@ -860,7 +900,14 @@ static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, i
     }
 }
 
-/* Trampoline: marshals (eax=tree, edx=planes, ecx=planeCount, stack=stackLevel) to cdecl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_AddAabbTreeSurfaces_r(GfxAabbTree *tree, DpvsPlane *planes, int planeCount, int stackLevel)
+{
+    R_AddAabbTreeSurfaces_r_impl(tree, planes, planeCount, stackLevel);
+}
+#else
+/* x86 trampoline: eax=tree, edx=planes, ecx=planeCount, stack=stackLevel → cdecl _impl */
 static __attribute__((naked))
 void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackLevel)
 {
@@ -877,6 +924,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "retl\n"
     );
 }
+#endif
 
 /* line 1907 — R_GetFurtherCellList_r
  * Recursively traverses portals to build a list of visible cells.
@@ -998,7 +1046,14 @@ static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *par
     return count;
 }
 
-/* Trampoline: eax=cell, edx=parentPlane, ecx=planes, stack=planeCount,v,list,count */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static int R_GetFurtherCellList_r(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t *v, const GfxCell **list, int count)
+{
+    return R_GetFurtherCellList_r_impl(cell, parentPlane, planes, planeCount, v, list, count);
+}
+#else
+/* x86 trampoline: eax=cell, edx=parentPlane, ecx=planes, stack=planeCount,v,list,count → cdecl _impl */
 static __attribute__((naked))
 int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, vec3_t (*v)[128], const GfxCell * *list, int count)
 {
@@ -1018,6 +1073,7 @@ int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes
         "retl\n"
     );
 }
+#endif
 
 /* line 1646 — R_AddVisibleSurfacesInCell
  * Adds all visible content in a cell: world surfaces (AABB tree), dynamic entities,
@@ -1179,7 +1235,14 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
     }
 }
 
-/* Trampoline: eax=cell, edx=planes, ecx=planeCount */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount)
+{
+    R_AddVisibleSurfacesInCell_impl(cell, planes, planeCount);
+}
+#else
+/* x86 trampoline: eax=cell, edx=planes, ecx=planeCount → cdecl _impl */
 static __attribute__((naked))
 void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, int planeCount)
 {
@@ -1192,6 +1255,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "retl\n"
     );
 }
+#endif
 
 /* Shared helper: test if all occluder vertices are behind a plane.
  * Returns 1 if any vertex is in front (not all behind). */
@@ -1675,7 +1739,14 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
     }
 }
 
-/* Trampoline: eax=cell, edx=parentPortal, ecx=parentPlane, stack=planes,planeCount,clipChildren */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, DpvsClipChildren clipChildren)
+{
+    R_VisitPortalsForCell_impl(cell, parentPortal, parentPlane, planes, planeCount, clipChildren);
+}
+#else
+/* x86 trampoline: eax=cell, edx=parentPortal, ecx=parentPlane, stack=planes,planeCount,clipChildren → cdecl _impl */
 static __attribute__((naked))
 void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount, DpvsClipChildren clipChildren)
 {
@@ -1691,6 +1762,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* Original ASM — converted to R_VisitPortalsForCell_impl above */
 static __attribute__((naked))
@@ -3175,7 +3247,14 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
     ZN10LargeLocalD1Ev(&hullPointsPool_large_local);
 }
 
-/* Trampoline: all args on stack (cdecl) */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount)
+{
+    R_VisitPortals_impl(cell, parentPlane, planes, planeCount);
+}
+#else
+/* x86 trampoline: all args on stack (cdecl), tail-call to _impl */
 static __attribute__((naked))
 void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const DpvsPlane *planes, int planeCount)
 {
@@ -3183,6 +3262,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jmp R_VisitPortals_impl\n"
     );
 }
+#endif
 
 #if 0 /* Original ASM — converted to R_VisitPortals_impl above */
 static __attribute__((naked))
@@ -4627,7 +4707,14 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
     ZN10LargeLocalD1Ev(&activeOccluderBuffer_large_local);
 }
 
-/* Trampoline: stack-based cdecl args */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
+{
+    R_AddWorldSurfacesDpvs_impl(viewParms, cameraCellIndex);
+}
+#else
+/* x86 trampoline: stack-based cdecl args, tail-call to _impl */
 __attribute__((naked))
 void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
 {
@@ -4635,6 +4722,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "jmp R_AddWorldSurfacesDpvs_impl\n"
     );
 }
+#endif
 
 #if 0 /* Original ASM — converted to R_AddWorldSurfacesDpvs_impl above */
 __attribute__((naked))

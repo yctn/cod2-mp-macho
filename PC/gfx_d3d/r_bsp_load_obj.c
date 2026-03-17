@@ -116,6 +116,14 @@ static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
     return totalTreesUsed;
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static int R_FinishLoadingAabbTrees_r(byte *tree, int totalTreesUsed)
+{
+    return R_FinishLoadingAabbTrees_r_impl(tree, totalTreesUsed);
+}
+#else
+/* x86 trampoline: eax=tree, edx=totalTreesUsed → cdecl _impl */
 static __attribute__((naked))
 int R_FinishLoadingAabbTrees_r(void)
 {
@@ -127,6 +135,7 @@ int R_FinishLoadingAabbTrees_r(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1129 */
 /* line 1129 — Parse sun light parameters from an entity definition text block.
@@ -672,7 +681,14 @@ static Bool R_IsValidStaticModel_impl(char *spawnVars, int spawnVarCount, struct
     return 1;
 }
 
-/* Naked trampoline: marshals register args (eax, edx, ecx) + stack arg (origin) */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool R_IsValidStaticModel(char *spawnVars, int spawnVarCount, struct XModel **model, vec_t *origin)
+{
+    return R_IsValidStaticModel_impl(spawnVars, spawnVarCount, model, origin);
+}
+#else
+/* x86 trampoline: eax=spawnVars, edx=spawnVarCount, ecx=model, stack=origin → cdecl _impl */
 static __attribute__((naked))
 Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XModel * *model, vec_t *origin)
 {
@@ -686,6 +702,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "retl $4\n"
     );
 }
+#endif
 #if 0 /* original R_IsValidStaticModel ASM — replaced above */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1004 */
@@ -907,7 +924,14 @@ static void R_SetParentAndCell_r_impl(mnode_t *node, int parent)
         node->cellIndex = node->u.node.children[0]->cellIndex;
 }
 
-/* Trampoline: eax=node, edx=parent */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_SetParentAndCell_r(mnode_t *node, int parent)
+{
+    R_SetParentAndCell_r_impl(node, parent);
+}
+#else
+/* x86 trampoline: eax=node, edx=parent → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_SetParentAndCell_r(void)
 {
@@ -919,6 +943,7 @@ snd_alias_list_t R_SetParentAndCell_r(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1256 — BSP entity string parser: reads key-value pairs from entity lump,
  * processes special entity types (worldspawn sun params, misc_model static models,
@@ -1863,7 +1888,14 @@ static void R_LoadNodesAndLeafs_impl(const byte *loadState)
     R_SetParentAndCell_r_impl(&nodes[0], 0);
 }
 
-/* Trampoline: eax=load */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadNodesAndLeafs(const byte *loadState)
+{
+    R_LoadNodesAndLeafs_impl(loadState);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadNodesAndLeafs(void)
 {
@@ -1874,6 +1906,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1530 */
 /* line 1530 — Load portals from BSP lump 0xC8.
@@ -1949,6 +1982,14 @@ static void R_LoadPortals_impl(const int *load)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadPortals(const int *load)
+{
+    R_LoadPortals_impl(load);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadPortals(void)
 {
@@ -1959,6 +2000,7 @@ snd_alias_list_t R_LoadPortals(void)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
@@ -2219,6 +2261,14 @@ static void R_LoadCells_impl(const int *load)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadCells(const int *load)
+{
+    R_LoadCells_impl(load);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadCells(GfxBspLoad *load)
 {
@@ -2229,6 +2279,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
@@ -2448,6 +2499,14 @@ static void R_LoadAabbTrees_impl(const int *load)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadAabbTrees(const int *load)
+{
+    R_LoadAabbTrees_impl(load);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadAabbTrees(void)
 {
@@ -2458,6 +2517,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
@@ -2690,6 +2750,14 @@ static void R_LoadOccluders_impl(const byte *loadState)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadOccluders(const byte *loadState)
+{
+    R_LoadOccluders_impl(loadState);
+}
+#else
+/* x86 trampoline: eax=loadState → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadOccluders(void)
 {
@@ -2700,6 +2768,7 @@ snd_alias_list_t R_LoadOccluders(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1506 */
 /* line 1506 — Load portal vertex positions from BSP lump 0x90.
@@ -2721,6 +2790,14 @@ static void R_LoadPortalVerts_impl(const int *load)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadPortalVerts(const int *load)
+{
+    R_LoadPortalVerts_impl(load);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadPortalVerts(void)
 {
@@ -2731,6 +2808,7 @@ snd_alias_list_t R_LoadPortalVerts(void)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
@@ -2873,6 +2951,14 @@ static void R_LoadCullGroups_impl(const int *load)
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static snd_alias_list_t R_LoadCullGroups(const int *load)
+{
+    R_LoadCullGroups_impl(load);
+}
+#else
+/* x86 trampoline: eax=load → cdecl _impl */
 static __attribute__((naked))
 snd_alias_list_t R_LoadCullGroups(void)
 {
@@ -2883,6 +2969,7 @@ snd_alias_list_t R_LoadCullGroups(void)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {

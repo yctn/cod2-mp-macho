@@ -165,6 +165,13 @@ static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeade
         Hunk_FreeTempMemory(expandedData);
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel)
+{
+    Image_LoadBitmap_impl(image, fileHeader, data, format, bytesPerPixel);
+}
+#else
 /* Naked trampoline: marshals register args (eax=image, edx=fileHeader, ecx=data)
  * plus stack args (format, bytesPerPixel) to _impl */
 static __attribute__((naked))
@@ -181,6 +188,7 @@ jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeade
         "retl $8\n"
     );
 }
+#endif
 
 #if 0 /* original Image_LoadBitmap ASM — replaced above */
         "movl %esp, %ebp\n"
@@ -427,6 +435,13 @@ static jpeg_alloc Image_LoadDxtc_impl(GfxImage *image, const GfxImageFileHeader 
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock)
+{
+    Image_LoadDxtc_impl(image, fileHeader, data, format, bytesPerBlock);
+}
+#else
 static __attribute__((naked))
 jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock)
 {
@@ -441,6 +456,7 @@ jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader,
         "retl $8\n"
     );
 }
+#endif
 
 /* line 102 */
 /* line 102 — Wavelet image decompression: iterates mip levels from bottom to top,
@@ -520,6 +536,13 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
     return;
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel)
+{
+    Image_LoadWavelet_impl(image, fileHeader, data, format, bytesPerPixel);
+}
+#else
 /* Naked trampoline: eax=image, edx=fileHeader, ecx=data, stack=format,bytesPerPixel */
 static __attribute__((naked))
 jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel)
@@ -539,6 +562,7 @@ jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked (253 lines) */
 {

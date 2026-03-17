@@ -373,6 +373,14 @@ static int R_GetSurfaceData_impl(const byte *ent, const void *obj, void *surface
     return DObjGetSurfaces(obj, surfaces, partBits, lods);
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static int R_GetSurfaceData(const byte *ent, const void *obj, void *surfaces, int *partBits, char *lods)
+{
+    return R_GetSurfaceData_impl(ent, obj, surfaces, partBits, lods);
+}
+#else
+/* x86 trampoline: eax=ent, edx=obj, ecx=surfaces, stack=partBits,lods → cdecl _impl */
 static __attribute__((naked))
 int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lods)
 {
@@ -387,6 +395,7 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "retl $8\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
@@ -553,6 +562,14 @@ static void R_XModelDebugBoxes_impl(const byte *sceneEnt, const byte *ent, const
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_XModelDebugBoxes(const byte *sceneEnt, const byte *ent, const void *obj)
+{
+    R_XModelDebugBoxes_impl(sceneEnt, ent, obj);
+}
+#else
+/* x86 trampoline: eax=sceneEnt, edx=ent, ecx=obj → cdecl _impl */
 static __attribute__((naked))
 void R_XModelDebugBoxes(void)
 {
@@ -565,6 +582,7 @@ void R_XModelDebugBoxes(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 365 — R_XModelDebugAxes
  * Draws 3-axis coordinate frames for each active bone in an XModel.
@@ -626,6 +644,14 @@ static void R_XModelDebugAxes_impl(const byte *sceneEnt, const byte *ent, const 
     }
 }
 
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void R_XModelDebugAxes(const byte *sceneEnt, const byte *ent, const void *obj)
+{
+    R_XModelDebugAxes_impl(sceneEnt, ent, obj);
+}
+#else
+/* x86 trampoline: eax=sceneEnt, edx=ent, ecx=obj → cdecl _impl */
 static __attribute__((naked))
 void R_XModelDebugAxes(void)
 {
@@ -638,6 +664,7 @@ void R_XModelDebugAxes(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 2749 */
 /* line 2749 — Computes world-space bounding box for an XModel entity by transforming

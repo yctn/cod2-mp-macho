@@ -926,7 +926,14 @@ static void RB_EndBenchmarkGpu_impl(void *time)
     QueryPerformanceCounter(time);
 }
 
-/* Naked trampoline: marshals eax (time pointer) to stack arg */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_EndBenchmarkGpu(void *time)
+{
+    RB_EndBenchmarkGpu_impl(time);
+}
+#else
+/* x86 trampoline: eax=time → cdecl _impl */
 static __attribute__((naked))
 void RB_EndBenchmarkGpu(void)
 {
@@ -940,6 +947,7 @@ void RB_EndBenchmarkGpu(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 3352 */
 static void RB_BeginBenchmarkGpu_impl(void *time)
@@ -995,7 +1003,14 @@ static void RB_BeginBenchmarkGpu_impl(void *time)
     } while (*(volatile int *)imp_alwaysfails);
 }
 
-/* Naked trampoline: marshals eax (time pointer) to stack arg */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_BeginBenchmarkGpu(void *time)
+{
+    RB_BeginBenchmarkGpu_impl(time);
+}
+#else
+/* x86 trampoline: eax=time → cdecl _impl */
 static __attribute__((naked))
 void RB_BeginBenchmarkGpu(void)
 {
@@ -1009,6 +1024,7 @@ void RB_BeginBenchmarkGpu(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 326 */
 void RB_Set3D(void)
@@ -4255,7 +4271,14 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     }
 }
 
-/* Naked trampoline: marshals register args (eax=material, edx=techType) to stack for _impl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType)
+{
+    return RB_TestFillPass3D_impl(material, techType);
+}
+#else
+/* x86 trampoline: eax=material, edx=techType → cdecl _impl */
 static __attribute__((naked))
 float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType)
 {
@@ -4271,6 +4294,7 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "retl\n"
     );
 }
+#endif
 
 /* line 433 */
 /* line 433 */
@@ -4519,8 +4543,14 @@ static float RB_BenchmarkRepeatedCalls_impl(const Material *material, int iterat
     }
 }
 
-/* Naked trampoline: marshals register args (eax=material, edx=iterationCount,
- * xmm0=width, xmm1=height) to stack for _impl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static float RB_BenchmarkRepeatedCalls(const Material *material, int iterationCount, float width, float height)
+{
+    return RB_BenchmarkRepeatedCalls_impl(material, iterationCount, width, height);
+}
+#else
+/* x86 trampoline: eax=material, edx=iterationCount, xmm0=width, xmm1=height → cdecl _impl */
 static __attribute__((naked))
 float RB_BenchmarkRepeatedCalls(float width, float height)
 {
@@ -4535,6 +4565,7 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
         "retl\n"
     );
 }
+#endif
 
 int g_rb_exec_count = 0; /* diagnostic */
 static const char rb_diag_fmt[] = "";
@@ -6001,8 +6032,17 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
     }
 }
 
-/* Naked trampoline: marshals register args (eax=text, edx=maxChars, ecx=font,
- * xmm0=x, xmm1=y, xmm2=xScale, xmm3=yScale) + stack args to _impl */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font,
+                                   float x, float y, float xScale, float yScale,
+                                   GfxColor color, int style, int cursorPos, int cursor)
+{
+    RB_DrawTextWithCursor_impl(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
+}
+#else
+/* x86 trampoline: eax=text, edx=maxChars, ecx=font, xmm0-3=x,y,xScale,yScale,
+ * stack=color,style,cursorPos,cursor → cdecl _impl */
 static __attribute__((naked))
 void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, float xScale, float yScale, const GfxColor color, int style, int cursorPos, int cursor)
 {
@@ -6030,6 +6070,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "retl\n"
     );
 }
+#endif
 
 /* line 3101 — RB_DrawTextCmd
  * Extracts text rendering parameters from GfxCmdDrawText and calls RB_DrawTextWithCursor.

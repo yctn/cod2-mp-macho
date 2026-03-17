@@ -173,7 +173,14 @@ static Bool Material_ValidatePassArguments_impl(const Material *material, const 
     return 1;
 }
 
-/* Trampoline: eax=material, edx=techniqueSetName, ecx=techniqueName, stack=argCount,args */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_ValidatePassArguments(const Material *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args)
+{
+    return Material_ValidatePassArguments_impl(material, techniqueSetName, techniqueName, argCount, args);
+}
+#else
+/* x86 trampoline: eax=material, edx=techniqueSetName, ecx=techniqueName, stack=argCount,args → cdecl _impl */
 static __attribute__((naked))
 Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args)
 {
@@ -191,6 +198,7 @@ Bool Material_ValidatePassArguments(const MaterialObj *material, const char *tec
         "retl\n"
     );
 }
+#endif
 
 /* line 3553 — Material_PreLoadSingleShaderText
  * Loads a shader text file from disk into a GfxCachedShaderText entry.
@@ -218,7 +226,14 @@ static void Material_PreLoadSingleShaderText_impl(const char *filename, const ch
     cached->textSize = fileSize;
 }
 
-/* Trampoline: eax=filename, edx=subdir, ecx=cached */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, GfxCachedShaderText *cached)
+{
+    Material_PreLoadSingleShaderText_impl(filename, subdir, cached);
+}
+#else
+/* x86 trampoline: eax=filename, edx=subdir, ecx=cached → cdecl _impl */
 static __attribute__((naked))
 void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, GfxCachedShaderText *cached)
 {
@@ -231,6 +246,7 @@ void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, 
         "retl\n"
     );
 }
+#endif
 
 /* line 3589 */
 static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, const GfxCachedShaderText *cached1)
@@ -1027,7 +1043,14 @@ after_array:
     return 0;
 }
 
-/* Trampoline: eax=text, edx=routing, ecx=offset, stack=sourceTable,arg */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_ParseCodeConstantSource_r(const char **text, const byte *routing, int offset, const CodeConstantSource *sourceTable, byte *arg)
+{
+    return Material_ParseCodeConstantSource_r_impl(text, routing, offset, sourceTable, arg);
+}
+#else
+/* x86 trampoline: eax=text, edx=routing, ecx=offset, stack=sourceTable,arg → cdecl _impl */
 static __attribute__((naked))
 Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRouting *routing, int offset, const CodeConstantSource *sourceTable, MaterialShaderArgument *arg)
 {
@@ -1045,6 +1068,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "retl\n"
     );
 }
+#endif
 
 /* line 1670 — Material_ParseVector
  * Parses a vector of floats from text in format "( x, y, z )" or "( x, y, z, w )".
@@ -1069,7 +1093,14 @@ static Bool Material_ParseVector_impl(const char **text, int elemCount, float *v
     return Com_MatchToken(text, ")", 1) ? 1 : 0;
 }
 
-/* Trampoline: eax=text, edx=elemCount, ecx=vector */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_ParseVector(const char **text, int elemCount, float *vector)
+{
+    return Material_ParseVector_impl(text, elemCount, vector);
+}
+#else
+/* x86 trampoline: eax=text, edx=elemCount, ecx=vector → cdecl _impl */
 static __attribute__((naked))
 Bool Material_ParseVector(int elemCount)
 {
@@ -1082,6 +1113,7 @@ Bool Material_ParseVector(int elemCount)
         "retl\n"
     );
 }
+#endif
 
 /* line 2659 — Dx7 texture stage state parser converted to _impl + trampoline.
  * Register convention: eax=text, edx=samplerIndex, ecx=texStateName, stack: validTest, texStageBits. */
@@ -1211,7 +1243,14 @@ static Bool Material_LoadPassTextureStateDx7_impl(const char **text, int sampler
     return Com_MatchToken(text, ";", 1) ? 1 : 0;
 }
 
-/* Trampoline: eax=text, edx=samplerIndex, ecx=texStateName, stack: validTest, texStageBits */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_LoadPassTextureStateDx7(const char **text, int samplerIndex, const char *texStateName, int validTest, int *texStageBits)
+{
+    return Material_LoadPassTextureStateDx7_impl(text, samplerIndex, texStateName, validTest, texStageBits);
+}
+#else
+/* x86 trampoline: eax=text, edx=samplerIndex, ecx=texStateName, stack=validTest,texStageBits → cdecl _impl */
 static __attribute__((naked))
 Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidDx7 validTest, int *texStageBits)
 {
@@ -1641,6 +1680,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 1574 — Material_CodeSamplerSource_r
  * Recursively resolves a code sampler source from a dot-separated path.
@@ -1693,7 +1733,14 @@ found:;
     return 1;
 }
 
-/* Trampoline: eax=text, edx=offset, ecx=sourceTable, stack=arg */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_CodeSamplerSource_r(const char **text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg)
+{
+    return Material_CodeSamplerSource_r_impl(text, offset, sourceTable, arg);
+}
+#else
+/* x86 trampoline: eax=text, edx=offset, ecx=sourceTable, stack=arg → cdecl _impl */
 static __attribute__((naked))
 Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamplerSource *sourceTable, MaterialShaderArgument *arg)
 {
@@ -1710,6 +1757,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         "retl\n"
     );
 }
+#endif
 
 /* line 1610 — Material_ParseSamplerSource
  * Parses a sampler source declaration: either "sampler.codePath" or "material.textureName".
@@ -1738,7 +1786,14 @@ static Bool Material_ParseSamplerSource_impl(const char **text, MaterialShaderAr
     return 0;
 }
 
-/* Trampoline: eax=text, edx=arg */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_ParseSamplerSource(const char **text, MaterialShaderArgument *arg)
+{
+    return Material_ParseSamplerSource_impl(text, arg);
+}
+#else
+/* x86 trampoline: eax=text, edx=arg → cdecl _impl */
 static __attribute__((naked))
 Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg)
 {
@@ -1750,6 +1805,7 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
         "retl\n"
     );
 }
+#endif
 
 /* line 2317 — Shader argument binder converted to _impl + trampoline.
  * Register convention: eax=text, edx=mtlShader, ecx=techFlags, stack: argCount, args. */
@@ -1992,7 +2048,14 @@ cleanup: ((void (*)(void *))((*(int **)constants)[2]))(constants);
     return success;
 }
 
-/* Trampoline: eax=text, edx=mtlShader, ecx=techFlags, stack: argCount, args */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_SetPassShaderArguments(const char **text, const byte *mtlShader, short unsigned int *techFlags, short unsigned int *argCount, MaterialShaderArgument **args)
+{
+    return Material_SetPassShaderArguments_impl(text, mtlShader, techFlags, argCount, args);
+}
+#else
+/* x86 trampoline: eax=text, edx=mtlShader, ecx=techFlags, stack=argCount,args → cdecl _impl */
 static __attribute__((naked))
 Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *techFlags, short unsigned int *argCount, MaterialShaderArgument * *args)
 {
@@ -2847,6 +2910,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 1000 — Material_ParseRuleSetConditionTest
  * Parses a state map condition test: "sourceName == valueName".
@@ -2909,7 +2973,14 @@ foundValue:;
     return 0; /* success */
 }
 
-/* Trampoline: eax=text, edx=token, ecx=rule */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static MtlParseSuccess Material_ParseRuleSetConditionTest(const char **text, const char *token, MaterialStateMapRule *rule)
+{
+    return Material_ParseRuleSetConditionTest_impl(text, token, rule);
+}
+#else
+/* x86 trampoline: eax=text, edx=token, ecx=rule → cdecl _impl */
 static __attribute__((naked))
 MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialStateMapRule *rule)
 {
@@ -2922,6 +2993,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         "retl\n"
     );
 }
+#endif
 
 /* line 1141 */
 /* line 1141 — State map rule set parser: reads condition→action rule pairs from text.
@@ -3108,7 +3180,14 @@ copy_values:
     return 1;
 }
 
-/* Trampoline: eax=text, edx=ruleSetName, ecx=stateSet, stack: ruleSet */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_ParseRuleSet(const char **text, const char *ruleSetName, const MtlStateMapBitGroup *stateSet, const MaterialStateMapRuleSet **ruleSet)
+{
+    return Material_ParseRuleSet_impl(text, ruleSetName, stateSet, ruleSet);
+}
+#else
+/* x86 trampoline: eax=text, edx=ruleSetName, ecx=stateSet, stack=ruleSet → cdecl _impl */
 static __attribute__((naked))
 Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const MtlStateMapBitGroup *stateSet, const MaterialStateMapRuleSet * *ruleSet)
 {
@@ -3542,6 +3621,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 1371 — State map loader converted to _impl + trampoline.
  * Loads .sm file, parses 11 rule set categories with Dx7 blend fallbacks.
@@ -3706,7 +3786,14 @@ static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap *
     return Com_MatchToken(text, ";", 1) ? 1 : 0;
 }
 
-/* Trampoline: eax=text, edx=stateMap */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_LoadPassStateMap(const char **text, MaterialStateMap **stateMap)
+{
+    return Material_LoadPassStateMap_impl(text, stateMap);
+}
+#else
+/* x86 trampoline: eax=text, edx=stateMap → cdecl _impl */
 static __attribute__((naked))
 Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
 {
@@ -4044,6 +4131,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 2299 — Shader loader converted to _impl + trampoline.
  * Reads D3DX shader from cached text, compiles via D3DXCompileShader,
@@ -4246,7 +4334,14 @@ cleanup_sourceName:
     return mtlShader;
 }
 
-/* Trampoline: eax=text, edx=shaderType */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static MaterialShader *Material_LoadPassShader(const char **text, int shaderType)
+{
+    return Material_LoadPassShader_impl(text, shaderType);
+}
+#else
+/* x86 trampoline: eax=text, edx=shaderType → cdecl _impl */
 static __attribute__((naked))
 MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
 {
@@ -4810,6 +4905,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 3407 — Material instance finalizer: the main material compilation orchestrator.
  * Parses technique set from text, iterates each technique type, loads passes with
@@ -5166,7 +5262,14 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
     }
 }
 
-/* Trampoline: eax=material, edx=imageTrack */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
+{
+    return Material_FinishLoadingInstance_impl(material, imageTrack);
+}
+#else
+/* x86 trampoline: eax=material, edx=imageTrack → cdecl _impl */
 static __attribute__((naked))
 Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
 {
@@ -6837,6 +6940,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
 #endif
     );
 }
+#endif /* __EMSCRIPTEN__ */
 
 /* line 3473 — Material_Load
  * Main entry point for loading a material from file.

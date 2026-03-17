@@ -306,11 +306,17 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
 }
 
 /* line 522 */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_GetTextureFromCode(int codeTexture, void **image, byte *samplerState)
+{
+    RB_GetTextureFromCode_impl(codeTexture, image, samplerState);
+}
+#else
+/* x86 trampoline: eax=codeTexture, edx=image, ecx=samplerState → cdecl _impl */
 static __attribute__((naked))
 void RB_GetTextureFromCode(void)
 {
-    /* Marshal register args (eax=codeTexture, edx=image, ecx=samplerState)
-     * to standard C calling convention */
     __asm__ __volatile__ (
         "pushl %ebp\n"
         "movl %esp, %ebp\n"
@@ -323,6 +329,7 @@ void RB_GetTextureFromCode(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1481 */
 static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibility)
@@ -364,8 +371,14 @@ static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibilit
     }
 }
 
-/* Naked trampoline: marshals register args (eax=colorForDir, xmm0=sunVisibility)
- * to standard C calling convention */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_SetEntityHwLightsDx7(vec4_t *colorForDir, float sunVisibility)
+{
+    RB_SetEntityHwLightsDx7_impl(colorForDir, sunVisibility);
+}
+#else
+/* Naked trampoline: eax=colorForDir, xmm0=sunVisibility → cdecl _impl */
 static __attribute__((naked))
 void RB_SetEntityHwLightsDx7(void)
 {
@@ -381,6 +394,7 @@ void RB_SetEntityHwLightsDx7(void)
         "retl\n"
     );
 }
+#endif
 
 /* line 1785 */
 void RB_CreateDynamicBuffers(void)
@@ -477,8 +491,14 @@ static void RB_SetupLighting_impl(void)
     }
 }
 
-/* Naked trampoline: RB_SetupLighting is void(void) with standard calling
- * convention, so just tail-call the impl directly */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static void RB_SetupLighting(void)
+{
+    RB_SetupLighting_impl();
+}
+#else
+/* x86 trampoline: void(void), tail-call to _impl */
 static __attribute__((naked))
 void RB_SetupLighting(void)
 {
@@ -486,6 +506,7 @@ void RB_SetupLighting(void)
         "jmp RB_SetupLighting_impl\n"
     );
 }
+#endif
 
 /* line 210 */
 /* Copy vertex data with color conversion for a specific stride.
@@ -1375,8 +1396,14 @@ static const float *RB_GetCodeMatrix_impl(int source, int firstRow)
     return (const float *)(codeMatrix + (firstRow + matrixIndex * 4) * 16);
 }
 
-/* Naked trampoline: marshals register args (eax=source, edx=firstRow)
- * to stack for _impl, returns result in eax */
+#ifdef __EMSCRIPTEN__
+/* Clean C version for WASM — no register calling convention */
+static const float *RB_GetCodeMatrix(int source, int firstRow)
+{
+    return RB_GetCodeMatrix_impl(source, firstRow);
+}
+#else
+/* x86 trampoline: eax=source, edx=firstRow → cdecl _impl */
 static __attribute__((naked))
 const float * RB_GetCodeMatrix(int source, int firstRow)
 {
@@ -1388,6 +1415,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "retl\n"
     );
 }
+#endif
 
 #if 0 /* original naked — replaced above */
 {
