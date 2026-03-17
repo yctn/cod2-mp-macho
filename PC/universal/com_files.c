@@ -75,8 +75,8 @@ int FS_Write(const float *buffer, int len, fileHandle_t h);
 int FS_Seek(fileHandle_t f, long int offset, int origin);
 int FS_FTell(fileHandle_t f);
 float FS_Flush(fileHandle_t f);
-static Bool __attribute__((regparm(3))) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize);
-static float __attribute__((regparm(3))) FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread);
+static Bool __attribute_regparm__(3) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize);
+static float __attribute_regparm__(3) FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread);
 float FS_BuildOSPath(const char *base, const char *game, const char *qpath, char *ospath);
 qboolean FS_FileExists(const char *file);
 const char * FS_ShortOSFilePath(const char *filename);
@@ -176,6 +176,7 @@ long int FS_HashFileName(const char *fname, int hashSize)
 }
 
 /* line 497 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 fileHandle_t FS_HandleForFile(qboolean streamThread)
 {
@@ -268,6 +269,9 @@ fileHandle_t FS_HandleForFile(qboolean streamThread)
         "retl\n"
     );
 }
+#else
+fileHandle_t FS_HandleForFile(qboolean streamThread) { return 0; }
+#endif
 
 /* line 538 */
 FILE * FS_FileForHandle(fileHandle_t f)
@@ -397,6 +401,7 @@ float FS_ShutdownServerReferencedIwds(void)
 }
 
 /* line 3544 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Bool FS_RegisterDvars(void)
 {
@@ -483,6 +488,9 @@ Bool FS_RegisterDvars(void)
         "retl\n"
     );
 }
+#else
+Bool FS_RegisterDvars(void) { return 0; }
+#endif
 
 /* line 3726 */
 float FS_ClearIwdReferences(void)
@@ -577,6 +585,7 @@ float FS_FCloseFile(fileHandle_t h)
 }
 
 /* line 3494 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 float FS_Shutdown(qboolean closemfp)
 {
@@ -1100,8 +1109,8 @@ float FS_Flush(fileHandle_t f)
 }
 
 /* line 1270 */
-static __attribute__((regparm(3)))
-Bool __attribute__((regparm(3))) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize)
+static __attribute_regparm__(3)
+Bool __attribute_regparm__(3) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize)
 {
     unsigned int srcIndex = 0;
     unsigned int dstIndex = 0;
@@ -1151,7 +1160,7 @@ Bool __attribute__((regparm(3))) FS_SanitizeFilename(const char *filename, char 
 }
 
 /* line 652 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 float FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread)
 {
     const char *useGame;
@@ -6526,3 +6535,6 @@ float FS_InitFilesystem(void)
         "jmp .Lf37c9e_00037d30\n"
     );
 }
+#else
+float FS_Shutdown(qboolean closemfp) { return 0.0f; }
+#endif

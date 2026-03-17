@@ -148,6 +148,7 @@ void SaveRegisteredItems(void)
 }
 
 /* line 1214 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void RegisterItem(int iItemIndex, qboolean bUpdateCS)
 {
@@ -3479,3 +3480,6 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "jmp .Lf1b078a_001b0816\n"
     );
 }
+#else
+void RegisterItem(int iItemIndex, qboolean bUpdateCS) { }
+#endif

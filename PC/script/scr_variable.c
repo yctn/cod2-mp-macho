@@ -162,6 +162,7 @@ int GetVarType(unsigned int id)
 }
 
 /* line 361 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2)
 {
@@ -14259,3 +14260,6 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
     );
 }
 
+#else
+static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2) { return 0; }
+#endif

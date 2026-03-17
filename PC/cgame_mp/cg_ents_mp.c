@@ -42,6 +42,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent);
 long unsigned int CG_AddPacketEntities(void);
 
 /* line 253 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
 {
@@ -100,8 +101,12 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
         "retl\n"
     );
 }
+#else
+struct XAnim_s * CG_GetMG42Anims(centity_t *cent) { return 0; }
+#endif
 
 /* line 288 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
 {
@@ -2693,3 +2698,6 @@ long unsigned int CG_AddPacketEntities(void)
     );
 }
 
+#else
+static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits) { return 0; }
+#endif

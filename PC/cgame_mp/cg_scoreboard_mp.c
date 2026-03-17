@@ -133,6 +133,7 @@ float CG_DrawScoreboard_GetTeamColor(int team, vec_t *color)
 }
 
 /* line 958 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth, qboolean selection, int *piDrawLine, const int numDrawn)
 {
@@ -2202,3 +2203,6 @@ qboolean CG_DrawScoreboard(void)
         "jmp .Lf1c48ac_001c4fa4\n"
     );
 }
+#else
+static float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth, qboolean selection, int *piDrawLine, const int numDrawn) { return 0.0f; }
+#endif

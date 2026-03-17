@@ -1017,6 +1017,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
  *   Type 7 (rail core): segmented line strip with per-segment quads
  *   Type 8 (rail rings): ring sprites along rail path
  *   Type 9 (lightning): segmented line with random jitter offsets */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void RB_TessEntity(const GfxEntity *re)
 {
@@ -2704,3 +2705,6 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     *(int *)(tess + 0x5a7e8) = tri->firstVertex;
     *(int *)(tess + 0x5a7e4) = (int)tri->vertexCount;
 }
+#else
+void RB_TessEntity(const GfxEntity *re) { }
+#endif

@@ -536,6 +536,7 @@ static void FX_AddFxToScene_impl(byte *effect, int reType)
     if (flags & 0x4000000) *(int *)(ent + 0x04) |= 0x80;
     FxHelper_AddFxToScene(*(void **)imp_theFxHelper, ent, *(int *)(effect + 0xb4));
 }
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void FX_AddFxToScene(void)
 {
@@ -547,6 +548,9 @@ void FX_AddFxToScene(void)
         "retl\n"
     );
 }
+#else
+static void FX_AddFxToScene(void) { }
+#endif
 
 /* line 1820 */
 void Emitter_Draw(const Emitter * _this)

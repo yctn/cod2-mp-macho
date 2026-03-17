@@ -90,6 +90,7 @@ static float XAnimFindServerNoteTrack(float dtime);
 int DObjUpdateServerInfo(DObj *obj, float dtime, int bNotify);
 
 /* line 117 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void XAnimInit(void)
 {
@@ -153,6 +154,9 @@ void XAnimInit(void)
         "retl\n"
     );
 }
+#else
+void XAnimInit(void) { }
+#endif
 
 /* line 155 */
 void XAnimShutdown(void)
@@ -170,6 +174,7 @@ void XAnimAbort(void)
 }
 
 /* line 175 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void XAnimFree(XAnimParts *parts)
 {
@@ -234,8 +239,12 @@ void XAnimFree(XAnimParts *parts)
         "retl\n"
     );
 }
+#else
+void XAnimFree(XAnimParts *parts) { }
+#endif
 
 /* line 307 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags)
 {
@@ -298,8 +307,12 @@ void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned
         "retl\n"
     );
 }
+#else
+void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags) { }
+#endif
 
 /* line 339 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 XAnim * XAnimCreateAnims(const char *debugName, int size, Alloc_t Alloc)
 {
@@ -14401,3 +14414,6 @@ int DObjUpdateServerInfo(DObj *obj, float dtime, int bNotify)
     );
 }
 
+#else
+XAnim * XAnimCreateAnims(const char *debugName, int size, Alloc_t Alloc) { return 0; }
+#endif

@@ -54,6 +54,7 @@ static short int SV_Drop_f(void);
 static short int SV_MapRotate_f(void);
 
 /* line 34 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 client_t * SV_GetPlayerByName(void)
 {
@@ -1649,3 +1650,6 @@ short int SV_MapRotate_f(void)
     );
 }
 
+#else
+static client_t * SV_GetPlayerByName(void) { return 0; }
+#endif

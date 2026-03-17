@@ -35,7 +35,7 @@ qboolean MenuParse_onOpen(const char (*item)[4], int handle);
 qboolean MenuParse_onClose(const char (*item)[4], int handle);
 qboolean MenuParse_onESC(const char (*item)[4], int handle);
 qboolean MenuParse_soundLoop(const char (*item)[4], int handle);
-void __attribute__((regparm(2))) Item_ValidateTypeData(itemDef_t *item, int handle);
+void __attribute_regparm__(2) Item_ValidateTypeData(itemDef_t *item, int handle);
 qboolean Item_IsEditFieldDef(itemDef_t *item);
 editFieldDef_t *Item_GetEditFieldDef(itemDef_t *item);
 qboolean ItemParse_textsavegame(const char (*item)[4], int handle);
@@ -80,7 +80,7 @@ Bool I_isupper(int c);
 void Com_Printf(const char *fmt, ...);
 void Com_Error(errorParm_t code, const char *fmt, ...);
 void Menu_SetCursorItem(menuDef_t *menu, int cursorItem);
-static Bool __attribute__((regparm(2))) Menu_New(int handle, int imageTrack);
+static Bool __attribute_regparm__(2) Menu_New(int handle, int imageTrack);
 qboolean Item_Parse(int handle, const char (*item)[4]);
 qboolean MenuParse_itemDef(const char (*item)[4], int handle);
 void Item_SetupKeywordHash(void);
@@ -149,7 +149,7 @@ qboolean ItemParse_maxChars(const char (*item)[4], int handle);
 qboolean ItemParse_maxPaintChars(const char (*item)[4], int handle);
 qboolean ItemParse_ownerdrawFlag(const char (*item)[4], int handle);
 qboolean ItemParse_execKeyInt(const char (*item)[4], int handle);
-static Bool __attribute__((regparm(2))) UI_ParseMenuInternal(const char *menuFile, int imageTrack);
+static Bool __attribute_regparm__(2) UI_ParseMenuInternal(const char *menuFile, int imageTrack);
 MenuList * UI_LoadMenus(const char *menuFile, int imageTrack);
 MenuList * UI_LoadMenu(const char *menuFile, int imageTrack);
 
@@ -203,6 +203,7 @@ static unsigned int UI_KeywordHashKey(const char *keyword)
 }
 
 /* line 103 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void UI_MapLoadInfo(const char *filename)
 {
@@ -576,7 +577,7 @@ qboolean MenuParse_soundLoop(const char (*item)[4], int handle)
 }
 
 /* line 1117 */
-void __attribute__((regparm(2))) Item_ValidateTypeData(itemDef_t *item, int handle)
+void __attribute_regparm__(2) Item_ValidateTypeData(itemDef_t *item, int handle)
 {
     editFieldDef_t *editDef;
 
@@ -1249,7 +1250,7 @@ qboolean ItemParse_textfile(const char (*item)[4], int handle)
 }
 
 /* line 2515 */
-static Bool __attribute__((regparm(2))) Menu_New(int handle, int imageTrack)
+static Bool __attribute_regparm__(2) Menu_New(int handle, int imageTrack)
 {
     loadAssets_t *load;
     MenuList *menuList;
@@ -8056,3 +8057,6 @@ MenuList * UI_LoadMenu(const char *menuFile, int imageTrack)
 
     return UI_MenuList();
 }
+#else
+void UI_MapLoadInfo(const char *filename) { }
+#endif

@@ -363,6 +363,7 @@ void MSG_ReadData(msg_t *msg, void *data, int len)
 }
 
 /* line 1424 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, int iBufferSize)
 {
@@ -8710,3 +8711,6 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         "jmp .Lf177192_001776d8\n"
     );
 }
+#else
+void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, int iBufferSize) { }
+#endif

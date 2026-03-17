@@ -24,7 +24,7 @@ extern char __ZNSs4_Rep11_S_terminalE __asm__("__ZNSs4_Rep11_S_terminalE");
 
 unsigned char * SE_LoadFileData(const char *psFileName);
 void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile);
-static void SE_R_ListFiles(const char *psExtension, const char *psDir, LocalizeString *strResults) __attribute__((regparm(3)));
+static void SE_R_ListFiles(const char *psExtension, const char *psDir, LocalizeString *strResults) __attribute_regparm__(3);
 int SE_BuildFileList(const char *psStartDir, LocalizeString *strResults);
 
 /* line 31 */
@@ -45,7 +45,7 @@ void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile)
 }
 
 /* line 53 */
-static void __attribute__((regparm(3)))
+static void __attribute_regparm__(3)
 SE_R_ListFiles(const char *psExtension, const char *psDir, LocalizeString *strResults)
 {
     char sDirName[64];

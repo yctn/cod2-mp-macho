@@ -31,6 +31,7 @@ void CM_LinkWorld(void);
 void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t clipHandle);
 
 /* line 454 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CM_UnlinkEntity(svEntity_t *ent)
 {
@@ -2655,3 +2656,6 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
     );
 }
 
+#else
+void CM_UnlinkEntity(svEntity_t *ent) { }
+#endif

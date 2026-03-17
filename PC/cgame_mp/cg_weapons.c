@@ -44,6 +44,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
 void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8]);
 
 /* line 63 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_PlayADSAnim(void)
 {
@@ -121,6 +122,9 @@ void CG_PlayADSAnim(void)
         "jmp .Lf1d54ec_001d5573\n"
     );
 }
+#else
+static void CG_PlayADSAnim(void) { }
+#endif
 
 /* line 311 */
 int CG_WeaponDObjHandle(int weaponNum)
@@ -129,6 +133,7 @@ int CG_WeaponDObjHandle(int weaponNum)
 }
 
 /* line 363 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
 {
@@ -6537,3 +6542,6 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
     );
 }
 
+#else
+void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) { }
+#endif

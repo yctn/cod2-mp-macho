@@ -87,9 +87,9 @@ enum {
 
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out);
 static void Scr_ReadOnlyField(gentity_t *ent, int offset);
-static unsigned int __attribute__((regparm(2))) G_SetEntityScriptVariableInternal(const char *key, const char *value);
+static unsigned int __attribute_regparm__(2) G_SetEntityScriptVariableInternal(const char *key, const char *value);
 void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source);
-static const gitem_t * __attribute__((regparm(1))) G_GetItemForClassname(const char *classname);
+static const gitem_t * __attribute_regparm__(1) G_GetItemForClassname(const char *classname);
 qboolean G_CallSpawnEntity(gentity_t *ent);
 void GScr_AddFieldsForEntity(void);
 void GScr_AddFieldsForRadiant(void);
@@ -99,7 +99,7 @@ void Scr_FreeHudElem(game_hudelem_t *hud);
 void Scr_AddHudElem(game_hudelem_t *hud);
 scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int paramcount);
 void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount);
-static void __attribute__((regparm(3))) G_ParseEntityField(const char *key, const char *value, gentity_t *ent);
+static void __attribute_regparm__(3) G_ParseEntityField(const char *key, const char *value, gentity_t *ent);
 void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs);
 void Scr_GetEnt(void);
 void Scr_GetEntArray(void);
@@ -242,7 +242,7 @@ static void Scr_ReadOnlyField(gentity_t *ent, int offset)
 }
 
 /* line 160 */
-static unsigned int __attribute__((regparm(2))) G_SetEntityScriptVariableInternal(const char *key, const char *value)
+static unsigned int __attribute_regparm__(2) G_SetEntityScriptVariableInternal(const char *key, const char *value)
 {
     int type;
     unsigned int index;
@@ -310,7 +310,7 @@ void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
 }
 
 /* line 392 */
-static const gitem_t * __attribute__((regparm(1))) G_GetItemForClassname(const char *classname)
+static const gitem_t * __attribute_regparm__(1) G_GetItemForClassname(const char *classname)
 {
     int weaponIndex;
     int itemIndex;
@@ -434,7 +434,7 @@ void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 }
 
 /* line 225 */
-static void __attribute__((regparm(3))) G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
+static void __attribute_regparm__(3) G_ParseEntityField(const char *key, const char *value, gentity_t *ent)
 {
     const ent_field_t *field;
     unsigned int index;

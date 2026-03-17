@@ -374,6 +374,7 @@ unsigned int ScrCmd_GetClanURL(scr_entref_t entref)
 }
 
 /* line 315 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int print(void)
 {
@@ -419,6 +420,9 @@ unsigned int print(void)
         "retl\n"
     );
 }
+#else
+unsigned int print(void) { return 0; }
+#endif
 
 /* line 623 */
 unsigned int assertCmd(void)
@@ -610,6 +614,7 @@ unsigned int ScrCmd_StopRumble(scr_entref_t entref)
 }
 
 /* line 1862 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 qboolean G_GetHintStringIndex(int *piIndex, const char *pszString)
 {
@@ -684,8 +689,12 @@ qboolean G_GetHintStringIndex(int *piIndex, const char *pszString)
         "retl\n"
     );
 }
+#else
+qboolean G_GetHintStringIndex(int *piIndex, const char *pszString) { return 0; }
+#endif
 
 /* line 2109 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int SetObjectiveIcon(void)
 {
@@ -754,8 +763,12 @@ unsigned int SetObjectiveIcon(void)
         "retl\n"
     );
 }
+#else
+unsigned int SetObjectiveIcon(void) { return 0; }
+#endif
 
 /* line 2232 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int Scr_Objective_Icon(void)
 {
@@ -790,8 +803,12 @@ unsigned int Scr_Objective_Icon(void)
         "jmp SetObjectiveIcon\n" /* line 2240 */
     );
 }
+#else
+unsigned int Scr_Objective_Icon(void) { return 0; }
+#endif
 
 /* line 2274 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int Scr_Objective_OnEntity(void)
 {
@@ -12089,3 +12106,6 @@ unsigned int GScr_LoadScripts(void)
     );
 }
 
+#else
+unsigned int Scr_Objective_OnEntity(void) { return 0; }
+#endif

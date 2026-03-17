@@ -153,11 +153,16 @@ unsigned int Scr_GetNumScriptThreads(void)
 void Scr_ResetTimeout(void)
 {
     unsigned int tsc_low;
+#ifndef __EMSCRIPTEN__
     __asm__ __volatile__ ("rdtsc" : "=a" (tsc_low) : : "edx");
+#else
+    tsc_low = 0;
+#endif
     *(unsigned int *)(scrVmGlob + 24) = tsc_low >> 2;
 }
 
 /* line 2620 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue)
 {
@@ -210,8 +215,12 @@ void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notify
         "jmp RemoveVariable\n" /* line 2635 */
     );
 }
+#else
+static void VM_CancelNotifyInternal(unsigned int notifyListOwnerId, unsigned int notifyListId, unsigned int notifyNameListId, unsigned int stringValue) { }
+#endif
 
 /* line 2640 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId)
 {
@@ -9833,3 +9842,6 @@ void Scr_AddVector(const float *value)
     );
 }
 
+#else
+void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId) { }
+#endif

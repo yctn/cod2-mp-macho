@@ -315,6 +315,7 @@ void Con_Shutdown(void)
 }
 
 /* line 620 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void Con_UpdateMessageWindowLine(qboolean linefeed)
 {
@@ -4329,3 +4330,6 @@ void CL_DeathMessagePrint(const char *attackerName, const vec_t *attackerColor, 
         "jmp .Lf15f1e6_0015f329\n"
     );
 }
+#else
+static void Con_UpdateMessageWindowLine(qboolean linefeed) { }
+#endif

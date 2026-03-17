@@ -762,6 +762,7 @@ int CL_ScaledMilliseconds(void)
 }
 
 /* line 3422 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CL_InitRef(void)
 {
@@ -1046,6 +1047,9 @@ void CL_InitRef(void)
         "retl\n"
     );
 }
+#else
+void CL_InitRef(void) { }
+#endif
 
 /* line 3739 */
 void CL_startSingleplayer_f(void)
@@ -1247,6 +1251,7 @@ void CL_ShutdownDebugData(void)
 }
 
 /* line 4449 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CL_GetPing(int n, char *buf, int buflen, int *pingtime)
 {
@@ -5718,3 +5723,6 @@ WARNING: You are missing some files referenced by the serve" */
         "jmp .Lf14d570_0014d5ce\n"
     );
 }
+#else
+void CL_GetPing(int n, char *buf, int buflen, int *pingtime) { }
+#endif

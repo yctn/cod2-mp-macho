@@ -192,6 +192,7 @@ void CG_FxSetTestPosition(void)
 }
 
 /* line 128 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_OffsetThirdPersonView(void)
 {
@@ -1914,3 +1915,6 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "jmp .Lf1d25bc_001d2e41\n"
     );
 }
+#else
+static void CG_OffsetThirdPersonView(void) { }
+#endif

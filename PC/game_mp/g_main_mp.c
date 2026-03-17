@@ -156,7 +156,7 @@ qboolean G_LocationalTracePassed(const vec_t *start, const vec_t *end, int passE
 int G_SightTrace(int *hitNum, const vec_t *start, const vec_t *end, int passEntityNum, int contentmask);
 int G_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const char *pszText);
 int G_ShutdownGame(qboolean freeScripts);
-static int __attribute__((regparm(1))) G_RunFrameForEntity(gentity_t *ent);
+static int __attribute_regparm__(1) G_RunFrameForEntity(gentity_t *ent);
 int G_RunFrame(int levelTime);
 
 /* line 510 */
@@ -377,6 +377,7 @@ void DBG_PrintFreeVars(const char *label)
 }
 
 /* line 763 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist)
 {
@@ -1086,6 +1087,9 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "jmp .Lf1abbfa_001ac124\n"
     );
 }
+#else
+int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist) { return 0; }
+#endif
 
 /* line 1202 */
 int CheckVote(void)
@@ -1266,7 +1270,7 @@ int G_ShutdownGame(qboolean freeScripts)
 }
 
 /* line 1384 */
-static int __attribute__((regparm(1))) G_RunFrameForEntity(gentity_t *ent)
+static int __attribute_regparm__(1) G_RunFrameForEntity(gentity_t *ent)
 {
     if (ent->processedFrame == level.framenum) {
         return 0;
@@ -1348,6 +1352,7 @@ static int __attribute__((regparm(1))) G_RunFrameForEntity(gentity_t *ent)
 }
 
 /* line 1503 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int G_RunFrame(int levelTime)
 {
@@ -1771,3 +1776,6 @@ int G_RunFrame(int levelTime)
         "jmp .Lf1ad0b4_001ad593\n"
     );
 }
+#else
+int G_RunFrame(int levelTime) { return 0; }
+#endif

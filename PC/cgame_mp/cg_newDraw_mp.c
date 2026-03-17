@@ -224,6 +224,7 @@ const char * CG_GetUseString(void)
 }
 
 /* line 1408 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
 {
@@ -4239,3 +4240,6 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".text\n"
     );
 }
+#else
+static void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle) { }
+#endif

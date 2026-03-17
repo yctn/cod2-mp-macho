@@ -115,6 +115,7 @@ void GScr_NewClientHudElem(void);
 void GScr_NewTeamHudElem(void);
 
 /* line 282 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetEnumString(const char * *names, int nameCount)
 {
@@ -210,6 +211,9 @@ Should be o" */
         "retl\n"
     );
 }
+#else
+static void HudElem_SetEnumString(const char * *names, int nameCount) { }
+#endif
 
 /* line 343 */
 static void HudElem_SetLocalizedString(game_hudelem_t *hud, int offset)
@@ -263,6 +267,7 @@ static void HudElem_SetFontScale(game_hudelem_t *hud, int offset)
 }
 
 /* line 458 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetFont(game_hudelem_t *hud, int offset)
 {
@@ -281,8 +286,12 @@ void HudElem_SetFont(game_hudelem_t *hud, int offset)
         "jmp HudElem_SetEnumString\n" /* line 460 */
     );
 }
+#else
+static void HudElem_SetFont(game_hudelem_t *hud, int offset) { }
+#endif
 
 /* line 480 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetAlignX(game_hudelem_t *hud, int offset)
 {
@@ -301,8 +310,12 @@ void HudElem_SetAlignX(game_hudelem_t *hud, int offset)
         "jmp HudElem_SetEnumString\n" /* line 482 */
     );
 }
+#else
+static void HudElem_SetAlignX(game_hudelem_t *hud, int offset) { }
+#endif
 
 /* line 502 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetAlignY(game_hudelem_t *hud, int offset)
 {
@@ -321,8 +334,12 @@ void HudElem_SetAlignY(game_hudelem_t *hud, int offset)
         "jmp HudElem_SetEnumString\n" /* line 504 */
     );
 }
+#else
+static void HudElem_SetAlignY(game_hudelem_t *hud, int offset) { }
+#endif
 
 /* line 524 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetHorzAlign(game_hudelem_t *hud, int offset)
 {
@@ -341,8 +358,12 @@ void HudElem_SetHorzAlign(game_hudelem_t *hud, int offset)
         "jmp HudElem_SetEnumString\n" /* line 526 */
     );
 }
+#else
+static void HudElem_SetHorzAlign(game_hudelem_t *hud, int offset) { }
+#endif
 
 /* line 546 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_SetVertAlign(game_hudelem_t *hud, int offset)
 {
@@ -361,8 +382,12 @@ void HudElem_SetVertAlign(game_hudelem_t *hud, int offset)
         "jmp HudElem_SetEnumString\n" /* line 548 */
     );
 }
+#else
+static void HudElem_SetVertAlign(game_hudelem_t *hud, int offset) { }
+#endif
 
 /* line 557 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void HudElem_GetVertAlign(game_hudelem_t *hud, int offset)
 {
@@ -2800,3 +2825,6 @@ void GScr_NewTeamHudElem(void)
     );
 }
 
+#else
+static void HudElem_GetVertAlign(game_hudelem_t *hud, int offset) { }
+#endif

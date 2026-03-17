@@ -462,9 +462,14 @@ char pPriorityMapAlt[64] __attribute__((aligned(4))) = {0};
 char PrerollMovie[64] __attribute__((aligned(4))) = {0};
 char PtInRect[64] __attribute__((aligned(4))) = {0};
 /* ptr_195ecb4 = Mac GOT entry for legacyHacks (double-deref pattern, stores &legacyHacks) */
+#ifndef __EMSCRIPTEN__
 __asm__(".section .data\n.globl ptr_195ecb4\nptr_195ecb4: .long legacyHacks\n.space 60\n.previous\n");
 /* ptr_195ecbc = Mac GOT entry for com_sv_running (double-deref pattern, stores &com_sv_running) */
 __asm__(".section .data\n.globl ptr_195ecbc\nptr_195ecbc: .long com_sv_running\n.space 60\n.previous\n");
+#else
+char ptr_195ecb4[64] __attribute__((aligned(4))) = {0};
+char ptr_195ecbc[64] __attribute__((aligned(4))) = {0};
+#endif
 char ptr_195eea4[64] __attribute__((aligned(4))) = {0};
 char ptr_195f58c[64] __attribute__((aligned(4))) = {0};
 char ptr_195f5e0[64] __attribute__((aligned(4))) = {0};
@@ -642,9 +647,13 @@ void *CDirect3D_GetDirect3DInterface(void) { return (void *)0; }
 
 /* CDirect3DDevice vtable function stub — referenced from data.S at various offsets.
    data.S uses function+1115/+1116 offsets, so the function body must be >= 1200 bytes. */
-void CDirect3DDevice_CreateAndSetFixedFunctionVAO(void)
-{
+void CDirect3DDevice_CreateAndSetFixedFunctionVAO(void);
 #ifndef __EMSCRIPTEN__
-    __asm__ __volatile__ (".space 1200\n");
+/* data.S references this function at +1115/+1116 offsets, so body must be >= 1200 bytes */
+__asm__(
+    ".globl CDirect3DDevice_CreateAndSetFixedFunctionVAO\n"
+    "CDirect3DDevice_CreateAndSetFixedFunctionVAO:\n"
+    ".space 1200\n"
+    "retl\n"
+);
 #endif
-}

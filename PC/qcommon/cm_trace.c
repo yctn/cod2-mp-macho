@@ -42,6 +42,7 @@ cmodel_t * CM_ClipHandleToModel(clipHandle_t handle)
 }
 
 /* line 254 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 int CM_TestInLeafBrushNode_r(void)
 {
@@ -4321,3 +4322,6 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
     );
 }
 
+#else
+static int CM_TestInLeafBrushNode_r(void) { return 0; }
+#endif

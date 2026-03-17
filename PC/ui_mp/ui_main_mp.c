@@ -455,6 +455,7 @@ qboolean Load_ScriptMenu(const char *pszMenu, int imageTrack)
 }
 
 /* line 701 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void UI_DrawMapPreview(void)
 {
@@ -8105,3 +8106,6 @@ check_connection_state:
         }
     }
 }
+#else
+static void UI_DrawMapPreview(void) { }
+#endif

@@ -107,6 +107,7 @@ int DObjSkelAreBonesUpToDate(const DObj *obj, int *partBits)
 }
 
 /* line 1142 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void DObjFree(DObj_s *obj)
 {
@@ -152,6 +153,9 @@ void DObjFree(DObj_s *obj)
         "retl\n"
     );
 }
+#else
+void DObjFree(DObj_s *obj) { }
+#endif
 
 /* line 1223 */
 int DObjGetAllocSkelSize(const DObj *obj)
@@ -218,6 +222,7 @@ int DObjGetMatOffset(const DObj *obj, int modelIndex)
 }
 
 /* line 1393 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void DObjGetBoneInfo(const DObj *obj, XBoneInfo * *boneInfo)
 {
@@ -272,8 +277,12 @@ void DObjGetBoneInfo(const DObj *obj, XBoneInfo * *boneInfo)
         "retl\n"
     );
 }
+#else
+void DObjGetBoneInfo(const DObj *obj, XBoneInfo * *boneInfo) { }
+#endif
 
 /* line 1480 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int DObjGetNumSurfaces(const DObj *obj, char *lods)
 {
@@ -336,6 +345,9 @@ int DObjGetNumSurfaces(const DObj *obj, char *lods)
         "retl\n"
     );
 }
+#else
+int DObjGetNumSurfaces(const DObj *obj, char *lods) { return 0; }
+#endif
 
 /* line 1509 */
 struct XSurface_s * DObjGetSurface(const DObj *obj, int modelIndex, int subMatIndex, int lod)
@@ -348,6 +360,7 @@ struct XSurface_s * DObjGetSurface(const DObj *obj, int modelIndex, int subMatIn
 }
 
 /* line 1522 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 const char * DObjGetSurfaceName(DObj *obj, int modelIndex, int subMatIndex, int lod)
 {
@@ -4110,3 +4123,6 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
     );
 }
 
+#else
+const char * DObjGetSurfaceName(DObj *obj, int modelIndex, int subMatIndex, int lod) { return 0; }
+#endif

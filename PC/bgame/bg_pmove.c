@@ -45,6 +45,7 @@ static void PM_GroundTrace(pmove_t *pm, pml_t *pml);
 void Pmove(pmove_t *pm);
 
 /* line 247 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask)
 {
@@ -83,8 +84,12 @@ void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mi
         "jmpl *%ecx\n" /* line 249 */
     );
 }
+#else
+void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask) { }
+#endif
 
 /* line 294 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void PM_AddTouchEnt(pmove_t *pm, int entityNum)
 {
@@ -136,6 +141,9 @@ void PM_AddTouchEnt(pmove_t *pm, int entityNum)
         "retl\n"
     );
 }
+#else
+void PM_AddTouchEnt(pmove_t *pm, int entityNum) { }
+#endif
 
 void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerState_t *ps);
 
@@ -166,6 +174,7 @@ int PM_GroundSurfaceType(pml_t *pml)
 }
 
 /* line 1803 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDown)
 {
@@ -191,6 +200,9 @@ int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDow
         "retl\n"
     );
 }
+#else
+int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDown) { return 0; }
+#endif
 
 /* line 3954 */
 void PM_SetProneMovementOverride(playerState_t *ps)
@@ -201,6 +213,7 @@ void PM_SetProneMovementOverride(playerState_t *ps)
 }
 
 /* line 4728 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 float BG_GetSpeed(const playerState_t *ps, int time)
 {
@@ -235,8 +248,12 @@ float BG_GetSpeed(const playerState_t *ps, int time)
         "retl\n"
     );
 }
+#else
+float BG_GetSpeed(const playerState_t *ps, int time) { return 0.0f; }
+#endif
 
 /* line 3530 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 qboolean BG_CheckProneTurned(void)
 {
@@ -307,8 +324,12 @@ qboolean BG_CheckProneTurned(void)
         "retl\n"
     );
 }
+#else
+static qboolean BG_CheckProneTurned(void) { return 0; }
+#endif
 
 /* line 2723 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 qboolean PM_ShouldMakeFootsteps(pmove_t *pm)
 {
@@ -348,8 +369,12 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm)
         "retl\n"
     );
 }
+#else
+qboolean PM_ShouldMakeFootsteps(pmove_t *pm) { return 0; }
+#endif
 
 /* line 330 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out)
 {
@@ -392,8 +417,12 @@ void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out)
         "retl\n"
     );
 }
+#else
+void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out) { }
+#endif
 
 /* line 478 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void PM_Accelerate(pml_t *pml)
 {
@@ -8999,3 +9028,6 @@ void Pmove(pmove_t *pm)
     );
 }
 
+#else
+static void PM_Accelerate(pml_t *pml) { }
+#endif

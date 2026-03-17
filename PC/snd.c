@@ -119,7 +119,7 @@ void SND_RestoreListeners(snd_listener *listeners);
 float SND_GetLerpedSlavePercentage(float baseSlavePercentage);
 float SND_Attenuate(SndCurve *volumeFalloffCurve, float radius, float mindist, float maxdist);
 Bool SND_IsAliasChannel3D(int channel);
-static __attribute__((regparm(3))) Bool SND_ValidateSoundAliasBlend(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, Bool bReport);
+static __attribute_regparm__(3) Bool SND_ValidateSoundAliasBlend(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, Bool bReport);
 static void SND_PauseSounds(void);
 static void SND_UnpauseSounds(void);
 void SND_SetChannelVolumes(int priority, const float *channelvolume, int fademsec);
@@ -136,7 +136,7 @@ void SND_SetChannelInfo(int index, int entnum, const snd_alias_t *pAlias0, const
 void SND_GetCurrent3DPosition(int entnum, const vec_t *offset, vec_t *pos_out);
 int SND_GetSoundOverlay(snd_overlay_type_t type, snd_overlay_info_t *info, int maxcount, int *cpu);
 static __attribute__((regparm(3), sseregparm)) int SND_StartAliasStream(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, float volume, float pitch, int timeshift, float fraction, int treatAsMaster, int *pChannel, snd_alias_system_t system);
-static __attribute__((regparm(2))) void SND_SaveChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile);
+static __attribute_regparm__(2) void SND_SaveChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile);
 void SND_Init(void);
 static __attribute__((regparm(3), sseregparm)) int SND_PlaySoundAlias_Internal(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, int *pChannel, int timeshift, int treatAsMaster, snd_alias_system_t system);
 int SND_PlayLocalSoundAliasByName(const char *aliasname, snd_alias_system_t system);
@@ -146,8 +146,8 @@ int SND_PlaySoundAliasAsMaster(const snd_alias_t *pAlias, int entnum, const vec_
 int SND_PlaySoundAlias(const snd_alias_t *pAlias, int entnum, const vec_t *org, int timeshift, snd_alias_system_t system);
 int SND_FindFree2DChannel(int entnum, int entchannel);
 int SND_FindFree3DChannel(int entnum, int entchannel);
-static __attribute__((regparm(2))) void SND_RestoreChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile);
-static __attribute__((regparm(3))) void SND_StartBackground(int track, const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system);
+static __attribute_regparm__(2) void SND_RestoreChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile);
+static __attribute_regparm__(3) void SND_StartBackground(int track, const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system);
 void SND_PlayAmbientAlias(const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system);
 void SND_PlayMusicAlias(const snd_alias_t *pAlias, snd_alias_system_t system);
 void SND_StopMusic(int fadetime);
@@ -158,7 +158,7 @@ void SND_FadeAllSounds(float volume, int fadetime);
 void SND_SetEnvironmentEffects_f(void);
 void SND_DeactivateEnvironmentEffects_f(void);
 void SND_Save(MemoryFile *memFile);
-static __attribute__((regparm(2))) Bool SND_RestoreStreamChannel(int channel, MemoryFile *memFile);
+static __attribute_regparm__(2) Bool SND_RestoreStreamChannel(int channel, MemoryFile *memFile);
 void SND_Restore(MemoryFile *memFile);
 void SND_Update(void);
 
@@ -207,7 +207,7 @@ Bool SND_IsAliasChannel3D(int channel)
 }
 
 /* line 924 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 Bool SND_ValidateSoundAliasBlend(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, Bool bReport)
 {
     int flags0, flags1;
@@ -931,7 +931,7 @@ no_channel:
 
 /* line 2082 */
 /* line 2082 */
-static __attribute__((regparm(2)))
+static __attribute_regparm__(2)
 void SND_SaveChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile)
 {
     short value_s;
@@ -1414,7 +1414,7 @@ int SND_FindFree3DChannel(int entnum, int entchannel)
 
 /* line 2098 */
 /* line 2098 */
-static __attribute__((regparm(2)))
+static __attribute_regparm__(2)
 void SND_RestoreChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile)
 {
     short value_s;
@@ -1454,7 +1454,7 @@ void SND_RestoreChanInfo(snd_channel_info_t *chaninfo, MemoryFile *memFile)
 }
 
 /* line 1189 */
-static __attribute__((regparm(3)))
+static __attribute_regparm__(3)
 void SND_StartBackground(int track, const snd_alias_t *pAlias, int fadetime, snd_alias_system_t system)
 {
     int channel;
@@ -1879,7 +1879,7 @@ void SND_Save(MemoryFile *memFile)
 }
 
 /* line 2383 */
-static __attribute__((regparm(2)))
+static __attribute_regparm__(2)
 Bool SND_RestoreStreamChannel(int channel, MemoryFile *memFile)
 {
     const char *name;

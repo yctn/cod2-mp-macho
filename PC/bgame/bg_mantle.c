@@ -52,9 +52,9 @@ void Mantle_ClearHint(playerState_t *ps);
 void Mantle_CapView(playerState_t *ps);
 Bool Mantle_IsWeaponInactive(playerState_t *ps);
 void Mantle_CreateAnims(MantleAnimAlloc xanimAlloc);
-static void __attribute__((regparm(3))) Mantle_GetAnimDelta(byte *mstate, int time, float *delta);
+static void __attribute_regparm__(3) Mantle_GetAnimDelta(byte *mstate, int time, float *delta);
 void Mantle_Move(pmove_t *pm, playerState_t *ps, pml_t *pml);
-static Bool __attribute__((regparm(3))) Mantle_CheckLedge(pmove_t *pm, pml_t *pml, byte *mresults, float height);
+static Bool __attribute_regparm__(3) Mantle_CheckLedge(pmove_t *pm, pml_t *pml, byte *mresults, float height);
 void Mantle_Check(pmove_t *pm, pml_t *pml);
 
 /* line 161 */
@@ -190,7 +190,7 @@ void Mantle_CreateAnims(MantleAnimAlloc xanimAlloc)
 }
 
 /* line 263 - regparm(3): eax=mstate, edx=time, ecx=delta */
-static void __attribute__((regparm(3))) Mantle_GetAnimDelta(byte *mstate, int time, float *delta)
+static void __attribute_regparm__(3) Mantle_GetAnimDelta(byte *mstate, int time, float *delta)
 {
     float rot[4];
     float trans[3];
@@ -334,7 +334,7 @@ void Mantle_Move(pmove_t *pm, playerState_t *ps, pml_t *pml)
 }
 
 /* line 418 - regparm(3): eax=pm, edx=pml, ecx=mresults; xmm0=height */
-static Bool __attribute__((regparm(3))) Mantle_CheckLedge(pmove_t *pm, pml_t *pml, byte *mresults, float height)
+static Bool __attribute_regparm__(3) Mantle_CheckLedge(pmove_t *pm, pml_t *pml, byte *mresults, float height)
 {
     byte *ps = (byte *)*(void **)pm;
     float playerRadius = *(float *)(ps + 0x578);

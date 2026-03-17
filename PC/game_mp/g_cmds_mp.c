@@ -181,6 +181,7 @@ void G_setfog(const char *fogstring)
 }
 
 /* line 732 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
 {
@@ -3269,3 +3270,6 @@ void ClientCommand(int clientNum)
         "jmp .Lf1a53ec_001a54b3\n"
     );
 }
+#else
+qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) { return 0; }
+#endif

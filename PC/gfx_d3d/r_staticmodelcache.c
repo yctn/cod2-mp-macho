@@ -78,6 +78,7 @@ void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf)
  * Handles single-bone (rigid) and multi-bone (weighted) paths, Dx7/non-Dx7 layouts.
  * 786 lines of quaternion→matrix + vertex transformation + VB lock/write.
  * Uses cdecl calling convention (all stack args). */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers)
 {
@@ -2140,3 +2141,6 @@ void R_FlushStaticModelCache(void)
         ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
     }
 }
+#else
+void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers) { }
+#endif

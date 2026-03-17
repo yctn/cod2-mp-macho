@@ -54,6 +54,7 @@ int PC_DollarDirective_evalint(source_t *source);
 void StripDoubleQuotes(char *string);
 
 /* line 35 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SourceError(source_t *source, char *str)
 {
@@ -88,8 +89,12 @@ void SourceError(source_t *source, char *str)
         "retl\n"
     );
 }
+#else
+void SourceError(source_t *source, char *str) { }
+#endif
 
 /* line 53 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SourceWarning(source_t *source, char *str)
 {
@@ -124,8 +129,12 @@ void SourceWarning(source_t *source, char *str)
         "retl\n"
     );
 }
+#else
+void SourceWarning(source_t *source, char *str) { }
+#endif
 
 /* line 348 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int PC_StringizeTokens(token_t *tokens, token_t *token)
 {
@@ -193,8 +202,12 @@ int PC_StringizeTokens(token_t *tokens, token_t *token)
         "retl\n"
     );
 }
+#else
+int PC_StringizeTokens(token_t *tokens, token_t *token) { return 0; }
+#endif
 
 /* line 1490 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int PC_OperatorPriority(int op)
 {
@@ -303,6 +316,9 @@ int PC_OperatorPriority(int op)
         ".text\n"
     );
 }
+#else
+int PC_OperatorPriority(int op) { return 0; }
+#endif
 
 /* line 2312 */
 int PC_Directive_line(source_t *source)
@@ -312,6 +328,7 @@ int PC_Directive_line(source_t *source)
 }
 
 /* line 3150 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int PC_SourceFileAndLine(int handle, char *filename, int *line)
 {
@@ -368,8 +385,12 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line)
         "retl\n"
     );
 }
+#else
+int PC_SourceFileAndLine(int handle, char *filename, int *line) { return 0; }
+#endif
 
 /* line 180 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int PC_ReadSourceToken(source_t *source, token_t *token)
 {
@@ -6258,3 +6279,6 @@ int PC_DollarDirective_evalint(source_t *source)
         "jmp .Lfc295c_000c2af8\n"
     );
 }
+#else
+int PC_ReadSourceToken(source_t *source, token_t *token) { return 0; }
+#endif

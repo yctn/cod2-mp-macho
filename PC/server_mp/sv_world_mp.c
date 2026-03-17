@@ -78,6 +78,7 @@ int SV_UnlinkEntity(gentity_t *gEnt)
 }
 
 /* line 817 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum0, int passEntityNum1, int contentmask)
 {
@@ -232,8 +233,12 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
         "retl\n"
     );
 }
+#else
+int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum0, int passEntityNum1, int contentmask) { return 0; }
+#endif
 
 /* line 604 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask, qboolean locational, unsigned char *priorityMap, qboolean staticmodels)
 {
@@ -2003,3 +2008,6 @@ int SV_PointContents(const vec_t *p, int passEntityNum, int contentmask)
     );
 }
 
+#else
+int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentmask, qboolean locational, unsigned char *priorityMap, qboolean staticmodels) { return 0; }
+#endif

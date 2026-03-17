@@ -1,16 +1,19 @@
 #define _GNU_SOURCE
 /* Platform stubs for agl (macOS → Linux) */
 #include "agl_stubs.h"
+#ifndef __EMSCRIPTEN__
 #include <ucontext.h>
 #include <GL/gl.h>
-#include <SDL2/SDL.h>
 #include <dlfcn.h>
+#include <execinfo.h>
+#endif
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <execinfo.h>
 #include <signal.h>
 
+#ifndef __EMSCRIPTEN__
 static void crash_handler(int sig, siginfo_t *info, void *ucontext) {
     ucontext_t *uc = (ucontext_t *)ucontext;
     unsigned int eip = uc->uc_mcontext.gregs[REG_EIP];
@@ -37,6 +40,7 @@ __attribute__((constructor)) static void install_crash_handler(void) {
     sa.sa_flags = SA_SIGINFO;
     sigaction(SIGSEGV, &sa, NULL);
 }
+#endif
 
 static long long get_ms(void) {
     struct timeval tv;
@@ -63,6 +67,7 @@ void diag_addcmd(unsigned int x_hex, unsigned int y_hex, unsigned int retaddr)
 }
 
 /* Intercept glDrawRangeElements to dump GL state at draw time */
+#ifndef __EMSCRIPTEN__
 void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices)
 {
     typedef void (*fn_t)(GLenum, GLuint, GLuint, GLsizei, GLenum, const void *);
@@ -74,6 +79,7 @@ void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, G
 
     real_fn(mode, start, end, count, type, indices);
 }
+#endif
 
 /* Intercept glTexImage2D to check texture uploads */
 /* glTexImage2D interceptor disabled — was calling glGetIntegerv inside GL calls */

@@ -62,6 +62,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
 int BG_AnimScriptAnimation(playerState_t *ps, aistateEnum_t state, scriptAnimMoveTypes_t movetype, qboolean isContinue);
 
 /* line 382 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void BG_AnimParseError(const char *msg)
 {
@@ -110,6 +111,9 @@ void BG_AnimParseError(const char *msg)
         "retl\n"
     );
 }
+#else
+void BG_AnimParseError(const char *msg) { }
+#endif
 
 void BG_LoadWeaponStrings(void);
 
@@ -121,6 +125,7 @@ void BG_InitWeaponStrings(void)
 }
 
 /* line 1827 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int forceDuration, qboolean setTimer, qboolean isContinue, qboolean force, playerState_t *ps_7, scriptAnimEventTypes_t event)
 {
@@ -6235,3 +6240,6 @@ int BG_AnimScriptAnimation(playerState_t *ps, aistateEnum_t state, scriptAnimMov
     );
 }
 
+#else
+int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int forceDuration, qboolean setTimer, qboolean isContinue, qboolean force, playerState_t *ps_7, scriptAnimEventTypes_t event) { return 0; }
+#endif

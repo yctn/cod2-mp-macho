@@ -3,8 +3,12 @@
 
 /* Platform stubs for agl (macOS → Linux) */
 
+#ifndef __EMSCRIPTEN__
 #include <GL/gl.h>
 #include <GL/glx.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 
 typedef void *AGLContext;
 typedef void *AGLPixelFormat;

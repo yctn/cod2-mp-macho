@@ -146,6 +146,7 @@ Bool R_ValidateStaticModel(struct XModel *model)
  * the leaf's bounds by expanding against the static model instance's bounds.
  * Register convention: eax=world, edx=tree, ecx=smodelIndex.
  * 201 lines with Hunk allocation, bounds expansion, and child iteration. */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 int R_AddStaticModelToAabbTree_r(GfxWorld *world, int smodelIndex)
 {
@@ -2192,3 +2193,6 @@ int R_AllocStaticModels(GfxAabbTree *tree)
 }
 #endif
 
+#else
+static int R_AddStaticModelToAabbTree_r(GfxWorld *world, int smodelIndex) { return 0; }
+#endif

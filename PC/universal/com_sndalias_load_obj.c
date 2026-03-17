@@ -51,6 +51,7 @@ static int AliasNameCompare(snd_alias_build_t *pFrontList, snd_alias_build_t *pB
 }
 
 /* line 1024 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(), int isRemovingDups)
 {
@@ -4037,3 +4038,6 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
     );
 }
 
+#else
+static snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, int *piAliasCount, int (*test)(), int isRemovingDups) { return 0; }
+#endif

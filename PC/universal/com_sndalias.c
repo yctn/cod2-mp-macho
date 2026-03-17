@@ -50,6 +50,7 @@ J_COLOR_SPACE * Com_GetSoundFileMem(const snd_alias_t *pAlias)
 }
 
 /* line 979 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCurGame, snd_alias_system_t system)
 {
@@ -1575,3 +1576,6 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
     );
 }
 
+#else
+J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCurGame, snd_alias_system_t system) { return 0; }
+#endif

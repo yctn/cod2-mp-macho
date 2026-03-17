@@ -31,6 +31,7 @@ void ZNSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE13inser
 void ZNSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE8_M_eraseEPSt13_Rb_tree_nodeIS2_E(void); /* std__Rb_tree<std_basic_string<char, std_char_traits<char>, std_allocator<char> >, std_pair<std_basic_string<char, std_char_traits<char>, std_allocator<char> > const, std_basic_string<char, std_char_traits<char>, std_allocator<char> > >, std__Select1st<std_pair<std_basic_string<char, std_char_traits<char>, std_allocator<char> > const, std_basic_string<char, std_char_traits<char>, std_allocator<char> > > >, std_less<std_basic_string<char, std_char_traits<char>, std_allocator<char> > >, std_allocator<std_pair<std_basic_string<char, std_char_traits<char>, std_allocator<char> > const, std_basic_string<char, std_char_traits<char>, std_allocator<char> > > > >__M_erase */
 
 /* line 474 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * *psParsePos, char *psDest)
 {
@@ -215,8 +216,12 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
         "jmp .Lf48cbe_00048d1c\n"
     );
 }
+#else
+qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * *psParsePos, char *psDest) { return 0; }
+#endif
 
 /* line 298 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CStringEdPackage_SetupNewFileParse(const CStringEdPackage * _this, const char *psFileName)
 {
@@ -3297,3 +3302,6 @@ void ZNSt8_Rb_treeISsSt4pairIKSsSsESt10_Select1stIS2_ESt4lessISsESaIS2_EE8_M_era
     );
 }
 
+#else
+double CStringEdPackage_SetupNewFileParse(const CStringEdPackage * _this, const char *psFileName) { return 0.0f; }
+#endif

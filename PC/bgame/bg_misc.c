@@ -186,6 +186,7 @@ void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerStat
 }
 
 /* line 819 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean snap, int handler)
 {
@@ -1787,3 +1788,6 @@ qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime
 
     return 1;
 }
+#else
+void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean snap, int handler) { }
+#endif

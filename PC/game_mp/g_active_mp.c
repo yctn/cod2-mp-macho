@@ -86,6 +86,7 @@ void ClientThink(int clientNum);
 void ClientEndFrame(gentity_t *ent);
 
 /* line 119 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ClientImpacts(gentity_t *ent, pmove_t *pm)
 {
@@ -2973,3 +2974,6 @@ void ClientEndFrame(gentity_t *ent)
     );
 }
 
+#else
+void ClientImpacts(gentity_t *ent, pmove_t *pm) { }
+#endif

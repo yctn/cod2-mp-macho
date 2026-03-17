@@ -136,6 +136,7 @@ void CG_ParseCodinfo(void)
 }
 
 /* line 540 — uses register calling convention (str in eax), called from naked CG_ServerCommand */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_AddToTeamChat(void)
 {
@@ -1891,3 +1892,6 @@ void CG_ExecuteNewServerCommands(int latestSequence)
         }
     }
 }
+#else
+static void CG_AddToTeamChat(void) { }
+#endif

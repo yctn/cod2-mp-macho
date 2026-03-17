@@ -73,6 +73,7 @@ long int SV_SendServerCommand(client_t *cl, svscmd_type type, const char *fmt);
 long int SV_Frame(int msec);
 
 /* line 281 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd)
 {
@@ -2655,3 +2656,6 @@ long int SV_Frame(int msec)
     );
 }
 
+#else
+long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd) { return 0; }
+#endif

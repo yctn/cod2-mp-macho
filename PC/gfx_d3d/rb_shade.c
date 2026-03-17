@@ -2048,6 +2048,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
  * 1836 lines of ASM — the largest function in the codebase.
  * MUST remain naked: register calling convention (eax=vertDeclType, edx=args, ecx=stateOverride)
  * and 30+ D3D COM vtable calls with complex state management make C conversion impractical. */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride)
 {
@@ -4120,3 +4121,6 @@ cleanup:
     *(int *)(tess + 0x5a7d0) = 0; /* indexCount */
     *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
 }
+#else
+static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride) { }
+#endif

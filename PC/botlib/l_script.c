@@ -38,6 +38,7 @@ static void Script_SanitizeBuffer(struct script_s *script)
 }
 
 /* line 146 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations)
 {
@@ -1584,3 +1585,6 @@ int PS_ReadToken(script_t *script, token_t *token)
         "jmp .Lfc375a_000c3920\n"
     );
 }
+#else
+void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations) { }
+#endif

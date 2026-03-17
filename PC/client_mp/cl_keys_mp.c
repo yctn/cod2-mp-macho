@@ -45,7 +45,7 @@ void Key_SetOverstrikeMode(qboolean state);
 static void FindMatches(const char *s);
 static void PrintMatches(const char *s);
 static void keyConcatArgs(void);
-static __attribute__((regparm(1))) int Key_StringToKeynum(const char *str);
+static __attribute_regparm__(1) int Key_StringToKeynum(const char *str);
 char * Key_KeynumToString(int keynum, qboolean translate);
 void Key_SetBinding(int keynum, const char *binding);
 char * Key_GetBinding(int keynum);
@@ -72,6 +72,7 @@ qboolean Key_GetOverstrikeMode(void)
 }
 
 /* line 451 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Field_AdjustScroll(field_t *edit)
 {
@@ -291,6 +292,9 @@ void Field_AdjustScroll(field_t *edit)
         "jmp .Lf13fac6_0013fbe3\n"
     );
 }
+#else
+void Field_AdjustScroll(field_t *edit) { }
+#endif
 
 /* line 1158 */
 void Key_SetOverstrikeMode(qboolean state)
@@ -399,7 +403,7 @@ static int Key_HexCharValue(char ch)
 }
 
 /* line 1193 */
-static __attribute__((regparm(1)))
+static __attribute_regparm__(1)
 int Key_StringToKeynum(const char *str)
 {
     keyname_t *name;
@@ -516,6 +520,7 @@ void Key_Shutdown(void)
 }
 
 /* line 384 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qboolean showCursor)
 {
@@ -2420,3 +2425,6 @@ void Key_ClearStates(void)
         *(int *)(k + 4) = 0; /* repeats */
     }
 }
+#else
+void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qboolean showCursor) { }
+#endif

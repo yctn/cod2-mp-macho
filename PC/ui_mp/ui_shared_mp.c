@@ -503,6 +503,7 @@ void Script_ExecNow(displayContextDef_t *dc, itemDef_t *item, const char **args)
 }
 
 /* line 1130 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)())
 {
@@ -519,6 +520,9 @@ void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)())
         "retl\n"
     );
 }
+#else
+static void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)()) { }
+#endif
 
 static void Script_ConditionalExecHandler_impl(int execWhen, Bool (*shouldExec)(const char *, const char *), const char **args)
 {
@@ -1072,6 +1076,7 @@ int Item_ListBox_ThumbDrawPosition(displayContextDef_t *dc, itemDef_t *item)
 }
 
 /* line 2908 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void Scroll_Slider_SetThumbPos(void)
 {
@@ -5934,3 +5939,6 @@ count_visible:;
         UI_Pause(0);
     }
 }
+#else
+static void Scroll_Slider_SetThumbPos(void) { }
+#endif

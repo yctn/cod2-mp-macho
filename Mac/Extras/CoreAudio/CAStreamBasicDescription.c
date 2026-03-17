@@ -8,6 +8,7 @@ void CAStreamBasicDescription_SetCanonical(const CAStreamBasicDescription * _thi
 void CAStreamBasicDescription_CAStreamBasicDescription(const CAStreamBasicDescription * _this);
 
 /* line 124 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CAStreamBasicDescription_SetCanonical(const CAStreamBasicDescription * _this, UInt32 nChannels, int interleaved)
 {
@@ -36,8 +37,12 @@ void CAStreamBasicDescription_SetCanonical(const CAStreamBasicDescription * _thi
         "retl\n"
     );
 }
+#else
+void CAStreamBasicDescription_SetCanonical(const CAStreamBasicDescription * _this, UInt32 nChannels, int interleaved) { }
+#endif
 
 /* line 56 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CAStreamBasicDescription_CAStreamBasicDescription(const CAStreamBasicDescription * _this)
 {
@@ -55,4 +60,7 @@ void CAStreamBasicDescription_CAStreamBasicDescription(const CAStreamBasicDescri
         "retl\n"
     );
 }
+#else
+void CAStreamBasicDescription_CAStreamBasicDescription(const CAStreamBasicDescription * _this) { }
+#endif
 

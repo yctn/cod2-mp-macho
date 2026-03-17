@@ -15,6 +15,19 @@ static recordingSample_t *s_recordingSamplePtr; /* 0xff2b44 */
 static recordingSample_t *g_current_sample; /* 0xff2204 */
 static CAudioRecorder *sAudioRecorder; /* 0xff2200 */
 
+int CAudioRecorder_Start(CAudioRecorder *rec);
+int CAudioRecorder_Stop(CAudioRecorder *rec);
+void CAudioRecorder_CAudioRecorder(void *rec, double freq, int channels, int bits);
+void *CAudioRecorder_GetBuffer(CAudioRecorder *rec, int *outSize);
+int CAudioRecorder_GetRecordLevel(CAudioRecorder *rec);
+int CAudioRecorder_Initialize(void *rec);
+void CAudioRecorder_Mute(CAudioRecorder *rec, int mute);
+void CAudioRecorder_SetRecordLevel(CAudioRecorder *rec, int level);
+void CAudioRecorder_Shutdown(CAudioRecorder *rec);
+void ZN14CAudioRecorderD1Ev(void *rec);
+void *__Znwm(unsigned int size);
+void __ZdlPv(void *ptr);
+void Com_Printf(const char *fmt, ...);
 int DSOUNDRecord_Start(recordingSample_t *pRecSample);
 int DSOUNDRecord_Stop(recordingSample_t *pRecSample);
 recordingSample_t * DSOUNDRecord_NewSample(void);

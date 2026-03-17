@@ -31,6 +31,7 @@ int DSound_UpdateSample(sample_t *sample, char *data, unsigned int data_len)
 }
 
 /* line 47 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 sample_t * DSound_NewSample(void)
 {
@@ -167,3 +168,6 @@ void DSound_SampleFrame(sample_t *sample)
         "jmp .Lf1f618e_001f61a7\n"
     );
 }
+#else
+sample_t * DSound_NewSample(void) { return 0; }
+#endif

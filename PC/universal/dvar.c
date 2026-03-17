@@ -77,12 +77,12 @@ void Dvar_SetInAutoExec(int inAutoExec);
 Bool Dvar_IsSystemActive(void);
 Bool Dvar_IsValidName(const char *dvarName);
 const char * Dvar_EnumToString(const dvar_t *dvar);
-const char * __attribute__((regparm(2))) Dvar_ValueToString(const dvar_t *dvar, DvarValue value);
+const char * __attribute_regparm__(2) Dvar_ValueToString(const dvar_t *dvar, DvarValue value);
 static const char *Dvar_ValueToString_impl(const dvar_t *dvar, DvarValue value);
 const char * Dvar_DisplayableValue(const dvar_t *dvar);
 const char * Dvar_DisplayableResetValue(const dvar_t *dvar);
 const char * Dvar_DisplayableLatchedValue(const dvar_t *dvar);
-static Bool __attribute__((regparm(3))) Dvar_ValuesEqual(int type, DvarValue val0, DvarValue val1);
+static Bool __attribute_regparm__(3) Dvar_ValuesEqual(int type, DvarValue val0, DvarValue val1);
 Bool Dvar_HasLatchedValue(const dvar_t *dvar);
 Bool Dvar_IsAtDefaultValue(const dvar_t *dvar);
 void Dvar_ClearModified(const dvar_t *dvar);
@@ -90,12 +90,12 @@ void Dvar_SetModified(const dvar_t *dvar);
 void Dvar_AddFlags(const dvar_t *dvar, int flags);
 void Dvar_ResetScriptInfo(void);
 const char * Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexString);
-static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, byte color[4]);
+static void __attribute_regparm__(2) Dvar_StringToColor(const char *string, byte color[4]);
 static DvarValue Dvar_StringToValue_impl(int type, DvarLimits domain, const char *string);
-static DvarValue __attribute__((regparm(3))) Dvar_StringToValue(
+static DvarValue __attribute_regparm__(3) Dvar_StringToValue(
     int type, uint32_t domainLo, uint32_t domainHi, const char *string);
 void Dvar_GetUnpackedColor(const dvar_t *dvar, long unsigned int (*expandedColor)[16]);
-static void __attribute__((regparm(2))) Dvar_SetLatchedValue(const dvar_t *dvar, DvarValue value);
+static void __attribute_regparm__(2) Dvar_SetLatchedValue(const dvar_t *dvar, DvarValue value);
 void Dvar_Shutdown(void);
 Bool Dvar_AnyLatchedValues(void);
 qboolean Com_SaveDvarsToBuffer(const char * *dvarnames, int numDvars, char *buffer, int bufsize);
@@ -109,25 +109,25 @@ const dvar_t * Dvar_FindVar(const char *dvarName);
 void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable);
 static const char *Dvar_DomainToString_Internal_impl(
     int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount);
-static const char * __attribute__((regparm(3))) Dvar_DomainToString_Internal(
+static const char * __attribute_regparm__(3) Dvar_DomainToString_Internal(
     int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount);
 const char * Dvar_DomainToString_GetLines(int type, DvarLimits domain, char *outBuffer, int outBufferLen, int *outLineCount);
 void Dvar_PrintDomain(int type, DvarLimits domain);
-static void __attribute__((regparm(1))) Dvar_PerformUnregistration(dvar_t *dvar);
+static void __attribute_regparm__(1) Dvar_PerformUnregistration(dvar_t *dvar);
 void Dvar_UnregisterSystem(int sysFlag);
-static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value);
+static void __attribute_regparm__(2) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value);
 static Bool Dvar_ValueInDomain(int type, DvarValue value, DvarLimits domain);
 static DvarValue Dvar_ClampValueToDomain(int type, DvarValue value, DvarValue resetValue, DvarLimits domain);
 static Bool Dvar_CanChangeValue(const dvar_t *dvar, DvarSetSource source);
 static void Dvar_UpdateValue(dvar_t *dvar, DvarValue value);
-static void __attribute__((regparm(3))) Dvar_MakeExplicitType(
+static void __attribute_regparm__(3) Dvar_MakeExplicitType(
     dvar_t *dvar, const char *dvarName, int type, unsigned short flags, DvarValue resetValue, DvarLimits domain);
 void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value);
-static void __attribute__((regparm(3))) Dvar_SetVariant(
+static void __attribute_regparm__(3) Dvar_SetVariant(
     const dvar_t *dvar, DvarValue value, DvarSetSource source);
 void Dvar_SetCheatState(void);
 void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource);
-static void __attribute__((regparm(3))) Dvar_SetFromStringFromSource(
+static void __attribute_regparm__(3) Dvar_SetFromStringFromSource(
     const dvar_t *dvar, const char *string, DvarSetSource source);
 void Dvar_SetFromString(const dvar_t *dvar, const char *string);
 void Dvar_SetString(const dvar_t *dvar, const char *value);
@@ -167,19 +167,19 @@ const dvar_t * Dvar_SetFromStringByNameFromSource(const char *dvarName, const ch
 void Dvar_SetCommand(const char *dvarName, const char *string);
 void Dvar_SetFromStringByName(const char *dvarName, const char *string);
 
-typedef const dvar_t *(__attribute__((regparm(3))) *DvarRegisterVariantRegparmFn)(
+typedef const dvar_t *(__attribute_regparm__(3) *DvarRegisterVariantRegparmFn)(
     const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain);
-typedef void (__attribute__((regparm(3))) *DvarSetVariantRegparmFn)(
+typedef void (__attribute_regparm__(3) *DvarSetVariantRegparmFn)(
     const dvar_t *dvar, DvarValue value, DvarSetSource source);
-typedef void (__attribute__((regparm(3))) *DvarSetFromStringFromSourceRegparmFn)(
+typedef void (__attribute_regparm__(3) *DvarSetFromStringFromSourceRegparmFn)(
     const dvar_t *dvar, const char *string, DvarSetSource source);
-typedef void (__attribute__((regparm(2))) *DvarUpdateResetValueRegparmFn)(
+typedef void (__attribute_regparm__(2) *DvarUpdateResetValueRegparmFn)(
     const dvar_t *dvar, DvarValue value);
-typedef void (__attribute__((regparm(1))) *DvarPerformUnregistrationRegparmFn)(
+typedef void (__attribute_regparm__(1) *DvarPerformUnregistrationRegparmFn)(
     dvar_t *dvar);
-typedef const char *(__attribute__((regparm(3))) *DvarDomainToStringRegparmFn)(
+typedef const char *(__attribute_regparm__(3) *DvarDomainToStringRegparmFn)(
     int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount);
-typedef DvarValue (__attribute__((regparm(3))) *DvarStringToValueRegparmFn)(
+typedef DvarValue (__attribute_regparm__(3) *DvarStringToValueRegparmFn)(
     int type, uint32_t domainLo, uint32_t domainHi, const char *string);
 
 static const dvar_t *Dvar_RegisterVariantReg(const char *dvarName, int type, unsigned int flags, DvarValue value, DvarLimits domain)
@@ -785,7 +785,7 @@ static const char *Dvar_ValueToString_impl(const dvar_t *dvar, DvarValue value)
 }
 
 /* Register CC ABI: dvar in %eax, value in %edx, returns in %eax */
-const char * __attribute__((regparm(2))) Dvar_ValueToString(const dvar_t *dvar, DvarValue value)
+const char * __attribute_regparm__(2) Dvar_ValueToString(const dvar_t *dvar, DvarValue value)
 {
     return Dvar_ValueToString_impl(dvar, value);
 }
@@ -809,7 +809,7 @@ const char * Dvar_DisplayableLatchedValue(const dvar_t *dvar)
 }
 
 /* line 838 */
-static Bool __attribute__((regparm(3))) Dvar_ValuesEqual(int type, DvarValue val0, DvarValue val1)
+static Bool __attribute_regparm__(3) Dvar_ValuesEqual(int type, DvarValue val0, DvarValue val1)
 {
     switch (type) {
     case DVAR_TYPE_BOOL:
@@ -892,7 +892,7 @@ const char * Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexS
 }
 
 /* line 428 */
-static void __attribute__((regparm(2))) Dvar_StringToColor(const char *string, byte color[4])
+static void __attribute_regparm__(2) Dvar_StringToColor(const char *string, byte color[4])
 {
     float colorVec[4];
 
@@ -954,7 +954,7 @@ static DvarValue Dvar_StringToValue_impl(int type, DvarLimits domain, const char
     return value;
 }
 
-static DvarValue __attribute__((regparm(3))) Dvar_StringToValue(
+static DvarValue __attribute_regparm__(3) Dvar_StringToValue(
     int type, uint32_t domainLo, uint32_t domainHi, const char *string)
 {
     return Dvar_StringToValue_impl(type, Dvar_UnpackLimits(domainLo, domainHi), string);
@@ -983,7 +983,7 @@ void Dvar_GetUnpackedColor(const dvar_t *dvar, long unsigned int (*expandedColor
 }
 
 /* line 879 */
-static void __attribute__((regparm(2))) Dvar_SetLatchedValue(const dvar_t *dvar, DvarValue value)
+static void __attribute_regparm__(2) Dvar_SetLatchedValue(const dvar_t *dvar, DvarValue value)
 {
     dvar_t *mutableDvar;
 
@@ -1328,7 +1328,7 @@ static const char *Dvar_DomainToString_Internal_impl(
     return outBuffer;
 }
 
-static const char * __attribute__((regparm(3))) Dvar_DomainToString_Internal(
+static const char * __attribute_regparm__(3) Dvar_DomainToString_Internal(
     int type, uint32_t domainLo, uint32_t domainHi, char *outBuffer, int outBufferLen, int *outLineCount)
 {
     return Dvar_DomainToString_Internal_impl(
@@ -1354,7 +1354,7 @@ void Dvar_PrintDomain(int type, DvarLimits domain)
 }
 
 /* line 1310 */
-static void __attribute__((regparm(1))) Dvar_PerformUnregistration(dvar_t *dvar)
+static void __attribute_regparm__(1) Dvar_PerformUnregistration(dvar_t *dvar)
 {
     vec_t *vectorMem;
     const char *valueString;
@@ -1406,7 +1406,7 @@ void Dvar_UnregisterSystem(int sysFlag)
 }
 
 /* line 1377 */
-static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value)
+static void __attribute_regparm__(2) Dvar_UpdateResetValue(const dvar_t *dvar, DvarValue value)
 {
     dvar_t *mutableDvar;
     const char *oldResetString;
@@ -1446,7 +1446,7 @@ static void __attribute__((regparm(2))) Dvar_UpdateResetValue(const dvar_t *dvar
 }
 
 /* line 1452 */
-static void __attribute__((regparm(3))) Dvar_MakeExplicitType(
+static void __attribute_regparm__(3) Dvar_MakeExplicitType(
     dvar_t *dvar, const char *dvarName, int type, unsigned short flags, DvarValue resetValue, DvarLimits domain)
 {
     DvarValue castValue;
@@ -1515,7 +1515,7 @@ void Dvar_ChangeResetValue(const dvar_t *dvar, DvarValue value)
 }
 
 /* line 925 */
-static void __attribute__((regparm(3))) Dvar_SetVariant(
+static void __attribute_regparm__(3) Dvar_SetVariant(
     const dvar_t *dvarConst, DvarValue value, DvarSetSource source)
 {
     dvar_t *dvar;
@@ -1590,7 +1590,7 @@ void Dvar_Reset(const dvar_t *dvar, DvarSetSource setSource)
 }
 
 /* line 2142 */
-static void __attribute__((regparm(3))) Dvar_SetFromStringFromSource(
+static void __attribute_regparm__(3) Dvar_SetFromStringFromSource(
     const dvar_t *dvar, const char *string, DvarSetSource source)
 {
     char buf[0x400];
@@ -1714,6 +1714,7 @@ void Dvar_SetBoolFromSource(const dvar_t *dvar, int value, DvarSetSource source)
 }
 
 /* line 1698 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned int flags, DvarValue value, DvarLimits domain)
 {
@@ -3160,3 +3161,6 @@ void Dvar_SetFromStringByName(const char *dvarName, const char *string)
 {
     Dvar_SetFromStringByNameFromSource(dvarName, string, 0);
 }
+#else
+static const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned int flags, DvarValue value, DvarLimits domain) { return 0; }
+#endif

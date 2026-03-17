@@ -87,7 +87,7 @@ static qboolean CG_DrawFollow(void);
 unsigned int CG_DrawPlayerSprites(void);
 unsigned int CG_DrawActive(void);
 static unsigned int CG_DrawChatMessages(void);
-static void __attribute__((regparm(2))) CG_CalcCrosshairPosition(float *x, float *y);
+static void __attribute_regparm__(2) CG_CalcCrosshairPosition(float *x, float *y);
 static float CG_DrawFPS(float y);
 unsigned int CG_DrawBoldGameMessages(void);
 unsigned int CG_DrawTurretCrossHair(void);
@@ -511,6 +511,7 @@ unsigned int CG_DrawCrosshairNames(void)
 }
 
 /* line 2410 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int CG_CheckTimedMenus(void)
 {
@@ -978,6 +979,9 @@ unsigned int CG_CheckTimedMenus(void)
         "jmp .Lf1cbae6_001cc017\n"
     );
 }
+#else
+unsigned int CG_CheckTimedMenus(void) { return 0; }
+#endif
 
 /* line 2507 */
 static unsigned int CG_DrawSoundOverlay(void)
@@ -1189,6 +1193,7 @@ unsigned int CG_DrawPlayerSprites(void)
 }
 
 /* line 3404 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 unsigned int CG_DrawActive(void)
 {
@@ -1260,6 +1265,9 @@ unsigned int CG_DrawActive(void)
         "retl\n"
     );
 }
+#else
+unsigned int CG_DrawActive(void) { return 0; }
+#endif
 
 /* line 549 */
 unsigned int CG_DrawChatMessages(void)
@@ -1356,7 +1364,7 @@ unsigned int CG_DrawChatMessages(void)
 }
 
 /* line 1110 */
-static void __attribute__((regparm(2))) CG_CalcCrosshairPosition(float *x, float *y)
+static void __attribute_regparm__(2) CG_CalcCrosshairPosition(float *x, float *y)
 {
     cg_t *cg;
     vec3_t gunAng;
@@ -1396,6 +1404,7 @@ static void __attribute__((regparm(2))) CG_CalcCrosshairPosition(float *x, float
 }
 
 /* line 286 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 float CG_DrawFPS(float y)
 {
@@ -4436,3 +4445,6 @@ unsigned int CG_Draw2D(void)
         "jmp .Lf1cebea_001cff68\n"
     );
 }
+#else
+static float CG_DrawFPS(float y) { return 0.0f; }
+#endif

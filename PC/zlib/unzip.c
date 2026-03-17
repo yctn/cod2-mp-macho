@@ -38,7 +38,7 @@ int unzGetCurrentFileInfoPosition(unzFile file, long unsigned int *pos);
 int unzReadCurrentFile(unzFile file, voidp buf, unsigned int len);
 long int unztell(unzFile file);
 int unzCloseCurrentFile(unzFile file);
-static int __attribute__((regparm(3))) unzlocal_GetCurrentFileInfoInternal(
+static int __attribute_regparm__(3) unzlocal_GetCurrentFileInfoInternal(
     unzFile file,
     unz_file_info *pfile_info,
     unz_file_info_internal *pfile_info_internal,
@@ -397,7 +397,7 @@ int unzCloseCurrentFile(unzFile file)
 }
 
 /* line 522 — replaced naked+regparm(3) asm with clean C (naked unsupported on x86 gcc 4.0.4) */
-static int __attribute__((regparm(3)))
+static int __attribute_regparm__(3)
 unzlocal_GetCurrentFileInfoInternal(unzFile file, unz_file_info *pfile_info, unz_file_info_internal *pfile_info_internal, char *szFileName, uLong fileNameBufferSize, void *extraField, uLong extraFieldBufferSize, char *szComment, uLong commentBufferSize)
 {
     unz_s *s;

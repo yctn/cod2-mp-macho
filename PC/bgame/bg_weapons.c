@@ -89,6 +89,7 @@ WeaponDef * BG_GetWeaponDef(int iWeapon)
 }
 
 /* line 376 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void BG_ClearWeaponDef(void)
 {
@@ -116,6 +117,9 @@ void BG_ClearWeaponDef(void)
         "jmp BG_InitWeaponStrings\n" /* line 405 */
     );
 }
+#else
+void BG_ClearWeaponDef(void) { }
+#endif
 
 /* line 558 */
 int BG_GetNumWeapons(void)
@@ -136,6 +140,7 @@ int BG_GetAmmoClipSize(int iClipIndex)
 }
 
 /* line 713 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int BG_FindWeaponIndexForName(const char *name)
 {
@@ -8729,3 +8734,6 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
     );
 }
 
+#else
+int BG_FindWeaponIndexForName(const char *name) { return 0; }
+#endif

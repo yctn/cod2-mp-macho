@@ -22,6 +22,7 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
 void CompileError2(const char *codePos, const char *msg);
 
 /* line 63 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Scr_InitOpcodeLookup(void)
 {
@@ -64,8 +65,12 @@ void Scr_InitOpcodeLookup(void)
         "retl\n"
     );
 }
+#else
+void Scr_InitOpcodeLookup(void) { }
+#endif
 
 /* line 92 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Scr_ShutdownOpcodeLookup(void)
 {
@@ -1355,3 +1360,6 @@ void CompileError2(const char *codePos, const char *msg)
     );
 }
 
+#else
+void Scr_ShutdownOpcodeLookup(void) { }
+#endif

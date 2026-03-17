@@ -949,6 +949,7 @@ snd_alias_list_t R_SetParentAndCell_r(void)
  * processes special entity types (worldspawn sun params, misc_model static models,
  * fx_origin effects). Handles spawn variables, model validation, sun light setup.
  * 861 lines of text parsing with R_ParseSunLight, R_IsValidStaticModel, R_CreateStaticModel. */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 snd_alias_list_t R_LoadEntities(void)
 {
@@ -5548,3 +5549,6 @@ GfxWorld * R_LoadWorldInternal(const char *name)
     );
 }
 
+#else
+static snd_alias_list_t R_LoadEntities(void) { return 0; }
+#endif

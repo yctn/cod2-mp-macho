@@ -124,7 +124,7 @@ extern void NET_OutOfBandPrint(int sock, int a, int b, int c, const char *data);
 extern void *SV_GameClientNum(int clientNum);
 
 void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg);
-static cachedSnapshot_t * __attribute__((regparm(1))) SV_GetCachedSnapshotInternal(int archivedFrame);
+static cachedSnapshot_t * __attribute_regparm__(1) SV_GetCachedSnapshotInternal(int archivedFrame);
 void SV_ArchiveSnapshot(void);
 void SV_SendMessageToClient(msg_t *msg, client_t *client);
 qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4], void (*cs)());
@@ -165,7 +165,7 @@ void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
 }
 
 /* line 836 */
-static __attribute__((regparm(1)))
+static __attribute_regparm__(1)
 cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
 {
     byte msg_buf_ll[16]; /* LargeLocal */
@@ -432,6 +432,7 @@ cleanup:
 }
 
 /* line 1772 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SV_ArchiveSnapshot(void)
 {
@@ -2974,3 +2975,6 @@ void SV_SendClientMessages(void)
     }
 }
 
+#else
+void SV_ArchiveSnapshot(void) { }
+#endif

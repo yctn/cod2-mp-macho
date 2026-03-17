@@ -103,6 +103,7 @@ YY_BUFFER_STATE yy_create_buffer(FILE *file, int size)
 }
 
 /* line 463 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int yyparse(void)
 {
@@ -4643,3 +4644,6 @@ void ScriptParse(sval_t *parseData, int user)
     *parseData = yaccResult;
 }
 
+#else
+int yyparse(void) { return 0; }
+#endif

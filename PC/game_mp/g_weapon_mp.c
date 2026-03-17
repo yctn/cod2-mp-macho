@@ -102,6 +102,7 @@ void G_SelectWeaponIndex(int clientNum, int iWeaponIndex)
 }
 
 /* line 644 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms *wp)
 {
@@ -237,8 +238,12 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
         "retl\n"
     );
 }
+#else
+void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms *wp) { }
+#endif
 
 /* line 615 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms *wp)
 {
@@ -317,8 +322,12 @@ int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms 
         "retl\n"
     );
 }
+#else
+int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms *wp) { return 0; }
+#endif
 
 /* line 797 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void G_UseOffHand(gentity_s (*ent)[16])
 {
@@ -378,8 +387,12 @@ void G_UseOffHand(gentity_s (*ent)[16])
         "retl\n"
     );
 }
+#else
+void G_UseOffHand(gentity_s (*ent)[16]) { }
+#endif
 
 /* line 41 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range, float width, float height, trace_t *trace, vec_t *endPos)
 {
@@ -552,8 +565,12 @@ Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range,
         "retl\n"
     );
 }
+#else
+static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range, float width, float height, trace_t *trace, vec_t *endPos) { return 0; }
+#endif
 
 /* line 102 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float width, float height)
 {
@@ -1841,3 +1858,6 @@ qboolean G_GivePlayerWeapon(playerState_t *pPS, int iWeaponIndex)
     );
 }
 
+#else
+void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float width, float height) { }
+#endif

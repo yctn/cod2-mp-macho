@@ -288,6 +288,7 @@ const char * CG_Argv(int arg)
 }
 
 /* line 862 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void CG_RegisterGraphics(const char *mapname)
 {
@@ -647,6 +648,9 @@ void CG_RegisterGraphics(const char *mapname)
         "retl\n"
     );
 }
+#else
+static void CG_RegisterGraphics(const char *mapname) { }
+#endif
 
 /* line 1043 */
 void CG_StartAmbient(void)
@@ -674,6 +678,7 @@ Bool CG_PlaySoundOnCurrentLocalClient(int entitynum, const vec_t *origin, const 
 }
 
 /* line 1290 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
 {
@@ -3017,3 +3022,6 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "jmp .Lf145828_001474d2\n"
     );
 }
+#else
+static Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString) { return 0; }
+#endif

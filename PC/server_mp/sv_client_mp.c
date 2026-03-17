@@ -60,6 +60,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg);
 gentity_t * SV_AddTestClient(void);
 
 /* line 138 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SV_AuthorizeRequest(struct netadr_t from, int challenge)
 {
@@ -4604,3 +4605,6 @@ gentity_t * SV_AddTestClient(void)
     );
 }
 
+#else
+void SV_AuthorizeRequest(struct netadr_t from, int challenge) { }
+#endif

@@ -48,6 +48,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
 static unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *devStatBlock);
 
 /* line 2300 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16])
 {
@@ -12464,3 +12465,6 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
     );
 }
 
+#else
+static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]) { return 0; }
+#endif

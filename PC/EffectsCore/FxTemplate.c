@@ -223,6 +223,7 @@ float FxRange_GetValPct(const FxRange * _this, float percent)
 
 /* line 351 — NOTE: This function's ASM is incomplete/truncated in the original dump.
    Keeping as naked to preserve existing behavior. */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const char *val, int *groupFlags, const PrimitiveTemplate * _this_3, const char *flag, const FxFlagEntry *flagEntries, int flagEntryCount)
 {
@@ -1777,4 +1778,7 @@ Bool PrimitiveTemplate_ParsePrimitive(const PrimitiveTemplate * _this, GPGroup *
 }
 
 #if 0 /* Original ASM for PrimitiveTemplate_ParsePrimitive */
+#endif
+#else
+Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const char *val, int *groupFlags, const PrimitiveTemplate * _this_3, const char *flag, const FxFlagEntry *flagEntries, int flagEntryCount) { return 0; }
 #endif

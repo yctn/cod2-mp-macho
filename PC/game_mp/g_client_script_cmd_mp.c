@@ -73,6 +73,7 @@ static void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref);
 static void PlayerCmd_GetWeaponSlotAmmo(scr_entref_t entref);
 
 /* line 69 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void PlayerCmd_takeWeapon(struct scr_entref_t entref)
 {
@@ -5547,3 +5548,6 @@ static const BuiltinMethodDef player_methods[] __attribute__((used)) = {
     {"getguid", (BuiltinMethod)PlayerCmd_GetGuid, 0},
     {0, 0, 0},
 };
+#else
+void PlayerCmd_takeWeapon(struct scr_entref_t entref) { }
+#endif
