@@ -51,6 +51,7 @@ static void EnsureAppFolderInitialized(void)
     sAppFolderDirID = info.parentDirID;
 }
 
+#ifndef __EMSCRIPTEN__
 /* line 185 */
 __attribute__((naked))
 SInt32 MacFolders_GetExecutableFolderID(void)
@@ -120,7 +121,14 @@ SInt32 MacFolders_GetExecutableFolderID(void)
         "jmp .Lf8f96_00008fe0\n"
     );
 }
+#else
+SInt32 MacFolders_GetExecutableFolderID(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 132 */
 __attribute__((naked))
 OSStatus MacFolders_GetApplicationFolderItemPath(const char *inItem, char *outPath, int inMaxPath)
@@ -206,6 +214,12 @@ OSStatus MacFolders_GetApplicationFolderItemPath(const char *inItem, char *outPa
         "jmp .Lf903e_00009063\n"
     );
 }
+#else
+OSStatus MacFolders_GetApplicationFolderItemPath(const char *inItem, char *outPath, int inMaxPath)
+{
+    return 0;
+}
+#endif
 
 /* line 153 */
 OSStatus MacFolders_GetApplicationFolderItemRef(const char *inItem, FSRef *outRef)
@@ -220,6 +234,7 @@ OSStatus MacFolders_GetApplicationFolderItemRef(const char *inItem, FSRef *outRe
     return FSPathMakeRef((const UInt8 *)path, outRef, NULL);
 }
 
+#ifndef __EMSCRIPTEN__
 /* line 215 */
 __attribute__((naked))
 SInt32 MacFolders_GetDataFolderID(void)
@@ -442,7 +457,14 @@ SInt32 MacFolders_GetDataFolderID(void)
         "jmp .Lf916e_0000924f\n"
     );
 }
+#else
+SInt32 MacFolders_GetDataFolderID(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 288 */
 __attribute__((naked))
 OSStatus MacFolders_GetDataFolderPath(char *outPath, int inMaxPath)
@@ -513,6 +535,12 @@ OSStatus MacFolders_GetDataFolderPath(char *outPath, int inMaxPath)
         "jmp .Lf9552_00009565\n"
     );
 }
+#else
+OSStatus MacFolders_GetDataFolderPath(char *outPath, int inMaxPath)
+{
+    return 0;
+}
+#endif
 
 /* line 311 */
 OSStatus MacFolders_GetDataFolderItemPath(const char *inItem, char *outPath, int inMaxPath)

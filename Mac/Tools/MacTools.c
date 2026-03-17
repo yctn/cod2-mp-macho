@@ -33,6 +33,7 @@ void StShowCursor_StShowCursor(const StShowCursor * _this);
 void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void); /* std_vector<FSRef, std_allocator<FSRef> >__M_insert_aux */
 
 /* line 48 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_SetCursorID(int inCursorID)
 {
@@ -58,8 +59,13 @@ void MacTools_SetCursorID(int inCursorID)
         "retl\n"
     );
 }
+#else
+void MacTools_SetCursorID(int inCursorID)
+{ }
+#endif
 
 /* line 62 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_ShowCursor(int inWarpIt, const Point *inWarpPt)
 {
@@ -117,8 +123,13 @@ void MacTools_ShowCursor(int inWarpIt, const Point *inWarpPt)
         "jmp .Lfa6f4_0000a73b\n"
     );
 }
+#else
+void MacTools_ShowCursor(int inWarpIt, const Point *inWarpPt)
+{ }
+#endif
 
 /* line 95 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_HideCursor(int inWarpIt)
 {
@@ -211,8 +222,13 @@ void MacTools_HideCursor(int inWarpIt)
         "jmp .Lfa784_0000a82f\n"
     );
 }
+#else
+void MacTools_HideCursor(int inWarpIt)
+{ }
+#endif
 
 /* line 143 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean MacTools_IsCursorVisible(void)
 {
@@ -224,8 +240,13 @@ Boolean MacTools_IsCursorVisible(void)
         "retl\n"
     );
 }
+#else
+Boolean MacTools_IsCursorVisible(void)
+{ return 0; }
+#endif
 
 /* line 481 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
 {
@@ -564,8 +585,13 @@ SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
         "jmp .Lfa892_0000ac28\n"
     );
 }
+#else
+SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
+{ return 0; }
+#endif
 
 /* line 594 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_CenterRect(MacRect *ioRect, const MacRect *inBounds)
 {
@@ -629,8 +655,13 @@ void MacTools_CenterRect(MacRect *ioRect, const MacRect *inBounds)
         "retl\n"
     );
 }
+#else
+void MacTools_CenterRect(MacRect *ioRect, const MacRect *inBounds)
+{ }
+#endif
 
 /* line 612 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_Sleep(UInt32 inMillisecondsToSleep)
 {
@@ -655,8 +686,13 @@ void MacTools_Sleep(UInt32 inMillisecondsToSleep)
         "retl\n"
     );
 }
+#else
+void MacTools_Sleep(UInt32 inMillisecondsToSleep)
+{ }
+#endif
 
 /* line 660 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_SendQuitAppleEvent(const ProcessSerialNumber *inPSN)
 {
@@ -713,8 +749,13 @@ void MacTools_SendQuitAppleEvent(const ProcessSerialNumber *inPSN)
         "jmp .Lfad9e_0000ae1b\n"
     );
 }
+#else
+void MacTools_SendQuitAppleEvent(const ProcessSerialNumber *inPSN)
+{ }
+#endif
 
 /* line 716 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean MacTools_FindApplicationPSN(OSType inCreatorCode, ProcessSerialNumber *outPSN)
 {
@@ -766,8 +807,13 @@ Boolean MacTools_FindApplicationPSN(OSType inCreatorCode, ProcessSerialNumber *o
         "retl\n"
     );
 }
+#else
+Boolean MacTools_FindApplicationPSN(OSType inCreatorCode, ProcessSerialNumber *outPSN)
+{ return 0; }
+#endif
 
 /* line 750 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 SInt32 MacTools_GetDictionaryValue(CFDictionaryRef inDictionaryRef, CFStringRef inKeyRef)
 {
@@ -824,8 +870,13 @@ SInt32 MacTools_GetDictionaryValue(CFDictionaryRef inDictionaryRef, CFStringRef 
         "jmp .Lfaea2_0000aedf\n"
     );
 }
+#else
+SInt32 MacTools_GetDictionaryValue(CFDictionaryRef inDictionaryRef, CFStringRef inKeyRef)
+{ return 0; }
+#endif
 
 /* line 780 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean MacTools_GetIORegistryValue(io_registry_entry_t inEntryRef, CFStringRef inKeyRef, char *outValue)
 {
@@ -869,10 +920,15 @@ Boolean MacTools_GetIORegistryValue(io_registry_entry_t inEntryRef, CFStringRef 
         "retl\n"
     );
 }
+#else
+Boolean MacTools_GetIORegistryValue(io_registry_entry_t inEntryRef, CFStringRef inKeyRef, char *outValue)
+{ return 0; }
+#endif
 
 /* overload skip: MacTools_GetIORegistryValue (0xaf82) */
 
 /* line 935 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean MacTools_PostPrivateEventToWindow(WindowRef inWindow, UInt32 inMessage, UInt32 inParam1, UInt32 inParam2)
 {
@@ -946,8 +1002,13 @@ Boolean MacTools_PostPrivateEventToWindow(WindowRef inWindow, UInt32 inMessage, 
         "retl\n"
     );
 }
+#else
+Boolean MacTools_PostPrivateEventToWindow(WindowRef inWindow, UInt32 inMessage, UInt32 inParam1, UInt32 inParam2)
+{ return 0; }
+#endif
 
 /* line 1105 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean MacTools_QuestionAlert(CFStringRef inMessage1, CFStringRef inMessage2)
 {
@@ -1032,10 +1093,15 @@ Boolean MacTools_QuestionAlert(CFStringRef inMessage1, CFStringRef inMessage2)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+Boolean MacTools_QuestionAlert(CFStringRef inMessage1, CFStringRef inMessage2)
+{ return 0; }
+#endif
 
 /* overload skip: MacTools_QuestionAlert (0xb19e) */
 
 /* line 1158 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12StShowCursorD1Ev(void) /* StShowCursor_~StShowCursor */
 {
@@ -1053,8 +1119,13 @@ void ZN12StShowCursorD1Ev(void) /* StShowCursor_~StShowCursor */
         "jmp MacTools_HideCursor\n" /* line 1162 */
     );
 }
+#else
+void ZN12StShowCursorD1Ev(void) /* StShowCursor_~StShowCursor */
+{ }
+#endif
 
 /* line 1028 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_MessageAlert(CFStringRef inMessage1, CFStringRef inMessage2, int inStop)
 {
@@ -1117,12 +1188,17 @@ void MacTools_MessageAlert(CFStringRef inMessage1, CFStringRef inMessage2, int i
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void MacTools_MessageAlert(CFStringRef inMessage1, CFStringRef inMessage2, int inStop)
+{ }
+#endif
 
 /* overload skip: MacTools_MessageAlert (0xb2d0) */
 
 /* overload skip: MacTools_MessageAlert (0xb2f4) */
 
 /* line 962 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void MacTools_MessageAlertFromKey(CFStringRef inKeyRef, int inStop)
 {
@@ -1167,8 +1243,13 @@ void MacTools_MessageAlertFromKey(CFStringRef inKeyRef, int inStop)
         "retl\n"
     );
 }
+#else
+void MacTools_MessageAlertFromKey(CFStringRef inKeyRef, int inStop)
+{ }
+#endif
 
 /* line 156 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef)
 {
@@ -1434,8 +1515,13 @@ Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef)
         "jmp .Lfb3de_0000b6ad\n"
     );
 }
+#else
+Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef)
+{ return 0; }
+#endif
 
 /* line 1147 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void StShowCursor_StShowCursor(const StShowCursor * _this)
 {
@@ -1463,8 +1549,13 @@ void StShowCursor_StShowCursor(const StShowCursor * _this)
         "retl\n"
     );
 }
+#else
+void StShowCursor_StShowCursor(const StShowCursor * _this)
+{ }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<FSRef, std_allocator<FSRef> >__M_insert_aux */
 {
@@ -1687,4 +1778,8 @@ void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
+#else
+void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<FSRef, std_allocator<FSRef> >__M_insert_aux */
+{ }
+#endif
 

@@ -7,6 +7,7 @@
 void CSampleSound_Calculate3DAttributes(const CSampleSound * _this, Float32 *outAzimuth, Float32 *outElevation, Float32 *outDistance);
 
 /* line 41 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_Calculate3DAttributes(const CSampleSound * _this, Float32 *outAzimuth, Float32 *outElevation, Float32 *outDistance)
 {
@@ -370,4 +371,9 @@ void CSampleSound_Calculate3DAttributes(const CSampleSound * _this, Float32 *out
         "jmp .Lf1e6f90_001e7356\n"
     );
 }
+#else
+void CSampleSound_Calculate3DAttributes(const CSampleSound * _this, Float32 *outAzimuth, Float32 *outElevation, Float32 *outDistance)
+{
+}
+#endif
 

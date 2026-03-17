@@ -630,3 +630,21 @@ int g_High = 0;
 int g_Low = 0;
 int g_special = 0;
 int D3DXGetShaderConstantTable(const void *function, void **constantTable) { (void)function; if (constantTable) *constantTable = 0; return 0x80004005; /* E_FAIL */ }
+
+/* Globals for draw-call tracking (rb_backend.c / agl_stubs.c) */
+int g_dip_vs_null = 0;
+int g_dip_vs_bound = 0;
+int g_dip_vs_skip = 0;
+int g_draw_count = 0;
+
+/* CDirect3D interface accessor */
+void *CDirect3D_GetDirect3DInterface(void) { return (void *)0; }
+
+/* CDirect3DDevice vtable function stub — referenced from data.S at various offsets.
+   data.S uses function+1115/+1116 offsets, so the function body must be >= 1200 bytes. */
+void CDirect3DDevice_CreateAndSetFixedFunctionVAO(void)
+{
+#ifndef __EMSCRIPTEN__
+    __asm__ __volatile__ (".space 1200\n");
+#endif
+}

@@ -35,6 +35,7 @@ void ZN9WinCursorD1Ev(void); /* WinCursor_~WinCursor */
 void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void); /* std_vector<WinCursor, std_allocator<WinCursor> >__M_insert_aux */
 
 /* line 295 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 bool WinIcon_Load(const WinIcon * _this, const UInt8 *inIcon)
 {
@@ -309,8 +310,13 @@ bool WinIcon_Load(const WinIcon * _this, const UInt8 *inIcon)
         "jmp .Lfc460_0000c7a5\n"
     );
 }
+#else
+bool WinIcon_Load(const WinIcon * _this, const UInt8 *inIcon)
+{ return 0; }
+#endif
 
 /* line 172 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 HCURSOR SetWinCursor(HCURSOR hCursor)
 {
@@ -413,8 +419,13 @@ HCURSOR SetWinCursor(HCURSOR hCursor)
         "jmp .Lfc810_0000c832\n"
     );
 }
+#else
+HCURSOR SetWinCursor(HCURSOR hCursor)
+{ return 0; }
+#endif
 
 /* line 261 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SwitchToWinCursor(void)
 {
@@ -432,8 +443,13 @@ void SwitchToWinCursor(void)
         "retl\n"
     );
 }
+#else
+void SwitchToWinCursor(void)
+{ }
+#endif
 
 /* line 250 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void SwitchToMacCursor(void)
 {
@@ -454,8 +470,13 @@ void SwitchToMacCursor(void)
         "retl\n"
     );
 }
+#else
+void SwitchToMacCursor(void)
+{ }
+#endif
 
 /* line 112 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CursorTimerProc(void)
 {
@@ -513,8 +534,13 @@ void CursorTimerProc(void)
         "jmp .Lfc994_0000c9ae\n"
     );
 }
+#else
+void CursorTimerProc(void)
+{ }
+#endif
 
 /* line 898 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void __static_initialization_and_destruction_0(void)
 {
@@ -600,8 +626,13 @@ void __static_initialization_and_destruction_0(void)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void __static_initialization_and_destruction_0(void)
+{ }
+#endif
 
 /* line 900 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void GLOBAL__D_LoadCursorFromFileA(void) /* global destructors keyed to LoadCursorFromFileA */
 {
@@ -614,8 +645,13 @@ void GLOBAL__D_LoadCursorFromFileA(void) /* global destructors keyed to LoadCurs
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+void GLOBAL__D_LoadCursorFromFileA(void) /* global destructors keyed to LoadCursorFromFileA */
+{ }
+#endif
 
 /* line 899 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void GLOBAL__I_LoadCursorFromFileA(void) /* global constructors keyed to LoadCursorFromFileA */
 {
@@ -628,8 +664,13 @@ void GLOBAL__I_LoadCursorFromFileA(void) /* global constructors keyed to LoadCur
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+void GLOBAL__I_LoadCursorFromFileA(void) /* global constructors keyed to LoadCursorFromFileA */
+{ }
+#endif
 
 /* line 275 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void WinIcon_WinIcon(const WinIcon * _this)
 {
@@ -704,10 +745,15 @@ void WinIcon_WinIcon(const WinIcon * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void WinIcon_WinIcon(const WinIcon * _this)
+{ }
+#endif
 
 /* overload skip: WinIcon_WinIcon (0xcbbc) */
 
 /* line 649 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 bool WinCursor_ReadCursor(const WinCursor * _this, const UInt8 *inCursor)
 {
@@ -1049,8 +1095,13 @@ bool WinCursor_ReadCursor(const WinCursor * _this, const UInt8 *inCursor)
         "jmp .Lfcc78_0000cfe0\n"
     );
 }
+#else
+bool WinCursor_ReadCursor(const WinCursor * _this, const UInt8 *inCursor)
+{ return 0; }
+#endif
 
 /* line 613 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 bool WinCursor_Load(const WinCursor * _this, const char *inFileName)
 {
@@ -1136,8 +1187,13 @@ bool WinCursor_Load(const WinCursor * _this, const char *inFileName)
         "jmp .Lfd024_0000d0b2\n"
     );
 }
+#else
+bool WinCursor_Load(const WinCursor * _this, const char *inFileName)
+{ return 0; }
+#endif
 
 /* line 127 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 HCURSOR LoadCursorFromFileA(LPCSTR lpFileName)
 {
@@ -1357,8 +1413,13 @@ HCURSOR LoadCursorFromFileA(LPCSTR lpFileName)
         "jmp .Lfd0da_0000d2ff\n"
     );
 }
+#else
+HCURSOR LoadCursorFromFileA(LPCSTR lpFileName)
+{ return 0; }
+#endif
 
 /* line 287 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN7WinIconD2Ev(void) /* WinIcon_~WinIcon */
 {
@@ -1397,8 +1458,13 @@ void ZN7WinIconD2Ev(void) /* WinIcon_~WinIcon */
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void ZN7WinIconD2Ev(void) /* WinIcon_~WinIcon */
+{ }
+#endif
 
 /* line 287 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN7WinIconD1Ev(void) /* WinIcon_~WinIcon */
 {
@@ -1437,8 +1503,13 @@ void ZN7WinIconD1Ev(void) /* WinIcon_~WinIcon */
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void ZN7WinIconD1Ev(void) /* WinIcon_~WinIcon */
+{ }
+#endif
 
 /* line 555 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void WinCursor_WinCursor(const WinCursor * _this, const WinCursor *inCursor)
 {
@@ -1533,10 +1604,15 @@ void WinCursor_WinCursor(const WinCursor * _this, const WinCursor *inCursor)
         "jmp .Lfd408_0000d4ac\n"
     );
 }
+#else
+void WinCursor_WinCursor(const WinCursor * _this, const WinCursor *inCursor)
+{ }
+#endif
 
 /* overload skip: WinCursor_WinCursor (0xd4de) */
 
 /* line 589 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN9WinCursorD2Ev(void) /* WinCursor_~WinCursor */
 {
@@ -1575,8 +1651,13 @@ void ZN9WinCursorD2Ev(void) /* WinCursor_~WinCursor */
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void ZN9WinCursorD2Ev(void) /* WinCursor_~WinCursor */
+{ }
+#endif
 
 /* line 589 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN9WinCursorD1Ev(void) /* WinCursor_~WinCursor */
 {
@@ -1615,8 +1696,13 @@ void ZN9WinCursorD1Ev(void) /* WinCursor_~WinCursor */
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void ZN9WinCursorD1Ev(void) /* WinCursor_~WinCursor */
+{ }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<WinCursor, std_allocator<WinCursor> >__M_insert_aux */
 {
@@ -2307,5 +2393,9 @@ void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterato
         "jmp .Lf2bc4b0_002bcbb5\n"
     );
 }
+#else
+void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<WinCursor, std_allocator<WinCursor> >__M_insert_aux */
+{ }
+#endif
 
 

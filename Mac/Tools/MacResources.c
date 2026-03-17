@@ -81,6 +81,7 @@ int MacResources_GetDiscName(void)
     return sResult;
 }
 
+#ifndef __EMSCRIPTEN__
 /* line 266 */
 __attribute__((naked))
 SInt32 MacResources_GetLanguageCode(void)
@@ -112,7 +113,14 @@ SInt32 MacResources_GetLanguageCode(void)
         "movl $0x32e714, 8(%esp)\n"
     );
 }
+#else
+SInt32 MacResources_GetLanguageCode(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 284 */
 __attribute__((naked))
 CFStringRef MacResources_GetNeedsNewerOSError(void)
@@ -180,6 +188,12 @@ CFStringRef MacResources_GetNeedsNewerOSError(void)
         "jmp .Lfa144_0000a198\n"
     );
 }
+#else
+CFStringRef MacResources_GetNeedsNewerOSError(void)
+{
+    return 0;
+}
+#endif
 
 /* line 305 */
 int MacResources_GetNoQuickTimeError(void)
@@ -192,6 +206,7 @@ int MacResources_GetNoQuickTimeError(void)
     return sResult;
 }
 
+#ifndef __EMSCRIPTEN__
 /* line 320 */
 __attribute__((naked))
 CFStringRef MacResources_GetMissingDataFolderError(void)
@@ -297,7 +312,14 @@ CFStringRef MacResources_GetMissingDataFolderError(void)
         "jmp .Lfa23a_0000a2a9\n"
     );
 }
+#else
+CFStringRef MacResources_GetMissingDataFolderError(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 341 */
 __attribute__((naked))
 CFStringRef MacResources_GetInsertDiscError(void)
@@ -365,7 +387,14 @@ CFStringRef MacResources_GetInsertDiscError(void)
         "jmp .Lfa388_0000a3dc\n"
     );
 }
+#else
+CFStringRef MacResources_GetInsertDiscError(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 362 */
 __attribute__((naked))
 CFStringRef MacResources_GetNeeds32BitError(void)
@@ -433,7 +462,14 @@ CFStringRef MacResources_GetNeeds32BitError(void)
         "jmp .Lfa43c_0000a490\n"
     );
 }
+#else
+CFStringRef MacResources_GetNeeds32BitError(void)
+{
+    return 0;
+}
+#endif
 
+#ifndef __EMSCRIPTEN__
 /* line 383 */
 __attribute__((naked))
 CFStringRef MacResources_GetCantRunFromDiscError(void)
@@ -467,6 +503,12 @@ CFStringRef MacResources_GetCantRunFromDiscError(void)
         "movl %eax, %ebx\n"
     );
 }
+#else
+CFStringRef MacResources_GetCantRunFromDiscError(void)
+{
+    return 0;
+}
+#endif
 
 void SwitchToWinCursor(void)
 {

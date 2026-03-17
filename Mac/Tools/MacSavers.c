@@ -7,6 +7,7 @@
 void StPortState_StPortState(const StPortState * _this, WindowRef inWindow);
 void ZN11StPortStateD1Ev(void); /* StPortState_~StPortState */
 
+#ifndef __EMSCRIPTEN__
 /* line 31 */
 __attribute__((naked))
 void StPortState_StPortState(const StPortState * _this, WindowRef inWindow)
@@ -42,4 +43,13 @@ void ZN11StPortStateD1Ev(void) /* StPortState_~StPortState */
         "jmp SetPort\n" /* line 41 */
     );
 }
+#else
+void StPortState_StPortState(const StPortState * _this, WindowRef inWindow)
+{
+}
+
+void ZN11StPortStateD1Ev(void)
+{
+}
+#endif
 

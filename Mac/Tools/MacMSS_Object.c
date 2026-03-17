@@ -185,6 +185,7 @@ void CSoundObject_set_sample_address(char *_this, const void *start, unsigned lo
 }
 
 /* line 310 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSoundObject_set_sample_type(const CSoundObject * _this, long int format, long unsigned int flags)
 {
@@ -1807,3 +1808,6 @@ long int CSoundObject_set_sample_info(const CSoundObject * _this, const AILSOUND
         "jmp .Lf13f8f8_0013fa92\n"
     );
 }
+#else
+void CSoundObject_set_sample_type(const CSoundObject * _this, long int format, long unsigned int flags) { (void)_this; (void)format; (void)flags; }
+#endif

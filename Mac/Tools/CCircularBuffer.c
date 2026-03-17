@@ -148,6 +148,7 @@ void CCircularBuffer_Alloc(CCircularBuffer *_this, UInt32 inBufferSize)
 
 /* overload skip: CCircularBuffer_CCircularBuffer (0x1f6f58) */
 
+#ifndef __EMSCRIPTEN__
 /* line 169 */
 __attribute__((naked))
 void CCircularBuffer_Write(const CCircularBuffer * _this, const void *inBuffer, UInt32 *ioSize)
@@ -278,3 +279,8 @@ void CCircularBuffer_Write(const CCircularBuffer * _this, const void *inBuffer, 
         "jmp .Lf1f6f9c_001f7016\n"
     );
 }
+#else
+void CCircularBuffer_Write(const CCircularBuffer * _this, const void *inBuffer, UInt32 *ioSize)
+{
+}
+#endif

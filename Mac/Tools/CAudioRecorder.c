@@ -101,6 +101,7 @@ void CAudioRecorder_Mute(CAudioRecorder *_this, int inMute)
 }
 
 /* line 333 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 Float32 CAudioRecorder_GetRecordLevel(const CAudioRecorder * _this)
 {
@@ -801,3 +802,6 @@ OSStatus CAudioRecorder_AudioConverterProc(AudioConverterRef inAudioConverter, U
     return 0;
 }
 
+#else
+Float32 CAudioRecorder_GetRecordLevel(const CAudioRecorder * _this) { return 0; }
+#endif

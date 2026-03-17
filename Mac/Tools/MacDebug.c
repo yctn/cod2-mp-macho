@@ -8,6 +8,7 @@ extern bool g_InhibitOpenGLErrors; /* 0x0 */
 
 inflate_huft game_dprintf(const char *inFormat);
 
+#ifndef __EMSCRIPTEN__
 /* line 99 */
 __attribute__((naked))
 inflate_huft game_dprintf(const char *inFormat)
@@ -20,4 +21,11 @@ inflate_huft game_dprintf(const char *inFormat)
         "retl\n"
     );
 }
+#else
+inflate_huft game_dprintf(const char *inFormat)
+{
+    inflate_huft result = {0};
+    return result;
+}
+#endif
 

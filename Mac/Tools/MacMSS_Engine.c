@@ -277,6 +277,7 @@ J_DCT_METHOD CSoundEngine_GetListenerUpVector(const CSoundEngine * _this, D3DXVE
 }
 
 /* line 797 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 CSoundObject * CSoundEngine_GetAvailableSampleBus(const CSoundEngine * _this, UInt32 inSoundType)
 {
@@ -1680,3 +1681,6 @@ void ZNSt6vectorIP12CSoundObjectSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_it
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
+#else
+CSoundObject * CSoundEngine_GetAvailableSampleBus(const CSoundEngine * _this, UInt32 inSoundType) { return 0; }
+#endif

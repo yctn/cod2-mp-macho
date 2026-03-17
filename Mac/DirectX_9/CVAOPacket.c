@@ -593,6 +593,24 @@ bool CVAOPacket_IsFixedFunction(const CVAOPacket * _this)
     return 1;
 }
 
+bool CVAOPacketFixedFunction_IsFixedFunction(const CVAOPacket * _this)
+{
+    (void)_this;
+    return 1;
+}
+
+bool CVAOPacketProgrammable_IsFixedFunction(const CVAOPacket * _this)
+{
+    (void)_this;
+    return 0;
+}
+
+/* Derived-class destructors for vtable entries */
+void ZN23CVAOPacketFixedFunctionD1Ev(void) { }
+void ZN23CVAOPacketFixedFunctionD0Ev(void) { }
+void ZN22CVAOPacketProgrammableD1Ev(void) { }
+void ZN22CVAOPacketProgrammableD0Ev(void) { }
+
 CVAOPacketRbTreeNodeBase *ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE11lower_boundERS1_(const CVAOPacketRbTree *tree, const UINT32 *key) /* lower_bound */
 {
     CVAOPacketRbTreeNodeBase *x;

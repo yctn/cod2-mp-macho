@@ -23,6 +23,7 @@ double CAETarget_CountElements(const CAETarget * _this, const AEDesc *inObjectSp
 double CAETarget_GetPropertyData(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inPropertyID, DescType inRequestedType, AEDesc *outData);
 
 /* line 505 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN8CAEEventD1Ev(void) /* CAEEvent_~CAEEvent */
 {
@@ -46,8 +47,13 @@ void ZN8CAEEventD1Ev(void) /* CAEEvent_~CAEEvent */
         "retl\n"
     );
 }
+#else
+void ZN8CAEEventD1Ev(void) /* CAEEvent_~CAEEvent */
+{ }
+#endif
 
 /* line 565 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN9CAETargetD1Ev(void) /* CAETarget_~CAETarget */
 {
@@ -71,8 +77,13 @@ void ZN9CAETargetD1Ev(void) /* CAETarget_~CAETarget */
         "retl\n"
     );
 }
+#else
+void ZN9CAETargetD1Ev(void) /* CAETarget_~CAETarget */
+{ }
+#endif
 
 /* line 557 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAETarget_CAETarget(const CAETarget * _this, const ProcessSerialNumber *inPSN)
 {
@@ -123,8 +134,13 @@ double CAETarget_CAETarget(const CAETarget * _this, const ProcessSerialNumber *i
         "calll __Unwind_Resume\n"
     );
 }
+#else
+double CAETarget_CAETarget(const CAETarget * _this, const ProcessSerialNumber *inPSN)
+{ return 0; }
+#endif
 
 /* line 210 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEDesc_GetData(const CAEDesc * _this, DescType inTypeCode, double *outDataPtr, Size inDataSize)
 {
@@ -211,10 +227,15 @@ double CAEDesc_GetData(const CAEDesc * _this, DescType inTypeCode, double *outDa
         "calll __Unwind_Resume\n"
     );
 }
+#else
+double CAEDesc_GetData(const CAEDesc * _this, DescType inTypeCode, double *outDataPtr, Size inDataSize)
+{ return 0; }
+#endif
 
 /* overload skip: CAEDesc_GetData (0x2ad6) */
 
 /* line 299 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEDesc_PutData(const CAEDesc * _this, DescType inTypeCode, const double *inDataPtr, Size inDataSize)
 {
@@ -261,8 +282,13 @@ double CAEDesc_PutData(const CAEDesc * _this, DescType inTypeCode, const double 
         "calll ___cxa_throw\n"
     );
 }
+#else
+double CAEDesc_PutData(const CAEDesc * _this, DescType inTypeCode, const double *inDataPtr, Size inDataSize)
+{ return 0; }
+#endif
 
 /* line 349 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEObject_CAEObject(const CAEObject * _this, DescType inDesiredClass, const AEDesc *inContainer, DescType inKeyForm, const AEDesc *inKeyData)
 {
@@ -318,10 +344,15 @@ double CAEObject_CAEObject(const CAEObject * _this, DescType inDesiredClass, con
         "calll __Unwind_Resume\n"
     );
 }
+#else
+double CAEObject_CAEObject(const CAEObject * _this, DescType inDesiredClass, const AEDesc *inContainer, DescType inKeyForm, const AEDesc *inKeyData)
+{ return 0; }
+#endif
 
 /* overload skip: CAEObject_CAEObject (0x2d04) */
 
 /* line 471 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAERecord_PutParam(const CAERecord * _this, AEKeyword inKeyword, const AEDesc *inParam)
 {
@@ -358,8 +389,13 @@ double CAERecord_PutParam(const CAERecord * _this, AEKeyword inKeyword, const AE
         "calll ___cxa_throw\n"
     );
 }
+#else
+double CAERecord_PutParam(const CAERecord * _this, AEKeyword inKeyword, const AEDesc *inParam)
+{ return 0; }
+#endif
 
 /* line 515 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEEvent_Create(const CAEEvent * _this, CAETarget *inTarget, AEEventClass inEventClass, AEEventID inEventID)
 {
@@ -408,6 +444,10 @@ double CAEEvent_Create(const CAEEvent * _this, CAETarget *inTarget, AEEventClass
         "calll ___cxa_throw\n"
     );
 }
+#else
+double CAEEvent_Create(const CAEEvent * _this, CAETarget *inTarget, AEEventClass inEventClass, AEEventID inEventID)
+{ return 0; }
+#endif
 
 /* overload skip: CAETarget_CAETarget (0x2e86) */
 
@@ -416,6 +456,7 @@ double CAEEvent_Create(const CAEEvent * _this, CAETarget *inTarget, AEEventClass
 /* overload skip: CAETarget_CAETarget (0x2fae) */
 
 /* line 491 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEEvent_CAEEvent(const CAEEvent * _this)
 {
@@ -429,8 +470,13 @@ double CAEEvent_CAEEvent(const CAEEvent * _this)
         "retl\n"
     );
 }
+#else
+double CAEEvent_CAEEvent(const CAEEvent * _this)
+{ return 0; }
+#endif
 
 /* line 526 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAEEvent_Send(const CAEEvent * _this)
 {
@@ -491,8 +537,13 @@ double CAEEvent_Send(const CAEEvent * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+double CAEEvent_Send(const CAEEvent * _this)
+{ return 0; }
+#endif
 
 /* line 638 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAETarget_SetPropertyData(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inPropertyID, const AEDesc *inData, const CAERecord * _this_4, AEKeyword inKeyword, SInt32 *outParam, const CAERecord * _this_7, AEKeyword inKeyword_8, StringPtr outParam_9)
 {
@@ -543,8 +594,13 @@ double CAETarget_SetPropertyData(const CAETarget * _this, const AEDesc *inObject
         "movl $0x64617461, 4(%esp)\n"
     );
 }
+#else
+double CAETarget_SetPropertyData(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inPropertyID, const AEDesc *inData, const CAERecord * _this_4, AEKeyword inKeyword, SInt32 *outParam, const CAERecord * _this_7, AEKeyword inKeyword_8, StringPtr outParam_9)
+{ return 0; }
+#endif
 
 /* line 575 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAETarget_CountElements(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inElementClass, SInt32 *outCount)
 {
@@ -686,8 +742,13 @@ double CAETarget_CountElements(const CAETarget * _this, const AEDesc *inObjectSp
         "jmp .Lf3294_0000343e\n"
     );
 }
+#else
+double CAETarget_CountElements(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inElementClass, SInt32 *outCount)
+{ return 0; }
+#endif
 
 /* line 608 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 double CAETarget_GetPropertyData(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inPropertyID, DescType inRequestedType, AEDesc *outData)
 {
@@ -875,4 +936,8 @@ double CAETarget_GetPropertyData(const CAETarget * _this, const AEDesc *inObject
         "jmp .Lf3468_000036be\n"
     );
 }
+#else
+double CAETarget_GetPropertyData(const CAETarget * _this, const AEDesc *inObjectSpecifier, DescType inPropertyID, DescType inRequestedType, AEDesc *outData)
+{ return 0; }
+#endif
 

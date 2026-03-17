@@ -35,6 +35,7 @@ void MacFiles_CleanPath(const char *inPath, char *outPath, int inForHFS)
 
 /* overload skip: MacFiles_CleanPath (0x8d38) */
 
+#ifndef __EMSCRIPTEN__
 /* line 272 */
 static __attribute__((naked))
 void RemoveDirectoryContents(void)
@@ -210,6 +211,16 @@ OSStatus MacFiles_RemoveDirectoryA(const char *inPath)
         "jmp .Lf8eb8_00008ee2\n"
     );
 }
+#else
+static void RemoveDirectoryContents(void)
+{
+}
+
+OSStatus MacFiles_RemoveDirectoryA(const char *inPath)
+{
+    return 0;
+}
+#endif
 
 /* line 75 */
 int MacFiles_access(const char *inPath, int inMode)

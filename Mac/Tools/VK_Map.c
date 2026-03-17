@@ -11,6 +11,7 @@ extern UInt8 sANSI_VK_Map[128]; /* 0x3081c0 */
 
 UInt8 TranslateKeyCodeToVK(UInt32 inKeyCode);
 
+#ifndef __EMSCRIPTEN__
 /* line 432 */
 __attribute__((naked))
 UInt8 TranslateKeyCodeToVK(UInt32 inKeyCode)
@@ -49,4 +50,10 @@ UInt8 TranslateKeyCodeToVK(UInt32 inKeyCode)
         "jmp .Lfd650_0000d664\n"
     );
 }
+#else
+UInt8 TranslateKeyCodeToVK(UInt32 inKeyCode)
+{
+    return 0;
+}
+#endif
 

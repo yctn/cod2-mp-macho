@@ -477,6 +477,7 @@ void AIL_sample_ms_position(HSAMPLE S, long int *total_milliseconds, long int *c
 }
 
 /* line 456 — no C replacement, keeping ASM */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 HSTREAM AIL_open_stream(HDIGDRIVER dig, const char *filename, long int stream_mem)
 {
@@ -550,6 +551,12 @@ HSTREAM AIL_open_stream(HDIGDRIVER dig, const char *filename, long int stream_me
         "jmp .Lf111106_0011113f\n"
     );
 }
+#else
+HSTREAM AIL_open_stream(HDIGDRIVER dig, const char *filename, long int stream_mem)
+{
+    return 0;
+}
+#endif
 
 /* line 495 — C replacement from snd_mac.c */
 void AIL_close_stream(HSTREAM stream)
@@ -950,6 +957,7 @@ void AIL_3D_position(H3DPOBJECT obj, float *X, float *Y, float *Z)
 }
 
 /* line 729 — no C replacement, keeping ASM */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 long int AIL_WAV_info(const void *data, long int (*info)())
 {
@@ -1095,3 +1103,9 @@ long int AIL_WAV_info(const void *data, long int (*info)())
         "jmp .Lf111a44_00111b2c\n"
     );
 }
+#else
+long int AIL_WAV_info(const void *data, long int (*info)())
+{
+    return 0;
+}
+#endif

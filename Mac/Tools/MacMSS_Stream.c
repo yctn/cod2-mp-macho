@@ -26,6 +26,7 @@ void ZNSt6vectorIP12CStreamSoundSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS
 void ZNSt6vectorIP12CStreamSoundSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_(void); /* std_vector<CStreamSound*, std_allocator<CStreamSound*> >__M_insert_aux */
 
 /* line 34 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_CStreamSound(const CStreamSound * _this, CSoundEngine *inEngine)
 {
@@ -52,8 +53,12 @@ void CStreamSound_CStreamSound(const CStreamSound * _this, CSoundEngine *inEngin
         "retl\n"
     );
 }
+#else
+void CStreamSound_CStreamSound(const CStreamSound * _this, CSoundEngine *inEngine) { (void)_this; (void)inEngine; }
+#endif
 
 /* line 46 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CStreamSoundD1Ev(void) /* CStreamSound_~CStreamSound */
 {
@@ -67,8 +72,12 @@ void ZN12CStreamSoundD1Ev(void) /* CStreamSound_~CStreamSound */
         "jmp ZN12CSoundObjectD2Ev\n"
     );
 }
+#else
+void ZN12CStreamSoundD1Ev(void) { }
+#endif
 
 /* line 46 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CStreamSoundD0Ev(void) /* CStreamSound_~CStreamSound */
 {
@@ -88,8 +97,12 @@ void ZN12CStreamSoundD0Ev(void) /* CStreamSound_~CStreamSound */
         "jmp __ZdlPv\n"
     );
 }
+#else
+void ZN12CStreamSoundD0Ev(void) { }
+#endif
 
 /* line 105 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_stop_sample(const CStreamSound * _this)
 {
@@ -116,8 +129,12 @@ void CStreamSound_stop_sample(const CStreamSound * _this)
         "jmp StopMovie\n" /* line 111 */
     );
 }
+#else
+void CStreamSound_stop_sample(const CStreamSound * _this) { (void)_this; }
+#endif
 
 /* line 138 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_end_sample(const CStreamSound * _this)
 {
@@ -147,8 +164,12 @@ void CStreamSound_end_sample(const CStreamSound * _this)
         "jmp GoToBeginningOfMovie\n" /* line 145 */
     );
 }
+#else
+void CStreamSound_end_sample(const CStreamSound * _this) { (void)_this; }
+#endif
 
 /* line 152 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_get_sample_ms_position(const CStreamSound * _this, long int *total_milliseconds, long int *current_milliseconds)
 {
@@ -206,8 +227,12 @@ void CStreamSound_get_sample_ms_position(const CStreamSound * _this, long int *t
         "retl\n"
     );
 }
+#else
+void CStreamSound_get_sample_ms_position(const CStreamSound * _this, long int *total_milliseconds, long int *current_milliseconds) { (void)_this; (void)total_milliseconds; (void)current_milliseconds; }
+#endif
 
 /* line 174 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_set_sample_ms_position(const CStreamSound * _this, long int milliseconds)
 {
@@ -240,8 +265,12 @@ void CStreamSound_set_sample_ms_position(const CStreamSound * _this, long int mi
         "jmp SetMovieTimeValue\n" /* line 182 */
     );
 }
+#else
+void CStreamSound_set_sample_ms_position(const CStreamSound * _this, long int milliseconds) { (void)_this; (void)milliseconds; }
+#endif
 
 /* line 354 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_ChangedVolume(const CStreamSound * _this)
 {
@@ -315,8 +344,12 @@ void CStreamSound_ChangedVolume(const CStreamSound * _this)
         "jmp .Lf13dfde_0013e01b\n"
     );
 }
+#else
+void CStreamSound_ChangedVolume(const CStreamSound * _this) { (void)_this; }
+#endif
 
 /* line 63 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_UpdateAllStreams(void)
 {
@@ -394,8 +427,12 @@ void CStreamSound_UpdateAllStreams(void)
         "jmp .Lf13e0aa_0013e0c3\n"
     );
 }
+#else
+void CStreamSound_UpdateAllStreams(void) { }
+#endif
 
 /* line 328 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_close_stream(const CStreamSound * _this)
 {
@@ -439,8 +476,12 @@ void CStreamSound_close_stream(const CStreamSound * _this)
         "retl\n"
     );
 }
+#else
+void CStreamSound_close_stream(const CStreamSound * _this) { }
+#endif
 
 /* line 118 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_resume_sample(const CStreamSound * _this)
 {
@@ -491,8 +532,12 @@ void CStreamSound_resume_sample(const CStreamSound * _this)
         "jmp StartMovie\n" /* line 130 */
     );
 }
+#else
+void CStreamSound_resume_sample(const CStreamSound * _this) { }
+#endif
 
 /* line 188 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CStreamSound_set_sample_playback_rate(const CStreamSound * _this, long int playback_rate)
 {
@@ -530,8 +575,12 @@ void CStreamSound_set_sample_playback_rate(const CStreamSound * _this, long int 
         "jmp SetMovieRate\n" /* line 396 */
     );
 }
+#else
+void CStreamSound_set_sample_playback_rate(const CStreamSound * _this, long int playback_rate) { }
+#endif
 
 /* line 203 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 bool CStreamSound_open_stream(const CStreamSound * _this, const char *filename)
 {
@@ -732,8 +781,12 @@ bool CStreamSound_open_stream(const CStreamSound * _this, const char *filename)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+bool CStreamSound_open_stream(const CStreamSound * _this, const char *filename) { (void)_this; (void)filename; return 0; }
+#endif
 
 /* line 398 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void __static_initialization_and_destruction_0(void)
 {
@@ -775,8 +828,12 @@ void __static_initialization_and_destruction_0(void)
         "retl\n"
     );
 }
+#else
+static void __static_initialization_and_destruction_0(void) { }
+#endif
 
 /* line 400 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void GLOBAL__D__ZN12CStreamSound10sQTStreamsE(void) /* global destructors keyed to CStreamSound_sQTStreams */
 {
@@ -789,8 +846,12 @@ void GLOBAL__D__ZN12CStreamSound10sQTStreamsE(void) /* global destructors keyed 
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+static void GLOBAL__D__ZN12CStreamSound10sQTStreamsE(void) /* global destructors keyed to CStreamSound_sQTStreams */ { }
+#endif
 
 /* line 399 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void GLOBAL__I__ZN12CStreamSound10sQTStreamsE(void) /* global constructors keyed to CStreamSound_sQTStreams */
 {
@@ -803,8 +864,12 @@ void GLOBAL__I__ZN12CStreamSound10sQTStreamsE(void) /* global constructors keyed
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+static void GLOBAL__I__ZN12CStreamSound10sQTStreamsE(void) /* global constructors keyed to CStreamSound_sQTStreams */ { }
+#endif
 
 /* line 110 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorIP12CStreamSoundSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void) /* std_vector<CStreamSound*, std_allocator<CStreamSound*> >_erase */
 {
@@ -839,8 +904,12 @@ void ZNSt6vectorIP12CStreamSoundSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS
         "retl\n"
     );
 }
+#else
+void ZNSt6vectorIP12CStreamSoundSaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EE(void) /* std_vector<CStreamSound*, std_allocator<CStreamSound*> >_erase */ { }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorIP12CStreamSoundSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_(void) /* std_vector<CStreamSound*, std_allocator<CStreamSound*> >__M_insert_aux */
 {
@@ -979,5 +1048,6 @@ void ZNSt6vectorIP12CStreamSoundSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_it
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
-
-
+#else
+void ZNSt6vectorIP12CStreamSoundSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_(void) { }
+#endif

@@ -80,6 +80,7 @@ void CSampleSound_CSampleSound(CSampleSound *_this, CSoundEngine *inEngine, UInt
 }
 
 /* line 146 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_TheadIdle(const CSampleSound * _this)
 {
@@ -174,8 +175,13 @@ void CSampleSound_TheadIdle(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_TheadIdle(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 201 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_stop_sample(const CSampleSound * _this)
 {
@@ -218,8 +224,13 @@ void CSampleSound_stop_sample(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_stop_sample(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 252 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_end_sample(const CSampleSound * _this)
 {
@@ -263,8 +274,13 @@ void CSampleSound_end_sample(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_end_sample(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 279 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 bool CSampleSound_open_stream(const CSampleSound * _this, const char *filename)
 {
@@ -429,8 +445,13 @@ bool CSampleSound_open_stream(const CSampleSound * _this, const char *filename)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+bool CSampleSound_open_stream(const CSampleSound * _this, const char *filename)
+{ return 0; }
+#endif
 
 /* line 400 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_close_stream(const CSampleSound * _this)
 {
@@ -491,6 +512,10 @@ void CSampleSound_close_stream(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_close_stream(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 469 */
 void CSampleSound_ChangedFormat(CSampleSound *_this)
@@ -505,6 +530,7 @@ void CSampleSound_Changed3DPosition(CSampleSound *_this)
 }
 
 /* line 926 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_DoConvert(const CSampleSound * _this, UInt32 *ioNumberDataPackets, AudioBufferList *ioData)
 {
@@ -646,6 +672,10 @@ OSStatus CSampleSound_DoConvert(const CSampleSound * _this, UInt32 *ioNumberData
         "jmp .Lf1148fc_00114967\n"
     );
 }
+#else
+OSStatus CSampleSound_DoConvert(const CSampleSound * _this, UInt32 *ioNumberDataPackets, AudioBufferList *ioData)
+{ return 0; }
+#endif
 
 /* line 755 */
 OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription **outDataPacketDescription, void *inUserData)
@@ -657,6 +687,7 @@ OSStatus CSampleSound_AudioConverterProc(AudioConverterRef inAudioConverter, UIn
 }
 
 /* line 525 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_UpdateStreamFormat(const CSampleSound * _this)
 {
@@ -801,6 +832,10 @@ void CSampleSound_UpdateStreamFormat(const CSampleSound * _this)
         "jmp .Lf114ab8_00114bb8\n"
     );
 }
+#else
+void CSampleSound_UpdateStreamFormat(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 431 */
 void CSampleSound_ChangedVolume(CSampleSound *_this)
@@ -836,6 +871,7 @@ void CSampleSound_ChangedVolume(CSampleSound *_this)
 }
 
 /* line 597 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_Update3DValues(const CSampleSound * _this)
 {
@@ -939,8 +975,13 @@ void CSampleSound_Update3DValues(const CSampleSound * _this)
         "jmp .Lf114d80_00114e3b\n"
     );
 }
+#else
+void CSampleSound_Update3DValues(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 779 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_DoRender(const CSampleSound * _this, AudioUnitRenderActionFlags *ioActionFlags, UInt32 inNumberFrames, AudioBufferList *ioData)
 {
@@ -1174,6 +1215,10 @@ OSStatus CSampleSound_DoRender(const CSampleSound * _this, AudioUnitRenderAction
         "calll __Unwind_Resume\n"
     );
 }
+#else
+OSStatus CSampleSound_DoRender(const CSampleSound * _this, AudioUnitRenderActionFlags *ioActionFlags, UInt32 inNumberFrames, AudioBufferList *ioData)
+{ return 0; }
+#endif
 
 /* line 691 */
 OSStatus CSampleSound_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
@@ -1185,6 +1230,7 @@ OSStatus CSampleSound_RenderCallbackProc(void *inRefCon, AudioUnitRenderActionFl
 }
 
 /* line 223 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_resume_sample(const CSampleSound * _this)
 {
@@ -1299,8 +1345,13 @@ void CSampleSound_resume_sample(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_resume_sample(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 84 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_InitSample(const CSampleSound * _this, UInt32 inSoundType, UInt32 inSpatializationAlgorithm, UInt32 in3DRenderFlags, UInt32 inDopplerShift)
 {
@@ -1459,8 +1510,13 @@ OSStatus CSampleSound_InitSample(const CSampleSound * _this, UInt32 inSoundType,
         "calll __Unwind_Resume\n"
     );
 }
+#else
+OSStatus CSampleSound_InitSample(const CSampleSound * _this, UInt32 inSoundType, UInt32 inSpatializationAlgorithm, UInt32 in3DRenderFlags, UInt32 inDopplerShift)
+{ return 0; }
+#endif
 
 /* line 485 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void CSampleSound_Changed3DDistances(const CSampleSound * _this)
 {
@@ -1582,8 +1638,13 @@ void CSampleSound_Changed3DDistances(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+void CSampleSound_Changed3DDistances(const CSampleSound * _this)
+{ }
+#endif
 
 /* line 718 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_RenderNotifyProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
 {
@@ -1724,8 +1785,13 @@ OSStatus CSampleSound_RenderNotifyProc(void *inRefCon, AudioUnitRenderActionFlag
         "jmp .Lf115680_00115787\n"
     );
 }
+#else
+OSStatus CSampleSound_RenderNotifyProc(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData)
+{ return 0; }
+#endif
 
 /* line 44 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CSampleSoundD2Ev(void) /* CSampleSound_~CSampleSound */
 {
@@ -1839,8 +1905,13 @@ void ZN12CSampleSoundD2Ev(void) /* CSampleSound_~CSampleSound */
         "jmp .Lf115822_00115950\n"
     );
 }
+#else
+void ZN12CSampleSoundD2Ev(void) /* CSampleSound_~CSampleSound */
+{ }
+#endif
 
 /* line 44 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CSampleSoundD1Ev(void) /* CSampleSound_~CSampleSound */
 {
@@ -1954,8 +2025,13 @@ void ZN12CSampleSoundD1Ev(void) /* CSampleSound_~CSampleSound */
         "jmp .Lf11597e_00115aac\n"
     );
 }
+#else
+void ZN12CSampleSoundD1Ev(void) /* CSampleSound_~CSampleSound */
+{ }
+#endif
 
 /* line 44 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CSampleSoundD0Ev(void) /* CSampleSound_~CSampleSound */
 {
@@ -2071,8 +2147,13 @@ void ZN12CSampleSoundD0Ev(void) /* CSampleSound_~CSampleSound */
         "jmp .Lf115ada_00115c16\n"
     );
 }
+#else
+void ZN12CSampleSoundD0Ev(void) /* CSampleSound_~CSampleSound */
+{ }
+#endif
 
 /* line 888 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_DoPreRender(const CSampleSound * _this)
 {
@@ -2150,8 +2231,13 @@ OSStatus CSampleSound_DoPreRender(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+OSStatus CSampleSound_DoPreRender(const CSampleSound * _this)
+{ return 0; }
+#endif
 
 /* line 906 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus CSampleSound_DoPostRender(const CSampleSound * _this)
 {
@@ -2229,4 +2315,8 @@ OSStatus CSampleSound_DoPostRender(const CSampleSound * _this)
         "calll __Unwind_Resume\n"
     );
 }
+#else
+OSStatus CSampleSound_DoPostRender(const CSampleSound * _this)
+{ return 0; }
+#endif
 

@@ -58,6 +58,7 @@ ControlPartCode UserPaneHitTestProc(ControlRef theControl, struct Point theWhere
 }
 
 /* line 167 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 WindowRef MacBuilder_BuildWindow(CFStringRef inName, CFStringRef inNibName, int inStandardHandler, MacBuilderProcPtr inBuilderProc)
 {
@@ -162,6 +163,12 @@ WindowRef MacBuilder_BuildWindow(CFStringRef inName, CFStringRef inNibName, int 
         "jmp .Lf3726_0000378f\n"
     );
 }
+#else
+WindowRef MacBuilder_BuildWindow(CFStringRef inName, CFStringRef inNibName, int inStandardHandler, MacBuilderProcPtr inBuilderProc)
+{
+    return 0;
+}
+#endif
 
 /* line 221 */
 UInt32 MacBuilder_RunModalWindow(WindowRef inWindow)
@@ -196,6 +203,7 @@ ControlRef MacBuilder_GetControlRef(WindowRef inWindow, SInt32 inID)
 }
 
 /* line 655 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 inflate_blocks_statef ValidationProc(ControlRef inControlRef)
 {
@@ -266,8 +274,14 @@ inflate_blocks_statef ValidationProc(ControlRef inControlRef)
         "jmp .Lf390a_00003951\n"
     );
 }
+#else
+static inflate_blocks_statef ValidationProc(ControlRef inControlRef)
+{
+}
+#endif
 
 /* line 34 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 OSStatus HandleStandardEvents(EventRef inEvent, inflate_blocks_statef *inUserData)
 {
@@ -451,8 +465,15 @@ OSStatus HandleStandardEvents(EventRef inEvent, inflate_blocks_statef *inUserDat
         "jmp .Lf39b8_000039fd\n"
     );
 }
+#else
+static OSStatus HandleStandardEvents(EventRef inEvent, inflate_blocks_statef *inUserData)
+{
+    return 0;
+}
+#endif
 
 /* line 598 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 ControlKeyFilterResult KeyFilterProc(ControlRef inControlRef, SInt16 *ioCharCode, EventModifiers *ioModifiers)
 {
@@ -575,8 +596,15 @@ ControlKeyFilterResult KeyFilterProc(ControlRef inControlRef, SInt16 *ioCharCode
         "jmp .Lf3bda_00003cd3\n"
     );
 }
+#else
+static ControlKeyFilterResult KeyFilterProc(ControlRef inControlRef, SInt16 *ioCharCode, EventModifiers *ioModifiers)
+{
+    return 0;
+}
+#endif
 
 /* line 751 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 inflate_blocks_statef MacBuilder_SetTextObjectFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize)
 {
@@ -655,6 +683,11 @@ inflate_blocks_statef MacBuilder_SetTextObjectFontStyle(WindowRef inWindow, SInt
         "jmp .Lf3d14_00003d73\n"
     );
 }
+#else
+inflate_blocks_statef MacBuilder_SetTextObjectFontStyle(WindowRef inWindow, SInt32 inID, int inFontFamilyID, int inFontSize)
+{
+}
+#endif
 
 /* line 305 */
 void MacBuilder_GetControlText(WindowRef inWindow, SInt32 inID, int inBufferSize, char *outText)
@@ -822,6 +855,7 @@ void MacBuilder_SetupUserPaneControl(WindowRef inWindow, SInt32 inID, ControlUse
 }
 
 /* line 673 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 inflate_blocks_statef MacBuilder_SetEditTextHook(WindowRef inWindow, SInt32 inID, MacBuilderEditHookPtr inHookProc, int inCharLimit)
 {
@@ -930,8 +964,14 @@ inflate_blocks_statef MacBuilder_SetEditTextHook(WindowRef inWindow, SInt32 inID
         "jmp .Lf41a4_00004238\n"
     );
 }
+#else
+inflate_blocks_statef MacBuilder_SetEditTextHook(WindowRef inWindow, SInt32 inID, MacBuilderEditHookPtr inHookProc, int inCharLimit)
+{
+}
+#endif
 
 /* line 726 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 TXNObject MacBuilder_GetTextObject(WindowRef inWindow, SInt32 inID)
 {
@@ -987,4 +1027,10 @@ TXNObject MacBuilder_GetTextObject(WindowRef inWindow, SInt32 inID)
         "jmp .Lf42e2_00004328\n"
     );
 }
+#else
+TXNObject MacBuilder_GetTextObject(WindowRef inWindow, SInt32 inID)
+{
+    return 0;
+}
+#endif
 

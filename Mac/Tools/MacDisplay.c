@@ -157,6 +157,7 @@ CGrafPtr MacDisplay_GetMainPort(void)
 }
 
 /* line 495 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 GDHandle MacDisplay_GetDeviceHandle(void)
 {
@@ -232,6 +233,10 @@ GDHandle MacDisplay_GetDeviceHandle(void)
         "retl\n"
     );
 }
+#else
+GDHandle MacDisplay_GetDeviceHandle(void)
+{ return 0; }
+#endif
 
 /* line 529 */
 Boolean MacDisplay_IsWindowMode(void)
@@ -276,6 +281,7 @@ static short unsigned int MacDisplay_FadeIn_orig(float inInterval)
 }
 
 /* line 658 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 static short unsigned int MacDisplay_FadeOut_orig(float inInterval)
 {
@@ -328,6 +334,10 @@ static short unsigned int MacDisplay_FadeOut_orig(float inInterval)
         "jmp .Lf455c_0000458e\n"
     );
 }
+#else
+static short unsigned int MacDisplay_FadeOut_orig(float inInterval)
+{ return 0; }
+#endif
 
 /* line 685 */
 short unsigned int MacDisplay_GetCurrentDimensions(int *outWidth, int *outHeight)
@@ -410,6 +420,7 @@ short unsigned int MacDisplay_StopCapture(void)
 }
 
 /* line 2622 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 short unsigned int CenterWindowOnDisplay(void)
 {
@@ -486,8 +497,13 @@ short unsigned int CenterWindowOnDisplay(void)
         "jmp .Lf476c_00004796\n"
     );
 }
+#else
+static short unsigned int CenterWindowOnDisplay(void)
+{ return 0; }
+#endif
 
 /* line 349 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus MacDisplay_SetupDisplay(int inWidth, int inHeight)
 {
@@ -580,6 +596,10 @@ OSStatus MacDisplay_SetupDisplay(int inWidth, int inHeight)
         "retl\n"
     );
 }
+#else
+OSStatus MacDisplay_SetupDisplay(int inWidth, int inHeight)
+{ return 0; }
+#endif
 
 /* line 2857 */
 static Boolean BuilderCallback(WindowRef theWindow, UInt32 theCommandID)
@@ -774,6 +794,7 @@ int MacDisplay_GetNumModes(void)
 }
 
 /* line 2671 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 short unsigned int UserPaneDrawProc(ControlRef theControl)
 {
@@ -1233,8 +1254,13 @@ short unsigned int UserPaneDrawProc(ControlRef theControl)
         "jmp .Lf4df6_00005533\n"
     );
 }
+#else
+short unsigned int UserPaneDrawProc(ControlRef theControl)
+{ return 0; }
+#endif
 
 /* line 2831 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt)
 {
@@ -1300,6 +1326,10 @@ ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt)
         "retl\n"
     );
 }
+#else
+static ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt)
+{ return 0; }
+#endif
 
 /* line 1897 */
 void ZN16OpaqueContextRefD1Ev(char *this_ptr) /* OpaqueContextRef_~OpaqueContextRef */
@@ -1384,6 +1414,7 @@ short unsigned int MacDisplay_ReleaseDisplay(void)
 }
 
 /* line 1101 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer)
 {
@@ -2070,6 +2101,10 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
         "jmp .Lf57ca_00006152\n"
     );
 }
+#else
+static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer)
+{ return 0; }
+#endif
 
 /* line 758 */
 short unsigned int MacDisplay_GetCurrentMode(int *outWidth, int *outHeight, int *outDepth, int *outRefreshRate)
@@ -2114,6 +2149,7 @@ short unsigned int MacDisplay_GetCurrentMode(int *outWidth, int *outHeight, int 
 }
 
 /* line 774 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 short unsigned int MacDisplay_SetMode(int inWidth, int inHeight, int inDepth, int inRefreshRate)
 {
@@ -2225,8 +2261,13 @@ short unsigned int MacDisplay_SetMode(int inWidth, int inHeight, int inDepth, in
         "jmp .Lf628a_0000638e\n"
     );
 }
+#else
+short unsigned int MacDisplay_SetMode(int inWidth, int inHeight, int inDepth, int inRefreshRate)
+{ return 0; }
+#endif
 
 /* line 2361 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZN12CDisplayInfoaSERKS_(void) /* CDisplayInfo_operator= */
 {
@@ -2315,8 +2356,13 @@ void ZN12CDisplayInfoaSERKS_(void) /* CDisplayInfo_operator= */
         "retl\n"
     );
 }
+#else
+void ZN12CDisplayInfoaSERKS_(void) /* CDisplayInfo_operator= */
+{ }
+#endif
 
 /* line 1979 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirectDisplayID inDisplayID)
 {
@@ -3111,6 +3157,10 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         "jmp .Lf64da_00006ed3\n"
     );
 }
+#else
+short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirectDisplayID inDisplayID)
+{ return 0; }
+#endif
 
 /* overload skip: CDisplayInfo_CDisplayInfo (0x6f4a) */
 
@@ -3119,6 +3169,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
 /* overload skip: CDisplayInfo_CDisplayInfo (0x7c2a) */
 
 /* line 214 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 OSStatus MacDisplay_Initialize(void)
 {
@@ -3768,8 +3819,13 @@ OSStatus MacDisplay_Initialize(void)
         "jmp .Lf7e9a_000085cf\n"
     );
 }
+#else
+OSStatus MacDisplay_Initialize(void)
+{ return 0; }
+#endif
 
 /* line 2923 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 short unsigned int __static_initialization_and_destruction_0(void)
 {
@@ -4015,8 +4071,13 @@ short unsigned int __static_initialization_and_destruction_0(void)
         "jmp .Lf882a_00008a94\n"
     );
 }
+#else
+static short unsigned int __static_initialization_and_destruction_0(void)
+{ return 0; }
+#endif
 
 /* line 2925 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void GLOBAL__D__ZN10MacDisplay10InitializeEv(void) /* global destructors keyed to MacDisplay_Initialize */
 {
@@ -4029,8 +4090,13 @@ void GLOBAL__D__ZN10MacDisplay10InitializeEv(void) /* global destructors keyed t
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+static void GLOBAL__D__ZN10MacDisplay10InitializeEv(void) /* global destructors keyed to MacDisplay_Initialize */
+{ }
+#endif
 
 /* line 2924 */
+#ifndef __EMSCRIPTEN__
 static __attribute__((naked))
 void GLOBAL__I__ZN10MacDisplay10InitializeEv(void) /* global constructors keyed to MacDisplay_Initialize */
 {
@@ -4043,8 +4109,13 @@ void GLOBAL__I__ZN10MacDisplay10InitializeEv(void) /* global constructors keyed 
         "jmp __static_initialization_and_destruction_0\n"
     );
 }
+#else
+static void GLOBAL__I__ZN10MacDisplay10InitializeEv(void) /* global constructors keyed to MacDisplay_Initialize */
+{ }
+#endif
 
 /* line 118 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt11__push_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiS2_EvT_T0_S9_T1_(void) /* void std___push_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int, CResInfo> */
 {
@@ -4135,8 +4206,13 @@ void ZSt11__push_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS
         "jmp .Lf2ba718_002ba751\n"
     );
 }
+#else
+void ZSt11__push_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiS2_EvT_T0_S9_T1_(void) /* void std___push_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int, CResInfo> */
+{ }
+#endif
 
 /* line 210 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiS2_EvT_T0_S9_T1_(void) /* void std___adjust_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int, CResInfo> */
 {
@@ -4293,8 +4369,13 @@ void ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_Sa
         "jmp .Lf2ba7d8_002ba8af\n"
     );
 }
+#else
+void ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiS2_EvT_T0_S9_T1_(void) /* void std___adjust_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int, CResInfo> */
+{ }
+#endif
 
 /* line 2083 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEES2_EvT_T0_(void) /* void std___unguarded_linear_insert<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, CResInfo> */
 {
@@ -4359,8 +4440,13 @@ void ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6
         "jmp .Lf2ba958_002ba984\n"
     );
 }
+#else
+void ZSt25__unguarded_linear_insertIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEES2_EvT_T0_(void) /* void std___unguarded_linear_insert<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, CResInfo> */
+{ }
+#endif
 
 /* line 344 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt9make_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std_make_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
 {
@@ -4425,8 +4511,13 @@ void ZSt9make_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_E
         "retl\n"
     );
 }
+#else
+void ZSt9make_heapIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std_make_heap<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
+{ }
+#endif
 
 /* line 2027 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt21__unguarded_partitionIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEES2_ET_S8_S8_T0_(void) /* __gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > std___unguarded_partition<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, CResInfo> */
 {
@@ -4525,8 +4616,13 @@ void ZSt21__unguarded_partitionIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vect
         "retl\n"
     );
 }
+#else
+void ZSt21__unguarded_partitionIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEES2_ET_S8_S8_T0_(void) /* __gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > std___unguarded_partition<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, CResInfo> */
+{ }
+#endif
 
 /* line 2125 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std___insertion_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
 {
@@ -4655,8 +4751,13 @@ void ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2
         "jmp .Lf2bab3e_002bab8e\n"
     );
 }
+#else
+void ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std___insertion_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
+{ }
+#endif
 
 /* line 2212 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt22__final_insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std___final_insertion_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
 {
@@ -4719,8 +4820,13 @@ void ZSt22__final_insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vec
         "jmp ZSt16__insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_\n"
     );
 }
+#else
+void ZSt22__final_insertion_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_(void) /* void std___final_insertion_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
+{ }
+#endif
 
 /* line 2277 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt12partial_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_S8_(void) /* void std_partial_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
 {
@@ -4892,8 +4998,13 @@ void ZSt12partial_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaI
         "jmp .Lf2bacfe_002bad54\n"
     );
 }
+#else
+void ZSt12partial_sortIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEEvT_S8_S8_(void) /* void std_partial_sort<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > > > */
+{ }
+#endif
 
 /* line 2478 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiEvT_S8_T0_(void) /* void std___introsort_loop<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int> */
 {
@@ -5107,8 +5218,13 @@ void ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2
         "jmp .Lf2baeb0_002baf4f\n"
     );
 }
+#else
+void ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIP8CResInfoSt6vectorIS2_SaIS2_EEEEiEvT_S8_T0_(void) /* void std___introsort_loop<__gnu_cxx___normal_iterator<CResInfo*, std_vector<CResInfo, std_allocator<CResInfo> > >, int> */
+{ }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI7MacRectSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<MacRect, std_allocator<MacRect> >__M_insert_aux */
 {
@@ -5290,8 +5406,13 @@ void ZNSt6vectorI7MacRectSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorI
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
+#else
+void ZNSt6vectorI7MacRectSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<MacRect, std_allocator<MacRect> >__M_insert_aux */
+{ }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI8CResInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<CResInfo, std_allocator<CResInfo> >__M_insert_aux */
 {
@@ -5510,8 +5631,13 @@ void ZNSt6vectorI8CResInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterator
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
+#else
+void ZNSt6vectorI8CResInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<CResInfo, std_allocator<CResInfo> >__M_insert_aux */
+{ }
+#endif
 
 /* line 133 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI8CResInfoSaIS0_EEaSERKS2_(void) /* std_vector<CResInfo, std_allocator<CResInfo> >_operator= */
 {
@@ -5730,8 +5856,13 @@ void ZNSt6vectorI8CResInfoSaIS0_EEaSERKS2_(void) /* std_vector<CResInfo, std_all
         "calll __ZSt17__throw_bad_allocv\n" /* line 86 */
     );
 }
+#else
+void ZNSt6vectorI8CResInfoSaIS0_EEaSERKS2_(void) /* std_vector<CResInfo, std_allocator<CResInfo> >_operator= */
+{ }
+#endif
 
 /* line 249 */
+#ifndef __EMSCRIPTEN__
 __attribute__((naked))
 void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<CDisplayInfo, std_allocator<CDisplayInfo> >__M_insert_aux */
 {
@@ -6610,3 +6741,7 @@ void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_ite
         "jmp .Lf2bb652_002bbffd\n"
     );
 }
+#else
+void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<CDisplayInfo, std_allocator<CDisplayInfo> >__M_insert_aux */
+{ }
+#endif

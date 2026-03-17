@@ -21,6 +21,7 @@ void MacStrings_GetCString(const HFSUniStr255 *inUniStr, char *outCString, int i
     CFRelease(stringRef);
 }
 
+#ifndef __EMSCRIPTEN__
 /* line 163 */
 __attribute__((naked))
 void MacStrings_CopyAndClean(const char *inSrcString, char *inDstString, int inDstSize)
@@ -98,4 +99,9 @@ void MacStrings_CopyAndClean(const char *inSrcString, char *inDstString, int inD
         "jmp .Lfa644_0000a662\n"
     );
 }
+#else
+void MacStrings_CopyAndClean(const char *inSrcString, char *inDstString, int inDstSize)
+{
+}
+#endif
 
