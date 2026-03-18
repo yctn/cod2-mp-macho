@@ -223,6 +223,8 @@ static void init_display_list(void) {
  * The context ref is a 16-byte struct: { void *glContext, void *unused1, void *unused2, char hasAux }
  */
 SDL_Window *sdl_gl_window = NULL;
+int sdl_gl_width = 640;
+int sdl_gl_height = 480;
 
 static int sdl_quit_watch(void *ud, SDL_Event *e)
 {
@@ -261,7 +263,7 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
     if (!sdl_gl_window) {
         sdl_gl_window = SDL_CreateWindow("CoD2",
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-            640, 480,
+            sdl_gl_width, sdl_gl_height,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
         if (!sdl_gl_window)
             return (ContextRef)0;

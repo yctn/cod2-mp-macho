@@ -1206,22 +1206,45 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
         /* Device exists — just init systems */
         R_InitSystems();
     } else {
-        /* Create D3D device — complex initialization path */
-        /* This includes: Direct3DCreate9, GetDeviceCaps, display mode enumeration,
-         * sort, resolution selection, presentation params, R_CreateDevice with AA retry.
-         * The full logic is preserved in the #if 0 ASM block below. */
+        /* Simplified device creation path (replaces ~1000-line ASM block) */
         if (!*(int *)((char *)&dx + 4)) {
             ri_printf(0, "Initializing Direct3D\n");
             *(int *)((char *)&dx + 4) = Direct3DCreate9(0x20);
             if (!*(int *)((char *)&dx + 4)) {
                 ri_printf(0, "Direct3DCreate9 failed\n");
-                /* Fatal — would normally call error handler */
             }
         }
-        /* Device caps, display modes, device creation handled by original ASM
-         * — this path calls R_CreateDevice which is already converted */
-        /* For now, delegate to the trampoline which calls the original ASM path */
-        /* TODO: Full device creation path needs detailed conversion */
+
+        /* Build D3DPRESENT_PARAMETERS and create device */
+        {
+            int d3dpp[14];
+            int width = 640, height = 480;
+
+            memset(d3dpp, 0, sizeof(d3dpp));
+            d3dpp[0] = width;   /* BackBufferWidth */
+            d3dpp[1] = height;  /* BackBufferHeight */
+            d3dpp[2] = 0x15;    /* BackBufferFormat = D3DFMT_X8R8G8B8 */
+            d3dpp[3] = 1;       /* BackBufferCount */
+            d3dpp[6] = 1;       /* SwapEffect = D3DSWAPEFFECT_DISCARD */
+            d3dpp[8] = 0x4b;    /* AutoDepthStencilFormat */
+            d3dpp[11] = 1;      /* PresentationInterval */
+
+            R_CreateDevice_impl(0, 0x40, d3dpp);
+
+            /* Set vidConfig */
+            vidConfig.width = width;
+            vidConfig.height = height;
+            vidConfig.displayFrequency = 60;
+            vidConfig.isFullscreen = 0;
+            vidConfig.aspectRatioWindow = (float)height / (float)width;
+            vidConfig.aspectRatioPixel = (float)height / (float)width;
+
+            /* Note: r_rendererInUse defaults to non-Dx7 (programmable shaders).
+             * Dx7 mode requires s_passOptionsDx7/s_textureFuncsDx7 data tables
+             * which are not yet initialized in the decompilation. */
+        }
+
+        R_InitSystems();
     }
 
     /* Phase 3: Register backend assets */

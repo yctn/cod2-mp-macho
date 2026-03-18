@@ -335,6 +335,11 @@ int MacOpenGLUtils_GetSubPixelOffset(float *XOffset, float *YOffset)
 /* line 629 */
 int MacOpenGLUtils_GetOpenGLTextureType(bool *CreateOpenGLResources, GLenum *OpenGLInternalFormat, GLenum *OpenGLFormat, GLenum *OpenGLElementType, D3DFORMAT mFormat)
 {
+    GLenum tmpInternal = 0, tmpFormat = 0, tmpElement = 0;
+    if (!OpenGLInternalFormat) OpenGLInternalFormat = &tmpInternal;
+    if (!OpenGLFormat) OpenGLFormat = &tmpFormat;
+    if (!OpenGLElementType) OpenGLElementType = &tmpElement;
+
     switch (mFormat) {
         case D3DFMT_A1R5G5B5:    /* 0x19 = 25 */
             *OpenGLInternalFormat = 0x8057; /* GL_RGB5_A1 */

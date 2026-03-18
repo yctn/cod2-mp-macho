@@ -103,13 +103,32 @@ void *CDirect3D_GetAdapterMonitor(const void *_this, UINT Adapter)
 HRESULT CDirect3D_CreateDevice(const void *_this, UINT Adapter, int DeviceType, void *hFocusWindow, DWORD BehaviorFlags, void *pPresentationParameters, void **ppReturnedDeviceInterface)
 {
     static char deviceMem[4096]; /* generous static allocation for device struct */
+    int *pp = (int *)pPresentationParameters;
+    int width = 640, height = 480;
+    void *ctx;
 
     (void)_this; (void)Adapter; (void)DeviceType; (void)hFocusWindow;
-    (void)BehaviorFlags; (void)pPresentationParameters;
+    (void)BehaviorFlags;
+
+    /* Extract dimensions from D3DPRESENT_PARAMETERS if available */
+    if (pp) {
+        if (pp[0] > 0) width = pp[0];
+        if (pp[1] > 0) height = pp[1];
+    }
 
     memset(deviceMem, 0, sizeof(deviceMem));
     *(void ***)deviceMem = vtbl_CDirect3DDevice; /* set vtable */
     CDirect3DDevice_Init(deviceMem);
+
+    /* Set window dimensions for SDL, then create GL context */
+    {
+        extern int sdl_gl_width, sdl_gl_height;
+        sdl_gl_width = width;
+        sdl_gl_height = height;
+    }
+    ctx = MacDisplay_CreateScreenContext(24, 1, 0, 0, 0, NULL);
+    *(void **)(deviceMem + 0x008) = ctx; /* store context in device */
+
     *ppReturnedDeviceInterface = deviceMem;
     return 0;
 }
