@@ -962,9 +962,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                                 if (d3dTex && (unsigned int)d3dTex > 0x08000000u) {
                                     /* Call UpdateOpenGLSurfaces on the texture to upload data */
                                     extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
-                                    static unsigned int lastUploadedTex = 0;
+                                    {
                                     unsigned int tid = *(unsigned int *)((byte *)d3dTex + 0x54);
-                                    if (tid != lastUploadedTex) {
+                                    {
                                         /* Check if pixelData has real content */
                                         byte *pdata = *(byte **)((byte *)d3dTex + 0x50);
                                         {
@@ -979,7 +979,6 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                                             }
                                         }
                                         CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
-                                        lastUploadedTex = tid;
                                         glBindTexture(0x0DE1, tid);
                                     }
                                 }
@@ -987,6 +986,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                         }
                     }
                 }
+            }
             }
         } else {
             glDisable(0x0DE1);

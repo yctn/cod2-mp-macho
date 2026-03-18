@@ -121,9 +121,10 @@ HRESULT CDirect3DTexture_LockRect(const CDirect3DTexture *_this, UINT Level, D3D
     hr = CDirect3DSurface_LockRect((CDirect3DSurface *)tex->surfaces[Level], pLockedRect, pRect, Flags);
     {
         static int tlk = 0;
-        if (tlk++ < 20)
-            fprintf(stderr, "[TEX_LOCK] texID=%u lv=%u pBits=%p pitch=%d\n",
-                    tex->texIDStorage, Level, pLockedRect->pBits, pLockedRect->Pitch);
+        if (tlk++ < 5000) {
+            FILE *f = fopen("/tmp/tex_lock.log","a");
+            if(f){fprintf(f,"[TEX_LOCK] texID=%u lv=%u\n", tex->texIDStorage, Level);fclose(f);}
+        }
     }
     return hr;
 }
