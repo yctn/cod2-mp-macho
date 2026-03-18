@@ -29,6 +29,17 @@ static UINT32 CColorConverter_RotateRight32(UINT32 value, unsigned int shift)
     return (value >> shift) | (value << (32 - shift));
 }
 
+/* Byte-swap: on LE x86, converts [A,R,G,B] bytes to [B,G,R,A] for GL_BGRA.
+ * The original RotateRight32(v,8) was correct on big-endian Mac but swaps
+ * R and B on little-endian because rotate != reverse. */
+static UINT32 CColorConverter_ByteSwap32(UINT32 value)
+{
+    return ((value & 0xFF000000) >> 24) |
+           ((value & 0x00FF0000) >> 8)  |
+           ((value & 0x0000FF00) << 8)  |
+           ((value & 0x000000FF) << 24);
+}
+
 static float CColorConverter_ByteToFloat(UINT8 value)
 {
     return (float)value * (1.0f / 255.0f);
@@ -57,7 +68,7 @@ static UINT32 CColorConverter_PackStdARGB(float r, float g, float b, float a)
            | (CColorConverter_FloatToByte(g) << 16)
            | (CColorConverter_FloatToByte(r) << 8)
            | CColorConverter_FloatToByte(a);
-    return CColorConverter_RotateRight32(packed, 8);
+    return CColorConverter_ByteSwap32(packed);
 }
 
 static UINT32 CColorConverter_PackATI4CompsARGB(float r, float g, float b, float a)
@@ -135,7 +146,7 @@ void StdConverterARGB_Convert(const StdConverterARGB * _this, const void * pDst,
     (void)_this;
 
     memcpy(&value, pSrc, sizeof(value));
-    value = CColorConverter_RotateRight32(value, 8);
+    value = CColorConverter_ByteSwap32(value);
     memcpy((void *)pDst, &value, sizeof(value));
 }
 

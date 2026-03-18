@@ -280,6 +280,16 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SwapWindow(sdl_gl_window);
 
+    /* Initialize GL fog color to black — ARB fragment programs read
+     * state.fog.color for fog blending; uninitialized values cause color tint */
+    {
+        float fogBlack[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+        glFogfv(0x0B66 /* GL_FOG_COLOR */, fogBlack);
+        glFogi(0x0B63 /* GL_FOG_MODE */, 0x2601 /* GL_LINEAR */);
+        glFogf(0x0B63 /* GL_FOG_START */, 0.0f);
+        glFogf(0x0B64 /* GL_FOG_END */, 1.0f);
+    }
+
     /* Allocate a fake 16-byte context struct (matches what the Mac code allocates) */
     ctx = (unsigned char *)calloc(1, 16);
     /* Store the SDL context pointer so we can use it later */

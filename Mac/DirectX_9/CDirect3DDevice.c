@@ -1019,7 +1019,20 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitiveUP(const CDirect3DDevice *_this,
 
 HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice *_this, D3DRENDERSTATETYPE State, DWORD Value)
 {
-    (void)_this; (void)State; (void)Value;
+    (void)_this;
+    switch (State) {
+        case 0x22: { /* D3DRS_FOGCOLOR */
+            float fc[4];
+            fc[0] = ((Value >> 16) & 0xFF) / 255.0f;
+            fc[1] = ((Value >> 8) & 0xFF) / 255.0f;
+            fc[2] = (Value & 0xFF) / 255.0f;
+            fc[3] = ((Value >> 24) & 0xFF) / 255.0f;
+            glFogfv(0x0B66 /* GL_FOG_COLOR */, fc);
+            break;
+        }
+        default:
+            break;
+    }
     return 0;
 }
 
