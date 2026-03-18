@@ -4185,6 +4185,49 @@ void RB_EndSurface(void)
     RB_SetVertexData(0, tess, *(int *)(tess + 0x5a7d4), vertexStride);
     args.u.buf.baseVertex = 0;
 
+    /* Bind the material's first texture before drawing.
+     * The ASM shader code in RB_DrawSingleTechnique calls SetTexture via
+     * CreateVertexShader/CreatePixelShader which return stubs on this port,
+     * so textures never get bound — everything renders as white/grey boxes.
+     * We fix this by pre-binding the correct texture here. */
+    {
+#define RB_GL_TEXTURE_2D 0x0DE1
+        const Material *mat = *(const Material **)(tess + 0x5a7bc);
+        if (mat) {
+            int texCount = *(unsigned short *)((byte *)mat + 0x34);
+            byte *textures = *(byte **)((byte *)mat + 0x3c);
+            if (texCount > 0 && textures) {
+                /* MaterialTextureDef is 0xc bytes; image pointer at +0x08 */
+                byte *texEntry = textures; /* textures[0] */
+                void *image = *(void **)(texEntry + 8); /* GfxImage* from union u */
+                if (image) {
+                    /* GfxImage: texture union (IDirect3DBaseTexture9*) at +0x04 */
+                    void *d3dTexture = *(void **)((byte *)image + 4);
+                    if (d3dTexture) {
+                        /* Call SetTexture on D3D device (vtable[0x104/4] = vtable[65]) */
+                        void *device = *(void **)((byte *)imp_dx + 8);
+                        void **vtable = *(void ***)device;
+                        ((void (*)(void *, int, void *))vtable[0x104 / 4])(device, 0, d3dTexture);
+
+                        /* Also bind via OpenGL directly for the fixed-function path.
+                         * CDirect3DTexture: texIDStorage (GLuint) at +0x54 */
+                        {
+                            unsigned int texID = *(unsigned int *)((byte *)d3dTexture + 0x54);
+                            /* Store for DIP to use after GL state reset */
+                            extern unsigned int g_prebind_texID;
+                            g_prebind_texID = texID;
+                            if (texID) {
+                                glBindTexture(RB_GL_TEXTURE_2D, texID);
+                                glEnable(RB_GL_TEXTURE_2D);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+#undef RB_GL_TEXTURE_2D
+    }
+
     /* Draw main tess geometry */
     g_rb_endsurface_draw++;
     RB_DrawTechnique(*(MaterialVertexDeclType *)(tess + 0x5a7cc), &args);

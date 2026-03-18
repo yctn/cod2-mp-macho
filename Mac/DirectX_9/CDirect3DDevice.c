@@ -270,6 +270,7 @@ typedef struct {
 static DWORD g_currentFVF = 0;
 static float g_vsConst[256 * 4]; /* Vertex shader constant registers (256 vec4) */
 static IDirect3DBaseTexture9 *g_boundTextures[8] = {0};
+unsigned int g_prebind_texID = 0; /* Set by RB_EndSurface texture pre-binding */
 
 /* ============================================================ */
 /* IUnknown                                                     */
@@ -759,25 +760,27 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     if (present_count == 3) {
         FILE *f = fopen("/tmp/es_debug.txt","a");
         if (f) {
-            int row, rows[] = {10, 40, 60, 80, 100, 120, 150, 200, 250, 300, 330, 350, 370, 390, 410, 440, 460};
-            for (row = 0; row < 17; row++) {
+            /* Sample specific X positions at y=370 to check text character detail */
+            int row, rows[] = {370};
+            for (row = 0; row < 1; row++) {
                 unsigned char pixels[640 * 4];
                 int x, colored = 0;
                 glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
                 for (x = 0; x < 640; x++)
                     if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
                         colored++;
-                if (colored > 0) {
-                    for (x = 0; x < 640; x++) {
-                        if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
-                            fprintf(f, "[FB] y=%d: %d colored, first@x=%d=(%d,%d,%d,%d)\n",
-                                    rows[row], colored, x,
-                                    pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
-                            break;
-                        }
+                /* Dump all pixel values at key X positions */
+                {
+                    int xp, xpts[] = {356, 360, 365, 370, 380, 400, 420, 450, 480, 500, 520, 550, 580, 600, 620};
+                    fprintf(f, "[FB] y=%d: %d colored\n", rows[row], colored);
+                    for (xp = 0; xp < 15; xp++) {
+                        int px = xpts[xp];
+                        if (px < 640)
+                            fprintf(f, "  x=%d: (%d,%d,%d,%d)\n", px,
+                                    pixels[px*4], pixels[px*4+1], pixels[px*4+2], pixels[px*4+3]);
                     }
-                } else {
-                    fprintf(f, "[FB] y=%d: 0 colored\n", rows[row]);
+                }
+                if (0) {
                 }
             }
             fclose(f);
@@ -920,21 +923,19 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glLoadIdentity();
     }
 
-    /* Bind texture: use g_boundTextures[0] if set, otherwise disable texturing.
-     * Note: The ASM shader code sets textures via SetTexture before DIP.
-     * All textures currently resolve to glID=1 (white) because shader stubs
-     * prevent proper texture routing. */
+    /* Bind texture from pre-bind (set by RB_EndSurface before RB_DrawTechnique).
+     * The ASM shader code overwrites g_boundTextures with glID=1, so we use
+     * g_prebind_texID which was set from the material's actual texture. */
     { extern void glBindTexture(unsigned int, unsigned int);
-      unsigned int glTexID = 0;
-      if (g_boundTextures[0]) {
-          glTexID = *(unsigned int *)((byte *)g_boundTextures[0] + 0x54);
-      }
+      unsigned int glTexID = g_prebind_texID;
+      { extern void glBindTexture(unsigned int, unsigned int);
       if (glTexID) {
           glEnable(0x0DE1); /* GL_TEXTURE_2D */
           glBindTexture(0x0DE1, glTexID);
           glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
       } else {
-          glDisable(0x0DE1); /* GL_TEXTURE_2D */
+          glDisable(0x0DE1);
+      }
       }
     }
 
