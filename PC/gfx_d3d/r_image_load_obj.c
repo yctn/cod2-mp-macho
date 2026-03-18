@@ -495,6 +495,14 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
 
     Image_Setup(image, width, height, depth, mipmapCount, 0, format);
 
+    /* The D3D mip level offset and loop bound come from the image's applied
+     * picmip (at GfxImage offset 8), NOT from the IWi header's mipmapCount.
+     * Image_Setup applies picmip to the image dimensions, so:
+     *   D3D mip N has size (image->width >> N) x (image->height >> N)
+     *   Wavelet level L has size (rawWidth >> L) x (rawHeight >> L)
+     * Mapping: D3D mip = waveletLevel - picmip  */
+    int picmip = image->picmip.platform[0];
+
     /* Compute starting mip level */
     if (*(byte *)(fileHeader + 5) & 2) {
         startLevel = 0;
@@ -525,7 +533,7 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
     }
 
     /* Process mip levels from bottom to top */
-    for (level = startLevel; level >= mipmapCount; level--, decode.mipLevel = level) {
+    for (level = startLevel; level >= picmip; level--, decode.mipLevel = level) {
         int mipW = width >> level; if (mipW < 1) mipW = 1;
         int mipH = height >> level; if (mipH < 1) mipH = 1;
         int sizeForLevel = mipW * mipH * pixelStride;
@@ -549,7 +557,7 @@ static void Image_LoadWavelet_impl(GfxImage *image, const byte *fileHeader,
 
             /* Upload to texture */
             int cubeFace = Image_CubemapFace(face);
-            Image_UploadData(image, format, cubeFace, level - mipmapCount, (const byte *)pTemp);
+            Image_UploadData(image, format, cubeFace, level - picmip, (const byte *)pTemp);
 
             if (pTemp)
                 __ZdaPv(pTemp);

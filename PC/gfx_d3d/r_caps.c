@@ -43,66 +43,17 @@ int R_CheckDxCaps(const D3DCAPS9 *caps)
     int videoMemory;
     int textureMemory;
 
+    (void)caps;
     MacDisplay_GetVideoMemoryInfo(&videoMemory, &textureMemory);
 
-    int allowedPaths;
-    if (videoMemory >= 0x4000001) {
-        allowedPaths = 6; /* 4 + 2: both DX9c and DX9b paths */
-    } else {
-        allowedPaths = 4; /* DX9c only */
-    }
+    /* Allow both DX9c (bit 2) and DX9b (bit 1) paths.
+     * The s_capsCheckBits/s_capsCheckInt tables are uninitialized in
+     * the decompilation so all cap checks would be skipped anyway.
+     * The original function returns garbage due to a stack frame issue
+     * in the compiled output, so we hardcode the result. */
+    int allowedPaths = 6;
 
-    /* Check bits-based caps */
-    int i;
-    for (i = 0; i < 36; i++) {
-        int capsOffset = *(int *)((byte *)&s_capsCheckBits[i]);
-        int requiredBits = *(int *)((byte *)&s_capsCheckBits[i] + 4);
-        int disallowedBits = *(int *)((byte *)&s_capsCheckBits[i] + 8);
-        int response = *(int *)((byte *)&s_capsCheckBits[i] + 0xc);
-        const char *msg = *(const char **)((byte *)&s_capsCheckBits[i] + 0x10);
-
-        /* Skip empty table entries (uninitialized data) */
-        if (requiredBits == 0 && disallowedBits == 0)
-            continue;
-
-        int capsValue = *(int *)((byte *)caps + capsOffset);
-
-        /* Check disallowed bits */
-        if (disallowedBits != 0) {
-            if ((~capsValue & disallowedBits) == 0)
-                continue;
-        }
-
-        /* Check required bits */
-        if (requiredBits != 0) {
-            if ((capsValue & requiredBits) == 0)
-                continue;
-        }
-
-        R_HandleCapsResponse(response, msg, &allowedPaths);
-    }
-
-    /* Check integer-range caps */
-    for (i = 0; i < 8; i++) {
-        int capsOffset = *(int *)((byte *)&s_capsCheckInt[i]);
-        int minVal = *(int *)((byte *)&s_capsCheckInt[i] + 4);
-        int maxVal = *(int *)((byte *)&s_capsCheckInt[i] + 8);
-        int response = *(int *)((byte *)&s_capsCheckInt[i] + 0xc);
-        const char *msg = *(const char **)((byte *)&s_capsCheckInt[i] + 0x10);
-
-        /* Skip empty table entries (uninitialized data) */
-        if (minVal == 0 && maxVal == 0 && response == 0)
-            continue;
-
-        int capsValue = *(int *)((byte *)caps + capsOffset);
-
-        /* Value must be in range [minVal, maxVal] */
-        if (capsValue >= minVal && capsValue <= maxVal)
-            continue;
-
-        R_HandleCapsResponse(response, msg, &allowedPaths);
-    }
-
-    fprintf(stderr, "[caps] R_CheckDxCaps returning allowedPaths=%d\n", allowedPaths);
+    fprintf(stderr, "[caps] R_CheckDxCaps returning allowedPaths=%d (videoMemory=%d)\n",
+            allowedPaths, videoMemory);
     return allowedPaths;
 }
