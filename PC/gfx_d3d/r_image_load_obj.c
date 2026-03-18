@@ -119,10 +119,10 @@ static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeade
         mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
     }
 
-    /* Iterate mip levels from max down to 0 */
+    /* Iterate mip levels from max down to picmip level */
     while (1) {
         maxMip = img[8];
-        if (mipLevel >= maxMip)
+        if (mipLevel < maxMip)
             break;
 
         {
@@ -137,7 +137,7 @@ static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeade
             mipDataSize = mipPixels * bytesPerPixel;
 
             for (face = 0; face < faceCount; face++) {
-                int uploadMip = mipLevel - img[8];
+                int uploadMip = mipLevel - maxMip;
 
                 if (format == 0x16) {
                     /* Convert BGR (3 bytes) → ARGB (4 bytes) */
