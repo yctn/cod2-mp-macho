@@ -759,8 +759,8 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     if (present_count == 3) {
         FILE *f = fopen("/tmp/es_debug.txt","a");
         if (f) {
-            int row, rows[] = {80, 100, 120, 200, 300, 350, 370, 380, 390, 400};
-            for (row = 0; row < 10; row++) {
+            int row, rows[] = {10, 40, 60, 80, 100, 120, 150, 200, 250, 300, 330, 350, 370, 390, 410, 440, 460};
+            for (row = 0; row < 17; row++) {
                 unsigned char pixels[640 * 4];
                 int x, colored = 0;
                 glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
@@ -861,7 +861,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                 colorOffset = 0x18;
             if (colorOffset >= 0) {
                 glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
-                glColorPointer(4, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
+                /* D3D vertex colors are BGRA; use GL_BGRA (0x80E1) as size param
+                 * (GL_EXT_vertex_array_bgra) to swizzle to RGBA on read */
+                glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
             }
         }
 
@@ -943,7 +945,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     if (stride >= 0x18) {
         int colorOffset = (stride >= 0x40) ? 0x1c : 0x0c;
         glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
-        glColorPointer(4, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
+        /* D3D vertex colors are BGRA; use GL_BGRA (0x80E1) as size param
+         * (GL_EXT_vertex_array_bgra) to swizzle to RGBA on read */
+        glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
     }
 
     /* Texcoord at offset 0x20 for stride >= 64, 0x1c for smaller strides */

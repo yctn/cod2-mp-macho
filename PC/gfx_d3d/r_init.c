@@ -1240,7 +1240,7 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
             vidConfig.displayFrequency = 60;
             vidConfig.isFullscreen = 0;
             vidConfig.aspectRatioWindow = (float)height / (float)width;
-            vidConfig.aspectRatioPixel = (float)height / (float)width;
+            vidConfig.aspectRatioPixel = (float)height * vidConfig.aspectRatioWindow / (float)width;
 
             /* Note: r_rendererInUse defaults to non-Dx7 (programmable shaders).
              * Dx7 mode requires s_passOptionsDx7/s_textureFuncsDx7 data tables
