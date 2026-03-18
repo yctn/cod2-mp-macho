@@ -409,12 +409,13 @@ static jpeg_alloc Image_LoadDxtc_impl(GfxImage *image, const GfxImageFileHeader 
     else
         mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
 
+    { static int dxtd = 0; if (dxtd++ < 5) { FILE *f = fopen("/tmp/es_debug.txt","a"); if(f){fprintf(f,"[DXTC] mipLevel=%d maxMip=%d w=%d h=%d faceCount=%d\n", mipLevel, (int)img[8], *(short*)(hdr+6), *(short*)(hdr+8), faceCount);fclose(f);} } }
     while (1) {
-        int maxMip = img[8];
+        int maxMip = img[8]; /* picmip level — mip levels below this are skipped */
         int mipW, mipH, face, mipDataSize;
         int blocksW, blocksH;
 
-        if (mipLevel >= maxMip)
+        if (mipLevel < maxMip)
             break;
 
         mipW = *(short *)(hdr + 6) >> mipLevel;
@@ -433,7 +434,7 @@ static jpeg_alloc Image_LoadDxtc_impl(GfxImage *image, const GfxImageFileHeader 
         }
 
         for (face = 0; face < faceCount; face++) {
-            int uploadMip = mipLevel - img[8];
+            int uploadMip = mipLevel - maxMip;
             Image_UploadData(image, format, Image_CubemapFace(face), uploadMip, (byte *)srcPtr);
             srcPtr += mipDataSize;
         }

@@ -299,8 +299,17 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
     /* No D3D device (com_skipRenderer 1) — skip GPU upload.
      * imp_dx = &dx (DxGlobals BSS struct). Device ptr at offset +8.
      * Original decompiler checked *(int *)imp_dx which reads dx.hinst (0 on Linux). */
-    if (*(int *)((byte *)imp_dx + 8) == 0 || *(int *)(*(int *)((byte *)imp_dx + 8)) == 0)
-        return;
+    {
+        int dev = *(int *)((byte *)imp_dx + 8);
+        int devvt = dev ? *(int *)dev : 0;
+        static int iud = 0;
+        if (iud++ < 5)
+            fprintf(stderr, "[IUD] Image_UploadData dev=%p devvt=%p mapType=%d w=%d\n", (void*)dev, (void*)devvt, image->mapType, image->width);
+        if (dev == 0 || devvt == 0) {
+            if (iud <= 5) fprintf(stderr, "[IUD] SKIPPING - no device\n");
+            return;
+        }
+    }
 
     if (image->mapType == 4) {
         /* TODO: Volume texture upload needs CDirect3DVolumeTexture vtable */
