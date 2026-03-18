@@ -511,6 +511,7 @@ static void RB_EndFrame_real(void)
 
     /* IDirect3DDevice9::Present(NULL, NULL, NULL, NULL) — vtable offset 0x44 */
     device = *(void **)(dx + 8);
+    { static int ef = 0; if (ef++ < 5) { FILE *f = fopen("/tmp/es_debug.txt","a"); if(f){fprintf(f,"[ENDFRAME] device=%p dx=%p\n",device,dx);fclose(f);} } }
     if (!device)
         goto skip_present;
     vtable = *(void ***)device;

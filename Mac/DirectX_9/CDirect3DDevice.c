@@ -756,27 +756,30 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
         fprintf(stderr, "[SEQ] Present called\n");
     /* Scan multiple rows to find rendered content */
     if (present_count == 3) {
-        int row, rows[] = {60, 100, 200, 240, 300, 380, 420};
-        for (row = 0; row < 7; row++) {
-            unsigned char pixels[640 * 4];
-            int x, colored = 0;
-            glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
-            for (x = 0; x < 640; x++)
-                if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
-                    colored++;
-            if (colored > 0) {
-                /* Find first colored pixel */
-                for (x = 0; x < 640; x++) {
-                    if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
-                        fprintf(stderr, "[FB] y=%d: %d colored, first at x=%d = (%d,%d,%d,%d)\n",
-                                rows[row], colored, x,
-                                pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
-                        break;
+        FILE *f = fopen("/tmp/es_debug.txt","a");
+        if (f) {
+            int row, rows[] = {60, 100, 200, 240, 300, 380, 420};
+            for (row = 0; row < 7; row++) {
+                unsigned char pixels[640 * 4];
+                int x, colored = 0;
+                glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
+                for (x = 0; x < 640; x++)
+                    if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
+                        colored++;
+                if (colored > 0) {
+                    for (x = 0; x < 640; x++) {
+                        if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
+                            fprintf(f, "[FB] y=%d: %d colored, first@x=%d=(%d,%d,%d,%d)\n",
+                                    rows[row], colored, x,
+                                    pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
+                            break;
+                        }
                     }
+                } else {
+                    fprintf(f, "[FB] y=%d: 0 colored\n", rows[row]);
                 }
-            } else {
-                fprintf(stderr, "[FB] y=%d: 0 colored\n", rows[row]);
             }
+            fclose(f);
         }
     }
     /* Actually swap the buffers! */
