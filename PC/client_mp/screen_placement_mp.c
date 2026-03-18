@@ -183,6 +183,14 @@ void SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical
 
     SP->subScreenLeft = 0.5f * horzAspectPixelDiff;
     SP->virtualScreenOffsetX = 640.0f - adjustedRealWidth * SP->scaleRealToVirtual[0];
+
+    { FILE *f = fopen("/tmp/es_debug.txt","a");
+      if(f){fprintf(f,"[SSS] vp=%dx%d adjW=%.1f diff=%.1f subLeft=%.1f scale=%.4f,%.4f offX=%.1f aspPix=%.4f\n",
+        viewportWidth, viewportHeight, adjustedRealWidth, horzAspectPixelDiff,
+        SP->subScreenLeft, SP->scaleVirtualToReal[0], SP->scaleVirtualToReal[1],
+        SP->virtualScreenOffsetX, CLS_VIDCONFIG_ASPECT_RATIO_PIXEL(cls));
+      fclose(f);}
+    }
 }
 
 /* line 285 */

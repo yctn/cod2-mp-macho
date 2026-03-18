@@ -4193,6 +4193,38 @@ void RB_EndSurface(void)
     {
 #define RB_GL_TEXTURE_2D 0x0DE1
         const Material *mat = *(const Material **)(tess + 0x5a7bc);
+
+        /* [PREBIND] diagnostic: log material name and image name for first draws */
+        {
+            static int prebind_diag_count = 0;
+            if (prebind_diag_count < 30 && mat) {
+                const char *matName = *(const char **)((byte *)mat + 0x00);
+                int texCount = *(unsigned short *)((byte *)mat + 0x34);
+                byte *textures = *(byte **)((byte *)mat + 0x3c);
+                FILE *pf = fopen("/tmp/prebind_diag.txt", "a");
+                if (pf) {
+                    fprintf(pf, "[PREBIND] draw#%d mat=%p name=\"%s\" texCount=%d\n",
+                            prebind_diag_count, (void *)mat,
+                            matName ? matName : "(null)", texCount);
+                    if (texCount > 0 && textures) {
+                        void *image = *(void **)(textures + 8);
+                        if (image) {
+                            const char *imgName = *(const char **)((byte *)image + 0x20);
+                            void *d3dTex = *(void **)((byte *)image + 4);
+                            unsigned int tID = d3dTex ? *(unsigned int *)((byte *)d3dTex + 0x54) : 0;
+                            fprintf(pf, "  image=%p imgName=\"%s\" d3dTex=%p texID=%u\n",
+                                    image, imgName ? imgName : "(null)",
+                                    d3dTex, tID);
+                        } else {
+                            fprintf(pf, "  image=(null)\n");
+                        }
+                    }
+                    fclose(pf);
+                }
+                prebind_diag_count++;
+            }
+        }
+
         if (mat) {
             int texCount = *(unsigned short *)((byte *)mat + 0x34);
             byte *textures = *(byte **)((byte *)mat + 0x3c);
