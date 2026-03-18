@@ -268,6 +268,22 @@ static void SCR_UpdateFrame(void)
     if (!re || !*(void **)((byte *)re + 0xa8)) {
         return;
     }
+
+    /* During the connect phase (before cgame is initialized), the UI
+       connect screen and CG_DrawInformation access data structures that
+       may not be valid after a map restart (Hunk_Clear wipes them).
+       Skip rendering entirely and just end the frame until the client
+       reaches CS_ACTIVE (connstate 8), where CL_InitCGame sets
+       everything up properly. */
+    {
+        byte *clc_check = *(byte **)clc_ptr_195ee8c;
+        int cs = *(int *)clc_check;
+        if (cs >= 3 && cs <= 7) {
+            RE_FUNC(re, 0xa8, re_void_func)();
+            goto end_frame;
+        }
+    }
+
     RE_FUNC(re, 0xa8, re_void_func)();
     CL_ClearScene();
     CL_ResetSkeletonCache(0);

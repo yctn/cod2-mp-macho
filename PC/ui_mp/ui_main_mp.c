@@ -7960,14 +7960,8 @@ void UI_DrawConnectScreen(void)
     const float connectScale = 0.5f;
 
     legacyBase = *(byte **)imp_legacyHacks;
-    if (!legacyBase) {
+    if (!legacyBase)
         return;
-    }
-    /* double-check: dereference test */
-    {
-        volatile byte test = legacyBase[0];
-        (void)test;
-    }
 
     /* determine loading flag */
     {

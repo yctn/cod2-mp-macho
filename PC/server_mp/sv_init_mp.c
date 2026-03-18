@@ -833,12 +833,6 @@ void SV_SpawnServer(const char *server)
     Dvar_SetStringByName("mapname", server);
     CL_MapLoading(server);
     CL_ShutdownAll();
-    /* Clear scr_initialized to prevent rendering with stale renderer state
-       during map restart.  CL_StartHunkUsers → SCR_Init will re-set it. */
-    {
-        extern unsigned char scr_initialized[];
-        *(int *)scr_initialized = 0;
-    }
     SV_ShutdownGameProgs();
 
     Com_Printf("------ Server Initialization ------\n");
@@ -1095,5 +1089,6 @@ next_baseline:
     /* Server is ready */
     *(int *)((byte *)imp_sv + SV_STATE_OFF) = 2;
     SV_Heartbeat_f();
+
     Com_Printf("-----------------------------------\n");
 }

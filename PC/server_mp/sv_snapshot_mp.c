@@ -2876,6 +2876,17 @@ void SV_SendClientMessages(void)
 
         numclients++;
 
+        /* If the client is CS_CONNECTED (2) and hasn't received a
+           gamestate yet, send it now.  In a listen-server +devmap flow
+           the local client never sends the initial netchan packet that
+           normally triggers the gamestate send in SV_ExecuteClientMessage. */
+        if (*(int *)(c + CLIENT_STATE) == 2) {
+            extern void SV_SendClientGameState(client_t *);
+            Com_Printf("DBG: sending gamestate to CS_CONNECTED client %d\n", i);
+            SV_SendClientGameState((client_t *)c);
+            continue;
+        }
+
         sendFrag = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
         if (sendFrag == 0) {
             /* No pending fragment - send snapshot */
