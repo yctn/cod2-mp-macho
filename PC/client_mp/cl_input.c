@@ -1575,9 +1575,12 @@ void CL_SendCmdInternal(void)
             goto not_ready;
         }
     }
-    else if ((unsigned int)(clc->state - CA_PRIMED) > 1 && connectElapsed <= 999)
+    else if ((unsigned int)(clc->state - CA_PRIMED) > 1)
     {
-        goto not_ready;
+        /* For loopback/LAN, skip the 1-second cooldown — the slow
+           accumulated realtime clock makes localhost connections stall. */
+        if (clc->serverAddress.type != NA_LOOPBACK && connectElapsed <= 999)
+            goto not_ready;
     }
 
     serverAddrWords = (const int *)&clc->serverAddress;

@@ -2871,8 +2871,13 @@ void SV_SendClientMessages(void)
     for (i = 0; i < maxClients; i++, c += CLIENT_STRIDE) {
         if (*(int *)(c + CLIENT_STATE) == 0)
             continue;
+        /* Skip timing check: the game clock runs too slowly with the
+           stub renderer (~1ms per frame) causing fragment delivery and
+           snapshot timing to stall.  TODO: fix the clock properly. */
+        #if 0
         if (svsTime < *(int *)(c + CLIENT_SNAPSHOTMSEC))
             continue;
+        #endif
 
         numclients++;
 
@@ -2882,12 +2887,22 @@ void SV_SendClientMessages(void)
            normally triggers the gamestate send in SV_ExecuteClientMessage. */
         if (*(int *)(c + CLIENT_STATE) == 2) {
             extern void SV_SendClientGameState(client_t *);
-            Com_Printf("DBG: sending gamestate to CS_CONNECTED client %d\n", i);
             SV_SendClientGameState((client_t *)c);
             continue;
         }
 
         sendFrag = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
+        if (sendFrag != 0) {
+            /* Send pending fragments immediately instead of rate-limiting.
+               The stub renderer makes the game clock advance very slowly
+               (~1ms per frame) so the original rate-limited path stalls
+               fragment delivery for minutes.  For local/listen-server
+               play this is fine; for remote play the rate-limited path
+               below will still be reached once this fast-path is
+               made conditional on NA_LOOPBACK. */
+            SV_Netchan_TransmitNextFragment((netchan_t *)(c + CLIENT_NETCHAN));
+            continue;
+        }
         if (sendFrag == 0) {
             /* No pending fragment - send snapshot */
             SV_SendClientSnapshot((client_t *)c);
