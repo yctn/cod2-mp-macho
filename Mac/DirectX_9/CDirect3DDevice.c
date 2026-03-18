@@ -920,18 +920,25 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glLoadIdentity();
     }
 
-    /* Bind texture from stage 0 if available */
+    /* Bind texture: use g_boundTextures[0] if set, otherwise disable texturing.
+     * Note: The ASM shader code sets textures via SetTexture before DIP.
+     * All textures currently resolve to glID=1 (white) because shader stubs
+     * prevent proper texture routing. */
     { extern void glBindTexture(unsigned int, unsigned int);
-    if (g_boundTextures[0]) {
-        unsigned int glTexID = *(unsigned int *)((byte *)g_boundTextures[0] + 0x54);
-        if (glTexID) {
-            glEnable(0x0DE1); /* GL_TEXTURE_2D */
-            glBindTexture(0x0DE1, glTexID);
-        }
-    } else {
-        glDisable(0x0DE1); /* GL_TEXTURE_2D */
+      unsigned int glTexID = 0;
+      if (g_boundTextures[0]) {
+          glTexID = *(unsigned int *)((byte *)g_boundTextures[0] + 0x54);
+      }
+      if (glTexID) {
+          glEnable(0x0DE1); /* GL_TEXTURE_2D */
+          glBindTexture(0x0DE1, glTexID);
+          glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
+      } else {
+          glDisable(0x0DE1); /* GL_TEXTURE_2D */
+      }
     }
-    } /* end extern glBindTexture scope */
+
+    /* (texture diagnostic removed) */
 
     /* Enable alpha blending for UI transparency */
     glEnable(0x0BE2); /* GL_BLEND */
