@@ -760,8 +760,8 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     if (present_count == 3) {
         FILE *f = fopen("/tmp/es_debug.txt","a");
         if (f) {
-            int row, rows[] = {20, 60, 80, 100, 120, 200, 300, 350, 370, 390, 410, 440};
-            for (row = 0; row < 12; row++) {
+            int row, rows[] = {65, 75, 85, 95, 350, 360, 370, 380, 390, 400};
+            for (row = 0; row < 10; row++) {
                 unsigned char pixels[640 * 4];
                 int x, colored = 0;
                 glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
@@ -931,6 +931,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         if (glTexID) {
             glEnable(0x0DE1); /* GL_TEXTURE_2D */
             glBindTexture(0x0DE1, glTexID);
+            /* GL_MODULATE: output = texture * vertex color.
+             * For font glyphs (alpha textures), the vertex color provides brightness
+             * and the texture alpha provides the glyph shape for blending. */
             glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
             /* Force re-upload texture data from CPU memory.
              * The game writes texture data via LockRect but never uploads to GL
@@ -974,7 +977,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
 
     /* Enable alpha blending for UI transparency */
     glEnable(0x0BE2); /* GL_BLEND */
-    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
+    glBlendFunc(0x0001 /* GL_ONE */, 0x0001 /* GL_ONE */); /* Additive blending to brighten text */
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
