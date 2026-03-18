@@ -1074,7 +1074,10 @@ void CL_StartLoading(const char *mapname, const char *gametype)
     if (*(int *)(ptr + 4) == 0)
         return;
     CL_StartHunkUsers();
-    SCR_UpdateScreenInternal();
+    /* Skip SCR_UpdateScreenInternal during map loading to avoid crash
+       from renderer function table being in an inconsistent state after
+       CL_ShutdownAll + Hunk_Clear + re-init.  The loading screen is
+       cosmetic; the map still loads correctly without it. */
 }
 
 /* line 1426 */

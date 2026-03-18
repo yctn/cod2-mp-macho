@@ -7960,6 +7960,14 @@ void UI_DrawConnectScreen(void)
     const float connectScale = 0.5f;
 
     legacyBase = *(byte **)imp_legacyHacks;
+    if (!legacyBase) {
+        return;
+    }
+    /* double-check: dereference test */
+    {
+        volatile byte test = legacyBase[0];
+        (void)test;
+    }
 
     /* determine loading flag */
     {
@@ -8136,7 +8144,9 @@ check_connection_state:
             }
         } else if (cs == 5) {
             /* CA_CONNECTED - downloading */
-            if (legacyBase[0x1c] == 0)
+            /* Reload legacyBase: stack corruption can zero the local */
+            legacyBase = *(byte **)imp_legacyHacks;
+            if (!legacyBase || legacyBase[0x1c] == 0)
                 return;
             UI_DisplayDownloadInfo((const char *)(legacyBase + 0x1c), 320.0f, 89.0f, font, connectScale);
         } else if (cs == 3) {

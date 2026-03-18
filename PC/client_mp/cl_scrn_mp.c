@@ -264,6 +264,10 @@ static void SCR_UpdateFrame(void)
     byte *re = re_ptr_195eca8;
     static int s_prevConnstate = -1;
 
+    /* Guard: skip if renderer function table not populated */
+    if (!re || !*(void **)((byte *)re + 0xa8)) {
+        return;
+    }
     RE_FUNC(re, 0xa8, re_void_func)();
     CL_ClearScene();
     CL_ResetSkeletonCache(0);

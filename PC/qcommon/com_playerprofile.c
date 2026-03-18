@@ -238,7 +238,10 @@ JCOEF Com_InitPlayerProfiles(void)
     com_playerProfile = Dvar_RegisterString("com_playerProfile", "", 0x1040);
 
     if (FS_ReadFile("players/active.txt", &buf) < 0) {
-        Com_ExecStartupConfigs(0);
+        /* Auto-create a default profile so CLI commands like +devmap work */
+        Com_NewPlayerProfile("default");
+        FS_WriteFile("players/active.txt", "default", 7);
+        Com_SetPlayerProfileAndExec("default");
         return 0;
     }
 

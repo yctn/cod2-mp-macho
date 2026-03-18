@@ -2782,7 +2782,7 @@ void SV_DirectConnect(netadr_t from)
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movl %eax, %ebx\n" /* version */
-        "cmpl $0x73, %eax\n" /* line 547 */
+        "cmpl $0x76, %eax\n" /* line 547 */
         "je .Lf17cf24_0017d067\n"
         "movl $str_002167d8, 4(%esp)\n" /* line 551 */
         "movl $str_002ae49c, (%esp)\n" /* "error

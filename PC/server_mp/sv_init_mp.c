@@ -376,7 +376,7 @@ void SV_Init(void)
 
     *(dvar_t **)imp_sv_gametype = Dvar_RegisterString("g_gametype", "dm", 0x1024);
     Dvar_RegisterString("sv_keywords", "", 0x1004);
-    Dvar_RegisterInt("protocol", 0x73, 0x73, 0x73, 0x1044);
+    Dvar_RegisterInt("protocol", 0x76, 0x76, 0x76, 0x1044);
     *(dvar_t **)imp_sv_mapname = Dvar_RegisterString("mapname", "", 0x1044);
     *(dvar_t **)imp_sv_privateClients = Dvar_RegisterInt("sv_privateClients", 0, 0, 0x40, 0x1004);
     *(dvar_t **)imp_sv_maxclients = Dvar_RegisterInt("sv_maxclients", 20, 1, 0x40, 0x1025);
@@ -833,6 +833,12 @@ void SV_SpawnServer(const char *server)
     Dvar_SetStringByName("mapname", server);
     CL_MapLoading(server);
     CL_ShutdownAll();
+    /* Clear scr_initialized to prevent rendering with stale renderer state
+       during map restart.  CL_StartHunkUsers → SCR_Init will re-set it. */
+    {
+        extern unsigned char scr_initialized[];
+        *(int *)scr_initialized = 0;
+    }
     SV_ShutdownGameProgs();
 
     Com_Printf("------ Server Initialization ------\n");
