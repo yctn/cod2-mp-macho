@@ -733,9 +733,6 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice *_this, DWORD Count, const D
         glFlags |= 0x400; /* GL_STENCIL_BUFFER_BIT */
     }
     if (glFlags) {
-        static int clear_count = 0;
-        if (clear_count++ < 20)
-            fprintf(stderr, "[SEQ] Clear flags=0x%x color=0x%08x\n", Flags, Color);
         /* Skip color-only clears with transparent black (0x00000000) —
          * the game issues this after drawing, wiping the framebuffer */
         if (Flags == 1 && Color == 0x00000000) {
@@ -754,38 +751,7 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     static int present_count = 0;
     extern SDL_Window *sdl_gl_window;
     (void)_this; (void)pSourceRect; (void)pDestRect; (void)hDestWindowOverride; (void)pDirtyRegion;
-    if (present_count++ < 10)
-        fprintf(stderr, "[SEQ] Present called\n");
-    /* Scan multiple rows to find rendered content */
-    if (present_count == 3) {
-        FILE *f = fopen("/tmp/es_debug.txt","a");
-        if (f) {
-            int row, rows[] = {65, 75, 85, 95, 350, 360, 370, 380, 390, 400};
-            for (row = 0; row < 10; row++) {
-                unsigned char pixels[640 * 4];
-                int x, colored = 0;
-                glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
-                for (x = 0; x < 640; x++)
-                    if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
-                        colored++;
-                {
-                    /* Find and show first 3 colored pixels */
-                    int found = 0;
-                    fprintf(f, "[FB] y=%d: %d colored", rows[row], colored);
-                    for (x = 0; x < 640 && found < 3; x++) {
-                        if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
-                            fprintf(f, " [x=%d]=(%d,%d,%d,%d)", x, pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
-                            found++;
-                        }
-                    }
-                    fprintf(f, "\n");
-                }
-                if (0) {
-                }
-            }
-            fclose(f);
-        }
-    }
+    present_count++;
     /* Actually swap the buffers! */
     if (sdl_gl_window)
         SDL_GL_SwapWindow(sdl_gl_window);
@@ -934,16 +900,6 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             glBindTexture(0x0DE1, glTexID);
             /* GL_MODULATE: output RGB = tex.rgb * vtx.rgb, output A = tex.a * vtx.a */
             glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV_MODE = GL_MODULATE */
-            /* Read first texel to check if alpha channel has data */
-            {
-                static int texcheck = 0;
-                if (texcheck++ < 3) {
-                    unsigned char t4[4] = {0};
-                    glGetTexImage(0x0DE1, 0, 0x1908, 0x1401, t4);
-                    FILE *f = fopen("/tmp/es_debug.txt","a");
-                    if(f){fprintf(f,"[TEXCHECK] id=%u rgba=(%d,%d,%d,%d)\n",glTexID,t4[0],t4[1],t4[2],t4[3]);fclose(f);}
-                }
-            }
             /* Force re-upload texture data from CPU memory.
              * The game writes texture data via LockRect but never uploads to GL
              * because UpdateOpenGLSurfaces was a no-op. We upload here on first use. */
@@ -964,23 +920,8 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                                     extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
                                     {
                                     unsigned int tid = *(unsigned int *)((byte *)d3dTex + 0x54);
-                                    {
-                                        /* Check if pixelData has real content */
-                                        byte *pdata = *(byte **)((byte *)d3dTex + 0x50);
-                                        {
-                                            static int pdchk = 0;
-                                            if (pdchk++ < 5 && pdata) {
-                                                int nonzero = 0, i;
-                                                for (i = 0; i < 256 && i < 4096; i++)
-                                                    if (pdata[i]) nonzero++;
-                                                FILE *f = fopen("/tmp/es_debug.txt","a");
-                                                if(f){fprintf(f,"[PIXDATA] texID=%u pdata=%p nonzero=%d/256 first4=%02x%02x%02x%02x\n",
-                                                    tid,(void*)pdata,nonzero,pdata[0],pdata[1],pdata[2],pdata[3]);fclose(f);}
-                                            }
-                                        }
-                                        CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
-                                        glBindTexture(0x0DE1, tid);
-                                    }
+                                    CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
+                                    glBindTexture(0x0DE1, tid);
                                 }
                             }
                         }

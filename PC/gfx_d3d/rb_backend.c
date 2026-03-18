@@ -166,7 +166,6 @@ extern void RB_TouchAllImages(void);
 extern int ColorIndex(int c);
 extern void RB_EndSurface(void);
 extern void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
-extern void diag_rb_draw(unsigned int x_hex, unsigned int y_hex, unsigned int mat_ptr);
 extern void *Image_GetSurface(void *image);
 extern void RB_TessEntity(void *entity);
 extern Bool Material_IsDefault(MaterialHandle handle);
@@ -511,7 +510,6 @@ static void RB_EndFrame_real(void)
 
     /* IDirect3DDevice9::Present(NULL, NULL, NULL, NULL) — vtable offset 0x44 */
     device = *(void **)(dx + 8);
-    { static int ef = 0; if (ef++ < 5) { FILE *f = fopen("/tmp/es_debug.txt","a"); if(f){fprintf(f,"[ENDFRAME] device=%p dx=%p\n",device,dx);fclose(f);} } }
     if (!device)
         goto skip_present;
     vtable = *(void ***)device;
@@ -4396,9 +4394,6 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
 
     isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
 
-    /* Diagnostic: log vertex positions */
-    diag_rb_draw(*(unsigned int *)&x, *(unsigned int *)&y, (unsigned int)(uintptr_t)material);
-
     if (isDx7) {
         /* Dx7 vertex layout: stride 36 (0x24)
          *   +0x00: vec3 position, +0x0c: vec3 normal, +0x18: color, +0x1c: vec2 texcoord */
@@ -4458,12 +4453,6 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         char *v1 = v0 + 64;
         char *v2 = v0 + 128;
         char *v3 = v0 + 192;
-
-        /* Diagnostic */
-        { static int sp_diag = 0; if (sp_diag++ < 5) {
-            FILE *f = fopen("/tmp/es_debug.txt","a");
-            if (f) { fprintf(f, "[SP] x=%.1f y=%.1f w=%.1f h=%.1f vc=%d v0=%p tess=%p\n", x, y, w, h, vc, v0, t); fclose(f); }
-        }}
 
         /* Vertex 0: (x, y) texcoord (s0, t0) */
         *(float *)(v0 + 0x00) = x;

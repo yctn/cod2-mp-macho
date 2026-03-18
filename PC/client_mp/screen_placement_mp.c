@@ -184,20 +184,12 @@ void SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical
     SP->subScreenLeft = 0.5f * horzAspectPixelDiff;
     SP->virtualScreenOffsetX = 640.0f - adjustedRealWidth * SP->scaleRealToVirtual[0];
 
-    { FILE *f = fopen("/tmp/es_debug.txt","a");
-      if(f){fprintf(f,"[SSS] vp=%dx%d adjW=%.1f diff=%.1f subLeft=%.1f scale=%.4f,%.4f offX=%.1f aspPix=%.4f\n",
-        viewportWidth, viewportHeight, adjustedRealWidth, horzAspectPixelDiff,
-        SP->subScreenLeft, SP->scaleVirtualToReal[0], SP->scaleVirtualToReal[1],
-        SP->virtualScreenOffsetX, CLS_VIDCONFIG_ASPECT_RATIO_PIXEL(cls));
-      fclose(f);}
-    }
 }
+
 
 /* line 285 */
 void CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
 {
-    float origX = *x;
-
     switch (horzAlign) {
     default:
         *x = *x * SP->scaleVirtualToReal[0] + SP->subScreenLeft;
@@ -229,14 +221,6 @@ void CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, 
         *x = *x * SP->scaleVirtualToReal[0] + (SP->realViewableMin[0] + SP->realViewableMax[0]) * 0.5f;
         *w *= SP->scaleVirtualToReal[0];
         break;
-    }
-
-    if (*x != *x) { /* output x is NaN */
-        static int csp_diag = 0; if (csp_diag++ < 50) {
-            FILE *f = fopen("/tmp/es_debug.txt","a");
-            if (f) { fprintf(f, "[CSP_NAN] horzAlign=%d origX=%f scaleV2R=%.4f scaleV2F=%.4f subLeft=%.4f outX=%f outW=%f\n",
-                horzAlign, origX, SP->scaleVirtualToReal[0], SP->scaleVirtualToFull[0], SP->subScreenLeft, *x, *w); fclose(f); }
-        }
     }
 
     switch (vertAlign) {
