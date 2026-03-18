@@ -4345,6 +4345,10 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
     if (!material)
         return;
 
+    /* Guard against NaN positions from uninitialized screen placement */
+    if (x != x || y != y || w != w || h != h)
+        return;
+
     /* Enter 2D mode if not already active */
     if (!*((byte *)&backEnd + 0x4bd))
         RB_Set2D();

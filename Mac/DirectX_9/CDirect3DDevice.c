@@ -760,9 +760,8 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     if (present_count == 3) {
         FILE *f = fopen("/tmp/es_debug.txt","a");
         if (f) {
-            /* Sample specific X positions at y=370 to check text character detail */
-            int row, rows[] = {370};
-            for (row = 0; row < 1; row++) {
+            int row, rows[] = {20, 60, 80, 100, 120, 200, 300, 350, 370, 390, 410, 440};
+            for (row = 0; row < 12; row++) {
                 unsigned char pixels[640 * 4];
                 int x, colored = 0;
                 glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
