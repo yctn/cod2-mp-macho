@@ -871,8 +871,12 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
     glDisable(0x0B71); /* GL_DEPTH_TEST */
     glDisable(0x0B44); /* GL_CULL_FACE */
+    glDisable(0x0B60); /* GL_FOG — game enables via ASM, never disabled */
+    glDisable(0x0B50); /* GL_LIGHTING */
+    glDisable(0x0BC0); /* GL_ALPHA_TEST */
     glColorMask(1, 1, 1, 1);
     glDepthMask(0);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f); /* default white in case color array fails */
     while (glGetError()) {}
 
     /* Orthographic projection: map screen coords (0-640, 0-480) to NDC (-1 to +1) */
