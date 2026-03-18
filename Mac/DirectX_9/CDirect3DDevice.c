@@ -754,22 +754,30 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     (void)_this; (void)pSourceRect; (void)pDestRect; (void)hDestWindowOverride; (void)pDirtyRegion;
     if (present_count++ < 10)
         fprintf(stderr, "[SEQ] Present called\n");
-    /* Check framebuffer before swap */
+    /* Scan multiple rows to find rendered content */
     if (present_count == 3) {
-        unsigned char pixels[640 * 4]; /* one row */
-        int x, colored = 0;
-        glReadPixels(0, 240, 640, 1, 0x1908 /* GL_RGBA */, 0x1401 /* GL_UNSIGNED_BYTE */, pixels);
-        /* Find pixels with non-zero RGB (not just alpha) */
-        for (x = 0; x < 640; x++)
-            if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
-                colored++;
-        fprintf(stderr, "[SEQ] Present frame 2: %d colored pixels in row y=240\n", colored);
-        /* Sample center area */
-        fprintf(stderr, "  pixel[64] = (%d,%d,%d,%d)\n", pixels[64*4], pixels[64*4+1], pixels[64*4+2], pixels[64*4+3]);
-        fprintf(stderr, "  pixel[160] = (%d,%d,%d,%d)\n", pixels[160*4], pixels[160*4+1], pixels[160*4+2], pixels[160*4+3]);
-        fprintf(stderr, "  pixel[320] = (%d,%d,%d,%d)\n", pixels[320*4], pixels[320*4+1], pixels[320*4+2], pixels[320*4+3]);
-        fprintf(stderr, "  pixel[480] = (%d,%d,%d,%d)\n", pixels[480*4], pixels[480*4+1], pixels[480*4+2], pixels[480*4+3]);
-        fprintf(stderr, "  pixel[576] = (%d,%d,%d,%d)\n", pixels[576*4], pixels[576*4+1], pixels[576*4+2], pixels[576*4+3]);
+        int row, rows[] = {60, 100, 200, 240, 300, 380, 420};
+        for (row = 0; row < 7; row++) {
+            unsigned char pixels[640 * 4];
+            int x, colored = 0;
+            glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
+            for (x = 0; x < 640; x++)
+                if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
+                    colored++;
+            if (colored > 0) {
+                /* Find first colored pixel */
+                for (x = 0; x < 640; x++) {
+                    if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
+                        fprintf(stderr, "[FB] y=%d: %d colored, first at x=%d = (%d,%d,%d,%d)\n",
+                                rows[row], colored, x,
+                                pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
+                        break;
+                    }
+                }
+            } else {
+                fprintf(stderr, "[FB] y=%d: 0 colored\n", rows[row]);
+            }
+        }
     }
     /* Actually swap the buffers! */
     if (sdl_gl_window)
