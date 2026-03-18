@@ -149,10 +149,15 @@ HRESULT CDirect3DCubeTexture_SetAutoGenFilterType(const CDirect3DCubeTexture *_t
 D3DTEXTUREFILTERTYPE CDirect3DCubeTexture_GetAutoGenFilterType(const CDirect3DCubeTexture *_this) { (void)_this; return 0; }
 void CDirect3DCubeTexture_GenerateMipSubLevels(const CDirect3DCubeTexture *_this) { (void)_this; }
 
-/* COpenGLTexture_UpdateOpenGLSurfaces — no-op, shared with CDirect3DTexture */
+/* COpenGLTexture_UpdateOpenGLSurfaces — uploads dirty surfaces to GL.
+ * Called via secondary vtable with this = texture + 4 (COpenGLTexture subobject).
+ * Shared between CDirect3DTexture and CDirect3DCubeTexture. */
 void COpenGLTexture_UpdateOpenGLSurfaces(const COpenGLTexture *_this)
 {
-    (void)_this;
+    /* Adjust this pointer: called with texture+4, need texture+0 */
+    byte *texBase = (byte *)_this - 4;
+    extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
+    CDirect3DTexture_UpdateOpenGLSurfaces(texBase);
 }
 
 /* --- Destructors --- */

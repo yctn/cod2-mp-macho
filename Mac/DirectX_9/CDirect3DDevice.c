@@ -768,16 +768,17 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
                 for (x = 0; x < 640; x++)
                     if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
                         colored++;
-                /* Dump all pixel values at key X positions */
                 {
-                    int xp, xpts[] = {356, 360, 365, 370, 380, 400, 420, 450, 480, 500, 520, 550, 580, 600, 620};
-                    fprintf(f, "[FB] y=%d: %d colored\n", rows[row], colored);
-                    for (xp = 0; xp < 15; xp++) {
-                        int px = xpts[xp];
-                        if (px < 640)
-                            fprintf(f, "  x=%d: (%d,%d,%d,%d)\n", px,
-                                    pixels[px*4], pixels[px*4+1], pixels[px*4+2], pixels[px*4+3]);
+                    /* Find and show first 3 colored pixels */
+                    int found = 0;
+                    fprintf(f, "[FB] y=%d: %d colored", rows[row], colored);
+                    for (x = 0; x < 640 && found < 3; x++) {
+                        if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2]) {
+                            fprintf(f, " [x=%d]=(%d,%d,%d,%d)", x, pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
+                            found++;
+                        }
                     }
+                    fprintf(f, "\n");
                 }
                 if (0) {
                 }
@@ -931,10 +932,18 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         if (glTexID) {
             glEnable(0x0DE1); /* GL_TEXTURE_2D */
             glBindTexture(0x0DE1, glTexID);
-            /* GL_MODULATE: output = texture * vertex color.
-             * For font glyphs (alpha textures), the vertex color provides brightness
-             * and the texture alpha provides the glyph shape for blending. */
-            glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
+            /* GL_MODULATE: output RGB = tex.rgb * vtx.rgb, output A = tex.a * vtx.a */
+            glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV_MODE = GL_MODULATE */
+            /* Read first texel to check if alpha channel has data */
+            {
+                static int texcheck = 0;
+                if (texcheck++ < 3) {
+                    unsigned char t4[4] = {0};
+                    glGetTexImage(0x0DE1, 0, 0x1908, 0x1401, t4);
+                    FILE *f = fopen("/tmp/es_debug.txt","a");
+                    if(f){fprintf(f,"[TEXCHECK] id=%u rgba=(%d,%d,%d,%d)\n",glTexID,t4[0],t4[1],t4[2],t4[3]);fclose(f);}
+                }
+            }
             /* Force re-upload texture data from CPU memory.
              * The game writes texture data via LockRect but never uploads to GL
              * because UpdateOpenGLSurfaces was a no-op. We upload here on first use. */
@@ -977,7 +986,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
 
     /* Enable alpha blending for UI transparency */
     glEnable(0x0BE2); /* GL_BLEND */
-    glBlendFunc(0x0001 /* GL_ONE */, 0x0001 /* GL_ONE */); /* Additive blending to brighten text */
+    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */

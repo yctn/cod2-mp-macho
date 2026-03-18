@@ -115,9 +115,17 @@ HRESULT CDirect3DTexture_GetSurfaceLevel(const CDirect3DTexture *_this, UINT Lev
 HRESULT CDirect3DTexture_LockRect(const CDirect3DTexture *_this, UINT Level, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags)
 {
     CDirect3DTextureClean *tex = (CDirect3DTextureClean *)_this;
+    HRESULT hr;
     HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface *_this, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags);
     if (Level >= tex->levelCount) return -1;
-    return CDirect3DSurface_LockRect((CDirect3DSurface *)tex->surfaces[Level], pLockedRect, pRect, Flags);
+    hr = CDirect3DSurface_LockRect((CDirect3DSurface *)tex->surfaces[Level], pLockedRect, pRect, Flags);
+    {
+        static int tlk = 0;
+        if (tlk++ < 20)
+            fprintf(stderr, "[TEX_LOCK] texID=%u lv=%u pBits=%p pitch=%d\n",
+                    tex->texIDStorage, Level, pLockedRect->pBits, pLockedRect->Pitch);
+    }
+    return hr;
 }
 
 HRESULT CDirect3DTexture_UnlockRect(const CDirect3DTexture *_this, UINT Level)
@@ -292,7 +300,9 @@ void CDirect3DTexture_CDirect3DTexture(const CDirect3DTexture *_this, UINT32 Wid
     glBindTexture(GL_TEXTURE_2D, prevTex);
 }
 
-/* Called after texture data is written — iterates surfaces and uploads dirty ones to GL */
+/* Called after texture data is written — iterates surfaces and uploads dirty ones to GL.
+ * Can be called directly with texture pointer, OR via secondary vtable where this=texture+4.
+ * The DIP code calls directly, the game's original code calls via secondary vtable. */
 void CDirect3DTexture_UpdateOpenGLSurfaces(const CDirect3DTexture *_this)
 {
     CDirect3DTextureClean *tex = (CDirect3DTextureClean *)_this;
