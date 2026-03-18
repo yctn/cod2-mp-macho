@@ -927,15 +927,47 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
      * The ASM shader code overwrites g_boundTextures with glID=1, so we use
      * g_prebind_texID which was set from the material's actual texture. */
     { extern void glBindTexture(unsigned int, unsigned int);
-      unsigned int glTexID = g_prebind_texID;
       { extern void glBindTexture(unsigned int, unsigned int);
-      if (glTexID) {
-          glEnable(0x0DE1); /* GL_TEXTURE_2D */
-          glBindTexture(0x0DE1, glTexID);
-          glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
-      } else {
-          glDisable(0x0DE1);
-      }
+        unsigned int glTexID = g_prebind_texID;
+        if (glTexID) {
+            glEnable(0x0DE1); /* GL_TEXTURE_2D */
+            glBindTexture(0x0DE1, glTexID);
+            glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV = GL_MODULATE */
+            /* Force re-upload texture data from CPU memory.
+             * The game writes texture data via LockRect but never uploads to GL
+             * because UpdateOpenGLSurfaces was a no-op. We upload here on first use. */
+            {
+                extern void *imp_tess;
+                byte *tess_base = (byte *)imp_tess;
+                void *material = *(void **)(tess_base + 0x5a7bc);
+                if (material && (unsigned int)material > 0x08000000u) {
+                    unsigned short texCount = *(unsigned short *)((byte *)material + 0x34);
+                    if (texCount > 0) {
+                        byte *texDefs = *(byte **)((byte *)material + 0x3C);
+                        if (texDefs && (unsigned int)texDefs > 0x08000000u) {
+                            void *image = *(void **)((byte *)texDefs + 0x08);
+                            if (image && (unsigned int)image > 0x08000000u) {
+                                void *d3dTex = *(void **)((byte *)image + 0x04);
+                                if (d3dTex && (unsigned int)d3dTex > 0x08000000u) {
+                                    /* Call UpdateOpenGLSurfaces on the texture to upload data */
+                                    extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
+                                    static unsigned int lastUploadedTex = 0;
+                                    unsigned int tid = *(unsigned int *)((byte *)d3dTex + 0x54);
+                                    if (tid != lastUploadedTex) {
+                                        CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
+                                        lastUploadedTex = tid;
+                                        /* Re-bind after upload */
+                                        glBindTexture(0x0DE1, tid);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            glDisable(0x0DE1);
+        }
       }
     }
 

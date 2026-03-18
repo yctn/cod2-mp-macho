@@ -131,6 +131,11 @@ HRESULT CDirect3DTexture_UnlockRect(const CDirect3DTexture *_this, UINT Level)
     /* Upload dirty data to GL (Mac used zero-copy VAR, we must upload explicitly) */
     if (CDirect3DSurface_IsDirty(surface)) {
         int prevTex = 0;
+        {
+            static int ulk = 0;
+            if (ulk++ < 50)
+                fprintf(stderr, "[UNLOCK] texID=%u level=%u\n", tex->texIDStorage, Level);
+        }
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
         glBindTexture(GL_TEXTURE_2D, tex->texIDStorage);
         CDirect3DSurface_UpdateOpenGLSurfaceObject(surface, 0);
@@ -287,11 +292,28 @@ void CDirect3DTexture_CDirect3DTexture(const CDirect3DTexture *_this, UINT32 Wid
     glBindTexture(GL_TEXTURE_2D, prevTex);
 }
 
-/* Called from CDirect3D.c ASM — iterates surfaces and uploads dirty ones */
+/* Called after texture data is written — iterates surfaces and uploads dirty ones to GL */
 void CDirect3DTexture_UpdateOpenGLSurfaces(const CDirect3DTexture *_this)
 {
-    /* On Linux we upload in UnlockRect instead, so this is a no-op */
-    (void)_this;
+    CDirect3DTextureClean *tex = (CDirect3DTextureClean *)_this;
+    unsigned int i;
+    int prevTex = 0;
+
+    if (!tex->surfaces || !tex->texIDStorage)
+        return;
+
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
+    glBindTexture(GL_TEXTURE_2D, tex->texIDStorage);
+
+    for (i = 0; i < tex->levelCount; i++) {
+        CDirect3DSurface *surf = (CDirect3DSurface *)tex->surfaces[i];
+        if (surf) {
+            /* Always re-upload since data may have changed */
+            CDirect3DSurface_UpdateOpenGLSurfaceObject(surf, 1); /* bRecreateSurface=1 for glTexImage2D */
+        }
+    }
+
+    glBindTexture(GL_TEXTURE_2D, prevTex);
 }
 
 /* --- IDirect3DResource9 stubs --- */
