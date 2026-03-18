@@ -965,9 +965,21 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                                     static unsigned int lastUploadedTex = 0;
                                     unsigned int tid = *(unsigned int *)((byte *)d3dTex + 0x54);
                                     if (tid != lastUploadedTex) {
+                                        /* Check if pixelData has real content */
+                                        byte *pdata = *(byte **)((byte *)d3dTex + 0x50);
+                                        {
+                                            static int pdchk = 0;
+                                            if (pdchk++ < 5 && pdata) {
+                                                int nonzero = 0, i;
+                                                for (i = 0; i < 256 && i < 4096; i++)
+                                                    if (pdata[i]) nonzero++;
+                                                FILE *f = fopen("/tmp/es_debug.txt","a");
+                                                if(f){fprintf(f,"[PIXDATA] texID=%u pdata=%p nonzero=%d/256 first4=%02x%02x%02x%02x\n",
+                                                    tid,(void*)pdata,nonzero,pdata[0],pdata[1],pdata[2],pdata[3]);fclose(f);}
+                                            }
+                                        }
                                         CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
                                         lastUploadedTex = tid;
-                                        /* Re-bind after upload */
                                         glBindTexture(0x0DE1, tid);
                                     }
                                 }

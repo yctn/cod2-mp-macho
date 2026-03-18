@@ -136,12 +136,28 @@ HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface *_this, D3DLOCKED_RECT 
     }
 
     surface->isDirty = 1;
+    { static int slk = 0; if (slk++ < 10) fprintf(stderr, "[SURF_LOCK] w=%d h=%d pBits=%p pitch=%d mem=%p\n", surface->width, surface->height, pLockedRect->pBits, pLockedRect->Pitch, (void*)surface->surfaceMemory); }
     return 0;
 }
 
 HRESULT CDirect3DSurface_UnlockRect(const CDirect3DSurface *_this)
 {
-    (void)_this;
+    CDirect3DSurfaceImpl *surface = (CDirect3DSurfaceImpl *)_this;
+
+    /* Upload dirty surface data to GL using parent texture's GL ID.
+     * owner field (set by CDirect3DTexture constructor) points to parent CDirect3DTextureClean.
+     * CDirect3DTextureClean.texIDStorage is at offset 0x54. */
+    if (surface->isDirty && surface->surfaceMemory && surface->owner) {
+        unsigned int texID = *(unsigned int *)((byte *)surface->owner + 0x54);
+        if (texID) {
+            int prevTex = 0;
+            glGetIntegerv(0x8069 /* GL_TEXTURE_BINDING_2D */, &prevTex);
+            glBindTexture(0x0DE1 /* GL_TEXTURE_2D */, texID);
+            CDirect3DSurface_UpdateOpenGLSurfaceObject(_this, 1); /* bRecreateSurface=1 for glTexImage2D */
+            glBindTexture(0x0DE1, prevTex);
+        }
+    }
+
     return 0;
 }
 

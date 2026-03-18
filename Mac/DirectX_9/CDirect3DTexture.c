@@ -288,6 +288,8 @@ void CDirect3DTexture_CDirect3DTexture(const CDirect3DTexture *_this, UINT32 Wid
         void *surf = calloc(1, 128);
         CDirect3DSurface_CDirect3DSurface((CDirect3DSurface *)surf, 0, 0, i,
             levelW, levelH, Format, tex->pixelData + offset, NULL);
+        /* Store parent texture pointer in surface's owner field (offset 40) for GL upload */
+        *(void **)((byte *)surf + 40) = tex;
         tex->surfaces[i] = surf;
 
         if (createGL)

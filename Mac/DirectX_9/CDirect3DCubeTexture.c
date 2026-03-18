@@ -156,6 +156,8 @@ void COpenGLTexture_UpdateOpenGLSurfaces(const COpenGLTexture *_this)
 {
     /* Adjust this pointer: called with texture+4, need texture+0 */
     byte *texBase = (byte *)_this - 4;
+    unsigned int texID = *(unsigned int *)(texBase + 0x54);
+    { static int uos = 0; if (uos++ < 10) fprintf(stderr, "[UOS] texID=%u texBase=%p\n", texID, texBase); }
     extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
     CDirect3DTexture_UpdateOpenGLSurfaces(texBase);
 }
