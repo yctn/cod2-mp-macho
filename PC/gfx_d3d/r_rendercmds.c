@@ -539,6 +539,14 @@ void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float 
 {
     GfxCmdStretchPic *cmd;
 
+    if (x != x) {
+        static int radd_nan = 0; if (radd_nan++ < 5) {
+            FILE *f = fopen("/tmp/es_debug.txt","a");
+            if (f) { fprintf(f, "[RADD_NAN] x=%f y=%f w=%f h=%f caller=%p\n",
+                x, y, w, h, __builtin_return_address(0)); fclose(f); }
+        }
+    }
+
     cmd = (GfxCmdStretchPic *)R_AllocCmd(0x2c, 0, 0xf);
     if (cmd == NULL) {
         return;

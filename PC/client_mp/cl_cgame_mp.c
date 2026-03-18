@@ -1331,6 +1331,13 @@ void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int ve
     __asm__ volatile("emms");
 #endif
     CalcScreenPlacement(&x, &y, &w, &h, horzAlign, vertAlign);
+    if (x != x) {
+        static int cl_nan = 0; if (cl_nan++ < 5) {
+            FILE *f = fopen("/tmp/es_debug.txt","a");
+            if (f) { fprintf(f, "[CL_DSP_NAN] horzAlign=%d vertAlign=%d x=%f y=%f w=%f h=%f\n",
+                horzAlign, vertAlign, x, y, w, h); fclose(f); }
+        }
+    }
     RE->DrawStretchPic(x, y, w, h, s1, t1, s2, t2, color, material);
 }
 

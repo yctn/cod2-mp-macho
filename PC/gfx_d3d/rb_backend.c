@@ -4345,8 +4345,13 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
     if (!material)
         return;
 
-    /* Guard against NaN positions from uninitialized screen placement */
-    if (x != x || y != y || w != w || h != h)
+    /* Fix NaN positions from uninitialized screen placement in original binary code.
+     * The background draw (e.g. "background_american_w") comes through the original
+     * binary's CalcScreenPlacement which produces NaN for x due to an uninitialized
+     * screen placement struct. The background should be centered fullscreen. */
+    if (x != x) x = 0.0f;
+    if (y != y) y = 0.0f;
+    if (w != w || h != h)
         return;
 
     /* Enter 2D mode if not already active */
