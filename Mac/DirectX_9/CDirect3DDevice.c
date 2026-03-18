@@ -269,6 +269,7 @@ typedef struct {
 
 static DWORD g_currentFVF = 0;
 static float g_vsConst[256 * 4]; /* Vertex shader constant registers (256 vec4) */
+static IDirect3DBaseTexture9 *g_boundTextures[8] = {0};
 
 /* ============================================================ */
 /* IUnknown                                                     */
@@ -758,8 +759,8 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     if (present_count == 3) {
         FILE *f = fopen("/tmp/es_debug.txt","a");
         if (f) {
-            int row, rows[] = {60, 100, 200, 240, 300, 380, 420};
-            for (row = 0; row < 7; row++) {
+            int row, rows[] = {80, 100, 120, 200, 300, 350, 370, 380, 390, 400};
+            for (row = 0; row < 10; row++) {
                 unsigned char pixels[640 * 4];
                 int x, colored = 0;
                 glReadPixels(0, rows[row], 640, 1, 0x1908, 0x1401, pixels);
@@ -917,6 +918,23 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glLoadIdentity();
     }
 
+    /* Bind texture from stage 0 if available */
+    { extern void glBindTexture(unsigned int, unsigned int);
+    if (g_boundTextures[0]) {
+        unsigned int glTexID = *(unsigned int *)((byte *)g_boundTextures[0] + 0x54);
+        if (glTexID) {
+            glEnable(0x0DE1); /* GL_TEXTURE_2D */
+            glBindTexture(0x0DE1, glTexID);
+        }
+    } else {
+        glDisable(0x0DE1); /* GL_TEXTURE_2D */
+    }
+    } /* end extern glBindTexture scope */
+
+    /* Enable alpha blending for UI transparency */
+    glEnable(0x0BE2); /* GL_BLEND */
+    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
+
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
     glVertexPointer(3, 0x1406 /* GL_FLOAT */, stride, vertBase);
@@ -926,6 +944,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         int colorOffset = (stride >= 0x40) ? 0x1c : 0x0c;
         glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
         glColorPointer(4, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
+    }
+
+    /* Texcoord at offset 0x20 for stride >= 64, 0x1c for smaller strides */
+    if (stride >= 0x18) {
+        int texOffset = (stride >= 0x40) ? 0x20 : 0x1c;
+        glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
+        glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + texOffset);
     }
 
     /* Draw with glDrawElements */
@@ -940,6 +965,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     /* Disable arrays */
     glDisableClientState(0x8074); /* GL_VERTEX_ARRAY */
     glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
+    glDisableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
 
     return 0;
 }
@@ -984,7 +1010,9 @@ HRESULT CDirect3DDevice_GetRenderState(const CDirect3DDevice *_this, D3DRENDERST
 
 HRESULT CDirect3DDevice_SetTexture(const CDirect3DDevice *_this, DWORD Stage, IDirect3DBaseTexture9 *pTexture)
 {
-    (void)_this; (void)Stage; (void)pTexture;
+    (void)_this;
+    if (Stage < 8)
+        g_boundTextures[Stage] = pTexture;
     return 0;
 }
 
