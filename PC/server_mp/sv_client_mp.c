@@ -4231,6 +4231,11 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl 0x20818(%edi), %eax\n" /* line 2196 | cl */
         "cmpl 0x2081c(%edi), %eax\n" /* cl */
         "jle .Lf17e2ae_0017e3b3\n"
+        /* Check if there are unsent gamestate fragments still pending.
+           If so, skip resending — the fragment delivery will complete
+           the current gamestate and the serverId will then match. */
+        "cmpl $0, 0x725dc(%edi)\n" /* client->netchan.unsentFragments */
+        "jne .Lf17e2ae_0017e3b3\n" /* skip if fragments pending */
         "leal 0x20c48(%edi), %eax\n" /* line 2198 | cl */
         "movl %eax, 4(%esp)\n"
         "movl $str_002ae794, (%esp)\n" /* "%s : dropped gamestate, resending

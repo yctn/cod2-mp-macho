@@ -738,6 +738,12 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
             fragmentLength);
     }
 
+    {
+        static int dbg_txfrag;
+        if (dbg_txfrag++ < 10)
+            Com_Printf("DBG Netchan_TxNextFrag: sock=%d fragStart=%d fragLen=%d res=%d\n",
+                chan->sock, chan->unsentFragmentStart, fragmentLength, res);
+    }
     chan->unsentFragmentStart += fragmentLength;
 
     if (chan->unsentFragmentStart == chan->unsentLength) {

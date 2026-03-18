@@ -2900,7 +2900,19 @@ void SV_SendClientMessages(void)
                play this is fine; for remote play the rate-limited path
                below will still be reached once this fast-path is
                made conditional on NA_LOOPBACK. */
-            SV_Netchan_TransmitNextFragment((netchan_t *)(c + CLIENT_NETCHAN));
+            {
+                static int dbg_frag_send;
+                netchan_t *nch = (netchan_t *)(c + CLIENT_NETCHAN);
+                int before = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
+                if (dbg_frag_send < 5)
+                    Com_Printf("DBG frag: nch=%p sock=%d unsent=%d start=%d len=%d\n",
+                        nch, nch->sock, nch->unsentFragments, nch->unsentFragmentStart, nch->unsentLength);
+                SV_Netchan_TransmitNextFragment(nch);
+                int after = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
+                if (dbg_frag_send++ < 5)
+                    Com_Printf("DBG frag: after unsent=%d start=%d\n",
+                        nch->unsentFragments, nch->unsentFragmentStart);
+            }
             continue;
         }
         if (sendFrag == 0) {
