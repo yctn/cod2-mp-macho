@@ -78,10 +78,10 @@ void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes)
         return;
     }
 
-    colorBytes[0] = (byte)(int)(colorFloat[3] * 255.0f);
-    colorBytes[1] = (byte)(int)(colorFloat[0] * 255.0f);
-    colorBytes[2] = (byte)(int)(colorFloat[1] * 255.0f);
-    colorBytes[3] = (byte)(int)(colorFloat[2] * 255.0f);
+    colorBytes[0] = (byte)(int)(colorFloat[2] * 255.0f);
+    colorBytes[1] = (byte)(int)(colorFloat[1] * 255.0f);
+    colorBytes[2] = (byte)(int)(colorFloat[0] * 255.0f);
+    colorBytes[3] = (byte)(int)(colorFloat[3] * 255.0f);
 }
 
 /* line 154 */

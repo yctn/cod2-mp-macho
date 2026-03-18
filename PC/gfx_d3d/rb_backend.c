@@ -5948,8 +5948,8 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
     GfxColor newColor = color;
     GfxColor newBlack;
     byte savedAlpha;
-    newBlack.packed = color.packed & 0xFF; /* alpha-only = black shadow */
-    savedAlpha = color.array[0];
+    newBlack.packed = color.packed & 0xFF000000; /* alpha-only = black shadow */
+    savedAlpha = color.array[3];
     float xOrig, yPos, xPos, xAdj, glyphX, glyphY, savedGlyphX2;
     int count, ch;
     Glyph *glyph;
@@ -5977,8 +5977,8 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
                 } else {
                     byte rgb[4];
                     RB_LookupColor((int)(unsigned char)*next, rgb);
-                    newColor.packed = savedAlpha | ((unsigned int)rgb[0] << 8) |
-                                     ((unsigned int)rgb[1] << 16) | ((unsigned int)rgb[2] << 24);
+                    newColor.packed = ((unsigned int)savedAlpha << 24) | ((unsigned int)rgb[0] << 16) |
+                                     ((unsigned int)rgb[1] << 8) | rgb[2];
                 }
                 text++; /* skip digit */
                 count += 2;

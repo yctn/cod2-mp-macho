@@ -145,10 +145,10 @@ static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeade
                     byte *dst = expandedData;
                     const byte *src = srcPtr;
                     for (p = 0; p < mipPixels; p++) {
-                        dst[0] = 0xFF;     /* alpha */
-                        dst[1] = src[2];   /* R */
-                        dst[2] = src[1];   /* G */
-                        dst[3] = src[0];   /* B */
+                        dst[0] = src[0];   /* B */
+                        dst[1] = src[1];   /* G */
+                        dst[2] = src[2];   /* R */
+                        dst[3] = 0xFF;     /* alpha */
                         dst += 4;
                         src += 3;
                     }
