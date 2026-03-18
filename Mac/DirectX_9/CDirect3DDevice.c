@@ -740,29 +740,7 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice *_this, DWORD Count, const D
             /* Skip this clear — it destroys the rendered frame */
         } else {
             glClear(glFlags);
-            /* TEST: clear to RED instead of black to verify framebuffer works */
-            if (clear_count < 30 && Color == 0xff000000) {
-                glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-                glClear(0x4000); /* GL_COLOR_BUFFER_BIT */
-            }
-            /* TEST: draw red triangle immediately after clear */
-            if (0 && clear_count < 30 && Color == 0xff000000) {
-                glDisable(0x0B71); /* GL_DEPTH_TEST */
-                glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
-                glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
-                glBindVertexArrayAPPLE(0);
-                glMatrixMode(0x1701); /* GL_PROJECTION */
-                glLoadIdentity();
-                glMatrixMode(0x1700); /* GL_MODELVIEW */
-                glLoadIdentity();
-                glColorMask(1, 1, 1, 1);
-                glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-                glBegin(0x0004); /* GL_TRIANGLES */
-                glVertex3f(-0.9f, -0.9f, 0.0f);
-                glVertex3f(0.9f, -0.9f, 0.0f);
-                glVertex3f(0.0f, 0.9f, 0.0f);
-                glEnd();
-            }
+            /* (test code removed — rendering verified working) */
         }
     }
     return 0;
@@ -782,20 +760,19 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     /* Check if any non-black pixels exist in the framebuffer */
     if (present_count == 2) {
         unsigned char pixels[640 * 4]; /* one row */
-        int x, nonblack = 0;
+        int x, colored = 0;
         glReadPixels(0, 240, 640, 1, 0x1908 /* GL_RGBA */, 0x1401 /* GL_UNSIGNED_BYTE */, pixels);
-        for (x = 0; x < 640 * 4; x++)
-            if (pixels[x]) nonblack++;
-        fprintf(stderr, "[SEQ] Present frame 2: scanned 640px row at y=240, nonblack bytes=%d\n", nonblack);
-        if (nonblack > 0) {
-            /* dump first few non-zero pixels */
-            for (x = 0; x < 640; x++) {
-                if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2] || pixels[x*4+3]) {
-                    fprintf(stderr, "  pixel[%d] = (%d,%d,%d,%d)\n", x, pixels[x*4], pixels[x*4+1], pixels[x*4+2], pixels[x*4+3]);
-                    if (x > 10) break;
-                }
-            }
-        }
+        /* Find pixels with non-zero RGB (not just alpha) */
+        for (x = 0; x < 640; x++)
+            if (pixels[x*4] || pixels[x*4+1] || pixels[x*4+2])
+                colored++;
+        fprintf(stderr, "[SEQ] Present frame 2: %d colored pixels in row y=240\n", colored);
+        /* Sample center area */
+        fprintf(stderr, "  pixel[64] = (%d,%d,%d,%d)\n", pixels[64*4], pixels[64*4+1], pixels[64*4+2], pixels[64*4+3]);
+        fprintf(stderr, "  pixel[160] = (%d,%d,%d,%d)\n", pixels[160*4], pixels[160*4+1], pixels[160*4+2], pixels[160*4+3]);
+        fprintf(stderr, "  pixel[320] = (%d,%d,%d,%d)\n", pixels[320*4], pixels[320*4+1], pixels[320*4+2], pixels[320*4+3]);
+        fprintf(stderr, "  pixel[480] = (%d,%d,%d,%d)\n", pixels[480*4], pixels[480*4+1], pixels[480*4+2], pixels[480*4+3]);
+        fprintf(stderr, "  pixel[576] = (%d,%d,%d,%d)\n", pixels[576*4], pixels[576*4+1], pixels[576*4+2], pixels[576*4+3]);
     }
     return 0;
 }
@@ -882,89 +859,63 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + 16);
         }
 
-        if (dip_count++ < 2) {
-            fprintf(stderr, "  vsConst[0-3]: %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f | %.3f %.3f %.3f %.3f\n",
-                    g_vsConst[0], g_vsConst[1], g_vsConst[2], g_vsConst[3],
-                    g_vsConst[4], g_vsConst[5], g_vsConst[6], g_vsConst[7],
-                    g_vsConst[8], g_vsConst[9], g_vsConst[10], g_vsConst[11],
-                    g_vsConst[12], g_vsConst[13], g_vsConst[14], g_vsConst[15]);
-        }
-        if (dip_count < 5) {
+        if (dip_count < 3) {
             float *pos = (float *)vertBase;
             unsigned int *raw = (unsigned int *)vertBase;
             unsigned short *idx = (unsigned short *)(ibData + startIndex * 2);
-            fprintf(stderr, "[DIP] stride=%d numVtx=%d primCount=%d\n", stride, NumVertices, primCount);
-            fprintf(stderr, "  v0 raw: %08x %08x %08x %08x %08x %08x %08x %08x\n",
-                    raw[0], raw[1], raw[2], raw[3], raw[4], raw[5], raw[6], raw[7]);
-            fprintf(stderr, "  v0 float: %.3f %.3f %.3f | %.3f %.3f | color@28: %02x%02x%02x%02x\n",
-                    pos[0], pos[1], pos[2], pos[4], pos[5],
-                    vertBase[28], vertBase[29], vertBase[30], vertBase[31]);
+            int vi;
+            fprintf(stderr, "[DIP] stride=%d numVtx=%d primCount=%d base=%d off=%d\n",
+                    stride, NumVertices, primCount, BaseVertexIndex, offset);
+            for (vi = 0; vi < NumVertices && vi < 4; vi++) {
+                float *vp = (float *)(vertBase + vi * stride);
+                fprintf(stderr, "  v%d pos=(%.2f,%.2f,%.2f) col=%02x%02x%02x%02x\n",
+                        vi, vp[0], vp[1], vp[2],
+                        vertBase[vi*stride+28], vertBase[vi*stride+29],
+                        vertBase[vi*stride+30], vertBase[vi*stride+31]);
+            }
             fprintf(stderr, "  idx: %d %d %d %d %d %d\n", idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
         }
     }
 
-    /* Clear any pending GL errors */
+    /* Reset GL state for fixed-function rendering.
+     * The game's ASM code enables ARB programs and binds VAOs that interfere
+     * with our fixed-function draws. We need to fully reset the relevant state. */
     while (glGetError()) {}
-
-    /* Disable ARB programs for fixed-function rendering */
+    glBindProgramARB(0x8620, 0); /* unbind vertex program */
+    glBindProgramARB(0x8804, 0); /* unbind fragment program */
     glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
     glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+    { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
+    glDisable(0x0B71); /* GL_DEPTH_TEST */
+    glDisable(0x0B44); /* GL_CULL_FACE */
+    glColorMask(1, 1, 1, 1);
+    glDepthMask(0);
+    while (glGetError()) {}
 
-    /* Unbind any VAO (bind 0 = default VAO) */
-    glBindVertexArrayAPPLE(0);
-
-    /* Use identity matrices — vertex data appears to be in NDC already */
+    /* Identity matrices — vertex positions are in NDC-like space */
     glMatrixMode(0x1701); /* GL_PROJECTION */
     glLoadIdentity();
     glMatrixMode(0x1700); /* GL_MODELVIEW */
     glLoadIdentity();
 
-    /* Force sane GL state for rendering */
-    glColorMask(1, 1, 1, 1);
-    glDepthMask(0); /* Don't write depth for 2D */
-    glDisable(0x0BE2); /* GL_BLEND */
-    glDisable(0x0BC0); /* GL_ALPHA_TEST */
-    glDisable(0x0C11); /* GL_SCISSOR_TEST */
-
-    /* TEST: draw a bright red triangle to verify GL rendering works */
-    {
-        static int test_drawn = 0;
-        if (test_drawn++ < 120) {
-            glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-            glBegin(0x0004); /* GL_TRIANGLES */
-            glVertex3f(-0.8f, -0.8f, 0.0f);
-            glVertex3f(0.8f, -0.8f, 0.0f);
-            glVertex3f(0.0f, 0.8f, 0.0f);
-            glEnd();
-        }
-    }
-
-    /* Disable depth test for 2D */
-    glDisable(0x0B71); /* GL_DEPTH_TEST */
-
-    /* Draw */
-    glMode = 0x0004; /* GL_TRIANGLES */
-    indexCount = primCount * 3;
-
+    /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
     glVertexPointer(3, 0x1406 /* GL_FLOAT */, stride, vertBase);
 
+    /* Color at offset 0x1c for stride >= 64, 0x0c for smaller strides */
     if (stride >= 0x18) {
         int colorOffset = (stride >= 0x40) ? 0x1c : 0x0c;
         glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
         glColorPointer(4, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
     }
 
-    glDrawRangeElements(glMode, MinVertexIndex, MinVertexIndex + NumVertices - 1,
-                        indexCount, 0x1403 /* GL_UNSIGNED_SHORT */,
-                        ibData + startIndex * 2);
-
-    /* Check GL error after draw */
+    /* Draw with glDrawElements */
     {
-        static int draw_err_count = 0;
-        int err = glGetError();
-        if (err && draw_err_count++ < 10)
-            fprintf(stderr, "[DIP] GL error after draw: 0x%x primCount=%d\n", err, primCount);
+        extern void glDrawElements(unsigned int, int, unsigned int, const void *);
+        indexCount = primCount * 3;
+        glDrawElements(0x0004 /* GL_TRIANGLES */, indexCount,
+                       0x1403 /* GL_UNSIGNED_SHORT */,
+                       ibData + startIndex * 2);
     }
 
     /* Disable arrays */
