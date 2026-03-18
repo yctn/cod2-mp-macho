@@ -754,11 +754,8 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
     (void)_this; (void)pSourceRect; (void)pDestRect; (void)hDestWindowOverride; (void)pDirtyRegion;
     if (present_count++ < 10)
         fprintf(stderr, "[SEQ] Present called\n");
-    /* Actually swap the buffers! */
-    if (sdl_gl_window)
-        SDL_GL_SwapWindow(sdl_gl_window);
-    /* Check if any non-black pixels exist in the framebuffer */
-    if (present_count == 2) {
+    /* Check framebuffer before swap */
+    if (present_count == 3) {
         unsigned char pixels[640 * 4]; /* one row */
         int x, colored = 0;
         glReadPixels(0, 240, 640, 1, 0x1908 /* GL_RGBA */, 0x1401 /* GL_UNSIGNED_BYTE */, pixels);
@@ -774,6 +771,9 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice *_this, const RECT *pSourc
         fprintf(stderr, "  pixel[480] = (%d,%d,%d,%d)\n", pixels[480*4], pixels[480*4+1], pixels[480*4+2], pixels[480*4+3]);
         fprintf(stderr, "  pixel[576] = (%d,%d,%d,%d)\n", pixels[576*4], pixels[576*4+1], pixels[576*4+2], pixels[576*4+3]);
     }
+    /* Actually swap the buffers! */
+    if (sdl_gl_window)
+        SDL_GL_SwapWindow(sdl_gl_window);
     return 0;
 }
 

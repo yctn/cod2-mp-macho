@@ -31,7 +31,7 @@ extern void Dvar_SetBool(const dvar_t *dvar, int value);
 extern void Dvar_SetString(const dvar_t *dvar, const char *value);
 extern void UI_SetMap(const char *mapname, const char *gametype);
 extern void SCR_UpdateScreenInternal(void);
-extern void SetScreenScaling(int *width, int *height, float, float, int, int);
+extern void SetScreenScaling(float safeAreaH, float safeAreaV, int vpX, int vpY, int vpW, int vpH);
 extern void SND_Init(void);
 extern void SND_StopSounds(int);
 extern void SND_FadeAllSounds(float, float);
@@ -708,7 +708,12 @@ void CL_InitRenderer(void)
 
     /* re.BeginRegistration */
     ((void (*)(int *))*(int *)((char *)&re + 4))((int *)((char *)&cls + 0x2a0a64));
-    SetScreenScaling((int *)((char *)&cls + 0x2a0a64), (int *)((char *)&cls + 0x2a0a68), 1.0f, 1.0f, 0, 0);
+    /* Parameters: safeAreaH, safeAreaV, viewportX, viewportY, viewportW, viewportH */
+    {
+        int vw = *(int *)((char *)&cls + 0x2a0a64); /* vidConfig.width from BeginRegistration output */
+        int vh = *(int *)((char *)&cls + 0x2a0a68); /* vidConfig.height */
+        SetScreenScaling(1.0f, 1.0f, 0, 0, vw, vh);
+    }
 
     /* cls.charSetShader = re.RegisterShaderNoMip("white", 3, 3) */
     *(int *)((char *)&cls + 0x2a0a58) = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("white", 3, 3);
