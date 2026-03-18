@@ -52,9 +52,13 @@ static long long get_ms(void) {
 int g_rb_draw_diag_count = 0;
 void diag_rb_draw(unsigned int x_hex, unsigned int y_hex, unsigned int mat_ptr)
 {
-    (void)x_hex;
-    (void)y_hex;
-    (void)mat_ptr;
+    static int draw_diag_count = 0;
+    if (draw_diag_count++ < 20) {
+        float x, y;
+        memcpy(&x, &x_hex, 4);
+        memcpy(&y, &y_hex, 4);
+        fprintf(stderr, "[RB_DRAW] x=%.1f y=%.1f mat=%p\n", x, y, (void*)(uintptr_t)mat_ptr);
+    }
 }
 
 /* Diagnostic: dump x,y,retaddr inside R_AddCmdDrawStretchPic */

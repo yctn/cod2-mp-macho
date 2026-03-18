@@ -4449,6 +4449,12 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         char *v2 = v0 + 128;
         char *v3 = v0 + 192;
 
+        /* Diagnostic */
+        { static int sp_diag = 0; if (sp_diag++ < 5) {
+            FILE *f = fopen("/tmp/es_debug.txt","a");
+            if (f) { fprintf(f, "[SP] x=%.1f y=%.1f w=%.1f h=%.1f vc=%d v0=%p tess=%p\n", x, y, w, h, vc, v0, t); fclose(f); }
+        }}
+
         /* Vertex 0: (x, y) texcoord (s0, t0) */
         *(float *)(v0 + 0x00) = x;
         *(float *)(v0 + 0x04) = y;

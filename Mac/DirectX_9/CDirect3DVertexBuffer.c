@@ -58,9 +58,13 @@ ULONG CDirect3DVertexBuffer_Release(const CDirect3DVertexBuffer *_this)
 HRESULT CDirect3DVertexBuffer_Lock(const CDirect3DVertexBuffer *_this, UINT OffsetToLock, UINT SizeToLock, void **ppbData, DWORD Flags)
 {
     CDirect3DVertexBufferClean *vb = (CDirect3DVertexBufferClean *)_this;
+    static int lock_count = 0;
     (void)SizeToLock;
     (void)Flags;
     *ppbData = vb->data + OffsetToLock;
+    if (lock_count++ < 10)
+        fprintf(stderr, "[VB_LOCK] vb=%p off=%d size=%d data=%p flags=0x%x\n",
+                (void*)_this, OffsetToLock, SizeToLock, *ppbData, Flags);
     return 0;
 }
 

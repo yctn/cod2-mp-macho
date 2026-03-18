@@ -892,11 +892,19 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     glDepthMask(0);
     while (glGetError()) {}
 
-    /* Identity matrices — vertex positions are in NDC-like space */
-    glMatrixMode(0x1701); /* GL_PROJECTION */
-    glLoadIdentity();
-    glMatrixMode(0x1700); /* GL_MODELVIEW */
-    glLoadIdentity();
+    /* Orthographic projection: map screen coords (0-640, 0-480) to NDC (-1 to +1) */
+    {
+        float ortho[16] = {
+            2.0f/640.0f, 0, 0, 0,
+            0, -2.0f/480.0f, 0, 0,
+            0, 0, -1.0f, 0,
+            -1.0f, 1.0f, 0, 1.0f
+        };
+        glMatrixMode(0x1701); /* GL_PROJECTION */
+        glLoadMatrixf(ortho);
+        glMatrixMode(0x1700); /* GL_MODELVIEW */
+        glLoadIdentity();
+    }
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
@@ -1202,6 +1210,12 @@ HRESULT CDirect3DDevice_SetVertexShaderConstantF(const CDirect3DDevice *_this, U
     UINT i;
     const float *pf = pConstantData;
     (void)_this;
+    {
+        static int vsc_log = 0;
+        if (vsc_log++ < 20)
+            fprintf(stderr, "[VSC] SetVertexShaderConstantF reg=%d count=%d val=(%.3f,%.3f,%.3f,%.3f)\n",
+                    StartRegister, Vector4fCount, pf[0], pf[1], pf[2], pf[3]);
+    }
     for (i = StartRegister; i < StartRegister + Vector4fCount; i++) {
         glProgramEnvParameter4fvARB(0x8620, i, pf);
         /* Also save to our local copy for fixed-function fallback */

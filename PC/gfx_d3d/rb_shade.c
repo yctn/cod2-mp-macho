@@ -3998,6 +3998,8 @@ void RB_EndSurface(void)
     GfxDrawPrimArgs args;
     int vertexStride;
 
+    /* Note: fprintf to stderr doesn't work from this function (thread/redirect issue).
+     * Use file output instead. */
     diag_endsurface_entry(tess);
     tess = RB_TessBase();
 
@@ -4054,6 +4056,17 @@ void RB_EndSurface(void)
 
     /* === Cached/optimized geometry path (static model cache, world VB) === */
     cachedIndexCount = *(int *)(tess + 0x5a7e0); /* optimizedIndexCount */
+    {
+        static int path_diag = 0;
+        if (path_diag++ < 10) {
+            FILE *f = fopen("/tmp/es_debug.txt","a");
+            if (f) {
+                fprintf(f, "[PATH] cached=%d main=%d vs=%d\n",
+                        cachedIndexCount, *(int *)(tess + 0x5a7d0), *(int *)(tess + 0x5a7b8));
+                fclose(f);
+            }
+        }
+    }
     if (cachedIndexCount != 0) {
         int cachedVertDeclType;
         IDirect3DVertexBuffer9 *vb;
@@ -4108,6 +4121,17 @@ void RB_EndSurface(void)
         diag_idxzero(tess);
         return;
     }
+    {
+        static int mainpath = 0;
+        if (mainpath++ < 5) {
+            FILE *f = fopen("/tmp/es_debug.txt","a");
+            if (f) {
+                int vc = *(int *)(tess + 0x5a7d4);
+                fprintf(f, "[MAIN_TESS] indexCount=%d vertCount=%d stride=%d\n", indexCount, vc, vertexStride);
+                fclose(f);
+            }
+        }
+    }
 
     /* Build draw args from main tess fields */
     args.firstVertexFromBase = 0;
@@ -4137,6 +4161,24 @@ void RB_EndSurface(void)
         int needed = *(int *)(tess + 0x5a7d4) * vertexStride + lockSlot[0];
         if (needed > lockSlot[1])
             lockSlot[0] = 0;
+    }
+
+    /* Diagnostic: dump tess vertex data before upload */
+    {
+        static int tess_dump = 0;
+        if (tess_dump++ < 3) {
+            int vc = *(int *)(tess + 0x5a7d4);
+            float *vp = (float *)tess;
+            fprintf(stderr, "[TESS] vertCount=%d stride=%d tess=%p\n", vc, vertexStride, tess);
+            if (vc >= 4) {
+                int vi;
+                for (vi = 0; vi < 4; vi++) {
+                    float *v = (float *)(tess + vi * vertexStride);
+                    fprintf(stderr, "  tv%d pos=(%.2f,%.2f,%.2f,%.2f) @%p\n",
+                            vi, v[0], v[1], v[2], v[3], v);
+                }
+            }
+        }
     }
 
     /* Upload vertex data to GPU vertex buffer */
