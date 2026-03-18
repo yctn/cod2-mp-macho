@@ -126,6 +126,10 @@ int aglDestroyContext(AGLContext ctx)
 
 int aglSetCurrentContext(AGLContext ctx)
 {
+    extern SDL_Window *sdl_gl_window;
+    if (sdl_gl_window && ctx) {
+        SDL_GL_MakeCurrent(sdl_gl_window, (SDL_GLContext)ctx);
+    }
     return 1;
 }
 
@@ -152,9 +156,42 @@ extern SDL_Window *sdl_gl_window; /* exposed from macos_compat.c */
 
 void aglSwapBuffers(AGLContext ctx)
 {
+    static int swap_count = 0;
     if (!sdl_gl_window)
         return;
 
+    /* TEST: draw right before swap */
+    if (swap_count < 60) {
+        glDisable(0x0B71); /* GL_DEPTH_TEST */
+        glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
+        glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+        glDisable(0x0BE2); /* GL_BLEND */
+        glDisable(0x0BC0); /* GL_ALPHA_TEST */
+        glDisable(0x0C11); /* GL_SCISSOR_TEST */
+        /* Note: glUseProgram not imported, skip GLSL unbind */
+        glBindVertexArrayAPPLE(0);
+        glColorMask(1, 1, 1, 1);
+        glMatrixMode(0x1701);
+        glLoadIdentity();
+        glMatrixMode(0x1700);
+        glLoadIdentity();
+        glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+        glBegin(0x0004);
+        glVertex3f(-0.9f, -0.9f, 0.0f);
+        glVertex3f(0.9f, -0.9f, 0.0f);
+        glVertex3f(0.0f, 0.9f, 0.0f);
+        glEnd();
+    }
+
+    if (swap_count == 3) {
+        unsigned char pixels[4];
+        glReadPixels(320, 100, 1, 1, 0x1908, 0x1401, pixels);
+        fprintf(stderr, "[SWAP] pixel at center-bottom = (%d,%d,%d,%d)\n",
+                pixels[0], pixels[1], pixels[2], pixels[3]);
+    }
+
+    if (swap_count++ < 10)
+        fprintf(stderr, "[SEQ] aglSwapBuffers\n");
     SDL_PumpEvents();
     SDL_GL_SwapWindow(sdl_gl_window);
 }

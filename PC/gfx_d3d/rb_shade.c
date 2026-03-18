@@ -3932,6 +3932,23 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
     if (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2 && (unsigned)(techType - 9) <= 5)
         stateOverride = &overrideEnableRenormalize;
 
+    /* Diagnostic: check technique pass count */
+    {
+        static int dt_count = 0;
+        char *_tess = RB_TessBase();
+        void *mat = *(void **)(_tess + 0x5a7bc);
+        if (mat) {
+            void *techSet = *(void **)((char *)mat + 0x38);
+            if (techSet) {
+                void *tech = *(void **)((char *)techSet + 4 + (int)techType * 4);
+                short passCount = tech ? *(short *)((char *)tech + 6) : -1;
+                if (dt_count++ < 20)
+                    fprintf(stderr, "[DrawTech] techType=%d vertDecl=%d tech=%p passCount=%d\n",
+                            (int)techType, (int)vertDeclType, tech, (int)passCount);
+            }
+        }
+    }
+
     /* RB_DrawSingleTechnique uses a non-standard register calling convention:
      * eax = techType (from tess), edx = vertDeclType, ecx = args, stack = stateOverride */
     __asm__ __volatile__ (
@@ -4111,8 +4128,12 @@ void RB_EndSurface(void)
     {
         char *dx = (char *)imp_dx;
         int *lockSlot = *(int **)(dx + 0x2db4);
-        if (!lockSlot)
+        if (!lockSlot) {
+            static int lockslot_warn = 0;
+            if (lockslot_warn++ < 5)
+                fprintf(stderr, "[EndSurf] lockSlot NULL at dx+0x2db4, skipping draw\n");
             goto cleanup;
+        }
         int needed = *(int *)(tess + 0x5a7d4) * vertexStride + lockSlot[0];
         if (needed > lockSlot[1])
             lockSlot[0] = 0;

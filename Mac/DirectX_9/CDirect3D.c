@@ -12,6 +12,12 @@ extern void *vtbl_CDirect3DDevice[];
 /* Device constructor — defined in CDirect3DDevice.c */
 void CDirect3DDevice_Init(void *device);
 
+/* Surface constructor — defined in CDirect3DSurface.c */
+extern void CDirect3DSurface_CDirect3DSurface(const void *_this,
+    int s, unsigned int CubemapID, unsigned int Level,
+    unsigned int Width, unsigned int Height, int Format,
+    const void *pSurfaceMemory, void *pOpenGLTextureInfo);
+
 /* The CDirect3D object */
 typedef struct {
     void **vtable;
@@ -128,6 +134,15 @@ HRESULT CDirect3D_CreateDevice(const void *_this, UINT Adapter, int DeviceType, 
     }
     ctx = MacDisplay_CreateScreenContext(24, 1, 0, 0, 0, NULL);
     *(void **)(deviceMem + 0x008) = ctx; /* store context in device */
+
+    /* Create back buffer surface (needed by R_InitRenderTargets) */
+    {
+        void *bbSurf = calloc(1, 0x3c);
+        /* D3DFMT_X8R8G8B8 = 0x16 (22), SurfaceType=0 (plain), no cubemap, level 0 */
+        CDirect3DSurface_CDirect3DSurface(bbSurf, 0, 0, 0, width, height, 0x16, NULL, NULL);
+        *(void **)(deviceMem + 0x01C) = bbSurf; /* backBuffer */
+        *(void **)(deviceMem + 0x014) = bbSurf; /* renderTarget (initial) */
+    }
 
     *ppReturnedDeviceInterface = deviceMem;
     return 0;

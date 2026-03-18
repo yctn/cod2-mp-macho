@@ -1091,6 +1091,7 @@ static Bool R_CreateForInitOrReset(void)
     byte *dxp = (byte *)(void *)&dx;
     int i;
 
+    fprintf(stderr, "[R_CreateForInitOrReset] ENTERED, dxp=%p\n", dxp);
     Printf(0, "R_InitRenderTargets");
     R_InitRenderTargets();
     Printf(0, "R_InitStaticModelCache");
@@ -1113,6 +1114,8 @@ static Bool R_CreateForInitOrReset(void)
 
     /* Store VB wrapper pointer */
     *(int *)(dxp + 11700) = (int)(intptr_t)(dxp + 11688);
+    fprintf(stderr, "[R_CreateForInitOrReset] set dxp+11700 (0x2db4) = %p, value = %p\n",
+            (void *)(dxp + 11700), *(void **)(dxp + 11700));
 
     /* Create 2 additional VBs for multi-buffering */
     int loopVbSize = isDx7 ? 0x480000 : 0x800000;
@@ -1245,6 +1248,11 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
         }
 
         R_InitSystems();
+    }
+
+    /* Create dynamic vertex/index buffers, particle cloud, set initial render state */
+    if (!R_CreateForInitOrReset()) {
+        ri_printf(0, "R_CreateForInitOrReset failed\n");
     }
 
     /* Phase 3: Register backend assets */
