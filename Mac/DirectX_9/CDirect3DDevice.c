@@ -877,16 +877,21 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
 
     if (stride == 0x44) {
-        /* 3D world geometry: keep the game's ARB shader programs active
-         * and use the matrices already set by the game engine. */
-        glEnable(0x0B71); /* GL_DEPTH_TEST */
-        glDepthMask(1);
-        glDepthFunc(0x0203); /* GL_LEQUAL */
-        glEnable(0x0B44); /* GL_CULL_FACE */
-        glDisable(0x0B50); /* GL_LIGHTING */
-        glDisable(0x0BC0); /* GL_ALPHA_TEST */
-        glColorMask(1, 1, 1, 1);
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        /* 3D world geometry: the game's rendering backend has already set up:
+         * - ARB vertex/fragment programs (shaders with matrices baked in)
+         * - VAO with vertex attribute bindings
+         * - Textures and render state
+         * DON'T touch ANY of that — just supply the index buffer and draw.
+         * The game's shaders handle all transformation and lighting. */
+        {
+            extern void glDrawElements(unsigned int, int, unsigned int, const void *);
+            indexCount = primCount * 3;
+            glDrawElements(0x0004 /* GL_TRIANGLES */, indexCount,
+                           0x1403 /* GL_UNSIGNED_SHORT */,
+                           ibData + startIndex * 2);
+        }
+        dip_count++;
+        return 0;
     } else {
         /* 2D HUD/UI: disable shaders, use fixed-function ortho */
         glBindProgramARB(0x8620, 0);
