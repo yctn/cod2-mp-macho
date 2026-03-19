@@ -877,19 +877,23 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
 
     if (stride == 0x44) {
-        /* 3D world geometry: the game's rendering backend has already set up:
-         * - ARB vertex/fragment programs (shaders with matrices baked in)
-         * - VAO with vertex attribute bindings
-         * - Textures, render state, and element array buffer (IBO)
-         * DON'T touch ANY of that — just call glDrawElements.
-         * Since the game's IBO is already bound, pass the byte offset
-         * (not a CPU pointer) as the indices parameter. */
+        /* 3D world geometry: the game's rendering backend has already set up
+         * ARB programs, VAO, textures, and render state.
+         * Use glDrawElementsBaseVertex to apply BaseVertexIndex offset
+         * (D3D DIP adds BaseVertexIndex to all indices). */
         {
-            extern void glDrawElements(unsigned int, int, unsigned int, const void *);
+            extern void glDrawElementsBaseVertex(unsigned int, int, unsigned int, const void *, int);
+            extern void glBindBuffer(unsigned int, unsigned int);
+            extern void glPolygonMode(unsigned int, unsigned int);
+            glBindBuffer(0x8893 /* GL_ELEMENT_ARRAY_BUFFER */, 0);
+            /* Wireframe mode to visualize world geometry */
+            glPolygonMode(0x0408 /* GL_FRONT_AND_BACK */, 0x1B01 /* GL_LINE */);
             indexCount = primCount * 3;
-            glDrawElements(0x0004 /* GL_TRIANGLES */, indexCount,
+            glDrawElementsBaseVertex(0x0004 /* GL_TRIANGLES */, indexCount,
                            0x1403 /* GL_UNSIGNED_SHORT */,
-                           (const void *)(intptr_t)(startIndex * 2));
+                           ibData + startIndex * 2,
+                           BaseVertexIndex);
+            glPolygonMode(0x0408, 0x1B02 /* GL_FILL */); /* restore */
         }
         dip_count++;
         return 0;
