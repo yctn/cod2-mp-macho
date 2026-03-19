@@ -876,105 +876,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     while (glGetError()) {}
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
 
-    if (stride == 0x44) {
-        /* 3D world geometry: use fixed-function GL with the game's
-         * viewProjectionMatrix from rg+0x3190 → GfxViewParms+0xC8.
-         * No ARB programs at DIP time — game expects D3D to handle transforms. */
-        {
-            extern void glDrawElementsBaseVertex(unsigned int, int, unsigned int, const void *, int);
-            extern void glBindBuffer(unsigned int, unsigned int);
-
-            /* Read viewProjectionMatrix from render backend state.
-             * backEnd+0x3c8 has viewParms pointer (set by RB_BeginViewCmd).
-             * Also try backEnd+0x3f0 which has viewProjectionMatrix directly. */
-            extern byte backEnd[];
-            void *viewParms = *(void **)(backEnd + 0x3c8);
-            {
-                static int vpDiag = 0;
-                if (vpDiag < 2) {
-                    float *m = viewParms ? (float *)((byte *)viewParms + 0xC8) : NULL;
-                    fprintf(stderr, "[VPMAT#%d] viewParms=%p mat=[%.4f,%.4f,%.4f,%.4f | %.4f,%.4f,%.4f,%.4f | %.4f,%.4f,%.4f,%.4f | %.4f,%.4f,%.4f,%.4f]\n",
-                        vpDiag, viewParms,
-                        m?m[0]:0, m?m[1]:0, m?m[2]:0, m?m[3]:0,
-                        m?m[4]:0, m?m[5]:0, m?m[6]:0, m?m[7]:0,
-                        m?m[8]:0, m?m[9]:0, m?m[10]:0, m?m[11]:0,
-                        m?m[12]:0, m?m[13]:0, m?m[14]:0, m?m[15]:0);
-                    vpDiag++;
-                }
-            }
-
-            /* Reset state for fixed-function 3D */
-            glBindProgramARB(0x8620, 0);
-            glBindProgramARB(0x8804, 0);
-            glDisable(0x8620);
-            glDisable(0x8804);
-            glDisable(0x0B50); /* GL_LIGHTING */
-            glEnable(0x0B71); /* GL_DEPTH_TEST */
-            glDepthFunc(0x0203); /* GL_LEQUAL */
-            glDepthMask(1);
-            glEnable(0x0B44); /* GL_CULL_FACE */
-            glCullFace(0x0405); /* GL_BACK */
-            glDisable(0x0BC0); /* GL_ALPHA_TEST */
-            glColorMask(1, 1, 1, 1);
-
-            /* Set view and projection matrices from GfxViewParms.
-             * D3D uses row-major matrices, OpenGL column-major.
-             * Use glLoadTransposeMatrixf to handle the row→column conversion. */
-            if (viewParms) {
-                extern void glLoadTransposeMatrixf(const float *);
-                float *projMatrix = (float *)((byte *)viewParms + 0x88);
-                float *viewMatrix = (float *)((byte *)viewParms + 0x48);
-                glMatrixMode(0x1701); /* GL_PROJECTION */
-                glLoadTransposeMatrixf(projMatrix);
-                glMatrixMode(0x1700); /* GL_MODELVIEW */
-                glLoadTransposeMatrixf(viewMatrix);
-            } else {
-                /* Fallback: use the direct viewProjectionMatrix at backEnd+0x3f0 */
-                extern void glLoadTransposeMatrixf(const float *);
-                float *vpMat = (float *)(backEnd + 0x3f0);
-                glMatrixMode(0x1701); /* GL_PROJECTION */
-                glLoadTransposeMatrixf(vpMat);
-                glMatrixMode(0x1700); /* GL_MODELVIEW */
-                glLoadIdentity();
-            }
-
-            /* Vertex arrays: position at +0, color at +0x18, texcoord at +0x1C */
-            glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
-            glVertexPointer(3, 0x1406, stride, vertBase);
-            glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
-            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-            /* Bind texture if available */
-            { unsigned int glTexID = g_prebind_texID;
-              if (glTexID) {
-                  glEnable(0x0DE1);
-                  glBindTexture(0x0DE1, glTexID);
-                  glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_MODULATE */
-                  glEnableClientState(0x8078);
-                  glTexCoordPointer(2, 0x1406, stride, vertBase + 0x1c);
-              } else {
-                  glDisable(0x0DE1);
-              }
-            }
-
-            /* Draw */
-            glBindBuffer(0x8893, 0); /* unbind IBO */
-            indexCount = primCount * 3;
-            glDrawElementsBaseVertex(0x0004, indexCount, 0x1403,
-                ibData + startIndex * 2, BaseVertexIndex);
-
-            /* Cleanup */
-            glDisableClientState(0x8074);
-            glDisableClientState(0x8078);
-        }
-        dip_count++;
-        return 0;
-    } else {
-        /* 2D HUD/UI: disable shaders, use fixed-function ortho */
+    {
+        /* Common rendering path for both world and HUD.
+         * Reset GL state, then set projection based on stride. */
         glBindProgramARB(0x8620, 0);
         glBindProgramARB(0x8804, 0);
-        glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
-        glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+        glDisable(0x8620);
+        glDisable(0x8804);
         glDisable(0x0B71); /* GL_DEPTH_TEST */
         glDisable(0x0B44); /* GL_CULL_FACE */
         glDisable(0x0B60); /* GL_FOG */
@@ -984,17 +892,46 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glDepthMask(0);
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-        /* Orthographic projection for 2D screen-space rendering */
-        {
+        if (stride == 0x44) {
+            /* 3D world: use game's view+projection matrices */
+            extern byte backEnd[];
+            void *viewParms = *(void **)(backEnd + 0x3c8);
+            if (viewParms) {
+                float *src;
+                float t[16];
+                /* Projection (transposed + D3D→GL z remap) */
+                src = (float *)((byte *)viewParms + 0x88);
+                t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
+                t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
+                t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
+                t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
+                t[2]  = 2.0f*t[2]  - t[3];
+                t[6]  = 2.0f*t[6]  - t[7];
+                t[10] = 2.0f*t[10] - t[11];
+                t[14] = 2.0f*t[14] - t[15];
+                glMatrixMode(0x1701);
+                glLoadMatrixf(t);
+                /* View (transposed) */
+                src = (float *)((byte *)viewParms + 0x48);
+                t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
+                t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
+                t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
+                t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
+                glMatrixMode(0x1700);
+                glLoadMatrixf(t);
+            }
+            glColor4f(1.0f, 0.3f, 0.3f, 1.0f); /* reddish for world */
+        } else {
+            /* 2D HUD: ortho projection */
             float ortho[16] = {
                 2.0f/640.0f, 0, 0, 0,
                 0, -2.0f/480.0f, 0, 0,
                 0, 0, -1.0f, 0,
                 -1.0f, 1.0f, 0, 1.0f
             };
-            glMatrixMode(0x1701); /* GL_PROJECTION */
+            glMatrixMode(0x1701);
             glLoadMatrixf(ortho);
-            glMatrixMode(0x1700); /* GL_MODELVIEW */
+            glMatrixMode(0x1700);
             glLoadIdentity();
         }
     }
