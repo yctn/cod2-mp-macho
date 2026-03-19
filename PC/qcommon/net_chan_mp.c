@@ -649,7 +649,7 @@ qboolean NET_GetLoopPacket(netsrc_t sock, netadr_t *net_from, msg_t *net_message
     int pending = send - get;
 
     static int getloop_diag = 0;
-    if (pending > 0 && getloop_diag < 20) {
+    if (pending > 0 && getloop_diag < 40) {
         getloop_diag++;
         fprintf(stderr, "[GetLoop#%d] sock=%d send=%d get=%d pending=%d\n",
                 getloop_diag, sock, send, get, pending);
@@ -856,7 +856,11 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
     }
 
     if (fragmented) {
-        if (chan->sock == 0) {
+        /* The sender writes the fragment offset as Long (client, sock=0)
+           or Short (server, sock=1).  The receiver has the OPPOSITE sock
+           value, so we must read in the opposite format from what our
+           own sock would suggest. */
+        if (chan->sock == 1) {
             fragmentStart = MSG_ReadLong(msg);
         } else {
             fragmentStart = MSG_ReadShort(msg);
