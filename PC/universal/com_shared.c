@@ -44,6 +44,13 @@ int Com_RealTime(qtime_t *qtime)
 
 long int Com_Memcpy(long int *dest, const long int *src, int count)
 {
+    /* Guard against writes to shared-library space (0xf0000000+).
+       Stale Mac relocations in BSP loader ASM can produce destination
+       pointers in dynamic library mappings. */
+    unsigned int d = (unsigned int)dest;
+    if (d >= 0xf0000000) {
+        return (long int)dest;
+    }
     return (long int)memcpy(dest, src, count);
 }
 

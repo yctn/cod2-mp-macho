@@ -1667,7 +1667,8 @@ void ZN15CDirect3DDeviceD1Ev(void *_this)
 void ZN15CDirect3DDeviceD0Ev(void *_this)
 {
     ZN15CDirect3DDeviceD1Ev(_this);
-    free(_this);
+    /* Don't free: the device is allocated in a static buffer (deviceMem)
+       in CDirect3D.c, not on the heap. */
 }
 
 void ZN15CDirect3DDeviceD2Ev(void *_this)
