@@ -247,6 +247,8 @@ void R_UpdateLightsFromDvars(void)
 }
 
 /* line 317 */
+int g_bsp_loading = 0;
+
 void R_LoadWorld(const char *name, int *checksum)
 {
     byte *globals;
@@ -258,7 +260,12 @@ void R_LoadWorld(const char *name, int *checksum)
     int i;
 
     RB_InitLightVisHistory(name);
-    world = (byte *)R_LoadWorldInternal(name);
+    {
+        extern int g_bsp_loading;
+        g_bsp_loading = 1;
+        world = (byte *)R_LoadWorldInternal(name);
+        g_bsp_loading = 0;
+    }
     *(void **)(r_glob_ptr + 0x109c) = world;
 
     if (checksum != NULL) {

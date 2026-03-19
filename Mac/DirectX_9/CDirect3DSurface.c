@@ -116,7 +116,15 @@ HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface *_this, D3DLOCKED_RECT 
 
     (void)Flags;
 
-    pLockedRect->pBits = surface->surfaceMemory;
+    /* If surfaceMemory is NULL or in library space (stale pointer from
+       before a device reset), return a static scratch buffer so writes
+       don't SIGSEGV.  The pixels won't display but the engine won't crash. */
+    if (!surface->surfaceMemory || (unsigned int)surface->surfaceMemory >= 0xf0000000) {
+        static byte scratch[4 * 1024 * 1024]; /* 4MB scratch for lightmaps */
+        pLockedRect->pBits = scratch;
+    } else {
+        pLockedRect->pBits = surface->surfaceMemory;
+    }
 
     if (MacOpenGLUtils_IsCompressed(&surface->format)) {
         UINT32 blocksWide = surface->width ? surface->width + 3 : 4;

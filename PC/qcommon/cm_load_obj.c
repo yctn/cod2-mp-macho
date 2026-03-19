@@ -1556,10 +1556,12 @@ void CM_LoadMapFromBsp(const char *name, int usePvs)
      * =========================== */
     {
         int entLen = header->lumps[37].filelen;
+        int entOfs = header->lumps[37].fileofs;
+        Com_Printf("DBG entity lump37: len=%d ofs=%d\n", entLen, entOfs);
         cmLocal->numEntityChars = entLen;
 
         cmLocal->entityString = (char *)CM_Hunk_Alloc(entLen, "CMod_LoadEntityString", 9);
-        Com_Memcpy(cmLocal->entityString, bspBase + header->lumps[37].fileofs, entLen);
+        Com_Memcpy(cmLocal->entityString, bspBase + entOfs, entLen);
     }
 
     /* Clear BSP base */
