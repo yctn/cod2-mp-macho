@@ -443,8 +443,8 @@ qboolean Load_ScriptMenu(const char *pszMenu, int imageTrack)
     szMenuFile[12] = 'm'; szMenuFile[13] = 'e'; szMenuFile[14] = 'n'; szMenuFile[15] = 'u';
     szMenuFile[16] = 's'; szMenuFile[17] = '/'; szMenuFile[18] = 0;
 
-    I_strncat(szMenuFile, pszMenu, 0x100);
-    I_strncat(szMenuFile, ".menu", 0x100);
+    I_strncat(szMenuFile, 0x100, pszMenu);
+    I_strncat(szMenuFile, 0x100, ".menu");
 
     menuList = UI_LoadMenu(szMenuFile, imageTrack);
     if (!menuList)
