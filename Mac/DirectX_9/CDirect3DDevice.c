@@ -893,7 +893,16 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (stride == 0x44) {
-            /* 3D world: use game's view+projection matrices */
+            /* 3D world: TEST with ortho matrix (same as HUD) to verify
+             * the issue is matrices, not vertex data */
+            glMatrixMode(0x1701);
+            glLoadIdentity();
+            glMatrixMode(0x1700);
+            glLoadIdentity();
+            /* Scale down world coords to fit in [-1,1] NDC range */
+            glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
+            glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+            if (0) { /* skip real matrices for now */
             extern byte backEnd[];
             void *viewParms = *(void **)(backEnd + 0x3c8);
             if (viewParms) {
@@ -920,7 +929,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                 glMatrixMode(0x1700);
                 glLoadMatrixf(t);
             }
-            glColor4f(1.0f, 0.3f, 0.3f, 1.0f); /* reddish for world */
+            } /* close if(0) */
         } else {
             /* 2D HUD: ortho projection */
             float ortho[16] = {
@@ -937,9 +946,12 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     }
     while (glGetError()) {}
 
-    /* Bind texture from pre-bind (set by RB_EndSurface before RB_DrawTechnique).
-     * The ASM shader code overwrites g_boundTextures with glID=1, so we use
-     * g_prebind_texID which was set from the material's actual texture. */
+    /* Bind texture from pre-bind. For world geometry, skip textures to ensure
+     * solid color rendering works first. */
+    if (stride == 0x44) {
+        glDisable(0x0DE1); /* force no textures for world — just solid color */
+    }
+    else
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
         unsigned int glTexID = g_prebind_texID;
@@ -985,9 +997,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
 
     /* (texture diagnostic removed) */
 
-    /* Enable alpha blending for UI transparency */
-    glEnable(0x0BE2); /* GL_BLEND */
-    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
+    /* Alpha blending: enable for HUD, disable for world */
+    if (stride == 0x44) {
+        glDisable(0x0BE2); /* no blend for world — solid color */
+    } else {
+        glEnable(0x0BE2); /* GL_BLEND */
+        glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
+    }
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
