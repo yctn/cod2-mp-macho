@@ -490,7 +490,17 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
     diffG = scale * *(float *)(sp + 0x5c);
     diffB = scale * *(float *)(sp + 0x60);
 
-    /* Fill GfxLight if provided */
+    /* Fill GfxLight if provided.
+       Guard against read-only pointers — R_LoadWorldInternal (naked ASM)
+       can pass a stale Mac relocation address into the read-only strings
+       section.  Redirect to a scratch buffer so the write doesn't segfault. */
+    {
+        static GfxLight sunLightScratch;
+        if ((unsigned int)sunLight >= 0x08200000 && (unsigned int)sunLight < 0x08800000) {
+            sunLight = &sunLightScratch;
+            sl = (byte *)sunLight;
+        }
+    }
     if (sunLight) {
         *(float *)(sl + 0x04) = sunDirection[0];
         *(float *)(sl + 0x08) = sunDirection[1];

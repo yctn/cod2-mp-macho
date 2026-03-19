@@ -147,6 +147,11 @@ const float * Material_RegisterLiteral(const vec_t *literal)
 /* line 529 */
 static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 {
+    /* Guard against corrupt/uninitialized material pointers in the sort
+       array.  After hunk clear + re-init, some slots may contain stale
+       handles (small integers) instead of valid pointers. */
+    if ((unsigned int)mtl0 < 0x10000 || (unsigned int)mtl1 < 0x10000)
+        return 0;
     int diff = (int)mtl0->info.sortKey - (int)mtl1->info.sortKey;
     if (diff != 0)
         return (unsigned int)diff >> 31;
