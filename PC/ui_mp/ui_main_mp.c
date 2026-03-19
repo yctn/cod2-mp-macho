@@ -241,7 +241,8 @@ qboolean UI_CheckExecKey(int key);
 static void UI_VerifyLanguage(void);
 const char * UI_SafeTranslateString(const char *reference);
 static void UI_AddServerToFavoritesList(const char * *p, const char * *out);
-static Bool UI_GetOpenOrCloseMenuOnDvarArgs(char *testValue, char *menuName);
+static Bool UI_GetOpenOrCloseMenuOnDvarArgs(const char **args, const char *cmd,
+                                            char *dvarName, char *testValue, char *menuName);
 static int UI_GetServerStatusInfo(serverStatusInfo_t *info);
 void UI_FeederSelection(float feederID, int index);
 static void UI_GetGameTypesList(void);
@@ -957,77 +958,25 @@ void UI_AddServerToFavoritesList(const char * *p, const char * *out)
 }
 
 /* line 2061 */
-static __attribute__((naked))
-Bool UI_GetOpenOrCloseMenuOnDvarArgs(char *testValue, char *menuName)
+Bool UI_GetOpenOrCloseMenuOnDvarArgs(const char **args, const char *cmd,
+                                     char *dvarName, char *testValue, char *menuName)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2061 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl %eax, %ebx\n" /* args */
-        "movl %edx, %esi\n" /* cmd */
-        "movl $0x400, 8(%esp)\n" /* line 2063 */
-        "movl %ecx, 4(%esp)\n" /* dvarName */
-        "movl %eax, (%esp)\n"
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "jne .Lf14f9e0_0014fa1d\n"
-        "movl %esi, 4(%esp)\n" /* line 2065 | cmd */
-        "movl $str_002aa240, (%esp)\n" /* "%s: invalid dvar name.
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 2082 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14f9e0_0014fa1d:\n"
-        "movl $0x400, 8(%esp)\n" /* line 2069 */
-        "movl 8(%ebp), %eax\n" /* testValue */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf14f9e0_0014fa5f\n"
-        "movl $0x400, 8(%esp)\n" /* line 2075 */
-        "movl 0xc(%ebp), %eax\n" /* menuName */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* args */
-        "calll String_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf14f9e0_0014fa78\n"
-        "movl $1, %eax\n"
-        "addl $0x10, %esp\n" /* line 2082 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14f9e0_0014fa5f:\n"
-        "movl %esi, 4(%esp)\n" /* line 2071 | cmd */
-        "movl $str_002aa258, (%esp)\n" /* "%s: invalid test value.
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 2082 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf14f9e0_0014fa78:\n"
-        "movl %esi, 4(%esp)\n" /* line 2077 | cmd */
-        "movl $str_002aa274, (%esp)\n" /* "%s: invalid menu name.
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 2082 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!String_Parse(args, dvarName, 0x400)) {
+        Com_Printf("%s: invalid dvar name.\n", cmd);
+        return 0;
+    }
+
+    if (!String_Parse(args, testValue, 0x400)) {
+        Com_Printf("%s: invalid test value.\n", cmd);
+        return 0;
+    }
+
+    if (!String_Parse(args, menuName, 0x400)) {
+        Com_Printf("%s: invalid menu name.\n", cmd);
+        return 0;
+    }
+
+    return 1;
 }
 
 /* line 3140 */
@@ -5770,14 +5719,8 @@ void UI_RunMenuScript(const char * *args)
 
     if (I_stricmp(name, "openMenuOnDvar") == 0 || I_stricmp(name, "openMenuOnDvarNot") == 0) {
         int wantMatch = (I_stricmp(name, "openMenuOnDvar") == 0);
-        if (!UI_GetOpenOrCloseMenuOnDvarArgs(testValue, menuName))
+        if (!UI_GetOpenOrCloseMenuOnDvarArgs(args, name, dvarName, testValue, menuName))
             return;
-
-        /* args parsing uses register-convention call, approximate with standard C */
-        {
-            /* Get dvar name from args - already parsed by UI_GetOpenOrCloseMenuOnDvarArgs into dvarName */
-            /* The dvarName was filled by UI_GetOpenOrCloseMenuOnDvarArgs */
-        }
 
         if (!Dvar_FindVar(dvarName)) {
             Com_Printf("%s: cannot find dvar %s\n", name, dvarName);
@@ -5795,7 +5738,7 @@ void UI_RunMenuScript(const char * *args)
 
     if (I_stricmp(name, "closeMenuOnDvar") == 0 || I_stricmp(name, "closeMenuOnDvarNot") == 0) {
         int wantMatch = (I_stricmp(name, "closeMenuOnDvar") == 0);
-        if (!UI_GetOpenOrCloseMenuOnDvarArgs(testValue, menuName))
+        if (!UI_GetOpenOrCloseMenuOnDvarArgs(args, name, dvarName, testValue, menuName))
             return;
 
         if (!Dvar_FindVar(dvarName)) {

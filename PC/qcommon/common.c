@@ -1647,7 +1647,7 @@ void Com_Frame_Try_Block_Function(void)
         dvar_modifiedFlags &= ~1;
         if (Com_HasPlayerProfile()) {
             char path[64];
-            Com_BuildPlayerProfilePath(path, 64, "");
+            Com_BuildPlayerProfilePath(path, 64, "config_mp.cfg");
             Com_WriteConfigToFile(path);
         }
     }

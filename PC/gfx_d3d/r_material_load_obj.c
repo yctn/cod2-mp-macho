@@ -6918,14 +6918,67 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
 extern int Material_LoadFile(const char *filename, int *fileHandle);
 extern void *Material_Alloc(int size);
 
+static Bool Material_IsUiLikeNameForLoad(const char *name)
+{
+    return strncmp(name, "ui/", 3) == 0 ||
+           strncmp(name, "ui_", 3) == 0 ||
+           strncmp(name, "menu/", 5) == 0 ||
+           strncmp(name, "levelshots/", 11) == 0 ||
+           stricmp(name, "$levelbriefing") == 0;
+}
+
+static Bool Material_HasImageExtensionForLoad(const char *name)
+{
+    int len = (int)strlen(name);
+
+    if (len <= 4 || name[len - 4] != '.')
+        return 0;
+
+    return stricmp(name + len - 4, ".tga") == 0 ||
+           stricmp(name + len - 4, ".jpg") == 0 ||
+           stricmp(name + len - 4, ".iwi") == 0;
+}
+
+static Bool Material_HasExtensionlessAliasForLoad(const char *name)
+{
+    char aliasName[64];
+    int aliasHandle;
+    int aliasSize;
+    int len;
+
+    if (!Material_HasImageExtensionForLoad(name))
+        return 0;
+
+    len = (int)strlen(name);
+    if (len >= (int)sizeof(aliasName))
+        return 0;
+
+    memcpy(aliasName, name, len - 4);
+    aliasName[len - 4] = '\0';
+
+    aliasSize = Material_LoadFile(aliasName, &aliasHandle);
+    if (aliasSize < 0)
+        return 0;
+
+    FS_FCloseFile(aliasHandle);
+    return 1;
+}
+
+static Bool Material_ShouldPrintMissingMaterial(const char *name)
+{
+    if (name[0] == '$' || Material_IsUiLikeNameForLoad(name))
+        return 0;
+
+    return !Material_HasExtensionlessAliasForLoad(name);
+}
+
 Material * Material_Load(const char *name, int imageTrack)
 {
     int fileHandle;
     int fileSize = Material_LoadFile(name, &fileHandle);
 
     if (fileSize < 0) {
-        /* File not found — silent for $-prefixed names (built-in) */
-        if (name[0] != '$')
+        if (Material_ShouldPrintMissingMaterial(name))
             Com_Printf("^1ERROR: Couldn't find material '%s'\n", name);
         return NULL;
     }
@@ -7502,4 +7555,3 @@ void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(
     );
 }
 #endif /* original naked introsort GfxCachedShaderText */
-

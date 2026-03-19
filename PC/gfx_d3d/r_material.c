@@ -108,6 +108,53 @@ typedef unsigned char (*MaterialCompFunc)(const Material *, const Material *);
 void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(Material **first, int holeIndex, int len, Material *value, MaterialCompFunc comp);
 void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(Material **first, Material **last, MaterialCompFunc comp);
 void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(Material **first, Material **last, int depth_limit, MaterialCompFunc comp);
+extern void FS_FCloseFile(fileHandle_t f);
+
+static qboolean Material_IsUiLikeName(const char *name)
+{
+    return strncmp(name, "ui/", 3) == 0 ||
+           strncmp(name, "ui_", 3) == 0 ||
+           strncmp(name, "menu/", 5) == 0 ||
+           strncmp(name, "levelshots/", 11) == 0 ||
+           stricmp(name, "$levelbriefing") == 0;
+}
+
+static qboolean Material_HasImageExtension(const char *name)
+{
+    int len = (int)strlen(name);
+
+    if (len <= 4 || name[len - 4] != '.')
+        return 0;
+
+    return stricmp(name + len - 4, ".tga") == 0 ||
+           stricmp(name + len - 4, ".jpg") == 0 ||
+           stricmp(name + len - 4, ".iwi") == 0;
+}
+
+static MaterialHandle Material_TryAliasWithoutExtension(const char *name, int imageTrack)
+{
+    char aliasName[64];
+    fileHandle_t fileHandle;
+    int fileSize;
+    int len;
+
+    if (!Material_HasImageExtension(name))
+        return NULL;
+
+    len = (int)strlen(name);
+    if (len >= (int)sizeof(aliasName))
+        return NULL;
+
+    memcpy(aliasName, name, len - 4);
+    aliasName[len - 4] = '\0';
+
+    fileSize = Material_LoadFile(aliasName, &fileHandle);
+    if (fileSize < 0)
+        return NULL;
+
+    FS_FCloseFile(fileHandle);
+    return Material_Duplicate(Material_Register(aliasName, imageTrack), name);
+}
 
 /* line 218 */
 void * Material_Alloc(int size)
@@ -1417,6 +1464,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
     int hash = R_HashAssetName(name) & 0x3ff;
     byte *existing;
     Material *material;
+    MaterialHandle aliasMaterial;
     int count;
 
     /* Search for existing material */
@@ -1435,10 +1483,20 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
     /* Not found — try loading */
     material = Material_Load(name, imageTrack);
     if (!material) {
-        /* Load failed — duplicate from default material */
         rgp = (byte *)imp_rgp;
         if (!*(void **)(rgp + 0x102c))
             R_Error(0, "No default material loaded for %s fallback", name);
+
+        aliasMaterial = Material_TryAliasWithoutExtension(name, imageTrack);
+        if (aliasMaterial)
+            return aliasMaterial;
+
+        if (Material_IsUiLikeName(name)) {
+            MaterialHandle fallback = *(MaterialHandle *)(rgp + 0x1038);
+            if (!fallback)
+                fallback = *(MaterialHandle *)(rgp + 0x102c);
+            return Material_Duplicate(fallback, name);
+        }
 
         Com_Printf("^3WARNING: Could not find material '%s'\n", name);
         return Material_Duplicate(*(MaterialHandle *)(rgp + 0x102c), name);
