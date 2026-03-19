@@ -818,28 +818,32 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
         glVertexPointer(3, 0x1406 /* GL_FLOAT */, stride, vertBase);
 
-        /* Color: 4 bytes BGRA at offset 0x1c (28) for stride >= 64,
-         * at 0x0c for stride 24/32, at 0x18 for stride 36 */
+        /* Color and texcoord offsets depend on vertex layout.
+         * GfxWorldVertex (stride 0x44=68): pos(12)+tangent(12)+color(4)+texCoord(8)+lmapCoord(8)+binormal(12)+normal(12)
+         * HUD vertex (stride 0x40=64): similar layout */
         {
             int colorOffset = -1;
-            if (stride == 0x40 || stride == 0x44)
+            int texOffset = -1;
+            if (stride == 0x44) {
+                colorOffset = 0x18;  /* after pos(12) + tangent(12) */
+                texOffset = 0x1c;    /* after color(4) */
+            } else if (stride == 0x40) {
                 colorOffset = 0x1c;
-            else if (stride == 0x18 || stride == 0x20)
+                texOffset = 0x20;
+            } else if (stride == 0x18 || stride == 0x20) {
                 colorOffset = 0x0c;
-            else if (stride == 0x24)
+            } else if (stride == 0x24) {
                 colorOffset = 0x18;
+                texOffset = 0x1c;
+            }
             if (colorOffset >= 0) {
                 glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
-                /* D3D vertex colors are BGRA; use GL_BGRA (0x80E1) as size param
-                 * (GL_EXT_vertex_array_bgra) to swizzle to RGBA on read */
                 glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
             }
-        }
-
-        /* Texcoord: 2 floats at offset 16 for stride >= 64 */
-        if (stride >= 0x40) {
-            glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
-            glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + 16);
+            if (texOffset >= 0) {
+                glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
+                glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + texOffset);
+            }
         }
 
         if (dip_count < 3) {
@@ -953,7 +957,10 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     {
         int colorOffset = -1;
         int texOffset = -1;
-        if (stride == 0x40 || stride == 0x44) {
+        if (stride == 0x44) {
+            colorOffset = 0x18;
+            texOffset = 0x1c;
+        } else if (stride == 0x40) {
             colorOffset = 0x1c;
             texOffset = 0x20;
         } else if (stride == 0x24) {
