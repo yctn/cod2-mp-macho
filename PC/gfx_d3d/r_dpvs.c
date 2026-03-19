@@ -1538,7 +1538,7 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
     }
 
     /* 2. Add visible surfaces in this cell */
-    R_AddVisibleSurfacesInCell(cell, planes, planeCount);
+    R_AddVisibleSurfacesInCell_impl(cell, planes, planeCount);
 
     /* 3. Walk ancestor portal chain, set isAncestor */
     {
@@ -1732,7 +1732,7 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
         const GfxCell *furtherCells[128];
         int cellCount = R_GetFurtherCellList_r_impl(cell, parentPlane, planes, planeCount, scratchBuf, furtherCells, 0);
         for (i = 0; i < cellCount; i++) {
-            R_AddVisibleSurfacesInCell(furtherCells[i], planes, planeCount);
+            R_AddVisibleSurfacesInCell_impl(furtherCells[i], planes, planeCount);
         }
     }
 
@@ -4641,7 +4641,7 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
     }
 
     /* Portal traversal or full-cell fallback */
-    if (!(*(const dvar_t **)imp_r_skipPvs)->current.integer) {
+    if (!(*(const dvar_t **)imp_r_skipPvs)->current.enabled) {
         if (cameraCellIndex >= 0) {
             byte *world = *(byte **)((byte *)&rgp + 0x109c);
             GfxCell *cells = *(GfxCell **)(world + 0x100);
@@ -4650,7 +4650,7 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
             if ((*(const dvar_t **)imp_r_singleCell)->current.integer) {
                 /* Single cell mode: just add surfaces in camera cell */
                 *(void **)((byte *)&dpvsGlob + 44) = 0;
-                R_AddVisibleSurfacesInCell(cameraCell, frustumPlanes, frustumPlaneCount);
+                R_AddVisibleSurfacesInCell_impl(cameraCell, frustumPlanes, frustumPlaneCount);
             } else {
                 /* Full portal traversal */
                 R_VisitPortals(cameraCell, (const DpvsPlane *)&dpvsGlob, frustumPlanes, frustumPlaneCount);
@@ -4670,7 +4670,7 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
                 int cellCount = *(int *)(world + 0xfc);
                 GfxCell *cells = *(GfxCell **)(world + 0x100);
                 for (i = 0; i < cellCount; i++)
-                    R_AddVisibleSurfacesInCell(&cells[i], frustumPlanes, frustumPlaneCount);
+                    R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
             }
         }
     }
