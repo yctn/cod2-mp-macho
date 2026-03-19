@@ -886,8 +886,8 @@ const char * UI_SafeTranslateString(const char *reference)
         }
         /* Build error string: "^1UNLOCALIZED(^7" + ref + "^1)^7" */
         strcpy(errorString, "^1UNLOCALIZED(^7");
-        I_strncat(errorString, ref, 0x400);
-        I_strncat(errorString, "^1)^7", 0x400);
+        I_strncat(errorString, 0x400, ref);
+        I_strncat(errorString, 0x400, "^1)^7");
         return errorString;
     }
 
