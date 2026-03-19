@@ -836,9 +836,15 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                 colorOffset = 0x18;
                 texOffset = 0x1c;
             }
-            if (colorOffset >= 0) {
+            if (colorOffset >= 0 && stride != 0x44) {
+                /* Use vertex colors for non-world geometry (HUD, etc.) */
                 glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
                 glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
+            } else if (stride == 0x44) {
+                /* World geometry: force white color since vertex colors are
+                   dark ambient occlusion and we don't have lightmap support yet */
+                glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
+                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
             }
             if (texOffset >= 0) {
                 glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
@@ -864,38 +870,53 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         }
     }
 
-    /* Reset GL state for fixed-function rendering.
-     * The game's ASM code enables ARB programs and binds VAOs that interfere
-     * with our fixed-function draws. We need to fully reset the relevant state. */
+    /* Reset GL state. For world geometry (stride=0x44), keep ARB programs
+     * and use 3D perspective projection. For HUD (other strides), use
+     * fixed-function with ortho projection. */
     while (glGetError()) {}
-    glBindProgramARB(0x8620, 0); /* unbind vertex program */
-    glBindProgramARB(0x8804, 0); /* unbind fragment program */
-    glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
-    glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
-    glDisable(0x0B71); /* GL_DEPTH_TEST */
-    glDisable(0x0B44); /* GL_CULL_FACE */
-    glDisable(0x0B60); /* GL_FOG — game enables via ASM, never disabled */
-    glDisable(0x0B50); /* GL_LIGHTING */
-    glDisable(0x0BC0); /* GL_ALPHA_TEST */
-    glColorMask(1, 1, 1, 1);
-    glDepthMask(0);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f); /* default white in case color array fails */
-    while (glGetError()) {}
 
-    /* Orthographic projection: map screen coords (0-640, 0-480) to NDC (-1 to +1) */
-    {
-        float ortho[16] = {
-            2.0f/640.0f, 0, 0, 0,
-            0, -2.0f/480.0f, 0, 0,
-            0, 0, -1.0f, 0,
-            -1.0f, 1.0f, 0, 1.0f
-        };
-        glMatrixMode(0x1701); /* GL_PROJECTION */
-        glLoadMatrixf(ortho);
-        glMatrixMode(0x1700); /* GL_MODELVIEW */
-        glLoadIdentity();
+    if (stride == 0x44) {
+        /* 3D world geometry: keep the game's ARB shader programs active
+         * and use the matrices already set by the game engine. */
+        glEnable(0x0B71); /* GL_DEPTH_TEST */
+        glDepthMask(1);
+        glDepthFunc(0x0203); /* GL_LEQUAL */
+        glEnable(0x0B44); /* GL_CULL_FACE */
+        glDisable(0x0B50); /* GL_LIGHTING */
+        glDisable(0x0BC0); /* GL_ALPHA_TEST */
+        glColorMask(1, 1, 1, 1);
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    } else {
+        /* 2D HUD/UI: disable shaders, use fixed-function ortho */
+        glBindProgramARB(0x8620, 0);
+        glBindProgramARB(0x8804, 0);
+        glDisable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
+        glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+        glDisable(0x0B71); /* GL_DEPTH_TEST */
+        glDisable(0x0B44); /* GL_CULL_FACE */
+        glDisable(0x0B60); /* GL_FOG */
+        glDisable(0x0B50); /* GL_LIGHTING */
+        glDisable(0x0BC0); /* GL_ALPHA_TEST */
+        glColorMask(1, 1, 1, 1);
+        glDepthMask(0);
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+        /* Orthographic projection for 2D screen-space rendering */
+        {
+            float ortho[16] = {
+                2.0f/640.0f, 0, 0, 0,
+                0, -2.0f/480.0f, 0, 0,
+                0, 0, -1.0f, 0,
+                -1.0f, 1.0f, 0, 1.0f
+            };
+            glMatrixMode(0x1701); /* GL_PROJECTION */
+            glLoadMatrixf(ortho);
+            glMatrixMode(0x1700); /* GL_MODELVIEW */
+            glLoadIdentity();
+        }
     }
+    while (glGetError()) {}
 
     /* Bind texture from pre-bind (set by RB_EndSurface before RB_DrawTechnique).
      * The ASM shader code overwrites g_boundTextures with glID=1, so we use
