@@ -674,9 +674,8 @@ void CG_RegisterGraphics_ASM_DISABLED(const char *mapname)
         "retl\n"
     );
 }
-#endif /* disabled ASM CG_RegisterGraphics */
 #else
-static void CG_RegisterGraphics(const char *mapname)
+static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
 {
     byte *cgsPtr;
     int i;
@@ -841,7 +840,8 @@ static void CG_RegisterGraphics(const char *mapname)
     /* line 1032 */
     CG_LoadingString((const char *)str_002a79a4);
 }
-#endif
+#endif /* __EMSCRIPTEN__ */
+#endif /* disabled #if 0 - CG_RegisterGraphics replaced by cg_registergraphics_new.c */
 
 /* line 1043 */
 void CG_StartAmbient(void)
