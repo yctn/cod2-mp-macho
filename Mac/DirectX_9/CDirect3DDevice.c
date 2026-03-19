@@ -960,12 +960,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     }
     while (glGetError()) {}
 
-    /* Bind texture from pre-bind. For world geometry, skip textures to ensure
-     * solid color rendering works first. */
-    if (stride == 0x44) {
-        glDisable(0x0DE1); /* force no textures for world — just solid color */
-    }
-    else
+    /* Bind texture from pre-bind. */
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
         unsigned int glTexID = g_prebind_texID;
@@ -1011,13 +1006,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
 
     /* (texture diagnostic removed) */
 
-    /* Alpha blending: enable for HUD, disable for world */
-    if (stride == 0x44) {
-        glDisable(0x0BE2); /* no blend for world — solid color */
-    } else {
-        glEnable(0x0BE2); /* GL_BLEND */
-        glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
-    }
+    /* Alpha blending */
+    glEnable(0x0BE2); /* GL_BLEND */
+    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
