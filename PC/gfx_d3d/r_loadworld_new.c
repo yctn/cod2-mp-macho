@@ -879,11 +879,9 @@ GfxWorld *R_LoadWorldInternal(const char *name)
     /* Clear rgl again */
     memset(&rgl, 0, 6 * 4);
 
-    /* R_LoadSun and R_RegisterOutdoorImage may crash due to stale ASM
-       addresses.  Skip for now — sun/outdoor visuals won't work but
-       gameplay functions. TODO: decompile these to C. */
-    /* R_LoadSun(name, &s_world.sun); */
-    /* R_RegisterOutdoorImage(&s_world); */
+    /* Sun and outdoor setup — these are binary ASM functions */
+    R_LoadSun(name, &s_world.sun);
+    R_RegisterOutdoorImage(&s_world);
 
     return &s_world;
 }
