@@ -48,8 +48,13 @@ void __wrap_R_Error(int level, const char *fmt, ...)
         va_end(args);
 
         if (strstr(buf, "Vertex type") && strstr(buf, "doesn't have")) {
-            /* Downgrade to warning — print but don't exit */
-            Com_Printf("WARNING: %s", buf);
+            /* Downgrade to warning — print first few then suppress */
+            static int vtypeWarnCount = 0;
+            vtypeWarnCount++;
+            if (vtypeWarnCount <= 5)
+                Com_Printf("WARNING: %s", buf);
+            else if (vtypeWarnCount == 6)
+                Com_Printf("WARNING: Suppressing further vertex type warnings...\n");
             return;
         }
     }
