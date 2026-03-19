@@ -135,9 +135,18 @@ void IN_Shutdown(void)
 void IN_Frame(void)
 {
     SDL_Event ev;
+    SDL_Window *focus;
+
+    if (mouse_active && relative_mode_ok && SDL_GetRelativeMouseMode() != SDL_TRUE)
+        relative_mode_ok = 0;
+
+    focus = SDL_GetKeyboardFocus();
+    if (!focus)
+        focus = SDL_GetMouseFocus();
 
     /* Retry relative mouse mode if it failed at init (window may now have focus) */
-    if (mouse_active && !relative_mode_ok) {
+    if (mouse_active && !relative_mode_ok && focus) {
+        SDL_ShowCursor(SDL_DISABLE);
         if (SDL_SetRelativeMouseMode(SDL_TRUE) == 0) {
             relative_mode_ok = 1;
             fprintf(stderr, "[IN_Frame] SDL_SetRelativeMouseMode now OK\n");
@@ -148,6 +157,16 @@ void IN_Frame(void)
         switch (ev.type) {
         case SDL_QUIT:
             exit(0);
+            break;
+
+        case SDL_WINDOWEVENT:
+            if (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+                relative_mode_ok = 0;
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+                SDL_ShowCursor(SDL_ENABLE);
+            } else if (ev.window.event == SDL_WINDOWEVENT_FOCUS_GAINED && mouse_active) {
+                relative_mode_ok = 0;
+            }
             break;
 
         case SDL_KEYDOWN:

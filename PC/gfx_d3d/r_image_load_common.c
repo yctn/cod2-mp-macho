@@ -302,11 +302,7 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
     {
         int dev = *(int *)((byte *)imp_dx + 8);
         int devvt = dev ? *(int *)dev : 0;
-        static int iud = 0;
-        if (iud++ < 5)
-            fprintf(stderr, "[IUD] Image_UploadData dev=%p devvt=%p mapType=%d w=%d\n", (void*)dev, (void*)devvt, image->mapType, image->width);
         if (dev == 0 || devvt == 0) {
-            if (iud <= 5) fprintf(stderr, "[IUD] SKIPPING - no device\n");
             return;
         }
     }

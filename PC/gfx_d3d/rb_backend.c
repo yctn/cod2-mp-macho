@@ -90,21 +90,6 @@ extern int g_rb_skip_reason;
 extern int g_rb_dispatch_count;
 extern int g_rb_first_cmd;
 static void diag_rb_frame_end(void) {
-    static int last_print = 0;
-    /* Print first 5 frames, then every 60 frames up to 900 */
-    if (g_rb_exec_count > last_print && (g_rb_exec_count <= 5 || (g_rb_exec_count % 60 == 0 && g_rb_exec_count <= 900))) {
-        fprintf(stderr, "[RB f%d] rdsl=%d es=%d/%d nomat=%d notech=%d dxst=%d idx0=%d f1=%d f2=%d gl=%d tri=%d df0=%d dsc=%d/%d/%d tnull=%d sort=%d bf=%d tt=%d/%d skip=%d disp=%d cmd1=%d\n",
-            g_rb_exec_count, rb_rdsl_call_count, g_rb_endsurface_count, g_rb_endsurface_draw,
-            g_rb_endsurface_nomaterial, g_rb_endsurface_notechnique, g_rb_endsurface_dxstate,
-            g_rb_endsurface_idxzero, g_rb_endsurface_flag1skip, g_rb_endsurface_flag2skip,
-            g_dip_gl_draw, g_dip_is_tri, g_dip_drawflag_zero,
-            rb_drawsurfscmd_count, g_dsc_surfcount[0], g_dsc_surfcount[1],
-            g_rdsl_ignore_technull,
-            g_rdsl_sortchange, g_rdsl_bf_entry,
-            g_dsc_techtype[0], g_dsc_techtype[1],
-            g_rb_skip_reason, g_rb_dispatch_count, g_rb_first_cmd);
-        last_print = g_rb_exec_count;
-    }
     /* Reset per-frame counters */
     rb_rdsl_call_count = 0;
     g_rb_endsurface_count = 0;

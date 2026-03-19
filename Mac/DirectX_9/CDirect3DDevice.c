@@ -12,6 +12,7 @@ extern void SDL_GL_SwapWindow(SDL_Window *window);
 
 /* --- External vtable --- */
 extern void *vtbl_CDirect3DDevice[];
+extern void *vtbl_CDirect3DTexture[];
 
 /* --- External globals --- */
 extern bool g_ShowShadowCookies;
@@ -270,7 +271,407 @@ typedef struct {
 static DWORD g_currentFVF = 0;
 static float g_vsConst[256 * 4]; /* Vertex shader constant registers (256 vec4) */
 static IDirect3DBaseTexture9 *g_boundTextures[8] = {0};
+static DWORD g_alphaTestEnable = 0;
+static DWORD g_textureFactor = 0xFFFFFFFFu;
+static DWORD g_textureStageState[8][33];
+static DWORD g_samplerState[16][14];
 unsigned int g_prebind_texID = 0; /* Set by RB_EndSurface texture pre-binding */
+
+#define GL_NEAREST              0x2600
+#define GL_LINEAR               0x2601
+#define GL_REPEAT               0x2901
+#define GL_NEAREST_MIPMAP_NEAREST 0x2700
+#define GL_LINEAR_MIPMAP_NEAREST  0x2701
+#define GL_NEAREST_MIPMAP_LINEAR  0x2702
+#define GL_LINEAR_MIPMAP_LINEAR   0x2703
+#define GL_CLAMP_TO_EDGE        0x812F
+#define GL_MIRRORED_REPEAT      0x8370
+#define GL_TEXTURE_ENV          0x2300
+#define GL_TEXTURE_ENV_MODE     0x2200
+#define GL_REPLACE              0x1E01
+#define GL_ADD                  0x0104
+#define GL_COMBINE              0x8570
+#define GL_COMBINE_RGB          0x8571
+#define GL_COMBINE_ALPHA        0x8572
+#define GL_RGB_SCALE            0x8573
+#define GL_ADD_SIGNED           0x8574
+#define GL_INTERPOLATE          0x8575
+#define GL_CONSTANT             0x8576
+#define GL_PRIMARY_COLOR        0x8577
+#define GL_PREVIOUS             0x8578
+#define GL_SOURCE0_RGB          0x8580
+#define GL_SOURCE1_RGB          0x8581
+#define GL_SOURCE2_RGB          0x8582
+#define GL_SOURCE0_ALPHA        0x8588
+#define GL_SOURCE1_ALPHA        0x8589
+#define GL_SOURCE2_ALPHA        0x858A
+#define GL_OPERAND0_RGB         0x8590
+#define GL_OPERAND1_RGB         0x8591
+#define GL_OPERAND2_RGB         0x8592
+#define GL_OPERAND0_ALPHA       0x8598
+#define GL_OPERAND1_ALPHA       0x8599
+#define GL_OPERAND2_ALPHA       0x859A
+#define GL_SUBTRACT             0x84E7
+#define GL_TEXTURE0_ARB         0x84C0
+#define GL_ALPHA_SCALE          0x0D1C
+
+#define D3DTA_SELECTMASK        0x0F
+#define D3DTA_COMPLEMENT        0x10
+#define D3DTA_ALPHAREPLICATE    0x20
+
+static GLenum CDirect3DDevice_MapCompareFunc(DWORD func)
+{
+    switch (func) {
+    case 1: return 0x0200; /* GL_NEVER */
+    case 2: return 0x0201; /* GL_LESS */
+    case 3: return 0x0202; /* GL_EQUAL */
+    case 4: return 0x0203; /* GL_LEQUAL */
+    case 5: return 0x0204; /* GL_GREATER */
+    case 6: return 0x0205; /* GL_NOTEQUAL */
+    case 7: return 0x0206; /* GL_GEQUAL */
+    default: return 0x0207; /* GL_ALWAYS */
+    }
+}
+
+static GLenum CDirect3DDevice_MapBlendFunc(DWORD blend)
+{
+    switch (blend) {
+    case 1: return 0;        /* GL_ZERO */
+    case 2: return 1;        /* GL_ONE */
+    case 3: return 0x0300;   /* GL_SRC_COLOR */
+    case 4: return 0x0301;   /* GL_ONE_MINUS_SRC_COLOR */
+    case 5: return 0x0302;   /* GL_SRC_ALPHA */
+    case 6: return 0x0303;   /* GL_ONE_MINUS_SRC_ALPHA */
+    case 7: return 0x0304;   /* GL_DST_ALPHA */
+    case 8: return 0x0305;   /* GL_ONE_MINUS_DST_ALPHA */
+    case 9: return 0x0306;   /* GL_DST_COLOR */
+    case 10: return 0x0307;  /* GL_ONE_MINUS_DST_COLOR */
+    case 11: return 0x0308;  /* GL_SRC_ALPHA_SATURATE */
+    case 12: return 0x0302;  /* D3DBLEND_BOTHSRCALPHA */
+    case 13: return 0x0303;  /* D3DBLEND_BOTHINVSRCALPHA */
+    default: return 1;       /* GL_ONE */
+    }
+}
+
+static unsigned int CDirect3DDevice_GetTextureGLId(IDirect3DBaseTexture9 *texture)
+{
+    if (!texture || (unsigned int)texture <= 0x08000000u)
+        return 0;
+    return *(unsigned int *)((byte *)texture + 0x54);
+}
+
+static GLenum CDirect3DDevice_MapTextureAddress(DWORD addressMode)
+{
+    switch (addressMode) {
+    case D3DTADDRESS_CLAMP:
+        return GL_CLAMP_TO_EDGE;
+    case D3DTADDRESS_MIRROR:
+        return GL_MIRRORED_REPEAT;
+    default:
+        return GL_REPEAT;
+    }
+}
+
+static GLenum CDirect3DDevice_MapTextureMagFilter(DWORD filter)
+{
+    switch (filter) {
+    case D3DTEXF_POINT:
+        return GL_NEAREST;
+    case D3DTEXF_LINEAR:
+    case D3DTEXF_ANISOTROPIC:
+    default:
+        return GL_LINEAR;
+    }
+}
+
+static GLenum CDirect3DDevice_MapTextureMinFilter(DWORD minFilter, DWORD mipFilter)
+{
+    if (minFilter != D3DTEXF_POINT && minFilter != D3DTEXF_LINEAR && minFilter != D3DTEXF_ANISOTROPIC)
+        minFilter = D3DTEXF_LINEAR;
+
+    if (mipFilter == D3DTEXF_NONE) {
+        return (minFilter == D3DTEXF_POINT) ? GL_NEAREST : GL_LINEAR;
+    }
+
+    if (mipFilter == D3DTEXF_POINT) {
+        return (minFilter == D3DTEXF_POINT) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_NEAREST;
+    }
+
+    return (minFilter == D3DTEXF_POINT) ? GL_NEAREST_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_LINEAR;
+}
+
+static GLenum CDirect3DDevice_MapTextureArgSource(DWORD arg)
+{
+    switch (arg & D3DTA_SELECTMASK) {
+    case 0: /* D3DTA_DIFFUSE */
+        return GL_PRIMARY_COLOR;
+    case 1: /* D3DTA_CURRENT */
+        return GL_PREVIOUS;
+    case 2: /* D3DTA_TEXTURE */
+        return 0x1702; /* GL_TEXTURE */
+    case 3: /* D3DTA_TFACTOR */
+    case 6: /* D3DTA_CONSTANT */
+        return GL_CONSTANT;
+    case 4: /* D3DTA_SPECULAR */
+        return GL_PRIMARY_COLOR;
+    case 5: /* D3DTA_TEMP */
+    default:
+        return GL_PREVIOUS;
+    }
+}
+
+static GLenum CDirect3DDevice_MapTextureArgOperandRGB(DWORD arg)
+{
+    if (arg & D3DTA_ALPHAREPLICATE) {
+        return (arg & D3DTA_COMPLEMENT) ? 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */ : 0x0302 /* GL_SRC_ALPHA */;
+    }
+    return (arg & D3DTA_COMPLEMENT) ? 0x0301 /* GL_ONE_MINUS_SRC_COLOR */ : 0x0300 /* GL_SRC_COLOR */;
+}
+
+static GLenum CDirect3DDevice_MapTextureArgOperandAlpha(DWORD arg)
+{
+    return (arg & D3DTA_COMPLEMENT) ? 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */ : 0x0302 /* GL_SRC_ALPHA */;
+}
+
+static void CDirect3DDevice_SetTextureFactorColor(void)
+{
+    GLfloat factor[4];
+
+    factor[0] = ((g_textureFactor >> 16) & 0xFF) / 255.0f;
+    factor[1] = ((g_textureFactor >> 8) & 0xFF) / 255.0f;
+    factor[2] = (g_textureFactor & 0xFF) / 255.0f;
+    factor[3] = ((g_textureFactor >> 24) & 0xFF) / 255.0f;
+    glTexEnvfv(GL_TEXTURE_ENV, 0x2201 /* GL_TEXTURE_ENV_COLOR */, factor);
+}
+
+static void CDirect3DDevice_SetTextureCombineArgs(GLenum source0Enum, GLenum operand0Enum,
+                                                  GLenum source1Enum, GLenum operand1Enum,
+                                                  GLenum source2Enum, GLenum operand2Enum,
+                                                  DWORD arg0, DWORD arg1, DWORD arg2,
+                                                  int alpha)
+{
+    GLenum (*mapOperand)(DWORD) = alpha ? CDirect3DDevice_MapTextureArgOperandAlpha
+                                        : CDirect3DDevice_MapTextureArgOperandRGB;
+    GLenum (*sourceEnumBase)(DWORD) = CDirect3DDevice_MapTextureArgSource;
+
+    glTexEnvi(GL_TEXTURE_ENV, source0Enum, sourceEnumBase(arg0));
+    glTexEnvi(GL_TEXTURE_ENV, operand0Enum, mapOperand(arg0));
+    glTexEnvi(GL_TEXTURE_ENV, source1Enum, sourceEnumBase(arg1));
+    glTexEnvi(GL_TEXTURE_ENV, operand1Enum, mapOperand(arg1));
+    glTexEnvi(GL_TEXTURE_ENV, source2Enum, sourceEnumBase(arg2));
+    glTexEnvi(GL_TEXTURE_ENV, operand2Enum, mapOperand(arg2));
+}
+
+static void CDirect3DDevice_ApplyTextureCombineRGB(DWORD op, DWORD arg0, DWORD arg1, DWORD arg2)
+{
+    GLenum combine = 0x2100; /* GL_MODULATE */
+    GLint scale = 1;
+    DWORD src0 = arg1;
+    DWORD src1 = arg2;
+    DWORD src2 = arg0;
+
+    switch (op) {
+    case D3DTOP_DISABLE:
+    case D3DTOP_SELECTARG1:
+        combine = GL_REPLACE;
+        src0 = arg1;
+        break;
+    case D3DTOP_SELECTARG2:
+        combine = GL_REPLACE;
+        src0 = arg2;
+        break;
+    case D3DTOP_MODULATE:
+        combine = 0x2100; /* GL_MODULATE */
+        break;
+    case D3DTOP_MODULATE2X:
+        combine = 0x2100;
+        scale = 2;
+        break;
+    case D3DTOP_MODULATE4X:
+        combine = 0x2100;
+        scale = 4;
+        break;
+    case D3DTOP_ADD:
+        combine = GL_ADD;
+        break;
+    case D3DTOP_ADDSIGNED:
+    case D3DTOP_ADDSIGNED2X:
+        combine = GL_ADD_SIGNED;
+        scale = (op == D3DTOP_ADDSIGNED2X) ? 2 : 1;
+        break;
+    case D3DTOP_SUBTRACT:
+        combine = GL_SUBTRACT;
+        break;
+    case D3DTOP_BLENDDIFFUSEALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 0; /* diffuse */
+        break;
+    case D3DTOP_BLENDTEXTUREALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 2; /* texture */
+        break;
+    case D3DTOP_BLENDFACTORALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 3; /* tfactor */
+        break;
+    case D3DTOP_BLENDCURRENTALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 1; /* current */
+        break;
+    case D3DTOP_LERP:
+        combine = GL_INTERPOLATE;
+        break;
+    default:
+        combine = 0x2100;
+        break;
+    }
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, combine);
+    glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, scale);
+    CDirect3DDevice_SetTextureCombineArgs(GL_SOURCE0_RGB, GL_OPERAND0_RGB,
+                                          GL_SOURCE1_RGB, GL_OPERAND1_RGB,
+                                          GL_SOURCE2_RGB, GL_OPERAND2_RGB,
+                                          src0, src1, src2, 0);
+}
+
+static void CDirect3DDevice_ApplyTextureCombineAlpha(DWORD op, DWORD arg0, DWORD arg1, DWORD arg2)
+{
+    GLenum combine = GL_REPLACE;
+    GLint scale = 1;
+    DWORD src0 = arg1;
+    DWORD src1 = arg2;
+    DWORD src2 = arg0;
+
+    switch (op) {
+    case D3DTOP_DISABLE:
+    case D3DTOP_SELECTARG1:
+        combine = GL_REPLACE;
+        src0 = arg1;
+        break;
+    case D3DTOP_SELECTARG2:
+        combine = GL_REPLACE;
+        src0 = arg2;
+        break;
+    case D3DTOP_MODULATE:
+        combine = 0x2100; /* GL_MODULATE */
+        break;
+    case D3DTOP_MODULATE2X:
+        combine = 0x2100;
+        scale = 2;
+        break;
+    case D3DTOP_MODULATE4X:
+        combine = 0x2100;
+        scale = 4;
+        break;
+    case D3DTOP_ADD:
+        combine = GL_ADD;
+        break;
+    case D3DTOP_ADDSIGNED:
+    case D3DTOP_ADDSIGNED2X:
+        combine = GL_ADD_SIGNED;
+        scale = (op == D3DTOP_ADDSIGNED2X) ? 2 : 1;
+        break;
+    case D3DTOP_SUBTRACT:
+        combine = GL_SUBTRACT;
+        break;
+    case D3DTOP_BLENDDIFFUSEALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 0;
+        break;
+    case D3DTOP_BLENDTEXTUREALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 2;
+        break;
+    case D3DTOP_BLENDFACTORALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 3;
+        break;
+    case D3DTOP_BLENDCURRENTALPHA:
+        combine = GL_INTERPOLATE;
+        src2 = 1;
+        break;
+    case D3DTOP_LERP:
+        combine = GL_INTERPOLATE;
+        break;
+    default:
+        combine = GL_REPLACE;
+        break;
+    }
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, combine);
+    glTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, scale);
+    CDirect3DDevice_SetTextureCombineArgs(GL_SOURCE0_ALPHA, GL_OPERAND0_ALPHA,
+                                          GL_SOURCE1_ALPHA, GL_OPERAND1_ALPHA,
+                                          GL_SOURCE2_ALPHA, GL_OPERAND2_ALPHA,
+                                          src0, src1, src2, 1);
+}
+
+static void CDirect3DDevice_ApplyStage0TextureState(void)
+{
+    DWORD colorOp = g_textureStageState[0][D3DTSS_COLOROP];
+    DWORD alphaOp = g_textureStageState[0][D3DTSS_ALPHAOP];
+    DWORD colorArg0 = g_textureStageState[0][D3DTSS_COLORARG0];
+    DWORD colorArg1 = g_textureStageState[0][D3DTSS_COLORARG1];
+    DWORD colorArg2 = g_textureStageState[0][D3DTSS_COLORARG2];
+    DWORD alphaArg0 = g_textureStageState[0][D3DTSS_ALPHAARG0];
+    DWORD alphaArg1 = g_textureStageState[0][D3DTSS_ALPHAARG1];
+    DWORD alphaArg2 = g_textureStageState[0][D3DTSS_ALPHAARG2];
+
+    if (!colorOp)
+        colorOp = D3DTOP_MODULATE;
+    if (!alphaOp)
+        alphaOp = D3DTOP_SELECTARG1;
+    if (!colorArg1)
+        colorArg1 = 2; /* D3DTA_TEXTURE */
+    if (!colorArg2)
+        colorArg2 = 1; /* D3DTA_CURRENT */
+    if (!alphaArg1)
+        alphaArg1 = 2; /* D3DTA_TEXTURE */
+    if (!alphaArg2)
+        alphaArg2 = 1; /* D3DTA_CURRENT */
+
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+    CDirect3DDevice_SetTextureFactorColor();
+    CDirect3DDevice_ApplyTextureCombineRGB(colorOp, colorArg0, colorArg1, colorArg2);
+    CDirect3DDevice_ApplyTextureCombineAlpha(alphaOp, alphaArg0, alphaArg1, alphaArg2);
+}
+
+static void CDirect3DDevice_ApplyStage0SamplerState(void)
+{
+    DWORD addressU = g_samplerState[0][D3DSAMP_ADDRESSU];
+    DWORD addressV = g_samplerState[0][D3DSAMP_ADDRESSV];
+    DWORD minFilter = g_samplerState[0][D3DSAMP_MINFILTER];
+    DWORD magFilter = g_samplerState[0][D3DSAMP_MAGFILTER];
+    DWORD mipFilter = g_samplerState[0][D3DSAMP_MIPFILTER];
+
+    if (!addressU)
+        addressU = D3DTADDRESS_WRAP;
+    if (!addressV)
+        addressV = D3DTADDRESS_WRAP;
+    if (!minFilter)
+        minFilter = D3DTEXF_LINEAR;
+    if (!magFilter)
+        magFilter = D3DTEXF_LINEAR;
+
+    glTexParameteri(0x0DE1 /* GL_TEXTURE_2D */, 0x2802 /* GL_TEXTURE_WRAP_S */,
+                    CDirect3DDevice_MapTextureAddress(addressU));
+    glTexParameteri(0x0DE1 /* GL_TEXTURE_2D */, 0x2803 /* GL_TEXTURE_WRAP_T */,
+                    CDirect3DDevice_MapTextureAddress(addressV));
+    glTexParameteri(0x0DE1 /* GL_TEXTURE_2D */, 0x2801 /* GL_TEXTURE_MIN_FILTER */,
+                    CDirect3DDevice_MapTextureMinFilter(minFilter, mipFilter));
+    glTexParameteri(0x0DE1 /* GL_TEXTURE_2D */, 0x2800 /* GL_TEXTURE_MAG_FILTER */,
+                    CDirect3DDevice_MapTextureMagFilter(magFilter));
+}
+
+static void CDirect3DDevice_UpdateTextureIfNeeded(IDirect3DBaseTexture9 *texture)
+{
+    extern void CDirect3DTexture_UpdateOpenGLSurfaces(const CDirect3DTexture *_this);
+
+    if (!texture || (unsigned int)texture <= 0x08000000u)
+        return;
+    if (*(void ***)texture == vtbl_CDirect3DTexture)
+        CDirect3DTexture_UpdateOpenGLSurfaces((const CDirect3DTexture *)texture);
+}
 
 /* ============================================================ */
 /* IUnknown                                                     */
@@ -774,7 +1175,6 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     UINT stride, offset;
     int indexCount;
     GLenum glMode;
-    static int dip_count = 0;
 
     (void)PrimitiveType; /* Always D3DPT_TRIANGLELIST (4) from the game */
 
@@ -796,85 +1196,12 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     /* Vertex base = VB data + stream offset + BaseVertexIndex * stride */
     vertBase = vbData + offset + BaseVertexIndex * stride;
 
-    /* Set up vertex attributes based on stride.
-     * Non-Dx7 generic vertex (stride 64): pos(12) + normal(4 packed) + color(4) + texcoord0(8) + ...
-     * The FVF-based layout differs: pos(12) + normal(12) + color(4) + texcoord(8) = 36 bytes.
-     * Since SetFVF may not always be called before DIP, use stride to determine layout. */
-    {
-        DWORD fvf = g_currentFVF;
-        int fvfOffset = 0;
-
-        /* For stride=64 (non-Dx7 generic vertex), the actual layout is:
-         *   float pos[3]       @ 0  (12 bytes)
-         *   packed normal      @ 12 (4 bytes)
-         *   float texcoord[2]  @ 16 (8 bytes)
-         *   4 bytes padding    @ 24
-         *   byte color[4]      @ 28 (0x1c)
-         *   ... remaining data up to stride
-         * This doesn't match FVF 0x152 which assumes 12-byte float normal.
-         * Use stride-based layout for correct offsets. */
-
-        /* Position: always 3 floats at offset 0 */
-        glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
-        glVertexPointer(3, 0x1406 /* GL_FLOAT */, stride, vertBase);
-
-        /* Color and texcoord offsets depend on vertex layout.
-         * GfxWorldVertex (stride 0x44=68): pos(12)+tangent(12)+color(4)+texCoord(8)+lmapCoord(8)+binormal(12)+normal(12)
-         * HUD vertex (stride 0x40=64): similar layout */
-        {
-            int colorOffset = -1;
-            int texOffset = -1;
-            if (stride == 0x44) {
-                colorOffset = 0x18;  /* after pos(12) + tangent(12) */
-                texOffset = 0x1c;    /* after color(4) */
-            } else if (stride == 0x40) {
-                colorOffset = 0x1c;
-                texOffset = 0x20;
-            } else if (stride == 0x18 || stride == 0x20) {
-                colorOffset = 0x0c;
-            } else if (stride == 0x24) {
-                colorOffset = 0x18;
-                texOffset = 0x1c;
-            }
-            if (colorOffset >= 0 && stride != 0x44) {
-                /* Use vertex colors for non-world geometry (HUD, etc.) */
-                glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
-                glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + colorOffset);
-            } else if (stride == 0x44) {
-                /* World geometry: force white color since vertex colors are
-                   dark ambient occlusion and we don't have lightmap support yet */
-                glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
-                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-            }
-            if (texOffset >= 0) {
-                glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
-                glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + texOffset);
-            }
-        }
-
-        if (dip_count < 3) {
-            float *pos = (float *)vertBase;
-            unsigned int *raw = (unsigned int *)vertBase;
-            unsigned short *idx = (unsigned short *)(ibData + startIndex * 2);
-            int vi;
-            fprintf(stderr, "[DIP] stride=%d numVtx=%d primCount=%d base=%d off=%d\n",
-                    stride, NumVertices, primCount, BaseVertexIndex, offset);
-            for (vi = 0; vi < NumVertices && vi < 4; vi++) {
-                float *vp = (float *)(vertBase + vi * stride);
-                fprintf(stderr, "  v%d pos=(%.2f,%.2f,%.2f) col=%02x%02x%02x%02x\n",
-                        vi, vp[0], vp[1], vp[2],
-                        vertBase[vi*stride+28], vertBase[vi*stride+29],
-                        vertBase[vi*stride+30], vertBase[vi*stride+31]);
-            }
-            fprintf(stderr, "  idx: %d %d %d %d %d %d\n", idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
-        }
-    }
-
     /* Reset GL state. For world geometry (stride=0x44), keep ARB programs
      * and use 3D perspective projection. For HUD (other strides), use
      * fixed-function with ortho projection. */
-    while (glGetError()) {}
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
+    glActiveTextureARB(GL_TEXTURE0_ARB);
+    glClientActiveTextureARB(GL_TEXTURE0_ARB);
 
     {
         /* Common rendering path for both world and HUD.
@@ -883,19 +1210,31 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glBindProgramARB(0x8804, 0);
         glDisable(0x8620);
         glDisable(0x8804);
-        if (stride == 0x44) {
-            glEnable(0x0B71); /* GL_DEPTH_TEST for world */
-            glDepthFunc(0x0203); /* GL_LEQUAL */
-            glDepthMask(1);
+        if (stride == 0x44 && dev->zEnable) {
+            glEnable(0x0B71); /* GL_DEPTH_TEST */
+            glDepthFunc(CDirect3DDevice_MapCompareFunc(dev->zFunc));
+            glDepthMask(dev->zWriteEnable ? 1 : 0);
         } else {
-            glDisable(0x0B71); /* no depth test for HUD */
+            glDisable(0x0B71);
+            glDepthMask(0);
         }
         glDisable(0x0B44); /* GL_CULL_FACE */
-        glDisable(0x0B60); /* GL_FOG */
+        if (stride == 0x44 && dev->fogEnable)
+            glEnable(0x0B60); /* GL_FOG */
+        else
+            glDisable(0x0B60);
         glDisable(0x0B50); /* GL_LIGHTING */
-        glDisable(0x0BC0); /* GL_ALPHA_TEST */
-        glColorMask(1, 1, 1, 1);
-        glDepthMask(0);
+        if (g_alphaTestEnable) {
+            glEnable(0x0BC0); /* GL_ALPHA_TEST */
+            glAlphaFunc(CDirect3DDevice_MapCompareFunc(dev->alphaFuncVal), dev->alphaRef);
+        } else {
+            glDisable(0x0BC0);
+        }
+        glColorMask(
+            (dev->colorWriteEnable & 1) != 0,
+            (dev->colorWriteEnable & 2) != 0,
+            (dev->colorWriteEnable & 4) != 0,
+            (dev->colorWriteEnable & 8) != 0);
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (stride == 0x44) {
@@ -915,11 +1254,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
                 float rx=axis[3], ry=axis[4], rz=axis[5]; /* right */
                 float ux=axis[6], uy=axis[7], uz=axis[8]; /* up */
                 float ox=origin[0], oy=origin[1], oz=origin[2];
+                float aspect = (dev->viewportW && dev->viewportH)
+                    ? ((float)dev->viewportW / (float)dev->viewportH)
+                    : (640.0f / 480.0f);
 
                 /* GL perspective projection (90 degree FOV, 4:3 aspect) */
                 float n = 4.0f, f = 16000.0f;
                 float fov_scale = 1.0f; /* tan(45°) = 1.0 for 90° FOV */
-                float aspect = 640.0f / 480.0f;
                 float proj[16] = {
                     fov_scale/aspect, 0, 0, 0,
                     0, fov_scale, 0, 0,
@@ -952,9 +1293,11 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             }
         } else {
             /* 2D HUD: ortho projection */
+            float orthoW = dev->viewportW ? (float)dev->viewportW : 640.0f;
+            float orthoH = dev->viewportH ? (float)dev->viewportH : 480.0f;
             float ortho[16] = {
-                2.0f/640.0f, 0, 0, 0,
-                0, -2.0f/480.0f, 0, 0,
+                2.0f/orthoW, 0, 0, 0,
+                0, -2.0f/orthoH, 0, 0,
                 0, 0, -1.0f, 0,
                 -1.0f, 1.0f, 0, 1.0f
             };
@@ -964,45 +1307,26 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             glLoadIdentity();
         }
     }
-    while (glGetError()) {}
-
     /* Bind texture for all geometry */
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
-        unsigned int glTexID = g_prebind_texID;
-        if (glTexID) {
+        DWORD colorOp = g_textureStageState[0][D3DTSS_COLOROP];
+        unsigned int glTexID;
+
+        CDirect3DDevice_UpdateTextureIfNeeded(g_boundTextures[0]);
+        glTexID = CDirect3DDevice_GetTextureGLId(g_boundTextures[0]);
+        if (!glTexID)
+            glTexID = g_prebind_texID;
+        if (glTexID && colorOp != D3DTOP_DISABLE) {
             glEnable(0x0DE1); /* GL_TEXTURE_2D */
             glBindTexture(0x0DE1, glTexID);
-            /* GL_MODULATE: output RGB = tex.rgb * vtx.rgb, output A = tex.a * vtx.a */
-            glTexEnvi(0x2300, 0x2200, 0x2100); /* GL_TEXTURE_ENV_MODE = GL_MODULATE */
-            /* Force re-upload texture data from CPU memory.
-             * The game writes texture data via LockRect but never uploads to GL
-             * because UpdateOpenGLSurfaces was a no-op. We upload here on first use. */
-            {
-                extern void *imp_tess;
-                byte *tess_base = (byte *)imp_tess;
-                void *material = *(void **)(tess_base + 0x5a7bc);
-                if (material && (unsigned int)material > 0x08000000u) {
-                    unsigned short texCount = *(unsigned short *)((byte *)material + 0x34);
-                    if (texCount > 0) {
-                        byte *texDefs = *(byte **)((byte *)material + 0x3C);
-                        if (texDefs && (unsigned int)texDefs > 0x08000000u) {
-                            void *image = *(void **)((byte *)texDefs + 0x08);
-                            if (image && (unsigned int)image > 0x08000000u) {
-                                void *d3dTex = *(void **)((byte *)image + 0x04);
-                                if (d3dTex && (unsigned int)d3dTex > 0x08000000u) {
-                                    /* Call UpdateOpenGLSurfaces on the texture to upload data */
-                                    extern void CDirect3DTexture_UpdateOpenGLSurfaces(const void *);
-                                    {
-                                    unsigned int tid = *(unsigned int *)((byte *)d3dTex + 0x54);
-                                    CDirect3DTexture_UpdateOpenGLSurfaces(d3dTex);
-                                    glBindTexture(0x0DE1, tid);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            CDirect3DDevice_ApplyStage0SamplerState();
+            if (stride == 0x44) {
+                CDirect3DDevice_ApplyStage0TextureState();
+            } else {
+                /* HUD/font quads behave better with the fixed-function default:
+                 * texture RGBA multiplied by vertex RGBA. */
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0x2100 /* GL_MODULATE */);
             }
         } else {
             glDisable(0x0DE1);
@@ -1010,11 +1334,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
       }
     }
 
-    /* (texture diagnostic removed) */
-
-    /* Alpha blending */
-    glEnable(0x0BE2); /* GL_BLEND */
-    glBlendFunc(0x0302 /* GL_SRC_ALPHA */, 0x0303 /* GL_ONE_MINUS_SRC_ALPHA */);
+    if (dev->alphaBlendEnable) {
+        glEnable(0x0BE2); /* GL_BLEND */
+        glBlendFunc(CDirect3DDevice_MapBlendFunc(dev->srcBlend),
+                    CDirect3DDevice_MapBlendFunc(dev->destBlend));
+    } else {
+        glDisable(0x0BE2);
+    }
 
     /* Set up vertex attributes from game data */
     glEnableClientState(0x8074); /* GL_VERTEX_ARRAY */
@@ -1037,7 +1363,10 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             colorOffset = 0x0c;
             texOffset = -1;
         }
-        if (colorOffset >= 0) {
+        if (stride == 0x44) {
+            glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
+            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        } else if (colorOffset >= 0) {
             glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
             /* D3D vertex colors are BGRA; use GL_BGRA (0x80E1) as size param
              * (GL_EXT_vertex_array_bgra) to swizzle to RGBA on read */
@@ -1093,10 +1422,49 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitiveUP(const CDirect3DDevice *_this,
 
 HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice *_this, D3DRENDERSTATETYPE State, DWORD Value)
 {
-    (void)_this;
+    DeviceImpl *dev = (DeviceImpl *)_this;
     switch (State) {
+        case D3DRS_ZENABLE:
+            dev->zEnable = Value;
+            break;
+        case D3DRS_ZWRITEENABLE:
+            dev->zWriteEnable = Value;
+            break;
+        case D3DRS_ZFUNC:
+            dev->zFunc = Value;
+            break;
+        case D3DRS_ALPHATESTENABLE:
+            g_alphaTestEnable = Value;
+            break;
+        case D3DRS_ALPHAREF:
+            dev->alphaRefVal = Value;
+            dev->alphaRef = (float)Value / 255.0f;
+            break;
+        case D3DRS_ALPHAFUNC:
+            dev->alphaFuncVal = Value;
+            dev->alphaFunc = CDirect3DDevice_MapCompareFunc(Value);
+            break;
+        case D3DRS_SRCBLEND:
+            dev->srcBlend = Value;
+            break;
+        case D3DRS_DESTBLEND:
+            dev->destBlend = Value;
+            break;
+        case D3DRS_CULLMODE:
+            dev->cullMode = Value;
+            break;
+        case D3DRS_ALPHABLENDENABLE:
+            dev->alphaBlendEnable = (unsigned char)Value;
+            break;
+        case D3DRS_FOGENABLE:
+            dev->fogEnable = Value;
+            break;
+        case D3DRS_TEXTUREFACTOR:
+            g_textureFactor = Value;
+            break;
         case 0x22: { /* D3DRS_FOGCOLOR */
             float fc[4];
+            dev->fogColor = Value;
             fc[0] = ((Value >> 16) & 0xFF) / 255.0f;
             fc[1] = ((Value >> 8) & 0xFF) / 255.0f;
             fc[2] = (Value & 0xFF) / 255.0f;
@@ -1104,6 +1472,24 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice *_this, D3DRENDERST
             glFogfv(0x0B66 /* GL_FOG_COLOR */, fc);
             break;
         }
+        case D3DRS_COLORWRITEENABLE:
+            dev->colorWriteEnable = Value;
+            break;
+        case D3DRS_BLENDOP:
+            dev->blendOp = Value;
+            break;
+        case D3DRS_SEPARATEALPHABLENDENABLE:
+            dev->separateAlphaBlendEnable = Value;
+            break;
+        case D3DRS_SRCBLENDALPHA:
+            dev->srcBlendAlpha = Value;
+            break;
+        case D3DRS_DESTBLENDALPHA:
+            dev->destBlendAlpha = Value;
+            break;
+        case D3DRS_BLENDOPALPHA:
+            dev->alphaSrcBlend = Value;
+            break;
         default:
             break;
     }
@@ -1112,49 +1498,82 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice *_this, D3DRENDERST
 
 HRESULT CDirect3DDevice_GetRenderState(const CDirect3DDevice *_this, D3DRENDERSTATETYPE State, DWORD *pValue)
 {
-    (void)_this; (void)State;
-    if (pValue) *pValue = 0;
+    DeviceImpl *dev = (DeviceImpl *)_this;
+    if (!pValue)
+        return 0;
+    switch (State) {
+    case D3DRS_ZENABLE: *pValue = dev->zEnable; break;
+    case D3DRS_ZWRITEENABLE: *pValue = dev->zWriteEnable; break;
+    case D3DRS_ZFUNC: *pValue = dev->zFunc; break;
+    case D3DRS_ALPHATESTENABLE: *pValue = g_alphaTestEnable; break;
+    case D3DRS_ALPHAREF: *pValue = dev->alphaRefVal; break;
+    case D3DRS_ALPHAFUNC: *pValue = dev->alphaFuncVal; break;
+    case D3DRS_SRCBLEND: *pValue = dev->srcBlend; break;
+    case D3DRS_DESTBLEND: *pValue = dev->destBlend; break;
+    case D3DRS_CULLMODE: *pValue = dev->cullMode; break;
+    case D3DRS_ALPHABLENDENABLE: *pValue = dev->alphaBlendEnable; break;
+    case D3DRS_FOGENABLE: *pValue = dev->fogEnable; break;
+    case D3DRS_TEXTUREFACTOR: *pValue = g_textureFactor; break;
+    case D3DRS_FOGCOLOR: *pValue = dev->fogColor; break;
+    case D3DRS_COLORWRITEENABLE: *pValue = dev->colorWriteEnable; break;
+    case D3DRS_BLENDOP: *pValue = dev->blendOp; break;
+    case D3DRS_SEPARATEALPHABLENDENABLE: *pValue = dev->separateAlphaBlendEnable; break;
+    case D3DRS_SRCBLENDALPHA: *pValue = dev->srcBlendAlpha; break;
+    case D3DRS_DESTBLENDALPHA: *pValue = dev->destBlendAlpha; break;
+    case D3DRS_BLENDOPALPHA: *pValue = dev->alphaSrcBlend; break;
+    default: *pValue = 0; break;
+    }
     return 0;
 }
 
 HRESULT CDirect3DDevice_SetTexture(const CDirect3DDevice *_this, DWORD Stage, IDirect3DBaseTexture9 *pTexture)
 {
     (void)_this;
-    if (Stage < 8)
+    if (Stage < 8) {
         g_boundTextures[Stage] = pTexture;
+        if (Stage == 0 && !pTexture)
+            g_prebind_texID = 0;
+    }
     return 0;
 }
 
 HRESULT CDirect3DDevice_GetTexture(const CDirect3DDevice *_this, DWORD Stage, IDirect3DBaseTexture9 **ppTexture)
 {
-    (void)_this; (void)Stage;
-    if (ppTexture) *ppTexture = NULL;
+    (void)_this;
+    if (ppTexture)
+        *ppTexture = (Stage < 8) ? g_boundTextures[Stage] : NULL;
     return 0;
 }
 
 HRESULT CDirect3DDevice_SetTextureStageState(const CDirect3DDevice *_this, DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value)
 {
-    (void)_this; (void)Stage; (void)Type; (void)Value;
+    (void)_this;
+    if (Stage < 8 && (unsigned int)Type < 33)
+        g_textureStageState[Stage][Type] = Value;
     return 0;
 }
 
 HRESULT CDirect3DDevice_GetTextureStageState(const CDirect3DDevice *_this, DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD *pValue)
 {
-    (void)_this; (void)Stage; (void)Type;
-    if (pValue) *pValue = 0;
+    (void)_this;
+    if (pValue)
+        *pValue = (Stage < 8 && (unsigned int)Type < 33) ? g_textureStageState[Stage][Type] : 0;
     return 0;
 }
 
 HRESULT CDirect3DDevice_SetSamplerState(const CDirect3DDevice *_this, DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value)
 {
-    (void)_this; (void)Sampler; (void)Type; (void)Value;
+    (void)_this;
+    if (Sampler < 16 && (unsigned int)Type < 14)
+        g_samplerState[Sampler][Type] = Value;
     return 0;
 }
 
 HRESULT CDirect3DDevice_GetSamplerState(const CDirect3DDevice *_this, DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD *pValue)
 {
-    (void)_this; (void)Sampler; (void)Type;
-    if (pValue) *pValue = 0;
+    (void)_this;
+    if (pValue)
+        *pValue = (Sampler < 16 && (unsigned int)Type < 14) ? g_samplerState[Sampler][Type] : 0;
     return 0;
 }
 
@@ -1719,9 +2138,46 @@ long unsigned int CDirect3DDevice_CDirect3DDevice(const CDirect3DDevice *_this,
 /* Called from CDirect3D_CreateDevice */
 void CDirect3DDevice_Init(void *device)
 {
+    unsigned int stage;
     DeviceImpl *dev = (DeviceImpl *)device;
     dev->vtable = vtbl_CDirect3DDevice;
     dev->refCount = 1;
+    dev->srcBlend = 5;
+    dev->destBlend = 6;
+    dev->srcBlendAlpha = 5;
+    dev->destBlendAlpha = 6;
+    dev->alphaRef = 0.0f;
+    dev->alphaFunc = 0x0207; /* GL_ALWAYS */
+    dev->alphaRefVal = 0;
+    dev->alphaFuncVal = 8;
+    dev->zEnable = 1;
+    dev->zWriteEnable = 1;
+    dev->cullMode = 1;
+    dev->zFunc = 4;
+    dev->colorWriteEnable = 0xF;
+    dev->fogColor = 0xFF000000u;
+    dev->blendOp = 1;
+    g_alphaTestEnable = 0;
+    g_textureFactor = 0xFFFFFFFFu;
+    memset(g_textureStageState, 0, sizeof(g_textureStageState));
+    memset(g_samplerState, 0, sizeof(g_samplerState));
+    for (stage = 0; stage < 8; ++stage) {
+        g_textureStageState[stage][D3DTSS_COLOROP] = (stage == 0) ? D3DTOP_MODULATE : D3DTOP_DISABLE;
+        g_textureStageState[stage][D3DTSS_COLORARG1] = 2; /* D3DTA_TEXTURE */
+        g_textureStageState[stage][D3DTSS_COLORARG2] = 1; /* D3DTA_CURRENT */
+        g_textureStageState[stage][D3DTSS_ALPHAOP] = (stage == 0) ? D3DTOP_SELECTARG1 : D3DTOP_DISABLE;
+        g_textureStageState[stage][D3DTSS_ALPHAARG1] = 2; /* D3DTA_TEXTURE */
+        g_textureStageState[stage][D3DTSS_ALPHAARG2] = 1; /* D3DTA_CURRENT */
+        g_textureStageState[stage][D3DTSS_TEXCOORDINDEX] = stage;
+        g_textureStageState[stage][D3DTSS_TEXTURETRANSFORMFLAGS] = D3DTTFF_DISABLE;
+        g_samplerState[stage][D3DSAMP_ADDRESSU] = D3DTADDRESS_WRAP;
+        g_samplerState[stage][D3DSAMP_ADDRESSV] = D3DTADDRESS_WRAP;
+        g_samplerState[stage][D3DSAMP_ADDRESSW] = D3DTADDRESS_WRAP;
+        g_samplerState[stage][D3DSAMP_MINFILTER] = D3DTEXF_LINEAR;
+        g_samplerState[stage][D3DSAMP_MAGFILTER] = D3DTEXF_LINEAR;
+        g_samplerState[stage][D3DSAMP_MIPFILTER] = D3DTEXF_LINEAR;
+        g_samplerState[stage][D3DSAMP_MAXANISOTROPY] = 1;
+    }
 }
 
 /* ============================================================ */

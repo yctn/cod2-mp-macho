@@ -144,7 +144,6 @@ HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface *_this, D3DLOCKED_RECT 
     }
 
     surface->isDirty = 1;
-    { static int slk = 0; if (slk++ < 10) fprintf(stderr, "[SURF_LOCK] w=%d h=%d pBits=%p pitch=%d mem=%p\n", surface->width, surface->height, pLockedRect->pBits, pLockedRect->Pitch, (void*)surface->surfaceMemory); }
     return 0;
 }
 
@@ -274,10 +273,9 @@ void CDirect3DSurface_CDirect3DSurface(const CDirect3DSurface *_this, SurfaceTyp
         &surface->openGLElementType,
         Format);
 
-    /* Upload initial texture data to GL */
-    if (!g_NoTextureID && createGL && pSurfaceMemory) {
-        CDirect3DSurface_CreateOpenGLSurfaceObject(_this);
-    }
+    (void)createGL;
+    (void)g_NoTextureID;
+    (void)pSurfaceMemory;
 }
 
 /* --- Stubs --- */

@@ -59,6 +59,7 @@ typedef struct {
     void **surfaces;            /* +0x4C — array of CDirect3DSurface* */
     byte *pixelData;            /* +0x50 — contiguous pixel buffer */
     GLuint texIDStorage;        /* +0x54 — actual GLuint (mpTexID points here) */
+    UINT32 dirtyMask;
 } CDirect3DTextureClean;
 
 /* Forward declarations */
@@ -119,13 +120,8 @@ HRESULT CDirect3DTexture_LockRect(const CDirect3DTexture *_this, UINT Level, D3D
     HRESULT CDirect3DSurface_LockRect(const CDirect3DSurface *_this, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags);
     if (Level >= tex->levelCount) return -1;
     hr = CDirect3DSurface_LockRect((CDirect3DSurface *)tex->surfaces[Level], pLockedRect, pRect, Flags);
-    {
-        static int tlk = 0;
-        if (tlk++ < 5000) {
-            FILE *f = fopen("/tmp/tex_lock.log","a");
-            if(f){fprintf(f,"[TEX_LOCK] texID=%u lv=%u\n", tex->texIDStorage, Level);fclose(f);}
-        }
-    }
+    if (hr == 0)
+        tex->dirtyMask |= 1u << Level;
     return hr;
 }
 
@@ -140,16 +136,13 @@ HRESULT CDirect3DTexture_UnlockRect(const CDirect3DTexture *_this, UINT Level)
     /* Upload dirty data to GL (Mac used zero-copy VAR, we must upload explicitly) */
     if (CDirect3DSurface_IsDirty(surface)) {
         int prevTex = 0;
-        {
-            static int ulk = 0;
-            if (ulk++ < 50)
-                fprintf(stderr, "[UNLOCK] texID=%u level=%u\n", tex->texIDStorage, Level);
-        }
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
         glBindTexture(GL_TEXTURE_2D, tex->texIDStorage);
         CDirect3DSurface_UpdateOpenGLSurfaceObject(surface, 0);
         glBindTexture(GL_TEXTURE_2D, prevTex);
     }
+
+    tex->dirtyMask &= ~(1u << Level);
 
     return 0;
 }
@@ -309,10 +302,13 @@ void CDirect3DTexture_CDirect3DTexture(const CDirect3DTexture *_this, UINT32 Wid
 void CDirect3DTexture_UpdateOpenGLSurfaces(const CDirect3DTexture *_this)
 {
     CDirect3DTextureClean *tex = (CDirect3DTextureClean *)_this;
+    UINT32 dirtyMask;
     unsigned int i;
     int prevTex = 0;
 
-    if (!tex->surfaces || !tex->texIDStorage)
+    dirtyMask = tex->dirtyMask;
+
+    if (!dirtyMask || !tex->surfaces || !tex->texIDStorage)
         return;
 
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTex);
@@ -320,10 +316,11 @@ void CDirect3DTexture_UpdateOpenGLSurfaces(const CDirect3DTexture *_this)
 
     for (i = 0; i < tex->levelCount; i++) {
         CDirect3DSurface *surf = (CDirect3DSurface *)tex->surfaces[i];
-        if (surf) {
-            /* Always re-upload since data may have changed */
-            CDirect3DSurface_UpdateOpenGLSurfaceObject(surf, 1); /* bRecreateSurface=1 for glTexImage2D */
-        }
+        if (!(dirtyMask & (1u << i)))
+            continue;
+        if (surf && CDirect3DSurface_IsDirty(surf))
+            CDirect3DSurface_UpdateOpenGLSurfaceObject(surf, 0);
+        tex->dirtyMask &= ~(1u << i);
     }
 
     glBindTexture(GL_TEXTURE_2D, prevTex);
