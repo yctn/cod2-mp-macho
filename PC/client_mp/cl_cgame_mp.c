@@ -195,6 +195,10 @@ static void CL_FirstSnapshot(void)
             Dvar_SetString(autorecDvar, "");
         }
     }
+
+    /* Note: player position is at map origin (0,0,0) until team is joined.
+       Use console (~) and type: setviewpos 480 -600 200
+       Or try: open team menu via ESC key */
 }
 
 /* line 79 */

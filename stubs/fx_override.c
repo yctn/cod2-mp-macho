@@ -48,13 +48,21 @@ void __wrap_R_Error(int level, const char *fmt, ...)
         va_end(args);
 
         if (strstr(buf, "Vertex type") && strstr(buf, "doesn't have")) {
-            /* Downgrade to warning — print first few then suppress */
+            /* Downgrade to warning — count by type for diagnostics */
             static int vtypeWarnCount = 0;
+            static int vtypeByType[8] = {0};
+            int vt = 0;
+            const char *p = strstr(buf, "Vertex type ");
+            if (p) vt = p[12] - '0';
+            if (vt >= 0 && vt < 8) vtypeByType[vt]++;
             vtypeWarnCount++;
-            if (vtypeWarnCount <= 5)
+            if (vtypeWarnCount <= 10)
                 Com_Printf("WARNING: %s", buf);
-            else if (vtypeWarnCount == 6)
+            else if (vtypeWarnCount == 11)
                 Com_Printf("WARNING: Suppressing further vertex type warnings...\n");
+            else if (vtypeWarnCount % 10000 == 0)
+                Com_Printf("WARNING: vertex type errors so far: t0=%d t1=%d t2=%d t3=%d t4=%d t5=%d\n",
+                    vtypeByType[0], vtypeByType[1], vtypeByType[2], vtypeByType[3], vtypeByType[4], vtypeByType[5]);
             return;
         }
     }
