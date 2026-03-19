@@ -898,46 +898,45 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
              * Only projection gets D3D→GL z remap. */
             extern byte backEnd[];
             void *viewParms = *(void **)(backEnd + 0x3c8);
+            /* Build GL matrices from camera parameters in GfxViewParms:
+             * origin at +0x00 (vec3), axis at +0x0C (3 x vec3).
+             * Use simple GL perspective + lookAt-style view matrix. */
             if (viewParms) {
-                float *src;
-                float t[16];
-                int i, hasNaN;
-                /* Projection matrix */
-                src = (float *)((byte *)viewParms + 0x88);
-                hasNaN = 0;
-                for (i = 0; i < 16; i++) if (src[i] != src[i]) hasNaN = 1;
-                if (!hasNaN) {
-                    t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
-                    t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
-                    t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
-                    t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
-                    /* D3D z→[0,1] to GL z→[-1,1] */
-                    t[2]  = 2.0f*t[2]  - t[3];
-                    t[6]  = 2.0f*t[6]  - t[7];
-                    t[10] = 2.0f*t[10] - t[11];
-                    t[14] = 2.0f*t[14] - t[15];
-                    glMatrixMode(0x1701);
-                    glLoadMatrixf(t);
-                } else {
-                    glMatrixMode(0x1701);
-                    glLoadIdentity();
-                    glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
-                }
-                /* View matrix */
-                src = (float *)((byte *)viewParms + 0x48);
-                hasNaN = 0;
-                for (i = 0; i < 16; i++) if (src[i] != src[i]) hasNaN = 1;
-                if (!hasNaN) {
-                    t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
-                    t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
-                    t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
-                    t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
-                    glMatrixMode(0x1700);
-                    glLoadMatrixf(t);
-                } else {
-                    glMatrixMode(0x1700);
-                    glLoadIdentity();
-                }
+                float *origin = (float *)viewParms;
+                float *axis = (float *)((byte *)viewParms + 0x0C);
+                /* axis[0..2] = forward, axis[3..5] = right, axis[6..8] = up */
+                float fx=axis[0], fy=axis[1], fz=axis[2]; /* forward */
+                float rx=axis[3], ry=axis[4], rz=axis[5]; /* right */
+                float ux=axis[6], uy=axis[7], uz=axis[8]; /* up */
+                float ox=origin[0], oy=origin[1], oz=origin[2];
+
+                /* GL perspective projection (90 degree FOV, 4:3 aspect) */
+                float n = 4.0f, f = 16000.0f;
+                float fov_scale = 1.0f; /* tan(45°) = 1.0 for 90° FOV */
+                float aspect = 640.0f / 480.0f;
+                float proj[16] = {
+                    fov_scale/aspect, 0, 0, 0,
+                    0, fov_scale, 0, 0,
+                    0, 0, -(f+n)/(f-n), -1.0f,
+                    0, 0, -2.0f*f*n/(f-n), 0
+                };
+                glMatrixMode(0x1701);
+                glLoadMatrixf(proj);
+
+                /* GL view matrix: camera looks down -Z in GL convention.
+                 * CoD2 axis: forward=+Z, right=+X, up=+Y in D3D convention.
+                 * GL view: right=+X, up=+Y, forward=-Z */
+                float view[16] = {
+                     rx,  ux, -fx, 0,
+                     ry,  uy, -fy, 0,
+                     rz,  uz, -fz, 0,
+                    -(rx*ox + ry*oy + rz*oz),
+                    -(ux*ox + uy*oy + uz*oz),
+                     (fx*ox + fy*oy + fz*oz),
+                    1.0f
+                };
+                glMatrixMode(0x1700);
+                glLoadMatrixf(view);
             } else {
                 glMatrixMode(0x1701);
                 glLoadIdentity();
