@@ -880,15 +880,16 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         /* 3D world geometry: the game's rendering backend has already set up:
          * - ARB vertex/fragment programs (shaders with matrices baked in)
          * - VAO with vertex attribute bindings
-         * - Textures and render state
-         * DON'T touch ANY of that — just supply the index buffer and draw.
-         * The game's shaders handle all transformation and lighting. */
+         * - Textures, render state, and element array buffer (IBO)
+         * DON'T touch ANY of that — just call glDrawElements.
+         * Since the game's IBO is already bound, pass the byte offset
+         * (not a CPU pointer) as the indices parameter. */
         {
             extern void glDrawElements(unsigned int, int, unsigned int, const void *);
             indexCount = primCount * 3;
             glDrawElements(0x0004 /* GL_TRIANGLES */, indexCount,
                            0x1403 /* GL_UNSIGNED_SHORT */,
-                           ibData + startIndex * 2);
+                           (const void *)(intptr_t)(startIndex * 2));
         }
         dip_count++;
         return 0;
