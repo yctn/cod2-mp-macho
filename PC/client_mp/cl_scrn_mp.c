@@ -279,8 +279,7 @@ static void SCR_UpdateFrame(void)
         byte *clc_check = *(byte **)clc_ptr_195ee8c;
         int cs = *(int *)clc_check;
         if (cs >= 3 && cs <= 7) {
-            RE_FUNC(re, 0xa8, re_void_func)();
-            goto end_frame;
+            return; /* skip ALL rendering during connect/loading phase */
         }
     }
 

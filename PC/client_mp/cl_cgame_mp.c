@@ -1112,7 +1112,12 @@ void CL_InitCGame(void)
         *(int *)clui = 6;
         *(unsigned char *)(cl + 0xa) = 1;
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: before CG_Init"); }
-        CG_Init(*(int *)(clui + 8), *(int *)(clui + 0x20140), *(int *)(clui + 0x20138));
+        {
+            extern int g_bsp_loading;
+            g_bsp_loading = 1;
+            CG_Init(*(int *)(clui + 8), *(int *)(clui + 0x20140), *(int *)(clui + 0x20138));
+            g_bsp_loading = 0;
+        }
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: after CG_Init"); }
         *(unsigned char *)(cl + 9) = 1;
         *(int *)clui = 7;

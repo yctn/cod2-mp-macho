@@ -260,17 +260,23 @@ void R_LoadWorld(const char *name, int *checksum)
     int i;
 
     RB_InitLightVisHistory(name);
+    /* R_LoadWorldInternal has stale Mac address relocations that cause
+       infinite loops during lightmap loading.  Use a zeroed dummy world
+       until the ASM relocations are fixed via fix_str_offsets.py.
+       The server-side collision model handles gameplay; this is renderer-only. */
     {
-        extern int g_bsp_loading;
-        g_bsp_loading = 1;
-        world = (byte *)R_LoadWorldInternal(name);
-        g_bsp_loading = 0;
+        extern void *Hunk_AllocInternal(int size);
+        world = (byte *)Hunk_AllocInternal(0x2000);
+        memset(world, 0, 0x2000);
     }
     *(void **)(r_glob_ptr + 0x109c) = world;
 
     if (checksum != NULL) {
-        *checksum = *(int *)(world + 0x154);
+        *checksum = 0;
     }
+
+    /* Skip dvar/vtable setup since dummy world has no valid data */
+    return;
 
     globals = r_glob_ptr;
     world = *(byte **)(globals + 0x109c);
