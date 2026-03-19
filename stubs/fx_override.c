@@ -24,6 +24,45 @@ void *__wrap_FX_RegisterEffect(const char *fileName)
     return defaultEffect;
 }
 
+/* Override R_Error to make vertex type errors non-fatal.
+   The binary renderer triggers a fatal R_Error when a surface's vertex type
+   doesn't match the shader requirements.  This happens because the vertex
+   buffer was created with Dx7 format (type 1) which lacks tangent/binormal.
+   Converting to a warning lets the game continue — those surfaces just
+   won't render correctly. */
+extern void Com_Printf(const char *fmt, ...);
+extern void __real_R_Error(int level, const char *fmt, ...);
+
+#include <stdarg.h>
+#include <stdio.h>
+
+void __wrap_R_Error(int level, const char *fmt, ...)
+{
+    /* Check if this is the "Vertex type" error we want to suppress */
+    if (fmt) {
+        /* Match the known vertex type error format string address or content */
+        va_list args;
+        char buf[512];
+        va_start(args, fmt);
+        vsnprintf(buf, sizeof(buf), fmt, args);
+        va_end(args);
+
+        if (strstr(buf, "Vertex type") && strstr(buf, "doesn't have")) {
+            /* Downgrade to warning — print but don't exit */
+            Com_Printf("WARNING: %s", buf);
+            return;
+        }
+    }
+
+    /* For all other errors, call the real R_Error */
+    va_list args;
+    va_start(args, fmt);
+    char buf[512];
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    __real_R_Error(level, "%s", buf);
+}
+
 float __wrap_FX_CreateDefaultEffect(void)
 {
     /* Create a minimal empty effect template. */
