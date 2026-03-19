@@ -609,7 +609,7 @@ static void R_WorldCheck_diag(void *rgp_field, void *cell_ptr, int cellIdx)
  * world surfaces, sorts draw surfaces, submits render commands for each draw group
  * (depth prepass, lit, unlit, post-effects), handles debug entity display. */
 extern void *R_AllocViewParms(void);
-extern void R_CellForPoint(const void *viewParms);
+extern int R_CellForPoint(const void *viewParms);
 extern void R_AddWorldSurfacesDpvs(const void *viewParms, int cellIdx);
 extern void CG_AddMarks(void);
 extern void FX_DrawScheduledEffects(void);
@@ -750,8 +750,7 @@ void R_RenderScene(const refdef_t *refdef)
     {
         int cellIdx;
         R_WorldCheck_diag(*(void **)(rgp_p + 0x109c), NULL, 0);
-        cellIdx = (int)(intptr_t)viewParmsDraw; /* Actually R_CellForPoint returns int */
-        /* The call pattern: R_CellForPoint(viewParmsDraw) returns cellIdx, then R_AddWorldSurfacesDpvs */
+        cellIdx = R_CellForPoint(viewParmsDraw);
         {
             void *world = *(void **)(rgp_p + 0x109c);
             if (world && *(void **)((char *)world + 0x100)) {
