@@ -9,7 +9,13 @@
 extern void PrimitiveTemplate_Shutdown(void *prim);
 extern void PrimitiveTemplate_Init(void *prim);
 extern int PrimitiveTemplate_ParsePrimitive(void *prim, void *group);
-extern EffectTemplate *FX_TryRegisterEffect(const char *name);
+/* FX_TryRegisterEffect stub: the binary ASM version has stale Mac
+   address relocations that crash during FX template iteration.
+   Return NULL to force fallback to the default empty effect. */
+EffectTemplate *FX_TryRegisterEffect(const char *name)
+{
+    return NULL;
+}
 extern void Com_Error(int level, const char *fmt, ...);
 extern void Z_FreeInternal(void *ptr);
 extern void *Z_MallocInternal(int size);

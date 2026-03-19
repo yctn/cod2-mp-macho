@@ -312,9 +312,11 @@ const char * CG_Argv(int arg)
 }
 
 /* line 862 */
+/* CG_RegisterGraphics rewritten in clean C in cg_registergraphics_new.c */
+#if 0 /* disabled ASM version */
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
-void CG_RegisterGraphics(const char *mapname)
+void CG_RegisterGraphics_ASM_DISABLED(const char *mapname)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 862 */
@@ -672,6 +674,7 @@ void CG_RegisterGraphics(const char *mapname)
         "retl\n"
     );
 }
+#endif /* disabled ASM CG_RegisterGraphics */
 #else
 static void CG_RegisterGraphics(const char *mapname)
 {
