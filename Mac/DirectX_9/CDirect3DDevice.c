@@ -877,23 +877,30 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     { extern void glBindVertexArray(unsigned int); glBindVertexArray(0); }
 
     if (stride == 0x44) {
-        /* 3D world geometry: the game's rendering backend has already set up
-         * ARB programs, VAO, textures, and render state.
-         * Use glDrawElementsBaseVertex to apply BaseVertexIndex offset
-         * (D3D DIP adds BaseVertexIndex to all indices). */
+        /* 3D world geometry: pass through to game's GL state.
+         * Check what ARB program and IBO state is active. */
         {
             extern void glDrawElementsBaseVertex(unsigned int, int, unsigned int, const void *, int);
-            extern void glBindBuffer(unsigned int, unsigned int);
-            extern void glPolygonMode(unsigned int, unsigned int);
-            glBindBuffer(0x8893 /* GL_ELEMENT_ARRAY_BUFFER */, 0);
-            /* Wireframe mode to visualize world geometry */
-            glPolygonMode(0x0408 /* GL_FRONT_AND_BACK */, 0x1B01 /* GL_LINE */);
+            int boundVP = 0, boundFP = 0, boundIBO = 0, boundVAO = 0;
+            glGetIntegerv(0x8642 /* GL_VERTEX_PROGRAM_BINDING_ARB */, &boundVP);
+            glGetIntegerv(0x8809 /* GL_FRAGMENT_PROGRAM_BINDING_ARB... */, &boundFP);
+            glGetIntegerv(0x8895 /* GL_ELEMENT_ARRAY_BUFFER_BINDING */, &boundIBO);
+            glGetIntegerv(0x85B5 /* GL_VERTEX_ARRAY_BINDING */, &boundVAO);
+            static int diag3d = 0;
+            if (diag3d < 5) {
+                fprintf(stderr, "[DIP3D#%d] VP=%d FP=%d IBO=%d VAO=%d startIdx=%d baseVtx=%d prim=%d\n",
+                    diag3d, boundVP, boundFP, boundIBO, boundVAO, startIndex, BaseVertexIndex, primCount);
+                diag3d++;
+            }
+            /* Use game IBO if bound, otherwise client-side */
             indexCount = primCount * 3;
-            glDrawElementsBaseVertex(0x0004 /* GL_TRIANGLES */, indexCount,
-                           0x1403 /* GL_UNSIGNED_SHORT */,
-                           ibData + startIndex * 2,
-                           BaseVertexIndex);
-            glPolygonMode(0x0408, 0x1B02 /* GL_FILL */); /* restore */
+            if (boundIBO) {
+                glDrawElementsBaseVertex(0x0004, indexCount, 0x1403,
+                    (const void *)(intptr_t)(startIndex * 2), BaseVertexIndex);
+            } else {
+                glDrawElementsBaseVertex(0x0004, indexCount, 0x1403,
+                    ibData + startIndex * 2, BaseVertexIndex);
+            }
         }
         dip_count++;
         return 0;
