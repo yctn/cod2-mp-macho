@@ -24,18 +24,6 @@ static void crash_handler(int sig, siginfo_t *info, void *ucontext) {
     unsigned int edx = uc->uc_mcontext.gregs[REG_EDX];
     unsigned int esp = uc->uc_mcontext.gregs[REG_ESP];
     unsigned int ebp = uc->uc_mcontext.gregs[REG_EBP];
-    unsigned int addr = (unsigned int)(unsigned long)info->si_addr;
-
-    /* During CG_Init, auto-map faulting pages so the initialization
-       can complete despite stale Mac address relocations and NULL
-       pointers from the dummy BSP world. */
-    extern int g_bsp_loading;
-    if (g_bsp_loading && addr != 0) {
-        void *page = (void *)(addr & ~0xFFF);
-        mmap(page, 0x1000, PROT_READ|PROT_WRITE,
-             MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
-        return; /* retry the instruction */
-    }
     fprintf(stderr, "\n*** SIGSEGV at eip=0x%08x addr=%p ***\n", eip, info->si_addr);
     fprintf(stderr, "  eax=%08x ebx=%08x ecx=%08x edx=%08x esp=%08x ebp=%08x\n",
             eax, ebx, ecx, edx, esp, ebp);

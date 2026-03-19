@@ -120,6 +120,10 @@ extern void Com_Printf(const char *fmt, ...);
 
 Bool R_ValidateStaticModel(struct XModel *model)
 {
+    /* Guard against invalid model pointers from R_RegisterModel
+       (can return addresses in shared library space after hunk clear). */
+    if (!model || (unsigned int)model >= 0xf0000000)
+        return 0;
     int lodCount = XModelGetNumLods(model);
     int lodIndex, surfIndex, surfCount;
     void *surfaces;

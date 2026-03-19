@@ -490,9 +490,10 @@ void SCR_UpdateScreenInternal(void)
 }
 
 /* line 438 */
+extern int g_cginit_loading;
 void SCR_UpdateScreen(void)
 {
-    if (updateScreenCalled)
+    if (g_cginit_loading || updateScreenCalled)
         return;
 
     byte *clc = *(byte **)clc_ptr_195ee8c;

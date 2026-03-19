@@ -13,7 +13,7 @@ LIBS = -lGL -lm -lpthread -ldl $(LIBSTDCPP) $(SDL2_LIBS)
 TARGET = cod2_linux
 
 # Find all .c and .S files recursively
-C_SRCS = $(shell find . -name '*.c' | sort)
+C_SRCS = $(shell find . -name '*.c' -not -path './utils/*' | sort)
 S_SRCS = $(shell find . -name '*.S' | sort)
 NAKED_C_SRCS = $(shell rg -l '__attribute__\(\(naked\)\)' . -g'*.c' 2>/dev/null || true)
 C_OBJS = $(C_SRCS:.c=.o)

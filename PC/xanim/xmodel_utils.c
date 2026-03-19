@@ -47,6 +47,11 @@ int XModelGetSurfaces(const XModel *model, struct XSurface_s ***surfaces, int lo
 {
     byte *lodEntry = (byte *)model + lod * 20 + 4;
     byte *surfData = *(byte **)(lodEntry + 0x10);
+    if (!surfData) {
+        *surfaces = NULL;
+        *partBits = NULL;
+        return 0;
+    }
     *surfaces = *(struct XSurface_s ***)(surfData);
     *partBits = (int *)(surfData + 4);
     return *(short *)(lodEntry + 8);

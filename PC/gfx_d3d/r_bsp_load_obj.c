@@ -25,17 +25,17 @@ static Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, stru
 static snd_alias_list_t R_SetParentAndCell_r(void);
 #endif
 static void R_SetParentAndCell_r_impl(mnode_t *node, int parent);
-static snd_alias_list_t R_LoadEntities(void);
-static snd_alias_list_t R_LoadNodesAndLeafs(void);
+snd_alias_list_t R_LoadEntities(void);
+snd_alias_list_t R_LoadNodesAndLeafs(void);
 static void R_LoadNodesAndLeafs_impl(const byte *loadState);
-static snd_alias_list_t R_LoadPortals(void);
-static snd_alias_list_t R_LoadCells(GfxBspLoad *load);
-static snd_alias_list_t R_LoadAabbTrees(void);
-static snd_alias_list_t R_LoadOccluders(void);
+snd_alias_list_t R_LoadPortals(void);
+snd_alias_list_t R_LoadCells(GfxBspLoad *load);
+snd_alias_list_t R_LoadAabbTrees(void);
+snd_alias_list_t R_LoadOccluders(void);
 static void R_LoadOccluders_impl(const byte *loadState);
-static snd_alias_list_t R_LoadPortalVerts(void);
-static snd_alias_list_t R_LoadCullGroups(void);
-static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load);
+snd_alias_list_t R_LoadPortalVerts(void);
+snd_alias_list_t R_LoadCullGroups(void);
+snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load);
 GfxWorld * R_LoadWorldInternal(const char *name);
 
 /* line 1396 */
@@ -63,8 +63,14 @@ static int R_ValidateLump(const int *load, int lumpOfs, int elemSize, const byte
 
     if (lumpFileOfs + lumpSize > load[2])
         R_Error(1, "LoadMap: lump extends past end of file in %s", *(const char **)&s_world);
-    if (lumpFileOfs <= 3)
+    if (lumpFileOfs <= 3) {
+        /* Allow zero-size lumps (empty occluder indices, etc.) */
+        if (lumpSize == 0) {
+            if (outData) *outData = NULL;
+            return 0;
+        }
         R_Error(1, "LoadMap: funny lump offset in %s", *(const char **)&s_world);
+    }
 
     count = lumpSize / elemSize;
     if (lumpSize < 0)
@@ -965,9 +971,27 @@ snd_alias_list_t R_SetParentAndCell_r(void)
  * processes special entity types (worldspawn sun params, misc_model static models,
  * fx_origin effects). Handles spawn variables, model validation, sun light setup.
  * 861 lines of text parsing with R_ParseSunLight, R_IsValidStaticModel, R_CreateStaticModel. */
-#ifndef __EMSCRIPTEN__
-static __attribute__((naked))
+/* R_LoadEntities stub: the full ASM version has stale Mac address
+   relocations (origin pointer, model pointer).  Skip entity processing
+   for now — static models won't appear but gameplay works since the
+   server-side entity loading (G_SpawnEntitiesFromString) handles gameplay. */
+snd_alias_list_t R_LoadEntities_stub(void)
+{
+    snd_alias_list_t r = {0};
+    return r;
+}
+
+/* The naked ASM R_LoadEntities has stale Mac address relocations.
+   Replace with a stub that does nothing. */
 snd_alias_list_t R_LoadEntities(void)
+{
+    snd_alias_list_t r = {0};
+    return r;
+}
+
+#ifndef __EMSCRIPTEN__
+__attribute__((naked))
+snd_alias_list_t R_LoadEntities_ASM_DISABLED(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1256 */
@@ -1907,13 +1931,13 @@ static void R_LoadNodesAndLeafs_impl(const byte *loadState)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadNodesAndLeafs(const byte *loadState)
+snd_alias_list_t R_LoadNodesAndLeafs(const byte *loadState)
 {
     R_LoadNodesAndLeafs_impl(loadState);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadNodesAndLeafs(void)
 {
     __asm__ __volatile__ (
@@ -2001,13 +2025,13 @@ static void R_LoadPortals_impl(const int *load)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadPortals(const int *load)
+snd_alias_list_t R_LoadPortals(const int *load)
 {
     R_LoadPortals_impl(load);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadPortals(void)
 {
     __asm__ __volatile__ (
@@ -2280,13 +2304,13 @@ static void R_LoadCells_impl(const int *load)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadCells(const int *load)
+snd_alias_list_t R_LoadCells(const int *load)
 {
     R_LoadCells_impl(load);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadCells(GfxBspLoad *load)
 {
     __asm__ __volatile__ (
@@ -2518,13 +2542,13 @@ static void R_LoadAabbTrees_impl(const int *load)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadAabbTrees(const int *load)
+snd_alias_list_t R_LoadAabbTrees(const int *load)
 {
     R_LoadAabbTrees_impl(load);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadAabbTrees(void)
 {
     __asm__ __volatile__ (
@@ -2769,13 +2793,13 @@ static void R_LoadOccluders_impl(const byte *loadState)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadOccluders(const byte *loadState)
+snd_alias_list_t R_LoadOccluders(const byte *loadState)
 {
     R_LoadOccluders_impl(loadState);
 }
 #else
 /* x86 trampoline: eax=loadState → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadOccluders(void)
 {
     __asm__ __volatile__ (
@@ -2809,13 +2833,13 @@ static void R_LoadPortalVerts_impl(const int *load)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadPortalVerts(const int *load)
+snd_alias_list_t R_LoadPortalVerts(const int *load)
 {
     R_LoadPortalVerts_impl(load);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadPortalVerts(void)
 {
     __asm__ __volatile__ (
@@ -2970,13 +2994,13 @@ static void R_LoadCullGroups_impl(const int *load)
 
 #ifdef __EMSCRIPTEN__
 /* Clean C version for WASM — no register calling convention */
-static snd_alias_list_t R_LoadCullGroups(const int *load)
+snd_alias_list_t R_LoadCullGroups(const int *load)
 {
     R_LoadCullGroups_impl(load);
 }
 #else
 /* x86 trampoline: eax=load → cdecl _impl */
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadCullGroups(void)
 {
     __asm__ __volatile__ (
@@ -3117,7 +3141,7 @@ snd_alias_list_t R_LoadCullGroups(void)
  * atlas assignment, and populates draw surface sort keys.
  * 751 lines of BSP lump parsing with material lookup and surface construction. */
 #ifndef __EMSCRIPTEN__
-static __attribute__((naked))
+__attribute__((naked))
 snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
 {
     __asm__ __volatile__ (
@@ -3876,6 +3900,9 @@ Only one sky" */
  * occluders, nodes/leafs, lights, entities, etc.), allocates GfxWorld, initializes
  * DPVS structures, builds static model lighting cache, sets up reflection probes.
  * 1687 lines — the largest BSP loading function, orchestrating 20+ lump loaders. */
+/* R_LoadWorldInternal has been rewritten in clean C in r_loadworld_new.c.
+   The naked ASM below is disabled to use the C version instead. */
+#if 0 /* disabled — using C rewrite in r_loadworld_new.c */
 __attribute__((naked))
 GfxWorld * R_LoadWorldInternal(const char *name)
 {
@@ -5565,10 +5592,11 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "jmp .Lfe5778_000e68ca\n"
     );
 }
+#endif /* disabled naked ASM R_LoadWorldInternal */
 
 #else
-static snd_alias_list_t R_LoadEntities(void) { snd_alias_list_t r = {0}; return r; }
+snd_alias_list_t R_LoadEntities(void) { snd_alias_list_t r = {0}; return r; }
 #endif
 #else
-static snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load) { snd_alias_list_t r = {0}; (void)load; return r; }
+snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load) { snd_alias_list_t r = {0}; (void)load; return r; }
 #endif

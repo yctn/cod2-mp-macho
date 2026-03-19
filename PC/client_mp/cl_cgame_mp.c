@@ -1067,6 +1067,8 @@ write_new:
     }
 }
 
+int g_cginit_loading = 0;
+
 /* line 1411 */
 void CL_StartLoading(const char *mapname, const char *gametype)
 {
@@ -1113,10 +1115,10 @@ void CL_InitCGame(void)
         *(unsigned char *)(cl + 0xa) = 1;
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: before CG_Init"); }
         {
-            extern int g_bsp_loading;
-            g_bsp_loading = 1;
+            extern int g_cginit_loading;
+            g_cginit_loading = 1;
             CG_Init(*(int *)(clui + 8), *(int *)(clui + 0x20140), *(int *)(clui + 0x20138));
-            g_bsp_loading = 0;
+            g_cginit_loading = 0;
         }
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: after CG_Init"); }
         *(unsigned char *)(cl + 9) = 1;
