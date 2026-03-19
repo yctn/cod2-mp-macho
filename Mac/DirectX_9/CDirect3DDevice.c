@@ -893,43 +893,31 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (stride == 0x44) {
-            /* 3D world: TEST with ortho matrix (same as HUD) to verify
-             * the issue is matrices, not vertex data */
-            glMatrixMode(0x1701);
-            glLoadIdentity();
-            glMatrixMode(0x1700);
-            glLoadIdentity();
-            /* Scale down world coords to fit in [-1,1] NDC range */
-            glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
-            glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-            if (0) { /* skip real matrices for now */
+            /* 3D world: use combined viewProjectionMatrix from game state.
+             * Use the VP matrix at viewParms+0xC8 (combined view*projection). */
             extern byte backEnd[];
             void *viewParms = *(void **)(backEnd + 0x3c8);
+            glMatrixMode(0x1701); /* GL_PROJECTION */
             if (viewParms) {
-                float *src;
+                float *src = (float *)((byte *)viewParms + 0xC8);
                 float t[16];
-                /* Projection (transposed + D3D→GL z remap) */
-                src = (float *)((byte *)viewParms + 0x88);
+                /* Transpose D3D row-major → GL column-major */
                 t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
                 t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
                 t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
                 t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
+                /* D3D z→[0,1], GL z→[-1,1]: remap z row */
                 t[2]  = 2.0f*t[2]  - t[3];
                 t[6]  = 2.0f*t[6]  - t[7];
                 t[10] = 2.0f*t[10] - t[11];
                 t[14] = 2.0f*t[14] - t[15];
-                glMatrixMode(0x1701);
                 glLoadMatrixf(t);
-                /* View (transposed) */
-                src = (float *)((byte *)viewParms + 0x48);
-                t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
-                t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
-                t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
-                t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
-                glMatrixMode(0x1700);
-                glLoadMatrixf(t);
+            } else {
+                glLoadIdentity();
+                glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
             }
-            } /* close if(0) */
+            glMatrixMode(0x1700); /* GL_MODELVIEW */
+            glLoadIdentity();
         } else {
             /* 2D HUD: ortho projection */
             float ortho[16] = {
