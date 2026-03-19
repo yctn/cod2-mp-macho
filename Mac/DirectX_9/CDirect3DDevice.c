@@ -893,31 +893,58 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (stride == 0x44) {
-            /* 3D world: use combined viewProjectionMatrix from game state.
-             * Use the VP matrix at viewParms+0xC8 (combined view*projection). */
+            /* 3D world: use separate view and projection matrices.
+             * projection at viewParms+0x88, view at viewParms+0x48.
+             * Only projection gets D3D→GL z remap. */
             extern byte backEnd[];
             void *viewParms = *(void **)(backEnd + 0x3c8);
-            glMatrixMode(0x1701); /* GL_PROJECTION */
             if (viewParms) {
-                float *src = (float *)((byte *)viewParms + 0xC8);
+                float *src;
                 float t[16];
-                /* Transpose D3D row-major → GL column-major */
-                t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
-                t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
-                t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
-                t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
-                /* D3D z→[0,1], GL z→[-1,1]: remap z row */
-                t[2]  = 2.0f*t[2]  - t[3];
-                t[6]  = 2.0f*t[6]  - t[7];
-                t[10] = 2.0f*t[10] - t[11];
-                t[14] = 2.0f*t[14] - t[15];
-                glLoadMatrixf(t);
+                int i, hasNaN;
+                /* Projection matrix */
+                src = (float *)((byte *)viewParms + 0x88);
+                hasNaN = 0;
+                for (i = 0; i < 16; i++) if (src[i] != src[i]) hasNaN = 1;
+                if (!hasNaN) {
+                    t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
+                    t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
+                    t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
+                    t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
+                    /* D3D z→[0,1] to GL z→[-1,1] */
+                    t[2]  = 2.0f*t[2]  - t[3];
+                    t[6]  = 2.0f*t[6]  - t[7];
+                    t[10] = 2.0f*t[10] - t[11];
+                    t[14] = 2.0f*t[14] - t[15];
+                    glMatrixMode(0x1701);
+                    glLoadMatrixf(t);
+                } else {
+                    glMatrixMode(0x1701);
+                    glLoadIdentity();
+                    glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
+                }
+                /* View matrix */
+                src = (float *)((byte *)viewParms + 0x48);
+                hasNaN = 0;
+                for (i = 0; i < 16; i++) if (src[i] != src[i]) hasNaN = 1;
+                if (!hasNaN) {
+                    t[0]=src[0]; t[1]=src[4]; t[2]=src[8];  t[3]=src[12];
+                    t[4]=src[1]; t[5]=src[5]; t[6]=src[9];  t[7]=src[13];
+                    t[8]=src[2]; t[9]=src[6]; t[10]=src[10]; t[11]=src[14];
+                    t[12]=src[3]; t[13]=src[7]; t[14]=src[11]; t[15]=src[15];
+                    glMatrixMode(0x1700);
+                    glLoadMatrixf(t);
+                } else {
+                    glMatrixMode(0x1700);
+                    glLoadIdentity();
+                }
             } else {
+                glMatrixMode(0x1701);
                 glLoadIdentity();
                 glScalef(1.0f/4000.0f, 1.0f/4000.0f, 1.0f/4000.0f);
+                glMatrixMode(0x1700);
+                glLoadIdentity();
             }
-            glMatrixMode(0x1700); /* GL_MODELVIEW */
-            glLoadIdentity();
         } else {
             /* 2D HUD: ortho projection */
             float ortho[16] = {
