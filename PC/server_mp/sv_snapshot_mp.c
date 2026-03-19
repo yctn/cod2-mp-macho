@@ -2893,25 +2893,13 @@ void SV_SendClientMessages(void)
 
         sendFrag = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
         if (sendFrag != 0) {
-            /* Send pending fragments immediately instead of rate-limiting.
-               The stub renderer makes the game clock advance very slowly
-               (~1ms per frame) so the original rate-limited path stalls
-               fragment delivery for minutes.  For local/listen-server
-               play this is fine; for remote play the rate-limited path
-               below will still be reached once this fast-path is
-               made conditional on NA_LOOPBACK. */
-            {
-                static int dbg_frag_send;
-                netchan_t *nch = (netchan_t *)(c + CLIENT_NETCHAN);
-                int before = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
-                if (dbg_frag_send < 5)
-                    Com_Printf("DBG frag: nch=%p sock=%d unsent=%d start=%d len=%d\n",
-                        nch, nch->sock, nch->unsentFragments, nch->unsentFragmentStart, nch->unsentLength);
+            /* Send ALL pending fragments in a tight loop.  The stub
+               renderer's slow game clock makes one-per-frame delivery
+               unreliable (netchan state can get reset between frames by
+               SV_ExecuteClientMessage processing stale client packets). */
+            netchan_t *nch = (netchan_t *)(c + CLIENT_NETCHAN);
+            while (nch->unsentFragments) {
                 SV_Netchan_TransmitNextFragment(nch);
-                int after = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
-                if (dbg_frag_send++ < 5)
-                    Com_Printf("DBG frag: after unsent=%d start=%d\n",
-                        nch->unsentFragments, nch->unsentFragmentStart);
             }
             continue;
         }

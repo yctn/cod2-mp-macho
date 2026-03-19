@@ -18,7 +18,8 @@ extern const dvar_t *packetDebug; /* 0x0 */
 static char s[64]; /* s */
 extern char * netsrcString[2]; /* netsrcString */
 static int net_iProfilingOn; /* net_iProfilingOn */
-static loopback_t loopbacks[2]; /* loopbacks */
+extern loopback_t loopbacks[2]; /* loopbacks — must be extern to share
+                                    with the binary's loopback buffer */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void Com_DPrintf(const char *fmt, ...);
@@ -410,7 +411,7 @@ static int net_send_diag = 0;
 Bool NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
 {
     net_send_diag++;
-    if (net_send_diag <= 20) {
+    if (net_send_diag <= 50) {
         const char *d = (const char *)data;
         const char *payload = (length > 4 && d[0]==(char)0xff) ? d+4 : d;
         int plen = (length > 4 && d[0]==(char)0xff) ? length-4 : length;
@@ -430,6 +431,12 @@ Bool NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
         }
     }
 
+    if (length > 100 && to.type != 2) {
+        static int dbg_nonloop;
+        if (dbg_nonloop++ < 5)
+            Com_Printf("DBG NET_SendPacket: NON-LOOPBACK large pkt! sock=%d len=%d type=%d\n",
+                sock, length, to.type);
+    }
     if (to.type == 2) {
         /* NA_LOOPBACK - send to the OTHER side's inbox (sock^1) */
         int idx;
@@ -738,12 +745,6 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
             fragmentLength);
     }
 
-    {
-        static int dbg_txfrag;
-        if (dbg_txfrag++ < 10)
-            Com_Printf("DBG Netchan_TxNextFrag: sock=%d fragStart=%d fragLen=%d res=%d\n",
-                chan->sock, chan->unsentFragmentStart, fragmentLength, res);
-    }
     chan->unsentFragmentStart += fragmentLength;
 
     if (chan->unsentFragmentStart == chan->unsentLength) {
