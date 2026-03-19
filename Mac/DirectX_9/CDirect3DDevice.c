@@ -883,7 +883,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glBindProgramARB(0x8804, 0);
         glDisable(0x8620);
         glDisable(0x8804);
-        glDisable(0x0B71); /* GL_DEPTH_TEST */
+        if (stride == 0x44) {
+            glEnable(0x0B71); /* GL_DEPTH_TEST for world */
+            glDepthFunc(0x0203); /* GL_LEQUAL */
+            glDepthMask(1);
+        } else {
+            glDisable(0x0B71); /* no depth test for HUD */
+        }
         glDisable(0x0B44); /* GL_CULL_FACE */
         glDisable(0x0B60); /* GL_FOG */
         glDisable(0x0B50); /* GL_LIGHTING */
@@ -960,7 +966,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     }
     while (glGetError()) {}
 
-    /* Bind texture from pre-bind. */
+    /* Bind texture for all geometry */
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
         unsigned int glTexID = g_prebind_texID;
