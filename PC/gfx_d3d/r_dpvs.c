@@ -4660,15 +4660,29 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
         }
     }
 
-    /* TEMP: Always add surfaces from ALL cells without frustum culling.
-     * The portal traversal and per-surface culling have issues with the
-     * spectator camera at origin. Force-add all world surfaces. */
-    {
-        byte *world = *(byte **)((byte *)&rgp + 0x109c);
-        int cellCount = *(int *)(world + 0xfc);
-        GfxCell *cells = *(GfxCell **)(world + 0x100);
-        for (i = 0; i < cellCount; i++)
-            R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
+    /* Add world surfaces: camera cell + portal-visible cells */
+    if (!(*(const dvar_t **)imp_r_skipPvs)->current.enabled) {
+        if (cameraCellIndex >= 0) {
+            byte *world = *(byte **)((byte *)&rgp + 0x109c);
+            GfxCell *cells = *(GfxCell **)(world + 0x100);
+            GfxCell *cameraCell = &cells[cameraCellIndex];
+
+            /* Add surfaces from camera cell */
+            R_AddVisibleSurfacesInCell_impl(cameraCell, frustumPlanes, frustumPlaneCount);
+
+            /* Try portal traversal for neighboring cells */
+            R_VisitPortals(cameraCell, (const DpvsPlane *)&dpvsGlob, frustumPlanes, frustumPlaneCount);
+
+            /* Diagnostic */
+            R_dpvs_diag_print(cameraCellIndex, *(byte *)((byte *)&dpvsGlob + 100), cameraCell);
+        } else {
+            /* Unknown cell — fallback to all cells */
+            byte *world = *(byte **)((byte *)&rgp + 0x109c);
+            int cellCount = *(int *)(world + 0xfc);
+            GfxCell *cells = *(GfxCell **)(world + 0x100);
+            for (i = 0; i < cellCount; i++)
+                R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
+        }
     }
 
     /* Process sorted world surfaces (sky surfaces) — always add */

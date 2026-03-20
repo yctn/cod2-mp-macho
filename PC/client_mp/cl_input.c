@@ -1151,18 +1151,6 @@ void CL_CmdButtons(usercmd_t *cmd)
 
     cl = *(clientActive_t **)imp_cl;
 
-    /* Auto-press attack to help spawn in DM.
-     * Pulse attack a few times after connecting, then stop. */
-    {
-        static int spawnTimer = 0;
-        if (spawnTimer < 600) {
-            spawnTimer++;
-            if (spawnTimer >= 200 && (spawnTimer % 120) < 5) {
-                cmd->buttons |= 0x1;
-            }
-        }
-    }
-
     if (CL_ConsumeButtonPress(KB_AT(0x118)))
     {
         cmd->buttons |= 0x1;
