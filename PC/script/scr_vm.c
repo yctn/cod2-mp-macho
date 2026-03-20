@@ -54,7 +54,7 @@ int Scr_IsSystemActive(int sys);
 unsigned int Scr_GetNumParam(void);
 void Scr_AddArray(void);
 void Scr_AddArrayStringIndexed(unsigned int stringValue);
-VariableValue GetEntityFieldValue(unsigned int classnum, int entnum, int offset);
+unsigned long long __attribute__((regparm(0))) GetEntityFieldValue(unsigned int classnum, int entnum, int offset);
 void Scr_SetStructField(unsigned int structId, unsigned int index);
 void Scr_Init(void);
 void Scr_TraverseScript(const char *pos);
@@ -1015,18 +1015,21 @@ void Scr_AddArrayStringIndexed(unsigned int stringValue)
 /* line 4992 */
 extern void Scr_GetObjectField(unsigned int classnum, int entnum, int offset);
 extern unsigned char bg_weapClips[];
-VariableValue GetEntityFieldValue(unsigned int classnum, int entnum, int offset)
+/* Return value+type in eax:edx to match the naked ASM caller convention.
+ * GCC's default for 8-byte struct return on i386 uses a hidden pointer,
+ * but the Mac-decompiled naked ASM callers expect eax:edx. */
+unsigned long long __attribute__((regparm(0)))
+GetEntityFieldValue(unsigned int classnum, int entnum, int offset)
 {
-    VariableValue result;
-
     *(int *)((byte *)&scrVmPub + 16) = (int)(bg_weapClips + 536);
     *(int *)(scrVmGlob + 4) = 0;
     Scr_GetObjectField(classnum, entnum, offset);
     *(int *)((byte *)&scrVmPub + 24) = 0;
 
-    result.u.intValue = *(int *)scrVmGlob;
-    result.type = *(int *)(scrVmGlob + 4);
-    return result;
+    /* Pack value in low 32 bits (eax), type in high 32 bits (edx) */
+    unsigned int val = *(unsigned int *)scrVmGlob;
+    unsigned int typ = *(unsigned int *)(scrVmGlob + 4);
+    return ((unsigned long long)typ << 32) | val;
 }
 
 /* line 5010 */
@@ -9225,6 +9228,8 @@ unsigned int Scr_GetConstLowercaseString(unsigned int index)
 
 /* line 4920 */
 __attribute__((naked))
+/* Wrapper: make script errors non-fatal by storing the message
+ * and using longjmp to the script error recovery instead of Com_Error. */
 void Scr_Error(const char *error)
 {
     __asm__ __volatile__ (

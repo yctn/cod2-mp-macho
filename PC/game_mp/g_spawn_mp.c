@@ -73,7 +73,14 @@ extern const dvar_t *g_gravity;
 extern const dvar_t *g_motd;
 
 extern spawn_t spawns[22]; /* 0x0 */
-static const ent_field_t fields[11]; /* fields */
+/* Entity fields table — data extracted from Mac binary (utils/binary.x86 @ 0x333360):
+ *   classname(0x168,STR) origin(0x138,VEC) model(0x164,MDL) spawnflags(0x170,INT)
+ *   target(0x16a,STR) targetname(0x16c,STR) count(0x1a0,INT) health(0x194,INT)
+ *   dmg(0x19c,INT) angles(0x144,VEC)
+ * Currently disabled — enabling causes cascading script errors because the
+ * game scripts access many more fields (client fields, custom fields) that
+ * aren't registered yet. The GetEntityFieldValue calling convention is fixed. */
+static const ent_field_t fields[11]; /* disabled — needs full client fields table too */
 
 enum {
     GSP_CS_GAME_VERSION = 2,
@@ -502,6 +509,8 @@ void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         scr_string_t stringValue = *(scr_string_t *)(b + ofs);
         if (stringValue) {
             Scr_AddConstString(stringValue);
+        } else {
+            Scr_AddUndefined();
         }
         break;
     }
@@ -513,6 +522,8 @@ void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         gentity_t *ent = *(gentity_t **)(b + ofs);
         if (ent) {
             Scr_AddEntityNum(ent->s.number, 0);
+        } else {
+            Scr_AddUndefined();
         }
         break;
     }

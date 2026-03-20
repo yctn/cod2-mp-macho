@@ -503,7 +503,7 @@ unsigned int Scr_EvalVariableObject(unsigned int id)
             return objectId;
     }
 
-    Scr_Error(va((const char *)str_0021d344, var_typename[type])); /* "%s is not a field object" */
+    Com_Printf("^3%s is not a field object\n", var_typename[type]); /* non-fatal */
     return 0;
 }
 
@@ -10651,7 +10651,7 @@ unsigned int Scr_EvalFieldObject(unsigned int tempVariable, VariableValue *value
         "movl $str_0021d344, (%esp)\n" /* "%s is not a field object" */
         "calll va\n"
         "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
+        "calll Com_Printf\n" /* non-fatal: warn and return 0 */
         "xorl %esi, %esi\n"
         /* } scope */
         "movl %esi, %eax\n" /* line 2980 */
