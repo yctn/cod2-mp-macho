@@ -492,26 +492,7 @@ R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms)
     memcpy(viewParms->origin, refdef->vieworg, sizeof(viewParms->origin));
     memcpy(viewParms->axis, refdef->viewaxis, sizeof(viewParms->axis));
 
-    /* TEMP: Override spectator camera to a valid map position for testing.
-     * When the player is at origin (spectator, not spawned), move camera to
-     * a position inside the map's playable area and set a useful view angle. */
-    if (viewParms->origin[0] == 0.0f && viewParms->origin[1] == 0.0f
-        && viewParms->origin[2] < 20.0f && viewParms->origin[2] >= 0.0f) {
-        /* Position higher up, looking down at an angle to see ground + buildings */
-        viewParms->origin[0] = 1800.0f;
-        viewParms->origin[1] = 2200.0f;
-        viewParms->origin[2] = 250.0f;
-        /* Look forward-down to see textured ground and walls */
-        viewParms->axis[0][0] = 0.5f;   /* forward X */
-        viewParms->axis[0][1] = 0.5f;   /* forward Y */
-        viewParms->axis[0][2] = -0.707f; /* looking down 45° */
-        viewParms->axis[1][0] = -0.707f; /* right */
-        viewParms->axis[1][1] = 0.707f;
-        viewParms->axis[1][2] = 0.0f;
-        viewParms->axis[2][0] = 0.354f;  /* up (adjusted for tilt) */
-        viewParms->axis[2][1] = 0.354f;
-        viewParms->axis[2][2] = 0.866f;
-    }
+    /* Camera uses player/spectator position from the game. */
 
     MatrixForViewer((float (*)[4])&viewParms->viewMatrix, viewParms->origin, viewParms->axis);
 
