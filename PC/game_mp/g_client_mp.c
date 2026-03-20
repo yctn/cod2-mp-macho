@@ -53,6 +53,7 @@ extern void Com_Error(int level, const char *fmt, ...);
 
 extern vec3_t playerMins; /* 0x0 */
 extern vec3_t playerMaxs; /* 0x0 */
+extern const dvar_t *g_password; /* 0x0 */
 
 extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
 extern byte level_ptr[]; /* imp_level - used for level metadata */
@@ -65,7 +66,6 @@ extern byte *g_sv_running_ptr; /* imp_voice_global */
 extern byte *g_deadChat_ptr; /* imp_voice_deadChat */
 extern byte *g_voiceChatsAllowed_ptr; /* imp_voice_localEcho */
 extern byte *g_voiceChatTalkingDuration_ptr; /* imp_g_inactivity */
-extern byte *g_password_ptr; /* imp_g_password */
 extern byte *g_bobMax_ptr; /* imp_bg_bobMax */
 extern int __mh_execute_header;
 extern int g_time; /* imp_level_bgs */
@@ -955,9 +955,7 @@ char * ClientConnect(int clientNum, int scriptPersId)
     /* Check password if not local client */
     if (*(int *)(client + 0x2700) == 0) {
         const char *password = Info_ValueForKey(userinfo, "password");
-        byte *passwordDvar = *(byte **)g_password_ptr;
-        passwordDvar = *(byte **)passwordDvar;
-        const char *serverPassword = (const char *)(*(int *)(passwordDvar + 8));
+        const char *serverPassword = g_password ? g_password->current.string : "";
 
         if (*serverPassword != 0) {
             if (I_stricmp(serverPassword, "")) {

@@ -317,11 +317,9 @@ unsigned int GScr_AllocString(const char *s)
 unsigned int Scr_LoadLevel(void)
 {
     unsigned int handle = *(unsigned int *)&g_scr_data;
-    Com_Printf("[Scr_LoadLevel] handle=%u\n", handle);
     if (handle)
     {
         unsigned int threadId = Scr_ExecThread(handle, 0);
-        Com_Printf("[Scr_LoadLevel] thread=%u completed\n", threadId);
         Scr_FreeThread(threadId & 0xFFFF);
     }
     return 0;
@@ -486,7 +484,6 @@ unsigned int GScr_IsDefined(void)
     } else {
         result = (type != 0);
     }
-    Com_Printf("DBG isDefined: type=%d result=%d\n", type, result);
     Scr_AddInt(result);
     return 0;
 }
@@ -517,7 +514,6 @@ unsigned int GScr_GetDvar(void)
 {
     const char *name = Scr_GetString(0);
     const char *val = Dvar_GetVariantString(name);
-    Com_Printf("DBG getCvar('%s') = '%s'\n", name, val);
     Scr_AddString(val);
     return 0;
 }

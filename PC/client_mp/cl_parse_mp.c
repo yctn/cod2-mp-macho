@@ -100,8 +100,6 @@ void CL_SystemInfoChanged(void)
         const char *sid_str = Info_ValueForKey(systemInfo, "sv_serverid");
         int sid_val = atoi(sid_str);
         *(int *)(cls + 0x8628) = sid_val;
-        fprintf(stderr, "[CL_SystemInfoChanged] sv_serverid='%s' val=%d cls=%p cls+0x8628=%p\n",
-                sid_str ? sid_str : "(null)", sid_val, cls, cls + 0x8628);
     }
 
     /* line 586 */
@@ -256,7 +254,6 @@ void CL_ParseGamestate(msg_t *msg)
     }
 
     /* line 726 */
-    Com_Printf("DBG: calling CL_InitDownloads\n");
     CL_InitDownloads();
     {
         extern unsigned char clientConnections[];
@@ -961,23 +958,13 @@ void CL_ParseServerMessage(msg_t *msg)
         }
 
         /* line 930 - command dispatch */
-        {
-            static int psm_count = 0;
-            if (psm_count < 20) {
-                fprintf(stderr, "[PSM#%d] cmd=%d readcount=%d cursize=%d\n",
-                        psm_count, cmd, msgCompressed.readcount, msgCompressed.cursize);
-                psm_count++;
-            }
-        }
         switch (cmd) {
         case 0:
             /* svc_nop / svc_bad - handled as default */
             break;
         case 1: {
             /* svc_gamestate (line 950) */
-            fprintf(stderr, "[PSM] Calling CL_ParseGamestate\n");
             CL_ParseGamestate(&msgCompressed);
-            fprintf(stderr, "[PSM] CL_ParseGamestate returned\n");
             break;
         }
         case 4: {

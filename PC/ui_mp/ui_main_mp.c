@@ -675,8 +675,27 @@ void UI_LoadIngameMenus(void)
 {
     if (g_ingameMenusLoaded)
         return;
+
     g_ingameMenusLoaded = 1;
-    UI_AddMenuList(uiInfo, UI_LoadMenus("ui_mp/ingame.txt", 3));
+
+    Load_ScriptMenu("ingame", 3);
+    Load_ScriptMenu("callvote", 3);
+    Load_ScriptMenu("muteplayer", 3);
+    Load_ScriptMenu("quickcommands", 3);
+    Load_ScriptMenu("quickresponses", 3);
+    Load_ScriptMenu("quickstatements", 3);
+    Load_ScriptMenu("serverinfo_dm", 3);
+    Load_ScriptMenu("serverinfo_tdm", 3);
+    Load_ScriptMenu("serverinfo_ctf", 3);
+    Load_ScriptMenu("serverinfo_hq", 3);
+    Load_ScriptMenu("serverinfo_sd", 3);
+    Load_ScriptMenu("team_americangerman", 3);
+    Load_ScriptMenu("team_britishgerman", 3);
+    Load_ScriptMenu("team_russiangerman", 3);
+    Load_ScriptMenu("weapon_american", 3);
+    Load_ScriptMenu("weapon_british", 3);
+    Load_ScriptMenu("weapon_german", 3);
+    Load_ScriptMenu("weapon_russian", 3);
 }
 
 /* line 1007 */
@@ -1601,6 +1620,7 @@ void UI_Init(void)
 
     menuList = UI_LoadMenus("ui_mp/menus.txt", 3);
     UI_AddMenuList(uiInfo, menuList);
+    UI_LoadIngameMenus();
 
     if (g_mapname[0] != '\0') {
         UI_MapLoadInfo(va("maps/mp/%s.csv", g_mapname));

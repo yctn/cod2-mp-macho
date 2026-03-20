@@ -330,7 +330,6 @@ static void CG_OpenScriptMenu(void)
     const char *arg2;
 
     menuIndex = atoi(CG_Argv(1));
-    Com_Printf("[OPENMENU] menuIndex=%d\n", menuIndex);
 
     if ((unsigned int)menuIndex > 31) {
         Com_Printf((const char *)str_002b8070, menuIndex);
@@ -339,7 +338,6 @@ static void CG_OpenScriptMenu(void)
     }
 
     pszMenu = CL_GetConfigString(menuIndex + 0x4de);
-    Com_Printf("[OPENMENU] cs[%d]='%s'\n", menuIndex + 0x4de, pszMenu ? pszMenu : "(null)");
 
     if (*pszMenu == '\0') {
         Com_Printf((const char *)str_002b80b4, menuIndex);

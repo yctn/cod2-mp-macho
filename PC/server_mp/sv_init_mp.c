@@ -904,8 +904,6 @@ void SV_SpawnServer(const char *server)
             Material_PreLoadAllShaderText();
     }
 
-    UI_LoadIngameMenus();
-
     /* Initialize configstrings */
     sv = (byte *)imp_sv;
     {
