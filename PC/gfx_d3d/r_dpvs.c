@@ -1123,13 +1123,24 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
     /* 1. World surfaces via AABB tree */
     if (*(byte *)((byte *)&dpvsGlob + 100)) {
         GfxAabbTree *tree = cell->aabbTree;
-        if (tree) {
-            /* HACK: skip frustum culling, add ALL surfaces from this cell's tree.
-             * Pass planeCount=0 to R_AddWorldSurfaceWithCull_impl so all surfaces pass. */
+        if (tree && tree->childCount > 0) {
+            /* Recurse into child AABB trees with frustum culling */
+            if (*(byte *)(*(int *)imp_r_portalFineCull + 8)) {
+                for (i = 0; i < tree->childCount; i++) {
+                    GfxAabbTree *child = (GfxAabbTree *)((byte *)(intptr_t)tree->children + i * sizeof(GfxAabbTree));
+                    R_AddAabbTreeSurfaces_r_impl(child, (DpvsPlane *)planes, planeCount, 0);
+                }
+            } else {
+                /* Fine culling disabled: add all surfaces from root tree */
+                int startSurf = tree->startSurfIndex;
+                for (i = 0; i < tree->surfaceCount; i++)
+                    R_AddWorldSurfaceWithCull_impl(startSurf + i, planes, planeCount, 0);
+            }
+        } else if (tree) {
+            /* Leaf: add surfaces with per-surface culling */
             int startSurf = tree->startSurfIndex;
-            int totalSurfs = tree->surfaceCount;
-            for (i = 0; i < totalSurfs; i++)
-                R_AddWorldSurfaceWithCull_impl(startSurf + i, planes, 0, 0);
+            for (i = 0; i < tree->surfaceCount; i++)
+                R_AddWorldSurfaceWithCull_impl(startSurf + i, planes, planeCount, 0);
         }
     } else {
         /* drawWorld is off — no world surfaces will be added */

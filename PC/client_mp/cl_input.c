@@ -1151,23 +1151,12 @@ void CL_CmdButtons(usercmd_t *cmd)
 
     cl = *(clientActive_t **)imp_cl;
 
-    /* Auto-spawn: send menu responses to join team and spawn.
-     * In CoD2 DM, the spawn flow is: join allies → select weapon → spawn.
-     * Use Cbuf_AddText to send the "mr" (menu response) commands. */
+    /* Auto-press attack to help spawn in DM.
+     * Press once after 3 seconds, then every 2 seconds until spawned. */
     {
-        extern void Cbuf_AddText(const char *text);
         static int spawnTimer = 0;
         spawnTimer++;
-        if (spawnTimer == 200) {
-            /* Join allies team */
-            Cbuf_AddText("mr 16 3 allies\n");
-        }
-        if (spawnTimer == 250) {
-            /* Select default weapon class */
-            Cbuf_AddText("mr 16 3 weapon_kar98k\n");
-        }
-        if (spawnTimer >= 300 && spawnTimer <= 305) {
-            /* Press attack to finalize spawn */
+        if (spawnTimer >= 200 && (spawnTimer % 120) < 5) {
             cmd->buttons |= 0x1;
         }
     }
