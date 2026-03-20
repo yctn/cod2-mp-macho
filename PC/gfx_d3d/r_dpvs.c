@@ -692,6 +692,10 @@ static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *plane
     /* Per-surface visibility data: skip if already visited this frame */
     int *surfVisData = *(int **)(rg_ptr + 0x3198);
     int viewCount = *(int *)imp_scene;
+
+    if (!surfVisData)
+        return;
+
     if (surfVisData[surfIndex] == viewCount)
         return;
 
@@ -701,8 +705,12 @@ static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *plane
     GfxSurface *surf = &surfaces[surfIndex];
     srfTriangles_t *tris = surf->tris;
 
-    /* Frustum plane culling (only if r_portalFineCull is enabled) */
-    if (*(byte *)(*(int *)imp_r_portalFineCull + 8)) {
+    if (!tris) {
+        return;
+    }
+
+    /* Frustum plane culling — SKIP when planeCount==0 (force-add mode) */
+    if (planeCount > 0 && *(byte *)(*(int *)imp_r_portalFineCull + 8)) {
         const float *bounds = (const float *)tris->bounds;
         if (!R_CullByFrustumPlanes((DpvsPlane *)planes, planeCount, stackLevel, bounds))
             return;
@@ -714,6 +722,7 @@ static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *plane
     surfVisData[surfIndex] = viewCount;
 
     int entIndex = surf->sortGroup + 0x800;
+
     R_AddDrawSurfForSurface(surf, entIndex);
 }
 
@@ -1114,21 +1123,16 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
     /* 1. World surfaces via AABB tree */
     if (*(byte *)((byte *)&dpvsGlob + 100)) {
         GfxAabbTree *tree = cell->aabbTree;
-        if (tree && tree->childCount > 0) {
-            /* Has children: check if fine culling enabled */
-            if (*(byte *)(*(int *)imp_r_portalFineCull + 8)) {
-                /* Recurse into child AABB trees */
-                for (i = 0; i < tree->childCount; i++) {
-                    GfxAabbTree *child = (GfxAabbTree *)((byte *)(intptr_t)tree->children + i * sizeof(GfxAabbTree));
-                    R_AddAabbTreeSurfaces_r_impl(child, (DpvsPlane *)planes, planeCount, 0);
-                }
-            }
-        } else if (tree) {
-            /* Leaf: add surfaces with per-surface culling */
+        if (tree) {
+            /* HACK: skip frustum culling, add ALL surfaces from this cell's tree.
+             * Pass planeCount=0 to R_AddWorldSurfaceWithCull_impl so all surfaces pass. */
             int startSurf = tree->startSurfIndex;
-            for (i = 0; i < tree->surfaceCount; i++)
-                R_AddWorldSurfaceWithCull_impl(startSurf + i, planes, planeCount, 0);
+            int totalSurfs = tree->surfaceCount;
+            for (i = 0; i < totalSurfs; i++)
+                R_AddWorldSurfaceWithCull_impl(startSurf + i, planes, 0, 0);
         }
+    } else {
+        /* drawWorld is off — no world surfaces will be added */
     }
 
     /* 2. Dynamic entities from cell's modelRef list */
@@ -4467,6 +4471,8 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
 
         viewDir = viewParms->axis[0];
 
+        /* Eye position comes from viewParms->origin (set by player spawn) */
+
         /* Near plane normal = view axis */
         nearPlaneNormal[0] = viewDir[0];
         nearPlaneNormal[1] = viewDir[1];
@@ -4640,39 +4646,15 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
         }
     }
 
-    /* Portal traversal or full-cell fallback */
-    if (!(*(const dvar_t **)imp_r_skipPvs)->current.enabled) {
-        if (cameraCellIndex >= 0) {
-            byte *world = *(byte **)((byte *)&rgp + 0x109c);
-            GfxCell *cells = *(GfxCell **)(world + 0x100);
-            GfxCell *cameraCell = &cells[cameraCellIndex];
-
-            if ((*(const dvar_t **)imp_r_singleCell)->current.integer) {
-                /* Single cell mode: just add surfaces in camera cell */
-                *(void **)((byte *)&dpvsGlob + 44) = 0;
-                R_AddVisibleSurfacesInCell_impl(cameraCell, frustumPlanes, frustumPlaneCount);
-            } else {
-                /* Full portal traversal */
-                R_VisitPortals(cameraCell, (const DpvsPlane *)&dpvsGlob, frustumPlanes, frustumPlaneCount);
-
-                /* Diagnostic print */
-                R_dpvs_diag_print(cameraCellIndex, *(byte *)((byte *)&dpvsGlob + 100), cameraCell);
-
-                /* Check if portal traversal found anything; if not, fallback to all cells */
-                if (R_DpvsShouldFallbackAllCells(cameraCellIndex))
-                    goto fallback_all_cells;
-            }
-        } else {
-        fallback_all_cells:
-            {
-                /* Add surfaces from all cells */
-                byte *world = *(byte **)((byte *)&rgp + 0x109c);
-                int cellCount = *(int *)(world + 0xfc);
-                GfxCell *cells = *(GfxCell **)(world + 0x100);
-                for (i = 0; i < cellCount; i++)
-                    R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
-            }
-        }
+    /* TEMP: Always add surfaces from ALL cells without frustum culling.
+     * The portal traversal and per-surface culling have issues with the
+     * spectator camera at origin. Force-add all world surfaces. */
+    {
+        byte *world = *(byte **)((byte *)&rgp + 0x109c);
+        int cellCount = *(int *)(world + 0xfc);
+        GfxCell *cells = *(GfxCell **)(world + 0x100);
+        for (i = 0; i < cellCount; i++)
+            R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
     }
 
     /* Process sorted world surfaces (sky surfaces) if far plane is active */

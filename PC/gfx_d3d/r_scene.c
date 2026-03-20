@@ -492,6 +492,26 @@ R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms)
     memcpy(viewParms->origin, refdef->vieworg, sizeof(viewParms->origin));
     memcpy(viewParms->axis, refdef->viewaxis, sizeof(viewParms->axis));
 
+    /* TEMP: Override spectator camera to a valid map position for testing.
+     * When the player is at origin (spectator, not spawned), move camera to
+     * a position inside the map's playable area and set a useful view angle. */
+    if (viewParms->origin[0] == 0.0f && viewParms->origin[1] == 0.0f
+        && viewParms->origin[2] < 20.0f && viewParms->origin[2] >= 0.0f) {
+        viewParms->origin[0] = 2000.0f;
+        viewParms->origin[1] = 1500.0f;
+        viewParms->origin[2] = 120.0f;
+        /* Look along a 45-degree angle to see more of the map */
+        viewParms->axis[0][0] = 0.707f; /* forward X */
+        viewParms->axis[0][1] = 0.707f; /* forward Y */
+        viewParms->axis[0][2] = -0.1f;  /* slightly down */
+        viewParms->axis[1][0] = -0.707f; /* right */
+        viewParms->axis[1][1] = 0.707f;
+        viewParms->axis[1][2] = 0.0f;
+        viewParms->axis[2][0] = 0.0f;   /* up */
+        viewParms->axis[2][1] = 0.0f;
+        viewParms->axis[2][2] = 1.0f;
+    }
+
     MatrixForViewer((float (*)[4])&viewParms->viewMatrix, viewParms->origin, viewParms->axis);
 
     zNear = refdef->zNear;

@@ -315,8 +315,11 @@ void ZN37COpenGLNVidiaRegisterCombinersProgramD0Ev(const COpenGLNVidiaRegisterCo
 
 J_COLOR_SPACE COpenGLARBFragmentProgram_Enable(const COpenGLARBFragmentProgram * _this)
 {
-    (void)_this;
-    /* Original: glBindProgramARB(0x8804, programId), glEnable(0x8804). Stub. */
+    COpenGLARBFragmentProgramImpl *program = (COpenGLARBFragmentProgramImpl *)_this;
+    if (program->programId) {
+        glEnable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+        glBindProgramARB(0x8804, program->programId);
+    }
     ++g_fp_enable_count;
     return 0;
 }
@@ -324,27 +327,29 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_Enable(const COpenGLARBFragmentProgram *
 J_COLOR_SPACE COpenGLARBFragmentProgram_Disable(const COpenGLARBFragmentProgram * _this)
 {
     (void)_this;
-    /* Original: glDisable(0x8804). Stub for WebGL2. */
+    glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+    glBindProgramARB(0x8804, 0);
     return 0;
 }
 
 J_COLOR_SPACE COpenGLARBFragmentProgram_SetConstants(const COpenGLARBFragmentProgram * _this, UINT32 Register, const float * pConstantData, UINT32 Vector4fCount, UINT32 CommandNumber)
 {
+    UINT32 i;
+    const float *pf = pConstantData;
     (void)_this;
-    (void)Register;
-    (void)pConstantData;
-    (void)Vector4fCount;
     (void)CommandNumber;
-    /* Original: glProgramEnvParameter4fvARB(0x8804, ...). Stub for WebGL2. */
+    for (i = 0; i < Vector4fCount; i++) {
+        glProgramEnvParameter4fvARB(0x8804, Register + i, pf);
+        pf += 4;
+    }
     return 0;
 }
 
 J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(const COpenGLARBFragmentProgram * _this, const string *Name, const string *Code)
 {
     COpenGLARBFragmentProgramImpl *program;
-
-    (void)Name;
-    (void)Code;
+    const char *codeStr;
+    int codeLen;
 
     program = (COpenGLARBFragmentProgramImpl *)_this;
     program->vtable = vtbl_CDirect3DPixelShader_ARB;
@@ -353,12 +358,49 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(const COpenGLA
     program->nameStr = NULL;
     program->codeStr = NULL;
     program->programId = 0;
-    /*
-     * Original: allocated std::string copies of Name/Code, searched Code for
-     * "texture[ N ]" patterns to build textureUsageMask, then:
-     * glGenProgramsARB, glBindProgramARB, glProgramStringARB.
-     * All stubbed for WebGL2.
-     */
+
+    /* Code is a std::string — on i386 GCC, the c_str data pointer is at offset 0.
+     * The Mac std::string layout: pointer to char data at offset 0. */
+    codeStr = *(const char **)Code;
+    if (!codeStr || !codeStr[0])
+        return 0;
+
+    codeLen = strlen(codeStr);
+
+    /* Build texture usage mask by scanning for "texture[ N ]" patterns */
+    {
+        const char *p = codeStr;
+        while ((p = strstr(p, "texture[")) != NULL) {
+            p += 8; /* skip "texture[" */
+            while (*p == ' ') p++;
+            if (*p >= '0' && *p <= '9') {
+                int idx = *p - '0';
+                if (idx < 16)
+                    program->textureUsageMask |= (1u << idx);
+            }
+            p++;
+        }
+    }
+
+    /* Create ARB fragment program */
+    glGenProgramsARB(1, &program->programId);
+    glBindProgramARB(0x8804, program->programId);
+    glProgramStringARB(0x8804, 0x8875 /* GL_PROGRAM_FORMAT_ASCII_ARB */,
+                       codeLen, codeStr);
+
+    /* Check for compile errors */
+    {
+        int errorPos = 0;
+        glGetIntegerv(0x864B /* GL_PROGRAM_ERROR_POSITION_ARB */, &errorPos);
+        if (errorPos != -1) {
+            fprintf(stderr, "[ARB FP] Compile error at position %d in program %u\n",
+                    errorPos, program->programId);
+        }
+    }
+
+    /* Unbind after setup */
+    glBindProgramARB(0x8804, 0);
+
     return 0;
 }
 
@@ -368,12 +410,10 @@ static void COpenGLARBFragmentProgram_DestroyImpl(const COpenGLARBFragmentProgra
     COpenGLARBFragmentProgramImpl *program;
     program = (COpenGLARBFragmentProgramImpl *)_this;
     program->vtable = vtbl_CDirect3DPixelShader_ARB;
-    /*
-     * Original: optional glDisable(0x8804), clear bound program,
-     * glDeleteProgramsARB(1, &programId), destroy std::string members,
-     * then call base D2.
-     * All stubbed — no GL resources to clean up.
-     */
+    if (program->programId) {
+        glDeleteProgramsARB(1, &program->programId);
+        program->programId = 0;
+    }
     ZN20CDirect3DPixelShaderD2Ev((const CDirect3DPixelShader *)_this);
 }
 

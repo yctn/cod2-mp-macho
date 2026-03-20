@@ -267,7 +267,33 @@ void GLOBAL__I__ZN7COpenGL7sOpenGLE(void)
 
 unsigned int COpenGLVertexProgram_COpenGLVertexProgram(const COpenGLVertexProgram *_this, const char *pSrcData)
 {
-    (void)_this; (void)pSrcData;
+    /* COpenGLVertexProgram: compile ARB vertex program.
+     * Store the GL program ID at offset 0 of the embedded object. */
+    GLuint *progIdPtr = (GLuint *)_this;
+
+    if (!pSrcData || pSrcData[0] != '!' || pSrcData[1] != '!') {
+        *progIdPtr = 0;
+        return 0;
+    }
+
+    {
+        int len = strlen(pSrcData);
+        int errorPos = -1;
+
+        glGenProgramsARB(1, progIdPtr);
+        glBindProgramARB(0x8620 /* GL_VERTEX_PROGRAM_ARB */, *progIdPtr);
+        glProgramStringARB(0x8620, 0x8875 /* GL_PROGRAM_FORMAT_ASCII_ARB */,
+                           len, pSrcData);
+
+        glGetIntegerv(0x864B /* GL_PROGRAM_ERROR_POSITION_ARB */, &errorPos);
+        if (errorPos != -1) {
+            fprintf(stderr, "[ARB VP] Compile error at position %d in program %u\n",
+                    errorPos, *progIdPtr);
+        }
+
+        glBindProgramARB(0x8620, 0);
+    }
+
     return 0;
 }
 

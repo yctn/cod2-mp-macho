@@ -102,8 +102,10 @@ unsigned char CDirect3DVertexShader_CDirect3DVertexShader(const CDirect3DVertexS
 
     shader = (CDirect3DVertexShaderImpl *)_this;
     memset(shader->baseState, 0, sizeof(shader->baseState));
-    /* Original called COpenGLVertexProgram_COpenGLVertexProgram; stub is no-op */
-    (void)pSrcData;
+    /* Compile the ARB vertex program via COpenGLVertexProgram constructor.
+     * The VP program ID is stored at baseState[0] (offset +8 from shader start). */
+    COpenGLVertexProgram_COpenGLVertexProgram(
+        (const COpenGLVertexProgram *)shader->baseState, pSrcData);
     shader->vtablePrimary = vtbl_CDirect3DVertexShader;
     shader->vtableSecondary = vtbl_CDirect3DVertexShader_secondary;
     shader->isBound = 0;

@@ -104,6 +104,10 @@ extern void game_dprintf(const char *fmt, ...);
 extern void COpenGLMatrix_SetIdentity(float *m);
 extern void D3DXMatrixMultiply(float *out, const float *a, const float *b);
 
+/* --- ARB fragment program constructor (from CDirect3DPixelShader.c) --- */
+extern J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(
+    const COpenGLARBFragmentProgram *_this, const string *Name, const string *Code);
+
 /* --- Pixel shader stub vtable --- */
 /* Minimal pixel shader object: vtable + refcount */
 typedef struct {
@@ -134,6 +138,9 @@ static void *ps_stub_vtbl[] = {
     (void*)PS_D1, (void*)PS_D0,
     (void*)PS_Enable, (void*)PS_Disable, (void*)PS_SetConstants
 };
+
+/* Active vertex shader — set by SetVertexShader, read by DrawIndexedPrimitive */
+static IDirect3DVertexShader9 *g_activeVertexShader = NULL;
 
 /* --- Query stub --- */
 typedef struct {
@@ -798,6 +805,7 @@ HRESULT CDirect3DDevice_CreateVertexShader(const CDirect3DDevice *_this,
     int errorPos;
     (void)_this;
     shader = malloc(0x19c);
+    memset(shader, 0, 0x19c);
     CDirect3DVertexShader_CDirect3DVertexShader((const CDirect3DVertexShader *)shader, (const char *)pFunction);
     *ppShader = (IDirect3DVertexShader9 *)shader;
     glGetIntegerv(0x864b, &errorPos);
@@ -810,12 +818,32 @@ HRESULT CDirect3DDevice_CreateVertexShader(const CDirect3DDevice *_this,
 HRESULT CDirect3DDevice_CreatePixelShader(const CDirect3DDevice *_this,
     const DWORD *pFunction, IDirect3DPixelShader9 **ppShader)
 {
-    PixelShaderStub *ps;
-    (void)_this; (void)pFunction;
-    ps = (PixelShaderStub *)calloc(1, sizeof(PixelShaderStub));
-    ps->vtable = ps_stub_vtbl;
-    ps->refCount = 1;
-    *ppShader = (IDirect3DPixelShader9 *)ps;
+    (void)_this;
+
+    /* On the Mac port, pixel shader "bytecodes" are actually ARB assembly strings.
+     * Check if the data starts with "!!" (ARB program prefix) and create a real
+     * ARB fragment program if so. */
+    if (pFunction) {
+        const char *src = (const char *)pFunction;
+        if (src[0] == '!' && src[1] == '!') {
+            /* ARB fragment program source — create real GL program */
+            void *program = calloc(1, 0x20);
+            const char *codePtr = src;
+            COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(
+                (const COpenGLARBFragmentProgram *)program, NULL, (const string *)&codePtr);
+            *ppShader = (IDirect3DPixelShader9 *)program;
+            return 0;
+        }
+    }
+
+    /* Fallback: create stub for unknown shader formats */
+    {
+        PixelShaderStub *ps;
+        ps = (PixelShaderStub *)calloc(1, sizeof(PixelShaderStub));
+        ps->vtable = ps_stub_vtbl;
+        ps->refCount = 1;
+        *ppShader = (IDirect3DPixelShader9 *)ps;
+    }
     return 0;
 }
 
@@ -823,12 +851,28 @@ HRESULT CDirect3DDevice_CreatePixelShaderOpenGL(const CDirect3DDevice *_this,
     OpenGLPixelShaderType ShaderType, const long unsigned int *pSrcData,
     IDirect3DPixelShader9 **ppShader)
 {
-    PixelShaderStub *ps;
-    (void)_this; (void)ShaderType; (void)pSrcData;
-    ps = (PixelShaderStub *)calloc(1, sizeof(PixelShaderStub));
-    ps->vtable = ps_stub_vtbl;
-    ps->refCount = 1;
-    *ppShader = (IDirect3DPixelShader9 *)ps;
+    (void)_this; (void)ShaderType;
+
+    /* pSrcData is ARB assembly source code */
+    if (pSrcData) {
+        const char *src = (const char *)pSrcData;
+        if (src[0] == '!' && src[1] == '!') {
+            void *program = calloc(1, 0x20);
+            const char *codePtr = src;
+            COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(
+                (const COpenGLARBFragmentProgram *)program, NULL, (const string *)&codePtr);
+            *ppShader = (IDirect3DPixelShader9 *)program;
+            return 0;
+        }
+    }
+
+    {
+        PixelShaderStub *ps;
+        ps = (PixelShaderStub *)calloc(1, sizeof(PixelShaderStub));
+        ps->vtable = ps_stub_vtbl;
+        ps->refCount = 1;
+        *ppShader = (IDirect3DPixelShader9 *)ps;
+    }
     return 0;
 }
 
@@ -1134,14 +1178,15 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice *_this, DWORD Count, const D
         glFlags |= 0x400; /* GL_STENCIL_BUFFER_BIT */
     }
     if (glFlags) {
-        /* Skip color-only clears with transparent black (0x00000000) —
-         * the game issues this after drawing, wiping the framebuffer */
+        /* The game issues Clear(color=0x00000000) after drawing to clear a render target
+         * that should be separate from the backbuffer. Since we don't have proper render
+         * target tracking, skip color-only clears with transparent black to prevent
+         * wiping the just-rendered frame before Present. */
         if (Flags == 1 && Color == 0x00000000) {
-            /* Skip this clear — it destroys the rendered frame */
-        } else {
-            glClear(glFlags);
-            /* (test code removed — rendering verified working) */
+            return 0; /* skip — would wipe the rendered frame */
         }
+        glDepthMask(1); /* ensure depth writes enabled for clear */
+        glClear(glFlags);
     }
     return 0;
 }
@@ -1204,12 +1249,78 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     glClientActiveTextureARB(GL_TEXTURE0_ARB);
 
     {
-        /* Common rendering path for both world and HUD.
-         * Reset GL state, then set projection based on stride. */
-        glBindProgramARB(0x8620, 0);
-        glBindProgramARB(0x8804, 0);
-        glDisable(0x8620);
-        glDisable(0x8804);
+        /* Shader path selection:
+         * For world geometry (stride 0x44): use programmable shaders if available.
+         * The backend (rb_shade.c) calls SetPixelShader/SetVertexShader before
+         * each draw, setting up the ARB programs. We enable them here.
+         * For 2D/HUD: always use fixed-function. */
+        if (stride == 0x44 && dev->pixelShader && g_activeVertexShader) {
+            /* Material texture binding moved to just before glDrawElements */
+            /* Enable the active pixel shader */
+            void **psVtbl = *(void ***)dev->pixelShader;
+            if (psVtbl && psVtbl[7])
+                ((void (*)(const void *))psVtbl[7])(dev->pixelShader);
+            /* Enable the active vertex shader */
+            {
+                GLuint vpId = *(GLuint *)((byte *)g_activeVertexShader + 8);
+                if (vpId) {
+                    glEnable(0x8620);
+                    glBindProgramARB(0x8620, vpId);
+                }
+            }
+            /* Bind textures: diffuse from material, lightmap from world.
+             * Material texture[0] → GL_TEXTURE0 (diffuse)
+             * World lightmap[lmapIndex][0] → GL_TEXTURE1 (lightmap) */
+            {
+                extern void *imp_tess;
+                extern GfxWorld s_world;
+                byte *tessBase = (byte *)imp_tess;
+                const void *mat = *(const void **)(tessBase + 0x5a7bc);
+                int lmapIndex = *(int *)(tessBase + 0x5a7c4);
+
+                /* Bind diffuse texture from material */
+                if (mat) {
+                    int texCount = *(unsigned short *)((byte *)mat + 0x34);
+                    byte *textures = *(byte **)((byte *)mat + 0x3c);
+                    if (texCount > 0 && textures) {
+                        void *image = *(void **)(textures + 8);
+                        if (image) {
+                            void *d3dTex = *(void **)((byte *)image + 4);
+                            if (d3dTex) {
+                                unsigned int texID = *(unsigned int *)((byte *)d3dTex + 0x54);
+                                if (texID) {
+                                    glActiveTextureARB(0x84C0);
+                                    glBindTexture(0x0DE1, texID);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                /* Bind lightmap from world data */
+                if (lmapIndex >= 0 && lmapIndex < 31 && s_world.lightmaps) {
+                    GfxImage *lmapImg = s_world.lightmaps[lmapIndex][0];
+                    if (lmapImg) {
+                        void *lmTex = *(void **)((byte *)lmapImg + 4);
+                        if (lmTex) {
+                            unsigned int lmTexID = *(unsigned int *)((byte *)lmTex + 0x54);
+                            if (lmTexID) {
+                                glActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+                                glBindTexture(0x0DE1, lmTexID);
+                                glEnable(0x0DE1);
+                            }
+                        }
+                    }
+                }
+                glActiveTextureARB(0x84C0);
+            }
+        } else {
+            /* Fixed-function: disable all programs */
+            glDisable(0x8804);
+            glBindProgramARB(0x8804, 0);
+            glDisable(0x8620);
+            glBindProgramARB(0x8620, 0);
+        }
         if (stride == 0x44 && dev->zEnable) {
             glEnable(0x0B71); /* GL_DEPTH_TEST */
             glDepthFunc(CDirect3DDevice_MapCompareFunc(dev->zFunc));
@@ -1238,9 +1349,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (stride == 0x44) {
-            /* 3D world: use separate view and projection matrices.
-             * projection at viewParms+0x88, view at viewParms+0x48.
-             * Only projection gets D3D→GL z remap. */
+            /* 3D world fallback: use separate view and projection matrices. */
             extern byte backEnd[];
             void *viewParms = *(void **)(backEnd + 0x3c8);
             /* Build GL matrices from camera parameters in GfxViewParms:
@@ -1307,7 +1416,10 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             glLoadIdentity();
         }
     }
-    /* Bind texture for all geometry */
+    /* Bind texture for fixed-function path only.
+     * For programmable path (stride 0x44 with shaders), textures are already
+     * bound from the material chain above. */
+    if (!(stride == 0x44 && dev->pixelShader && g_activeVertexShader))
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
         DWORD colorOp = g_textureStageState[0][D3DTSS_COLOROP];
@@ -1364,8 +1476,14 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
             texOffset = -1;
         }
         if (stride == 0x44) {
-            glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
-            glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            /* World geometry: enable vertex colors AND second texcoord for lightmaps */
+            glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
+            glColorPointer(0x80E1 /* GL_BGRA */, 0x1401 /* GL_UNSIGNED_BYTE */, stride, vertBase + 0x18);
+            /* Set up texcoord[1] for lightmap UVs (at offset 0x24) */
+            glClientActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+            glEnableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
+            glTexCoordPointer(2, 0x1406 /* GL_FLOAT */, stride, vertBase + 0x24);
+            glClientActiveTextureARB(0x84C0); /* GL_TEXTURE0 */
         } else if (colorOffset >= 0) {
             glEnableClientState(0x8076); /* GL_COLOR_ARRAY */
             /* D3D vertex colors are BGRA; use GL_BGRA (0x80E1) as size param
@@ -1378,9 +1496,37 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         }
     }
 
+    /* For programmable path: bind material texture right before draw.
+     * Call UpdateTextureIfNeeded to ensure dirty surfaces are uploaded to GL. */
+    if (stride == 0x44 && dev->pixelShader && g_activeVertexShader) {
+        extern void *imp_tess;
+        byte *tessBase = (byte *)imp_tess;
+        const void *mat = *(const void **)(tessBase + 0x5a7bc);
+        if (mat) {
+            int texCount = *(unsigned short *)((byte *)mat + 0x34);
+            byte *textures = *(byte **)((byte *)mat + 0x3c);
+            if (texCount > 0 && textures) {
+                void *image = *(void **)(textures + 8);
+                if (image) {
+                    void *d3dTex = *(void **)((byte *)image + 4);
+                    if (d3dTex) {
+                        /* Ensure GL texture data is up to date */
+                        CDirect3DDevice_UpdateTextureIfNeeded((IDirect3DBaseTexture9 *)d3dTex);
+                        unsigned int texID = *(unsigned int *)((byte *)d3dTex + 0x54);
+                        if (texID) {
+                            glActiveTextureARB(0x84C0);
+                            glBindTexture(0x0DE1, texID);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /* Draw with glDrawElements */
     {
         extern void glDrawElements(unsigned int, int, unsigned int, const void *);
+        extern unsigned int glGetError(void);
         indexCount = primCount * 3;
         glDrawElements(0x0004 /* GL_TRIANGLES */, indexCount,
                        0x1403 /* GL_UNSIGNED_SHORT */,
@@ -1391,6 +1537,12 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     glDisableClientState(0x8074); /* GL_VERTEX_ARRAY */
     glDisableClientState(0x8076); /* GL_COLOR_ARRAY */
     glDisableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
+    /* Also disable texcoord[1] array if it was enabled for lightmaps */
+    if (stride == 0x44) {
+        glClientActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+        glDisableClientState(0x8078);
+        glClientActiveTextureARB(0x84C0); /* GL_TEXTURE0 */
+    }
 
     return 0;
 }
@@ -1744,8 +1896,10 @@ HRESULT CDirect3DDevice_GetFVF(const CDirect3DDevice *_this, DWORD *pFVF)
 
 HRESULT CDirect3DDevice_SetVertexShader(const CDirect3DDevice *_this, IDirect3DVertexShader9 *pShader)
 {
-    (void)_this; (void)pShader;
+    (void)_this;
+    g_activeVertexShader = pShader;
     CDirect3DDevice_mNeedsVertexShaderValidation = 1;
+    /* VP binding deferred to DrawIndexedPrimitive when programmable path is enabled */
     return 0;
 }
 
@@ -1777,15 +1931,8 @@ HRESULT CDirect3DDevice_SetVertexShaderConstantF(const CDirect3DDevice *_this, U
     UINT i;
     const float *pf = pConstantData;
     (void)_this;
-    {
-        static int vsc_log = 0;
-        if (vsc_log++ < 20)
-            fprintf(stderr, "[VSC] SetVertexShaderConstantF reg=%d count=%d val=(%.3f,%.3f,%.3f,%.3f)\n",
-                    StartRegister, Vector4fCount, pf[0], pf[1], pf[2], pf[3]);
-    }
     for (i = StartRegister; i < StartRegister + Vector4fCount; i++) {
         glProgramEnvParameter4fvARB(0x8620, i, pf);
-        /* Also save to our local copy for fixed-function fallback */
         if (i < 256)
             memcpy(g_vsConst + i * 4, pf, 16);
         pf += 4;
@@ -2150,6 +2297,14 @@ void CDirect3DDevice_Init(void *device)
     dev->alphaFunc = 0x0207; /* GL_ALWAYS */
     dev->alphaRefVal = 0;
     dev->alphaFuncVal = 8;
+    dev->viewportX = 0;
+    dev->viewportY = 0;
+    dev->viewportW = 640;
+    dev->viewportH = 480;
+    dev->viewportMinZ = 0.0f;
+    dev->viewportMaxZ = 1.0f;
+    glViewport(0, 0, 640, 480);
+    glDepthRange(0.0, 1.0);
     dev->zEnable = 1;
     dev->zWriteEnable = 1;
     dev->cullMode = 1;

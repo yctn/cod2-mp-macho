@@ -152,10 +152,235 @@ void ZN18CD3DXConstantTableD0Ev(const void *_this)
     free((void *)_this);
 }
 
-/* --- D3DXCompileShader --- */
-/* The renderer calls this to compile HLSL shaders. On Mac, this translated HLSL→GLSL.
-   For WebGL2, we'll need a proper GLSL ES translation pass eventually.
-   For now, return a dummy shader blob so the renderer doesn't crash. */
+/* --- D3DXCompileShader — HLSL→ARB translator for CoD2 Mac port --- */
+/*
+ * The Mac port's D3DXCompileShader compiled HLSL to ARB assembly.
+ * We detect the shader type from the HLSL source and return pre-written
+ * ARB programs matching CoD2's register layout (see globals.hlsl):
+ *
+ * VS constants: c0-c3 = worldViewProjectionMatrix, c4-c7 = worldMatrix,
+ *               c8-c11 = worldViewMatrix/inverseTransposeWorldMatrix
+ * PS constants: c11 = fogConsts, c21 = fogColor, c23 = materialColor
+ * VS semantics: position, color, texcoord0, texcoord1, texcoord2, texcoord3, normal
+ * PS samplers:  texture[0]=colorMap, texture[1..4]=lightmaps, texture[5]=normalMap
+ */
+
+/* Helper: check if source contains a substring */
+static int hlsl_has(const char *src, int len, const char *needle) {
+    int nlen = strlen(needle);
+    int i;
+    for (i = 0; i <= len - nlen; i++) {
+        if (memcmp(src + i, needle, nlen) == 0) return 1;
+    }
+    return 0;
+}
+
+/* ---- ARB Vertex Program templates ---- */
+
+/* All VS templates use state.matrix.mvp (the GL fixed-function MVP matrix)
+ * because the game's D3D constant routing doesn't populate program.env[0..3].
+ * The DIP function sets up the GL matrices via glMatrixMode/glLoadMatrixf
+ * before each draw, and the VP reads them via state.matrix.mvp. */
+
+/* Lightmap VS: transform pos, pass color, texcoords, lmap coords, fog */
+static const char *arb_vs_lightmap =
+    "!!ARBvp1.0\n"
+    "PARAM mvp[4] = { state.matrix.mvp };\n"
+    ""
+    "ATTRIB iPos = vertex.position;\n"
+    "ATTRIB iCol = vertex.color;\n"
+    "ATTRIB iTc0 = vertex.texcoord[0];\n"
+    "ATTRIB iTc1 = vertex.texcoord[1];\n"
+    "OUTPUT oPos = result.position;\n"
+    "OUTPUT oCol = result.color;\n"
+    "OUTPUT oTc0 = result.texcoord[0];\n"
+    "OUTPUT oTc1 = result.texcoord[1];\n"
+    "OUTPUT oFog = result.fogcoord;\n"
+    ""
+    "DP4 oPos.x, iPos, mvp[0];\n"
+    "DP4 oPos.y, iPos, mvp[1];\n"
+    "DP4 oPos.z, iPos, mvp[2];\n"
+    "DP4 oPos.w, iPos, mvp[3];\n"
+    "MOV oCol, iCol;\n"
+    "MOV oTc0, iTc0;\n"
+    "MOV oTc1, iTc1;\n"
+    "MOV oFog.x, {1}.x;\n"  /* fog=1 → no fog for now */
+    "END\n";
+
+/* Simple VS: transform position, pass color + texcoord0, compute fog */
+static const char *arb_vs_simple =
+    "!!ARBvp1.0\n"
+    "PARAM mvp[4] = { state.matrix.mvp };\n"
+    ""
+    "ATTRIB iPos = vertex.position;\n"
+    "ATTRIB iCol = vertex.color;\n"
+    "ATTRIB iTc0 = vertex.texcoord[0];\n"
+    "OUTPUT oPos = result.position;\n"
+    "OUTPUT oCol = result.color;\n"
+    "OUTPUT oTc0 = result.texcoord[0];\n"
+    "OUTPUT oFog = result.fogcoord;\n"
+    ""
+    "DP4 oPos.x, iPos, mvp[0];\n"
+    "DP4 oPos.y, iPos, mvp[1];\n"
+    "DP4 oPos.z, iPos, mvp[2];\n"
+    "DP4 oPos.w, iPos, mvp[3];\n"
+    "MOV oCol, iCol;\n"
+    "MOV oTc0, iTc0;\n"
+    "MOV oFog.x, {1}.x;\n"  /* fog=1 → no fog for now */
+    "END\n";
+
+/* Sky VS: transform position, pass direction as texcoord for cubemap */
+static const char *arb_vs_sky =
+    "!!ARBvp1.0\n"
+    "PARAM mvp[4] = { state.matrix.mvp };\n"
+    "ATTRIB iPos = vertex.position;\n"
+    "OUTPUT oPos = result.position;\n"
+    "OUTPUT oTc0 = result.texcoord[0];\n"
+    "DP4 oPos.x, iPos, mvp[0];\n"
+    "DP4 oPos.y, iPos, mvp[1];\n"
+    "DP4 oPos.z, iPos, mvp[2];\n"
+    "DP4 oPos.w, iPos, mvp[3];\n"
+    "MOV oTc0.xyz, iPos;\n"
+    "END\n";
+
+/* Passthrough VS: just transform position, pass color */
+static const char *arb_vs_passthrough =
+    "!!ARBvp1.0\n"
+    "PARAM mvp[4] = { state.matrix.mvp };\n"
+    "ATTRIB iPos = vertex.position;\n"
+    "ATTRIB iCol = vertex.color;\n"
+    "ATTRIB iTc0 = vertex.texcoord[0];\n"
+    "OUTPUT oPos = result.position;\n"
+    "OUTPUT oCol = result.color;\n"
+    "OUTPUT oTc0 = result.texcoord[0];\n"
+    "DP4 oPos.x, iPos, mvp[0];\n"
+    "DP4 oPos.y, iPos, mvp[1];\n"
+    "DP4 oPos.z, iPos, mvp[2];\n"
+    "DP4 oPos.w, iPos, mvp[3];\n"
+    "MOV oCol, iCol;\n"
+    "MOV oTc0, iTc0;\n"
+    "END\n";
+
+/* ---- ARB Fragment Program templates ---- */
+
+/* Lightmap PS: sample colorMap × vertexColor, sample lightmap, combine.
+ * texture[0] = colorMap, texture[1] = lightmapSun (used as simple lightmap) */
+static const char *arb_ps_lightmap =
+    "!!ARBfp1.0\n"
+    "OPTION ARB_precision_hint_fastest;\n"
+    "OUTPUT oC0AfterFog = result.color;\n"
+    "TEMP r0, r1, oC0;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
+    "ATTRIB t0 = fragment.texcoord[0];\n"
+    "ATTRIB t1 = fragment.texcoord[1];\n"
+    "TEX r0, t0, texture[0], 2D;\n"      /* sample color map */
+    "TEX r1, t1, texture[1], 2D;\n"      /* sample lightmap */
+    "MUL r0, r0, v0;\n"                  /* color × vertex color */
+    "MUL oC0.rgb, r0, r1;\n"             /* color × lightmap */
+    "MOV oC0.a, r0.a;\n"
+    /* Fog blend */
+    "MAX r1.x, fragment.fogcoord.x, {0}.x;\n"
+    "MIN r1.x, r1.x, {1}.x;\n"
+    "LRP oC0AfterFog.xyz, r1.x, oC0, state.fog.color;\n"
+    "MOV oC0AfterFog.w, oC0.w;\n"
+    "END\n";
+
+/* Lightmap PS with alpha test */
+static const char *arb_ps_lightmap_alpha =
+    "!!ARBfp1.0\n"
+    "OPTION ARB_precision_hint_fastest;\n"
+    "OUTPUT oC0AfterFog = result.color;\n"
+    "TEMP r0, r1, oC0;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
+    "ATTRIB t0 = fragment.texcoord[0];\n"
+    "ATTRIB t1 = fragment.texcoord[1];\n"
+    "TEX r0, t0, texture[0], 2D;\n"
+    "TEX r1, t1, texture[1], 2D;\n"
+    "MUL r0, r0, v0;\n"
+    "MUL oC0.rgb, r0, r1;\n"
+    "MOV oC0.a, r0.a;\n"
+    "MAX r1.x, fragment.fogcoord.x, {0}.x;\n"
+    "MIN r1.x, r1.x, {1}.x;\n"
+    "LRP oC0AfterFog.xyz, r1.x, oC0, state.fog.color;\n"
+    "MOV oC0AfterFog.w, oC0.w;\n"
+    "END\n";
+
+/* Textured PS: sample colorMap, add bright ambient to see dark textures. */
+static const char *arb_ps_textured =
+    "!!ARBfp1.0\n"
+    "PARAM bright = {0.3, 0.3, 0.3, 0.0};\n"
+    "OUTPUT oC0 = result.color;\n"
+    "TEMP r0;\n"
+    "ATTRIB t0 = fragment.texcoord[0];\n"
+    "TEX r0, t0, texture[0], 2D;\n"
+    "ADD oC0, r0, bright;\n"  /* texture + ambient so even dark textures show */
+    "END\n";
+
+/* Vertex color only PS: just pass vertex color */
+static const char *arb_ps_vertcolor =
+    "!!ARBfp1.0\n"
+    "OPTION ARB_precision_hint_fastest;\n"
+    "OUTPUT oC0AfterFog = result.color;\n"
+    "TEMP r0, oC0;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
+    "MOV oC0, v0;\n"
+    "MAX r0.x, fragment.fogcoord.x, {0}.x;\n"
+    "MIN r0.x, r0.x, {1}.x;\n"
+    "LRP oC0AfterFog.xyz, r0.x, oC0, state.fog.color;\n"
+    "MOV oC0AfterFog.w, oC0.w;\n"
+    "END\n";
+
+/* Sky PS: cubemap sample */
+static const char *arb_ps_sky =
+    "!!ARBfp1.0\n"
+    "OUTPUT oC0 = result.color;\n"
+    "TEMP r0;\n"
+    "ATTRIB t0 = fragment.texcoord[0];\n"
+    "TEX r0, t0, texture[0], CUBE;\n"
+    "MOV r0.w, {0}.x;\n"
+    "MOV oC0, r0;\n"
+    "END\n";
+
+/* Passthrough PS: just output vertex color */
+static const char *arb_ps_passthrough =
+    "!!ARBfp1.0\n"
+    "OUTPUT oC0 = result.color;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
+    "MOV oC0, v0;\n"
+    "END\n";
+
+/* Multiply/blend PS: colorMap modulated by materialColor */
+static const char *arb_ps_multiply =
+    "!!ARBfp1.0\n"
+    "OPTION ARB_precision_hint_fastest;\n"
+    "PARAM matColor = program.env[23];\n"
+    "OUTPUT oC0AfterFog = result.color;\n"
+    "TEMP r0, r1, oC0;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
+    "ATTRIB t0 = fragment.texcoord[0];\n"
+    "TEX r0, t0, texture[0], 2D;\n"
+    "MUL r1.xyz, v0, r0;\n"
+    "MAD oC0.xyz, matColor.w, r1, r0;\n"
+    "MOV oC0.w, r0.w;\n"
+    "MAX r1.x, fragment.fogcoord.x, {0}.x;\n"
+    "MIN r1.x, r1.x, {1}.x;\n"
+    "LRP oC0AfterFog.xyz, r1.x, oC0, state.fog.color;\n"
+    "MOV oC0AfterFog.w, oC0.w;\n"
+    "END\n";
+
+/* Depth-only PS: output constant color (for z-prepass) */
+static const char *arb_ps_depth =
+    "!!ARBfp1.0\n"
+    "OUTPUT oC0 = result.color;\n"
+    "MOV oC0, {1, 1, 1, 1};\n"
+    "END\n";
+
+/* DEBUG: solid green PS to test if geometry is on screen */
+static const char *arb_ps_debug_green =
+    "!!ARBfp1.0\n"
+    "OUTPUT oC0 = result.color;\n"
+    "MOV oC0, {0, 1, 0, 1};\n"
+    "END\n";
 
 HRESULT D3DXCompileShader(
     const char *pSrcData, UINT SrcDataLen,
@@ -164,22 +389,54 @@ HRESULT D3DXCompileShader(
     DWORD Flags, void **ppShader, void **ppErrorMsgs,
     void **ppConstantTable)
 {
-    (void)pSrcData; (void)SrcDataLen; (void)pDefines; (void)pInclude;
-    (void)pFunctionName; (void)pProfile; (void)Flags;
+    const char *arbCode = NULL;
+    int isVS = 0;
+    int len = (int)SrcDataLen;
 
-    /* Create a minimal shader blob — 4 bytes of dummy data */
+    (void)pDefines; (void)pInclude; (void)Flags;
+
+    if (ppErrorMsgs) *ppErrorMsgs = NULL;
+
+    /* Determine vertex vs pixel shader from profile string */
+    if (pProfile && pProfile[0] == 'v' && pProfile[1] == 's')
+        isVS = 1;
+
+    if (isVS) {
+        /* --- Vertex shader selection --- */
+        if (hlsl_has(pSrcData, len, "texCUBE") || hlsl_has(pSrcData, len, "cubeMapSampler")) {
+            arbCode = arb_vs_sky;
+        } else if (hlsl_has(pSrcData, len, "lmapCoords") || hlsl_has(pSrcData, len, "lightmap")) {
+            arbCode = arb_vs_lightmap;
+        } else if (hlsl_has(pSrcData, len, "texCoords") || hlsl_has(pSrcData, len, "colorMapSampler")) {
+            arbCode = arb_vs_simple;
+        } else {
+            arbCode = arb_vs_passthrough;
+        }
+    } else {
+        /* --- Pixel shader selection --- */
+        if (hlsl_has(pSrcData, len, "texCUBE")) {
+            arbCode = arb_ps_sky;
+        } else if (hlsl_has(pSrcData, len, "lightmapSampler") || hlsl_has(pSrcData, len, "lmapCoords")
+                   || hlsl_has(pSrcData, len, "colorMapSampler") || hlsl_has(pSrcData, len, "tex2D")) {
+            arbCode = arb_ps_textured;
+        } else {
+            arbCode = arb_ps_vertcolor;
+        }
+    }
+
+    /* Return the ARB assembly as the shader blob */
     if (ppShader) {
-        *ppShader = CD3DXBuffer_Create("\0\0\0\0", 4);
+        int arbLen = strlen(arbCode) + 1;
+        *ppShader = CD3DXBuffer_Create(arbCode, arbLen);
     }
-    if (ppErrorMsgs) {
-        *ppErrorMsgs = NULL;
-    }
+
     if (ppConstantTable) {
         CD3DXConstantTableImpl *ct = (CD3DXConstantTableImpl *)calloc(1, sizeof(CD3DXConstantTableImpl));
         ct->vtable = vtbl_CD3DXConstantTable;
         ct->refCount = 1;
         *ppConstantTable = ct;
     }
+
     return 0;
 }
 
