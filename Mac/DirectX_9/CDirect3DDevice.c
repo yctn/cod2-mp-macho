@@ -1412,11 +1412,16 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         DWORD colorOp = g_textureStageState[0][D3DTSS_COLOROP];
         unsigned int glTexID;
 
-        CDirect3DDevice_UpdateTextureIfNeeded(g_boundTextures[0]);
-        glTexID = CDirect3DDevice_GetTextureGLId(g_boundTextures[0]);
-        if (!glTexID)
-            glTexID = g_prebind_texID;
-        /* Fallback: get texture directly from material if D3D SetTexture wasn't called */
+        /* For world geometry (stride 0x44): get texture from material chain.
+         * For HUD/menu: use D3D SetTexture state (g_boundTextures). */
+        if (stride != 0x44) {
+            CDirect3DDevice_UpdateTextureIfNeeded(g_boundTextures[0]);
+            glTexID = CDirect3DDevice_GetTextureGLId(g_boundTextures[0]);
+            if (!glTexID)
+                glTexID = g_prebind_texID;
+        } else {
+            glTexID = 0;
+        }
         if (!glTexID && stride == 0x44) {
             extern void *imp_tess;
             byte *tessBase = (byte *)imp_tess;
