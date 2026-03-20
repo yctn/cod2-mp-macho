@@ -1254,20 +1254,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
          * The backend (rb_shade.c) calls SetPixelShader/SetVertexShader before
          * each draw, setting up the ARB programs. We enable them here.
          * For 2D/HUD: always use fixed-function. */
-        if (stride == 0x44 && dev->pixelShader && g_activeVertexShader) {
-            /* Material texture binding moved to just before glDrawElements */
-            /* Enable the active pixel shader */
-            void **psVtbl = *(void ***)dev->pixelShader;
-            if (psVtbl && psVtbl[7])
-                ((void (*)(const void *))psVtbl[7])(dev->pixelShader);
-            /* Enable the active vertex shader */
-            {
-                GLuint vpId = *(GLuint *)((byte *)g_activeVertexShader + 8);
-                if (vpId) {
-                    glEnable(0x8620);
-                    glBindProgramARB(0x8620, vpId);
-                }
-            }
+        if (0 /* programmable path disabled — using fixed-function for all */) {
             /* Bind textures: diffuse from material, lightmap from world.
              * Material texture[0] → GL_TEXTURE0 (diffuse)
              * World lightmap[lmapIndex][0] → GL_TEXTURE1 (lightmap) */
@@ -1419,7 +1406,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     /* Bind texture for fixed-function path only.
      * For programmable path (stride 0x44 with shaders), textures are already
      * bound from the material chain above. */
-    if (!(stride == 0x44 && dev->pixelShader && g_activeVertexShader))
+    if (1) /* always run fixed-function texture binding */
     { extern void glBindTexture(unsigned int, unsigned int);
       { extern void glBindTexture(unsigned int, unsigned int);
         DWORD colorOp = g_textureStageState[0][D3DTSS_COLOROP];
@@ -1429,12 +1416,58 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         glTexID = CDirect3DDevice_GetTextureGLId(g_boundTextures[0]);
         if (!glTexID)
             glTexID = g_prebind_texID;
+        /* Fallback: get texture directly from material if D3D SetTexture wasn't called */
+        if (!glTexID && stride == 0x44) {
+            extern void *imp_tess;
+            byte *tessBase = (byte *)imp_tess;
+            const void *mat = *(const void **)(tessBase + 0x5a7bc);
+            if (mat) {
+                int texCount = *(unsigned short *)((byte *)mat + 0x34);
+                byte *textures = *(byte **)((byte *)mat + 0x3c);
+                if (texCount > 0 && textures) {
+                    void *image = *(void **)(textures + 8);
+                    if (image) {
+                        void *d3dTex = *(void **)((byte *)image + 4);
+                        if (d3dTex) {
+                            CDirect3DDevice_UpdateTextureIfNeeded((IDirect3DBaseTexture9 *)d3dTex);
+                            glTexID = *(unsigned int *)((byte *)d3dTex + 0x54);
+                        }
+                    }
+                }
+            }
+        }
         if (glTexID && colorOp != D3DTOP_DISABLE) {
             glEnable(0x0DE1); /* GL_TEXTURE_2D */
             glBindTexture(0x0DE1, glTexID);
             CDirect3DDevice_ApplyStage0SamplerState();
             if (stride == 0x44) {
-                CDirect3DDevice_ApplyStage0TextureState();
+                /* World: texture unit 0 = diffuse (modulate with vertex color) */
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0x2100 /* GL_MODULATE */);
+
+                /* Bind lightmap on texture unit 1 if available */
+                {
+                    extern void *imp_tess;
+                    extern GfxWorld s_world;
+                    byte *tessBase = (byte *)imp_tess;
+                    int lmapIndex = *(int *)(tessBase + 0x5a7c4);
+                    if (lmapIndex >= 0 && lmapIndex < 31 && s_world.lightmaps) {
+                        GfxImage *lmapImg = s_world.lightmaps[lmapIndex][0];
+                        if (lmapImg) {
+                            void *lmTex = *(void **)((byte *)lmapImg + 4);
+                            if (lmTex) {
+                                unsigned int lmTexID = *(unsigned int *)((byte *)lmTex + 0x54);
+                                if (lmTexID) {
+                                    glActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+                                    glEnable(0x0DE1);
+                                    glBindTexture(0x0DE1, lmTexID);
+                                    /* Modulate: result = tex0 * tex1 (diffuse × lightmap) */
+                                    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, 0x2100);
+                                    glActiveTextureARB(0x84C0); /* back to unit 0 */
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 /* HUD/font quads behave better with the fixed-function default:
                  * texture RGBA multiplied by vertex RGBA. */
@@ -1496,33 +1529,6 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
         }
     }
 
-    /* For programmable path: bind material texture right before draw.
-     * Call UpdateTextureIfNeeded to ensure dirty surfaces are uploaded to GL. */
-    if (stride == 0x44 && dev->pixelShader && g_activeVertexShader) {
-        extern void *imp_tess;
-        byte *tessBase = (byte *)imp_tess;
-        const void *mat = *(const void **)(tessBase + 0x5a7bc);
-        if (mat) {
-            int texCount = *(unsigned short *)((byte *)mat + 0x34);
-            byte *textures = *(byte **)((byte *)mat + 0x3c);
-            if (texCount > 0 && textures) {
-                void *image = *(void **)(textures + 8);
-                if (image) {
-                    void *d3dTex = *(void **)((byte *)image + 4);
-                    if (d3dTex) {
-                        /* Ensure GL texture data is up to date */
-                        CDirect3DDevice_UpdateTextureIfNeeded((IDirect3DBaseTexture9 *)d3dTex);
-                        unsigned int texID = *(unsigned int *)((byte *)d3dTex + 0x54);
-                        if (texID) {
-                            glActiveTextureARB(0x84C0);
-                            glBindTexture(0x0DE1, texID);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     /* Draw with glDrawElements */
     {
         extern void glDrawElements(unsigned int, int, unsigned int, const void *);
@@ -1539,9 +1545,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     glDisableClientState(0x8078); /* GL_TEXTURE_COORD_ARRAY */
     /* Also disable texcoord[1] array if it was enabled for lightmaps */
     if (stride == 0x44) {
-        glClientActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+        /* Disable lightmap texture unit and texcoord array */
+        glActiveTextureARB(0x84C1); /* GL_TEXTURE1 */
+        glDisable(0x0DE1); /* GL_TEXTURE_2D */
+        glClientActiveTextureARB(0x84C1);
         glDisableClientState(0x8078);
-        glClientActiveTextureARB(0x84C0); /* GL_TEXTURE0 */
+        glActiveTextureARB(0x84C0); /* GL_TEXTURE0 */
+        glClientActiveTextureARB(0x84C0);
     }
 
     return 0;

@@ -497,19 +497,20 @@ R_SetViewParmsForScene(const refdef_t *refdef, GfxViewParms *viewParms)
      * a position inside the map's playable area and set a useful view angle. */
     if (viewParms->origin[0] == 0.0f && viewParms->origin[1] == 0.0f
         && viewParms->origin[2] < 20.0f && viewParms->origin[2] >= 0.0f) {
-        viewParms->origin[0] = 2000.0f;
-        viewParms->origin[1] = 1500.0f;
-        viewParms->origin[2] = 120.0f;
-        /* Look along a 45-degree angle to see more of the map */
-        viewParms->axis[0][0] = 0.707f; /* forward X */
-        viewParms->axis[0][1] = 0.707f; /* forward Y */
-        viewParms->axis[0][2] = -0.1f;  /* slightly down */
+        /* Position higher up, looking down at an angle to see ground + buildings */
+        viewParms->origin[0] = 1800.0f;
+        viewParms->origin[1] = 2200.0f;
+        viewParms->origin[2] = 250.0f;
+        /* Look forward-down to see textured ground and walls */
+        viewParms->axis[0][0] = 0.5f;   /* forward X */
+        viewParms->axis[0][1] = 0.5f;   /* forward Y */
+        viewParms->axis[0][2] = -0.707f; /* looking down 45° */
         viewParms->axis[1][0] = -0.707f; /* right */
         viewParms->axis[1][1] = 0.707f;
         viewParms->axis[1][2] = 0.0f;
-        viewParms->axis[2][0] = 0.0f;   /* up */
-        viewParms->axis[2][1] = 0.0f;
-        viewParms->axis[2][2] = 1.0f;
+        viewParms->axis[2][0] = 0.354f;  /* up (adjusted for tilt) */
+        viewParms->axis[2][1] = 0.354f;
+        viewParms->axis[2][2] = 0.866f;
     }
 
     MatrixForViewer((float (*)[4])&viewParms->viewMatrix, viewParms->origin, viewParms->axis);

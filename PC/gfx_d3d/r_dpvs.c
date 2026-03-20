@@ -4607,6 +4607,9 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
                 void *bmodel = *(void **)(sceneEnt + 4);
                 vec3_t boundsMin, boundsMax, transformed;
 
+                if (!bmodel || (unsigned int)bmodel < 0x1000)
+                    continue;
+
                 ClearBounds(boundsMin, boundsMax);
 
                 /* Transform 8 OBB corners to world space and expand bounds */
@@ -4657,18 +4660,15 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
             R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
     }
 
-    /* Process sorted world surfaces (sky surfaces) if far plane is active */
+    /* Process sorted world surfaces (sky surfaces) — always add */
     {
-        DpvsPlane *farPlaneCheck = *(DpvsPlane **)((byte *)&dpvsGlob + 44);
-        if (farPlaneCheck) {
-            byte *world = *(byte **)((byte *)&rgp + 0x109c);
-            int skySurfCount = *(int *)(world + 0x18);
-            if (skySurfCount > 0) {
-                int *skyStartSurfs = *(int **)(world + 0x1c);
-                for (i = 0; i < skySurfCount; i++) {
-                    int surfIndex = skyStartSurfs[i];
-                    R_AddWorldSurfaceWithCull_impl(surfIndex, frustumPlanes, frustumPlaneCount - 1, 0);
-                }
+        byte *world = *(byte **)((byte *)&rgp + 0x109c);
+        int skySurfCount = *(int *)(world + 0x18);
+        if (skySurfCount > 0) {
+            int *skyStartSurfs = *(int **)(world + 0x1c);
+            for (i = 0; i < skySurfCount; i++) {
+                int surfIndex = skyStartSurfs[i];
+                R_AddWorldSurfaceWithCull_impl(surfIndex, frustumPlanes, 0, 0);
             }
         }
     }

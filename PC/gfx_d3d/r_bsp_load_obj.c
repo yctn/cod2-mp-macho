@@ -502,7 +502,10 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
        section.  Redirect to a scratch buffer so the write doesn't segfault. */
     {
         static GfxLight sunLightScratch;
-        if ((unsigned int)sunLight >= 0x08200000 && (unsigned int)sunLight < 0x08800000) {
+        /* Guard against invalid sunLight pointers — can be stale relocations,
+         * small constants (0x1), or BSS-range addresses from naked ASM */
+        if ((unsigned int)sunLight < 0x1000 ||
+            ((unsigned int)sunLight >= 0x08200000 && (unsigned int)sunLight < 0x08800000)) {
             sunLight = &sunLightScratch;
             sl = (byte *)sunLight;
         }
