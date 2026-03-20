@@ -31,7 +31,9 @@ extern byte g_entities_ptr[]; /* imp_g_entities - points to entity array */
 #define CLIENT_STRIDE sizeof(gclient_s)
 #define ENTITY_STRIDE sizeof(gentity_s)
 
-static const client_fields_t fields[14]; /* fields */
+static client_fields_t fields[14]; /* initialized at runtime in GScr_AddFieldsForClient */
+static int fields_inited = 0;
+#define CF(i,n,o,t,s,g) do{fields[i].name=n;fields[i].ofs=o;fields[i].type=t;fields[i].setter=(ScriptCallbackClient)(s);fields[i].getter=(ScriptCallbackClient)(g);}while(0)
 
 static void ClientScr_ReadOnly(gclient_t *pSelf, const client_fields_s *pField);
 static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pField);
@@ -383,6 +385,23 @@ static void ClientScr_GetPSOffsetTime(gclient_t *pSelf, const client_fields_s *p
 /* line 428 */
 void GScr_AddFieldsForClient(void)
 {
+    /* Populate client fields from Mac binary data (utils/binary.x86 @ 0x332760) */
+    if (!fields_inited) {
+        fields_inited = 1;
+        CF(0,  "name",            0x2784, F_LSTRING, ClientScr_ReadOnly,        NULL);
+        CF(1,  "sessionteam",     0,      F_STRING,  ClientScr_SetSessionTeam,  ClientScr_GetSessionTeam);
+        CF(2,  "sessionstate",    0,      F_STRING,  ClientScr_SetSessionState, ClientScr_GetSessionState);
+        CF(3,  "maxhealth",       0x2728, F_INT,     ClientScr_SetMaxHealth,    NULL);
+        CF(4,  "score",           0x26b8, F_INT,     ClientScr_SetScore,        NULL);
+        CF(5,  "deaths",          0x26bc, F_INT,     NULL,                      NULL);
+        CF(6,  "statusicon",      0,      F_STRING,  ClientScr_SetStatusIcon,   ClientScr_GetStatusIcon);
+        CF(7,  "headicon",        0,      F_STRING,  ClientScr_SetHeadIcon,     ClientScr_GetHeadIcon);
+        CF(8,  "headiconteam",    0,      F_STRING,  ClientScr_SetHeadIconTeam, ClientScr_GetHeadIconTeam);
+        CF(9,  "spectatorclient", 0x26ac, F_INT,     ClientScr_ReadOnly,        NULL);
+        CF(10, "archivetime",     0x26b4, F_FLOAT,   ClientScr_SetArchiveTime,  ClientScr_GetArchiveTime);
+        CF(11, "psoffsettime",    0x27a4, F_INT,     ClientScr_SetPSOffsetTime, ClientScr_GetPSOffsetTime);
+        CF(12, "pers",            0x26c0, F_OBJECT,  ClientScr_ReadOnly,        NULL);
+    }
     byte *fb = (byte *)fields;
     int i;
     const char *name;
@@ -413,6 +432,9 @@ void Scr_SetClientField(gclient_t *client, int offset)
     byte *entry;
     void (*setter)(gclient_t *, const client_fields_s *);
 
+    if (!client || offset < 0 || offset >= 13 || !fields[offset].name)
+        return;
+
     entry = (byte *)fields + offset * 20;
     setter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0xc);
 
@@ -428,6 +450,11 @@ void Scr_GetClientField(gclient_t *client, int offset)
 {
     byte *entry;
     void (*getter)(gclient_t *, const client_fields_s *);
+
+    if (!client || offset < 0 || offset >= 13 || !fields[offset].name) {
+        Scr_AddUndefined();
+        return;
+    }
 
     entry = (byte *)fields + offset * 20;
     getter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0x10);

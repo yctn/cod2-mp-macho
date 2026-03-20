@@ -9158,13 +9158,9 @@ JCOEF Scr_EvalBoolNot(VariableValue *value)
         "cmpl $4, %ebx\n"
         "je .Lf8f0ec_0008f185\n"
         ".Lf8f0ec_0008f110:\n"
-        "movl $0, 4(%esi)\n" /* line 2818 | value */
-        "movl var_typename(, %ebx, 4), %eax\n" /* line 2819 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021d59c, (%esp)\n" /* "cannot cast %s to Bool" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
+        /* Unhandled types → false */
+        "movl $0, (%esi)\n"
+        "movl $6, 4(%esi)\n"
         ".Lf8f0ec_0008f136:\n"
         "cmpl $6, 4(%esi)\n" /* line 2777 | value */
         "jne .Lf8f0ec_0008f146\n"
@@ -10783,21 +10779,8 @@ Bool Scr_CastString(VariableValue *value)
         "je .Lf90410_00090503\n"
         "cmpl $4, %eax\n" /* line 2844 */
         "je .Lf90410_000904b1\n"
-        "movl var_typename(, %eax, 4), %eax\n" /* line 2853 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021d640, (%esp)\n" /* "cannot cast %s to string" */
-        "calll va\n"
-        "movl %eax, scrVarPub+16\n"
-        "movl (%esi), %edx\n" /* line 252 */
-        "movl 4(%esi), %eax\n" /* type */
-        /* { scope 2 */
-        "cmpl $3, %eax\n" /* line 1946 */
-        "jg .Lf90410_0009048d\n"
-        "cmpl $2, %eax\n"
-        "jl .Lf90410_00090522\n"
-        "movl %edx, (%esp)\n" /* line 1953 */
-        "calll SL_RemoveRefToString\n"
-        /* } scope */
+        /* Unhandled types → return empty string (skip Scr_Error + cleanup) */
+        "jmp .Lf90410_00090471\n"
         ".Lf90410_00090471:\n"
         "movl $0, 4(%esi)\n" /* line 2855 | value */
         "xorl %eax, %eax\n"
@@ -13065,17 +13048,14 @@ JCOEF Scr_CastBool(VariableValue *value)
         "cmpl $4, %ebx\n"
         "je .Lf91980_00091a12\n"
         ".Lf91980_000919a4:\n"
-        "movl $0, 4(%esi)\n" /* line 2818 | value */
-        "movl var_typename(, %ebx, 4), %eax\n" /* line 2819 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021d59c, (%esp)\n" /* "cannot cast %s to Bool" */
-        "calll va\n"
-        "movl %eax, 8(%ebp)\n" /* value */
-        "addl $0x10, %esp\n" /* line 2820 */
+        /* Unhandled types (thread, removed entity/thread, etc.) → false */
+        "movl $0, (%esi)\n"
+        "movl $6, 4(%esi)\n"
+        "addl $0x10, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %ebp\n"
-        "jmp Scr_Error\n" /* line 2819 */
+        "retl\n"
         ".Lf91980_000919d0:\n"
         "cmpl $2, %ebx\n" /* line 1946 */
         "jl .Lf91980_00091a30\n"

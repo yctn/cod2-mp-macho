@@ -80,7 +80,20 @@ extern spawn_t spawns[22]; /* 0x0 */
  * Currently disabled — enabling causes cascading script errors because the
  * game scripts access many more fields (client fields, custom fields) that
  * aren't registered yet. The GetEntityFieldValue calling convention is fixed. */
-static const ent_field_t fields[11]; /* disabled — needs full client fields table too */
+/* Entity fields — from Mac binary (utils/binary.x86 @ 0x333360) */
+static const ent_field_t fields[11] = {
+    { "classname",   0x168, F_STRING, NULL },
+    { "origin",      0x138, F_VECTOR, NULL },
+    { "model",       0x164, F_MODEL,  NULL },
+    { "spawnflags",  0x170, F_INT,    NULL },
+    { "target",      0x16a, F_STRING, NULL },
+    { "targetname",  0x16c, F_STRING, NULL },
+    { "count",       0x1a0, F_INT,    NULL },
+    { "health",      0x194, F_INT,    NULL },
+    { "dmg",         0x19c, F_INT,    NULL },
+    { "angles",      0x144, F_VECTOR, NULL },
+    { NULL, 0, 0, NULL }
+};
 
 enum {
     GSP_CS_GAME_VERSION = 2,
@@ -158,13 +171,14 @@ static qboolean Scr_SetEntityField(int entnum, int offset)
     const ent_field_t *field;
 
     if ((offset & 0xC000) == 0xC000) {
-        if (!ent->client) {
+        if (!ent || !ent->client)
             return 0;
-        }
-
         Scr_SetClientField(ent->client, offset & 0x3FFF);
         return 1;
     }
+
+    if (offset < 0 || offset >= 10 || !fields[offset].name)
+        return 1; /* silently ignore unknown fields */
 
     field = &fields[offset];
     if (field->callback) {
@@ -181,9 +195,16 @@ static void Scr_GetEntityField(int entnum, int offset)
     gentity_t *ent = &G_Entities()[entnum];
 
     if ((offset & 0xC000) == 0xC000) {
-        if (ent->client) {
+        if (ent && ent->client) {
             Scr_GetClientField(ent->client, offset & 0x3FFF);
+        } else {
+            Scr_AddUndefined();
         }
+        return;
+    }
+
+    if (offset < 0 || offset >= 10 || !fields[offset].name) {
+        Scr_AddUndefined();
         return;
     }
 
@@ -510,7 +531,7 @@ void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         if (stringValue) {
             Scr_AddConstString(stringValue);
         } else {
-            Scr_AddUndefined();
+            Scr_AddString("");
         }
         break;
     }
