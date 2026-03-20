@@ -326,7 +326,7 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
 {
     extern void CL_ConsoleFixPosition(void);
     extern qboolean UI_AnyFullScreenMenuVisible(void);
-    extern char *cls; /* import pointer - struct, offset 0x110 has uiStarted */
+    extern char *cls;
     va_list argptr;
 
     if (com_errorEntered) {
