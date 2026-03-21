@@ -80,20 +80,9 @@ extern spawn_t spawns[22]; /* 0x0 */
  * Currently disabled — enabling causes cascading script errors because the
  * game scripts access many more fields (client fields, custom fields) that
  * aren't registered yet. The GetEntityFieldValue calling convention is fixed. */
-/* Entity fields — from Mac binary (utils/binary.x86 @ 0x333360) */
-static const ent_field_t fields[11] = {
-    { "classname",   0x168, F_STRING, NULL },
-    { "origin",      0x138, F_VECTOR, NULL },
-    { "model",       0x164, F_MODEL,  NULL },
-    { "spawnflags",  0x170, F_INT,    NULL },
-    { "target",      0x16a, F_STRING, NULL },
-    { "targetname",  0x16c, F_STRING, NULL },
-    { "count",       0x1a0, F_INT,    NULL },
-    { "health",      0x194, F_INT,    NULL },
-    { "dmg",         0x19c, F_INT,    NULL },
-    { "angles",      0x144, F_VECTOR, NULL },
-    { NULL, 0, 0, NULL }
-};
+/* Entity fields — data from Mac binary (utils/binary.x86 @ 0x333360).
+ * Disabled until script VM cast errors are fully handled. */
+static const ent_field_t fields[11];
 
 enum {
     GSP_CS_GAME_VERSION = 2,

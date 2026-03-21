@@ -84,64 +84,63 @@ char * ClientConnect(int clientNum, int scriptPersId);
 #define GENTITY_STRIDE sizeof(gentity_s)
 #define CLIENT_STRIDE sizeof(gclient_s)
 
+/* Helper: get typed pointers from raw BSS arrays */
+static inline gclient_s *G_ClientForNum(int clientNum) {
+    return &((gclient_s *)CLIENT_BASE)[clientNum];
+}
+static inline gentity_s *G_EntityForNum(int entNum) {
+    return &((gentity_s *)g_entities_ptr)[entNum];
+}
+static inline level_locals_t *G_Level(void) {
+    return (level_locals_t *)level_ptr;
+}
+
 /* line 156 */
 void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up)
 {
-    byte *client = *(byte **)((byte *)ent + 0x158);
-    AngleVectors((vec_t *)(client + 0xe8), forward, right, up);
+    gclient_s *client = ent->client;
+    AngleVectors(client->ps.viewangles, forward, right, up);
 }
 
 /* line 426 */
 void ClientBegin(int clientNum)
 {
-    byte *level = (byte *)CLIENT_BASE;
-    byte *client = level +clientNum * CLIENT_STRIDE;
-    byte *ents = (byte *)g_entities_ptr;
-    byte *scr_data = imp_scr_const;
-    gentity_t *ent;
+    gclient_s *client = G_ClientForNum(clientNum);
+    gentity_s *ent = G_EntityForNum(clientNum);
 
-    *(int *)(client + 0x26c4) = 2;
-    *(int *)(client + 4) = 4;
+    client->sess.connected = 2; /* CON_CONNECTED */
+    *(int *)((byte *)client + 4) = 4; /* clientMOTDPending — no struct field yet */
 
     CalculateRanks();
 
-    ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
-    Scr_Notify(ent, *(unsigned short *)(scr_data + 0x6c), 0);
+    Scr_Notify(ent, *(unsigned short *)((byte *)imp_scr_const + 0x6c), 0);
 }
 
 /* line 596 */
 void ClientDisconnect(int clientNum)
 {
-    byte *level = (byte *)CLIENT_BASE;
-    byte *client;
-    gentity_t *ent;
-    byte *ents;
+    gclient_s *client = G_ClientForNum(clientNum);
+    gentity_s *ent = G_EntityForNum(clientNum);
+    level_locals_t *level = G_Level();
     int i;
-
-    client = level +clientNum * CLIENT_STRIDE;
-    ents = (byte *)g_entities_ptr;
-    ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
 
     if (Scr_IsSystemActive(1)) {
         Scr_AddString("disconnect");
         Scr_AddString("^1teleport");
-        {
-            byte *scr_data = imp_scr_const;
-            Scr_Notify(ent, *(unsigned short *)(scr_data + 0x70), 2);
-        }
+        Scr_Notify(ent, *(unsigned short *)((byte *)imp_scr_const + 0x70), 2);
     }
 
     /* Stop other players following this client */
-    if (*(int *)(level + 0x1e4) > 0) {
-        for (i = 0; i < *(int *)(level + 0x1e4); i++) {
-            byte *otherClient = level +i * CLIENT_STRIDE;
-            gentity_t *otherEnt = (gentity_t *)(ents + i * GENTITY_STRIDE);
+    if (level->maxclients > 0) {
+        for (i = 0; i < level->maxclients; i++) {
+            gclient_s *otherClient = G_ClientForNum(i);
+            gentity_s *otherEnt = G_EntityForNum(i);
 
-            if (*(int *)(otherClient + 0x26c4) == 0)
+            if (otherClient->sess.connected == 0)
                 continue;
-            if (*(int *)(otherClient + 0x26a8) != 2)
+            if (otherClient->sess.sessionState != 2) /* SPECTATOR */
                 continue;
-            if (*(int *)(otherClient + 0x27a8) != clientNum)
+            if (*(int *)((byte *)otherClient + 0x27a8) != clientNum) /* spectatorClient */
                 continue;
 
             StopFollowing(otherEnt);
@@ -156,7 +155,7 @@ void ClientDisconnect(int clientNum)
 
     G_FreeEntity(ent);
 
-    *(int *)(client + 0x26c4) = 0;
+    client->sess.connected = 0; /* CON_DISCONNECTED */
     memset(client + 0x2748, 0, 0x5c);
 
     CalculateRanks();
