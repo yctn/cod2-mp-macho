@@ -4837,7 +4837,7 @@ void CL_Shutdown(void)
         "calll Cmd_RemoveCommand\n"
         "movl $str_002a91d0, (%esp)\n" /* line 4344 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2a0ab4, 8(%esp)\n" /* line 4346 - sizeof(cls), was symbolized as str_002a0ab4 */
+        "movl $str_002a0ab4, 8(%esp)\n" /* line 4346 - sizeof(cls), was symbolized as str_002a0ab4 */
         "movl $0, 4(%esp)\n"
         "movl $cls, (%esp)\n"
         "calll memset\n"

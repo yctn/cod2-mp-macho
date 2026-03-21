@@ -123,7 +123,7 @@ void UI_LoadArenas(void)
     ui_numArenas = 0;
 
     uiInfo = (byte *)sharedUiInfo;
-    *(int *)(uiInfo + 0x1350) = 0;
+    sharedUiInfo.mapCount = 0;
 
     /* Get list of arena files */
     numdirs = FS_GetFileList("mp", "arena", 0, dirlist, 0x400);
@@ -161,46 +161,46 @@ void UI_LoadArenas(void)
     /* Process each arena */
     uiInfo = (byte *)sharedUiInfo;
     for (n = 0; n < ui_numArenas; n++) {
-        arenaIdx = *(int *)(uiInfo + 0x1350);
+        arenaIdx = sharedUiInfo.mapCount;
 
         /* Extract map name */
         mapName = Info_ValueForKey(ui_arenaInfos[n], "map");
         mapName = String_Alloc(mapName);
         {
             int off = arenaIdx * 41;
-            *(const char **)(uiInfo + 0x1358 + off * 4) = mapName;
+            sharedUiInfo.mapList[off/41].mapLoadName = mapName;
         }
 
         /* Extract long name */
-        arenaIdx = *(int *)(uiInfo + 0x1350);
+        arenaIdx = sharedUiInfo.mapCount;
         longName = Info_ValueForKey(ui_arenaInfos[n], "longname");
         longName = String_Alloc(longName);
         {
             int off = arenaIdx * 41;
-            *(const char **)(uiInfo + 0x1354 + off * 4) = longName;
+            sharedUiInfo.mapList[off/41].mapName = longName;
         }
 
         /* Initialize gametype field to -1 */
-        arenaIdx = *(int *)(uiInfo + 0x1350);
+        arenaIdx = sharedUiInfo.mapCount;
         {
             int off = arenaIdx * 41;
-            *(int *)(uiInfo + 0x136c + off * 4) = -1;
-            *(int *)(uiInfo + 0x13f0 + off * 4) = 0;
+            sharedUiInfo.mapList[off/41].cinematic = -1;
+            sharedUiInfo.mapList[off/41].levelShot = 0;
         }
 
         /* Generate loadscreen name and register material */
-        arenaIdx = *(int *)(uiInfo + 0x1350);
+        arenaIdx = sharedUiInfo.mapCount;
         {
             int off = arenaIdx * 41;
-            const char *mapStr = *(const char **)(uiInfo + 0x1358 + off * 4);
+            const char *mapStr = sharedUiInfo.mapList[off/41].mapLoadName;
             loadscreen = String_Alloc(va("loadscreen_%s", mapStr));
-            *(const char **)(uiInfo + 0x135c + off * 4) = loadscreen;
+            sharedUiInfo.mapList[off/41].imageName = loadscreen;
         }
 
-        arenaIdx = *(int *)(uiInfo + 0x1350);
+        arenaIdx = sharedUiInfo.mapCount;
         {
             int off = arenaIdx * 41;
-            const char *ls = *(const char **)(uiInfo + 0x135c + off * 4);
+            const char *ls = sharedUiInfo.mapList[off/41].imageName;
             MaterialHandle mat = CL_RegisterMaterialNoMip(ls, 3);
             *(MaterialHandle *)(uiInfo + 0x13f0 + off * 4) = mat;
         }
@@ -209,17 +209,17 @@ void UI_LoadArenas(void)
         gametypes = Info_ValueForKey(ui_arenaInfos[n], "type");
         if (gametypes == NULL || *gametypes == '\0') {
             /* No gametype - set default */
-            arenaIdx = *(int *)(uiInfo + 0x1350);
+            arenaIdx = sharedUiInfo.mapCount;
             {
                 int off = arenaIdx * 41;
-                *(int *)(uiInfo + 0x1368 + off * 4) = -1;
+                sharedUiInfo.mapList[off/41].typeBits = -1;
             }
         } else {
             /* Clear gametype bits */
-            arenaIdx = *(int *)(uiInfo + 0x1350);
+            arenaIdx = sharedUiInfo.mapCount;
             {
                 int off = arenaIdx * 41;
-                *(int *)(uiInfo + 0x1368 + off * 4) = 0;
+                sharedUiInfo.mapList[off/41].typeBits = 0;
             }
 
             /* Parse gametype names */
@@ -234,14 +234,14 @@ void UI_LoadArenas(void)
                         break;
 
                     /* Match against known gametypes */
-                    int numGT = *(int *)(uiInfo + 0x1148);
+                    int numGT = sharedUiInfo.numGameTypes;
                     for (j = 0; j < numGT; j++) {
-                        gtMap = *(const char **)(uiInfo + 0x114c + j * 8);
+                        gtMap = sharedUiInfo.gameTypes[j].gameType;
                         if (I_stricmp(token, gtMap) == 0) {
-                            arenaIdx = *(int *)(uiInfo + 0x1350);
+                            arenaIdx = sharedUiInfo.mapCount;
                             {
                                 int off = arenaIdx * 41;
-                                *(int *)(uiInfo + 0x1368 + off * 4) |= (1 << j);
+                                sharedUiInfo.mapList[off/41].typeBits |= (1 << j);
                             }
                             break;
                         }
@@ -253,8 +253,8 @@ void UI_LoadArenas(void)
         }
 
         uiInfo = (byte *)sharedUiInfo;
-        arenaIdx = *(int *)(uiInfo + 0x1350);
-        *(int *)(uiInfo + 0x1350) = arenaIdx + 1;
+        arenaIdx = sharedUiInfo.mapCount;
+        sharedUiInfo.mapCount = arenaIdx + 1;
         if (arenaIdx + 1 > 0x7f)
             return;
     }

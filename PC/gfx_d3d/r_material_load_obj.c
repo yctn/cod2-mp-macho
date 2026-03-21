@@ -3084,8 +3084,8 @@ parse_operator:;
                 }
 
                 /* OR bit value into rule at firstRule */
-                *(unsigned int *)(ruleAtFirstRule + 0x10 + colIndex * 4) |= (unsigned int)bitName->bits;
-                *(unsigned int *)(ruleAtFirstRule + 0x18 + colIndex * 4) |= (unsigned int)bgPtr->stateBitsMask[colIndex];
+                ((unsigned int *)ruleAtFirstRule)[4 + colIndex] |= (unsigned int)bitName->bits;
+                ((unsigned int *)ruleAtFirstRule)[6 + colIndex] |= (unsigned int)bgPtr->stateBitsMask[colIndex];
 
                 /* Check if there's another bit group */
                 if (bgNext->name == NULL) {
@@ -3106,10 +3106,10 @@ copy_values:
             int i;
             for (i = firstRule + 1; i < ruleCount; i++) {
                 byte *dst = rules + i * 0x20;
-                *(unsigned int *)(dst + 0x10) = *(unsigned int *)(ruleAtFirstRule + 0x10);
-                *(unsigned int *)(dst + 0x14) = *(unsigned int *)(ruleAtFirstRule + 0x14);
-                *(unsigned int *)(dst + 0x18) = *(unsigned int *)(ruleAtFirstRule + 0x18);
-                *(unsigned int *)(dst + 0x1C) = *(unsigned int *)(ruleAtFirstRule + 0x1C);
+                ((MaterialStateMapRule *)dst)->stateBitsSet[0] = ((MaterialStateMapRule *)ruleAtFirstRule)->stateBitsSet[0];
+                ((MaterialStateMapRule *)dst)->stateBitsSet[1] = ((MaterialStateMapRule *)ruleAtFirstRule)->stateBitsSet[1];
+                ((MaterialStateMapRule *)dst)->stateBitsClear[0] = ((MaterialStateMapRule *)ruleAtFirstRule)->stateBitsClear[0];
+                ((MaterialStateMapRule *)dst)->stateBitsClear[1] = ((MaterialStateMapRule *)ruleAtFirstRule)->stateBitsClear[1];
             }
         }
         firstRule = ruleCount;
@@ -3137,8 +3137,8 @@ copy_values:
             int i;
             for (i = 0; i < ruleCount; i++) {
                 byte *r = (byte *)&rs->rules[0] + i * 0x20;
-                *(unsigned int *)(r + 0x18) = ~*(unsigned int *)(r + 0x18);
-                *(unsigned int *)(r + 0x1C) = ~*(unsigned int *)(r + 0x1C);
+                ((MaterialStateMapRule *)r)->stateBitsSet[0] = ~((MaterialStateMapRule *)r)->stateBitsSet[0];
+                ((MaterialStateMapRule *)r)->stateBitsClear[0] = ~((MaterialStateMapRule *)r)->stateBitsClear[0];
             }
         }
         *ruleSet = rs;
@@ -3655,12 +3655,12 @@ static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap *
                 byte *rule = rs;
                 int i;
                 for (i = 0; i < rc; i++, rule += 0x20) {
-                    unsigned int v1c = *(unsigned int *)(rule + 0x1c);
+                    unsigned int v1c = ((MaterialStateMapRule *)rule)->stateBitsClear[1];
                     if (((v1c >> 8) & 7) != 0) {
-                        unsigned int v14 = *(unsigned int *)(rule + 0x14);
+                        unsigned int v14 = ((MaterialStateMapRule *)rule)->stateBitsValue[1];
                         if ((v14 & 0x700) > 0x100) {
-                            *(unsigned int *)(rule + 0x1c) = v1c | 0x7ff;
-                            *(unsigned int *)(rule + 0x14) = (v14 & 0xfffff800) | 0x111;
+                            ((MaterialStateMapRule *)rule)->stateBitsClear[1] = v1c | 0x7ff;
+                            ((MaterialStateMapRule *)rule)->stateBitsValue[1] = (v14 & 0xfffff800) | 0x111;
                         }
                     }
                 }
@@ -3677,11 +3677,11 @@ static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap *
                 if (((byte *)imp_dx)[0x2d7d] == 0) {
                     /* Not supported: set to passthrough */
                     *(int *)alphaRS = 1;
-                    *(int *)(alphaRS + 0x04) = 0;
-                    *(int *)(alphaRS + 0x08) = 0;
-                    *(int *)(alphaRS + 0x0C) = 0;
-                    *(int *)(alphaRS + 0x10) = 0;
-                    *(unsigned int *)(alphaRS + 0x1c) |= 0x7ff0000;
+                    ((MaterialStateMapRule *)alphaRS)->stateBitsMask[1] = 0;
+                    ((MaterialStateMapRule *)alphaRS)->stateBitsValue[0] = 0;
+                    ((MaterialStateMapRule *)alphaRS)->stateBitsValue[1] = 0;
+                    ((MaterialStateMapRule *)alphaRS)->stateBitsSet[0] = 0;
+                    ((MaterialStateMapRule *)alphaRS)->stateBitsClear[1] |= 0x7ff0000;
                     { unsigned int v14 = *(unsigned int *)(alphaRS + 0x14);
                       *(unsigned int *)(alphaRS + 0x14) = (v14 & 0xf800ffff) | 0x120000; }
                 } else if (((byte *)imp_dx)[0x2d7c] == 0) {
@@ -3689,12 +3689,12 @@ static Bool Material_LoadPassStateMap_impl(const char **text, MaterialStateMap *
                     byte *rule = alphaRS;
                     int i;
                     for (i = 0; i < rc; i++, rule += 0x20) {
-                        unsigned int v1c = *(unsigned int *)(rule + 0x1c);
+                        unsigned int v1c = ((MaterialStateMapRule *)rule)->stateBitsClear[1];
                         if ((v1c & 0x7000000) != 0) {
-                            unsigned int v14 = *(unsigned int *)(rule + 0x14);
+                            unsigned int v14 = ((MaterialStateMapRule *)rule)->stateBitsValue[1];
                             if ((v14 & 0x7000000) > 0x1000000) {
-                                *(unsigned int *)(rule + 0x1c) = v1c | 0x7ff0000;
-                                *(unsigned int *)(rule + 0x14) = (v14 & 0xf800ffff) | 0x01110000;
+                                ((MaterialStateMapRule *)rule)->stateBitsClear[1] = v1c | 0x7ff0000;
+                                ((MaterialStateMapRule *)rule)->stateBitsValue[1] = (v14 & 0xf800ffff) | 0x01110000;
                             }
                         }
                     }
@@ -4260,13 +4260,13 @@ static MaterialShader *Material_LoadPassShader_impl(const char **text, int shade
             {
                 byte *mtl = (byte *)mtlShader;
                 /* name at end, shader data at offset 0x10 */
-                *(byte **)(mtl + 4) = mtl + 0x10;
-                *(const char **)(mtl + 0) = (const char *)(mtl + 0x10 + shaderSize);
+                ((MaterialShader *)mtl)->program = (void (*)(void))(mtl + 0x10);
+                ((MaterialShader *)mtl)->name = (const char *)(mtl + 0x10 + shaderSize);
                 memcpy(mtl + 0x10 + shaderSize, filename, nameLen);
                 memcpy(mtl + 0x10, shaderDataPtr, shaderSize);
                 *(unsigned short *)(mtl + 8) = (unsigned short)(shaderSize >> 2);
-                *(byte *)(mtl + 0xA) = (byte)shaderType;
-                *(byte *)(mtl + 0xB) = (byte)version;
+                ((MaterialShader *)mtl)->shaderType = (byte)shaderType;
+                ((MaterialShader *)mtl)->shaderVersion = (byte)version;
 
                 /* Create D3D shader via device vtable */
                 {
@@ -4902,11 +4902,11 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
     /* Phase 1: Fix up material pointers */
     *(int *)(mtl + 0) += (int)mtl;
     *(int *)(mtl + 4) += (int)mtl;
-    *(int *)(mtl + 0x3c) += (int)mtl;
+    ((Material *)mtl)->textures = (MaterialTextureDef *)((int)((Material *)mtl)->textures + (int)mtl);
 
     /* Process texture table */
-    { unsigned short texCount = *(unsigned short *)(mtl + 0x34);
-      byte *tex = (byte *)*(int *)(mtl + 0x3c);
+    { unsigned short texCount = ((Material *)mtl)->textureCount;
+      byte *tex = (byte *)((Material *)mtl)->textures;
       for (i = 0; i < texCount; i++, tex += 0x0c) {
           *(int *)tex = (int)Material_RegisterString((const char *)((int)mtl + *(int *)tex));
           byte sem = *(byte *)(tex + 5);
@@ -4942,7 +4942,7 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
     }
 
     /* Fix up and process constant table */
-    *(int *)(mtl + 0x40) += (int)mtl;
+    ((Material *)mtl)->constants = (MaterialConstantDef *)((int)((Material *)mtl)->constants + (int)mtl);
     { unsigned short cc = *(unsigned short *)(mtl + 0x36);
       byte *ce = (byte *)*(int *)(mtl + 0x40);
       for (i = 0; i < cc; i++, ce += 0x14) {

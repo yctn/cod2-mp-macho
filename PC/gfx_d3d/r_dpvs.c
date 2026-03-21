@@ -102,14 +102,14 @@ static inline int R_CullByFrustumPlanes(DpvsPlane *planes, int planeCount, int s
 static inline int R_CullByOccluders(int stackLevel, const float *bounds)
 {
     int occCount = *(int *)((byte *)&dpvsGlob + 56);
-    int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
+    GfxOccluder **occTable = *(GfxOccluder ***)((byte *)&dpvsGlob + 60);
     int i;
     for (i = 0; i < occCount; i++) {
-        byte *occ = (byte *)occTable[i];
-        if (stackLevel > *(int *)(occ + 0x18))
+        GfxOccluder *occ = occTable[i];
+        if (stackLevel > occ->ignoreStackLevel)
             continue;
-        int planeCount = *(int *)(occ + 0x1c);
-        DpvsPlane *planes = *(DpvsPlane **)(occ + 0x20);
+        int planeCount = occ->viewPlaneCount;
+        DpvsPlane *planes = occ->viewPlanes;
         if (planeCount <= 0)
             return 0; /* degenerate occluder: fully occluded */
         int j;
@@ -218,15 +218,14 @@ void R_ClearDpvsScene(void)
 {
     *(int *)((char *)&dpvsScene + 131072) = 0;
 
-    byte *globals = (byte *)&rgp;
-    byte *world = *(byte **)(globals + 0x109c);
+    GfxWorld *world = rgp.world;
     if (!world)
         return;
 
-    int cellCount = *(int *)(world + 0xfc);
-    byte *cells = *(byte **)(world + 0x100);
+    int cellCount = world->cellCount;
+    GfxCell *cells = world->cells;
     for (int i = 0; i < cellCount; i++) {
-        *(int *)(cells + i * 0x3c + 0x38) = 0;
+        cells[i].modelRefs = NULL;
     }
 }
 
@@ -286,8 +285,7 @@ static int R_FilterEntityIntoCells_r_impl(mnode_t *node, int entIndex, const vec
         return cellIndex;
 
     /* Leaf cell: add entity to cell's modelRef list */
-    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-    GfxCell *cells = *(GfxCell **)(world + 0x100);
+    GfxCell *cells = rgp.world->cells;
     GfxCell *cell = &cells[cellIndex];
 
     /* Check modelRef limit */
@@ -580,8 +578,7 @@ static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *plan
         return;
 
     /* Get static model instance */
-    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-    GfxStaticModelInstance *smodelInst = (GfxStaticModelInstance *)(*(byte **)(world + 0xf8) + smodelIndex * 96);
+    GfxStaticModelInstance *smodelInst = &rgp.world->smodelInsts[smodelIndex];
 
     /* LOD distance check (only if cullDist != 0) */
     if (smodelInst->cullDist != 0.0f) {
@@ -700,9 +697,7 @@ static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *plane
         return;
 
     /* Look up the surface's triangle data for bounds */
-    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-    GfxSurface *surfaces = *(GfxSurface **)(world + 0x14);
-    GfxSurface *surf = &surfaces[surfIndex];
+    GfxSurface *surf = &rgp.world->surfaces[surfIndex];
     srfTriangles_t *tris = surf->tris;
 
     if (!tris) {
@@ -769,8 +764,7 @@ static void R_AddStaticModelDirect(int smodelIndex)
         return;
     smodelDync[0] = viewCount;
 
-    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-    GfxStaticModelInstance *inst = (GfxStaticModelInstance *)(*(byte **)(world + 0xf8) + smodelIndex * 96);
+    GfxStaticModelInstance *inst = &rgp.world->smodelInsts[smodelIndex];
 
     /* LOD distance check */
     if (inst->cullDist != 0.0f) {
@@ -808,9 +802,7 @@ static void R_AddWorldSurfaceDirect(int surfIndex)
         return;
     surfVisData[surfIndex] = viewCount;
 
-    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-    GfxSurface *surfaces = *(GfxSurface **)(world + 0x14);
-    GfxSurface *surf = &surfaces[surfIndex];
+    GfxSurface *surf = &rgp.world->surfaces[surfIndex];
     R_AddDrawSurfForSurface(surf, surf->sortGroup + 0x800);
 }
 
@@ -825,13 +817,13 @@ static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, i
 
     /* Phase 2: Occluder cull — test near corner against each global occluder volume */
     int occCount = *(int *)((byte *)&dpvsGlob + 56);
-    int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
+    GfxOccluder **occTable = *(GfxOccluder ***)((byte *)&dpvsGlob + 60);
     for (i = 0; i < occCount; i++) {
-        byte *occ = (byte *)occTable[i];
-        if (stackLevel > *(int *)(occ + 0x18))
+        GfxOccluder *occ = occTable[i];
+        if (stackLevel > occ->ignoreStackLevel)
             continue;
-        int occPlaneCount = *(int *)(occ + 0x1c);
-        DpvsPlane *occPlanes = *(DpvsPlane **)(occ + 0x20);
+        int occPlaneCount = occ->viewPlaneCount;
+        DpvsPlane *occPlanes = occ->viewPlanes;
         if (occPlaneCount <= 0)
             return; /* degenerate occluder */
         int occluded = 1;
@@ -870,7 +862,7 @@ static void R_AddAabbTreeSurfaces_r_impl(GfxAabbTree *tree, DpvsPlane *planes, i
     /* Check if any global occluder could still affect children */
     if (!recursionNeeded) {
         for (i = 0; i < occCount; i++) {
-            if (stackLevel <= *(int *)((byte *)occTable[i] + 0x18)) {
+            if (stackLevel <= occTable[i]->ignoreStackLevel) {
                 recursionNeeded = 1;
                 break;
             }
@@ -955,8 +947,8 @@ static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *par
     int portalIndex;
 
     for (portalIndex = 0; portalIndex < portalCount; portalIndex++) {
-        byte *portal = (byte *)cell->portals + portalIndex * 0x44;
-        const GfxCell *destCell = *(const GfxCell **)(portal + 0x1c);
+        GfxPortal *portal = &cell->portals[portalIndex];
+        const GfxCell *destCell = portal->cell;
 
         /* Skip if destination cell is already in the list */
         int already = 0;
@@ -971,19 +963,19 @@ static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *par
             continue;
 
         /* Skip if portal doesn't face the eye */
-        if (*(byte *)(portal + 1))
+        if (portal->writable.isAncestor)
             continue;
 
         /* Eye-facing test: dot(portalPlane.normal, eyeDir) + portalPlane.dist * eyeDist */
-        float *portalPlane = (float *)(portal + 8);
+        float *portalPlane = portal->plane.coeffs;
         float dot = portalPlane[0] * eyeDir[0] + portalPlane[1] * eyeDir[1]
                   + portalPlane[2] * eyeDir[2] + portalPlane[3] * eyeDir[3];
         if (dot > 0.0f)
             continue;
 
         /* Get portal winding */
-        vec3_t *portalVerts = *(vec3_t **)(portal + 0x20);
-        int vertCount = (unsigned char)*(portal + 0x24);
+        vec3_t *portalVerts = portal->vertices;
+        int vertCount = portal->vertexCount;
 
         /* Clip winding against parent plane */
         vec3_t *w;
@@ -1020,9 +1012,9 @@ static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *par
         int occluded = 0;
         int oi;
         for (oi = 0; oi < occCount && !occluded; oi++) {
-            byte *occ = (byte *)occTable[oi];
-            int occPlaneCount = *(int *)(occ + 0x1c);
-            DpvsPlane *occPlanes = *(DpvsPlane **)(occ + 0x20);
+            GfxOccluder *occ = occTable[oi];
+            int occPlaneCount = occ->viewPlaneCount;
+            DpvsPlane *occPlanes = occ->viewPlanes;
             if (occPlaneCount <= 0) {
                 occluded = 1;
                 break;
@@ -1040,7 +1032,7 @@ static int R_GetFurtherCellList_r_impl(const GfxCell *cell, const DpvsPlane *par
                     allBehind = 0;
                 /* Test remaining vertices */
                 int vi;
-                for (vi = 1; vi < (int)(unsigned char)*(portal + 0x24) && allBehind; vi++) {
+                for (vi = 1; vi < (int)portal->vertexCount && allBehind; vi++) {
                     vert = (float *)((byte *)portalVerts + vi * 12);
                     d = op[0] * vert[0] + op[1] * vert[1] + op[2] * vert[2] + op[3];
                     if (d > 0.0f)
@@ -1230,9 +1222,8 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
                     continue;
 
                 /* Get cull group bounds */
-                byte *world = *(byte **)((byte *)&rgp + 0x109c);
-                byte *cullGroupData = *(byte **)(world + 0xf0) + groupIdx * 32;
-                float *bounds = (float *)(cullGroupData);
+                GfxCullGroup *cg = &rgp.world->cullGroups[groupIdx];
+                float *bounds = cg->mins;
 
                 /* Frustum + occluder culling */
                 if (!R_CullByFrustumPlanes((DpvsPlane *)planes, planeCount, 0, bounds))
@@ -1243,13 +1234,13 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
                 /* Debug box */
                 if (*(int *)(*(int *)imp_r_showPortals + 8) & 1) {
                     byte *debugGlobals = *(byte **)imp_frontEndDataOut + 0x249d18;
-                    R_AddDebugBox(debugGlobals, bounds, bounds + 3, (const float *)imp_colorLtYellow);
+                    R_AddDebugBox(debugGlobals, cg->mins, cg->maxs, (const float *)imp_colorLtYellow);
                 }
 
                 /* Mark visited and add all surfaces in this cull group */
                 groupVisData[groupIdx] = viewCount;
-                int surfStart = *(int *)(cullGroupData + 0x1c);
-                int surfCount = *(int *)(cullGroupData + 0x18);
+                int surfStart = cg->startSurfIndex;
+                int surfCount = cg->surfaceCount;
                 int j;
                 for (j = 0; j < surfCount; j++)
                     R_AddWorldSurfaceDirect(surfStart + j);
@@ -1472,8 +1463,8 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
         }
 
         int occIdx = *(int *)((byte *)&dpvsGlob + 56);
-        int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
-        occTable[occIdx] = (int *)occ;
+        GfxOccluder **occTable = *(GfxOccluder ***)((byte *)&dpvsGlob + 60);
+        occTable[occIdx] = occ;
         *(int *)((byte *)&dpvsGlob + 56) = occIdx + 1;
 
         /* Set ignoreStackLevel to max */
@@ -1615,10 +1606,11 @@ static void R_VisitPortalsForCell_impl(const GfxCell *cell, GfxPortal *parentPor
                  * ALL view planes of any single occluder, portal is fully occluded */
                 int occCount = *(int *)((byte *)&dpvsGlob + 56);
                 int visible = 1;
+                GfxOccluder **occPtrTable = *(GfxOccluder ***)((byte *)&dpvsGlob + 60);
                 for (int oi = 0; oi < occCount; oi++) {
-                    byte *occPtr = (byte *)(*(int ***)((byte *)&dpvsGlob + 60))[oi];
-                    int vpCount = *(int *)(occPtr + 0x1c);
-                    DpvsPlane *vpPlanes = *(DpvsPlane **)(occPtr + 0x20);
+                    GfxOccluder *occPtr = occPtrTable[oi];
+                    int vpCount = occPtr->viewPlaneCount;
+                    DpvsPlane *vpPlanes = occPtr->viewPlanes;
 
                     if (vpCount == 0) {
                         visible = 0;
@@ -2200,7 +2192,7 @@ void R_VisitPortalsForCell_original(const GfxCell *cell, GfxPortal *parentPortal
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -3974,7 +3966,7 @@ void R_VisitPortals_original(const GfxCell *cell, const DpvsPlane *parentPlane, 
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4181,7 +4173,7 @@ DP4 oPos.z," */
         "movl $color, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4206,7 +4198,7 @@ DP4 oPos.z," */
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */

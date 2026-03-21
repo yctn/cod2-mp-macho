@@ -216,21 +216,19 @@ void R_AddLightToScene(const vec_t *org, float radius, float r, float g, float b
 /* line 424 */
 void R_DefaultVertexFrames(int vertCount, GfxWorldVertex *verts)
 {
-    byte *v = (byte *)verts;
     for (int i = 0; i < vertCount; i++) {
-        /* tangent = (0, 0, 1) */
-        *(float *)(v + 0x0C) = 0.0f;
-        *(float *)(v + 0x10) = 0.0f;
-        *(float *)(v + 0x14) = 1.0f;
+        /* normal = (0, 0, 1) */
+        verts[i].normal[0] = 0.0f;
+        verts[i].normal[1] = 0.0f;
+        verts[i].normal[2] = 1.0f;
         /* binormal = (0, 1, 0) */
-        *(float *)(v + 0x2C) = 0.0f;
-        *(float *)(v + 0x30) = 1.0f;
-        *(float *)(v + 0x34) = 0.0f;
-        /* normal = (1, 0, 0) */
-        *(float *)(v + 0x38) = 1.0f;
-        *(float *)(v + 0x3C) = 0.0f;
-        *(float *)(v + 0x40) = 0.0f;
-        v += 0x44;
+        verts[i].binormal[0] = 0.0f;
+        verts[i].binormal[1] = 1.0f;
+        verts[i].binormal[2] = 0.0f;
+        /* tangent = (1, 0, 0) */
+        verts[i].tangent[0] = 1.0f;
+        verts[i].tangent[1] = 0.0f;
+        verts[i].tangent[2] = 0.0f;
     }
 }
 

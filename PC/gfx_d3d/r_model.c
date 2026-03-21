@@ -364,7 +364,7 @@ static int R_GetSurfaceData_impl(const byte *ent, const void *obj, void *surface
     float dist, scale;
 
     modelCount = DObjGetNumModels(obj);
-    scale = *(float *)(ent + 0x38);
+    scale = ((GfxEntity *)ent)->scale;
 
     /* Compute distance from entity origin to camera, scaled by LOD parameters */
     dist = Vec3Distance(ent + 0x3c, rg + 0x317c);
@@ -713,13 +713,13 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     int boneInfo[128]; /* bone info array */
 
     /* Check state: must be <= 3 to proceed */
-    if (*(int *)(se + 0xc) > 3)
+    if (((GfxSceneEntity *)se)->cullState > 3)
         return;
 
     /* Atomic compare-exchange: try to claim state 0→1 */
     if (InterlockedCompareExchange((volatile int *)(se + 0xc), 0, 1) != 0) {
         /* Someone else is processing — spin until done */
-        while (*(volatile int *)(se + 0xc) <= 1)
+        while (((GfxSceneEntity *)se)->cullState <= 1)
             ;
         return;
     }
@@ -854,19 +854,19 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 
         /* Transform bounds by entity orientation */
         GetRotatedBounds(bounds, (float *)(e + 0x3c), (float *)(e + 0x14), (float *)(se + 0x14));
-        *(int *)(se + 0xc) = 2;
+        ((GfxSceneEntity *)se)->cullState = 2;
         return;
     }
 
 set_origin_bounds:
     /* Degenerate bounds: min = max = entity origin */
-    *(float *)(se + 0x14) = *(float *)(e + 0x3c);
-    *(float *)(se + 0x18) = *(float *)(e + 0x40);
-    *(float *)(se + 0x1c) = *(float *)(e + 0x44);
-    *(float *)(se + 0x20) = *(float *)(e + 0x3c);
-    *(float *)(se + 0x24) = *(float *)(e + 0x40);
-    *(float *)(se + 0x28) = *(float *)(e + 0x44);
-    *(int *)(se + 0xc) = 2;
+    *(float *)(se + 0x14) = ((GfxEntity *)e)->origin[0];
+    *(float *)(se + 0x18) = ((GfxEntity *)e)->origin[1];
+    *(float *)(se + 0x1c) = ((GfxEntity *)e)->origin[2];
+    *(float *)(se + 0x20) = ((GfxEntity *)e)->origin[0];
+    *(float *)(se + 0x24) = ((GfxEntity *)e)->origin[1];
+    *(float *)(se + 0x28) = ((GfxEntity *)e)->origin[2];
+    ((GfxSceneEntity *)se)->cullState = 2;
 }
 
 #if 0 /* original naked — replaced above */
@@ -1288,10 +1288,10 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
     xsurf = DObjGetSurface(obj, surfIdx, *(short *)((char *)surface + 2), skinIndex);
 
     /* Set material in scene surface list */
-    *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4) = material;
+    ((GfxSceneEntity *)sceneEnt)->materials[surfaceIndex] = (const Material *)material;
 
     /* Check if surface has skinning data */
-    if (*(int *)((char *)xsurf + 0x10)) {
+    if (((XSurface *)xsurf)->surfRigid.vb) {
         /* Rigid surface */
         *(int *)surfPos = 4;
         *(void **)(surfPos + 4) = xsurf;
@@ -1299,7 +1299,7 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
     }
 
     /* Skinned surface: check if cached skinning is available */
-    if (*(byte *)(*(char **)imp_r_skinCache + 8) && *(int *)((char *)xsurf + 0x14)) {
+    if (*(byte *)(*(char **)imp_r_skinCache + 8) && ((XSurface *)xsurf)->indexBuffer) {
         *(int *)(surfPos + 0xc) = 0;
         int vertCount = XSurfaceGetNumVerts(xsurf);
         int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
@@ -1572,12 +1572,12 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     byte surfBuf[3520]; /* large buffer for pre-skinned surface data */
 
     /* Check state: must be <= 3 */
-    if (*(int *)(se + 0xc) > 3)
+    if (((GfxSceneEntity *)se)->cullState > 3)
         return;
 
     /* Atomic compare-exchange: claim state 2→3 */
     if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
-        while (*(volatile int *)(se + 0xc) <= 3)
+        while (((GfxSceneEntity *)se)->cullState <= 3)
             ;
         return;
     }
@@ -1603,7 +1603,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
             R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, obj);
 #endif
         }
-        *(int *)(se + 0xc) = 4;
+        ((GfxSceneEntity *)se)->cullState = 4;
         return;
     }
 
@@ -1631,14 +1631,14 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         surfaceCount = sc;
     }
     if (surfaceCount == 0) {
-        *(int *)(se + 0xc) = 4;
+        ((GfxSceneEntity *)se)->cullState = 4;
         return;
     }
 
     /* Get bone rotation/translation array */
     boneMatrix = (const DObjAnimMat *)DObjGetRotTransArray(obj);
     if (!boneMatrix) {
-        *(int *)(se + 0xc) = 4;
+        ((GfxSceneEntity *)se)->cullState = 4;
         return;
     }
 
@@ -1657,12 +1657,12 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     (*(PrintFunc *)imp_ri)(2, "MAX_SCENE_SURFS_PLUS_ENTITIES exceeded\n");
                 }
             }
-            *(int *)(se + 0xc) = 4;
+            ((GfxSceneEntity *)se)->cullState = 4;
             return;
         }
 
         /* Set surface list pointer in scene entity */
-        *(void **)(se + 0x2c) = (void *)(scene + 0x1a560 + startIndex * 4);
+        ((GfxSceneEntity *)se)->materials = (const Material **)(scene + 0x1a560 + startIndex * 4);
     }
 
     /* Pre-skin each surface */
@@ -1674,7 +1674,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
             int result = R_PreSkinXSurface(sceneEnt, (const struct DObj_s *)obj,
                 (long unsigned int (*)[32])&surfaces[i], i, lods, surfPtr);
             if (!result) {
-                *(int *)(se + 0xc) = 4;
+                ((GfxSceneEntity *)se)->cullState = 4;
                 return;
             }
             surfPtr += result;
@@ -1692,17 +1692,17 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
                     typedef int (*PrintFunc)(int, const char *, ...);
                     (*(PrintFunc *)imp_ri)(2, "MAX_SKINNED_CACHE exceeded\n");
                 }
-                *(int *)(se + 0xc) = 4;
+                ((GfxSceneEntity *)se)->cullState = 4;
                 return;
             }
 
-            *(void **)(se + 0x30) = fed + 0x8000c + offset;
+            ((GfxSceneEntity *)se)->surfs = (surfaceType_t *)(fed + 0x8000c + offset);
             memcpy(fed + 0x8000c + offset, surfBuf, size);
         }
     }
 
     /* Set surface count */
-    *(int *)(se + 0x10) = surfaceCount;
+    ((GfxSceneEntity *)se)->surfCount = surfaceCount;
 
     /* Debug rendering if r_xdebug */
     {
@@ -1745,7 +1745,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     if (boneCount == 1) {
         /* Single bone: use rigid skinning command */
         SkinRigidXModelCmd rigidCmd;
-        rigidCmd.surfs = *(surfaceType_t **)(se + 0x30);
+        rigidCmd.surfs = ((GfxSceneEntity *)se)->surfs;
         rigidCmd.surfCount = surfaceCount;
         rigidCmd.e = (GfxEntity *)ent;
         /* Copy DObjAnimMat (32 bytes) */
@@ -1755,7 +1755,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         /* Multi-bone: build SkinXModelCmd with per-surface mat offsets */
         SkinXModelCmd skinCmd;
         int i;
-        skinCmd.surfs = *(surfaceType_t **)(se + 0x30);
+        skinCmd.surfs = ((GfxSceneEntity *)se)->surfs;
         skinCmd.surfCount = (byte)surfaceCount;
         skinCmd.e = (GfxEntity *)ent;
         skinCmd.mat = boneMatrix;
@@ -1768,7 +1768,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         R_AddFrontendCmd(surfaceCount > 10 ? 7 : 6, &skinCmd);
     }
 
-    *(int *)(se + 0xc) = 4;
+    ((GfxSceneEntity *)se)->cullState = 4;
 }
 
 #if 0 /* original naked — replaced above */
@@ -2064,7 +2064,7 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
     /* Set material in scene surface list */
     {
         void *material = *(void **)((char *)*(void **)((char *)skins + lod * 4) + surfaceIndex * 4);
-        *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4) = material;
+        ((GfxSceneEntity *)sceneEnt)->materials[surfaceIndex] = (const Material *)material;
     }
 
     /* Check for static model cached surface (SMC) */
@@ -2074,8 +2074,8 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
             int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
             if (!isDx7) {
                 /* Check for valid material technique for SMC */
-                void *mat = *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4);
-                void *techSet = *(void **)((char *)mat + 0x38);
+                void *mat = (void *)((GfxSceneEntity *)sceneEnt)->materials[surfaceIndex];
+                void *techSet = (void *)((Material *)mat)->techniqueSet;
                 void *tech34 = *(void **)((char *)techSet + 0x34);
                 if (tech34 && *(short *)((char *)tech34 + 6) && *(byte *)((char *)tech34 + 0xc)) {
                     goto try_smc;
@@ -2087,7 +2087,7 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
                     char *staticSurf = (char *)*(void **)((char *)smcData + smodelIndex * 8 + 4) + surfaceIndex * 16;
                     void *cached = *(void **)(staticSurf + lod * 4);
                     if (!cached) {
-                        void *mat = *(void **)((char *)*(void **)((char *)sceneEnt + 0x2c) + surfaceIndex * 4);
+                        void *mat = (void *)((GfxSceneEntity *)sceneEnt)->materials[surfaceIndex];
                         cached = R_CacheStaticModelSurface(staticSurf, xsurf, smodelIndex, mat);
                         *(void **)(staticSurf + lod * 4) = cached;
                         if (!cached) goto no_smc;
@@ -2105,7 +2105,7 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
 no_smc:
 
     /* Check if surface has pre-built rigid skinning */
-    if (*(int *)((char *)xsurf + 0x10)) {
+    if (((XSurface *)xsurf)->surfRigid.vb) {
         *(int *)surfPos = 4;
         *(void **)(surfPos + 4) = xsurf;
         *needSkinningSurf = 1;
@@ -2114,7 +2114,7 @@ no_smc:
 
     /* Skinned surface: allocate from cache or dynamic VB */
     /* (Same pattern as R_PreSkinXSurface) */
-    if (*(byte *)(*(char **)imp_r_skinCache + 8) && *(int *)((char *)xsurf + 0x14)) {
+    if (*(byte *)(*(char **)imp_r_skinCache + 8) && ((XSurface *)xsurf)->indexBuffer) {
         *(int *)(surfPos + 0xc) = 0;
         int vertCount = XSurfaceGetNumVerts(xsurf);
         int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
@@ -2429,9 +2429,9 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
     qboolean needSkinningSurf = 0;
     byte surfBuf[3520];
 
-    if (*(int *)(se + 0xc) > 3) return;
+    if (((GfxSceneEntity *)se)->cullState > 3) return;
     if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
-        while (*(volatile int *)(se + 0xc) <= 3) ;
+        while (((GfxSceneEntity *)se)->cullState <= 3) ;
         return;
     }
 
@@ -2454,7 +2454,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             R_XModelDebugAxes_impl((const byte *)sceneEnt, (const byte *)ent, defaultObj);
 #endif
         }
-        *(int *)(se + 0xc) = 4; return;
+        ((GfxSceneEntity *)se)->cullState = 4; return;
     }
 
     boneCount = XModelNumBones(model);
@@ -2469,7 +2469,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             dist /= scale;
         lod = XModelGetLodForDist(model, dist);
     }
-    if (lod < 0) { *(int *)(se + 0xc) = 4; return; }
+    if (lod < 0) { ((GfxSceneEntity *)se)->cullState = 4; return; }
 
     surfaceCount = XModelGetSurfaces(model, &surfacesPtr, lod, partBits);
 
@@ -2485,7 +2485,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                 warnCount = *(int *)fed;
                 (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SCENE_SURFS_PLUS_ENTITIES exceeded\n");
             }
-            *(int *)(se + 0xc) = 4; return;
+            ((GfxSceneEntity *)se)->cullState = 4; return;
         }
         *(void **)(se + 0x2c) = (void *)(scene + 0x1a560 + startIdx * 4);
     }
@@ -2498,7 +2498,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
         for (i = 0; i < surfaceCount; i++) {
             int result = R_PreSkinStaticSurface(sceneEnt, ent, smodelIndex,
                 (const struct XModel *)model, (XSurface *)surfArray[i], i, lod, &needSkinningSurf, surfPtr);
-            if (!result) { *(int *)(se + 0xc) = 4; return; }
+            if (!result) { ((GfxSceneEntity *)se)->cullState = 4; return; }
             surfPtr += result;
         }
 
@@ -2513,14 +2513,14 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
                     warnCount = *(int *)fed;
                     (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SKINNED_CACHE exceeded\n");
                 }
-                *(int *)(se + 0xc) = 4; return;
+                ((GfxSceneEntity *)se)->cullState = 4; return;
             }
-            *(void **)(se + 0x30) = fed + 0x8000c + offset;
+            ((GfxSceneEntity *)se)->surfs = (surfaceType_t *)(fed + 0x8000c + offset);
             memcpy(fed + 0x8000c + offset, surfBuf, size);
         }
     }
 
-    *(int *)(se + 0x10) = surfaceCount;
+    ((GfxSceneEntity *)se)->surfCount = surfaceCount;
 
     /* Debug rendering */
     {
@@ -2556,14 +2556,14 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
         }
     }
 
-    if (!needSkinningSurf) { *(int *)(se + 0xc) = 4; return; }
+    if (!needSkinningSurf) { ((GfxSceneEntity *)se)->cullState = 4; return; }
 
     /* Queue skinning command */
     {
         const DObjAnimMat *basePose = XModelGetBasePose(model);
         if (boneCount == 1) {
             SkinRigidXModelCmd rigidCmd;
-            rigidCmd.surfs = *(surfaceType_t **)(se + 0x30);
+            rigidCmd.surfs = ((GfxSceneEntity *)se)->surfs;
             rigidCmd.surfCount = surfaceCount;
             rigidCmd.e = (GfxEntity *)ent;
             memcpy(&rigidCmd.mat, basePose, sizeof(DObjAnimMat));
@@ -2571,7 +2571,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
         } else {
             SkinXModelCmd skinCmd;
             int i;
-            skinCmd.surfs = *(surfaceType_t **)(se + 0x30);
+            skinCmd.surfs = ((GfxSceneEntity *)se)->surfs;
             skinCmd.surfCount = (byte)surfaceCount;
             skinCmd.e = (GfxEntity *)ent;
             skinCmd.mat = basePose;
@@ -2582,7 +2582,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             R_AddFrontendCmd(surfaceCount > 10 ? 7 : 6, &skinCmd);
         }
     }
-    *(int *)(se + 0xc) = 4;
+    ((GfxSceneEntity *)se)->cullState = 4;
 }
 
 #if 0 /* original naked — replaced above */

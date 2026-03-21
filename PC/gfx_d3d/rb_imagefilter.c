@@ -485,13 +485,15 @@ static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, G
     /* line 59: scale radius by viewport height / 480 */
     be = (byte *)backEnd;
     {
-        const GfxViewParms *viewParms = *(const GfxViewParms **)(be + 0x3c8);
-        int viewportHeight = *(int *)((byte *)viewParms + 0x3c);
+        const r_backEndGlobals_t *backend = (const r_backEndGlobals_t *)backEnd;
+        const GfxViewParms *viewParms = backend->viewParms;
+        int viewportHeight = (int)viewParms->viewport.Height;
         float heightScaled = (float)viewportHeight * glowRadius / 480.0f;
 
         /* line 60: multiply by aspect ratio */
         vc = (byte *)vidConfig;
-        scaledRadius = heightScaled * *(float *)(vc + 0x14);
+        const vidConfig_t *vcfg = (const vidConfig_t *)vidConfig;
+        scaledRadius = heightScaled * vcfg->aspectRatioPixel;
     }
 
     /* line 519-520 */
@@ -658,13 +660,15 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
     /* line 59: scale radius by viewport height / 480 */
     be = (byte *)backEnd;
     {
-        const GfxViewParms *viewParms = *(const GfxViewParms **)(be + 0x3c8);
-        int viewportHeight = *(int *)((byte *)viewParms + 0x3c);
+        const r_backEndGlobals_t *backend = (const r_backEndGlobals_t *)backEnd;
+        const GfxViewParms *viewParms = backend->viewParms;
+        int viewportHeight = (int)viewParms->viewport.Height;
         float heightScaled = (float)viewportHeight * radius / 480.0f;
 
         /* line 60 */
         vc = (byte *)vidConfig;
-        scaledRadius = heightScaled * *(float *)(vc + 0x14);
+        const vidConfig_t *vcfg = (const vidConfig_t *)vidConfig;
+        scaledRadius = heightScaled * vcfg->aspectRatioPixel;
     }
 
     /* line 483-484 */
@@ -679,8 +683,9 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
 
     /* line 491: generate filter chain from vidConfig dimensions to target dimensions */
     {
-        int vidWidth = *(int *)(vc + 0x0);   /* vidConfig->width */
-        int vidHeight = *(int *)(vc + 0x4);  /* vidConfig->height */
+        const vidConfig_t *vcfg2 = (const vidConfig_t *)vidConfig;
+        int vidWidth = vcfg2->width;
+        int vidHeight = vcfg2->height;
 
         passCount = RB_GenerateGaussianFilterChain(
             scaledRadius, scaledRadius,

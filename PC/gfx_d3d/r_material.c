@@ -268,8 +268,8 @@ void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, i
 
     void *entry = *(void **)((char *)materialGlobals + 0x259C + hash * 4);
     while (entry != NULL) {
-        if (*(byte *)((byte *)entry + 0xa) == (byte)shaderType &&
-            *(byte *)((byte *)entry + 0xb) == (byte)shaderVersion &&
+        if (((MaterialShader *)entry)->shaderType == (byte)shaderType &&
+            ((MaterialShader *)entry)->shaderVersion == (byte)shaderVersion &&
             strcmp(*(char **)entry, shaderName) == 0)
             break;
         hash = (hash + 1) & 0xff;
@@ -282,7 +282,7 @@ void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, i
 /* line 981 */
 Bool Material_IsDefault(const Material *material)
 {
-    const Material *defaultMtl = *(const Material **)((byte *)imp_rgp + 0x102c);
+    const Material *defaultMtl = ((r_global_permanent_t *)imp_rgp)->defaultMaterial;
     if (material->textures != defaultMtl->textures)
         return 0;
     if (material->constants != defaultMtl->constants)
@@ -358,25 +358,25 @@ void Material_UpdatePicmipAll(void)
         if (!material)
             continue;
 
-        textureCount = *(unsigned short *)(material + 0x34);
+        textureCount = ((Material *)material)->textureCount;
         if (textureCount <= 0)
             continue;
 
-        texdefs = *(byte **)(material + 0x3c);
+        texdefs = (byte *)((Material *)material)->textures;
         for (textureIndex = 0; textureIndex < textureCount; textureIndex++) {
             texdef = texdefs + textureIndex * 0xc;
 
             /* Skip water textures (semantic == 5) */
-            if (*(byte *)(texdef + 5) == 5)
+            if (((MaterialTextureDef *)texdef)->semantic == 5)
                 continue;
 
-            image = *(GfxImage **)(texdef + 8);
+            image = ((MaterialTextureDef *)texdef)->u.image;
             if (!image)
                 continue;
 
             Image_UpdatePicmip(image);
             /* Re-read count since UpdatePicmip may have side effects */
-            textureCount = *(unsigned short *)(material + 0x34);
+            textureCount = ((Material *)material)->textureCount;
         }
     }
 }
@@ -467,7 +467,7 @@ void Material_Sort(void)
     count = *(int *)(rgp + 4);
     for (i = 0; i < count; i++) {
         byte *mtl = *(byte **)(rgp + 8 + i * 4);
-        *(unsigned short *)(mtl + 0xa) = (unsigned short)i;
+        ((Material *)mtl)->info.sortedIndex = (unsigned short)i;
     }
 }
 
@@ -669,8 +669,8 @@ void Material_Shutdown(void)
 _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTrack)
 {
     byte *rgp = (byte *)imp_rgp;
-    byte *defaultImage = *(byte **)(rgp + 0x102c);
-    byte *rawImage = *(byte **)(rgp + 0x1030);
+    byte *defaultImage = (byte *)((r_global_permanent_t *)rgp)->defaultMaterial;
+    byte *rawImage = (byte *)((r_global_permanent_t *)rgp)->rawMaterial;
     _ValueType result;
 
     /* Empty name returns default image */
@@ -680,19 +680,19 @@ _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTra
     }
 
     /* Check if raw image matches default (no reload needed) */
-    if (*(int *)(rawImage + 0x3c) == *(int *)(defaultImage + 0x3c) &&
-        *(int *)(rawImage + 0x40) == *(int *)(defaultImage + 0x40) &&
-        *(int *)(rawImage + 0x38) == *(int *)(defaultImage + 0x38)) {
+    if (((Material *)rawImage)->textures == ((Material *)defaultImage)->textures &&
+        ((Material *)rawImage)->constants == ((Material *)defaultImage)->constants &&
+        ((Material *)rawImage)->techniqueSet == ((Material *)defaultImage)->techniqueSet) {
         *(void **)&result = defaultImage;
         return result;
     }
 
     /* Release and reload raw image */
-    Image_Release(*(GfxImage **)(rgp + 0x1098));
-    if (Image_LoadRaw(*(GfxImage **)(rgp + 0x1098), name, imageTrack)) {
-        *(void **)&result = *(void **)(rgp + 0x1030); /* rawImage */
+    Image_Release(((r_global_permanent_t *)rgp)->rawImage);
+    if (Image_LoadRaw(((r_global_permanent_t *)rgp)->rawImage, name, imageTrack)) {
+        *(void **)&result = (void *)((r_global_permanent_t *)rgp)->rawMaterial; /* rawMaterial */
     } else {
-        *(void **)&result = *(void **)(rgp + 0x102c); /* defaultImage */
+        *(void **)&result = (void *)((r_global_permanent_t *)rgp)->defaultMaterial; /* defaultMaterial */
     }
     return result;
 }
@@ -802,18 +802,18 @@ storeDecl2:
                 continue;
 
             /* Check shader managed flag at offset 0x0a */
-            if (*(byte *)(shader + 0x0a) == 0) {
+            if (((MaterialShader *)shader)->shaderType == 0) {
                 /* Not managed: call D3D CreatePixelShader (vtable[0x16c/4]) */
                 void *device = *(void **)(dx + 8);
                 void **vtable = *(void ***)device;
                 hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x16c/4])(
-                    device, *(void **)(shader + 4), (void **)(shader + 0xc));
+                    device, ((MaterialShader *)shader)->program, &((MaterialShader *)shader)->u);
             } else {
                 /* Managed: call D3D CreateVertexShader (vtable[0x1a8/4]) */
                 void *device = *(void **)(dx + 8);
                 void **vtable = *(void ***)device;
                 hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x1a8/4])(
-                    device, *(void **)(shader + 4), (void **)(shader + 0xc));
+                    device, ((MaterialShader *)shader)->program, &((MaterialShader *)shader)->u);
             }
 
             if (hr < 0) {
@@ -1357,11 +1357,11 @@ void R_Cmd_ReloadMaterialTextures(void)
 
     /* Reload textures in order: repeatedly find the smallest image pointer
      * greater than lastReloaded, and reload it. This ensures ordered reload. */
-    textureCount = *(unsigned short *)(material + 0x34);
+    textureCount = ((Material *)material)->textureCount;
     if (textureCount == 0)
         return;
 
-    texdefs = *(byte **)(material + 0x3c);
+    texdefs = (byte *)((Material *)material)->textures;
     lastReloaded = NULL;
 
     for (;;) {
@@ -1370,10 +1370,10 @@ void R_Cmd_ReloadMaterialTextures(void)
             byte *texdef = texdefs + i * 0xc;
             GfxImage *img;
 
-            if (*(byte *)(texdef + 5) == 5) /* skip water */
+            if (((MaterialTextureDef *)texdef)->semantic == 5) /* skip water */
                 continue;
 
-            img = *(GfxImage **)(texdef + 8);
+            img = ((MaterialTextureDef *)texdef)->u.image;
             if (!lastReloaded) {
                 /* First pass: find largest image pointer */
                 if ((unsigned int)img > (unsigned int)best)
@@ -1439,9 +1439,9 @@ MaterialHandle Material_Duplicate(MaterialHandle mtlCopy, const char *name)
     /* Register in rgp and rg */
     rgp = (byte *)imp_rgp;
     *(int *)rgp = 1; /* needsSort */
-    *(unsigned short *)(material + 8) = (unsigned short)hash;
+    ((Material *)material)->info.hashIndex = (unsigned short)hash;
     count = *(int *)(rgp + 4);
-    *(unsigned short *)(material + 0xa) = (unsigned short)count;
+    ((Material *)material)->info.sortedIndex = (unsigned short)count;
     *(void **)(rgp + 8 + count * 4) = material;
     rg = (byte *)imp_rg;
     *(void **)(rg + 0x28 + hash * 4) = material;

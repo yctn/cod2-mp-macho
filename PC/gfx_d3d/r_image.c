@@ -95,9 +95,9 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
     void **vtable;
     HRESULT hr;
 
-    *(unsigned short *)(img + 0x18) = (unsigned short)width;
-    *(unsigned short *)(img + 0x1a) = (unsigned short)height;
-    *(unsigned short *)(img + 0x1c) = 1;
+    image->width = (unsigned short)width;
+    image->height = (unsigned short)height;
+    image->depth = 1;
     *(int *)img = 3; /* texture type = 2D */
 
     /* IDirect3DDevice9::CreateTexture — vtable 0x5C */
@@ -110,9 +110,9 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
-            *(const char **)(img + 0x20),
-            (int)*(unsigned short *)(img + 0x18),
-            (int)*(unsigned short *)(img + 0x1a),
+            image->name,
+            (int)image->width,
+            (int)image->height,
             0, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
     }
 }
@@ -125,9 +125,9 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
     void **vtable;
     HRESULT hr;
 
-    *(unsigned short *)(img + 0x18) = (unsigned short)width;
-    *(unsigned short *)(img + 0x1a) = (unsigned short)height;
-    *(unsigned short *)(img + 0x1c) = (unsigned short)depth;
+    image->width = (unsigned short)width;
+    image->height = (unsigned short)height;
+    image->depth = (unsigned short)depth;
     *(int *)img = 4; /* texture type = 3D/volume */
 
     /* IDirect3DDevice9::CreateVolumeTexture — vtable 0x60 */
@@ -140,10 +140,10 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
 
     if (hr < 0) {
         R_Error(1, "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s",
-            *(const char **)(img + 0x20),
-            (int)*(unsigned short *)(img + 0x18),
-            (int)*(unsigned short *)(img + 0x1a),
-            (int)*(unsigned short *)(img + 0x1c),
+            image->name,
+            (int)image->width,
+            (int)image->height,
+            (int)image->depth,
             0, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
     }
 }
@@ -158,9 +158,9 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
     HRESULT hr;
     int actualMipCount;
 
-    *(unsigned short *)(img + 0x18) = (unsigned short)edgeLen;
-    *(unsigned short *)(img + 0x1a) = (unsigned short)edgeLen;
-    *(unsigned short *)(img + 0x1c) = 1;
+    image->width = (unsigned short)edgeLen;
+    image->height = (unsigned short)edgeLen;
+    image->depth = 1;
     *(int *)img = 5; /* texture type = cube */
 
     /* Check if cubemap mipmaps are supported */
@@ -180,8 +180,8 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
 
     if (hr < 0) {
         R_Error(1, "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s",
-            *(const char **)(img + 0x20),
-            (int)*(unsigned short *)(img + 0x18),
+            image->name,
+            (int)image->width,
             mipmapCount, (int)imageFormat, (int)hr, R_ErrorDescription(hr));
     }
 }
@@ -336,7 +336,7 @@ extern void R_CreateWaterSetup(const water_t *water, int index, water_t *dest);
 water_t * R_LoadWaterSetup(const water_t *water)
 {
     byte *rg = (byte *)imp_rg;
-    int waterCount = *(int *)(rg + 0x1028);
+    int waterCount = ((r_globals_t *)rg)->sceneWaterMapSetupsCount;
     int i;
     water_t *slot;
 
@@ -359,7 +359,7 @@ water_t * R_LoadWaterSetup(const water_t *water)
     rg = (byte *)imp_rg;
     slot = (water_t *)(rg + 0xc + 0x1020 + i * 68);
     R_CreateWaterSetup(water, i, slot);
-    *(int *)(rg + 0x1028) += 1;
+    ((r_globals_t *)rg)->sceneWaterMapSetupsCount += 1;
 
     return slot;
 }
@@ -429,7 +429,7 @@ void R_DownsampleMipMapBilinear(const byte *src, int srcBufferSize, int srcWidth
 void Image_Release(GfxImage *image)
 {
     byte *img = (byte *)image;
-    signed char mapType = *(signed char *)(img + 0xc);
+    signed char mapType = (signed char)image->track;
     void *texture;
     void **vtable;
     int i;
@@ -439,7 +439,7 @@ void Image_Release(GfxImage *image)
     if ((byte)mapType > 4 || !((1 << mapType) & 0x13)) {
         /* Subtract per-platform memory tracking from imageGlobals totals */
         for (i = 0; i < 2; i++) {
-            imageGlobals[0x200c / 4 + i] -= *(int *)(img + 0x10 + i * 4);
+            imageGlobals[0x200c / 4 + i] -= image->cardMemory.platform[i];
         }
     }
 
@@ -450,8 +450,8 @@ void Image_Release(GfxImage *image)
         if (vtable && vtable[8 / 4])
             ((ULONG (*)(void *))(vtable[8 / 4]))(texture); /* Release — vtable 0x08 */
         *(void **)(img + 4) = NULL;
-        *(int *)(img + 0x10) = 0;
-        *(int *)(img + 0x14) = 0;
+        image->cardMemory.platform[0] = 0;
+        image->cardMemory.platform[1] = 0;
     }
 
     *(int *)img = 0;
@@ -472,7 +472,7 @@ void R_ReloadLostImages(void)
         if (!image)
             continue;
 
-        category = *(byte *)((char *)image + 0x1e);
+        category = image->category;
         if (category <= 4)
             continue;
 
@@ -501,7 +501,7 @@ extern int Image_GetCardMemoryAmount(int imageFlags, D3DFORMAT format, int width
 void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int width, int height, int depth)
 {
     byte *img = (byte *)image;
-    signed char mapType = *(signed char *)(img + 0xc);
+    signed char mapType = (signed char)image->track;
     int needsGlobalAccounting;
     int amount;
     int i;
@@ -521,7 +521,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
             if (mipD < 1) mipD = 1;
 
             amount = Image_GetCardMemoryAmount(imageFlags, format, mipW, mipH, mipD);
-            *(int *)(img + 0x10 + i * 4) = amount;
+            image->cardMemory.platform[i] = amount;
 
             if (needsGlobalAccounting)
                 imageGlobals[0x200c / 4 + i] += amount;
@@ -530,7 +530,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
         /* Single-platform path: same dimensions for all platforms */
         for (i = 0; i < 2; i++) {
             amount = Image_GetCardMemoryAmount(imageFlags, format, width, height, depth);
-            *(int *)(img + 0x10 + i * 4) = amount;
+            image->cardMemory.platform[i] = amount;
 
             if (needsGlobalAccounting)
                 imageGlobals[0x200c / 4 + i] += amount;
@@ -542,7 +542,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
 void Image_TrackFullscreenTexture(GfxImage *image, int picmip, D3DFORMAT format)
 {
     byte *img = (byte *)image;
-    signed char mapType = *(signed char *)(img + 0xc);
+    signed char mapType = (signed char)image->track;
     int needsGlobalAccounting = ((byte)mapType > 4) || !((1 << mapType) & 0x13);
     int platform;
     int screenWidth, screenHeight;
@@ -567,7 +567,7 @@ void Image_TrackFullscreenTexture(GfxImage *image, int picmip, D3DFORMAT format)
         if (mipH < 1) mipH = 1;
 
         amount = Image_GetCardMemoryAmount(3, format, mipW, mipH, 1);
-        *(int *)(img + 0x10 + platform * 4) += amount;
+        image->cardMemory.platform[platform] += amount;
 
         if (needsGlobalAccounting)
             imageGlobals[0x200c / 4 + platform] += amount;
@@ -585,10 +585,10 @@ GfxImage * Image_AllocProg(int imageProgType, int category)
     int hash;
 
     /* Initialize image fields */
-    *(const char **)((char *)image + 0x20) = name; /* image->name */
-    *((byte *)image + 0x1e) = (byte)category;      /* image->category */
-    *((byte *)image + 0x0a) = 0;                    /* image->state */
-    *((byte *)image + 0x0c) = 0;                    /* image->mapType */
+    image->name = name; /* image->name */
+    image->category = (byte)category;      /* image->category */
+    /* image->semantic = 0 (zero-initialized) */                    /* image->state */
+    image->track = 0;                    /* image->mapType */
 
     /* Find free slot in hash table */
     hash = R_HashAssetName(name) & 0x7ff;
@@ -614,13 +614,13 @@ GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTr
 
     /* Name stored right after the struct */
     nameDst = (char *)(image + 0x24);
-    *(char **)(image + 0x20) = nameDst;
+    ((GfxImage *)image)->name = nameDst;
     memcpy(nameDst, name, nameLen);
 
     /* Initialize fields */
-    *(byte *)(image + 0x1e) = (byte)category;
-    *(byte *)(image + 0x0a) = (byte)semantic;
-    *(byte *)(image + 0x0c) = (byte)imageTrack;
+    ((GfxImage *)image)->category = (byte)category;
+    ((GfxImage *)image)->semantic = (byte)semantic;
+    ((GfxImage *)image)->track = (byte)imageTrack;
 
     /* Insert into hash table */
     hash = R_HashAssetName(name) & 0x7ff;
@@ -762,12 +762,12 @@ void R_ImageList_f(void)
             }
 
             /* Print image type */
-            Com_Printf(0, "  %s", imageTypeName[*(byte *)((char *)image + 0xc)]);
+            Com_Printf(0, "  %s", imageTypeName[image->track]);
 
             if (!listAllImages) {
                 /* Print per-platform sizes */
                 for (platform = 0; platform < 2; platform++) {
-                    int size = *(int *)((char *)image + 0x10 + platform * 4);
+                    int size = image->cardMemory.platform[platform];
                     float sizeKB = (float)size * 0.0009765625f; /* / 1024.0 */
                     if (sizeKB < 10.0f)
                         Com_Printf(0, "%7.1f", (double)sizeKB);
@@ -776,13 +776,13 @@ void R_ImageList_f(void)
 
                     /* Accumulate per-type stats */
                     {
-                        int imgType = *(byte *)((char *)image + 0xc);
+                        int imgType = image->track;
                         imageTrack[imgType * 2 + platform] += size;
                     }
 
                     /* Accumulate total for eligible types */
                     {
-                        int imgType = *(byte *)((char *)image + 0xc);
+                        int imgType = image->track;
                         if (imgType <= 4 && ((1 << imgType) & 0x13))
                             ; /* skip total for these types */
                         else
@@ -792,13 +792,13 @@ void R_ImageList_f(void)
             } else {
                 /* listAllImages: print sizes and accumulate totals directly */
                 for (platform = 0; platform < 2; platform++) {
-                    int size = *(int *)((char *)image + 0x10 + platform * 4);
+                    int size = image->cardMemory.platform[platform];
                     float sizeKB = (float)size * 0.0009765625f;
                     const char *fmt = (sizeKB >= 10.0f) ? "%7.0f" : "%7.1f";
                     Com_Printf(0, fmt, (double)sizeKB);
 
                     {
-                        int imgType = *(byte *)((char *)image + 0xc);
+                        int imgType = image->track;
                         imageTrack[imgType * 2 + platform] += size;
                     }
                     total[platform] += size;
@@ -806,7 +806,7 @@ void R_ImageList_f(void)
             }
 
             /* Print image name */
-            Com_Printf(0, "  %s\n", *(const char **)((char *)image + 0x20));
+            Com_Printf(0, "  %s\n", image->name);
         }
 
         /* Print summary */
@@ -1357,7 +1357,7 @@ GfxImage * Image_Register(const char *imageName, int semantic, int imageTrack)
     image = (GfxImage *)imageGlobals[hash];
 
     while (image) {
-        if (strcmp(*(const char **)((char *)image + 0x20), imageName) == 0)
+        if (strcmp(image->name, imageName) == 0)
             break;
         hash = (hash + 1) & 0x7ff;
         image = (GfxImage *)imageGlobals[hash];
@@ -1393,31 +1393,31 @@ void R_InitImages(void)
     R_SetPicmip();
 
     /* Register built-in images */
-    *(GfxImage **)(rgp + 0x1008) = Image_Register("$white", 1, 0);
+    ((r_global_permanent_t *)rgp)->whiteImage = Image_Register("$white", 1, 0);
     rgp = (byte *)imp_rgp;
-    *(GfxImage **)(rgp + 0x100c) = Image_Register("$black", 1, 0);
+    ((r_global_permanent_t *)rgp)->blackImage = Image_Register("$black", 1, 0);
 
     rendererType = *(int *)(*(char **)imp_r_rendererInUse + 8);
     if (rendererType == 2) {
         /* Dx7 path */
-        *(GfxImage **)(rgp + 0x10a4) = Image_Register("$watercolor", 1, 0);
+        ((r_global_permanent_t *)rgp)->waterColorImage = Image_Register("$watercolor", 1, 0);
     } else {
         /* Non-Dx7 path */
-        *(GfxImage **)(rgp + 0x1010) = Image_Register("$identitynormalmap", 1, 0);
-        *(GfxImage **)(rgp + 0x1014) = Image_Register("$specularity", 1, 0);
-        *(GfxImage **)(rgp + 0x101c) = Image_Register("$lightgridweights0", 1, 0);
-        *(GfxImage **)(rgp + 0x1020) = Image_Register("$lightgridweights1", 1, 0);
-        *(GfxImage **)(rgp + 0x1018) = Image_Register("$lightmapweights", 1, 0);
+        ((r_global_permanent_t *)rgp)->identityNormalMapImage = Image_Register("$identitynormalmap", 1, 0);
+        ((r_global_permanent_t *)rgp)->specularityImage = Image_Register("$specularity", 1, 0);
+        ((r_global_permanent_t *)rgp)->lightGridWeightsImage[0] = Image_Register("$lightgridweights0", 1, 0);
+        ((r_global_permanent_t *)rgp)->lightGridWeightsImage[1] = Image_Register("$lightgridweights1", 1, 0);
+        ((r_global_permanent_t *)rgp)->lightmapWeightsImage = Image_Register("$lightmapweights", 1, 0);
     }
 
     RB_InitImages();
 
     /* Initialize raw image prog (index 11 = offset 396 in g_imageProgs) */
     rawImage = &g_imageProgs[11];
-    *(const char **)((byte *)rawImage + 0x20) = g_imageProgNames[11];
-    *((byte *)rawImage + 0x1e) = 4;  /* category */
-    *((byte *)rawImage + 0x0a) = 0;  /* state */
-    *((byte *)rawImage + 0x0c) = 0;  /* mapType */
+    rawImage->name = g_imageProgNames[11];
+    rawImage->category = 4;  /* category */
+    /* rawImage->semantic = 0 (zero-initialized) */
+    rawImage->track = 0;  /* track */
 
     /* Insert into hash table */
     hash = R_HashAssetName(g_imageProgNames[11]) & 0x7ff;
@@ -1427,10 +1427,10 @@ void R_InitImages(void)
 
     /* Set up rgp raw image references */
     rgp = (byte *)imp_rgp;
-    *(GfxImage **)(rgp + 0x1098) = rawImage;
-    *(byte *)(rgp + 0x10e8) = 0x32;  /* samplerState */
-    *(byte *)(rgp + 0x10e9) = 0;
-    *(GfxImage **)(rgp + 0x10ec) = rawImage;
+    ((r_global_permanent_t *)rgp)->rawImage = rawImage;
+    ((r_global_permanent_t *)rgp)->rawTexdef.samplerState = 0x32;
+    ((r_global_permanent_t *)rgp)->rawTexdef.semantic = 0;
+    ((r_global_permanent_t *)rgp)->rawTexdef.u.image = rawImage;
 }
 
 /* line 715 */
@@ -1443,9 +1443,9 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
     void **vtable;
     HRESULT hr;
 
-    *(unsigned short *)(img + 0x18) = w;
-    *(unsigned short *)(img + 0x1a) = h;
-    *(unsigned short *)(img + 0x1c) = 1;
+    image->width = w;
+    image->height = h;
+    image->depth = 1;
     *(int *)img = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_RENDERTARGET(1), Pool=D3DPOOL_DEFAULT(0) */
@@ -1457,7 +1457,7 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
-            *(const char **)(img + 0x20), (int)w, (int)h, 0, (int)imageFormat,
+            image->name, (int)w, (int)h, 0, (int)imageFormat,
             (int)hr, R_ErrorDescription(hr));
     }
 
@@ -1474,9 +1474,9 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
     void **vtable;
     HRESULT hr;
 
-    *(unsigned short *)(img + 0x18) = w;
-    *(unsigned short *)(img + 0x1a) = h;
-    *(unsigned short *)(img + 0x1c) = 1;
+    image->width = w;
+    image->height = h;
+    image->depth = 1;
     *(int *)img = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_DYNAMIC(0x200), Pool=D3DPOOL_SYSTEMMEM(2) */
@@ -1488,7 +1488,7 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
-            *(const char **)(img + 0x20), (int)w, (int)h, 0, (int)imageFormat,
+            image->name, (int)w, (int)h, 0, (int)imageFormat,
             (int)hr, R_ErrorDescription(hr));
     }
 
@@ -1514,7 +1514,7 @@ void Image_RebuildCosinePowerMap(float shift)
         return;
 
     rgp = (byte *)imp_rgp;
-    image = *(GfxImage **)(rgp + 0x1014);
+    image = ((r_global_permanent_t *)rgp)->specularityImage;
     RB_UnbindImage(image);
 
     /* Release existing texture */
@@ -1527,12 +1527,12 @@ void Image_RebuildCosinePowerMap(float shift)
     } while (*(volatile int *)imp_alwaysfails);
 
     /* Recreate as 32x256 D3DFMT_L8(0x32) texture */
-    image = *(GfxImage **)(rgp + 0x1014);
+    image = ((r_global_permanent_t *)rgp)->specularityImage;
     Image_Create2DTexture(image, 32, 256, 1, 0, 0x32, 1);
 
     /* Build and upload specularity data */
     Image_BuildSpecularityMap(shift, pic);
-    Image_UploadData(*(GfxImage **)(rgp + 0x1014), 0x32, 0, 0, pic);
+    Image_UploadData(((r_global_permanent_t *)rgp)->specularityImage, 0x32, 0, 0, pic);
 }
 
 /* line 599 */
@@ -1570,11 +1570,11 @@ void R_ShutdownImages(void)
 
         /* Release non-prog image (inlined Image_Release with vtable NULL check) */
         {
-            signed char mapType = *(signed char *)(img + 0xc);
+            signed char mapType = (signed char)image->track;
             if ((byte)mapType > 4 || !((1 << mapType) & 0x13)) {
                 int j;
                 for (j = 0; j < 2; j++)
-                    imageGlobals[0x200c / 4 + j] -= *(int *)(img + 0x10 + j * 4);
+                    imageGlobals[0x200c / 4 + j] -= image->cardMemory.platform[j];
             }
 
             {
@@ -1584,8 +1584,8 @@ void R_ShutdownImages(void)
                     if (vtable && vtable[8 / 4]) {
                         ((ULONG (*)(void *))(vtable[8 / 4]))(texture);
                         *(void **)(img + 4) = NULL;
-                        *(int *)(img + 0x10) = 0;
-                        *(int *)(img + 0x14) = 0;
+                        image->cardMemory.platform[0] = 0;
+                        image->cardMemory.platform[1] = 0;
                     }
                 }
             }
@@ -1599,7 +1599,7 @@ void R_ShutdownImages(void)
     /* Re-insert saved prog images into the cleared hash table */
     for (i = 0; i < savedImageCount; i++) {
         GfxImage *image = savedImages[i];
-        const char *name = *(const char **)((byte *)image + 0x20);
+        const char *name = image->name;
 
         hash = R_HashAssetName(name) & 0x7ff;
         while (imageGlobals[hash] != 0)
@@ -1620,7 +1620,7 @@ void R_ReleaseLostImages(void)
             continue;
 
         /* Only release images with category > 4 */
-        if (*(byte *)((char *)image + 0x1e) <= 4)
+        if (image->category <= 4)
             continue;
 
         Image_Release(image);
@@ -1649,7 +1649,7 @@ void Image_UpdatePicmip(GfxImage *image)
 
     if (!Image_LoadFromFile(image)) {
         R_Error(1, "failed to load image '%s'",
-            *(const char **)(img + 0x20));
+            image->name);
     }
 }
 
@@ -1661,7 +1661,7 @@ void Image_Reload(GfxImage *image)
 
     if (!Image_LoadFromFile(image)) {
         R_Error(1, "failed to load image '%s'",
-            *(const char **)((char *)image + 0x20));
+            image->name);
     }
 }
 

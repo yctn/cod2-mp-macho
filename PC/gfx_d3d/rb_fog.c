@@ -21,14 +21,13 @@ GfxFogOffset RB_FogOffset(void)
     }
 
     byte *viewParms = *(byte **)g_viewParms;
-    return *(GfxFogOffset *)(viewParms + 0x219cec);
+    GfxFog *fog = (GfxFog *)(viewParms + 0x219cec);
+    return fog->techniqueOffset;
 }
 
 int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
 {
-    byte *backEndPtr = (byte *)&backEnd;
-    byte *rgPtr = (byte *)&rg;
-    int fogIndex = *(int *)(rgPtr + 0x150c);
+    int fogIndex = rg.fogIndex;
 
     if (fogIndex == 0)
         return 0;
@@ -40,7 +39,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
         if (fogColorSrc == 2) {
             fogColor = 0;
         } else {
-            fogColor = *(unsigned int *)(backEndPtr + 0x4c8);
+            fogColor = backEnd.fogColor.packed;
         }
 
         fogColor |= 0xff000000;
@@ -65,7 +64,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
         if (renderMode == 0x20) {
             fogColor = 0;
         } else {
-            fogColor = *(unsigned int *)(backEndPtr + 0x4c8);
+            fogColor = backEnd.fogColor.packed;
         }
 
         fogColor |= 0xff000000;
@@ -95,22 +94,20 @@ int RB_SetIteratorFog(void)
         return 0;
 
     byte *viewParms = *(byte **)g_viewParms;
-    byte *fog = viewParms + 0x219cec;
-    int fogOffset = *(int *)fog;
+    GfxFog *fog = (GfxFog *)(viewParms + 0x219cec);
 
-    if (fogOffset == 0)
+    if (fog->techniqueOffset == 0)
         return 0;
 
-    if (fog[0x1c] == 0)
+    if (!fog->registered)
         return 0;
 
     /* Set backend fog color */
-    unsigned int fogColorPacked = *(unsigned int *)(fog + 0xc);
-    *(unsigned int *)((byte *)&backEnd + 0x4c8) = fogColorPacked;
+    unsigned int fogColorPacked = fog->color.packed;
+    backEnd.fogColor.packed = fogColorPacked;
 
     /* Inline RB_UpdateFogColor logic */
-    byte *rgPtr = (byte *)&rg;
-    int fogIndex = *(int *)(rgPtr + 0x150c);
+    int fogIndex = rg.fogIndex;
     if (fogIndex != 0) {
         byte *backEndData = *(byte **)g_backEndData;
         int renderMode = *(int *)(backEndData + 0x2000) & 0xf0;
@@ -140,34 +137,34 @@ int RB_SetIteratorFog(void)
 
     /* Convert fog color bytes to floats (1/255 scale) */
     float inv255 = 0.003921568859368563f;
-    float fr = (float)(unsigned char)fog[0xd] * inv255;
-    float fg = (float)(unsigned char)fog[0xc] * inv255;
-    float fa = (float)(unsigned char)fog[0xf] * inv255;
-    float fb = (float)(unsigned char)fog[0xe] * inv255;
+    float fr = (float)fog->color.array[1] * inv255;
+    float fg = (float)fog->color.array[0] * inv255;
+    float fa = (float)fog->color.array[3] * inv255;
+    float fb = (float)fog->color.array[2] * inv255;
 
-    /* Store fog color as vec4 at backEnd + 0x1d0 */
-    *(float *)(ecx + 0x1d0) = fb;
-    *(float *)(ecx + 0x1d4) = fr;
-    *(float *)(ecx + 0x1d8) = fg;
-    *(float *)(ecx + 0x1dc) = fa;
+    /* Store fog color as vec4 at backEnd.codeConsts[29] */
+    backEnd.codeConsts[29][0] = fb;
+    backEnd.codeConsts[29][1] = fr;
+    backEnd.codeConsts[29][2] = fg;
+    backEnd.codeConsts[29][3] = fa;
 
     /* Compute fog parameters */
     byte *viewInfo = *(byte **)g_viewInfo;
     float fogEnd = *(float *)(viewInfo + 8);
     if (fogEnd == 0.0f) {
-        fogEnd = *(float *)(fog + 0x14);
+        fogEnd = fog->fogEnd;
     }
-    float fogStart = *(float *)(fog + 0x10);
+    float fogStart = fog->fogStart;
     float fogRange = fogEnd - fogStart;
     float invRange = 1.0f / fogRange;
-    float density = *(float *)(fog + 0x18);
+    float density = fog->density;
     float negDensity = -density;
 
-    /* Store fog distance params as vec4 at backEnd + 0x1c0 */
-    *(float *)(ecx + 0x1c0) = -invRange;
-    *(float *)(ecx + 0x1c4) = invRange * fogEnd;
-    *(float *)(ecx + 0x1c8) = negDensity;
-    *(float *)(ecx + 0x1cc) = 0.0f;
+    /* Store fog distance params as vec4 at backEnd.codeConsts[28] */
+    backEnd.codeConsts[28][0] = -invRange;
+    backEnd.codeConsts[28][1] = invRange * fogEnd;
+    backEnd.codeConsts[28][2] = negDensity;
+    backEnd.codeConsts[28][3] = 0.0f;
 
     /* Check D3D caps for fog mode */
     byte *dxCaps = *(byte **)imp_r_rendererInUse;
@@ -175,8 +172,7 @@ int RB_SetIteratorFog(void)
         return 0;
 
     /* Set D3D fog render states based on fog type */
-    int fogType = *(int *)fog;
-    if (fogType == 1) {
+    if (fog->techniqueOffset == 1) {
         /* Exponential fog */
         byte *bd = *(byte **)g_backEndData;
         if (*(int *)(bd + 0x215c) != 3) {
@@ -198,7 +194,7 @@ int RB_SetIteratorFog(void)
                 void *device = *(void **)(dxPtr + 8);
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
-                ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x24, *(int *)(fog + 0x10));
+                ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x24, *(int *)&fog->fogStart);
             } while (*(volatile int *)imp_alwaysfails != 0);
             bd = *(byte **)g_backEndData;
             *(float *)(bd + 0x2160) = fogStart;
@@ -238,7 +234,7 @@ int RB_SetIteratorFog(void)
                 void *device = *(void **)(dxPtr + 8);
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
-                ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x26, *(int *)(fog + 0x18));
+                ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x26, *(int *)&fog->density);
             } while (*(volatile int *)imp_alwaysfails != 0);
             bd = *(byte **)g_backEndData;
             *(float *)(bd + 0x2168) = density;

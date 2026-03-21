@@ -55,7 +55,7 @@ const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter)
         return &nullGlyph;
     }
 
-    Glyph *glyphs = *(Glyph **)((byte *)font + 0x10);
+    Glyph *glyphs = font->glyphs;
     int numGlyphs, top, bot, mid;
 
     /* Fast path for printable ASCII (0x20..0x7F) */
@@ -63,7 +63,7 @@ const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter)
         return &glyphs[letter - 0x20];
 
     /* Binary search through extended glyphs */
-    numGlyphs = *(int *)((byte *)font + 8);
+    numGlyphs = font->glyphCount;
     top = numGlyphs - 1;
     bot = 0x60;
 
@@ -171,7 +171,7 @@ float R_NormalizedTextScale(FontHandle font, float scale)
     font = R_ResolveFont(font);
     if (!font)
         return scale;
-    return 48.0f * scale / (float)*(int *)((byte *)font + 4);
+    return 48.0f * scale / (float)font->pixelHeight;
 }
 
 /* line 202 */
@@ -180,7 +180,7 @@ int R_TextHeight(FontHandle font)
     font = R_ResolveFont(font);
     if (!font)
         return 0;
-    return *(int *)((byte *)font + 4);
+    return font->pixelHeight;
 }
 
 /* line 209 */

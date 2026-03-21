@@ -85,7 +85,7 @@ float UI_FillRectPhysical(float x, float y, float width, float height, const vec
     MaterialHandle whiteMaterial;
 
     /* line 140 */
-    whiteMaterial = *(MaterialHandle *)((byte *)sharedUiInfo + 0x20);
+    whiteMaterial = sharedUiInfo.assets.whiteMaterial;
 
     if (whiteMaterial)
     {
@@ -100,7 +100,7 @@ float UI_FillRect(float x, float y, float width, float height, int horzAlign, in
     MaterialHandle whiteMaterial;
 
     /* line 154 */
-    whiteMaterial = *(MaterialHandle *)((byte *)sharedUiInfo + 0x20);
+    whiteMaterial = sharedUiInfo.assets.whiteMaterial;
 
     if (whiteMaterial)
     {

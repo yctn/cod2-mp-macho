@@ -46,55 +46,61 @@ void R_UpdateLightsFromDvars(void);
 void R_LoadWorld(const char *name, int *checksum);
 void R_ResetSunLightParseParams(void);
 
+/* Helper: get the GfxWorld pointer from rgp */
+static inline GfxWorld *R_GetWorld(void)
+{
+    return *(GfxWorld **)(r_glob_ptr + 0x109c);
+}
+
 /* line 273 */
 void R_ResetSunLightOverride(void)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
-    /* VectorCopy: world+0xe0 → world+0xc8 */
-    *(int *)(world + 0xc8) = *(int *)(world + 0xe0);
-    *(int *)(world + 0xcc) = *(int *)(world + 0xe4);
-    *(int *)(world + 0xd0) = *(int *)(world + 0xe8);
+    /* VectorCopy: sunLight.color → sunColorFromBsp */
+    world->sunColorFromBsp[0] = world->sunLight.color[0];
+    world->sunColorFromBsp[1] = world->sunLight.color[1];
+    world->sunColorFromBsp[2] = world->sunLight.color[2];
 }
 
 /* line 366 */
 void R_ReleaseWorld(void)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
-    if (*(void **)(world + 0x30) != NULL) {
-        R_FreeStaticVertexBuffer(*(void **)(world + 0x30));
-        *(void **)(world + 0x30) = NULL;
+    if (world->vd.worldVb != NULL) {
+        R_FreeStaticVertexBuffer(world->vd.worldVb);
+        world->vd.worldVb = NULL;
     }
 }
 
 /* line 166 */
 void R_GetWorldBounds(vec_t *min, vec_t *max)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
-    /* VectorCopy: world+0x13c → min */
-    *(int *)(min + 0) = *(int *)(world + 0x13c);
-    *(int *)(min + 1) = *(int *)(world + 0x140);
-    *(int *)(min + 2) = *(int *)(world + 0x144);
+    /* VectorCopy: world->mins → min */
+    *(int *)(min + 0) = *(int *)&world->mins[0];
+    *(int *)(min + 1) = *(int *)&world->mins[1];
+    *(int *)(min + 2) = *(int *)&world->mins[2];
 
-    /* VectorCopy: world+0x148 → max */
-    *(int *)(max + 0) = *(int *)(world + 0x148);
-    *(int *)(max + 1) = *(int *)(world + 0x14c);
-    *(int *)(max + 2) = *(int *)(world + 0x150);
+    /* VectorCopy: world->maxs → max */
+    *(int *)(max + 0) = *(int *)&world->maxs[0];
+    *(int *)(max + 1) = *(int *)&world->maxs[1];
+    *(int *)(max + 2) = *(int *)&world->maxs[2];
 }
 
 /* line 244 */
 void R_InterpretSunLightParseParams(SunLightParseParams *sunParse)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
-    R_InterpretSunLightParseParamsIntoLights(sunParse, world + 0xb4);
+    R_InterpretSunLightParseParamsIntoLights(sunParse, &world->sunLight);
 
-    /* VectorCopy: world+0xc8 → world+0xe0 */
-    *(int *)(world + 0xe0) = *(int *)(world + 0xc8);
-    *(int *)(world + 0xe4) = *(int *)(world + 0xcc);
-    *(int *)(world + 0xe8) = *(int *)(world + 0xd0);
+    /* VectorCopy: sunLight.color → sunColorFromBsp */
+    world->sunColorFromBsp[0] = world->sunLight.color[0];
+    world->sunColorFromBsp[1] = world->sunLight.color[1];
+    world->sunColorFromBsp[2] = world->sunLight.color[2];
 }
 
 /* line 261 */
@@ -106,12 +112,12 @@ void R_SetSunLightOverride(const vec_t *sunColor)
         return;
 
     {
-        byte *world = *(byte **)(r_glob_ptr + 0x109c);
+        GfxWorld *world = R_GetWorld();
 
-        /* VectorCopy: sunColor → world+0xc8 */
-        *(int *)(world + 0xc8) = *(int *)(sunColor + 0);
-        *(int *)(world + 0xcc) = *(int *)(sunColor + 1);
-        *(int *)(world + 0xd0) = *(int *)(sunColor + 2);
+        /* VectorCopy: sunColor → sunLight.color */
+        world->sunLight.color[0] = sunColor[0];
+        world->sunLight.color[1] = sunColor[1];
+        world->sunLight.color[2] = sunColor[2];
     }
 }
 
@@ -162,24 +168,24 @@ IDirect3DVertexBuffer9 * R_CreateWorldVertexBuffer(GfxWorldVertex *vertices, int
 /* line 381 */
 void R_ReloadWorld(void)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
-    *(void **)(world + 0x30) = R_CreateWorldVertexBuffer(
-        *(GfxWorldVertex **)(world + 0x28),
-        *(int *)(world + 0x2c));
+    world->vd.worldVb = R_CreateWorldVertexBuffer(
+        world->vd.vertices,
+        world->vertexCount);
 }
 
 /* line 355 */
 void R_ShutdownWorld(void)
 {
-    byte *world = *(byte **)(r_glob_ptr + 0x109c);
+    GfxWorld *world = R_GetWorld();
 
     if (world == NULL)
         return;
 
-    if (*(void **)(world + 0x30) != NULL) {
-        R_FreeStaticVertexBuffer(*(void **)(world + 0x30));
-        *(void **)(world + 0x30) = NULL;
+    if (world->vd.worldVb != NULL) {
+        R_FreeStaticVertexBuffer(world->vd.worldVb);
+        world->vd.worldVb = NULL;
     }
 
     *(void **)(r_glob_ptr + 0x109c) = NULL;
@@ -188,117 +194,115 @@ void R_ShutdownWorld(void)
 /* line 252 */
 void R_UpdateLightsFromDvars(void)
 {
-    byte sunParse[128];
+    SunLightParseParams sunParse;
     byte *dvar;
     int channelIter;
-    byte *world;
+    GfxWorld *world;
 
     /* Load scalar float values from three dvars */
     dvar = *(byte **)r_dvar_ef38;
-    *(int *)(sunParse + 0x40) = *(int *)(dvar + 8);
+    sunParse.ambientScale = *(float *)(dvar + 8);
 
     dvar = *(byte **)r_dvar_ef34;
-    *(int *)(sunParse + 0x50) = *(int *)(dvar + 8);
+    sunParse.diffuseFraction = *(float *)(dvar + 8);
 
     dvar = *(byte **)r_dvar_ef48;
-    *(int *)(sunParse + 0x54) = *(int *)(dvar + 8);
+    sunParse.sunLight = *(float *)(dvar + 8);
 
     /* Convert first color dvar RGB bytes to float, normalize */
     dvar = *(byte **)r_dvar_ef3c;
     for (channelIter = 0; channelIter < 3; channelIter++) {
-        *(float *)(sunParse + 0x44 + channelIter * 4) = (float)(unsigned char)dvar[8 + channelIter];
+        sunParse.ambientColor[channelIter] = (float)(unsigned char)dvar[8 + channelIter];
     }
-    ColorNormalize((float *)(sunParse + 0x44), (float *)(sunParse + 0x44));
+    ColorNormalize(sunParse.ambientColor, sunParse.ambientColor);
 
     /* Convert second color dvar */
     dvar = *(byte **)r_dvar_ef30;
     for (channelIter = 0; channelIter < 3; channelIter++) {
-        *(float *)(sunParse + 0x58 + channelIter * 4) = (float)(unsigned char)dvar[8 + channelIter];
+        sunParse.sunColor[channelIter] = (float)(unsigned char)dvar[8 + channelIter];
     }
-    ColorNormalize((float *)(sunParse + 0x58), (float *)(sunParse + 0x58));
+    ColorNormalize(sunParse.sunColor, sunParse.sunColor);
 
     /* Convert third color dvar */
     dvar = *(byte **)r_dvar_ef44;
     for (channelIter = 0; channelIter < 3; channelIter++) {
-        *(float *)(sunParse + 0x64 + channelIter * 4) = (float)(unsigned char)dvar[8 + channelIter];
+        sunParse.diffuseColor[channelIter] = (float)(unsigned char)dvar[8 + channelIter];
     }
-    ColorNormalize((float *)(sunParse + 0x64), (float *)(sunParse + 0x64));
+    ColorNormalize(sunParse.diffuseColor, sunParse.diffuseColor);
 
     /* Set override flag */
-    sunParse[0x70] = 1;
+    sunParse.diffuseColorHasBeenSet = 1;
 
     /* Copy vec3 from last dvar's pointed-to value */
     dvar = *(byte **)r_dvar_ef4c;
     {
         byte *src = *(byte **)(dvar + 8);
-        *(int *)(sunParse + 0x74) = *(int *)(src + 0);
-        *(int *)(sunParse + 0x78) = *(int *)(src + 4);
-        *(int *)(sunParse + 0x7c) = *(int *)(src + 8);
+        sunParse.angles[0] = *(float *)(src + 0);
+        sunParse.angles[1] = *(float *)(src + 4);
+        sunParse.angles[2] = *(float *)(src + 8);
     }
 
     /* Apply sun light params */
-    world = *(byte **)(r_glob_ptr + 0x109c);
-    R_InterpretSunLightParseParamsIntoLights(sunParse, world + 0xb4);
+    world = R_GetWorld();
+    R_InterpretSunLightParseParamsIntoLights(&sunParse, &world->sunLight);
 
-    /* VectorCopy: world+0xc8 → world+0xe0 */
-    *(int *)(world + 0xe0) = *(int *)(world + 0xc8);
-    *(int *)(world + 0xe4) = *(int *)(world + 0xcc);
-    *(int *)(world + 0xe8) = *(int *)(world + 0xd0);
+    /* VectorCopy: sunLight.color → sunColorFromBsp */
+    world->sunColorFromBsp[0] = world->sunLight.color[0];
+    world->sunColorFromBsp[1] = world->sunLight.color[1];
+    world->sunColorFromBsp[2] = world->sunLight.color[2];
 }
 
 /* line 317 */
 void R_LoadWorld(const char *name, int *checksum)
 {
-    byte *globals;
-    byte *world;
-    byte *worldData;
+    GfxWorld *world;
+    SunLightParseParams *worldSunParse;
     byte *vtable;
     byte *dvar;
     byte *frontEnd;
     int i;
 
     RB_InitLightVisHistory(name);
-    world = (byte *)R_LoadWorldInternal(name);
+    world = (GfxWorld *)R_LoadWorldInternal(name);
     *(void **)(r_glob_ptr + 0x109c) = world;
 
     if (checksum != NULL) {
-        *checksum = *(int *)(world + 0x154);
+        *checksum = world->checksum;
     }
 
-    globals = r_glob_ptr;
-    world = *(byte **)(globals + 0x109c);
-    worldData = world + 0x34;
+    world = R_GetWorld();
+    worldSunParse = &world->sunParse;
 
     /* Set up dvars from world data through vtable */
     vtable = r_vtable_ptr;
 
     /* Dvar_SetFloat-style calls (vtable offset 0x9c) */
     ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef38, *(int *)(worldData + 0x40));
+        (*(void **)r_dvar_ef38, *(int *)&worldSunParse->ambientScale);
     ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef34, *(int *)(worldData + 0x50));
+        (*(void **)r_dvar_ef34, *(int *)&worldSunParse->diffuseFraction);
     ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef48, *(int *)(worldData + 0x54));
+        (*(void **)r_dvar_ef48, *(int *)&worldSunParse->sunLight);
 
     /* Dvar_SetColor-style calls (vtable offset 0xa4) - (dvar, r, g, b, 1.0f) */
     ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
         (*(void **)r_dvar_ef3c,
-         *(int *)(worldData + 0x44), *(int *)(worldData + 0x48),
-         *(int *)(worldData + 0x4c), 0x3f800000);
+         *(int *)&worldSunParse->ambientColor[0], *(int *)&worldSunParse->ambientColor[1],
+         *(int *)&worldSunParse->ambientColor[2], 0x3f800000);
     ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
         (*(void **)r_dvar_ef30,
-         *(int *)(worldData + 0x58), *(int *)(worldData + 0x5c),
-         *(int *)(worldData + 0x60), 0x3f800000);
+         *(int *)&worldSunParse->sunColor[0], *(int *)&worldSunParse->sunColor[1],
+         *(int *)&worldSunParse->sunColor[2], 0x3f800000);
     ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
         (*(void **)r_dvar_ef44,
-         *(int *)(worldData + 0x64), *(int *)(worldData + 0x68),
-         *(int *)(worldData + 0x6c), 0x3f800000);
+         *(int *)&worldSunParse->diffuseColor[0], *(int *)&worldSunParse->diffuseColor[1],
+         *(int *)&worldSunParse->diffuseColor[2], 0x3f800000);
 
     /* Dvar_SetVec3-style call (vtable offset 0xac) */
     ((void (*)(void *, int, int, int))(*(void **)(vtable + 0xac)))
         (*(void **)r_dvar_ef4c,
-         *(int *)(worldData + 0x74), *(int *)(worldData + 0x78),
-         *(int *)(worldData + 0x7c));
+         *(int *)&worldSunParse->angles[0], *(int *)&worldSunParse->angles[1],
+         *(int *)&worldSunParse->angles[2]);
 
     /* Dvar_SetModified-style calls (vtable offset 0x80) - (dvar, dvar->current) */
     dvar = *(byte **)r_dvar_ef38;
@@ -323,18 +327,18 @@ void R_LoadWorld(const char *name, int *checksum)
 
     /* Allocate front-end data arrays */
     frontEnd = r_frontEndData_ptr;
-    world = *(byte **)(r_glob_ptr + 0x109c);
+    world = R_GetWorld();
 
-    *(void **)(frontEnd + 0x3194) = Hunk_AllocInternal(*(int *)(world + 0xf4) * 8);
-    world = *(byte **)(r_glob_ptr + 0x109c);
-    *(void **)(frontEnd + 0x3198) = Hunk_AllocInternal(*(int *)(world + 0x10) * 4);
-    world = *(byte **)(r_glob_ptr + 0x109c);
-    *(void **)(frontEnd + 0x319c) = Hunk_AllocInternal(*(int *)(world + 0xec) * 4);
+    *(void **)(frontEnd + 0x3194) = Hunk_AllocInternal(world->smodelCount * 8);
+    world = R_GetWorld();
+    *(void **)(frontEnd + 0x3198) = Hunk_AllocInternal(world->surfaceCount * 4);
+    world = R_GetWorld();
+    *(void **)(frontEnd + 0x319c) = Hunk_AllocInternal(world->cullGroupCount * 4);
 
     /* Init static model dynamic data */
-    world = *(byte **)(r_glob_ptr + 0x109c);
-    if (*(int *)(world + 0xf4) > 0) {
-        for (i = 0; i < *(int *)(world + 0xf4); i++) {
+    world = R_GetWorld();
+    if (world->smodelCount > 0) {
+        for (i = 0; i < world->smodelCount; i++) {
             R_InitStaticModelDynamicData(i);
         }
     }

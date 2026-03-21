@@ -59,9 +59,9 @@ int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstan
     byte *inst = (byte *)smodelInst;
 
     /* lightingOrigin = midpoint of absmin and absmax (offsets 0x14 and 0x20) */
-    lightingOrigin[0] = (*(float *)(inst + 0x14) + *(float *)(inst + 0x20)) * 0.5f;
-    lightingOrigin[1] = (*(float *)(inst + 0x18) + *(float *)(inst + 0x24)) * 0.5f;
-    lightingOrigin[2] = (*(float *)(inst + 0x1c) + *(float *)(inst + 0x28)) * 0.5f;
+    lightingOrigin[0] = (((GfxStaticModelInstance *)inst)->mins[0] + ((GfxStaticModelInstance *)inst)->maxs[0]) * 0.5f;
+    lightingOrigin[1] = (((GfxStaticModelInstance *)inst)->mins[1] + ((GfxStaticModelInstance *)inst)->maxs[1]) * 0.5f;
+    lightingOrigin[2] = (((GfxStaticModelInstance *)inst)->mins[2] + ((GfxStaticModelInstance *)inst)->maxs[2]) * 0.5f;
 
     *sunVisibility = RB_GetLightingAtPoint((byte *)world + 0x11c, lightingOrigin, colorForDir);
     return 0;
@@ -581,18 +581,18 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
     char *matArray, *vertBuf;
 
     /* Set model, origin, angles→axis, scale */
-    *(void **)(si + 0x10) = model;
+    ((GfxStaticModelInstance *)si)->model = (struct XModel *)model;
     memcpy(si + 4, origin, 12);
     AnglesToAxis(angles, si + 0x2c);
-    *(float *)(si + 0x50) = scale;
+    ((GfxStaticModelInstance *)si)->scale = scale;
 
     /* Init bounds to FLT_MAX / -FLT_MAX */
-    *(int *)(si + 0x14) = 0x7f7fffff;
-    *(int *)(si + 0x18) = 0x7f7fffff;
-    *(int *)(si + 0x1c) = 0x7f7fffff;
-    *(int *)(si + 0x20) = 0xff7fffff;
-    *(int *)(si + 0x24) = 0xff7fffff;
-    *(int *)(si + 0x28) = 0xff7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->mins[0] = 0x7f7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->mins[1] = 0x7f7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->mins[2] = 0x7f7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->maxs[0] = 0xff7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->maxs[1] = 0xff7fffff;
+    *(int *)&((GfxStaticModelInstance *)si)->maxs[2] = 0xff7fffff;
 
     /* Get surfaces for LOD 0 */
     surfaceCount = XModelGetSurfaces(model, &surfacesPtr, partBits, 0);
@@ -1136,8 +1136,8 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
             char *inst = smodelInsts + indices[i] * 96;
             int a;
             for (a = 0; a < 3; a++) {
-                float lo = *(float *)(inst + 0x14 + a*4);
-                float hi = *(float *)(inst + 0x20 + a*4);
+                float lo = ((GfxStaticModelInstance *)inst)->mins[a];
+                float hi = ((GfxStaticModelInstance *)inst)->maxs[a];
                 if (lo < mins[a]) mins[a] = lo;
                 if (hi > maxs[a]) maxs[a] = hi;
             }
@@ -1187,12 +1187,12 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
                 int idx = ptr[i];
                 char *inst = smodelInsts + idx * 96;
                 /* Test if instance fits in this quadrant */
-                if (*(float *)(inst + 0x14) >= testMins[q][0] &&
-                    *(float *)(inst + 0x18) >= testMins[q][1] &&
-                    *(float *)(inst + 0x1c) >= testMins[q][2] &&
-                    *(float *)(inst + 0x20) <= testMaxs[q][0] &&
-                    *(float *)(inst + 0x24) <= testMaxs[q][1] &&
-                    *(float *)(inst + 0x28) <= testMaxs[q][2])
+                if (((GfxStaticModelInstance *)inst)->mins[0] >= testMins[q][0] &&
+                    ((GfxStaticModelInstance *)inst)->mins[1] >= testMins[q][1] &&
+                    ((GfxStaticModelInstance *)inst)->mins[2] >= testMins[q][2] &&
+                    ((GfxStaticModelInstance *)inst)->maxs[0] <= testMaxs[q][0] &&
+                    ((GfxStaticModelInstance *)inst)->maxs[1] <= testMaxs[q][1] &&
+                    ((GfxStaticModelInstance *)inst)->maxs[2] <= testMaxs[q][2])
                 {
                     /* Swap to front */
                     int tmp = *front;
