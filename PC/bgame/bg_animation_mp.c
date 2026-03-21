@@ -6309,11 +6309,10 @@ int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int for
 
 int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean isContinue, qboolean force) {
     int client;
-    byte *scriptEntry;
     int numItems;
     byte *ci;
     int i;
-    int *ppScriptItem;
+    animScriptItem_t **ppScriptItem;
 
     /* line 2120: if event != 1 (not JUMP), check weapon state */
     if ((int)event != 1) {
@@ -6321,10 +6320,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
             return -1;
     }
 
-    /* line 2123: look up event script table */
-    scriptEntry = (byte *)&globalScriptData->scriptEvents[event];
-
-    /* line 2124: numItems */
+    /* line 2123: look up event script table, line 2124: numItems */
     numItems = globalScriptData->scriptEvents[event].numItems;
     if (numItems == 0)
         return -1;
@@ -6336,13 +6332,13 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
     ci = (byte *)&bgs->clientinfo[client];
 
     /* line 1796: ppScriptItem = scriptEvents[event].items array */
-    ppScriptItem = (int *)globalScriptData->scriptEvents[event].items;
+    ppScriptItem = globalScriptData->scriptEvents[event].items;
 
     /* Iterate over script items */
     for (i = 0; i < numItems; i++) {
-        byte *scriptItem = (byte *)(*(ppScriptItem + i));
-        int numConds = *(int *)scriptItem;
-        byte *cond = scriptItem + 4;
+        animScriptItem_t *scriptItem = ppScriptItem[i];
+        int numConds = scriptItem->numConditions;
+        byte *cond = (byte *)scriptItem->conditions;
         int j;
         int allMatch = 1;
 
@@ -6381,17 +6377,15 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
 
         /* All conditions passed — execute a random command from this item */
         {
-            int numCommands = ((animScriptItem_t *)scriptItem)->numCommands;
+            int numCommands = scriptItem->numCommands;
             int randIdx;
-            byte *scriptCommand;
 
             if (numCommands == 0)
                 return -1;
 
             randIdx = rand() % numCommands;
-            scriptCommand = scriptItem + 0x74 + randIdx * 16;
 
-            return BG_ExecuteCommand(ps, (animScriptCommand_t *)scriptCommand, 1, isContinue, force);
+            return BG_ExecuteCommand(ps, &scriptItem->commands[randIdx], 1, isContinue, force);
         }
     }
 
