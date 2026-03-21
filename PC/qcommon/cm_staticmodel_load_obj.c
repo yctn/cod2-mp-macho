@@ -84,7 +84,7 @@ void CM_LoadStaticModels(void)
 
     /* Second pass: populate static models */
     ptr = cm->entityString;
-    int offset = 0;
+    int modelIdx = 0;
 
     for (;;) {
         const char *token = Com_Parse(&ptr);
@@ -138,7 +138,7 @@ void CM_LoadStaticModels(void)
         if (!Com_ValidXModelName(modelName))
             continue;
 
-        byte *staticModel = staticModels + offset;
+        cStaticModel_t *staticModel = &cm->staticModelList[modelIdx];
 
         /* Validate model name not empty */
         if (modelName[7] == '\0') {
@@ -159,17 +159,17 @@ void CM_LoadStaticModels(void)
         /* Load model */
         void *model = CM_XModelPrecache(modelName + 7);
         if (model == NULL) {
-            *(int *)(cm + 4) -= 1;
+            cm->numStaticModels -= 1;
             continue;
         }
 
         /* Store model pointer */
-        *(void **)(staticModel + 4) = model;
+        staticModel->xmodel = (struct XModel *)model;
 
         /* Copy origin */
-        *(float *)(staticModel + 8) = origin[0];
-        *(float *)(staticModel + 12) = origin[1];
-        *(float *)(staticModel + 16) = origin[2];
+        staticModel->origin[0] = origin[0];
+        staticModel->origin[1] = origin[1];
+        staticModel->origin[2] = origin[2];
 
         /* Build scaled axis */
         float axis[9];
@@ -191,21 +191,19 @@ void CM_LoadStaticModels(void)
         axis[8] *= scale[2];
 
         /* Store inverse axis */
-        MatrixInverse(axis, (float *)(staticModel + 0x14));
+        MatrixInverse(axis, (float *)staticModel->invAxis);
 
         /* Get static bounds */
-        float *absMin = (float *)(staticModel + 0x38);
-        float *absMax = (float *)(staticModel + 0x44);
-        if (XModelGetStaticBounds(model, axis, absMin, absMax)) {
+        if (XModelGetStaticBounds(model, axis, staticModel->absmin, staticModel->absmax)) {
             /* Offset bounds by origin */
-            absMin[0] += origin[0];
-            absMin[1] += origin[1];
-            absMin[2] += origin[2];
-            absMax[0] += origin[0];
-            absMax[1] += origin[1];
-            absMax[2] += origin[2];
+            staticModel->absmin[0] += origin[0];
+            staticModel->absmin[1] += origin[1];
+            staticModel->absmin[2] += origin[2];
+            staticModel->absmax[0] += origin[0];
+            staticModel->absmax[1] += origin[1];
+            staticModel->absmax[2] += origin[2];
         }
 
-        offset += 0x50;
+        modelIdx++;
     }
 }

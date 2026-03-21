@@ -144,12 +144,13 @@ void BG_ClearWeaponDef(void) {
     bg_weapClips[0] = defaultDef;
     bg_iNumWeapClips = 1;
 
-    /* Clear giTag (offset 0x48) for all items in bg_itemlist.
-       Each item is 0x2c (44) bytes, 0x1600/0x2c = 128 items. */
+    /* Clear an unknown field at offset 0x48 for all items in bg_itemlist.
+       Each item is 0x2c (44) bytes, 0x1600/0x2c = 128 items.
+       NOTE: 0x48 exceeds sizeof(gitem_t)=0x2c; this may be an extended game-side struct. */
     itemList = (byte *)(*(void **)imp_bg_itemlist);
     end = itemList + 0x1600;
     while (itemList != end) {
-        *(int *)(itemList + 0x48) = 0;
+        *(int *)(itemList + 0x48) = 0; /* TODO: unknown offset - exceeds gitem_t size */
         itemList += 0x2c;
     }
 

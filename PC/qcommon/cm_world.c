@@ -2693,7 +2693,7 @@ void CM_UnlinkEntity(svEntity_t *ent)
     unsigned short nodeIndex;
     byte *node; /* worldSector_t pointer */
 
-    nodeIndex = *(unsigned short *)(entRaw + 0);
+    nodeIndex = ent->worldSector;
     if (nodeIndex == 0)
         return;
 
@@ -2704,27 +2704,28 @@ void CM_UnlinkEntity(svEntity_t *ent)
     }
 
     /* Clear entity's worldSector field */
-    *(unsigned short *)(entRaw + 0) = 0;
+    ent->worldSector = 0;
 
     /* Remove entity from the sector's entity linked list */
     {
-        unsigned short headEntIdx = *(unsigned short *)(node + 8);
+        worldSector_t *sector = (worldSector_t *)node;
+        unsigned short headEntIdx = sector->contents.entities;
         unsigned int ei = (unsigned int)headEntIdx;
         byte *sv = (byte *)imp_sv;
-        byte *cur = sv + 0x22a4 + ei * 372;
+        svEntity_t *cur = (svEntity_t *)(sv + 0x22a4 + ei * 372);
 
-        if (cur == entRaw) {
+        if (cur == ent) {
             /* Entity is the head: replace head with entity's next */
-            *(unsigned short *)(node + 8) = *(unsigned short *)(entRaw + 2);
+            sector->contents.entities = ent->nextEntityInWorldSector;
         } else {
             /* Walk the linked list to find the predecessor */
             while (1) {
-                unsigned short nextIdx = *(unsigned short *)(cur + 2);
+                unsigned short nextIdx = cur->nextEntityInWorldSector;
                 unsigned int ni = (unsigned int)nextIdx;
-                byte *next = sv + 0x22a4 + ni * 372;
-                if (next == entRaw) {
+                svEntity_t *next = (svEntity_t *)(sv + 0x22a4 + ni * 372);
+                if (next == ent) {
                     /* Unlink: predecessor's next = entity's next */
-                    *(unsigned short *)(cur + 2) = *(unsigned short *)(entRaw + 2);
+                    cur->nextEntityInWorldSector = ent->nextEntityInWorldSector;
                     break;
                 }
                 cur = next;
@@ -2738,26 +2739,26 @@ void CM_UnlinkEntity(svEntity_t *ent)
      * 32-bit read at offset 8 checks entities(u16) + staticModels(u16) combined
      * 32-bit read at offset 0x14 checks child[0](u16) + child[1](u16) combined */
 check_empty:
-    if (*(int *)(node + 8) != 0)
+    if (((worldSector_t *)node)->contents.entities != 0 || ((worldSector_t *)node)->contents.staticModels != 0)
         goto update_contents;
 
-    if (*(int *)(node + 0x14) != 0)
+    if (((worldSector_t *)node)->tree.child[0] != 0 || ((worldSector_t *)node)->tree.child[1] != 0)
         goto update_contents;
 
     /* Node is empty: contents = 0 */
-    *(int *)(node + 4) = 0;
+    ((worldSector_t *)node)->contents.contentsEntities = 0;
 
     /* Check parent */
     {
-        unsigned short parentIdx = *(unsigned short *)(node + 0x12);
+        unsigned short parentIdx = ((worldSector_t *)node)->tree.u.parent;
         if (parentIdx == 0)
             goto update_contents;
 
         /* Free this node: put on free list */
         {
-            unsigned short oldFreeHead = *(unsigned short *)((byte *)&cm_world + 26);
-            *(unsigned short *)(node + 0x12) = oldFreeHead;
-            *(unsigned short *)((byte *)&cm_world + 26) = nodeIndex;
+            unsigned short oldFreeHead = cm_world.freeHead;
+            ((worldSector_t *)node)->tree.u.nextFree = oldFreeHead;
+            cm_world.freeHead = nodeIndex;
         }
 
         /* Get parent node */
@@ -2766,10 +2767,10 @@ check_empty:
             byte *parentNode = (byte *)&cm_world + 28 + pi * 24;
 
             /* Update parent's child pointer: if we were child[0], clear child[0]; else clear child[1] */
-            if (*(unsigned short *)(parentNode + 0x14) == nodeIndex) {
-                *(unsigned short *)(parentNode + 0x14) = 0;
+            if (((worldSector_t *)parentNode)->tree.child[0] == nodeIndex) {
+                ((worldSector_t *)parentNode)->tree.child[0] = 0;
             } else {
-                *(unsigned short *)(parentNode + 0x16) = 0;
+                ((worldSector_t *)parentNode)->tree.child[1] = 0;
             }
 
             nodeIndex = parentIdx;
@@ -2778,51 +2779,51 @@ check_empty:
     }
 
     /* Check if this parent node also became empty */
-    if (*(int *)(node + 8) == 0)
+    if (((worldSector_t *)node)->contents.entities == 0 && ((worldSector_t *)node)->contents.staticModels == 0)
         goto check_empty;
 
 update_contents:
     /* Recompute contents by OR-ing children's contents and all entities in linked list */
     {
-        unsigned short child0Idx = *(unsigned short *)(node + 0x14);
-        unsigned short child1Idx = *(unsigned short *)(node + 0x16);
+        unsigned short child0Idx = ((worldSector_t *)node)->tree.child[0];
+        unsigned short child1Idx = ((worldSector_t *)node)->tree.child[1];
         int contents;
 
         /* OR children contents */
         {
             unsigned int c0 = (unsigned int)child0Idx;
             unsigned int c1 = (unsigned int)child1Idx;
-            contents = *(int *)((byte *)&cm_world + 32 + c0 * 24);
-            contents |= *(int *)((byte *)&cm_world + 32 + c1 * 24);
+            contents = cm_world.sectors[c0].contents.contentsEntities;
+            contents |= cm_world.sectors[c1].contents.contentsEntities;
         }
 
         /* OR entity contents from linked list */
         {
-            unsigned short entIdx = *(unsigned short *)(node + 8);
+            unsigned short entIdx = ((worldSector_t *)node)->contents.entities;
             if (entIdx != 0) {
                 byte *sv = (byte *)imp_sv;
-                byte *svEnt = sv + 0x22a4 + (unsigned int)entIdx * 372;
+                svEntity_t *svEnt = (svEntity_t *)(sv + 0x22a4 + (unsigned int)entIdx * 372);
 
                 while (1) {
-                    gentity_t *gent = SV_GEntityForSvEntity((svEntity_t *)svEnt);
-                    contents |= *(int *)((byte *)gent + 0x11c);
-                    unsigned short nextIdx = *(unsigned short *)(svEnt + 2);
+                    gentity_t *gent = SV_GEntityForSvEntity(svEnt);
+                    contents |= gent->r.contents;
+                    unsigned short nextIdx = svEnt->nextEntityInWorldSector;
                     if (nextIdx == 0)
                         break;
                     {
                         unsigned int ni = (unsigned int)nextIdx;
-                        svEnt = (byte *)imp_sv + 0x229c + ni * 372 + 8;
+                        svEnt = (svEntity_t *)((byte *)imp_sv + 0x229c + ni * 372 + 8);
                     }
                 }
             }
         }
 
         /* Store updated contents */
-        *(int *)(node + 4) = contents;
+        ((worldSector_t *)node)->contents.contentsEntities = contents;
 
         /* Walk up to parent and continue updating */
         {
-            unsigned short parentIdx = *(unsigned short *)(node + 0x12);
+            unsigned short parentIdx = ((worldSector_t *)node)->tree.u.parent;
             if (parentIdx == 0)
                 return;
             {

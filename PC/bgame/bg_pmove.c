@@ -94,9 +94,8 @@ void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mi
 }
 #else
 void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask) {
-    /* Look up the trace handler from pmoveHandlers[pm->handler].trace and tail-call it.
-       pm->handler is at offset 0xe4 (byte field). */
-    unsigned char handlerByte = *(unsigned char *)((byte *)pm + 0xe4);
+    /* Look up the trace handler from pmoveHandlers[pm->handler].trace and tail-call it. */
+    unsigned char handlerByte = pm->handler;
     pmove_trace handler = pmoveHandlers[handlerByte].trace;
     handler(results, start, mins, maxs, end, passEntityNum, contentMask);
 }

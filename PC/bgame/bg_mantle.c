@@ -644,8 +644,8 @@ void Mantle_Check(pmove_t *pm, pml_t *pml)
 
     PM_trace(pm, trace, start, mins, maxs, end, ps->clientNum, 0x1000000);
 
-    /* Check we hit something */
-    if (*(short *)(trace + 0x22) == 0) {
+    /* Check we hit something (allsolid or startsolid must be set) */
+    if (((trace_t *)trace)->allsolid == 0 && ((trace_t *)trace)->startsolid == 0) {
         if (mantle_debug->current.enabled)
             Com_Printf("%s\n", "Mantle Failed: No wall found");
         return;
@@ -659,7 +659,7 @@ void Mantle_Check(pmove_t *pm, pml_t *pml)
     }
 
     /* Check surface has mantle flag */
-    if (!(*(int *)(trace + 0x10) & 0x6000000)) {
+    if (!(((trace_t *)trace)->surfaceFlags & 0x6000000)) {
         if (mantle_debug->current.enabled)
             Com_Printf("%s\n", "Mantle Failed: Surface not mantleable");
         return;
@@ -697,13 +697,13 @@ void Mantle_Check(pmove_t *pm, pml_t *pml)
     *(float *)(mresults + 8) = mantleDir[2];
 
     /* Set player position */
-    *(float *)(mresults + 0xc) = ps->origin[0];
-    *(float *)(mresults + 0x10) = ps->origin[1];
-    *(float *)(mresults + 0x14) = ps->origin[2];
+    ((MantleResults *)mresults)->startPos[0] = ps->origin[0];
+    ((MantleResults *)mresults)->startPos[1] = ps->origin[1];
+    ((MantleResults *)mresults)->startPos[2] = ps->origin[2];
 
     /* Check if trace hit indicated wall is thin enough to mantle over */
-    if (*(byte *)(trace + 0x13) & 4) {
-        *(int *)(mresults + 0x30) |= 1;
+    if (((trace_t *)trace)->surfaceFlags & 0x4000000) {
+        ((MantleResults *)mresults)->flags |= 1;
     }
 
     /* Try three different ledge heights */

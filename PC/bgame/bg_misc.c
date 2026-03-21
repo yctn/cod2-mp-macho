@@ -157,7 +157,7 @@ const gitem_t *G_FindItem(const char *pickupName)
 
     for (iIndex = 0x81; iIndex < count; iIndex++) {
         char *it = base + iIndex * 44;
-        if (I_stricmp(*(const char **)(it + 0x14), pickupName) == 0) {
+        if (I_stricmp(((gitem_t *)it)->pickup_name, pickupName) == 0) {
             return (const gitem_t *)it;
         }
         if (I_stricmp(*(const char **)it, pickupName) == 0) {
@@ -721,7 +721,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
         return 0;
     }
 
-    giType = *(int *)(base + index * 44 + 0x1c);
+    giType = ((gitem_t *)base)[index].giType;
 
     switch (giType) {
         case 0:
@@ -729,7 +729,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
             return 0;
 
         case 1: /* IT_WEAPON */
-            weapon = *(int *)(base + index * 44 + 0x20);
+            weapon = ((gitem_t *)base)[index].giTag;
             if (BG_DoesWeaponNeedSlot(weapon)) {
                 if (!(ps->weapons[weapon >> 5] & (1 << (weapon & 0x1f)))) {
                     if (bTouched) {
@@ -743,7 +743,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
             return 1;
 
         case 2: /* IT_AMMO */
-            weapon = *(int *)(base + index * 44 + 0x20);
+            weapon = ((gitem_t *)base)[index].giTag;
             if (!(ps->weapons[weapon >> 5] & (1 << (weapon & 0x1f)))) {
                 if (!BG_WeaponIsClipOnly(weapon)) {
                     return 0;

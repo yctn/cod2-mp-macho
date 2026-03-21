@@ -6261,8 +6261,8 @@ int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int for
     if (forceDuration) {
         duration = forceDuration;
     } else {
-        /* animNum*3*32 = animNum*96 byte offset into globalScriptData, field at +0x48 is duration */
-        duration = *(int *)((byte *)globalScriptData + animNum * 96 + 0x48) + 0x32;
+        /* animNum * sizeof(animation_t) + offsetof(duration) = animation_t[animNum].duration */
+        duration = globalScriptData->animations[animNum].duration + 0x32;
     }
 
     /* Handle legs animation (bodyPart == 1 LEGS or bodyPart == 3 BOTH) */
@@ -6321,29 +6321,22 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
             return -1;
     }
 
-    /* line 2123: look up event script table
-       event * 512 + event * 4 = event * 516, plus 0x37560 offset */
-    scriptEntry = (byte *)globalScriptData + (int)event * 516 + 0x37560;
+    /* line 2123: look up event script table */
+    scriptEntry = (byte *)&globalScriptData->scriptEvents[event];
 
-    /* line 2124: numItems at offset 4 */
-    numItems = *(int *)(scriptEntry + 4);
+    /* line 2124: numItems */
+    numItems = globalScriptData->scriptEvents[event].numItems;
     if (numItems == 0)
         return -1;
 
     /* line 2129: client index from ps->clientNum */
     client = ps->clientNum;
 
-    /* Compute ci pointer: bgs + 0xb3bfc + client * 1208
-       (client*5 → *16 → -client*5 → *2+client → *8 = client*(5*16-5)*2+client)*8 = client*1208) */
-    {
-        int tmp1 = client * 5;
-        int tmp2 = tmp1 * 16 - tmp1; /* client * 75 */
-        int tmp3 = client + tmp2 * 2; /* client * 151 */
-        ci = (byte *)bgs + 0xb3bfc + tmp3 * 8;
-    }
+    /* Compute ci pointer: &bgs->clientinfo[client] */
+    ci = (byte *)&bgs->clientinfo[client];
 
-    /* line 1796: ppScriptItem starts at scriptEntry + 8 */
-    ppScriptItem = (int *)(scriptEntry + 8);
+    /* line 1796: ppScriptItem = scriptEvents[event].items array */
+    ppScriptItem = (int *)globalScriptData->scriptEvents[event].items;
 
     /* Iterate over script items */
     for (i = 0; i < numItems; i++) {
@@ -6360,11 +6353,11 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
 
             if (testType == 0) {
                 /* Mask check: condition passes if either mask pair has matching bits */
-                int mask1 = *(int *)(ci + 0x45c + condType * 8);
+                int mask1 = ((clientInfo_t *)ci)->clientConditions[condType][0];
                 if (mask1 & *(int *)(cond + 4))
                     continue; /* condition matched */
                 {
-                    int mask2 = *(int *)(ci + 0x460 + condType * 8);
+                    int mask2 = ((clientInfo_t *)ci)->clientConditions[condType][1];
                     if (mask2 & *(int *)(cond + 8))
                         continue; /* condition matched */
                 }
@@ -6373,7 +6366,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
                 break;
             } else if (testType == 1) {
                 /* Exact match: condition passes if values are equal */
-                int val = *(int *)(ci + 0x45c + condType * 8);
+                int val = ((clientInfo_t *)ci)->clientConditions[condType][0];
                 if (val == *(int *)(cond + 4))
                     continue; /* condition matched */
                 /* Not equal — condition failed */
@@ -6388,7 +6381,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
 
         /* All conditions passed — execute a random command from this item */
         {
-            int numCommands = *(int *)(scriptItem + 0x70);
+            int numCommands = ((animScriptItem_t *)scriptItem)->numCommands;
             int randIdx;
             byte *scriptCommand;
 

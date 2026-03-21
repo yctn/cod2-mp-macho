@@ -4342,11 +4342,11 @@ static void __attribute_regparm__(3) CM_TestInLeafBrushNode_r_impl(traceWork_t *
 
 top:
     /* Check contents mask */
-    if (!(tw->contents & *(int *)(node + 4)))
+    if (!(tw->contents & ((cLeafBrushNode_t *)node)->contents))
         return;
 
     {
-        short leafBrushCount = *(short *)(node + 2);
+        short leafBrushCount = ((cLeafBrushNode_t *)node)->leafBrushCount;
 
         if (leafBrushCount == 0) {
             goto leaf_dist_test;
@@ -4358,12 +4358,12 @@ top:
                 return;
 
             for (k = 0; k < (int)leafBrushCount; k++) {
-                if (!(tw->contents & *(int *)(node + 4)))
+                if (!(tw->contents & ((cLeafBrushNode_t *)node)->contents))
                     continue;
 
                 {
-                    /* Get brush pointer: node+8 is pointer to unsigned short array of brush indices */
-                    unsigned short *brushIndices = *(unsigned short **)(node + 8);
+                    /* Get brush pointer: node->data.leaf.brushes is pointer to unsigned short array */
+                    unsigned short *brushIndices = ((cLeafBrushNode_t *)node)->data.leaf.brushes;
                     unsigned int brushIdx = brushIndices[k];
                     /* brush = cm->brushes + brushIdx */
                     clipMap_t *cm = (clipMap_t *)imp_cm;
@@ -4455,16 +4455,16 @@ top:
 
 leaf_dist_test:
     {
-        unsigned int axis = *(unsigned char *)(node + 0);
-        float dist = *(float *)(node + 8);
+        unsigned int axis = ((cLeafBrushNode_t *)node)->axis;
+        float dist = ((cLeafBrushNode_t *)node)->data.children.dist;
         float tw_min = tw->bounds[0][axis];
 
         if (tw_min > dist) {
             /* Go to child[0] and loop */
-            unsigned short childOff = *(unsigned short *)(node + 0x10);
+            unsigned short childOff = ((cLeafBrushNode_t *)node)->data.children.childOffset[0];
             node = node + childOff * 20;
             /* Check contents and continue */
-            if (!(tw->contents & *(int *)(node + 4)))
+            if (!(tw->contents & ((cLeafBrushNode_t *)node)->contents))
                 return;
             goto top;
         }
@@ -4474,7 +4474,7 @@ leaf_dist_test:
 
             if (tw_max >= dist) {
                 /* Straddles: recurse into child[0], then fall through to child[1] */
-                unsigned short childOff0 = *(unsigned short *)(node + 0x10);
+                unsigned short childOff0 = ((cLeafBrushNode_t *)node)->data.children.childOffset[0];
                 byte *child0 = node + childOff0 * 20;
                 CM_TestInLeafBrushNode_r_impl(tw, child0, trace);
                 if (trace->allsolid != 0)
@@ -4483,7 +4483,7 @@ leaf_dist_test:
 
             /* Go to child[1] and loop */
             {
-                unsigned short childOff1 = *(unsigned short *)(node + 0x12);
+                unsigned short childOff1 = ((cLeafBrushNode_t *)node)->data.children.childOffset[1];
                 node = node + childOff1 * 20;
                 goto top;
             }
