@@ -532,19 +532,19 @@ void Item_InitControls(const char (*item)[4])
 /* line 632 */
 qboolean MenuParse_onOpen(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x244)) != 0;
+    return PC_Script_Parse(handle, &((menuDef_t *)item)->onOpen) != 0;
 }
 
 /* line 644 */
 qboolean MenuParse_onClose(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x248)) != 0;
+    return PC_Script_Parse(handle, &((menuDef_t *)item)->onClose) != 0;
 }
 
 /* line 656 */
 qboolean MenuParse_onESC(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x24c)) != 0;
+    return PC_Script_Parse(handle, &((menuDef_t *)item)->onESC) != 0;
 }
 
 /* line 875 */
@@ -651,8 +651,8 @@ static void Item_InitDvarEditField(itemDef_t *item)
 /* line 1201 */
 qboolean ItemParse_textsavegame(const char (*item)[4], int handle)
 {
-    *(const char **)((char *)item + 0x294) = (const char *)str_002b4164;
-    *(int *)((char *)item + 0x298) = 1;
+    ((itemDef_t *)item)->text = (const char *)str_002b4164;
+    ((itemDef_t *)item)->textSavegameInfo = 1;
     return 1;
 }
 
@@ -729,7 +729,7 @@ qboolean ItemParse_noScrollBars(const char (*item)[4], int handle)
 /* line 1327 */
 qboolean ItemParse_horizontalscroll(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x200000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x200000);
     return 1;
 }
 
@@ -785,49 +785,49 @@ qboolean ItemParse_doubleClick(const char (*item)[4], int handle)
 /* line 1703 */
 qboolean ItemParse_onFocus(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b8)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->onFocus) != 0;
 }
 
 /* line 1713 */
 qboolean ItemParse_leaveFocus(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2bc)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->leaveFocus) != 0;
 }
 
 /* line 1723 */
 qboolean ItemParse_mouseEnter(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a8)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->mouseEnter) != 0;
 }
 
 /* line 1733 */
 qboolean ItemParse_mouseExit(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2ac)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->mouseExit) != 0;
 }
 
 /* line 1743 */
 qboolean ItemParse_mouseEnterText(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a0)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->mouseEnterText) != 0;
 }
 
 /* line 1753 */
 qboolean ItemParse_mouseExitText(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a4)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->mouseExitText) != 0;
 }
 
 /* line 1763 */
 qboolean ItemParse_action(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b0)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->action) != 0;
 }
 
 /* line 1774 */
 qboolean ItemParse_accept(const char (*item)[4], int handle)
 {
-    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b4)) != 0;
+    return PC_Script_Parse(handle, &((itemDef_t *)item)->onAccept) != 0;
 }
 
 /* line 1851 */
@@ -974,56 +974,56 @@ qboolean ItemParse_dvarStrList(const char (*item)[4], int handle)
 /* line 2049 */
 qboolean ItemParse_enableDvar(const char (*item)[4], int handle)
 {
-    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+    if (!PC_Script_Parse(handle, &((itemDef_t *)item)->enableDvar))
         return 0;
-    *(int *)((char *)item + 0x2d0) |= 1;
+    ((itemDef_t *)item)->dvarFlags |= 1;
     return 1;
 }
 
 /* line 2060 */
 qboolean ItemParse_disableDvar(const char (*item)[4], int handle)
 {
-    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+    if (!PC_Script_Parse(handle, &((itemDef_t *)item)->enableDvar))
         return 0;
-    *(int *)((char *)item + 0x2d0) |= 2;
+    ((itemDef_t *)item)->dvarFlags |= 2;
     return 1;
 }
 
 /* line 2071 */
 qboolean ItemParse_showDvar(const char (*item)[4], int handle)
 {
-    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+    if (!PC_Script_Parse(handle, &((itemDef_t *)item)->enableDvar))
         return 0;
-    *(int *)((char *)item + 0x2d0) |= 4;
+    ((itemDef_t *)item)->dvarFlags |= 4;
     return 1;
 }
 
 /* line 2082 */
 qboolean ItemParse_hideDvar(const char (*item)[4], int handle)
 {
-    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+    if (!PC_Script_Parse(handle, &((itemDef_t *)item)->enableDvar))
         return 0;
-    *(int *)((char *)item + 0x2d0) |= 8;
+    ((itemDef_t *)item)->dvarFlags |= 8;
     return 1;
 }
 
 /* line 2093 */
 qboolean ItemParse_focusDvar(const char (*item)[4], int handle)
 {
-    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+    if (!PC_Script_Parse(handle, &((itemDef_t *)item)->enableDvar))
         return 0;
-    *(int *)((char *)item + 0x2d0) |= 0x10;
+    ((itemDef_t *)item)->dvarFlags |= 0x10;
     return 1;
 }
 
 /* line 2483 */
 void Menu_PostParse(menuDef_t *menu)
 {
-    int size = *(int *)((char *)menu + 0x218) * 4;
+    int size = ((menuDef_t *)menu)->itemCount * 4;
     void *items = UI_Alloc(size, 4);
-    *(void **)((char *)menu + 0x27c) = items;
+    ((menuDef_t *)menu)->items = items;
     memcpy(items, (void *)(g_load + 64), size);
-    if (*(int *)((char *)menu + 0x214)) {
+    if (((menuDef_t *)menu)->fullScreen) {
         rectDef_t rect;
         rect.x = 0.0f;
         rect.y = 0.0f;
@@ -1037,42 +1037,42 @@ void Menu_PostParse(menuDef_t *menu)
 /* line 853 */
 qboolean MenuParse_popup(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x1000000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x1000000);
     return 1;
 }
 
 /* line 864 */
 qboolean MenuParse_outOfBounds(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x2000000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x2000000);
     return 1;
 }
 
 /* line 1021 */
 qboolean MenuParse_legacySplitScreenScale(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x4000000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x4000000);
     return 1;
 }
 
 /* line 1261 */
 qboolean ItemParse_decoration(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x100000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x100000);
     return 1;
 }
 
 /* line 1305 */
 qboolean ItemParse_wrapped(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x400000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x400000);
     return 1;
 }
 
 /* line 1316 */
 qboolean ItemParse_autowrapped(const char (*item)[4], int handle)
 {
-    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x800000);
+    Window_SetStaticFlags((void *)item, ((itemDef_t *)item)->window.staticFlags | 0x800000);
     return 1;
 }
 
@@ -1272,21 +1272,20 @@ static Bool __attribute_regparm__(2) Menu_New(int handle, int imageTrack)
     memset(menu, 0, 0x280);
     Menu_SetCursorItem(menu, -1);
 
-    menuBytes = (byte *)menu;
-    *(float *)(menuBytes + 0x238) = load->fadeAmount;
-    *(float *)(menuBytes + 0x23c) = load->fadeInAmount;
-    *(float *)(menuBytes + 0x234) = load->fadeClamp;
-    *(int *)(menuBytes + 0x230) = load->fadeCycle;
-    *(int *)(menuBytes + 0x258) = imageTrack;
-    *(itemDef_t ***)(menuBytes + 0x27c) = UI_MenuItemStorage();
+    menu->fadeAmount = load->fadeAmount;
+    menu->fadeInAmount = load->fadeInAmount;
+    menu->fadeClamp = load->fadeClamp;
+    menu->fadeCycle = load->fadeCycle;
+    menu->imageTrack = imageTrack;
+    menu->items = UI_MenuItemStorage();
 
-    memset(menu, 0, 0x210);
-    *(float *)(menuBytes + 0xe0) = 1.0f;
-    *(float *)(menuBytes + 0x1d8) = 1.0f;
-    *(float *)(menuBytes + 0x1d4) = 1.0f;
-    *(float *)(menuBytes + 0x1d0) = 1.0f;
-    *(float *)(menuBytes + 0x1cc) = 1.0f;
-    *(int *)(menuBytes + 0xcc) = -1;
+    memset(&menu->window, 0, sizeof(Window));
+    menu->window.borderSize = 1.0f;
+    menu->window.outlineColor[2] = 1.0f;
+    menu->window.outlineColor[1] = 1.0f;
+    menu->window.outlineColor[0] = 1.0f;
+    menu->window.foreColor[0] = 1.0f;
+    menu->window.cinematic = -1;
 
     if (!PC_ReadTokenHandle(handle, &token) || token.string[0] != '{')
         return 0;
@@ -1317,7 +1316,7 @@ static Bool __attribute_regparm__(2) Menu_New(int handle, int imageTrack)
         }
     }
 
-    if (*(const char **)(menuBytes + 0xc0) == NULL) {
+    if (menu->window.name == NULL) {
         PC_SourceError(handle, "menu has no name");
         return 0;
     }
@@ -1378,36 +1377,35 @@ qboolean MenuParse_itemDef(const char (*item)[4], int handle)
     int itemCount;
     int imageTrack;
 
-    menuBytes = (byte *)item;
-    itemCount = *(int *)(menuBytes + 0x218);
+    menuDef_t *menuPtr = (menuDef_t *)item;
+    itemCount = menuPtr->itemCount;
     if (itemCount > 0xff)
         return 1;
 
-    items = *(itemDef_t ***)(menuBytes + 0x27c);
+    items = menuPtr->items;
     itemDef = (itemDef_t *)UI_Alloc(0x2f4, 4);
     items[itemCount] = itemDef;
 
-    imageTrack = *(int *)(menuBytes + 0x258);
-    itemBytes = (byte *)itemDef;
+    imageTrack = menuPtr->imageTrack;
     memset(itemDef, 0, 0x2f4);
-    *(float *)(itemBytes + 0x28c) = 0.55f;
-    *(int *)(itemBytes + 0x2f0) = imageTrack;
+    itemDef->textscale = 0.55f;
+    itemDef->imageTrack = imageTrack;
 
-    memset(itemDef, 0, 0x210);
-    *(float *)(itemBytes + 0xe0) = 1.0f;
-    *(float *)(itemBytes + 0x1d8) = 1.0f;
-    *(float *)(itemBytes + 0x1d4) = 1.0f;
-    *(float *)(itemBytes + 0x1d0) = 1.0f;
-    *(float *)(itemBytes + 0x1cc) = 1.0f;
-    *(int *)(itemBytes + 0xcc) = -1;
+    memset(&itemDef->window, 0, sizeof(Window));
+    itemDef->window.borderSize = 1.0f;
+    itemDef->window.outlineColor[2] = 1.0f;
+    itemDef->window.outlineColor[1] = 1.0f;
+    itemDef->window.outlineColor[0] = 1.0f;
+    itemDef->window.foreColor[0] = 1.0f;
+    itemDef->window.cinematic = -1;
 
     if (!Item_Parse(handle, (const char (*)[4])itemDef))
         return 0;
 
     Item_InitControls((const char (*)[4])itemDef);
 
-    *(const char (**)[4])(itemBytes + 0x29c) = item;
-    *(int *)(menuBytes + 0x218) = itemCount + 1;
+    itemDef->parent = menuPtr;
+    menuPtr->itemCount = itemCount + 1;
     return 1;
 }
 
@@ -1647,7 +1645,7 @@ qboolean MenuParse_name(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0xc0) = String_Alloc(token + 0x10);
+    ((menuDef_t *)item)->window.name = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1658,9 +1656,9 @@ qboolean MenuParse_background(const char (*item)[4], int handle)
     char name[0x40];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    I_strncpyz(name, String_Alloc(token + 0x10), 0x40);
+    I_strncpyz(name, String_Alloc(((pc_token_t *)token)->string), 0x40);
     I_strlwr(name);
-    *(void **)((char *)item + 0x20c) = CL_RegisterMaterialNoMip(name, *(int *)((char *)item + 0x258));
+    ((menuDef_t *)item)->window.background = CL_RegisterMaterialNoMip(name, ((menuDef_t *)item)->imageTrack);
     return 1;
 }
 
@@ -1670,7 +1668,7 @@ qboolean MenuParse_cinematic(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0xc8) = String_Alloc(token + 0x10);
+    ((menuDef_t *)item)->window.cinematicName = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1680,7 +1678,7 @@ qboolean ItemParse_name(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0xc0) = String_Alloc(token + 0x10);
+    ((menuDef_t *)item)->window.name = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1729,7 +1727,7 @@ qboolean ItemParse_text(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0x294) = String_Alloc(token + 0x10);
+    ((itemDef_t *)item)->text = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1739,7 +1737,7 @@ qboolean ItemParse_group(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0xc4) = String_Alloc(token + 0x10);
+    ((menuDef_t *)item)->window.group = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1750,9 +1748,9 @@ qboolean ItemParse_background(const char (*item)[4], int handle)
     char name[0x40];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    I_strncpyz(name, String_Alloc(token + 0x10), 0x40);
+    I_strncpyz(name, String_Alloc(((pc_token_t *)token)->string), 0x40);
     I_strlwr(name);
-    *(void **)((char *)item + 0x20c) = CL_RegisterMaterialNoMip(name, *(int *)((char *)item + 0x2f0));
+    ((menuDef_t *)item)->window.background = CL_RegisterMaterialNoMip(name, ((itemDef_t *)item)->imageTrack);
     return 1;
 }
 
@@ -1762,7 +1760,7 @@ qboolean ItemParse_cinematic(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0xc8) = String_Alloc(token + 0x10);
+    ((menuDef_t *)item)->window.cinematicName = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
@@ -1772,7 +1770,7 @@ qboolean ItemParse_dvarTest(const char (*item)[4], int handle)
     char token[0x418];
     if (!PC_ReadTokenHandle(handle, token))
         return 0;
-    *(const char **)((char *)item + 0x2c4) = String_Alloc(token + 0x10);
+    ((itemDef_t *)item)->dvarTest = String_Alloc(((pc_token_t *)token)->string);
     return 1;
 }
 
