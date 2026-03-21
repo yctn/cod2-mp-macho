@@ -119,7 +119,7 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
     struct XAnim_s *pAnims;
 
     /* line 259: get weapon def from cent->currentState.weapon (offset 0x1b8) */
-    weapDef = BG_GetWeaponDef(*(int *)((byte *)cent + 0x1b8));
+    weapDef = BG_GetWeaponDef(cent->nextState.weapon);
 
     /* line 261: create anim tree with 3 slots, name "MG42" */
     pAnims = XAnimCreateAnims((const char *)str_002abcf4, 3, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
@@ -417,7 +417,7 @@ long unsigned int CG_ProcessClientNoteTracks(int clientNum)
 /* line 686 */
 long unsigned int CG_DObjUpdateInfo(struct DObj_s *obj)
 {
-    float timescale = (float)(*(int *)(*(int *)imp_cg + 0x25bac)) * 0.001f;
+    float timescale = (float)(((cg_t *)*(int *)imp_cg)->frametime) * 0.001f;
     DObjUpdateClientInfo(obj, timescale);
     return 0;
 }
@@ -518,8 +518,8 @@ static long unsigned int * CG_AllocAnimTree(int size)
 /* line 1410 */
 long unsigned int CG_UsedDObjCalcPose(const centity_t *cent)
 {
-    if (cent != NULL && *(byte *)((byte *)cent + 0x1e1) == 0)
-        *(byte *)((byte *)cent + 0x1e1) = 1;
+    if (cent != NULL && cent->cullIn == 0)
+        ((centity_t *)cent)->cullIn = 1;
     return 0;
 }
 
@@ -527,7 +527,7 @@ long unsigned int CG_UsedDObjCalcPose(const centity_t *cent)
 long unsigned int CG_CullIn(const centity_t *cent)
 {
     if (cent != NULL)
-        *(byte *)((byte *)cent + 0x1e1) = 2;
+        ((centity_t *)cent)->cullIn = 2;
     return 0;
 }
 
@@ -2756,18 +2756,18 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     ps = cg_s + 0x25bc4;
 
     /* line 303: get DObj for this entity */
-    obj = (byte *)Com_GetClientDObj(*(int *)(s1 + 0x00), *(int *)((byte *)cent + 0x220));
+    obj = (byte *)Com_GetClientDObj(s1->number, cent->localClientNum);
 
     /* line 306: check if player state flags & 0x300 set */
-    if ((*(int *)(ps + 0xa0) & 0x300) && *(int *)(ps + 0x594) == *(int *)(s1 + 0x00)) {
+    if ((ps->eFlags & 0x300) && ps->viewlocked_entNum == s1->number) {
         /* line 308: player is using this MG42 - use AngleSubtract from viewangles */
-        angles[0] = AngleSubtract(*(float *)(cg_s + 0x285c8), *(float *)((byte *)cent + 0x1f8));
-        angles[1] = AngleSubtract(*(float *)(cg_s + 0x285cc), *(float *)((byte *)cent + 0x1fc));
+        angles[0] = AngleSubtract(((cg_t *)cg_s)->refdefViewAngles[0], cent->lerpAngles[0]);
+        angles[1] = AngleSubtract(((cg_t *)cg_s)->refdefViewAngles[1], cent->lerpAngles[1]);
         angles[2] = 0.0f;
     } else {
         /* line 314: not our MG42 - lerp angles from entity state */
-        angles[0] = LerpAngle(*(int *)(s1 + 0x68), *(int *)(s1 + 0x68), *(int *)(cg_s + 0x25ba8));
-        angles[1] = LerpAngle(*(int *)(s1 + 0x6c), *(int *)(s1 + 0x6c), *(int *)(cg_s + 0x25ba8));
+        angles[0] = LerpAngle(*(int *)&s1->angles2[0], *(int *)&s1->angles2[0], ((cg_t *)cg_s)->frameInterpolation);
+        angles[1] = LerpAngle(*(int *)&s1->angles2[1], *(int *)&s1->angles2[1], ((cg_t *)cg_s)->frameInterpolation);
         angles[2] = 0.0f;
     }
 
@@ -2780,7 +2780,7 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
 
     /* line 322: lerp barrel angle */
     cg_s = *(byte **)imp_cg;
-    angles[0] = LerpAngle(*(int *)(s1 + 0x70), *(int *)(s1 + 0x70), *(int *)(cg_s + 0x25ba8));
+    angles[0] = LerpAngle(*(int *)&s1->angles2[2], *(int *)&s1->angles2[2], ((cg_t *)cg_s)->frameInterpolation);
     angles[1] = 0.0f;
 
     /* line 325: set tag_barrel control tag angles */
@@ -2790,18 +2790,18 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     tree = (struct XAnim_s *)DObjGetTree(obj);
 
     /* line 330-335: determine anim index based on player state */
-    if (*(int *)(cg_s + 0x25c64) & 0x300) {
-        if (*(int *)(cg_s + 0x26158) == *(int *)(s1 + 0x00)) {
+    if (((cg_t *)cg_s)->predictedPlayerState.eFlags & 0x300) {
+        if (((cg_t *)cg_s)->predictedPlayerState.viewlocked_entNum == s1->number) {
             animIndex = 1;
         } else {
-            if (*(byte *)((byte *)cent + 0xf8) & 0x40) {
+            if (*(byte *)&cent->nextState.eFlags & 0x40) {
                 animIndex = 2;
             } else {
                 animIndex = 1;
             }
         }
     } else {
-        if (*(byte *)((byte *)cent + 0xf8) & 0x40) {
+        if (*(byte *)&cent->nextState.eFlags & 0x40) {
             animIndex = 2;
         } else {
             animIndex = 1;

@@ -63,8 +63,8 @@ extern int stricmp(const char *s1, const char *s2);
  *   imp_cg_thirdPerson -> dvar
  *   imp_cg_teamChatsOnly -> dvar (cl_paused)
  */
-#define CGS_PTR      ((char *)*(void **)imp_cgs)
-#define CG_PTR       ((char *)*(void **)imp_cg)
+#define CGS_PTR      (*(cgs_t **)imp_cgs)
+#define CG_PTR       (*(cg_t **)imp_cg)
 #define CGUI_PTR     ((char *)*(void **)imp_legacyHacks)
 
 void CG_ParseServerinfo(void);
@@ -89,7 +89,7 @@ void CG_ParseServerinfo(void)
 {
     const char *info;
     const char *val;
-    char *cgs;
+    cgs_t *cgs;
     const char *mapname;
     const char *ext;
 
@@ -97,32 +97,32 @@ void CG_ParseServerinfo(void)
 
     val = Info_ValueForKey(info, (const char *)str_002a714c);
     cgs = CGS_PTR;
-    strncpy(cgs + 0x5ec4, val, 0x100);
+    strncpy(cgs->szHostName, val, 0x100);
 
     val = Info_ValueForKey(info, (const char *)str_002a7100);
-    strncpy(cgs + 0x5ea4, val, 0x20);
+    strncpy(cgs->gametype, val, 0x20);
 
-    if (*(int *)(cgs + 0x5ea0) == 0) {
-        Dvar_SetStringByName((const char *)str_002a7100, cgs + 0x5ea4);
+    if (cgs->localServer == 0) {
+        Dvar_SetStringByName((const char *)str_002a7100, cgs->gametype);
     }
 
     val = Info_ValueForKey(info, (const char *)str_002a70dc);
-    *(int *)(cgs + 0x5fc4) = atoi(val);
+    cgs->maxclients = atoi(val);
 
     mapname = Info_ValueForKey(info, (const char *)str_002a7124);
     ext = GetBspExtension();
-    Com_sprintf(cgs + 0x5fc8, 0x40, (const char *)str_002a74ac, mapname, ext);
+    Com_sprintf(cgs->mapname, 0x40, (const char *)str_002a74ac, mapname, ext);
 }
 
 /* line 172 */
 void CG_ParseCodinfo(void)
 {
-    char *cgs;
+    cgs_t *cgs;
     int i;
     const char *key;
 
     cgs = CGS_PTR;
-    if (*(int *)(cgs + 0x5ea0) != 0) {
+    if (cgs->localServer != 0) {
         return;
     }
 
@@ -359,7 +359,7 @@ static void CG_OpenScriptMenu(void)
 
     cgui = CGUI_PTR;
     I_strncpyz(cgui + 0x2e4, pszMenu, 0x100);
-    *(int *)(cgui + 0x3e4) = menuIndex;
+    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = menuIndex;
 
     if (noMouseControl) {
         result = CL_Popup((const char *)str_002adc98);
@@ -374,20 +374,20 @@ static void CG_OpenScriptMenu(void)
     /* Popup failed */
     cgui = CGUI_PTR;
     *(cgui + 0x2e4) = '\0';
-    *(int *)(cgui + 0x3e4) = -1;
+    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
 
     if (*(cgui + 0x3e8) != '\0') {
         if (I_stricmp(pszMenu, cgui + 0x3e8) == 0) {
             return;
         }
-        Cbuf_AddText(va((const char *)str_002b80f0, *(int *)(cgui + 0x4e8)));
+        Cbuf_AddText(va((const char *)str_002b80f0, *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */));
     }
 
     /* Store as waiting menu */
     cgui = CGUI_PTR;
     I_strncpyz(cgui + 0x3e8, pszMenu, 0x100);
-    *(int *)(cgui + 0x4e8) = menuIndex;
-    *(unsigned char *)(cgui + 0x4ec) = noMouseControl;
+    *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = menuIndex;
+    *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = noMouseControl;
 }
 
 /* line 763 */
@@ -404,10 +404,10 @@ void CG_CheckOpenWaitingScriptMenu(void)
     /* Copy waiting menu to active */
     strcpy(cgui + 0x2e4, cgui + 0x3e8);
     cgui = CGUI_PTR;
-    *(int *)(cgui + 0x3e4) = *(int *)(cgui + 0x4e8);
+    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */;
 
     cgui = CGUI_PTR;
-    if (*(unsigned char *)(cgui + 0x4ec)) {
+    if (*(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */) {
         result = CL_Popup((const char *)str_002adc98);
     } else {
         result = CL_Popup((const char *)str_002adc84);
@@ -417,13 +417,13 @@ void CG_CheckOpenWaitingScriptMenu(void)
         /* Popup succeeded, clear waiting */
         cgui = CGUI_PTR;
         *(cgui + 0x3e8) = '\0';
-        *(int *)(cgui + 0x4e8) = -1;
-        *(unsigned char *)(cgui + 0x4ec) = 0;
+        *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = -1;
+        *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = 0;
     } else {
         /* Popup failed, clear active */
         cgui = CGUI_PTR;
         *(cgui + 0x2e4) = '\0';
-        *(int *)(cgui + 0x3e4) = -1;
+        *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
     }
 }
 
@@ -436,13 +436,13 @@ void CG_CloseScriptMenu(void)
     CL_ClosePopup((const char *)str_002adc98);
 
     cgui = CGUI_PTR;
-    *(unsigned char *)(cgui + 0x1de) = 0;
-    *(int *)(cgui + 0x2e0) = -1;
+    *(unsigned char *)(cgui + 0x1de) /* TODO: unknown legacyHacks offset */ = 0;
+    *(int *)(cgui + 0x2e0) /* TODO: unknown legacyHacks offset */ = -1;
     *(cgui + 0x2e4) = '\0';
-    *(int *)(cgui + 0x3e4) = -1;
+    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
     *(cgui + 0x3e8) = '\0';
-    *(int *)(cgui + 0x4e8) = -1;
-    *(unsigned char *)(cgui + 0x4ec) = 0;
+    *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = -1;
+    *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = 0;
 }
 
 /* line 825 — jump table, kept as naked */
@@ -686,7 +686,7 @@ void CG_ParseFog(void)
     float start;
     double halfDist_d, val3_d, val4_d, val5_d, val6_d;
     int transitionTime;
-    char *cg;
+    cg_t *cg;
 
     info = CL_GetConfigString(12);
 
@@ -697,7 +697,7 @@ void CG_ParseFog(void)
     if (token == NULL || *token == '\0') {
         /* Simple fog: just switch */
         cg = CG_PTR;
-        CL_SwitchFog(0, *(int *)(cg + 0x25bb0), (int)start);
+        CL_SwitchFog(0, cg->time, (int)start);
         return;
     }
 
@@ -718,7 +718,7 @@ void CG_ParseFog(void)
         (float)val3_d);
 
     cg = CG_PTR;
-    CL_SwitchFog(1, *(int *)(cg + 0x25bb0), transitionTime);
+    CL_SwitchFog(1, cg->time, transitionTime);
 }
 
 /* line 1097 */
@@ -750,7 +750,7 @@ static void CG_SetChannelVolCmd(void)
     int shockIndex;
     int fadeTime;
     float fval;
-    char *cgs;
+    cgs_t *cgs;
 
     argc = Cmd_Argc();
     if (argc != 4) {
@@ -764,7 +764,7 @@ static void CG_SetChannelVolCmd(void)
     fadeTime = (fval > 0.0f) ? (int)fval : 0;
 
     cgs = CGS_PTR;
-    SND_SetChannelVolumes(prio, cgs + 0x68fc + shockIndex * 132, fadeTime);
+    SND_SetChannelVolumes(prio, cgs->shellshockParms[shockIndex].sound.channelvolume, fadeTime);
 }
 
 /* line 1047 */
@@ -791,16 +791,16 @@ static void CG_DeactivateReverbCmd(void)
 /* line 359 */
 void CG_SetConfigValues(void)
 {
-    char *cgs;
+    cgs_t *cgs;
     int i;
     const char *str;
 
     cgs = CGS_PTR;
-    *(int *)(cgs + 0x63b8) = atoi(CL_GetConfigString(5));
-    *(int *)(cgs + 0x63bc) = atoi(CL_GetConfigString(6));
-    *(int *)(cgs + 0x63b4) = atoi(CL_GetConfigString(13));
+    cgs->teamScores[0] = atoi(CL_GetConfigString(5));
+    cgs->teamScores[1] = atoi(CL_GetConfigString(6));
+    cgs->levelStartTime = atoi(CL_GetConfigString(13));
 
-    CL_SwitchFog(0, *(int *)(CG_PTR + 0x25bb0), 0);
+    CL_SwitchFog(0, CG_PTR->time, 0);
 
     /* Load script menus */
     for (i = 0x4de; i < 0x4fe; i++) {
@@ -836,8 +836,8 @@ void CG_SetConfigValues(void)
 /* line 621 */
 void CG_MapRestart(qboolean savepersist)
 {
-    char *cg;
-    char *cgs;
+    cg_t *cg;
+    cgs_t *cgs;
     char *cgui;
 
     if (*(int *)(*(char **)*(void **)imp_cg_showmiss + 8) != 0) {
@@ -845,31 +845,31 @@ void CG_MapRestart(qboolean savepersist)
     }
 
     cg = CG_PTR;
-    *(int *)(cg + 0x2b990) = 0;
-    *(int *)(cg + 0x2bdf0) = 0;
-    *(int *)(cg + 0x2be00) = 1;
+    cg->centerPrintTime = 0;
+    cg->cursorHintFade = 0;
+    cg->lastHealthLerpDelay = 1;
 
     CG_InitLocalEntities();
     CG_InitMarkPolys();
     FX_FreeActive();
 
     cgs = CGS_PTR;
-    *(int *)(cgs + 0x6088) = 0;
+    cgs->voteTime = 0;
 
-    *(int *)(cg + 0x25bbc) = 1;
+    cg->mapRestart = 1;
 
     SND_StopSounds(0);
     CG_StartAmbient();
 
-    *(int *)(cg + 0x2c5a4) = 0;
-    *(int *)(cg + 0x2bf0c) = 0;
+    cg->latchVictorySound = 0;
+    cg->v_dmg_time = 0;
 
-    memset(cg + 0x2be74, 0, 0x60);
+    memset(cg->viewDamage, 0, sizeof(cg->viewDamage));
 
-    *(int *)(cg + 0x2be60) = 0;
-    *(int *)(cg + 0x2be64) = 0;
-    *(int *)(cg + 0x2be68) = 0;
-    *(int *)(cg + 0x2be6c) = 0;
+    *(int *)&cg->fWeapSelectFrac[0] = 0;
+    *(int *)&cg->fWeapSelectFrac[1] = 0;
+    *(int *)&cg->fWeapSelectFrac[2] = 0;
+    cg->iWeapSelectLastDrawTime = 0;
 
     Dvar_SetBool(*(void **)*(void **)imp_cg_thirdPerson, 0);
 
@@ -880,19 +880,19 @@ void CG_MapRestart(qboolean savepersist)
 
     if (!savepersist) {
         cgui = CGUI_PTR;
-        *(unsigned char *)(cgui + 0x4ed) = 0;
+        *(unsigned char *)(cgui + 0x4ed) /* TODO: unknown legacyHacks offset */ = 0;
 
         CG_CloseScriptMenu();
         CG_CloseScriptMenu();
 
         cgui = CGUI_PTR;
-        *(unsigned char *)(cgui + 0x4ed) = 1;
+        *(unsigned char *)(cgui + 0x4ed) /* TODO: unknown legacyHacks offset */ = 1;
 
         CL_CloseAllMenus();
     }
 
     CG_ScoresUp_f();
-    *(unsigned char *)(cg + 0x2a9fc) = 0;
+    *(unsigned char *)cg->objectiveText = 0;
 
     CL_SyncTimes();
 }
@@ -1869,22 +1869,22 @@ void CG_ServerCommand(void)
 /* line 1380 */
 void CG_ExecuteNewServerCommands(int latestSequence)
 {
-    char *cgs;
+    cgs_t *cgs;
     static int _svrcmd_cnt = 0;
 
     cgs = CGS_PTR;
 
-    if (_svrcmd_cnt < 20 || (latestSequence != *(int *)(cgs + 0x5e98) && _svrcmd_cnt < 200)) {
-        Com_Printf("[EXECSVR] call#%d latestSeq=%d storedSeq=%d\n", _svrcmd_cnt, latestSequence, *(int *)(cgs + 0x5e98));
+    if (_svrcmd_cnt < 20 || (latestSequence != cgs->serverCommandSequence && _svrcmd_cnt < 200)) {
+        Com_Printf("[EXECSVR] call#%d latestSeq=%d storedSeq=%d\n", _svrcmd_cnt, latestSequence, cgs->serverCommandSequence);
     }
     _svrcmd_cnt++;
 
-    while (*(int *)(cgs + 0x5e98) < latestSequence) {
-        *(int *)(cgs + 0x5e98) += 1;
-        if (CL_GetServerCommand(*(int *)(cgs + 0x5e98))) {
+    while (cgs->serverCommandSequence < latestSequence) {
+        cgs->serverCommandSequence += 1;
+        if (CL_GetServerCommand(cgs->serverCommandSequence)) {
             {
                 const char *_cmd0 = CG_Argv(0);
-                Com_Printf("[SVRCMD] seq=%d cmd='%s' argc=%d\n", *(int *)(cgs + 0x5e98), _cmd0 ? _cmd0 : "(null)", Cmd_Argc());
+                Com_Printf("[SVRCMD] seq=%d cmd='%s' argc=%d\n", cgs->serverCommandSequence, _cmd0 ? _cmd0 : "(null)", Cmd_Argc());
             }
             CG_ServerCommand();
         }
@@ -1914,7 +1914,7 @@ static void CG_AddToTeamChat_impl(const char *str)
 
     /* line 557: compute destination row */
     cgs_p = *(byte **)imp_cgs;
-    chatCount = *(int *)(cgs_p + 0xba14);
+    chatCount = ((cgs_t *)cgs_p)->teamChatPos;
     row = chatCount % chatHeight;
 
     /* Each row is at cgs + 0xb170 + row * (16 + 256 - 16 + 1...) */
@@ -1950,16 +1950,16 @@ static void CG_AddToTeamChat_impl(const char *str)
 
             /* line 575: advance to next row */
             cgs_p = *(byte **)imp_cgs;
-            chatCount = *(int *)(cgs_p + 0xba14);
+            chatCount = ((cgs_t *)cgs_p)->teamChatPos;
             {
                 int r = chatCount % chatHeight;
                 cg_p = *(byte **)imp_cg;
-                *(int *)(cgs_p + 0xb9f4 + r * 4) = *(int *)(cg_p + 0x25bb0);
+                ((cgs_t *)cgs_p)->teamChatMsgTimes[r] = ((cg_t *)cg_p)->time;
             }
 
             /* line 577 */
             chatCount += 1;
-            *(int *)(cgs_p + 0xba14) = chatCount;
+            ((cgs_t *)cgs_p)->teamChatPos = chatCount;
 
             /* line 578: new row */
             row = chatCount % chatHeight;
@@ -2029,29 +2029,29 @@ check_space:
 
     /* line 602: record timestamp */
     cgs_p = *(byte **)imp_cgs;
-    chatCount = *(int *)(cgs_p + 0xba14);
+    chatCount = ((cgs_t *)cgs_p)->teamChatPos;
     {
         int r = chatCount % chatHeight;
         cg_p = *(byte **)imp_cg;
-        *(int *)(cgs_p + 0xb9f4 + r * 4) = *(int *)(cg_p + 0x25bb0);
+        ((cgs_t *)cgs_p)->teamChatMsgTimes[r] = ((cg_t *)cg_p)->time;
     }
 
     /* line 603 */
     chatCount += 1;
-    *(int *)(cgs_p + 0xba14) = chatCount;
+    ((cgs_t *)cgs_p)->teamChatPos = chatCount;
 
     /* line 605 */
-    if (chatHeight < chatCount - *(int *)(cgs_p + 0xba18)) {
+    if (chatHeight < chatCount - ((cgs_t *)cgs_p)->teamLastChatPos) {
         /* line 606 */
-        *(int *)(cgs_p + 0xba18) = chatCount - chatHeight;
+        ((cgs_t *)cgs_p)->teamLastChatPos = chatCount - chatHeight;
     }
     return;
 
 zero_out:
     /* line 551 */
     cgs_p = *(byte **)imp_cgs;
-    *(int *)(cgs_p + 0xba18) = 0;
-    *(int *)(cgs_p + 0xba14) = 0;
+    ((cgs_t *)cgs_p)->teamLastChatPos = 0;
+    ((cgs_t *)cgs_p)->teamChatPos = 0;
 }
 
 #endif

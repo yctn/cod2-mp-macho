@@ -95,9 +95,9 @@ static char bigConfigString[8192]; /* bigConfigString */
 extern const vec4_t g_color_table[]; /* g_color_table — rodata.c */
 
 #define RE         ((refexport_t *)imp_re)
-#define CLS        ((char *)imp_cls)
-#define CL_LOCAL   ((char *)*(void **)imp_cl)
-#define CLUI_STATE ((char *)*(void **)imp_clc)
+#define CLS        ((clientStatic_t *)imp_cls)
+#define CL_LOCAL   ((clientActive_t *)*(void **)imp_cl)
+#define CLUI_STATE ((clientConnection_t *)*(void **)imp_clc)
 
 void CL_GetScreenDimensions(int *width, int *height, float *aspect);
 qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
@@ -174,16 +174,16 @@ void CL_SetCGameTime(void);
 /* Helper: inline CL_FirstSnapshot logic */
 static void CL_FirstSnapshot(void)
 {
-    char *cl = CL_LOCAL;
-    char *clui = CLUI_STATE;
+    clientActive_t *cl = CL_LOCAL;
+    clientConnection_t *clui = CLUI_STATE;
 
-    *(int *)clui = 8; /* CA_ACTIVE */
+    clui->state = 8; /* CA_ACTIVE */
     fprintf(stderr, "[CL_FirstSnapshot] set connstate=8 clui=%p\n", clui);
-    int serverTime = *(int *)(cl + 0x20);
-    char *cls = CLS;
-    *(int *)(cl + 0x26fc) = serverTime - *(int *)(cls + 0x118);
-    *(int *)(cl + 0x26f4) = serverTime;
-    *(int *)(clui + 0x407c4) = serverTime;
+    int serverTime = cl->snap.serverTime;
+    clientStatic_t *cls = CLS;
+    cl->serverTimeDelta = serverTime - cls->realtime;
+    cl->oldServerTime = serverTime;
+    clui->timeDemoBaseTime = serverTime;
 
     /* Execute autorecord command if set */
     char *autorecDvar = (char *)*(void **)imp_cl_activeAction;
@@ -204,21 +204,21 @@ static void CL_FirstSnapshot(void)
 /* line 79 */
 void CL_GetScreenDimensions(int *width, int *height, float *aspect)
 {
-    char *cls = CLS;
-    *width = *(int *)(cls + 0x2a0a64);
-    *height = *(int *)(cls + 0x2a0a68);
-    *aspect = *(float *)(cls + 0x2a0a74);
+    clientStatic_t *cls = CLS;
+    *width = cls->vidConfig.width;
+    *height = cls->vidConfig.height;
+    *aspect = cls->vidConfig.aspectRatioWindow;
 }
 
 /* line 91 */
 qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd)
 {
-    char *cl = CL_LOCAL;
-    int currentCmd = *(int *)(cl + 0x4945c);
+    clientActive_t *cl = CL_LOCAL;
+    int currentCmd = cl->cmdNumber;
 
     if (currentCmd < cmdNumber) {
         Com_Error(ERR_DROP, "CL_GetUserCmd: %i >= %i", cmdNumber, currentCmd);
-        currentCmd = *(int *)(cl + 0x4945c);
+        currentCmd = cl->cmdNumber;
     }
 
     if (cmdNumber <= currentCmd - 128) {
@@ -226,67 +226,66 @@ qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd)
     }
 
     int idx = cmdNumber & 0x7f;
-    char *cmdEntry = cl + 0x48650 + idx * 28;
-    memcpy(ucmd, cmdEntry + 12, 28);
+    memcpy(ucmd, &cl->cmds[idx], sizeof(usercmd_t));
     return 1;
 }
 
 /* line 114 */
 int CL_GetCurrentCmdNumber(void)
 {
-    char *cl = CL_LOCAL;
-    return *(int *)(cl + 0x4945c);
+    clientActive_t *cl = CL_LOCAL;
+    return cl->cmdNumber;
 }
 
 /* line 125 */
 void CL_GetCurrentSnapshotNumber(int *snapshotNumber, int *serverTime)
 {
-    char *cl = CL_LOCAL;
-    *snapshotNumber = *(int *)(cl + 0x24);
-    *serverTime = *(int *)(cl + 0x20);
+    clientActive_t *cl = CL_LOCAL;
+    *snapshotNumber = cl->snap.messageNum;
+    *serverTime = cl->snap.serverTime;
 }
 
 /* line 137 */
 qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 {
-    char *cl = CL_LOCAL;
+    clientActive_t *cl = CL_LOCAL;
     int count;
     int i;
 
-    if (*(int *)(cl + 0x24) < snapshotNumber) {
+    if (cl->snap.messageNum < snapshotNumber) {
         Com_Error(ERR_DROP, "CL_GetSnapshot: snapshotNumber > cl.snap.messageNum");
     }
 
-    if (*(int *)(cl + 0x24) - snapshotNumber > 0x1f) {
+    if (cl->snap.messageNum - snapshotNumber > 0x1f) {
         return 0;
     }
 
-    /* Calculate snapshot entry: array at cl+0x495e0, stride 9944 bytes, 32 entries */
+    /* Calculate snapshot entry: array of 32 entries */
     int idx = snapshotNumber & 0x1f;
-    char *clSnap = cl + 0x495e0 + idx * 9944;
+    clSnapshot_t *clSnap = &cl->snapshots[idx];
 
-    if (*(int *)clSnap == 0) {
+    if (clSnap->valid == 0) {
         return 0;
     }
 
-    if (*(int *)(cl + 0x85d0) - *(int *)(clSnap + 0x26cc) > 0x7ff) {
+    if (cl->parseEntitiesNum - clSnap->parseEntitiesNum > 0x7ff) {
         return 0;
     }
-    if (*(int *)(cl + 0x85d4) - *(int *)(clSnap + 0x26d0) > 0x7ff) {
+    if (cl->parseClientsNum - clSnap->parseClientsNum > 0x7ff) {
         return 0;
     }
 
     /* Copy basic snapshot fields */
-    *(int *)((char *)snapshot) = *(int *)(clSnap + 4);
-    *(int *)((char *)snapshot + 0x12dbc) = *(int *)(clSnap + 0x26d4);
-    *(int *)((char *)snapshot + 4) = *(int *)(clSnap + 0x14);
-    *(int *)((char *)snapshot + 8) = *(int *)(clSnap + 8);
+    snapshot->snapFlags = clSnap->snapFlags;
+    snapshot->serverCommandSequence = clSnap->serverCommandNum;
+    snapshot->ping = clSnap->ping;
+    snapshot->serverTime = clSnap->serverTime;
 
     /* Copy playerstate data */
-    memcpy((char *)snapshot + 0xc, clSnap + 0x1c, 0x26a8);
+    memcpy(&snapshot->ps, &clSnap->ps, sizeof(playerState_t));
 
     /* Entity states count */
-    count = *(int *)(clSnap + 0x26c4);
+    count = clSnap->numEntities;
     if (count > 256) {
         char *statmonCfg = *(char **)*(void **)imp_com_statmon;
         if (*(unsigned char *)(statmonCfg + 8)) {
@@ -297,29 +296,25 @@ qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
         count = 256;
     }
 
-    *(int *)((char *)snapshot + 0x26b4) = count;
+    snapshot->numEntities = count;
 
-    /* Copy entity states: stride 0xF0 (240) bytes, circular buffer at cl+0xd30e0 */
+    /* Copy entity states: circular buffer */
     for (i = 0; i < count; i++) {
-        int entIdx = (i + *(int *)(clSnap + 0x26cc)) & 0x7ff;
-        char *src = cl + 0xd30e0 + entIdx * 240;
-        char *dst = (char *)snapshot + 0x26bc + i * 240;
-        memcpy(dst, src, 240);
+        int entIdx = (i + clSnap->parseEntitiesNum) & 0x7ff;
+        memcpy(&snapshot->entities[i], &cl->parseEntities[entIdx], sizeof(entityState_t));
     }
 
     /* Client states count, clamped to 64 */
-    int clientCount = *(int *)(clSnap + 0x26c8);
+    int clientCount = clSnap->numClients;
     if (clientCount > 64) {
         clientCount = 64;
     }
-    *(int *)((char *)snapshot + 0x26b8) = clientCount;
+    snapshot->numClients = clientCount;
 
-    /* Copy client states: stride 0x5C (92) bytes, circular buffer at cl+0x14b0e0 */
+    /* Copy client states: circular buffer */
     for (i = 0; i < clientCount; i++) {
-        int cliIdx = (i + *(int *)(clSnap + 0x26d0)) & 0x7ff;
-        char *src = cl + 0x14b0e0 + cliIdx * 92;
-        char *dst = (char *)snapshot + 0x116bc + i * 92;
-        memcpy(dst, src, 92);
+        int cliIdx = (i + clSnap->parseClientsNum) & 0x7ff;
+        memcpy(&snapshot->clients[i], &cl->parseClients[cliIdx], sizeof(clientState_t));
     }
 
     return 1;
@@ -328,17 +323,17 @@ qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
 /* line 234 */
 void CL_SetUserCmdValue(int userCmdValue, int holdableValue, float sensitivityScale)
 {
-    char *cl = CL_LOCAL;
-    *(int *)(cl + 0x85f8) = userCmdValue;
-    *(int *)(cl + 0x85fc) = holdableValue;
-    *(float *)(cl + 0x8604) = sensitivityScale;
+    clientActive_t *cl = CL_LOCAL;
+    cl->cgameUserCmdValue = userCmdValue;
+    cl->cgameUserHoldableValue = holdableValue;
+    cl->cgameSensitivity = sensitivityScale;
 }
 
 /* line 258 */
 void CL_SetUserCmdInShellshock(qboolean shocked)
 {
-    char *cl = CL_LOCAL;
-    *(int *)(cl + 0x8600) = shocked;
+    clientActive_t *cl = CL_LOCAL;
+    cl->cgameInShellshock = shocked;
 }
 
 /* line 275 */
@@ -350,11 +345,11 @@ void CL_AddCgameCommand(const char *cmdName)
 /* line 286 */
 void CL_ConfigstringModified(void)
 {
-    char oldGs[0x5e84];
+    gameState_t oldGs;
     int index;
     const char *s;
     int i, len;
-    char *cl;
+    clientActive_t *cl;
 
     index = atoi(Cmd_Argv(1));
     if ((unsigned int)index > 0x7ff) {
@@ -366,18 +361,18 @@ void CL_ConfigstringModified(void)
     cl = CL_LOCAL;
     /* Check if configstring changed */
     {
-        int offset = *(int *)(cl + 0x270c + index * 4);
-        const char *old = cl + 0x470c + offset;
+        int offset = cl->gameState.stringOffsets[index];
+        const char *old = cl->gameState.stringData + offset;
         if (strcmp(old, s) == 0)
             return;
     }
 
     /* Backup old configstring data */
-    memcpy(oldGs, cl + 0x270c, 0x5e84);
+    memcpy(&oldGs, &cl->gameState, sizeof(gameState_t));
 
     /* Reset configstring area */
-    memset(cl + 0x270c, 0, 0x5e84);
-    *(int *)(cl + 0x858c) = 1;
+    memset(&cl->gameState, 0, sizeof(gameState_t));
+    cl->gameState.dataCount = 1;
 
     /* Rebuild configstrings */
     for (i = 0; i < 0x800; i++) {
@@ -386,8 +381,8 @@ void CL_ConfigstringModified(void)
         if (i == index) {
             dup = s;
         } else {
-            int oldOff = *(int *)((char *)oldGs + i * 4);
-            dup = (char *)oldGs + 0x2000 + oldOff;
+            int oldOff = oldGs.stringOffsets[i];
+            dup = oldGs.stringData + oldOff;
         }
 
         if (*dup == '\0')
@@ -395,15 +390,15 @@ void CL_ConfigstringModified(void)
 
         len = strlen(dup) + 1;
         cl = CL_LOCAL;
-        int writePos = *(int *)(cl + 0x858c);
+        int writePos = cl->gameState.dataCount;
         if (writePos + len > 0x3e80) {
             Com_Error(ERR_DROP, "CL_ConfigstringModified: overflow");
-            writePos = *(int *)(cl + 0x858c);
+            writePos = cl->gameState.dataCount;
         }
 
-        *(int *)(cl + 0x270c + i * 4) = writePos;
-        memcpy(cl + 0x470c + writePos, dup, len);
-        *(int *)(cl + 0x858c) = writePos + len;
+        cl->gameState.stringOffsets[i] = writePos;
+        memcpy(cl->gameState.stringData + writePos, dup, len);
+        cl->gameState.dataCount = writePos + len;
     }
 
     if (index == 1) {
@@ -414,13 +409,13 @@ void CL_ConfigstringModified(void)
 /* line 359 */
 qboolean CL_GetServerCommand(int serverCommandNumber)
 {
-    char *clui = CLUI_STATE;
+    clientConnection_t *clui = CLUI_STATE;
     char *s;
     const char *cmd;
     int argc;
 
-    if (serverCommandNumber <= *(int *)(clui + 0x2013c) - 128) {
-        if (*(int *)(clui + 0x407a0)) {
+    if (serverCommandNumber <= clui->serverCommandSequence - 128) {
+        if (clui->demoplaying) {
             return 0;
         }
         Com_Printf("CL_GetServerCommand: a]command was lost\n");
@@ -428,20 +423,20 @@ qboolean CL_GetServerCommand(int serverCommandNumber)
         {
             int j;
             for (j = 0; j < 128; j++) {
-                char *clui2 = CLUI_STATE;
-                Com_Printf("cmd %5d: %s\n", j, clui2 + 0x20144 + (j & 0x7f) * 1024);
+                clientConnection_t *clui2 = CLUI_STATE;
+                Com_Printf("cmd %5d: %s\n", j, clui2->serverCommands[j & 0x7f]);
             }
         }
         Com_Error(ERR_DROP, "CL_GetServerCommand: too many missed");
     }
 
     clui = CLUI_STATE;
-    if (serverCommandNumber > *(int *)(clui + 0x2013c)) {
+    if (serverCommandNumber > clui->serverCommandSequence) {
         Com_Error(ERR_DROP, "CL_GetServerCommand: requested beyond last");
     }
 
-    s = clui + 0x20144 + (serverCommandNumber & 0x7f) * 1024;
-    *(int *)(clui + 0x20140) = serverCommandNumber;
+    s = clui->serverCommands[serverCommandNumber & 0x7f];
+    clui->lastExecutedServerCommand = serverCommandNumber;
 
     {
         char *debugCvar = *(char **)*(void **)imp_cl_showServerCommands;
@@ -504,7 +499,7 @@ restart:
     case 'z':
         Con_ClearNotify();
         Con_ClearSubtitles();
-        memset(CL_LOCAL + 0x4865c, 0, 0xe00);
+        memset(CL_LOCAL->cmds, 0, sizeof(CL_LOCAL->cmds));
         RE->ClearFlares();
         return 1;
     case 'C':
@@ -576,14 +571,14 @@ void CL_CM_LoadMap(const char *mapname)
 /* line 539 */
 void CL_ShutdownCGame(void)
 {
-    char *cl;
+    clientActive_t *cl;
 
     Com_UnloadSoundAliases(1);
     cl = CL_LOCAL;
-    if (*(unsigned char *)(cl + 0xa)) {
+    if (cl->cgameInitCalled) {
         CG_Shutdown();
-        *(unsigned char *)(cl + 0xa) = 0;
-        *(unsigned char *)(cl + 9) = 0;
+        cl->cgameInitCalled = 0;
+        cl->cgameInitialized = 0;
     }
 }
 
@@ -670,9 +665,9 @@ void CL_SubtitlePrint(const char *pszText, int iDuration, int iLineWidth)
 /* line 714 */
 const char *CL_GetConfigString(int index)
 {
-    char *cl = CL_LOCAL;
-    int offset = *(int *)(cl + 0x270c + index * 4);
-    return cl + 0x470c + offset;
+    clientActive_t *cl = CL_LOCAL;
+    int offset = cl->gameState.stringOffsets[index];
+    return cl->gameState.stringData + offset;
 }
 
 /* line 729 */
@@ -863,15 +858,15 @@ void CL_LoadSoundAliases(const char *loadspec)
 /* line 1106 */
 qboolean CL_Popup(const char *menu)
 {
-    char *clui = CLUI_STATE;
+    clientConnection_t *clui = CLUI_STATE;
 
     Com_Printf("[CL_Popup] menu='%s' clui[0]=%d clui[0x407a0]=%d fullscreen=%d\n",
-        menu, *(int *)clui, *(int *)(clui + 0x407a0), UI_IsFullscreen());
+        menu, clui->state, clui->demoplaying, UI_IsFullscreen());
 
-    if (*(int *)clui != 8)
+    if (clui->state != 8)
         return 0;
 
-    if (*(int *)(clui + 0x407a0))
+    if (clui->demoplaying)
         return 0;
 
     if (UI_IsFullscreen())
@@ -955,9 +950,9 @@ void CL_FX_AdjustCamera(refdef_t *refdef)
 /* line 1247 */
 void CL_CapTurnRate(float maxPitchSpeed, float maxYawSpeed)
 {
-    char *cl = CL_LOCAL;
-    *(float *)(cl + 0x8608) = maxPitchSpeed;
-    *(float *)(cl + 0x860c) = maxYawSpeed;
+    clientActive_t *cl = CL_LOCAL;
+    cl->cgameMaxPitchSpeed = maxPitchSpeed;
+    cl->cgameMaxYawSpeed = maxYawSpeed;
 }
 
 /* line 1285 */
@@ -1005,8 +1000,8 @@ void CL_UpdateLevelHunkUsage(void)
 
         /* Check if this is our map */
         {
-            char *cl = CL_LOCAL;
-            if (I_stricmp(token, cl + 0x8590) == 0) {
+            clientActive_t *cl = CL_LOCAL;
+            if (I_stricmp(token, cl->mapname) == 0) {
                 token = Com_Parse(&buftrav);
                 if (!token || *token == '\0')
                     continue;
@@ -1058,8 +1053,8 @@ write_new:
     }
 
     {
-        char *cl = CL_LOCAL;
-        Com_sprintf(outstr, 256, "%s %i\n", cl + 0x8590, memusage);
+        clientActive_t *cl = CL_LOCAL;
+        Com_sprintf(outstr, 256, "%s %i\n", cl->mapname, memusage);
     }
     FS_Write(outstr, strlen(outstr), handle);
     FS_FCloseFile(handle);
@@ -1091,42 +1086,42 @@ void CL_InitCGame(void)
 {
     int t1;
     char mapname[64];
-    char *cl;
+    clientActive_t *cl;
 
     t1 = Sys_Milliseconds();
     Con_Close();
 
     cl = CL_LOCAL;
     {
-        int offset = *(int *)(cl + 0x270c);
-        const char *systemInfo = cl + 0x470c + offset;
+        int offset = cl->gameState.stringOffsets[0];
+        const char *systemInfo = cl->gameState.stringData + offset;
         I_strncpyz(mapname, Info_ValueForKey(systemInfo, "mapname"), 64);
     }
 
     {
         const char *ext = GetBspExtension();
-        Com_sprintf(cl + 0x8590, 64, "maps/mp/%s.%s", mapname, ext);
+        Com_sprintf(cl->mapname, 64, "maps/mp/%s.%s", mapname, ext);
     }
 
     if (!*(unsigned char *)(*(char **)*(void **)imp_com_sv_running + 8)) {
         Com_InitDObj();
-        CL_SetExpectedHunkUsage(cl + 0x8590);
+        CL_SetExpectedHunkUsage(cl->mapname);
     }
 
     {
-        char *clui = CLUI_STATE;
-        *(int *)clui = 6;
-        *(unsigned char *)(cl + 0xa) = 1;
+        clientConnection_t *clui = CLUI_STATE;
+        clui->state = 6;
+        cl->cgameInitCalled = 1;
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: before CG_Init"); }
         {
             extern int g_cginit_loading;
             g_cginit_loading = 1;
-            CG_Init(*(int *)(clui + 8), *(int *)(clui + 0x20140), *(int *)(clui + 0x20138));
+            CG_Init(clui->clientNum, clui->lastExecutedServerCommand, clui->serverMessageSequence);
             g_cginit_loading = 0;
         }
         { extern void DBG_Hunk_PrintUsage(const char *); DBG_Hunk_PrintUsage("CL: after CG_Init"); }
-        *(unsigned char *)(cl + 9) = 1;
-        *(int *)clui = 7;
+        cl->cgameInitialized = 1;
+        clui->state = 7;
     }
 
     {
@@ -1145,8 +1140,8 @@ void CL_InitCGame(void)
 /* line 1528 */
 qboolean CL_GameCommand(void)
 {
-    char *cl = CL_LOCAL;
-    if (!*(unsigned char *)(cl + 9))
+    clientActive_t *cl = CL_LOCAL;
+    if (!cl->cgameInitialized)
         return 0;
     return CG_ConsoleCommand();
 }
@@ -1154,25 +1149,25 @@ qboolean CL_GameCommand(void)
 /* line 1561 */
 void CL_AdjustTimeDelta(void)
 {
-    char *cl;
-    char *clui;
+    clientActive_t *cl;
+    clientConnection_t *clui;
     int serverTime, frameTime, newDelta, serverTimeDelta, deltaDiff;
 
     cl = CL_LOCAL;
-    *(int *)(cl + 0x2708) = 0;
+    cl->newSnapshots = 0;
 
     clui = CLUI_STATE;
-    if (*(int *)(clui + 0x407a0))
+    if (clui->demoplaying)
         return;
 
-    serverTime = *(int *)(cl + 0x20);
-    frameTime = serverTime - *(int *)(cl + 0x2700);
+    serverTime = cl->snap.serverTime;
+    frameTime = serverTime - cl->oldSnapServerTime;
 
     {
-        char *cls = CLS;
-        newDelta = serverTime - *(int *)(cls + 0x118) - frameTime - 5;
+        clientStatic_t *cls = CLS;
+        newDelta = serverTime - cls->realtime - frameTime - 5;
     }
-    serverTimeDelta = *(int *)(cl + 0x26fc);
+    serverTimeDelta = cl->serverTimeDelta;
     deltaDiff = newDelta - serverTimeDelta;
 
     if (deltaDiff > 0) {
@@ -1187,10 +1182,10 @@ void CL_AdjustTimeDelta(void)
 
     /* Check for big time jump */
     if (deltaDiff > 500) {
-        *(int *)(cl + 0x26fc) = newDelta;
+        cl->serverTimeDelta = newDelta;
         cl = CL_LOCAL;
-        *(int *)(cl + 0x26f4) = *(int *)(cl + 0x20);
-        *(int *)(cl + 0x26f0) = *(int *)(cl + 0x20);
+        cl->oldServerTime = cl->snap.serverTime;
+        cl->serverTime = cl->snap.serverTime;
         {
             char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
             if (*(unsigned char *)(debugCvar + 8)) {
@@ -1209,7 +1204,7 @@ void CL_AdjustTimeDelta(void)
             }
         }
         cl = CL_LOCAL;
-        *(int *)(cl + 0x26fc) = (newDelta + *(int *)(cl + 0x26fc)) >> 1;
+        cl->serverTimeDelta = (newDelta + cl->serverTimeDelta) >> 1;
         goto debug_print;
     }
 
@@ -1220,14 +1215,14 @@ smooth:
             goto debug_print;
     }
 
-    if (*(int *)(cl + 0x2704)) {
-        *(int *)(cl + 0x2704) = 0;
+    if (cl->extrapolatedSnapshot) {
+        cl->extrapolatedSnapshot = 0;
         cl = CL_LOCAL;
-        *(int *)(cl + 0x26fc) -= 2;
+        cl->serverTimeDelta -= 2;
     } else if (newDelta > serverTimeDelta) {
-        *(int *)(cl + 0x26fc) = serverTimeDelta + 1;
+        cl->serverTimeDelta = serverTimeDelta + 1;
     } else if (newDelta < serverTimeDelta) {
-        *(int *)(cl + 0x26fc) = serverTimeDelta - 1;
+        cl->serverTimeDelta = serverTimeDelta - 1;
     }
 
 debug_print:
@@ -1236,13 +1231,13 @@ debug_print:
         if (*(unsigned char *)(debugCvar + 8)) {
             cl = CL_LOCAL;
             {
-                char *cls = CLS;
+                clientStatic_t *cls = CLS;
                 Com_Printf("client time: %i, server time: %i\n",
-                    *(int *)(cls + 0x118) + *(int *)(cl + 0x26fc),
-                    *(int *)(cl + 0x20));
+                    cls->realtime + cl->serverTimeDelta,
+                    cl->snap.serverTime);
             }
             Com_Printf("snapshot delta: %i, time delta: %i\n",
-                newDelta, *(int *)(cl + 0x26fc));
+                newDelta, cl->serverTimeDelta);
         }
     }
 }
@@ -1250,15 +1245,15 @@ debug_print:
 /* line 1876 */
 void CL_SetADS(int ads)
 {
-    char *cl = CL_LOCAL;
-    *(unsigned char *)(cl + 0xb) = (unsigned char)ads;
+    clientActive_t *cl = CL_LOCAL;
+    cl->usingAds = (unsigned char)ads;
 }
 
 /* line 1888 */
 void CL_DrawString(int x, int y, const char *pszString, qboolean bShadow, int iCharHeight)
 {
-    char *cl = CL_LOCAL;
-    if (!*(unsigned char *)(cl + 9))
+    clientActive_t *cl = CL_LOCAL;
+    if (!cl->cgameInitialized)
         return;
     CG_DrawStringExt((float)x, (float)y, pszString, 0, 0, bShadow, (float)iCharHeight, 1);
 }
@@ -1285,9 +1280,9 @@ void CL_LookupColor(int c, vec_t *color)
     if (idx <= 7) {
         src = (float *)&g_color_table[idx];
     } else if ((unsigned char)c == '8') {
-        src = (float *)(CL_LOCAL + 0x862c);
+        src = (float *)CL_LOCAL->color_allies;
     } else if ((unsigned char)c == '9') {
-        src = (float *)(CL_LOCAL + 0x863c);
+        src = (float *)CL_LOCAL->color_axis;
     } else {
         color[0] = 1.0f;
         color[1] = 1.0f;
@@ -1305,18 +1300,18 @@ void CL_LookupColor(int c, vec_t *color)
 /* line 247 */
 void CL_SetUserCmdAimValues(vec_t *kickAngles)
 {
-    char *cl = CL_LOCAL;
-    *(float *)(cl + 0x8610) = kickAngles[0];
-    *(float *)(cl + 0x8614) = kickAngles[1];
-    *(float *)(cl + 0x8618) = kickAngles[2];
+    clientActive_t *cl = CL_LOCAL;
+    cl->cgameKickAngles[0] = kickAngles[0];
+    cl->cgameKickAngles[1] = kickAngles[1];
+    cl->cgameKickAngles[2] = kickAngles[2];
 }
 
 /* line 1954 */
 void CL_UpdateColor(void)
 {
-    char *cl = CL_LOCAL;
-    float *alliesColor = (float *)(cl + 0x862c);
-    float *axisColor = (float *)(cl + 0x863c);
+    clientActive_t *cl = CL_LOCAL;
+    float *alliesColor = (float *)cl->color_allies;
+    float *axisColor = (float *)cl->color_axis;
 
     Dvar_GetUnpackedColorByName("g_TeamColor_Allies", alliesColor);
     alliesColor[3] = 1.0f;
@@ -1330,9 +1325,9 @@ void CL_UpdateColor(void)
 /* line 964 */
 void CL_SetFullScreenViewport(void)
 {
-    char *cls = CLS;
-    int width = *(int *)(cls + 0x2a0a64);
-    int height = *(int *)(cls + 0x2a0a68);
+    clientStatic_t *cls = CLS;
+    int width = cls->vidConfig.width;
+    int height = cls->vidConfig.height;
 
     RE->SetViewport(0, 0, width, height);
     SetScreenScaling(1.0f, 1.0f, 0, 0, width, height);
@@ -1351,13 +1346,13 @@ void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int ve
 /* line 1272 */
 void CL_SyncTimes(void)
 {
-    char *clui = CLUI_STATE;
-    if (*(int *)clui != 8)
+    clientConnection_t *clui = CLUI_STATE;
+    if (clui->state != 8)
         return;
 
     {
-        char *cl = CL_LOCAL;
-        if (*(unsigned char *)(cl + 0x1c) & 2)
+        clientActive_t *cl = CL_LOCAL;
+        if (cl->snap.snapFlags & 2)
             return;
     }
 
@@ -1367,12 +1362,12 @@ void CL_SyncTimes(void)
 /* line 1743 */
 void CL_SetCGameTime(void)
 {
-    char *clui;
-    char *cl;
+    clientConnection_t *clui;
+    clientActive_t *cl;
     int state;
 
     clui = CLUI_STATE;
-    state = *(int *)clui;
+    state = clui->state;
 
     if (state != 8 && state != 7)
         return;
@@ -1380,41 +1375,41 @@ void CL_SetCGameTime(void)
     {
         static int sct_diag = 0;
         if (sct_diag < 20 || (sct_diag % 200 == 0)) {
-            char *cl_tmp = CL_LOCAL;
+            clientActive_t *cl_tmp = CL_LOCAL;
             fprintf(stderr, "[CL_SetCGameTime#%d] state=%d cl=%p newSnap=%d snap.valid=%d\n",
-                    sct_diag, state, cl_tmp, *(int *)(cl_tmp + 0x2708),
-                    *(int *)(cl_tmp + 0x18));
+                    sct_diag, state, cl_tmp, cl_tmp->newSnapshots,
+                    cl_tmp->snap.valid);
         }
         sct_diag++;
     }
 
     if (state == 7) {
         /* CA_PRIMED */
-        if (*(int *)(clui + 0x407a0)) {
+        if (clui->demoplaying) {
             /* Demo playing */
-            if (!*(int *)(clui + 0x407ac)) {
-                *(int *)(clui + 0x407ac) = 1;
+            if (!clui->firstDemoFrameSkipped) {
+                clui->firstDemoFrameSkipped = 1;
                 return;
             }
             CL_ReadDemoMessage();
         }
 
         cl = CL_LOCAL;
-        if (*(int *)(cl + 0x2708)) {
-            *(int *)(cl + 0x2708) = 0;
-            if (!(*(unsigned char *)(cl + 0x1c) & 2)) {
+        if (cl->newSnapshots) {
+            cl->newSnapshots = 0;
+            if (!(cl->snap.snapFlags & 2)) {
                 CL_FirstSnapshot();
             }
         }
 
         clui = CLUI_STATE;
-        if (*(int *)clui != 8)
+        if (clui->state != 8)
             return;
     }
 
     /* CA_ACTIVE */
     cl = CL_LOCAL;
-    if (!*(int *)(cl + 0x18)) {
+    if (!cl->snap.valid) {
         Com_Error(ERR_DROP, "CL_SetCGameTime: no snapshot");
     }
 
@@ -1433,14 +1428,14 @@ void CL_SetCGameTime(void)
 
     cl = CL_LOCAL;
     {
-        int serverTime = *(int *)(cl + 0x20);
-        if (serverTime < *(int *)(cl + 0x26f8)) {
-            char *cls = CLS;
-            if (I_stricmp((char *)(cls + 8), "localhost") != 0) {
+        int serverTime = cl->snap.serverTime;
+        if (serverTime < cl->oldFrameServerTime) {
+            clientStatic_t *cls = CLS;
+            if (I_stricmp(cls->servername, "localhost") != 0) {
                 Com_Error(ERR_DROP, "cl.snap.serverTime < cl.oldFrameServerTime");
             }
             /* Reset via CL_FirstSnapshot */
-            if (!(*(unsigned char *)(cl + 0x1c) & 2)) {
+            if (!(cl->snap.snapFlags & 2)) {
                 CL_FirstSnapshot();
             }
         }
@@ -1448,30 +1443,30 @@ void CL_SetCGameTime(void)
 
     cl = CL_LOCAL;
     {
-        int serverTime = *(int *)(cl + 0x20);
-        *(int *)(cl + 0x26f8) = serverTime;
+        int serverTime = cl->snap.serverTime;
+        cl->oldFrameServerTime = serverTime;
     }
 
     clui = CLUI_STATE;
     {
-        int demoPlaying = *(int *)(clui + 0x407a0);
-        char *cls = CLS;
+        int demoPlaying = clui->demoplaying;
+        clientStatic_t *cls = CLS;
 
         if (!demoPlaying || !*(unsigned char *)(*(char **)*(void **)imp_cl_freezeDemo + 8)) {
             /* Live game or not timedemo */
-            int timeDelta = *(int *)(cl + 0x26fc);
-            int realtime = *(int *)(cls + 0x118);
-            *(int *)(cl + 0x26f0) = realtime + timeDelta;
+            int timeDelta = cl->serverTimeDelta;
+            int realtime = cls->realtime;
+            cl->serverTime = realtime + timeDelta;
 
-            int oldServerTime = *(int *)(cl + 0x26f4);
-            if (*(int *)(cl + 0x26f0) < oldServerTime) {
-                *(int *)(cl + 0x26f0) = oldServerTime;
+            int oldServerTime = cl->oldServerTime;
+            if (cl->serverTime < oldServerTime) {
+                cl->serverTime = oldServerTime;
             }
-            *(int *)(cl + 0x26f4) = *(int *)(cl + 0x26f0);
+            cl->oldServerTime = cl->serverTime;
 
-            int serverTime = *(int *)(cl + 0x20);
+            int serverTime = cl->snap.serverTime;
             if (timeDelta + realtime < serverTime - 5) {
-                *(int *)(cl + 0x2704) = 1;
+                cl->extrapolatedSnapshot = 1;
                 {
                     char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
                     if (*(unsigned char *)(debugCvar + 8)) {
@@ -1481,9 +1476,9 @@ void CL_SetCGameTime(void)
             }
         } else {
             /* Timedemo mode */
-            if (!*(int *)(clui + 0x407b4)) {
+            if (!clui->timeDemoLog) {
                 /* Open timedemo CSV file */
-                char *mapPath = cl + 0x8590;
+                char *mapPath = cl->mapname;
                 char *base = mapPath;
                 char *dotPos = 0;
                 while (*mapPath) {
@@ -1504,50 +1499,50 @@ void CL_SetCGameTime(void)
                         name = base;
                     }
                     int mode = Dvar_GetInt("cl_timedemoMode");
-                    *(int *)(clui + 0x407b4) = FS_FOpenFileWrite(va("demos/timedemo_%s_mode_%i.csv", name, mode));
+                    clui->timeDemoLog = FS_FOpenFileWrite(va("demos/timedemo_%s_mode_%i.csv", name, mode));
                 }
             }
 
             {
                 int msec = Sys_Milliseconds();
                 clui = CLUI_STATE;
-                if (!*(int *)(clui + 0x407bc)) {
-                    *(int *)(clui + 0x407bc) = msec;
-                } else if (*(int *)(clui + 0x407b4)) {
-                    FS_Printf(*(int *)(clui + 0x407b4), "%i,%i\n",
-                        *(int *)(clui + 0x407b8),
-                        msec - *(int *)(clui + 0x407c0));
+                if (!clui->timeDemoStart) {
+                    clui->timeDemoStart = msec;
+                } else if (clui->timeDemoLog) {
+                    FS_Printf(clui->timeDemoLog, "%i,%i\n",
+                        clui->timeDemoFrames,
+                        msec - clui->timeDemoPrev);
                 }
-                *(int *)(clui + 0x407c0) = msec;
-                int frameNum = *(int *)(clui + 0x407b8) + 1;
-                *(int *)(clui + 0x407b8) = frameNum;
+                clui->timeDemoPrev = msec;
+                int frameNum = clui->timeDemoFrames + 1;
+                clui->timeDemoFrames = frameNum;
                 cl = CL_LOCAL;
-                *(int *)(cl + 0x26f0) = *(int *)(clui + 0x407c4) + frameNum * 50;
+                cl->serverTime = clui->timeDemoBaseTime + frameNum * 50;
             }
         }
     }
 
     cl = CL_LOCAL;
     /* Check newSnapshots and adjust time delta */
-    if (*(int *)(cl + 0x2708)) {
+    if (cl->newSnapshots) {
         CL_AdjustTimeDelta();
     }
 
     clui = CLUI_STATE;
-    if (!*(int *)(clui + 0x407a0))
+    if (!clui->demoplaying)
         return;
 
     /* Demo playback: advance snapshots */
-    if (!*(int *)(clui + 0x407a4)) {
+    if (!clui->isTimeDemo) {
         cl = CL_LOCAL;
     } else {
         cl = CL_LOCAL;
     }
 
-    while (*(int *)(cl + 0x26f0) >= *(int *)(cl + 0x20)) {
+    while (cl->serverTime >= cl->snap.serverTime) {
         CL_ReadDemoMessage();
         clui = CLUI_STATE;
-        if (*(int *)clui != 8)
+        if (clui->state != 8)
             return;
         cl = CL_LOCAL;
     }

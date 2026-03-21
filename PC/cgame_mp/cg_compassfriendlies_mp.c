@@ -129,42 +129,41 @@ void CG_ApplyCompassPointerRadiusScale(float *radiusScale)
 /* line 15 */
 void CG_CompassAddWeaponPingInfo(centity_t *cent, const vec_t *origin, int msec)
 {
-    byte *cg = *cg_glob;
-    byte *centRaw = (byte *)cent;
-    int eType = *(int *)(centRaw + ES_ETYPE);
+    cg_t *cg = *(cg_t **)cg_glob;
+    int eType = cent->nextState.eType;
 
     /* line 22: Skip if eType == 2 (ET_PLAYER) */
     if (eType == 2)
         return;
 
     /* line 26: Get local client number (at cg_base + 4) */
-    int localClientNum = *(int *)(cg + 4);
+    int localClientNum = cg->clientNum;
 
     /* Compute localClientInfo pointer: cg_base + 0xe0914 + localClientNum * 1208 */
-    byte *localClientInfo = cg + CG_CLIENTINFO_BASE + localClientNum * CLIENTINFO_STRIDE;
+    clientInfo_t *localClientInfo = &cg->bgs.clientinfo[localClientNum];
 
     /* line 27: Get entity's clientNum */
-    int entClientNum = *(int *)(centRaw + ES_CLIENTNUM);
+    int entClientNum = cent->nextState.number;
 
     /* Compute entity's clientInfo pointer */
-    byte *entClientInfo = cg + CG_CLIENTINFO_BASE + entClientNum * CLIENTINFO_STRIDE;
+    clientInfo_t *entClientInfo = &cg->bgs.clientinfo[entClientNum];
 
     /* line 29: Skip if same clientInfo (same client) */
     if (localClientInfo == entClientInfo)
         return;
 
     /* line 33-35: Check entity's team; skip if spectator (3) */
-    int entTeam = *(int *)(entClientInfo + CI_TEAM);
+    int entTeam = entClientInfo->team;
     if (entTeam == 3)
         return;
 
     /* line 40: Store ping time = cg.time + msec */
-    int cgTime = *(int *)(cg + CG_TIME);
-    byte *actor = cg + CG_COMPASS_ACTORS + entClientNum * COMPASS_ACTOR_SIZE;
-    *(int *)(actor + 0x14) = cgTime + msec; /* beginFadeTime */
+    int cgTime = cg->time;
+    compassactor_t *actor = &cg->compassActors[entClientNum];
+    actor->beginFadeTime = cgTime + msec; /* beginFadeTime */
 
     /* line 41: Determine enemy flag based on local client's team vs entity's team */
-    int localTeam = *(int *)(localClientInfo + CI_TEAM);
+    int localTeam = localClientInfo->team;
     byte enemyFlag;
     if (localTeam == 0) {
         /* No team (FFA) - mark as enemy */
@@ -176,15 +175,15 @@ void CG_CompassAddWeaponPingInfo(centity_t *cent, const vec_t *origin, int msec)
         /* Different team - enemy */
         enemyFlag = 1;
     }
-    *(byte *)(actor + 0x18) = enemyFlag; /* enemy */
+    actor->enemy = enemyFlag; /* enemy */
 
     /* line 43: Only store position if enemy flag is set */
-    if (*(byte *)(actor + 0x18) == 0)
+    if (actor->enemy == 0)
         return;
 
     /* line 44: Store origin into vLastPos */
-    *(float *)(actor + 0x04) = origin[0]; /* vLastPos[0] */
-    *(float *)(actor + 0x08) = origin[1]; /* vLastPos[1] */
+    actor->vLastPos[0] = origin[0]; /* vLastPos[0] */
+    actor->vLastPos[1] = origin[1]; /* vLastPos[1] */
 }
 
 /*
@@ -212,8 +211,8 @@ static float CompassDistToRadius(float dist)
 /* line 95 */
 void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *color)
 {
-    byte *cg;
-    byte *cgs;
+    cg_t *cg;
+    cgs_t *cgs;
     float compassFadeOutAlpha;
     float centerX, centerY;
     int team;
@@ -224,10 +223,10 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
     int duration = (int)floorf(fadeDvar->current.value * 1000.0f + 0.5f);
 
     /* Get cg base */
-    cg = *cg_glob;
+    cg = *(cg_t **)cg_glob;
 
     /* Compute fade alpha */
-    int displayStartTime = *(int *)(cg + CG_COMPASS_DISPLAYTIME);
+    int displayStartTime = cg->compassFadeTime;
     compassFadeOutAlpha = CG_FadeHudMenu(fadeDvar, displayStartTime, duration);
 
     /* line 125: Skip if fully transparent */
@@ -235,16 +234,16 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
         return;
 
     /* line 128: Get our snap clientNum and check clientInfo */
-    byte *snapPtr = *(byte **)(cg + CG_SNAP_PTR);
-    int ourClientNum = *(int *)(snapPtr + SNAP_PS_CLIENTNUM);
-    byte *ourCI = cg + CG_CLIENTINFO_BASE + ourClientNum * CLIENTINFO_STRIDE;
-    int infoValid = *(int *)(ourCI + CI_INFOVALID);
+    snapshot_t *snapPtr = cg->snap;
+    int ourClientNum = snapPtr->ps.clientNum;
+    clientInfo_t *ourCI = &cg->bgs.clientinfo[ourClientNum];
+    int infoValid = ourCI->infoValid;
 
     if (infoValid == 0)
         return;
 
     /* line 130: Get our team */
-    team = *(int *)(ourCI + CI_TEAM);
+    team = ourCI->team;
 
     /* line 132: Skip if spectator */
     if (team == 3)
@@ -268,25 +267,24 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
     /* line 142: Branch based on team */
     if (team != 0) {
         /* team != 0: iterate over snapshot clients */
-        byte *snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
-        int numClients = *(int *)(snapPtr2 + SNAP_PS_NUMCLIENTS);
+        snapshot_t *snapPtr2 = cg->snap;
+        int numClients = snapPtr2->numEntities;
 
         for (i = 0; i < numClients; i++) {
-            byte *snap = *(byte **)(cg + CG_SNAP_PTR);
+            snapshot_t *snap = cg->snap;
 
             /* line 147: Get clientNum from playerInfo array */
-            int clientIdx = *(int *)(snap + SNAP_PI_STRIDE * i + SNAP_PS_CLIENTBASE);
+            int clientIdx = snap->entities[i].number;
 
             /* Compute centity pointer for this client */
-            byte *entities = *cg_entities_glob;
-            byte *centRaw = entities + clientIdx * CENTITY_BIN_SIZE;
+            centity_t *centEnt = &((centity_t *)*cg_entities_glob)[clientIdx];
 
             /* line 148: Check eType == 1 (ET_PLAYER_CORPSE? or ET_GENERAL) */
-            if (*(int *)(centRaw + ES_ETYPE) != 1)
+            if (centEnt->nextState.eType != 1)
                 continue;
 
             /* line 150: Check eFlags bit 1 (crouching/dead?) */
-            if (*(byte *)(centRaw + 0xfa) & 0x02)
+            if (((centEnt->nextState.eFlags >> 16) & 0x02))
                 continue;
 
             /* line 154: Skip negative clientNum */
@@ -294,46 +292,46 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
                 continue;
 
             /* line 157: Compute clientInfo for this client */
-            cg = *cg_glob;
-            byte *ci = cg + CG_CLIENTINFO_BASE + clientIdx * CLIENTINFO_STRIDE;
+            cg = *(cg_t **)cg_glob;
+            clientInfo_t *ci = &cg->bgs.clientinfo[clientIdx];
 
             /* Check infoValid */
-            if (*(int *)(ci + CI_INFOVALID) == 0)
+            if (ci->infoValid == 0)
                 continue;
 
             /* line 159: Check team matches ours */
-            if (*(int *)(ci + CI_TEAM) != team)
+            if (ci->team != team)
                 continue;
 
             /* line 165: Update compass actor iLastUpdate */
-            byte *actor = cg + CG_COMPASS_ACTORS + clientIdx * COMPASS_ACTOR_SIZE;
-            int cgTime = *(int *)(cg + CG_TIME);
-            *(int *)(actor + 0x00) = cgTime; /* iLastUpdate */
+            compassactor_t *actor = &cg->compassActors[clientIdx];
+            int cgTime = cg->time;
+            actor->iLastUpdate = cgTime; /* iLastUpdate */
 
             /* line 166: Store lerpOrigin into vLastPos */
-            *(float *)(actor + 0x04) = *(float *)(centRaw + ES_ORIGIN_X);
-            *(float *)(actor + 0x08) = *(float *)(centRaw + ES_ORIGIN_Y);
+            actor->vLastPos[0] = centEnt->lerpOrigin[0];
+            actor->vLastPos[1] = centEnt->lerpOrigin[1];
 
             /* line 167: Store lean/yaw into fLastYaw */
-            *(float *)(actor + 0x0c) = *(float *)(centRaw + ES_LEAN);
+            actor->fLastYaw = centEnt->lerpAngles[1];
 
             /* line 169: Check eFlags bit 6 (firing?) for weapon ping */
-            if (!(*(byte *)(centRaw + 0xfa) & 0x40))
+            if (!(((centEnt->nextState.eFlags >> 16) & 0x40)))
                 continue;
 
             /* line 170: Extend pingTime if expired */
-            cg = *cg_glob;
-            cgTime = *(int *)(cg + CG_TIME);
-            if (*(int *)(actor + 0x10) <= cgTime) {
-                *(int *)(actor + 0x10) = cgTime + 3000; /* 0xbb8 = 3000ms */
+            cg = *(cg_t **)cg_glob;
+            cgTime = cg->time;
+            if (actor->pingTime <= cgTime) {
+                actor->pingTime = cgTime + 3000; /* 0xbb8 = 3000ms */
             }
         }
 
         /* Reload snap pointer for compass packed data below */
-        snapPtr2 = *(byte **)(*(byte **)(cg_glob) + CG_SNAP_PTR);
+        snapPtr2 = (*(cg_t **)cg_glob)->snap;
 
         /* line 174: Check ps.compassFriend packed data */
-        int compassPacked = *(int *)(snapPtr2 + PS_COMPASS_PACKED);
+        int compassPacked = snapPtr2->ps.iCompassFriendInfo;
         if (compassPacked == 0)
             goto draw_friendlies;
 
@@ -341,14 +339,14 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
         int packedClientNum = compassPacked & 0x3f;
 
         /* line 179: Update compass actor iLastUpdate for packed client */
-        cg = *cg_glob;
-        byte *packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
-        *(int *)(packedActor + 0x00) = *(int *)(cg + CG_TIME); /* iLastUpdate */
+        cg = *(cg_t **)cg_glob;
+        compassactor_t *packedActor = &cg->compassActors[packedClientNum];
+        packedActor->iLastUpdate = cg->time; /* iLastUpdate */
 
         /* line 181-182: Extract packed position offsets */
-        cg = *cg_glob;
-        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
-        compassPacked = *(int *)(snapPtr2 + PS_COMPASS_PACKED);
+        cg = *(cg_t **)cg_glob;
+        snapPtr2 = cg->snap;
+        compassPacked = snapPtr2->ps.iCompassFriendInfo;
         int packedX = ((compassPacked & 0x7fc0) >> 4) - 0x3fc;
         int packedY = ((compassPacked & 0xff8000) >> 13) - 0x3fc;
         float deltaX = (float)packedX;
@@ -365,37 +363,37 @@ void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *c
             Vec2Normalize(dir);
 
             /* line 187: Store normalized position */
-            cg = *cg_glob;
-            packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
-            *(float *)(packedActor + 0x04) = dir[0];
-            *(float *)(packedActor + 0x08) = dir[1];
+            cg = *(cg_t **)cg_glob;
+            packedActor = &cg->compassActors[packedClientNum];
+            packedActor->vLastPos[0] = dir[0];
+            packedActor->vLastPos[1] = dir[1];
         }
         else
         {
             /* line 191-200: Store absolute position (playerOrigin + delta) */
-            cg = *cg_glob;
-            packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
-            float playerX = *(float *)(cg + CG_ORIGIN_X);
-            float playerY = *(float *)(cg + CG_ORIGIN_Y);
-            *(float *)(packedActor + 0x04) = playerX + deltaX;
-            *(float *)(packedActor + 0x08) = playerY + deltaY;
+            cg = *(cg_t **)cg_glob;
+            packedActor = &cg->compassActors[packedClientNum];
+            float playerX = cg->refdef.vieworg[0];
+            float playerY = cg->refdef.vieworg[1];
+            packedActor->vLastPos[0] = playerX + deltaX;
+            packedActor->vLastPos[1] = playerY + deltaY;
         }
 
         /* line 195: Store packed yaw */
-        cg = *cg_glob;
-        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
-        signed char packedYaw = *(signed char *)(snapPtr2 + PS_COMPASS_FRIEND_YAW);
-        *(float *)(cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE + 0x0c) =
+        cg = *(cg_t **)cg_glob;
+        snapPtr2 = cg->snap;
+        signed char packedYaw = (signed char)(snapPtr2->ps.iCompassFriendInfo >> 24);
+        cg->compassActors[packedClientNum].fLastYaw =
             (float)packedYaw * 1.40625f;
 
         /* line 197: Check eFlags for firing bit */
-        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
-        if (*(byte *)(snapPtr2 + PS_COMPASS_EFLAGS) & 0x80) {
+        snapPtr2 = cg->snap;
+        if (((snapPtr2->ps.eFlags >> 16) & 0x80)) {
             /* Update ping time if expired */
-            int cgTime2 = *(int *)(cg + CG_TIME);
-            byte *pActor2 = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
-            if (*(int *)(pActor2 + 0x10) <= cgTime2) {
-                *(int *)(pActor2 + 0x10) = cgTime2 + 3000;
+            int cgTime2 = cg->time;
+            compassactor_t *pActor2 = &cg->compassActors[packedClientNum];
+            if (pActor2->pingTime <= cgTime2) {
+                pActor2->pingTime = cgTime2 + 3000;
             }
         }
     }
@@ -416,35 +414,35 @@ draw_friendlies:
         fadedColor[3] = a;
     }
 
-    cg = *cg_glob;
+    cg = *(cg_t **)cg_glob;
 
     /* line 209: Iterate over 64 compass actors */
     for (i = 0; i < COMPASS_ACTOR_COUNT; i++) {
-        byte *cgBase = *cg_glob;
-        byte *actor = cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE;
+        cg_t *cgBase = *(cg_t **)cg_glob;
+        compassactor_t *actor = &cgBase->compassActors[i];
 
         /* line 211: Reset iLastUpdate if in the future */
-        int lastUpdate = *(int *)(actor + 0x00);
-        int cgTime = *(int *)(cgBase + CG_TIME);
+        int lastUpdate = actor->iLastUpdate;
+        int cgTime = cgBase->time;
         if (lastUpdate > cgTime) {
-            *(int *)(actor + 0x00) = 0;
+            actor->iLastUpdate = 0;
         }
 
         /* line 213: Skip if too old (> 800ms ago) */
-        cgTime = *(int *)(cgBase + CG_TIME);
-        if (*(int *)(actor + 0x00) < cgTime - 0x320)
+        cgTime = cgBase->time;
+        if (actor->iLastUpdate < cgTime - 0x320)
             continue;
 
         /* line 216: Skip our own client */
-        byte *snap2 = *(byte **)(cgBase + CG_SNAP_PTR);
-        if (i == *(int *)(snap2 + SNAP_PS_CLIENTNUM))
+        snapshot_t *snap2 = cgBase->snap;
+        if (i == snap2->ps.clientNum)
             continue;
 
         /* line 220: Check if position is valid (not tiny/zero) */
-        float posX = *(float *)(actor + 0x04);
-        float posY = *(float *)(actor + 0x08);
-        unsigned int absX = *(unsigned int *)(actor + 0x04) & 0x7fffffff;
-        unsigned int absY = *(unsigned int *)(actor + 0x08) & 0x7fffffff;
+        float posX = actor->vLastPos[0];
+        float posY = actor->vLastPos[1];
+        unsigned int absX = *(unsigned int *)&actor->vLastPos[0] & 0x7fffffff;
+        unsigned int absY = *(unsigned int *)&actor->vLastPos[1] & 0x7fffffff;
         float fabsX, fabsY;
         *(unsigned int *)&fabsX = absX;
         *(unsigned int *)&fabsY = absY;
@@ -458,7 +456,7 @@ draw_friendlies:
             dirVec[0] = posX;
             dirVec[1] = posY;
             float yawTo = vectoyaw(dirVec);
-            yawTo = AngleNormalize360(yawTo - *(float *)(cgBase + CG_COMPASS_YAW));
+            yawTo = AngleNormalize360(yawTo - cgBase->compPointerYaw);
 
             /* line 224-227: For out-of-range targets, use midpoint alpha and max radius */
             float clampSat = dvar_value(dvar_compassClampSaturation);
@@ -485,13 +483,13 @@ draw_friendlies:
             CG_ApplySplitScreenCompassScale(&x, &y, &w, &h);
 
             /* line 265: Compute angle for drawing */
-            float refYaw = *(float *)(cgBase + CG_REFDEF_YAW);
-            float actorYaw = *(float *)(actor + 0x0c);
+            float refYaw = cgBase->refdefViewAngles[1];
+            float actorYaw = actor->fLastYaw;
             float drawAngle = AngleNormalize360(refYaw - actorYaw);
 
             /* line 267-270: Determine ping flash state */
-            int pingTime = *(int *)(actor + 0x10);
-            cgTime = *(int *)(cgBase + CG_TIME);
+            int pingTime = actor->pingTime;
+            cgTime = cgBase->time;
             int pingFlash = 0;
             if (pingTime > cgTime) {
                 int elapsed = pingTime - cgTime;
@@ -502,7 +500,7 @@ draw_friendlies:
             }
 
             /* line 276: Check if ping has expired */
-            int beginFade = *(int *)(actor + 0x14);
+            int beginFade = actor->beginFadeTime;
             float pingFadeTime = dvar_value(dvar_compassPingFadeTime);
             float fadeEnd = (float)beginFade + pingFadeTime * 1000.0f;
             MaterialHandle friendMat = NULL;
@@ -517,8 +515,8 @@ draw_friendlies:
                     iconAlpha = 1.0f + (float)(cgTime - beginFade) / (pingFadeTime * -1000.0f);
                 }
                 /* line 283: Get compass back material */
-                cgs = *cgs_glob;
-                friendMat = *(MaterialHandle *)(cgs + CGS_COMPASS_BACK);
+                cgs = *(cgs_t **)cgs_glob;
+                friendMat = cgs->media.compassping_friendlyfiring;
             } else {
                 friendMat = NULL;
             }
@@ -537,15 +535,15 @@ draw_friendlies:
             /* line 293: Draw based on ping flash state */
             if (pingFlash == 1) {
                 /* line 295: Draw compass dot */
-                cgs = *cgs_glob;
-                MaterialHandle dotMat = *(MaterialHandle *)(cgs + CGS_COMPASS_DOT);
+                cgs = *(cgs_t **)cgs_glob;
+                MaterialHandle dotMat = cgs->media.friendMaterials[1];
                 UI_DrawHandlePic(x, y, w, h, rect->horzAlign, rect->vertAlign, fadedColor, dotMat);
             } else {
                 /* line 299-303: Draw direction indicator and/or friend material */
                 if (friendMat == NULL || iconAlpha != 1.0f) {
                     /* line 300: Draw direction material */
-                    cgs = *cgs_glob;
-                    MaterialHandle dirMat = *(MaterialHandle *)(cgs + CGS_COMPASS_DIR(pingFlash));
+                    cgs = *(cgs_t **)cgs_glob;
+                    MaterialHandle dirMat = cgs->media.friendMaterials[pingFlash];
                     CG_DrawRotatedPic(x, y, w, h, rect->horzAlign, rect->vertAlign, drawAngle, actorColor, dirMat);
                 }
                 if (friendMat != NULL) {
@@ -554,20 +552,20 @@ draw_friendlies:
                 }
             }
 
-            cg = *cg_glob;
+            cg = *(cg_t **)cg_glob;
             continue;
         }
 
         /* Normal case: position is absolute coordinates */
         /* line 65-66: Compute position delta */
         vec2_t posDelta;
-        posDelta[0] = posX - *(float *)(cgBase + CG_ORIGIN_X);
-        posDelta[1] = posY - *(float *)(cgBase + CG_ORIGIN_Y);
+        posDelta[0] = posX - cgBase->refdef.vieworg[0];
+        posDelta[1] = posY - cgBase->refdef.vieworg[1];
 
         /* line 233: Compute yaw to target */
         float yawTo = vectoyaw(posDelta);
-        cgBase = *cg_glob;
-        yawTo = AngleNormalize360(yawTo - *(float *)(cgBase + CG_COMPASS_YAW));
+        cgBase = *(cg_t **)cg_glob;
+        yawTo = AngleNormalize360(yawTo - cgBase->compPointerYaw);
 
         /* line 134/81: Compute distance */
         float dist = sqrtf(posDelta[0] * posDelta[0] + posDelta[1] * posDelta[1]);
@@ -633,14 +631,14 @@ draw_friendlies:
         CG_ApplySplitScreenCompassScale(&x2, &y2, &w2, &h2);
 
         /* line 265: Compute draw angle */
-        cgBase = *cg_glob;
-        float refYaw2 = *(float *)(cgBase + CG_REFDEF_YAW);
-        float actorYaw2 = *(float *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x0c);
+        cgBase = *(cg_t **)cg_glob;
+        float refYaw2 = cgBase->refdefViewAngles[1];
+        float actorYaw2 = cgBase->compassActors[i].fLastYaw;
         float drawAngle2 = AngleNormalize360(refYaw2 - actorYaw2);
 
         /* line 267-270: Ping flash calculation */
-        int pingTime2 = *(int *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x10);
-        cgTime = *(int *)(cgBase + CG_TIME);
+        int pingTime2 = cgBase->compassActors[i].pingTime;
+        cgTime = cgBase->time;
         int pingFlash2 = 0;
         if (pingTime2 > cgTime) {
             int elapsed2 = pingTime2 - cgTime;
@@ -651,7 +649,7 @@ draw_friendlies:
         }
 
         /* line 276: Check begin fade time for ping display */
-        int beginFade2 = *(int *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x14);
+        int beginFade2 = cgBase->compassActors[i].beginFadeTime;
         float pingFadeTime2 = dvar_value(dvar_compassPingFadeTime);
         float fadeEnd2 = (float)beginFade2 + pingFadeTime2 * 1000.0f;
         MaterialHandle friendMat2 = NULL;
@@ -662,8 +660,8 @@ draw_friendlies:
             } else {
                 iconAlpha2 = 1.0f + (float)(cgTime - beginFade2) / (pingFadeTime2 * -1000.0f);
             }
-            cgs = *cgs_glob;
-            friendMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_BACK);
+            cgs = *(cgs_t **)cgs_glob;
+            friendMat2 = cgs->media.compassping_friendlyfiring;
         }
 
         /* line 456-459: Build per-actor color */
@@ -678,13 +676,13 @@ draw_friendlies:
 
         /* line 293: Draw based on ping state */
         if (pingFlash2 == 1) {
-            cgs = *cgs_glob;
-            MaterialHandle dotMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_DOT);
+            cgs = *(cgs_t **)cgs_glob;
+            MaterialHandle dotMat2 = cgs->media.friendMaterials[1];
             UI_DrawHandlePic(x2, y2, w2, h2, rect->horzAlign, rect->vertAlign, fadedColor, dotMat2);
         } else {
             if (friendMat2 == NULL || iconAlpha2 != 1.0f) {
-                cgs = *cgs_glob;
-                MaterialHandle dirMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_DIR(pingFlash2));
+                cgs = *(cgs_t **)cgs_glob;
+                MaterialHandle dirMat2 = cgs->media.friendMaterials[pingFlash2];
                 CG_DrawRotatedPic(x2, y2, w2, h2, rect->horzAlign, rect->vertAlign, drawAngle2, actorColor2, dirMat2);
             }
             if (friendMat2 != NULL) {
@@ -692,26 +690,26 @@ draw_friendlies:
             }
         }
 
-        cg = *cg_glob;
+        cg = *(cg_t **)cg_glob;
     }
 
     /* line 309: Draw weapon pings (separate loop over all 64 actors) */
     {
-        byte *cgBase2 = *cg_glob;
+        cg_t *cgBase2 = *(cg_t **)cg_glob;
         for (i = 0; i < COMPASS_ACTOR_COUNT; i++) {
-            byte *actor2 = cgBase2 + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE;
+            compassactor_t *actor2 = &cgBase2->compassActors[i];
 
             /* line 312: Check enemy flag */
-            if (*(byte *)(actor2 + 0x18) == 0)
+            if (actor2->enemy == 0)
                 continue;
 
             /* line 314: Check if ping is still valid */
-            int pingBeginFade = *(int *)(actor2 + 0x14);
-            cgBase2 = *cg_glob;
-            byte *cg2 = cgBase2;
+            int pingBeginFade = actor2->beginFadeTime;
+            cgBase2 = *(cg_t **)cg_glob;
+            cg_t *cg2 = cgBase2;
             float pingFadeVal = dvar_value(dvar_compassPingFadeTime);
             float pingEnd = (float)pingBeginFade + pingFadeVal * 1000.0f;
-            int cgTime2 = *(int *)(cg2 + CG_TIME);
+            int cgTime2 = cg2->time;
             if ((float)cgTime2 > pingEnd)
                 continue;
             if (pingBeginFade == 0)
@@ -719,12 +717,12 @@ draw_friendlies:
 
             /* line 65-66: Compute position delta */
             vec2_t posDelta2;
-            posDelta2[0] = *(float *)(actor2 + 0x04) - *(float *)(cg2 + CG_ORIGIN_X);
-            posDelta2[1] = *(float *)(actor2 + 0x08) - *(float *)(cg2 + CG_ORIGIN_Y);
+            posDelta2[0] = actor2->vLastPos[0] - cg2->refdef.vieworg[0];
+            posDelta2[1] = actor2->vLastPos[1] - cg2->refdef.vieworg[1];
 
             /* line 318: Compute yaw and distance */
             float yaw = vectoyaw(posDelta2);
-            yaw = AngleNormalize360(yaw - *(float *)(cg2 + CG_COMPASS_YAW));
+            yaw = AngleNormalize360(yaw - cg2->compPointerYaw);
 
             float pingDist = sqrtf(posDelta2[0] * posDelta2[0] + posDelta2[1] * posDelta2[1]);
 
@@ -749,7 +747,7 @@ draw_friendlies:
 
             /* line 334-337: Compute fade alpha */
             float pingAlpha;
-            int cgTime3 = *(int *)(cg2 + CG_TIME);
+            int cgTime3 = cg2->time;
             if (pingBeginFade >= cgTime3) {
                 pingAlpha = 1.0f;
             } else {
@@ -763,8 +761,8 @@ draw_friendlies:
             fadedColor[3] = pingAlpha;
 
             /* line 343: Draw ping */
-            cgs = *cgs_glob;
-            MaterialHandle pingMat = *(MaterialHandle *)(cgs + CGS_COMPASS_PING);
+            cgs = *(cgs_t **)cgs_glob;
+            MaterialHandle pingMat = cgs->media.compassping_enemyfiring;
             UI_DrawHandlePic(px, py, pw, ph, rect->horzAlign, rect->vertAlign, fadedColor, pingMat);
         }
     }

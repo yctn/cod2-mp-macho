@@ -1332,7 +1332,7 @@ void SV_ClientEnterWorld(client_t *client, const dvar_t * (*cmd)[4])
 /* line 1106 */
 void SV_DoneDownload_f(client_t *cl)
 {
-    Com_DPrintf("clientDownload: %s Done\n", (const char *)((byte *)cl + 0x20c48));
+    Com_DPrintf("clientDownload: %s Done\n", cl->name);
     SV_SendClientGameState(cl);
 }
 
@@ -1340,8 +1340,8 @@ void SV_DoneDownload_f(client_t *cl)
 void SV_RetransmitDownload_f(client_t *cl)
 {
     int block = atoi(SV_Cmd_Argv(1));
-    if (block == *(int *)((byte *)cl + 0x20cb4))
-        *(int *)((byte *)cl + 0x20cbc) = block;
+    if (block == cl->downloadClientBlock)
+        cl->downloadXmitBlock = block;
 }
 
 /* line 1196 */
@@ -1865,7 +1865,7 @@ void SV_VerifyIwds_f(client_t *cl)
 /* line 1553 */
 void SV_ResetPureClient_f(client_t *cl)
 {
-    *(int *)((byte *)cl + 0x6e5b0) = 0;
+    cl->pureAuthentic = 0;
 }
 
 /* line 1694 */
@@ -4638,10 +4638,10 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
 {
     char game[0x400];
     extern void *imp_svs;
-    char *svs = (char *)imp_svs;
+    serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
 
     /* line 146 */
-    if (*(int *)(svs + 0xa068) == 1) {
+    if (svsPtr->authorizeAddress.type == 1) {
         return;
     }
 
@@ -4673,6 +4673,6 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
         game, (int)(unsigned char)allowAnon);
 
     /* line 159 */
-    NET_OutOfBandPrint(1, *(netadr_t *)(svs + 0xa068), s);
+    NET_OutOfBandPrint(1, svsPtr->authorizeAddress, s);
 }
 #endif

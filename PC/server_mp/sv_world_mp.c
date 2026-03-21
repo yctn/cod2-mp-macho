@@ -64,7 +64,7 @@ int SV_PointContents(const vec_t *p, int passEntityNum, int contentmask);
 clipHandle_t SV_ClipHandleForEntity(const gentity_t *ent)
 {
     if (ent->r.bmodel)
-        return *(int *)((byte *)ent + 0x8C); /* brush model handle */
+        return ent->s.index.brushmodel; /* brush model handle */
     return CM_TempBoxModel(ent->r.mins, ent->r.maxs, ent->r.contents);
 }
 
@@ -2107,19 +2107,18 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
 
     /* 2. Set entityNum: if fraction == 1.0 => 0x3ff (ENTITYNUM_NONE), else 0x3fe (ENTITYNUM_WORLD) */
     {
-        float fraction = *(float *)results;
-        int isOne = (fraction == 1.0f) ? 1 : 0;
-        *(unsigned short *)((byte *)results + 0x1c) = (unsigned short)(isOne + 0x3fe);
+        int isOne = (results->fraction == 1.0f) ? 1 : 0;
+        results->entityNum = (unsigned short)(isOne + 0x3fe);
     }
 
     /* 3. Early out if fraction is 0.0 */
-    if (*(float *)results == 0.0f)
+    if (results->fraction == 0.0f)
         return 0;
 
     /* 4. Static models trace (optional) */
     if (staticmodels) {
         CM_PointTraceStaticModels(results, start, end, contentmask);
-        if (*(float *)results == 0.0f)
+        if (results->fraction == 0.0f)
             return 0;
     }
 
@@ -2157,7 +2156,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 ownerNum = -1;
             } else {
                 gentity_t *passEnt = SV_GentityNum(passEntityNum);
-                ownerNum = *(int *)((byte *)passEnt + 0x150);
+                ownerNum = passEnt->r.ownerNum;
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }
@@ -2194,7 +2193,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 ownerNum = -1;
             } else {
                 gentity_t *passEnt = SV_GentityNum(passEntityNum);
-                ownerNum = *(int *)((byte *)passEnt + 0x150);
+                ownerNum = passEnt->r.ownerNum;
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }

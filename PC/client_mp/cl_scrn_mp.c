@@ -41,9 +41,9 @@ typedef void (*re_write_cubemap_func)(const char *, int, float, float);
 #define RE_FUNC(re, offset, type) ((type)(*(void **)((byte *)(re) + (offset))))
 
 /* clientStatic_t field offsets */
-#define CLS_CONSOLE_FONT(base) (*(int *)((base) + 0x2a0a60))
-#define CLS_CONN_STATE_FLAG(base) (*(int *)((base) + 0x110))
-#define CLS_CLIENT_TIME(base) (*(int *)((base) + 0x118))
+#define CLS_CONSOLE_FONT(base) (((clientStatic_t *)(base))->consoleFont)
+#define CLS_CONN_STATE_FLAG(base) (((clientStatic_t *)(base))->uiStarted)
+#define CLS_CLIENT_TIME(base) (((clientStatic_t *)(base))->realtime)
 
 /* Extern function declarations */
 extern void Com_Printf(const char *fmt, ...);
@@ -121,16 +121,16 @@ void SCR_Init(void)
 /* line 302 */
 float CL_GetMenuBlurRadius(void)
 {
-    byte *dvar = *(byte **)dvar_ptr_195ee78;
-    if (!(*(byte *)(dvar + 4) & 8))
+    clientActive_t *cl_local = *(clientActive_t **)dvar_ptr_195ee78;
+    if (!(cl_local->keyCatchers & 8))
         return 0.0f;
 
     byte *cls = cls_ptr_195ecac;
     if (CLS_CONN_STATE_FLAG(cls) == 0)
         return 0.0f;
 
-    byte *clc = *(byte **)clc_ptr_195ee8c;
-    if (*(int *)clc == 1)
+    clientConnection_t *clc = *(clientConnection_t **)clc_ptr_195ee8c;
+    if (clc->state == 1)
         return 0.0f;
 
     return UI_GetBlurRadius();
@@ -160,8 +160,8 @@ void CL_CubemapShot_f(void)
     byte isLightingShot;
     int side;
 
-    byte *dvar = *(byte **)dvar_ptr_195ee78;
-    if (*(byte *)(dvar + 9) == 0) {
+    clientActive_t *cl_local = *(clientActive_t **)dvar_ptr_195ee78;
+    if (cl_local->cgameInitialized == 0) {
         Com_Printf("must be in a map to use this command\n");
         return;
     }
@@ -237,10 +237,10 @@ void CL_CubemapShot_f(void)
         RE_FUNC(re, 0xa8, re_void_func)();
         CL_ClearScene();
 
-        byte *clc = *(byte **)clc_ptr_195ee8c;
-        int needRender = *(int *)(clc + 0x407a0) != 0;
-        byte *dv = *(byte **)dvar_ptr_195ee78;
-        int serverTime = *(int *)(dv + 0x26f0);
+        clientConnection_t *clc_local = *(clientConnection_t **)clc_ptr_195ee8c;
+        int needRender = clc_local->demoplaying != 0;
+        clientActive_t *dv = *(clientActive_t **)dvar_ptr_195ee78;
+        int serverTime = dv->serverTime;
 
         CG_DrawActiveFrame(serverTime, needRender, side, size, 0);
         RE_FUNC(re, 0xac, re_void_func)();
@@ -276,8 +276,8 @@ static void SCR_UpdateFrame(void)
        reaches CS_ACTIVE (connstate 8), where CL_InitCGame sets
        everything up properly. */
     {
-        byte *clc_check = *(byte **)clc_ptr_195ee8c;
-        int cs = *(int *)clc_check;
+        clientConnection_t *clc_check = *(clientConnection_t **)clc_ptr_195ee8c;
+        int cs = clc_check->state;
         if (cs >= 3 && cs <= 7) {
             return; /* skip ALL rendering during connect/loading phase */
         }
@@ -296,8 +296,8 @@ static void SCR_UpdateFrame(void)
     }
 
     /* Check connection state for scene rendering */
-    byte *clc = *(byte **)clc_ptr_195ee8c;
-    int connstate = *(int *)clc;
+    clientConnection_t *clc = *(clientConnection_t **)clc_ptr_195ee8c;
+    int connstate = clc->state;
     if (connstate != 8 && connstate != 1) {
         RE_FUNC(re, 0xc8, re_int4_func)(1, (int)(unsigned int)ptr_195f58c, 0, 0);
     }
@@ -321,8 +321,8 @@ static void SCR_UpdateFrame(void)
 
     if (UI_IsFullscreen()) {
         /* Fullscreen UI path */
-        clc = *(byte **)clc_ptr_195ee8c;
-        connstate = *(int *)clc;
+        clc = *(clientConnection_t **)clc_ptr_195ee8c;
+        connstate = clc->state;
 
         if (connstate < 0) {
             Com_Error(0, "SCR_DrawScreenField: bad clc->state");
@@ -330,9 +330,9 @@ static void SCR_UpdateFrame(void)
             goto check_ui;
         } else if (connstate == 8) {
             /* Active game frame (fullscreen) */
-            int needRender = *(int *)(clc + 0x407a0) != 0;
-            byte *dv = *(byte **)dvar_ptr_195ee78;
-            int serverTime = *(int *)(dv + 0x26f0);
+            int needRender = clc->demoplaying != 0;
+            clientActive_t *dv = *(clientActive_t **)dvar_ptr_195ee78;
+            int serverTime = dv->serverTime;
 
             int result = CG_DrawActiveFrame(serverTime, needRender, 0, 0, 0);
             if (result == 0) {
@@ -344,8 +344,8 @@ static void SCR_UpdateFrame(void)
         }
     } else {
         /* Non-fullscreen path */
-        clc = *(byte **)clc_ptr_195ee8c;
-        connstate = *(int *)clc;
+        clc = *(clientConnection_t **)clc_ptr_195ee8c;
+        connstate = clc->state;
 
         if ((unsigned int)connstate > 8) {
             Com_Error(0, "SCR_DrawScreenField: bad clc->state");
@@ -368,8 +368,8 @@ static void SCR_UpdateFrame(void)
 
         case 2: /* logo */
             CL_DrawLogo();
-            clc = *(byte **)clc_ptr_195ee8c;
-            if (*(int *)clc != 2) {
+            clc = *(clientConnection_t **)clc_ptr_195ee8c;
+            if (clc->state != 2) {
                 goto end_frame_draw;
             }
             goto check_ui;
@@ -385,9 +385,9 @@ static void SCR_UpdateFrame(void)
 
         case 8: /* active */
         {
-            int needRender = *(int *)(clc + 0x407a0) != 0;
-            byte *dv = *(byte **)dvar_ptr_195ee78;
-            int serverTime = *(int *)(dv + 0x26f0);
+            int needRender = clc->demoplaying != 0;
+            clientActive_t *dv = *(clientActive_t **)dvar_ptr_195ee78;
+            int serverTime = dv->serverTime;
 
             int result = CG_DrawActiveFrame(serverTime, needRender, 0, 0, 1);
             if (result == 0) {
@@ -395,13 +395,13 @@ static void SCR_UpdateFrame(void)
             }
 
             /* Demo recording overlay */
-            clc = *(byte **)clc_ptr_195ee8c;
-            if (*(int *)(clc + 0x4079c)) {
-                int pos = FS_FTell(*(int *)(clc + 0x407b0));
+            clc = *(clientConnection_t **)clc_ptr_195ee8c;
+            if (clc->demorecording) {
+                int pos = FS_FTell(clc->demofile);
                 int posKB = (pos + 0x3ff) >> 10;
                 char buf[1024];
                 float color[4];
-                sprintf(buf, "RECORDING %s: %ik", (char *)(clc + 0x4075c), posKB);
+                sprintf(buf, "RECORDING %s: %ik", clc->demoName, posKB);
 
                 CL_LookupColor(0x37, color);
                 float x = 5.0f;
@@ -427,9 +427,9 @@ static void SCR_UpdateFrame(void)
 check_ui:
     /* Draw UI if conditions met */
     {
-        byte *dv = *(byte **)dvar_ptr_195ee78;
+        clientActive_t *dv = *(clientActive_t **)dvar_ptr_195ee78;
 
-        if (*(byte *)(dv + 4) & 8)
+        if (dv->keyCatchers & 8)
             UI_Refresh();
     }
 
@@ -472,8 +472,8 @@ void SCR_UpdateScreenInternal(void)
     if (updateScreenCalled)
         return;
 
-    byte *clc = *(byte **)clc_ptr_195ee8c;
-    if (*(int *)clc == 6) {
+    clientConnection_t *clc_tmp = *(clientConnection_t **)clc_ptr_195ee8c;
+    if (clc_tmp->state == 6) {
         Sys_LoadingKeepAlive();
     }
 
@@ -496,8 +496,8 @@ void SCR_UpdateScreen(void)
     if (g_cginit_loading || updateScreenCalled)
         return;
 
-    byte *clc = *(byte **)clc_ptr_195ee8c;
-    if (*(int *)clc == 6) {
+    clientConnection_t *clc_tmp = *(clientConnection_t **)clc_ptr_195ee8c;
+    if (clc_tmp->state == 6) {
         Sys_LoadingKeepAlive();
     }
 

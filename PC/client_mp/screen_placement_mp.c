@@ -15,9 +15,9 @@ extern unsigned char spGlob[]; /* spGlob - global BSS, not static */
 extern byte *cls_ptr_195ecac; /* imp_cls - pointer to clientStatic_t */
 
 /* vidConfig field offsets within clientStatic_t */
-#define CLS_VIDCONFIG_WIDTH(base) (*(int *)((base) + 0x2a0a64))
-#define CLS_VIDCONFIG_HEIGHT(base) (*(int *)((base) + 0x2a0a68))
-#define CLS_VIDCONFIG_ASPECT_RATIO_PIXEL(base) (*(float *)((base) + 0x2a0a78))
+#define CLS_VIDCONFIG_WIDTH(base) (((clientStatic_t *)(base))->vidConfig.width)
+#define CLS_VIDCONFIG_HEIGHT(base) (((clientStatic_t *)(base))->vidConfig.height)
+#define CLS_VIDCONFIG_ASPECT_RATIO_PIXEL(base) (((clientStatic_t *)(base))->vidConfig.aspectRatioPixel)
 
 float GetRealWidthFromVirtualWidth(float width);
 float GetRealHeightFromVirtualHeight(float height);

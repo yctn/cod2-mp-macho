@@ -169,12 +169,12 @@ float CG_CalcPlayerHealth(void)
 void CG_ResetLowHealthOverlay(void)
 {
     byte *cg = (byte *)*(int *)imp_cg;
-    *(byte *)(cg + 0x2be20) = 0;
-    *(float *)(cg + 0x2be10) = *(float *)((byte *)hud_healthOverlay_phaseEnd_toAlpha + 8);
-    *(int *)(cg + 0x2be18) = 0;
-    *(int *)(cg + 0x2be1c) = 0;
-    *(int *)(cg + 0x2be2c) = 0;
-    *(float *)(cg + 0x2be28) = 1.0f;
+    ((cg_t *)cg)->healthOverlayHurt = 0;
+    ((cg_t *)cg)->healthOverlayToAlpha = *(float *)((byte *)hud_healthOverlay_phaseEnd_toAlpha + 8);
+    ((cg_t *)cg)->healthOverlayPulseDuration = 0;
+    ((cg_t *)cg)->healthOverlayPulsePhase = 0;
+    ((cg_t *)cg)->healthOverlayPulseIndex = 0;
+    ((cg_t *)cg)->healthOverlayOldHealth = 1.0f;
 }
 
 /* line 1036 */
@@ -212,7 +212,7 @@ const char * CG_GetUseString(void)
     char binding[0x100];
 
     cg = (byte *)*(void **)imp_cg;
-    hintString = CL_GetConfigString(*(int *)(cg + 0x2bdf4) + 0x4fe);
+    hintString = CL_GetConfigString(((cg_t *)cg)->cursorHintString + 0x4fe);
     if (!hintString || !*hintString)
     {
         return 0;
@@ -616,7 +616,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
     }
 
     cg = (byte *)*(void **)imp_cg;
-    if (!(*(byte *)(cg + 0x2618c) & 8))
+    if (!(*(byte *)&((cg_t *)cg)->predictedPlayerState.mantleState.flags & 8))
     {
         return;
     }
@@ -652,7 +652,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         rect->horzAlign,
         rect->vertAlign,
         color,
-        *(MaterialHandle *)(cgs + 0xbc78));
+        *(MaterialHandle *)(cgs + 0xbc78)); /* TODO: unknown cgs_t offset - likely cgs->media field */
 }
 
 /* line 1615 */
@@ -733,9 +733,9 @@ CG_DrawScore(int team, const rectDef_t *rect, struct Font_s *font, float scale, 
 const char * CG_GetKillerText(void)
 {
     byte *cg = (byte *)*(int *)imp_cg;
-    if (!*(byte *)(cg + 0x2b54c))
+    if (!((cg_t *)cg)->killerName[0])
         return "";
-    return va("Fragged by %s", (const char *)(cg + 0x2b54c));
+    return va("Fragged by %s", (const char *)((cg_t *)cg)->killerName);
 }
 
 /* line 1768 */
@@ -887,14 +887,14 @@ void CG_ArchiveState(MemoryFile *memFile)
     archiveProc = (MemoryFileArchiveProc)memFile->archiveProc;
     cg = (byte *)*(void **)imp_cg;
 
-    archiveProc(memFile, 4, cg + 0x2c5c4);
-    archiveProc(memFile, 4, cg + 0x2c5c8);
-    archiveProc(memFile, 4, cg + 0x2c5cc);
-    archiveProc(memFile, 4, cg + 0x2c5c0);
-    archiveProc(memFile, 4, cg + 0x2c5d0);
-    archiveProc(memFile, 4, cg + 0x2bdc8);
-    archiveProc(memFile, 0x400, cg + 0x2a9fc);
-    archiveProc(memFile, 0x100, cg + 0x2adfc);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->healthFadeTime);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->ammoFadeTime);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->stanceFadeTime);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->compassFadeTime);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->offhandFadeTime);
+    archiveProc(memFile, 4, (byte *)&((cg_t *)cg)->drawHud);
+    archiveProc(memFile, 0x400, ((cg_t *)cg)->objectiveText);
+    archiveProc(memFile, 0x100, ((cg_t *)cg)->scriptMainMenu);
 }
 
 /* line 1525 */
@@ -1091,7 +1091,7 @@ void CG_DrawPlayerCompassBack(const rectDef_t *rect, MaterialHandle material, ve
     cg = *(cg_t **)imp_cg;
     compassSizeDvar = *(const dvar_t **)imp_cg_hudCompassSize;
     duration = (int)(1000.0f * hud_fade_compass->current.value + 0.5f);
-    displayStartTime = *(int *)((byte *)cg + 0x2c5c0);
+    displayStartTime = ((cg_t *)cg)->compassFadeTime;
     alpha = CG_FadeHudMenu(hud_fade_compass, displayStartTime, duration);
     color[3] = alpha;
     if (alpha == 0.0f)
@@ -4268,31 +4268,31 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
 
     /* line 1308: check for cursor hint in cg struct */
     cg = (byte *)*(void **)imp_cg;
-    if (!*(int *)(cg + 0x25bc0)) {
+    if (!((cg_t *)cg)->renderingThirdPerson) {
         /* line 1311: check snapshot for new hint data */
-        snap = *(byte **)(cg + 0x24);
-        if (*(int *)(snap + 0x5a4)) {
+        snap = (byte *)((cg_t *)cg)->nextSnap;
+        if (((snapshot_t *)snap)->ps.cursorHint) {
             /* line 1313-1316: copy hint data from snapshot */
-            *(int *)(cg + 0x2bdec) = *(int *)(cg + 0x25bb0); /* hintStartTime = time */
-            *(int *)(cg + 0x2bdf0) = *(int *)((byte *)*(void **)imp_cg_hintFadeTime + 8); /* hintFadeTime = dvar */
-            *(int *)(cg + 0x2bde8) = *(int *)(snap + 0x5a4); /* cursorHintValue */
-            *(int *)(cg + 0x2bdf4) = *(int *)(snap + 0x5a8); /* cursorHintString */
+            ((cg_t *)cg)->cursorHintTime = ((cg_t *)cg)->time; /* hintStartTime = time */
+            ((cg_t *)cg)->cursorHintFade = *(int *)((byte *)*(void **)imp_cg_hintFadeTime + 8); /* hintFadeTime = dvar */
+            ((cg_t *)cg)->cursorHintIcon = ((snapshot_t *)snap)->ps.cursorHint; /* cursorHintValue */
+            ((cg_t *)cg)->cursorHintString = ((snapshot_t *)snap)->ps.cursorHintString; /* cursorHintString */
         }
         cg = (byte *)*(void **)imp_cg;
     }
 
     /* line 1431: get hint icon material */
     cgs = (byte *)*(void **)imp_cgs;
-    cursorHintValue = *(int *)(cg + 0x2bde8);
-    hintIcon = *(MaterialHandle *)(cgs + 0xba44 + cursorHintValue * 4);
+    cursorHintValue = ((cg_t *)cg)->cursorHintIcon;
+    hintIcon = *(MaterialHandle *)(cgs + 0xba44 + cursorHintValue * 4); /* TODO: unknown cgs_t offset - likely cgs->media hint icons array */
     if (!hintIcon)
         return;
 
     /* line 1436: get fade color */
-    fadeColor = CG_FadeColor(*(int *)(cg + 0x2bdec), *(int *)(cg + 0x2bdf0), 100);
+    fadeColor = CG_FadeColor(((cg_t *)cg)->cursorHintTime, ((cg_t *)cg)->cursorHintFade, 100);
     if (!fadeColor) {
         /* line 1439: clear cursor hint on fade out */
-        *(int *)(cg + 0x2bde8) = 0;
+        ((cg_t *)cg)->cursorHintIcon = 0;
         return;
     }
 
@@ -4304,7 +4304,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
 
     if (cursorHintsDvarVal == 3) {
         /* line 1451: pulsing alpha mode */
-        float sinVal = sinf((float)*(int *)(cg + 0x25bb0) / 150.0f);
+        float sinVal = sinf((float)((cg_t *)cg)->time / 150.0f);
         fadeColor[3] *= sinVal * 0.5f + 0.5f;
         /* reload dvar since cg_cursorHints was read again in ASM */
         cursorHintsDvarVal = *(int *)((byte *)*(void **)imp_cg_cursorHints + 8);
@@ -4314,11 +4314,11 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
     if (cursorHintsDvarVal <= 2) {
         if (cursorHintsDvarVal == 2) {
             /* line 1461: scale from hintStartTime percentage */
-            int startTime = *(int *)(cg + 0x2bdec);
+            int startTime = ((cg_t *)cg)->cursorHintTime;
             scale = (float)(startTime % 1000) / 100.0f;
         } else {
             /* line 1463: pulsing scale mode (0 or 1) */
-            float sinVal = sinf((float)*(int *)(cg + 0x25bb0) / 150.0f);
+            float sinVal = sinf((float)((cg_t *)cg)->time / 150.0f);
             scale = (sinVal * 0.5f + 0.5f) * 10.0f;
         }
         halfscale = 0.5f * scale;
@@ -4330,7 +4330,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
 
     /* line 1468: check if this is a weapon hint (cursorHintValue 5-132) */
     cg = (byte *)*(void **)imp_cg;
-    cursorHintValue = *(int *)(cg + 0x2bde8);
+    cursorHintValue = ((cg_t *)cg)->cursorHintIcon;
     text = NULL;
     widthScale = 1.0f;
     widthOfs = 0.0f;
@@ -4353,7 +4353,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
         if (*(int *)(weapDef + 0x7c) == 7) {
             /* line 1482: melee weapon - use cursorHintString */
             cg = (byte *)*(void **)imp_cg;
-            cursorHintString = *(int *)(cg + 0x2bdf4);
+            cursorHintString = ((cg_t *)cg)->cursorHintString;
             if (cursorHintString >= 0) {
                 text = CG_GetUseString();
             }
@@ -4364,7 +4364,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
             byte *cgPtr;
 
             cgPtr = (byte *)*(void **)imp_cg;
-            weapIdx = *(int *)(cgPtr + 0x2bde8) - 4;
+            weapIdx = ((cg_t *)cgPtr)->cursorHintIcon - 4;
             pickupWeapDef = (byte *)BG_GetWeaponDef(weapIdx);
 
             /* line 1340: get key binding */
@@ -4372,17 +4372,17 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
 
             /* line 1344: check if weapon needs a slot */
             if (BG_DoesWeaponNeedSlot(weapIdx)) {
-                int emptySlot = BG_GetEmptySlotForWeapon((const playerState_t *)(cgPtr + 0x25bc4), weapIdx);
+                int emptySlot = BG_GetEmptySlotForWeapon((const playerState_t *)&((cg_t *)cgPtr)->predictedPlayerState, weapIdx);
                 if (emptySlot == 0) {
                     /* no empty slot - check if same weapon type for swap */
                     byte *currentWeapDef;
-                    int currentWeap = *(int *)(cgPtr + 0x25c98);
+                    int currentWeap = ((cg_t *)cgPtr)->predictedPlayerState.weapon;
                     currentWeapDef = (byte *)BG_GetWeaponDef(currentWeap);
 
                     /* line 1346: compare weapon type */
                     if (*(int *)(currentWeapDef + 0x80) == *(int *)(pickupWeapDef + 0x80)) {
                         /* line 1348: same type - check if same weapon */
-                        if (*(int *)(cgPtr + 0x25c98) == weapIdx) {
+                        if (((cg_t *)cgPtr)->predictedPlayerState.weapon == weapIdx) {
                             text = NULL; /* same weapon, no text */
                             goto draw_icon;
                         }
@@ -4392,7 +4392,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
                     }
 
                     /* line 1353: different weapon type - check if it's the same slot */
-                    if ((signed char)*(byte *)(cgPtr + 0x26118 + *(int *)(pickupWeapDef + 0x80)) == weapIdx) {
+                    if ((signed char)((cg_t *)cgPtr)->predictedPlayerState.weaponslots[*(int *)(pickupWeapDef + 0x80)] == weapIdx) {
                         text = NULL; /* same weapon in slot */
                         goto draw_icon;
                     }
@@ -4409,7 +4409,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
         }
     } else {
         /* non-weapon hint */
-        cursorHintString = *(int *)(cg + 0x2bdf4);
+        cursorHintString = ((cg_t *)cg)->cursorHintString;
 
         if (cursorHintString < 0) {
             /* line 1494: check if hint is health pickup (cursorHintValue == 3) */

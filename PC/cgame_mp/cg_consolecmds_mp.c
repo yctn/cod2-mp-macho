@@ -85,50 +85,46 @@ static void CG_SizeDown_f(void)
 /* line 66 */
 static void CG_Viewpos_f(void)
 {
-    byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x20);
+    cg_t *cg = *(cg_t **)cg_ptr;
 
     Com_Printf("(%i %i %i) : %i\n",
-        (int)*(float *)(cg + 0x28588),
-        (int)*(float *)(cg + 0x2858c),
-        (int)*(float *)(cg + 0x28590),
-        (int)*(float *)(cg + 0x285cc));
+        (int)cg->refdef.vieworg[0],
+        (int)cg->refdef.vieworg[1],
+        (int)cg->refdef.vieworg[2],
+        (int)cg->refdefViewAngles[1]);
 }
 
 /* line 77 */
 void CG_ScoresUp_f(void)
 {
-    byte *cg;
-    byte *snap;
+    cg_t *cg;
 
     if (!CG_ScoreboardDisplayed())
         return;
 
-    cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x20);
-    *(int *)(cg + 0x2b534) = 0;
-    *(int *)(cg + 0x2b538) = *(int *)(cg + 0x25bb0);
+    cg = *(cg_t **)cg_ptr;
+    cg->showScores = 0;
+    cg->scoreFadeTime = cg->time;
 }
 
 /* line 95 */
 void CG_ScoresDown_f(void)
 {
-    byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x20);
-    int serverCommandSequence = *(int *)(cg + 0x25bb0);
-    int lastScoreTime = *(int *)(cg + 0x2aefc);
+    cg_t *cg = *(cg_t **)cg_ptr;
+    int currentTime = cg->time;
+    int lastScoreTime = cg->scoresRequestTime;
 
-    if (lastScoreTime + 2000 < serverCommandSequence) {
-        *(int *)(cg + 0x2aefc) = serverCommandSequence;
+    if (lastScoreTime + 2000 < currentTime) {
+        cg->scoresRequestTime = currentTime;
         CL_AddReliableCommand("score");
 
         if (!CG_ScoreboardDisplayed()) {
-            *(int *)(cg + 0x2af00) = 0;
-            *(int *)(cg + 0x2b53c) = 0;
+            cg->numScores = 0;
+            cg->scoresTop = 0;
         }
     }
 
-    *(int *)(cg + 0x2b534) = 1;
+    cg->showScores = 1;
 }
 
 /* line 153 */
@@ -137,8 +133,7 @@ static void CG_ShellShock_f(void)
     char arg[256];
     int argc;
     double duration;
-    byte *cg;
-    byte *snap;
+    cg_t *cg;
 
     argc = Cmd_Argc();
 
@@ -154,12 +149,11 @@ static void CG_ShellShock_f(void)
     Cmd_ArgvBuffer(1, arg, 256);
     duration = atof(arg);
 
-    cg = *(byte **)cg_ptr;
-    CG_SetShellShockParmsFromDvars(cg + 0x68c4);
+    cg = *(cg_t **)cg_ptr;
+    CG_SetShellShockParmsFromDvars((byte *)cg + 0x68c4); /* TODO: unknown offset - likely cgs shellshockParms */
 
-    snap = *(byte **)(cg + 0x20);
-    *(int *)(cg + 0x2ccf8) = *(int *)(cg + 0x25bb0);
-    *(int *)(cg + 0x2ccfc) = (int)floorf((float)(duration * 1000.0) + 0.5f);
+    cg->testShock.time = cg->time;
+    cg->testShock.duration = (int)floorf((float)(duration * 1000.0) + 0.5f);
 }
 
 /* line 185 */
@@ -209,13 +203,12 @@ static void CG_TellTarget_f(void)
 /* line 238 */
 static void CG_QuickMessage_f(void)
 {
-    byte *cg = *(byte **)cg_ptr;
-    byte *snap = *(byte **)(cg + 0x20);
-    byte *field24 = *(byte **)(snap + 0x24);
+    cg_t *cg = *(cg_t **)cg_ptr;
+    snapshot_t *nextSnap = cg->nextSnap;
 
-    if (field24 == NULL)
+    if (nextSnap == NULL)
         return;
-    if (!(*(byte *)(field24 + 0x1a) & 0x80))
+    if (!(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) /* TODO: unknown offset 0x1a in snapshot_t */
         return;
 
     CL_Popup("UIMENU_WM_QUICKMESSAGE");
@@ -225,18 +218,16 @@ static void CG_QuickMessage_f(void)
 static void CG_VoiceChat_f(void)
 {
     char chatCmd[64];
-    byte *cg;
-    byte *snap;
-    byte *field24;
+    cg_t *cg;
+    snapshot_t *nextSnap;
 
     if (Cmd_Argc() != 2)
         return;
 
-    cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x20);
-    field24 = *(byte **)(snap + 0x24);
+    cg = *(cg_t **)cg_ptr;
+    nextSnap = cg->nextSnap;
 
-    if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
+    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) { /* TODO: unknown offset 0x1a in snapshot_t */
         Com_Printf("%s\n", UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT"));
         return;
     }
@@ -249,18 +240,16 @@ static void CG_VoiceChat_f(void)
 static void CG_TeamVoiceChat_f(void)
 {
     char chatCmd[64];
-    byte *cg;
-    byte *snap;
-    byte *field24;
+    cg_t *cg;
+    snapshot_t *nextSnap;
 
     if (Cmd_Argc() != 2)
         return;
 
-    cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x20);
-    field24 = *(byte **)(snap + 0x24);
+    cg = *(cg_t **)cg_ptr;
+    nextSnap = cg->nextSnap;
 
-    if (field24 != NULL && *(int *)(field24 + 0x10) != 5 && !(*(byte *)(field24 + 0x1a) & 0x80)) {
+    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) { /* TODO: unknown offset 0x1a in snapshot_t */
         Com_Printf("%s\n", UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT"));
         return;
     }
@@ -281,9 +270,11 @@ qboolean CG_ConsoleCommand(void)
     void (*func)(void);
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x20);
-    if (snap == NULL || *(byte **)(snap + 0x24) == NULL)
-        return 0;
+    {
+        cg_t *cg_s = (cg_t *)cg;
+        if (cg_s->snap == NULL || cg_s->nextSnap == NULL)
+            return 0;
+    }
 
     cmd = CG_Argv(0);
     name = *(const char **)cmdList;

@@ -62,55 +62,54 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2);
 /* line 23 */
 void GetClientState(uiClientState_t *state)
 {
-    byte *cls = *(byte **)imp_clc;
-    byte *clc = (byte *)imp_cls;
-    byte *cl = *(byte **)imp_cl;
+    clientConnection_t *clc_local = *(clientConnection_t **)imp_clc;
+    clientStatic_t *cls_local = (clientStatic_t *)imp_cls;
+    clientActive_t *cl = *(clientActive_t **)imp_cl;
 
-    *(int *)((byte *)state + 4) = *(int *)(cls + 0x24);
-    *(int *)state = *(int *)cls;
-    I_strncpyz((char *)state + 0xc, (const char *)(clc + 8), 0x400);
-    I_strncpyz((char *)state + 0x40c, (const char *)(cls + 0x28), 0x400);
-    *(int *)((byte *)state + 8) = *(int *)(cl + 0x100);
+    state->connectPacketCount = clc_local->connectPacketCount;
+    state->connState = clc_local->state;
+    I_strncpyz(state->servername, cls_local->servername, 0x400);
+    I_strncpyz(state->messageString, clc_local->serverMessage, 0x400);
+    state->clientNum = cl->snap.ps.clientNum;
 }
 
 /* line 41 */
 void LAN_ResetPings(int source)
 {
-    byte *base = (byte *)imp_cls;
-    byte *server;
+    clientStatic_t *base = (clientStatic_t *)imp_cls;
+    serverInfo_t *servers;
     int count;
 
     if (source == 0) {
         count = 128;
-        server = base + 0x13c;
+        servers = base->localServers;
     } else if (source == 1) {
-        count = *(int *)(base + 0x4540);
-        server = base + 0x4544;
+        count = base->numglobalservers;
+        servers = base->globalServers;
         if (count <= 0)
             return;
     } else if (source == 2) {
         count = 128;
-        server = base + 0x29c648;
+        servers = base->favoriteServers;
     } else {
         return;
     }
 
     for (int i = 0; i < count; i++) {
-        *(short *)(server + 0x1e) = -1;
-        server += 0x88;
+        servers[i].ping = -1;
     }
 }
 
 /* line 82 */
 int LAN_GetServerCount(int source)
 {
-    byte *base = (byte *)imp_cls;
+    clientStatic_t *base = (clientStatic_t *)imp_cls;
     if (source == 0)
-        return *(int *)(base + 0x138);
+        return base->numlocalservers;
     if (source == 1)
-        return *(int *)(base + 0x4540);
+        return base->numglobalservers;
     if (source == 2)
-        return *(int *)(base + 0x29c644);
+        return base->numfavoriteservers;
     return 0;
 }
 
@@ -119,27 +118,27 @@ qboolean LAN_WaitServerResponse(int source)
 {
     if (source != 1)
         return 0;
-    return *(int *)((byte *)imp_cls + 0x453c);
+    return ((clientStatic_t *)imp_cls)->waitglobalserverresponse;
 }
 
 /* line 124 */
 void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
 {
     char info[1024];
-    byte *base = (byte *)imp_cls;
-    byte *server = NULL;
+    clientStatic_t *cls_base = (clientStatic_t *)imp_cls;
+    serverInfo_t *server = NULL;
 
     info[0] = '\0';
 
     if (source == 0) {
         if ((unsigned)n > 0x7f) goto fail;
-        server = base + n * 0x88 + 0x13c;
+        server = &cls_base->localServers[n];
     } else if (source == 1) {
-        if (n < 0 || n >= *(int *)(base + 0x4540)) goto fail;
-        server = base + n * 0x88 + 0x4544;
+        if (n < 0 || n >= cls_base->numglobalservers) goto fail;
+        server = &cls_base->globalServers[n];
     } else if (source == 2) {
         if ((unsigned)n > 0x7f) goto fail;
-        server = base + n * 0x88 + 0x29c648;
+        server = &cls_base->favoriteServers[n];
     } else {
         goto fail;
     }
@@ -148,30 +147,30 @@ void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
     if (!buf) return;
 
     *buf = '\0';
-    Info_SetValueForKey(info, "hostname", (char *)(server + 0x20));
-    Info_SetValueForKey(info, "mapname", (char *)(server + 0x40));
-    Info_SetValueForKey(info, "clients", va("%i", (int)*(byte *)(server + 0xd)));
-    Info_SetValueForKey(info, "sv_maxclients", va("%i", (int)*(byte *)(server + 0xe)));
-    Info_SetValueForKey(info, "ping", va("%i", (int)*(short *)(server + 0x1e)));
-    Info_SetValueForKey(info, "minping", va("%i", (int)*(short *)(server + 0x1a)));
-    Info_SetValueForKey(info, "maxping", va("%i", (int)*(short *)(server + 0x1c)));
-    Info_SetValueForKey(info, "game", (char *)(server + 0x60));
-    Info_SetValueForKey(info, "gametype", (char *)(server + 0x78));
-    Info_SetValueForKey(info, "nettype", va("%i", (int)*(byte *)(server + 0xc)));
+    Info_SetValueForKey(info, "hostname", server->hostName);
+    Info_SetValueForKey(info, "mapname", server->mapName);
+    Info_SetValueForKey(info, "clients", va("%i", (int)server->clients));
+    Info_SetValueForKey(info, "sv_maxclients", va("%i", (int)server->maxClients));
+    Info_SetValueForKey(info, "ping", va("%i", (int)server->ping));
+    Info_SetValueForKey(info, "minping", va("%i", (int)server->minPing));
+    Info_SetValueForKey(info, "maxping", va("%i", (int)server->maxPing));
+    Info_SetValueForKey(info, "game", server->game);
+    Info_SetValueForKey(info, "gametype", server->gameType);
+    Info_SetValueForKey(info, "nettype", va("%i", (int)server->netType));
     {
         netadr_t adr;
-        memcpy(&adr, server, 12);
+        memcpy(&adr, &server->adr, sizeof(netadr_t));
         Info_SetValueForKey(info, "addr", NET_AdrToString(adr));
     }
-    Info_SetValueForKey(info, "sv_allowAnonymous", va("%i", (int)*(byte *)(server + 0x10)));
-    Info_SetValueForKey(info, "con_disabled", va("%i", (int)*(signed char *)(server + 0x15)));
-    Info_SetValueForKey(info, "pswrd", va("%i", (int)*(byte *)(server + 0x11)));
-    Info_SetValueForKey(info, "pure", va("%i", (int)*(byte *)(server + 0x12)));
-    Info_SetValueForKey(info, "ff", va("%i", (int)*(signed char *)(server + 0x13)));
-    Info_SetValueForKey(info, "kc", va("%i", (int)*(signed char *)(server + 0x14)));
-    Info_SetValueForKey(info, "hw", va("%i", (int)*(byte *)(server + 0x16)));
-    Info_SetValueForKey(info, "mod", va("%i", (int)*(byte *)(server + 0x17)));
-    Info_SetValueForKey(info, "voice", va("%i", (int)*(byte *)(server + 0x18)));
+    Info_SetValueForKey(info, "sv_allowAnonymous", va("%i", (int)server->allowAnonymous));
+    Info_SetValueForKey(info, "con_disabled", va("%i", (int)server->consoleDisabled));
+    Info_SetValueForKey(info, "pswrd", va("%i", (int)server->bPassword));
+    Info_SetValueForKey(info, "pure", va("%i", (int)server->pure));
+    Info_SetValueForKey(info, "ff", va("%i", (int)server->friendlyfire));
+    Info_SetValueForKey(info, "kc", va("%i", (int)server->killcam));
+    Info_SetValueForKey(info, "hw", va("%i", (int)server->hardware));
+    Info_SetValueForKey(info, "mod", va("%i", (int)server->mod));
+    Info_SetValueForKey(info, "voice", va("%i", (int)server->voice));
     I_strncpyz(buf, info, buflen);
     return;
 
@@ -183,36 +182,36 @@ fail:
 /* line 200 */
 int LAN_GetServerPing(int source, int n)
 {
-    byte *base = (byte *)imp_cls;
-    byte *server;
+    clientStatic_t *base = (clientStatic_t *)imp_cls;
+    serverInfo_t *server;
 
     if (source == 0) {
         if ((unsigned)n > 0x7f)
             return -1;
-        server = base + n * 0x88 + 0x13c;
+        server = &base->localServers[n];
     } else if (source == 1) {
-        if (n < 0 || n >= *(int *)(base + 0x4540))
+        if (n < 0 || n >= base->numglobalservers)
             return -1;
-        server = base + n * 0x88 + 0x4544;
+        server = &base->globalServers[n];
     } else if (source == 2) {
         if ((unsigned)n > 0x7f)
             return -1;
-        server = base + n * 0x88 + 0x29c648;
+        server = &base->favoriteServers[n];
     } else {
         return -1;
     }
 
     if (!server)
         return -1;
-    return *(short *)(server + 0x1e);
+    return server->ping;
 }
 
 /* line 419 */
 void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 {
-    byte *base = (byte *)imp_cls;
+    clientStatic_t *cls_base = (clientStatic_t *)imp_cls;
+    serverInfo_t *servers;
     int count;
-    byte *ptr;
     int i;
 
     Com_PumpMessageLoop();
@@ -221,31 +220,30 @@ void LAN_MarkServerDirty(int source, int n, qboolean dirty)
         /* Mark all servers dirty */
         if (source == 0) {
             count = 0x80;
-            ptr = base + 0x13c;
+            servers = cls_base->localServers;
         } else if (source == 1) {
-            count = *(int *)(base + 0x4540);
-            ptr = base + 0x4544;
+            count = cls_base->numglobalservers;
+            servers = cls_base->globalServers;
             if (count <= 0) return;
         } else if (source == 2) {
             count = 0x80;
-            ptr = base + 0x29c648;
+            servers = cls_base->favoriteServers;
         } else {
             return;
         }
         for (i = 0; i < count; i++) {
-            *(byte *)(ptr + 0xf) = (byte)dirty;
-            ptr += 0x88;
+            servers[i].dirty = (byte)dirty;
         }
     } else {
         if (source == 0) {
             if ((unsigned)n > 0x7f) return;
-            *(byte *)(base + n * 0x88 + 0x14b) = (byte)dirty;
+            cls_base->localServers[n].dirty = (byte)dirty;
         } else if (source == 1) {
-            if (n < 0 || n >= *(int *)(base + 0x4540)) return;
-            *(byte *)(base + n * 0x88 + 0x4553) = (byte)dirty;
+            if (n < 0 || n >= cls_base->numglobalservers) return;
+            cls_base->globalServers[n].dirty = (byte)dirty;
         } else if (source == 2) {
             if ((unsigned)n > 0x7f) return;
-            *(byte *)(base + n * 0x88 + 0x29c657) = (byte)dirty;
+            cls_base->favoriteServers[n].dirty = (byte)dirty;
         }
     }
 }
@@ -253,20 +251,20 @@ void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 /* line 490 */
 int LAN_ServerIsDirty(int source, int n)
 {
-    byte *base = (byte *)imp_cls;
+    clientStatic_t *cls_base = (clientStatic_t *)imp_cls;
 
     if (source == 0) {
         if ((unsigned)n > 0x7f)
             return 0;
-        return *(byte *)(base + n * 0x88 + 0x14b);
+        return cls_base->localServers[n].dirty;
     } else if (source == 1) {
-        if (n < 0 || n >= *(int *)(base + 0x4540))
+        if (n < 0 || n >= cls_base->numglobalservers)
             return 0;
-        return *(byte *)(base + n * 0x88 + 0x4553);
+        return cls_base->globalServers[n].dirty;
     } else if (source == 2) {
         if ((unsigned)n > 0x7f)
             return 0;
-        return *(byte *)(base + n * 0x88 + 0x29c657);
+        return cls_base->favoriteServers[n].dirty;
     }
     return 0;
 }
@@ -304,20 +302,20 @@ void Key_GetBindingBuf(int keynum, char *buf, int buflen)
 /* line 582 */
 int Key_GetCatcher(void)
 {
-    return *(int *)((char *)*(void **)imp_cl + 4);
+    return (*(clientActive_t **)imp_cl)->keyCatchers;
 }
 
 /* line 593 */
 void Key_SetCatcher(int catcher)
 {
-    byte *ptr = (byte *)*(void **)imp_cl;
-    if (*(int *)(ptr + 4) & 1)
-        *(int *)(ptr + 4) = catcher | 1;
+    clientActive_t *ptr = *(clientActive_t **)imp_cl;
+    if (ptr->keyCatchers & 1)
+        ptr->keyCatchers = catcher | 1;
     else
-        *(int *)(ptr + 4) = catcher;
-    ptr = (byte *)*(void **)imp_cl;
-    if (!(*(int *)(ptr + 4) & 8))
-        *(byte *)(ptr + 8) = 0;
+        ptr->keyCatchers = catcher;
+    ptr = *(clientActive_t **)imp_cl;
+    if (!(ptr->keyCatchers & 8))
+        ptr->displayHUDWithKeycatchUI = 0;
 }
 
 /* line 611 */
@@ -373,30 +371,29 @@ void CLUI_SetCDKey(char *buf, char *buf2)
 /* line 647 */
 qboolean GetClientname(int index, char *buf, int size)
 {
-    byte *cl;
+    clientActive_t *cl;
     int count;
     int start;
     int i;
 
     *buf = '\0';
 
-    cl = (byte *)*(void **)imp_cl;
-    if (!*(int *)(cl + 0x18))
+    cl = *(clientActive_t **)imp_cl;
+    if (!cl->snap.valid)
         return 0;
 
-    count = *(int *)(cl + 0x26e0);
+    count = cl->snap.numEntities;
     if (count <= 0)
         return 0;
 
-    start = *(int *)(cl + 0x26e8);
+    start = cl->snap.parseEntitiesNum;
 
     for (i = 0; i < count; i++) {
         int slot = (start + i) & 0x7ff;
-        int entryOffset = (slot * 24 - slot) * 4;
-        byte *entry = cl + 0x14b0e0 + entryOffset;
+        clientState_t *entry = &cl->parseClients[slot];
 
-        if (*(int *)entry == index) {
-            strncpy(buf, (char *)(entry + 0x3c), size);
+        if (entry->clientIndex == index) {
+            strncpy(buf, entry->name, size);
             return 1;
         }
     }
@@ -419,38 +416,38 @@ int UI_PlayLocalSoundAliasByName(const char *aliasname)
 /* line 884 */
 qboolean UI_ClientIsInGame(void)
 {
-    void *ptr = *(void **)imp_clc;
-    if (!ptr) return 0;
-    return *(int *)ptr == 8;
+    clientConnection_t *clc_local = *(clientConnection_t **)imp_clc;
+    if (!clc_local) return 0;
+    return clc_local->state == 8;
 }
 
 /* line 899 */
 qboolean CL_ShutdownUI(void)
 {
-    byte *clc = (byte *)imp_cls;
-    byte *cl;
+    clientStatic_t *cls_local = (clientStatic_t *)imp_cls;
+    clientActive_t *cl;
 
-    if (!*(int *)(clc + 0x110))
+    if (!cls_local->uiStarted)
         return 0;
 
     Com_UnloadSoundAliases(0);
 
-    cl = (byte *)*(void **)imp_cl;
-    *(int *)(cl + 4) &= ~8;
-    *(byte *)(cl + 8) = 0;
+    cl = *(clientActive_t **)imp_cl;
+    cl->keyCatchers &= ~8;
+    cl->displayHUDWithKeycatchUI = 0;
 
     CL_SwitchToLocalClient(0);
     UI_Shutdown();
     CL_SwitchToLocalClient(0);
 
-    *(int *)(clc + 0x110) = 0;
+    cls_local->uiStarted = 0;
     return 1;
 }
 
 /* line 935 */
 void CL_InitUI(void)
 {
-    *(int *)((byte *)imp_cls + 0x110) = 1;
+    ((clientStatic_t *)imp_cls)->uiStarted = 1;
     CL_SwitchToLocalClient(0);
     UI_Init();
     CL_SwitchToLocalClient(0);
@@ -463,7 +460,7 @@ void CL_InitUI(void)
 /* line 963 */
 qboolean UI_checkKeyExec(int key)
 {
-    if (!*(int *)((byte *)imp_cls + 0x110))
+    if (!((clientStatic_t *)imp_cls)->uiStarted)
         return 0;
     return UI_CheckExecKey(key);
 }

@@ -360,9 +360,9 @@ void CL_AddReliableCommand(const char *cmd)
     {
         Com_Error(1, "CL_AddReliableCommand: too many commands");
     }
-    *(int *)((byte *)clc + 0x130) += 1;
-    index = *(int *)((byte *)clc + 0x130) & 0x7f;
-    MSG_WriteReliableCommandToBuffer(cmd, (char *)((byte *)clc + 0x138 + index * 0x400), 0x400);
+    ((clientConnection_t *)clc)->reliableSequence += 1;
+    index = clc->reliableSequence & 0x7f;
+    MSG_WriteReliableCommandToBuffer(cmd, (char *)clc->reliableCommands[index], 0x400);
 }
 
 /* line 700 */
@@ -371,17 +371,17 @@ void CL_StopRecord_f(void)
     byte *cc = (byte *)&clientConnections[0];
     int len;
 
-    if (!*(int *)(cc + 0x4079c)) {
+    if (!((clientConnection_t *)cc)->demorecording) {
         Com_Printf(str_002a8a78);
         return;
     }
 
     len = -1;
-    FS_Write(&len, 4, *(int *)(cc + 0x407b0));
-    FS_Write(&len, 4, *(int *)(cc + 0x407b0));
-    FS_FCloseFile(*(int *)(cc + 0x407b0));
-    *(int *)(cc + 0x407b0) = 0;
-    *(int *)(cc + 0x4079c) = 0;
+    FS_Write(&len, 4, ((clientConnection_t *)cc)->demofile);
+    FS_Write(&len, 4, ((clientConnection_t *)cc)->demofile);
+    FS_FCloseFile(((clientConnection_t *)cc)->demofile);
+    ((clientConnection_t *)cc)->demofile = 0;
+    ((clientConnection_t *)cc)->demorecording = 0;
     Com_Printf(str_002a8a90);
 }
 
@@ -391,26 +391,26 @@ void CL_ShutdownDemo(void)
     if (!*(int *)((char *)&clientConnections + 264112))
         return;
     FS_FCloseFile(*(int *)((char *)&clientConnections + 264112));
-    *(int *)((byte *)clc + 0x407b0) = 0;
-    *(int *)((byte *)clc + 0x407a0) = 0;
-    *(int *)((byte *)clc + 0x4079c) = 0;
+    ((clientConnection_t *)clc)->demofile = 0;
+    ((clientConnection_t *)clc)->demoplaying = 0;
+    ((clientConnection_t *)clc)->demorecording = 0;
 }
 
 /* line 1272 */
 int CL_GetSkelTimeStamp(int localClientNum)
 {
     char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
-    return *(int *)(client + 0x864c);
+    return ((clientActive_t *)client)->skelTimeStamp;
 }
 
 /* line 1279 */
 char * CL_AllocSkelMemory(int localClientNum, unsigned int size)
 {
     char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
-    int pos = *(int *)(client + 0x8650);
-    char *buf = (char *)(pos + *(int *)(client + 0x48654));
+    int pos = ((clientActive_t *)client)->skelMemPos;
+    char *buf = (char *)(pos + (int)((clientActive_t *)client)->skelMemoryStart);
     int newPos = pos + ((size + 15) & ~15);
-    *(int *)(client + 0x8650) = newPos;
+    ((clientActive_t *)client)->skelMemPos = newPos;
     if (newPos >= 0x3fff1)
         return 0;
     return buf;
@@ -420,12 +420,12 @@ char * CL_AllocSkelMemory(int localClientNum, unsigned int size)
 void CL_ResetSkeletonCache(int localClientNum)
 {
     char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
-    unsigned int count = *(unsigned int *)(client + 0x864c) + 1;
+    unsigned int count = ((clientActive_t *)client)->skelTimeStamp + 1;
     if (!count)
         count = 1;
-    *(unsigned int *)(client + 0x864c) = count;
-    *(int *)(client + 0x48654) = ((int)(client + 0x8663)) & ~15;
-    *(int *)(client + 0x8650) = 0;
+    ((clientActive_t *)client)->skelTimeStamp = count;
+    ((clientActive_t *)client)->skelMemoryStart = (char *)(((int)(client + 0x8663)) & ~15);
+    ((clientActive_t *)client)->skelMemPos = 0;
 }
 
 /* line 1343 */
@@ -436,21 +436,21 @@ void CL_ClearState(void)
     int keyCatchers;
 
     /* Save fields that survive the clear */
-    cgameInitialized = cl[9];
-    cgameInitCalled = cl[10];
-    keyCatchers = *(int *)(cl + 4);
-    displayHUD = cl[8];
-    active = cl[0];
+    cgameInitialized = ((clientActive_t *)cl)->cgameInitialized;
+    cgameInitCalled = ((clientActive_t *)cl)->cgameInitCalled;
+    keyCatchers = ((clientActive_t *)cl)->keyCatchers;
+    displayHUD = ((clientActive_t *)cl)->displayHUDWithKeycatchUI;
+    active = ((clientActive_t *)cl)->active;
 
     memset(&clients[0], 0, 0x179c14);
 
     /* Restore preserved fields */
     cl = (byte *)&clients[0];
-    cl[9] = cgameInitialized;
-    cl[10] = cgameInitCalled;
-    *(int *)(cl + 4) = keyCatchers;
-    cl[8] = displayHUD;
-    cl[0] = active;
+    ((clientActive_t *)cl)->cgameInitialized = cgameInitialized;
+    ((clientActive_t *)cl)->cgameInitCalled = cgameInitCalled;
+    ((clientActive_t *)cl)->keyCatchers = keyCatchers;
+    ((clientActive_t *)cl)->displayHUDWithKeycatchUI = displayHUD;
+    ((clientActive_t *)cl)->active = active;
 
     Com_ClientDObjClearAllSkel();
 }
@@ -494,7 +494,7 @@ extern void Cbuf_AddText(const char *text);
 extern const char *va(const char *fmt, ...);
 void CL_Reconnect_f(void)
 {
-    char *server = (char *)&cls + 8;
+    char *server = cls.servername;
 
     /* Don't reconnect to empty or localhost */
     if (!*server || !memcmp(server, str_002a8ab8, 10)) {
@@ -531,9 +531,9 @@ void CL_Configstrings_f(void)
 
     cl = *(byte **)imp_cl;
     for (i = 0; i < 0x800; i++) {
-        offset = *(int *)(cl + 0x270c + i * 4);
+        offset = ((clientActive_t *)cl)->gameState.stringOffsets[i];
         if (offset)
-            Com_Printf(str_002a8b40, i, cl + 0x470c + offset);
+            Com_Printf(str_002a8b40, i, ((clientActive_t *)cl)->gameState.stringData + offset);
     }
 }
 
@@ -544,7 +544,7 @@ void CL_Clientinfo_f(void)
 {
     Com_Printf(str_002a8b4c);
     Com_Printf(str_002a8b74, **(int **)imp_clc);
-    Com_Printf(str_002a74a0, (char *)&cls + 8);
+    Com_Printf(str_002a74a0, cls.servername);
     Com_Printf(str_002a8b80);
     Info_Print(Dvar_InfoString(2));
     Com_Printf(str_002a8b98);
@@ -619,17 +619,17 @@ extern void CL_WriteVoicePacket(void);
 void CL_VoiceTransmit(void)
 {
     byte *cl = *(byte **)imp_cl;
-    int voiceLen = *(int *)(cl + 0x179c0c);
+    int voiceLen = ((clientActive_t *)cl)->voicePacketCount;
 
     if (voiceLen <= 0)
         return;
 
     /* Send if enough time passed or enough data buffered */
-    if (*(int *)((byte *)&clients[0] + 9968) - *(int *)(cl + 0x179c10) > 199 || voiceLen > 9) {
+    if (*(int *)((byte *)&clients[0] + 9968) - ((clientActive_t *)cl)->voicePacketLastTransmit > 199 || voiceLen > 9) {
         CL_WriteVoicePacket();
         cl = *(byte **)imp_cl;
-        *(int *)(cl + 0x179c0c) = 0;
-        *(int *)(cl + 0x179c10) = *(int *)(cl + 0x26f0);
+        ((clientActive_t *)cl)->voicePacketCount = 0;
+        ((clientActive_t *)cl)->voicePacketLastTransmit = ((clientActive_t *)cl)->serverTime;
     }
 }
 
@@ -657,7 +657,7 @@ Bool Voice_SendVoiceData(void)
         return 1;
     if (IsTalking())
         return 1;
-    if (*(int *)(*(byte **)imp_cl + 0x179c0c))
+    if ((*(clientActive_t **)imp_cl)->voicePacketCount)
         return 1;
 
     return 0;
@@ -719,27 +719,27 @@ void CL_InitRenderer(void)
     int fieldWidth;
 
     /* re.BeginRegistration */
-    ((void (*)(int *))*(int *)((char *)&re + 4))((int *)((char *)&cls + 0x2a0a64));
+    ((void (*)(int *))*(int *)((char *)&re + 4))((int *)&cls.vidConfig);
     /* Parameters: safeAreaH, safeAreaV, viewportX, viewportY, viewportW, viewportH */
     {
-        int vw = *(int *)((char *)&cls + 0x2a0a64); /* vidConfig.width from BeginRegistration output */
-        int vh = *(int *)((char *)&cls + 0x2a0a68); /* vidConfig.height */
+        int vw = cls.vidConfig.width; /* vidConfig.width from BeginRegistration output */
+        int vh = cls.vidConfig.height; /* vidConfig.height */
         SetScreenScaling(1.0f, 1.0f, 0, 0, vw, vh);
     }
 
     /* cls.charSetShader = re.RegisterShaderNoMip("white", 3, 3) */
-    *(int *)((char *)&cls + 0x2a0a58) = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("white", 3, 3);
+    cls.whiteMaterial = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("white", 3, 3);
     /* cls.whiteShader = re.RegisterShaderNoMip("console", 3, 3) */
-    *(int *)((char *)&cls + 0x2a0a5c) = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("console", 3, 3);
+    cls.consoleMaterial = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("console", 3, 3);
     /* cls.consoleFont = re.RegisterFont("fonts/consoleFont", 3) */
-    *(int *)((char *)&cls + 0x2a0a60) = ((int (*)(const char *, int))*(int *)((char *)&re + 224))("fonts/consoleFont", 3);
+    cls.consoleFont = ((int (*)(const char *, int))*(int *)((char *)&re + 224))("fonts/consoleFont", 3);
 
-    fieldWidth = *(int *)((char *)&cls + 0x2a0a64) - 0x20;
+    fieldWidth = cls.vidConfig.width - 0x20;
     *(int *)imp_g_console_field_width = fieldWidth;
 
-    *(int *)((char *)imp_g_consoleField + 0xc) = fieldWidth;
-    *(int *)((char *)imp_g_consoleField + 0x10) = *(int *)imp_g_console_char_height;
-    *(int *)((char *)imp_g_consoleField + 0x14) = 1;
+    ((field_t *)imp_g_consoleField)->widthInPixels = fieldWidth;
+    *(float *)&((field_t *)imp_g_consoleField)->charHeight = *(float *)imp_g_console_char_height;
+    ((field_t *)imp_g_consoleField)->fixedSize = 1;
 
     StatMon_Reset();
 }
@@ -764,7 +764,7 @@ void CL_StartHunkUsers(void)
         Sys_LoadingKeepAlive();
     }
 
-    if (!*(int *)((char *)&cls + 272)) {
+    if (!cls.uiStarted) {
         CL_InitUI();
         Sys_LoadingKeepAlive();
     }
@@ -1249,7 +1249,7 @@ void CL_OpenScriptMenu_f(void)
 
     if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed))
         return;
-    if (!*(int *)((char *)&cls + 272))
+    if (!cls.uiStarted)
         return;
 
     parentMenuName = Cmd_Argv(1);
@@ -1684,19 +1684,19 @@ void CL_UpdateDebugData(void)
 {
     byte *c = (byte *)&cls;
 
-    if (!*(int *)(c + 264))
+    if (!((clientStatic_t *)c)->rendererStarted)
         return;
 
-    if (*(int *)(c + 0x2a0a98)) {
+    if (((clientStatic_t *)c)->debug.strings) {
         /* re.AddDebugString */
         ((void (*)(void *, int, int))*(int *)((char *)&re + 252))(
-            *(void **)(c + 0x2a0a98), *(int *)(c + 0x2a0a94), *(int *)(c + 0x2a0a90));
+            ((clientStatic_t *)c)->debug.strings, ((clientStatic_t *)c)->debug.numStrings, ((clientStatic_t *)c)->debug.maxStrings);
     }
 
-    if (*(int *)(c + 0x2a0aa8)) {
+    if (((clientStatic_t *)c)->debug.lines) {
         /* re.AddDebugLine */
         ((void (*)(void *, int, int))*(int *)((char *)&re + 256))(
-            *(void **)(c + 0x2a0aa8), *(int *)(c + 0x2a0aa4), *(int *)(c + 0x2a0aa0));
+            ((clientStatic_t *)c)->debug.lines, ((clientStatic_t *)c)->debug.numLines, ((clientStatic_t *)c)->debug.maxLines);
     }
 }
 
@@ -1783,13 +1783,13 @@ void CL_WriteDemoMessage(msg_t *msg, int headerBytes)
     int demofile;
 
     /* Write sequence number */
-    swlen = *(int *)(cc + 131384);
-    FS_Write(&swlen, 4, *(int *)(cc + 0x407b0));
+    swlen = ((clientConnection_t *)cc)->serverMessageSequence;
+    FS_Write(&swlen, 4, ((clientConnection_t *)cc)->demofile);
 
     /* Write message length minus header */
     len = msg->cursize - headerBytes;
     swlen = len;
-    demofile = *(int *)(cc + 0x407b0);
+    demofile = ((clientConnection_t *)cc)->demofile;
     FS_Write(&swlen, 4, demofile);
 
     /* Write message data after header */
@@ -3162,25 +3162,25 @@ int Client_SendVoiceData(int bytes, char *enc_buffer)
 
     if (bytes > 0) {
         c = *(byte **)imp_cl;
-        voiceIdx = *(int *)(c + 0x179c0c);
+        voiceIdx = ((clientActive_t *)c)->voicePacketCount;
 
         /* Copy voice data: dest = cl + voiceIdx*256 + voiceIdx*4 + 0x1791e8 */
-        memcpy(c + (voiceIdx << 8) + (voiceIdx * 4) + 0x1791e8, enc_buffer, bytes);
+        memcpy(((clientActive_t *)c)->voicePackets[voiceIdx].data, enc_buffer, bytes);
 
         /* Store size */
-        *(int *)(c + (voiceIdx << 8) + (voiceIdx * 4) + 0x1791e4) = bytes;
+        ((clientActive_t *)c)->voicePackets[voiceIdx].dataSize = bytes;
 
         /* Increment voice packet count */
         newIdx = voiceIdx + 1;
-        *(int *)(c + 0x179c0c) = newIdx;
+        ((clientActive_t *)c)->voicePacketCount = newIdx;
 
         /* CL_VoiceTransmit inline */
         if (newIdx > 0) {
-            if (*(int *)(c + 0x26f0) - *(int *)(c + 0x179c10) > 199 || newIdx > 9) {
+            if (((clientActive_t *)c)->serverTime - ((clientActive_t *)c)->voicePacketLastTransmit > 199 || newIdx > 9) {
                 CL_WriteVoicePacket();
                 c = *(byte **)imp_cl;
-                *(int *)(c + 0x179c0c) = 0;
-                *(int *)(c + 0x179c10) = *(int *)(c + 0x26f0);
+                ((clientActive_t *)c)->voicePacketCount = 0;
+                ((clientActive_t *)c)->voicePacketLastTransmit = ((clientActive_t *)c)->serverTime;
             }
         }
     }
@@ -4020,15 +4020,15 @@ void CL_Init(void)
     memset(c, 0, 0x179c14);
 
     /* Restore preserved fields */
-    c[9] = saved9;
-    c[0xa] = savedA;
-    *(int *)(c + 4) = saved4;
-    c[8] = saved8;
-    c[0] = saved0;
+    ((clientActive_t *)c)->cgameInitialized = saved9;
+    ((clientActive_t *)c)->cgameInitCalled = savedA;
+    ((clientActive_t *)c)->keyCatchers = saved4;
+    ((clientActive_t *)c)->displayHUDWithKeycatchUI = saved8;
+    ((clientActive_t *)c)->active = saved0;
 
     Com_ClientDObjClearAllSkel();
     CL_ClearMutedList();
-    *(int *)(c + 0x179c0c) = 0;
+    ((clientActive_t *)c)->voicePacketCount = 0;
 
     /* Reset connection state */
     *(int *)(byte *)clc = 0;
@@ -4061,19 +4061,19 @@ void CL_ShutdownAll(void)
     if (shutdownInput)
         shutdownInput();
 
-    if (*(int *)((char *)&cls + 4)) {
+    if (cls.hunkUsersStarted) {
         CL_ShutdownCGame();
         CL_ShutdownUI();
-        *(int *)((char *)&cls + 0x2a0a58) = 0;
-        *(int *)((char *)&cls + 0x2a0a5c) = 0;
-        *(int *)((char *)&cls + 0x2a0a60) = 0;
-        *(int *)((char *)&cls + 4) = 0;
+        cls.whiteMaterial = 0;
+        cls.consoleMaterial = 0;
+        cls.consoleFont = 0;
+        cls.hunkUsersStarted = 0;
     }
 
     if (shutdown)
         shutdown(0);
 
-    *(int *)((char *)&cls + 264) = 0;
+    cls.rendererStarted = 0;
 }
 
 /* line 3062 */
@@ -5436,17 +5436,15 @@ void CL_ForwardToServer_f(void)
     if (Cmd_Argc() <= 1) return;
     const char *cmd = (const char *)Cmd_Args(1);
     /* Write to reliable command buffer */
-    byte *c = (byte *)&clc;
-    int seq = *(int *)(c + 0x130);
-    int acked = *(int *)(c + 0x134);
+    int seq = clc->reliableSequence;
+    int acked = clc->reliableAcknowledge;
     if (seq - acked - 128 > 0) {
         Com_Error(1, "CL_ForwardToServer_f: MAX_RELIABLE_COMMANDS exceeded\n");
     }
     seq++;
-    *(int *)(c + 0x130) = seq;
+    ((clientConnection_t *)clc)->reliableSequence = seq;
     int slot = seq & 0x7f;
-    byte *buf = c + 0x138 + slot * 0x400;
-    MSG_WriteReliableCommandToBuffer(cmd, buf, 0x400);
+    MSG_WriteReliableCommandToBuffer(cmd, (char *)clc->reliableCommands[slot], 0x400);
 }
 
 /* line 2020 */

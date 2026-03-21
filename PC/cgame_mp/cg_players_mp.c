@@ -108,29 +108,29 @@ void CG_ResetPlayerEntity(centity_t *cent)
     deadFlag = es->eFlags & 0x20000;
 
     if (!deadFlag) {
-        pAnimTree = *(void **)(ci + 0x4a4);
+        pAnimTree = ((clientInfo_t *)ci)->pXAnimTree /* TODO: unknown offset - clientInfo anim tree */;
         if (pAnimTree) {
             /* Clear tree goal weights */
-            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cg + 0xe08e4), 0);
+            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cg + 0xe08e4) /* TODO: unknown offset - bgs anim index */, 0);
 
             /* Set complete goal weights for 3 anim indices */
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d0) /* TODO: unknown offset - bgs anim index */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d2) /* TODO: unknown offset - bgs anim index */, 1.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d4) /* TODO: unknown offset - bgs anim index */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
         }
 
         /* Zero out lerpAnim ranges */
         memset(ciBase + 0x394, 0, 48);
-        *(float *)(ci + 0x380) = *(float *)(ci + 0x3ec);
-        *(int *)(ci + 0x384) = 0;
-        *(int *)(ci + 0x388) = 0;
-        *(int *)(ci + 0x38c) = 0;
+        ((clientInfo_t *)ci)->legs.yawAngle = ((clientInfo_t *)ci)->playerAngles[1];
+        ((clientInfo_t *)ci)->legs.yawing = 0;
+        ((clientInfo_t *)ci)->legs.pitchAngle = 0;
+        ((clientInfo_t *)ci)->legs.pitching = 0;
 
         memset(ciBase + 0x3c4, 0, 48);
-        *(float *)(ci + 0x3b0) = *(float *)(ci + 0x3ec);
-        *(int *)(ci + 0x3b4) = 0;
-        *(int *)(ci + 0x3b8) = *(int *)(ci + 0x3e8);
-        *(int *)(ci + 0x3bc) = 0;
+        ((clientInfo_t *)ci)->torso.yawAngle = ((clientInfo_t *)ci)->playerAngles[1];
+        ((clientInfo_t *)ci)->torso.yawing = 0;
+        ((clientInfo_t *)ci)->torso.pitchAngle = *(int *)((clientInfo_t *)ci)->playerAngles;
+        ((clientInfo_t *)ci)->torso.pitching = 0;
     }
 }
 
@@ -148,13 +148,13 @@ static void CG_PlayerFloatSprite(centity_t *cent, MaterialHandle material, float
     int time;
 
     cg = *(byte **)cg_ptr;
-    snap = *(byte **)(cg + 0x20);
+    snap = (byte *)((cg_t *)cg)->snap;
 
     /* Check if spectating/killcam */
-    if (*(int *)(snap + 0x18) & 0xc00000) {
+    if (((snapshot_t *)snap)->snapFlags & 0xc00000) {
         clientNum = cent->nextState.number;
-        if (clientNum == *(int *)(snap + 0xd8)) {
-            if (!*(int *)(cg + 0x25bc0))
+        if (clientNum == ((snapshot_t *)snap)->ps.clientNum) {
+            if (!((cg_t *)cg)->renderingThirdPerson)
                 return;
         }
     } else {
@@ -214,20 +214,20 @@ void CG_PlayerSprites(centity_t *cent)
     ci = cg + 0xe0914 + cent->nextState.clientNum * CI_STRIDE;
     if (!*(int *)ci)
         return;
-    iTeam = *(int *)(ci + 0x2c);
+    iTeam = ((clientInfo_t *)ci)->team;
 
     /* Get local player's client info */
-    snap = *(byte **)(cg + 0x20);
-    ci = cg + 0xe0914 + *(int *)(snap + 0xd8) * CI_STRIDE;
+    snap = (byte *)((cg_t *)cg)->snap;
+    ci = cg + 0xe0914 + ((snapshot_t *)snap)->ps.clientNum * CI_STRIDE;
     if (!*(int *)ci)
         return;
-    localTeam = *(int *)(ci + 0x2c);
+    localTeam = ((clientInfo_t *)ci)->team;
 
     /* Check headicon */
     {
-        int headicon = *(int *)((byte *)cent + 0x184);
+        int headicon = cent->nextState.iHeadIcon;
         if (headicon) {
-            int headiconTeam = *(int *)((byte *)cent + 0x188);
+            int headiconTeam = cent->nextState.iHeadIconTeam;
             if (!headiconTeam || localTeam == 3 || localTeam == headiconTeam) {
                 const char *str = CL_GetConfigString(headicon + 30);
                 material = CL_RegisterMaterial(str, 7);
@@ -247,11 +247,11 @@ void CG_PlayerSprites(centity_t *cent)
 check_local_player:
     /* Check if this is the local player */
     cg = *(byte **)cg_ptr;
-    if (cent->nextState.number == *(int *)(cg + 4)) {
-        if (*(int *)(cg + 0x2cd14)) {
+    if (cent->nextState.number == ((cg_t *)cg)->clientNum) {
+        if (((cg_t *)cg)->inKillCam) {
             /* Show "you" indicator */
             height = (int)additionalRadiusSize;
-            material = *(MaterialHandle *)(cg + 0xba38);
+            material = *(MaterialHandle *)(cg + 0xba38) /* TODO: unknown offset - likely cgs->media.youInKillCamMaterial */;
             CG_PlayerFloatSprite(cent, material,
                 *(float *)(*(byte **)cg_sprite5_ptr + 8), height, 1);
             return;
@@ -262,7 +262,7 @@ check_local_player:
     eFlags = cent->nextState.eFlags;
     if (eFlags & 0x80) {
         height = (int)additionalRadiusSize;
-        material = *(MaterialHandle *)(cg + 0xba34);
+        material = *(MaterialHandle *)(cg + 0xba34) /* TODO: unknown offset - likely cgs->media.connectionMaterial */;
         CG_PlayerFloatSprite(cent, material,
             *(float *)(*(byte **)cg_sprite6_ptr + 8), height, 0);
         return;
@@ -273,9 +273,9 @@ check_local_player:
         return;
 
     /* Check headicon timer */
-    if (*(int *)((byte *)cent + 0x218) > *(int *)(cg + 0x25bb0)) {
+    if (cent->voiceChatSpriteTime > ((cg_t *)cg)->time) {
         height = (int)additionalRadiusSize;
-        material = *(MaterialHandle *)((byte *)cent + 0x214);
+        material = cent->voiceChatSprite;
         CG_PlayerFloatSprite(cent, material,
             *(float *)(*(byte **)cg_sprite2_ptr + 8), height, 0);
         return;
@@ -288,7 +288,7 @@ check_local_player:
     /* Show friendly indicator */
     additionalRadiusSize -= 5.0f;
     height = (int)additionalRadiusSize;
-    material = *(MaterialHandle *)(cg + 0xba30);
+    material = *(MaterialHandle *)(cg + 0xba30) /* TODO: unknown offset - likely cgs->media.balloonMaterial */;
     CG_PlayerFloatSprite(cent, material,
         *(float *)(*(byte **)cg_sprite2_ptr + 8), height, 0);
 }
@@ -315,10 +315,10 @@ void CG_Player(centity_t *cent)
     /* line 396: spectator/killcam check */
     cg = *(byte **)cg_ptr;
     {
-        byte *snap = *(byte **)(cg + 0x20);
-        if (*(int *)(snap + 0x18) & 0xc00000) {
-            if (es->number == *(int *)(snap + 0xd8)) {
-                if (!*(int *)(cg + 0x25bc0))
+        byte *snap = (byte *)((cg_t *)cg)->snap;
+        if (((snapshot_t *)snap)->snapFlags & 0xc00000) {
+            if (es->number == ((snapshot_t *)snap)->ps.clientNum) {
+                if (!((cg_t *)cg)->renderingThirdPerson)
                     return;
             }
         }
@@ -393,11 +393,11 @@ void CG_Player(centity_t *cent)
             pLerpAnim = ciBase + 0x394;
 
             /* line 208: check pLerpAnim fields */
-            animValue = *(int *)(pLerpAnim + 0x10);
+            animValue = ((lerpFrame_t *)pLerpAnim)->animationNumber;
             if (!animValue)
                 goto render;
 
-            animPtr = *(byte **)(pLerpAnim + 0x14);
+            animPtr = (byte *)((lerpFrame_t *)pLerpAnim)->animation;
             if (!animPtr)
                 goto render;
 
@@ -426,7 +426,7 @@ void CG_Player(centity_t *cent)
             }
 
             /* line 226: check frame duration */
-            frameDuration = *(int *)(cg + 0x25bac);
+            frameDuration = ((cg_t *)cg)->frametime;
             if (!frameDuration)
                 goto render;
 
@@ -434,8 +434,8 @@ void CG_Player(centity_t *cent)
             weapDef = BG_GetWeaponDef(pTurretCEnt->nextState.weapon);
 
             /* line 234 */
-            pAnimTree = *(void **)(turretCi + 0x4a4);
-            pXAnims = *(void **)(cg + 0xe08cc);
+            pAnimTree = ((clientInfo_t *)turretCi)->pXAnimTree;
+            pXAnims = *(void **)(cg + 0xe08cc) /* TODO: unknown offset - bgs anim data */;
             baseAnim = (unsigned short)(animValue & ~0x200);
             if (!pAnimTree)
                 goto render;
@@ -713,13 +713,13 @@ render:
     AnglesToAxis(cent->lerpAngles, (float *)(body + 0x14));
 
     /* body.origin = lerpOrigin */
-    *(float *)(body + 0x3C) = cent->lerpOrigin[0];
-    *(float *)(body + 0x40) = cent->lerpOrigin[1];
-    *(float *)(body + 0x44) = cent->lerpOrigin[2];
+    ((GfxEntity *)body)->origin[0] = cent->lerpOrigin[0];
+    ((GfxEntity *)body)->origin[1] = cent->lerpOrigin[1];
+    ((GfxEntity *)body)->origin[2] = cent->lerpOrigin[2];
 
     /* body.oldOrigin */
-    *(float *)(body + 0x08) = cent->lerpOrigin[0];
-    *(float *)(body + 0x0C) = cent->lerpOrigin[1];
+    ((GfxEntity *)body)->lighting.baseCoords[0] = cent->lerpOrigin[0];
+    ((GfxEntity *)body)->lighting.baseCoords[1] = cent->lerpOrigin[1];
 
     /* line 433 */
     {
@@ -733,13 +733,13 @@ render:
         else
             z += 32.0f;
 
-        *(float *)(body + 0x10) = z;
+        ((GfxEntity *)body)->lighting.baseCoords[2] = z;
     }
 
     /* line 442 */
-    *(int *)(body + 0x00) = 0;
+    ((GfxEntity *)body)->reType = 0;
     /* line 444 */
-    *(int *)(body + 0x04) = 0x80;
+    ((GfxEntity *)body)->renderFxFlags = 0x80;
 
     /* line 446 */
     CG_AddCEntityToScene(body, obj, cent);
@@ -800,13 +800,13 @@ void CG_Corpse(centity_t *cent)
     AnglesToAxis(cent->lerpAngles, (float *)(body + 0x14));
 
     /* body.origin = lerpOrigin */
-    *(float *)(body + 0x3C) = cent->lerpOrigin[0];
-    *(float *)(body + 0x40) = cent->lerpOrigin[1];
-    *(float *)(body + 0x44) = cent->lerpOrigin[2];
+    ((GfxEntity *)body)->origin[0] = cent->lerpOrigin[0];
+    ((GfxEntity *)body)->origin[1] = cent->lerpOrigin[1];
+    ((GfxEntity *)body)->origin[2] = cent->lerpOrigin[2];
 
     /* body.oldOrigin[0,1] = lerpOrigin[0,1] */
-    *(float *)(body + 0x08) = cent->lerpOrigin[0];
-    *(float *)(body + 0x0C) = cent->lerpOrigin[1];
+    ((GfxEntity *)body)->lighting.baseCoords[0] = cent->lerpOrigin[0];
+    ((GfxEntity *)body)->lighting.baseCoords[1] = cent->lerpOrigin[1];
 
     /* body.oldOrigin[2] = lerpOrigin[2] + fTorsoPitch + stance height */
     z = cent->lerpOrigin[2] + es->fTorsoPitch;
@@ -818,12 +818,12 @@ void CG_Corpse(centity_t *cent)
     } else {
         z += 32.0f;  /* standing */
     }
-    *(float *)(body + 0x10) = z;
+    ((GfxEntity *)body)->lighting.baseCoords[2] = z;
 
     /* body.reType = 0 */
-    *(int *)(body + 0x00) = 0;
+    ((GfxEntity *)body)->reType = 0;
     /* body.renderFxFlags = RF_SHADOW */
-    *(int *)(body + 0x04) = 0x80;
+    ((GfxEntity *)body)->renderFxFlags = 0x80;
 
     /* Add to scene */
     CG_AddCEntityToScene(body, obj, cent);

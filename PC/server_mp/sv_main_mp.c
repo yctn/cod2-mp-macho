@@ -1925,8 +1925,8 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
 /* line 1190 */
 long int SV_FreeClientScriptId(client_t *cl)
 {
-    Scr_FreeValue(*(unsigned short *)((byte *)cl + 0x765f0));
-    *(unsigned short *)((byte *)cl + 0x765f0) = 0;
+    Scr_FreeValue(cl->scriptId);
+    cl->scriptId = 0;
     return 0;
 }
 
@@ -2689,24 +2689,24 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
     int i;
     int reliableSequence;
 
-    /* Check netchanState */
-    if (*(int *)(cl + 0x765f4) != 0)
+    /* Check bIsTestClient */
+    if (client->bIsTestClient != 0)
         return 0;
 
-    reliableSequence = *(int *)(cl + 0x20814);
+    reliableSequence = client->reliableSent;
     i = reliableSequence;
 
     /* Check if too many unacknowledged commands */
-    if (i - *(int *)(cl + 0x20810) > 0x3f) {
+    if (i - client->reliableAcknowledge > 0x3f) {
         /* Compress: remove acknowledged commands by shifting buffer down */
         int toIndex;
-        int from = *(int *)(cl + 0x20814) + 1;
+        int from = client->reliableSent + 1;
 
         toIndex = from;
         while (from <= reliableSequence) {
             int fromSlot = from & 0x7f;
             int fromOff = fromSlot * 0x408;
-            int entryType = *(int *)(cl + 0x810 + fromOff);
+            int entryType = client->reliableCommandInfo[fromSlot].type;
 
             if (entryType == 0) {
                 /* Empty entry, skip */
@@ -2718,16 +2718,15 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
                 int toSlot = toIndex & 0x7f;
 
                 if (toSlot != fromSlot) {
-                    int toOff = toSlot * 0x408;
                     /* Copy the entry */
-                    memcpy(cl + 0x40c + toOff, cl + 0x40c + fromOff, 0x408);
+                    memcpy(&client->reliableCommandInfo[toSlot], &client->reliableCommandInfo[fromSlot], sizeof(svscmd_info_t));
                 }
             }
             toIndex++;
             from++;
         }
         reliableSequence = toIndex - 1;
-        *(int *)(cl + 0x20814) = reliableSequence;
+        client->reliableSent = reliableSequence;
     }
 
     /* If type != 0, try to deduplicate (find matching command) */
@@ -2735,11 +2734,10 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         int from;
         int foundIdx = -1;
 
-        from = *(int *)(cl + 0x20814) + 1;
+        from = client->reliableSent + 1;
         while (from <= i) {
             int slot = from & 0x7f;
-            int off = slot * 0x408;
-            int entryType = *(int *)(cl + 0x810 + off);
+            int entryType = client->reliableCommandInfo[slot].type;
 
             if (entryType == 0) {
                 from++;
@@ -2749,7 +2747,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
             /* Check if first char matches */
             {
                 char firstChar = cmd[0];
-                if (*(char *)(cl + 0x40c + off) != firstChar) {
+                if (client->reliableCommandInfo[slot].cmd[0] != firstChar) {
                     from++;
                     continue;
                 }
@@ -2797,7 +2795,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
                     if (partialMatch) {
                         /* Compare from offset 2: cmd[2..] vs entry[2..], skipping spaces */
                         const char *str1 = cmd + 2;
-                        const char *str2 = (const char *)(cl + 0x40c + off + 2);
+                        const char *str2 = client->reliableCommandInfo[slot].cmd + 2;
                         int matched = 1;
 
                         while (1) {
@@ -2843,7 +2841,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
                         }
                     } else {
                         /* Full match: compare cmd+1 vs entry+1 (using strcmp) */
-                        char *entryStr = (char *)(cl + 0x40c + off + 1);
+                        char *entryStr = client->reliableCommandInfo[slot].cmd + 1;
                         if (strcmp(cmd + 1, entryStr) != 0) {
                             from++;
                             continue;
@@ -2861,19 +2859,17 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
                 int toCmd = foundIdx;
 
                 if (fromCmd <= reliableSequence) {
-                    while (fromCmd <= *(int *)(cl + 0x20814)) {
+                    while (fromCmd <= client->reliableSent) {
                         int fromSlot2 = fromCmd & 0x7f;
                         int toSlot2 = toCmd & 0x7f;
-                        int fromOff2 = fromSlot2 * 0x408;
-                        int toOff2 = toSlot2 * 0x408;
 
-                        memcpy(cl + 0x40c + toOff2, cl + 0x40c + fromOff2, 0x408);
+                        memcpy(&client->reliableCommandInfo[toSlot2], &client->reliableCommandInfo[fromSlot2], sizeof(svscmd_info_t));
                         fromCmd++;
                         toCmd++;
                     }
                 }
 
-                reliableSequence = *(int *)(cl + 0x20814);
+                reliableSequence = client->reliableSent;
                 i = reliableSequence;
             }
             break;
@@ -2881,18 +2877,17 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
     }
 
     /* Check if buffer overflow */
-    if (i - *(int *)(cl + 0x20810) == 0x81) {
+    if (i - client->reliableAcknowledge == 0x81) {
         /* Overflow: dump pending commands and disconnect */
         int dumpFrom;
 
         Com_Printf(str_002ab3d4); /* "===== pending server commands =====\n" */
 
-        dumpFrom = *(int *)(cl + 0x20810) + 1;
-        while (dumpFrom <= *(int *)(cl + 0x20814)) {
+        dumpFrom = client->reliableAcknowledge + 1;
+        while (dumpFrom <= client->reliableSent) {
             int dumpSlot = dumpFrom & 0x7f;
-            int dumpOff = dumpSlot * 0x408;
-            Com_Printf(str_002ab3fc, dumpFrom, *(int *)(cl + 0x80c + dumpOff),
-                        (char *)(cl + 0x40c + dumpOff));
+            Com_Printf(str_002ab3fc, dumpFrom, client->reliableCommandInfo[dumpSlot].time,
+                        client->reliableCommandInfo[dumpSlot].cmd);
             dumpFrom++;
         }
 
@@ -2901,10 +2896,8 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
 
         /* Send disconnect to client via OOB */
         {
-            int a = *(int *)(cl + 0x6e5c4);
-            int b = *(int *)(cl + 0x6e5c8);
-            int c = *(int *)(cl + 0x6e5cc);
-            NET_OutOfBandPrint(1, a, b, c, str_00228e90); /* "disconnect" */
+            netadr_t addr = client->netchan.remoteAddress;
+            NET_OutOfBandPrint(1, *(int *)&addr, ((int *)&addr)[1], ((int *)&addr)[2], str_00228e90); /* "disconnect" */
         }
 
         /* Delay-drop the client */
@@ -2913,24 +2906,23 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         /* Replace command with overflow indicator */
         cmd = va(str_002ab42c, 0x77); /* "%c \"EXE_SERVERCOMMANDOVERFLOW\"" */
         type = 1;
-        i = *(int *)(cl + 0x20814);
+        i = client->reliableSent;
     }
 
     /* Write the new command */
     {
         int newSeq = i + 1;
-        *(int *)(cl + 0x20814) = newSeq;
+        client->reliableSent = newSeq;
         i = newSeq;
     }
 
     {
         int slot = i & 0x7f;
-        int off = slot * 0x408;
 
-        MSG_WriteReliableCommandToBuffer(cmd, (char *)(cl + 0x40c + off), 0x400);
+        MSG_WriteReliableCommandToBuffer(cmd, client->reliableCommandInfo[slot].cmd, 0x400);
 
-        *(int *)(cl + 0x80c + off) = *(int *)((byte *)&svs + 4);
-        *(int *)(cl + 0x810 + off) = type;
+        client->reliableCommandInfo[slot].time = *(int *)((byte *)&svs + 4);
+        client->reliableCommandInfo[slot].type = type;
     }
 
     return 0;

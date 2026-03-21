@@ -277,11 +277,11 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum);
 void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 {
     char *ent = (char *)cg_entities + entnum * 548;
-    vec_t *origin = (vec_t *)(ent + 0x1ec);
+    vec_t *origin = (vec_t *)((centity_t *)ent)->lerpOrigin;
     origin_out[0] = origin[0];
     origin_out[1] = origin[1];
     origin_out[2] = origin[2];
-    AnglesToAxis((vec_t *)(ent + 0x1f8), axis_out);
+    AnglesToAxis((vec_t *)((centity_t *)ent)->lerpAngles, axis_out);
 }
 
 /* line 727 */
@@ -704,46 +704,46 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
 
     /* line 877 */
     cgsPtr = (byte *)cgs;
-    *(int *)(cgsPtr + 0xba40) = CL_RegisterMaterial((const char *)str_002a75c0, 7);  /* lagometer */
-    *(int *)(cgsPtr + 0xba34) = CL_RegisterMaterial((const char *)str_002a75cc, 7);  /* headicondisconnected */
-    *(int *)(cgsPtr + 0xba38) = CL_RegisterMaterial((const char *)str_002a75e4, 7);  /* headiconyouinkillcam */
+    ((cgs_t *)cgsPtr)->media.lagometerMaterial = CL_RegisterMaterial((const char *)str_002a75c0, 7);  /* lagometer */
+    ((cgs_t *)cgsPtr)->media.connectionMaterial = CL_RegisterMaterial((const char *)str_002a75cc, 7);  /* headicondisconnected */
+    ((cgs_t *)cgsPtr)->media.youInKillCamMaterial = CL_RegisterMaterial((const char *)str_002a75e4, 7);  /* headiconyouinkillcam */
     CL_RegisterMaterial((const char *)str_002a75fc, 7);  /* killiconmelee */
     CL_RegisterMaterial((const char *)str_002a760c, 7);  /* killiconsuicide */
     CL_RegisterMaterial((const char *)str_002a761c, 7);  /* killiconfalling */
     CL_RegisterMaterial((const char *)str_002a762c, 7);  /* killiconcrush */
     CL_RegisterMaterial((const char *)str_002a763c, 7);  /* killicondied */
-    *(int *)(cgsPtr + 0xba3c) = CL_RegisterMaterial((const char *)str_002a764c, 6);  /* gfx/misc/tracer */
-    *(int *)(cgsPtr + 0xba4c) = CL_RegisterMaterial((const char *)str_002a765c, 7);  /* gfx/icons/hint_usable */
-    *(int *)(cgsPtr + 0xba50) = CL_RegisterMaterial((const char *)str_002a7674, 7);  /* hint_health */
-    *(int *)(cgsPtr + 0xba54) = CL_RegisterMaterial((const char *)str_002a7680, 7);  /* hint_friendly */
-    *(int *)(cgsPtr + 0xbc58) = CL_RegisterMaterial((const char *)str_002a7690, 7);  /* stance_stand */
-    *(int *)(cgsPtr + 0xbc5c) = CL_RegisterMaterial((const char *)str_002a76a0, 7);  /* stance_crouch */
-    *(int *)(cgsPtr + 0xbc60) = CL_RegisterMaterial((const char *)str_002a76b0, 7);  /* stance_prone */
-    *(int *)(cgsPtr + 0xbc64) = CL_RegisterMaterial((const char *)str_002a76c0, 7);  /* stance_flash */
-    *(int *)(cgsPtr + 0xbc68) = CL_RegisterMaterial((const char *)str_002a76d0, 7);  /* objective */
-    *(int *)(cgsPtr + 0xbc6c) = CL_RegisterMaterial((const char *)str_002a76dc, 7);  /* objective_friendly */
-    *(int *)(cgsPtr + 0xbc70) = CL_RegisterMaterial((const char *)str_002a76f0, 7);  /* objective_friendly_chat */
-    *(int *)(cgsPtr + 0xbc74) = CL_RegisterMaterial((const char *)str_002a7708, 7);  /* hit_direction */
-    *(int *)(cgsPtr + 0xbc78) = CL_RegisterMaterial((const char *)str_002a7718, 7);  /* hint_mantle */
-    *(int *)(cgsPtr + 0xc1d4) = CL_RegisterMaterialNoMip((const char *)str_002a7724, 7);  /* ui/assets/checkbox_clear */
-    *(int *)(cgsPtr + 0xc1d8) = CL_RegisterMaterialNoMip((const char *)str_002a7740, 7);  /* ui/assets/checkbox_checked */
-    *(int *)(cgsPtr + 0xc1dc) = CL_RegisterMaterialNoMip((const char *)str_002a775c, 7);  /* ui/assets/checkbox_fail */
-    *(int *)(cgsPtr + 0xc1e0) = CL_RegisterMaterialNoMip((const char *)str_002a7774, 7);  /* compassping_friendlyfiring */
-    *(int *)(cgsPtr + 0xc1e4) = CL_RegisterMaterialNoMip((const char *)str_002a7790, 7);  /* compassping_friendlyyelling */
-    *(int *)(cgsPtr + 0xc1e8) = CL_RegisterMaterialNoMip((const char *)str_002a77ac, 7);  /* compassping_enemyfiring */
-    *(int *)(cgsPtr + 0xc1ec) = CL_RegisterMaterialNoMip((const char *)str_002a77c4, 7);  /* compassping_enemyyelling */
-    *(int *)(cgsPtr + 0xc1f0) = CL_RegisterMaterialNoMip((const char *)str_002a77e0, 7);  /* compassping_grenade */
-    *(int *)(cgsPtr + 0xc1f4) = CL_RegisterMaterialNoMip((const char *)str_002a77f4, 7);  /* compassping_explosion */
-    *(int *)(cgsPtr + 0xc1f8) = CL_RegisterMaterialNoMip((const char *)str_002a780c, 7);  /* hud_grenadeicon */
-    *(int *)(cgsPtr + 0xc1fc) = CL_RegisterMaterialNoMip((const char *)str_002a781c, 7);  /* hud_grenadepointer */
-    *(int *)(cgsPtr + 0xba28) = CL_RegisterMaterial((const char *)str_002a7830, 7);  /* hudcolorbar */
+    ((cgs_t *)cgsPtr)->media.tracerMaterial = CL_RegisterMaterial((const char *)str_002a764c, 6);  /* gfx/misc/tracer */
+    ((cgs_t *)cgsPtr)->media.hintMaterials[0] = CL_RegisterMaterial((const char *)str_002a765c, 7);  /* gfx/icons/hint_usable */
+    ((cgs_t *)cgsPtr)->media.hintMaterials[1] = CL_RegisterMaterial((const char *)str_002a7674, 7);  /* hint_health */
+    ((cgs_t *)cgsPtr)->media.hintMaterials[2] = CL_RegisterMaterial((const char *)str_002a7680, 7);  /* hint_friendly */
+    ((cgs_t *)cgsPtr)->media.stanceMaterials[0] = CL_RegisterMaterial((const char *)str_002a7690, 7);  /* stance_stand */
+    ((cgs_t *)cgsPtr)->media.stanceMaterials[1] = CL_RegisterMaterial((const char *)str_002a76a0, 7);  /* stance_crouch */
+    ((cgs_t *)cgsPtr)->media.stanceMaterials[2] = CL_RegisterMaterial((const char *)str_002a76b0, 7);  /* stance_prone */
+    ((cgs_t *)cgsPtr)->media.stanceMaterials[3] = CL_RegisterMaterial((const char *)str_002a76c0, 7);  /* stance_flash */
+    ((cgs_t *)cgsPtr)->media.objectiveMaterials[0] = CL_RegisterMaterial((const char *)str_002a76d0, 7);  /* objective */
+    ((cgs_t *)cgsPtr)->media.friendMaterials[0] = CL_RegisterMaterial((const char *)str_002a76dc, 7);  /* objective_friendly */
+    ((cgs_t *)cgsPtr)->media.friendMaterials[1] = CL_RegisterMaterial((const char *)str_002a76f0, 7);  /* objective_friendly_chat */
+    ((cgs_t *)cgsPtr)->media.damageMaterial = CL_RegisterMaterial((const char *)str_002a7708, 7);  /* hit_direction */
+    ((cgs_t *)cgsPtr)->media.mantleHint = CL_RegisterMaterial((const char *)str_002a7718, 7);  /* hint_mantle */
+    ((cgs_t *)cgsPtr)->media.checkbox_clear = CL_RegisterMaterialNoMip((const char *)str_002a7724, 7);  /* ui/assets/checkbox_clear */
+    ((cgs_t *)cgsPtr)->media.checkbox_checked = CL_RegisterMaterialNoMip((const char *)str_002a7740, 7);  /* ui/assets/checkbox_checked */
+    ((cgs_t *)cgsPtr)->media.checkbox_fail = CL_RegisterMaterialNoMip((const char *)str_002a775c, 7);  /* ui/assets/checkbox_fail */
+    ((cgs_t *)cgsPtr)->media.compassping_friendlyfiring = CL_RegisterMaterialNoMip((const char *)str_002a7774, 7);  /* compassping_friendlyfiring */
+    ((cgs_t *)cgsPtr)->media.compassping_friendlyyelling = CL_RegisterMaterialNoMip((const char *)str_002a7790, 7);  /* compassping_friendlyyelling */
+    ((cgs_t *)cgsPtr)->media.compassping_enemyfiring = CL_RegisterMaterialNoMip((const char *)str_002a77ac, 7);  /* compassping_enemyfiring */
+    ((cgs_t *)cgsPtr)->media.compassping_enemyyelling = CL_RegisterMaterialNoMip((const char *)str_002a77c4, 7);  /* compassping_enemyyelling */
+    ((cgs_t *)cgsPtr)->media.compassping_grenade = CL_RegisterMaterialNoMip((const char *)str_002a77e0, 7);  /* compassping_grenade */
+    ((cgs_t *)cgsPtr)->media.compassping_explosion = CL_RegisterMaterialNoMip((const char *)str_002a77f4, 7);  /* compassping_explosion */
+    ((cgs_t *)cgsPtr)->media.grenadeIcon = CL_RegisterMaterialNoMip((const char *)str_002a780c, 7);  /* hud_grenadeicon */
+    ((cgs_t *)cgsPtr)->media.grenadePointer = CL_RegisterMaterialNoMip((const char *)str_002a781c, 7);  /* hud_grenadepointer */
+    ((cgs_t *)cgsPtr)->media.teamStatusBar = CL_RegisterMaterial((const char *)str_002a7830, 7);  /* hudcolorbar */
 
     /* line 930 */
     CG_LoadingString((const char *)str_002a783c);
 
     /* line 934 */
-    *(int *)(cgsPtr + 0xba2c) = CL_RegisterMaterial((const char *)str_002a7848, 7);  /* headiconvoicechat */
-    *(int *)(cgsPtr + 0xba30) = CL_RegisterMaterial((const char *)str_002a785c, 7);  /* headicontalkballoon */
+    ((cgs_t *)cgsPtr)->media.voiceChatMaterial = CL_RegisterMaterial((const char *)str_002a7848, 7);  /* headiconvoicechat */
+    ((cgs_t *)cgsPtr)->media.balloonMaterial = CL_RegisterMaterial((const char *)str_002a785c, 7);  /* headicontalkballoon */
 
     /* line 937 */
     CG_RegisterScoreboardGraphics();
@@ -763,7 +763,7 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
 
     /* line 949 */
     numInlineModels = CM_NumInlineModels();
-    *(int *)(cgsPtr + 0x7188) = numInlineModels;
+    ((cgs_t *)cgsPtr)->numInlineModels = numInlineModels;
 
     /* line 950-961: register inline models */
     if (numInlineModels - 1 > 0) {
@@ -802,7 +802,7 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
 
     /* line 990 */
     cgsPtr = (byte *)cgs;
-    *(int *)(cgsPtr + 0x68c0) = FX_RegisterEffect((const char *)str_002a78a4);
+    ((cgs_t *)cgsPtr)->smokeGrenadeFx = FX_RegisterEffect((const char *)str_002a78a4);
 
     /* line 993-1003: register shellshocks */
     {
@@ -829,13 +829,13 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
     CG_SetShellShockParmsFromDvars(cgsPtr + 0x7104);
 
     /* line 1027 */
-    *(int *)(cgsPtr + 0xc200) = CG_RegisterImpactEffects(mapname);
-    if (!*(int *)(cgsPtr + 0xc200)) {
+    ((cgs_t *)cgsPtr)->media.fx = CG_RegisterImpactEffects(mapname);
+    if (!((cgs_t *)cgsPtr)->media.fx) {
         Com_Error(1, (const char *)str_002a7938);
     }
 
     /* line 1030 */
-    *(int *)(cgsPtr + 0xc204) = FX_RegisterEffect((const char *)str_002a7980);
+    ((cgs_t *)cgsPtr)->media.fxNoBloodFleshHit = FX_RegisterEffect((const char *)str_002a7980);
 
     /* line 1032 */
     CG_LoadingString((const char *)str_002a79a4);

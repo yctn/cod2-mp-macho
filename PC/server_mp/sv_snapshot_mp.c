@@ -135,9 +135,8 @@ void SV_SendClientMessages(void);
 /* line 483 */
 void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
 {
-    byte *cl = (byte *)client;
-    int reliableAck = *(int *)(cl + CLIENT_RELIABLEACK);
-    int reliableSeq = *(int *)(cl + CLIENT_RELIABLESEQUENCE);
+    int reliableAck = client->reliableAcknowledge;
+    int reliableSeq = client->reliableSequence;
     byte *showdvar = *(byte **)&sv_showcommands_dvar;
     int i;
     int idx;
@@ -145,8 +144,8 @@ void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
 
     if (reliableAck + 1 < reliableSeq) {
         if (*(byte *)(*(byte **)showdvar + 8) != 0) {
-            Com_Printf("Client %s has the following un-ack'd reliable commands:\n", cl + CLIENT_NAME);
-            reliableAck = *(int *)(cl + CLIENT_RELIABLEACK);
+            Com_Printf("Client %s has the following un-ack'd reliable commands:\n", client->name);
+            reliableAck = client->reliableAcknowledge;
         }
     }
 
@@ -154,14 +153,14 @@ void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
         MSG_WriteByte(msg, 4);
         MSG_WriteLong(msg, i);
         idx = i & CLIENT_CMDENTRY_MASK;
-        cmdStr = (char *)(cl + CLIENT_CMDENTRY_BASE + idx * CLIENT_CMDENTRY_SIZE + CLIENT_CMDENTRY_STROFF);
+        cmdStr = client->reliableCommandInfo[idx].cmd;
         MSG_WriteString(msg, cmdStr);
         if (*(byte *)(*(byte **)*(byte **)&sv_showcommands_dvar + 8) != 0) {
-            Com_Printf("%i: %s\n", i - *(int *)(cl + CLIENT_RELIABLEACK) - 1, cmdStr);
+            Com_Printf("%i: %s\n", i - client->reliableAcknowledge - 1, cmdStr);
         }
     }
 
-    *(int *)(cl + CLIENT_RELIABLESENT) = reliableSeq;
+    client->reliableSent = reliableSeq;
 }
 
 /* line 836 */
@@ -171,25 +170,25 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
     byte msg_buf_ll[16]; /* LargeLocal */
     byte *msg_buf;
     msg_t msg;
-    byte *svs;
+    serverStatic_t *svs;
     cachedSnapshot_t *cachedFrame = NULL;
     byte *partEntry;
 
     LargeLocal_LargeLocal(msg_buf_ll, 0x20000);
     msg_buf = LargeLocal_GetBuf(msg_buf_ll);
 
-    svs = (byte *)imp_svs;
+    svs = (serverStatic_t *)imp_svs;
 
     /* Compute archived entity part entry (archivedFrame % 1200, stride 8) */
-    partEntry = *(byte **)(svs + SVS_ARCHIVEDENTITYPARTS) + (archivedFrame % 1200) * 8;
+    partEntry = (byte *)svs->archivedSnapshotFrames + (archivedFrame % 1200) * 8;
 
     /* Check data freshness */
-    if (*(int *)partEntry < *(int *)(svs + SVS_ARCHIVEDENTITYBUFSIZE) - 0x2000000)
+    if (*(int *)partEntry < svs->nextArchivedSnapshotBuffer - 0x2000000)
         goto return_null;
 
     /* Search existing cached frames */
     {
-        int searchStart = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM);
+        int searchStart = svs->nextCachedSnapshotFrames;
         int searchEnd = searchStart - 0x200;
         byte *cfBase;
         int i;
@@ -197,14 +196,14 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         if (searchEnd < 0) searchEnd = 0;
 
         if (searchStart - 1 >= searchEnd) {
-            cfBase = *(byte **)((byte *)imp_svs + SVS_CACHEDFRAMES);
+            cfBase = (byte *)svs->cachedSnapshotFrames;
             for (i = searchStart - 1; i >= searchEnd; i--) {
                 cachedSnapshot_t *cf = (cachedSnapshot_t *)(cfBase + (i % 512) * 28);
                 if (cf->archivedFrame == archivedFrame) {
                     cachedFrame = cf;
-                    svs = (byte *)imp_svs;
-                    if (cf->first_entity >= *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) - 0x4000) {
-                        if (cf->first_client >= *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) - (int)&__mh_execute_header) {
+                    svs = (serverStatic_t *)imp_svs;
+                    if (cf->first_entity >= svs->nextCachedSnapshotEntities - 0x4000) {
+                        if (cf->first_client >= svs->nextCachedSnapshotClients - (int)&__mh_execute_header) {
                             goto cleanup; /* Still valid */
                         }
                     }
@@ -224,12 +223,12 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         byte *entBuf;
 
         if (msg.cursize <= remaining) {
-            svs = (byte *)imp_svs;
-            entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
+            svs = (serverStatic_t *)imp_svs;
+            entBuf = svs->archivedSnapshotBuffer;
             memcpy(msg.data, entBuf + dataOffset, msg.cursize);
         } else {
-            svs = (byte *)imp_svs;
-            entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
+            svs = (serverStatic_t *)imp_svs;
+            entBuf = svs->archivedSnapshotBuffer;
             memcpy(msg.data, entBuf + dataOffset, remaining);
             memcpy(msg.data + remaining, entBuf, msg.cursize - remaining);
         }
@@ -240,14 +239,14 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         int oldArchivedFrame = MSG_ReadLong(&msg);
         cachedSnapshot_t *oldCachedFrame;
 
-        svs = (byte *)imp_svs;
-        if (oldArchivedFrame < *(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) - 0x4b0)
+        svs = (serverStatic_t *)imp_svs;
+        if (oldArchivedFrame < svs->nextArchivedSnapshotFrames - 0x4b0)
             goto return_null;
 
         /* Validate old data freshness */
         {
-            byte *oldPart = *(byte **)(svs + SVS_ARCHIVEDENTITYPARTS) + (oldArchivedFrame % 1200) * 8;
-            if (*(int *)oldPart < *(int *)(svs + SVS_ARCHIVEDENTITYBUFSIZE) - 0x2000000)
+            byte *oldPart = (byte *)svs->archivedSnapshotFrames + (oldArchivedFrame % 1200) * 8;
+            if (*(int *)oldPart < svs->nextArchivedSnapshotBuffer - 0x2000000)
                 goto return_null;
         }
 
@@ -257,14 +256,14 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
 
         /* Allocate new cached frame slot */
         {
-            int frameIdx = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) % 512;
-            cachedFrame = (cachedSnapshot_t *)(*(byte **)(svs + SVS_CACHEDFRAMES) + frameIdx * 28);
+            int frameIdx = svs->nextCachedSnapshotFrames % 512;
+            cachedFrame = (cachedSnapshot_t *)((byte *)svs->cachedSnapshotFrames + frameIdx * 28);
         }
         cachedFrame->archivedFrame = archivedFrame;
         cachedFrame->num_entities = 0;
-        cachedFrame->first_entity = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX);
+        cachedFrame->first_entity = svs->nextCachedSnapshotEntities;
         cachedFrame->num_clients = 0;
-        cachedFrame->first_client = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX);
+        cachedFrame->first_client = svs->nextCachedSnapshotClients;
         cachedFrame->usesDelta = 1;
         cachedFrame->time = MSG_ReadLong(&msg);
 
@@ -277,7 +276,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
 
             if (oldNumClients > 0) {
                 int firstIdx = oldCachedFrame->first_client % 0x1000;
-                oldCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + firstIdx * CACHEDCLIENT_STRIDE;
+                oldCachedClient = (byte *)svs->cachedSnapshotClients + firstIdx * CACHEDCLIENT_STRIDE;
                 oldClientNum = *(int *)(oldCachedClient + 4);
             }
 
@@ -297,16 +296,17 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                         break;
                     }
                     {
-                        byte *cdata = *(byte **)((byte *)imp_svs + SVS_ARCHIVEDCLIENTDATA);
+                        svs = (serverStatic_t *)imp_svs;
+                        byte *cdata = (byte *)svs->cachedSnapshotClients;
                         int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
                         oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
                         oldClientNum = *(int *)(oldCachedClient + 4);
                     }
                 }
 
-                svs = (byte *)imp_svs;
-                clientIdx = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) % 0x1000;
-                newCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + clientIdx * CACHEDCLIENT_STRIDE;
+                svs = (serverStatic_t *)imp_svs;
+                clientIdx = svs->nextCachedSnapshotClients % 0x1000;
+                newCachedClient = (byte *)svs->cachedSnapshotClients + clientIdx * CACHEDCLIENT_STRIDE;
 
                 if (oldClientNum == newClientNum) {
                     /* Delta from old cached client */
@@ -315,9 +315,9 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (*(int *)newCachedClient != 0)
                         MSG_ReadDeltaPlayerstate(&msg, oldCachedClient + 0x60, newCachedClient + 0x60);
 
-                    svs = (byte *)imp_svs;
-                    *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
-                    if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+                    svs = (serverStatic_t *)imp_svs;
+                    svs->nextCachedSnapshotClients += 1;
+                    if (svs->nextCachedSnapshotClients > 0x7ffffffd)
                         Com_Error(0, "SV_GetCachedSnapshot: too many clients");
 
                     cachedFrame->num_clients++;
@@ -327,7 +327,8 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (oldindex >= oldCachedFrame->num_clients) {
                         oldClientNum = 0x1869f;
                     } else {
-                        byte *cdata = *(byte **)((byte *)imp_svs + SVS_ARCHIVEDCLIENTDATA);
+                        svs = (serverStatic_t *)imp_svs;
+                        byte *cdata = (byte *)svs->cachedSnapshotClients;
                         int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
                         oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
                         oldClientNum = *(int *)(oldCachedClient + 4);
@@ -339,9 +340,9 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (*(int *)newCachedClient != 0)
                         MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
 
-                    svs = (byte *)imp_svs;
-                    *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
-                    if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+                    svs = (serverStatic_t *)imp_svs;
+                    svs->nextCachedSnapshotClients += 1;
+                    if (svs->nextCachedSnapshotClients > 0x7ffffffd)
                         Com_Error(0, "SV_GetCachedSnapshot: too many clients");
 
                     cachedFrame->num_clients++;
@@ -350,17 +351,17 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         }
     } else {
         /* Full fresh decode (no delta base) */
-        svs = (byte *)imp_svs;
+        svs = (serverStatic_t *)imp_svs;
 
         {
-            int frameIdx = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) % 512;
-            cachedFrame = (cachedSnapshot_t *)(*(byte **)(svs + SVS_CACHEDFRAMES) + frameIdx * 28);
+            int frameIdx = svs->nextCachedSnapshotFrames % 512;
+            cachedFrame = (cachedSnapshot_t *)((byte *)svs->cachedSnapshotFrames + frameIdx * 28);
         }
         cachedFrame->archivedFrame = archivedFrame;
         cachedFrame->num_entities = 0;
-        cachedFrame->first_entity = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX);
+        cachedFrame->first_entity = svs->nextCachedSnapshotEntities;
         cachedFrame->num_clients = 0;
-        cachedFrame->first_client = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX);
+        cachedFrame->first_client = svs->nextCachedSnapshotClients;
         cachedFrame->usesDelta = 0;
         cachedFrame->time = MSG_ReadLong(&msg);
 
@@ -373,16 +374,16 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
             if (msg.readcount > msg.cursize)
                 Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
 
-            clientIdx = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) % 0x1000;
-            newCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + clientIdx * CACHEDCLIENT_STRIDE;
+            clientIdx = svs->nextCachedSnapshotClients % 0x1000;
+            newCachedClient = (byte *)svs->cachedSnapshotClients + clientIdx * CACHEDCLIENT_STRIDE;
 
             MSG_ReadDeltaClient(&msg, NULL, newCachedClient + 4, clientNum);
             *(int *)newCachedClient = MSG_ReadBit(&msg);
             if (*(int *)newCachedClient != 0)
                 MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
 
-            *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
-            if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+            svs->nextCachedSnapshotClients += 1;
+            if (svs->nextCachedSnapshotClients > 0x7ffffffd)
                 Com_Error(0, "SV_GetCachedSnapshot: too many clients");
 
             cachedFrame->num_clients++;
@@ -394,7 +395,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         int entNum = MSG_ReadBits(&msg, 10);
         int entIdx;
         byte *archivedEnt;
-        byte *sv;
+        server_t *sv;
 
         if (entNum == 0x3ff)
             break;
@@ -402,24 +403,24 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         if (msg.readcount > msg.cursize)
             Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
 
-        svs = (byte *)imp_svs;
-        entIdx = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) % 0x4000;
-        archivedEnt = *(byte **)(svs + SVS_ARCHIVEDENTITYDATA) + entIdx * 276;
+        svs = (serverStatic_t *)imp_svs;
+        entIdx = svs->nextCachedSnapshotEntities % 0x4000;
+        archivedEnt = (byte *)svs->cachedSnapshotEntities + entIdx * 276;
 
-        sv = (byte *)imp_sv;
-        MSG_ReadDeltaArchivedEntity(&msg, sv + 0x241c + entNum * 372, archivedEnt, entNum);
+        sv = (server_t *)imp_sv;
+        MSG_ReadDeltaArchivedEntity(&msg, (byte *)&sv->svEntities[entNum].baseline, archivedEnt, entNum);
 
-        *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) += 1;
-        if (*(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) > 0x7ffffffd)
+        svs->nextCachedSnapshotEntities += 1;
+        if (svs->nextCachedSnapshotEntities > 0x7ffffffd)
             Com_Error(0, "SV_GetCachedSnapshot: too many entities");
 
         cachedFrame->num_entities++;
     }
 
     /* Increment archived frame number */
-    svs = (byte *)imp_svs;
-    *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) += 1;
-    if (*(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) > 0x7ffffffd)
+    svs = (serverStatic_t *)imp_svs;
+    svs->nextCachedSnapshotFrames += 1;
+    if (svs->nextCachedSnapshotFrames > 0x7ffffffd)
         Com_Error(0, "SV_GetCachedSnapshot: too many frames");
 
     goto cleanup;
@@ -1141,9 +1142,8 @@ void SV_ArchiveSnapshot(void)
 /* line 1619 */
 void SV_SendMessageToClient(msg_t *msg, client_t *client)
 {
-    byte *cl = (byte *)client;
-    byte *svs = (byte *)imp_svs;
-    byte *sv = (byte *)imp_sv;
+    serverStatic_t *psvs = (serverStatic_t *)imp_svs;
+    server_t *sv = (server_t *)imp_sv;
     byte compressedBuf_ll[24];
     byte *compressedBuf;
     int compressedSize;
@@ -1158,38 +1158,38 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
     compressedBuf = LargeLocal_GetBuf(compressedBuf_ll);
 
     /* Copy sequence number as first 4 bytes */
-    *(int *)compressedBuf = *(int *)*(byte **)((byte *)msg + 4);
+    *(int *)compressedBuf = *(int *)msg->data;
 
     /* Compress the message data */
-    compressedSize = MSG_WriteBitsCompress(*(byte **)((byte *)msg + 4) + 4, compressedBuf + 4, *(int *)((byte *)msg + 0xc) - 4) + 4;
+    compressedSize = MSG_WriteBitsCompress(msg->data + 4, compressedBuf + 4, msg->cursize - 4) + 4;
 
     /* Check for client error */
-    if (*(int *)(cl + 8) != 0) {
-        SV_DropClient(client, (const char *)*(int *)(cl + 8));
+    if (client->dropReason != NULL) {
+        SV_DropClient(client, client->dropReason);
     }
 
     /* Store snapshot info in client frame history */
-    /* idx = netchan.outgoingSequence & 31 */
-    /* frame index math: idx*5 => *32 - idx*5 => *16 + idx = idx*2401, *4 for array */
-    idx = *(int *)(cl + CLIENT_NETCHAN) & 0x1f;
+    idx = client->netchan.outgoingSequence & 0x1f;
     {
-        int t = idx * 5;
-        int frameOff = ((t * 32 - t) * 16 + idx) * 4;
-        *(int *)(cl + 0x233e4 + frameOff) = compressedSize;
-        *(int *)(cl + 0x233dc + frameOff) = *(int *)(svs + SVS_TIME);
-        *(int *)(cl + 0x233e0 + frameOff) = -1;
+        clientSnapshot_t *frame = &client->frames[idx];
+        frame->messageSize = compressedSize;
+        frame->messageSent = psvs->time;
+        frame->messageAcked = -1;
     }
 
     /* Transmit */
     SV_Netchan_Transmit(client, compressedSize, compressedBuf);
 
     /* Rate limiting */
-    if (*(int *)(cl + CLIENT_NETTYPE) == 2 ||
-        Sys_IsLANAddress(*(int *)(cl + CLIENT_NETTYPE), *(int *)(cl + CLIENT_NETTYPE + 4), *(int *)(cl + CLIENT_NETTYPE + 8))) {
-        /* LAN client - set next snapshot time to svs.time - 1 */
-        *(int *)(cl + CLIENT_SNAPSHOTMSEC) = *(int *)(svs + SVS_TIME) - 1;
-        ZN10LargeLocalD1Ev(compressedBuf_ll);
-        return;
+    {
+        netadr_t *addr = &client->netchan.remoteAddress;
+        if (addr->type == 2 ||
+            Sys_IsLANAddress(((int *)addr)[0], ((int *)addr)[1], ((int *)addr)[2])) {
+            /* LAN client - set next snapshot time to svs.time - 1 */
+            client->nextSnapshotTime = psvs->time - 1;
+            ZN10LargeLocalD1Ev(compressedBuf_ll);
+            return;
+        }
     }
 
     /* Rate-limited client */
@@ -1197,7 +1197,7 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
     if (messageSize > 0x5dc)
         messageSize = 0x5dc;
 
-    rate = *(int *)(cl + CLIENT_RATE);
+    rate = client->rate;
     dvar = *(byte **)&sv_minPingRate_dvar;
     dvar = *(byte **)dvar;
     if (*(int *)(dvar + 8) != 0) {
@@ -1217,29 +1217,29 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
     dvar = *(byte **)&showpackets_dvar;
     if (*(byte *)(*(byte **)dvar + 8) != 0) {
         Com_Printf("It would take %ims to send %i bytes to client %s (rate %i)\n",
-            rateMsec, messageSize, cl + CLIENT_NAME, *(int *)(cl + CLIENT_RATE));
+            rateMsec, messageSize, client->name, client->rate);
     }
 
-    if (rateMsec < *(int *)(cl + CLIENT_RATEDELAYED)) {
-        *(int *)(cl + CLIENT_PUREAUTH) = 0;
-        rateMsec = *(int *)(cl + CLIENT_RATEDELAYED);
+    if (rateMsec < client->snapshotMsec) {
+        client->rateDelayed = 0;
+        rateMsec = client->snapshotMsec;
     } else {
-        *(int *)(cl + CLIENT_PUREAUTH) = 1;
+        client->rateDelayed = 1;
     }
 
-    svsTime = *(int *)(svs + SVS_TIME);
-    *(int *)(cl + CLIENT_SNAPSHOTMSEC) = rateMsec + svsTime;
+    svsTime = psvs->time;
+    client->nextSnapshotTime = rateMsec + svsTime;
 
-    if (*(int *)(cl + CLIENT_STATE) != 4) {
-        if (*(byte *)(cl + CLIENT_DOWNLOAD) == 0) {
+    if (client->state != 4) {
+        if (client->downloadName[0] == 0) {
             if (rateMsec + svsTime < svsTime + 0x3e8) {
-                *(int *)(cl + CLIENT_SNAPSHOTMSEC) = svsTime + 0x3e8;
+                client->nextSnapshotTime = svsTime + 0x3e8;
             }
         }
     }
 
     /* Track bandwidth */
-    *(int *)(sv + 0x5f48c) += compressedSize;
+    sv->bpsTotalBytes += compressedSize;
 
     ZN10LargeLocalD1Ev(compressedBuf_ll);
 }
@@ -1247,12 +1247,12 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
 /* line 1302 */
 qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4], void (*cs)())
 {
-    byte *svs = (byte *)imp_svs;
+    serverStatic_t *svs = (serverStatic_t *)imp_svs;
     cachedSnapshot_t *snap = NULL;
     int archivedFrame = 0;
 
-    if (*(int *)(svs + SVS_NUMONEWAYCLIENTS) != 0 && *pArchiveTime > 0) {
-        int archivedSnapshotCount = *(int *)(svs + SVS_ARCHIVEDFRAMECOUNT);
+    if (svs->archiveEnabled != 0 && *pArchiveTime > 0) {
+        int archivedSnapshotCount = svs->nextArchivedSnapshotFrames;
         int rate = *(int *)(*(byte **)sv_maxRate_dvar + 8);
         int minFrame;
 
@@ -1269,9 +1269,9 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
             archivedFrame = 0;
         }
 
-        if (*(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) > archivedFrame) {
-            byte *svsReload = (byte *)imp_svs;
-            while (archivedFrame < *(int *)(svsReload + SVS_ARCHIVEDFRAMECOUNT)) {
+        if (svs->nextArchivedSnapshotFrames > archivedFrame) {
+            serverStatic_t *svsReload = (serverStatic_t *)imp_svs;
+            while (archivedFrame < svsReload->nextArchivedSnapshotFrames) {
                 snap = SV_GetCachedSnapshotInternal(archivedFrame);
                 if (snap != NULL)
                     break;
@@ -1286,10 +1286,9 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
 
     if (snap != NULL) {
         /* Found cached snapshot - extract archived client data */
-        byte *snapBytes = (byte *)snap;
-        byte *svs2 = (byte *)imp_svs;
-        int deltaTime = *(int *)(svs2 + SVS_TIME) - *(int *)(snapBytes + 4);
-        int numClients = *(int *)(snapBytes + 0x10);
+        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+        int deltaTime = svs2->time - snap->time;
+        int numClients = snap->num_clients;
         byte *cachedClientsBase;
         int firstIndex;
         byte *cachedClient = NULL;
@@ -1299,8 +1298,8 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         if (numClients <= 0)
             return 0;
 
-        cachedClientsBase = *(byte **)(svs2 + SVS_ARCHIVEDCLIENTDATA);
-        firstIndex = *(int *)(snapBytes + 0x14);
+        cachedClientsBase = (byte *)svs2->cachedSnapshotClients;
+        firstIndex = snap->first_client;
 
         for (i = 0; i < numClients; i++) {
             int idx = (firstIndex + i) % 0x1000;
@@ -1321,40 +1320,45 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         /* Adjust time fields by deltaTime */
         psBytes = (byte *)ps;
 
-        if (*(int *)(psBytes + 0x0) != 0)
-            *(int *)(psBytes + 0x0) += deltaTime;
-        if (*(int *)(psBytes + 0x10) != 0)
-            *(int *)(psBytes + 0x10) += deltaTime;
-        if (*(int *)(psBytes + 0x44) != 0)
-            *(int *)(psBytes + 0x44) += deltaTime;
-        if (*(int *)(psBytes + 0x70) != 0)
-            *(int *)(psBytes + 0x70) += deltaTime;
-        if (*(int *)(psBytes + 0xfc) != 0)
-            *(int *)(psBytes + 0xfc) += deltaTime;
-        if (*(int *)(psBytes + 0x5dc) != 0)
-            *(int *)(psBytes + 0x5dc) += deltaTime;
+        /* playerState_s time field adjustments */
+        {
+            playerState_t *pps = (playerState_t *)psBytes;
+            if (pps->commandTime != 0)
+                pps->commandTime += deltaTime;
+            if (pps->pm_time != 0)
+                pps->pm_time += deltaTime;
+            if (pps->jumpTime != 0)
+                pps->jumpTime += deltaTime;
+            if (pps->legsTimer != 0)
+                pps->legsTimer += deltaTime;
+            if (pps->adsDelayTime != 0)
+                pps->adsDelayTime += deltaTime;
+            if (pps->shellshockTime != 0)
+                pps->shellshockTime += deltaTime;
+        }
 
-        /* Adjust time fields in 31 weapon/anim entries at stride 0x80 */
+        /* Adjust time fields in 31 hudelem entries at stride 0x80 */
+        /* TODO: unknown offset - these are hudelem_t time fields deep in playerState_s.hud */
         {
             byte *p = psBytes;
-            byte *svsPtr = (byte *)imp_svs;
+            serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
             for (i = 0; i < 31; i++) {
-                if (*(int *)(p + 0x1790) != 0)
+                if (*(int *)(p + 0x1790) != 0) /* TODO: unknown offset */
                     *(int *)(p + 0x1790) += deltaTime;
-                if (*(int *)(p + 0x1750) != 0) {
+                if (*(int *)(p + 0x1750) != 0) { /* TODO: unknown offset */
                     *(int *)(p + 0x1750) += deltaTime;
-                    if (*(int *)(p + 0x1750) > *(int *)(svsPtr + SVS_TIME))
-                        *(int *)(p + 0x1750) = *(int *)(svsPtr + SVS_TIME);
+                    if (*(int *)(p + 0x1750) > svsPtr->time)
+                        *(int *)(p + 0x1750) = svsPtr->time;
                 }
-                if (*(int *)(p + 0x1770) != 0)
+                if (*(int *)(p + 0x1770) != 0) /* TODO: unknown offset */
                     *(int *)(p + 0x1770) += deltaTime;
-                if (*(int *)(p + 0x1788) != 0)
+                if (*(int *)(p + 0x1788) != 0) /* TODO: unknown offset */
                     *(int *)(p + 0x1788) += deltaTime;
                 p += 0x80;
             }
         }
 
-        *(int *)(psBytes + 0x7a4) += deltaTime;
+        ((playerState_t *)psBytes)->deltaTime += deltaTime;
         return 1;
     }
 
@@ -1363,10 +1367,9 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         return 0;
 
     {
-        byte *clients = *(byte **)(svs + SVS_CLIENTS);
-        byte *client = clients + clientNum * CLIENT_STRIDE;
+        client_t *client = &svs->clients[clientNum];
 
-        if (*(int *)(client + CLIENT_STATE) != 4)
+        if (client->state != 4)
             return 0;
 
         if (!GetFollowPlayerState(clientNum, (byte *)ps))
@@ -1380,7 +1383,7 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
 /* line 1179 */
 Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
 {
-    byte *svs = (byte *)imp_svs;
+    serverStatic_t *svs = (serverStatic_t *)imp_svs;
     byte *maxRateDvar = *(byte **)imp_sv_maxRate;
     int msPerFrame;
     int svsTime;
@@ -1397,7 +1400,7 @@ Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
     /* msPerFrame = 1000 / sv_maxRate->current.integer */
     msPerFrame = 1000 / *(int *)(*(byte **)maxRateDvar + 8);
 
-    svsTime = *(int *)(svs + SVS_TIME);
+    svsTime = svs->time;
     frameOffset = (svsTime / msPerFrame) * msPerFrame - gametime;
     frameOffset = frameOffset / msPerFrame;
 
@@ -1410,9 +1413,9 @@ Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
     for (i = 10; i > 0; i--) {
         if (SV_GetArchivedClientInfo(clientNum, &timeRequest, (int (*)[4])ps, (void (*)())cs)) {
             startTime = timeRequest;
-            startPos[0] = *(float *)(ps + 0x14);
-            startPos[1] = *(float *)(ps + 0x18);
-            startPos[2] = *(float *)(ps + 0x1c);
+            startPos[0] = ((playerState_t *)ps)->origin[0];
+            startPos[1] = ((playerState_t *)ps)->origin[1];
+            startPos[2] = ((playerState_t *)ps)->origin[2];
             foundStart = 1;
             break;
         }
@@ -1425,9 +1428,9 @@ Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
     for (i = 10; i > 0; i--) {
         if (SV_GetArchivedClientInfo(clientNum, &timeRequest, (int (*)[4])ps, (void (*)())cs)) {
             endTime = timeRequest;
-            endPos[0] = *(float *)(ps + 0x14);
-            endPos[1] = *(float *)(ps + 0x18);
-            endPos[2] = *(float *)(ps + 0x1c);
+            endPos[0] = ((playerState_t *)ps)->origin[0];
+            endPos[1] = ((playerState_t *)ps)->origin[1];
+            endPos[2] = ((playerState_t *)ps)->origin[2];
             foundEnd = 1;
             break;
         }
@@ -2845,9 +2848,9 @@ void SV_SendClientSnapshot(client_t *client)
 /* line 2077 */
 void SV_SendClientMessages(void)
 {
-    byte *sv = (byte *)imp_sv;
-    byte *svs = (byte *)imp_svs;
-    byte *c;
+    server_t *sv = (server_t *)imp_sv;
+    serverStatic_t *psvs = (serverStatic_t *)imp_svs;
+    client_t *c;
     int i, numclients;
     int maxClients;
     int svsTime;
@@ -2858,24 +2861,24 @@ void SV_SendClientMessages(void)
     int j;
 
     /* Reset bandwidth counters */
-    *(int *)(sv + 0x5f48c) = 0;
-    *(int *)(sv + 0x5f4e4) = 0;
+    sv->bpsTotalBytes = 0;
+    sv->ubpsTotalBytes = 0;
 
-    c = *(byte **)(svs + SVS_CLIENTS);
+    c = psvs->clients;
     dvar = *(byte **)imp_sv_maxclients;
     maxClients = *(int *)(dvar + 8);
     numclients = 0;
 
-    svsTime = *(int *)(svs + SVS_TIME);
+    svsTime = psvs->time;
 
-    for (i = 0; i < maxClients; i++, c += CLIENT_STRIDE) {
-        if (*(int *)(c + CLIENT_STATE) == 0)
+    for (i = 0; i < maxClients; i++, c++) {
+        if (c->state == 0)
             continue;
         /* Skip timing check: the game clock runs too slowly with the
            stub renderer (~1ms per frame) causing fragment delivery and
            snapshot timing to stall.  TODO: fix the clock properly. */
         #if 0
-        if (svsTime < *(int *)(c + CLIENT_SNAPSHOTMSEC))
+        if (svsTime < c->nextSnapshotTime)
             continue;
         #endif
 
@@ -2885,19 +2888,19 @@ void SV_SendClientMessages(void)
            gamestate yet, send it now.  In a listen-server +devmap flow
            the local client never sends the initial netchan packet that
            normally triggers the gamestate send in SV_ExecuteClientMessage. */
-        if (*(int *)(c + CLIENT_STATE) == 2) {
+        if (c->state == 2) {
             extern void SV_SendClientGameState(client_t *);
-            SV_SendClientGameState((client_t *)c);
+            SV_SendClientGameState(c);
             continue;
         }
 
-        sendFrag = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
+        sendFrag = c->netchan.unsentFragments;
         if (sendFrag != 0) {
             /* Send ALL pending fragments in a tight loop.  The stub
                renderer's slow game clock makes one-per-frame delivery
                unreliable (netchan state can get reset between frames by
                SV_ExecuteClientMessage processing stale client packets). */
-            netchan_t *nch = (netchan_t *)(c + CLIENT_NETCHAN);
+            netchan_t *nch = &c->netchan;
             while (nch->unsentFragments) {
                 SV_Netchan_TransmitNextFragment(nch);
             }
@@ -2905,13 +2908,13 @@ void SV_SendClientMessages(void)
         }
         if (sendFrag == 0) {
             /* No pending fragment - send snapshot */
-            SV_SendClientSnapshot((client_t *)c);
-            SV_SendClientVoiceData((client_t *)c);
+            SV_SendClientSnapshot(c);
+            SV_SendClientVoiceData(c);
             continue;
         }
 
         /* Has pending fragment - calculate rate and retransmit */
-        messageSize = *(int *)(c + CLIENT_NETCHAN_SENDLEN) - *(int *)(c + CLIENT_NETCHAN_SENDSTART);
+        messageSize = c->netchan.unsentLength - c->netchan.unsentFragmentStart;
         if (messageSize > 0x5dc)
             messageSize = 0x5dc;
 
@@ -2919,7 +2922,7 @@ void SV_SendClientMessages(void)
         {
             int msgBytes = messageSize * 5 * 5 * 5 * 8;
 
-            rate = *(int *)(c + CLIENT_RATE);
+            rate = c->rate;
             dvar = *(byte **)&sv_minPingRate_dvar;
             dvar = *(byte **)dvar;
             if (*(int *)(dvar + 8) != 0) {
@@ -2937,12 +2940,12 @@ void SV_SendClientMessages(void)
             dvar = *(byte **)&showpackets_dvar;
             if (*(byte *)(*(byte **)dvar + 8) != 0) {
                 Com_Printf("It would take %ims to send %i bytes to client %s (rate %i)\n",
-                    rateMsec, messageSize, c + CLIENT_NAME, *(int *)(c + CLIENT_RATE));
+                    rateMsec, messageSize, c->name, c->rate);
             }
         }
 
-        *(int *)(c + CLIENT_SNAPSHOTMSEC) = svsTime + rateMsec;
-        SV_Netchan_TransmitNextFragment((netchan_t *)(c + CLIENT_NETCHAN));
+        c->nextSnapshotTime = svsTime + rateMsec;
+        SV_Netchan_TransmitNextFragment(&c->netchan);
     }
 
     /* BPS tracking */
@@ -2950,53 +2953,53 @@ void SV_SendClientMessages(void)
     if (*(byte *)(dvar + 8) == 0 || numclients <= 0)
         return;
 
-    sv = (byte *)imp_sv;
+    sv = (server_t *)imp_sv;
     totalBps = 0.0f;
     totalUBps = 0.0f;
 
-    /* Loop over 19 history slots (sv + 0 to sv + 0x4c, step 4) */
+    /* Shift BPS window history: bpsWindow[j] = bpsWindow[j+1] */
     for (j = 0; j < 19; j++) {
-        int bpsVal = *(int *)(sv + 0x5f43c + j * 4);
-        *(int *)(sv + 0x5f438 + j * 4) = bpsVal;
+        int bpsVal = sv->bpsWindow[j + 1];
+        sv->bpsWindow[j] = bpsVal;
         totalBps += (float)bpsVal;
 
-        int ubpsVal = *(int *)(sv + 0x5f498 + j * 4);
-        *(int *)(sv + 0x5f494 + j * 4) = ubpsVal;
+        int ubpsVal = sv->ubpsWindow[j + 1];
+        sv->ubpsWindow[j] = ubpsVal;
         totalUBps += (float)ubpsVal;
     }
 
     {
-        int sentBps = *(int *)(sv + 0x5f48c);
-        *(int *)(sv + 0x5f484) = sentBps;
+        int sentBps = sv->bpsTotalBytes;
+        sv->bpsWindow[19] = sentBps;
         float bpsTotal = (float)sentBps + totalBps;
 
-        int sentUBps = *(int *)(sv + 0x5f4e4);
-        *(int *)(sv + 0x5f4e0) = sentUBps;
+        int sentUBps = sv->ubpsTotalBytes;
+        sv->ubpsWindow[19] = sentUBps;
         float ubpsTotal = (float)sentUBps + totalUBps;
 
-        if (sentBps >= *(int *)(sv + 0x5f490))
-            *(int *)(sv + 0x5f490) = sentBps;
-        if (sentUBps >= *(int *)(sv + 0x5f4e8))
-            *(int *)(sv + 0x5f4e8) = sentUBps;
+        if (sentBps >= sv->bpsMaxBytes)
+            sv->bpsMaxBytes = sentBps;
+        if (sentUBps >= sv->ubpsMaxBytes)
+            sv->ubpsMaxBytes = sentUBps;
 
-        int counter = *(int *)(sv + 0x5f488) + 1;
-        *(int *)(sv + 0x5f488) = counter;
+        int counter = sv->bpsWindowSteps + 1;
+        sv->bpsWindowSteps = counter;
 
         if (counter > 19) {
-            *(int *)(sv + 0x5f488) = 0;
+            sv->bpsWindowSteps = 0;
             float bpsAvg = bpsTotal / 20.0f;
             float ubpsAvg = ubpsTotal / 20.0f;
             float compressionRatio = bpsAvg / ubpsAvg;
             float pctSaved = (1.0f - compressionRatio) * 100.0f;
-            float totalPctSaved = pctSaved + *(float *)(sv + 0x5f4ec);
-            *(float *)(sv + 0x5f4ec) = totalPctSaved;
-            int numSamples = *(int *)(sv + 0x5f4f0) + 1;
-            *(int *)(sv + 0x5f4f0) = numSamples;
+            float totalPctSaved = pctSaved + sv->ucompAve;
+            sv->ucompAve = totalPctSaved;
+            int numSamples = sv->ucompNum + 1;
+            sv->ucompNum = numSamples;
             float avgPctSaved = totalPctSaved / (float)numSamples;
             Com_DPrintf("bpspc(%2.0f) bps(%2.0f) pk(%i) ubps(%2.0f) upk(%i) cr(%2.2f)",
                 (double)(bpsAvg / (float)numclients), (double)bpsAvg,
-                *(int *)(sv + 0x5f490), (double)ubpsAvg,
-                *(int *)(sv + 0x5f4e8), (double)pctSaved, (double)avgPctSaved);
+                sv->bpsMaxBytes, (double)ubpsAvg,
+                sv->ubpsMaxBytes, (double)pctSaved, (double)avgPctSaved);
         }
     }
 }
@@ -3107,8 +3110,8 @@ void SV_ArchiveSnapshot(void)
     byte msg_buf_large_local[24]; /* LargeLocal on stack */
     byte *msg_buf;
     byte msg[24]; /* msg_t on stack */
-    byte *svs_p = (byte *)imp_svs;
-    byte *sv_p = (byte *)imp_sv;
+    serverStatic_t *svs_p = (serverStatic_t *)imp_svs;
+    server_t *sv_p = (server_t *)imp_sv;
     byte ps[0x26a8]; /* playerState_t buffer */
     byte archivedEnt[0xf0]; /* archived entity buffer */
 
@@ -3116,11 +3119,11 @@ void SV_ArchiveSnapshot(void)
     msg_buf = LargeLocal_GetBuf(msg_buf_large_local);
 
     /* Check sv.state == 2 (SS_GAME) */
-    if (*(int *)sv_p != 2)
+    if (sv_p->state != 2)
         goto cleanup;
 
     /* Check numOneWayClients > 0 */
-    if (*(int *)(svs_p + 0x28) == 0)
+    if (svs_p->archiveEnabled == 0)
         goto cleanup;
 
     /* Init message buffer */
@@ -3128,7 +3131,7 @@ void SV_ArchiveSnapshot(void)
 
     /* Find old cached frame to delta against */
     {
-        int archivedFrameNum = *(int *)(svs_p + 0x44);
+        int archivedFrameNum = svs_p->nextCachedSnapshotFrames;
         int oldindex = archivedFrameNum - 0x200;
         int newnum;
         byte *cachedFrames;
@@ -3142,13 +3145,13 @@ void SV_ArchiveSnapshot(void)
         {
             byte *fps_dvar = *(byte **)&sv_maxRate_dvar; /* imp_sv_fps */
             byte *fps_val = *(byte **)fps_dvar;
-            newnum = *(int *)(svs_p + 0x2c) - *(int *)(fps_val + 8);
+            newnum = svs_p->nextArchivedSnapshotFrames - *(int *)(fps_val + 8);
         }
 
         /* Walk backwards to find a suitable old frame */
         {
             int idx = archivedFrameNum - 1;
-            cachedFrames = *(byte **)(svs_p + 0x50);
+            cachedFrames = (byte *)svs_p->cachedSnapshotFrames;
 
             while (idx >= oldindex) {
                 int cfSlot = signedMod512(idx);
@@ -3156,25 +3159,25 @@ void SV_ArchiveSnapshot(void)
 
                 if (*(int *)cf <= newnum) {
                     /* Check if this frame has valid delta data */
-                    if (*(int *)(cf + 0x18) == 0) {
+                    if (((cachedSnapshot_t *)cf)->usesDelta == 0) {
                         /* This frame doesn't use delta - check if its entity/client indices are recent enough */
-                        byte *svs2 = (byte *)imp_svs;
-                        if (*(int *)(cf + 0x0c) < *(int *)(svs2 + 0x3c) - 0x4000)
+                        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+                        if (((cachedSnapshot_t *)cf)->first_entity < svs2->nextCachedSnapshotEntities - 0x4000)
                             break;
-                        if (*(int *)(cf + 0x14) < *(int *)(svs2 + 0x40) - (int)&__mh_execute_header)
+                        if (((cachedSnapshot_t *)cf)->first_client < svs2->nextCachedSnapshotClients - (int)&__mh_execute_header)
                             break;
 
                         /* Write delta reference */
                         MSG_WriteBit0((msg_t *)msg);
-                        MSG_WriteLong((msg_t *)msg, *(int *)cf);
-                        MSG_WriteLong((msg_t *)msg, *(int *)(svs2 + 4));
+                        MSG_WriteLong((msg_t *)msg, ((cachedSnapshot_t *)cf)->archivedFrame);
+                        MSG_WriteLong((msg_t *)msg, svs2->time);
 
                         /* Write client deltas */
                         {
                             byte *maxclients_dvar = *(byte **)&sv_maxclients_dvar;
                             byte *maxclients_val = *(byte **)maxclients_dvar;
                             int to_num_clients = *(int *)(maxclients_val + 8);
-                            int from_num_clients = *(int *)(cf + 0x10);
+                            int from_num_clients = ((cachedSnapshot_t *)cf)->num_clients;
                             byte *cachedClient = NULL;
                             int newIdx = 0;
                             int oldIdx2 = 0;
@@ -3183,10 +3186,10 @@ void SV_ArchiveSnapshot(void)
                                 if (newIdx >= to_num_clients) {
                                     /* Process remaining old clients */
                                     while (oldIdx2 < from_num_clients) {
-                                        int archClientIdx = oldIdx2 + *(int *)(cf + 0x14);
+                                        int archClientIdx = oldIdx2 + ((cachedSnapshot_t *)cf)->first_client;
                                         int archSlot = signedMod4096(archClientIdx);
-                                        byte *svs3 = (byte *)imp_svs;
-                                        cachedClient = *(byte **)(svs3 + 0x4c) + archSlot * 9992;
+                                        serverStatic_t *svs3 = (serverStatic_t *)imp_svs;
+                                        cachedClient = (byte *)svs3->cachedSnapshotClients + archSlot * 9992;
 
                                         if (*(int *)(cachedClient + 4) >= newIdx)
                                             break;
@@ -3199,8 +3202,8 @@ void SV_ArchiveSnapshot(void)
 
                                 /* Check if this client is active */
                                 {
-                                    byte *svs4 = (byte *)imp_svs;
-                                    byte *clients = *(byte **)(svs4 + 0x0c);
+                                    serverStatic_t *svs4 = (serverStatic_t *)imp_svs;
+                                    byte *clients = (byte *)svs4->clients;
                                     /* Client stride: newIdx * 0x78f0c + ... complex calculation */
                                     /* The asm computes: newIdx*5 => *128+val => *64+newIdx => *4-val => *4 */
                                     /* Let me trace: leal (%ebx, %ebx, 4) => ebx*5
@@ -3237,10 +3240,10 @@ void SV_ArchiveSnapshot(void)
 
                                 /* Check if we need to process old clients first */
                                 if (oldIdx2 < from_num_clients) {
-                                    int archClientIdx = oldIdx2 + *(int *)(cf + 0x14);
+                                    int archClientIdx = oldIdx2 + ((cachedSnapshot_t *)cf)->first_client;
                                     int archSlot = signedMod4096(archClientIdx);
-                                    byte *svs3 = (byte *)imp_svs;
-                                    cachedClient = *(byte **)(svs3 + 0x4c) + archSlot * 9992;
+                                    serverStatic_t *svs3 = (serverStatic_t *)imp_svs;
+                                    cachedClient = (byte *)svs3->cachedSnapshotClients + archSlot * 9992;
                                     int oldClientNum = *(int *)(cachedClient + 4);
 
                                     if (oldClientNum == newIdx) {
@@ -3323,24 +3326,24 @@ void SV_ArchiveSnapshot(void)
 
                         /* Write entity deltas for this frame */
                         {
-                            int numEnts = *(int *)(sv_p + 0x5f424);
+                            int numEnts = sv_p->num_entities;
                             int i;
 
                             if (numEnts > 0) {
                                 for (i = 0; i < numEnts; i++) {
                                     byte *gent = SV_GentityNum(i);
-                                    if (*(byte *)(gent + 0xf0) == 0)
+                                    if (((gentity_t *)gent)->r.linked == 0)
                                         continue;
 
                                     /* Check if entity has locational data */
-                                    int contents = *(int *)(gent + 0x100);
+                                    int contents = ((gentity_t *)gent)->r.broadcastTime;
                                     if (contents == 0) {
                                         /* Check svFlags bit 0 */
-                                        if (!(*(byte *)(gent + 0xf2) & 1)) {
+                                        if (!(((gentity_t *)gent)->r.svFlags & 1)) {
                                             /* Check if linked to any clusters */
-                                            byte *svEnt = (byte *)SV_SvEntityForGentity(gent);
-                                            if (!(*(byte *)(gent + 0xf2) & 0x18)) {
-                                                if (*(int *)(svEnt + 0x118) == 0)
+                                            svEntity_t *svEnt = (svEntity_t *)SV_SvEntityForGentity(gent);
+                                            if (!(((gentity_t *)gent)->r.svFlags & 0x18)) {
+                                                if (svEnt->numClusters == 0)
                                                     continue;
                                             }
                                         }
@@ -3348,25 +3351,30 @@ void SV_ArchiveSnapshot(void)
 
                                     /* Build archived entity */
                                     memcpy(archivedEnt, gent, 0xf0);
-                                    *(int *)(archivedEnt + 0xf0) = *(byte *)(gent + 0xf2);
-                                    if (*(int *)(gent + 0x100) != 0) {
-                                        *(int *)(archivedEnt + 0xf0) |= 8;
+                                    /* Build archivedEntityShared_t from gentity's entityShared_t */
+                                    {
+                                        gentity_t *ge = (gentity_t *)gent;
+                                        archivedEntity_t *ae = (archivedEntity_t *)archivedEnt;
+                                        ae->r.svFlags = ge->r.svFlags;
+                                        if (ge->r.broadcastTime != 0) {
+                                            ae->r.svFlags |= 8;
+                                        }
+                                        ae->r.clientMask[0] = ge->r.clientMask[0];
+                                        ae->r.clientMask[1] = ge->r.clientMask[1];
+                                        /* Copy absmin */
+                                        ae->r.absmin[0] = ge->r.absmin[0];
+                                        ae->r.absmin[1] = ge->r.absmin[1];
+                                        ae->r.absmin[2] = ge->r.absmin[2];
+                                        /* Copy absmax */
+                                        ae->r.absmax[0] = ge->r.absmax[0];
+                                        ae->r.absmax[1] = ge->r.absmax[1];
+                                        ae->r.absmax[2] = ge->r.absmax[2];
                                     }
-                                    *(int *)(archivedEnt + 0xf4) = *(int *)(gent + 0xf4);
-                                    *(int *)(archivedEnt + 0xf8) = *(int *)(gent + 0xf8);
-                                    /* Copy absmin (3 floats) */
-                                    *(int *)(archivedEnt + 0xfc) = *(int *)(gent + 0x120);
-                                    *(int *)(archivedEnt + 0x100) = *(int *)(gent + 0x124);
-                                    *(int *)(archivedEnt + 0x104) = *(int *)(gent + 0x128);
-                                    /* Copy absmax (3 floats) */
-                                    *(int *)(archivedEnt + 0x108) = *(int *)(gent + 0x12c);
-                                    *(int *)(archivedEnt + 0x10c) = *(int *)(gent + 0x130);
-                                    *(int *)(archivedEnt + 0x110) = *(int *)(gent + 0x134);
 
                                     /* Write delta from baseline */
                                     {
-                                        int entNum = *(int *)gent;
-                                        byte *baseline = sv_p + 0x241c + entNum * 372;
+                                        int entNum = ((gentity_t *)gent)->s.number;
+                                        byte *baseline = (byte *)&sv_p->svEntities[entNum].baseline;
                                         MSG_WriteDeltaArchivedEntity((msg_t *)msg, baseline, archivedEnt, 1);
                                     }
                                 }
@@ -3385,29 +3393,29 @@ void SV_ArchiveSnapshot(void)
     /* No old frame found - write without delta */
     MSG_WriteBit1((msg_t *)msg);
     {
-        byte *svs2 = (byte *)imp_svs;
-        MSG_WriteLong((msg_t *)msg, *(int *)(svs2 + 4));
+        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+        MSG_WriteLong((msg_t *)msg, svs2->time);
     }
 
     /* Set up cached frame for current archive */
     {
-        byte *svs2 = (byte *)imp_svs;
-        int frameNum = *(int *)(svs2 + 0x44);
+        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+        int frameNum = svs2->nextCachedSnapshotFrames;
         int frameSlot = signedMod512(frameNum);
-        byte *cachedFrames = *(byte **)(svs2 + 0x50);
-        byte *cachedFrame = cachedFrames + frameSlot * 28;
+        byte *cachedFrames = (byte *)svs2->cachedSnapshotFrames;
+        cachedSnapshot_t *cachedFrame = (cachedSnapshot_t *)(cachedFrames + frameSlot * 28);
 
-        *(int *)(cachedFrame + 0) = *(int *)(svs2 + 0x2c); /* serverTime = archivedFrameCount */
-        *(int *)(cachedFrame + 8) = 0;                       /* numEntities = 0 */
-        *(int *)(cachedFrame + 0xc) = *(int *)(svs2 + 0x3c); /* firstEntity = archivedEntNumIndex */
-        *(int *)(cachedFrame + 0x10) = 0;                     /* numClients = 0 */
-        *(int *)(cachedFrame + 0x14) = *(int *)(svs2 + 0x40); /* firstClient = archivedClientNumIndex */
-        *(int *)(cachedFrame + 0x18) = 0;                     /* usesDelta = 0 */
-        *(int *)(cachedFrame + 4) = *(int *)(svs2 + 4);       /* archiveTime = svs.time */
+        cachedFrame->archivedFrame = svs2->nextArchivedSnapshotFrames;
+        cachedFrame->num_entities = 0;
+        cachedFrame->first_entity = svs2->nextCachedSnapshotEntities;
+        cachedFrame->num_clients = 0;
+        cachedFrame->first_client = svs2->nextCachedSnapshotClients;
+        cachedFrame->usesDelta = 0;
+        cachedFrame->time = svs2->time;
 
         /* Write per-client data */
         {
-            byte *clients = *(byte **)(svs2 + 0x0c);
+            byte *clients = (byte *)svs2->clients;
             byte *maxclients_dvar = *(byte **)&sv_maxclients_dvar;
             byte *maxclients_val;
             int maxClients;
@@ -3423,9 +3431,9 @@ void SV_ArchiveSnapshot(void)
 
                 /* Get archived client slot */
                 {
-                    int clientArchIdx = *(int *)(svs2 + 0x40);
+                    int clientArchIdx = svs2->nextCachedSnapshotClients;
                     int clientSlot = signedMod4096(clientArchIdx);
-                    byte *archivedClient = *(byte **)(svs2 + 0x4c) + clientSlot * 9992;
+                    byte *archivedClient = (byte *)svs2->cachedSnapshotClients + clientSlot * 9992;
 
                     /* Copy client state */
                     {
@@ -3451,17 +3459,17 @@ void SV_ArchiveSnapshot(void)
 
                     /* Increment archivedClientNumIndex */
                     {
-                        byte *svs3 = (byte *)imp_svs;
-                        int newClientIdx = *(int *)(svs3 + 0x40) + 1;
-                        *(int *)(svs3 + 0x40) = newClientIdx;
+                        serverStatic_t *svs3 = (serverStatic_t *)imp_svs;
+                        int newClientIdx = svs3->nextCachedSnapshotClients + 1;
+                        svs3->nextCachedSnapshotClients = newClientIdx;
                         if (newClientIdx > 0x7ffffffd) {
                             Com_Error(0, str_002b0440);
                         }
                     }
 
                     /* Increment cachedFrame numClients */
-                    cachedFrame = *(byte **)(((byte *)imp_svs) + 0x50) + frameSlot * 28;
-                    *(int *)(cachedFrame + 0x10) += 1;
+                    cachedFrame = (cachedSnapshot_t *)((byte *)((serverStatic_t *)imp_svs)->cachedSnapshotFrames + frameSlot * 28);
+                    cachedFrame->num_clients += 1;
 
                     /* Re-read maxclients_dvar */
                     maxclients_val = *(byte **)(*(byte **)&sv_maxclients_dvar);
@@ -3474,21 +3482,21 @@ void SV_ArchiveSnapshot(void)
 
         /* Write entity data */
         {
-            int numEnts = *(int *)(sv_p + 0x5f424);
+            int numEnts = sv_p->num_entities;
             int i;
 
             if (numEnts > 0) {
                 for (i = 0; i < numEnts; i++) {
                     byte *gent = SV_GentityNum(i);
-                    if (*(byte *)(gent + 0xf0) == 0)
+                    if (((gentity_t *)gent)->r.linked == 0)
                         continue;
 
-                    int entityContents = *(int *)(gent + 0x100);
+                    int entityContents = ((gentity_t *)gent)->r.broadcastTime;
                     if (entityContents == 0) {
-                        if (!(*(byte *)(gent + 0xf2) & 1)) {
-                            byte *svEnt = (byte *)SV_SvEntityForGentity(gent);
-                            if (!(*(byte *)(gent + 0xf2) & 0x18)) {
-                                if (*(int *)(svEnt + 0x118) == 0)
+                        if (!(((gentity_t *)gent)->r.svFlags & 1)) {
+                            svEntity_t *svEnt = (svEntity_t *)SV_SvEntityForGentity(gent);
+                            if (!(((gentity_t *)gent)->r.svFlags & 0x18)) {
+                                if (svEnt->numClusters == 0)
                                     continue;
                             }
                         }
@@ -3496,41 +3504,46 @@ void SV_ArchiveSnapshot(void)
 
                     /* Write archived entity */
                     {
-                        byte *svs4 = (byte *)imp_svs;
-                        int entArchIdx = *(int *)(svs4 + 0x3c);
+                        serverStatic_t *svs4 = (serverStatic_t *)imp_svs;
+                        int entArchIdx = svs4->nextCachedSnapshotEntities;
                         int entSlot = signedMod16384(entArchIdx);
 
-                        byte *archivedEntSlot = *(byte **)(svs4 + 0x48) + entSlot * 276;
+                        byte *archivedEntSlot = (byte *)svs4->cachedSnapshotEntities + entSlot * 276;
 
                         /* Copy entity state */
                         memcpy(archivedEntSlot, gent, 0xf0);
-                        *(int *)(archivedEntSlot + 0xf0) = *(byte *)(gent + 0xf2);
-                        if (*(int *)(gent + 0x100) != 0) {
-                            *(int *)(archivedEntSlot + 0xf0) |= 8;
+                        /* Build archivedEntityShared_t from gentity's entityShared_t */
+                        {
+                            gentity_t *ge = (gentity_t *)gent;
+                            archivedEntity_t *ae = (archivedEntity_t *)archivedEntSlot;
+                            ae->r.svFlags = ge->r.svFlags;
+                            if (ge->r.broadcastTime != 0) {
+                                ae->r.svFlags |= 8;
+                            }
+                            ae->r.clientMask[0] = ge->r.clientMask[0];
+                            ae->r.clientMask[1] = ge->r.clientMask[1];
+                            /* absmin */
+                            ae->r.absmin[0] = ge->r.absmin[0];
+                            ae->r.absmin[1] = ge->r.absmin[1];
+                            ae->r.absmin[2] = ge->r.absmin[2];
+                            /* absmax */
+                            ae->r.absmax[0] = ge->r.absmax[0];
+                            ae->r.absmax[1] = ge->r.absmax[1];
+                            ae->r.absmax[2] = ge->r.absmax[2];
                         }
-                        *(int *)(archivedEntSlot + 0xf4) = *(int *)(gent + 0xf4);
-                        *(int *)(archivedEntSlot + 0xf8) = *(int *)(gent + 0xf8);
-                        /* absmin */
-                        *(int *)(archivedEntSlot + 0xfc) = *(int *)(gent + 0x120);
-                        *(int *)(archivedEntSlot + 0x100) = *(int *)(gent + 0x124);
-                        *(int *)(archivedEntSlot + 0x104) = *(int *)(gent + 0x128);
-                        /* absmax */
-                        *(int *)(archivedEntSlot + 0x108) = *(int *)(gent + 0x12c);
-                        *(int *)(archivedEntSlot + 0x10c) = *(int *)(gent + 0x130);
-                        *(int *)(archivedEntSlot + 0x110) = *(int *)(gent + 0x134);
 
                         /* Write delta from baseline */
                         {
-                            int entNum = *(int *)gent;
-                            byte *baseline = sv_p + 0x241c + entNum * 372;
+                            int entNum = ((gentity_t *)gent)->s.number;
+                            byte *baseline = (byte *)&sv_p->svEntities[entNum].baseline;
                             MSG_WriteDeltaArchivedEntity((msg_t *)msg, baseline, archivedEntSlot, 1);
                         }
 
                         /* Increment archivedEntNumIndex */
                         {
-                            byte *svs5 = (byte *)imp_svs;
-                            int newEntIdx = *(int *)(svs5 + 0x3c) + 1;
-                            *(int *)(svs5 + 0x3c) = newEntIdx;
+                            serverStatic_t *svs5 = (serverStatic_t *)imp_svs;
+                            int newEntIdx = svs5->nextCachedSnapshotEntities + 1;
+                            svs5->nextCachedSnapshotEntities = newEntIdx;
                             if (newEntIdx > 0x7ffffffd) {
                                 Com_Error(0, str_002b0468);
                             }
@@ -3538,8 +3551,8 @@ void SV_ArchiveSnapshot(void)
 
                         /* Increment cachedFrame numEntities */
                         {
-                            byte *cf2 = *(byte **)(((byte *)imp_svs) + 0x50) + frameSlot * 28;
-                            *(int *)(cf2 + 8) += 1;
+                            cachedSnapshot_t *cf2 = (cachedSnapshot_t *)((byte *)((serverStatic_t *)imp_svs)->cachedSnapshotFrames + frameSlot * 28);
+                            cf2->num_entities += 1;
                         }
                     }
                 }
@@ -3548,9 +3561,9 @@ void SV_ArchiveSnapshot(void)
 
         /* Increment archivedFrameNum */
         {
-            byte *svs5 = (byte *)imp_svs;
-            int newFrameNum = *(int *)(svs5 + 0x44) + 1;
-            *(int *)(svs5 + 0x44) = newFrameNum;
+            serverStatic_t *svs5 = (serverStatic_t *)imp_svs;
+            int newFrameNum = svs5->nextCachedSnapshotFrames + 1;
+            svs5->nextCachedSnapshotFrames = newFrameNum;
             if (newFrameNum > 0x7ffffffd) {
                 Com_Error(0, str_002b0490);
             }
@@ -3572,8 +3585,8 @@ write_frame:
 
     /* Store archived frame data in ring buffer */
     {
-        byte *svs2 = (byte *)imp_svs;
-        int archivedFrameCount = *(int *)(svs2 + 0x2c);
+        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+        int archivedFrameCount = svs2->nextArchivedSnapshotFrames;
         int bufIndex;
         byte *entParts;
         int bufOffset;
@@ -3591,16 +3604,14 @@ write_frame:
             bufIndex = archivedFrameCount - q * 1200;
         }
 
-        entParts = *(byte **)(svs2 + 0x30);
+        entParts = (byte *)svs2->archivedSnapshotFrames;
         byte *partEntry = entParts + bufIndex * 8;
 
-        bufOffset = *(int *)(svs2 + 0x38);
+        bufOffset = svs2->nextArchivedSnapshotBuffer;
         *(int *)partEntry = bufOffset; /* startOffset */
 
         /* msg data offset and length */
-        msgDataLen = *(int *)(msg + 0xc); /* msg.cursize, stored at offset 0xc from msg_t base */
-        /* Actually checking the asm: "movl -0x28(%ebp), %eax" with msg at -0x34(%ebp).
-         * -0x28 = -0x34 + 0xc. So yes, msg.cursize is at offset 0xc in msg_t. */
+        msgDataLen = ((msg_t *)msg)->cursize;
         *(int *)(partEntry + 4) = msgDataLen;
 
         /* Copy message data to archived entity buffer with ring wrap */
@@ -3609,13 +3620,13 @@ write_frame:
 
         if (remaining + msgDataLen <= bufSize) {
             /* No wrap needed */
-            byte *archBuf = *(byte **)(svs2 + 0x34);
-            byte *msgData = *(byte **)(msg + 4); /* msg.data pointer at offset 4 */
+            byte *archBuf = svs2->archivedSnapshotBuffer;
+            byte *msgData = ((msg_t *)msg)->data;
             memcpy(archBuf + remaining, msgData, msgDataLen);
         } else {
             /* Wrap around */
             int firstPart = bufSize - remaining;
-            byte *archBuf = *(byte **)(svs2 + 0x34);
+            byte *archBuf = svs2->archivedSnapshotBuffer;
             byte *msgData = *(byte **)(msg + 4);
 
             memcpy(archBuf + remaining, msgData, firstPart);
@@ -3625,9 +3636,9 @@ write_frame:
 
     /* Increment archivedFrameCount */
     {
-        byte *svs2 = (byte *)imp_svs;
-        int newCount = *(int *)(svs2 + 0x2c) + 1;
-        *(int *)(svs2 + 0x2c) = newCount;
+        serverStatic_t *svs2 = (serverStatic_t *)imp_svs;
+        int newCount = svs2->nextArchivedSnapshotFrames + 1;
+        svs2->nextArchivedSnapshotFrames = newCount;
         if (newCount > 0x7ffffffd) {
             Com_Error(0, str_002b0520);
         }

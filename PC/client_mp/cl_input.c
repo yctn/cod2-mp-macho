@@ -317,8 +317,8 @@ void IN_MLookDown(void)
 /* line 654 */
 void IN_CenterView(void)
 {
-    byte *cl = (byte *)*(void **)imp_cl;
-    *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
+    clientActive_t *cl = *(clientActive_t **)imp_cl;
+    cl->viewangles[0] = (float)cl->snap.ps.delta_angles[0] * -0.0054931640625f;
 }
 
 /* line 116 */
@@ -722,18 +722,18 @@ void IN_LeanRight_Up(void)
 /* line 616 */
 void IN_Stance_Down(void)
 {
-    byte *cl;
+    clientActive_t *cl;
 
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
     {
         return;
     }
 
-    cl = (byte *)*(void **)imp_cl;
-    *(byte *)(cl + 0x85ec) = 1;
-    *(int *)(cl + 0x85f0) = *(int *)((byte *)(*(void **)imp_legacyHacks) + 8);
-    *(int *)(cl + 0x85f4) = *(int *)imp_com_frameTime;
-    if (*(int *)(cl + 0x85f0) != 1)
+    cl = *(clientActive_t **)imp_cl;
+    cl->stanceHeld = 1;
+    cl->stancePosition = *(int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    cl->stanceTime = *(int *)imp_com_frameTime;
+    if (cl->stancePosition != 1)
     {
         *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 1;
     }
@@ -742,29 +742,29 @@ void IN_Stance_Down(void)
 /* line 630 */
 void IN_Stance_Up(void)
 {
-    byte *ptr;
+    clientActive_t *ptr;
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
         return;
-    ptr = (byte *)*(void **)imp_cl;
-    if (*(byte *)(ptr + 0x85ec) && *(int *)(ptr + 0x85f0) == 1)
+    ptr = *(clientActive_t **)imp_cl;
+    if (ptr->stanceHeld && ptr->stancePosition == 1)
     {
         *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 0;
-        ptr = (byte *)*(void **)imp_cl;
+        ptr = *(clientActive_t **)imp_cl;
     }
-    *(byte *)(ptr + 0x85ec) = 0;
+    ptr->stanceHeld = 0;
 }
 
 /* line 660 */
 void IN_ToggleADS(void)
 {
-    byte *p = (byte *)*(void **)imp_cl + 0xb;
-    *p = (*p == 0) ? 1 : 0;
+    clientActive_t *p = *(clientActive_t **)imp_cl;
+    p->usingAds = (p->usingAds == 0) ? 1 : 0;
 }
 
 /* line 666 */
 void IN_LeaveADS(void)
 {
-    *(byte *)((char *)*(void **)imp_cl + 0xb) = 0;
+    (*(clientActive_t **)imp_cl)->usingAds = 0;
 }
 
 /* line 672 */
@@ -876,13 +876,13 @@ Bool IsTalking(void)
 /* line 1006 */
 void CL_MouseEvent(const int dx, const int dy)
 {
-    byte *ptr = (byte *)*(void **)imp_cl;
+    clientActive_t *ptr = *(clientActive_t **)imp_cl;
     int index;
-    if (!(*(byte *)(ptr + 4) & 8) || *(byte *)((byte *)cl_bypassMouseInput + 8))
+    if (!(ptr->keyCatchers & 8) || *(byte *)((byte *)cl_bypassMouseInput + 8))
     {
-        index = *(int *)(ptr + 0x85e8);
-        *(int *)(ptr + 0x85d8 + index * 4) += dx;
-        *(int *)(ptr + 0x85e0 + index * 4) += dy;
+        index = ptr->mouseIndex;
+        ptr->mouseDx[index] += dx;
+        ptr->mouseDy[index] += dy;
     }
     else
     {
@@ -943,39 +943,39 @@ void CL_WritePacket(void)
     clc_ptr = *(byte **)imp_clc;
 
     /* early out if demo playing or not connected */
-    if (*(int *)(clc_ptr + 0x407a0))
+    if (((clientConnection_t *)clc_ptr)->demoplaying)
         return;
-    if (*(int *)clc_ptr == 1 || *(int *)clc_ptr == 2)
+    if (((clientConnection_t *)clc_ptr)->state == 1 || ((clientConnection_t *)clc_ptr)->state == 2)
         return;
 
     cl_ptr = *(byte **)imp_cl;
 
     /* set default usercmd into nullcmd */
-    MSG_SetDefaultUserCmd((void *)(cl_ptr + 0x34), (void *)&nullcmd);
+    MSG_SetDefaultUserCmd((void *)&((clientActive_t *)cl_ptr)->snap.ps, (void *)&nullcmd);
 
     /* init message buffer */
     MSG_Init(&buf, data, 0x4000);
 
     /* write server id */
     {
-        int serverId = *(int *)(cl_ptr + 0x8628);
+        int serverId = ((clientActive_t *)cl_ptr)->serverId;
         CL_WritePacketDbg("[CL_WritePacket] serverId=%d\n", serverId);
         MSG_WriteByte(&buf, serverId);
     }
 
     /* write server message sequence and command number */
-    MSG_WriteLong(&buf, *(int *)(clc_ptr + 0x20138));
-    MSG_WriteLong(&buf, *(int *)(clc_ptr + 0x2013c));
+    MSG_WriteLong(&buf, ((clientConnection_t *)clc_ptr)->serverMessageSequence);
+    MSG_WriteLong(&buf, ((clientConnection_t *)clc_ptr)->serverCommandSequence);
 
     /* write reliable commands */
-    i = *(int *)(clc_ptr + 0x134) + 1;
-    while (i <= *(int *)(clc_ptr + 0x130))
+    i = ((clientConnection_t *)clc_ptr)->reliableAcknowledge + 1;
+    while (i <= ((clientConnection_t *)clc_ptr)->reliableSequence)
     {
         MSG_WriteBits(&buf, 2, 3);
         MSG_WriteLong(&buf, i);
         {
             int idx = (i & 0x7f) << 10;
-            MSG_WriteString(&buf, (const char *)(clc_ptr + 0x138 + idx));
+            MSG_WriteString(&buf, (const char *)&((clientConnection_t *)clc_ptr)->reliableCommands[i & 0x7f]);
         }
         i++;
     }
@@ -984,9 +984,9 @@ void CL_WritePacket(void)
     {
         byte *cl2 = *(byte **)imp_cl;
         const dvar_t *packetdup = *(const dvar_t **)imp_cl_packetdup;
-        int cmdNum = *(int *)(clc_ptr + 0x407c8);
+        int cmdNum = ((clientConnection_t *)clc_ptr)->netchan.outgoingSequence;
         int dupIdx = (cmdNum - *(int *)((byte *)packetdup + 8) - 1) & 0x1f;
-        compressedSize = *(int *)(cl2 + 0x4945c) - *(int *)(cl2 + 0x49460 + dupIdx * 12);
+        compressedSize = ((clientActive_t *)cl2)->cmdNumber - ((clientActive_t *)cl2)->outPackets[dupIdx].p_cmdNumber;
     }
 
     if (compressedSize > 0x20)
@@ -1014,7 +1014,7 @@ void CL_WritePacket(void)
     {
         const dvar_t *nodelta = *(const dvar_t **)imp_cl_nodelta;
         byte *cl3 = *(byte **)imp_cl;
-        int snap = *(int *)(cl3 + 0x18);
+        int snap = ((clientActive_t *)cl3)->snap.valid;
 
         if (*(byte *)((byte *)nodelta + 8) || !snap)
         {
@@ -1023,7 +1023,7 @@ void CL_WritePacket(void)
         else
         {
             byte *clc2 = *(byte **)imp_clc;
-            if (*(int *)(clc2 + 0x407a8) || *(int *)(clc2 + 0x20138) != *(int *)((byte *)cl3 + 0x18 + 0xc))
+            if (((clientConnection_t *)clc2)->demowaiting || ((clientConnection_t *)clc2)->serverMessageSequence != ((clientActive_t *)cl3)->snap.messageNum)
             {
                 goto write_nodelta;
             }
@@ -1043,11 +1043,10 @@ write_cmdcount:
     /* compute key for delta encoding */
     {
         byte *clc3 = *(byte **)imp_clc;
-        key = *(int *)(clc3 + 0x20138);
-        key ^= *(int *)(clc3 + 0x12c);
+        key = ((clientConnection_t *)clc3)->serverMessageSequence;
+        key ^= ((clientConnection_t *)clc3)->checksumFeed;
         {
-            int seqIdx = (*(int *)(clc3 + 0x2013c) & 0x7f) << 10;
-            key ^= Com_HashKey((const char *)(clc3 + 0x20144 + seqIdx), 0x20);
+            key ^= Com_HashKey(((clientConnection_t *)clc3)->serverCommands[((clientConnection_t *)clc3)->serverCommandSequence & 0x7f], 0x20);
         }
     }
 
@@ -1058,9 +1057,9 @@ write_cmdcount:
         byte *cl4 = *(byte **)imp_cl;
         for (i = 0; i != compressedSize; i++)
         {
-            int idx = (*(int *)(cl4 + 0x4945c) - compressedSize + 1 + i) & 0x7f;
+            int idx = (((clientActive_t *)cl4)->cmdNumber - compressedSize + 1 + i) & 0x7f;
             /* idx * 28 = idx * 32 - idx * 4 */
-            usercmd_t *curCmd = (usercmd_t *)(cl4 + 0x4865c + idx * 28);
+            usercmd_t *curCmd = &((clientActive_t *)cl4)->cmds[idx];
             MSG_WriteDeltaUsercmdKey(&buf, key, (void *)prevCmd, (void *)curCmd);
             prevCmd = curCmd;
         }
@@ -1086,13 +1085,13 @@ write_footer:
     {
         byte *clc4 = *(byte **)imp_clc;
         byte *cl5 = *(byte **)imp_cl;
-        int slot = *(int *)(clc4 + 0x407c8) & 0x1f;
-        byte *entry = cl5 + slot * 12;
+        int slot = ((clientConnection_t *)clc4)->netchan.outgoingSequence & 0x1f;
+        /* outPackets[slot] accessed via struct */
         byte *cls_ptr = (byte *)imp_cls;
-        *(int *)(entry + 0x49468) = *(int *)(cls_ptr + 0x118);
-        *(int *)(entry + 0x49464) = *(int *)lastCmd;
-        *(int *)(entry + 0x49460) = *(int *)(cl5 + 0x4945c);
-        *(int *)(clc4 + 0xc) = *(int *)(cls_ptr + 0x118);
+        ((clientActive_t *)cl5)->outPackets[slot].p_realtime = ((clientStatic_t *)cls_ptr)->realtime;
+        ((clientActive_t *)cl5)->outPackets[slot].p_serverTime = lastCmd->serverTime;
+        ((clientActive_t *)cl5)->outPackets[slot].p_cmdNumber = ((clientActive_t *)cl5)->cmdNumber;
+        ((clientConnection_t *)clc4)->lastPacketSentTime = ((clientStatic_t *)cls_ptr)->realtime;
 
         {
             const dvar_t *showSend2 = *(const dvar_t **)imp_cl_showSend;
@@ -1103,15 +1102,15 @@ write_footer:
         }
 
         /* transmit */
-        CL_Netchan_Transmit((void *)(clc4 + 0x407c8), compressedBuf, compressedSize);
+        CL_Netchan_Transmit((void *)&((clientConnection_t *)clc4)->netchan, compressedBuf, compressedSize);
 
         /* send remaining fragments */
-        if (*(int *)(clc4 + 0x447f0))
+        if (((clientConnection_t *)clc4)->netchan.unsentFragments)
         {
             do
             {
-                CL_Netchan_TransmitNextFragment((void *)(clc4 + 0x407c8));
-            } while (*(int *)(*(byte **)imp_clc + 0x447f0));
+                CL_Netchan_TransmitNextFragment((void *)&((clientConnection_t *)clc4)->netchan);
+            } while ((*(clientConnection_t **)imp_clc)->netchan.unsentFragments);
         }
     }
 }
@@ -1362,8 +1361,8 @@ void IN_MLookUp(void)
 {
     *(byte *)((byte *)kb + 0x114) = 0;
     if (*(byte *)((byte *)*(void **)imp_cl_freelook + 8) == 0) {
-        byte *cl = (byte *)*(void **)imp_cl;
-        *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
+        clientActive_t *cl = *(clientActive_t **)imp_cl;
+        cl->viewangles[0] = (float)cl->snap.ps.delta_angles[0] * -0.0054931640625f;
     }
 }
 
@@ -1530,7 +1529,7 @@ usercmd_t CL_CreateCmd(void)
     cmd.weapon = (byte)cl->cgameUserCmdValue;
     cmd.offHandIndex = (byte)cl->cgameUserHoldableValue;
 
-    currentCmdTime = *(int *)((byte *)cl + 0x26f0);
+    currentCmdTime = cl->serverTime;
     if (currentCmdTime > cl->serverTime + 5000)
     {
         currentCmdTime = cl->serverTime + 5000;
@@ -1608,7 +1607,7 @@ not_ready:
 /* line 1713 */
 void CL_Input(void)
 {
-    if (*(int *)*(void **)imp_clc != 8)
+    if ((*(clientConnection_t **)imp_clc)->state != 8)
         return;
     CL_SyncGpu();
     CL_SendCmdInternal();
@@ -1617,7 +1616,7 @@ void CL_Input(void)
 /* line 1693 */
 void CL_SendCmd(void)
 {
-    int state = *(int *)*(void **)imp_clc;
+    int state = (*(clientConnection_t **)imp_clc)->state;
     if (state <= 4 || state == 8)
         return;
     CL_SendCmdInternal();

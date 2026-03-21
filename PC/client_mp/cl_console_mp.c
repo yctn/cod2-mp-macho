@@ -198,19 +198,19 @@ void Con_ToggleConsole_f(void)
     /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
        Fixed: only restrict when con_restricted IS set. */
     if (Dvar_GetBool("con_restricted")) {
-        if (*(int *)((char *)*(void **)imp_keys + 0x780))
+        if (*(int *)((char *)*(void **)imp_keys + 0x780)) /* TODO: unknown offset in PlayerKeyState */
             goto toggle;
-        if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
+        if (!((*(clientActive_t **)imp_cl)->keyCatchers & 1))
             return;
     }
 toggle:
     field = (char *)imp_g_consoleField;
     Field_Clear(field);
-    *(int *)(field + 0xc) = g_console_field_width;
-    *(int *)(field + 0x10) = *(int *)&g_console_char_height;
-    *(int *)(field + 0x14) = 1;
+    ((field_t *)field)->widthInPixels = g_console_field_width;
+    ((field_t *)field)->charHeight = g_console_char_height;
+    ((field_t *)field)->fixedSize = 1;
     *(byte *)((char *)&con + 131100) = 0;
-    *(int *)(4 + (char *)imp_clients) ^= 1;
+    ((clientActive_t *)imp_clients)->keyCatchers ^= 1;
 }
 
 /* line 319 */
@@ -220,10 +220,10 @@ static void Con_ChatModePublic_f(void)
     **(int **)imp_chat_team = 0;
     field = *(char **)*(int **)imp_chatField;
     Field_Clear(field);
-    *(int *)(field + 0xc) = 0x24c;
-    *(int *)(field + 0x10) = 0x41200000;
-    *(int *)(field + 0x14) = 0;
-    *(int *)((char *)*(void **)imp_cl + 4) ^= 0x10;
+    ((field_t *)field)->widthInPixels = 0x24c;
+    *(int *)&((field_t *)field)->charHeight = 0x41200000;
+    ((field_t *)field)->fixedSize = 0;
+    (*(clientActive_t **)imp_cl)->keyCatchers ^= 0x10;
 }
 
 /* line 331 */
@@ -233,10 +233,10 @@ static void Con_ChatModeTeam_f(void)
     **(int **)imp_chat_team = 1;
     field = *(char **)*(int **)imp_chatField;
     Field_Clear(field);
-    *(int *)(field + 0xc) = 0x21f;
-    *(int *)(field + 0x10) = 0x41200000;
-    *(int *)(field + 0x14) = 0;
-    *(int *)((char *)*(void **)imp_cl + 4) ^= 0x10;
+    ((field_t *)field)->widthInPixels = 0x21f;
+    *(int *)&((field_t *)field)->charHeight = 0x41200000;
+    ((field_t *)field)->fixedSize = 0;
+    (*(clientActive_t **)imp_cl)->keyCatchers ^= 0x10;
 }
 
 /* line 2032 */
@@ -331,7 +331,7 @@ static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean lin
     line = &msgwnd->lines[msgwnd->current_line];
 
     /* line 632: set start time to current server time */
-    serverTime = *(int *)((char *)*(void **)imp_cl + 0x26f0);
+    serverTime = (*(clientActive_t **)imp_cl)->serverTime;
     line->startTime = serverTime;
 
     /* line 633: set end time = start time + duration */
@@ -394,7 +394,7 @@ static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean lin
         endTime = otherLine->endTime;
         fadeout = msgwnd->fadeout;
         cl_ptr = (char *)*(void **)imp_cl;
-        curTime = *(int *)(cl_ptr + 0x26f0);
+        curTime = ((clientActive_t *)cl_ptr)->serverTime;
 
         if (endTime - fadeout > curTime) {
             /* line 652: compress timing so fade starts now */
@@ -402,7 +402,7 @@ static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean lin
             otherLine->startTime = fadeout + (curTime - lineDuration);
 
             /* line 653: set end time to now + fadeout */
-            otherLine->endTime = *(int *)((char *)*(void **)imp_cl + 0x26f0) + msgwnd->fadeout;
+            otherLine->endTime = (*(clientActive_t **)imp_cl)->serverTime + msgwnd->fadeout;
         }
     }
 }
@@ -1935,7 +1935,7 @@ static void ConDrawInput_DvarMatch(const char *str)
         return;
 
     drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
-    font = *(void **)((char *)imp_cls + 0x2a0a60);
+    font = (void *)((clientStatic_t *)imp_cls)->consoleFont;
 
     /* Draw dvar name */
     drawText(str, 0x18, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputDvarMatchColor, 0);
@@ -2683,7 +2683,7 @@ static void ConDrawInput_CmdMatch(const char *str)
         return;
 
     drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
-    font = *(void **)((char *)imp_cls + 0x2a0a60);
+    font = (void *)((clientStatic_t *)imp_cls)->consoleFont;
 
     drawText(str, 0x7fffffff, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputCommandMatchColor, 0);
 
@@ -3754,7 +3754,7 @@ void Con_DrawInput(void)
 void Con_DrawConsole(void)
 {
     Con_CheckResize();
-    if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
+    if (!((*(clientActive_t **)imp_cl)->keyCatchers & 1))
         return;
     if (con.outputVisible)
         Con_DrawOuputWindow();

@@ -53,19 +53,19 @@ qboolean CG_DrawScoreboard(void);
 /* line 1392 */
 qboolean CG_ScoreboardDisplayed(void)
 {
-    return *(int *)(*(int *)imp_cg + 0x2b534);
+    return ((cg_t *)*(int *)imp_cg)->showScores;
 }
 
 /* line 1404 */
 float CG_ScrollScoreboardUp(void)
 {
-    int *cg = (int *)*(int *)imp_cg;
-    int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
+    cg_t *cg = (cg_t *)*(int *)imp_cg;
+    int scrollOffset = cg->scoresTop;
     if (scrollOffset > 0) {
         scrollOffset -= *(int *)(*(int *)imp_cg_scoreboardScrollStep + 8);
-        *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
+        cg->scoresTop = scrollOffset;
         if (scrollOffset < 0)
-            *(int *)((byte *)cg + 0x2b53c) = 0;
+            cg->scoresTop = 0;
     }
     return 0;
 }
@@ -73,14 +73,14 @@ float CG_ScrollScoreboardUp(void)
 /* line 1415 */
 float CG_ScrollScoreboardDown(void)
 {
-    int *cg = (int *)*(int *)imp_cg;
-    if (*(int *)((byte *)cg + 0x2b540) != 0) {
-        int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
+    cg_t *cg = (cg_t *)*(int *)imp_cg;
+    if (cg->scoresOffBottom != 0) {
+        int scrollOffset = cg->scoresTop;
         scrollOffset += *(int *)(*(int *)imp_cg_scoreboardScrollStep + 8);
-        *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
-        int maxScroll = *(int *)((byte *)cg + 0x2af00) - 1;
+        cg->scoresTop = scrollOffset;
+        int maxScroll = cg->numScores - 1;
         if (scrollOffset > maxScroll)
-            *(int *)((byte *)cg + 0x2b53c) = maxScroll;
+            cg->scoresTop = maxScroll;
     }
     return 0;
 }
@@ -2255,33 +2255,35 @@ qboolean CG_DrawScoreboard(void)
 
     /* line 1355 */
     cg_s = *(byte **)imp_cg;
-    if (*(int *)(cg_s + 0x2b534) == 0) {
-        /* line 1365: try to get fade color */
-        fadePtr = (float *)CG_FadeColor(*(int *)(cg_s + 0x2b538), 100, 100);
-        if (fadePtr == 0) {
-            /* line 1371 */
-            *(byte *)(cg_s + 0x2b54c) = 0;
-            goto scoreboard_done;
-        }
-        /* line 1374 */
-        fade = fadePtr[0];
-        bgAlpha = fade * 0.8f;
-        borderAlpha = fade * 0.1f;
-    } else {
-        /* line 1355: scoreboard is showing */
-        fade = 1.0f;
-        bgAlpha = 0.8f;
-        borderAlpha = 0.1f;
-    }
-
-    /* line 1378: check if we need to request scores */
     {
-        byte *cg2 = *(byte **)imp_cg;
-        int serverTime = *(int *)(cg2 + 0x25bb0);
-        int lastScoreTime = *(int *)(cg2 + 0x2aefc);
-        if (lastScoreTime + 0x7d0 < serverTime) {
-            *(int *)(cg2 + 0x2aefc) = serverTime;
-            CL_AddReliableCommand((const char *)str_002b3bec);
+        cg_t *cg = (cg_t *)cg_s;
+        if (cg->showScores == 0) {
+            /* line 1365: try to get fade color */
+            fadePtr = (float *)CG_FadeColor(cg->scoreFadeTime, 100, 100);
+            if (fadePtr == 0) {
+                /* line 1371 */
+                cg->killerName[0] = 0;
+                goto scoreboard_done;
+            }
+            /* line 1374 */
+            fade = fadePtr[0];
+            bgAlpha = fade * 0.8f;
+            borderAlpha = fade * 0.1f;
+        } else {
+            /* line 1355: scoreboard is showing */
+            fade = 1.0f;
+            bgAlpha = 0.8f;
+            borderAlpha = 0.1f;
+        }
+
+        /* line 1378: check if we need to request scores */
+        {
+            int serverTime = cg->time;
+            int lastScoreTime = cg->scoresRequestTime;
+            if (lastScoreTime + 0x7d0 < serverTime) {
+                cg->scoresRequestTime = serverTime;
+                CL_AddReliableCommand((const char *)str_002b3bec);
+            }
         }
     }
 

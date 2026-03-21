@@ -162,7 +162,7 @@ void CG_ImpactMark(MaterialHandle markMaterial, const vec_t *origin, const vec_t
 
     /* Check additional condition in cg_t (offset 0x2bee8, e.g. snapshot availability) */
     cg = CG_PTR;
-    if (*(int *)(cg + 0x2bee8) == 0)
+    if (((cg_t *)cg)->nomarks == 0)
         return;
 
     /* Build orthonormal axis from impact direction */

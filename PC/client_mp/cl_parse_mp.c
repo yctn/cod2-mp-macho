@@ -78,8 +78,8 @@ void CL_SystemInfoChanged(void)
     LargeLocal value_large_local;
     char *key;
     char *value;
-    byte *cls;
-    byte *clc;
+    clientActive_t *cla;
+    clientConnection_t *clc;
     char *systemInfo;
     const char *s;
 
@@ -90,20 +90,20 @@ void CL_SystemInfoChanged(void)
     value = (char *)LargeLocal_GetBuf(&value_large_local);
 
     /* line 582 */
-    cls = (byte *)cl;
-    clc = *clc_ptr;
+    cla = (clientActive_t *)cl;
+    clc = (clientConnection_t *)*clc_ptr;
     /* config strings and sv_serverid are in clientActive_t (cl), not clientConnection_t (clc) */
-    systemInfo = (char *)(cls + 0x470c + *(int *)(cls + 0x2710));
+    systemInfo = cla->gameState.stringData + cla->gameState.stringOffsets[1];
 
     /* line 583 - sv_serverid */
     {
         const char *sid_str = Info_ValueForKey(systemInfo, "sv_serverid");
         int sid_val = atoi(sid_str);
-        *(int *)(cls + 0x8628) = sid_val;
+        cla->serverId = sid_val;
     }
 
     /* line 586 */
-    if (*(int *)((*clc_ptr) + 0x407a0) != 0) {
+    if (((clientConnection_t *)*clc_ptr)->demoplaying != 0) {
         ZN10LargeLocalD1Ev(&value_large_local);
         ZN10LargeLocalD1Ev(&key_large_local);
         return;
@@ -149,8 +149,8 @@ void CL_SystemInfoChanged(void)
 /* line 632 */
 void CL_ParseGamestate(msg_t *msg)
 {
-    byte *clc;
-    byte *cls;
+    clientConnection_t *clc;
+    clientActive_t *cla;
     int newnum;
     int i;
     char *s;
@@ -161,18 +161,18 @@ void CL_ParseGamestate(msg_t *msg)
     Con_Close();
 
     /* line 643 */
-    clc = *clc_ptr;
-    *(int *)(clc + 0x24) = 0;
+    clc = (clientConnection_t *)*clc_ptr;
+    clc->connectPacketCount = 0;
 
     /* line 646 */
     CL_ClearState();
 
     /* line 649 */
-    *(int *)(clc + 0x2013c) = MSG_ReadLong(msg);
+    clc->serverCommandSequence = MSG_ReadLong(msg);
 
     /* line 652 */
-    cls = (byte *)cl;
-    *(int *)(cls + 0x858c) = 1;
+    cla = (clientActive_t *)cl;
+    cla->gameState.dataCount = 1;
 
     for (;;) {
         /* line 655 */
@@ -196,17 +196,17 @@ void CL_ParseGamestate(msg_t *msg)
             len = strlen(s);
 
             /* line 674 */
-            cls = (byte *)cl;
-            if (len + 1 + *(int *)(cls + 0x858c) > 0x3e80) {
+            cla = (clientActive_t *)cl;
+            if (len + 1 + cla->gameState.dataCount > 0x3e80) {
                 Com_Error(1, "\x15MAX_GAMESTATE_CHARS exceeded");
             }
 
             /* line 680 */
-            *(int *)(cls + 0x270c + i * 4) = *(int *)(cls + 0x858c);
+            cla->gameState.stringOffsets[i] = cla->gameState.dataCount;
             /* line 681 */
-            memcpy(cls + 0x470c + *(int *)(cls + 0x858c), s, len + 1);
+            memcpy(cla->gameState.stringData + cla->gameState.dataCount, s, len + 1);
             /* line 682 */
-            *(int *)(cls + 0x858c) = *(int *)(cls + 0x858c) + len + 1;
+            cla->gameState.dataCount = cla->gameState.dataCount + len + 1;
         } else if (cmd == 3) {
             /* line 686 - baseline */
             newnum = MSG_ReadBits(msg, 10);
@@ -219,7 +219,7 @@ void CL_ParseGamestate(msg_t *msg)
 
             /* line 693 */
             MSG_ReadDeltaEntity(msg, &nullstate,
-                (entityState_t *)(cls + 0x970e0 + newnum * 240),
+                &cla->entityBaselines[newnum],
                 newnum);
         } else {
             /* line 697 */
@@ -228,24 +228,21 @@ void CL_ParseGamestate(msg_t *msg)
     }
 
     /* line 701 */
-    clc = *clc_ptr;
-    *(int *)(clc + 8) = MSG_ReadLong(msg);
+    clc = (clientConnection_t *)*clc_ptr;
+    clc->clientNum = MSG_ReadLong(msg);
 
     /* line 703 */
-    *(int *)(clc + 0x12c) = MSG_ReadLong(msg);
+    clc->checksumFeed = MSG_ReadLong(msg);
 
     /* line 706 */
     CL_SystemInfoChanged();
 
     /* line 710 */
-    FS_ConditionalRestart(*(int *)(clc + 0x12c));
+    FS_ConditionalRestart(clc->checksumFeed);
 
     /* line 720 */
     if (*(byte *)((*cl_paused) + 8) == 0) {
-        int addr0 = *(int *)(clc + 0x14);
-        int addr1 = *(int *)(clc + 0x18);
-        int addr2 = *(int *)(clc + 0x1c);
-        if (!Sys_IsLANAddress(addr0, addr1, addr2)) {
+        if (!Sys_IsLANAddress(*(int *)&clc->serverAddress, *(int *)((byte *)&clc->serverAddress + 4), *(int *)((byte *)&clc->serverAddress + 8))) {
             /* line 721 */
             CL_RequestAuthorization();
         }
@@ -279,7 +276,7 @@ void CL_ParseDownload(msg_t *msg)
     byte *data;
     int block;
     int size;
-    byte *clc;
+    clientConnection_t *clc;
 
     /* line 752 */
     LargeLocal_LargeLocal(&data_large_local, 0x4000);
@@ -291,14 +288,14 @@ void CL_ParseDownload(msg_t *msg)
     /* line 757 */
     if (block == 0) {
         /* line 760 */
-        clc = *clc_ptr;
-        *(int *)(clc + 0x40354) = MSG_ReadLong(msg);
+        clc = (clientConnection_t *)*clc_ptr;
+        clc->downloadSize = MSG_ReadLong(msg);
 
         /* line 762 */
-        *(int *)((*download_ui_ptr) + 0x10) = *(int *)(clc + 0x40354);
+        *(int *)((*download_ui_ptr) + 0x10) = clc->downloadSize;
 
         /* line 764 */
-        size = *(int *)(clc + 0x40354);
+        size = clc->downloadSize;
         if (size < 0) {
             /* line 766 - error message from server */
             Com_Error(1, "%s", va("%s", MSG_ReadString(msg)));
@@ -317,27 +314,27 @@ void CL_ParseDownload(msg_t *msg)
     }
 
     /* line 775 */
-    clc = *clc_ptr;
-    if (*(int *)(clc + 0x4034c) != block) {
+    clc = (clientConnection_t *)*clc_ptr;
+    if (clc->downloadBlock != block) {
         /* line 777 */
         Com_DPrintf("CL_ParseDownload: Expected block %d, got %d\n",
-                    *(int *)(clc + 0x4034c), block);
+                    clc->downloadBlock, block);
 
         /* line 779 */
-        if (block > *(int *)(clc + 0x4034c)) {
+        if (block > clc->downloadBlock) {
             /* line 781 */
             Com_DPrintf("CL_ParseDownload: Sending retransmit request to get the missed block\n");
             /* line 782 */
-            CL_AddReliableCommand(va("retransdl %d", *(int *)(clc + 0x4034c)));
+            CL_AddReliableCommand(va("retransdl %d", clc->downloadBlock));
         }
         ZN10LargeLocalD1Ev(&data_large_local);
         return;
     }
 
     /* line 789 */
-    if (*(int *)(clc + 0x40144) == 0) {
+    if (clc->download == 0) {
         /* line 791 */
-        if (*(byte *)(clc + 0x40148) == '\0') {
+        if (clc->downloadTempName[0] == '\0') {
             /* line 793 */
             Com_Printf("Server sending download, but no download was requested\n");
             CL_AddReliableCommand("stopdl");
@@ -346,10 +343,10 @@ void CL_ParseDownload(msg_t *msg)
         }
 
         /* line 798 */
-        *(int *)(clc + 0x40144) = FS_SV_FOpenFileWrite((const char *)(clc + 0x40148));
-        if (*(int *)(clc + 0x40144) == 0) {
+        clc->download = FS_SV_FOpenFileWrite(clc->downloadTempName);
+        if (clc->download == 0) {
             /* line 802 */
-            Com_Printf("Could not create %s\n", (const char *)(clc + 0x40148));
+            Com_Printf("Could not create %s\n", clc->downloadTempName);
             CL_AddReliableCommand("stopdl");
             CL_NextDownload();
             ZN10LargeLocalD1Ev(&data_large_local);
@@ -360,20 +357,20 @@ void CL_ParseDownload(msg_t *msg)
     /* line 809 */
     if (size != 0) {
         /* line 810 */
-        FS_Write(data, size, *(int *)((*clc_ptr) + 0x40144));
+        FS_Write(data, size, ((clientConnection_t *)*clc_ptr)->download);
     }
 
     /* line 812 */
-    clc = *clc_ptr;
-    CL_AddReliableCommand(va("nextdl %d", *(int *)(clc + 0x4034c)));
+    clc = (clientConnection_t *)*clc_ptr;
+    CL_AddReliableCommand(va("nextdl %d", clc->downloadBlock));
     /* line 813 */
-    *(int *)(clc + 0x4034c) += 1;
+    clc->downloadBlock += 1;
 
     /* line 815 */
-    *(int *)(clc + 0x40350) += size;
+    clc->downloadCount += size;
 
     /* line 818 */
-    *(int *)((*download_ui_ptr) + 0x14) = *(int *)(clc + 0x40350);
+    *(int *)((*download_ui_ptr) + 0x14) = clc->downloadCount;
 
     /* line 820 */
     if (size != 0) {
@@ -382,18 +379,18 @@ void CL_ParseDownload(msg_t *msg)
     }
 
     /* line 822 - download complete */
-    if (*(int *)(clc + 0x40144) != 0) {
+    if (clc->download != 0) {
         /* line 824 */
-        FS_FCloseFile(*(int *)(clc + 0x40144));
+        FS_FCloseFile(clc->download);
         /* line 825 */
-        *(int *)(clc + 0x40144) = 0;
+        clc->download = 0;
         /* line 828 */
-        FS_SV_Rename((const char *)(clc + 0x40148), (const char *)(clc + 0x40248));
+        FS_SV_Rename(clc->downloadTempName, clc->downloadName);
     }
 
     /* line 830 */
-    *(byte *)(clc + 0x40248) = 0;
-    *(byte *)(clc + 0x40148) = 0;
+    clc->downloadName[0] = 0;
+    clc->downloadTempName[0] = 0;
 
     /* line 831 */
     *(byte *)((*download_ui_ptr) + 0x1c) = 0;
@@ -454,10 +451,10 @@ static byte *CL_SnapSlot(byte *base, int messageNum)
 void CL_ParseSnapshot(msg_t *msg)
 {
     LargeLocal newSnap_large_local;
-    byte *newSnap;
-    byte *cls;
-    byte *clc;
-    byte *old;
+    clSnapshot_t *newSnap;
+    clientActive_t *cla;
+    clientConnection_t *clc;
+    clSnapshot_t *old;
     int oldMessageNum;
     int deltaNum;
     int newnum;
@@ -470,21 +467,21 @@ void CL_ParseSnapshot(msg_t *msg)
     int oldClientNum;
 
     /* line 413 */
-    LargeLocal_LargeLocal(&newSnap_large_local, 0x26d8);
-    newSnap = (byte *)LargeLocal_GetBuf(&newSnap_large_local);
+    LargeLocal_LargeLocal(&newSnap_large_local, sizeof(clSnapshot_t));
+    newSnap = (clSnapshot_t *)LargeLocal_GetBuf(&newSnap_large_local);
 
     /* line 421 */
-    memset(newSnap, 0, 0x26d8);
+    memset(newSnap, 0, sizeof(clSnapshot_t));
 
     /* line 425 */
-    clc = *clc_ptr;
-    *(int *)(newSnap + 0x26d4) = *(int *)(clc + 0x2013c);
+    clc = (clientConnection_t *)*clc_ptr;
+    newSnap->serverCommandNum = clc->serverCommandSequence;
 
     /* line 427 */
-    *(int *)(newSnap + 8) = MSG_ReadLong(msg);
+    newSnap->serverTime = MSG_ReadLong(msg);
 
     /* line 429 */
-    *(int *)(newSnap + 0xc) = *(int *)(clc + 0x20138);
+    newSnap->messageNum = clc->serverMessageSequence;
 
     /* line 431 */
     deltaNum = MSG_ReadByte(msg);
@@ -492,46 +489,46 @@ void CL_ParseSnapshot(msg_t *msg)
     /* line 432 */
     if (deltaNum == 0) {
         /* line 434 */
-        *(int *)(newSnap + 0x10) = -1;
+        newSnap->deltaNum = -1;
     } else {
         /* line 438 */
-        *(int *)(newSnap + 0x10) = *(int *)(newSnap + 0xc) - deltaNum;
+        newSnap->deltaNum = newSnap->messageNum - deltaNum;
     }
 
     /* line 440 */
-    *(int *)(newSnap + 4) = MSG_ReadByte(msg);
+    newSnap->snapFlags = MSG_ReadByte(msg);
 
     /* line 446 */
-    oldMessageNum = *(int *)(newSnap + 0x10);
+    oldMessageNum = newSnap->deltaNum;
     if (oldMessageNum <= 0) {
         /* line 448 */
-        *(int *)(newSnap) = 1;
+        newSnap->valid = 1;
         /* line 450 */
-        *(int *)((*clc_ptr) + 0x407a8) = 0;
+        ((clientConnection_t *)*clc_ptr)->demowaiting = 0;
         old = NULL;
     } else {
         /* line 454 */
-        cls = (byte *)cl;
-        old = CL_SnapSlot(cls, oldMessageNum);
+        cla = (clientActive_t *)cl;
+        old = &cla->snapshots[oldMessageNum & 0x1f];
 
         /* line 455 */
-        if (*(int *)old == 0) {
+        if (old->valid == 0) {
             /* line 458 */
             Com_Printf("Delta from invalid frame (not supposed to happen!).\n");
-        } else if (*(int *)(old + 0xc) != oldMessageNum) {
+        } else if (old->messageNum != oldMessageNum) {
             /* line 464 */
             Com_DPrintf("Delta frame too old.\n");
         } else {
             /* line 466 */
-            if (*(int *)(cls + 0x85d0) - *(int *)(old + 0x26cc) > 0x780) {
+            if (cla->parseEntitiesNum - old->parseEntitiesNum > 0x780) {
                 /* line 468 */
                 Com_DPrintf("Delta parseEntitiesNum too old.\n");
-            } else if (*(int *)(cls + 0x85d4) - *(int *)(old + 0x26d0) > 0x780) {
+            } else if (cla->parseClientsNum - old->parseClientsNum > 0x780) {
                 /* line 472 */
                 Com_DPrintf("Delta parseClientsNum too old.\n");
             } else {
                 /* line 476 */
-                *(int *)(newSnap) = 1;
+                newSnap->valid = 1;
             }
         }
     }
@@ -543,10 +540,10 @@ void CL_ParseSnapshot(msg_t *msg)
 
     /* line 482 - read delta playerstate */
     if (old) {
-        MSG_ReadDeltaPlayerstate(msg, (playerState_t *)(old + 0x1c), (playerState_t *)(newSnap + 0x1c));
+        MSG_ReadDeltaPlayerstate(msg, &old->ps, &newSnap->ps);
     } else {
         /* line 488 */
-        MSG_ReadDeltaPlayerstate(msg, NULL, (playerState_t *)(newSnap + 0x1c));
+        MSG_ReadDeltaPlayerstate(msg, NULL, &newSnap->ps);
     }
 
     /* Logging */
@@ -555,14 +552,14 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* ---- CL_ParsePacketEntities (inlined, line 142+) ---- */
-    cls = (byte *)cl;
-    *(int *)(newSnap + 0x26cc) = *(int *)(cls + 0x85d0);
-    *(int *)(newSnap + 0x26c4) = 0;
+    cla = (clientActive_t *)cl;
+    newSnap->parseEntitiesNum = cla->parseEntitiesNum;
+    newSnap->numEntities = 0;
 
     /* line 148 */
-    if (old && *(int *)(old + 0x26c4) > 0) {
+    if (old && old->numEntities > 0) {
         /* line 160 */
-        oldEntitySlot = CL_EntitySlot(cls, *(int *)(old + 0x26cc));
+        oldEntitySlot = (byte *)&cla->parseEntities[old->parseEntitiesNum & 0x7ff];
         oldEntityNum = *(int *)oldEntitySlot;
     } else {
         oldEntitySlot = NULL;
@@ -599,17 +596,17 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 82-95: CL_DeltaEntity - copy old entity unchanged */
-            cls = (byte *)cl;
-            memcpy(CL_EntitySlot(cls, *(int *)(cls + 0x85d0)), oldEntitySlot, 0xf0);
-            *(int *)(cls + 0x85d0) += 1;
-            *(int *)(newSnap + 0x26c4) += 1;
+            cla = (clientActive_t *)cl;
+            memcpy(&cla->parseEntities[cla->parseEntitiesNum & 0x7ff], oldEntitySlot, sizeof(entityState_t));
+            cla->parseEntitiesNum += 1;
+            newSnap->numEntities += 1;
 
             /* line 189-198: advance old */
             oldindex += 1;
-            if (oldindex >= *(int *)(old + 0x26c4)) {
+            if (oldindex >= old->numEntities) {
                 oldEntityNum = 0x1869f;
             } else {
-                oldEntitySlot = CL_EntitySlot(cls, oldindex + *(int *)(old + 0x26cc));
+                oldEntitySlot = (byte *)&cla->parseEntities[(oldindex + old->parseEntitiesNum) & 0x7ff];
                 oldEntityNum = *(int *)oldEntitySlot;
             }
         }
@@ -622,20 +619,20 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 82-95: CL_DeltaEntity - delta */
-            cls = (byte *)cl;
+            cla = (clientActive_t *)cl;
             if (!MSG_ReadDeltaEntity(msg, (entityState_t *)oldEntitySlot,
-                    (entityState_t *)CL_EntitySlot(cls, *(int *)(cls + 0x85d0)),
+                    &cla->parseEntities[cla->parseEntitiesNum & 0x7ff],
                     oldEntityNum)) {
-                *(int *)(cls + 0x85d0) += 1;
-                *(int *)(newSnap + 0x26c4) += 1;
+                cla->parseEntitiesNum += 1;
+                newSnap->numEntities += 1;
             }
 
             /* advance old */
             oldindex += 1;
-            if (oldindex >= *(int *)(old + 0x26c4)) {
+            if (oldindex >= old->numEntities) {
                 oldEntityNum = 0x1869f;
             } else {
-                oldEntitySlot = CL_EntitySlot(cls, oldindex + *(int *)(old + 0x26cc));
+                oldEntitySlot = (byte *)&cla->parseEntities[(oldindex + old->parseEntitiesNum) & 0x7ff];
                 oldEntityNum = *(int *)oldEntitySlot;
             }
         } else {
@@ -645,13 +642,13 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 231 - CL_DeltaEntity with baseline */
-            cls = (byte *)cl;
+            cla = (clientActive_t *)cl;
             if (!MSG_ReadDeltaEntity(msg,
-                    (entityState_t *)(cls + 0x970e0 + newnum * 240),
-                    (entityState_t *)CL_EntitySlot(cls, *(int *)(cls + 0x85d0)),
+                    &cla->entityBaselines[newnum],
+                    &cla->parseEntities[cla->parseEntitiesNum & 0x7ff],
                     newnum)) {
-                *(int *)(cls + 0x85d0) += 1;
-                *(int *)(newSnap + 0x26c4) += 1;
+                cla->parseEntitiesNum += 1;
+                newSnap->numEntities += 1;
             }
         }
     }
@@ -667,23 +664,23 @@ void CL_ParseSnapshot(msg_t *msg)
         }
 
         /* CL_DeltaEntity - copy unchanged */
-        cls = (byte *)cl;
-        memcpy(CL_EntitySlot(cls, *(int *)(cls + 0x85d0)), oldEntitySlot, 0xf0);
-        *(int *)(cls + 0x85d0) += 1;
-        *(int *)(newSnap + 0x26c4) += 1;
+        cla = (clientActive_t *)cl;
+        memcpy(&cla->parseEntities[cla->parseEntitiesNum & 0x7ff], oldEntitySlot, sizeof(entityState_t));
+        cla->parseEntitiesNum += 1;
+        newSnap->numEntities += 1;
 
         /* advance old */
         oldindex += 1;
-        if (oldindex >= *(int *)(old + 0x26c4))
+        if (oldindex >= old->numEntities)
             break;
 
-        oldEntitySlot = CL_EntitySlot(cls, oldindex + *(int *)(old + 0x26cc));
+        oldEntitySlot = (byte *)&cla->parseEntities[(oldindex + old->parseEntitiesNum) & 0x7ff];
         oldEntityNum = *(int *)oldEntitySlot;
     }
 
     /* line 257 */
     if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
-        Com_Printf("Entities in packet: %i\n", *(int *)(newSnap + 0x26c4));
+        Com_Printf("Entities in packet: %i\n", newSnap->numEntities);
     }
 
     /* Logging */
@@ -692,14 +689,14 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* ---- CL_ParsePacketClients (inlined, line 277+) ---- */
-    cls = (byte *)cl;
-    *(int *)(newSnap + 0x26d0) = *(int *)(cls + 0x85d4);
-    *(int *)(newSnap + 0x26c8) = 0;
+    cla = (clientActive_t *)cl;
+    newSnap->parseClientsNum = cla->parseClientsNum;
+    newSnap->numClients = 0;
 
     /* line 283 */
-    if (old && *(int *)(old + 0x26c8) > 0) {
+    if (old && old->numClients > 0) {
         /* line 295 */
-        oldClientSlot = CL_ClientSlot(cls, *(int *)(old + 0x26d0));
+        oldClientSlot = (byte *)&cla->parseClients[old->parseClientsNum & 0x7ff];
         oldClientNum = *(int *)oldClientSlot;
     } else {
         oldClientSlot = NULL;
@@ -733,18 +730,18 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 113-126: CL_DeltaClient - copy old */
-            cls = (byte *)cl;
-            memcpy(CL_ClientSlot(cls, *(int *)(cls + 0x85d4)), oldClientSlot, 0x5c);
-            *(int *)(cls + 0x85d4) += 1;
-            *(int *)(newSnap + 0x26c8) += 1;
+            cla = (clientActive_t *)cl;
+            memcpy(&cla->parseClients[cla->parseClientsNum & 0x7ff], oldClientSlot, sizeof(clientState_t));
+            cla->parseClientsNum += 1;
+            newSnap->numClients += 1;
 
             /* line 322-331: advance old */
             oldindex += 1;
-            if (oldindex >= *(int *)(old + 0x26c8)) {
+            if (oldindex >= old->numClients) {
                 oldClientNum = 0x1869f;
                 break;
             }
-            oldClientSlot = CL_ClientSlot(cls, oldindex + *(int *)(old + 0x26d0));
+            oldClientSlot = (byte *)&cla->parseClients[(oldindex + old->parseClientsNum) & 0x7ff];
             oldClientNum = *(int *)oldClientSlot;
         }
 
@@ -756,20 +753,20 @@ void CL_ParseSnapshot(msg_t *msg)
             }
 
             /* line 113-126: CL_DeltaClient - delta */
-            cls = (byte *)cl;
+            cla = (clientActive_t *)cl;
             if (!MSG_ReadDeltaClient(msg, (clientState_t *)oldClientSlot,
-                    (clientState_t *)CL_ClientSlot(cls, *(int *)(cls + 0x85d4)),
+                    &cla->parseClients[cla->parseClientsNum & 0x7ff],
                     oldClientNum)) {
-                *(int *)(cls + 0x85d4) += 1;
-                *(int *)(newSnap + 0x26c8) += 1;
+                cla->parseClientsNum += 1;
+                newSnap->numClients += 1;
             }
 
             /* advance old */
             oldindex += 1;
-            if (oldindex >= *(int *)(old + 0x26c8)) {
+            if (oldindex >= old->numClients) {
                 oldClientNum = 0x1869f;
             } else {
-                oldClientSlot = CL_ClientSlot(cls, oldindex + *(int *)(old + 0x26d0));
+                oldClientSlot = (byte *)&cla->parseClients[(oldindex + old->parseClientsNum) & 0x7ff];
                 oldClientNum = *(int *)oldClientSlot;
             }
         } else {
@@ -782,12 +779,12 @@ void CL_ParseSnapshot(msg_t *msg)
             memset(&dummy, 0, sizeof(clientState_t));
 
             /* line 113-126: CL_DeltaClient - delta with dummy baseline */
-            cls = (byte *)cl;
+            cla = (clientActive_t *)cl;
             if (!MSG_ReadDeltaClient(msg, (clientState_t *)&dummy,
-                    (clientState_t *)CL_ClientSlot(cls, *(int *)(cls + 0x85d4)),
+                    &cla->parseClients[cla->parseClientsNum & 0x7ff],
                     newnum)) {
-                *(int *)(cls + 0x85d4) += 1;
-                *(int *)(newSnap + 0x26c8) += 1;
+                cla->parseClientsNum += 1;
+                newSnap->numClients += 1;
             }
         }
     }
@@ -803,44 +800,44 @@ void CL_ParseSnapshot(msg_t *msg)
         }
 
         /* CL_DeltaClient - copy unchanged */
-        cls = (byte *)cl;
-        memcpy(CL_ClientSlot(cls, *(int *)(cls + 0x85d4)), oldClientSlot, 0x5c);
-        *(int *)(cls + 0x85d4) += 1;
-        *(int *)(newSnap + 0x26c8) += 1;
+        cla = (clientActive_t *)cl;
+        memcpy(&cla->parseClients[cla->parseClientsNum & 0x7ff], oldClientSlot, sizeof(clientState_t));
+        cla->parseClientsNum += 1;
+        newSnap->numClients += 1;
 
         /* advance old */
         oldindex += 1;
-        if (oldindex >= *(int *)(old + 0x26c8))
+        if (oldindex >= old->numClients)
             break;
 
-        oldClientSlot = CL_ClientSlot(cls, oldindex + *(int *)(old + 0x26d0));
+        oldClientSlot = (byte *)&cla->parseClients[(oldindex + old->parseClientsNum) & 0x7ff];
         oldClientNum = *(int *)oldClientSlot;
     }
 
     /* line 391 */
     if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
-        Com_Printf("Clients in packet: %i\n", *(int *)(newSnap + 0x26c8));
+        Com_Printf("Clients in packet: %i\n", newSnap->numClients);
     }
 
     /* line 499 */
     if (msg->overflowed) {
         /* line 501 */
-        *(int *)(newSnap) = 0;
+        newSnap->valid = 0;
         ZN10LargeLocalD1Ev(&newSnap_large_local);
         return;
     }
 
     /* line 507 */
-    if (*(int *)(newSnap) == 0) {
+    if (newSnap->valid == 0) {
         ZN10LargeLocalD1Ev(&newSnap_large_local);
         return;
     }
 
     /* line 516 */
-    cls = (byte *)cl;
+    cla = (clientActive_t *)cl;
     {
-        int oldMsg = *(int *)(cls + 0x24) + 1;
-        int serverMessageSequence = *(int *)(newSnap + 0xc);
+        int oldMsg = cla->snap.messageNum + 1;
+        int serverMessageSequence = newSnap->messageNum;
 
         /* line 520 */
         if (serverMessageSequence - oldMsg >= 0x20) {
@@ -849,55 +846,54 @@ void CL_ParseSnapshot(msg_t *msg)
 
         /* line 522 - invalidate old snapshots */
         while (oldMsg < serverMessageSequence) {
-            byte *snapSlot = CL_SnapSlot(cls, oldMsg);
-            *(int *)snapSlot = 0;
+            cla->snapshots[oldMsg & 0x1f].valid = 0;
             oldMsg++;
         }
     }
 
     /* line 528 */
-    cls = (byte *)cl;
-    *(int *)(cls + 0x2700) = *(int *)(cls + 0x20);
+    cla = (clientActive_t *)cl;
+    cla->oldSnapServerTime = cla->snap.serverTime;
 
     /* line 529 - copy newSnap to current snap */
-    memcpy(cls + 0x18, newSnap, 0x26d8);
+    memcpy(&cla->snap, newSnap, sizeof(clSnapshot_t));
 
     /* line 530 */
-    *(int *)(cls + 0x2c) = 999;
+    cla->snap.ping = 999;
 
     /* line 534-538 - compute ping */
     {
-        int parseEntNum = *(int *)((*clc_ptr) + 0x407c8);
-        int snapTime = *(int *)(cls + 0x34);
+        int parseEntNum = ((clientConnection_t *)*clc_ptr)->netchan.outgoingSequence;
+        int snapTime = cla->snap.ps.commandTime;
         int i;
 
         for (i = 1; i < 0x21; i++) {
             int idx = (parseEntNum - i) & 0x1f;
-            byte *slot = cls + 0x49464 + idx * 12;
-            if (*(int *)slot >= snapTime) {
-                *(int *)(cls + 0x2c) = *(int *)(*(byte **)cls_ptr + 0x118) - *(int *)(slot + 4);
+            outPacket_t *slot = &cla->outPackets[idx];
+            if (slot->p_serverTime >= snapTime) {
+                cla->snap.ping = *(int *)(*(byte **)cls_ptr + 0x118) - slot->p_realtime;
                 break;
             }
         }
     }
 
     /* line 542 - copy current snap to frame ring buffer */
-    cls = (byte *)cl;
-    memcpy(CL_SnapSlot(cls, *(int *)(cls + 0x24)), cls + 0x18, 0x26d8);
+    cla = (clientActive_t *)cl;
+    memcpy(&cla->snapshots[cla->snap.messageNum & 0x1f], &cla->snap, sizeof(clSnapshot_t));
 
     /* line 544 */
     if (*(int *)((*cl_shownet) + 8) == 3) {
         Com_Printf("   snapshot:%i  delta:%i  ping:%i\n",
-                    *(int *)(cls + 0x24), *(int *)(cls + 0x28), *(int *)(cls + 0x2c));
+                    cla->snap.messageNum, cla->snap.deltaNum, cla->snap.ping);
     }
 
     /* line 549 */
-    *(int *)(cls + 0x2708) = 1;
+    cla->newSnapshots = 1;
     {
         static int snap_diag = 0;
         if (snap_diag < 5) {
             fprintf(stderr, "[CL_ParseSnapshot#%d] set newSnapshots=1 at %p\n",
-                    snap_diag, (void *)(cls + 0x2708));
+                    snap_diag, (void *)&cla->newSnapshots);
             snap_diag++;
         }
     }
@@ -971,13 +967,13 @@ void CL_ParseServerMessage(msg_t *msg)
             /* svc_serverCommand (line 863) */
             int seq = MSG_ReadLong(&msgCompressed);
             char *str = MSG_ReadString(&msgCompressed);
-            byte *clc = *clc_ptr;
-            if (seq <= *(int *)(clc + 0x2013c))
+            clientConnection_t *clc = (clientConnection_t *)*clc_ptr;
+            if (seq <= clc->serverCommandSequence)
                 break;
             /* line 871 */
-            *(int *)(clc + 0x2013c) = seq;
+            clc->serverCommandSequence = seq;
             /* line 874 */
-            I_strncpyz((char *)(clc + 0x20144 + (seq & 0x7f) * 0x400), str, 0x400);
+            I_strncpyz(clc->serverCommands[seq & 0x7f], str, 1024);
             break;
         }
         case 5:

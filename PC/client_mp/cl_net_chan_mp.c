@@ -62,13 +62,12 @@ void CL_Netchan_Decode(byte *data, int size)
     clc_base = *(byte **)clc_ptr;
 
     /* Compute string from reliableCommands[reliableAcknowledge & 0x7f] */
-    reliableAcknowledge = *(int *)(clc_base + CLC_RELIABLEACK_OFF);
-    string = (const char *)(clc_base + CLC_RELIABLECMDS_OFF
-             + (reliableAcknowledge & 0x7f) * RELIABLECMD_SIZE);
+    reliableAcknowledge = ((clientConnection_t *)clc_base)->reliableAcknowledge;
+    string = ((clientConnection_t *)clc_base)->reliableCommands[reliableAcknowledge & 0x7f];
 
     /* Compute initial key from serverMessageSequence XOR challenge */
-    key = (byte)(*(int *)(clc_base + CLC_SERVERMSGSEQ_OFF));
-    key ^= (byte)(*(int *)(clc_base + CLC_CHALLENGE_OFF));
+    key = (byte)(((clientConnection_t *)clc_base)->serverMessageSequence);
+    key ^= (byte)(((clientConnection_t *)clc_base)->challenge);
 
     /* XOR decode the data using the key and cycling through the string */
     index = 0;
@@ -118,13 +117,12 @@ void CL_Netchan_Transmit(netchan_t *chan, byte *data, int length)
     clc_base = *(byte **)clc_ptr;
 
     /* Get the string from serverCommands[serverCommandSequence & 0x7f] */
-    serverCommandSequence = *(int *)(clc_base + CLC_SERVERCMDSEQ_OFF);
-    string = (const char *)(clc_base + CLC_SERVERCMDS_OFF
-             + (serverCommandSequence & 0x7f) * RELIABLECMD_SIZE);
+    serverCommandSequence = ((clientConnection_t *)clc_base)->serverCommandSequence;
+    string = ((clientConnection_t *)clc_base)->serverCommands[serverCommandSequence & 0x7f];
 
     /* Compute initial key from cl->serverId XOR challenge XOR serverMessageSequence */
-    key = (byte)(*(int *)(*(byte **)cl_ptr + CL_SERVERID_OFF));
-    key ^= (byte)(*(int *)(clc_base + CLC_CHALLENGE_OFF));
+    key = (byte)((*(clientActive_t **)cl_ptr)->serverId);
+    key ^= (byte)(((clientConnection_t *)clc_base)->challenge);
     key ^= (byte)(*(int *)(clc_base + CLC_SERVERMSGSEQ_OFF));
 
     /* XOR encode the data using the key and cycling through the string */
@@ -163,9 +161,9 @@ void CL_Netchan_AddOOBProfilePacket(int iLength)
         return;
 
     clc_base = *(byte **)clc_ptr;
-    NetProf_PrepProfiling((netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF));
-    pOOBProf = *(netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF);
-    NetProf_AddPacket((netProfileStream_t *)pOOBProf, iLength, 0);
+    NetProf_PrepProfiling(&((clientConnection_t *)clc_base)->pOOBProf);
+    pOOBProf = ((clientConnection_t *)clc_base)->pOOBProf;
+    NetProf_AddPacket(&pOOBProf->send, iLength, 0);
 }
 
 /* line 134 */
@@ -179,7 +177,7 @@ void CL_Netchan_SendOOBPacket(int iLength, const void *pData, netadr_t to)
     }
 
     clc_base = *(byte **)clc_ptr;
-    NetProf_PrepProfiling((netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF));
+    NetProf_PrepProfiling(&((clientConnection_t *)clc_base)->pOOBProf);
 
     /* Send the packet */
     NET_SendPacket(NS_CLIENT1, iLength, pData, to);
@@ -188,8 +186,8 @@ void CL_Netchan_SendOOBPacket(int iLength, const void *pData, netadr_t to)
     if (*(int *)(*(byte **)net_profile_dvar + 8) == 0)
         return;
 
-    NetProf_PrepProfiling((netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF));
-    NetProf_AddPacket((netProfileStream_t *)*(netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF), iLength, 0);
+    NetProf_PrepProfiling(&((clientConnection_t *)clc_base)->pOOBProf);
+    NetProf_AddPacket(&((clientConnection_t *)clc_base)->pOOBProf->send, iLength, 0);
 }
 
 /* line 187 */
@@ -207,17 +205,17 @@ void CL_Netchan_PrintProfileStats(qboolean bPrintToConsole)
     clc_base = *(byte **)clc_ptr;
 
     /* Update netchan profiling statistics if netchan.pProf is set */
-    pProf = *(netProfileInfo_t **)(clc_base + CLC_NETCHAN_PPROF_OFF);
+    pProf = ((clientConnection_t *)clc_base)->netchan.pProf;
     if (pProf != NULL) {
-        NetProf_UpdateStatistics((netProfileStream_t *)pProf);
-        NetProf_UpdateStatistics((netProfileStream_t *)((byte *)pProf + 0x2f0));
+        NetProf_UpdateStatistics(&pProf->send);
+        NetProf_UpdateStatistics(&pProf->recieve);
     }
 
     /* Update OOB profiling statistics if pOOBProf is set */
-    pOOBProf = *(netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF);
+    pOOBProf = ((clientConnection_t *)clc_base)->pOOBProf;
     if (pOOBProf != NULL) {
-        NetProf_UpdateStatistics((netProfileStream_t *)pOOBProf);
-        NetProf_UpdateStatistics((netProfileStream_t *)((byte *)pOOBProf + 0x2f0));
+        NetProf_UpdateStatistics(&pOOBProf->send);
+        NetProf_UpdateStatistics(&pOOBProf->recieve);
     }
 
     /* Print header */
@@ -252,16 +250,16 @@ void CL_Netchan_PrintProfileStats(qboolean bPrintToConsole)
 
     /* Get OOB profiling info */
     clc_base = *(byte **)clc_ptr;
-    pOOBProf = *(netProfileInfo_t **)(clc_base + CLC_POOBPROF_OFF);
+    pOOBProf = ((clientConnection_t *)clc_base)->pOOBProf;
     if (pOOBProf != NULL) {
-        iTotalBPSSent = *(int *)((byte *)pOOBProf + 0x2d4);
-        iTotalBPSRecieved = *(int *)((byte *)pOOBProf + 0x5c4);
+        iTotalBPSSent = pOOBProf->send.iBytesPerSecond;
+        iTotalBPSRecieved = pOOBProf->recieve.iBytesPerSecond;
 
         /* OOB Sent line */
         Com_sprintf(szLine, 0x400, "    OOB Sent: %5i %5i %5i    -",
             iTotalBPSSent,
-            *(int *)((byte *)pOOBProf + 0x2e8),
-            *(int *)((byte *)pOOBProf + 0x2ec));
+            pOOBProf->send.iLargestPacket,
+            pOOBProf->send.iSmallestPacket);
         if (bPrintToConsole) {
             Com_Printf("%s\n", szLine);
         } else {
@@ -271,9 +269,9 @@ void CL_Netchan_PrintProfileStats(qboolean bPrintToConsole)
 
         /* OOB Recieved line */
         Com_sprintf(szLine, 0x400, "OOB Recieved: %5i %5i %5i    -",
-            *(int *)((byte *)pOOBProf + 0x5c4),
-            *(int *)((byte *)pOOBProf + 0x5d8),
-            *(int *)((byte *)pOOBProf + 0x5dc));
+            pOOBProf->recieve.iBytesPerSecond,
+            pOOBProf->recieve.iLargestPacket,
+            pOOBProf->recieve.iSmallestPacket);
         if (bPrintToConsole) {
             Com_Printf("%s\n", szLine);
         } else {
@@ -304,17 +302,17 @@ void CL_Netchan_PrintProfileStats(qboolean bPrintToConsole)
 
     /* Get netchan profiling info */
     clc_base = *(byte **)clc_ptr;
-    pProf = *(netProfileInfo_t **)(clc_base + CLC_NETCHAN_PPROF_OFF);
+    pProf = ((clientConnection_t *)clc_base)->netchan.pProf;
     if (pProf != NULL) {
-        iTotalBPSSent += *(int *)((byte *)pProf + 0x2d4);
-        iTotalBPSRecieved += *(int *)((byte *)pProf + 0x5c4);
+        iTotalBPSSent += pProf->send.iBytesPerSecond;
+        iTotalBPSRecieved += pProf->recieve.iBytesPerSecond;
 
         /* Sent line with fragment percentage */
         Com_sprintf(szLine, 0x400, "        Sent: %5i %5i %5i  %3i%%",
-            *(int *)((byte *)pProf + 0x2d4),
-            *(int *)((byte *)pProf + 0x2e8),
-            *(int *)((byte *)pProf + 0x2ec),
-            *(int *)((byte *)pProf + 0x2e4));
+            pProf->send.iBytesPerSecond,
+            pProf->send.iLargestPacket,
+            pProf->send.iSmallestPacket,
+            pProf->send.iFragmentPercentage);
         if (bPrintToConsole) {
             Com_Printf("%s\n", szLine);
         } else {
@@ -324,10 +322,10 @@ void CL_Netchan_PrintProfileStats(qboolean bPrintToConsole)
 
         /* Recieved line with fragment percentage */
         Com_sprintf(szLine, 0x400, "    Recieved: %5i %5i %5i  %3i%%",
-            *(int *)((byte *)pProf + 0x5c4),
-            *(int *)((byte *)pProf + 0x5d8),
-            *(int *)((byte *)pProf + 0x5dc),
-            *(int *)((byte *)pProf + 0x5d4));
+            pProf->recieve.iBytesPerSecond,
+            pProf->recieve.iLargestPacket,
+            pProf->recieve.iSmallestPacket,
+            pProf->recieve.iFragmentPercentage);
         if (bPrintToConsole) {
             Com_Printf("%s\n", szLine);
         } else {

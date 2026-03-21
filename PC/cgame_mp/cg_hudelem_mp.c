@@ -53,14 +53,12 @@ static char *cg_base(void) {
 
 /* Helper: get current server time from cg */
 static int cg_time(void) {
-    char *base = cg_base();
-    return *(int *)(base + 0x25bb0);
+    return ((cg_t *)cg_base())->time;
 }
 
 /* Helper: get cgs->clientinfo / hudelem pointer base from snap */
 static char *cg_snap(void) {
-    char *base = cg_base();
-    return *(char **)(base + 0x20);
+    return (char *)((cg_t *)cg_base())->snap;
 }
 
 /* Helper: clamp 0..1 */
@@ -117,7 +115,7 @@ static float CG_AlignY(int alignOrg, float y, float height) {
 Bool CG_AreHudElemsHidden(void)
 {
     char *base = cg_base();
-    int val = *(int *)(base + 0x2bdc8);
+    int val = ((cg_t *)base)->drawHud;
     if (!val) {
         return 1;
     }

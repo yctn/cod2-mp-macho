@@ -154,7 +154,7 @@ void CG_PlayADSAnim(void)
    In Emscripten, callers use _impl directly. */
 static void CG_PlayADSAnim_impl(void *pAnimTree, int animIndex)
 {
-    byte *cg;
+    cg_t *cgp;
     float adsProgress;
 
     if (animIndex == 0x15) {
@@ -168,8 +168,8 @@ static void CG_PlayADSAnim_impl(void *pAnimTree, int animIndex)
     }
 
     /* Set anim times based on ADS progress */
-    cg = (byte *)*(void **)imp_cg;
-    adsProgress = *(float *)(cg + 0x25ca0);
+    cgp = *(cg_t **)imp_cg;
+    adsProgress = cgp->predictedPlayerState.fWeaponPosFrac;
     XAnimSetTime(pAnimTree, 0x15, adsProgress);
     XAnimSetTime(pAnimTree, 0x16, 1.0f - adsProgress);
 }
@@ -255,11 +255,11 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
 /* line 1246 */
 void CG_HoldBreathInit(void)
 {
-    byte *p = (byte *)*(void **)imp_cg;
-    *(int *)(p + 0x2cd00) = -1;
-    *(int *)(p + 0x2cd04) = 0;
-    *(int *)(p + 0x2cd08) = 0;
-    *(int *)(p + 0x2cd0c) = 0;
+    cg_t *cgp = *(cg_t **)imp_cg;
+    cgp->holdBreathTime = -1;
+    cgp->holdBreathInTime = 0;
+    cgp->holdBreathDelay = 0;
+    cgp->holdBreathFrac = 0.0f;
 }
 
 /* line 2631 */

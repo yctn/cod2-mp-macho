@@ -196,7 +196,7 @@ static void PlayProneSound(int entNum, int isFirstPerson, int soundOffset) {
 /* line 346 */
 void CG_EntityEvent(centity_t *cent, int event)
 {
-    char *es;           /* nextState pointer */
+    entityState_t *es;  /* nextState pointer */
     char *position;     /* lerpOrigin pointer */
     int eventParm;
     int clientNum;
@@ -243,18 +243,18 @@ void CG_EntityEvent(centity_t *cent, int event)
     /* line 368 */
     position = (char *)cent + CENT_LERPORIGIN;
     /* line 370 */
-    es = (char *)cent + CENT_NEXTSTATE;
+    es = &cent->nextState;
     /* line 371 */
-    eventParm = *(int *)(es + ES_EVENTPARM);
+    eventParm = es->eventParm;
 
     /* line 372: check if this entity is the viewer */
     cg = *cg_glob;
-    snap = *(char **)(cg + CG_SNAP);
+    snap = (char *)((cg_t *)cg)->snap;
     isFirstPerson = 0;
     isViewerFlag = 0;
-    if (*(int *)(snap + SNAP_FLAGS) & 0xc00000) {
-        int esNumber = *(int *)(es + ES_NUMBER);
-        if (esNumber == *(int *)(snap + SNAP_PS_CLIENTNUM)) {
+    if (((snapshot_t *)snap)->snapFlags & 0xc00000) {
+        int esNumber = es->number;
+        if (esNumber == ((snapshot_t *)snap)->ps.clientNum) {
             isFirstPerson = 1;
             isViewerFlag = 1;
         }
@@ -264,7 +264,7 @@ void CG_EntityEvent(centity_t *cent, int event)
     cg = *((char **)cg_dvar_debug);
     if (*(char *)(cg + 8) != 0) {
         /* "ent:%3i  event:%3i " */
-        Com_Printf((const char *)str_002b83e4, *(int *)(es + ES_NUMBER), event);
+        Com_Printf((const char *)str_002b83e4, es->number, event);
         /* line 380 */
         cg = *((char **)cg_dvar_debug);
         if (*(char *)(cg + 8) != 0) {
@@ -275,14 +275,14 @@ void CG_EntityEvent(centity_t *cent, int event)
     }
 
     /* line 383 */
-    clientNum = *(int *)(es + ES_CLIENTNUM);
+    clientNum = es->clientNum;
     /* line 384 */
     if ((unsigned int)clientNum >= 0x40) {
         clientNum = 0;
     }
 
     /* line 387 */
-    weapon = *(int *)(es + ES_WEAPON);
+    weapon = es->weapon;
     if (weapon != 0) {
         BG_GetWeaponDef(weapon);
     }
@@ -299,26 +299,26 @@ void CG_EntityEvent(centity_t *cent, int event)
             cgs = *cgs_glob;
             if (isFirstPerson) {
                 /* line 394: third person sound */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP1_THIRD + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepRunSoundPlayer[sndIdx]);
             } else {
                 /* line 396: first person sound */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP1_FIRST + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepRunSound[sndIdx]);
             }
         }
 
         /* line 398 */
-        entNum = *(int *)(es + ES_NUMBER);
+        entNum = es->number;
 
         /* Prone movement sound (lines 268-280) */
         cgs = *cgs_glob;
         if (isViewerFlag) {
             /* line 271 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_NONVIEW));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.runningEquipmentSoundPlayer);
         } else {
             /* line 278 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_3P));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.runningEquipmentSound);
         }
         return;
     }
@@ -333,26 +333,26 @@ void CG_EntityEvent(centity_t *cent, int event)
             cgs = *cgs_glob;
             if (isFirstPerson) {
                 /* line 405-406: first person */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP2_FIRST + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepWalkSoundPlayer[sndIdx]);
             } else {
                 /* line 408: third person */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP2_THIRD + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepWalkSound[sndIdx]);
             }
         }
 
         /* line 410 */
-        entNum = *(int *)(es + ES_NUMBER);
+        entNum = es->number;
 
         /* Prone sound */
         cgs = *cgs_glob;
         if (isViewerFlag) {
             /* line 273 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_STOP_1P));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.walkingEquipmentSoundPlayer);
         } else {
             /* line 280 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_VIEW));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.walkingEquipmentSound);
         }
         return;
     }
@@ -367,26 +367,26 @@ void CG_EntityEvent(centity_t *cent, int event)
             cgs = *cgs_glob;
             if (isFirstPerson) {
                 /* line 417-418: third person */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP3_THIRD + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepProneSoundPlayer[sndIdx]);
             } else {
                 /* line 420: first person */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_FOOTSTEP3_FIRST + sndIdx * 4));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.stepProneSound[sndIdx]);
             }
         }
 
         /* line 422 */
-        entNum = *(int *)(es + ES_NUMBER);
+        entNum = es->number;
 
         /* Prone sound */
         cgs = *cgs_glob;
         if (isViewerFlag) {
             /* line 273 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_STOP_1P));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.walkingEquipmentSoundPlayer);
         } else {
             /* line 280 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_VIEW));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.walkingEquipmentSound);
         }
         return;
     }
@@ -399,25 +399,25 @@ void CG_EntityEvent(centity_t *cent, int event)
         cgs = *cgs_glob;
         if (isFirstPerson) {
             /* line 428 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_FOOTSTEP1_THIRD + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.stepRunSoundPlayer[sndIdx]);
         } else {
             /* line 430 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_FOOTSTEP1_FIRST + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.stepRunSound[sndIdx]);
         }
 
         /* line 431 */
-        entNum = *(int *)(es + ES_NUMBER);
+        entNum = es->number;
 
         /* Prone sound */
         cgs = *cgs_glob;
         if (isViewerFlag) {
             /* line 271 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_NONVIEW));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.runningEquipmentSoundPlayer);
         } else {
             /* line 278 */
-            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_3P));
+            CG_PlayEntitySoundAlias(entNum, ((cgs_t *)cgs)->media.runningEquipmentSound);
         }
         return;
     }
@@ -430,22 +430,22 @@ void CG_EntityEvent(centity_t *cent, int event)
         cgs = *cgs_glob;
         if (isFirstPerson) {
             /* line 437 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_SPRINT_THIRD + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.landSoundPlayer[sndIdx]);
         } else {
             /* line 439 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_SPRINT_FIRST + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.landSound[sndIdx]);
         }
 
         /* line 440 */
         cg = *cg_glob;
-        if (clientNum == *(int *)(cg + CG_CLIENTNUM)) {
+        if (clientNum == ((cg_t *)cg)->predictedPlayerState.clientNum) {
             /* line 443 */
             float neg = -(float)eventParm;
-            *(float *)(cg + CG_SHELLSHOCK_TILT) = neg;
+            ((cg_t *)cg)->landChange = neg;
             /* line 444 */
-            *(int *)(cg + CG_SHELLSHOCK_TIME) = *(int *)(cg + CG_TIME);
+            ((cg_t *)cg)->landTime = ((cg_t *)cg)->time;
         }
         return;
     }
@@ -458,21 +458,21 @@ void CG_EntityEvent(centity_t *cent, int event)
         cgs = *cgs_glob;
         if (isFirstPerson) {
             /* line 451 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_SPRINT_THIRD + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.landSoundPlayer[sndIdx]);
         } else {
             /* line 453 */
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_SPRINT_FIRST + sndIdx * 4));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.landSound[sndIdx]);
         }
 
         /* line 454: melee hit sound */
-        CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-            *(int *)(cgs + CGS_SND_MELEE_HIT));
+        CG_PlayEntitySoundAlias(es->number,
+            ((cgs_t *)cgs)->media.landDmgSound);
 
         /* line 455 */
         cg = *cg_glob;
-        if (clientNum == *(int *)(cg + CG_CLIENTNUM)) {
+        if (clientNum == ((cg_t *)cg)->predictedPlayerState.clientNum) {
             /* line 457: shellshock calculation */
             char *ssMin = *cg_dvar_shellshock_min;
             float ssMinVal = *(float *)(ssMin + 8);
@@ -500,10 +500,10 @@ void CG_EntityEvent(centity_t *cent, int event)
                 }
 
                 /* line 470 */
-                *(float *)(cg + CG_SHELLSHOCK_TILT) = -tiltVal;
+                ((cg_t *)cg)->landChange = -tiltVal;
                 /* line 471 */
                 cg = *cg_glob;
-                *(int *)(cg + CG_SHELLSHOCK_TIME) = *(int *)(cg + CG_TIME);
+                ((cg_t *)cg)->landTime = ((cg_t *)cg)->time;
             }
         }
         return;
@@ -529,8 +529,8 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x8b:
         {
             cgs = *cgs_glob;
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                *(int *)(cgs + CGS_SND_WEAPON_PICKUP));
+            CG_PlayEntitySoundAlias(es->number,
+                ((cgs_t *)cgs)->media.foliageMovement);
             return;
         }
 
@@ -538,7 +538,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x8c:
         {
             cg = *cg_glob;
-            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+            if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 /* "Event %s just for client %i was sent to other clients\n" */
                 char **eventNames2 = (char **)(*cg_eventNames);
                 Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x230), clientNum);
@@ -546,10 +546,10 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
             /* line 492 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) != 0)
+            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
                 return;
             /* line 493 */
-            *(int *)(ui + 0x8) = 0;
+            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 0;
             return;
         }
 
@@ -557,17 +557,17 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x8d:
         {
             cg = *cg_glob;
-            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+            if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
                 Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x234), clientNum);
                 return;
             }
             /* line 501 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) != 0)
+            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
                 return;
             /* line 502 */
-            *(int *)(ui + 0x8) = 1;
+            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 1;
             return;
         }
 
@@ -575,17 +575,17 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x8e:
         {
             cg = *cg_glob;
-            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+            if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
                 Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x238), clientNum);
                 return;
             }
             /* line 510 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) != 0)
+            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
                 return;
             /* line 511 */
-            *(int *)(ui + 0x8) = 2;
+            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 2;
             return;
         }
 
@@ -593,13 +593,13 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x8f:
         {
             cg = *cg_glob;
-            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+            if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
                 Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x23c), clientNum);
                 return;
             }
             /* line 523 */
-            if (*(int *)(cg + CG_FIELD_8) != 0)
+            if (((cg_t *)cg)->demoType != 0)
                 return;
             char *dv1 = *cg_dvar1;
             if (*(char *)(dv1 + 8) != 0)
@@ -609,8 +609,8 @@ void CG_EntityEvent(centity_t *cent, int event)
                 return;
 
             /* line 528 */
-            int cgTime = *(int *)(cg + CG_TIME);
-            int prevTime = *(int *)(cg + CG_SHELLSHOCK_VIEWANGLE + 4);
+            int cgTime = ((cg_t *)cg)->time;
+            int prevTime = ((cg_t *)cg)->stepTime;
             int timeDiff = cgTime - prevTime;
             float viewAngle = 0.0f;
 
@@ -618,7 +618,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             if (timeDiff <= 99) {
                 /* line 530 */
                 int remaining = 100 - timeDiff;
-                viewAngle = (float)remaining * *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE);
+                viewAngle = (float)remaining * ((cg_t *)cg)->stepChange;
                 viewAngle /= f_100_0;
                 viewAngle *= f_0_9;
             }
@@ -626,22 +626,22 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 536 */
             int parmAdj = eventParm - 128;
             viewAngle += (float)parmAdj;
-            *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = viewAngle;
+            ((cg_t *)cg)->stepChange = viewAngle;
 
             /* line 537 */
             cg = *cg_glob;
-            float curAngle = *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE);
+            float curAngle = ((cg_t *)cg)->stepChange;
             if (curAngle > f_24_0) {
                 /* line 538 */
-                *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = 24.0f;
+                ((cg_t *)cg)->stepChange = 24.0f;
             } else if (curAngle < f_neg16) {
                 /* line 540 */
-                *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = -16.0f;
+                ((cg_t *)cg)->stepChange = -16.0f;
             }
 
             /* line 542 */
             cg = *cg_glob;
-            *(int *)(cg + CG_SHELLSHOCK_VIEWANGLE + 4) = *(int *)(cg + CG_TIME);
+            ((cg_t *)cg)->stepTime = ((cg_t *)cg)->time;
             return;
         }
 
@@ -649,7 +649,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x90:
         case 0x91:
         {
-            int itemIndex = *(int *)(es + ES_EVENTPARM);
+            int itemIndex = es->eventParm;
             if (itemIndex <= 0)
                 return;
             int *itemCnt = *cg_itemCount;
@@ -662,20 +662,20 @@ void CG_EntityEvent(centity_t *cent, int event)
 
             if (event == 0x90) {
                 /* line 559 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(itemData + 0x1c));
+                CG_PlayEntitySoundAlias(es->number,
+                    *(int *)(itemData + 0x1c) /* TODO: unknown offset in item data */);
             } else {
                 /* line 561 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(itemData + 0x20));
+                CG_PlayEntitySoundAlias(es->number,
+                    *(int *)(itemData + 0x20) /* TODO: unknown offset in item data */);
             }
 
             /* line 564 */
             cg = *cg_glob;
-            snap = *(char **)(cg + CG_SNAP);
-            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+            snap = (char *)((cg_t *)cg)->snap;
+            if (!(((snapshot_t *)snap)->snapFlags & 0xc00000))
                 return;
-            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+            if (es->number != ((snapshot_t *)snap)->ps.clientNum)
                 return;
 
             /* line 237: check item type for offhand weapon equip */
@@ -683,26 +683,26 @@ void CG_EntityEvent(centity_t *cent, int event)
                 int itemid = itemIndex;
                 char *itemInfoBase = *cg_itemInfo;
                 char *item = itemInfoBase + itemid * (1 + 2 * 5) * 4;
-                int weapId = *(int *)(item + 0x20);
-                if (*(int *)(item + 0x1c) != 1)
+                int weapId = *(int *)(item + 0x20) /* TODO: unknown offset in item info */;
+                if (*(int *)(item + 0x1c) /* TODO: unknown offset in item info */ != 1)
                     return;
 
                 /* line 242 */
                 char *weapDef = (char *)BG_GetWeaponDef(weapId);
                 /* line 244 */
-                if (*(int *)(weapDef + 0x7c) == 9)
+                if (*(int *)(weapDef + 0x7c) /* TODO: unknown offset in WeaponDef */ == 9)
                     return;
 
                 /* line 247 */
-                if (*(int *)(weapDef + 0x84) != 0) {
+                if (*(int *)(weapDef + 0x84) /* TODO: unknown offset in WeaponDef */ != 0) {
                     /* line 249 */
-                    if (*(int *)(cg + CG_OFFHAND) != 0)
+                    if (((cg_t *)cg)->equippedOffHand != 0)
                         return;
                     /* line 250 */
                     CG_SetEquippedOffHand(weapId);
                 } else {
                     /* line 254 */
-                    if (*(int *)(cg + CG_OFFHAND2) != 0)
+                    if (((cg_t *)cg)->weaponSelect != 0)
                         return;
                     /* line 255 */
                     CG_SelectWeaponIndex(weapId);
@@ -715,37 +715,37 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x92:
         {
             if (isFirstPerson) {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0xfc);
+                int alias = *(int *)(wepData + 0xfc) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 577 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* line 578: fall through to alt sound */
-                alias = *(int *)(wepData + 0x104);
+                alias = *(int *)(wepData + 0x104) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
             } else {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
                 /* line 580 */
-                int alias = *(int *)(wepData + 0xf8);
+                int alias = *(int *)(wepData + 0xf8) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* line 582-583 */
-                alias = *(int *)(wepData + 0x100);
+                alias = *(int *)(wepData + 0x100) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
             }
@@ -756,37 +756,37 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x93:
         {
             if (isFirstPerson) {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0x104);
+                int alias = *(int *)(wepData + 0x104) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 588 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* line 589-590 */
-                alias = *(int *)(wepData + 0xfc);
+                alias = *(int *)(wepData + 0xfc) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
             } else {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
                 /* line 591-592 */
-                int alias = *(int *)(wepData + 0x100);
+                int alias = *(int *)(wepData + 0x100) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* line 593-594 */
-                alias = *(int *)(wepData + 0xf8);
+                alias = *(int *)(wepData + 0xf8) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
             }
@@ -797,30 +797,30 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x94:
         {
             if (isFirstPerson) {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0x10c);
+                int alias = *(int *)(wepData + 0x10c) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 599 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* fallthrough: line 600 */
-                alias = *(int *)(wepData + 0x108);
+                alias = *(int *)(wepData + 0x108) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             } else {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
                 /* line 607 */
-                int alias = *(int *)(wepData + 0x110);
+                int alias = *(int *)(wepData + 0x110) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             }
             return;
@@ -830,30 +830,30 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x95:
         {
             if (isFirstPerson) {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0x114);
+                int alias = *(int *)(wepData + 0x114) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 606 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* fallthrough: line 607-608 */
-                alias = *(int *)(wepData + 0x110);
+                alias = *(int *)(wepData + 0x110) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             } else {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
                 /* line 608 */
-                int alias = *(int *)(wepData + 0x108);
+                int alias = *(int *)(wepData + 0x108) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             }
             return;
@@ -862,19 +862,19 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 613: no ammo / weapon change */
         case 0x96:
         {
-            int w = *(int *)(es + ES_WEAPON);
+            int w = es->weapon;
             if (!BG_WeaponIsClipOnly(w)) {
                 /* line 614 */
                 cgs = *cgs_glob;
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
-                    *(int *)(cgs + CGS_SND_NOAMMO));
+                CG_PlayEntitySoundAlias(es->number,
+                    ((cgs_t *)cgs)->media.noAmmoSound);
             }
             /* line 615 */
             cg = *cg_glob;
-            snap = *(char **)(cg + CG_SNAP);
-            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+            snap = (char *)((cg_t *)cg)->snap;
+            if (!(((snapshot_t *)snap)->snapFlags & 0xc00000))
                 return;
-            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+            if (es->number != ((snapshot_t *)snap)->ps.clientNum)
                 return;
             /* line 616 */
             CG_OutOfAmmoChange();
@@ -885,10 +885,10 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x97:
         {
             cg = *cg_glob;
-            snap = *(char **)(cg + CG_SNAP);
-            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+            snap = (char *)((cg_t *)cg)->snap;
+            if (!(((snapshot_t *)snap)->snapFlags & 0xc00000))
                 return;
-            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+            if (es->number != ((snapshot_t *)snap)->ps.clientNum)
                 return;
             /* line 622 */
             CG_MenuShowNotify(4);
@@ -901,10 +901,10 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0x98:
         {
             cg = *cg_glob;
-            snap = *(char **)(cg + CG_SNAP);
-            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+            snap = (char *)((cg_t *)cg)->snap;
+            if (!(((snapshot_t *)snap)->snapFlags & 0xc00000))
                 return;
-            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+            if (es->number != ((snapshot_t *)snap)->ps.clientNum)
                 return;
             /* line 630 */
             CL_SetADS(0);
@@ -914,14 +914,14 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 634: weapon raise sound */
         case 0x99:
         {
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             int wepOff = weaponDataOffset(weapon);
             char *wepDefs = *cg_weaponDefs;
             char *wepData = wepDefs + wepOff * 4;
-            int alias = *(int *)(wepData + 0x118);
+            int alias = *(int *)(wepData + 0x118) /* TODO: weapon data offset */;
             if (alias != 0) {
                 /* line 635 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                CG_PlayEntitySoundAlias(es->number, alias);
             }
             return;
         }
@@ -929,14 +929,14 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 640: weapon putaway sound */
         case 0x9a:
         {
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             int wepOff = weaponDataOffset(weapon);
             char *wepDefs = *cg_weaponDefs;
             char *wepData = wepDefs + wepOff * 4;
-            int alias = *(int *)(wepData + 0x120);
+            int alias = *(int *)(wepData + 0x120) /* TODO: weapon data offset */;
             if (alias != 0) {
                 /* line 641 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                CG_PlayEntitySoundAlias(es->number, alias);
             }
             return;
         }
@@ -944,14 +944,14 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 646: weapon alt raise sound */
         case 0x9b:
         {
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             int wepOff = weaponDataOffset(weapon);
             char *wepDefs = *cg_weaponDefs;
             char *wepData = wepDefs + wepOff * 4;
-            int alias = *(int *)(wepData + 0x11c);
+            int alias = *(int *)(wepData + 0x11c) /* TODO: weapon data offset */;
             if (alias != 0) {
                 /* line 647 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                CG_PlayEntitySoundAlias(es->number, alias);
             }
             return;
         }
@@ -992,14 +992,14 @@ void CG_EntityEvent(centity_t *cent, int event)
                 char *ents = *cg_entities_glob;
                 char *entData = ents + entStride * 4;
                 /* line 668 */
-                if (*(char *)(entData + 0x1e0) == 0)
+                if (((centity_t *)entData)->nextValid == 0)
                     return;
-                if (*(int *)(entData + 0xf4) != 1)
+                if (((centity_t *)entData)->nextState.eType != 1)
                     return;
                 cg = *cg_glob;
-                snap = *(char **)(cg + CG_SNAP);
-                int snapWeapon = *(int *)(snap + SNAP_PS_WEAPON);
-                if (snapWeapon == *(int *)((char *)cent + CENT_NEXTSTATE + ES_NUMBER))
+                snap = (char *)((cg_t *)cg)->snap;
+                int snapWeapon = *(int *)(snap + SNAP_PS_WEAPON) /* TODO: snapshot field at 0x5a0 */;
+                if (snapWeapon == cent->nextState.number)
                     return;
                 /* line 669 */
                 CG_CompassAddWeaponPingInfo(entData, position, 50);
@@ -1010,14 +1010,14 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 674: weapon sound alt */
         case 0x9f:
         {
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             int wepOff = weaponDataOffset(weapon);
             char *wepDefs = *cg_weaponDefs;
             char *wepData = wepDefs + wepOff * 4;
-            int alias = *(int *)(wepData + 0xd8);
+            int alias = *(int *)(wepData + 0xd8) /* TODO: weapon data offset */;
             if (alias != 0) {
                 /* line 675 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                CG_PlayEntitySoundAlias(es->number, alias);
             }
             return;
         }
@@ -1034,30 +1034,30 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa1:
         {
             if (isFirstPerson) {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0xf4);
+                int alias = *(int *)(wepData + 0xf4) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 686 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                     return;
                 }
                 /* line 687-688 */
-                alias = *(int *)(wepData + 0xf0);
+                alias = *(int *)(wepData + 0xf0) /* TODO: weapon data offset */;
                 if (alias != 0) {
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             } else {
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 char *wepData = wepDefs + wepOff * 4;
-                int alias = *(int *)(wepData + 0xec);
+                int alias = *(int *)(wepData + 0xec) /* TODO: weapon data offset */;
                 if (alias != 0) {
                     /* line 697 */
-                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    CG_PlayEntitySoundAlias(es->number, alias);
                 }
             }
             return;
@@ -1067,21 +1067,21 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa2:
         {
             /* line 692 */
-            CG_EjectWeaponBrass((entityState_t *)es, 0xa2);
+            CG_EjectWeaponBrass(es, 0xa2);
             return;
         }
 
         /* line 696: weapon sound misc */
         case 0xa3:
         {
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             int wepOff = weaponDataOffset(weapon);
             char *wepDefs = *cg_weaponDefs;
             char *wepData = wepDefs + wepOff * 4;
-            int alias = *(int *)(wepData + 0xec);
+            int alias = *(int *)(wepData + 0xec) /* TODO: weapon data offset */;
             if (alias != 0) {
                 /* line 697 */
-                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                CG_PlayEntitySoundAlias(es->number, alias);
             }
             return;
         }
@@ -1090,7 +1090,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa4:
         {
             /* line 704 */
-            CG_PrepOffHand((entityState_t *)es, 0xa5, *(int *)(es + ES_EVENTPARM));
+            CG_PrepOffHand(es, 0xa5, es->eventParm);
             return;
         }
 
@@ -1098,7 +1098,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa5:
         {
             /* line 708 */
-            CG_UseOffHand(cent, 0xa6, *(int *)(es + ES_EVENTPARM));
+            CG_UseOffHand(cent, 0xa6, es->eventParm);
             return;
         }
 
@@ -1108,7 +1108,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 712 */
             if (!isFirstPerson)
                 return;
-            CG_SetEquippedOffHand(*(int *)(es + ES_EVENTPARM));
+            CG_SetEquippedOffHand(es->eventParm);
             return;
         }
 
@@ -1116,8 +1116,8 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa7:
         {
             cgs = *cgs_glob;
-            CG_PlayEntitySoundAlias(*(int *)(es + ES_OTHERENTNUM),
-                *(int *)(cgs + CGS_SND_NIGHTVISION_ON));
+            CG_PlayEntitySoundAlias(es->otherEntityNum,
+                ((cgs_t *)cgs)->media.meleeHit);
             return;
         }
 
@@ -1125,8 +1125,8 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xa8:
         {
             cgs = *cgs_glob;
-            CG_PlaySoundAlias(*(int *)(es + ES_OTHERENTNUM), position,
-                *(int *)(cgs + CGS_SND_NIGHTVISION_OFF));
+            CG_PlaySoundAlias(es->otherEntityNum, position,
+                ((cgs_t *)cgs)->media.meleeHitOther);
             return;
         }
 
@@ -1141,13 +1141,13 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 733 */
             cgs = *cgs_glob;
             CG_PlaySoundAlias(0x3fe, position,
-                *(int *)(cgs + CGS_SND_BULLET_FLESH));
+                ((cgs_t *)cgs)->media.grenadeExplodeSound[0]);
 
             /* line 734 */
             {
-                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxLookup = (char *)((cgs_t *)cgs)->media.fx;
                 char *fxData = *(char **)(fxLookup + 4);
-                int fxId = *(int *)(fxData + 0x33c);
+                int fxId = *(int *)(fxData + 0x33c) /* TODO: unknown offset in FxImpactTable */;
                 if (fxId != 0) {
                     /* line 735 */
                     FX_PlayEffect(fxId, position, dir);
@@ -1160,12 +1160,12 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xaa:
         {
             /* line 747 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
             /* line 748 */
-            ByteToDir(*(int *)(es + ES_DMGFLAGS), reflect);
+            ByteToDir(es->dmgFlags, reflect);
             /* line 749 */
-            CG_BulletHitEvent(*(int *)(es + ES_OTHERENTNUM), position,
-                dir, reflect, *(int *)(es + ES_SURFTYPE), event);
+            CG_BulletHitEvent(es->otherEntityNum, position,
+                dir, reflect, es->surfType, event);
             return;
         }
 
@@ -1173,8 +1173,8 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xab:
         {
             /* line 754 */
-            CG_BulletHitClientEvent(*(int *)(es + ES_OTHERENTNUM), position,
-                *(int *)(es + ES_SURFTYPE), event);
+            CG_BulletHitClientEvent(es->otherEntityNum, position,
+                es->surfType, event);
             return;
         }
 
@@ -1182,15 +1182,15 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xac:
         {
             /* line 759 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
             /* line 760 */
             cgs = *cgs_glob;
-            int surfType = *(int *)(es + ES_SURFTYPE);
+            int surfType = es->surfType;
             CG_PlaySoundAlias(0x3fe, position,
-                *(int *)(cgs + CGS_SND_BULLET_WHIZBY + surfType * 4));
+                ((cgs_t *)cgs)->media.grenadeBounceSound[surfType]);
             /* line 761 */
             {
-                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxLookup = (char *)((cgs_t *)cgs)->media.fx;
                 char *fxData = *(char **)(fxLookup + 4);
                 int fxId = *(int *)(fxData + 0x2e0 + surfType * 4);
                 if (fxId != 0) {
@@ -1205,16 +1205,16 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xad:
         {
             /* line 767 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
             /* line 768 */
             cgs = *cgs_glob;
-            int surfType2 = *(int *)(es + ES_SURFTYPE);
+            int surfType2 = es->surfType;
             CG_PlaySoundAlias(0x3fe, position,
-                *(int *)(cgs + CGS_SND_BULLET_FLESH + surfType2 * 4));
+                ((cgs_t *)cgs)->media.grenadeExplodeSound[surfType2]);
 
             /* line 770 */
             {
-                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxLookup = (char *)((cgs_t *)cgs)->media.fx;
                 char *fxData = *(char **)(fxLookup + 4);
                 int fxId = *(int *)(fxData + 0x33c + surfType2 * 4);
                 if (fxId != 0) {
@@ -1224,7 +1224,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
 
             /* line 773 */
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             {
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
@@ -1234,7 +1234,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                     FX_PlayEffect(fxId, position, dir);
                 }
 
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 wepOff = weaponDataOffset(weapon);
                 /* line 776 */
                 int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
@@ -1250,24 +1250,24 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xae:
         {
             /* line 781 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
             /* line 783 */
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             {
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
 
                 /* line 804 */
                 cgs = *cgs_glob;
-                int surfType3 = *(int *)(es + ES_SURFTYPE);
+                int surfType3 = es->surfType;
                 CG_PlaySoundAlias(0x3fe, position,
-                    *(int *)(cgs + CGS_SND_GRENADE_BOUNCE + surfType3 * 4));
+                    ((cgs_t *)cgs)->media.rocketExplodeSound[surfType3]);
 
                 /* line 805 */
                 {
-                    char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                    char *fxLookup = (char *)((cgs_t *)cgs)->media.fx;
                     char *fxData = *(char **)(fxLookup + 4);
-                    int surfType4 = *(int *)(es + ES_SURFTYPE);
+                    int surfType4 = es->surfType;
                     int fxId = *(int *)(fxData + 0x398 + surfType4 * 4);
                     if (fxId != 0) {
                         /* line 806 */
@@ -1276,7 +1276,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 }
 
                 /* line 808 */
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 wepOff = weaponDataOffset(weapon);
                 int fxId2 = *(int *)(wepDefs + 0x164 + wepOff * 4);
                 if (fxId2 != 0) {
@@ -1285,7 +1285,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 }
 
                 /* line 810 */
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 wepOff = weaponDataOffset(weapon);
                 int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
                 if (sndAlias != 0) {
@@ -1296,7 +1296,7 @@ void CG_EntityEvent(centity_t *cent, int event)
 
             /* line 812 */
             cg = *cg_glob;
-            *(int *)(cg + CG_VEHFLAG) = 0;
+            ((cg_t *)cg)->nomarks = 0;
             return;
         }
 
@@ -1305,22 +1305,22 @@ void CG_EntityEvent(centity_t *cent, int event)
         {
             /* line 799 */
             cg = *cg_glob;
-            *(int *)(cg + CG_VEHFLAG) = 1;
+            ((cg_t *)cg)->nomarks = 1;
 
             /* line 803 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
 
             /* line 804 */
             cgs = *cgs_glob;
-            int surfType5 = *(int *)(es + ES_SURFTYPE);
+            int surfType5 = es->surfType;
             CG_PlaySoundAlias(0x3fe, position,
-                *(int *)(cgs + CGS_SND_GRENADE_BOUNCE + surfType5 * 4));
+                ((cgs_t *)cgs)->media.rocketExplodeSound[surfType5]);
 
             /* line 805 */
             {
-                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxLookup = (char *)((cgs_t *)cgs)->media.fx;
                 char *fxData = *(char **)(fxLookup + 4);
-                int surfType6 = *(int *)(es + ES_SURFTYPE);
+                int surfType6 = es->surfType;
                 int fxId = *(int *)(fxData + 0x398 + surfType6 * 4);
                 if (fxId != 0) {
                     /* line 806 */
@@ -1329,7 +1329,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
 
             /* line 808 */
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             {
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
@@ -1339,7 +1339,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                     FX_PlayEffect(fxId, position, dir);
                 }
 
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 wepOff = weaponDataOffset(weapon);
                 /* line 810 */
                 int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
@@ -1351,7 +1351,7 @@ void CG_EntityEvent(centity_t *cent, int event)
 
             /* line 812 */
             cg = *cg_glob;
-            *(int *)(cg + CG_VEHFLAG) = 0;
+            ((cg_t *)cg)->nomarks = 0;
             return;
         }
 
@@ -1359,39 +1359,39 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xb0:
         {
             /* line 781 */
-            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            ByteToDir(es->eventParm, dir);
 
             /* line 783 */
-            weapon = *(int *)(es + ES_WEAPON);
+            weapon = es->weapon;
             {
                 int wepOff = weaponDataOffset(weapon);
                 char *wepDefs = *cg_weaponDefs;
                 int fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
                 if (fxId != 0) {
                     /* line 786 */
-                    FX_WarpTime(*(int *)(es + ES_TIME));
+                    FX_WarpTime(es->time);
                     /* line 787 */
-                    weapon = *(int *)(es + ES_WEAPON);
+                    weapon = es->weapon;
                     wepOff = weaponDataOffset(weapon);
                     fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
                     FX_PlayEffect(fxId, position, dir);
                     /* line 789 */
                     cg = *cg_glob;
-                    FX_WarpTime(*(int *)(cg + CG_TIME));
+                    FX_WarpTime(((cg_t *)cg)->time);
                 }
 
                 /* line 791 */
-                weapon = *(int *)(es + ES_WEAPON);
+                weapon = es->weapon;
                 wepOff = weaponDataOffset(weapon);
                 int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
                 if (sndAlias == 0)
                     return;
 
                 /* line 793 */
-                if (*(char *)(es + 0x0a) & 1) {
+                if (*(char *)((char *)es + 0x0a) /* TODO: unknown offset in entityState_s */ & 1) {
                     cg = *cg_glob;
-                    int cgTime2 = *(int *)(cg + CG_TIME);
-                    int esTime = *(int *)(es + ES_TIME);
+                    int cgTime2 = ((cg_t *)cg)->time;
+                    int esTime = es->time;
                     if (cgTime2 - esTime > 49)
                         return;
                 }
@@ -1404,29 +1404,29 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 816: play config string sound */
         case 0xb1:
         {
-            int csIndex = *(int *)(es + ES_EVENTPARM) + 0x24e;
+            int csIndex = es->eventParm + 0x24e;
             const char *csStr = CL_GetConfigString(csIndex);
-            CG_PlaySoundAliasByName(*(int *)(es + ES_NUMBER),
-                es + 0x18, csStr);
+            CG_PlaySoundAliasByName(es->number,
+                (char *)&es->pos.trBase, csStr);
             return;
         }
 
         /* line 819: play config string sound as master */
         case 0xb2:
         {
-            int csIndex = *(int *)(es + ES_EVENTPARM) + 0x24e;
+            int csIndex = es->eventParm + 0x24e;
             const char *csStr = CL_GetConfigString(csIndex);
-            CG_PlaySoundAliasAsMasterByName(*(int *)(es + ES_NUMBER),
-                es + 0x18, csStr);
+            CG_PlaySoundAliasAsMasterByName(es->number,
+                (char *)&es->pos.trBase, csStr);
             return;
         }
 
         /* line 837: shake camera from entity */
         case 0xb3:
         {
-            int duration = *(int *)(es + 0x6c);
-            int esTime = *(int *)(es + ES_TIME);
-            float intensity = *(float *)(es + 0x68);
+            int duration = es->angles2[1];
+            int esTime = es->time;
+            float intensity = es->angles2[0];
             CG_StartShakeCamera(intensity, position, esTime, *(float *)&duration);
             return;
         }
@@ -1449,16 +1449,16 @@ void CG_EntityEvent(centity_t *cent, int event)
             iconColor[3] = 1.0f;
 
             /* line 50-51 */
-            target = *(int *)(es + ES_OTHERENTNUM);
-            attacker = *(int *)(es + ES_ATTACKERENTNUM);
+            target = es->otherEntityNum;
+            attacker = es->attackerEntityNum;
 
             /* line 87: check eventParm for weapon/means of death */
-            int ep = *(int *)(es + ES_EVENTPARM);
+            int ep = es->eventParm;
             if ((ep & 0x80) == 0) {
                 /* line 99 */
                 char *weapDef = (char *)BG_GetWeaponDef(ep);
                 /* line 100 */
-                const char *killIcon = *(const char **)(weapDef + 0x34c);
+                const char *killIcon = *(const char **)(weapDef + 0x34c) /* TODO: unknown offset in WeaponDef */;
                 if (*killIcon == '\0') {
                     /* Default icon */
                     iconWidth = f_1_4;
@@ -1468,14 +1468,14 @@ void CG_EntityEvent(centity_t *cent, int event)
                     /* line 102 */
                     iconShader = killIcon;
                     /* line 103 */
-                    int isWideIcon = *(int *)(weapDef + 0x350);
+                    int isWideIcon = *(int *)(weapDef + 0x350) /* TODO: unknown offset in WeaponDef */;
                     if (isWideIcon) {
                         iconWidth = f_2_8;
                     } else {
                         iconWidth = f_1_4;
                     }
                     /* line 105 */
-                    iconHorzFlip = *(int *)(weapDef + 0x354) != 0;
+                    iconHorzFlip = *(int *)(weapDef + 0x354) /* TODO: unknown offset in WeaponDef */ != 0;
                 }
             } else {
                 /* Means of death icon lookup */
@@ -1542,7 +1542,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 victimCI = clientInfoBase + 0x14;
 
                 /* line 147 */
-                if (*(int *)(clientInfoBase + 0x14) == 0)
+                if (((clientInfo_t *)clientInfoBase)->infoValid == 0)
                     return;
 
                 /* line 150 */
@@ -1553,9 +1553,9 @@ void CG_EntityEvent(centity_t *cent, int event)
                 CG_DrawScoreboard_GetTeamColor(*(int *)(victimCI + 0x30 - 0x14), victimColor);
 
                 /* line 155: check if local client info exists */
-                int localClient = *(int *)(cg + CG_LOCALCLIENT);
+                int localClient = ((cg_t *)cg)->clientNum;
                 char *localCI = cg + CG_CLIENTINFO + localClient * 1208;
-                if (*(int *)(localCI + 0x14) == 0)
+                if (((clientInfo_t *)localCI)->infoValid == 0)
                     return;
             }
 
@@ -1566,7 +1566,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 attackerCI = atkInfoBase + 0x14;
 
                 /* line 167 */
-                if (*(int *)(atkInfoBase + 0x14) == 0)
+                if (((clientInfo_t *)atkInfoBase)->infoValid == 0)
                     return;
 
                 /* line 169 */
@@ -1577,8 +1577,8 @@ void CG_EntityEvent(centity_t *cent, int event)
                 CG_DrawScoreboard_GetTeamColor(*(int *)(attackerCI + 0x30 - 0x14), attackerColor);
 
                 /* line 174 */
-                snap = *(char **)(cg + CG_SNAP);
-                if (target == *(int *)(snap + SNAP_PS_CLIENTNUM)) {
+                snap = (char *)((cg_t *)cg)->snap;
+                if (target == ((snapshot_t *)snap)->ps.clientNum) {
                     /* line 175: copy attacker name to killcam */
                     I_strncpyz(cg + CG_KILLCAM_NAME, attackerName, 0x20);
                 }
@@ -1597,8 +1597,8 @@ void CG_EntityEvent(centity_t *cent, int event)
             } else {
                 /* line 183 */
                 cg = *cg_glob;
-                snap = *(char **)(cg + CG_SNAP);
-                int localClientNum = *(int *)(snap + SNAP_PS_CLIENTNUM);
+                snap = (char *)((cg_t *)cg)->snap;
+                int localClientNum = ((snapshot_t *)snap)->ps.clientNum;
 
                 if (attacker == localClientNum) {
                     /* line 185: "you killed" */
@@ -1609,7 +1609,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             const char *msg = va((const char *)str_002b8478, targetName, (const char *)str_002b8468);
                             /* line 205 */
                             cg = *cg_glob;
-                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
                             }
                             cg = *cg_glob;
@@ -1617,7 +1617,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             /* line 188 */
                             const char *msg = va((const char *)str_002b8498, targetName);
                             cg = *cg_glob;
-                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
                             }
                             cg = *cg_glob;
@@ -1625,7 +1625,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                     } else {
                         const char *msg = va((const char *)str_002b8498, targetName);
                         cg = *cg_glob;
-                        if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                        if (((cg_t *)cg)->inKillCam == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
                         }
                         cg = *cg_glob;
@@ -1638,7 +1638,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             /* line 202 */
                             const char *msg = va((const char *)str_002b84ac, attackerName, (const char *)str_002b8468);
                             cg = *cg_glob;
-                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
                             }
                             cg = *cg_glob;
@@ -1646,7 +1646,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             /* line 204 */
                             const char *msg = va((const char *)str_002b84d0, attackerName);
                             cg = *cg_glob;
-                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
                             }
                             cg = *cg_glob;
@@ -1654,7 +1654,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                     } else {
                         const char *msg = va((const char *)str_002b84d0, attackerName);
                         cg = *cg_glob;
-                        if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                        if (((cg_t *)cg)->inKillCam == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
                         }
                         cg = *cg_glob;
@@ -1663,7 +1663,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
 
             /* line 217: death message print */
-            if (*(int *)(cg + CG_DEATHFADE) != 0)
+            if (((cg_t *)cg)->inKillCam != 0)
                 return;
 
             /* line 219 */
@@ -1676,10 +1676,10 @@ void CG_EntityEvent(centity_t *cent, int event)
         case 0xb4:
         {
             /* line 219: get angles */
-            float *angles = (float *)(es + ES_APOS_BASE);
+            float *angles = (float *)es->apos.trBase;
 
             /* line 292 */
-            int fxIndex = *(int *)((char *)cent + 0x190);
+            int fxIndex = cent->nextState.eventParm;
             int fxIdx = fxIndex - 1;
             if ((unsigned int)fxIdx > 62) {
                 /* line 295 */
@@ -1701,7 +1701,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         /* line 317: play fx from config string */
         case 0xb5:
         {
-            int csIndex2 = *(int *)(es + ES_EVENTPARM) + 0x38e;
+            int csIndex2 = es->eventParm + 0x38e;
             const char *csStr2 = CL_GetConfigString(csIndex2);
 
             /* line 323: parse fx index from config string */
@@ -1713,7 +1713,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 int fxId2 = *(int *)(cgs + CGS_FX_CUSTOM + fxIdx2 * 4);
 
                 /* line 325 */
-                int entNum2 = *(int *)((char *)cent + CENT_NEXTSTATE + ES_NUMBER);
+                int entNum2 = cent->nextState.number;
                 int entityInfo = entNum2;
 
                 /* line 326 */
@@ -1760,13 +1760,13 @@ void CG_CheckEvents(centity_t *cent)
     int diff;
 
     /* line 877 */
-    eType = *(int *)(c + CENT_ETYPE);
+    eType = ((centity_t *)c)->nextState.eType;
     if (eType > 10) {
         /* line 879 */
-        i = *(int *)(c + CENT_PREVEVSEQ);
+        i = ((centity_t *)c)->previousEventSequence;
         if (i == 0) {
             /* line 881 */
-            *(int *)(c + CENT_PREVEVSEQ) = 1;
+            ((centity_t *)c)->previousEventSequence = 1;
             /* line 884 */
             CG_CalcEntityLerpPositions(cent);
             /* line 885 */
@@ -1776,20 +1776,20 @@ void CG_CheckEvents(centity_t *cent)
     }
 
     /* line 891 */
-    eventSequence = *(int *)(c + CENT_EVSEQ);
+    eventSequence = ((centity_t *)c)->nextState.eventSequence;
     if (eventSequence == 0) {
         /* line 893 */
-        *(int *)(c + CENT_PREVEVSEQ) = 0;
+        ((centity_t *)c)->previousEventSequence = 0;
         return;
     }
 
-    prevEventSeq = *(int *)(c + CENT_PREVEVSEQ);
+    prevEventSeq = ((centity_t *)c)->previousEventSequence;
 
     /* line 897 */
     if (eventSequence < prevEventSeq) {
         /* line 899 */
         prevEventSeq -= 256;
-        *(int *)(c + CENT_PREVEVSEQ) = prevEventSeq;
+        ((centity_t *)c)->previousEventSequence = prevEventSeq;
     }
 
     /* line 901 */
@@ -1797,13 +1797,13 @@ void CG_CheckEvents(centity_t *cent)
     if (diff > 4) {
         /* line 903 */
         prevEventSeq = eventSequence - 4;
-        *(int *)(c + CENT_PREVEVSEQ) = prevEventSeq;
+        ((centity_t *)c)->previousEventSequence = prevEventSeq;
     }
 
     /* line 906 */
     if (prevEventSeq >= eventSequence) {
         /* line 908 */
-        *(int *)(c + CENT_PREVEVSEQ) = eventSequence;
+        ((centity_t *)c)->previousEventSequence = eventSequence;
         return;
     }
 
@@ -1811,18 +1811,18 @@ void CG_CheckEvents(centity_t *cent)
     CG_CalcEntityLerpPositions(cent);
 
     /* line 916 */
-    oldEventParm = *(unsigned char *)(c + CENT_EVPARM);
-    i = *(int *)(c + CENT_PREVEVSEQ);
+    oldEventParm = (unsigned char)((centity_t *)c)->nextState.eventParm;
+    i = ((centity_t *)c)->previousEventSequence;
 
     /* line 917 */
     while (i != eventSequence) {
         /* line 919 */
         int evIdx = i & 3;
-        int ev = *(int *)(c + CENT_EVENTS + evIdx * 4);
+        int ev = ((int *)&((centity_t *)c)->nextState.events)[evIdx];
 
         /* line 921 */
-        int evParm = *(int *)(c + CENT_EVPARMS + evIdx * 4);
-        *(int *)(c + CENT_EVPARM) = evParm;
+        int evParm = ((int *)&((centity_t *)c)->nextState.eventParms)[evIdx];
+        ((centity_t *)c)->nextState.eventParm = evParm;
 
         /* line 922 */
         CG_EntityEvent(cent, ev);
@@ -1832,8 +1832,8 @@ void CG_CheckEvents(centity_t *cent)
     }
 
     /* line 924 */
-    *(int *)(c + CENT_EVPARM) = (unsigned char)oldEventParm;
+    ((centity_t *)c)->nextState.eventParm = (unsigned char)oldEventParm;
 
     /* line 925 */
-    *(int *)(c + CENT_PREVEVSEQ) = eventSequence;
+    ((centity_t *)c)->previousEventSequence = eventSequence;
 }

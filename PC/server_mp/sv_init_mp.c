@@ -266,12 +266,14 @@ void SV_SetUserinfo(int index, const char *val)
     if (!val)
         val = "";
 
-    svs = (byte *)imp_svs;
-    client = *(byte **)(svs + SVS_CLIENTS_OFF) + index * CLIENT_SIZE;
+    {
+        serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
+        client_t *cl = &svsPtr->clients[index];
 
-    I_strncpyz((char *)(client + CLIENT_USERINFO_OFF), val, 0x400);
-    name = (const char *)Info_ValueForKey(val, "name");
-    I_strncpyz((char *)(client + CLIENT_NAME_OFF), name, 0x20);
+        I_strncpyz(cl->userinfo, val, 0x400);
+        name = (const char *)Info_ValueForKey(val, "name");
+        I_strncpyz(cl->name, name, 0x20);
+    }
 }
 
 /* line 263 */
@@ -287,10 +289,12 @@ void SV_GetUserinfo(int index, char *buffer, int bufferSize)
         Com_Error(1, "SV_GetUserinfo: bad index %i\n", index);
     }
 
-    svs = (byte *)imp_svs;
-    client = *(byte **)(svs + SVS_CLIENTS_OFF) + index * CLIENT_SIZE;
+    {
+        serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
+        client_t *cl = &svsPtr->clients[index];
 
-    I_strncpyz(buffer, (const char *)(client + CLIENT_USERINFO_OFF), bufferSize);
+        I_strncpyz(buffer, cl->userinfo, bufferSize);
+    }
 }
 
 /* line 491 */
@@ -332,35 +336,35 @@ void SV_SetExpectedHunkUsage(char *mapname)
 /* line 564 */
 void SV_EnableArchivedSnapshot(qboolean bEnable)
 {
-    byte *svs;
+    serverStatic_t *svs;
 
-    svs = (byte *)imp_svs;
-    *(int *)(svs + SVS_ARCHSNAP_ENABLED_OFF) = bEnable;
+    svs = (serverStatic_t *)imp_svs;
+    svs->archiveEnabled = bEnable;
 
     if (!bEnable)
         return;
-    if (*(int *)(svs + SVS_ARCHSNAP_FRAMES_OFF))
+    if (svs->archivedSnapshotFrames)
         return;
 
-    *(void **)(svs + SVS_ARCHSNAP_48_OFF) = Z_MallocInternal(0x450000);
-    *(void **)(svs + SVS_ARCHSNAP_4C_OFF) = Z_MallocInternal(0x2708000);
-    *(void **)(svs + SVS_ARCHSNAP_FRAMES_OFF) = Z_MallocInternal(0x2580);
-    *(void **)(svs + SVS_ARCHSNAP_BUFFER_OFF) = Z_MallocInternal(0x2000000);
-    *(void **)(svs + SVS_ARCHSNAP_50_OFF) = Z_MallocInternal(0x3800);
+    *(void **)&svs->cachedSnapshotEntities = Z_MallocInternal(0x450000);
+    *(void **)&svs->cachedSnapshotClients = Z_MallocInternal(0x2708000);
+    *(void **)&svs->archivedSnapshotFrames = Z_MallocInternal(0x2580);
+    svs->archivedSnapshotBuffer = Z_MallocInternal(0x2000000);
+    svs->cachedSnapshotFrames = Z_MallocInternal(0x3800);
 }
 
 /* line 599 */
 void SV_InitArchivedSnapshot(void)
 {
-    byte *svs;
+    serverStatic_t *svs;
 
-    svs = (byte *)imp_svs;
-    *(int *)(svs + SVS_ARCHSNAP_ENABLED_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_2C_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_38_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_3C_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_40_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_44_OFF) = 0;
+    svs = (serverStatic_t *)imp_svs;
+    svs->archiveEnabled = 0;
+    svs->nextArchivedSnapshotFrames = 0;
+    svs->nextArchivedSnapshotBuffer = 0;
+    svs->nextCachedSnapshotEntities = 0;
+    svs->nextCachedSnapshotClients = 0;
+    svs->nextCachedSnapshotFrames = 0;
 }
 
 /* line 655 */
@@ -465,20 +469,21 @@ void SV_SetConfigstring(const int index, const char *val)
     sprintf(buf, "%i", index);
     maxChunk = 0x3fd - strlen(buf);
 
-    client = *(byte **)((byte *)imp_svs + SVS_CLIENTS_OFF);
+    {
+    serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
     for (i = 0; i < *(int *)(*(byte **)imp_sv_maxclients + 8); i++) {
-        if (*(int *)(client + CLIENT_STATE_OFF) <= 2)
+        if (svsPtr->clients[i].state <= 2)
             goto next;
 
         if (len <= maxChunk) {
-            SV_SendServerCommand(client, 1, "%c %i %s", 'd', index, val);
+            SV_SendServerCommand(&svsPtr->clients[i], 1, "%c %i %s", 'd', index, val);
         } else {
             remaining = len;
             sent = 0;
             cmd = 'x';
             while (remaining > 0) {
                 I_strncpyz(buf, val + sent, maxChunk + 1);
-                SV_SendServerCommand(client, 1, "%c %i %s", cmd, index, buf);
+                SV_SendServerCommand(&svsPtr->clients[i], 1, "%c %i %s", cmd, index, buf);
                 sent += maxChunk;
                 remaining -= maxChunk;
                 if (remaining <= 0)
@@ -489,7 +494,8 @@ void SV_SetConfigstring(const int index, const char *val)
             }
         }
 next:
-        client += CLIENT_SIZE;
+        ;
+    }
     }
 }
 
@@ -520,8 +526,7 @@ void SV_SetConfigValueForKey(int start, int max, const char *key, const char *va
 void SV_Shutdown(char *finalmsg)
 {
     int savedState;
-    byte *svs;
-    byte *client;
+    serverStatic_t *svs;
     int i, j;
     int maxclients;
 
@@ -536,24 +541,23 @@ void SV_Shutdown(char *finalmsg)
 
     savedState = *(int *)(byte *)imp_sv;
 
-    svs = (byte *)imp_svs;
-    if (*(byte **)(svs + SVS_CLIENTS_OFF)) {
+    svs = (serverStatic_t *)imp_svs;
+    if (svs->clients) {
         for (j = 0; j < 2; j++) {
-            client = *(byte **)(svs + SVS_CLIENTS_OFF);
             maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
             for (i = 0; i < maxclients; i++) {
-                if (*(int *)(client + CLIENT_STATE_OFF) <= 1)
+                if (svs->clients[i].state <= 1)
                     goto next_client1;
 
-                if (*(int *)(client + CLIENT_NETCHAN_STATE_OFF) != 2) {
-                    SV_SendServerCommand(client, 0, "%c \"%s\"", 'e', finalmsg);
-                    SV_SendServerCommand(client, 1, "%c \"%s\"", 'w', finalmsg);
+                if (svs->clients[i].netchan.remoteAddress.type != 2) {
+                    SV_SendServerCommand(&svs->clients[i], 0, "%c \"%s\"", 'e', finalmsg);
+                    SV_SendServerCommand(&svs->clients[i], 1, "%c \"%s\"", 'w', finalmsg);
                 }
 
-                *(int *)(client + 0x20d18) = -1;
-                SV_SendClientSnapshot(client);
+                svs->clients[i].nextSnapshotTime = -1;
+                SV_SendClientSnapshot(&svs->clients[i]);
 next_client1:
-                client += CLIENT_SIZE;
+                ;
             }
         }
     }
@@ -563,14 +567,13 @@ next_client1:
     SV_ShutdownGameProgs();
 
     /* SV_DropAllClients - line 1373 */
-    client = *(byte **)((byte *)imp_svs + SVS_CLIENTS_OFF);
-    if (client != NULL && *(byte **)imp_sv_maxclients != NULL) {
+    svs = (serverStatic_t *)imp_svs;
+    if (svs->clients != NULL && *(byte **)imp_sv_maxclients != NULL) {
         maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
         for (i = 0; i < maxclients; i++) {
-            if (*(int *)(client + CLIENT_STATE_OFF) > 1) {
-                SV_DropClient(client, "EXE_DISCONNECTED");
+            if (svs->clients[i].state > 1) {
+                SV_DropClient(&svs->clients[i], "EXE_DISCONNECTED");
             }
-            client += CLIENT_SIZE;
         }
     }
 
@@ -590,35 +593,35 @@ next_client1:
     }
 
     /* Free clients */
-    svs = (byte *)imp_svs;
-    if (*(byte **)(svs + SVS_CLIENTS_OFF)) {
+    svs = (serverStatic_t *)imp_svs;
+    if (svs->clients) {
         SV_FreeClients();
     }
 
     /* SV_FreeArchivedSnapshotBuffers - line 618 */
-    if (*(void **)(svs + SVS_ARCHSNAP_48_OFF)) {
-        Z_FreeInternal(*(void **)(svs + SVS_ARCHSNAP_48_OFF));
-        *(void **)(svs + SVS_ARCHSNAP_48_OFF) = 0;
+    if (svs->cachedSnapshotEntities) {
+        Z_FreeInternal(svs->cachedSnapshotEntities);
+        *(void **)&svs->cachedSnapshotEntities = 0;
     }
-    if (*(void **)(svs + SVS_ARCHSNAP_4C_OFF)) {
-        Z_FreeInternal(*(void **)(svs + SVS_ARCHSNAP_4C_OFF));
-        *(void **)(svs + SVS_ARCHSNAP_4C_OFF) = 0;
+    if (svs->cachedSnapshotClients) {
+        Z_FreeInternal(svs->cachedSnapshotClients);
+        *(void **)&svs->cachedSnapshotClients = 0;
     }
-    if (*(void **)(svs + SVS_ARCHSNAP_FRAMES_OFF)) {
-        Z_FreeInternal(*(void **)(svs + SVS_ARCHSNAP_FRAMES_OFF));
-        *(void **)(svs + SVS_ARCHSNAP_FRAMES_OFF) = 0;
+    if (svs->archivedSnapshotFrames) {
+        Z_FreeInternal(svs->archivedSnapshotFrames);
+        *(void **)&svs->archivedSnapshotFrames = 0;
     }
-    if (*(void **)(svs + SVS_ARCHSNAP_BUFFER_OFF)) {
-        Z_FreeInternal(*(void **)(svs + SVS_ARCHSNAP_BUFFER_OFF));
-        *(void **)(svs + SVS_ARCHSNAP_BUFFER_OFF) = 0;
+    if (svs->archivedSnapshotBuffer) {
+        Z_FreeInternal(svs->archivedSnapshotBuffer);
+        svs->archivedSnapshotBuffer = 0;
     }
-    if (*(void **)(svs + SVS_ARCHSNAP_50_OFF)) {
-        Z_FreeInternal(*(void **)(svs + SVS_ARCHSNAP_50_OFF));
-        *(void **)(svs + SVS_ARCHSNAP_50_OFF) = 0;
+    if (svs->cachedSnapshotFrames) {
+        Z_FreeInternal(svs->cachedSnapshotFrames);
+        svs->cachedSnapshotFrames = 0;
     }
 
     /* SV_FreeServerStructure */
-    memset(svs, 0, 0xa0f8);
+    memset(svs, 0, sizeof(serverStatic_t));
 
     /* If FX system exists, free it */
     {
@@ -647,13 +650,13 @@ next_client1:
 /* line 365 */
 void SV_Startup(void)
 {
-    byte *svs;
+    serverStatic_t *svs;
     dvar_t *maxclients;
     int numClients;
     int isDedicated;
 
-    svs = (byte *)imp_svs;
-    if (*(int *)(svs + SVS_INITIALIZED_OFF)) {
+    svs = (serverStatic_t *)imp_svs;
+    if (svs->initialized) {
         Com_Error(0, "SV_Startup: svs.initialized");
     }
 
@@ -670,8 +673,8 @@ void SV_Startup(void)
 
     /* Allocate clients */
     numClients = *(int *)((byte *)maxclients + 8);
-    *(void **)(svs + SVS_CLIENTS_OFF) = Z_VirtualAllocInternal(numClients * CLIENT_SIZE);
-    if (!*(void **)(svs + SVS_CLIENTS_OFF)) {
+    svs->clients = Z_VirtualAllocInternal(numClients * sizeof(client_t));
+    if (!svs->clients) {
         Com_Error(0, "SV_Startup: unable to allocate svs.clients");
     }
 
@@ -680,25 +683,24 @@ void SV_Startup(void)
     maxclients = *(dvar_t **)imp_sv_maxclients;
     numClients = *(int *)((byte *)maxclients + 8);
     if (isDedicated) {
-        *(int *)(svs + SVS_NUMSNAPENTS_OFF) = numClients << 11;
-        *(int *)(svs + SVS_NUMSNAPCLIENTS_OFF) = numClients * numClients * 32;
+        svs->numSnapshotEntities = numClients << 11;
+        svs->numSnapshotClients = numClients * numClients * 32;
     } else {
-        *(int *)(svs + SVS_NUMSNAPENTS_OFF) = numClients << 8;
-        *(int *)(svs + SVS_NUMSNAPCLIENTS_OFF) = numClients * numClients * 4;
+        svs->numSnapshotEntities = numClients << 8;
+        svs->numSnapshotClients = numClients * numClients * 4;
     }
 
-    *(int *)(svs + SVS_INITIALIZED_OFF) = 1;
+    svs->initialized = 1;
     Dvar_SetBool(*(dvar_t **)imp_com_sv_running, 1);
 }
 
 /* line 402 */
 void SV_ChangeMaxClients(void)
 {
-    byte *svs;
+    serverStatic_t *svs;
     int oldMaxClients;
     int minClients;
-    byte *oldClients;
-    byte *client;
+    client_t *oldClients;
     int i;
     dvar_t *maxclients;
     int numClients;
@@ -708,15 +710,13 @@ void SV_ChangeMaxClients(void)
 
     /* Find minimum required client count */
     if (oldMaxClients > 0) {
-        svs = (byte *)imp_svs;
-        client = *(byte **)(svs + SVS_CLIENTS_OFF);
+        svs = (serverStatic_t *)imp_svs;
         minClients = 0;
         for (i = 0; i < oldMaxClients; i++) {
-            if (*(int *)(client + CLIENT_STATE_OFF) > 1) {
+            if (svs->clients[i].state > 1) {
                 if (i > minClients)
                     minClients = i;
             }
-            client += CLIENT_SIZE;
         }
         minClients++;
     } else {
@@ -737,37 +737,35 @@ void SV_ChangeMaxClients(void)
         return;
 
     /* Save old client data */
-    oldClients = (byte *)Hunk_AllocateTempMemoryInternal(minClients * CLIENT_SIZE);
+    oldClients = (client_t *)Hunk_AllocateTempMemoryInternal(minClients * sizeof(client_t));
     for (i = 0; i < minClients; i++) {
-        svs = (byte *)imp_svs;
-        client = *(byte **)(svs + SVS_CLIENTS_OFF) + i * CLIENT_SIZE;
-        if (*(int *)(client + CLIENT_STATE_OFF) > 1) {
-            memcpy(oldClients + i * CLIENT_SIZE, client, CLIENT_SIZE);
+        svs = (serverStatic_t *)imp_svs;
+        if (svs->clients[i].state > 1) {
+            memcpy(&oldClients[i], &svs->clients[i], sizeof(client_t));
         } else {
-            Com_Memset(oldClients + i * CLIENT_SIZE, 0, CLIENT_SIZE);
+            Com_Memset(&oldClients[i], 0, sizeof(client_t));
         }
     }
 
     /* Free old clients, allocate new */
-    svs = (byte *)imp_svs;
-    Z_VirtualFreeInternal(*(void **)(svs + SVS_CLIENTS_OFF));
+    svs = (serverStatic_t *)imp_svs;
+    Z_VirtualFreeInternal(svs->clients);
 
     numClients = *(int *)(*(byte **)imp_sv_maxclients + 8);
-    *(void **)(svs + SVS_CLIENTS_OFF) = Z_VirtualAllocInternal(numClients * CLIENT_SIZE);
-    if (!*(void **)(svs + SVS_CLIENTS_OFF)) {
+    svs->clients = Z_VirtualAllocInternal(numClients * sizeof(client_t));
+    if (!svs->clients) {
         Com_Error(0, "SV_Startup: unable to allocate svs.clients");
     }
 
     /* Clear new clients */
     numClients = *(int *)(*(byte **)imp_sv_maxclients + 8);
-    Com_Memset(*(void **)((byte *)imp_svs + SVS_CLIENTS_OFF), 0, numClients * CLIENT_SIZE);
+    Com_Memset(svs->clients, 0, numClients * sizeof(client_t));
 
     /* Copy old client data to new */
     for (i = 0; i < minClients; i++) {
-        if (*(int *)(oldClients + i * CLIENT_SIZE) > 1) {
-            svs = (byte *)imp_svs;
-            memcpy(*(byte **)(svs + SVS_CLIENTS_OFF) + i * CLIENT_SIZE,
-                   oldClients + i * CLIENT_SIZE, CLIENT_SIZE);
+        if (oldClients[i].state > 1) {
+            svs = (serverStatic_t *)imp_svs;
+            memcpy(&svs->clients[i], &oldClients[i], sizeof(client_t));
         }
     }
 
@@ -776,13 +774,13 @@ void SV_ChangeMaxClients(void)
     /* Update snapshot entity counts */
     isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
     numClients = *(int *)(*(byte **)imp_sv_maxclients + 8);
-    svs = (byte *)imp_svs;
+    svs = (serverStatic_t *)imp_svs;
     if (isDedicated) {
-        *(int *)(svs + SVS_NUMSNAPENTS_OFF) = numClients << 11;
-        *(int *)(svs + SVS_NUMSNAPCLIENTS_OFF) = numClients * numClients * 32;
+        svs->numSnapshotEntities = numClients << 11;
+        svs->numSnapshotClients = numClients * numClients * 32;
     } else {
-        *(int *)(svs + SVS_NUMSNAPENTS_OFF) = numClients << 8;
-        *(int *)(svs + SVS_NUMSNAPCLIENTS_OFF) = numClients * numClients * 4;
+        svs->numSnapshotEntities = numClients << 8;
+        svs->numSnapshotClients = numClients * numClients * 4;
     }
 }
 
@@ -813,17 +811,17 @@ void SV_SpawnServer(const char *server)
         savepersist = (int)G_GetSavePersist();
 
         /* Notify connected clients about map change */
-        svs = (byte *)imp_svs;
-        client = *(byte **)(svs + SVS_CLIENTS_OFF);
+        {
+        serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
         maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
         for (i = 0; i < maxclients; i++) {
-            if (*(int *)(client + CLIENT_STATE_OFF) > 2) {
+            if (svsPtr->clients[i].state > 2) {
                 Com_sprintf(filename, 64, "loadingnewmap\n%s\n%s",
                     server, (const char *)*(int *)(*(byte **)imp_sv_gametype + 8));
-                addr = *(netadr_t *)(client + CLIENT_NETCHAN_STATE_OFF);
+                addr = svsPtr->clients[i].netchan.remoteAddress;
                 NET_OutOfBandPrint(1, addr, filename);
             }
-            client += CLIENT_SIZE;
+        }
         }
         NET_Sleep(250);
     } else {
@@ -919,28 +917,28 @@ void SV_SpawnServer(const char *server)
     Dvar_ResetScriptInfo();
 
     /* Allocate snapshot buffers */
-    svs = (byte *)imp_svs;
     {
-        int numSnapEnts = *(int *)(svs + SVS_NUMSNAPENTS_OFF);
-        *(void **)(svs + SVS_SNAPENTS_OFF) = Hunk_AllocInternal((numSnapEnts * 256) - (numSnapEnts * 16));
-    }
-    *(int *)(svs + SVS_NEXTSNAPENTS_OFF) = 0;
-    {
-        int numSnapClients = *(int *)(svs + SVS_NUMSNAPCLIENTS_OFF);
-        *(void **)(svs + SVS_SNAPCLIENTS_OFF) = Hunk_AllocInternal(numSnapClients * 92);
-    }
-    *(int *)(svs + SVS_NEXTSNAPCLIENTS_OFF) = 0;
+        serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
+        int numSnapEnts = svsPtr->numSnapshotEntities;
+        svsPtr->snapshotEntities = Hunk_AllocInternal((numSnapEnts * 256) - (numSnapEnts * 16));
+        svsPtr->nextSnapshotEntities = 0;
+        {
+            int numSnapClients = svsPtr->numSnapshotClients;
+            *(void **)&svsPtr->snapshotClients = Hunk_AllocInternal(numSnapClients * 92);
+        }
+        svsPtr->nextSnapshotClients = 0;
 
-    /* SV_InitArchivedSnapshot */
-    *(int *)(svs + SVS_ARCHSNAP_ENABLED_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_2C_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_38_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_3C_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_40_OFF) = 0;
-    *(int *)(svs + SVS_ARCHSNAP_44_OFF) = 0;
+        /* SV_InitArchivedSnapshot */
+        svsPtr->archiveEnabled = 0;
+        svsPtr->nextArchivedSnapshotFrames = 0;
+        svsPtr->nextArchivedSnapshotBuffer = 0;
+        svsPtr->nextCachedSnapshotEntities = 0;
+        svsPtr->nextCachedSnapshotClients = 0;
+        svsPtr->nextCachedSnapshotFrames = 0;
 
-    /* Toggle snap flag bit */
-    *(int *)(svs + SVS_SNAPFLAGBIT_OFF) ^= 4;
+        /* Toggle snap flag bit */
+        svsPtr->snapFlagServerBit ^= 4;
+    }
 
     /* Set "nextmap" dvar */
     Dvar_SetString(*(dvar_t **)&nextmap, "map_restart");
@@ -991,7 +989,7 @@ void SV_SpawnServer(const char *server)
 
     /* Run a few frames */
     for (i = 0; i < 3; i++) {
-        *(int *)((byte *)imp_svs + SVS_TIME_OFF) += 100;
+        ((serverStatic_t *)imp_svs)->time += 100;
         SV_RunFrame();
     }
 
@@ -1003,53 +1001,56 @@ void SV_SpawnServer(const char *server)
             int entOff;
             byte *dest;
 
-            ent = (byte *)SV_GentityNum(i);
-            if (*(char *)(ent + 0xf0) == 0) {
+            {
+            gentity_t *gent = (gentity_t *)SV_GentityNum(i);
+            if (gent->r.linked == 0) {
                 sv = (byte *)imp_sv;
                 goto next_baseline;
             }
 
             /* Set entity number */
-            *(int *)ent = i;
+            gent->s.number = i;
 
             /* Copy entity state to baseline */
-            memcpy(basePtr + 0x2590, ent, 0xf0);
-            *(int *)(basePtr + 0x2680) = (unsigned char)*(ent + 0xf2);
-            *(int *)(basePtr + 0x2684) = *(int *)(ent + 0xf4);
-            *(int *)(basePtr + 0x2688) = *(int *)(ent + 0xf8);
+            memcpy(basePtr + 0x2590, &gent->s, sizeof(entityState_t));
+            *(int *)(basePtr + 0x2680) = (unsigned char)gent->r.svFlags;
+            *(int *)(basePtr + 0x2684) = gent->r.clientMask[0];
+            *(int *)(basePtr + 0x2688) = gent->r.clientMask[1];
 
-            /* Copy origin */
+            /* Copy origin (absmin) */
             entOff = i * 0x174;
             sv = (byte *)imp_sv;
             dest = sv + entOff + 0x2500 + 0x18;
-            *(float *)dest = *(float *)(ent + 0x120);
-            *(int *)(dest + 4) = *(int *)(ent + 0x124);
-            *(int *)(dest + 8) = *(int *)(ent + 0x128);
+            *(float *)dest = gent->r.absmin[0];
+            *(int *)(dest + 4) = *(int *)&gent->r.absmin[1];
+            *(int *)(dest + 8) = *(int *)&gent->r.absmin[2];
 
-            /* Copy angles */
+            /* Copy angles (absmax) */
             dest = sv + entOff + 0x2510 + 0x14;
-            *(int *)dest = *(int *)(ent + 0x12c);
-            *(int *)(dest + 4) = *(int *)(ent + 0x130);
-            *(int *)(dest + 8) = *(int *)(ent + 0x134);
+            *(int *)dest = *(int *)&gent->r.absmax[0];
+            *(int *)(dest + 4) = *(int *)&gent->r.absmax[1];
+            *(int *)(dest + 8) = *(int *)&gent->r.absmax[2];
+            }
 next_baseline:
             basePtr += 0x174;
         }
     }
 
     /* Reconnect clients - line 980 */
-    svs = (byte *)imp_svs;
+    {
+    serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
     maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
     for (i = 0; i < maxclients; i++) {
-        client = *(byte **)(svs + SVS_CLIENTS_OFF) + i * CLIENT_SIZE;
-        if (*(int *)(client + CLIENT_STATE_OFF) <= 1)
+        if (svsPtr->clients[i].state <= 1)
             continue;
 
-        s = ClientConnect(i, *(unsigned short *)(client + 0x765f0));
+        s = ClientConnect(i, svsPtr->clients[i].scriptId);
         if (s) {
-            SV_DropClient(client, s);
+            SV_DropClient(&svsPtr->clients[i], s);
         } else {
-            *(int *)(*(byte **)(svs + SVS_CLIENTS_OFF) + i * CLIENT_SIZE) = 2;
+            svsPtr->clients[i].state = 2;
         }
+    }
     }
 
     /* Set IWD references */

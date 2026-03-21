@@ -19,8 +19,8 @@ static vec2_t sign[4] = { /* sign */
     {-1.0f,  1.0f}
 };
 
-extern char **cg_glob;              /* imp_cg — pointer to cg_t base */
-extern char **cgs_glob;             /* imp_cgs — pointer to cgs_t base */
+extern cg_t **cg_glob;              /* imp_cg — pointer to cg_t base */
+extern cgs_t **cgs_glob;            /* imp_cgs — pointer to cgs_t base */
 extern char **compPointerConfig;    /* imp_cg_hudCompassSpringyPointers */
 extern const vec_t *colorWhite;    /* imp_colorWhite */
 
@@ -89,13 +89,13 @@ int CG_DrawDevString(float x, float y, const char *s, const vec_t *color, int al
 }
 
 int CG_DrawBigDevStringColor(float x, float y, const char *s, const vec_t *color, int align) {
-    char *cgs = *cgs_glob;
-    return CG_DrawDevString(x, y, s, color, align, *(FontHandle *)(cgs + 0xbc80), 0);
+    cgs_t *cgs = *cgs_glob;
+    return CG_DrawDevString(x, y, s, color, align, cgs->media.bigDevFont, 0);
 }
 
 int CG_DrawSmallDevStringColor(float x, float y, const char *s, const vec_t *color, int align) {
-    char *cgs = *cgs_glob;
-    return CG_DrawDevString(x, y, s, color, align, *(FontHandle *)(cgs + 0xbc7c), 0);
+    cgs_t *cgs = *cgs_glob;
+    return CG_DrawDevString(x, y, s, color, align, cgs->media.smallDevFont, 0);
 }
 
 float * CG_FadeColor(int startMsec, int totalMsec, int fadeMsec) {
@@ -103,8 +103,8 @@ float * CG_FadeColor(int startMsec, int totalMsec, int fadeMsec) {
         return NULL;
     }
 
-    char *cg = *cg_glob;
-    int t = *(int *)(cg + 0x25bb0) - startMsec;
+    cg_t *cg = *cg_glob;
+    int t = cg->time - startMsec;
 
     if (t >= totalMsec) {
         return NULL;
@@ -126,31 +126,31 @@ float * CG_FadeColor(int startMsec, int totalMsec, int fadeMsec) {
 
 void CG_NorthDirectionChanged(void) {
     const char *configStr = CL_GetConfigString(11);
-    char *cg = *cg_glob;
-    *(float *)(cg + 0x2c5ac) = (float)atof(configStr);
+    cg_t *cg = *cg_glob;
+    cg->compassNorthYaw = (float)atof(configStr);
 }
 
 void CG_UpdateCompassOrientation(void) {
-    char *cg = *cg_glob;
-    float fTargetYaw = AngleNormalize360(*(float *)(cg + 0x285cc) - *(float *)(cg + 0x2c5ac));
+    cg_t *cg = *cg_glob;
+    float fTargetYaw = AngleNormalize360(cg->refdefViewAngles[1] - cg->compassNorthYaw);
 
-    int lastTime = *(int *)(cg + 0x2c5a8);
-    int currentTime = *(int *)(cg + 0x25bb0);
+    int lastTime = cg->compassLastTime;
+    int currentTime = cg->time;
 
     if (lastTime > currentTime || (float)(currentTime - lastTime) > 500.0f) {
-        *(int *)(cg + 0x2c5a8) = currentTime;
-        *(float *)(cg + 0x2c5b0) = fTargetYaw;
-        *(float *)(cg + 0x2c5b4) = 0.0f;
+        cg->compassLastTime = currentTime;
+        cg->compassYaw = fTargetYaw;
+        cg->compassSpeed = 0.0f;
         return;
     }
 
     int iTotalTime = currentTime - lastTime;
-    *(int *)(cg + 0x2c5a8) = currentTime;
-    float fDiff = AngleSubtract(*(float *)(cg + 0x2c5b0), fTargetYaw);
+    cg->compassLastTime = currentTime;
+    float fDiff = AngleSubtract(cg->compassYaw, fTargetYaw);
 
     if (iTotalTime <= 0) {
         cg = *cg_glob;
-        *(float *)(cg + 0x2c5b0) = AngleNormalize360(fDiff + fTargetYaw);
+        cg->compassYaw = AngleNormalize360(fDiff + fTargetYaw);
         return;
     }
 
@@ -167,89 +167,89 @@ void CG_UpdateCompassOrientation(void) {
 
         if (fabsf(fDiff) < 0.25f) {
             cg = *cg_glob;
-            if (fabsf(*(float *)(cg + 0x2c5b4)) < 1.0f) {
-                *(float *)(cg + 0x2c5b0) = fTargetYaw;
-                *(float *)(cg + 0x2c5b4) = 0.0f;
+            if (fabsf(cg->compassSpeed) < 1.0f) {
+                cg->compassYaw = fTargetYaw;
+                cg->compassSpeed = 0.0f;
                 return;
             }
         }
 
         cg = *cg_glob;
-        fDiff = AngleNormalize180(fDiff + fTimeStep * *(float *)(cg + 0x2c5b4));
+        fDiff = AngleNormalize180(fDiff + fTimeStep * cg->compassSpeed);
 
         if (fDiff > 0.0f) {
-            *(float *)(cg + 0x2c5b4) -= fTimeStep * 1000.0f;
+            cg->compassSpeed -= fTimeStep * 1000.0f;
         } else if (fDiff < 0.0f) {
             cg = *cg_glob;
-            *(float *)(cg + 0x2c5b4) += fTimeStep * 1000.0f;
+            cg->compassSpeed += fTimeStep * 1000.0f;
         }
 
         cg = *cg_glob;
-        float vel = *(float *)(cg + 0x2c5b4);
+        float vel = cg->compassSpeed;
         vel -= vel * 2.0f * fTimeStep;
-        *(float *)(cg + 0x2c5b4) = vel;
+        cg->compassSpeed = vel;
 
         if (vel > 0.0f) {
             if (fDiff > 0.0f) {
                 vel -= vel * 3.5f * fTimeStep;
-                *(float *)(cg + 0x2c5b4) = vel;
+                cg->compassSpeed = vel;
             }
             vel -= fTimeStep;
-            *(float *)(cg + 0x2c5b4) = vel;
+            cg->compassSpeed = vel;
             if (vel < 0.0f) {
-                *(float *)(cg + 0x2c5b4) = 0.0f;
+                cg->compassSpeed = 0.0f;
             }
         } else {
             if (fDiff < 0.0f) {
                 vel -= vel * 3.5f * fTimeStep;
-                *(float *)(cg + 0x2c5b4) = vel;
+                cg->compassSpeed = vel;
             }
             vel += fTimeStep;
             if (vel > 0.0f) vel = 0.0f;
-            *(float *)(cg + 0x2c5b4) = vel;
+            cg->compassSpeed = vel;
         }
 
         cg = *cg_glob;
-        vel = *(float *)(cg + 0x2c5b4);
+        vel = cg->compassSpeed;
         if (vel > 30000.0f) {
-            *(float *)(cg + 0x2c5b4) = 30000.0f;
+            cg->compassSpeed = 30000.0f;
         } else if (vel < -30000.0f) {
-            *(float *)(cg + 0x2c5b4) = -30000.0f;
+            cg->compassSpeed = -30000.0f;
         }
     }
 
     cg = *cg_glob;
-    *(float *)(cg + 0x2c5b0) = AngleNormalize360(fDiff + fTargetYaw);
+    cg->compassYaw = AngleNormalize360(fDiff + fTargetYaw);
 }
 
 void CG_UpdateCompPointerOrientation(void) {
     char *config = compPointerConfig ? *compPointerConfig : NULL;
     if (!config || *(char *)(config + 8) == 0) {
-        char *cg = *cg_glob;
-        *(float *)(cg + 0x2c5b8) = *(float *)(cg + 0x285cc);
+        cg_t *cg = *cg_glob;
+        cg->compPointerYaw = cg->refdefViewAngles[1];
         return;
     }
 
-    char *cg = *cg_glob;
-    int lastTime = *(int *)(cg + 0x2c5a8);
-    int currentTime = *(int *)(cg + 0x25bb0);
+    cg_t *cg = *cg_glob;
+    int lastTime = cg->compassLastTime;
+    int currentTime = cg->time;
 
     if (lastTime == currentTime) {
         return;
     }
 
-    float fTargetYaw = *(float *)(cg + 0x285cc);
+    float fTargetYaw = cg->refdefViewAngles[1];
 
     if (lastTime > currentTime || (float)(currentTime - lastTime) > 500.0f) {
-        *(int *)(cg + 0x2c5a8) = currentTime;
-        *(float *)(cg + 0x2c5b8) = fTargetYaw;
-        *(float *)(cg + 0x2c5bc) = 0.0f;
+        cg->compassLastTime = currentTime;
+        cg->compPointerYaw = fTargetYaw;
+        cg->compPointerSpeed = 0.0f;
         return;
     }
 
     int iTotalTime = currentTime - lastTime;
-    *(int *)(cg + 0x2c5a8) = currentTime;
-    float fDiff = AngleSubtract(*(float *)(cg + 0x2c5b8), fTargetYaw);
+    cg->compassLastTime = currentTime;
+    float fDiff = AngleSubtract(cg->compPointerYaw, fTargetYaw);
 
     if (fabsf(fDiff) > 10.0f) {
         fDiff = (fDiff >= 0.0f) ? 10.0f : -10.0f;
@@ -257,7 +257,7 @@ void CG_UpdateCompPointerOrientation(void) {
 
     if (iTotalTime <= 0) {
         cg = *cg_glob;
-        *(float *)(cg + 0x2c5b8) = AngleNormalize360(fDiff + fTargetYaw);
+        cg->compPointerYaw = AngleNormalize360(fDiff + fTargetYaw);
         return;
     }
 
@@ -274,79 +274,79 @@ void CG_UpdateCompPointerOrientation(void) {
 
         if (fabsf(fDiff) < 0.5f) {
             cg = *cg_glob;
-            if (fabsf(*(float *)(cg + 0x2c5bc)) < 2.0f) {
-                *(float *)(cg + 0x2c5b8) = fTargetYaw;
-                *(float *)(cg + 0x2c5bc) = 0.0f;
+            if (fabsf(cg->compPointerSpeed) < 2.0f) {
+                cg->compPointerYaw = fTargetYaw;
+                cg->compPointerSpeed = 0.0f;
                 return;
             }
         }
 
         cg = *cg_glob;
-        fDiff = AngleNormalize180(fDiff + fTimeStep * *(float *)(cg + 0x2c5bc));
+        fDiff = AngleNormalize180(fDiff + fTimeStep * cg->compPointerSpeed);
 
         if (fDiff > 0.0f) {
-            *(float *)(cg + 0x2c5bc) -= fTimeStep * 1500.0f;
+            cg->compPointerSpeed -= fTimeStep * 1500.0f;
         } else if (fDiff < 0.0f) {
             cg = *cg_glob;
-            *(float *)(cg + 0x2c5bc) += fTimeStep * 1500.0f;
+            cg->compPointerSpeed += fTimeStep * 1500.0f;
         }
 
         cg = *cg_glob;
-        float vel = *(float *)(cg + 0x2c5bc);
+        float vel = cg->compPointerSpeed;
         vel -= vel * 3.0f * fTimeStep;
-        *(float *)(cg + 0x2c5bc) = vel;
+        cg->compPointerSpeed = vel;
 
         if (vel > 0.0f) {
             if (fDiff > 0.0f) {
                 vel -= vel * 5.0f * fTimeStep;
-                *(float *)(cg + 0x2c5bc) = vel;
+                cg->compPointerSpeed = vel;
             }
             vel -= 2.0f * fTimeStep;
-            *(float *)(cg + 0x2c5bc) = vel;
+            cg->compPointerSpeed = vel;
             if (vel < 0.0f) {
-                *(float *)(cg + 0x2c5bc) = 0.0f;
+                cg->compPointerSpeed = 0.0f;
             }
         } else {
             if (fDiff < 0.0f) {
                 vel -= vel * 5.0f * fTimeStep;
-                *(float *)(cg + 0x2c5bc) = vel;
+                cg->compPointerSpeed = vel;
             }
             vel += 2.0f * fTimeStep;
             if (vel > 0.0f) vel = 0.0f;
-            *(float *)(cg + 0x2c5bc) = vel;
+            cg->compPointerSpeed = vel;
         }
 
         cg = *cg_glob;
-        vel = *(float *)(cg + 0x2c5bc);
+        vel = cg->compPointerSpeed;
         if (vel > 2000.0f) {
-            *(float *)(cg + 0x2c5bc) = 2000.0f;
+            cg->compPointerSpeed = 2000.0f;
         } else if (vel < -2000.0f) {
-            *(float *)(cg + 0x2c5bc) = -2000.0f;
+            cg->compPointerSpeed = -2000.0f;
         }
     }
 
     cg = *cg_glob;
-    *(float *)(cg + 0x2c5b8) = AngleNormalize360(fDiff + fTargetYaw);
+    cg->compPointerYaw = AngleNormalize360(fDiff + fTargetYaw);
 }
 
 void CG_TileClear(void) {
-    char *cgs = *cgs_glob;
-    char *cg = *cg_glob;
+    cgs_t *cgs = *cgs_glob;
+    cg_t *cg = *cg_glob;
 
-    if (*(int *)(cgs + 0x5e84) == *(int *)(cg + 0x28570) &&
-        *(int *)(cgs + 0x5e88) == *(int *)(cg + 0x28574) &&
-        *(int *)(cgs + 0x5e8c) == *(int *)(cg + 0x28578) &&
-        *(int *)(cgs + 0x5e90) == *(int *)(cg + 0x2857c)) {
+    if (cgs->viewX == cg->refdef.x &&
+        cgs->viewY == cg->refdef.y &&
+        cgs->viewWidth == cg->refdef.width &&
+        cgs->viewHeight == cg->refdef.height) {
         return;
     }
 
     CL_SetFullScreenViewport();
     cg = *cg_glob;
     CL_SetViewport(
-        *(int *)(cg + 0x28570),
-        *(int *)(cg + 0x28574),
-        *(int *)(cg + 0x28578),
-        *(int *)(cg + 0x2857c)
+        cg->refdef.x,
+        cg->refdef.y,
+        cg->refdef.width,
+        cg->refdef.height
     );
 }
 
@@ -357,8 +357,8 @@ int CG_DrawBigDevString(float x, float y, const char *s, float alpha, int align)
     c[2] = 1.0f;
     c[3] = alpha;
 
-    char *cgs = *cgs_glob;
-    return CG_DrawDevString(x, y, s, c, align, *(FontHandle *)(cgs + 0xbc80), 0);
+    cgs_t *cgs = *cgs_glob;
+    return CG_DrawDevString(x, y, s, c, align, cgs->media.bigDevFont, 0);
 }
 
 void CG_DrawRotatedPicPhysical(float x, float y, float width, float height, float angle, const vec_t *color, MaterialHandle material) {

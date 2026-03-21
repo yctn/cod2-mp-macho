@@ -69,19 +69,22 @@ void CG_FxTest(void)
     }
 
     cg_s = (char *)*(int *)imp_cg;
-    fxName = cg_s + 0x2bfdc;
-    I_strncpyz(fxName, CG_Argv(1), 0x40);
+    {
+        cg_t *cg = (cg_t *)cg_s;
+        fxName = cg->testFxName;
+        I_strncpyz(fxName, CG_Argv(1), 0x40);
 
-    fx = FX_RegisterEffect(fxName);
-    Com_Printf((const char *)str_002b7520, fxName);
-    FX_PlaySimpleEffect(fx, (const vec_t *)(cg_s + 0x2c01c));
-    *(int *)(cg_s + 0x2c028) = *(int *)(cg_s + 0x25bb0);
+        fx = FX_RegisterEffect(fxName);
+        Com_Printf((const char *)str_002b7520, fxName);
+        FX_PlaySimpleEffect(fx, (const vec_t *)cg->testFxPos);
+        cg->testFxTime = cg->time;
 
-    if (Cmd_Argc() == 3) {
-        double d = atof(CG_Argv(2));
-        *(int *)(cg_s + 0x2c02c) = (int)(d * 1000.0);
-    } else {
-        *(int *)(cg_s + 0x2c02c) = 0;
+        if (Cmd_Argc() == 3) {
+            double d = atof(CG_Argv(2));
+            cg->testFxRespawnTime = (int)(d * 1000.0);
+        } else {
+            cg->testFxRespawnTime = 0;
+        }
     }
 }
 
@@ -94,44 +97,47 @@ float CG_GetViewFov(void)
     float fov_x;
 
     cg_s = (char *)*(int *)imp_cg;
-    weapIndex = BG_GetViewmodelWeaponIndex((void *)(cg_s + 0x25bc4));
-    weapDef = (char *)BG_GetWeaponDef(weapIndex);
+    {
+        cg_t *cg = (cg_t *)cg_s;
+        weapIndex = BG_GetViewmodelWeaponIndex((void *)&cg->predictedPlayerState);
+        weapDef = (char *)BG_GetWeaponDef(weapIndex);
 
-    if (*(int *)(cg_s + 0x25bc8) == 5) {
-        fov_x = 90.0f;
-    } else {
-        fov_x = *(float *)((char *)(*(int *)imp_cg_fov) + 8);
+        if (cg->predictedPlayerState.pm_type == 5) {
+            fov_x = 90.0f;
+        } else {
+            fov_x = *(float *)((char *)(*(int *)imp_cg_fov) + 8);
 
-        if (BG_IsAimDownSightWeapon(weapIndex)) {
-            float fPosLerp = *(float *)(cg_s + 0x25ca0);
-            float adsFov = *(float *)(weapDef + 0x268);
+            if (BG_IsAimDownSightWeapon(weapIndex)) {
+                float fPosLerp = cg->predictedPlayerState.fWeaponPosFrac;
+                float adsFov = *(float *)(weapDef + 0x268);
 
-            if (fPosLerp == 1.0f) {
-                fov_x = adsFov;
-            } else if (fPosLerp != 0.0f) {
-                float transTime;
-                float normalizedLerp;
+                if (fPosLerp == 1.0f) {
+                    fov_x = adsFov;
+                } else if (fPosLerp != 0.0f) {
+                    float transTime;
+                    float normalizedLerp;
 
-                if (*(int *)(cg_s + 0x28490 + 4) != 0) {
-                    transTime = *(float *)(weapDef + 0x26c);
-                } else {
-                    transTime = *(float *)(weapDef + 0x270);
-                }
+                    if (cg->playerEntity.bPositionToADS != 0) {
+                        transTime = *(float *)(weapDef + 0x26c);
+                    } else {
+                        transTime = *(float *)(weapDef + 0x270);
+                    }
 
-                normalizedLerp = fPosLerp - (1.0f - transTime);
-                if (normalizedLerp > 0.0f) {
-                    normalizedLerp /= transTime;
+                    normalizedLerp = fPosLerp - (1.0f - transTime);
                     if (normalizedLerp > 0.0f) {
-                        fov_x -= (fov_x - adsFov) * normalizedLerp;
+                        normalizedLerp /= transTime;
+                        if (normalizedLerp > 0.0f) {
+                            fov_x -= (fov_x - adsFov) * normalizedLerp;
+                        }
                     }
                 }
             }
         }
-    }
 
-    /* Scope overlay check */
-    if (*(int *)((char *)*(int *)imp_cg + 0x25c64) & 0x300) {
-        fov_x = 55.0f;
+        /* Scope overlay check */
+        if (cg->predictedPlayerState.eFlags & 0x300) {
+            fov_x = 55.0f;
+        }
     }
 
     /* Apply fov scale */
@@ -163,19 +169,22 @@ static void CG_CalcFov(void)
     tanVal = (float)tan(halfAngle) * 0.75f;
 
     cg_s = (char *)*(int *)imp_cg;
-    fov_x = (float)((double)atanf(tanVal * *(float *)((char *)*(int *)imp_cgs + 0x5e94)) * 57.29577951308232 * 2.0);
-    fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
+    {
+        cg_t *cg = (cg_t *)cg_s;
+        fov_x = (float)((double)atanf(tanVal * *(float *)((char *)*(int *)imp_cgs + 0x5e94)) * 57.29577951308232 * 2.0);
+        fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
 
-    if (CG_PointContents((const vec_t *)(cg_s + 0x28588), -1, 0x20)) {
-        float phase = (float)(*(int *)(cg_s + 0x25bb0)) / 1000.0f * 0.4f;
-        float wave = sinf((float)((double)phase * 3.141592653589793 * 2.0));
-        fov_x += wave;
-        fov_y -= wave;
+        if (CG_PointContents((const vec_t *)cg->refdef.vieworg, -1, 0x20)) {
+            float phase = (float)(cg->time) / 1000.0f * 0.4f;
+            float wave = sinf((float)((double)phase * 3.141592653589793 * 2.0));
+            fov_x += wave;
+            fov_y -= wave;
+        }
+
+        cg->refdef.fov_x = fov_x;
+        cg->refdef.fov_y = fov_y;
+        cg->zoomSensitivity = fov_x / *(float *)((char *)(*(int *)imp_cg_fov) + 8);
     }
-
-    *(float *)(cg_s + 0x28580) = fov_x;
-    *(float *)(cg_s + 0x28584) = fov_y;
-    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)((char *)(*(int *)imp_cg_fov) + 8);
 }
 
 /* line 49 */
@@ -445,22 +454,25 @@ static void CG_OffsetThirdPersonView(void)
 
     /* line 139 */
     cg_s = *(byte **)imp_cg;
-    origin = cg_s + 0x28588;
-    viewAngles = cg_s + 0x285c8;
+    {
+        cg_t *cg = (cg_t *)cg_s;
+        origin = (byte *)cg->refdef.vieworg;
+        viewAngles = (byte *)cg->refdefViewAngles;
 
-    /* Add predicted error to z */
-    *(float *)(origin + 8) += *(float *)(cg_s + 0x25cbc);
+        /* Add predicted error to z */
+        cg->refdef.vieworg[2] += cg->predictedPlayerState.viewHeightCurrent;
 
-    /* Copy view angles to focusAngles */
-    focusAngles[0] = *(float *)(viewAngles + 0);
-    focusAngles[1] = *(float *)(viewAngles + 4);
-    focusAngles[2] = *(float *)(viewAngles + 8);
+        /* Copy view angles to focusAngles */
+        focusAngles[0] = cg->refdefViewAngles[0];
+        focusAngles[1] = cg->refdefViewAngles[1];
+        focusAngles[2] = cg->refdefViewAngles[2];
 
-    /* line 144: if pm_type > 5 */
-    if (*(int *)(cg_s + 0x25bc8) > 5) {
-        /* line 146-147 */
-        focusAngles[1] = (float)*(int *)(cg_s + 0x25cf4);
-        *(float *)(viewAngles + 4) = (float)*(int *)(cg_s + 0x25cf4);
+        /* line 144: if pm_type > 5 */
+        if (cg->predictedPlayerState.pm_type > 5) {
+            /* line 146-147 */
+            focusAngles[1] = (float)cg->predictedPlayerState.stats[1];
+            cg->refdefViewAngles[1] = (float)cg->predictedPlayerState.stats[1];
+        }
     }
 
     /* line 152: clamp focusAngles[0] to min(45.0f, focusAngles[0]) */
@@ -515,7 +527,7 @@ static void CG_OffsetThirdPersonView(void)
 
     /* line 172: first trace from origin to view */
     CG_TraceCapsule((trace_t *)trace, (const vec_t *)origin, (const vec_t *)&mins, (const vec_t *)&maxs,
-                    (const vec_t *)view, *(int *)(cg_s + 0x25c90), 0x811);
+                    (const vec_t *)view, ((cg_t *)cg_s)->predictedPlayerState.clientNum, 0x811);
 
     trace_fraction = *(float *)trace;
 
@@ -532,7 +544,7 @@ static void CG_OffsetThirdPersonView(void)
 
         /* line 181: second trace */
         CG_TraceCapsule((trace_t *)trace, (const vec_t *)origin, (const vec_t *)&mins, (const vec_t *)&maxs,
-                        (const vec_t *)view, *(int *)(cg_s + 0x25c90), 0x811);
+                        (const vec_t *)view, ((cg_t *)cg_s)->predictedPlayerState.clientNum, 0x811);
         trace_fraction = *(float *)trace;
 
         /* VectorLerp again */
@@ -565,7 +577,7 @@ static void CG_OffsetThirdPersonView(void)
 
         /* line 194: compute pitch from atan2 */
         angle = atan2((double)dz, (double)dist2d);
-        *(float *)(cg_s + 0x285c8) = (float)(angle * -57.29577951308232);
+        ((cg_t *)cg_s)->refdefViewAngles[0] = (float)(angle * -57.29577951308232);
     }
 }
 #endif
@@ -1419,30 +1431,30 @@ void CG_CalcViewValues(void)
 
 void CG_InitView(void)
 {
-    char *cg_s;
+    cg_t *cg;
     int renderPlayerState;
 
-    cg_s = (char *)*(int *)imp_cg;
-    *(int *)(cg_s + 0x285b8) = *(int *)(cg_s + 0x25bb0);
-    *(int *)(cg_s + 0x285bc) = 0x3f800000;
+    cg = (cg_t *)*(int *)imp_cg;
+    *(int *)((char *)cg + 0x285b8) = cg->time; /* TODO: unknown offset 0x285b8 */
+    *(int *)((char *)cg + 0x285bc) = 0x3f800000; /* TODO: unknown offset 0x285bc */
 
     if (*(unsigned char *)((char *)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
         renderPlayerState = 1;
-    } else if (*(int *)(*(char **)(cg_s + 0x20) + 0x10) > 5) {
+    } else if (cg->snap->ps.pm_type > 5) {
         renderPlayerState = 1;
     } else {
         renderPlayerState = 0;
     }
 
-    *(int *)(cg_s + 0x25bc0) = renderPlayerState;
+    cg->renderingThirdPerson = renderPlayerState;
     CG_PredictPlayerState();
     CL_ResetSkeletonCache(0);
 
-    cg_s = (char *)*(int *)imp_cg;
-    CG_UpdateViewWeaponAnim((void *)(cg_s + 0x25bc4));
+    cg = (cg_t *)*(int *)imp_cg;
+    CG_UpdateViewWeaponAnim((void *)&cg->predictedPlayerState);
     CG_CalcViewValues();
-    CL_FX_AdjustCamera((void *)(cg_s + 0x28570));
-    FX_AdjustTime(*(int *)(cg_s + 0x25bb0));
+    CL_FX_AdjustCamera((void *)&cg->refdef);
+    FX_AdjustTime(cg->time);
 }
 
 /* line 935 */

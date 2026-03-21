@@ -316,7 +316,7 @@ void Field_AdjustScroll(field_t *edit) {
     if (edit->fixedSize) {
         fontScale = GetVirtualWidthFromRealWidth(fontScale);
         lineWidth = GetVirtualHeightFromRealHeight(lineWidth);
-        font = *(FontHandle *)((byte *)imp_cls + 0x2a0a60);
+        font = ((clientStatic_t *)imp_cls)->consoleFont;
     } else {
         font = UI_GetFontHandle(0, fontScale);
     }
@@ -2518,11 +2518,11 @@ void Key_ClearStates(void)
 
     for (i = 0; i < 256; i++) {
         k = (byte *)keys + i * 12;
-        if (*(int *)k) {
+        if (((qkey_t *)k)->down) {
             CL_KeyEvent(i, 0, 0);
         }
-        *(int *)k = 0;       /* down */
-        *(int *)(k + 4) = 0; /* repeats */
+        ((qkey_t *)k)->down = 0;
+        ((qkey_t *)k)->repeats = 0;
     }
 }
 #else
@@ -2548,15 +2548,15 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
     vColor[3] = 1.0f;
 
     /* line 398: copy visible portion of edit buffer */
-    I_strncpyz(str, (const char *)((byte *)edit + 0x18 + *(int *)((byte *)edit + 4)), 0x100 - *(int *)((byte *)edit + 4));
+    I_strncpyz(str, edit->buffer + edit->scroll, 0x100 - edit->scroll);
 
     /* line 400 */
-    cursorPos = *(int *)((byte *)edit) - *(int *)((byte *)edit + 4);
+    cursorPos = edit->cursor - edit->scroll;
 
     /* line 402: check if the field has a font scale set */
-    if (*(int *)((byte *)edit + 0x14) != 0) {
+    if (edit->fixedSize != 0) {
         /* line 404: use cls font */
-        font = *(void **)(*(byte **)imp_cls + 0x2a0a60);
+        font = (void *)(*(clientStatic_t **)imp_cls)->consoleFont;
 
         /* line 409: overstrike mode */
         if (*(int *)*key_overstrikeMode) {
@@ -2572,7 +2572,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         }
     } else {
         /* line 416: compute scale from edit->pixelWidth */
-        rawScale = *(float *)((byte *)edit + 0x10) / 48.0f;
+        rawScale = edit->charHeight / 48.0f;
 
         /* line 417 */
         font = (void *)UI_GetFontHandle(0, rawScale);
@@ -2621,12 +2621,12 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
     }
 
     /* line 438 */
-    drawWidth = *(int *)((byte *)edit + 8);
+    drawWidth = edit->drawWidth;
     if (drawWidth == 0)
-        *(int *)((byte *)edit + 8) = 0x100;
+        edit->drawWidth = 0x100;
 
     /* line 442: draw text with cursor */
-    CL_DrawTextWithCursor(str, *(int *)((byte *)edit + 8), font,
+    CL_DrawTextWithCursor(str, edit->drawWidth, font,
                           xAdj, yAdj, horzAlign, vertAlign,
                           xScale, yScale,
                           vColor, fontStyle, cursorPos, cursorChar);

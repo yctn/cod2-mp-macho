@@ -79,7 +79,7 @@ void CG_AddMovingTracer(localEntity_t *le)
     float dist;
 
     /* Evaluate the trajectory to get current position */
-    time = *(int *)((char *)(*(int *)imp_cg) + 0x25bb0);
+    time = ((cg_t *)(*(int *)imp_cg))->time;
     BG_EvaluateTrajectory(&le->pos, time, start);
 
     /* Get normalized direction from trDelta */
@@ -181,7 +181,7 @@ void CG_AddLocalEntities(void)
     while (le != cg_activeLocalEntities) {
         next = (localEntity_t *)(le->prev);
 
-        time = *(int *)((char *)(*(int *)imp_cg) + 0x25bb0);
+        time = ((cg_t *)(*(int *)imp_cg))->time;
 
         if (time >= le->endTime || time < le->pos.trTime) {
             /* Entity has expired or time is before trajectory start - free it */

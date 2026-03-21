@@ -13,7 +13,7 @@ extern float floorf(float x);
 
 /* extern globals */
 extern byte *_cg_p; /* imp_cg - pointer to cg_t* */
-#define cg (*(byte **)_cg_p)
+#define cg (*(cg_t **)_cg_p)
 
 /* dvar pointers - each is a dvar_t** (pointer to pointer to dvar_s) */
 extern byte *_dvar_shellshock_fadein;          /* imp_cg_shock_screenBlendFadeTime */
@@ -117,7 +117,7 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
 /* line 256 */
 void CG_PerturbCamera(void)
 {
-    byte *cgp = cg;
+    cg_t *cgp = cg;
     vec3_t rot;
     vec3_t up;
     vec3_t cross;
@@ -125,14 +125,14 @@ void CG_PerturbCamera(void)
     float axis[3][3];
 
     /* Check if perturbation angles are non-zero */
-    if (*(float *)(cgp + 0x2ccec) == 0.0f && *(float *)(cgp + 0x2ccf0) == 0.0f) {
+    if (cgp->shellshock.viewDelta[0] == 0.0f && cgp->shellshock.viewDelta[1] == 0.0f) {
         return;
     }
 
     /* line 264-269: build rotation axis */
     rot[0] = 1.0f;
-    rot[1] = *(float *)(cgp + 0x2ccec);
-    rot[2] = *(float *)(cgp + 0x2ccf0);
+    rot[1] = cgp->shellshock.viewDelta[0];
+    rot[2] = cgp->shellshock.viewDelta[1];
 
     up[0] = 0.0f;
     up[1] = 0.0f;
@@ -145,7 +145,7 @@ void CG_PerturbCamera(void)
     Vec3Cross(rot, cross, up);
 
     /* line 276-277: apply rotation to refdef axis */
-    refdefAxis = (float (*)[3])(cgp + 0x28594);
+    refdefAxis = (float (*)[3])cgp->refdef.viewaxis;
     AxisCopy(refdefAxis, axis);
     MatrixMultiply(rot, axis, refdefAxis);
 }
@@ -230,7 +230,7 @@ qboolean CG_LoadShellShockDvars(const char *name)
 /* line 286 */
 qboolean CG_DrawShellShockSavedScreenBlend(const shellshock_parms_t *parms, int start, int duration)
 {
-    byte *cgp;
+    cg_t *cgp;
     int timeLeft;
     int blend;
     int fadeDuration;
@@ -240,24 +240,24 @@ qboolean CG_DrawShellShockSavedScreenBlend(const shellshock_parms_t *parms, int 
     if (start == 0 || duration <= 0) {
         /* line 293 */
         cgp = cg;
-        *(int *)(cgp + 0x2ccf4) = 0;
+        cgp->shellshock.hasSavedScreen = 0;
         return 0;
     }
 
     /* line 297 */
     cgp = cg;
-    timeLeft = start + duration - *(int *)(cgp + 0x25bb0);
+    timeLeft = start + duration - cgp->time;
 
     /* line 298 */
     if (timeLeft <= 0) {
         /* line 300 */
-        *(int *)(cgp + 0x2ccf4) = 0;
+        cgp->shellshock.hasSavedScreen = 0;
         return 0;
     }
 
     /* line 304-305 */
-    fadeIn = *(int *)((byte *)parms + 0x10);
-    fadeDuration = *(int *)((byte *)parms + 0x0c);
+    fadeIn = parms->screenBlend.effectTime;
+    fadeDuration = parms->screenBlend.fadeTime;
 
     blend = fadeIn;
     if (timeLeft < fadeDuration) {
@@ -266,7 +266,7 @@ qboolean CG_DrawShellShockSavedScreenBlend(const shellshock_parms_t *parms, int 
     }
 
     /* line 310-313 */
-    if (*(int *)(cgp + 0x2ccf4) != 0) {
+    if (cgp->shellshock.hasSavedScreen != 0) {
         /* line 311 */
         CL_BlendSavedScreen(blend);
     }
@@ -275,135 +275,134 @@ qboolean CG_DrawShellShockSavedScreenBlend(const shellshock_parms_t *parms, int 
     CL_SaveScreen();
 
     /* line 313 */
-    *(int *)(cgp + 0x2ccf4) = 1;
+    cgp->shellshock.hasSavedScreen = 1;
     return 1;
 }
 
 /* line 413 */
 void CG_SetShellShockParmsFromDvars(shellshock_parms_t *parms)
 {
-    byte *p = (byte *)parms;
     float val;
     float epsilon;
 
     /* line 428: fadein (ms from seconds) */
-    *(int *)(p + 0x0c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadein));
+    parms->screenBlend.fadeTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadein));
 
     /* fadeout */
-    *(int *)(p + 0x10) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadeout));
+    parms->screenBlend.effectTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadeout));
 
     /* line 422: view = 3000 */
-    *(int *)(p + 0x00) = 3000;
+    parms->view.fadeTime = 3000;
 
     /* line 423: screenblend ratio */
     val = dvar_get_float(_dvar_shellshock_screenblend);
     epsilon = 0.001f;
     if (epsilon - val == 0.0f) {
-        *(float *)(p + 0x04) = 1.0f;
+        parms->view.kickRate = 1.0f;
     } else {
-        *(float *)(p + 0x04) = epsilon / val;
+        parms->view.kickRate = epsilon / val;
     }
 
     /* line 424: screentype */
-    *(int *)(p + 0x08) = dvar_get_int(_dvar_shellshock_screentype);
+    *(int *)&parms->view.kickRadius = dvar_get_int(_dvar_shellshock_screentype);
 
     /* line 426: screenenabled (bool) */
-    *(int *)(p + 0x14) = dvar_get_bool(_dvar_shellshock_screenenabled);
+    parms->sound.use = dvar_get_bool(_dvar_shellshock_screenenabled);
 
     /* line 428: soundfadein (ms) */
-    *(int *)(p + 0x18) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadein));
+    parms->sound.fadeInTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadein));
 
     /* soundfadeout (ms) */
-    *(int *)(p + 0x1c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadeout));
+    parms->sound.fadeOutTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadeout));
 
     /* loopfadein (ms) */
-    *(int *)(p + 0x68) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadein));
+    parms->sound.loopFadeTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadein));
 
     /* loopfadeout (ms) */
-    *(int *)(p + 0x6c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadeout));
+    parms->sound.loopEndDelay = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadeout));
 
     /* line 431: looptype - enum to string */
-    strncpy((char *)(p + 0x28), Dvar_EnumToString(dvar_get_ptr(_dvar_shellshock_looptype)), 0xf);
-    *(p + 0x37) = 0; /* null terminator */
+    strncpy(parms->sound.roomtype, Dvar_EnumToString(dvar_get_ptr(_dvar_shellshock_looptype)), 0xf);
+    parms->sound.roomtype[15] = 0; /* null terminator */
 
     /* line 433: sounddrylevellooptype */
-    *(int *)(p + 0x20) = dvar_get_int(_dvar_shellshock_sounddrylevellooptype);
+    *(int *)&parms->sound.drylevel = dvar_get_int(_dvar_shellshock_sounddrylevellooptype);
 
     /* line 434: soundwetlevellooptype */
-    *(int *)(p + 0x24) = dvar_get_int(_dvar_shellshock_soundwetlevellooptype);
+    *(int *)&parms->sound.wetlevel = dvar_get_int(_dvar_shellshock_soundwetlevellooptype);
 
     /* soundloopsilent (ms) */
-    *(int *)(p + 0x64) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundloopsilent));
+    parms->sound.modEndDelay = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundloopsilent));
 
     /* line 436: viewkickfadein - max(val, 1.0f) */
     val = dvar_get_float(_dvar_shellshock_viewkickfadein);
-    *(float *)(p + 0x38) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[0] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 437: viewkickperiod */
     val = dvar_get_float(_dvar_shellshock_viewkickperiod);
-    *(float *)(p + 0x3c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[1] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 438: viewkickradius */
     val = dvar_get_float(_dvar_shellshock_viewkickradius);
-    *(float *)(p + 0x40) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[2] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 439: viewkickpitch */
     val = dvar_get_float(_dvar_shellshock_viewkickpitch);
-    *(float *)(p + 0x4c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[5] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 440: viewkickyaw */
     val = dvar_get_float(_dvar_shellshock_viewkickyaw);
-    *(float *)(p + 0x50) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[6] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 441: soundroomtype */
     val = dvar_get_float(_dvar_shellshock_soundroomtype);
-    *(float *)(p + 0x48) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[4] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 442: sounddrylevel */
     val = dvar_get_float(_dvar_shellshock_sounddrylevel);
-    *(float *)(p + 0x44) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[3] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 443: soundwetlevel */
     val = dvar_get_float(_dvar_shellshock_soundwetlevel);
-    *(float *)(p + 0x54) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[7] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 444: soundmodenddelay */
     val = dvar_get_float(_dvar_shellshock_soundmodenddelay);
-    *(float *)(p + 0x58) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[8] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 445: soundendduration */
     val = dvar_get_float(_dvar_shellshock_soundendduration);
-    *(float *)(p + 0x5c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[9] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 446: soundfade */
     val = dvar_get_float(_dvar_shellshock_soundfade);
-    *(float *)(p + 0x60) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+    parms->sound.channelvolume[10] = (val > 0.0f && val > 1.0f) ? val : 1.0f;
 
     /* line 465: mouseenable (bool) */
-    *(int *)(p + 0x70) = dvar_get_bool(_dvar_shellshock_mouseenable);
+    parms->mouse.use = dvar_get_bool(_dvar_shellshock_mouseenable);
 
     /* line 428: mousefadein (ms) */
-    *(int *)(p + 0x74) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_mousefadein));
+    parms->mouse.fadeTime = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_mousefadein));
 
     /* line 468: mouseturnrate */
-    *(int *)(p + 0x7c) = dvar_get_int(_dvar_shellshock_mouseturnrate);
+    *(int *)&parms->mouse.maxPitchSpeed = dvar_get_int(_dvar_shellshock_mouseturnrate);
 
     /* line 469: mousereducemax */
-    *(int *)(p + 0x80) = dvar_get_int(_dvar_shellshock_mousereducemax);
+    *(int *)&parms->mouse.maxYawSpeed = dvar_get_int(_dvar_shellshock_mousereducemax);
 
     /* line 470: mousesensitivity */
-    *(int *)(p + 0x78) = dvar_get_int(_dvar_shellshock_mousesensitivity);
+    *(int *)&parms->mouse.sensitivity = dvar_get_int(_dvar_shellshock_mousesensitivity);
 }
 
 /* Deactivate sound and reset shellshock state */
-static void CG_DeactivateShellShockSound(byte *cgp)
+static void CG_DeactivateShellShockSound(cg_t *cgp)
 {
     SND_DeactivateChannelVolumes(3, 0);
     SND_DeactivateEnvironmentEffects(2, 0);
 
     /* line 488: check and stop loop sound */
-    if (*(int *)(cgp + 0x2cce4) != 0) {
-        *(int *)(cgp + 0x2cce4) = 0;
+    if (cgp->shellshock.loopEndTime != 0) {
+        cgp->shellshock.loopEndTime = 0;
         /* line 491 */
         {
             void *alias = CL_PickSoundAlias("shellshock_loop_end");
@@ -413,10 +412,10 @@ static void CG_DeactivateShellShockSound(byte *cgp)
 }
 
 /* Reset motion/view state on cgp */
-static void CG_ResetShellShockMotion(byte *cgp)
+static void CG_ResetShellShockMotion(cg_t *cgp)
 {
     /* line 503: sensitivity = 1.0f */
-    *(int *)(cgp + 0x2cce8) = 0x3f800000; /* 1.0f as int bits */
+    cgp->shellshock.sensitivity = 1.0f;
 
     /* line 504: cap turn rate to 0,0 */
     CL_CapTurnRate(0, 0);
@@ -425,10 +424,9 @@ static void CG_ResetShellShockMotion(byte *cgp)
 /* line 706 */
 void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duration)
 {
-    byte *cgp;
+    cg_t *cgp;
     int time;
     int timeSinceStart;
-    byte *p = (byte *)parms;
     float fade;
     float channelvolume[11];
     int i;
@@ -437,7 +435,7 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
 
     /* line 710 */
     cgp = cg;
-    time = *(int *)(cgp + 0x25bb0) - start;
+    time = cgp->time - start;
 
     /* line 711 */
     if (start == 0 || time < 0) {
@@ -448,8 +446,8 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
         CG_ResetShellShockMotion(cgp);
 
         /* line 515-516 */
-        *(int *)(cgp + 0x2ccec) = 0;
-        *(int *)(cgp + 0x2ccf0) = 0;
+        cgp->shellshock.viewDelta[0] = 0.0f;
+        cgp->shellshock.viewDelta[1] = 0.0f;
 
         /* line 530 */
         CL_SetUserCmdInShellshock(0);
@@ -458,14 +456,14 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
 
     /* Active shellshock */
     /* line 551: check if sound is enabled in parms */
-    if (*(int *)(p + 0x14) == 0) {
+    if (parms->sound.use == 0) {
         /* Sound not enabled */
         SND_DeactivateChannelVolumes(3, 0);
         SND_DeactivateEnvironmentEffects(2, 0);
 
         /* line 488 */
-        if (*(int *)(cgp + 0x2cce4) != 0) {
-            *(int *)(cgp + 0x2cce4) = 0;
+        if (cgp->shellshock.loopEndTime != 0) {
+            cgp->shellshock.loopEndTime = 0;
             {
                 void *alias = CL_PickSoundAlias("shellshock_loop_end");
                 SND_PlaySoundAlias(alias, 0x3ff, _snd_local_listener, 0, 1);
@@ -476,9 +474,9 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
 
     {
         /* line 557 */
-        int soundFadeOut = *(int *)(p + 0x1c);
-        int soundFadeIn = *(int *)(p + 0x18);  /* actually this is at +0x18 which is soundfadein in ms */
-        int totalWithFade = duration + *(int *)(p + 0x64) + soundFadeOut;
+        int soundFadeOut = parms->sound.fadeOutTime;
+        int soundFadeIn = parms->sound.fadeInTime;
+        int totalWithFade = duration + parms->sound.modEndDelay + soundFadeOut;
         int soundTimeLeft = totalWithFade - time;
 
         /* line 558 */
@@ -509,30 +507,30 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
         } else {
             /* line 570: compute channel volumes */
             for (i = 0; i < 11; i++) {
-                channelvolume[i] = (*(float *)(p + 0x38 + i * 4) - 1.0f) * fade + 1.0f;
+                channelvolume[i] = (parms->sound.channelvolume[i] - 1.0f) * fade + 1.0f;
             }
 
             /* line 571 */
             SND_SetChannelVolumes(3, channelvolume, 0);
 
             /* line 573 */
-            SND_SetEnvironmentEffects(2, (const char *)(p + 0x28),
-                fade * *(float *)(p + 0x20),
-                fade * *(float *)(p + 0x24), 0);
+            SND_SetEnvironmentEffects(2, parms->sound.roomtype,
+                fade * parms->sound.drylevel,
+                fade * parms->sound.wetlevel, 0);
         }
     }
 
     {
         /* line 583: loop sound */
-        int loopFadeOutVal = *(int *)(p + 0x6c);
-        loopTimeLeft = duration + loopFadeOutVal + *(int *)(p + 0x68) - time;
+        int loopFadeOutVal = parms->sound.loopEndDelay;
+        loopTimeLeft = duration + loopFadeOutVal + parms->sound.loopFadeTime - time;
 
         /* line 584 */
         if (loopTimeLeft > 0) {
             /* line 586-587 */
             void *pAlias0 = CL_PickSoundAlias("shellshock_loop");
             void *pAlias1 = CL_PickSoundAlias("shellshock_loop2");
-            int loopFadeIn = *(int *)(p + 0x68);
+            int loopFadeIn = parms->sound.loopFadeTime;
 
             /* line 589 */
             if (loopFadeIn == 0) {
@@ -548,21 +546,21 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
             /* line 595: play blended loop */
             SND_PlayBlendedSoundAliases(pAlias0, pAlias1, fade, 0x3ff, _snd_local_listener, 0, 1);
 
-            loopFadeOutVal = *(int *)(p + 0x6c);
+            loopFadeOutVal = parms->sound.loopEndDelay;
         }
 
         /* line 598: check loop end */
         cgp = cg;
         {
-            int cgTime = *(int *)(cgp + 0x25bb0);
+            int cgTime = cgp->time;
             int loopEndTime = cgTime - time + duration + loopFadeOutVal;
 
             /* line 599 */
             if (cgTime < loopEndTime) {
                 /* line 601 */
-                if (*(int *)(cgp + 0x2cce4) != 0) {
+                if (cgp->shellshock.loopEndTime != 0) {
                     /* line 603 */
-                    *(int *)(cgp + 0x2cce4) = 0;
+                    cgp->shellshock.loopEndTime = 0;
                     /* line 604 */
                     {
                         void *alias = CL_PickSoundAlias("shellshock_loop_end");
@@ -571,9 +569,9 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
                 }
             } else {
                 /* line 607 */
-                if (*(int *)(cgp + 0x2cce4) != loopEndTime) {
+                if (cgp->shellshock.loopEndTime != loopEndTime) {
                     /* line 609 */
-                    *(int *)(cgp + 0x2cce4) = loopEndTime;
+                    cgp->shellshock.loopEndTime = loopEndTime;
 
                     /* line 610 */
                     {
@@ -589,13 +587,12 @@ void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duratio
 check_mouse:
     {
         /* line 628: check mouse enabled */
-        byte *parms_p = (byte *)parms;
-        int mouseEnabled = *(int *)(parms_p + 0x70);
+        int mouseEnabled = parms->mouse.use;
         int timeSinceStart2 = duration - time;
 
         if (mouseEnabled == 0) {
             /* line 503 */
-            cgp = *(byte **)_cg_p;
+            cgp = cg;
             CG_ResetShellShockMotion(cgp);
 
             timeSinceStart2 = duration - time;
@@ -604,18 +601,18 @@ check_mouse:
 
         {
             /* line 634 */
-            int mouseFadeIn = *(int *)(parms_p + 0x74);
+            int mouseFadeIn = parms->mouse.fadeTime;
             if (timeSinceStart2 >= mouseFadeIn) {
                 /* Fully faded in */
                 /* line 650 */
-                cgp = *(byte **)_cg_p;
-                *(int *)(cgp + 0x2cce8) = *(int *)(parms_p + 0x78);
+                cgp = cg;
+                cgp->shellshock.sensitivity = parms->mouse.sensitivity;
 
                 /* line 651 */
-                CL_CapTurnRate(*(int *)(parms_p + 0x7c), *(int *)(parms_p + 0x80));
+                CL_CapTurnRate(*(int *)&parms->mouse.maxPitchSpeed, *(int *)&parms->mouse.maxYawSpeed);
             } else if (timeSinceStart2 <= 0) {
                 /* line 503: not started yet */
-                cgp = *(byte **)_cg_p;
+                cgp = cg;
                 CG_ResetShellShockMotion(cgp);
             } else {
                 /* line 640: fading in */
@@ -625,17 +622,17 @@ check_mouse:
                 if (t == 1.0f) {
                     /* Fully faded in */
                     /* line 650 */
-                    cgp = *(byte **)_cg_p;
-                    *(int *)(cgp + 0x2cce8) = *(int *)(parms_p + 0x78);
-                    CL_CapTurnRate(*(int *)(parms_p + 0x7c), *(int *)(parms_p + 0x80));
+                    cgp = cg;
+                    cgp->shellshock.sensitivity = parms->mouse.sensitivity;
+                    CL_CapTurnRate(*(int *)&parms->mouse.maxPitchSpeed, *(int *)&parms->mouse.maxYawSpeed);
                 } else {
                     /* line 655-656: interpolate */
-                    cgp = *(byte **)_cg_p;
-                    float sensitivity = *(float *)(parms_p + 0x78);
-                    *(float *)(cgp + 0x2cce8) = (sensitivity - 1.0f) * t + 1.0f;
+                    cgp = cg;
+                    float sensitivity = parms->mouse.sensitivity;
+                    cgp->shellshock.sensitivity = (sensitivity - 1.0f) * t + 1.0f;
 
-                    float minRate = *(float *)(parms_p + 0x7c) / t;
-                    float maxRate = *(float *)(parms_p + 0x80) / t;
+                    float minRate = parms->mouse.maxPitchSpeed / t;
+                    float maxRate = parms->mouse.maxYawSpeed / t;
                     CL_CapTurnRate(*(int *)&minRate, *(int *)&maxRate);
                 }
             }
@@ -648,11 +645,11 @@ check_viewkick:
     if (timeSinceStart <= 0) {
         /* line 515 */
         cgp = cg;
-        *(int *)(cgp + 0x2ccec) = 0;
-        *(int *)(cgp + 0x2ccf0) = 0;
+        cgp->shellshock.viewDelta[0] = 0.0f;
+        cgp->shellshock.viewDelta[1] = 0.0f;
     } else {
         /* line 686 */
-        int viewKickTime = *(int *)(p + 0x00); /* view (3000ms) */
+        int viewKickTime = parms->view.fadeTime;
         float t;
         float amplitude;
 
@@ -666,11 +663,11 @@ check_viewkick:
         }
 
         /* line 689 */
-        amplitude = amplitude * *(float *)(p + 0x08);
+        amplitude = amplitude * parms->view.kickRadius;
 
         /* line 691 */
         {
-            float phase = (float)time * *(float *)(p + 0x04);
+            float phase = (float)time * parms->view.kickRate;
             int phaseFloor = (int)floorf(phase);
             float frac = phase - (float)phaseFloor;
 
@@ -694,7 +691,7 @@ check_viewkick:
             float resultX = x1 + c_x;
 
             cgp = cg;
-            *(float *)(cgp + 0x2ccec) = amplitude * resultX;
+            cgp->shellshock.viewDelta[0] = amplitude * resultX;
 
             /* Same interpolation for Y component */
             float y0 = *(float *)(base + 4);
@@ -712,7 +709,7 @@ check_viewkick:
             yxmm2 *= frac;
             float resultY = y1 + yxmm2;
 
-            *(float *)(cgp + 0x2ccf0) = amplitude * resultY;
+            cgp->shellshock.viewDelta[1] = amplitude * resultY;
         }
     }
 

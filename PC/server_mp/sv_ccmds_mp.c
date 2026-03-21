@@ -1024,7 +1024,7 @@ short int SV_ConTell_f(void)
 /* line 848 */
 short int SV_Heartbeat_f(void)
 {
-    *(int *)((byte *)imp_svs + 0x54) = (int)0x80000000;
+    ((serverStatic_t *)imp_svs)->nextHeartbeatTime = (int)0x80000000;
 }
 
 /* line 861 */
@@ -1060,7 +1060,7 @@ static short int SV_DumpUser_f(void)
         return 0;
     Com_Printf("userinfo\n");
     Com_Printf("--------\n");
-    Info_Print((const char *)(cl + 0xc));
+    Info_Print(((client_t *)cl)->userinfo);
     return 0;
 }
 
@@ -1656,7 +1656,7 @@ short int SV_MapRotate_f(void)
 #else
 static client_t * SV_GetPlayerByName(void) {
     const char *s;
-    byte *cl;
+    client_t *cl;
     int i, maxclients;
     char cleanName[64];
 
@@ -1669,22 +1669,22 @@ static client_t * SV_GetPlayerByName(void) {
     }
 
     s = SV_Cmd_Argv(1);
-    cl = *(byte **)(*(byte **)imp_svs + 0xc);
+    cl = ((serverStatic_t *)imp_svs)->clients;
     maxclients = *(int *)(*(byte **)imp_sv_maxclients + 8);
 
     for (i = 0; i < maxclients; i++) {
-        if (!*(int *)cl)
+        if (!cl->state)
             goto next;
 
-        if (I_stricmp((char *)cl + 0x20c48, s) == 0)
-            return (client_t *)cl;
+        if (I_stricmp(cl->name, s) == 0)
+            return cl;
 
-        I_strncpyz(cleanName, (char *)cl + 0x20c48, 64);
+        I_strncpyz(cleanName, cl->name, 64);
         I_CleanStr(cleanName);
         if (I_stricmp(cleanName, s) == 0)
-            return (client_t *)cl;
+            return cl;
 next:
-        cl += 0x78f0c;
+        cl++;
     }
 
     Com_Printf((const char *)str_002ac3fc, s);

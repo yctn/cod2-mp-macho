@@ -35,14 +35,14 @@ extern byte *cls_ptr_195ecac; /* imp_cls - pointer to clientStatic_t */
 
 #define CLS (*(byte **)&cls_ptr_195ecac)
 
-#define CLS_NUMFAVORITESERVERS(base) (*(int *)((base) + 0x29c644))
-#define CLS_FAVORITESERVERS(base) ((serverInfo_t *)((base) + 0x29c648))
+#define CLS_NUMFAVORITESERVERS(base) (((clientStatic_t *)(base))->numfavoriteservers)
+#define CLS_FAVORITESERVERS(base) (((clientStatic_t *)(base))->favoriteServers)
 
-#define CLS_NUMGLOBALSERVERS(base) (*(int *)((base) + 0x4540))
-#define CLS_GLOBALSERVERS(base) ((serverInfo_t *)((base) + 0x4544))
+#define CLS_NUMGLOBALSERVERS(base) (((clientStatic_t *)(base))->numglobalservers)
+#define CLS_GLOBALSERVERS(base) (((clientStatic_t *)(base))->globalServers)
 
-#define CLS_NUMLOCALSERVERS(base) (*(int *)((base) + 0x138))
-#define CLS_LOCALSERVERS(base) ((serverInfo_t *)((base) + 0x13c))
+#define CLS_NUMLOCALSERVERS(base) (((clientStatic_t *)(base))->numlocalservers)
+#define CLS_LOCALSERVERS(base) (((clientStatic_t *)(base))->localServers)
 
 #define MAX_FAVORITESERVERS 128
 #define MAX_GLOBALSERVERS 20000

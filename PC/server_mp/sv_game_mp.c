@@ -130,29 +130,29 @@ qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits);
 /* line 76 */
 gentity_t * SV_GentityNum(int num)
 {
-    char *sv_data = (char *)imp_sv;
-    return (gentity_t *)(*(char **)(sv_data + 0x5f41c) + num * *(int *)(sv_data + 0x5f420));
+    server_t *sv = (server_t *)imp_sv;
+    return (gentity_t *)((char *)sv->gentities + num * sv->gentitySize);
 }
 
 /* line 86 */
 playerState_t * SV_GameClientNum(int num)
 {
-    char *sv_data = (char *)imp_sv;
-    return (playerState_t *)(*(char **)(sv_data + 0x5f428) + num * *(int *)(sv_data + 0x5f42c));
+    server_t *sv = (server_t *)imp_sv;
+    return (playerState_t *)((char *)sv->gameClients + num * sv->gameClientSize);
 }
 
 /* line 96 */
 int SV_SvEntityForGentity(const gentity_t *gEnt)
 {
-    char *sv_data = (char *)imp_sv;
+    server_t *sv = (server_t *)imp_sv;
     int number;
 
-    if (gEnt == NULL || *(int *)gEnt < 0 || *(int *)gEnt > 1023) {
+    if (gEnt == NULL || gEnt->s.number < 0 || gEnt->s.number > 1023) {
         Com_Error(1, "SV_SvEntityForGentity: bad gEnt");
     }
-    number = *(int *)gEnt;
+    number = gEnt->s.number;
 
-    return (int)(sv_data + 0x2418 + number * 372);
+    return (int)&sv->svEntities[number];
 }
 
 /* line 122 */
@@ -175,9 +175,8 @@ long unsigned int SV_GameSendServerCommand(int clientNum, svscmd_type type, cons
         p = *(char **)imp_sv_maxclients;
         maxClients = *(int *)(p + 8);
         if (clientNum < maxClients) {
-            clients_base = *(char **)((char *)imp_svs + 0xc);
-            client = clients_base + clientNum * 495372;
-            SV_SendServerCommand(client, type, "%s", text);
+            serverStatic_t *svs = (serverStatic_t *)imp_svs;
+            SV_SendServerCommand(&svs->clients[clientNum], type, "%s", text);
         }
     }
 }
@@ -187,13 +186,12 @@ long unsigned int SV_GameDropClient(int clientNum, const char *reason)
 {
     char *p;
     int maxClients;
-    char *clients_base;
 
     p = *(char **)imp_sv_maxclients;
     maxClients = *(int *)(p + 8);
     if (clientNum >= 0 && clientNum < maxClients) {
-        clients_base = *(char **)((char *)imp_svs + 0xc);
-        SV_DropClient(clients_base + clientNum * 495372, reason);
+        serverStatic_t *svs = (serverStatic_t *)imp_svs;
+        SV_DropClient(&svs->clients[clientNum], reason);
     }
 }
 
@@ -209,20 +207,20 @@ long unsigned int SV_GetServerinfo(char *buffer, int bufferSize)
 /* line 424 */
 long unsigned int SV_LocateGameData(gentity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient)
 {
-    char *sv_data = (char *)imp_sv;
-    *(int *)(sv_data + 0x5f41c) = (int)gEnts;
-    *(int *)(sv_data + 0x5f420) = sizeofGEntity_t;
-    *(int *)(sv_data + 0x5f424) = numGEntities;
-    *(int *)(sv_data + 0x5f428) = (int)clients;
-    *(int *)(sv_data + 0x5f42c) = sizeofGameClient;
+    server_t *sv = (server_t *)imp_sv;
+    sv->gentities = gEnts;
+    sv->gentitySize = sizeofGEntity_t;
+    sv->num_entities = numGEntities;
+    sv->gameClients = clients;
+    sv->gameClientSize = sizeofGameClient;
 }
 
 /* line 441 */
 long unsigned int SV_GetUsercmd(int clientNum, usercmd_t *cmd)
 {
-    char *clients_base = *(char **)((char *)imp_svs + 0xc);
+    serverStatic_t *svs = (serverStatic_t *)imp_svs;
     int *dst = (int *)cmd;
-    int *src = (int *)(clients_base + clientNum * 495372 + 0x20824);
+    int *src = (int *)&svs->clients[clientNum].lastUsercmd;
     dst[0] = src[0];
     dst[1] = src[1];
     dst[2] = src[2];
@@ -259,7 +257,7 @@ long unsigned int SV_DObjDumpInfo(gentity_t *ent)
     void *obj;
     char *p = *(char **)imp_com_developer;
     if (*(int *)(p + 8) != 0) {
-        obj = Com_GetServerDObj(*(int *)ent);
+        obj = Com_GetServerDObj(ent->s.number);
         if (obj) {
             DObjDumpInfo(obj);
         } else {
@@ -271,18 +269,18 @@ long unsigned int SV_DObjDumpInfo(gentity_t *ent)
 /* line 512 */
 long unsigned int SV_ResetSkeletonCache(void)
 {
-    char *sv_data = (char *)imp_sv;
-    int idx = *(int *)(sv_data + 0x5f430) + 1;
+    server_t *sv = (server_t *)imp_sv;
+    int idx = sv->skelTimeStamp + 1;
     if (idx == 0) idx = 1;
-    *(int *)(sv_data + 0x5f430) = idx;
+    sv->skelTimeStamp = idx;
     g_sv_skel_memory_start = (char *)((((unsigned int)g_sv_skel_memory) + 0xf) & ~0xfu);
-    *(int *)(sv_data + 0x5f434) = 0;
+    sv->skelMemPos = 0;
 }
 
 /* line 622 */
 qboolean SV_DObjUpdateServerTime(gentity_t *ent, float dtime, qboolean bNotify)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     if (obj) {
         return DObjUpdateServerInfo(obj, dtime, bNotify);
     }
@@ -292,7 +290,7 @@ qboolean SV_DObjUpdateServerTime(gentity_t *ent, float dtime, qboolean bNotify)
 /* line 640 */
 long unsigned int SV_DObjInitServerTime(gentity_t *ent, float dtime)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     if (obj) {
         DObjInitServerTime(obj, dtime);
     }
@@ -301,28 +299,28 @@ long unsigned int SV_DObjInitServerTime(gentity_t *ent, float dtime)
 /* line 658 */
 long unsigned int SV_DObjGetHierarchyBits(gentity_t *ent, int boneIndex, int *partBits)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     DObjGetHierarchyBits(obj, boneIndex, partBits);
 }
 
 /* line 675 */
 long unsigned int SV_DObjCalcAnim(gentity_t *ent, int *partBits)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     DObjCalcAnim(obj, partBits);
 }
 
 /* line 693 */
 long unsigned int SV_DObjCalcSkel(gentity_t *ent, int *partBits)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     DObjCalcSkel(obj, partBits);
 }
 
 /* line 728 */
 int SV_DObjGetBoneIndex(gentity_t *ent, unsigned int boneName)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     if (!obj) return -1;
     return DObjGetBoneIndex(obj, boneName);
 }
@@ -330,14 +328,14 @@ int SV_DObjGetBoneIndex(gentity_t *ent, unsigned int boneName)
 /* line 746 */
 DObjAnimMat_s * SV_DObjGetMatrixArray(gentity_t *ent)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     return DObjGetRotTransArray(obj);
 }
 
 /* line 763 */
 long unsigned int SV_DObjDisplayAnim(gentity_t *ent)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     if (obj) {
         DObjDisplayAnim(obj);
     }
@@ -346,7 +344,7 @@ long unsigned int SV_DObjDisplayAnim(gentity_t *ent)
 /* line 831 */
 struct XAnimTree_s * SV_DObjGetTree(gentity_t *ent)
 {
-    void *obj = Com_GetServerDObj(*(int *)ent);
+    void *obj = Com_GetServerDObj(ent->s.number);
     if (!obj) return 0;
     return DObjGetTree(obj);
 }
@@ -363,14 +361,14 @@ qboolean SV_MapExists(const char *name)
 /* line 946 */
 long unsigned int SV_ResetEntityParsePoint(void)
 {
-    char *sv_data = (char *)imp_sv;
-    *(int *)(sv_data + 0x5f418) = (int)CM_EntityString();
+    server_t *sv = (server_t *)imp_sv;
+    sv->entityParsePoint = CM_EntityString();
 }
 
 /* line 957 */
 qboolean SV_DObjExists(gentity_t *ent)
 {
-    return Com_GetServerDObj(*(int *)ent) != 0;
+    return Com_GetServerDObj(ent->s.number) != 0;
 }
 
 /* line 969 */
@@ -382,10 +380,10 @@ long unsigned int SV_SetWeaponInfoMemory(void)
 /* line 993 */
 qboolean SV_GetEntityToken(char *buffer, int bufferSize)
 {
-    char *sv_data = (char *)imp_sv;
-    const char *s = Com_Parse((char **)(sv_data + 0x5f418));
+    server_t *sv = (server_t *)imp_sv;
+    const char *s = Com_Parse((char **)&sv->entityParsePoint);
     I_strncpyz(buffer, s, bufferSize);
-    if (*(char **)(sv_data + 0x5f418) || *s) {
+    if (sv->entityParsePoint || *s) {
         return 1;
     }
     return 0;
@@ -395,27 +393,29 @@ qboolean SV_GetEntityToken(char *buffer, int bufferSize)
 int SV_GetGuid(int clientNum)
 {
     char *p = *(char **)imp_sv_maxclients;
-    char *clients_base;
     if (clientNum < 0 || clientNum >= *(int *)(p + 8)) {
         return 0;
     }
-    clients_base = *(char **)((char *)imp_svs + 0xc);
-    return *(int *)(clients_base + clientNum * 495372 + 0x765ec);
+    {
+        serverStatic_t *svs = (serverStatic_t *)imp_svs;
+        return svs->clients[clientNum].guid;
+    }
 }
 
 /* line 1052 */
 int SV_GetClientPing(int clientNum)
 {
-    char *clients_base = *(char **)((char *)imp_svs + 0xc);
-    return *(int *)(clients_base + clientNum * 495372 + 0x6e5a4);
+    serverStatic_t *svs = (serverStatic_t *)imp_svs;
+    return svs->clients[clientNum].ping;
 }
 
 /* line 1064 */
 qboolean SV_IsLocalClient(int clientNum)
 {
-    char *clients_base = *(char **)((char *)imp_svs + 0xc);
-    char *client = clients_base + clientNum * 495372;
-    return NET_IsLocalAddress(*(int *)(client + 0x6e5c4), *(int *)(client + 0x6e5c8), *(int *)(client + 0x6e5cc));
+    serverStatic_t *svs = (serverStatic_t *)imp_svs;
+    client_t *client = &svs->clients[clientNum];
+    netadr_t *addr = &client->netchan.remoteAddress;
+    return NET_IsLocalAddress(((int *)addr)[0], ((int *)addr)[1], ((int *)addr)[2]);
 }
 
 /* line 1106 */
@@ -428,7 +428,8 @@ void SV_SetGametype(void)
 
     /* If server is running and has save persist, use current gametype from sv */
     if (*(char *)(*(char **)imp_com_sv_running + 8) && G_GetSavePersist()) {
-        I_strncpyz(gametype, (char *)imp_sv + 0x5f4f4, 64);
+        server_t *sv = (server_t *)imp_sv;
+        I_strncpyz(gametype, sv->gametype, 64);
     } else {
         I_strncpyz(gametype, *(char **)((char *)*(void **)imp_sv_gametype + 8), 64);
     }
@@ -451,21 +452,20 @@ void SV_SetGametype(void)
 /* line 1152 */
 static void SV_InitGameVM(int restart, int savepersist)
 {
-    char *sv_data;
-    char *svs;
-    char *clients;
+    server_t *sv;
+    serverStatic_t *svs;
     int i;
     int maxclients;
 
     FX_InitServer();
 
-    sv_data = (char *)imp_sv;
-    *(const char **)(sv_data + 0x5f418) = CM_EntityString();
+    sv = (server_t *)imp_sv;
+    sv->entityParsePoint = CM_EntityString();
 
     Sys_LoadingKeepAlive();
 
-    svs = (char *)imp_svs;
-    G_InitGame(*(int *)(svs + 4), Sys_MillisecondsRaw(), restart, savepersist);
+    svs = (serverStatic_t *)imp_svs;
+    G_InitGame(svs->time, Sys_MillisecondsRaw(), restart, savepersist);
 
     /* DBG: count free script variables after G_InitGame */
     {
@@ -483,9 +483,10 @@ static void SV_InitGameVM(int restart, int savepersist)
 
     /* Clear client gentityNum for all clients */
     maxclients = *(int *)(*(char **)imp_sv_maxclients + 8);
-    clients = *(char **)((char *)imp_svs + 0xc);
+    svs = (serverStatic_t *)imp_svs;
     for (i = 0; i < maxclients; i++) {
-        *(int *)(clients + i * 495372 + 0x20c44) = 0;
+        /* offset 0x20c44 in client_t - gentity pointer / oldServerTime */
+        *(int *)((char *)&svs->clients[i] + 0x20c44) = 0;
     }
 
     /* Dump dvars if dedicated */
@@ -512,7 +513,8 @@ void SV_InitGameProgs(qboolean savepersist)
 /* line 1223 */
 qboolean SV_GameCommand(void)
 {
-    if (*(int *)(char *)imp_sv != 2) return 0;
+    server_t *sv = (server_t *)imp_sv;
+    if (sv->state != 2) return 0;
     return ConsoleCommand();
 }
 
@@ -520,24 +522,22 @@ qboolean SV_GameCommand(void)
 long unsigned int SV_SetBrushModel(gentity_t *ent)
 {
     vec3_t mins, maxs;
-    char *e = (char *)ent;
-    CM_ModelBounds(*(unsigned int *)(e + 0x8c), mins, maxs);
-    *(vec_t *)(e + 0x104) = mins[0];
-    *(vec_t *)(e + 0x108) = mins[1];
-    *(vec_t *)(e + 0x10c) = mins[2];
-    *(vec_t *)(e + 0x110) = maxs[0];
-    *(vec_t *)(e + 0x114) = maxs[1];
-    *(vec_t *)(e + 0x118) = maxs[2];
-    *(unsigned char *)(e + 0xf1) = 1;
-    *(int *)(e + 0x11c) = -1;
+    CM_ModelBounds(ent->s.index.brushmodel, mins, maxs);
+    ent->r.mins[0] = mins[0];
+    ent->r.mins[1] = mins[1];
+    ent->r.mins[2] = mins[2];
+    ent->r.maxs[0] = maxs[0];
+    ent->r.maxs[1] = maxs[1];
+    ent->r.maxs[2] = maxs[2];
+    ent->r.bmodel = 1;
+    ent->r.contents = -1;
     SV_LinkEntity(ent);
 }
 
 /* line 268 */
 qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t *gEnt)
 {
-    char *ent = (char *)gEnt;
-    unsigned char svFlags = *(unsigned char *)(ent + 0xf2);
+    unsigned char svFlags = gEnt->r.svFlags;
     float center[2];
     float radius;
     float distSq;
@@ -549,23 +549,23 @@ qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t 
         vec_t *vec3_origin = (vec_t *)*(char **)imp_vec3_origin;
         CM_TransformedBoxTraceExternal(trace, vec3_origin, vec3_origin,
             mins, maxs, clipHandle, -1,
-            (vec_t *)(ent + 0x138), (vec_t *)(ent + 0x144));
+            gEnt->r.currentOrigin, gEnt->r.currentAngles);
         return *(unsigned char *)(trace + 0x23);
     }
 
     if (svFlags & 0x20) {
         /* Capsule: check Z bounds first */
-        float entZ = *(float *)(ent + 0x140);
+        float entZ = gEnt->r.currentOrigin[2];
         if (entZ < maxs[2]) {
-            float topZ = entZ + *(float *)(ent + 0x118);
+            float topZ = entZ + gEnt->r.maxs[2];
             if (mins[2] >= topZ) {
                 return 0;
             }
             /* Z overlap, check 2D radius */
             center[0] = (mins[0] + maxs[0]) * 0.5f;
             center[1] = (mins[1] + maxs[1]) * 0.5f;
-            radius = maxs[0] - center[0] + *(float *)(ent + 0x110);
-            distSq = Vec2DistanceSq((float *)(ent + 0x138), center);
+            radius = maxs[0] - center[0] + gEnt->r.maxs[0];
+            distSq = Vec2DistanceSq((float *)gEnt->r.currentOrigin, center);
             return distSq > radius * radius;
         }
         return 0;
@@ -574,18 +574,17 @@ qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t 
     /* Cylinder without Z check */
     center[0] = (mins[0] + maxs[0]) * 0.5f;
     center[1] = (mins[1] + maxs[1]) * 0.5f;
-    radius = maxs[0] - center[0] + *(float *)(ent + 0x110) - 64.0f;
-    distSq = Vec2DistanceSq((float *)(ent + 0x138), center);
+    radius = maxs[0] - center[0] + gEnt->r.maxs[0] - 64.0f;
+    distSq = Vec2DistanceSq((float *)gEnt->r.currentOrigin, center);
     return distSq <= radius * radius;
 }
 
 /* line 106 */
 gentity_t * SV_GEntityForSvEntity(gentity_s (*svEnt)[4])
 {
-    char *sv_data = (char *)imp_sv;
-    char *sv_entities_base = sv_data + 0x2418;
-    int index = ((int)svEnt - (int)sv_entities_base) / 372;
-    return (gentity_t *)(*(char **)(sv_data + 0x5f41c) + index * *(int *)(sv_data + 0x5f420));
+    server_t *sv = (server_t *)imp_sv;
+    int index = ((int)svEnt - (int)sv->svEntities) / sizeof(svEntity_t);
+    return (gentity_t *)((char *)sv->gentities + index * sv->gentitySize);
 }
 
 /* line 845 */
@@ -607,7 +606,7 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
     float zz, zw;
     int edge;
 
-    obj = Com_GetServerDObj(*(int *)ent);
+    obj = Com_GetServerDObj(ent->s.number);
     DObjNumBones(obj);
     DObjGetBoneInfo(obj, boneInfoArray);
     boneMatrix = DObjGetRotTransArray(obj);
@@ -617,7 +616,7 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
     color[2] = 1.0f;
     color[3] = 0.0f;
 
-    AnglesToAxis((vec_t *)((char *)ent + 0x144), axis);
+    AnglesToAxis(ent->r.currentAngles, axis);
 
     numModels = DObjGetNumModels(obj);
 
@@ -668,9 +667,9 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
                 org[2] = boneInfo[boxVerts[edge][2] * 3 + 2];
                 MatrixTransformVector43(org, (float *)boneMat, vec);
                 MatrixTransformVector(vec, axis, start);
-                start[0] += *(float *)((char *)ent + 0x138);
-                start[1] += *(float *)((char *)ent + 0x13c);
-                start[2] += *(float *)((char *)ent + 0x140);
+                start[0] += ent->r.currentOrigin[0];
+                start[1] += ent->r.currentOrigin[1];
+                start[2] += ent->r.currentOrigin[2];
 
                 /* End vertex */
                 org[0] = boneInfo[boxVerts[edge + 1][0] * 3 + 0];
@@ -678,9 +677,9 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
                 org[2] = boneInfo[boxVerts[edge + 1][2] * 3 + 2];
                 MatrixTransformVector43(org, (float *)boneMat, vec);
                 MatrixTransformVector(vec, axis, end);
-                end[0] += *(float *)((char *)ent + 0x138);
-                end[1] += *(float *)((char *)ent + 0x13c);
-                end[2] += *(float *)((char *)ent + 0x140);
+                end[0] += ent->r.currentOrigin[0];
+                end[1] += ent->r.currentOrigin[1];
+                end[2] += ent->r.currentOrigin[2];
 
                 CL_AddDebugLine(start, end, color, 0, 0, 1);
             }
@@ -692,7 +691,7 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
 /* line 1077 */
 long unsigned int SV_ShutdownGameProgs(void)
 {
-    *(int *)(char *)imp_sv = 0;
+    ((server_t *)imp_sv)->state = 0;
     Com_UnloadSoundAliases(2);
     if (gameInitialized) {
         G_ShutdownGame(1);
@@ -704,9 +703,9 @@ long unsigned int SV_ShutdownGameProgs(void)
 /* line 189 */
 qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
 {
-    char *sv_data;
-    char *ent;
-    char *svEnt;
+    server_t *sv;
+    gentity_t *ent;
+    svEntity_t *svEnt;
     int numClusters;
     int cluster;
     byte *clientpvs;
@@ -717,19 +716,19 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
     float fogDistSqrd;
 
     /* Get entity pointer */
-    sv_data = (char *)imp_sv;
-    ent = *(char **)(sv_data + 0x5f41c) + iEntityNum * *(int *)(sv_data + 0x5f420);
+    sv = (server_t *)imp_sv;
+    ent = (gentity_t *)((char *)sv->gentities + iEntityNum * sv->gentitySize);
 
     /* Check if entity is linked */
-    if (*(char *)(ent + 0xf0) == 0)
+    if (ent->r.linked == 0)
         return 0;
 
     /* Check broadcastTime */
-    broadcastTime = *(int *)(ent + 0x100);
+    broadcastTime = ent->r.broadcastTime;
     if (broadcastTime)
         return 1;
 
-    svFlags = *(unsigned char *)(ent + 0xf2);
+    svFlags = ent->r.svFlags;
 
     /* SVF_NOCLIENT */
     if (svFlags & 1)
@@ -741,19 +740,19 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
 
     /* Get svEntity for PVS check */
     {
-        int number = *(int *)ent;
+        int number = ent->s.number;
         if (ent == 0 || number < 0 || number > 1023) {
             Com_Error(1, "SV_SvEntityForGentity: bad gEnt");
-            sv_data = (char *)imp_sv;
-            number = *(int *)ent;
+            sv = (server_t *)imp_sv;
+            number = ent->s.number;
         }
-        svEnt = sv_data + 0x2418 + number * 372;
+        svEnt = &sv->svEntities[number];
     }
 
     /* Get leaf for origin */
     cluster = CM_PointLeafnum(origin);
 
-    numClusters = *(int *)(svEnt + 0x118);
+    numClusters = svEnt->numClusters;
     if (numClusters == 0)
         return 0;
 
@@ -762,18 +761,18 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
 
     if (numClusters > 0) {
         /* Check clusternums array */
-        int firstCluster = *(int *)(svEnt + 0x11c);
+        int firstCluster = svEnt->clusternums[0];
         if ((clientpvs[firstCluster >> 3] >> (firstCluster & 7)) & 1)
             goto check_fog;
 
         for (i = 1; i < numClusters; i++) {
-            int cl = *(int *)(svEnt + 0x11c + i * 4);
+            int cl = svEnt->clusternums[i];
             if ((clientpvs[cl >> 3] >> (cl & 7)) & 1)
                 goto check_fog;
         }
 
         /* Check lastCluster */
-        lastCluster = *(int *)(svEnt + 0x15c);
+        lastCluster = svEnt->lastCluster;
         if (lastCluster == 0)
             return 0;
 
@@ -788,7 +787,7 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
         goto check_fog;
     } else {
         /* numClusters == 0, check lastCluster */
-        lastCluster = *(int *)(svEnt + 0x15c);
+        lastCluster = svEnt->lastCluster;
         if (lastCluster == 0)
             return 0;
 
@@ -805,51 +804,51 @@ check_fog:
     if (fogDistSqrd == 3.4028234663852886e+38f)
         return 1;
 
-    return !BoxDistSqrdExceeds((vec_t *)(ent + 0x120), (vec_t *)(ent + 0x12c), origin, fogDistSqrd);
+    return !BoxDistSqrdExceeds(ent->r.absmin, ent->r.absmax, origin, fogDistSqrd);
 }
 
 /* line 569 */
 qboolean SV_DObjCreateSkelForBone(gentity_t *ent, int boneIndex)
 {
     void *obj;
-    char *sv;
+    server_t *sv;
     int allocSize;
     int alignedSize;
     char *buf;
     int timestamp;
 
-    obj = Com_GetServerDObj(*(int *)ent);
-    sv = (char *)imp_sv;
+    obj = Com_GetServerDObj(ent->s.number);
+    sv = (server_t *)imp_sv;
 
-    if (DObjSkelExists(obj, *(int *)(sv + 0x5f430))) {
+    if (DObjSkelExists(obj, sv->skelTimeStamp)) {
         return DObjSkelIsBoneUpToDate(obj, boneIndex);
     }
 
     allocSize = DObjGetAllocSkelSize(obj);
     alignedSize = (allocSize + 15) & ~15;
-    buf = g_sv_skel_memory_start + *(int *)(sv + 0x5f434);
-    *(int *)(sv + 0x5f434) += alignedSize;
+    buf = g_sv_skel_memory_start + sv->skelMemPos;
+    sv->skelMemPos += alignedSize;
 
-    if (*(int *)(sv + 0x5f434) > 0x3fff0) {
+    if (sv->skelMemPos > 0x3fff0) {
         buf = (char *)(((unsigned int)g_sv_skel_memory + 15) & ~15u);
 
         do {
-            timestamp = *(int *)(sv + 0x5f430);
+            timestamp = sv->skelTimeStamp;
             if (timestamp != warnCount) {
                 warnCount = timestamp;
                 Com_Printf("^3WARNING: SV_SKEL_MEMORY_SIZE exceeded\n");
             }
-            timestamp = *(int *)(sv + 0x5f430) + 1;
+            timestamp = sv->skelTimeStamp + 1;
             if (timestamp == 0)
                 timestamp = 1;
-            *(int *)(sv + 0x5f430) = timestamp;
+            sv->skelTimeStamp = timestamp;
             g_sv_skel_memory_start = buf;
-            *(int *)(sv + 0x5f434) = alignedSize;
+            sv->skelMemPos = alignedSize;
         } while (alignedSize > 0x3fff0);
     }
 
-    sv = (char *)imp_sv;
-    DObjCreateSkel(obj, buf, *(int *)(sv + 0x5f430));
+    sv = (server_t *)imp_sv;
+    DObjCreateSkel(obj, buf, sv->skelTimeStamp);
     return 0;
 }
 
@@ -857,44 +856,44 @@ qboolean SV_DObjCreateSkelForBone(gentity_t *ent, int boneIndex)
 qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits)
 {
     void *obj;
-    char *sv;
+    server_t *sv;
     int allocSize;
     int alignedSize;
     char *buf;
     int timestamp;
 
-    obj = Com_GetServerDObj(*(int *)ent);
-    sv = (char *)imp_sv;
+    obj = Com_GetServerDObj(ent->s.number);
+    sv = (server_t *)imp_sv;
 
-    if (DObjSkelExists(obj, *(int *)(sv + 0x5f430))) {
+    if (DObjSkelExists(obj, sv->skelTimeStamp)) {
         return DObjSkelAreBonesUpToDate(obj, partBits);
     }
 
     allocSize = DObjGetAllocSkelSize(obj);
     alignedSize = (allocSize + 15) & ~15;
-    buf = g_sv_skel_memory_start + *(int *)(sv + 0x5f434);
-    *(int *)(sv + 0x5f434) += alignedSize;
+    buf = g_sv_skel_memory_start + sv->skelMemPos;
+    sv->skelMemPos += alignedSize;
 
-    if (*(int *)(sv + 0x5f434) > 0x3fff0) {
+    if (sv->skelMemPos > 0x3fff0) {
         buf = (char *)(((unsigned int)g_sv_skel_memory + 15) & ~15u);
 
         do {
-            timestamp = *(int *)(sv + 0x5f430);
+            timestamp = sv->skelTimeStamp;
             if (timestamp != warnCount) {
                 warnCount = timestamp;
                 Com_Printf("^3WARNING: SV_SKEL_MEMORY_SIZE exceeded\n");
             }
-            timestamp = *(int *)(sv + 0x5f430) + 1;
+            timestamp = sv->skelTimeStamp + 1;
             if (timestamp == 0)
                 timestamp = 1;
-            *(int *)(sv + 0x5f430) = timestamp;
+            sv->skelTimeStamp = timestamp;
             g_sv_skel_memory_start = buf;
-            *(int *)(sv + 0x5f434) = alignedSize;
+            sv->skelMemPos = alignedSize;
         } while (alignedSize > 0x3fff0);
     }
 
-    sv = (char *)imp_sv;
-    DObjCreateSkel(obj, buf, *(int *)(sv + 0x5f430));
+    sv = (server_t *)imp_sv;
+    DObjCreateSkel(obj, buf, sv->skelTimeStamp);
     return 0;
 }
 

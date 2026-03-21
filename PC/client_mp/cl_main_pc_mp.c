@@ -214,39 +214,37 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
     pinglist = (byte *)imp_cl_pinglist;
     for (i = 0; i < 16; i++)
     {
-        entry = pinglist + i * 0x414;
+        ping_t *ping = (ping_t *)(pinglist + i * sizeof(ping_t));
         /* check port != 0 */
-        if (*(unsigned short *)(entry + 8) == 0)
+        if (ping->adr.port == 0)
             continue;
         /* check time == 0 (not yet received) */
-        if (*(int *)(entry + 16) != 0)
+        if (ping->time != 0)
             continue;
         /* compare addresses */
         {
-            netadr_t pingAdr;
-            memcpy(&pingAdr, entry, sizeof(netadr_t));
-            if (!NET_CompareAdr(from, pingAdr))
+            if (!NET_CompareAdr(from, ping->adr))
                 continue;
         }
 
         /* found matching ping entry */
         {
-            int pingTime = time - *(int *)(entry + 0xc) + 1;
-            *(int *)(entry + 0x10) = pingTime;
+            int pingTime = time - ping->start + 1;
+            ping->time = pingTime;
         }
 
-        Com_DPrintf((const char *)str_002ab8fc, *(int *)(entry + 0x10), NET_AdrToString(from));
+        Com_DPrintf((const char *)str_002ab8fc, ping->time, NET_AdrToString(from));
 
         /* copy infoString into ping info buffer */
-        I_strncpyz((char *)(entry + 0x14), infoString, 0x400);
+        I_strncpyz(ping->info, infoString, sizeof(ping->info));
 
         /* set nettype */
         {
             int nettype = (from.type >= 3 && from.type <= 4) ? 1 : 0;
-            Info_SetValueForKey((char *)(entry + 0x14), (const char *)str_002ab8c0, va((const char *)str_00215a64, nettype));
+            Info_SetValueForKey(ping->info, (const char *)str_002ab8c0, va((const char *)str_00215a64, nettype));
         }
 
-        CL_SetServerInfoByAddress(from, infoString, *(int *)(entry + 0x10));
+        CL_SetServerInfoByAddress(from, infoString, ping->time);
         return 0;
     }
 
@@ -254,19 +252,19 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
     cls = (clientStatic_t *)imp_cls;
 
     /* if waiting for global server response, return */
-    if (*(int *)((byte *)cls + 0x2a0a48))
+    if (cls->waitglobalserverresponse)
         return 0;
 
     /* find empty slot in localServers */
     for (i = 0; i < 128; i++)
     {
-        byte *srv = (byte *)cls + i * 0x88;
+        byte *srv = (byte *)cls + i * 0x88; /* TODO: unknown offset - localServer slot base */
         /* check if port is non-zero */
-        if (*(unsigned short *)(srv + 0x144) != 0)
+        if (*(unsigned short *)(srv + 0x144) != 0) /* TODO: unknown offset */
         {
             /* slot occupied, compare address */
             netadr_t srvAdr;
-            memcpy(&srvAdr, srv + 0x13c, sizeof(netadr_t));
+            memcpy(&srvAdr, srv + 0x13c, sizeof(netadr_t)); /* TODO: unknown offset */
             if (NET_CompareAdr(from, srvAdr))
                 return 0;
             continue;
@@ -277,10 +275,10 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
             byte *base;
             serverInfo_t *server;
 
-            *(int *)((byte *)cls + 0x138) = i + 1;
+            cls->numlocalservers = i + 1;
 
-            base = (byte *)cls + i * 0x88;
-            server = (serverInfo_t *)(base + 0x130);
+            base = (byte *)cls + i * 0x88; /* TODO: unknown offset - localServer slot base */
+            server = (serverInfo_t *)(base + 0x130); /* TODO: unknown offset */
 
             server->adr = from;
             server->dirty = 0;
@@ -291,9 +289,9 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
             server->maxPing = 0;
             server->ping = -1;
             server->gameType[0] = '\0';
-            *(byte *)(base + 0x1b4) = 0;
+            *(byte *)(base + 0x1b4) = 0; /* TODO: unknown offset */
             server->netType = (byte)from.type;
-            *(byte *)(base + 0x140 + 0xc) = 0;
+            *(byte *)(base + 0x140 + 0xc) = 0; /* TODO: unknown offset */
 
             /* read second infoString (the server info line) */
             I_strncpyz(info, MSG_ReadString(msg), 0x400);
@@ -397,9 +395,9 @@ qboolean CL_CDKeyValidate_orig(const char *key, const char *checksum)
 /* line 432 */
 int CL_SortGlobalServers(void)
 {
-    byte *base = (byte *)imp_cls;
-    int count = *(int *)(base + 0x4540);
-    qsort(base + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
+    clientStatic_t *cls = (clientStatic_t *)imp_cls;
+    int count = cls->numglobalservers;
+    qsort(cls->globalServers, count, sizeof(serverInfo_t), (int (*)(const void *, const void *))CL_CompareAdrSigned);
     return 0;
 }
 
@@ -513,11 +511,11 @@ int CL_Rcon_f(void)
 
     /* determine send address */
     {
-        byte *clc_ptr = *(byte **)imp_clc;
-        if (*(int *)clc_ptr > 4)
+        clientConnection_t *clcLocal = *(clientConnection_t **)imp_clc;
+        if (clcLocal->state > 4)
         {
             /* use server address from connection */
-            memcpy(&sendAdr, clc_ptr + 0x407d8, sizeof(netadr_t));
+            memcpy(&sendAdr, &clcLocal->netchan.remoteAddress, sizeof(netadr_t));
         }
         else
         {
@@ -1010,19 +1008,18 @@ int CL_GlobalServers_f(void)
     }
 
     {
-        byte *cls = (byte *)imp_cls;
-        int numglobal = *(int *)(cls + 0x4540);
+        clientStatic_t *cls = (clientStatic_t *)imp_cls;
+        int numglobal = cls->numglobalservers;
 
         /* saturating increment of requestCount for all existing global servers */
         for (i = 0; i < numglobal; i++)
         {
-            byte *server = cls + 0x4544 + i * 0x88;
-            byte rc = server[0x19];
+            byte rc = cls->globalServers[i].requestCount;
             byte rc1 = (byte)(rc + 1);
             if (rc1 == 0)
-                server[0x19] = 0xFF;
+                cls->globalServers[i].requestCount = 0xFF;
             else
-                server[0x19] = rc1;
+                cls->globalServers[i].requestCount = rc1;
         }
     }
 
@@ -1032,9 +1029,9 @@ int CL_GlobalServers_f(void)
     NET_StringToAdr((const char *)str_002a9298, &to); /* "cod2master.activision.com" */
 
     {
-        byte *cls = (byte *)imp_cls;
-        *(int *)(cls + 0x453c) = 1;    /* pingUpdateSource = 1 */
-        *(int *)(cls + 0x2a0a48) = 1;  /* waitglobalserverresponse = 1 */
+        clientStatic_t *cls = (clientStatic_t *)imp_cls;
+        cls->pingUpdateSource = 1;
+        cls->waitglobalserverresponse = 1;
     }
 
     to.type = 4;            /* NA_IP */
@@ -1089,7 +1086,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
     Com_Printf((const char *)str_002abc30); /* "CL_ServersResponsePacket\n" */
 
     cls = (byte *)imp_cls;
-    *(int *)(cls + 0x453c) = 0; /* pingUpdateSource = 0 */
+    ((clientStatic_t *)cls)->pingUpdateSource = 0;
 
     buffptr = msg->data;
     buffend = msg->data + msg->cursize;
@@ -1152,7 +1149,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
 
     /* add parsed servers to global server list */
     cls = (byte *)imp_cls;
-    count = *(int *)(cls + 0x4540); /* numglobalservers */
+    count = ((clientStatic_t *)cls)->numglobalservers;
 
     for (i = 0; i < numservers && count <= 0x4e1f; i++)
     {
@@ -1173,7 +1170,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
 
         /* binary search for duplicate in existing globalServers */
         cls = (byte *)imp_cls;
-        high = *(int *)(cls + 0x4540);
+        high = ((clientStatic_t *)cls)->numglobalservers;
         if (high > 0)
         {
             low = 0;
@@ -1181,7 +1178,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
             {
                 cls = (byte *)imp_cls;
                 mid = (low + high) / 2;
-                compare = NET_CompareAdrSigned((const int *)&adr, (const int *)(cls + 0x4544 + mid * 0x88));
+                compare = NET_CompareAdrSigned((const int *)&adr, (const int *)&((clientStatic_t *)cls)->globalServers[mid]);
                 if (compare < 0)
                 {
                     high = mid;
@@ -1196,18 +1193,18 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
                     int j = mid;
                     while (j - 1 >= 0)
                     {
-                        if (NET_CompareAdrSigned((const int *)&adr, (const int *)((byte *)imp_cls + 0x4544 + (j - 1) * 0x88)) != 0)
+                        if (NET_CompareAdrSigned((const int *)&adr, (const int *)&((clientStatic_t *)imp_cls)->globalServers[j - 1]) != 0)
                             break;
                         j--;
                     }
                     /* overwrite all matching entries starting at j */
                     {
-                        byte *srvBase;
+                        clientStatic_t *clsStatic;
                         cls = (byte *)imp_cls;
-                        srvBase = cls + 0x4540 + j * 0x88;
+                        clsStatic = (clientStatic_t *)cls;
                         while (1)
                         {
-                            serverInfo_t *srv = (serverInfo_t *)(srvBase + 4);
+                            serverInfo_t *srv = &clsStatic->globalServers[j];
                             srv->adr.type = adr.type;
                             srv->adr.ip[0] = adr.ip[0];
                             srv->adr.ip[1] = adr.ip[1];
@@ -1229,10 +1226,9 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
                             srv->requestCount = 0;
 
                             j++;
-                            srvBase += 0x88;
-                            if (j >= *(int *)((byte *)imp_cls + 0x4540))
+                            if (j >= ((clientStatic_t *)imp_cls)->numglobalservers)
                                 break;
-                            if (NET_CompareAdrSigned((const int *)&adr, (const int *)(srvBase + 4)) != 0)
+                            if (NET_CompareAdrSigned((const int *)&adr, (const int *)&clsStatic->globalServers[j]) != 0)
                             {
                                 cls = (byte *)imp_cls;
                                 break;
@@ -1247,7 +1243,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
 
         /* no duplicate found — append new server at position count */
         {
-            serverInfo_t *srv = (serverInfo_t *)(cls + 0x4544 + count * 0x88);
+            serverInfo_t *srv = &((clientStatic_t *)cls)->globalServers[count];
             srv->adr.type = 4; /* NA_IP */
             srv->adr.ip[0] = ip[0];
             srv->adr.ip[1] = ip[1];
@@ -1275,8 +1271,8 @@ next_server:
     }
 
     /* update numglobalservers and sort */
-    *(int *)(cls + 0x4540) = count;
-    qsort(cls + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
+    ((clientStatic_t *)cls)->numglobalservers = count;
+    qsort(((clientStatic_t *)cls)->globalServers, count, sizeof(serverInfo_t), (int (*)(const void *, const void *))CL_CompareAdrSigned);
 
     Com_Printf((const char *)str_002abc6c, numservers, count);
         /* "%d servers parsed (total %d)\n" */
@@ -1311,32 +1307,32 @@ int CL_Ping_f(void)
     now = Sys_Milliseconds();
     pinglist = (byte *)imp_cl_pinglist;
     entry = pinglist;
-    endEntry = pinglist + 16 * 0x414;
+    endEntry = pinglist + 16 * sizeof(ping_t);
 
     while (entry != endEntry)
     {
+        ping_t *ping = (ping_t *)entry;
         /* check if port is zero (empty slot) */
-        if (*(unsigned short *)(entry + 8) == 0)
+        if (ping->adr.port == 0)
             goto found_slot;
 
         /* check if ping time was received */
         {
-            int pingTime = *(int *)(entry + 0x10);
-            if (pingTime == 0)
+            if (ping->time == 0)
             {
                 /* not yet received — check if timed out (> 499ms) */
-                int elapsed = now - *(int *)(entry + 0xc);
+                int elapsed = now - ping->start;
                 if (elapsed > 0x1f3)
                     goto found_slot;
             }
-            else if (pingTime > 0x1f3)
+            else if (ping->time > 0x1f3)
             {
                 /* ping was received but > 499ms — slot can be reused */
                 goto found_slot;
             }
         }
 
-        entry += 0x414;
+        entry += sizeof(ping_t);
     }
 
     /* no free slot found — find oldest entry to reuse */
@@ -1347,34 +1343,32 @@ int CL_Ping_f(void)
 
         while (scan != endEntry)
         {
-            int age = now - *(int *)(scan + 0xc);
+            int age = now - ((ping_t *)scan)->start;
             if (age > oldest)
             {
                 bestEntry = scan;
                 oldest = age;
             }
-            scan += 0x414;
+            scan += sizeof(ping_t);
         }
         entry = bestEntry;
         goto fill_slot;
     }
 
 found_slot:
-    *(unsigned short *)(entry + 8) = 0; /* clear port */
+    ((ping_t *)entry)->adr.port = 0; /* clear port */
 
 fill_slot:
     /* store the address in the ping entry */
-    memcpy(entry, &to, sizeof(netadr_t));
+    ((ping_t *)entry)->adr = to;
 
     /* record start time */
-    *(int *)(entry + 0xc) = Sys_Milliseconds();
-    *(int *)(entry + 0x10) = 0; /* no response yet */
+    ((ping_t *)entry)->start = Sys_Milliseconds();
+    ((ping_t *)entry)->time = 0; /* no response yet */
 
     /* update server info */
     {
-        netadr_t entryAdr;
-        memcpy(&entryAdr, entry, sizeof(netadr_t));
-        CL_SetServerInfoByAddress(entryAdr, NULL, 0);
+        CL_SetServerInfoByAddress(((ping_t *)entry)->adr, NULL, 0);
     }
 
     /* send getinfo request */
@@ -1401,7 +1395,7 @@ int CL_Connect_f(void)
 
     /* clear server message */
     clc = *(byte **)imp_clc;
-    *(byte *)(clc + 0x28) = 0; /* serverMessage[0] = 0 */
+    ((clientConnection_t *)clc)->serverMessage[0] = 0;
 
     server = Cmd_Argv(1);
 
@@ -1415,16 +1409,16 @@ int CL_Connect_f(void)
             {
                 /* connecting to localhost while server is running */
                 byte *legacyHacks = *(byte **)imp_legacyHacks;
-                *(byte *)(legacyHacks + 0xdd) = 1;
+                *(byte *)(legacyHacks + 0xdd) = 1; /* TODO: unknown offset */
             }
         }
     }
 
     {
         byte *legacyHacks = *(byte **)imp_legacyHacks;
-        *(byte *)(legacyHacks + 0x5c) = 0;
+        *(byte *)(legacyHacks + 0x5c) = 0; /* TODO: unknown offset */
         legacyHacks = *(byte **)imp_legacyHacks;
-        *(byte *)(legacyHacks + 0x9c) = 0;
+        *(byte *)(legacyHacks + 0x9c) = 0; /* TODO: unknown offset */
     }
 
     SV_Frame(0);
@@ -1432,40 +1426,43 @@ int CL_Connect_f(void)
     Con_Close();
 
     /* copy server name to cls->servername */
-    cls_servername = (byte *)imp_cls + 8;
-    I_strncpyz((char *)cls_servername, server, 0x100);
+    cls_servername = (byte *)((clientStatic_t *)imp_cls)->servername;
+    I_strncpyz((char *)cls_servername, server, sizeof(((clientStatic_t *)0)->servername));
 
     /* resolve server address into clc->serverAddress */
     clc = *(byte **)imp_clc;
-    if (!NET_StringToAdr((const char *)cls_servername, (netadr_t *)(clc + 0x14)))
     {
-        Com_Printf((const char *)str_002abcc0); /* "Bad server address\n" */
-        *(int *)clc = 0; /* state = 0 */
-        return 0;
-    }
+        clientConnection_t *clcConn = (clientConnection_t *)clc;
+        if (!NET_StringToAdr((const char *)cls_servername, &clcConn->serverAddress))
+        {
+            Com_Printf((const char *)str_002abcc0); /* "Bad server address\n" */
+            clcConn->state = 0; /* state = 0 */
+            return 0;
+        }
 
-    /* set default port if not specified */
-    if (*(unsigned short *)(clc + 0x1c) == 0)
-    {
-        *(unsigned short *)(clc + 0x1c) = 0x2071; /* 28817 (network byte order) */
-    }
+        /* set default port if not specified */
+        if (clcConn->serverAddress.port == 0)
+        {
+            clcConn->serverAddress.port = 0x2071; /* 28817 (network byte order) */
+        }
 
-    /* print resolved address */
-    {
-        unsigned short netPort = *(unsigned short *)(clc + 0x1c);
-        /* byte swap port for display */
-        short displayPort = (short)((netPort >> 8) | (netPort << 8));
-        Com_Printf((const char *)str_002a92e0, /* "%s resolved to %i.%i.%i.%i:%i\n" */
-            cls_servername,
-            (int)*(byte *)(clc + 0x18),
-            (int)*(byte *)(clc + 0x19),
-            (int)*(byte *)(clc + 0x1a),
-            (int)*(byte *)(clc + 0x1b),
-            (int)displayPort);
+        /* print resolved address */
+        {
+            unsigned short netPort = clcConn->serverAddress.port;
+            /* byte swap port for display */
+            short displayPort = (short)((netPort >> 8) | (netPort << 8));
+            Com_Printf((const char *)str_002a92e0, /* "%s resolved to %i.%i.%i.%i:%i\n" */
+                cls_servername,
+                (int)clcConn->serverAddress.ip[0],
+                (int)clcConn->serverAddress.ip[1],
+                (int)clcConn->serverAddress.ip[2],
+                (int)clcConn->serverAddress.ip[3],
+                (int)displayPort);
+        }
     }
 
     /* CD key validation (unless connecting to local address) */
-    if (!NET_IsLocalAddress(*(int *)(clc + 0x14), *(int *)(clc + 0x18), *(int *)(clc + 0x1c)))
+    if (!NET_IsLocalAddress(*(int *)&((clientConnection_t *)clc)->serverAddress, *(int *)((byte *)&((clientConnection_t *)clc)->serverAddress + 4), *(int *)((byte *)&((clientConnection_t *)clc)->serverAddress + 8)))
     {
         /* CRC16 CD key checksum */
         unsigned int crc = 0;
@@ -1504,34 +1501,38 @@ int CL_Connect_f(void)
 
     /* set connection state */
     {
-        byte *clcPtr;
+        clientConnection_t *clcConn;
         clc = *(byte **)imp_clc;
+        clcConn = (clientConnection_t *)clc;
 
-        if (NET_IsLocalAddress(*(int *)(clc + 0x14), *(int *)(clc + 0x18), *(int *)(clc + 0x1c)))
+        if (NET_IsLocalAddress(*(int *)&clcConn->serverAddress, *(int *)((byte *)&clcConn->serverAddress + 4), *(int *)((byte *)&clcConn->serverAddress + 8)))
         {
-            *(int *)clc = 4; /* CA_CHALLENGING (local) */
+            clcConn->state = 4; /* CA_CHALLENGING (local) */
         }
         else
         {
-            clcPtr = *(byte **)imp_clc;
-            *(int *)clcPtr = 3; /* CA_CONNECTING */
-            clc = clcPtr;
+            clcConn = *(clientConnection_t **)imp_clc;
+            clcConn->state = 3; /* CA_CONNECTING */
+            clc = (byte *)clcConn;
         }
     }
 
     /* initialize client state */
     {
-        byte *cl = *(byte **)imp_cl;
-        *(int *)(cl + 4) = 0;
-        *(byte *)(cl + 8) = 0;
+        clientActive_t *clActive = *(clientActive_t **)imp_cl;
+        clActive->keyCatchers = 0;
+        clActive->displayHUDWithKeycatchUI = 0;
     }
 
     /* set connect time and packet count */
-    *(int *)(clc + 0x20) = (int)0xfffe7961; /* connectTime = large negative (forces immediate connect) */
-    *(int *)(clc + 0x24) = 0;              /* connectPacketCount = 0 */
+    {
+        clientConnection_t *clcConn = (clientConnection_t *)clc;
+        clcConn->connectTime = (int)0xfffe7961; /* connectTime = large negative (forces immediate connect) */
+        clcConn->connectPacketCount = 0;
 
-    /* set qport */
-    *(int *)(clc + 0x04) = *(int *)imp_g_qport; /* clc->qport */
+        /* set qport */
+        clcConn->qport = *(int *)imp_g_qport;
+    }
 
     UI_CloseAll();
     SCR_UpdateScreen();
@@ -1697,13 +1698,13 @@ int CL_ServerStatus_f(void)
     else
     {
         /* use current connection */
-        byte *clc = *(byte **)imp_clc;
-        if (*(int *)clc != 8) /* state != CA_ACTIVE */
+        clientConnection_t *clcConn = *(clientConnection_t **)imp_clc;
+        if (clcConn->state != 8) /* state != CA_ACTIVE */
             goto not_connected;
-        if (*(int *)(clc + 0x407a0) != 0)
+        if (clcConn->demoplaying != 0)
             goto not_connected;
 
-        serverAddr = (const char *)((byte *)imp_cls + 8); /* cls->servername */
+        serverAddr = ((clientStatic_t *)imp_cls)->servername;
     }
 
     /* resolve address */
