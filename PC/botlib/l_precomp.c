@@ -104,8 +104,8 @@ void SourceError(source_t *source, char *str, ...) {
     vsnprintf(text, 0x400, str, ap);
     va_end(ap);
     {
-        byte *scriptfile = *(byte **)((byte *)source + 0x84);
-        Com_Printf((const char *)str_002220ac, scriptfile, *(int *)(scriptfile + 0x5c), text);
+        script_t *scriptfile = source->scriptstack;
+        Com_Printf((const char *)str_002220ac, scriptfile, scriptfile->line, text);
     }
 }
 #endif
@@ -154,8 +154,8 @@ void SourceWarning(source_t *source, char *str, ...) {
     vsnprintf(text, 0x400, str, ap);
     va_end(ap);
     {
-        byte *scriptfile = *(byte **)((byte *)source + 0x84);
-        Com_Printf((const char *)str_002220cc, scriptfile, *(int *)(scriptfile + 0x5c), text);
+        script_t *scriptfile = source->scriptstack;
+        Com_Printf((const char *)str_002220cc, scriptfile, scriptfile->line, text);
     }
 }
 #endif
@@ -231,19 +231,19 @@ int PC_StringizeTokens(token_t *tokens, token_t *token)
 }
 #else
 int PC_StringizeTokens(token_t *tokens, token_t *token) {
-    byte *t;
+    token_t *t;
     int len;
 
-    *(int *)((byte *)token + 0x400) = 1;
-    *(int *)((byte *)token + 0x420) = 0;
-    *(int *)((byte *)token + 0x424) = 0;
-    *(char *)token = '\0';
+    token->type = 1;
+    token->whitespace_p = NULL;
+    token->endwhitespace_p = NULL;
+    token->string[0] = '\0';
 
-    len = strlen((char *)token);
-    *((char *)token + len) = '"';
-    *((char *)token + len + 1) = '\0';
+    len = strlen(token->string);
+    token->string[len] = '"';
+    token->string[len + 1] = '\0';
 
-    for (t = (byte *)tokens; t; t = *(byte **)(t + 0x430)) {
+    for (t = tokens; t; t = (token_t *)t->next) {
         len = strlen((char *)token);
         strncat((char *)token, (char *)t, 0x400 - len);
     }
@@ -448,7 +448,6 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line)
 #else
 int PC_SourceFileAndLine(int handle, char *filename, int *line) {
     source_t *source;
-    byte *scriptstack;
 
     if ((unsigned)(handle - 1) > 0x3e)
         return 0;
@@ -456,14 +455,11 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line) {
     if (!source)
         return 0;
 
-    scriptstack = *(byte **)((byte *)source + 0x84);
-    if (scriptstack) {
-        /* scriptstack has filename at offset 0, line at offset 0x5c */
-        strcpy(filename, (const char *)scriptstack);
-        *line = *(int *)(scriptstack + 0x5c);
+    if (source->scriptstack) {
+        strcpy(filename, source->scriptstack->filename);
+        *line = source->scriptstack->line;
     } else {
-        /* source itself has filename at offset 0 */
-        strcpy(filename, (const char *)source);
+        strcpy(filename, source->filename);
         *line = 0;
     }
     return 1;
@@ -6362,50 +6358,49 @@ int PC_DollarDirective_evalint(source_t *source)
 }
 #else
 int PC_ReadSourceToken(source_t *source, token_t *token) {
-    byte *src = (byte *)source;
-    byte *tok;
-    byte *script;
-    byte *indent;
+    token_t *tok;
+    script_t *script;
+    indent_t *indent;
 
     for (;;) {
         /* Check for queued tokens */
-        tok = *(byte **)(src + 0x88); /* source->tokens */
+        tok = source->tokens;
         if (tok) {
             memcpy(token, tok, 0x440);
-            *(byte **)(src + 0x88) = *(byte **)(tok + 0x430); /* token->next */
+            source->tokens = (token_t *)tok->next;
             FreeMemory(tok);
             numtokens--;
             return 1;
         }
 
         /* Try reading from current script */
-        if (PS_ReadToken(*(void **)(src + 0x84), token))
+        if (PS_ReadToken(source->scriptstack, token))
             return 1;
 
         /* Read failed: check if end of script */
-        if (EndOfScript(*(void **)(src + 0x84))) {
+        if (EndOfScript(source->scriptstack)) {
             /* Check indentstack for unmatched #if directives */
-            indent = *(byte **)(src + 0x94);
-            if (indent && *(void **)(indent + 8) == *(void **)(src + 0x84)) {
+            indent = source->indentstack;
+            if (indent && indent->script == source->scriptstack) {
                 SourceWarning(source, "#if directive not terminated");
                 /* Free matching indent entries */
-                while ((indent = *(byte **)(src + 0x94)) != NULL) {
-                    if (*(void **)(indent + 8) != *(void **)(src + 0x84))
+                while ((indent = source->indentstack) != NULL) {
+                    if (indent->script != source->scriptstack)
                         break;
-                    *(byte **)(src + 0x94) = *(byte **)(indent + 0xc); /* indent->next */
-                    *(int *)(src + 0x98) -= *(int *)(indent + 4); /* source->skip -= indent->skip */
+                    source->indentstack = (indent_t *)indent->next;
+                    source->skip -= indent->skip;
                     FreeMemory(indent);
                 }
             }
         }
 
         /* Try to pop to next script in chain */
-        script = *(byte **)(src + 0x84); /* source->scriptstack */
+        script = source->scriptstack;
         {
-            byte *nextScript = *(byte **)(script + 0x4c0); /* scriptstack->next */
+            script_t *nextScript = (script_t *)script->next;
             if (!nextScript)
                 return 0; /* no more scripts */
-            *(byte **)(src + 0x84) = nextScript;
+            source->scriptstack = nextScript;
             FreeScript(script);
         }
     }

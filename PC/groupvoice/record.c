@@ -94,9 +94,9 @@ int Record_QueueAudioDataForEncoding(audioSample_t *sample)
     p_vol = *(float **)&encode_vol_ptr;
     *p_vol = 0.0f;
 
-    data = *(short **)sample;
-    numSamples = *(int *)((byte *)sample + 8);
-    channels = *(int *)((byte *)sample + 0xc);
+    data = (short *)sample->buffer;
+    numSamples = sample->lengthInSamples;
+    channels = sample->bytesPerSample; /* used as channel count */
 
     /* Apply volume scaling and compute average amplitude (stereo only) */
     if (channels == 2 && numSamples > 0) {
@@ -123,14 +123,14 @@ int Record_QueueAudioDataForEncoding(audioSample_t *sample)
 
     /* Get encoding frame size */
     encode_frame_size = Encode_GetFrameSize();
-    *(int *)((byte *)sample + 0x1c) = 0;
+    sample->sampleOffset = 0;
 
     if (encode_frame_size <= 0) {
         Com_Printf("Invalid encode frame size of %i\n", encode_frame_size);
         return 0;
     }
 
-    if (*(int *)((byte *)sample + 4) <= 0) {
+    if (sample->lengthInBytes <= 0) {
         Com_Printf("Invalid sample length of %i samples\n", numSamples);
         return 0;
     }
@@ -139,7 +139,7 @@ int Record_QueueAudioDataForEncoding(audioSample_t *sample)
 
     /* Main encoding loop */
     while (1) {
-        int samplesProcessed = *(int *)((byte *)sample + 0x1c);
+        int samplesProcessed = sample->sampleOffset;
         partial = samples_in_partial_audio_buffer;
 
         if (numSamples - samplesProcessed + partial < encode_frame_size) {
@@ -149,7 +149,7 @@ int Record_QueueAudioDataForEncoding(audioSample_t *sample)
                 memcpy(partial_audio_buffer + partial,
                        data + samplesProcessed * channels,
                        remaining * channels);
-                samples_in_partial_audio_buffer += numSamples - *(int *)((byte *)sample + 0x1c);
+                samples_in_partial_audio_buffer += numSamples - sample->sampleOffset;
             }
             return total_bytes;
         }
@@ -171,11 +171,11 @@ int Record_QueueAudioDataForEncoding(audioSample_t *sample)
         /* Copy remaining from source to fill frame */
         {
             int src_take = encode_frame_size - partial;
-            samplesProcessed = *(int *)((byte *)sample + 0x1c);
+            samplesProcessed = sample->sampleOffset;
             memcpy((byte *)audio_buffer + partial * 2,
                    data + samplesProcessed * channels,
                    src_take * channels);
-            *(int *)((byte *)sample + 0x1c) += src_take;
+            sample->sampleOffset += src_take;
         }
 
         /* Encode and send */

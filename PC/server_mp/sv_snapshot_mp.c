@@ -313,7 +313,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     MSG_ReadDeltaClient(&msg, oldCachedClient + 4, newCachedClient + 4, newClientNum);
                     *(int *)newCachedClient = MSG_ReadBit(&msg);
                     if (*(int *)newCachedClient != 0)
-                        MSG_ReadDeltaPlayerstate(&msg, oldCachedClient + 0x60, newCachedClient + 0x60);
+                        MSG_ReadDeltaPlayerstate(&msg, (byte *)&((cachedClient_t *)oldCachedClient)->ps, (byte *)&((cachedClient_t *)newCachedClient)->ps);
 
                     svs = (serverStatic_t *)imp_svs;
                     svs->nextCachedSnapshotClients += 1;
@@ -338,7 +338,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     MSG_ReadDeltaClient(&msg, NULL, newCachedClient + 4, newClientNum);
                     *(int *)newCachedClient = MSG_ReadBit(&msg);
                     if (*(int *)newCachedClient != 0)
-                        MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
+                        MSG_ReadDeltaPlayerstate(&msg, NULL, (byte *)&((cachedClient_t *)newCachedClient)->ps);
 
                     svs = (serverStatic_t *)imp_svs;
                     svs->nextCachedSnapshotClients += 1;
@@ -380,7 +380,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
             MSG_ReadDeltaClient(&msg, NULL, newCachedClient + 4, clientNum);
             *(int *)newCachedClient = MSG_ReadBit(&msg);
             if (*(int *)newCachedClient != 0)
-                MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
+                MSG_ReadDeltaPlayerstate(&msg, NULL, (byte *)&((cachedClient_t *)newCachedClient)->ps);
 
             svs->nextCachedSnapshotClients += 1;
             if (svs->nextCachedSnapshotClients > 0x7ffffffd)
@@ -1314,7 +1314,7 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
             return 0;
 
         /* Copy playerState and clientState from cache */
-        memcpy(ps, cachedClient + 0x60, 0x26a8);
+        memcpy(ps, (byte *)&((cachedClient_t *)cachedClient)->ps, 0x26a8);
         memcpy(cs, cachedClient + 4, 0x5c);
 
         /* Adjust time fields by deltaTime */
@@ -1338,23 +1338,23 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         }
 
         /* Adjust time fields in 31 hudelem entries at stride 0x80 */
-        /* TODO: unknown offset - these are hudelem_t time fields deep in playerState_s.hud */
+        /* Adjust time fields in 31 hudelem entries in playerState_s.hud.current */
         {
-            byte *p = psBytes;
+            playerState_t *ps = (playerState_t *)psBytes;
             serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
             for (i = 0; i < 31; i++) {
-                if (*(int *)(p + 0x1790) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1790) += deltaTime; /* TODO: unknown offset */
-                if (*(int *)(p + 0x1750) != 0) { /* TODO: unknown offset */
-                    *(int *)(p + 0x1750) += deltaTime; /* TODO: unknown offset */
-                    if (*(int *)(p + 0x1750) > svsPtr->time) /* TODO: unknown offset */
-                        *(int *)(p + 0x1750) = svsPtr->time; /* TODO: unknown offset */
+                hudelem_t *he = &ps->hud.current[i];
+                if (he->time != 0)
+                    he->time += deltaTime;
+                if (he->fadeStartTime != 0) {
+                    he->fadeStartTime += deltaTime;
+                    if (he->fadeStartTime > svsPtr->time)
+                        he->fadeStartTime = svsPtr->time;
                 }
-                if (*(int *)(p + 0x1770) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1770) += deltaTime; /* TODO: unknown offset */
-                if (*(int *)(p + 0x1788) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1788) += deltaTime; /* TODO: unknown offset */
-                p += 0x80;
+                if (he->scaleStartTime != 0)
+                    he->scaleStartTime += deltaTime;
+                if (he->moveStartTime != 0)
+                    he->moveStartTime += deltaTime;
             }
         }
 
@@ -3255,7 +3255,7 @@ void SV_ArchiveSnapshot(void)
                                         int hasPS = GetFollowPlayerState(newIdx, ps);
                                         if (hasPS) {
                                             MSG_WriteBit1((msg_t *)msg);
-                                            MSG_WriteDeltaPlayerstate((msg_t *)msg, cachedClient + 0x60, ps);
+                                            MSG_WriteDeltaPlayerstate((msg_t *)msg, (byte *)&((cachedClient_t *)cachedClient)->ps, ps);
                                         } else {
                                             MSG_WriteBit0((msg_t *)msg);
                                         }
@@ -3296,7 +3296,7 @@ void SV_ArchiveSnapshot(void)
                                         int hasPS = GetFollowPlayerState(newIdx, ps);
                                         if (hasPS) {
                                             MSG_WriteBit1((msg_t *)msg);
-                                            MSG_WriteDeltaPlayerstate((msg_t *)msg, cachedClient + 0x60, ps);
+                                            MSG_WriteDeltaPlayerstate((msg_t *)msg, (byte *)&((cachedClient_t *)cachedClient)->ps, ps);
                                         } else {
                                             MSG_WriteBit0((msg_t *)msg);
                                         }
@@ -3446,12 +3446,12 @@ void SV_ArchiveSnapshot(void)
 
                     /* Write playerstate */
                     {
-                        int hasPS = GetFollowPlayerState(c, archivedClient + 0x60);
+                        int hasPS = GetFollowPlayerState(c, (byte *)&((cachedClient_t *)archivedClient)->ps);
                         *(int *)archivedClient = hasPS;
 
                         if (hasPS) {
                             MSG_WriteBit1((msg_t *)msg);
-                            MSG_WriteDeltaPlayerstate((msg_t *)msg, NULL, archivedClient + 0x60);
+                            MSG_WriteDeltaPlayerstate((msg_t *)msg, NULL, (byte *)&((cachedClient_t *)archivedClient)->ps);
                         } else {
                             MSG_WriteBit0((msg_t *)msg);
                         }

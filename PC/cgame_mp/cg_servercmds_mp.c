@@ -65,7 +65,7 @@ extern int stricmp(const char *s1, const char *s2);
  */
 #define CGS_PTR      (*(cgs_t **)imp_cgs)
 #define CG_PTR       (*(cg_t **)imp_cg)
-#define CGUI_PTR     ((char *)*(void **)imp_legacyHacks)
+#define CGUI_PTR     ((LegacyHacks *)*(void **)imp_legacyHacks)
 
 void CG_ParseServerinfo(void);
 void CG_ParseCodinfo(void);
@@ -325,7 +325,7 @@ static void CG_OpenScriptMenu(void)
     int menuIndex;
     const char *pszMenu;
     unsigned char noMouseControl;
-    char *cgui;
+    LegacyHacks *cgui;
     int result;
     const char *arg2;
 
@@ -358,8 +358,8 @@ static void CG_OpenScriptMenu(void)
     }
 
     cgui = CGUI_PTR;
-    I_strncpyz(cgui + 0x2e4, pszMenu, 0x100);
-    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = menuIndex;
+    I_strncpyz(cgui->ui_newScriptMenu, pszMenu, 0x100);
+    cgui->ui_newScriptMenuIndex = menuIndex;
 
     if (noMouseControl) {
         result = CL_Popup((const char *)str_002adc98);
@@ -373,41 +373,41 @@ static void CG_OpenScriptMenu(void)
 
     /* Popup failed */
     cgui = CGUI_PTR;
-    *(cgui + 0x2e4) = '\0';
-    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
+    cgui->ui_newScriptMenu[0] = '\0';
+    cgui->ui_newScriptMenuIndex = -1;
 
-    if (*(cgui + 0x3e8) != '\0') {
-        if (I_stricmp(pszMenu, cgui + 0x3e8) == 0) {
+    if (cgui->ui_waitingScriptMenu[0] != '\0') {
+        if (I_stricmp(pszMenu, cgui->ui_waitingScriptMenu) == 0) {
             return;
         }
-        Cbuf_AddText(va((const char *)str_002b80f0, *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */));
+        Cbuf_AddText(va((const char *)str_002b80f0, cgui->ui_waitingScriptMenuIndex));
     }
 
     /* Store as waiting menu */
     cgui = CGUI_PTR;
-    I_strncpyz(cgui + 0x3e8, pszMenu, 0x100);
-    *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = menuIndex;
-    *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = noMouseControl;
+    I_strncpyz(cgui->ui_waitingScriptMenu, pszMenu, 0x100);
+    cgui->ui_waitingScriptMenuIndex = menuIndex;
+    cgui->ui_waitingScriptMenuNoMouse = noMouseControl;
 }
 
 /* line 763 */
 void CG_CheckOpenWaitingScriptMenu(void)
 {
-    char *cgui;
+    LegacyHacks *cgui;
     int result;
 
     cgui = CGUI_PTR;
-    if (*(cgui + 0x3e8) == '\0') {
+    if (cgui->ui_waitingScriptMenu[0] == '\0') {
         return;
     }
 
     /* Copy waiting menu to active */
-    strcpy(cgui + 0x2e4, cgui + 0x3e8);
+    strcpy(cgui->ui_newScriptMenu, cgui->ui_waitingScriptMenu);
     cgui = CGUI_PTR;
-    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */;
+    cgui->ui_newScriptMenuIndex = cgui->ui_waitingScriptMenuIndex;
 
     cgui = CGUI_PTR;
-    if (*(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */) {
+    if (cgui->ui_waitingScriptMenuNoMouse) {
         result = CL_Popup((const char *)str_002adc98);
     } else {
         result = CL_Popup((const char *)str_002adc84);
@@ -416,33 +416,33 @@ void CG_CheckOpenWaitingScriptMenu(void)
     if (result) {
         /* Popup succeeded, clear waiting */
         cgui = CGUI_PTR;
-        *(cgui + 0x3e8) = '\0';
-        *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = -1;
-        *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = 0;
+        cgui->ui_waitingScriptMenu[0] = '\0';
+        cgui->ui_waitingScriptMenuIndex = -1;
+        cgui->ui_waitingScriptMenuNoMouse = 0;
     } else {
         /* Popup failed, clear active */
         cgui = CGUI_PTR;
-        *(cgui + 0x2e4) = '\0';
-        *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
+        cgui->ui_newScriptMenu[0] = '\0';
+        cgui->ui_newScriptMenuIndex = -1;
     }
 }
 
 /* line 805 */
 void CG_CloseScriptMenu(void)
 {
-    char *cgui;
+    LegacyHacks *cgui;
 
     CL_ClosePopup((const char *)str_002adc84);
     CL_ClosePopup((const char *)str_002adc98);
 
     cgui = CGUI_PTR;
-    *(unsigned char *)(cgui + 0x1de) /* TODO: unknown legacyHacks offset */ = 0;
-    *(int *)(cgui + 0x2e0) /* TODO: unknown legacyHacks offset */ = -1;
-    *(cgui + 0x2e4) = '\0';
-    *(int *)(cgui + 0x3e4) /* TODO: unknown legacyHacks offset */ = -1;
-    *(cgui + 0x3e8) = '\0';
-    *(int *)(cgui + 0x4e8) /* TODO: unknown legacyHacks offset */ = -1;
-    *(unsigned char *)(cgui + 0x4ec) /* TODO: unknown legacyHacks offset */ = 0;
+    cgui->ui_scriptMenu[0] = 0;
+    cgui->ui_scriptMenuIndex = -1;
+    cgui->ui_newScriptMenu[0] = '\0';
+    cgui->ui_newScriptMenuIndex = -1;
+    cgui->ui_waitingScriptMenu[0] = '\0';
+    cgui->ui_waitingScriptMenuIndex = -1;
+    cgui->ui_waitingScriptMenuNoMouse = 0;
 }
 
 /* line 825 — jump table, kept as naked */
@@ -838,7 +838,7 @@ void CG_MapRestart(qboolean savepersist)
 {
     cg_t *cg;
     cgs_t *cgs;
-    char *cgui;
+    LegacyHacks *cgui;
 
     if (*(int *)(*(char **)*(void **)imp_cg_showmiss + 8) != 0) {
         Com_Printf((const char *)str_002b8228);
@@ -874,19 +874,19 @@ void CG_MapRestart(qboolean savepersist)
     Dvar_SetBool(*(void **)*(void **)imp_cg_thirdPerson, 0);
 
     cgui = CGUI_PTR;
-    *(int *)(cgui + 8) = 0;
+    cgui->cl_stance = 0;
 
     CL_SetADS(0);
 
     if (!savepersist) {
         cgui = CGUI_PTR;
-        *(unsigned char *)(cgui + 0x4ed) /* TODO: unknown legacyHacks offset */ = 0;
+        cgui->ui_scriptMenuAllowResponse = 0;
 
         CG_CloseScriptMenu();
         CG_CloseScriptMenu();
 
         cgui = CGUI_PTR;
-        *(unsigned char *)(cgui + 0x4ed) /* TODO: unknown legacyHacks offset */ = 1;
+        cgui->ui_scriptMenuAllowResponse = 1;
 
         CL_CloseAllMenus();
     }
@@ -1917,10 +1917,7 @@ static void CG_AddToTeamChat_impl(const char *str)
     chatCount = ((cgs_t *)cgs_p)->teamChatPos;
     row = chatCount % chatHeight;
 
-    /* Each row is at cgs + 0xb170 + row * (16 + 256 - 16 + 1...) */
-    /* Row size: row * 0x10 + row * 0x100 - row = row * (0x10 + 0x100 - 1) = row * 0x10f */
-    /* Actually from asm: offset = row * 16 + row * 256 - row = row * 271 = row * 0x10f */
-    dst = (char *)(cgs_p + 0xb170 + row * 0x10f);
+    dst = ((cgs_t *)cgs_p)->teamChatMsgs[row];
 
     /* line 558 */
     dst[0xc] = '\0';
@@ -1929,7 +1926,7 @@ static void CG_AddToTeamChat_impl(const char *str)
     lastcolor = 0x37; /* '7' */
     ls = NULL;
     p = str;
-    dst = (char *)(cgs_p + 0xb170 + row * 0x10f + 0xc);
+    dst = ((cgs_t *)cgs_p)->teamChatMsgs[row] + 0xc;
 
     while (*p != '\0') {
         char ch;
@@ -1963,7 +1960,7 @@ static void CG_AddToTeamChat_impl(const char *str)
 
             /* line 578: new row */
             row = chatCount % chatHeight;
-            dst = (char *)(cgs_p + 0xb170 + row * 0x10f + 0xc);
+            dst = ((cgs_t *)cgs_p)->teamChatMsgs[row] + 0xc;
 
             /* line 580: prepend color code */
             *dst++ = '^';

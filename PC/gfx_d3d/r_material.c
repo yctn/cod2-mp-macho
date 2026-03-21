@@ -354,7 +354,7 @@ void Material_UpdatePicmipAll(void)
     /* Iterate all material slots in rg (0x1000 byte stride, pointer at offset 0x28) */
     rgEnd = rg + 0x1000;
     for (slot = rg; slot < rgEnd; slot += 4) {
-        material = *(byte **)(slot + 0x28);
+        material = (byte *)((r_globals_t *)imp_rg)->materialHashTable[(slot - rg) / 4];
         if (!material)
             continue;
 
@@ -771,7 +771,7 @@ writeEnd2:
         memcpy((byte *)&elemTable[numElems] + 4, (byte *)&declEnd + 4, 4);
 
                 do {
-                    void *device = *(void **)(dx + 8);
+                    void *device = (void *)((DxGlobals *)dx)->device;
                     void **vtable = *(void ***)device;
                     ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x158/4])(
                         device, elemTable, &decl);
@@ -803,13 +803,13 @@ storeDecl2:
             /* Check shader managed flag at offset 0x0a */
             if (((MaterialShader *)shader)->shaderType == 0) {
                 /* Not managed: call D3D CreatePixelShader (vtable[0x16c/4]) */
-                void *device = *(void **)(dx + 8);
+                void *device = (void *)((DxGlobals *)dx)->device;
                 void **vtable = *(void ***)device;
                 hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x16c/4])(
                     device, ((MaterialShader *)shader)->program, &((MaterialShader *)shader)->u);
             } else {
                 /* Managed: call D3D CreateVertexShader (vtable[0x1a8/4]) */
-                void *device = *(void **)(dx + 8);
+                void *device = (void *)((DxGlobals *)dx)->device;
                 void **vtable = *(void ***)device;
                 hr = ((int (__attribute__((stdcall)) *)(void *, const void *, void **))vtable[0x1a8/4])(
                     device, ((MaterialShader *)shader)->program, &((MaterialShader *)shader)->u);
@@ -1406,19 +1406,18 @@ MaterialHandle Material_Duplicate(MaterialHandle mtlCopy, const char *name)
     int count;
 
     /* Search for existing material with this name */
-    existing = *(byte **)(rg + 0x28 + hash * 4);
+    existing = (byte *)((r_globals_t *)imp_rg)->materialHashTable[hash];
     while (existing) {
         if (strcmp(*(const char **)existing, name) == 0) {
             /* Found — overwrite with new data, preserve name pointer */
             char *savedName = *(char **)existing;
             memcpy(existing, (void *)mtlCopy, 0x44);
             *(char **)existing = savedName;
-            *(int *)imp_rgp = 1; /* rgp->needsSort = true */
+            ((r_global_permanent_t *)imp_rgp)->materialLoaded = 1; /* rgp->needsSort = true */
             return (MaterialHandle)existing;
         }
         hash = (hash + 1) & 0x3ff;
-        rg = (byte *)imp_rg;
-        existing = *(byte **)(rg + 0x28 + hash * 4);
+        existing = (byte *)((r_globals_t *)imp_rg)->materialHashTable[hash];
     }
 
     /* Not found — allocate new material (0x44 struct + name string) */
@@ -1430,21 +1429,22 @@ MaterialHandle Material_Duplicate(MaterialHandle mtlCopy, const char *name)
     memcpy(material, (void *)mtlCopy, 0x44);
 
     /* Name stored after struct, set name pointer */
-    nameDst = (char *)(material + 0x44);
-    *(char **)material = nameDst;
+    nameDst = (char *)(material + sizeof(Material));
+    ((Material *)material)->info.name = nameDst;
     memcpy(nameDst, name, nameLen);
 
     /* Register in rgp and rg */
-    rgp = (byte *)imp_rgp;
-    *(int *)rgp = 1; /* needsSort */
-    ((Material *)material)->info.hashIndex = (unsigned short)hash;
-    count = *(int *)(rgp + 4);
-    ((Material *)material)->info.sortedIndex = (unsigned short)count;
-    *(void **)(rgp + 8 + count * 4) = material;
-    rg = (byte *)imp_rg;
-    *(void **)(rg + 0x28 + hash * 4) = material;
-    count++;
-    *(int *)(rgp + 4) = count;
+    {
+        r_global_permanent_t *rgpPtr = (r_global_permanent_t *)imp_rgp;
+        rgpPtr->materialLoaded = 1; /* needsSort */
+        ((Material *)material)->info.hashIndex = (unsigned short)hash;
+        count = rgpPtr->materialCount;
+        ((Material *)material)->info.sortedIndex = (unsigned short)count;
+        rgpPtr->sortedMaterials[count] = (Material *)material;
+        ((r_globals_t *)imp_rg)->materialHashTable[hash] = (Material *)material;
+        count++;
+        rgpPtr->materialCount = count;
+    }
 
     if (count == 0x400)
         R_Error(0, "Too many unique materials (%i or more)\n", 0x400);
@@ -1466,38 +1466,38 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
     int count;
 
     /* Search for existing material */
-    rg = (byte *)imp_rg;
-    existing = *(byte **)(rg + 0x28 + hash * 4);
+    existing = (byte *)((r_globals_t *)imp_rg)->materialHashTable[hash];
     while (existing) {
         if (strcmp(*(const char **)existing, name) == 0) {
             /* Found existing material */
             return (MaterialHandle)((r_globals_t *)imp_rg)->materialHashTable[hash];
         }
         hash = (hash + 1) & 0x3ff;
-        rg = (byte *)imp_rg;
-        existing = *(byte **)(rg + 0x28 + hash * 4);
+        existing = (byte *)((r_globals_t *)imp_rg)->materialHashTable[hash];
     }
 
     /* Not found — try loading */
     material = Material_Load(name, imageTrack);
     if (!material) {
-        rgp = (byte *)imp_rgp;
-        if (!*(void **)(rgp + 0x102c))
-            R_Error(0, "No default material loaded for %s fallback", name);
+        {
+            r_global_permanent_t *rgpPtr = (r_global_permanent_t *)imp_rgp;
+            if (!rgpPtr->defaultMaterial)
+                R_Error(0, "No default material loaded for %s fallback", name);
 
-        aliasMaterial = Material_TryAliasWithoutExtension(name, imageTrack);
-        if (aliasMaterial)
-            return aliasMaterial;
+            aliasMaterial = Material_TryAliasWithoutExtension(name, imageTrack);
+            if (aliasMaterial)
+                return aliasMaterial;
 
-        if (Material_IsUiLikeName(name)) {
-            MaterialHandle fallback = *(MaterialHandle *)(rgp + 0x1038);
-            if (!fallback)
-                fallback = *(MaterialHandle *)(rgp + 0x102c);
-            return Material_Duplicate(fallback, name);
+            if (Material_IsUiLikeName(name)) {
+                MaterialHandle fallback = rgpPtr->whiteMaterial;
+                if (!fallback)
+                    fallback = rgpPtr->defaultMaterial;
+                return Material_Duplicate(fallback, name);
+            }
+
+            Com_Printf("^3WARNING: Could not find material '%s'\n", name);
+            return Material_Duplicate(rgpPtr->defaultMaterial, name);
         }
-
-        Com_Printf("^3WARNING: Could not find material '%s'\n", name);
-        return Material_Duplicate(*(MaterialHandle *)(rgp + 0x102c), name);
     }
 
     /* Register new material */
@@ -1572,8 +1572,8 @@ void Material_Init(void)
 
     /* Register $raw material and validate against $default */
     Material *rawMaterial = Material_Register("$raw", 0);
-    *(Material **)(rgp_ptr + 0x1030) = rawMaterial; /* rgp.rawMaterial */
-    Material *defaultMaterial = *(Material **)(rgp_ptr + 0x102c); /* rgp.defaultMaterial */
+    ((r_global_permanent_t *)rgp_ptr)->rawMaterial = rawMaterial;
+    Material *defaultMaterial = ((r_global_permanent_t *)rgp_ptr)->defaultMaterial;
 
     /* First pass: check if raw material is compatible with default */
     if (rawMaterial->textures != defaultMaterial->textures ||
@@ -1584,21 +1584,21 @@ void Material_Init(void)
             typedef void (*ri_Printf_fn)(int, const char *, ...);
             ((ri_Printf_fn)(*(void **)imp_ri))(3, "$raw material is not compatible with $default");
             rawMaterial = defaultMaterial;
-            *(Material **)(rgp_ptr + 0x1030) = defaultMaterial;
+            ((r_global_permanent_t *)rgp_ptr)->rawMaterial = defaultMaterial;
         }
     }
 
     /* Reload pointers (may have changed after fallback) */
-    rawMaterial = *(Material **)(rgp_ptr + 0x1030);
-    defaultMaterial = *(Material **)(rgp_ptr + 0x102c);
+    rawMaterial = ((r_global_permanent_t *)rgp_ptr)->rawMaterial;
+    defaultMaterial = ((r_global_permanent_t *)rgp_ptr)->defaultMaterial;
 
     /* Second pass: if textures/constants/techniqueSet still differ, copy technique data */
     if (rawMaterial->textures != defaultMaterial->textures ||
         rawMaterial->constants != defaultMaterial->constants ||
         rawMaterial->techniqueSet != defaultMaterial->techniqueSet) {
         /* Copy first entry from raw's textures to rgp fallback slot, redirect pointer */
-        *(int *)(rgp_ptr + 0x10e4) = *(int *)rawMaterial->textures;
-        rawMaterial->textures = (MaterialTextureDef *)(rgp_ptr + 0x10e4);
+        *(int *)&((r_global_permanent_t *)rgp_ptr)->rawTexdef = *(int *)rawMaterial->textures;
+        rawMaterial->textures = &((r_global_permanent_t *)rgp_ptr)->rawTexdef;
     }
 }
 

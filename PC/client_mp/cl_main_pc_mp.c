@@ -8,7 +8,19 @@
  *   #include "PC/universal/q_shared.h"
  */
 
-extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
+/* Per-server status request entry (matches Q3 serverStatus_t for cl_serverStatusList).
+ * NOTE: The common_types.h serverStatus_t is the UI server-browser struct, NOT this one. */
+typedef struct serverStatusRequest_s {
+    char string[0x2000];        /* 0x0000: info string buffer */
+    netadr_t address;           /* 0x2000: server address */
+    int time;                   /* 0x200C: last response time */
+    int startTime;              /* 0x2010: request start time */
+    qboolean pending;           /* 0x2014: request pending */
+    qboolean print;             /* 0x2018: print to console */
+    qboolean retrieved;         /* 0x201C: result retrieved */
+} serverStatusRequest_t;
+
+extern serverStatusRequest_t cl_serverStatusList[16]; /* 0x0 */
 static Bool s_playerMute[64]; /* s_playerMute */
 extern int NET_CompareAdrSigned(const int *a, const int *b);
 extern qboolean NET_CompareAdr(netadr_t a, netadr_t b);
@@ -258,27 +270,19 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
     /* find empty slot in localServers */
     for (i = 0; i < 128; i++)
     {
-        byte *srv = (byte *)cls + i * 0x88; /* TODO: unknown offset - localServer slot base */
+        serverInfo_t *server = &cls->localServers[i];
         /* check if port is non-zero */
-        if (*(unsigned short *)(srv + 0x144) != 0) /* TODO: unknown offset */
+        if (server->adr.port != 0)
         {
             /* slot occupied, compare address */
-            netadr_t srvAdr;
-            memcpy(&srvAdr, srv + 0x13c, sizeof(netadr_t)); /* TODO: unknown offset */
-            if (NET_CompareAdr(from, srvAdr))
+            if (NET_CompareAdr(from, server->adr))
                 return 0;
             continue;
         }
 
         /* found empty slot */
         {
-            byte *base;
-            serverInfo_t *server;
-
             cls->numlocalservers = i + 1;
-
-            base = (byte *)cls + i * 0x88; /* TODO: unknown offset - localServer slot base */
-            server = (serverInfo_t *)(base + 0x130); /* TODO: unknown offset */
 
             server->adr = from;
             server->dirty = 0;
@@ -289,9 +293,9 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
             server->maxPing = 0;
             server->ping = -1;
             server->gameType[0] = '\0';
-            *(byte *)(base + 0x1b4) = 0; /* TODO: unknown offset */
+            server->requestCount = 0; /* was: *(byte *)(base + 0x1b4) */
             server->netType = (byte)from.type;
-            *(byte *)(base + 0x140 + 0xc) = 0; /* TODO: unknown offset */
+            server->clients = 0; /* was: *(byte *)(base + 0x140 + 0xc) */
 
             /* read second infoString (the server info line) */
             I_strncpyz(info, MSG_ReadString(msg), 0x400);
@@ -831,7 +835,7 @@ int CL_ServerStatusResponse_asm(netadr_t from, msg_t *msg)
 int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 {
     int i;
-    byte *serverStatus = NULL;
+    serverStatusRequest_t *serverStatus = NULL;
     const char *line;
     char info[1024];
     int infoField;
@@ -839,12 +843,9 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
     /* find matching server status entry */
     for (i = 0; i < 16; i++)
     {
-        byte *entry = (byte *)&cl_serverStatusList[0] + i * 0x2020;
-        netadr_t entryAdr;
-        memcpy(&entryAdr, entry + 0x2000, sizeof(netadr_t));
-        if (NET_CompareAdr(from, entryAdr))
+        if (NET_CompareAdr(from, cl_serverStatusList[i].address))
         {
-            serverStatus = entry;
+            serverStatus = &cl_serverStatusList[i];
             break;
         }
     }
@@ -857,10 +858,10 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 
     /* read server info line */
     line = MSG_ReadStringLine(msg);
-    Com_sprintf((char *)serverStatus, 0x2000, (const char *)str_00216058, line);
+    Com_sprintf(serverStatus->string, 0x2000, (const char *)str_00216058, line);
 
     /* print server info header if callback is set */
-    if (*(int *)(serverStatus + 0x2018))
+    if (serverStatus->print)
     {
         Com_Printf((const char *)str_002abb28);
 
@@ -890,12 +891,12 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 
     /* append newline to status string */
     {
-        int statusLen = strlen((char *)serverStatus);
-        Com_sprintf((char *)serverStatus + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
+        int statusLen = strlen(serverStatus->string);
+        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
     }
 
     /* print player table header if callback is set */
-    if (*(int *)(serverStatus + 0x2018))
+    if (serverStatus->print)
     {
         Com_Printf((const char *)str_002abb44);
         Com_Printf((const char *)str_002abb50);
@@ -912,11 +913,11 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 
             /* append player line to status string */
             {
-                int statusLen = strlen((char *)serverStatus);
-                Com_sprintf((char *)serverStatus + statusLen, 0x2000 - statusLen, (const char *)str_002a6fb8, line);
+                int statusLen = strlen(serverStatus->string);
+                Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_002a6fb8, line);
             }
 
-            if (*(int *)(serverStatus + 0x2018))
+            if (serverStatus->print)
             {
                 int ping = 0, score = 0;
                 const char *name;
@@ -943,18 +944,18 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 
     /* append final newline */
     {
-        int statusLen = strlen((char *)serverStatus);
-        Com_sprintf((char *)serverStatus + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
+        int statusLen = strlen(serverStatus->string);
+        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
     }
 
     /* update server status metadata */
-    *(int *)(serverStatus + 0x200c) = Sys_Milliseconds();
-    memcpy(serverStatus + 0x2000, &from, sizeof(netadr_t));
-    *(int *)(serverStatus + 0x2014) = 0;
+    serverStatus->time = Sys_Milliseconds();
+    serverStatus->address = from;
+    serverStatus->pending = 0;
 
-    if (*(int *)(serverStatus + 0x2018))
+    if (serverStatus->print)
     {
-        *(int *)(serverStatus + 0x201c) = 1;
+        serverStatus->retrieved = 1;
     }
 
     return 0;
@@ -1409,16 +1410,16 @@ int CL_Connect_f(void)
             {
                 /* connecting to localhost while server is running */
                 byte *legacyHacks = *(byte **)imp_legacyHacks;
-                *(byte *)(legacyHacks + 0xdd) = 1; /* TODO: unknown offset */
+                *(byte *)(legacyHacks + 0xdd) = 1; /* legacyHacks->localConnect */
             }
         }
     }
 
     {
         byte *legacyHacks = *(byte **)imp_legacyHacks;
-        *(byte *)(legacyHacks + 0x5c) = 0; /* TODO: unknown offset */
+        *(char *)(legacyHacks + 0x5c) = '\0'; /* legacyHacks->mapName[0] */
         legacyHacks = *(byte **)imp_legacyHacks;
-        *(byte *)(legacyHacks + 0x9c) = 0; /* TODO: unknown offset */
+        *(char *)(legacyHacks + 0x9c) = '\0'; /* legacyHacks->gametype[0] */
     }
 
     SV_Frame(0);
@@ -1544,19 +1545,16 @@ int CL_Connect_f(void)
 int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
 {
     netadr_t to;
-    byte *serverStatus;
+    serverStatusRequest_t *serverStatus;
     int i;
 
     /* if serverAddress is NULL, reset all server status entries */
     if (serverAddress == NULL)
     {
-        byte *entry = (byte *)&cl_serverStatusList[0];
-        byte *end = entry + 16 * 0x2020;
-        while (entry != end)
+        for (i = 0; i < 16; i++)
         {
-            *(unsigned short *)(entry + 0x2008) = 0; /* clear port */
-            *(int *)(entry + 0x201c) = 1;            /* mark as retrieved */
-            entry += 0x2020;
+            cl_serverStatusList[i].address.port = 0;
+            cl_serverStatusList[i].retrieved = 1;
         }
         return 0;
     }
@@ -1570,12 +1568,9 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
     serverStatus = NULL;
     for (i = 0; i < 16; i++)
     {
-        byte *entry = (byte *)&cl_serverStatusList[0] + i * 0x2020;
-        netadr_t entryAdr;
-        memcpy(&entryAdr, entry + 0x2000, sizeof(netadr_t));
-        if (NET_CompareAdr(to, entryAdr))
+        if (NET_CompareAdr(to, cl_serverStatusList[i].address))
         {
-            serverStatus = entry;
+            serverStatus = &cl_serverStatusList[i];
             goto found_entry;
         }
     }
@@ -1583,35 +1578,33 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
     /* no match found — search for a free (retrieved) entry */
     {
         int idx;
-        byte *entry = (byte *)&cl_serverStatusList[0];
         for (idx = 0; idx < 16; idx++)
         {
-            if (*(int *)(entry + 0x201c) != 0) /* retrieved? */
+            if (cl_serverStatusList[idx].retrieved != 0)
             {
-                serverStatus = entry;
+                serverStatus = &cl_serverStatusList[idx];
                 goto found_entry;
             }
-            entry += 0x2020;
         }
     }
 
     /* no free entry — find oldest entry to reuse */
     {
         int bestIdx = 0;
-        int oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + 0x2010);
+        int oldestTime = cl_serverStatusList[0].startTime;
         int j;
 
         for (j = 1; j <= 15; j++)
         {
-            int entryTime = *(int *)((byte *)&cl_serverStatusList[0] + j * 0x2020 + 0x2010);
+            int entryTime = cl_serverStatusList[j].startTime;
             if (oldestTime > entryTime)
             {
                 bestIdx = j;
-                oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + bestIdx * 0x2020 + 0x2010);
+                oldestTime = cl_serverStatusList[bestIdx].startTime;
             }
         }
 
-        serverStatus = (byte *)&cl_serverStatusList[0] + bestIdx * 0x2020;
+        serverStatus = &cl_serverStatusList[bestIdx];
     }
 
 found_entry:
@@ -1620,42 +1613,40 @@ found_entry:
     if (serverStatusString == NULL)
     {
         /* no output string requested — just mark entry as retrieved */
-        *(int *)(serverStatus + 0x201c) = 1;
+        serverStatus->retrieved = 1;
         return 0;
     }
 
     /* check if the entry address matches our target */
     {
-        netadr_t entryAdr;
-        memcpy(&entryAdr, serverStatus + 0x2000, sizeof(netadr_t));
-        if (NET_CompareAdr(to, entryAdr))
+        if (NET_CompareAdr(to, serverStatus->address))
         {
             /* address matches — check if pending */
-            if (*(int *)(serverStatus + 0x2014) == 0)
+            if (serverStatus->pending == 0)
             {
                 /* not pending — data is ready, copy it out */
-                I_strncpyz(serverStatusString, (char *)serverStatus, maxLen);
-                *(int *)(serverStatus + 0x201c) = 1; /* mark as retrieved */
-                *(int *)(serverStatus + 0x2010) = 0; /* clear start time */
+                I_strncpyz(serverStatusString, serverStatus->string, maxLen);
+                serverStatus->retrieved = 1;
+                serverStatus->startTime = 0;
                 return 1;
             }
 
             /* pending — check if resend timer expired */
             {
-                int startTime = *(int *)(serverStatus + 0x2010);
+                int startTime = serverStatus->startTime;
                 int now = Sys_Milliseconds();
-                byte *resendDvar = *(byte **)imp_cl_serverStatusResendTime;
-                int resendTime = *(int *)(resendDvar + 8);
+                const dvar_t *resendDvar = *(const dvar_t **)imp_cl_serverStatusResendTime;
+                int resendTime = resendDvar->current.integer;
                 if (startTime >= now - resendTime)
                     return 0; /* still waiting */
             }
 
             /* resend timer expired — re-request */
-            *(int *)(serverStatus + 0x2018) = 0; /* print = 0 */
-            *(int *)(serverStatus + 0x2014) = 1; /* pending = 1 */
-            *(int *)(serverStatus + 0x201c) = 0; /* retrieved = 0 */
-            *(int *)(serverStatus + 0x200c) = 0; /* time = 0 */
-            *(int *)(serverStatus + 0x2010) = Sys_Milliseconds();
+            serverStatus->print = 0;
+            serverStatus->pending = 1;
+            serverStatus->retrieved = 0;
+            serverStatus->time = 0;
+            serverStatus->startTime = Sys_Milliseconds();
 
             /* send getstatus */
             NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
@@ -1664,16 +1655,16 @@ found_entry:
     }
 
     /* address doesn't match — check if entry has been retrieved */
-    if (*(int *)(serverStatus + 0x201c) == 0)
+    if (serverStatus->retrieved == 0)
         return 0;
 
     /* re-initialize entry for new address */
-    memcpy(serverStatus + 0x2000, &to, sizeof(netadr_t));
-    *(int *)(serverStatus + 0x2018) = 0; /* print = 0 */
-    *(int *)(serverStatus + 0x2014) = 1; /* pending = 1 */
-    *(int *)(serverStatus + 0x201c) = 0; /* retrieved = 0 */
-    *(int *)(serverStatus + 0x2010) = Sys_Milliseconds();
-    *(int *)(serverStatus + 0x200c) = 0; /* time = 0 */
+    serverStatus->address = to;
+    serverStatus->print = 0;
+    serverStatus->pending = 1;
+    serverStatus->retrieved = 0;
+    serverStatus->startTime = Sys_Milliseconds();
+    serverStatus->time = 0;
 
     /* send getstatus */
     NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
@@ -1685,7 +1676,7 @@ int CL_ServerStatus_f(void)
 {
     netadr_t to;
     const char *serverAddr;
-    byte *statusEntry;
+    serverStatusRequest_t *statusEntry;
     int i;
 
     Com_Memset(&to, 0, sizeof(netadr_t));
@@ -1718,59 +1709,53 @@ int CL_ServerStatus_f(void)
     /* CL_GetServerStatusList — find or allocate entry for this address */
     /* search for matching address */
     {
-        byte *entry = (byte *)&cl_serverStatusList[0];
         for (i = 0; i < 16; i++)
         {
-            netadr_t entryAdr;
-            memcpy(&entryAdr, entry + 0x2000, sizeof(netadr_t));
-            if (NET_CompareAdr(to, entryAdr))
+            if (NET_CompareAdr(to, cl_serverStatusList[i].address))
             {
-                statusEntry = entry;
+                statusEntry = &cl_serverStatusList[i];
                 goto store_entry;
             }
-            entry += 0x2020;
         }
     }
 
     /* no match — search for free (retrieved) entry */
     {
         int idx;
-        byte *entry = (byte *)&cl_serverStatusList[0];
         for (idx = 0; idx < 16; idx++)
         {
-            if (*(int *)(entry + 0x201c) != 0)
+            if (cl_serverStatusList[idx].retrieved != 0)
             {
-                statusEntry = entry;
+                statusEntry = &cl_serverStatusList[idx];
                 goto store_entry;
             }
-            entry += 0x2020;
         }
     }
 
     /* no free entry — find oldest to reuse */
     {
         int bestIdx = 0;
-        int oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + 0x2010);
+        int oldestTime = cl_serverStatusList[0].startTime;
         int j;
 
         for (j = 1; j <= 15; j++)
         {
-            int entryTime = *(int *)((byte *)&cl_serverStatusList[0] + j * 0x2020 + 0x2010);
+            int entryTime = cl_serverStatusList[j].startTime;
             if (oldestTime > entryTime)
             {
                 bestIdx = j;
-                oldestTime = *(int *)((byte *)&cl_serverStatusList[0] + bestIdx * 0x2020 + 0x2010);
+                oldestTime = cl_serverStatusList[bestIdx].startTime;
             }
         }
 
-        statusEntry = (byte *)&cl_serverStatusList[0] + bestIdx * 0x2020;
+        statusEntry = &cl_serverStatusList[bestIdx];
     }
 
 store_entry:
     /* store address and mark for printing */
-    memcpy(statusEntry + 0x2000, &to, sizeof(netadr_t));
-    *(int *)(statusEntry + 0x2018) = 1; /* print = 1 */
-    *(int *)(statusEntry + 0x2014) = 1; /* pending = 1 */
+    statusEntry->address = to;
+    statusEntry->print = 1;
+    statusEntry->pending = 1;
 
     return 0;
 

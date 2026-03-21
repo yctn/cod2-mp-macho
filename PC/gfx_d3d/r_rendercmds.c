@@ -247,9 +247,9 @@ void R_SyncRenderThread(void)
 /* line 1140 */
 GfxViewParms * R_AllocViewParms(void)
 {
-    int index = *(int *)((char *)frontEndDataOut + 0x217c7c);
-    *(int *)((char *)frontEndDataOut + 0x217c7c) = index + 1;
-    return (GfxViewParms *)((char *)frontEndDataOut + 0x217c80 + index * 332);
+    int index = frontEndDataOut->viewParmCount;
+    frontEndDataOut->viewParmCount = index + 1;
+    return &frontEndDataOut->viewParms[index];
 }
 
 /* line 1806 */
@@ -270,15 +270,15 @@ void R_BeginDebugFrame(void)
 /* line 2102 */
 void R_AddCmdTouchAllImages(void)
 {
-    int usedBytes = *(int *)((char *)s_cmdList + 0x30000);
-    int availBytes = 0x30000 - usedBytes + *(int *)((char *)s_cmdList + 0x30004) - 0x2000;
+    int usedBytes = s_cmdList->usedTotal;
+    int availBytes = (int)sizeof(s_cmdList->cmds) - usedBytes + s_cmdList->usedCritical - 0x2000;
     if (availBytes <= 3) {
-        *(int *)((char *)s_cmdList + 0x30008) = 0;
+        s_cmdList->lastCmd = NULL;
         return;
     }
-    char *cmdBuf = (char *)s_cmdList + usedBytes;
-    *(int *)((char *)s_cmdList + 0x30000) = usedBytes + 4;
-    *(void **)((char *)s_cmdList + 0x30008) = cmdBuf;
+    char *cmdBuf = (char *)s_cmdList->cmds + usedBytes;
+    s_cmdList->usedTotal = usedBytes + 4;
+    s_cmdList->lastCmd = (GfxCmdHeader *)cmdBuf;
     *(short *)cmdBuf = 0x21;
     *(short *)(cmdBuf + 2) = 4;
 }
@@ -509,18 +509,17 @@ int R_BeginDelayedDrawing(void)
 /* line 1013 */
 void R_EndDelayedDrawing(int marker)
 {
-    char *cmdList = (char *)s_cmdList;
-    int used = *(int *)(cmdList + 0x30000);
-    if (0x30000 - used > 3) {
-        char *cmd = cmdList + used;
-        *(int *)(cmdList + 0x30000) = used + 4;
-        *(int *)(cmdList + 0x30004) += 4;
-        *(int *)(cmdList + 0x30008) = (int)cmd;
+    int used = s_cmdList->usedTotal;
+    if ((int)sizeof(s_cmdList->cmds) - used > 3) {
+        char *cmd = (char *)s_cmdList->cmds + used;
+        s_cmdList->usedTotal = used + 4;
+        s_cmdList->usedCritical += 4;
+        s_cmdList->lastCmd = (GfxCmdHeader *)cmd;
         *(short *)cmd = 3;
         *(short *)(cmd + 2) = 4;
-        used = *(int *)(cmdList + 0x30000);
+        used = s_cmdList->usedTotal;
     } else {
-        *(int *)(cmdList + 0x30008) = 0;
+        s_cmdList->lastCmd = NULL;
     }
     *(int *)(cmdList + 4 + marker) = (int)(cmdList + used);
 }

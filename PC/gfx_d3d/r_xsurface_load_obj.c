@@ -91,40 +91,42 @@ XSurface * XModelReadSurface(XModel *model, int *partBits, const byte * *pos, Al
         byte *vertPtr = (byte *)surface->verts;
 
         for (j = 0; j < (int)surface->vertCount; j++) {
-            /* Read normal (3 floats = 12 bytes at offset 0x00) */
-            *(int *)(vertPtr + 0x00) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x04) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x08) = ConsumeInt(pos);
+            XVertexInfo *vi = (XVertexInfo *)vertPtr;
 
-            /* Read color (4 bytes at offset 0x0C) */
-            *(vertPtr + 0x0C) = (byte)(**pos);
-            *(vertPtr + 0x0D) = (byte)(*(*pos + 1));
-            *(vertPtr + 0x0E) = (byte)(*(*pos + 2));
-            *(vertPtr + 0x0F) = (byte)(*(*pos + 3));
+            /* Read normal (3 floats) */
+            *(int *)&vi->normal[0] = ConsumeInt(pos);
+            *(int *)&vi->normal[1] = ConsumeInt(pos);
+            *(int *)&vi->normal[2] = ConsumeInt(pos);
+
+            /* Read color (4 bytes) */
+            vi->color[0] = (byte)(**pos);
+            vi->color[1] = (byte)(*(*pos + 1));
+            vi->color[2] = (byte)(*(*pos + 2));
+            vi->color[3] = (byte)(*(*pos + 3));
             *pos += 4;
 
-            /* Read texCoordX (float at offset 0x1C) */
-            *(int *)(vertPtr + 0x1C) = ConsumeInt(pos);
-            /* Read texCoordY (float at offset 0x2C) */
-            *(int *)(vertPtr + 0x2C) = ConsumeInt(pos);
+            /* Read texCoordX */
+            *(int *)&vi->texCoordX = ConsumeInt(pos);
+            /* Read texCoordY */
+            *(int *)&vi->texCoordY = ConsumeInt(pos);
 
-            /* Read binormal (3 floats at offset 0x10) */
-            *(int *)(vertPtr + 0x10) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x14) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x18) = ConsumeInt(pos);
+            /* Read binormal (3 floats) */
+            *(int *)&vi->binormal[0] = ConsumeInt(pos);
+            *(int *)&vi->binormal[1] = ConsumeInt(pos);
+            *(int *)&vi->binormal[2] = ConsumeInt(pos);
 
-            /* Read tangent (3 floats at offset 0x20) */
-            *(int *)(vertPtr + 0x20) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x24) = ConsumeInt(pos);
-            *(int *)(vertPtr + 0x28) = ConsumeInt(pos);
+            /* Read tangent (3 floats) */
+            *(int *)&vi->tangent[0] = ConsumeInt(pos);
+            *(int *)&vi->tangent[1] = ConsumeInt(pos);
+            *(int *)&vi->tangent[2] = ConsumeInt(pos);
 
             if (boneOffsetRaw != -1) {
-                /* Rigid: read offset (3 floats at 0x30) */
-                *(int *)(vertPtr + 0x30) = ConsumeInt(pos);
-                *(int *)(vertPtr + 0x34) = ConsumeInt(pos);
-                *(int *)(vertPtr + 0x38) = ConsumeInt(pos);
+                /* Rigid: read offset (3 floats) */
+                *(int *)&vi->offset[0] = ConsumeInt(pos);
+                *(int *)&vi->offset[1] = ConsumeInt(pos);
+                *(int *)&vi->offset[2] = ConsumeInt(pos);
 
-                vertPtr += 0x40;
+                vertPtr += sizeof(XVertexInfo);
             } else {
                 /* Skinned: read numWeights, boneOffset per vertex, offset, blend info */
                 byte numWeights;
@@ -132,42 +134,43 @@ XSurface * XModelReadSurface(XModel *model, int *partBits, const byte * *pos, Al
                 int k;
 
                 numWeights = ConsumeByte(pos);
-                *(vertPtr + 0x3C) = numWeights;
+                vi->numWeights = numWeights;
 
                 vertBoneOffset = ConsumeShort(pos);
                 partBits[vertBoneOffset >> 5] |= (1 << (vertBoneOffset & 0x1f));
-                *(short *)(vertPtr + 0x3E) = (short)(vertBoneOffset << 6);
+                vi->boneOffset = (short)(vertBoneOffset << 6);
 
-                /* Read offset (3 floats at 0x30) */
-                *(int *)(vertPtr + 0x30) = ConsumeInt(pos);
-                *(int *)(vertPtr + 0x34) = ConsumeInt(pos);
-                *(int *)(vertPtr + 0x38) = ConsumeInt(pos);
+                /* Read offset (3 floats) */
+                *(int *)&vi->offset[0] = ConsumeInt(pos);
+                *(int *)&vi->offset[1] = ConsumeInt(pos);
+                *(int *)&vi->offset[2] = ConsumeInt(pos);
 
                 if (numWeights == 0) {
-                    vertPtr += 0x40;
+                    vertPtr += sizeof(XVertexInfo);
                 } else {
                     /* Read boneWeight for main bone */
-                    *(vertPtr + 0x3D) = ConsumeByte(pos);
+                    vi->boneWeight = ConsumeByte(pos);
 
-                    vertPtr += 0x40;
+                    vertPtr += sizeof(XVertexInfo);
 
                     /* Read extra blend weights */
                     for (k = 0; k < (int)numWeights; k++) {
+                        XBlendInfo *blend = (XBlendInfo *)vertPtr;
                         short blendBoneOffset;
 
                         blendBoneOffset = ConsumeShort(pos);
                         partBits[blendBoneOffset >> 5] |= (1 << (blendBoneOffset & 0x1f));
-                        *(short *)(vertPtr + 0x0C) = (short)(blendBoneOffset << 6);
+                        blend->boneOffset = (short)(blendBoneOffset << 6);
 
                         /* Read blend offset (3 floats) */
-                        *(int *)(vertPtr + 0x00) = ConsumeInt(pos);
-                        *(int *)(vertPtr + 0x04) = ConsumeInt(pos);
-                        *(int *)(vertPtr + 0x08) = ConsumeInt(pos);
+                        *(int *)&blend->offset[0] = ConsumeInt(pos);
+                        *(int *)&blend->offset[1] = ConsumeInt(pos);
+                        *(int *)&blend->offset[2] = ConsumeInt(pos);
 
                         /* Read blend boneWeight (unsigned short) */
-                        *(unsigned short *)(vertPtr + 0x0E) = ConsumeUShort(pos);
+                        blend->boneWeight = ConsumeUShort(pos);
 
-                        vertPtr += 0x10;
+                        vertPtr += sizeof(XBlendInfo);
                     }
                 }
             }

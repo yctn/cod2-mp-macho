@@ -81,24 +81,26 @@ long unsigned int XSurfaceTransferDx7(const XVertexBuffer *surfVerts, GfxVertexD
 
     for (vertIndex = 0; vertIndex < vertCount; vertIndex++)
     {
-        /* Copy position (offset 0x30 in XVertexInfo = offset field) to xyz */
-        verts[vertIndex].xyz[0] = *(const float *)(v + 0x30);
-        verts[vertIndex].xyz[1] = *(const float *)(v + 0x34);
-        verts[vertIndex].xyz[2] = *(const float *)(v + 0x38);
+        const XVertexInfo *vi = (const XVertexInfo *)v;
 
-        /* Copy normal (offset 0x00 in XVertexInfo = normal field) */
-        verts[vertIndex].normal[0] = *(const float *)(v + 0x00);
-        verts[vertIndex].normal[1] = *(const float *)(v + 0x04);
-        verts[vertIndex].normal[2] = *(const float *)(v + 0x08);
+        /* Copy position (offset field) to xyz */
+        verts[vertIndex].xyz[0] = vi->offset[0];
+        verts[vertIndex].xyz[1] = vi->offset[1];
+        verts[vertIndex].xyz[2] = vi->offset[2];
 
-        /* Copy color (offset 0x0C) */
-        verts[vertIndex].color.packed = *(const unsigned int *)(v + 0x0C);
+        /* Copy normal */
+        verts[vertIndex].normal[0] = vi->normal[0];
+        verts[vertIndex].normal[1] = vi->normal[1];
+        verts[vertIndex].normal[2] = vi->normal[2];
 
-        /* Copy texCoord (texCoordX at 0x1C, texCoordY at 0x2C) */
-        verts[vertIndex].texCoord[0] = *(const float *)(v + 0x1C);
-        verts[vertIndex].texCoord[1] = *(const float *)(v + 0x2C);
+        /* Copy color */
+        verts[vertIndex].color.packed = *(const unsigned int *)vi->color;
 
-        v += 0x40;
+        /* Copy texCoord */
+        verts[vertIndex].texCoord[0] = vi->texCoordX;
+        verts[vertIndex].texCoord[1] = vi->texCoordY;
+
+        v += sizeof(XVertexInfo);
     }
 }
 
@@ -113,37 +115,39 @@ long unsigned int XSurfaceTransfer(const XVertexBuffer *surfVerts, GfxVertex *ve
 
     for (vertIndex = 0; vertIndex < vertCount; vertIndex++)
     {
-        /* Copy position (offset 0x30 = offset field) to xyzw */
-        verts[vertIndex].xyzw[0] = *(const float *)(v + 0x30);
-        verts[vertIndex].xyzw[1] = *(const float *)(v + 0x34);
-        verts[vertIndex].xyzw[2] = *(const float *)(v + 0x38);
+        const XVertexInfo *vi = (const XVertexInfo *)v;
 
-        /* W component = 1.0f (0x3f800000) */
+        /* Copy position (offset field) to xyzw */
+        verts[vertIndex].xyzw[0] = vi->offset[0];
+        verts[vertIndex].xyzw[1] = vi->offset[1];
+        verts[vertIndex].xyzw[2] = vi->offset[2];
+
+        /* W component = 1.0f */
         verts[vertIndex].xyzw[3] = 1.0f;
 
-        /* Copy normal (offset 0x00 = normal field) */
-        verts[vertIndex].normal[0] = *(const float *)(v + 0x00);
-        verts[vertIndex].normal[1] = *(const float *)(v + 0x04);
-        verts[vertIndex].normal[2] = *(const float *)(v + 0x08);
+        /* Copy normal */
+        verts[vertIndex].normal[0] = vi->normal[0];
+        verts[vertIndex].normal[1] = vi->normal[1];
+        verts[vertIndex].normal[2] = vi->normal[2];
 
-        /* Copy color (offset 0x0C) */
-        verts[vertIndex].color.packed = *(const unsigned int *)(v + 0x0C);
+        /* Copy color */
+        verts[vertIndex].color.packed = *(const unsigned int *)vi->color;
 
-        /* Copy texCoord (texCoordX at 0x1C, texCoordY at 0x2C) */
-        verts[vertIndex].texCoord[0] = *(const float *)(v + 0x1C);
-        verts[vertIndex].texCoord[1] = *(const float *)(v + 0x2C);
+        /* Copy texCoord */
+        verts[vertIndex].texCoord[0] = vi->texCoordX;
+        verts[vertIndex].texCoord[1] = vi->texCoordY;
 
-        /* Copy binormal (offset 0x10 = binormal field) */
-        verts[vertIndex].binormal[0] = *(const float *)(v + 0x10);
-        verts[vertIndex].binormal[1] = *(const float *)(v + 0x14);
-        verts[vertIndex].binormal[2] = *(const float *)(v + 0x18);
+        /* Copy binormal */
+        verts[vertIndex].binormal[0] = vi->binormal[0];
+        verts[vertIndex].binormal[1] = vi->binormal[1];
+        verts[vertIndex].binormal[2] = vi->binormal[2];
 
-        /* Copy tangent (offset 0x20 = tangent field) */
-        verts[vertIndex].tangent[0] = *(const float *)(v + 0x20);
-        verts[vertIndex].tangent[1] = *(const float *)(v + 0x24);
-        verts[vertIndex].tangent[2] = *(const float *)(v + 0x28);
+        /* Copy tangent */
+        verts[vertIndex].tangent[0] = vi->tangent[0];
+        verts[vertIndex].tangent[1] = vi->tangent[1];
+        verts[vertIndex].tangent[2] = vi->tangent[2];
 
-        v += 0x40;
+        v += sizeof(XVertexInfo);
     }
 }
 
@@ -207,7 +211,7 @@ long unsigned int XSurfaceGetVerts(const XSurface *surf, DObjSkelMat *boneMatrix
 
             XSurfaceTransformPos(vertInfo->offset, mat, pVert);
             pVert += 3;
-            vertInfo = (XVertexInfo *)((char *)vertInfo + 0x40);
+            vertInfo = (XVertexInfo *)((char *)vertInfo + sizeof(XVertexInfo));
         }
     }
     else
@@ -249,7 +253,7 @@ long unsigned int XSurfaceGetVerts(const XSurface *surf, DObjSkelMat *boneMatrix
                 pVert[-2] *= scale;
                 pVert[-1] *= scale;
 
-                blend = (const XBlendInfo *)(vdata + 0x40);
+                blend = (const XBlendInfo *)(vdata + sizeof(XVertexInfo));
                 for (j = 0; j < v->numWeights; j++)
                 {
                     DObjSkelMat *mat2 = (DObjSkelMat *)((char *)boneMatrix + blend->boneOffset);

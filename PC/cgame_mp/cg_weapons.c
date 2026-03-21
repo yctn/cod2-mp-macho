@@ -1961,21 +1961,21 @@ void CG_RegisterWeapon(int weaponNum)
     }
 
     /* line 450-453: init dobjModels */
-    *(int *)(dobjModels + 0x00) = 0; /* model */
-    *(int *)(dobjModels + 0x04) = 0; /* boneName for slot 0 */
-    *(int *)(dobjModels + 0x08) = (int)str_002b6e38; /* boneName for slot 0 */
-    *(int *)(dobjModels + 0x0c) = 0; /* ignoreCollision for slot 0 */
+    dobjModels[0].model = NULL;
+    dobjModels[0].boneName = NULL;
+    dobjModels[0].ignoreCollision = (int)str_002b6e38; /* boneName constant */
+    *(int *)((byte *)dobjModels + 0x0c) = 0;
 
     /* line 456: build hand model path */
     sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, ((WeaponDef *)weapDef)->szHandXModel);
-    *(int *)(dobjModels + 0x00) = (int)CL_RegisterModel(szModelFile); /* TODO: unknown offset */
+    dobjModels[0].model = (struct XModel *)CL_RegisterModel(szModelFile);
 
     /* line 460: build viewmodel path */
     sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, ((WeaponDef *)weapDef)->szGunXModel);
-    *(int *)(dobjModels + 0x10) = (int)CL_RegisterModel(szModelFile); /* TODO: unknown offset */
+    dobjModels[1].model = (struct XModel *)CL_RegisterModel(szModelFile);
 
     /* line 463: check if models are bad */
-    if (XModelBad(*(void **)(dobjModels + 0x00)) || XModelBad(*(void **)(dobjModels + 0x10))) { /* TODO: unknown offset */
+    if (XModelBad(dobjModels[0].model) || XModelBad(dobjModels[1].model)) {
         CG_Weapons_SetToDefault(weaponNum, (weaponInfo_s (*)[4])dobjModels);
     }
 
@@ -1992,10 +1992,9 @@ void CG_RegisterWeapon(int weaponNum)
 
     /* line 478-496: create anims for each weapon anim slot */
     {
-        byte *animPtr = weapDef;
         i = 1;
         while (i < 0x17) {
-            const char *animName = *(const char **)(animPtr + 0x18); /* TODO: unknown offset */
+            const char *animName = ((WeaponDef *)weapDef)->szXAnims[i];
             if (*animName != '\0') {
                 XAnimPrecache(animName, (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
                 XAnimCreate(pAnims, i, animName);
@@ -2005,7 +2004,6 @@ void CG_RegisterWeapon(int weaponNum)
                 XAnimCreate(pAnims, i, ((WeaponDef *)weapDef)->szXAnims[1]);
             }
             i++;
-            animPtr += 4;
         }
     }
 
@@ -2168,7 +2166,7 @@ void CG_RegisterWeapon(int weaponNum)
     ((weaponInfo_t *)weapInfo)->viewModelDObj = (int)Com_GetClientDObj(dobjHandle, 0);
 
     /* line 584 */
-    I_strncpyz((char *)(weapInfo + 0x60), ((WeaponDef *)weapDef)->szHandXModel, 0x40);
+    I_strncpyz(((weaponInfo_t *)weapInfo)->handModel, ((WeaponDef *)weapDef)->szHandXModel, 0x40);
 
     /* line 587 */
     XAnimClearTreeGoalWeights(pAnimTree, 0, 0);
@@ -7117,6 +7115,6 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
 
     handModel = ((WeaponDef *)weapDef)->szGunXModel;
     sprintf(modelFile, "%s%s", "xmodel/", handModel);
-    *(void **)((byte *)dobjModels + 0xc) = CL_RegisterModel(modelFile); /* TODO: unknown offset */
+    dobjModels[1].model = (struct XModel *)CL_RegisterModel(modelFile);
 }
 #endif

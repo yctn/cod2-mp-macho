@@ -1014,22 +1014,21 @@ void RB_SetupEntityLighting(const GfxEntity *ent, GfxEntityLighting *lighting)
 {
     vec3_t lightOrigin;
     GfxWorld *world;
-    unsigned char *entBytes = (unsigned char *)ent;
 
     /* Set viewCount from backEnd */
     lighting->viewCount = backEnd.viewCount;
 
-    /* Check renderFxFlags sign bit (offset 4 of GfxEntity) */
-    if ((signed char)entBytes[4] < 0) {
-        /* Use origin at offset 0x08 (axes origin) */
-        lightOrigin[0] = *(float *)(entBytes + 8);
-        lightOrigin[1] = *(float *)(entBytes + 12);
-        lightOrigin[2] = *(float *)(entBytes + 16);
+    /* Check renderFxFlags sign bit */
+    if ((signed char)((unsigned char *)&ent->renderFxFlags)[0] < 0) {
+        /* Use lighting origin (baseCoords / origin in lighting union) */
+        lightOrigin[0] = ent->lighting.origin[0];
+        lightOrigin[1] = ent->lighting.origin[1];
+        lightOrigin[2] = ent->lighting.origin[2];
     } else {
-        /* Use origin at offset 0x3c (endpos) plus height offset */
-        lightOrigin[0] = *(float *)(entBytes + 0x3c);
-        lightOrigin[1] = *(float *)(entBytes + 0x40);
-        lightOrigin[2] = *(float *)(entBytes + 0x44) + 4.0f;
+        /* Use entity origin plus height offset */
+        lightOrigin[0] = ent->origin[0];
+        lightOrigin[1] = ent->origin[1];
+        lightOrigin[2] = ent->origin[2] + 4.0f;
     }
 
     world = rgp.world;

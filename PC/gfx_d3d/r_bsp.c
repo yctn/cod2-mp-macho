@@ -49,7 +49,7 @@ void R_ResetSunLightParseParams(void);
 /* Helper: get the GfxWorld pointer from rgp */
 static inline GfxWorld *R_GetWorld(void)
 {
-    return *(GfxWorld **)(r_glob_ptr + 0x109c);
+    return ((r_global_permanent_t *)r_glob_ptr)->world;
 }
 
 /* line 273 */
@@ -188,7 +188,7 @@ void R_ShutdownWorld(void)
         world->vd.worldVb = NULL;
     }
 
-    *(void **)(r_glob_ptr + 0x109c) = NULL;
+    ((r_global_permanent_t *)r_glob_ptr)->world = NULL;
 }
 
 /* line 252 */
@@ -264,7 +264,7 @@ void R_LoadWorld(const char *name, int *checksum)
 
     RB_InitLightVisHistory(name);
     world = (GfxWorld *)R_LoadWorldInternal(name);
-    *(void **)(r_glob_ptr + 0x109c) = world;
+    ((r_global_permanent_t *)r_glob_ptr)->world = world;
 
     if (checksum != NULL) {
         *checksum = world->checksum;
@@ -277,48 +277,41 @@ void R_LoadWorld(const char *name, int *checksum)
     vtable = r_vtable_ptr;
 
     /* Dvar_SetFloat-style calls (vtable offset 0x9c) */
-    ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef38, *(int *)&worldSunParse->ambientScale);
-    ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef34, *(int *)&worldSunParse->diffuseFraction);
-    ((void (*)(void *, int))(*(void **)(vtable + 0x9c)))
-        (*(void **)r_dvar_ef48, *(int *)&worldSunParse->sunLight);
+    ((refimport_t *)vtable)->Dvar_SetFloat(*(const dvar_t **)r_dvar_ef38, worldSunParse->ambientScale);
+    ((refimport_t *)vtable)->Dvar_SetFloat(*(const dvar_t **)r_dvar_ef34, worldSunParse->diffuseFraction);
+    ((refimport_t *)vtable)->Dvar_SetFloat(*(const dvar_t **)r_dvar_ef48, worldSunParse->sunLight);
 
-    /* Dvar_SetColor-style calls (vtable offset 0xa4) - (dvar, r, g, b, 1.0f) */
-    ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
-        (*(void **)r_dvar_ef3c,
-         *(int *)&worldSunParse->ambientColor[0], *(int *)&worldSunParse->ambientColor[1],
-         *(int *)&worldSunParse->ambientColor[2], 0x3f800000);
-    ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
-        (*(void **)r_dvar_ef30,
-         *(int *)&worldSunParse->sunColor[0], *(int *)&worldSunParse->sunColor[1],
-         *(int *)&worldSunParse->sunColor[2], 0x3f800000);
-    ((void (*)(void *, int, int, int, int))(*(void **)(vtable + 0xa4)))
-        (*(void **)r_dvar_ef44,
-         *(int *)&worldSunParse->diffuseColor[0], *(int *)&worldSunParse->diffuseColor[1],
-         *(int *)&worldSunParse->diffuseColor[2], 0x3f800000);
+    /* Dvar_SetColor calls - (dvar, r, g, b, 1.0f) */
+    ((refimport_t *)vtable)->Dvar_SetColor(*(const dvar_t **)r_dvar_ef3c,
+         worldSunParse->ambientColor[0], worldSunParse->ambientColor[1],
+         worldSunParse->ambientColor[2], 1.0f);
+    ((refimport_t *)vtable)->Dvar_SetColor(*(const dvar_t **)r_dvar_ef30,
+         worldSunParse->sunColor[0], worldSunParse->sunColor[1],
+         worldSunParse->sunColor[2], 1.0f);
+    ((refimport_t *)vtable)->Dvar_SetColor(*(const dvar_t **)r_dvar_ef44,
+         worldSunParse->diffuseColor[0], worldSunParse->diffuseColor[1],
+         worldSunParse->diffuseColor[2], 1.0f);
 
-    /* Dvar_SetVec3-style call (vtable offset 0xac) */
-    ((void (*)(void *, int, int, int))(*(void **)(vtable + 0xac)))
-        (*(void **)r_dvar_ef4c,
-         *(int *)&worldSunParse->angles[0], *(int *)&worldSunParse->angles[1],
-         *(int *)&worldSunParse->angles[2]);
+    /* Dvar_SetVec3 call */
+    ((refimport_t *)vtable)->Dvar_SetVec3(*(const dvar_t **)r_dvar_ef4c,
+         worldSunParse->angles[0], worldSunParse->angles[1],
+         worldSunParse->angles[2]);
 
-    /* Dvar_SetModified-style calls (vtable offset 0x80) - (dvar, dvar->current) */
+    /* Dvar_ChangeResetValue calls - (dvar, dvar->current) */
     dvar = *(byte **)r_dvar_ef38;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef34;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef48;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef3c;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef30;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef44;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
     dvar = *(byte **)r_dvar_ef4c;
-    ((void (*)(void *, int))(*(void **)(vtable + 0x80)))(dvar, *(int *)(dvar + 8));
+    ((refimport_t *)vtable)->Dvar_ChangeResetValue((dvar_t *)dvar, ((dvar_t *)dvar)->current);
 
     R_UpdateLightsFromDvars();
     R_FlushSun();
@@ -346,8 +339,8 @@ void R_LoadWorld(const char *name, int *checksum)
     /* Register sun half-angle image for DX9 */
     {
         byte *device = *(byte **)imp_r_rendererInUse;
-        if (*(int *)(device + 8) == 2) {
-            *(void **)(r_glob_ptr + 0x10a0) =
+        if (((dvar_t *)device)->current.integer == 2) {
+            ((r_global_permanent_t *)r_glob_ptr)->sunHalfAngleImage =
                 Image_Register("$sunhalfangle", 1, 0);
         }
     }

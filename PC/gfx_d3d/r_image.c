@@ -239,8 +239,8 @@ void R_SetPicmip(void)
 {
     byte *ri = (byte *)imp_ri;
     void (*ri_Printf)(int, const char *, ...) = *(void (**)(int, const char *, ...))ri;
-    void (*Cvar_SetValue)(void *, int) = *(void (**)(void *, int))(ri + 0x98);
-    int (*Cvar_VariableIntegerValue)(const char *) = *(int (**)(const char *))(ri + 0xe0);
+    void (*Cvar_SetValue)(void *, int) = (void (*)(void *, int))((refimport_t *)ri)->Dvar_SetInt;
+    int (*Cvar_VariableIntegerValue)(const char *) = (int (*)(const char *))((refimport_t *)ri)->Dvar_GetInt;
     int texMemInMegs, sysMemInMegs;
     int minPicmip;
     int changed;
@@ -309,7 +309,7 @@ apply_sysmem:
 set_cvars:
     /* Set cvar values to match computed picmip levels */
     ri = (byte *)imp_ri;
-    Cvar_SetValue = *(void (**)(void *, int))(ri + 0x98);
+    Cvar_SetValue = (void (*)(void *, int))((refimport_t *)ri)->Dvar_SetInt;
     ri_Printf = *(void (**)(int, const char *, ...))ri;
     Cvar_SetValue(*(void **)imp_r_picmip, imageGlobals[2048]);
     Cvar_SetValue(*(void **)imp_r_picmip_bump, imageGlobals[2049]);
@@ -613,7 +613,7 @@ GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTr
     image = (byte *)hunkAlloc(0x24 + nameLen);
 
     /* Name stored right after the struct */
-    nameDst = (char *)(image + 0x24);
+    nameDst = (char *)(image + sizeof(GfxImage));
     ((GfxImage *)image)->name = nameDst;
     memcpy(nameDst, name, nameLen);
 

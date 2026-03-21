@@ -662,8 +662,8 @@ void R_RenderScene(const refdef_t *refdef)
     }
 
     /* Setup scene timing */
-    *(int *)((char *)&scene + 4) = *(int *)((const char *)refdef + 0x48); /* scene.time */
-    *(float *)((char *)&scene + 8) = (float)*(int *)((const char *)refdef + 0x48) * 0.001f;
+    scene.def.time = ((const refdef_t *)refdef)->time;
+    scene.def.floatTime = (float)((const refdef_t *)refdef)->time * 0.001f;
 
     /* Copy refdef origin and axis to rg */
     memcpy(rg_p->viewOrg, (const char *)refdef + 0x18, 12); /* origin */
@@ -673,7 +673,7 @@ void R_RenderScene(const refdef_t *refdef)
     viewParms = R_AllocViewParms();
     R_SetViewParmsForScene(refdef, (GfxViewParms *)viewParms);
 
-    blurRadius = *(float *)((const char *)refdef + 0x50);
+    blurRadius = ((const refdef_t *)refdef)->blurRadius;
 
     /* Check splitscreen */
     {
@@ -738,15 +738,15 @@ void R_RenderScene(const refdef_t *refdef)
 
         /* Copy sun data to front-end */
         if (rg_ptr->fogIndex) {
-            char *fed = *(char **)imp_frontEndDataOut;
-            memcpy(fed + 0x219cec, fogActive, sizeof(GfxFog));
+            GfxBackEndData *fed = *(GfxBackEndData **)imp_frontEndDataOut;
+            memcpy(&fed->fogSettings, fogActive, sizeof(GfxFog));
         } else {
-            char *fed = *(char **)imp_frontEndDataOut;
-            *(int *)(fed + 0x219cec) = 0;
+            GfxBackEndData *fed = *(GfxBackEndData **)imp_frontEndDataOut;
+            fed->fogSettings.techniqueOffset = 0;
         }
     }
 
-    viewIndex = *(int *)((const char *)refdef + 0x54);
+    viewIndex = ((const refdef_t *)refdef)->viewIndex;
 
     /* DPVS: add world surfaces */
     {

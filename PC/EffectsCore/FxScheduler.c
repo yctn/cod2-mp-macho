@@ -87,7 +87,7 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch);
 /* line 75 */
 TMediaElement MediaHandles_GetHandle(const MediaHandles * _this)
 {
-    unsigned short count = *(unsigned short *)((byte *)_this + 4);
+    unsigned short count = _this->mMediaList.size;
     TMediaElement result;
     TMediaElement *elements;
 
@@ -96,16 +96,16 @@ TMediaElement MediaHandles_GetHandle(const MediaHandles * _this)
         return result;
     }
 
-    elements = *(TMediaElement **)((byte *)_this);
+    elements = _this->mMediaList.elements;
     return elements[irand(0, count)];
 }
 
 /* line 90 */
 void FxScheduler_FxScheduler(const FxScheduler * _this)
 {
-    /* FxScheduler: offset 0 = mScheduledHead (ptr), offset 4 = mScheduledCount (int) + offset 8 = padding/extra */
-    ((FxScheduler *)_this)->mScheduledCount = 0;
-    *(int *)((byte *)_this + 8) = 0; /* scheduledEffectCount */
+    FxScheduler *sched = (FxScheduler *)_this;
+    sched->mScheduledHead = NULL;
+    sched->mScheduledCount = 0;
 }
 
 /* line 459 */
@@ -594,7 +594,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
 
     /* Get and set seed */
     seed = FxHelper_GetSeed(helper);
-    *(int *)((byte *)_this + 0) = seed;
+    ((FxScheduler *)_this)->mSeed = seed;
     Rand_Init(seed);
 
     /* Handle null fx */
@@ -753,7 +753,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
                 /* Link into scheduler list */
                 sfx->mScheduledNext = ((FxScheduler *)_this)->mScheduledCount; /* link into list */
                 ((FxScheduler *)_this)->mScheduledCount = (int)(size_t)sfx;
-                *(int *)((byte *)_this + 8) += 1;
+                ((FxScheduler *)_this)->mScheduledCount += 1;
             } else {
                 /* Spawn immediately */
                 FxScheduler_CreateEffect(_this, fx, prim, bolt, (const vec_t *)or_.origin, (MediaHandles *(*)[4])ax, -delay, t);
@@ -769,7 +769,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         if (*(byte *)(*(void **)countDvar + 8) != 0) {
             void (*debugAddNum)(const vec_t *, int, const vec_t *, int);
             byte *rePtr = *(byte **)&imp_re;
-            debugAddNum = *(void (**)(const vec_t *, int, const vec_t *, int))((byte *)rePtr + 0x104);
+            debugAddNum = *(void (**)(const vec_t *, int, const vec_t *, int))((byte *)rePtr + 0x104); /* TODO: unknown struct offset for re->debugAddNum */
             debugAddNum(or_.origin, numAdded, *(const vec_t **)&imp_colorYellow, 3000);
         }
     }
@@ -1176,7 +1176,7 @@ float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplat
 /* line 69 */
 EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
 {
-    unsigned short count = *(unsigned short *)((byte *)_this + 4); /* mMediaList.count */
+    unsigned short count = _this->mMediaList.size;
     TMediaElement *elements;
 
     if (!count) {
@@ -1246,7 +1246,7 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
     size = FxScheduler_GetDecalSize(_this, primTemp);
 
     /* Get mark material from MediaHandles at primTemp offset 0x68 */
-    count = *(unsigned short *)((byte *)&primTemp->mMediaHandles + 4); /* mMediaHandles.mMediaList.count */
+    count = primTemp->mMediaHandles.mMediaList.size;
     if (!count) {
         markMaterial = NULL;
     } else {
@@ -1327,7 +1327,7 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
 static void FxArchive_ArchiveInt(const FxArchive *arch, int *field)
 {
     int tmp;
-    if (*(byte *)((byte *)arch + 4)) {
+    if (arch->isReading) {
         /* Reading */
         FxArchive_ReadData(arch, &tmp, 4);
         *field = tmp;
@@ -1342,7 +1342,7 @@ static void FxArchive_ArchiveInt(const FxArchive *arch, int *field)
 static void FxArchive_ArchiveVec3(const FxArchive *arch, vec_t *v)
 {
     int tmp;
-    if (*(byte *)((byte *)arch + 4)) {
+    if (arch->isReading) {
         /* Reading */
         FxArchive_ReadData(arch, v, 0xc);
     } else {
@@ -1401,10 +1401,11 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
     int i;
     ScheduledEffect *sfx;
 
-    if (*(byte *)((byte *)arch + 4)) {
+    FxScheduler *sched_self = (FxScheduler *)_this;
+    if (arch->isReading) {
         /* Reading */
-        *(int *)(self + 4) = 0; /* mScheduledHead = NULL */
-        *(int *)(self + 8) = 0; /* mScheduledCount = 0 */
+        sched_self->mScheduledHead = NULL;
+        sched_self->mScheduledCount = 0;
 
         /* Read pending count */
         FxArchive_ReadData(arch, &pendingCount, 4);
@@ -1426,9 +1427,9 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
                     PrimitiveTemplate *prim = fx->mPrimitives[primIndex];
                     (void)prim;
                     /* Link into scheduler list */
-                    newSfx->mScheduledNext = *(int *)(self + 4);
-                    *(int *)(self + 4) = (int)(size_t)newSfx;
-                    *(int *)(self + 8) += 1;
+                    newSfx->mScheduledNext = (int)(size_t)sched_self->mScheduledHead;
+                    sched_self->mScheduledHead = newSfx;
+                    sched_self->mScheduledCount += 1;
                 } else {
                     /* Invalid - free */
                     if (newSfx)
@@ -1438,7 +1439,7 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
         }
     } else {
         /* Writing */
-        int tmp = *(int *)(self + 8); /* mScheduledCount */
+        int tmp = sched_self->mScheduledCount;
         FxArchive_WriteData(arch, &tmp, 4);
 
         /* Iterate linked list and archive each */

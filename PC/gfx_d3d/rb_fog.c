@@ -8,7 +8,7 @@ extern void **g_renderState; /* imp_r_fog */
 extern void **g_viewParms;   /* imp_backEndData */
 extern r_globals_t rg;      /* imp_rg */
 extern r_backEndGlobals_t backEnd; /* imp_backEnd */
-extern void **g_backEndData; /* imp_dxState */
+extern DxState *dxState;     /* imp_dxState */
 /* g_dx was imp_dx, g_dxIter was imp_alwaysfails, g_dxCaps was imp_r_rendererInUse */
 extern void **g_drawSurf;    /* imp_tess */
 extern void **g_viewInfo;    /* imp_r_zfar */
@@ -35,7 +35,6 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
     unsigned int fogColor;
 
     if (fogColorSrc != 0) {
-        byte *backEndData = *(byte **)g_backEndData;
         if (fogColorSrc == 2) {
             fogColor = 0;
         } else {
@@ -44,7 +43,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
 
         fogColor |= 0xff000000;
 
-        if (*(unsigned int *)(backEndData + 0x2158) == fogColor)
+        if (dxState->fog.color.packed == fogColor)
             return 0;
 
         /* Set fog color via D3D device */
@@ -55,11 +54,9 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
             ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
         } while (*(volatile int *)imp_alwaysfails != 0);
 
-        byte *bd = *(byte **)g_backEndData;
-        *(unsigned int *)(bd + 0x2158) = fogColor;
+        dxState->fog.color.packed = fogColor;
     } else {
-        byte *backEndData = *(byte **)g_backEndData;
-        int renderMode = *(int *)(backEndData + 0x2000) & 0xf0;
+        int renderMode = dxState->refStateBits[0] & 0xf0;
         if (renderMode == 0x20) {
             fogColor = 0;
         } else {
@@ -68,7 +65,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
 
         fogColor |= 0xff000000;
 
-        if (*(unsigned int *)(backEndData + 0x2158) == fogColor)
+        if (dxState->fog.color.packed == fogColor)
             return 0;
 
         do {
@@ -78,8 +75,7 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
             ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
         } while (*(volatile int *)imp_alwaysfails != 0);
 
-        byte *bd = *(byte **)g_backEndData;
-        *(unsigned int *)(bd + 0x2158) = fogColor;
+        dxState->fog.color.packed = fogColor;
     }
 
     return 0;
@@ -87,8 +83,8 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
 
 int RB_SetIteratorFog(void)
 {
-    byte *drawSurf = *(byte **)g_drawSurf;
-    if (*(int *)(drawSurf + 0x5a7c0) == 3)
+    materialCommands_t *tess = *(materialCommands_t **)g_drawSurf;
+    if (tess->techType == 3)
         return 0;
 
     byte *viewParms = *(byte **)g_viewParms;
@@ -107,8 +103,7 @@ int RB_SetIteratorFog(void)
     /* Inline RB_UpdateFogColor logic */
     int fogIndex = rg.fogIndex;
     if (fogIndex != 0) {
-        byte *backEndData = *(byte **)g_backEndData;
-        int renderMode = *(int *)(backEndData + 0x2000) & 0xf0;
+        int renderMode = dxState->refStateBits[0] & 0xf0;
         unsigned int fogColor;
         if (renderMode == 0x20) {
             fogColor = 0;
@@ -117,7 +112,7 @@ int RB_SetIteratorFog(void)
         }
         fogColor |= 0xff000000;
 
-        if (*(unsigned int *)(backEndData + 0x2158) != fogColor) {
+        if (dxState->fog.color.packed != fogColor) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
@@ -125,12 +120,9 @@ int RB_SetIteratorFog(void)
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
             } while (*(volatile int *)imp_alwaysfails != 0);
 
-            backEndData = *(byte **)g_backEndData;
-            *(unsigned int *)(backEndData + 0x2158) = fogColor;
+            dxState->fog.color.packed = fogColor;
         }
     }
-
-    byte *ecx = (byte *)&backEnd;
 
     /* Convert fog color bytes to floats (1/255 scale) */
     float inv255 = 0.003921568859368563f;
@@ -146,8 +138,8 @@ int RB_SetIteratorFog(void)
     backEnd.codeConsts[29][3] = fa;
 
     /* Compute fog parameters */
-    byte *viewInfo = *(byte **)g_viewInfo;
-    float fogEnd = *(float *)(viewInfo + 8);
+    float *viewInfo = *(float **)g_viewInfo;
+    float fogEnd = viewInfo[2]; /* TODO: unknown struct - offset 8 */
     if (fogEnd == 0.0f) {
         fogEnd = fog->fogEnd;
     }
@@ -164,72 +156,65 @@ int RB_SetIteratorFog(void)
     backEnd.codeConsts[28][3] = 0.0f;
 
     /* Check D3D caps for fog mode */
-    byte *dxCaps = *(byte **)imp_r_rendererInUse;
-    if (*(int *)(dxCaps + 8) != 2)
+    int *dxCaps = *(int **)imp_r_rendererInUse;
+    if (dxCaps[2] != 2) /* TODO: unknown struct - offset 8 */
         return 0;
 
     /* Set D3D fog render states based on fog type */
     if (fog->techniqueOffset == 1) {
         /* Exponential fog */
-        byte *bd = *(byte **)g_backEndData;
-        if (*(int *)(bd + 0x215c) != 3) {
+        if (dxState->fog.mode != 3) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x8c, 3);
             } while (*(volatile int *)imp_alwaysfails != 0);
-            bd = *(byte **)g_backEndData;
-            *(int *)(bd + 0x215c) = 3;
+            dxState->fog.mode = 3;
         }
 
         /* Set fog start */
-        if (*(float *)(bd + 0x2160) != fogStart) {
+        if (dxState->fog.start != fogStart) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x24, *(int *)&fog->fogStart);
             } while (*(volatile int *)imp_alwaysfails != 0);
-            bd = *(byte **)g_backEndData;
-            *(float *)(bd + 0x2160) = fogStart;
+            dxState->fog.start = fogStart;
         }
 
         /* Set fog end */
-        if (*(float *)(bd + 0x2164) != fogEnd) {
+        if (dxState->fog.end != fogEnd) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x25, *(int *)&fogEnd);
             } while (*(volatile int *)imp_alwaysfails != 0);
-            bd = *(byte **)g_backEndData;
-            *(float *)(bd + 0x2164) = fogEnd;
+            dxState->fog.end = fogEnd;
         }
     } else {
         /* Linear fog */
-        byte *bd = *(byte **)g_backEndData;
-        if (*(int *)(bd + 0x215c) != 1) {
+        if (dxState->fog.mode != 1) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x8c, 1);
             } while (*(volatile int *)imp_alwaysfails != 0);
-            bd = *(byte **)g_backEndData;
-            *(int *)(bd + 0x215c) = 1;
+            dxState->fog.mode = 1;
         }
 
         /* Set fog density */
-        if (*(float *)(bd + 0x2168) != density) {
+        if (dxState->fog.density != density) {
             do {
                 void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x26, *(int *)&fog->density);
             } while (*(volatile int *)imp_alwaysfails != 0);
-            bd = *(byte **)g_backEndData;
-            *(float *)(bd + 0x2168) = density;
+            dxState->fog.density = density;
         }
     }
 

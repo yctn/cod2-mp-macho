@@ -186,11 +186,12 @@ static void R_InitFullscreenRenderTargetImage(int imageProgId, int picmip, D3DFO
 /* Helper for creating 128x128 depth stencil for small render targets */
 static IDirect3DSurface9 *R_CreateSmallDepthStencil(byte *dxPtr)
 {
-    IDirect3DSurface9 *existing = *(IDirect3DSurface9 **)(dxPtr + 0x2c88);
+    DxGlobals *dx = (DxGlobals *)dxPtr;
+    IDirect3DSurface9 *existing = dx->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].depthStencilSurface;
     if (existing != NULL) {
         /* AddRef the existing surface */
         ((IUnknown_AddRefFn)VTABLE(existing)[1])((void *)existing);
-        return *(IDirect3DSurface9 **)(dxPtr + 0x2c88);
+        return dx->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].depthStencilSurface;
     }
 
     /* Create a new 128x128 depth stencil surface */
@@ -326,7 +327,7 @@ long int R_InitRenderTargets(void)
         hr = ((D3DDevice_CreateDepthStencilFn)vtable[0x74 / 4])(
             device, fullWidth, fullHeight, D3DFMT_D24S8,
             DX_MULTISAMPLE_TYPE(dxPtr), DX_MULTISAMPLE_QUALITY(dxPtr),
-            0, (IDirect3DSurface9 **)(dxPtr + 0x2c38), NULL);
+            0, &((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_FRAME_BUFFER].depthStencilSurface, NULL);
 
         *creatingTex = 0;
 
@@ -344,14 +345,14 @@ long int R_InitRenderTargets(void)
         /* line 492: Get the actual format of the color surface */
         dxPtr = DX();
         {
-            IDirect3DSurface9 *colorSurf = *(IDirect3DSurface9 **)(dxPtr + 0x2c34);
+            IDirect3DSurface9 *colorSurf = ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_FRAME_BUFFER].colorSurface;
             void **surfVtable = VTABLE(colorSurf);
             ((D3DSurface_GetDescFn)surfVtable[0x30 / 4])((void *)colorSurf, &desc);
         }
 
         /* line 493: Store the actual format */
         surfaceFormat = desc.Format;
-        *(D3DFORMAT *)(dxPtr + 0x10) = surfaceFormat;
+        ((DxGlobals *)dxPtr)->backBufferFormat = surfaceFormat;
 
         /* line 495: Print actual format */
         riPrintf = *(void (**)())imp_ri;
@@ -362,7 +363,7 @@ long int R_InitRenderTargets(void)
     dxPtr = DX();
     backBufferFormat = DX_BACKBUFFER_FORMAT(dxPtr);
     R_InitFullscreenRenderTargetImage(0, 0, backBufferFormat, RENDERTARGET_USAGE_RENDER,
-        (GfxRenderTarget *)(dxPtr + 0x2c6c));
+        &((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_DYNAMICSHADOWS]);
 
     /* line 520: Copy renderTargets[3] to renderTargets[1] (RESOLVED_POST_SUN) */
     {
@@ -378,7 +379,7 @@ long int R_InitRenderTargets(void)
     /* line 521: Init renderTargets[2] (RESOLVED_SCENE) - format D3DFMT_A4R4G4B4 (=9?), picmip=0, usage=TEXTURE */
     backBufferFormat = DX_BACKBUFFER_FORMAT(dxPtr);
     R_InitFullscreenRenderTargetImage(9, 0, backBufferFormat, RENDERTARGET_USAGE_TEXTURE,
-        (GfxRenderTarget *)(dxPtr + 0x2c58));
+        &((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_RESOLVED_SCENE]);
 
     /* line 522: Copy renderTargets[1] to renderTargets[7] (SAVED_SCREEN) */
     {
@@ -398,24 +399,24 @@ long int R_InitRenderTargets(void)
 
         /* line 366: Allocate image prog 1 */
         image = Image_AllocProg(1, 6);
-        *(GfxImage **)(dxPtr + 0x2c80) = image;
+        ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].image = image;
 
         /* line 371: Setup as 128x128 A8R8G8B8 render target */
         Image_SetupRenderTarget(image, 128, 128, D3DFMT_A8R8G8B8);
 
         /* line 373: Get surface */
-        image = *(GfxImage **)(dxPtr + 0x2c80);
-        *(IDirect3DSurface9 **)(dxPtr + 0x2c84) = Image_GetSurface(image);
-        *(int *)(dxPtr + 0x2c8c) = 128;   /* line 374: width */
-        *(int *)(dxPtr + 0x2c90) = 128;   /* line 375: height */
+        image = ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].image;
+        ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].colorSurface = Image_GetSurface(image);
+        ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].width = 128;
+        ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].height = 128;
 
         /* line 383: Track texture */
-        Image_TrackTexture(*(GfxImage **)(dxPtr + 0x2c80), 3, D3DFMT_A8R8G8B8, 128, 128, 1);
+        Image_TrackTexture(((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].image, 3, D3DFMT_A8R8G8B8, 128, 128, 1);
 
         /* line 174: Get or create 128x128 depth stencil for shadow cookie */
         depthSurface = R_CreateSmallDepthStencil(dxPtr);
         dxPtr = DX();
-        *(IDirect3DSurface9 **)(dxPtr + 0x2c88) = depthSurface;
+        ((DxGlobals *)dxPtr)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].depthStencilSurface = depthSurface;
     }
 
     /* Init renderTargets[5] (SHADOWCOOKIE_BLUR) - 128x128 A8R8G8B8 render target */

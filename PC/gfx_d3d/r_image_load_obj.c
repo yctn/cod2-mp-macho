@@ -83,9 +83,9 @@ void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int 
 void Image_BuildWaterMap(GfxImage *image)
 {
     if (*(int *)((char *)(*(void **)imp_r_rendererInUse) + 8) == 2) {
-        Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 1, 0x200, 0x16, 0);
+        Image_Create2DTexture(image, image->width, image->height, 1, 0x200, 0x16, 0);
     } else {
-        Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 0, 0x200, 0x32, 0);
+        Image_Create2DTexture(image, image->width, image->height, 0, 0x200, 0x32, 0);
     }
 }
 
@@ -100,23 +100,23 @@ static jpeg_alloc Image_LoadBitmap_impl(GfxImage *image, const GfxImageFileHeade
     const byte *srcPtr = data;
 
     /* Setup image dimensions and format */
-    Image_Setup(image, *(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa),
-                hdr[5], 0, format);
+    Image_Setup(image, fileHeader->dimensions[0], fileHeader->dimensions[1], fileHeader->dimensions[2],
+                fileHeader->flags, 0, format);
 
     /* Cubemap: 6 faces if image type == 5, else 1 */
-    faceCount = (*(int *)img == 5) ? 6 : 1;
+    faceCount = (image->mapType == 5) ? 6 : 1;
 
     /* Allocate temp buffer for BGR→ARGB expansion if needed */
     if (format == 0x16) { /* D3DFMT_A8R8G8B8 */
-        int pixelCount = *(unsigned short *)(img + 0x18) * *(unsigned short *)(img + 0x1a);
+        int pixelCount = image->width * image->height;
         expandedData = (byte *)Hunk_AllocateTempMemoryInternal(pixelCount * 4);
     }
 
     /* Compute max mip level */
-    if (hdr[5] & 2) {
+    if (fileHeader->flags & 2) {
         mipLevel = 0; /* hasMips flag set: start from 0 */
     } else {
-        mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
+        mipLevel = Image_ComputeMipCount(fileHeader->dimensions[0], fileHeader->dimensions[1], fileHeader->dimensions[2]);
     }
 
     /* Iterate mip levels from max down to picmip level */
@@ -399,15 +399,15 @@ static jpeg_alloc Image_LoadDxtc_impl(GfxImage *image, const GfxImageFileHeader 
     int faceCount, mipLevel;
     const byte *srcPtr = data;
 
-    Image_Setup(image, *(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa),
-                hdr[5], 0, format);
+    Image_Setup(image, fileHeader->dimensions[0], fileHeader->dimensions[1], fileHeader->dimensions[2],
+                fileHeader->flags, 0, format);
 
-    faceCount = (*(int *)img == 5) ? 6 : 1;
+    faceCount = (image->mapType == 5) ? 6 : 1;
 
-    if (hdr[5] & 2)
+    if (fileHeader->flags & 2)
         mipLevel = 0;
     else
-        mipLevel = Image_ComputeMipCount(*(short *)(hdr + 6), *(short *)(hdr + 8), *(short *)(hdr + 0xa));
+        mipLevel = Image_ComputeMipCount(fileHeader->dimensions[0], fileHeader->dimensions[1], fileHeader->dimensions[2]);
 
     { static int dxtd = 0; if (dxtd++ < 5) { FILE *f = fopen("/tmp/es_debug.txt","a"); if(f){fprintf(f,"[DXTC] mipLevel=%d maxMip=%d w=%d h=%d faceCount=%d\n", mipLevel, (int)img[8], *(short*)(hdr+6), *(short*)(hdr+8), faceCount);fclose(f);} } }
     while (1) {
@@ -924,8 +924,10 @@ static void Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, by
 
     Vec3NormalizeTo(facePos, dirFromEye);
 
-    drawSurfs = (char *)((r_global_permanent_t *)imp_rgp)->world;
-    sunDir = (const vec_t *)(drawSurfs + 0xb8);
+    {
+        GfxWorld *world = ((r_global_permanent_t *)imp_rgp)->world;
+        sunDir = world->sunLight.position;
+    }
 
     halfAngle[0] = sunDir[0] - dirFromEye[0];
     halfAngle[1] = sunDir[1] - dirFromEye[1];
@@ -1060,7 +1062,7 @@ Bool Image_LoadFromFile(GfxImage *image)
     int result;
 
     /* Build filepath: "images/<name>.iwi" */
-    result = Com_sprintf(filepath, 0x40, "%s%s%s", "images/", *(const char **)(img + 0x20), ".iwi");
+    result = Com_sprintf(filepath, 0x40, "%s%s%s", "images/", image->name, ".iwi");
     if (result < 0) {
         Com_Printf("^1ERROR: filename '%s' too long\n", filepath);
         return 0;
@@ -1099,7 +1101,7 @@ Bool Image_LoadFromFile(GfxImage *image)
     }
 
     /* Load the image data (header at fileData, pixel data at fileData+0x1c) */
-    Image_LoadFromData(image, (GfxImageFileHeader *)fileData, fileData + 0x1c);
+    Image_LoadFromData(image, (GfxImageFileHeader *)fileData, fileData + sizeof(GfxImageFileHeader));
     FS_FreeFile(imageFile);
     return 1;
 }

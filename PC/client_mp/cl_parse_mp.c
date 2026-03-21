@@ -292,7 +292,7 @@ void CL_ParseDownload(msg_t *msg)
         clc->downloadSize = MSG_ReadLong(msg);
 
         /* line 762 */
-        *(int *)((*download_ui_ptr) + 0x10) = clc->downloadSize;
+        *(int *)((*download_ui_ptr) + 0x10) = clc->downloadSize; /* downloadUI->downloadSize */
 
         /* line 764 */
         size = clc->downloadSize;
@@ -370,7 +370,7 @@ void CL_ParseDownload(msg_t *msg)
     clc->downloadCount += size;
 
     /* line 818 */
-    *(int *)((*download_ui_ptr) + 0x14) = clc->downloadCount;
+    *(int *)((*download_ui_ptr) + 0x14) = clc->downloadCount; /* downloadUI->downloadCount */
 
     /* line 820 */
     if (size != 0) {
@@ -393,7 +393,7 @@ void CL_ParseDownload(msg_t *msg)
     clc->downloadTempName[0] = 0;
 
     /* line 831 */
-    *(byte *)((*download_ui_ptr) + 0x1c) = 0;
+    *(byte *)((*download_ui_ptr) + 0x1c) = 0; /* downloadUI->downloadActive = false */
 
     /* line 838 */
     CL_WritePacket();
@@ -871,7 +871,7 @@ void CL_ParseSnapshot(msg_t *msg)
             int idx = (parseEntNum - i) & 0x1f;
             outPacket_t *slot = &cla->outPackets[idx];
             if (slot->p_serverTime >= snapTime) {
-                cla->snap.ping = *(int *)(*(byte **)cls_ptr + 0x118) - slot->p_realtime;
+                cla->snap.ping = ((clientStatic_t *)*(void **)cls_ptr)->realtime - slot->p_realtime;
                 break;
             }
         }

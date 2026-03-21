@@ -410,7 +410,7 @@ unsigned char G_InitGentity(gentity_t *e)
 {
     ENT_NEXTFREEENT(e) = 0;
     ENT_INUSE(e) = 1;
-    Scr_SetString((scr_string_t *)((byte *)e + 0x168), ((scr_const_t *)scr_const_ptr)->noclass);
+    Scr_SetString(&e->classname, ((scr_const_t *)scr_const_ptr)->noclass);
     /* e->s.number = (e - g_entities) / ENTITY_STRIDE — magic multiply */
     ENT_NUMBER(e) = ((int)((byte *)e - g_entities_ptr) >> 4) * (int)0x8AF8AF8B;
     ENT_OWNERNUM(e) = 0x3FF;
@@ -757,7 +757,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
     }
 
     ENT_TAGINFO(ent) = 0;
-    Scr_SetString((scr_string_t *)(tagInfo + 0x08), 0);
+    Scr_SetString((scr_string_t *)&TAGINFO_TAGNAME(tagInfo), 0);
     MT_Free(tagInfo, 0x70);
 }
 
@@ -1121,7 +1121,7 @@ unsigned char G_EntDetachAll(gentity_t *ent)
 
     for (i = 0; i < 7; i++) {
         ENT_ATTACHMODEL(ent, i) = 0;
-        Scr_SetString((scr_string_t *)(base + 0x218 + i * 2), 0);
+        Scr_SetString(&ent->attachTagNames[i], 0);
     }
 
     ENT_IGNORECOLLISION(ent) = 0;
@@ -1147,7 +1147,7 @@ qboolean G_EntDetach(gentity_t *ent, const char *modelName, unsigned int tagName
 
         /* Found the match - remove it and shift down */
         ENT_ATTACHMODEL(ent, i) = 0;
-        Scr_SetString((scr_string_t *)((byte *)ent + 0x218 + i * 2), 0);
+        Scr_SetString(&ent->attachTagNames[i], 0);
 
         if (i <= 5) {
             int j;
@@ -1207,7 +1207,7 @@ qboolean G_EntAttach(gentity_t *ent, const char *modelName, unsigned int tagName
     }
 
     ENT_ATTACHMODEL(ent, i) = (byte)G_ModelIndex(modelName);
-    Scr_SetString((scr_string_t *)((byte *)ent + 0x218 + i * 2), tagName);
+    Scr_SetString(&ent->attachTagNames[i], tagName);
 
     if (ignoreCollision) {
         ENT_IGNORECOLLISION(ent) |= (byte)(1 << i);
@@ -1262,7 +1262,7 @@ gentity_t * G_TempEntity(const vec_t *origin, int event)
     e = G_Spawn();
     ENT_ETYPE(e) = event + 10;
 
-    Scr_SetString((scr_string_t *)((byte *)e + 0x168), ((scr_const_t *)scr_const_ptr)->tempEntity);
+    Scr_SetString(&e->classname, ((scr_const_t *)scr_const_ptr)->tempEntity);
 
     ENT_FREETIME(e) = LEVEL_TIME;
     ENT_EVENTTIME(e) = LEVEL_TIME;

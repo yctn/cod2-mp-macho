@@ -982,14 +982,14 @@ void StripDoubleQuotes(char *string)
 /* line 1318 */
 int EndOfScript(script_t *script)
 {
-    return *(unsigned int *)((byte *)script + 0x44) >= *(unsigned int *)((byte *)script + 0x48);
+    return (unsigned int)script->script_p >= (unsigned int)script->end_p;
 }
 
 /* line 1457 */
 void FreeScript(script_t *script)
 {
-    if (*(void **)((char *)script + 0x70))
-        FreeMemory(*(void **)((char *)script + 0x70));
+    if (script->punctuationtable)
+        FreeMemory(script->punctuationtable);
     FreeMemory(script);
 }
 
@@ -1592,11 +1592,11 @@ void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations) {
     byte *p;
     int i;
 
-    if (!*(void **)((byte *)script + 0x70)) {
-        *(void **)((byte *)script + 0x70) = GetMemory(0x400);
+    if (!script->punctuationtable) {
+        script->punctuationtable = GetMemory(0x400);
     }
 
-    table = *(int ***)((byte *)script + 0x70);
+    table = (int **)script->punctuationtable;
     memset(table, 0, 0x400);
 
     for (p = (byte *)punctuations; *(char **)p; p += 0xc) {

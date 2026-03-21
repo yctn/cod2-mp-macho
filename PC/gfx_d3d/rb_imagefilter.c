@@ -407,17 +407,17 @@ static void RB_ApplyFilterPasses(GfxImageFilter *filter, int swapLastPass)
         GfxRenderTargetId setTarget;
         int constIndex;
         float dstW, dstH;
-        byte *be = (byte *)backEnd;
+        r_backEndGlobals_t *be = (r_backEndGlobals_t *)backEnd;
 
         /* Set source texture on backEnd */
         if (passIndex == 0) {
             /* First pass: use original source image */
-            *(GfxImage **)(be + 0x2e8c) = filter->sourceImage;
+            be->currentFeedbackImage = filter->sourceImage;
         } else {
             /* Subsequent passes: use previous ping-pong buffer's image */
             int srcPP = 1 - pingPong;
             GfxRenderTargetId ppTarget = filter->pingPongTargets[srcPP];
-            *(GfxImage **)(be + 0x2e8c) = DX_RT_IMAGE(ppTarget);
+            be->currentFeedbackImage = DX_RT_IMAGE(ppTarget);
         }
 
         /* Determine render target */
@@ -433,15 +433,11 @@ static void RB_ApplyFilterPasses(GfxImageFilter *filter, int swapLastPass)
 
         /* Upload pixel shader constants (tap offsets and weights) */
         if (pass->tapHalfCount > 0) {
-            byte *constDst = be + 0x230;
-            byte *constSrc = (byte *)&pass->tapOffsetsAndWeights[0];
             for (constIndex = 0; constIndex < pass->tapHalfCount; constIndex++) {
-                *(int *)(constDst + 0) = *(int *)(constSrc + 0);
-                *(int *)(constDst + 4) = *(int *)(constSrc + 4);
-                *(int *)(constDst + 8) = *(int *)(constSrc + 8);
-                *(int *)(constDst + 12) = *(int *)(constSrc + 12);
-                constDst += 16;
-                constSrc += 16;
+                be->codeConsts[35 + constIndex][0] = pass->tapOffsetsAndWeights[constIndex][0];
+                be->codeConsts[35 + constIndex][1] = pass->tapOffsetsAndWeights[constIndex][1];
+                be->codeConsts[35 + constIndex][2] = pass->tapOffsetsAndWeights[constIndex][2];
+                be->codeConsts[35 + constIndex][3] = pass->tapOffsetsAndWeights[constIndex][3];
             }
         }
 
@@ -472,8 +468,6 @@ static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, G
     int passCount;
     int chainPassCount;
     int startPass;
-    byte *be;
-    byte *vc;
     int dstWidth, dstHeight;
     float scaledRadius;
 
@@ -483,7 +477,6 @@ static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, G
     }
 
     /* line 59: scale radius by viewport height / 480 */
-    be = (byte *)backEnd;
     {
         const r_backEndGlobals_t *backend = (const r_backEndGlobals_t *)backEnd;
         const GfxViewParms *viewParms = backend->viewParms;
@@ -491,7 +484,6 @@ static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, G
         float heightScaled = (float)viewportHeight * glowRadius / 480.0f;
 
         /* line 60: multiply by aspect ratio */
-        vc = (byte *)vidConfig;
         const vidConfig_t *vcfg = (const vidConfig_t *)vidConfig;
         scaledRadius = heightScaled * vcfg->aspectRatioPixel;
     }
@@ -559,7 +551,7 @@ int RB_GlowFilterImage(float *radius)
     float radiusX, radiusY;
     float scaleRatio;
     GfxRenderTargetId result;
-    byte *be;
+    r_backEndGlobals_t *be;
 
     /* line 570 */
     radiusX = radius[0];
@@ -590,22 +582,22 @@ int RB_GlowFilterImage(float *radius)
     }
 
     /* line 591: apply first glow filter pass */
-    be = (byte *)backEnd;
+    be = (r_backEndGlobals_t *)backEnd;
     {
-        GfxRenderTargetId srcTarget = *(GfxRenderTargetId *)(be + 0x2e88);
+        GfxRenderTargetId srcTarget = be->resolvedSceneTarget;
         result = RB_ApplyGlowFilter(srcTarget, R_RENDERTARGET_GLOW_0, radius[0]);
     }
 
     /* line 592: store first blurred image result */
     {
         GfxImage *blurImage = DX_RT_IMAGE(result);
-        *(GfxImage **)(be + 0x4d4) = blurImage;
+        be->glowImage[0] = blurImage;
     }
 
     /* line 593: check if second pass is needed */
     if (radius[1] == 0.0f) {
         /* line 595: single-pass glow */
-        *(int *)(be + 0x4d0) = 1;
+        be->glowCount = 1;
         return 0;
     }
 
@@ -624,11 +616,11 @@ int RB_GlowFilterImage(float *radius)
         GfxRenderTargetId secondResult = RB_ApplyGlowFilter(result, R_RENDERTARGET_GLOW_0, radius[1]);
 
         /* line 605: store second blurred image */
-        be = (byte *)backEnd;
-        *(GfxImage **)(be + 0x4d8) = DX_RT_IMAGE(secondResult);
+        be = (r_backEndGlobals_t *)backEnd;
+        be->glowImage[1] = DX_RT_IMAGE(secondResult);
 
         /* line 606: two-pass glow */
-        *(int *)(be + 0x4d0) = 2;
+        be->glowCount = 2;
     }
 
     return 0;
@@ -640,8 +632,7 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
     GfxImageFilter filter;
     int passCount;
     int passIndex;
-    byte *be;
-    byte *vc;
+    r_backEndGlobals_t *be;
     int width, height;
     float scaledRadius;
     int oddPassCount;
@@ -658,15 +649,13 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
     }
 
     /* line 59: scale radius by viewport height / 480 */
-    be = (byte *)backEnd;
+    be = (r_backEndGlobals_t *)backEnd;
     {
-        const r_backEndGlobals_t *backend = (const r_backEndGlobals_t *)backEnd;
-        const GfxViewParms *viewParms = backend->viewParms;
+        const GfxViewParms *viewParms = be->viewParms;
         int viewportHeight = (int)viewParms->viewport.Height;
         float heightScaled = (float)viewportHeight * radius / 480.0f;
 
         /* line 60 */
-        vc = (byte *)vidConfig;
         const vidConfig_t *vcfg = (const vidConfig_t *)vidConfig;
         scaledRadius = heightScaled * vcfg->aspectRatioPixel;
     }
@@ -708,15 +697,15 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
         int constIndex;
         float dstW, dstH;
 
-        be = (byte *)backEnd;
+        be = (r_backEndGlobals_t *)backEnd;
 
         /* line 325-326: set source texture */
         if (passIndex == 0) {
-            *(GfxImage **)(be + 0x2e8c) = filter.sourceImage;
+            be->currentFeedbackImage = filter.sourceImage;
         } else {
             int srcPP = 1 - pingPong;
             GfxRenderTargetId ppTarget = filter.pingPongTargets[srcPP];
-            *(GfxImage **)(be + 0x2e8c) = DX_RT_IMAGE(ppTarget);
+            be->currentFeedbackImage = DX_RT_IMAGE(ppTarget);
         }
 
         /* line 331-334: determine render target */
@@ -731,15 +720,11 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
 
         /* line 301: upload pixel shader constants */
         if (pass->tapHalfCount > 0) {
-            byte *constDst = be + 0x230;
-            byte *constSrc = (byte *)&pass->tapOffsetsAndWeights[0];
             for (constIndex = 0; constIndex < pass->tapHalfCount; constIndex++) {
-                *(int *)(constDst + 0) = *(int *)(constSrc + 0);
-                *(int *)(constDst + 4) = *(int *)(constSrc + 4);
-                *(int *)(constDst + 8) = *(int *)(constSrc + 8);
-                *(int *)(constDst + 12) = *(int *)(constSrc + 12);
-                constDst += 16;
-                constSrc += 16;
+                be->codeConsts[35 + constIndex][0] = pass->tapOffsetsAndWeights[constIndex][0];
+                be->codeConsts[35 + constIndex][1] = pass->tapOffsetsAndWeights[constIndex][1];
+                be->codeConsts[35 + constIndex][2] = pass->tapOffsetsAndWeights[constIndex][2];
+                be->codeConsts[35 + constIndex][3] = pass->tapOffsetsAndWeights[constIndex][3];
             }
         }
 

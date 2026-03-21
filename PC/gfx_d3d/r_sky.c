@@ -155,16 +155,17 @@ int R_FlushSun(void)
     int i;
     unsigned char *p;
 
-    p = r_sunFlareState;
-    for (i = 0; i < 4; i++) {
-        *(int *)(p + 0x04) = 0;
-        *(int *)(p + 0x08) = 0;
-        *(int *)(p + 0x00) = 0;
-        *(int *)(p + 0x20) = 0;
-        *(int *)(p + 0x1c) = 0;
-        *(int *)(p + 0x0c) = 0;
-        *(int *)(p + 0x18) = 0;
-        p += 0x30;
+    {
+        SunFlareDynamic *sfd = (SunFlareDynamic *)r_sunFlareState;
+        for (i = 0; i < 4; i++) {
+            sfd[i].currentBlind = 0.0f;
+            sfd[i].currentGlare = 0.0f;
+            sfd[i].flareIntensity = 0.0f;
+            sfd[i].hitNum = 0;
+            sfd[i].lastDot = 0.0f;
+            sfd[i].lastTime = 0;
+            sfd[i].lastVisibility = 0.0f;
+        }
     }
 
     return 0;

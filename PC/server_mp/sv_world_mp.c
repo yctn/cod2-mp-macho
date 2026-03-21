@@ -2183,10 +2183,10 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             midZ = (maxs[2] + mins[2]) * 0.5f;
 
             /* Set contentmask */
-            *(int *)(clip + 0x50) = contentmask; /* TODO: unknown offset */
+            ((moveclip_t *)clip)->contentmask = contentmask;
 
             /* Set passEntityNum */
-            *(int *)(clip + 0x48) = passEntityNum; /* TODO: unknown offset */
+            ((moveclip_t *)clip)->passEntityNum = passEntityNum;
 
             /* Look up ownerNum */
             if (passEntityNum == 0x3ff) {
@@ -2197,7 +2197,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }
-            *(int *)(clip + 0x4c) = ownerNum; /* TODO: unknown offset */
+            ((moveclip_t *)clip)->passOwnerNum = ownerNum;
 
             /* mins = -halfExtent */
             ((pointtrace_t *)clip)->extents.start[0] = -halfX;
@@ -2222,10 +2222,10 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             /* end = midpoint + end */
             ((pointtrace_t *)clip)->bLocational = midX + end[0];
             ((pointtrace_t *)clip)->priorityMap = midY + end[1];
-            *(float *)(clip + 0x38) = midZ + end[2]; /* TODO: unknown offset */
+            ((moveclip_t *)clip)->extents.end[2] = midZ + end[2];
 
             /* Calculate trace extents */
-            CM_CalcTraceEntents((const void *)(clip + 0x24));
+            CM_CalcTraceEntents(&((moveclip_t *)clip)->extents);
 
             /* Call CM_ClipMoveToEntities */
             CM_ClipMoveToEntities((const moveclip_t *)clip, results);

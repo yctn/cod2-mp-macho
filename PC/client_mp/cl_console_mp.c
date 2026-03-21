@@ -198,7 +198,7 @@ void Con_ToggleConsole_f(void)
     /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
        Fixed: only restrict when con_restricted IS set. */
     if (Dvar_GetBool("con_restricted")) {
-        if (*(int *)((char *)*(void **)imp_keys + 0x780)) /* TODO: unknown offset in PlayerKeyState */
+        if (((PlayerKeyState *)*(void **)imp_keys)->keys[135].binding) /* keys[135].binding - console key binding check */
             goto toggle;
         if (!((*(clientActive_t **)imp_cl)->keyCatchers & 1))
             return;
@@ -1934,7 +1934,7 @@ static void ConDrawInput_DvarMatch(const char *str)
     if (I_strnicmp(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen) != 0)
         return;
 
-    drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
+    drawText = (DrawTextFunc)((refexport_t *)imp_re)->DrawText;
     font = (void *)((clientStatic_t *)imp_cls)->consoleFont;
 
     /* Draw dvar name */

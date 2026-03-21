@@ -931,9 +931,9 @@ void GenericParser2_GenericParser2(const GenericParser2 * _this)
     grp->parent = NULL;
     grp->cleanFlag = 0;
     /* GenericParser2-specific fields (beyond GPGroup) */
-    byte *self = (byte *)_this;
-    *(void **)(self + 0x30) = NULL;  /* textPoolList */
-    *(byte *)(self + 0x34) = 0;     /* writeable */
+    GenericParser2 *gp = (GenericParser2 *)_this;
+    gp->textPoolList = NULL;
+    gp->writeable = 0;
 
 #if 0 /* Original ASM */
     __asm__ __volatile__ (
@@ -972,8 +972,7 @@ void GenericParser2_GenericParser2(const GenericParser2 * _this)
  */
 char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextPool * *poolPtr)
 {
-    /* TextPool layout: { char *data, TextPool *next, int capacity, int used } */
-    byte *pool = (byte *)_this;
+    TextPool *pool = (TextPool *)_this;
     int length;
     int extra;
     int used;
@@ -982,17 +981,17 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
     extra = addNULL ? 1 : 0;
     length = strlen(text) + extra;
 
-    used = *(int *)(pool + 0x0c);   /* pool->used */
-    if (used + length + 1 <= *(int *)(pool + 0x08)) {  /* pool->capacity */
+    used = pool->used;
+    if (used + length + 1 <= pool->capacity) {
         /* Fits in current pool */
-        dest = *(char **)pool + used;  /* pool->data + used */
+        dest = pool->data + used;
         strcpy(dest, text);
         used += length;
-        *(int *)(pool + 0x0c) = used;  /* pool->used = used */
+        pool->used = used;
         /* Null terminate at end */
-        (*(char **)pool)[used] = '\0';
+        pool->data[used] = '\0';
         /* Return pointer to start of allocated text */
-        return *(char **)pool + used - length;
+        return pool->data + used - length;
     }
 
     /* Doesn't fit -- need a new pool */
@@ -1001,32 +1000,32 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
     }
 
     {
-        byte *newPool;
+        TextPool *newPool;
         int initSize;
         TextPool *prev;
         TextPool *newNode;
 
-        initSize = *(int *)(pool + 0x08);  /* pool->capacity */
+        initSize = pool->capacity;
 
         /* Allocate new TextPool node (0x10 bytes) */
-        newPool = (byte *)Z_MallocInternal(0x10);
+        newPool = (TextPool *)Z_MallocInternal(0x10);
 
         /* Initialize new pool */
-        *(void **)(newPool + 0x04) = NULL;        /* newPool->next = NULL */
-        *(int *)(newPool + 0x08) = initSize;      /* newPool->capacity = initSize */
-        *(int *)(newPool + 0x0c) = 0;             /* newPool->used = 0 */
-        *(void **)newPool = Z_MallocInternal(initSize);  /* newPool->data */
+        newPool->next = NULL;
+        newPool->capacity = initSize;
+        newPool->used = 0;
+        newPool->data = (char *)Z_MallocInternal(initSize);
 
         /* Link: current pool's next = newPool */
-        prev = (TextPool *)(*poolPtr);
-        *(void **)((byte *)prev + 0x04) = (void *)newPool;  /* prev->next = newPool */
+        prev = *poolPtr;
+        prev->next = newPool;
 
         /* Update poolPtr to point to new pool */
-        newNode = (TextPool *)(*(void **)((byte *)(*poolPtr) + 0x04));  /* (*poolPtr)->next */
+        newNode = (*poolPtr)->next;
         *poolPtr = newNode;
 
         /* Recurse into new pool with no poolPtr (NULL) to avoid infinite recursion */
-        return TextPool_AllocText(newNode, text, addNULL ? 1 : 0, NULL);
+        return TextPool_AllocText((const TextPool *)newNode, text, addNULL ? 1 : 0, NULL);
     }
 
 #if 0 /* Original ASM */
@@ -1491,24 +1490,25 @@ GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *v
 /* Helper: shared destructor logic for GenericParser2 */
 static void GenericParser2_Destroy(byte *self)
 {
-    byte *pool;
-    byte *next;
+    GenericParser2 *gp = (GenericParser2 *)self;
+    TextPool *pool;
+    TextPool *next;
 
     /* Clean the group */
     GPGroup_Clean((const GPGroup *)self);
 
     /* Free all text pools */
-    pool = *(byte **)(self + 0x30);   /* textPoolList */
+    pool = gp->textPoolList;
     while (pool) {
-        next = *(byte **)(pool + 0x04); /* pool->next */
+        next = pool->next;
         /* Free pool data buffer */
-        Z_FreeInternal(*(void **)pool); /* pool->data */
+        Z_FreeInternal(pool->data);
         /* Free pool node */
         Z_FreeInternal(pool);
         pool = next;
     }
 
-    *(void **)(self + 0x30) = NULL;   /* textPoolList = NULL */
+    gp->textPoolList = NULL;
 
     /* Clean again (tail call in original) */
     GPGroup_Clean((const GPGroup *)self);
@@ -1848,43 +1848,43 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
  */
 Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cleanFirst, int writeable)
 {
-    byte *self = (byte *)_this;
+    GenericParser2 *gp = (GenericParser2 *)_this;
     TextPool *topPool;
 
     if (cleanFirst) {
         /* Clean the group */
-        GPGroup_Clean((const GPGroup *)self);
+        GPGroup_Clean((const GPGroup *)_this);
 
         /* Free all text pools */
         {
-            byte *pool = *(byte **)(self + 0x30);  /* textPoolList */
+            TextPool *pool = gp->textPoolList;
             while (pool) {
-                byte *next = *(byte **)(pool + 0x04);  /* pool->next */
-                Z_FreeInternal(*(void **)pool);  /* pool->data */
+                TextPool *next = pool->next;
+                Z_FreeInternal(pool->data);
                 Z_FreeInternal(pool);
                 pool = next;
             }
-            *(void **)(self + 0x30) = NULL;  /* textPoolList = NULL */
+            gp->textPoolList = NULL;
         }
     }
 
     /* Ensure a text pool exists */
-    if (*(void **)(self + 0x30) == NULL) {  /* textPoolList == NULL */
-        byte *newPool = (byte *)Z_MallocInternal(0x10);
-        *(void **)(newPool + 0x04) = NULL;        /* newPool->next = NULL */
-        *(int *)(newPool + 0x08) = 0x2800;        /* newPool->capacity = 10240 */
-        *(int *)(newPool + 0x0c) = 0;             /* newPool->used = 0 */
-        *(void **)newPool = Z_MallocInternal(0x2800);  /* newPool->data */
-        *(void **)(self + 0x30) = newPool;  /* textPoolList = newPool */
+    if (gp->textPoolList == NULL) {
+        TextPool *newPool = (TextPool *)Z_MallocInternal(0x10);
+        newPool->next = NULL;
+        newPool->capacity = 0x2800;
+        newPool->used = 0;
+        newPool->data = (char *)Z_MallocInternal(0x2800);
+        gp->textPoolList = newPool;
     }
 
     /* Set writeable flags */
-    *(byte *)(self + 0x34) = (byte)writeable;  /* GenericParser2.writeable */
+    gp->writeable = (byte)writeable;
     ((GPGroup *)_this)->cleanFlag = (byte)writeable;
 
     /* Parse using the top pool */
-    topPool = *(TextPool **)(self + 0x30);  /* textPoolList */
-    return (Bool)GPGroup_Parse((const GPGroup *)self, dataPtr, &topPool);
+    topPool = gp->textPoolList;
+    return (Bool)GPGroup_Parse((const GPGroup *)_this, dataPtr, &topPool);
 
 #if 0 /* Original ASM */
     __asm__ __volatile__ (

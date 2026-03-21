@@ -288,8 +288,8 @@ struct XModel * FX_ModelRegister(const char *name)
 /* line 2205 */
 float FxRange_GetVal(const FxRange * _this)
 {
-    float base = *(float *)((byte *)_this);
-    float amplitude = *(float *)((byte *)_this + 4);
+    float base = _this->mMin;
+    float amplitude = _this->mMax;
 
     if (base == amplitude) {
         return base;
@@ -1005,18 +1005,15 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         int channelId;
         byte *bcp = (byte *)backCompatibleParameters;
         for (channelId = 0; channelId < 24; channelId++) {
-            byte *chan = bcp + channelId * 0x40;
+            FxChannelBackwardCompatible *chan = (FxChannelBackwardCompatible *)(bcp + channelId * 0x40);
             int d;
             for (d = 0; d < 3; d++) {
-                /* start[d] range = (1.0, 1.0) — offset 0x00 + d*8 */
-                *(float *)(chan + d * 8 + 0x00) = 1.0f;
-                *(float *)(chan + d * 8 + 0x04) = 1.0f;
-                /* end[d] range = (1.0, 1.0) — offset 0x18 + d*8 */
-                *(float *)(chan + 0x18 + d * 8 + 0x00) = 1.0f;
-                *(float *)(chan + 0x18 + d * 8 + 0x04) = 1.0f;
-                /* parm range offset 0x30 — handled in d==0 only */
-                *(float *)(chan + 0x30) = 1.0f;
-                *(float *)(chan + 0x34) = 1.0f;
+                chan->start[d].mMin = 1.0f;
+                chan->start[d].mMax = 1.0f;
+                chan->end[d].mMin = 1.0f;
+                chan->end[d].mMax = 1.0f;
+                chan->parm.mMin = 1.0f;
+                chan->parm.mMax = 1.0f;
             }
         }
     }

@@ -90,14 +90,11 @@ static int RB_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *co
 static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
 {
     int stringIndex;
-    byte *backEndPtr;
-    byte *drawSurf;
+    materialCommands_t *tess;
 
     if (stringCount == 0) {
         return 0;
     }
-
-    backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
     if (backEnd.projection2D != 0) {
@@ -109,8 +106,6 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
             trDebugString_t *s = &strings[stringIndex];
             byte colorBytes[4];
             vec3_t xStep, yStep;
-            byte *v;
-            int fontAxisOffset;
 
             /* Convert color float to bytes */
             R_ConvertColorToBytes(s->color, colorBytes);
@@ -118,23 +113,23 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
             /* Scale is negated */
             float scale = -s->scale;
 
-            /* Get font glyph info from backEnd */
-            v = *(byte **)(backEndPtr + 0x3c8);
+            /* Get viewParms from backEnd */
+            const GfxViewParms *vp = backEnd.viewParms;
 
-            /* xStep = scale * axis[1] (offset 0x18 from font info) */
-            xStep[0] = scale * *(float *)(v + 0x18);
-            xStep[1] = scale * *(float *)(v + 0x1c);
-            xStep[2] = scale * *(float *)(v + 0x20);
+            /* xStep = scale * viewParms->axis[1] */
+            xStep[0] = scale * vp->axis[1][0];
+            xStep[1] = scale * vp->axis[1][1];
+            xStep[2] = scale * vp->axis[1][2];
 
-            /* yStep = scale * axis[2] (offset 0x24 from font info) */
-            yStep[0] = scale * *(float *)(v + 0x24);
-            yStep[1] = scale * *(float *)(v + 0x28);
-            yStep[2] = scale * *(float *)(v + 0x2c);
+            /* yStep = scale * viewParms->axis[2] */
+            yStep[0] = scale * vp->axis[2][0];
+            yStep[1] = scale * vp->axis[2][1];
+            yStep[2] = scale * vp->axis[2][2];
 
             /* Draw text in 3D space */
             RB_DrawTextInSpace(
                 s->text,
-                *(FontHandle *)(backEndPtr + 0x36e88),
+                backEnd.debugFont,
                 s->xyz,
                 xStep,
                 yStep,
@@ -144,8 +139,8 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
     }
 
     /* Check if there are pending tris to flush */
-    drawSurf = *(byte **)g_drawSurf;
-    if (*(int *)(drawSurf + 0x5a7d0) != 0 || *(int *)(drawSurf + 0x5a7e0) != 0) {
+    tess = *(materialCommands_t **)g_drawSurf;
+    if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
         RB_EndSurface();
     }
 
@@ -162,45 +157,35 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
 static JCOEF RB_DrawPolyOutlines(void)
 {
     GfxPointVertex *verts;
-    byte *data;
     int polyIndex;
     int vertCount = 0;
     int polyCount;
-    int polyOffset;
 
     /* Allocate temp vertex buffer: 0xaa50 bytes = 2730 GfxPointVertex (16 bytes each) */
     verts = (GfxPointVertex *)ri.Z_MallocInternal(0xaa50);
 
-    data = *(byte **)g_viewParms;
-    polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
+    DebugGlobals *dbg = (DebugGlobals *)(*(byte **)g_viewParms + DBGGLOB_OFF);
+    polyCount = dbg->polyCount;
 
     if (polyCount <= 0) {
         ri.Z_FreeInternal(verts);
         return 0;
     }
 
-    polyOffset = 0;
     for (polyIndex = 0; polyIndex < polyCount; polyIndex++) {
-        byte *poly;
         vec3_t *polyVerts;
         int polyVertCount;
         int vertIndex;
         int lastVert;
 
-        data = *(byte **)g_viewParms;
-
-        poly = data + *(int *)(data + DBGGLOB_OFF + 0x0C) + polyOffset; /* debugGlobals.polys + offset */
+        dbg = (DebugGlobals *)(*(byte **)g_viewParms + DBGGLOB_OFF);
+        GfxDebugPoly *poly = &dbg->polys[polyIndex];
 
         /* Get first vert index and compute polyVerts base */
-        {
-            int firstVert = *(int *)(poly + 0x10);
-            vec3_t *vertsBase = *(vec3_t **)(data + DBGGLOB_OFF); /* debugGlobals.verts */
-            polyVerts = &vertsBase[firstVert];
-        }
+        polyVerts = &dbg->verts[poly->firstVert];
 
-        polyVertCount = *(int *)(poly + 0x14);
+        polyVertCount = poly->vertCount;
         if (polyVertCount <= 0) {
-            polyOffset += 0x18;
             continue;
         }
 
@@ -211,7 +196,7 @@ static JCOEF RB_DrawPolyOutlines(void)
                 vertCount = RB_AddDebugLine(
                     (const vec_t *)currentEdgeStart,
                     (const vec_t *)&polyVerts[vertIndex],
-                    (const vec_t *)poly, /* color at start of GfxDebugPoly */
+                    (const vec_t *)poly->color, /* color at start of GfxDebugPoly */
                     0,
                     vertCount,
                     0xaa5, /* vertLimit = 2725 */
@@ -220,8 +205,6 @@ static JCOEF RB_DrawPolyOutlines(void)
                 currentEdgeStart = &polyVerts[vertIndex];
             }
         }
-
-        polyOffset += 0x18;
     }
 
     /* Flush remaining lines if any */
@@ -247,7 +230,6 @@ static JCOEF RB_DrawPolyOutlines(void)
 static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
 {
     GfxPointVertex *verts;
-    byte *backEndPtr;
     int depthTest;
     int lineIndex;
     int vertCount;
@@ -256,8 +238,6 @@ static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
     if (lineCount == 0) {
         return 0;
     }
-
-    backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
     if (backEnd.projection2D != 0) {

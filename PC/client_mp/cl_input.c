@@ -311,7 +311,7 @@ static float CL_ClampMouseAxisDelta(float delta, float maxSpeed)
 /* line 102 */
 void IN_MLookDown(void)
 {
-    *(byte *)((byte *)kb + 0x114) = 1;
+    kb[13].active = 1; /* mlook active */
 }
 
 /* line 654 */
@@ -414,7 +414,7 @@ void IN_UpDown(void)
     int *stance;
 
     IN_KeyDown((kbutton_t *)((byte *)kb + 0xf0));
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    if (kb[25].active || kb[11].active /* prone || down */)
     {
         return;
     }
@@ -724,7 +724,7 @@ void IN_Stance_Down(void)
 {
     clientActive_t *cl;
 
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    if (kb[25].active || kb[11].active /* prone || down */)
     {
         return;
     }
@@ -743,7 +743,7 @@ void IN_Stance_Down(void)
 void IN_Stance_Up(void)
 {
     clientActive_t *ptr;
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    if (kb[25].active || kb[11].active /* prone || down */)
         return;
     ptr = *(clientActive_t **)imp_cl;
     if (ptr->stanceHeld && ptr->stancePosition == 1)
@@ -772,7 +772,7 @@ void IN_LowerStance(void)
 {
     int *statePtr;
     int val;
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    if (kb[25].active || kb[11].active /* prone || down */)
         return;
     statePtr = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
     val = *statePtr;
@@ -785,7 +785,7 @@ void IN_LowerStance(void)
 /* line 690 */
 void IN_RaiseStance(void)
 {
-    if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
+    if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
     int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     if (*stance > 1)
@@ -797,7 +797,7 @@ void IN_RaiseStance(void)
 /* line 708 */
 void IN_ToggleCrouch(void)
 {
-    if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
+    if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
     int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 1) ? 1 : 0;
@@ -806,7 +806,7 @@ void IN_ToggleCrouch(void)
 /* line 726 */
 void IN_ToggleProne(void)
 {
-    if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
+    if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
     int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 2) ? 2 : 0;
@@ -815,7 +815,7 @@ void IN_ToggleProne(void)
 /* line 744 */
 void IN_GoProne(void)
 {
-    if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
+    if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
     *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 2;
 }
@@ -823,7 +823,7 @@ void IN_GoProne(void)
 /* line 760 */
 void IN_GoCrouch(void)
 {
-    if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
+    if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
     *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 1;
 }
@@ -841,7 +841,7 @@ void IN_GoStandDown(void)
         return;
     }
 
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
+    if (kb[25].active || kb[11].active /* prone || down */)
     {
         return;
     }
@@ -870,7 +870,7 @@ void IN_TalkUp(void)
 /* line 847 */
 Bool IsTalking(void)
 {
-    return *(byte *)((byte *)kb + 0x22c);
+    return kb[27].active; /* talk active */
 }
 
 /* line 1006 */
@@ -1320,46 +1320,46 @@ void CL_MouseMove(usercmd_t *cmd)
 void IN_DownDown(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0xdc));
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
+    if (kb[25].active || kb[11].active /* prone || down */)
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
 }
 
 /* line 315 */
 void IN_DownUp(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0xdc));
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
+    if (kb[25].active || kb[11].active /* prone || down */)
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
 }
 
 /* line 602 */
 void IN_Prone_Down(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0x1f4));
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
+    if (kb[25].active || kb[11].active /* prone || down */)
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
 }
 
 /* line 609 */
 void IN_Prone_Up(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0x1f4));
-    if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1;
+    if (kb[25].active || kb[11].active /* prone || down */)
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
 }
 
 /* line 108 */
 void IN_MLookUp(void)
 {
-    *(byte *)((byte *)kb + 0x114) = 0;
+    kb[13].active = 0; /* mlook active */
     if (*(byte *)((byte *)*(void **)imp_cl_freelook + 8) == 0) {
         clientActive_t *cl = *(clientActive_t **)imp_cl;
         cl->viewangles[0] = (float)cl->snap.ps.delta_angles[0] * -0.0054931640625f;

@@ -6177,6 +6177,7 @@ struct BackCompatibleParameters {
 };
 
 struct FxScheduler {
+    int mSeed;
     ScheduledEffect *mScheduledHead;
     int mScheduledCount;
 };
@@ -8796,7 +8797,10 @@ struct TestLod {
 };
 
 struct TextPool {
-    int _placeholder;
+    char *data;
+    struct TextPool *next;
+    int capacity;
+    int used;
 };
 
 struct TextureInfoType {

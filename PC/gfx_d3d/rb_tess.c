@@ -2378,26 +2378,26 @@ void RB_TessPoly(const surfaceType_t *surfType)
         /* DX7 mode: per-vertex copy, dest stride = 32, src stride = 0x44 */
         src = (char *)poly->verts;
         for (i = 0; i < vertCount; i++) {
-            char *srcVert = src + i * 0x44;
+            GfxWorldVertex *srcVert = (GfxWorldVertex *)(src + i * sizeof(GfxWorldVertex));
             tess = RB_TessBase();
             vertBase = tess->vertexCount;
-            dest = (char *)tess + (vertBase + i) * 32;
+            GfxWorldVertexDx7 *dstVert = (GfxWorldVertexDx7 *)((char *)tess + (vertBase + i) * sizeof(GfxWorldVertexDx7));
 
-            /* Copy position (vec3 = 12 bytes) */
-            *(int *)(dest + 0) = *(int *)(srcVert + 0);
-            *(int *)(dest + 4) = *(int *)(srcVert + 4);
-            *(int *)(dest + 8) = *(int *)(srcVert + 8);
+            /* Copy position (vec3) */
+            *(int *)&dstVert->xyz[0] = *(int *)&srcVert->xyz[0];
+            *(int *)&dstVert->xyz[1] = *(int *)&srcVert->xyz[1];
+            *(int *)&dstVert->xyz[2] = *(int *)&srcVert->xyz[2];
 
-            /* Copy D3DCOLOR (4 bytes at src+0x18 -> dest+0xc) */
-            *(int *)(dest + 0xc) = *(int *)(srcVert + 0x18);
+            /* Copy D3DCOLOR */
+            dstVert->color.packed = srcVert->color.packed;
 
-            /* Copy texcoord set 1 (8 bytes at src+0x1c -> dest+0x10) */
-            *(int *)(dest + 0x10) = *(int *)(srcVert + 0x1c);
-            *(int *)(dest + 0x14) = *(int *)(srcVert + 0x20);
+            /* Copy texcoord set 1 */
+            *(int *)&dstVert->texCoord[0] = *(int *)&srcVert->texCoord[0];
+            *(int *)&dstVert->texCoord[1] = *(int *)&srcVert->texCoord[1];
 
-            /* Copy texcoord set 2 (8 bytes at src+0x24 -> dest+0x18) */
-            *(int *)(dest + 0x18) = *(int *)(srcVert + 0x24);
-            *(int *)(dest + 0x1c) = *(int *)(srcVert + 0x28);
+            /* Copy texcoord set 2 (lmap coords) */
+            *(int *)&dstVert->lmapCoord[0] = *(int *)&srcVert->lmapCoord[0];
+            *(int *)&dstVert->lmapCoord[1] = *(int *)&srcVert->lmapCoord[1];
         }
     } else {
         /* DX9 mode: memcpy with stride 68 (0x44) */

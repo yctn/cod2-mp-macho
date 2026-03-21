@@ -21,55 +21,62 @@ extern void speex_warning_int(const char *msg, int val);
 /* line 50 */
 float * speex_encoder_init(const SpeexMode *mode)
 {
-    return ((float *(*)(const SpeexMode *))*(void **)((char *)mode + 0x14))(mode);
+    return ((float *(*)(const SpeexMode *))mode->enc_init)(mode);
 }
 
 /* line 55 */
 float * speex_decoder_init(const SpeexMode *mode)
 {
-    return ((float *(*)(const SpeexMode *))*(void **)((char *)mode + 0x20))(mode);
+    return ((float *(*)(const SpeexMode *))mode->dec_init)(mode);
 }
 
 /* line 60 */
 float speex_encoder_destroy(float *state)
 {
-    return ((float (*)(float *))*(void **)((char *)*(void **)state + 0x18))(state);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((float (*)(float *))mode->enc_destroy)(state);
 }
 
 /* line 65 */
 float speex_decoder_destroy(float *state)
 {
-    return ((float (*)(float *))*(void **)((char *)*(void **)state + 0x24))(state);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((float (*)(float *))mode->dec_destroy)(state);
 }
 
 /* line 72 */
 int speex_encode_native(float *state, spx_word16_t *in, SpeexBits *bits)
 {
-    return ((int (*)(float *, spx_word16_t *, SpeexBits *))*(void **)((char *)*(void **)state + 0x1c))(state, in, bits);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((int (*)(float *, spx_word16_t *, SpeexBits *))mode->enc)(state, in, bits);
 }
 
 /* line 77 */
 int speex_decode_native(float *state, SpeexBits *bits, spx_word16_t *out)
 {
-    return ((int (*)(float *, SpeexBits *, spx_word16_t *))*(void **)((char *)*(void **)state + 0x28))(state, bits, out);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((int (*)(float *, SpeexBits *, spx_word16_t *))mode->dec)(state, bits, out);
 }
 
 /* line 175 */
 int speex_encoder_ctl(float *state, int request, float *ptr)
 {
-    return ((int (*)(float *, int, float *))*(void **)((char *)*(void **)state + 0x2c))(state, request, ptr);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((int (*)(float *, int, float *))mode->enc_ctl)(state, request, ptr);
 }
 
 /* line 147 */
 int speex_decode(float *state, SpeexBits *bits, float *out)
 {
-    return ((int (*)(float *, SpeexBits *, float *))*(void **)((char *)*(void **)state + 0x28))(state, bits, out);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((int (*)(float *, SpeexBits *, float *))mode->dec)(state, bits, out);
 }
 
 /* line 180 */
 int speex_decoder_ctl(float *state, int request, float *ptr)
 {
-    return ((int (*)(float *, int, float *))*(void **)((char *)*(void **)state + 0x30))(state, request, ptr);
+    const SpeexMode *mode = *(const SpeexMode **)state;
+    return ((int (*)(float *, int, float *))mode->dec_ctl)(state, request, ptr);
 }
 
 /* line 187 */
@@ -85,9 +92,9 @@ int nb_mode_query(const float *mode, int request, float *ptr)
             return 0;
         }
         {
-            void *submodePtr = *(void **)((byte *)mode + 0x24 + *(int *)ptr * 4);
+            const SpeexSubmode *submodePtr = ((const SpeexNBMode *)mode)->submodes[*(int *)ptr];
             if (submodePtr) {
-                *(int *)ptr = *(int *)((byte *)submodePtr + 0x40);
+                *(int *)ptr = submodePtr->bits_per_frame;
             } else {
                 *(int *)ptr = -1;
             }
@@ -104,7 +111,7 @@ int wb_mode_query(const float *mode, int request, float *ptr)
 {
     switch (request) {
     case 0:
-        *(int *)ptr = *(int *)((byte *)mode + 4) * 2;
+        *(int *)ptr = ((const SpeexSBMode *)mode)->frameSize * 2;
         return 0;
     case 1:
         if (*(int *)ptr == 0) {
@@ -112,9 +119,9 @@ int wb_mode_query(const float *mode, int request, float *ptr)
             return 0;
         }
         {
-            void *submodePtr = *(void **)((byte *)mode + 0x28 + *(int *)ptr * 4);
+            const SpeexSubmode *submodePtr = ((const SpeexSBMode *)mode)->submodes[*(int *)ptr];
             if (submodePtr) {
-                *(int *)ptr = *(int *)((byte *)submodePtr + 0x40);
+                *(int *)ptr = submodePtr->bits_per_frame;
             } else {
                 *(int *)ptr = -1;
             }

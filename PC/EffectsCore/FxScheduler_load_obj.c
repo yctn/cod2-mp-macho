@@ -215,7 +215,7 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
 
         /* Validate materials for particle/tail/sound types */
         if (type == 1 || type == 7 || type == 3) {
-            if (*fx_developer_check_ptr != 0 && *(short *)((byte *)prim + 0x6c) == 0) { /* mMediaHandles.mMediaList.count */
+            if (*fx_developer_check_ptr != 0 && ((PrimitiveTemplate *)prim)->mMediaHandles.mMediaList.size == 0) {
                 FX_Print("^1FX Error, no materials defined for primitive template of type %d\n", type);
                 PrimitiveTemplate_Shutdown(prim);
                 count = effect->mPrimitiveCount;
@@ -237,7 +237,7 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
         }
 
     next_group:
-        primitiveGroup = *(void **)((byte *)primitiveGroup + 4); /* GPObject->next */
+        primitiveGroup = (void *)((GPObject *)primitiveGroup)->next;
         currentPrimitiveIndex++;
     }
 

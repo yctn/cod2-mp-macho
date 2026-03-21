@@ -59,11 +59,10 @@ int R_CullPointAndRadius(const vec_t *pt, float radius, const DpvsPlane *clipPla
     float negRadius = -radius;
 
     for (i = 0; i < clipPlaneCount; i++) {
-        byte *plane = (byte *)clipPlanes + i * 0x14;
-        float dist = pt[0] * *(float *)(plane)
-                   + pt[1] * *(float *)(plane + 4)
-                   + pt[2] * *(float *)(plane + 8)
-                   + *(float *)(plane + 0xc);
+        float dist = pt[0] * clipPlanes[i].coeffs[0]
+                   + pt[1] * clipPlanes[i].coeffs[1]
+                   + pt[2] * clipPlanes[i].coeffs[2]
+                   + clipPlanes[i].coeffs[3];
         if (dist < negRadius)
             return 2;
     }
@@ -113,11 +112,11 @@ qboolean R_PickMaterial(const vec_t *org, const vec_t *dir, char *name, char *su
             (trace, org, end, worldPtr, worldPtr, 0, 0x0f83fff7);
     }
 
-    if (*(short *)(trace + 0x22) != 0)
+    if (((trace_t *)trace)->allsolid != 0)
         return 0;
-    if (*(float *)trace == 1.0f)
+    if (((trace_t *)trace)->fraction == 1.0f)
         return 0;
-    material = *(void **)(trace + 0x18);
+    material = (void *)((trace_t *)trace)->material;
     if (material == NULL)
         return 0;
 
@@ -130,7 +129,7 @@ qboolean R_PickMaterial(const vec_t *org, const vec_t *dir, char *name, char *su
     contEnd = contents + charLimit - 1;
     *contEnd = '\0';
 
-    surfFlags = *(int *)(trace + 0x10);
+    surfFlags = ((trace_t *)trace)->surfaceFlags;
     surfType = ((surfFlags & 0x1f00000) >> 20) - 1;
 
     if (surfType > 21) {
@@ -145,7 +144,7 @@ qboolean R_PickMaterial(const vec_t *org, const vec_t *dir, char *name, char *su
 
     surfaceFlagsLen = strlen(surfaceFlags);
 
-    contFlags = *(int *)(trace + 0x14);
+    contFlags = ((trace_t *)trace)->contents;
     if (contFlags & 1) {
         strncpy(contents, "solid", charLimit);
     } else {
