@@ -408,7 +408,7 @@ void GScr_AddFieldsForRadiant(void)
 /* line 814 */
 void Scr_AddEntity(gentity_t *ent)
 {
-    Scr_AddEntityNum(*(int *)ent, 0);
+    Scr_AddEntityNum(ent->s.number, 0);
 }
 
 /* line 829 */
@@ -441,13 +441,13 @@ void Scr_AddHudElem(game_hudelem_t *hud)
 /* line 900 */
 scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int paramcount)
 {
-    return (unsigned short)Scr_ExecEntThreadNum(*(int *)ent, 0, handle, paramcount);
+    return (unsigned short)Scr_ExecEntThreadNum(ent->s.number, 0, handle, paramcount);
 }
 
 /* line 930 */
 void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 {
-    Scr_NotifyNum(*(int *)ent, 0, (unsigned short)stringValue, paramcount);
+    Scr_NotifyNum(ent->s.number, 0, (unsigned short)stringValue, paramcount);
 }
 
 /* line 225 */

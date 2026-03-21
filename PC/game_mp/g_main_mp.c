@@ -306,21 +306,21 @@ int G_LogPrintf(const char *fmt, ...)
     va_list argptr;
     int min, sec, tens, ones;
 
-    if (*(int *)((char *)&level + 24) <= 0)
+    if (level.logFile <= 0)
         return 0;
 
     va_start(argptr, fmt);
     vsnprintf(string2, 1024, fmt, argptr);
     va_end(argptr);
 
-    sec = *(int *)((char *)&level + 492) / 1000;
+    sec = level.time / 1000;
     min = sec / 60;
     sec %= 60;
     tens = sec / 10;
     ones = sec % 10;
 
     Com_sprintf(string, 1024, "%3i:%i%i %s", min, tens, ones, string2);
-    FS_Write(string, strlen(string), *(int *)((char *)&level + 24));
+    FS_Write(string, strlen(string), level.logFile);
 
     return 0;
 }
@@ -1235,13 +1235,13 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     memset(&level, 0, 0x3624);
     level.initializing = 1;
-    *(int *)((byte *)&level + 492) = levelTime;
-    *(int *)((byte *)&level + 504) = levelTime;
-    *(int *)((byte *)&level + 13828) = -1;
-    *(void **)((byte *)&level + 4) = (void *)g_entities;
-    *(void **)((byte *)&level + 0) = (void *)g_clients;
+    level.time = levelTime;
+    level.startTime = levelTime;
+    level.currentEntityThink = -1;
+    level.gentities = (gentity_s *)g_entities;
+    level.clients = (gclient_s *)g_clients;
 
-    G_InitDbgPrint("[G_InitGame] level.clients=%p\n", *(void **)&level);
+    G_InitDbgPrint("[G_InitGame] level.clients=%p\n", (void *)level.clients);
 
     srand(randomSeed);
     Rand_Init(randomSeed);
@@ -1249,7 +1249,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     G_RegisterDvars_impl();
     BG_RegisterDvars();
 
-    teamFlags = (int *)((byte *)&level + 520);
+    teamFlags = (int *)&level.teamScores[3]; /* offset 520 = teamScores[3] used as teamFlags base */
 
     if (!restart || !savepersist) {
         /* Set gametype team flags */
@@ -1263,22 +1263,22 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     *(void **)((byte *)&level_bgs + 736240) = (void *)G_CreateDObj;
     *(void **)((byte *)&level_bgs + 736244) = imp_Com_SafeServerDObjFree;
     *(void **)((byte *)&level_bgs + 736248) = (void *)Hunk_AllocXAnimServer;
-    *(int *)((byte *)&level_bgs + 736232) = 1;
+    *(int *)((byte *)&level_bgs + 736232) = 1; /* unknown level_bgs offset 736232 */
 
     /* Log file setup */
-    logFile = (const char *)*(int *)((byte *)g_log + 8);
+    logFile = (const char *)g_log->current.integer;
     if (*logFile != '\0') {
-        if (*(byte *)((byte *)g_logSync + 8)) {
-            FS_FOpenFileByMode(logFile, (int *)((byte *)&level + 24), 3);
+        if (g_logSync->current.integer) {
+            FS_FOpenFileByMode(logFile, &level.logFile, 3);
         } else {
-            FS_FOpenFileByMode(logFile, (int *)((byte *)&level + 24), 1);
+            FS_FOpenFileByMode(logFile, &level.logFile, 1);
         }
         G_LogPrintf("------------------------------------------------------------\n");
         G_LogPrintf("------------------------------------------------------------\n");
         SV_GetServerinfo("sv_mapname", (char *)((byte *)&level_bgs + 813548), 0x400);
         G_LogPrintf("InitGame: %s\n", (char *)((byte *)&level_bgs + 813548));
     } else {
-        *(int *)((byte *)&level + 24) = -1;
+        level.logFile = -1;
         Com_Printf("Not logging to disk.\n");
     }
 
@@ -1295,11 +1295,11 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     level.initializing = 0;
 
     Com_Printf("%i+%i entity slots, %i+%i client slots\n",
-        *(int *)((byte *)&level + 12), *(int *)((byte *)&level + 16),
-        *(int *)((byte *)&level + 484), 0);
+        level.num_entities, *(int *)((byte *)&level + 16) /* firstFreeEnt (used as int) */,
+        level.maxclients, 0);
 
     /* Log gametype */
-    G_LogPrintf("gametype: %s\n", (const char *)*(int *)((byte *)g_gametype + 8));
+    G_LogPrintf("gametype: %s\n", (const char *)g_gametype->current.integer);
 
     G_InitTurrets();
     G_SpawnTriggerHurt(SV_GetBrushModelCount() + 1);
@@ -1340,8 +1340,8 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     /* Update connected clients' userinfo */
     for (i = 0; i < g_maxclients->current.integer; i++) {
-        cl = (gclient_t *)((byte *)*(void **)&level + (unsigned int)i * 0x28a4);
-        if (*(int *)((byte *)cl + 0x26c4) == 2) {
+        cl = (gclient_t *)((byte *)level.clients + (unsigned int)i * 0x28a4);
+        if (cl->sess.connected == CON_CONNECTED) {
             /* ClientUserinfoChanged(clientNum, ent, client) */
             ClientUserinfoChanged(i,
                 (gentity_t *)((byte *)g_entities + (unsigned int)i * 0x230),
@@ -1350,11 +1350,11 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     }
 
     /* Reset team flags */
-    *(int *)((byte *)&level + 520) = 0;
+    level.teamScores[3] = 0; /* reset teamFlags */
 
     /* Password notice for dedicated servers */
     if (g_dedicated->current.integer > 0) {
-        const char *pw = (const char *)*(int *)((byte *)g_password + 8);
+        const char *pw = (const char *)g_password->current.integer;
         if (*pw != '\0') {
             Com_sprintf(info, sizeof(info), "password: %s\n", pw);
         }
@@ -1473,34 +1473,34 @@ int G_ShutdownGame(qboolean freeScripts)
 
     Com_Printf((const char *)str_002b4950);
 
-    if (*(int *)((char *)&level + 24) > 0) {
+    if (level.logFile > 0) {
         G_LogPrintf((const char *)str_002b4968);
         G_LogPrintf((const char *)str_002b4898);
-        FS_FCloseFile(*(int *)((char *)&level + 24));
+        FS_FCloseFile(level.logFile);
     }
 
     *(int *)imp_bgs = 0;
 
-    for (i = 0; i < *(int *)((char *)&level + 12); i++) {
-        if (*(char *)((char *)&g_entities[i] + 0xfc))
+    for (i = 0; i < level.num_entities; i++) {
+        if (g_entities[i].r.inuse)
             G_FreeEntity(&g_entities[i]);
     }
 
-    if (*(char *)((char *)&g_entities + 572572))
-        G_FreeEntity((gentity_t *)((char *)&g_entities + 572320));
+    if (g_entities[1022].r.inuse)
+        G_FreeEntity(&g_entities[1022]);
 
-    *(int *)((char *)&level + 12) = 0;
-    *(int *)((char *)&level + 16) = 0;
-    *(int *)((char *)&level + 20) = 0;
+    level.num_entities = 0;
+    *(int *)((char *)&level + 16) = 0; /* firstFreeEnt (used as int) */
+    *(int *)((char *)&level + 20) = 0; /* lastFreeEnt (used as int) */
 
     HudElem_DestroyAll();
 
     if (Scr_IsSystemActive(1)) {
-        if (!*(int *)((char *)&level + 7508))
+        if (!level.savepersist)
             SV_FreeClientScriptPers();
     }
 
-    Scr_ShutdownSystem(1, *(int *)((char *)&level + 7508) == 0);
+    Scr_ShutdownSystem(1, level.savepersist == 0);
 
     if (freeScripts) {
         Mantle_ShutdownAnims();
@@ -1532,15 +1532,15 @@ int G_ShutdownGame(qboolean freeScripts)
         Hunk_ClearToMarkLow(0);
     }
 
-    if (*(void * *)((char *)&level + 13836)) {
-        Z_FreeInternal(*(void * *)((char *)&level + 13836));
+    if (level.openScriptIOFileBuffers[0]) {
+        Z_FreeInternal(level.openScriptIOFileBuffers[0]);
     }
-    *(int *)((char *)&level + 13836) = 0;
+    level.openScriptIOFileBuffers[0] = NULL;
 
-    if (*(int *)((char *)&level + 13832) >= 0) {
-        FS_FCloseFile(*(int *)((char *)&level + 13832));
+    if (level.openScriptIOFileHandles[0] >= 0) {
+        FS_FCloseFile(level.openScriptIOFileHandles[0]);
     }
-    *(int *)((char *)&level + 13832) = -1;
+    level.openScriptIOFileHandles[0] = -1;
 
     return 0;
 }
@@ -2064,25 +2064,24 @@ int G_RunFrame(int levelTime) {
     unsigned short entNum, otherNum;
     int entGenCount, otherGenCount;
     int savedTriggerCount;
-    byte *lvl = (byte *)&level;
 
     /* Update level timing */
-    *(int *)(lvl + 488) += 1; /* framenum */
-    *(int *)(lvl + 496) = *(int *)(lvl + 492); /* previousTime = time */
-    *(int *)(lvl + 492) = levelTime; /* time = levelTime */
-    *(int *)(lvl + 500) = levelTime - *(int *)(lvl + 496); /* frametime */
+    level.framenum += 1;
+    level.previousTime = level.time;
+    level.time = levelTime;
+    level.frametime = levelTime - level.previousTime;
 
-    *(int *)((byte *)&level_bgs + 736220) = levelTime;
-    *(int *)((byte *)&level_bgs + 736224) = levelTime;
-    *(int *)((byte *)&level_bgs + 736228) = *(int *)(lvl + 500);
+    *(int *)((byte *)&level_bgs + 736220) = levelTime; /* unknown level_bgs offset 736220 */
+    *(int *)((byte *)&level_bgs + 736224) = levelTime; /* unknown level_bgs offset 736224 */
+    *(int *)((byte *)&level_bgs + 736228) = level.frametime; /* unknown level_bgs offset 736228 */
 
     *(void **)imp_bgs = (void *)&level_bgs;
 
     /* SV_DObjInitServerTime for active entities */
-    for (i = 0; i < *(int *)(lvl + 12); i++) {
+    for (i = 0; i < level.num_entities; i++) {
         entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
-        if (*(byte *)((byte *)entPtr + 0xfc)) {
-            float dt = (float)*(int *)(lvl + 500) * 0.001f;
+        if (entPtr->r.inuse) {
+            float dt = (float)level.frametime * 0.001f;
             SV_DObjInitServerTime(entPtr, dt);
         }
     }
@@ -2091,51 +2090,51 @@ int G_RunFrame(int levelTime) {
     memset(entIndex, 0, 0x400);
 
     /* Copy trigger info to backup */
-    triggerCount = *(int *)(lvl + 13800);
-    Com_Memcpy((void *)(lvl + 10728), (void *)(lvl + 7656), triggerCount * 12);
-    *(int *)(lvl + 13804) = triggerCount;
-    *(int *)(lvl + 13800) = 0;
+    triggerCount = level.pendingTriggerListSize;
+    Com_Memcpy((void *)level.currentTriggerList, (void *)level.pendingTriggerList, triggerCount * 12);
+    level.currentTriggerListSize = triggerCount;
+    level.pendingTriggerListSize = 0;
 
     index = 0;
 
     /* Process triggers repeatedly until no more are fired */
     do {
         index += 1;
-        savedTriggerCount = *(int *)(lvl + 13804);
+        savedTriggerCount = level.currentTriggerListSize;
         bMoreTriggered = 0;
 
         if (savedTriggerCount <= 0) {
             /* No triggers pending */
         } else {
             j = 0;
-            triggerInfo = lvl + 10728;
-            while (j < *(int *)(lvl + 13804)) {
+            triggerInfo = (byte *)level.currentTriggerList;
+            while (j < level.currentTriggerListSize) {
                 entNum = *(unsigned short *)(triggerInfo);
                 entPtr = (gentity_t *)((byte *)g_entities + (unsigned int)entNum * 0x230);
                 /* Check generation counts match */
-                if (*(int *)((byte *)entPtr + 0x228) != *(int *)(triggerInfo + 4)) {
+                if (entPtr->useCount != *(int *)(triggerInfo + 4)) {
                     /* Generation mismatch - remove this trigger */
-                    int last = *(int *)(lvl + 13804) - 1;
-                    *(int *)(lvl + 13804) = last;
+                    int last = level.currentTriggerListSize - 1;
+                    level.currentTriggerListSize = last;
                     j--;
                     triggerInfo -= 12;
                     /* Copy last entry over current */
-                    *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
-                    *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
-                    *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                    *(int *)(triggerInfo + 12) = *(int *)((byte *)level.currentTriggerList + last * 12);
+                    *(int *)(triggerInfo + 16) = *(int *)((byte *)level.currentTriggerList + last * 12 + 4);
+                    *(int *)(triggerInfo + 20) = *(int *)((byte *)level.currentTriggerList + last * 12 + 8);
                 } else {
                     /* Check other entity generation */
                     otherNum = *(unsigned short *)(triggerInfo + 2);
                     gentity_t *otherEnt = (gentity_t *)((byte *)g_entities + (unsigned int)otherNum * 0x230);
-                    if (*(int *)((byte *)otherEnt + 0x228) != *(int *)(triggerInfo + 8)) {
+                    if (otherEnt->useCount != *(int *)(triggerInfo + 8)) {
                         /* Other entity generation mismatch - remove */
-                        int last = *(int *)(lvl + 13804) - 1;
-                        *(int *)(lvl + 13804) = last;
+                        int last = level.currentTriggerListSize - 1;
+                        level.currentTriggerListSize = last;
                         j--;
                         triggerInfo -= 12;
-                        *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
-                        *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
-                        *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                        *(int *)(triggerInfo + 12) = *(int *)((byte *)level.currentTriggerList + last * 12);
+                        *(int *)(triggerInfo + 16) = *(int *)((byte *)level.currentTriggerList + last * 12 + 4);
+                        *(int *)(triggerInfo + 20) = *(int *)((byte *)level.currentTriggerList + last * 12 + 8);
                     } else {
                         /* Check if already processed this frame */
                         if (entIndex[entNum] != index) {
@@ -2145,13 +2144,13 @@ int G_RunFrame(int levelTime) {
                             Scr_Notify(entPtr, (int)*(unsigned short *)((byte *)imp_scr_const + 0x54), 1);
                             /* Remove this trigger entry */
                             {
-                                int last = *(int *)(lvl + 13804) - 1;
-                                *(int *)(lvl + 13804) = last;
+                                int last = level.currentTriggerListSize - 1;
+                                level.currentTriggerListSize = last;
                                 j--;
                                 triggerInfo -= 12;
-                                *(int *)(triggerInfo + 12) = *(int *)(lvl + 10728 + last * 12);
-                                *(int *)(triggerInfo + 16) = *(int *)(lvl + 10728 + last * 12 + 4);
-                                *(int *)(triggerInfo + 20) = *(int *)(lvl + 10728 + last * 12 + 8);
+                                *(int *)(triggerInfo + 12) = *(int *)((byte *)level.currentTriggerList + last * 12);
+                                *(int *)(triggerInfo + 16) = *(int *)((byte *)level.currentTriggerList + last * 12 + 4);
+                                *(int *)(triggerInfo + 20) = *(int *)((byte *)level.currentTriggerList + last * 12 + 8);
                             }
                         } else {
                             bMoreTriggered = 1;
@@ -2167,19 +2166,19 @@ int G_RunFrame(int levelTime) {
     } while (bMoreTriggered);
 
     /* G_DObjUpdateServerTime loop */
-    for (i = 0; i < *(int *)(lvl + 12); i++) {
+    for (i = 0; i < level.num_entities; i++) {
         entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
-        if (!*(byte *)((byte *)entPtr + 0xfc))
+        if (!entPtr->r.inuse)
             continue;
-        if (*(byte *)((byte *)entPtr + 0xfc + 0x78 + 1) & 0x20)
+        if (entPtr->flags & 0x2000) /* NODRAW-related flag, tested as byte[1] & 0x20 */
             continue;
         while (1) {
             if (!G_DObjUpdateServerTime(entPtr, 1))
                 break;
             Scr_RunCurrentThreads();
-            if (!*(byte *)((byte *)entPtr + 0xfc))
+            if (!entPtr->r.inuse)
                 break;
-            if (*(byte *)((byte *)entPtr + 0xfc + 0x78 + 1) & 0x20)
+            if (entPtr->flags & 0x2000)
                 break;
         }
     }
@@ -2187,34 +2186,34 @@ int G_RunFrame(int levelTime) {
     Scr_IncTime();
 
     /* Run frame for entities */
-    *(int *)(lvl + 13828) = 0;
-    for (i = 0; i < *(int *)(lvl + 12); i++) {
+    level.currentEntityThink = 0;
+    for (i = 0; i < level.num_entities; i++) {
         entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
-        if (*(byte *)((byte *)entPtr + 0xfc)) {
+        if (entPtr->r.inuse) {
             /* If entity has a parent (tagInfo->parent), run parent first */
-            void *tagInfo = *(void **)((byte *)entPtr + 0xfc + 0x10c);
+            void *tagInfo = *(void **)&entPtr->tagInfo; /* tagInfo is stored as int but used as pointer */
             if (tagInfo) {
                 gentity_t *parent = *(gentity_t **)tagInfo;
                 G_RunFrameForEntity(parent);
             }
             G_RunFrameForEntity(entPtr);
         }
-        *(int *)(lvl + 13828) = i + 1;
+        level.currentEntityThink = i + 1;
     }
-    *(int *)(lvl + 13828) = -1;
+    level.currentEntityThink = -1;
 
     /* Update objective data for connected clients */
     {
-        int numClients = *(int *)(lvl + 484);
+        int numClients = level.maxclients;
         for (i = 0; i < numClients; i++) {
-            byte *ent2 = (byte *)(*(void **)(lvl + 4)) + (unsigned int)i * 0x230;
-            if (!*(byte *)(ent2 + 0xfc))
+            gentity_t *ent2 = (gentity_t *)((byte *)level.gentities + (unsigned int)i * 0x230);
+            if (!ent2->r.inuse)
                 continue;
-            gclient_t *cli = *(gclient_t **)((byte *)ent2 + 0x158);
-            int lastObjId = *(int *)((byte *)cli + 0x274c);
-            byte *srcBase = lvl + 36;
+            gclient_t *cli = ent2->client;
+            int lastObjId = cli->sess.cs.team;
+            byte *srcBase = (byte *)level.objectives;
             byte *dstBase = (byte *)cli;
-            byte *levelEnd = lvl + 484;
+            byte *levelEnd = (byte *)&level.maxclients;
             byte *src = srcBase;
             byte *dst = dstBase;
             while (src < levelEnd) {
@@ -2244,22 +2243,22 @@ int G_RunFrame(int levelTime) {
 
     /* HudElem updates */
     {
-        int numClients = *(int *)(lvl + 484);
+        int numClients = level.maxclients;
         for (i = 0; i < numClients; i++) {
-            byte *ent2 = (byte *)(*(void **)(lvl + 4)) + (unsigned int)i * 0x230;
-            if (!*(byte *)(ent2 + 0xfc))
+            gentity_t *ent2 = (gentity_t *)((byte *)level.gentities + (unsigned int)i * 0x230);
+            if (!ent2->r.inuse)
                 continue;
-            HudElem_UpdateClient(*(gclient_t **)((byte *)ent2 + 0x158),
-                                 *(int *)ent2, 3);
+            HudElem_UpdateClient(ent2->client,
+                                 ent2->s.number, 3);
         }
     }
 
     /* ClientEndFrame for active clients */
     {
-        int numClients = *(int *)(lvl + 484);
+        int numClients = level.maxclients;
         for (i = 0; i < numClients; i++) {
             entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
-            if (*(byte *)((byte *)entPtr + 0xfc)) {
+            if (entPtr->r.inuse) {
                 ClientEndFrame(entPtr);
             }
         }
@@ -2268,52 +2267,52 @@ int G_RunFrame(int levelTime) {
     CheckTeamStatus();
 
     /* Vote checking */
-    if (*(byte *)((byte *)g_oldVoting + 8)) {
+    if (g_oldVoting->current.integer) {
         CheckVote();
     }
 
     /* DeathmatchScoreboardMessage for spectators */
-    if (*(int *)(lvl + 528)) {
-        int numClients = *(int *)(lvl + 484);
+    if (level.bUpdateScoresForIntermission) {
+        int numClients = level.maxclients;
         int foundAny = 0;
         for (i = 0; i < numClients; i++) {
-            gclient_t *cl2 = (gclient_t *)((byte *)(*(void **)lvl) + (unsigned int)i * 0x28a4);
-            if (*(int *)((byte *)cl2 + 0x26c4) != 2)
+            gclient_t *cl2 = (gclient_t *)((byte *)level.clients + (unsigned int)i * 0x28a4);
+            if (cl2->sess.connected != CON_CONNECTED)
                 continue;
-            if (*(int *)((byte *)cl2 + 4) != 5)
+            if (cl2->ps.pm_type != 5)
                 continue;
             DeathmatchScoreboardMessage((gentity_t *)((byte *)g_entities + i * 0x230));
             foundAny = 1;
         }
         if (!foundAny || numClients <= 0) {
-            *(int *)(lvl + 528) = 0;
+            level.bUpdateScoresForIntermission = 0;
         }
     }
 
     /* List entities debug */
-    if (*(byte *)((byte *)g_listEntity + 8)) {
+    if (g_listEntity->current.integer) {
         for (i = 0; i < 0x400; i++) {
             entPtr = (gentity_t *)((byte *)g_entities + i * 0x230);
             Com_Printf("%4i: %s\n", i,
-                (const char *)SL_ConvertToString(*(unsigned short *)((byte *)entPtr + 0x168)));
+                (const char *)SL_ConvertToString(entPtr->classname));
         }
         Dvar_SetBool(g_listEntity, 0);
     }
 
     /* Save weapons/items if flagged */
-    if (*(int *)(lvl + 13820)) {
+    if (level.registerWeapons) {
         SaveRegisteredWeapons();
     }
-    if (*(int *)(lvl + 13824)) {
+    if (level.bRegisterItems) {
         SaveRegisteredItems();
     }
 
     /* Dump anims */
-    if (*(int *)((byte *)g_dumpAnims + 8) >= 0) {
+    if (g_dumpAnims->current.integer >= 0) {
         Com_Printf("---------- Animtree dump ----------\n");
         {
-            int animIdx = *(int *)((byte *)g_dumpAnims + 8);
-            entPtr = (gentity_t *)((byte *)(*(void **)(lvl + 4)) + animIdx * 0x230);
+            int animIdx = g_dumpAnims->current.integer;
+            entPtr = (gentity_t *)((byte *)level.gentities + animIdx * 0x230);
             SV_DObjDisplayAnim(entPtr);
         }
     }

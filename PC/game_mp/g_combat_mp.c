@@ -46,10 +46,10 @@ extern float g_fHitLocDamageMult[19]; /* 0x0 */
 extern const char * g_HitLocNames[19]; /* g_HitLocNames */
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 
-extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
-extern byte level_ptr[]; /* imp_level */
-extern byte *g_clients_ptr; /* imp_entityHandlers */
-extern byte *g_debug_damage_ptr; /* imp_g_debugDamage */
+extern gentity_t g_entities[];       /* imp_g_entities - g_entities base (aliased via linker as g_entities_ptr) */
+extern struct level_locals_t level;  /* imp_level (aliased via linker as level_ptr) */
+extern byte *g_clients_ptr;          /* imp_entityHandlers */
+extern byte *g_debug_damage_ptr;     /* imp_g_debugDamage */
 /* imp_scr_const declared in generated_syms.h as void* */
 extern int g_sNextDmgTableId; /* 0x195b048 */
 extern int g_time; /* imp_level_bgs */
@@ -157,7 +157,6 @@ hitLocation_t G_GetHitLocationIndexFromString(int sString)
 /* line 547 */
 float CanDamage(gentity_t *targ, const vec_t *origin)
 {
-    byte *t = (byte *)targ;
     vec3_t dest;
     vec3_t endpoints[5];
     vec3_t forward;
@@ -165,15 +164,15 @@ float CanDamage(gentity_t *targ, const vec_t *origin)
     int hits;
     int i;
 
-    if (*(int *)(t + 0x158) != 0) {
+    if (targ->client != NULL) {
         /* Player path: use eye origin */
         G_GetPlayerViewOrigin(targ, eyeOrigin);
 
-        float halfHeight = (eyeOrigin[2] - *(float *)(t + 0x140)) * 0.5f;
+        float halfHeight = (eyeOrigin[2] - targ->r.currentOrigin[2]) * 0.5f;
 
         /* VectorSubtract: forward = origin - targ->origin */
-        forward[0] = *(float *)(origin) - *(float *)(t + 0x138);
-        forward[1] = *(float *)(origin + 1) - *(float *)(t + 0x13c);
+        forward[0] = origin[0] - targ->r.currentOrigin[0];
+        forward[1] = origin[1] - targ->r.currentOrigin[1];
         forward[2] = 0.0f;
         Vec3Normalize(forward);
 
@@ -182,9 +181,9 @@ float CanDamage(gentity_t *targ, const vec_t *origin)
         float right_z = forward[2];
 
         /* midpoint = (eyeOrigin + targ->origin) * 0.5 */
-        float mid_x = (eyeOrigin[0] + *(float *)(t + 0x138)) * 0.5f;
-        float mid_y = (eyeOrigin[1] + *(float *)(t + 0x13c)) * 0.5f;
-        float mid_z = (eyeOrigin[2] + *(float *)(t + 0x140)) * 0.5f;
+        float mid_x = (eyeOrigin[0] + targ->r.currentOrigin[0]) * 0.5f;
+        float mid_y = (eyeOrigin[1] + targ->r.currentOrigin[1]) * 0.5f;
+        float mid_z = (eyeOrigin[2] + targ->r.currentOrigin[2]) * 0.5f;
 
         /* endpoint 0: midpoint (center) */
         dest[0] = mid_x;
@@ -216,7 +215,7 @@ float CanDamage(gentity_t *targ, const vec_t *origin)
         hits = 0;
         for (i = 0; i < 5; i++) {
             vec_t *ep = (i == 0) ? dest : endpoints[i - 1];
-            if (G_LocationalTracePassed(origin, ep, *(int *)t, 0x802891) >= 1) {
+            if (G_LocationalTracePassed(origin, ep, targ->s.number, 0x802891) >= 1) {
                 hits++;
             }
         }
@@ -230,9 +229,9 @@ float CanDamage(gentity_t *targ, const vec_t *origin)
         return (float)hits / 3.0f;
     } else {
         /* Entity path: use absmin/absmax center */
-        float mid_x = (*(float *)(t + 0x120) + *(float *)(t + 0x12c)) * 0.5f;
-        float mid_y = (*(float *)(t + 0x124) + *(float *)(t + 0x130)) * 0.5f;
-        float mid_z = (*(float *)(t + 0x128) + *(float *)(t + 0x134)) * 0.5f;
+        float mid_x = (targ->r.absmin[0] + targ->r.absmax[0]) * 0.5f;
+        float mid_y = (targ->r.absmin[1] + targ->r.absmax[1]) * 0.5f;
+        float mid_z = (targ->r.absmin[2] + targ->r.absmax[2]) * 0.5f;
 
         dest[0] = mid_x;
         dest[1] = mid_y;
@@ -260,7 +259,7 @@ float CanDamage(gentity_t *targ, const vec_t *origin)
 
         for (i = 0; i < 5; i++) {
             vec_t *ep = (i == 0) ? dest : endpoints[i - 1];
-            if (G_LocationalTracePassed(ep, origin, *(int *)t, 0x802891)) {
+            if (G_LocationalTracePassed(ep, origin, targ->s.number, 0x802891)) {
                 return 1.0f;
             }
         }
@@ -278,19 +277,20 @@ static float G_GetHitLocDamageMult(int weapon, hitLocation_t hitLoc)
     }
 
     weapDef = BG_GetWeaponDef(weapon);
-    if (weapDef == NULL || *(int *)((byte *)weapDef + 0x78) == 0) {
+    if (weapDef == NULL || *(int *)((byte *)weapDef + 0x78) == 0) { /* TODO: unknown weaponDef_t field at 0x78 */
         return g_fHitLocDamageMult[hitLoc];
     }
 
-    return *(float *)((byte *)weapDef + 0x5b0 + hitLoc * 4);
+    return *(float *)((byte *)weapDef + 0x5b0 + hitLoc * 4); /* TODO: unknown weaponDef_t hitLocDamageMult array at 0x5b0 */
 }
 
 /* Helper: check if player can take damage */
-static int G_IsPlayerDamageable(byte *ps)
+static int G_IsPlayerDamageable(gclient_t *client)
 {
-    if (*(byte *)(ps + 0xe) != 0) {
-        if (*(int *)(ps + 0x27ac) == 0 && *(int *)(ps + 0x27b0) == 0) {
-            if (*(int *)(ps + 0x26c4) == 2) {
+    /* 0xe = byte 2 of ps.pm_flags (bits 16-23 on little-endian) */
+    if (*(byte *)((byte *)&client->ps.pm_flags + 2) != 0) {
+        if (client->noclip == 0 && client->ufo == 0) {
+            if (client->sess.connected == 2) {
                 return 1;
             }
         }
@@ -302,27 +302,23 @@ static int G_IsPlayerDamageable(byte *ps)
 /* line 462 */
 void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const vec_t *dir, const vec_t *point, int damage, int dflags, int mod, hitLocation_t hitLoc, int timeOffset)
 {
-    byte *t = (byte *)targ;
-    byte *ps;
     int weapon;
     float fDamage;
     int iDamage;
     vec3_t localdir;
     int health;
 
-    ps = *(byte **)(t + 0x158);
-
-    if (ps != NULL) {
+    if (targ->client != NULL) {
         /* Player target */
-        if (!G_IsPlayerDamageable(ps)) {
+        if (!G_IsPlayerDamageable(targ->client)) {
             return;
         }
 
         /* Get weapon from inflictor or attacker */
         if (inflictor != NULL) {
-            weapon = *(int *)((byte *)inflictor + 0xc8);
+            weapon = inflictor->s.weapon;
         } else if (attacker != NULL) {
-            weapon = *(int *)((byte *)attacker + 0xc8);
+            weapon = attacker->s.weapon;
         } else {
             weapon = 0;
         }
@@ -340,24 +336,23 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     }
 
     /* Entity (non-player) target */
-    if (*(byte *)(t + 0x161) == 0) {
+    if (targ->takedamage == 0) {
         return;
     }
 
     if (inflictor == NULL) {
-        byte *ents = (byte *)g_entities_ptr;
-        inflictor = (gentity_t *)(ents + 0x8bba0);
+        /* 0x8bba0 / 560 = entity index 1022 (world entity) */
+        inflictor = &g_entities[1022];
     }
 
     if (attacker == NULL) {
-        byte *ents = (byte *)g_entities_ptr;
-        attacker = (gentity_t *)(ents + 0x8bba0);
+        attacker = &g_entities[1022];
     }
 
     Vec3NormalizeTo(dir, localdir);
 
     /* Check FL_GODMODE */
-    if (*(int *)(t + 0x174) & 1) {
+    if (targ->flags & 1) {
         return;
     }
 
@@ -367,8 +362,8 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     }
 
     /* Check FL_NO_KNOCKBACK (flag 2) */
-    health = *(int *)(t + 0x194);
-    if (*(int *)(t + 0x174) & 2) {
+    health = targ->health;
+    if (targ->flags & 2) {
         /* Has shield/armor */
         if (health - damage <= 0) {
             damage = health - 1;
@@ -380,13 +375,13 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
         byte *dvar = *(byte **)g_debug_damage_ptr;
         dvar = *(byte **)dvar;
         if (*(byte *)(dvar + 8) != 0) {
-            Com_Printf("target:%i health:%i damage:%i\n", *(int *)t, health, damage);
+            Com_Printf("target:%i health:%i damage:%i\n", targ->s.number, health, damage);
         }
     }
 
-    health = *(int *)(t + 0x194);
+    health = targ->health;
     health -= damage;
-    *(int *)(t + 0x194) = health;
+    targ->health = health;
 
     /* Notify "damage" */
     Scr_AddEntity(attacker);
@@ -397,18 +392,18 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     }
 
     if (health > 0) {
-        /* Still alive - call pain callback */
-        int entType = *(unsigned char *)(t + 0x166);
-        byte *client = *(byte **)g_clients_ptr + entType * 40;
+        /* Still alive - call pain callback via entity handler table */
+        int entType = targ->handler;
+        byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*pain)(gentity_t *, gentity_t *, int, const vec_t *, int, hitLocation_t) =
-            *(void (**)())(client + 0x14);
+            *(void (**)())(handlers + 0x14);
         if (pain != NULL) {
             pain(targ, attacker, damage, point, mod, hitLoc);
         }
     } else {
         /* Dead */
         if (health < -999) {
-            *(int *)(t + 0x194) = -999;
+            targ->health = -999;
         }
 
         /* Notify "death" */
@@ -418,13 +413,13 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
             Scr_Notify(targ, *(unsigned short *)(scr_data + 0xa), 1);
         }
 
-        /* Call die callback */
-        int entType = *(unsigned char *)(t + 0x166);
-        byte *client = *(byte **)g_clients_ptr + entType * 40;
+        /* Call die callback via entity handler table */
+        int entType = targ->handler;
+        byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*die)(gentity_t *, gentity_t *, gentity_t *, int, int, int, const vec_t *, hitLocation_t, int) =
-            *(void (**)())(client + 0x18);
+            *(void (**)())(handlers + 0x18);
         if (die != NULL) {
-            int iWeapon = *(int *)((byte *)inflictor + 0xc8);
+            int iWeapon = inflictor->s.weapon;
             die(targ, inflictor, attacker, damage, mod, iWeapon, localdir, hitLoc, timeOffset);
         }
     }
@@ -445,7 +440,7 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
     float points;
     float damageScale;
     int hitClient;
-    byte *ent;
+    gentity_t *ent;
     float radiusTweak;
     void *tr_buf[7]; /* trace_t */
 
@@ -477,26 +472,26 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
 
     for (e = 0; e < numListedEntities; e++) {
         int entIdx = entityList[e];
-        ent = (byte *)g_entities_ptr + entIdx * 560;
+        ent = &g_entities[entIdx];
 
-        if ((gentity_t *)ent == ignore) {
+        if (ent == ignore) {
             continue;
         }
 
-        if (*(byte *)(ent + 0x161) == 0) {
+        if (ent->takedamage == 0) {
             continue;
         }
 
-        if (*(byte *)(ent + 0xf1) == 0) {
+        if (ent->r.bmodel == 0) {
             /* Use currentOrigin */
-            v[0] = *(float *)(ent + 0x138) - origin[0];
-            v[1] = *(float *)(ent + 0x13c) - origin[1];
-            v[2] = *(float *)(ent + 0x140) - origin[2];
+            v[0] = ent->r.currentOrigin[0] - origin[0];
+            v[1] = ent->r.currentOrigin[1] - origin[1];
+            v[2] = ent->r.currentOrigin[2] - origin[2];
         } else {
             /* Use absmin/absmax clamp */
             for (i = 0; i < 3; i++) {
-                float emin = *(float *)(ent + 0x120 + i * 4);
-                float emax = *(float *)(ent + 0x12c + i * 4);
+                float emin = ent->r.absmin[i];
+                float emax = ent->r.absmax[i];
                 if (emin > origin[i]) {
                     v[i] = emin - origin[i];
                 } else if (emax < origin[i]) {
@@ -515,9 +510,8 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
         }
 
         /* Check player intermission */
-        if (*(int *)(ent + 0x158) != 0) {
-            byte *lev = (byte *)level_ptr;
-            if (*(int *)(lev + 0x35f4) != 0) {
+        if (ent->client != NULL) {
+            if (level.bPlayerIgnoreRadiusDamage != 0) {
                 continue;
             }
         }
@@ -526,24 +520,24 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
         points = fInnerDamage - fOuterDamage;
         points = (1.0f - dist / radius) * points + fOuterDamage;
 
-        damageScale = CanDamage((gentity_t *)ent, origin);
+        damageScale = CanDamage(ent, origin);
         if (damageScale > 0.0f) {
-            if (LogAccuracyHit((gentity_t *)ent, attacker)) {
+            if (LogAccuracyHit(ent, attacker)) {
                 hitClient = 1;
             }
 
             /* dir = ent->origin - origin */
-            dir[0] = *(float *)(ent + 0x138) - origin[0];
-            dir[1] = *(float *)(ent + 0x13c) - origin[1];
-            dir[2] = *(float *)(ent + 0x140) - origin[2] + 24.0f;
+            dir[0] = ent->r.currentOrigin[0] - origin[0];
+            dir[1] = ent->r.currentOrigin[1] - origin[1];
+            dir[2] = ent->r.currentOrigin[2] - origin[2] + 24.0f;
 
-            G_Damage((gentity_t *)ent, inflictor, attacker, dir, origin,
+            G_Damage(ent, inflictor, attacker, dir, origin,
                      (int)(points * damageScale), 1, mod, 0, 0);
         } else {
             /* CanDamage returned 0 - try trace to bounds center */
-            dest[0] = (*(float *)(ent + 0x120) + *(float *)(ent + 0x12c)) * 0.5f;
-            dest[1] = (*(float *)(ent + 0x124) + *(float *)(ent + 0x130)) * 0.5f;
-            dest[2] = (*(float *)(ent + 0x128) + *(float *)(ent + 0x134)) * 0.5f;
+            dest[0] = (ent->r.absmin[0] + ent->r.absmax[0]) * 0.5f;
+            dest[1] = (ent->r.absmin[1] + ent->r.absmax[1]) * 0.5f;
+            dest[2] = (ent->r.absmin[2] + ent->r.absmax[2]) * 0.5f;
 
             {
                 byte *pw = *(byte **)&g_phys_world;
@@ -563,15 +557,15 @@ qboolean G_RadiusDamage(const vec_t *origin, gentity_t *inflictor, gentity_t *at
                 continue;
             }
 
-            if (LogAccuracyHit((gentity_t *)ent, attacker)) {
+            if (LogAccuracyHit(ent, attacker)) {
                 hitClient = 1;
             }
 
-            dir[0] = *(float *)(ent + 0x138) - origin[0];
-            dir[1] = *(float *)(ent + 0x13c) - origin[1];
-            dir[2] = *(float *)(ent + 0x140) - origin[2] + 24.0f;
+            dir[0] = ent->r.currentOrigin[0] - origin[0];
+            dir[1] = ent->r.currentOrigin[1] - origin[1];
+            dir[2] = ent->r.currentOrigin[2] - origin[2] + 24.0f;
 
-            G_Damage((gentity_t *)ent, inflictor, attacker, dir, origin,
+            G_Damage(ent, inflictor, attacker, dir, origin,
                      (int)(points * 0.1f), 1, mod, 0, 0);
         }
     }
@@ -583,8 +577,7 @@ done:
 /* line 282 */
 void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int iWeapon, const vec_t *vDir, const hitLocation_t hitLoc, int psTimeOffset)
 {
-    byte *s = (byte *)self;
-    byte *ps;
+    gclient_t *cl;
     int dobj;
     vec3_t dir;
     vec3_t launchvel;
@@ -594,18 +587,19 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     float yaw;
 
     /* Check DObj exists */
-    ps = *(byte **)(s + 0x158);
-    dobj = Com_GetServerDObj(*(int *)(ps + 0xcc));
+    cl = self->client;
+    dobj = Com_GetServerDObj(cl->ps.clientNum);
     if (!dobj) {
         return;
     }
 
     /* Check session state and flags */
-    ps = *(byte **)(s + 0x158);
-    if (*(int *)(ps + 4) > 1) {
+    cl = self->client;
+    if (cl->ps.pm_type > 1) {
         return;
     }
-    if (*(byte *)(ps + 0xe) & 0x40) {
+    /* 0xe = byte 2 of ps.pm_flags (bits 16-23 on little-endian), check flag 0x40 */
+    if (*(byte *)((byte *)&cl->ps.pm_flags + 2) & 0x40) {
         return;
     }
 
@@ -617,12 +611,10 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     }
 
     /* Check attacker type - if turret, resolve to user */
-    if (*(int *)((byte *)attacker + 4) == 9) {
-        int ownerNum = *(int *)((byte *)attacker + 0x150);
+    if (attacker->s.eType == 9) {
+        int ownerNum = attacker->r.ownerNum;
         if (ownerNum != 0x3ff) {
-            byte *ents = (byte *)g_entities_ptr;
-            gentity_t *owner = (gentity_t *)(ents + ownerNum * 560);
-            attacker = owner;
+            attacker = &g_entities[ownerNum];
         }
     }
 
@@ -635,22 +627,20 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
     /* Check if attacker is player on turret - get turret weapon */
     if (iWeapon != 0) {
-        byte *att = (byte *)attacker;
-        byte *att_ps = *(byte **)(att + 0x158);
-        if (att_ps != NULL && (*(int *)(att_ps + 0xa0) & 0x300) != 0) {
+        gclient_t *att_cl = attacker->client;
+        if (att_cl != NULL && (att_cl->ps.eFlags & 0x300) != 0) {
             /* Resolve turret entity weapon */
-            int ownerIdx = *(int *)((byte *)attacker + 0x74);
-            byte *ents = (byte *)g_entities_ptr;
-            byte *mg42Ent = ents + ownerIdx * 560;
-            if (*(int *)(mg42Ent + 4) == 9) {
-                iWeapon = *(int *)(mg42Ent + 0xc8);
+            int ownerIdx = attacker->s.otherEntityNum;
+            gentity_t *mg42Ent = &g_entities[ownerIdx];
+            if (mg42Ent->s.eType == 9) {
+                iWeapon = mg42Ent->s.weapon;
             }
         }
     }
 
     /* Check for grenade drop */
-    ps = *(byte **)(s + 0x158);
-    if (*(int *)(ps + 0x3c) != 0) {
+    cl = self->client;
+    if (cl->ps.grenadeTimeLeft != 0) {
         /* Has a grenade to drop */
         float lv_x, lv_y, lv_z;
 
@@ -662,26 +652,26 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
         launchvel[1] = lv_y * 160.0f;
         launchvel[2] = lv_z * 160.0f;
 
-        /* Copy origin */
-        *(int *)&launchspot[0] = *(int *)(s + 0x138);
-        *(int *)&launchspot[1] = *(int *)(s + 0x13c);
-        launchspot[2] = *(float *)(s + 0x140) + 40.0f;
+        /* Copy origin (bitwise copy via int to preserve exact float bits) */
+        *(int *)&launchspot[0] = *(int *)&self->r.currentOrigin[0];
+        *(int *)&launchspot[1] = *(int *)&self->r.currentOrigin[1];
+        launchspot[2] = self->r.currentOrigin[2] + 40.0f;
 
         fire_grenade(self, launchspot, launchvel,
-                     *(int *)(ps + 0x3c), *(int *)(ps + 0xd0));
-        ps = *(byte **)(s + 0x158);
+                     cl->ps.grenadeTimeLeft, cl->ps.offHandIndex);
+        cl = self->client;
     }
 
     /* Set death animation */
     {
         int state = 0;
-        if (*(int *)(ps + 4) == 1) {
+        if (cl->ps.pm_type == 1) {
             state = 1;
         }
-        *(int *)(ps + 4) = state + 6;
+        cl->ps.pm_type = state + 6;
     }
 
-    animResult = BG_AnimScriptEvent(ps, 1, 0, 1);
+    animResult = BG_AnimScriptEvent(&cl->ps, 1, 0, 1);
 
     /* Call script killed callback */
     Scr_PlayerKilled(self, inflictor, attacker, damage, meansOfDeath,
@@ -689,70 +679,61 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
     /* Update score for connected players watching this entity */
     {
-        byte *lev = (byte *)level_ptr;
-        int maxClients = *(int *)(lev + 0x1e4);
+        int maxClients = level.maxclients;
 
         if (maxClients > 0) {
-            byte *ents = (byte *)g_entities_ptr;
-            int offset = 0;
-            byte *entPtr = ents;
-
             for (i = 0; i < maxClients; i++) {
-                byte *cl = *(byte **)lev + offset;
-                if (*(int *)(cl + 0x26c4) == 2 && *(int *)(cl + 0x26a8) == 2) {
-                    if (*(int *)(cl + 0x27a8) == *(int *)s) {
-                        Cmd_Score_f((gentity_t *)entPtr);
+                gclient_t *client_i = &level.clients[i];
+                if (client_i->sess.connected == 2 && client_i->sess.sessionState == 2) {
+                    if (client_i->spectatorClient == self->s.number) {
+                        Cmd_Score_f(&g_entities[i]);
                     }
                 }
-                offset += 0x28a4;
-                entPtr += 0x230;
             }
         }
     }
 
     /* Set entity state */
-    *(byte *)(s + 0x161) = 1;
-    *(int *)(s + 0x11c) = 0x4000000;
-    *(int *)(s + 0x14c) = 0;
+    self->takedamage = 1;
+    self->r.contents = 0x4000000;
+    self->r.currentAngles[2] = 0.0f;
 
     /* Calculate death direction */
     if (attacker != NULL && attacker != self) {
         /* Direction from attacker to self */
-        dir[0] = *(float *)((byte *)attacker + 0x138) - *(float *)(s + 0x138);
-        dir[1] = *(float *)((byte *)attacker + 0x13c) - *(float *)(s + 0x13c);
-        dir[2] = *(float *)((byte *)attacker + 0x140) - *(float *)(s + 0x140);
+        dir[0] = attacker->r.currentOrigin[0] - self->r.currentOrigin[0];
+        dir[1] = attacker->r.currentOrigin[1] - self->r.currentOrigin[1];
+        dir[2] = attacker->r.currentOrigin[2] - self->r.currentOrigin[2];
     } else if (inflictor != NULL && inflictor != self) {
         /* Direction from inflictor to self */
-        dir[0] = *(float *)((byte *)inflictor + 0x138) - *(float *)(s + 0x138);
-        dir[1] = *(float *)((byte *)inflictor + 0x13c) - *(float *)(s + 0x13c);
-        dir[2] = *(float *)((byte *)inflictor + 0x140) - *(float *)(s + 0x140);
+        dir[0] = inflictor->r.currentOrigin[0] - self->r.currentOrigin[0];
+        dir[1] = inflictor->r.currentOrigin[1] - self->r.currentOrigin[1];
+        dir[2] = inflictor->r.currentOrigin[2] - self->r.currentOrigin[2];
     } else {
         /* Self-kill: use current angles yaw */
-        ps = *(byte **)(s + 0x158);
-        *(int *)(ps + 0x130) = (int)*(float *)(s + 0x148);
+        cl = self->client;
+        cl->ps.stats[1] = (int)self->r.currentAngles[1];
         goto after_yaw;
     }
 
-    ps = *(byte **)(s + 0x158);
+    cl = self->client;
     yaw = vectoyaw(dir);
-    *(int *)(ps + 0x130) = (int)yaw;
+    cl->ps.stats[1] = (int)yaw;
     vectoyaw(dir); /* called twice in original */
 
 after_yaw:
-    /* Copy viewangles to delta_angles */
-    ps = *(byte **)(s + 0x158);
+    /* Copy currentAngles to viewangles (bitwise copy to preserve exact float bits) */
+    cl = self->client;
     {
-        byte *to = ps + 0xe8;
-        byte *from = s + 0x144;
-        *(int *)(to) = *(int *)(from);
-        *(int *)(to + 4) = *(int *)(from + 4);
-        *(int *)(to + 8) = *(int *)(from + 8);
+        *(int *)&cl->ps.viewangles[0] = *(int *)&self->r.currentAngles[0];
+        *(int *)&cl->ps.viewangles[1] = *(int *)&self->r.currentAngles[1];
+        *(int *)&cl->ps.viewangles[2] = *(int *)&self->r.currentAngles[2];
     }
 
-    *(int *)(s + 0x84) = 0;
+    self->s.loopSound = 0;
     SV_UnlinkEntity(self);
-    *(int *)(s + 0x118) = 0x41f00000; /* 30.0f as int */
+    self->r.maxs[2] = 30.0f;
     SV_LinkEntity(self);
-    *(int *)(s + 0x194) = 0;
-    *(byte *)(s + 0x166) = 11;
+    self->health = 0;
+    self->handler = 11;
 }
