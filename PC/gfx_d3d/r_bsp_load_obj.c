@@ -17,7 +17,7 @@ extern GfxWorld s_world; /* 0x0 */
 static int R_FinishLoadingAabbTrees_r(void);
 #endif
 const char * R_ParseSunLight(SunLightParseParams *params, const char *text);
-snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight);
+void R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight);
 #ifndef __EMSCRIPTEN__
 static Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XModel * *model, vec_t *origin);
 #endif
@@ -451,7 +451,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 #endif
 
 /* line 1911 — Convert parsed sun light parameters into a GfxLight structure. */
-snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight)
+void R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight)
 {
     vec_t sunDirection[3];
     float ambient, sunIntensity, sunAngleOverride;
