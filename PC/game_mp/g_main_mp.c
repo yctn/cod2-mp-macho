@@ -730,11 +730,11 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "calll Dvar_RegisterString_mac\n"
         "movl %eax, g_password\n"
         "movl $0x800, 0x10(%esp)\n" /* line 119 */
-        "movl $0x320, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x320, 4(%esp)\n"
+        "movl $0x7f7fffff, 0xc(%esp)\n" /* FLT_MAX */
+        "movl $0x3f800000, 8(%esp)\n" /* 1.0f */
+        "movl $0x44480000, 4(%esp)\n" /* 800.0f */
         "movl $str_002b4550, (%esp)\n" /* "g_gravity" */
-        "calll Dvar_RegisterInt\n"
+        "calll Dvar_RegisterFloat\n"
         "movl %eax, g_gravity\n"
         "movl $0x800, 0x10(%esp)\n" /* line 120 */
         "movl $0xc8, 0xc(%esp)\n"
@@ -1093,7 +1093,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 extern const dvar_t *Dvar_RegisterString_mac(const char *name, int def, int min, int max, int flags);
 extern const dvar_t *Dvar_RegisterInt(const char *name, int def, int min, int max, int flags);
 extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int def, int min, int max, int flags);
-extern const dvar_t *Dvar_RegisterFloat(const char *name, int def, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float def, float min, float max, int flags);
 extern void Swap_Init(void);
 extern void G_ProcessIPBans(void);
 extern void G_SetupWeaponDef(void);
@@ -1149,41 +1149,41 @@ static void G_RegisterDvars_impl(void) {
     g_cheats = Dvar_RegisterBool_mac("sv_cheats", 0, 0, 0, 0);
     g_maxclients = Dvar_RegisterInt("sv_maxclients", 0, 0, 0x40, 0x1040);
     g_password = Dvar_RegisterString_mac("g_password", 0, 0, 0, 0x1040);
-    g_gravity = Dvar_RegisterInt("g_gravity", 0x320, 0, 0x320, 0x800);
+    g_gravity = Dvar_RegisterFloat("g_gravity", 800.0f, 1.0f, 3.402823466e38f, 0x800);
     g_speed = Dvar_RegisterInt("g_speed", 0xbe, 0, 0xc8, 0x800);
-    g_knockback = Dvar_RegisterInt("g_knockback", 0x3e8, 0, 0x3e8, 0x800);
+    g_knockback = Dvar_RegisterFloat("g_knockback", 1000.0f, -3.402823466e38f, 3.402823466e38f, 0x800);
     g_useholdtime = Dvar_RegisterInt("g_useholdtime", 0, 0, 0, 0);
     g_useholdspawndelay = Dvar_RegisterInt("g_useholdspawndelay", 0, 0, 0, 0);
     g_inactivity = Dvar_RegisterInt("g_inactivity", 0, 0, 0, 0x800);
-    g_debugDamage = Dvar_RegisterInt("g_debugDamage", 0, 0, 0, 0x800);
-    g_debugBullets = Dvar_RegisterInt("g_debugBullets", 0, 0, 0, 0x800);
-    g_weaponAmmoPools = Dvar_RegisterInt("g_weaponAmmoPools", 0, 0, 0, 0x800);
-    g_maxDroppedWeapons = Dvar_RegisterInt("g_maxDroppedWeapons", 0x10, 0, 0x10, 0x800);
+    g_debugDamage = Dvar_RegisterBool_mac("g_debugDamage", 0, 0, 0, 0x800);
+    g_debugBullets = Dvar_RegisterInt("g_debugBullets", 0, -3, 6, 0x800);
+    g_weaponAmmoPools = Dvar_RegisterBool_mac("g_weaponAmmoPools", 0, 0, 0, 0x800);
+    g_maxDroppedWeapons = Dvar_RegisterInt("g_maxDroppedWeapons", 0x10, 1, 0x20, 0x800);
     g_synchronousClients = Dvar_RegisterBool_mac("g_synchronousClients", 0, 0, 0, 0x800);
     g_motd = Dvar_RegisterString_mac("g_motd", 0, 0, 0, 0x800);
     g_allowVote = Dvar_RegisterBool_mac("g_allowVote", 1, 0, 0, 0);
-    g_dropForwardSpeed = Dvar_RegisterFloat("g_dropForwardSpeed", 0, 0, 0, 0x800);
-    g_dropUpSpeedBase = Dvar_RegisterFloat("g_dropUpSpeedBase", 0, 0, 0, 0x800);
-    g_dropUpSpeedRand = Dvar_RegisterFloat("g_dropUpSpeedRand", 0, 0, 0, 0x800);
-    g_clonePlayerMaxVelocity = Dvar_RegisterFloat("g_clonePlayerMaxVelocity", 0, 0, 0, 0x800);
+    g_dropForwardSpeed = Dvar_RegisterFloat("g_dropForwardSpeed", 10.0f, 0.0f, 1000.0f, 0x800);
+    g_dropUpSpeedBase = Dvar_RegisterFloat("g_dropUpSpeedBase", 10.0f, 0.0f, 1000.0f, 0x800);
+    g_dropUpSpeedRand = Dvar_RegisterFloat("g_dropUpSpeedRand", 5.0f, 0.0f, 1000.0f, 0x800);
+    g_clonePlayerMaxVelocity = Dvar_RegisterFloat("g_clonePlayerMaxVelocity", 80.0f, 0.0f, 3.402823466e38f, 0x800);
     voice_localEcho = Dvar_RegisterBool_mac("voice_localEcho", 0, 0, 0, 0x800);
     voice_global = Dvar_RegisterBool_mac("voice_global", 0, 0, 0, 0);
     voice_deadChat = Dvar_RegisterBool_mac("voice_deadChat", 0, 0, 0, 0);
-    g_voiceChatTalkingDuration = Dvar_RegisterFloat("g_voiceChatTalkingDuration", 0, 0, 0, 0);
+    g_voiceChatTalkingDuration = Dvar_RegisterInt("g_voiceChatTalkingDuration", 500, 0, 10000, 0);
     g_deadChat = Dvar_RegisterBool_mac("g_deadChat", 0, 0, 0, 0);
     g_banIPs = Dvar_RegisterString_mac("g_banIPs", 0, 0, 0, 0);
     g_smoothClients = Dvar_RegisterBool_mac("g_smoothClients", 1, 0, 0, 0);
     g_NoScriptSpam = Dvar_RegisterBool_mac("g_NoScriptSpam", 0, 0, 0, 0);
-    g_debugLocDamage = Dvar_RegisterInt("g_debugLocDamage", 0, 0, 0, 0x800);
-    g_friendlyfireDist = Dvar_RegisterFloat("g_friendlyfireDist", 0, 0, 0, 0x800);
-    g_friendlyNameDist = Dvar_RegisterFloat("g_friendlyNameDist", 0, 0, 0, 0x800);
-    player_meleeRange = Dvar_RegisterInt("player_meleeRange", 0, 0, 0, 0);
-    player_meleeWidth = Dvar_RegisterFloat("player_meleeWidth", 0, 0, 0, 0);
-    player_meleeHeight = Dvar_RegisterFloat("player_meleeHeight", 0, 0, 0, 0);
+    g_debugLocDamage = Dvar_RegisterBool_mac("g_debugLocDamage", 0, 0, 0, 0x800);
+    g_friendlyfireDist = Dvar_RegisterFloat("g_friendlyfireDist", 256.0f, 0.0f, 15000.0f, 0x800);
+    g_friendlyNameDist = Dvar_RegisterFloat("g_friendlyNameDist", 15000.0f, 0.0f, 15000.0f, 0x800);
+    player_meleeRange = Dvar_RegisterFloat("player_meleeRange", 64.0f, 0.0f, 1000.0f, 0);
+    player_meleeWidth = Dvar_RegisterFloat("player_meleeWidth", 10.0f, 0.0f, 1000.0f, 0);
+    player_meleeHeight = Dvar_RegisterFloat("player_meleeHeight", 10.0f, 0.0f, 1000.0f, 0);
     g_antilag = Dvar_RegisterBool_mac("g_antilag", 1, 0, 0, 0);
     g_oldVoting = Dvar_RegisterBool_mac("g_oldVoting", 1, 0, 0, 0);
-    g_playerCollisionEjectSpeed = Dvar_RegisterInt("g_playerCollisionEjectSpeed", 0, 0, 0, 0x800);
-    g_mantleBlockTimeBuffer = Dvar_RegisterInt("g_mantleBlockTimeBuffer", 0, 0, 0, 0x800);
+    g_playerCollisionEjectSpeed = Dvar_RegisterInt("g_playerCollisionEjectSpeed", 25, 0, 32000, 0x800);
+    g_mantleBlockTimeBuffer = Dvar_RegisterInt("g_mantleBlockTimeBuffer", 500, 0, 60000, 0x800);
     g_log = Dvar_RegisterString_mac("g_log", 0, 0, 0, 0);
     g_logSync = Dvar_RegisterBool_mac("g_logSync", 0, 0, 0, 0);
     g_listEntity = Dvar_RegisterBool_mac("g_listEntity", 0, 0, 0, 0);
@@ -1195,7 +1195,7 @@ static void G_RegisterDvars_impl(void) {
     g_TeamName_Axis = Dvar_RegisterString_mac("g_TeamName_Axis", 0, 0, 0, 0);
     g_TeamColor_Allies = Dvar_RegisterString_mac("g_TeamColor_Allies", 0, 0, 0, 0);
     g_TeamColor_Axis = Dvar_RegisterString_mac("g_TeamColor_Axis", 0, 0, 0, 0);
-    g_voteAbstainWeight = Dvar_RegisterFloat("g_voteAbstainWeight", 0, 0, 0, 0);
+    g_voteAbstainWeight = Dvar_RegisterFloat("g_voteAbstainWeight", 0.5f, 0.0f, 1.0f, 0);
     g_dumpAnims = Dvar_RegisterInt("g_dumpAnims", -1, 0, 0, 0x800);
 }
 

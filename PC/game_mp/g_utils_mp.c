@@ -411,8 +411,7 @@ unsigned char G_InitGentity(gentity_t *e)
     ENT_NEXTFREEENT(e) = 0;
     ENT_INUSE(e) = 1;
     Scr_SetString(&e->classname, ((scr_const_t *)scr_const_ptr)->noclass);
-    /* e->s.number = (e - g_entities) / ENTITY_STRIDE — magic multiply */
-    ENT_NUMBER(e) = ((int)((byte *)e - g_entities_ptr) >> 4) * (int)0x8AF8AF8B;
+    ENT_NUMBER(e) = (int)(((byte *)e - g_entities_ptr) / ENTITY_STRIDE);
     ENT_OWNERNUM(e) = 0x3FF;
     ENT_FREETIME(e) = 0;
     ENT_FREEAFTEREVENT(e) = 0;
@@ -956,7 +955,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
         memset(ed, 0, ENTITY_STRIDE);
         ENT_FREETIME(ed) = LEVEL_TIME;
 
-        /* Check if entity is in the dynamic range */
+        /* Only dynamic entities live on the free list; client slots stay reserved. */
         if ((byte *)ed - (byte *)LEVEL_GENTITIES > 0x9D7F) {
             /* Add to free list */
             if (LEVEL_LASTFREEENT) {
@@ -1221,8 +1220,19 @@ qboolean G_EntAttach(gentity_t *ent, const char *modelName, unsigned int tagName
 gentity_t * G_Spawn(void)
 {
     gentity_t *e;
+    byte *base;
+    int offset;
 
     e = LEVEL_FIRSTFREEENT;
+    base = (byte *)LEVEL_GENTITIES;
+    if (e) {
+        offset = (int)((byte *)e - base);
+        if (offset < 0 || offset >= 0x3FE * ENTITY_STRIDE || (offset % ENTITY_STRIDE) != 0) {
+            LEVEL_FIRSTFREEENT = 0;
+            LEVEL_LASTFREEENT = 0;
+            e = 0;
+        }
+    }
     if (e) {
         if (LEVEL_TIME - ENT_FREETIME(e) > 499 || LEVEL_NUMENTS > 0x3FD) {
             LEVEL_FIRSTFREEENT = ENT_NEXTFREEENT(e);
@@ -1243,7 +1253,7 @@ gentity_t * G_Spawn(void)
     /* Allocate from end */
     {
         int num = LEVEL_NUMENTS;
-        e = (gentity_t *)(LEVEL_GENTITIES + ((num * 5) * 8 - num * 5) * 16);
+        e = (gentity_t *)(base + num * ENTITY_STRIDE);
         LEVEL_NUMENTS = num + 1;
         SV_LocateGameData(LEVEL_GENTITIES, num + 1, ENTITY_STRIDE, *(byte **)(level_ptr), 0x28A4);
     }

@@ -184,8 +184,8 @@ static void trigger_use_shared(gentity_t *ent)
     SV_SetBrushModel(ent);
     /* line 536 */
     SV_LinkEntity(ent);
-    /* line 538 - set spawnflags area to ENTITYNUM_NONE */
-    ent->tagInfo = 0x3ff;
+    /* No tag parent is attached here; keep tagInfo as a null pointer. */
+    ent->tagInfo = 0;
     /* line 539 */
     ENT_POS_TRTYPE(ent) = 0;
     /* line 540 - VectorCopy(currentOrigin, pos.trBase) */

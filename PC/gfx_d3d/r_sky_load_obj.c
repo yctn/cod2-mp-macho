@@ -15,7 +15,7 @@ extern void Com_Memset(void *dest, int val, int count);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern char *strchr(const char *s, int c);
 
-extern void *r_sundvar_table; /* imp_s_sundvars */
+extern const char *s_sundvars[21];
 
 void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun)
 {
@@ -28,7 +28,7 @@ void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun)
         return;
     }
 
-    if (Com_LoadDvarsFromBuffer(&r_sundvar_table, R_GetSundvarsSize(), sunFile, fullpath)) {
+    if (Com_LoadDvarsFromBuffer(s_sundvars, R_GetSundvarsSize(), sunFile, fullpath)) {
         R_SetSunFromDvars(sun);
     }
 
