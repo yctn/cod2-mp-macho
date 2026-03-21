@@ -36,6 +36,9 @@ extern byte *g_trace_zero_ptr;  /* imp_vec3_origin */
 
 #define ENTITY_STRIDE 560
 
+#define LEVEL ((level_locals_t *)level_ptr)
+#define G_ENTITIES ((gentity_t *)g_entities_ptr)
+
 void G_Trigger(gentity_t *self, gentity_t *other);
 void hurt_use(gentity_t *self, gentity_t *other, gentity_t *activator);
 void SP_trigger_lookat(gentity_t *self);
@@ -57,133 +60,125 @@ void Use_trigger_damage(gentity_t *pEnt, gentity_t *pOther, gentity_t *pActivato
 /* line 3 */
 void G_Trigger(gentity_t *self, gentity_t *other)
 {
-    byte *s = (byte *)self;
-    byte *o = (byte *)other;
-    byte *level;
+    level_locals_t *level;
     int triggerCount;
-    byte *entry;
+    trigger_info_t *entry;
 
     if (!Scr_IsSystemActive(1))
         return;
 
-    level = level_ptr;
-    triggerCount = *(int *)(level + 0x35e8);
+    level = LEVEL;
+    triggerCount = level->pendingTriggerListSize;
 
     if (triggerCount == 0x100) {
         Scr_AddEntity(other);
-        Scr_Notify(self, *(unsigned short *)(imp_scr_const + 0x54), 1);
+        Scr_Notify(self, *(unsigned short *)(imp_scr_const + 0x54), 1); /* unknown scr_const offset 0x54 */
         return;
     }
 
-    entry = level + 0x1de0 + triggerCount * 12;
-    *(int *)(level + 0x35e8) = triggerCount + 1;
-    *(short *)(entry + 8) = *(short *)s;
-    *(short *)(entry + 10) = *(short *)o;
-    *(int *)(entry + 12) = *(int *)(s + 0x228);
-    *(int *)(entry + 16) = *(int *)(o + 0x228);
+    entry = &level->pendingTriggerList[triggerCount];
+    level->pendingTriggerListSize = triggerCount + 1;
+    entry->entnum = (unsigned short)self->s.number;
+    entry->otherEntnum = (unsigned short)other->s.number;
+    entry->useCount = self->useCount;
+    entry->otherUseCount = other->useCount;
 }
 
 /* line 235 */
 void hurt_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {
-    byte *s = (byte *)self;
-    byte state = *(byte *)(s + 0x166);
+    byte state = self->handler;
 
-    *(byte *)(s + 0x166) = (state != 3) ? 3 : 2;
+    self->handler = (state != 3) ? 3 : 2;
 }
 
 /* line 596 */
 void SP_trigger_lookat(gentity_t *self)
 {
-    byte *s = (byte *)self;
-
     SV_SetBrushModel(self);
-    *(int *)(s + 0x11c) = 0x20000000;
-    *(byte *)(s + 0xf2) = 1;
-    *(int *)(s + 8) |= 1;
+    self->r.contents = 0x20000000;
+    self->r.svFlags = 1;
+    self->s.eFlags |= 1;
     SV_LinkEntity(self);
 }
 
 /* line 254 */
 void SP_trigger_hurt(gentity_t *self)
 {
-    byte *s = (byte *)self;
     const char *sound;
     int spawnflags;
 
     SV_SetBrushModel(self);
-    *(int *)(s + 0x11c) = 0x405c0008;
-    *(byte *)(s + 0xf2) = 1;
-    *(int *)(s + 8) |= 1;
+    self->r.contents = 0x405c0008;
+    self->r.svFlags = 1;
+    self->s.eFlags |= 1;
 
     G_SpawnString("sound", "world_hurt_me", &sound);
 
-    if (*(int *)(s + 0x19c) == 0)
-        *(int *)(s + 0x19c) = 5;
+    if (self->damage == 0)
+        self->damage = 5;
 
-    *(int *)(s + 0x11c) = 0x405c0008;
+    self->r.contents = 0x405c0008;
 
-    spawnflags = *(int *)(s + 0x170) & 1;
-    *(byte *)(s + 0x166) = (byte)(-spawnflags + 3);
+    spawnflags = self->spawnflags & 1;
+    self->handler = (byte)(-spawnflags + 3);
 }
 
 /* line 464 */
 void SP_trigger_damage(gentity_t *pSelf)
 {
-    byte *s = (byte *)pSelf;
-    byte *level;
+    level_locals_t *level;
     float wait;
 
-    G_SpawnInt("accumulate", "0", (int *)(s + 0x1ac));
-    G_SpawnInt("threshold", "0", (int *)(s + 0x1a8));
+    G_SpawnInt("accumulate", "0", &pSelf->trigger.accumulate);
+    G_SpawnInt("threshold", "0", &pSelf->trigger.threshold);
 
-    *(int *)(s + 0x194) = 0x7d00;
-    *(byte *)(s + 0x161) = 1;
-    *(byte *)(s + 0x166) = 4;
+    pSelf->health = 0x7d00;
+    pSelf->takedamage = 1;
+    pSelf->handler = 4;
 
-    level = level_ptr;
-    if (*(byte *)(level + 0x1348) != 0) {
+    level = LEVEL;
+    if (level->spawnVar.spawnVarsValid != 0) {
         if (G_SpawnFloat("wait", "", &wait) && !(0.0f < wait))
-            *(int *)(s + 0x170) |= 0x200;
+            pSelf->spawnflags |= 0x200;
     }
 
     SV_SetBrushModel(pSelf);
-    *(int *)(s + 0x11c) = 0x405c0008;
-    *(byte *)(s + 0xf2) = 1;
-    *(int *)(s + 8) |= 1;
+    pSelf->r.contents = 0x405c0008;
+    pSelf->r.svFlags = 1;
+    pSelf->s.eFlags |= 1;
     SV_LinkEntity(pSelf);
 }
 
 /* line 96 */
 void SP_trigger_multiple(gentity_t *ent)
 {
-    byte *e = (byte *)ent;
-    byte *level;
+    level_locals_t *level;
     float wait;
     int spawnflags;
 
-    *(byte *)(e + 0x166) = 1;
+    ent->handler = 1;
 
-    level = level_ptr;
-    if (*(byte *)(level + 0x1348) != 0) {
+    level = LEVEL;
+    if (level->spawnVar.spawnVarsValid != 0) {
         if (G_SpawnFloat("wait", "", &wait) && !(0.0f < wait))
-            *(int *)(e + 0x170) |= 0x10;
+            ent->spawnflags |= 0x10;
     }
 
     SV_SetBrushModel(ent);
-    *(byte *)(e + 0xf2) = 1;
-    *(int *)(e + 8) |= 1;
+    ent->r.svFlags = 1;
+    ent->s.eFlags |= 1;
 
-    *(int *)(e + 0x11c) = 0;
-    spawnflags = *(int *)(e + 0x170);
+    ent->r.contents = 0;
+    spawnflags = ent->spawnflags;
     if (!(spawnflags & 8))
-        *(int *)(e + 0x11c) = 0x40000000;
+        ent->r.contents = 0x40000000;
     if (spawnflags & 1)
-        *(int *)(e + 0x11c) |= 0x40000;
+        ent->r.contents |= 0x40000;
     if (spawnflags & 2)
-        *(int *)(e + 0x11c) |= 0x80000;
+        ent->r.contents |= 0x80000;
     if (spawnflags & 4)
-        *(int *)(e + 0x11c) |= 0x100000;
+        ent->r.contents |= 0x100000;
 
     SV_LinkEntity(ent);
 }
@@ -191,16 +186,15 @@ void SP_trigger_multiple(gentity_t *ent)
 /* line 114 */
 void SP_trigger_radius(gentity_t *ent)
 {
-    byte *e = (byte *)ent;
-    byte *level;
+    level_locals_t *level;
     float radius;
     float height;
     float wait;
     float neg_radius;
     int spawnflags;
 
-    level = level_ptr;
-    if (*(byte *)(level + 0x1348) == 0) {
+    level = LEVEL;
+    if (level->spawnVar.spawnVarsValid == 0) {
         /* Script path */
         if (Scr_GetNumParam() <= 4)
             Scr_Error("USAGE: spawn( \"trigger_radius\", <origin>, <spawnflags>, <radius>, <height> )");
@@ -210,42 +204,42 @@ void SP_trigger_radius(gentity_t *ent)
         /* Map spawn path */
         if (!G_SpawnFloat("radius", "", &radius)) {
             Com_Error(1, va("radius not specified for trigger_radius at (%g %g %g)",
-                *(float *)(e + 0x138), *(float *)(e + 0x13c), *(float *)(e + 0x140)));
+                ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2]));
         }
         if (!G_SpawnFloat("height", "", &height)) {
             Com_Error(1, va("height not specified for trigger_radius at (%g %g %g)",
-                *(float *)(e + 0x138), *(float *)(e + 0x13c), *(float *)(e + 0x140)));
+                ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2]));
         }
     }
 
-    *(byte *)(e + 0x166) = 1;
+    ent->handler = 1;
 
     neg_radius = -radius;
-    *(float *)(e + 0x104) = neg_radius;
-    *(float *)(e + 0x108) = neg_radius;
-    *(float *)(e + 0x10c) = 0.0f;
-    *(float *)(e + 0x110) = radius;
-    *(float *)(e + 0x114) = radius;
-    *(float *)(e + 0x118) = height;
+    ent->r.mins[0] = neg_radius;
+    ent->r.mins[1] = neg_radius;
+    ent->r.mins[2] = 0.0f;
+    ent->r.maxs[0] = radius;
+    ent->r.maxs[1] = radius;
+    ent->r.maxs[2] = height;
 
-    *(byte *)(e + 0xf2) = 0x21;
+    ent->r.svFlags = 0x21;
 
-    if (*(byte *)(level + 0x1348) != 0) {
+    if (level->spawnVar.spawnVarsValid != 0) {
         if (G_SpawnFloat("wait", "", &wait) && !(0.0f < wait)) {
-            *(int *)(e + 0x170) |= 0x10;
+            ent->spawnflags |= 0x10;
         }
     }
 
-    spawnflags = *(int *)(e + 0x170);
-    *(int *)(e + 0x11c) = 0;
+    spawnflags = ent->spawnflags;
+    ent->r.contents = 0;
     if (!(spawnflags & 8))
-        *(int *)(e + 0x11c) = 0x40000000;
+        ent->r.contents = 0x40000000;
     if (spawnflags & 1)
-        *(int *)(e + 0x11c) |= 0x40000;
+        ent->r.contents |= 0x40000;
     if (spawnflags & 2)
-        *(int *)(e + 0x11c) |= 0x80000;
+        ent->r.contents |= 0x80000;
     if (spawnflags & 4)
-        *(int *)(e + 0x11c) |= 0x100000;
+        ent->r.contents |= 0x100000;
 
     SV_LinkEntity(ent);
 }
@@ -253,46 +247,45 @@ void SP_trigger_radius(gentity_t *ent)
 /* line 160 */
 void SP_trigger_disk(gentity_t *ent)
 {
-    byte *e = (byte *)ent;
-    byte *level;
+    level_locals_t *level;
     float radius;
     float wait;
     int spawnflags;
 
     if (!G_SpawnFloat("radius", "", &radius)) {
         Com_Error(1, va("radius not specified for trigger_radius at (%g %g %g)",
-            *(float *)(e + 0x138), *(float *)(e + 0x13c), *(float *)(e + 0x140)));
+            ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2]));
     }
 
-    *(byte *)(e + 0x166) = 1;
+    ent->handler = 1;
 
     radius += 64.0f;
-    *(float *)(e + 0x104) = -radius;
-    *(float *)(e + 0x108) = -radius;
-    *(float *)(e + 0x10c) = -100000.0f;
-    *(float *)(e + 0x110) = radius;
-    *(float *)(e + 0x114) = radius;
-    *(float *)(e + 0x118) = 100000.0f;
+    ent->r.mins[0] = -radius;
+    ent->r.mins[1] = -radius;
+    ent->r.mins[2] = -100000.0f;
+    ent->r.maxs[0] = radius;
+    ent->r.maxs[1] = radius;
+    ent->r.maxs[2] = 100000.0f;
 
-    *(byte *)(e + 0xf2) = 0x41;
+    ent->r.svFlags = 0x41;
 
-    level = level_ptr;
-    if (*(byte *)(level + 0x1348) != 0) {
+    level = LEVEL;
+    if (level->spawnVar.spawnVarsValid != 0) {
         if (G_SpawnFloat("wait", "", &wait) && !(0.0f < wait)) {
-            *(int *)(e + 0x170) |= 0x10;
+            ent->spawnflags |= 0x10;
         }
     }
 
-    spawnflags = *(int *)(e + 0x170);
-    *(int *)(e + 0x11c) = 0;
+    spawnflags = ent->spawnflags;
+    ent->r.contents = 0;
     if (!(spawnflags & 8))
-        *(int *)(e + 0x11c) = 0x40000000;
+        ent->r.contents = 0x40000000;
     if (spawnflags & 1)
-        *(int *)(e + 0x11c) |= 0x40000;
+        ent->r.contents |= 0x40000;
     if (spawnflags & 2)
-        *(int *)(e + 0x11c) |= 0x80000;
+        ent->r.contents |= 0x80000;
     if (spawnflags & 4)
-        *(int *)(e + 0x11c) |= 0x100000;
+        ent->r.contents |= 0x100000;
 
     SV_LinkEntity(ent);
 }
@@ -300,26 +293,25 @@ void SP_trigger_disk(gentity_t *ent)
 /* line 282 */
 void SP_trigger_once(gentity_t *ent)
 {
-    byte *e = (byte *)ent;
     int spawnflags;
 
-    *(byte *)(e + 0x166) = 1;
-    *(int *)(e + 0x170) |= 0x10;
+    ent->handler = 1;
+    ent->spawnflags |= 0x10;
 
     SV_SetBrushModel(ent);
-    *(byte *)(e + 0xf2) = 1;
-    *(int *)(e + 8) |= 1;
+    ent->r.svFlags = 1;
+    ent->s.eFlags |= 1;
 
-    *(int *)(e + 0x11c) = 0;
-    spawnflags = *(int *)(e + 0x170);
+    ent->r.contents = 0;
+    spawnflags = ent->spawnflags;
     if (!(spawnflags & 8))
-        *(int *)(e + 0x11c) = 0x40000000;
+        ent->r.contents = 0x40000000;
     if (spawnflags & 1)
-        *(int *)(e + 0x11c) |= 0x40000;
+        ent->r.contents |= 0x40000;
     if (spawnflags & 2)
-        *(int *)(e + 0x11c) |= 0x80000;
+        ent->r.contents |= 0x80000;
     if (spawnflags & 4)
-        *(int *)(e + 0x11c) |= 0x100000;
+        ent->r.contents |= 0x100000;
 
     SV_LinkEntity(ent);
 }
@@ -327,62 +319,56 @@ void SP_trigger_once(gentity_t *ent)
 /* line 89 */
 void Touch_Multi(gentity_t *self, gentity_t *other, qboolean bTouched)
 {
-    byte *s = (byte *)self;
-
     G_Trigger(self, other);
 
-    if (*(int *)(s + 0x170) & 0x10)
+    if (self->spawnflags & 0x10)
         G_FreeEntityDelay(self);
 }
 
 /* line 195 */
 void hurt_touch(gentity_t *self, gentity_t *other, qboolean bTouched)
 {
-    byte *s = (byte *)self;
-    byte *o = (byte *)other;
-    byte *level;
+    level_locals_t *level;
     int spawnflags;
     int dflags;
 
-    if (*(byte *)(o + 0x161) == 0)
+    if (other->takedamage == 0)
         return;
 
-    level = level_ptr;
-    if (*(int *)(s + 0x1b0) > *(int *)(level + 0x1ec))
+    level = LEVEL;
+    if (self->trigger.timestamp > level->time)
         return;
 
     G_Trigger(self, other);
 
-    spawnflags = *(int *)(s + 0x170);
+    spawnflags = self->spawnflags;
 
     if (spawnflags & 0x10) {
-        *(int *)(s + 0x1b0) = *(int *)(level_ptr + 0x1ec) + 1000;
+        self->trigger.timestamp = LEVEL->time + 1000;
     } else {
-        *(int *)(s + 0x1b0) = *(int *)(level_ptr + 0x1ec) + 50;
+        self->trigger.timestamp = LEVEL->time + 50;
     }
 
     dflags = (spawnflags & 8) ? 0x10 : 0;
 
-    G_Damage(other, self, self, NULL, NULL, *(int *)(s + 0x19c), dflags, 0xd, 0, 0);
+    G_Damage(other, self, self, NULL, NULL, self->damage, dflags, 0xd, 0, 0);
 
-    if (*(int *)(s + 0x170) & 0x20)
-        *(byte *)(s + 0x166) = 2;
+    if (self->spawnflags & 0x20)
+        self->handler = 2;
 }
 
 /* line 388 */
 void Activate_trigger_damage(gentity_t *pEnt, gentity_t *pOther, int iDamage, int iMOD)
 {
-    byte *e = (byte *)pEnt;
-    byte *o = (byte *)pOther;
     int threshold;
     int spawnflags;
     int accumulate;
 
-    threshold = *(int *)(e + 0x1a8);
+    threshold = pEnt->trigger.threshold;
     if (threshold > 0 && threshold > iDamage)
         return;
 
-    spawnflags = *(int *)(e + 0x170);
+    spawnflags = pEnt->spawnflags;
 
     /* Check damage type filters */
     if (spawnflags & 1) {
@@ -410,17 +396,17 @@ void Activate_trigger_damage(gentity_t *pEnt, gentity_t *pOther, int iDamage, in
     }
 
     /* Check accumulate */
-    accumulate = *(int *)(e + 0x1ac);
+    accumulate = pEnt->trigger.accumulate;
     if (accumulate != 0) {
-        if (accumulate > 0x7d00 - *(int *)(e + 0x194))
+        if (accumulate > 0x7d00 - pEnt->health)
             return;
     }
 
     if (iMOD != -1)
         G_Trigger(pEnt, pOther);
 
-    spawnflags = *(int *)(e + 0x170);
-    *(int *)(e + 0x194) = 0x7d00;
+    spawnflags = pEnt->spawnflags;
+    pEnt->health = 0x7d00;
 
     if (spawnflags & 0x200)
         G_FreeEntityDelay(pEnt);
@@ -433,9 +419,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
     int iTouch[1024];
     int iNum;
     int i;
-    byte *pHit;
-    byte *g_entities;
-    byte *g_scr_data;
+    gentity_t *pHit;
 
     vMins[0] = vStart[0]; vMins[1] = vStart[1]; vMins[2] = vStart[2];
     vMaxs[0] = vStart[0]; vMaxs[1] = vStart[1]; vMaxs[2] = vStart[2];
@@ -446,29 +430,27 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
     if (iNum <= 0)
         return;
 
-    g_entities = g_entities_ptr;
-
     for (i = 0; i < iNum; i++) {
-        pHit = g_entities + iTouch[i] * ENTITY_STRIDE;
+        pHit = &G_ENTITIES[iTouch[i]];
 
-        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(imp_scr_const + 0x5a))
+        if (pHit->classname != *(unsigned short *)(imp_scr_const + 0x5a)) /* unknown scr_const offset 0x5a */
             continue;
 
-        if (!(*(byte *)(pHit + 0x175) & 0x40))
+        if (!(pHit->flags & 0x4000)) /* flags bit 14 */
             continue;
 
         if (!SV_SightTraceToEntity(vStart, (vec_t *)g_trace_zero_ptr, (vec_t *)g_trace_zero_ptr,
-                                   vEnd, *(int *)pHit, -1))
+                                   vEnd, pHit->s.number, -1))
             continue;
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(imp_scr_const + 8), 2);
+        Scr_Notify(pHit, *(unsigned short *)(imp_scr_const + 8), 2); /* unknown scr_const offset 0x08 */
 
-        Activate_trigger_damage((gentity_t *)pHit, pActivator, iDamage, iMOD);
+        Activate_trigger_damage(pHit, pActivator, iDamage, iMOD);
 
-        if (*(int *)(pHit + 0x1ac) == 0)
-            *(int *)(pHit + 0x194) = 0x7d00;
+        if (pHit->trigger.accumulate == 0)
+            pHit->health = 0x7d00;
     }
 }
 
@@ -479,8 +461,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
     int iTouch[1024];
     int iNum;
     int i;
-    byte *pHit;
-    byte *g_entities;
+    gentity_t *pHit;
 
     vMins[0] = vStart[0]; vMins[1] = vStart[1]; vMins[2] = vStart[2];
     vMaxs[0] = vStart[0]; vMaxs[1] = vStart[1]; vMaxs[2] = vStart[2];
@@ -491,26 +472,24 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
     if (iNum <= 0)
         return;
 
-    g_entities = g_entities_ptr;
-
     for (i = 0; i < iNum; i++) {
-        pHit = g_entities + iTouch[i] * ENTITY_STRIDE;
+        pHit = &G_ENTITIES[iTouch[i]];
 
-        if (*(unsigned short *)(pHit + 0x168) != *(unsigned short *)(imp_scr_const + 0x5a))
+        if (pHit->classname != *(unsigned short *)(imp_scr_const + 0x5a)) /* unknown scr_const offset 0x5a */
             continue;
 
         if (!SV_SightTraceToEntity(vStart, (vec_t *)g_trace_zero_ptr, (vec_t *)g_trace_zero_ptr,
-                                   vEnd, *(int *)pHit, -1))
+                                   vEnd, pHit->s.number, -1))
             continue;
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify((gentity_t *)pHit, *(unsigned short *)(imp_scr_const + 8), 2);
+        Scr_Notify(pHit, *(unsigned short *)(imp_scr_const + 8), 2); /* unknown scr_const offset 0x08 */
 
-        Activate_trigger_damage((gentity_t *)pHit, pActivator, iDamage, iMOD);
+        Activate_trigger_damage(pHit, pActivator, iDamage, iMOD);
 
-        if (*(int *)(pHit + 0x1ac) == 0) {
-            *(int *)(pHit + 0x194) = 0x7d00;
+        if (pHit->trigger.accumulate == 0) {
+            pHit->health = 0x7d00;
         }
     }
 }
@@ -518,29 +497,23 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
 /* line 449 */
 void Die_trigger_damage(gentity_t *pSelf, gentity_t *pInflictor, gentity_t *pAttacker, int iDamage, int iMod, int iWeapon, const vec_t *vDir, const hitLocation_t hitLoc, int timeOffset)
 {
-    byte *s = (byte *)pSelf;
-
     Activate_trigger_damage(pSelf, pAttacker, iDamage, iMod);
 
-    if (*(int *)(s + 0x1ac) == 0)
-        *(int *)(s + 0x194) = 0x7d00;
+    if (pSelf->trigger.accumulate == 0)
+        pSelf->health = 0x7d00;
 }
 
 /* line 434 */
 void Pain_trigger_damage(gentity_t *pSelf, gentity_t *pAttacker, int iDamage, const vec_t *vPoint, const int iMod, const vec_t *vDir, const hitLocation_t hitLoc)
 {
-    byte *s = (byte *)pSelf;
-
     Activate_trigger_damage(pSelf, pAttacker, iDamage, iMod);
 
-    if (*(int *)(s + 0x1ac) == 0)
-        *(int *)(s + 0x194) = 0x7d00;
+    if (pSelf->trigger.accumulate == 0)
+        pSelf->health = 0x7d00;
 }
 
 /* line 423 */
 void Use_trigger_damage(gentity_t *pEnt, gentity_t *pOther, gentity_t *pActivator)
 {
-    byte *e = (byte *)pEnt;
-
-    Activate_trigger_damage(pEnt, pOther, *(int *)(e + 0x1ac) + 1, -1);
+    Activate_trigger_damage(pEnt, pOther, pEnt->trigger.accumulate + 1, -1);
 }

@@ -284,36 +284,35 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
     upScale = r2 * sinVal * fAimOffset;
 
     /* dir = forward * 16 */
-    dir[0] = *(float *)((byte *)wp + 0) * 16.0f;
-    dir[1] = *(float *)((byte *)wp + 4) * 16.0f;
-    dir[2] = *(float *)((byte *)wp + 8) * 16.0f;
+    dir[0] = wp->forward[0] * 16.0f;
+    dir[1] = wp->forward[1] * 16.0f;
+    dir[2] = wp->forward[2] * 16.0f;
 
     /* dir += right * rightScale */
-    dir[0] += rightScale * *(float *)((byte *)wp + 0xc);
-    dir[1] += rightScale * *(float *)((byte *)wp + 0x10);
-    dir[2] += rightScale * *(float *)((byte *)wp + 0x14);
+    dir[0] += rightScale * wp->right[0];
+    dir[1] += rightScale * wp->right[1];
+    dir[2] += rightScale * wp->right[2];
 
     /* dir += up * upScale */
-    dir[0] += upScale * *(float *)((byte *)wp + 0x18);
-    dir[1] += upScale * *(float *)((byte *)wp + 0x1c);
-    dir[2] += upScale * *(float *)((byte *)wp + 0x20);
+    dir[0] += upScale * wp->up[0];
+    dir[1] += upScale * wp->up[1];
+    dir[2] += upScale * wp->up[2];
 
     Vec3Normalize(dir);
 
     /* Copy launch position */
-    launchpos[0] = *(float *)((byte *)wp + 0x24);
-    launchpos[1] = *(float *)((byte *)wp + 0x28);
-    launchpos[2] = *(float *)((byte *)wp + 0x2c);
+    launchpos[0] = wp->muzzleTrace[0];
+    launchpos[1] = wp->muzzleTrace[1];
+    launchpos[2] = wp->muzzleTrace[2];
 
     missile = (gentity_t *)fire_rocket((gentity_t *)ent, launchpos, dir);
 
     /* Kick back */
-    client = *(gclient_t **)((byte *)ent + 0x158);
+    client = ((gentity_t *)ent)->client;
     if (client) {
-        float *vel = (float *)((byte *)client + 0x20);
-        vel[0] += *(float *)((byte *)wp + 0) * -64.0f;
-        vel[1] += *(float *)((byte *)wp + 4) * -64.0f;
-        vel[2] += *(float *)((byte *)wp + 8) * -64.0f;
+        client->ps.velocity[0] += wp->forward[0] * -64.0f;
+        client->ps.velocity[1] += wp->forward[1] * -64.0f;
+        client->ps.velocity[2] += wp->forward[2] * -64.0f;
     }
 }
 #endif
@@ -410,34 +409,33 @@ int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms 
     void *weapDef;
 
     /* Get weapon def for projectile speed/up-velocity */
-    weapDef = *(void **)((byte *)wp + 0x3c);
-    scale = (float)*(int *)((byte *)weapDef + 0x384);
-
+    weapDef = (void *)wp->weapDef;
+    scale = (float)*(int *)((byte *)weapDef + 0x384); /* weapDef->iProjectileSpeed */
     /* vTossVel = forward * scale */
-    vTossVel[0] = *(float *)((byte *)wp + 0) * scale;
-    vTossVel[1] = *(float *)((byte *)wp + 4) * scale;
-    vTossVel[2] = *(float *)((byte *)wp + 8) * scale;
+    vTossVel[0] = wp->forward[0] * scale;
+    vTossVel[1] = wp->forward[1] * scale;
+    vTossVel[2] = wp->forward[2] * scale;
 
     /* Add upward velocity component */
-    vTossVel[2] += (float)*(int *)((byte *)weapDef + 0x388);
+    vTossVel[2] += (float)*(int *)((byte *)weapDef + 0x388); /* weapDef->iProjectileSpeedUp */
 
     /* Get fuse time */
-    fuseTime = *(int *)((byte *)weapDef + 0x248);
+    fuseTime = *(int *)((byte *)weapDef + 0x248); /* weapDef->iFuseTime */
 
     /* Fire the grenade */
-    m = (gentity_t *)fire_grenade((gentity_t *)ent, (float *)((byte *)wp + 0x24), vTossVel, grenType, fuseTime);
+    m = (gentity_t *)fire_grenade((gentity_t *)ent, wp->muzzleTrace, vTossVel, grenType, fuseTime);
 
     /* Normalize toss velocity */
     Vec3Normalize(vTossVel);
 
     /* Add velocity dot product to missile origin */
-    client = *(gclient_t **)((byte *)ent + 0x158);
-    forward = (float *)((byte *)client + 0x20);
+    client = ((gentity_t *)ent)->client;
+    forward = client->ps.velocity;
     dot = vTossVel[0] * forward[0] + vTossVel[1] * forward[1] + vTossVel[2] * forward[2];
 
-    *(float *)((byte *)m + 0x24) += vTossVel[0] * dot;
-    *(float *)((byte *)m + 0x28) += vTossVel[1] * dot;
-    *(float *)((byte *)m + 0x2c) += vTossVel[2] * dot;
+    m->s.pos.trDelta[0] += vTossVel[0] * dot;
+    m->s.pos.trDelta[1] += vTossVel[1] * dot;
+    m->s.pos.trDelta[2] += vTossVel[2] * dot;
 
     return (int)m;
 }
@@ -514,20 +512,20 @@ void G_UseOffHand(gentity_s (*ent)[16]) {
     int weaponIndex;
     void *weapDef;
 
-    client = *(gclient_t **)((byte *)ent + 0x158);
+    client = ((gentity_t *)ent)->client;
 
     /* Get current off-hand weapon index */
-    weaponIndex = *(int *)((byte *)client + 0xd0);
+    weaponIndex = client->ps.offHandIndex;
     weapDef = BG_GetWeaponDef(weaponIndex);
 
     /* Get view angles from client */
-    viewang[0] = *(float *)((byte *)client + 0xe8);
-    viewang[1] = *(float *)((byte *)client + 0xec);
-    viewang[2] = *(float *)((byte *)client + 0xf0);
+    viewang[0] = client->ps.viewangles[0];
+    viewang[1] = client->ps.viewangles[1];
+    viewang[2] = client->ps.viewangles[2];
 
     /* Override pitch/yaw with view command angles */
-    viewang[0] = *(float *)((byte *)client + 0x27d8);
-    viewang[1] = *(float *)((byte *)client + 0x27dc);
+    viewang[0] = *(float *)((byte *)client + 0x27d8); /* unknown: cmd viewangles override pitch */
+    viewang[1] = *(float *)((byte *)client + 0x27dc); /* unknown: cmd viewangles override yaw */
 
     /* Build direction vectors */
     AngleVectors(viewang, (float *)&wp, right, up);
@@ -536,7 +534,7 @@ void G_UseOffHand(gentity_s (*ent)[16]) {
     G_GetPlayerViewOrigin((gentity_t *)ent, muzzlePoint);
 
     /* Fire grenade launcher with off-hand weapon */
-    weapon_grenadelauncher_fire(ent, *(int *)((byte *)client + 0xd0), &wp);
+    weapon_grenadelauncher_fire(ent, client->ps.offHandIndex, &wp);
 }
 #endif
 
@@ -732,10 +730,10 @@ static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float
         numTraces = 1;
     }
 
-    origin = (float *)((byte *)wp + 0x24);
-    forward = (float *)((byte *)wp + 0);
-    right = (float *)((byte *)wp + 0xc);
-    up = (float *)((byte *)wp + 0x18);
+    origin = wp->muzzleTrace;
+    forward = wp->forward;
+    right = wp->right;
+    up = wp->up;
 
     for (traceIndex = 0; traceIndex < numTraces; traceIndex++) {
         /* end = origin + forward * range */
@@ -756,10 +754,10 @@ static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float
         end[2] += up[2] * heightScale;
 
         /* Do the trace */
-        G_LocationalTrace(trace, origin, end, *(int *)ent, 0x2802831, (unsigned char *)imp_bulletPriorityMap);
+        G_LocationalTrace(trace, origin, end, ((gentity_t *)ent)->s.number, 0x2802831, (unsigned char *)imp_bulletPriorityMap);
 
         /* Compute hit position via interpolation */
-        fraction = *(float *)trace;
+        fraction = trace->fraction;
         endPos[0] = origin[0] + (end[0] - origin[0]) * fraction;
         endPos[1] = origin[1] + (end[1] - origin[1]) * fraction;
         endPos[2] = origin[2] + (end[2] - origin[2]) * fraction;
@@ -770,9 +768,9 @@ static Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float
         }
 
         /* Check for entity hit (not pass-through and fraction < 1.0) */
-        if (*(int *)((byte *)trace + 0x10) & 0x10) {
+        if (trace->surfaceFlags & 0x10) {
             /* startsolid - skip */
-        } else if (*(float *)trace == 1.0f) {
+        } else if (trace->fraction == 1.0f) {
             /* Complete miss - skip */
         } else {
             return 1;
@@ -2083,18 +2081,18 @@ void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float widt
     int weaponIndex;
 
     /* Get melee damage from weapon def */
-    weaponIndex = *(int *)((byte *)ent + 0xc8);
-    damage = *(int *)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1f4);
+    weaponIndex = ((gentity_t *)ent)->s.weapon;
+    damage = *(int *)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1f4); /* weapDef->iMeleeDamage */
 
     if (!Melee_Trace(ent, wp, damage, range, width, height, &tr, endpos))
         return;
 
     /* Get trace entity */
-    traceEntNum = *(unsigned short *)((byte *)&tr + 0x20);
+    traceEntNum = tr.entityNum;
     traceEnt = (gentity_t *)((byte *)imp_g_entities + traceEntNum * 0x230);
 
     /* Create temp entity for melee effect */
-    if (*(gclient_t **)((byte *)traceEnt + 0x158) != NULL) {
+    if (traceEnt->client != NULL) {
         /* Hit a player - blood effect */
         tent = (gentity_t *)G_TempEntity(endpos, 0xad);
     } else {
@@ -2103,28 +2101,28 @@ void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float widt
     }
 
     /* Set tent fields */
-    *(int *)((byte *)tent + 0x74) = traceEntNum;
+    tent->s.otherEntityNum = traceEntNum;
 
     /* DirToByte from trace normal */
     {
-        int dirByte = DirToByte((float *)((byte *)&tr + 0x14));
-        *(int *)((byte *)tent + 0xa0) = (unsigned char)dirByte;
+        int dirByte = DirToByte(tr.normal);
+        tent->s.eventParm = (unsigned char)dirByte;
     }
 
     /* Copy weapon index */
-    *(int *)((byte *)tent + 0xc8) = *(int *)((byte *)ent + 0xc8);
+    tent->s.weapon = ((gentity_t *)ent)->s.weapon;
 
     /* Check if hit world entity */
     if (traceEntNum == 0x3fe)
         return;
 
     /* Check if trace entity takes damage */
-    if (!*(byte *)((byte *)traceEnt + 0x161))
+    if (!traceEnt->takedamage)
         return;
 
     /* Apply damage */
     {
-        int locBits = *(unsigned short *)((byte *)&tr + 0x24);
+        int locBits = tr.partGroup;
         int randVal = rand();
         int dmg = damage + (randVal % 5);
         G_Damage(traceEnt, (gentity_t *)ent, (gentity_t *)ent, wp, endpos, dmg, 7, 0, locBits, 0);

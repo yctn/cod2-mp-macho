@@ -109,11 +109,11 @@ void ClientBegin(int clientNum)
     gentity_s *ent = G_EntityForNum(clientNum);
 
     client->sess.connected = 2; /* CON_CONNECTED */
-    *(int *)((byte *)client + 4) = 4; /* clientMOTDPending — no struct field yet */
+    client->ps.pm_type = 4; /* PM_INTERMISSION */
 
     CalculateRanks();
 
-    Scr_Notify(ent, *(unsigned short *)((byte *)imp_scr_const + 0x6c), 0);
+    Scr_Notify(ent, ((scr_const_t *)imp_scr_const)->begin, 0);
 }
 
 /* line 596 */
@@ -127,7 +127,7 @@ void ClientDisconnect(int clientNum)
     if (Scr_IsSystemActive(1)) {
         Scr_AddString("disconnect");
         Scr_AddString("^1teleport");
-        Scr_Notify(ent, *(unsigned short *)((byte *)imp_scr_const + 0x70), 2);
+        Scr_Notify(ent, ((scr_const_t *)imp_scr_const)->menuresponse, 2);
     }
 
     /* Stop other players following this client */
@@ -140,7 +140,7 @@ void ClientDisconnect(int clientNum)
                 continue;
             if (otherClient->sess.sessionState != 2) /* SPECTATOR */
                 continue;
-            if (*(int *)((byte *)otherClient + 0x27a8) != clientNum) /* spectatorClient */
+            if (otherClient->spectatorClient != clientNum)
                 continue;
 
             StopFollowing(otherEnt);
@@ -156,7 +156,7 @@ void ClientDisconnect(int clientNum)
     G_FreeEntity(ent);
 
     client->sess.connected = 0; /* CON_DISCONNECTED */
-    memset(client + 0x2748, 0, 0x5c);
+    memset(&client->sess.cs, 0, sizeof(clientState_t));
 
     CalculateRanks();
 }
@@ -164,19 +164,18 @@ void ClientDisconnect(int clientNum)
 /* line 651 */
 int G_GetNonPVSFriendlyInfo(gentity_t *pSelf, vec_t *vPosition, int iLastUpdateEnt)
 {
-    byte *selfClient;
+    gclient_s *selfClient;
     int team;
     int iBaseEnt;
     int iEntCount;
     int ent_num;
-    byte *ents;
-    byte *pEnt;
-    byte *pEntClient;
+    gentity_s *pEnt;
+    gclient_s *pEntClient;
     int dx, dy;
     float scaleX, scaleY, ratioX, ratioY;
 
-    selfClient = *(byte **)((byte *)pSelf + 0x158);
-    team = *(int *)(selfClient + 0x274c);
+    selfClient = pSelf->client;
+    team = selfClient->sess.cs.team;
 
     if (team == 0 || team == 3)
         return 0;
@@ -186,40 +185,38 @@ int G_GetNonPVSFriendlyInfo(gentity_t *pSelf, vec_t *vPosition, int iLastUpdateE
     else
         iBaseEnt = iLastUpdateEnt + 1;
 
-    ents = (byte *)g_entities_ptr;
-
     for (iEntCount = 0; iEntCount < 64; iEntCount++) {
         ent_num = (iBaseEnt + iEntCount) % 64;
         if (ent_num < 0)
             ent_num += 64;
 
-        pEnt = ents + ent_num * GENTITY_STRIDE;
+        pEnt = G_EntityForNum(ent_num);
 
-        if (*(byte *)(pEnt + 0xfc) == 0)
+        if (pEnt->r.inuse == 0)
             continue;
 
-        pEntClient = *(byte **)(pEnt + 0x158);
+        pEntClient = pEnt->client;
         if (pEntClient == NULL)
             continue;
 
-        if (*(int *)(pEntClient + 0x26a8) != 0)
+        if (pEntClient->sess.sessionState != 0)
             continue;
 
-        if (*(int *)(pEntClient + 0x274c) != team)
+        if (pEntClient->sess.cs.team != team)
             continue;
 
-        if ((gentity_t *)pEnt == pSelf)
+        if (pEnt == pSelf)
             continue;
 
         /* Check if in snapshot */
-        if (SV_inSnapshot(vPosition, *(int *)pEnt))
+        if (SV_inSnapshot(vPosition, pEnt->s.number))
             continue;
 
         /* Calculate relative position */
         {
-            int result = *(int *)pEnt;
-            float ex = *(float *)(pEnt + 0x138);
-            float ey = *(float *)(pEnt + 0x13c);
+            int result = pEnt->s.number;
+            float ex = pEnt->r.currentOrigin[0];
+            float ey = pEnt->r.currentOrigin[1];
 
             dx = (int)(ex - vPosition[0] + 0.5f);
             dy = (int)(ey - vPosition[1] + 0.5f);
@@ -288,7 +285,7 @@ int G_GetNonPVSFriendlyInfo(gentity_t *pSelf, vec_t *vPosition, int iLastUpdateE
             }
             result &= 0xffffff;
             {
-                int yawByte = (int)(*(float *)(pEnt + 0x148) * 0.7111111283302307f);
+                int yawByte = (int)(pEnt->r.currentAngles[1] * 0.7111111283302307f);
                 result |= (yawByte << 24);
             }
 
@@ -302,30 +299,27 @@ int G_GetNonPVSFriendlyInfo(gentity_t *pSelf, vec_t *vPosition, int iLastUpdateE
 /* line 748 */
 void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 {
-    byte *talkerClient;
-    byte *ents;
-    byte *otherEnt;
-    byte *otherClient;
+    gclient_s *talkerClient;
+    gentity_s *otherEnt;
+    gclient_s *otherClient;
     int otherPlayer;
     int talkerTeam;
 
-    talkerClient = *(byte **)((byte *)talker + 0x158);
+    talkerClient = talker->client;
 
     /* Set voice chat timestamp */
     {
-        byte *level = (byte *)CLIENT_BASE;
-        *(int *)(talkerClient + 0x2808) = *(int *)(level + 0x1ec);
+        level_locals_t *lev = G_Level();
+        talkerClient->lastVoiceTime = lev->time;
     }
 
-    ents = (byte *)g_entities_ptr;
-
     for (otherPlayer = 0; otherPlayer < 64; otherPlayer++) {
-        otherEnt = ents + otherPlayer * GENTITY_STRIDE;
+        otherEnt = G_EntityForNum(otherPlayer);
 
-        if (*(byte *)(otherEnt + 0xfc) == 0)
+        if (otherEnt->r.inuse == 0)
             continue;
 
-        otherClient = *(byte **)(otherEnt + 0x158);
+        otherClient = otherEnt->client;
         if (otherClient == NULL)
             continue;
 
@@ -337,25 +331,25 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
                 goto check_team;
         }
 
-        if (!OnSameTeam((gentity_t *)((byte *)talker), (gentity_t *)otherEnt))
+        if (!OnSameTeam(talker, (gentity_t *)otherEnt))
         {
-            talkerClient = *(byte **)((byte *)talker + 0x158);
-            talkerTeam = *(int *)(talkerClient + 0x274c);
+            talkerClient = talker->client;
+            talkerTeam = talkerClient->sess.cs.team;
             if (talkerTeam != 0) {
                 continue;
             }
         }
 
-        talkerClient = *(byte **)((byte *)talker + 0x158);
+        talkerClient = talker->client;
     check_team:
         /* Check if same team or spectator */
         {
-            int otherSessTeam = *(int *)(*(byte **)(otherEnt + 0x158) + 0x26a8);
-            int talkerSessTeam = *(int *)(talkerClient + 0x26a8);
-            if (otherSessTeam == talkerSessTeam)
+            int otherSessState = otherEnt->client->sess.sessionState;
+            int talkerSessState = talkerClient->sess.sessionState;
+            if (otherSessState == talkerSessState)
                 goto check_can_send;
 
-            if (otherSessTeam - 1 == 0 || talkerSessTeam - 1 == 0) {
+            if (otherSessState - 1 == 0 || talkerSessState - 1 == 0) {
                 byte *deadChatDvar = *(byte **)g_deadChat_ptr;
                 deadChatDvar = *(byte **)deadChatDvar;
                 if (*(byte *)(deadChatDvar + 8) == 0)
@@ -365,20 +359,20 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 
     check_can_send:
         /* Don't send to self unless voiceChatsAllowed */
-        if ((gentity_t *)otherEnt == talker) {
+        if (otherEnt == (gentity_s *)talker) {
             byte *dvar = *(byte **)g_voiceChatsAllowed_ptr;
             dvar = *(byte **)dvar;
             if (*(byte *)(dvar + 8) == 0)
                 continue;
         }
 
-        if (SV_ClientHasClientMuted(otherPlayer, *(int *)talker))
+        if (SV_ClientHasClientMuted(otherPlayer, talker->s.number))
             continue;
 
         if (!SV_ClientWantsVoiceData(otherPlayer))
             continue;
 
-        SV_QueueVoicePacket(*(int *)talker, otherPlayer, voicePacket);
+        SV_QueueVoicePacket(talker->s.number, otherPlayer, voicePacket);
     }
 }
 
@@ -386,7 +380,7 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 void SetClientViewAngle(gentity_t *ent, const vec_t *angle)
 {
     vec3_t newAngle;
-    byte *client;
+    gclient_s *client;
     int i;
     float delta;
 
@@ -394,191 +388,179 @@ void SetClientViewAngle(gentity_t *ent, const vec_t *angle)
     newAngle[1] = angle[1];
     newAngle[2] = angle[2];
 
-    client = *(byte **)((byte *)ent + 0x158);
+    client = ent->client;
 
-    if ((*(byte *)(client + 0xc) & 1) == 0 || (*(int *)(client + 0xa0) & 0x300) != 0) {
+    if ((*(byte *)(&client->ps.pm_flags) & 1) == 0 || (client->ps.eFlags & 0x300) != 0) {
         /* Pitch angle clamping vs vehicle turret limits */
-        delta = AngleNormalize180(AngleDelta(*(float *)(client + 0x584), newAngle[1]));
+        delta = AngleNormalize180(AngleDelta(client->ps.proneDirection, newAngle[1]));
 
         if (delta > 45.0f) {
             float overflow = delta - 45.0f;
-            client = *(byte **)((byte *)ent + 0x158);
-            *(int *)(client + 0x58) += (int)(overflow * 182.04444885253906f) & 0xffff;
+            client = ent->client;
+            client->ps.delta_angles[1] += (int)(overflow * 182.04444885253906f) & 0xffff;
             if (overflow > 0.0f)
-                newAngle[1] = AngleNormalize360(*(float *)(client + 0x584) - 45.0f);
+                newAngle[1] = AngleNormalize360(client->ps.proneDirection - 45.0f);
             else
-                newAngle[1] = AngleNormalize360(45.0f + *(float *)(client + 0x584));
+                newAngle[1] = AngleNormalize360(45.0f + client->ps.proneDirection);
         } else if (delta < -45.0f) {
             float overflow = delta + 45.0f;
-            client = *(byte **)((byte *)ent + 0x158);
-            *(int *)(client + 0x58) += (int)(overflow * 182.04444885253906f) & 0xffff;
+            client = ent->client;
+            client->ps.delta_angles[1] += (int)(overflow * 182.04444885253906f) & 0xffff;
             if (overflow > 0.0f)
-                newAngle[1] = AngleNormalize360(*(float *)(client + 0x584) - 45.0f);
+                newAngle[1] = AngleNormalize360(client->ps.proneDirection - 45.0f);
             else
-                newAngle[1] = AngleNormalize360(45.0f + *(float *)(client + 0x584));
+                newAngle[1] = AngleNormalize360(45.0f + client->ps.proneDirection);
         }
 
         /* Yaw angle clamping */
-        client = *(byte **)((byte *)ent + 0x158);
-        delta = AngleNormalize180(AngleDelta(*(float *)(client + 0x58c), newAngle[0]));
+        client = ent->client;
+        delta = AngleNormalize180(AngleDelta(client->ps.proneTorsoPitch, newAngle[0]));
 
         if (delta > 45.0f) {
             float overflow = delta - 45.0f;
-            client = *(byte **)((byte *)ent + 0x158);
-            *(int *)(client + 0x54) += (int)(overflow * 182.04444885253906f) & 0xffff;
+            client = ent->client;
+            client->ps.delta_angles[0] += (int)(overflow * 182.04444885253906f) & 0xffff;
             if (overflow > 0.0f)
-                newAngle[0] = AngleNormalize180(*(float *)(client + 0x58c) - 45.0f);
+                newAngle[0] = AngleNormalize180(client->ps.proneTorsoPitch - 45.0f);
             else
-                newAngle[0] = AngleNormalize180(15.0f + *(float *)(client + 0x58c));
+                newAngle[0] = AngleNormalize180(15.0f + client->ps.proneTorsoPitch);
         } else if (delta < -15.0f) {
             float overflow = delta + 15.0f;
-            client = *(byte **)((byte *)ent + 0x158);
-            *(int *)(client + 0x54) += (int)(overflow * 182.04444885253906f) & 0xffff;
+            client = ent->client;
+            client->ps.delta_angles[0] += (int)(overflow * 182.04444885253906f) & 0xffff;
             if (overflow > 0.0f)
-                newAngle[0] = AngleNormalize180(*(float *)(client + 0x58c) - 45.0f);
+                newAngle[0] = AngleNormalize180(client->ps.proneTorsoPitch - 45.0f);
             else
-                newAngle[0] = AngleNormalize180(15.0f + *(float *)(client + 0x58c));
+                newAngle[0] = AngleNormalize180(15.0f + client->ps.proneTorsoPitch);
         }
 
-        client = *(byte **)((byte *)ent + 0x158);
+        client = ent->client;
     }
 
     /* Set delta angles and copy angles */
     for (i = 0; i < 3; i++) {
         int cmdAngle = (int)(newAngle[i] * 182.04444885253906f) & 0xffff;
-        *(int *)(client + 0x54 + i * 4) = cmdAngle - *(int *)(client + 0x26d4 + i * 4);
-        client = *(byte **)((byte *)ent + 0x158);
+        client->ps.delta_angles[i] = cmdAngle - client->sess.cmd.angles[i];
+        client = ent->client;
     }
 
-    /* Copy to ent->s.apos + ent angles */
-    *(float *)((byte *)ent + 0x144) = newAngle[0];
-    *(float *)((byte *)ent + 0x148) = newAngle[1];
-    *(float *)((byte *)ent + 0x14c) = newAngle[2];
+    /* Copy to ent->r.currentAngles */
+    ent->r.currentAngles[0] = newAngle[0];
+    ent->r.currentAngles[1] = newAngle[1];
+    ent->r.currentAngles[2] = newAngle[2];
 
-    client = *(byte **)((byte *)ent + 0x158);
-    *(float *)(client + 0xe8) = newAngle[0];
-    *(float *)(client + 0xec) = newAngle[1];
-    *(float *)(client + 0xf0) = newAngle[2];
+    client = ent->client;
+    client->ps.viewangles[0] = newAngle[0];
+    client->ps.viewangles[1] = newAngle[1];
+    client->ps.viewangles[2] = newAngle[2];
 }
 
 /* line 452 */
 void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_angles)
 {
-    byte *client;
-    byte *level;
-    byte *ents;
+    gclient_s *client;
+    level_locals_t *lev;
     int clientNum;
     int iFlags;
     int savedSpawnCount;
     byte savedSess[0x100];
-    byte *scr_data;
+    scr_const_t *scr_data;
 
-    ents = (byte *)g_entities_ptr;
-    clientNum = ((byte *)ent - ents) / GENTITY_STRIDE;
+    clientNum = ent->s.number;
 
-    client = *(byte **)((byte *)ent + 0x158);
-    level = (byte *)CLIENT_BASE;
+    client = ent->client;
+    lev = G_Level();
 
     /* Check if player is in turret */
-    if (*(byte *)(client + 0xe) & 0x80) {
-        if (*(int *)(client + 0xa0) & 0x300) {
+    if (*(byte *)(&client->ps.pm_flags) & 0x80) {
+        if (client->ps.eFlags & 0x300) {
             /* Stop using turret first */
-            int turretEntNum = *(int *)(client + 0x594);
-            byte *turretEnt = (byte *)CLIENT_BASE + 4;
-            turretEnt = *(byte **)turretEnt;
-            byte *actualTurretEnt = turretEnt + turretEntNum * GENTITY_STRIDE;
-            G_ClientStopUsingTurret((gentity_t *)actualTurretEnt);
+            int turretEntNum = client->ps.viewlocked_entNum;
+            gentity_s *turretEnt = G_EntityForNum(turretEntNum);
+            G_ClientStopUsingTurret((gentity_t *)turretEnt);
         }
     }
 
     G_EntUnlink(ent);
 
-    if (*(byte *)((byte *)ent + 0xf0) != 0)
+    if (ent->r.linked != 0)
         SV_UnlinkEntity(ent);
 
-    *(int *)((byte *)ent + 0x7c) = 0x3ff;
+    ent->s.groundEntityNum = 0x3ff;
 
-    scr_data = imp_scr_const;
-    Scr_SetString((unsigned short *)((byte *)ent + 0x168), *(unsigned short *)(scr_data + 0x32));
+    scr_data = (scr_const_t *)imp_scr_const;
+    Scr_SetString(&ent->classname, scr_data->player);
 
-    *(int *)((byte *)ent + 0x184) = 0x2810011;
-    *(byte *)((byte *)ent + 0xf2) |= 1;
-    *(byte *)((byte *)ent + 0x161) = 0;
+    ent->clipmask = 0x2810011;
+    ent->r.svFlags |= 1;
+    ent->takedamage = 0;
 
     G_SetClientContents(ent);
 
-    *(byte *)((byte *)ent + 0x166) = 0xa;
-    *(int *)((byte *)ent + 0x174) = (int)&__mh_execute_header;
+    ent->handler = 0xa;
+    ent->flags = (int)&__mh_execute_header;
 
     /* Set mins/maxs */
-    *(float *)((byte *)ent + 0x104) = playerMins[0];
-    *(float *)((byte *)ent + 0x108) = playerMins[1];
-    *(float *)((byte *)ent + 0x10c) = playerMins[2];
+    ent->r.mins[0] = playerMins[0];
+    ent->r.mins[1] = playerMins[1];
+    ent->r.mins[2] = playerMins[2];
 
-    *(float *)((byte *)ent + 0x110) = playerMaxs[0];
-    *(float *)((byte *)ent + 0x114) = playerMaxs[1];
-    *(float *)((byte *)ent + 0x118) = playerMaxs[2];
+    ent->r.maxs[0] = playerMaxs[0];
+    ent->r.maxs[1] = playerMaxs[1];
+    ent->r.maxs[2] = playerMaxs[2];
 
     /* Save session data */
-    iFlags = *(int *)(client + 0xa0) & 0x100002;
+    iFlags = client->ps.eFlags & 0x100002;
 
-    memcpy(savedSess, client + 0x26a8, 0x100);
-    savedSpawnCount = *(int *)(client + 0x140);
+    memcpy(savedSess, &client->sess, 0x100);
+    savedSpawnCount = *(int *)((byte *)client + 0x140); /* ps.stats[5] */
 
     /* Clear client */
     memset(client, 0, CLIENT_STRIDE);
 
     /* Restore session */
-    memcpy(client + 0x26a8, savedSess, 0x100);
+    memcpy(&client->sess, savedSess, 0x100);
 
-    *(int *)(client + 0x27a8) = -1;
-    *(int *)(client + 0x2830) = 0x3ff;
+    client->spectatorClient = -1;
+    client->useHoldEntity = 0x3ff;
 
     savedSpawnCount++;
-    *(int *)(client + 0x140) = savedSpawnCount;
+    *(int *)((byte *)client + 0x140) = savedSpawnCount; /* ps.stats[5] */
 
-    *(int *)(client + 0x134) = *(int *)(client + 0x2728);
-    *(int *)(client + 0xa0) = iFlags;
+    *(int *)((byte *)client + 0x134) = client->sess.maxHealth; /* ps.stats[2] */
+    client->ps.eFlags = iFlags;
 
-    *(int *)(client + 0x2748) = clientNum;
-    *(int *)(client + 0xcc) = clientNum;
-    *(int *)(client + 0x594) = 0x3ff;
+    client->sess.cs.clientIndex = clientNum;
+    client->ps.clientNum = clientNum;
+    client->ps.viewlocked_entNum = 0x3ff;
 
     /* Get user command */
-    {
-        byte *lev = (byte *)CLIENT_BASE;
-        int clientIdx = (int)(client - *(byte **)lev) / 4;
-        /* Complex multiplication to compute client index from pointer offset */
-        int ucmdIdx;
-        /* The original asm does: client - level->clients, then a complex multiply sequence
-           to get the client number, which is used for SV_GetUsercmd */
-        SV_GetUsercmd(clientNum, client + 0x26c8);
-    }
+    SV_GetUsercmd(clientNum, (byte *)&client->sess.cmd);
 
-    *(int *)(client + 0xa0) ^= 2;
+    client->ps.eFlags ^= 2;
 
     /* Copy mins/maxs to client */
-    *(float *)(client + 0x56c) = *(float *)((byte *)ent + 0x104);
-    *(float *)(client + 0x570) = *(float *)((byte *)ent + 0x108);
-    *(float *)(client + 0x574) = *(float *)((byte *)ent + 0x10c);
+    client->ps.mins[0] = ent->r.mins[0];
+    client->ps.mins[1] = ent->r.mins[1];
+    client->ps.mins[2] = ent->r.mins[2];
 
-    *(float *)(client + 0x578) = *(float *)((byte *)ent + 0x110);
-    *(float *)(client + 0x57c) = *(float *)((byte *)ent + 0x114);
-    *(float *)(client + 0x580) = *(float *)((byte *)ent + 0x118);
+    client->ps.maxs[0] = ent->r.maxs[0];
+    client->ps.maxs[1] = ent->r.maxs[1];
+    client->ps.maxs[2] = ent->r.maxs[2];
 
-    *(int *)(client + 0xf4) = 0x3c;
-    *(int *)(client + 0xf8) = 0x42700000;  /* 60.0f */
-    *(int *)(client + 0xfc) = 0;
-    *(int *)(client + 0x108) = 0;
+    client->ps.viewHeightTarget = 0x3c;
+    *(int *)(&client->ps.viewHeightCurrent) = 0x42700000;  /* 60.0f */
+    client->ps.viewHeightLerpTime = 0;
+    client->ps.viewHeightLerpPosAdj = 0;
 
     G_SetOrigin(ent, spawn_origin);
 
     /* Copy origin to client */
-    *(float *)(client + 0x14) = spawn_origin[0];
-    *(float *)(client + 0x18) = spawn_origin[1];
-    *(float *)(client + 0x1c) = spawn_origin[2];
+    client->ps.origin[0] = spawn_origin[0];
+    client->ps.origin[1] = spawn_origin[1];
+    client->ps.origin[2] = spawn_origin[2];
 
-    *(int *)(client + 0xc) |= (int)&__mh_execute_header;
+    client->ps.pm_flags |= (int)&__mh_execute_header;
 
     SetClientViewAngle(ent, spawn_angles);
 
@@ -588,68 +570,63 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
         dvar = *(byte **)dvar;
         int dvarVal = *(int *)(dvar + 8);
         int time = dvarVal * 5 * 5 * 5;  /* dvarVal * 125 */
-        byte *lev = (byte *)CLIENT_BASE;
-        int serverTime = *(int *)(lev + 0x1ec);
-        *(int *)(client + 0x2800) = serverTime + time * 8;
+        client->inactivityTime = lev->time + time * 8;
     }
 
-    *(int *)(client + 0x27bc) = *(int *)(client + 0x26cc);
+    client->buttons = client->sess.cmd.buttons;
 
     {
-        byte *lev = (byte *)CLIENT_BASE;
-        *(int *)(lev + 0x20) = 1;
-        *(int *)(client + 0x28a0) = *(int *)(lev + 0x1ec);
-        *(int *)(client + 0x26c8) = *(int *)(lev + 0x1ec);
-        *(int *)(client + 0) = *(int *)(lev + 0x1ec) - 100;
+        lev->clientIsSpawning = 1;
+        client->lastSpawnTime = lev->time;
+        client->sess.cmd.serverTime = lev->time;
+        client->ps.commandTime = lev->time - 100;
 
         ClientEndFrame(ent);
-        ClientThink_real(ent, client + 0x26c8);
+        ClientThink_real(ent, (byte *)&client->sess.cmd);
 
-        *(int *)(lev + 0x20) = 0;
+        lev->clientIsSpawning = 0;
 
-        BG_PlayerStateToEntityState(client, ent, 1, 1);
+        BG_PlayerStateToEntityState((byte *)client, ent, 1, 1);
     }
 }
 
 /* line 103 */
 void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
 {
-    byte *ps;
+    gclient_s *client;
     float fBobCycle, xyspeed;
     float vertBob, horzBob;
     vec3_t vRight;
     int bobMax;
 
-    ps = *(byte **)((byte *)ent + 0x158);
+    client = ent->client;
 
-    if (*(int *)(ps + 0xa0) & 0x300) {
+    if (client->ps.eFlags & 0x300) {
         /* Turret - use tag position */
-        byte *scr_data = imp_scr_const;
-        int turretEntNum = *(int *)(ps + 0x594);
-        byte *ents = (byte *)g_entities_ptr;
-        gentity_t *turretEnt = (gentity_t *)(ents + turretEntNum * GENTITY_STRIDE);
+        scr_const_t *scr_data = (scr_const_t *)imp_scr_const;
+        int turretEntNum = client->ps.viewlocked_entNum;
+        gentity_s *turretEnt = G_EntityForNum(turretEntNum);
 
-        if (!G_DObjGetWorldTagPos(turretEnt, *(unsigned short *)(scr_data + 0x9a), origin)) {
+        if (!G_DObjGetWorldTagPos((gentity_t *)turretEnt, scr_data->tag_player, origin)) {
             Com_Error(1, "G_GetPlayerViewOrigin: couldn't find tag");
         }
         return;
     }
 
     /* Copy origin from playerState */
-    origin[0] = *(float *)(ps + 0x14);
-    origin[1] = *(float *)(ps + 0x18);
-    origin[2] = *(float *)(ps + 0x1c);
+    origin[0] = client->ps.origin[0];
+    origin[1] = client->ps.origin[1];
+    origin[2] = client->ps.origin[2];
 
     /* Add viewheight */
-    origin[2] += *(float *)(ps + 0xf8);
+    origin[2] += client->ps.viewHeightCurrent;
 
     /* Bob calculations */
-    fBobCycle = BG_GetBobCycle(ps);
+    fBobCycle = BG_GetBobCycle((byte *)&client->ps);
 
     {
-        byte *lev = (byte *)CLIENT_BASE;
-        int serverTime = *(int *)(lev + 0x1ec);
-        xyspeed = BG_GetSpeed(ps, serverTime);
+        level_locals_t *lev = G_Level();
+        xyspeed = BG_GetSpeed((byte *)&client->ps, lev->time);
     }
 
     /* Vertical bob */
@@ -657,7 +634,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
         byte *bobMaxDvar = *(byte **)g_bobMax_ptr;
         bobMaxDvar = *(byte **)bobMaxDvar;
         bobMax = *(int *)(bobMaxDvar + 8);
-        vertBob = BG_GetVerticalBobFactor(ps, fBobCycle, xyspeed, bobMax);
+        vertBob = BG_GetVerticalBobFactor((byte *)&client->ps, fBobCycle, xyspeed, bobMax);
     }
     origin[2] += vertBob;
 
@@ -666,22 +643,22 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
         byte *bobMaxDvar = *(byte **)g_bobMax_ptr;
         bobMaxDvar = *(byte **)bobMaxDvar;
         bobMax = *(int *)(bobMaxDvar + 8);
-        horzBob = BG_GetHorizontalBobFactor(ps, fBobCycle, xyspeed, bobMax);
+        horzBob = BG_GetHorizontalBobFactor((byte *)&client->ps, fBobCycle, xyspeed, bobMax);
     }
 
     /* Apply horizontal bob via right vector */
-    AngleVectors((vec_t *)(ps + 0xe8), NULL, vRight, NULL);
+    AngleVectors(client->ps.viewangles, NULL, vRight, NULL);
 
     origin[0] += horzBob * vRight[0];
     origin[1] += horzBob * vRight[1];
     origin[2] += horzBob * vRight[2];
 
     /* Add lean */
-    AddLeanToPosition(origin, *(int *)(ps + 0xec), *(int *)(ps + 0x4c), 20.0f, 16.0f);
+    AddLeanToPosition(origin, *(int *)&client->ps.viewangles[1], *(int *)&client->ps.leanf, 20.0f, 16.0f);
 
     /* Clamp to ground + 8 */
     {
-        float minZ = *(float *)(ps + 0x1c) + 8.0f;
+        float minZ = client->ps.origin[2] + 8.0f;
         if (minZ > origin[2])
             origin[2] = minZ;
     }
@@ -746,14 +723,13 @@ static void CleanName(const char *in, char *out, int outSize)
 /* line 270 */
 void ClientUserinfoChanged(int clientNum)
 {
-    byte *ents;
-    byte *client;
+    gentity_s *ent;
+    gclient_s *client;
     char userinfo[0x400];
     char oldname[0x400];
-    byte *scr_data;
 
-    ents = (byte *)g_entities_ptr;
-    client = *(byte **)(ents + clientNum * GENTITY_STRIDE + 0x158);
+    ent = G_EntityForNum(clientNum);
+    client = ent->client;
 
     SV_GetUserinfo(clientNum, userinfo, 0x400);
 
@@ -766,20 +742,20 @@ void ClientUserinfoChanged(int clientNum)
     }
 
     /* Check local client */
-    *(int *)(client + 0x2700) = SV_IsLocalClient(clientNum);
+    client->sess.localClient = SV_IsLocalClient(clientNum);
 
     /* Check handicap */
     {
         int handicap = atoi(Info_ValueForKey(userinfo, "handicap"));
-        *(int *)(client + 0x2704) = (handicap != 0) ? 1 : 0;
+        client->sess.predictItemPickup = (handicap != 0) ? 1 : 0;
     }
 
     /* If client is connected and level has restarted, use different name field */
-    if (*(int *)(client + 0x26c4) == 2) {
-        byte *lev = (byte *)CLIENT_BASE;
-        if (*(int *)(lev + 0x214) != 0) {
+    if (client->sess.connected == 2) {
+        level_locals_t *lev = G_Level();
+        if (lev->manualNameChange != 0) {
             const char *name = Info_ValueForKey(userinfo, "name");
-            char *shortName = (char *)(client + 0x2708);
+            char *shortName = client->sess.newnetname;
 
             /* Clean the name for short name */
             {
@@ -787,7 +763,7 @@ void ClientUserinfoChanged(int clientNum)
                 char *dst = shortName;
                 const char *src = name;
 
-                *(client + 0x2708) = 0;
+                shortName[0] = 0;
 
                 while (*src) {
                     if (*shortName == 0 && *src == ' ') {
@@ -825,7 +801,7 @@ void ClientUserinfoChanged(int clientNum)
 
             /* Update score info */
             {
-                char *longName = (char *)(client + 0x2784);
+                char *longName = client->sess.cs.name;
                 goto do_score_update;
             }
         }
@@ -833,7 +809,7 @@ void ClientUserinfoChanged(int clientNum)
 
     /* Normal name processing */
     {
-        char *longName = (char *)(client + 0x2784);
+        char *longName = client->sess.cs.name;
 
         /* Copy old name */
         I_strncpyz(oldname, longName, 0x400);
@@ -845,7 +821,7 @@ void ClientUserinfoChanged(int clientNum)
             char *dst = longName;
             const char *src = name;
 
-            *(client + 0x2784) = 0;
+            longName[0] = 0;
 
             while (*src) {
                 if (*longName == 0 && *src == ' ') {
@@ -882,7 +858,7 @@ void ClientUserinfoChanged(int clientNum)
         }
 
         /* Copy to short name */
-        I_strncpyz((char *)(client + 0x2708), longName, 0x20);
+        I_strncpyz(client->sess.newnetname, longName, 0x20);
 
     do_score_update:
         /* Update score board info */
@@ -893,7 +869,7 @@ void ClientUserinfoChanged(int clientNum)
 
             *(int *)(si + 8) = clientNum;
             I_strncpyz((char *)(si + 0x18 - 0xc), longName, 0x20);
-            *(int *)(si + 0x2c) = *(int *)(client + 0x274c);
+            *(int *)(si + 0x2c) = client->sess.cs.team;
         }
     }
 }
@@ -901,19 +877,14 @@ void ClientUserinfoChanged(int clientNum)
 /* line 344 */
 char * ClientConnect(int clientNum, int scriptPersId)
 {
-    byte *ents;
-    byte *level;
-    byte *client;
-    gentity_t *ent;
+    gentity_s *ent;
+    gclient_s *client;
     byte *ci;
     int pXAnimTree;
     char userinfo[0x400];
 
-    ents = (byte *)g_entities_ptr;
-    ent = (gentity_t *)(ents + clientNum * GENTITY_STRIDE);
-
-    level = (byte *)CLIENT_BASE;
-    client = level +clientNum * CLIENT_STRIDE;
+    ent = G_EntityForNum(clientNum);
+    client = G_ClientForNum(clientNum);
 
     /* Clear client */
     memset(client, 0, CLIENT_STRIDE);
@@ -932,41 +903,41 @@ char * ClientConnect(int clientNum, int scriptPersId)
     *(int *)(ci - 0xc + 0xc) = 1;  /* ci base valid */
     *(int *)(ci + 4) = 1;
 
-    *(int *)(client + 0x26c4) = 1;  /* CS_CONNECTED */
-    *(unsigned short *)(client + 0x26c0) = (unsigned short)scriptPersId;
+    client->sess.connected = 1;  /* CS_CONNECTED */
+    client->sess.scriptPersId = (unsigned short)scriptPersId;
 
-    *(int *)(client + 0x274c) = 3;  /* TEAM_SPECTATOR */
-    *(int *)(client + 0x26a8) = 2;  /* SESS_SPECTATOR */
-    *(int *)(client + 0x27a8) = -1;
-    *(int *)(client + 0x26ac) = -1;
+    client->sess.cs.team = 3;  /* TEAM_SPECTATOR */
+    client->sess.sessionState = 2;  /* SESS_SPECTATOR */
+    client->spectatorClient = -1;
+    client->sess.forceSpectatorClient = -1;
 
-    G_InitGentity(ent);
-    *(byte *)((byte *)ent + 0x166) = 0;
-    *(byte **)((byte *)ent + 0x158) = client;
-    *(int *)(client + 0x2830) = 0x3ff;
-    *(int *)(client + 0x2748) = clientNum;
-    *(int *)(client + 0xcc) = clientNum;
+    G_InitGentity((gentity_t *)ent);
+    ent->handler = 0;
+    ent->client = (gclient_t *)client;
+    client->useHoldEntity = 0x3ff;
+    client->sess.cs.clientIndex = clientNum;
+    client->ps.clientNum = clientNum;
 
     ClientUserinfoChanged(clientNum);
 
     SV_GetUserinfo(clientNum, userinfo, 0x400);
 
     /* Check password if not local client */
-    if (*(int *)(client + 0x2700) == 0) {
+    if (client->sess.localClient == 0) {
         const char *password = Info_ValueForKey(userinfo, "password");
         const char *serverPassword = g_password ? g_password->current.string : "";
 
         if (*serverPassword != 0) {
             if (I_stricmp(serverPassword, "")) {
                 if (strcmp(serverPassword, password)) {
-                    G_FreeEntity(ent);
+                    G_FreeEntity((gentity_t *)ent);
                     return "GAME_INVALIDPASSWORD";
                 }
             }
         }
     }
 
-    Scr_PlayerConnect(ent);
+    Scr_PlayerConnect((gentity_t *)ent);
     CalculateRanks();
 
     return NULL;

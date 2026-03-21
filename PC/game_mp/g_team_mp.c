@@ -15,6 +15,10 @@ extern byte level_ptr[];      /* imp_level */
 extern byte *sv_maxclients;  /* imp_g_maxclients */
 extern vec3_t *trace_mins;   /* imp_vec3_origin */
 
+#define STAT_IDENT_CLIENT_NUM    3
+#define STAT_IDENT_CLIENT_HEALTH 4
+#define PMF_FOLLOW               0x400000
+
 qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 short int TeamplayInfoMessage(gentity_t *ent);
 short int CheckTeamStatus(void);
@@ -34,11 +38,11 @@ qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2)
     if (!cl2)
         return 0;
 
-    team1 = *(int *)((byte *)cl1 + 0x274c);
+    team1 = cl1->sess.cs.team;
     if (team1 == 0)
         return 0;
 
-    if (team1 == *(int *)((byte *)cl2 + 0x274c))
+    if (team1 == cl2->sess.cs.team)
         return 1;
 
     return 0;
@@ -54,12 +58,12 @@ short int TeamplayInfoMessage(gentity_t *ent)
     trace_t trace;
     int identEnt;
     int compassTime;
-    byte *identGentBase;
+    gentity_t *identGent;
     gclient_t *identClient;
 
     client = ent->client;
 
-    if (*(int *)((byte *)client + 0x26a8) != 0) {
+    if (client->sess.sessionState != SESS_STATE_PLAYING) {
         /* Binocular/spectator path */
         G_GetPlayerViewOrigin(ent, vStart);
         G_GetPlayerViewDirection(ent, vForward, NULL, NULL);
@@ -68,14 +72,14 @@ short int TeamplayInfoMessage(gentity_t *ent)
         if (client->ps.viewHeightCurrent < 8.0f) {
             vStart[2] += 8.0f - client->ps.viewHeightCurrent;
         }
-    } else if (*(int *)((byte *)client + 0x274c) != 0) {
+    } else if (client->sess.cs.team != 0) {
         /* Team path */
         G_GetPlayerViewOrigin(ent, vStart);
         G_GetPlayerViewDirection(ent, vForward, NULL, NULL);
     } else {
         /* No team */
-        *(int *)((byte *)client + 0x138) = -1;
-        *(int *)((byte *)client + 0x13c) = 0;
+        client->ps.stats[STAT_IDENT_CLIENT_NUM] = -1;
+        client->ps.stats[STAT_IDENT_CLIENT_HEALTH] = 0;
         return 0;
     }
 
@@ -90,19 +94,19 @@ short int TeamplayInfoMessage(gentity_t *ent)
     identEnt = trace.entityNum;
 
     if (identEnt <= 63) {
-        identGentBase = g_entities_ptr + identEnt * 0x230;
-        identClient = *(gclient_t **)(identGentBase + 0x158);
+        identGent = &((gentity_t *)g_entities_ptr)[identEnt];
+        identClient = identGent->client;
 
         if (identClient != NULL) {
             if (!G_IsPlaying(ent)) {
                 /* Not playing (spectating) - show health regardless of team */
-                compassTime = *(int *)(identGentBase + 0x194);
+                compassTime = identGent->health;
                 goto store;
             }
 
             /* Check if same team */
-            if (*(int *)((byte *)identClient + 0x274c) == *(int *)((byte *)client + 0x274c)) {
-                compassTime = *(int *)(identGentBase + 0x194);
+            if (identClient->sess.cs.team == client->sess.cs.team) {
+                compassTime = identGent->health;
                 goto store;
             }
         }
@@ -113,53 +117,51 @@ short int TeamplayInfoMessage(gentity_t *ent)
 
 store:
     client = ent->client;
-    *(int *)((byte *)client + 0x138) = identEnt;
+    client->ps.stats[STAT_IDENT_CLIENT_NUM] = identEnt;
     client = ent->client;
-    *(int *)((byte *)client + 0x13c) = compassTime;
+    client->ps.stats[STAT_IDENT_CLIENT_HEALTH] = compassTime;
     return 0;
 }
 
 /* line 90 */
 short int CheckTeamStatus(void)
 {
-    byte *level;
+    level_locals_t *level;
     int time;
     int lastTime;
     int maxClients;
     int i;
-    byte *entBase;
-    byte *sessCheck;
+    gentity_t *ent;
     gclient_t *cl;
 
-    level = (byte *)level_ptr;
-    time = *(int *)(level + 0x1ec);
-    lastTime = *(int *)(level + 0x20c);
+    level = (level_locals_t *)level_ptr;
+    time = level->time;
+    lastTime = level->lastTeammateHealthTime;
 
     if (time - lastTime <= 0)
         return 0;
 
-    *(int *)(level + 0x20c) = time;
+    level->lastTeammateHealthTime = time;
 
-    maxClients = *(int *)(sv_maxclients + 8);
+    maxClients = ((dvar_t *)sv_maxclients)->current.integer;
     if (maxClients <= 0)
         return 0;
 
     for (i = 0; i < maxClients; i++) {
-        entBase = g_entities_ptr + i * 0x230;
-        sessCheck = entBase + 0xfc;
+        ent = &((gentity_t *)g_entities_ptr)[i];
 
-        /* Check if connected */
-        if (*sessCheck == 0)
+        /* Check if in use */
+        if (!ent->r.inuse)
             continue;
 
-        /* Check pm_flags for spectator/limbo */
-        cl = *(gclient_t **)(entBase + 0x158);
+        /* Check pm_flags for follow mode */
+        cl = ent->client;
         if (cl == NULL)
             continue;
-        if (*(byte *)((byte *)cl + 0xe) & 0x40)
+        if (cl->ps.pm_flags & PMF_FOLLOW)
             continue;
 
-        TeamplayInfoMessage((gentity_t *)entBase);
+        TeamplayInfoMessage(ent);
     }
 
     return 0;
