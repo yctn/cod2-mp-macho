@@ -985,7 +985,7 @@ void CL_WritePacket(void)
         byte *cl2 = *(byte **)imp_cl;
         const dvar_t *packetdup = *(const dvar_t **)imp_cl_packetdup;
         int cmdNum = ((clientConnection_t *)clc_ptr)->netchan.outgoingSequence;
-        int dupIdx = (cmdNum - *(int *)((byte *)packetdup + 8) - 1) & 0x1f;
+        int dupIdx = (cmdNum - packetdup->current.integer - 1) & 0x1f;
         compressedSize = ((clientActive_t *)cl2)->cmdNumber - ((clientActive_t *)cl2)->outPackets[dupIdx].p_cmdNumber;
     }
 
@@ -1319,48 +1319,48 @@ void CL_MouseMove(usercmd_t *cmd)
 /* line 308 */
 void IN_DownDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xdc));
+    IN_KeyDown(&kb[11]);
     if (kb[25].active || kb[11].active /* prone || down */)
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 1;
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 0;
 }
 
 /* line 315 */
 void IN_DownUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0xdc));
+    IN_KeyUp(&kb[11]);
     if (kb[25].active || kb[11].active /* prone || down */)
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 1;
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 0;
 }
 
 /* line 602 */
 void IN_Prone_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x1f4));
+    IN_KeyDown(&kb[25]);
     if (kb[25].active || kb[11].active /* prone || down */)
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 1;
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 0;
 }
 
 /* line 609 */
 void IN_Prone_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1f4));
+    IN_KeyUp(&kb[25]);
     if (kb[25].active || kb[11].active /* prone || down */)
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 1; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 1;
     else
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 0xc) = 0; /* legacyHacks->proneState */
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stanceTemp = 0;
 }
 
 /* line 108 */
 void IN_MLookUp(void)
 {
     kb[13].active = 0; /* mlook active */
-    if (*(byte *)((byte *)*(void **)imp_cl_freelook + 8) == 0) {
+    if (cl_freelook->current.enabled == 0) {
         clientActive_t *cl = *(clientActive_t **)imp_cl;
         cl->viewangles[0] = (float)cl->snap.ps.delta_angles[0] * -0.0054931640625f;
     }
@@ -1426,7 +1426,7 @@ void CL_KeyMove(usercmd_t *cmd)
     {
         if (cl->stanceHeld && com_frameTime - cl->stanceTime >= cl_stanceHoldTime->current.integer)
         {
-            legacyStance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
+            legacyStance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
             if (cl->stancePosition == 2)
             {
                 *legacyStance = 0;
@@ -1439,7 +1439,7 @@ void CL_KeyMove(usercmd_t *cmd)
             cl->stanceHeld = 0;
         }
 
-        legacyStance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
+        legacyStance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
         if (*legacyStance == 1)
         {
             cmd->buttons |= 0x200;

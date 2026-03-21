@@ -69,15 +69,15 @@ void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, i
     char *tess = RB_TessBase();
     g_begin_surface_calls++;
     g_tess_since_begin = 0;
-    *(int *)(tess + 0x5a7cc) = 0; /* tess.vertDeclType */
-    *(int *)(tess + 0x5a7b8) = 0; /* tess.optimizedVertexSource */
-    *(int *)(tess + 0x5a7d0) = 0; /* tess.indexCount */
-    *(int *)(tess + 0x5a7d4) = 0; /* tess.vertexCount */
-    *(int *)(tess + 0x5a7d8) = 0;
-    *(int *)(tess + 0x5a7dc) = 0;
-    *(const Material **)(tess + 0x5a7bc) = material; /* tess.material */
-    *(MaterialTechniqueType *)(tess + 0x5a7c0) = techType; /* tess.techType */
-    *(int *)(tess + 0x5a7c4) = lmapIndex; /* tess.lmapIndex */
+    ((materialCommands_t *)tess)->declType = 0;
+    ((materialCommands_t *)tess)->optimizedVertexSource = 0;
+    ((materialCommands_t *)tess)->indexCount = 0;
+    ((materialCommands_t *)tess)->vertexCount = 0;
+    ((materialCommands_t *)tess)->firstVertex = 0;
+    ((materialCommands_t *)tess)->lastVertex = 0;
+    ((materialCommands_t *)tess)->material = material;
+    ((materialCommands_t *)tess)->techType = techType;
+    ((materialCommands_t *)tess)->lmapIndex = lmapIndex;
 }
 
 /* line 132 */
@@ -85,7 +85,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
 {
     char *dx = (char *)imp_dx;
     int indexDataSize = indexCount * 2;  /* r_index_t = 2 bytes */
-    char **pLockSlot = (char **)(dx + 0x2d8c);
+    char **pLockSlot = (char **)(dx + 0x2d8c); /* TODO: DxGlobals.indexLockSlot */
     char *lockState = *pLockSlot;
     int overflow;
     int byteOffset;
@@ -114,7 +114,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
     ib = *(IDirect3DIndexBuffer9 **)(lockState + 8);
 
     /* D3DLOCK_NOOVERWRITE (0) when safe to append; D3DLOCK_DISCARD (0x2000) to reset */
-    if (!overflow && (*(int *)(dx + 0x2c20) != 0 || byteOffset != 0))
+    if (!overflow && (*(int *)(dx + 0x2c20) != 0 || byteOffset != 0)) /* TODO: DxGlobals offset 0x2c20 */
         lockFlags = 0;       /* D3DLOCK_NOOVERWRITE */
     else
         lockFlags = 0x2000;  /* D3DLOCK_DISCARD */
@@ -132,7 +132,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
         ((HRESULT (*)(IDirect3DIndexBuffer9*))(*(void***)(ib))[12])(ib);
     } while (*(int *)imp_alwaysfails);
 
-    if (ib != *(IDirect3DIndexBuffer9 **)(((char *)imp_dxState) + 0x20cc))
+    if (ib != ((DxState *)imp_dxState)->indexBuffer)
         RB_ChangeIndices(ib);
 
     /* Advance the write position in the current lock slot */
@@ -202,12 +202,12 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     case 10:
     case 11: { /* lightmap */
         tess = (char *)imp_tess;
-        lmapIdx = *(int *)(tess + 0x5a7c4);
+        lmapIdx = ((materialCommands_t *)tess)->lmapIndex;
         if (lmapIdx == 0x1f) {
-            char *mat = *(char **)(tess + 0x5a7bc);
+            char *mat = (char *)((materialCommands_t *)tess)->material;
             R_Error(0, str_00226700, *(char **)mat);
             tess = (char *)imp_tess;
-            lmapIdx = *(int *)(tess + 0x5a7c4);
+            lmapIdx = ((materialCommands_t *)tess)->lmapIndex;
         }
         world = rgp->world;
         *image = *(void **)((char *)world->lightmaps + lmapIdx * 16 + codeTexture * 4 - 0x20);
@@ -227,24 +227,24 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     }
 
     case 12:
-        *image = *(void **)(dx + 0x2c80);
+        *image = ((DxGlobals *)dx)->renderTargets[4].image;
         *samplerState = 0x32;
         return;
 
     case 13:
-        *image = *(void **)(backEnd + 0x2e8c);
+        *image = ((r_backEndGlobals_t *)backEnd)->currentFeedbackImage;
         *samplerState = 0x32;
         return;
 
     case 14:
-        idx = *(int *)(backEnd + 0x2e84);
-        *image = *(void **)(dx + 0x2c30 + idx * 20);
+        idx = *(int *)(backEnd + 0x2e84); /* TODO: unknown offset */
+        *image = ((DxGlobals *)dx)->renderTargets[idx].image;
         *samplerState = 0x32;
         return;
 
     case 15:
-        idx = *(int *)(backEnd + 0x2e88);
-        *image = *(void **)(dx + 0x2c30 + idx * 20);
+        idx = *(int *)(backEnd + 0x2e88); /* TODO: unknown offset */
+        *image = ((DxGlobals *)dx)->renderTargets[idx].image;
         *samplerState = 0x32;
         return;
 
@@ -259,14 +259,14 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     }
 
     case 17: { /* shadow cookie 0 */
-        char *entry = *(char **)(backEnd + 0x2ed0);
+        char *entry = *(char **)(backEnd + 0x2ed0); /* TODO: unknown offset */
         *image = *(void **)(entry + 0x0c);
         *samplerState = *(byte *)(entry + 0x10);
         return;
     }
 
     case 18: { /* shadow cookie 1 */
-        char *entry = *(char **)(backEnd + 0x2ed0 + 68);
+        char *entry = *(char **)(backEnd + 0x2ed0 + 68); /* TODO: unknown offset */
         *image = *(void **)(entry + 0x0c);
         *samplerState = *(byte *)(entry + 0x10);
         return;
@@ -275,9 +275,9 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     case 19: { /* shadow cookie conditional */
         int sc_on = *(byte *)((char *)*(void **)imp_sc_enable + 8);
         if (sc_on) {
-            char *entity = *(char **)(backEnd + 0x440);
+            char *entity = (char *)((r_backEndGlobals_t *)backEnd)->currentEntity;
             if (*(int *)entity > 2 || (*(byte *)(entity + 5) & 1)) {
-                *image = *(void **)(dx + 0x2c6c);
+                *image = ((DxGlobals *)dx)->renderTargets[3].image; /* renderTargets[3].image at 0x2c6c */
                 *samplerState = 0x32;
                 return;
             }
@@ -349,7 +349,7 @@ static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibilit
     void **vtable;
     int i;
 
-    material = *(const Material **)((char *)imp_tess + 0x5a7bc); /* tess.material */
+    material = ((materialCommands_t *)imp_tess)->material;
     lightCount = RB_DeriveEntityLights(colorForDir, sunVisibility, material, lights, 8);
 
     /* Enable and configure each active light */
@@ -408,9 +408,9 @@ void RB_SetEntityHwLightsDx7(void)
 void RB_CreateDynamicBuffers(void)
 {
     void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc); /* ri.Hunk_Alloc */
-    byte *t = (byte *)imp_tess;
-    *(void **)(t + 0x5a7b0) = hunkAlloc(0x200000); /* tess.indexBuffer */
-    *(void **)(t + 0x5a7b4) = hunkAlloc(0x200000); /* tess.vertexBuffer */
+    materialCommands_t *t = (materialCommands_t *)imp_tess;
+    t->indices = (r_index_t *)hunkAlloc(0x200000);
+    t->optimizedIndices = (r_index_t *)hunkAlloc(0x200000);
 }
 
 /* line 1500 */
@@ -425,26 +425,26 @@ static void RB_SetupLighting_impl(void)
 
     if (rendererType == 2) {
         /* Dx7 renderer path */
-        int techType = *(int *)((char *)imp_tess + 0x5a7c0);
+        int techType = ((materialCommands_t *)imp_tess)->techType;
 
         /* techType 15, 16, or 17: no lighting setup needed */
         if ((unsigned)(techType - 15) <= 2)
             return;
 
-        lighting = *(char **)(backEnd + 0x444);
+        lighting = (char *)((r_backEndGlobals_t *)backEnd)->currentEntityLighting;
         if (lighting) {
-            if (*(int *)lighting != *(int *)(backEnd + 0x3b4)) {
+            if (*(int *)lighting != ((r_backEndGlobals_t *)backEnd)->viewCount) {
                 RB_SetupEntityLighting(
-                    (const GfxEntity *)*(void **)(backEnd + 0x440),
+                    ((r_backEndGlobals_t *)backEnd)->currentEntity,
                     (GfxEntityLighting *)lighting);
-                lighting = *(char **)(backEnd + 0x444);
+                lighting = (char *)((r_backEndGlobals_t *)backEnd)->currentEntityLighting;
             }
             /* tail-call with lighting's inline colorForDir and sunVisibility */
             RB_SetEntityHwLightsDx7_impl(
                 (vec4_t *)(lighting + 8),
                 *(float *)(lighting + 4));
         } else {
-            entity = *(char **)(backEnd + 0x440);
+            entity = (char *)((r_backEndGlobals_t *)backEnd)->currentEntity;
             if (*(int *)entity == 2) {
                 /* Static model: colorForDir ptr and sunVisibility from entity */
                 RB_SetEntityHwLightsDx7_impl(
@@ -456,45 +456,45 @@ static void RB_SetupLighting_impl(void)
     }
 
     /* Non-Dx7 path */
-    lighting = *(char **)(backEnd + 0x444);
+    lighting = (char *)((r_backEndGlobals_t *)backEnd)->currentEntityLighting;
     if (lighting) {
-        if (*(int *)lighting != *(int *)(backEnd + 0x3b4)) {
+        if (*(int *)lighting != ((r_backEndGlobals_t *)backEnd)->viewCount) {
             RB_SetupEntityLighting(
-                (const GfxEntity *)*(void **)(backEnd + 0x440),
+                ((r_backEndGlobals_t *)backEnd)->currentEntity,
                 (GfxEntityLighting *)lighting);
-            lighting = *(char **)(backEnd + 0x444);
+            lighting = (char *)((r_backEndGlobals_t *)backEnd)->currentEntityLighting;
         }
 
         /* Set sunPrimaryDir code constant (0x85) with w = lighting sunVisibility */
         RB_SetCodeConstant(0x85,
-            *(vec_t *)(backEnd + 0x2eb0),
-            *(vec_t *)(backEnd + 0x2eb4),
-            *(vec_t *)(backEnd + 0x2eb8),
+            *(vec_t *)(backEnd + 0x2eb0), /* TODO: unknown offset - sunPrimaryDir x */
+            *(vec_t *)(backEnd + 0x2eb4), /* TODO: unknown offset - sunPrimaryDir y */
+            *(vec_t *)(backEnd + 0x2eb8), /* TODO: unknown offset - sunPrimaryDir z */
             *(vec_t *)(lighting + 4));
 
-        /* Copy 6 vec4 lighting blocks to backEnd */
-        Com_Memcpy(backEnd + 0x120, lighting + 0x08, 96);
+        /* Copy 6 vec4 lighting blocks to codeConsts[18] */
+        Com_Memcpy(((r_backEndGlobals_t *)backEnd)->codeConsts[18], lighting + 0x08, 96);
     } else {
         /* No lighting: copy sunPrimaryDir as fallback */
-        *(float *)(backEnd + 0x50) = *(float *)(backEnd + 0x2eb0);
-        *(float *)(backEnd + 0x54) = *(float *)(backEnd + 0x2eb4);
-        *(float *)(backEnd + 0x58) = *(float *)(backEnd + 0x2eb8);
-        *(float *)(backEnd + 0x5c) = *(float *)(backEnd + 0x2ebc);
+        ((r_backEndGlobals_t *)backEnd)->codeConsts[5][0] = *(float *)(backEnd + 0x2eb0); /* TODO: unknown offset */
+        ((r_backEndGlobals_t *)backEnd)->codeConsts[5][1] = *(float *)(backEnd + 0x2eb4); /* TODO: unknown offset */
+        ((r_backEndGlobals_t *)backEnd)->codeConsts[5][2] = *(float *)(backEnd + 0x2eb8); /* TODO: unknown offset */
+        ((r_backEndGlobals_t *)backEnd)->codeConsts[5][3] = *(float *)(backEnd + 0x2ebc); /* TODO: unknown offset */
 
-        entity = *(char **)(backEnd + 0x440);
+        entity = (char *)((r_backEndGlobals_t *)backEnd)->currentEntity;
         if (*(int *)entity == 2) {
             /* Static model: copy light grid dir and entity origin */
             GfxWorld *world = ((r_global_permanent_t *)imp_rgp)->world;
 
-            *(float *)(backEnd + 0x190) = world->smodelLightingLookupScale[0];
-            *(float *)(backEnd + 0x194) = world->smodelLightingLookupScale[1];
-            *(float *)(backEnd + 0x198) = world->smodelLightingLookupScale[2];
-            *(float *)(backEnd + 0x19c) = 0.0f;
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[25][0] = world->smodelLightingLookupScale[0];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[25][1] = world->smodelLightingLookupScale[1];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[25][2] = world->smodelLightingLookupScale[2];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[25][3] = 0.0f;
 
-            *(float *)(backEnd + 0x180) = ((GfxEntity *)entity)->lighting.origin[0];
-            *(float *)(backEnd + 0x184) = ((GfxEntity *)entity)->lighting.origin[1];
-            *(float *)(backEnd + 0x188) = ((GfxEntity *)entity)->lighting.origin[2];
-            *(float *)(backEnd + 0x18c) = 0.0f;
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[24][0] = ((GfxEntity *)entity)->lighting.origin[0];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[24][1] = ((GfxEntity *)entity)->lighting.origin[1];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[24][2] = ((GfxEntity *)entity)->lighting.origin[2];
+            ((r_backEndGlobals_t *)backEnd)->codeConsts[24][3] = 0.0f;
         }
     }
 }
@@ -554,7 +554,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
 {
     char *dx = (char *)imp_dx;
     int totalSize = stride * vertexCount;
-    int *lockSlot = *(int **)(dx + 0x2db4);
+    int *lockSlot = *(int **)(dx + 0x2db4); /* TODO: DxGlobals.vertexLockSlot */
     IDirect3DVertexBuffer9 *dxVb;
     int writeOffset;
 
@@ -568,7 +568,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
     HRESULT hr;
 
     /* Determine lock flags: DISCARD if at start, NOOVERWRITE if appending */
-    if (writeOffset == 0 || *(int *)(dx + 0x2c20) == 0)
+    if (writeOffset == 0 || *(int *)(dx + 0x2c20) == 0) /* TODO: DxGlobals offset 0x2c20 */
         lockFlags = 0x2000; /* D3DLOCK_DISCARD */
     else
         lockFlags = 0; /* D3DLOCK_NOOVERWRITE */
@@ -633,10 +633,10 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         int ssOfs = streamIndex * 12;
         int vertexOffset = lockSlot[0];
 
-        if (dxVb != *(IDirect3DVertexBuffer9 **)(dxState + 0x20d0 + ssOfs)) {
+        if (dxVb != ((DxState *)dxState)->streams[streamIndex].vb) {
             RB_ChangeStreamSource(streamIndex, dxVb, vertexOffset, stride);
-        } else if (*(int *)(dxState + 0x20d4 + ssOfs) != vertexOffset ||
-                   *(int *)(dxState + 0x20d8 + ssOfs) != stride) {
+        } else if (((DxState *)dxState)->streams[streamIndex].offset != vertexOffset ||
+                   ((DxState *)dxState)->streams[streamIndex].stride != stride) {
             RB_ChangeStreamSource(streamIndex, dxVb, vertexOffset, stride);
         }
     }
@@ -1202,9 +1202,9 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
 /* line 710 — Compute activeMatrices base from matrix stack index */
 static inline char *RB_GetActiveMatrices(void)
 {
-    char *be = (char *)imp_backEnd;
-    int idx = *(int *)(be + 0x2e80);
-    return be + 0x4e0 + idx * 3552;
+    r_backEndGlobals_t *be = (r_backEndGlobals_t *)imp_backEnd;
+    int idx = be->codeMatrixStackLevel;
+    return (char *)be + 0x4e0 + idx * 3552;
 }
 
 /* Scale a 4x4 matrix by 1/worldScale: multiply xyz columns, keep w column */
@@ -3909,15 +3909,15 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
     const GfxStateOverride *stateOverride;
 
     /* Update viewport if pending (clears the pending flag) */
-    if (*(byte *)(backEnd + 0x4bc) != 0)
+    if (((r_backEndGlobals_t *)backEnd)->viewportIsDirty != 0)
         RB_UpdateViewport();
 
-    techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);
+    techType = ((materialCommands_t *)tess)->techType;
 
     /* techType in [6..17]: set up per-pixel lighting constants */
     if ((unsigned)(techType - 6) <= 11) {
         RB_SetupLighting();
-        techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);  /* re-read; SetupLighting may change it */
+        techType = ((materialCommands_t *)tess)->techType;  /* re-read; SetupLighting may change it */
     }
 
     /* techType in [3..26]: set up fog iterator */
@@ -3925,7 +3925,7 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
         RB_SetIteratorFog();
 
     /* Re-read techType after potential modifications by the above calls */
-    techType = *(MaterialTechniqueType *)(tess + 0x5a7c0);
+    techType = ((materialCommands_t *)tess)->techType;
 
     /* On DX7, techType in [9..14] (skinned/lit models) need normal renormalization */
     stateOverride = NULL;
@@ -3987,7 +3987,7 @@ void RB_EndSurface(void)
     tess = RB_TessBase();
 
     /* Validate material */
-    material = *(const Material **)(tess + 0x5a7bc);
+    material = ((materialCommands_t *)tess)->material;
     if (!material) {
         g_rb_endsurface_nomaterial++;
         goto cleanup;
@@ -4002,7 +4002,7 @@ void RB_EndSurface(void)
         }
     }
     technique = material->techniqueSet->techniques[
-        *(MaterialTechniqueType *)(tess + 0x5a7c0)];
+        ((materialCommands_t *)tess)->techType];
 
     g_rb_endsurface_count++;
 
@@ -4013,11 +4013,11 @@ void RB_EndSurface(void)
 
     /* Update viewport if dirty */
     backEnd = (char *)imp_backEnd;
-    if (*(byte *)(backEnd + 0x4bc))
+    if (((r_backEndGlobals_t *)backEnd)->viewportIsDirty)
         RB_UpdateViewport();
 
     /* Skip draw if dxState device lost / not ready */
-    if (*(byte *)((char *)imp_dxState + 0x20c8)) {
+    if (*(byte *)((char *)imp_dxState + 0x20c8)) { /* TODO: unknown DxState offset */
         g_rb_endsurface_dxstate++;
         goto cleanup;
     }
@@ -4025,20 +4025,20 @@ void RB_EndSurface(void)
     /* Check technique flags for shadow texture availability */
     techFlags = technique->flags;
     if (techFlags & 1) {
-        if (*(int *)(backEnd + 0x2e84) == 0xe) {
+        if (*(int *)(backEnd + 0x2e84) == 0xe) { /* TODO: unknown offset */
             g_rb_endsurface_flag1skip++;
             goto cleanup;
         }
     }
     if (techFlags & 2) {
-        if (*(int *)(backEnd + 0x2e88) == 0xe) {
+        if (*(int *)(backEnd + 0x2e88) == 0xe) { /* TODO: unknown offset */
             g_rb_endsurface_flag2skip++;
             goto cleanup;
         }
     }
 
     /* === Cached/optimized geometry path (static model cache, world VB) === */
-    cachedIndexCount = *(int *)(tess + 0x5a7e0); /* optimizedIndexCount */
+    cachedIndexCount = ((materialCommands_t *)tess)->optimizedIndexCount;
     if (cachedIndexCount != 0) {
         int cachedVertDeclType;
         IDirect3DVertexBuffer9 *vb;
@@ -4046,14 +4046,14 @@ void RB_EndSurface(void)
 
         /* Build draw args from cached fields */
         args.firstVertexFromBase = 0;
-        args.vertexCount = *(int *)(tess + 0x5a7e4); /* optimizedVertexCount */
+        args.vertexCount = ((materialCommands_t *)tess)->optimizedVertexCount;
         args.primCount = cachedIndexCount / 3;
         args.u.buf.baseIndex = RB_SetIndexData(
-            *(r_index_t **)(tess + 0x5a7b4), cachedIndexCount);
+            ((materialCommands_t *)tess)->optimizedIndices, cachedIndexCount);
 
         isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
 
-        if (*(int *)(tess + 0x5a7b8) == 1) {
+        if (((materialCommands_t *)tess)->optimizedVertexSource == 1) {
             /* VERTDECL_WORLD: vertex data in world vertex buffer */
             vertexStride = isDx7 ? 0x20 : 0x44;
             vb = ((r_global_permanent_t *)imp_rgp)->world->vd.worldVb;
@@ -4061,31 +4061,31 @@ void RB_EndSurface(void)
         } else {
             /* VERTDECL_STATICMODELCACHE: vertex data in static model cache VB */
             vertexStride = isDx7 ? 0x18 : 0x40;
-            vb = *(IDirect3DVertexBuffer9 **)((char *)imp_dx + 0x2dc4);
+            vb = ((DxGlobals *)imp_dx)->smodelCacheVb;
             cachedVertDeclType = 3; /* VERTDECL_STATICMODELCACHE */
         }
 
         /* Update stream source if VB, offset, or stride changed */
         dxState = (char *)imp_dxState;
-        if (vb != *(IDirect3DVertexBuffer9 **)(dxState + 0x20d0) ||
-            *(int *)(dxState + 0x20d4) != 0 ||
-            *(int *)(dxState + 0x20d8) != vertexStride) {
+        if (vb != ((DxState *)dxState)->streams[0].vb ||
+            ((DxState *)dxState)->streams[0].offset != 0 ||
+            ((DxState *)dxState)->streams[0].stride != vertexStride) {
             RB_ChangeStreamSource(0, vb, 0, vertexStride);
         }
 
-        args.u.buf.baseVertex = *(int *)(tess + 0x5a7e8); /* firstOptimizedVertex */
+        args.u.buf.baseVertex = ((materialCommands_t *)tess)->firstOptimizedVertex;
 
         /* Draw cached geometry: setup lighting/fog/renormalize + draw */
         RB_DrawTechnique(cachedVertDeclType, &args);
 
         /* Clear cached state and fall through to check main tess path */
         tess = RB_TessBase();
-        *(int *)(tess + 0x5a7e0) = 0; /* optimizedIndexCount */
-        *(int *)(tess + 0x5a7b8) = 0; /* optimizedVertexSource */
+        ((materialCommands_t *)tess)->optimizedIndexCount = 0;
+        ((materialCommands_t *)tess)->optimizedVertexSource = 0;
     }
 
     /* === Main tessellation path === */
-    indexCount = *(int *)(tess + 0x5a7d0);
+    indexCount = ((materialCommands_t *)tess)->indexCount;
     if (indexCount == 0) {
         g_rb_endsurface_idxzero++;
         g_rb_tess_type_idxzero[g_rb_last_tess_type]++;
@@ -4094,36 +4094,36 @@ void RB_EndSurface(void)
     }
     /* Build draw args from main tess fields */
     args.firstVertexFromBase = 0;
-    args.vertexCount = *(int *)(tess + 0x5a7d4);
+    args.vertexCount = ((materialCommands_t *)tess)->vertexCount;
     args.primCount = indexCount / 3;
 
     isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
-    if (*(int *)(tess + 0x5a7cc) == 1) /* declType == VERTDECL_WORLD */
+    if (((materialCommands_t *)tess)->declType == 1) /* declType == VERTDECL_WORLD */
         vertexStride = isDx7 ? 0x20 : 0x44;
     else
         vertexStride = isDx7 ? 0x24 : 0x40;
 
     /* Upload index data to GPU index buffer */
     args.u.buf.baseIndex = RB_SetIndexData(
-        *(r_index_t **)(tess + 0x5a7b0), indexCount);
+        ((materialCommands_t *)tess)->indices, indexCount);
 
     /* Dynamic VB overflow check: reset write offset if data won't fit */
     {
         char *dx = (char *)imp_dx;
-        int *lockSlot = *(int **)(dx + 0x2db4);
+        int *lockSlot = *(int **)(dx + 0x2db4); /* TODO: DxGlobals.vertexLockSlot */
         if (!lockSlot) {
             static int lockslot_warn = 0;
             if (lockslot_warn++ < 5)
                 fprintf(stderr, "[EndSurf] lockSlot NULL at dx+0x2db4, skipping draw\n");
             goto cleanup;
         }
-        int needed = *(int *)(tess + 0x5a7d4) * vertexStride + lockSlot[0];
+        int needed = ((materialCommands_t *)tess)->vertexCount * vertexStride + lockSlot[0];
         if (needed > lockSlot[1])
             lockSlot[0] = 0;
     }
 
     /* Upload vertex data to GPU vertex buffer */
-    RB_SetVertexData(0, tess, *(int *)(tess + 0x5a7d4), vertexStride);
+    RB_SetVertexData(0, tess, ((materialCommands_t *)tess)->vertexCount, vertexStride);
     args.u.buf.baseVertex = 0;
 
     /* Bind the material's first texture before drawing.
@@ -4133,7 +4133,7 @@ void RB_EndSurface(void)
      * We fix this by pre-binding the correct texture here. */
     {
 #define RB_GL_TEXTURE_2D 0x0DE1
-        const Material *mat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+        const Material *mat = ((materialCommands_t *)tess)->material;
 
         if (mat) {
             int texCount = mat->textureCount;
@@ -4172,18 +4172,18 @@ void RB_EndSurface(void)
 
     /* Draw main tess geometry */
     g_rb_endsurface_draw++;
-    RB_DrawTechnique(*(MaterialVertexDeclType *)(tess + 0x5a7cc), &args);
+    RB_DrawTechnique(((materialCommands_t *)tess)->declType, &args);
 
     /* Clear tess counts */
     tess = RB_TessBase();
-    *(int *)(tess + 0x5a7d0) = 0; /* indexCount */
-    *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
+    ((materialCommands_t *)tess)->indexCount = 0;
+    ((materialCommands_t *)tess)->vertexCount = 0;
     return;
 
 cleanup:
-    *(int *)(tess + 0x5a7e0) = 0; /* optimizedIndexCount */
-    *(int *)(tess + 0x5a7d0) = 0; /* indexCount */
-    *(int *)(tess + 0x5a7d4) = 0; /* vertexCount */
+    ((materialCommands_t *)tess)->optimizedIndexCount = 0;
+    ((materialCommands_t *)tess)->indexCount = 0;
+    ((materialCommands_t *)tess)->vertexCount = 0;
 }
 #else
 /* RB_DrawSingleTechnique — Core shader technique rendering.
@@ -4250,7 +4250,7 @@ static void RB_EvalStateMap(byte *stateMap, byte *refStateBits, int stateBits[2]
 
         if (!matched) {
             char *tess2 = RB_TessBase();
-            const Material *mat = *(const Material **)(tess2 + 0x5a7bc);
+            const Material *mat = ((materialCommands_t *)tess2)->material;
             R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
                 *(char **)stateMap, ruleSetIndex);
         }
@@ -4270,8 +4270,8 @@ static void RB_EvalStateMap(byte *stateMap, byte *refStateBits, int stateBits[2]
 
     /* Clear depth write if 2D mode */
     {
-        byte *backEnd = (byte *)imp_backEnd;
-        if (*(byte *)(backEnd + 0x4bd))
+        r_backEndGlobals_t *backEnd = (r_backEndGlobals_t *)imp_backEnd;
+        if (backEnd->projection2D)
             stateBits[1] &= 0xffffffcf;
     }
 }
@@ -4289,13 +4289,13 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         MaterialShader *psShader = ((MaterialPassDx9 *)pass)->pixelShader;
         void *pixelShader = (void *)psShader->u.ps;
 
-        if (pixelShader != *(void **)(dxState + 0x2138)) {
+        if (pixelShader != *(void **)(dxState + 0x2138)) { /* TODO: DxState.pixelShader */
             do {
                 device = *(byte **)(dx + 8);
                 vtable = *(void ***)device;
                 ((void (*)(void *, void *))vtable[0x1ac/4])(device, pixelShader);
             } while (*alwaysfails);
-            *(void **)(dxState + 0x2138) = pixelShader;
+            *(void **)(dxState + 0x2138) = pixelShader; /* TODO: DxState.pixelShader */
         }
     }
 
@@ -4304,13 +4304,13 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         MaterialShader *vsShader = ((MaterialPassDx9 *)pass)->vertexShader;
         void *vertexShader = (void *)vsShader->u.vs;
 
-        if (vertexShader != *(void **)(dxState + 0x213c)) {
+        if (vertexShader != *(void **)(dxState + 0x213c)) { /* TODO: DxState.vertexShader */
             do {
                 device = *(byte **)(dx + 8);
                 vtable = *(void ***)device;
                 ((void (*)(void *, void *))vtable[0x170/4])(device, vertexShader);
             } while (*alwaysfails);
-            *(void **)(dxState + 0x213c) = vertexShader;
+            *(void **)(dxState + 0x213c) = vertexShader; /* TODO: DxState.vertexShader */
         }
     }
 
@@ -4319,14 +4319,14 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         byte *declArray = (byte *)((MaterialPassDx9 *)pass)->vertexDecl;
         void *decl = *(void **)(declArray + 8 + vertDeclType * 4);
 
-        if (decl != *(void **)(dxState + 0x2140)) {
+        if (decl != ((DxState *)dxState)->vertexDecl) {
             do {
                 device = *(byte **)(dx + 8);
                 vtable = *(void ***)device;
                 ((void (*)(void *, void *))vtable[0x15c/4])(device, decl);
             } while (*alwaysfails);
-            *(void **)(dxState + 0x2140) = decl;
-            *(int *)(dxState + 0x2144) = 0;
+            ((DxState *)dxState)->vertexDecl = decl;
+            ((DxState *)dxState)->fvf = 0;
         }
     }
 }
@@ -4355,7 +4355,7 @@ static void RB_DrawIndexedPrim(const GfxDrawPrimArgs *args, int numPrims)
 static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args, const GfxStateOverride *stateOverride)
 {
     char *tess = RB_TessBase();
-    const Material *material = *(const Material **)(tess + 0x5a7bc);
+    const Material *material = ((materialCommands_t *)tess)->material;
     byte *technique;
     int passCount;
     int passIndex;
@@ -4414,7 +4414,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
             tess = RB_TessBase();
             {
-                const Material *tessMat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                const Material *tessMat = ((materialCommands_t *)tess)->material;
                 refStateBits = (byte *)tessMat->stateBits;
             }
             stateMap = *(byte **)(pass + 8);
@@ -4452,7 +4452,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     }
 
                     if (!matched) {
-                        const Material *mat2 = *(const Material **)(RB_TessBase() + 0x5a7bc); /* tess.material */
+                        const Material *mat2 = ((materialCommands_t *)RB_TessBase())->material;
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
                             *(char **)stateMap, rsi, mat2->info.name);
                     }
@@ -4472,17 +4472,17 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             }
 
             /* Clear depth write in 2D mode */
-            if (*(byte *)(backEnd + 0x4bd))
+            if (((r_backEndGlobals_t *)backEnd)->projection2D)
                 stateBits[1] &= 0xffffffcf;
 
             /* Apply state bits changes */
-            if (stateBits[0] != *(int *)(dxState + 0x2000)) {
+            if (stateBits[0] != ((DxState *)dxState)->refStateBits[0]) {
                 RB_ChangeState_0(stateBits[0]);
-                *(int *)(dxState + 0x2000) = stateBits[0];
+                ((DxState *)dxState)->refStateBits[0] = stateBits[0];
             }
-            if (stateBits[1] != *(int *)(dxState + 0x2004)) {
+            if (stateBits[1] != ((DxState *)dxState)->refStateBits[1]) {
                 RB_ChangeState_1(stateBits[1]);
-                *(int *)(dxState + 0x2004) = stateBits[1];
+                ((DxState *)dxState)->refStateBits[1] = stateBits[1];
             }
 
             /* Update fog color: Dx7 pass uses normalFog(0) vs iteratorFog based on pass[8] */
@@ -4494,7 +4494,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             /* Set normalizeNormals render state if pass[4] differs */
             {
                 byte passNormalize = *(byte *)(pass + 4);
-                if (passNormalize != *(byte *)(dxState + 0x2094)) {
+                if (passNormalize != *(byte *)(dxState + 0x2094)) { /* TODO: unknown DxState offset */
                     byte *dx = (byte *)imp_dx;
                     volatile int *af = (volatile int *)imp_alwaysfails;
                     do {
@@ -4503,14 +4503,14 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         ((void (*)(void *, int, int))vt[0xe4/4])(dev, 0x89,
                             passNormalize ? 1 : 0);
                     } while (*af);
-                    *(byte *)(dxState + 0x2094) = passNormalize;
+                    *(byte *)(dxState + 0x2094) = passNormalize; /* TODO: unknown DxState offset */
                 }
             }
 
             /* Set FVF if vertex declaration changed */
             {
                 DWORD fvf = s_fvfForVertDeclType[vertDeclType];
-                if (*(void **)(dxState + 0x2140) != NULL) {
+                if (((DxState *)dxState)->vertexDecl != NULL) {
                     byte *dx = (byte *)imp_dx;
                     volatile int *af = (volatile int *)imp_alwaysfails;
                     do {
@@ -4518,9 +4518,9 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         void **vt = *(void ***)dev;
                         ((void (*)(void *, DWORD))vt[0x164/4])(dev, fvf);
                     } while (*af);
-                    *(DWORD *)(dxState + 0x2144) = fvf;
-                    *(void **)(dxState + 0x2140) = NULL;
-                } else if (fvf != *(DWORD *)(dxState + 0x2144)) {
+                    ((DxState *)dxState)->fvf = fvf;
+                    ((DxState *)dxState)->vertexDecl = NULL;
+                } else if (fvf != ((DxState *)dxState)->fvf) {
                     byte *dx = (byte *)imp_dx;
                     volatile int *af = (volatile int *)imp_alwaysfails;
                     do {
@@ -4528,8 +4528,8 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         void **vt = *(void ***)dev;
                         ((void (*)(void *, DWORD))vt[0x164/4])(dev, fvf);
                     } while (*af);
-                    *(DWORD *)(dxState + 0x2144) = fvf;
-                    *(void **)(dxState + 0x2140) = NULL;
+                    ((DxState *)dxState)->fvf = fvf;
+                    ((DxState *)dxState)->vertexDecl = NULL;
                 }
             }
 
@@ -4537,7 +4537,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             if (*(byte *)(pass + 7)) {
                 /* Compute animated objective color from dvars */
                 byte *backEnd2 = backEnd;
-                float phase = *(float *)(backEnd2 + 0x3bc);
+                float phase = ((r_backEndGlobals_t *)backEnd2)->sceneDef.floatTime; /* 0x3bc = sceneDef+4 */
                 byte *minDvar = *(byte **)imp_r_objectiveColorDx7Min;
                 minDvar = *(byte **)minDvar;
                 byte *maxDvar = *(byte **)imp_r_objectiveColorDx7Max;
@@ -4631,7 +4631,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                 void *decl = declArray->decl[vertDeclType];
                 if (!decl) {
                     tess = RB_TessBase();
-                    const Material *mat3 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                    const Material *mat3 = ((materialCommands_t *)tess)->material;
                     MaterialShader *pgm = ((MaterialPassDx9 *)pass)->vertexShader;
                     R_Error(0, "Vertex type %i doesn't have the information used by shader %",
                         vertDeclType, pgm->name, mat3->info.name);
@@ -4643,7 +4643,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             /* Get material refStateBits and stateMap */
             tess = RB_TessBase();
             {
-                const Material *tessMat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                const Material *tessMat = ((materialCommands_t *)tess)->material;
                 refStateBits = (byte *)tessMat->stateBits;
             }
             stateMap = (byte *)((MaterialPassDx9 *)pass)->stateMap;
@@ -4680,7 +4680,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     }
 
                     if (!matched) {
-                        const Material *mat4 = *(const Material **)(RB_TessBase() + 0x5a7bc); /* tess.material */
+                        const Material *mat4 = ((materialCommands_t *)RB_TessBase())->material;
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
                             *(char **)stateMap, rsi, mat4->info.name);
                     }
@@ -4700,17 +4700,17 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             }
 
             /* Clear depth write in 2D mode */
-            if (*(byte *)(backEnd + 0x4bd))
+            if (((r_backEndGlobals_t *)backEnd)->projection2D)
                 stateBits[1] &= 0xffffffcf;
 
             /* Apply state bits changes */
-            if (stateBits[0] != *(int *)(dxState + 0x2000)) {
+            if (stateBits[0] != ((DxState *)dxState)->refStateBits[0]) {
                 RB_ChangeState_0(stateBits[0]);
-                *(int *)(dxState + 0x2000) = stateBits[0];
+                ((DxState *)dxState)->refStateBits[0] = stateBits[0];
             }
-            if (stateBits[1] != *(int *)(dxState + 0x2004)) {
+            if (stateBits[1] != ((DxState *)dxState)->refStateBits[1]) {
                 RB_ChangeState_1(stateBits[1]);
-                *(int *)(dxState + 0x2004) = stateBits[1];
+                ((DxState *)dxState)->refStateBits[1] = stateBits[1];
             }
 
             /* Update fog color */
@@ -4792,7 +4792,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         /* Find constant in material's constant table */
                         {
                             tess = RB_TessBase();
-                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            const Material *mat5 = ((materialCommands_t *)tess)->material;
                             int constCount = mat5->constantCount;
                             byte *consts = (byte *)mat5->constants;
                             int ci;
@@ -4895,7 +4895,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
                         {
                             tess = RB_TessBase();
-                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            const Material *mat5 = ((materialCommands_t *)tess)->material;
                             int constCount = mat5->constantCount;
                             byte *consts = (byte *)mat5->constants;
                             int ci;
@@ -4945,7 +4945,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         /* Find texture in material's texture table */
                         {
                             tess = RB_TessBase();
-                            const Material *mat6 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            const Material *mat6 = ((materialCommands_t *)tess)->material;
                             int texCount = mat6->textureCount;
                             MaterialTextureDef *textures = mat6->textures;
                             int ti;
@@ -4987,7 +4987,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
         }
 
         /* Issue DrawIndexedPrimitive unless in 2D skip mode */
-        if (!*(byte *)(backEnd + 0x4bd)) {
+        if (!((r_backEndGlobals_t *)backEnd)->projection2D) {
             int primCount = args->primCount;
             int drawPrimFloor = *(int *)(*(byte **)imp_r_drawPrimFloor + 8);
             int drawPrimCap = *(int *)(*(byte **)imp_r_drawPrimCap + 8);

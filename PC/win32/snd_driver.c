@@ -1196,7 +1196,7 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
         return 0;
     }
 
-    handle = *(void **)(0x4a3ad4 + index * 4);
+    handle = milesGlob.handle_2D[index];
     sound = (byte *)Com_GetSoundFileMem(pAlias0);
     AIL_init_sample(handle);
 
@@ -1313,7 +1313,7 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
         return 0;
     }
 
-    handle = *(void **)(0x4a3ba8 + index * 4);
+    handle = milesGlob.handle_3D[index];
     sound = (byte *)Com_GetSoundFileMem(pAlias0);
 
     oneMinusLerp = 1.0f - lerp;
@@ -1739,9 +1739,9 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
 
     /* Close existing stream if present */
     streamIdx = index - 0x20;
-    if (*(void **)(0x4a3c28 + streamIdx * 4) != NULL) {
-        AIL_close_stream(*(void **)(0x4a3c28 + streamIdx * 4));
-        *(void **)(0x4a3c28 + streamIdx * 4) = NULL;
+    if (milesGlob.handle_stream[streamIdx] != NULL) {
+        AIL_close_stream(milesGlob.handle_stream[streamIdx]);
+        milesGlob.handle_stream[streamIdx] = NULL;
     }
 
     /* Build filename */
@@ -1764,7 +1764,7 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
 
 got_handle:
     /* Store handle */
-    *(void **)(0x4a3c28 + streamIdx * 4) = handle;
+    milesGlob.handle_stream[streamIdx] = handle;
 
     /* Get stream info */
     AIL_stream_info(handle, &filetype, NULL, NULL, NULL);
@@ -1875,7 +1875,7 @@ got_handle:
         MSS_SpatializeStreamImpl(streamIdx, &volume, &pan);
 
         /* If 3D stream, set 3D position */
-        if (AIL_is_3D_stream(*(void **)(0x4a3c28 + streamIdx * 4))) {
+        if (AIL_is_3D_stream(milesGlob.handle_stream[streamIdx])) {
             sndGlob = *(byte **)imp_g_snd;
             to = ((snd_local_t *)sndGlob)->chaninfo[index].org;
             {
@@ -1890,7 +1890,7 @@ got_handle:
                 float x = dx * right[0] + dy * right[1] + dz * right[2];
                 float z = dx * forward[0] + dy * forward[1] + dz * forward[2];
                 float y = -(dx * up[0] + dy * up[1] + dz * up[2]);
-                AIL_set_3D_stream_position(*(void **)(0x4a3c28 + streamIdx * 4), x, y, z);
+                AIL_set_3D_stream_position(milesGlob.handle_stream[streamIdx], x, y, z);
             }
             pan = 0.5f;
         }
@@ -1934,7 +1934,7 @@ void SND_Update3DChannel(int i, int frametime)
     int startDelay, newDelay;
 
     sndGlob = *(byte **)imp_g_snd;
-    ch = sndGlob + i * 80;
+    ch = (byte *)&((snd_local_t *)sndGlob)->chaninfo[i]; /* snd_channel_info_t for channel i */
 
     {
         snd_channel_info_t *ci = &((snd_local_t *)sndGlob)->chaninfo[i];
@@ -1983,7 +1983,7 @@ void SND_Update3DChannel(int i, int frametime)
     volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
     channel = (aliasFlags & 0x780) >> 7;
     scaledVol = volume * volTable[channel * 3] * ((snd_local_t *)sndGlob)->volume;
-    AIL_set_3D_sample_volume(*(void **)(0x4a3ba8 + i * 4), scaledVol);
+    AIL_set_3D_sample_volume(milesGlob.handle_3D[i], scaledVol);
 
     /* Update start delay */
     {
@@ -1995,7 +1995,7 @@ void SND_Update3DChannel(int i, int frametime)
             }
             ((snd_local_t *)sndGlob)->chaninfo[i].startDelay = newDelay;
             if (newDelay == 0) {
-                AIL_resume_3D_sample(*(void **)(0x4a3ba8 + i * 4));
+                AIL_resume_3D_sample(milesGlob.handle_3D[i]);
             }
         }
     }
@@ -2008,11 +2008,11 @@ void SND_Set2DChannelFromSaveInfo(int index, snd_save_2D_sample_t *info)
     float vol = info->volume * ((snd_local_t *)*(snd_local_t **)imp_g_snd)->volume;
 
     if (((snd_local_t *)*(snd_local_t **)imp_g_snd)->chaninfo[index].srcChannelCount == 2) {
-        AIL_set_sample_volume_levels(*(void **)(0x4a3ad4 + index * 4), vol, vol);
+        AIL_set_sample_volume_levels(milesGlob.handle_2D[index], vol, vol);
     } else {
         float leftVol = (1.0f - pan) * vol;
         float rightVol = pan * vol;
-        AIL_set_sample_volume_levels(*(void **)(0x4a3ad4 + index * 4), leftVol, rightVol);
+        AIL_set_sample_volume_levels(milesGlob.handle_2D[index], leftVol, rightVol);
     }
 }
 
@@ -2215,8 +2215,8 @@ configure_provider:
     /* Allocate 3D sample handles */
     sndGlob = *(byte **)imp_g_snd;
     for (i = 0; i < ((snd_local_t *)sndGlob)->max_3D_channels; i++) {
-        *(void **)(0x4a3ba8 + i * 4) = AIL_allocate_3D_sample_handle(milesGlob.provider_3D);
-        if (*(void **)(0x4a3ba8 + i * 4) == NULL) {
+        milesGlob.handle_3D[i] = AIL_allocate_3D_sample_handle(milesGlob.provider_3D);
+        if (milesGlob.handle_3D[i] == NULL) {
             Com_Error(1, (const char *)str_00219cd4, i + 1);
         }
     }
@@ -2641,14 +2641,14 @@ void SND_SetStreamChannelFromSaveInfo(int index, snd_save_stream_t *info)
         const snd_alias_t *pA = ((snd_local_t *)sndGlob)->chaninfo[index].pAlias0;
         int ch = (pA->flags & 0x780) >> 7;
         if (!SND_IsAliasChannel3D(ch)) {
-            AIL_set_stream_volume_levels(*(void **)(0x4a3ba8 + index * 4), vol, vol);
+            AIL_set_stream_volume_levels(milesGlob.handle_stream[index - 0x20], vol, vol);
             return;
         }
     }
     {
         float leftVol = (1.0f - pan) * vol;
         float rightVol = pan * vol;
-        AIL_set_stream_volume_levels(*(void **)(0x4a3ba8 + index * 4), leftVol, rightVol);
+        AIL_set_stream_volume_levels(milesGlob.handle_stream[index - 0x20], leftVol, rightVol);
     }
 }
 

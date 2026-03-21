@@ -220,7 +220,7 @@ static void RoQShutdown(void)
             }
         }
 
-        rendererCallback = *(void (**)(void))((char *)(void *)imp_re + 0x148);
+        rendererCallback = ((refexport_t *)(void *)imp_re)->SyncRenderThread;
         if (rendererCallback) {
             rendererCallback();
         }
@@ -276,7 +276,7 @@ void ROQ_UploadCinematicFromHandle(int handle)
                 cinTable[handle].dirty = 0;
             }
         }
-        if (!*(byte *)((*(char **)imp_cl_inGameVideo)[0] + 8)) {
+        if (!((dvar_t *)*(void **)imp_cl_inGameVideo)->current.enabled) { /* cl_inGameVideo->current.enabled */
             if (cinTable[handle].playonwalls == 1) {
                 cinTable[handle].playonwalls = 0;
             }
@@ -559,11 +559,11 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     cinTable[handle].sound = 0;
 
     if (cinTable[handle].alterGameState) {
-        if (*(int *)((char *)imp_cls + 0x110)) {
+        if (((clientStatic_t *)imp_cls)->uiStarted) {
             UI_SetActiveMenu(0);
         }
     } else {
-        cinTable[handle].playonwalls = *(byte *)((*(char **)imp_cl_inGameVideo)[8]) != 0;
+        cinTable[handle].playonwalls = ((dvar_t *)*(void **)imp_cl_inGameVideo)->current.enabled != 0;
     }
 
     if (handle >= 0) {
@@ -665,31 +665,31 @@ void ROQ_DrawCinematicFromHandle(int handle)
     CL_LookupColor(0x30, clearColor);
 
     cls = (char *)imp_cls;
-    screenAspect = *(float *)(cls + 0x2a0a74);
+    screenAspect = ((clientStatic_t *)cls)->vidConfig.aspectRatioWindow;
 
     if (aspect == screenAspect) {
         /* aspect matches screen exactly */
-        w = *(int *)(cls + 0x2a0a64);
-        h = *(int *)(cls + 0x2a0a68);
+        w = ((clientStatic_t *)cls)->vidConfig.width;
+        h = ((clientStatic_t *)cls)->vidConfig.height;
         x = 0;
         y = 0;
     } else if (aspect > screenAspect) {
         /* wider than screen: pillarbox (bars on top/bottom) */
-        h = *(int *)(cls + 0x2a0a68);
+        h = ((clientStatic_t *)cls)->vidConfig.height;
         barSize = ((float)h - screenAspect / aspect * (float)h) * 0.5f;
         y = (int)floorf(barSize);
         barSizeCeil = (int)ceilf(barSize);
         h = h - barSizeCeil * 2;
-        w = *(int *)(cls + 0x2a0a64);
+        w = ((clientStatic_t *)cls)->vidConfig.width;
         x = 0;
     } else {
         /* taller than screen: letterbox (bars on sides) */
-        w = *(int *)(cls + 0x2a0a64);
+        w = ((clientStatic_t *)cls)->vidConfig.width;
         barSize = ((float)w - aspect / screenAspect * (float)w) * 0.5f;
         x = (int)floorf(barSize);
         barSizeCeil = (int)ceilf(barSize);
         w = w - barSizeCeil * 2;
-        h = *(int *)(cls + 0x2a0a68);
+        h = ((clientStatic_t *)cls)->vidConfig.height;
         y = 0;
     }
 
@@ -706,11 +706,11 @@ void ROQ_DrawCinematicFromHandle(int handle)
     if (cinTable[handle].letterBox) {
         /* draw letterbox bars */
         cls = (char *)imp_cls;
-        barSize = (float)*(int *)(cls + 0x2a0a68) / 480.0f * 105.0f;
+        barSize = (float)((clientStatic_t *)cls)->vidConfig.height / 480.0f * 105.0f;
         barSizeCeil = (int)ceilf(barSize);
         xf = (float)x;
         wf = (float)w;
-        material = *(int *)(cls + 0x2a0a58);
+        material = ((clientStatic_t *)cls)->whiteMaterial;
 
         re = (refexport_t *)(void *)imp_re;
         ((void (*)(float, float, float, float, float, float, float, float, const vec_t *, int))re->DrawStretchPic)(
@@ -993,7 +993,7 @@ parse_roq:
         {
             /* Render callback */
             {
-                void (*rendererCb)(void) = *(void (**)(void))((char *)(void *)imp_re + 0x148);
+                void (*rendererCb)(void) = ((refexport_t *)(void *)imp_re)->SyncRenderThread;
                 if (rendererCb) rendererCb();
             }
             h = currentHandle;

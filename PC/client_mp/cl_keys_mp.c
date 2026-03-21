@@ -1033,7 +1033,7 @@ void CL_CharEvent(int key)
     if (key == '`' || key == '~')
         return;
 
-    keyCatchers = *(int *)(*(byte **)imp_cl + 4);
+    keyCatchers = (*(clientActive_t **)imp_cl)->keyCatchers;
 
     if (keyCatchers & 1) {
         Field_CharEvent(&g_consoleField, key);

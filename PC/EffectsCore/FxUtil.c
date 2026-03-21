@@ -2002,8 +2002,8 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
 #else
     FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
-    byte *primTemp = *(byte **)(p + 4);
-    void *bolt = *(void **)(p + 8);
+    byte *primTemp = (p->origin[0]);
+    void *bolt = (p->origin[1]);
     void *effect = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mPlayFxHandles);
     void *scheduler = *(void **)imp_theFxScheduler;
     if (bolt) {
@@ -2094,12 +2094,12 @@ void FX_DrawAll(void)
     if (effectBlockSightCount > 0) {
         for (i = 0; i < effectActiveCountNonBolt; i++) {
             byte *eff = ((byte **)effectListNonBolt)[i];
-            if (*(byte *)(eff + 0xa9) & 0x10)
+            if ((eff->mFlags_b1) & 0x10)
                 ((DrawFn)(*(void ***)eff)[7])(eff); /* AddVisibility */
         }
         for (i = 0; i < effectActiveCountBolt; i++) {
             byte *eff = ((byte **)effectListBolt)[i];
-            if (*(byte *)(eff + 0xa9) & 0x10)
+            if ((eff->mFlags_b1) & 0x10)
                 ((DrawFn)(*(void ***)eff)[7])(eff);
         }
     }
@@ -2863,7 +2863,7 @@ void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
     FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
     byte *primTemp = (byte *)prim->primTemp;
-    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    int killTime = (p->mTimeEnd) - (p->mTimeStart);
     FX_SetMaterialAndSequenceParams_impl(primTemp, p, killTime, indexInBatch);
     if (lateTime > 0) {
         float dt = (float)lateTime * 0.001f;
@@ -3147,7 +3147,7 @@ void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
 #else
     FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
-    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    int killTime = (p->mTimeEnd) - (p->mTimeStart);
     FX_SetMaterialAndSequenceParams_impl((byte *)prim->primTemp, p, killTime, indexInBatch);
 
     /* Copy normal to cylinder axis at p+0x48 */
@@ -3624,7 +3624,7 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
 #endif
 
     /* FX_SetMaterialAndSequenceParams: eax=primTemp, edx=particle, ecx=killTime, stack: indexInBatch */
-    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    int killTime = (p->mTimeEnd) - (p->mTimeStart);
     FX_SetMaterialAndSequenceParams_impl((byte *)prim->primTemp, p, killTime, indexInBatch);
 
     /* Late time velocity integration */
@@ -3671,7 +3671,7 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
 #else
     FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
-    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    int killTime = (p->mTimeEnd) - (p->mTimeStart);
     FX_SetMaterialAndSequenceParams_impl((byte *)prim->primTemp, p, killTime, indexInBatch);
     if (lateTime > 0) {
         float dt = (float)lateTime * 0.001f;
@@ -4192,7 +4192,7 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
 #else
     FX_InitParticle_impl((byte *)prim, (byte *)p, newOrigin, (const vec_t *)origin, ax, indexInBatch);
 #endif
-    int killTime = *(int *)(p + 0xbc) - *(int *)(p + 0xb8);
+    int killTime = (p->mTimeEnd) - (p->mTimeStart);
     FX_SetMaterialAndSequenceParams_impl((byte *)prim->primTemp, p, killTime, indexInBatch);
     if (lateTime > 0) {
         float dt = (float)lateTime * 0.001f;
@@ -4399,7 +4399,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
     while (i < count) {
         byte *eff = ((byte **)effectListNonBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             /* Effect expired — clear flag and remove */
             *(int *)(eff + 0xa8) &= ~0x400;
             /* Swap with last and destroy */
@@ -4463,7 +4463,7 @@ void FX_UpdateScheduledEffectsBolt(void)
     while (i < count) {
         byte *eff = ((byte **)effectListBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             *(int *)(eff + 0xa8) &= ~0x400;
             byte **slot = (byte **)effectListBolt + i;
             byte *dead = *slot;
@@ -4512,12 +4512,12 @@ static void FX_RemoveCluster(int clusterId)
         int i;
         for (i = 0; i < effectActiveCountBolt; i++) {
             byte *eff = ((byte **)effectListBolt)[i];
-            if (*(int *)(eff + 0xac) == lastIdx)
+            if ((eff->mClusterId) == lastIdx)
                 *(int *)(eff + 0xac) = clusterId;
         }
         for (i = 0; i < effectActiveCountNonBolt; i++) {
             byte *eff = ((byte **)effectListNonBolt)[i];
-            if (*(int *)(eff + 0xac) == lastIdx)
+            if ((eff->mClusterId) == lastIdx)
                 *(int *)(eff + 0xac) = clusterId;
         }
     }
@@ -4537,7 +4537,7 @@ void FX_UpdateAllBolt(void)
     while (i < count) {
         byte *eff = ((byte **)effectListBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             *(int *)(eff + 0xa8) &= ~0x400;
             /* Swap-remove and destroy */
             byte *dead = eff;
@@ -4561,10 +4561,10 @@ void FX_UpdateAllBolt(void)
     /* Phase 2: cleanup removed effects — destroy, remove clusters, update counts */
     for (i = count; i < initialEffectActiveCountBolt; i++) {
         byte *eff = ((byte **)effectListBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0) {
+        if ((cluster->refCount) <= 0) {
             FX_RemoveCluster(clusterId);
         }
         ((VtFn)(*(void ***)eff)[1])(eff); /* Delete */
@@ -4759,7 +4759,7 @@ void FX_Rewind(int time)
     i = 0;
     while (i < count) {
         byte *eff = ((byte **)effectListBolt)[i];
-        if (time < *(int *)(eff + 0xb8)) {
+        if (time < (eff->mTimeStart)) {
             /* Effect starts after rewind time — remove it */
             count--;
             privateEffectActiveCountBolt = count;
@@ -4779,10 +4779,10 @@ void FX_Rewind(int time)
     /* Phase 2: Cleanup removed bolt effects */
     for (i = count; i < initialEffectActiveCountBolt; i++) {
         byte *eff = ((byte **)effectListBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0)
+        if ((cluster->refCount) <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
         effectActiveCountBolt--;
@@ -4798,7 +4798,7 @@ void FX_Rewind(int time)
     i = 0;
     while (i < count) {
         byte *eff = ((byte **)effectListNonBolt)[i];
-        if (time < *(int *)(eff + 0xb8)) {
+        if (time < (eff->mTimeStart)) {
             count--;
             privateEffectActiveCountNonBolt = count;
             byte **slot = (byte **)effectListNonBolt + i;
@@ -4817,10 +4817,10 @@ void FX_Rewind(int time)
     /* Phase 4: Cleanup removed non-bolt effects */
     for (i = count; i < initialEffectActiveCountNonBolt; i++) {
         byte *eff = ((byte **)effectListNonBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0)
+        if ((cluster->refCount) <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
         effectActiveCountNonBolt--;
@@ -5133,7 +5133,7 @@ void FX_UpdateAllNonBolt(void)
     while (i < count) {
         byte *eff = ((byte **)effectListNonBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             *(int *)(eff + 0xa8) &= ~0x400;
             byte *dead = eff;
             count--;
@@ -5155,10 +5155,10 @@ void FX_UpdateAllNonBolt(void)
 
     for (i = count; i < initialEffectActiveCountNonBolt; i++) {
         byte *eff = ((byte **)effectListNonBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0)
+        if ((cluster->refCount) <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
         effectActiveCountNonBolt--;
@@ -5352,10 +5352,10 @@ void FX_DrawScheduledEffects(void)
     count = privateEffectActiveCountNonBolt;
     for (i = count; i < initialEffectActiveCountNonBolt; i++) {
         byte *eff = ((byte **)effectListNonBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0)
+        if ((cluster->refCount) <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
         effectActiveCountNonBolt--;
@@ -5367,10 +5367,10 @@ void FX_DrawScheduledEffects(void)
     count = privateEffectActiveCountBolt;
     for (i = count; i < initialEffectActiveCountBolt; i++) {
         byte *eff = ((byte **)effectListBolt)[i];
-        int clusterId = *(int *)(eff + 0xac);
+        int clusterId = (eff->mClusterId);
         byte *cluster = (byte *)effectClusters + clusterId * 16;
         *(int *)(cluster + 0xc) -= 1;
-        if (*(int *)(cluster + 0xc) <= 0)
+        if ((cluster->refCount) <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
         effectActiveCountBolt--;
@@ -5389,7 +5389,7 @@ void FX_DrawScheduledEffects(void)
     while (i < count) {
         byte *eff = ((byte **)effectListBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             *(int *)(eff + 0xa8) &= ~0x400;
             byte *dead = eff;
             count--;
@@ -5416,7 +5416,7 @@ void FX_DrawScheduledEffects(void)
     while (i < count) {
         byte *eff = ((byte **)effectListNonBolt)[i];
         int curTime = theFxHelper->mTime;
-        if (curTime > *(int *)(eff + 0xbc)) {
+        if (curTime > (eff->mTimeEnd)) {
             *(int *)(eff + 0xa8) &= ~0x400;
             byte *dead = eff;
             count--;
@@ -6054,7 +6054,7 @@ int FX_Restore(MemoryFile *memFile)
         /* Call FixupArchiveLoad (vtable[11]) */
         ((FixupFn)(*(void ***)eff)[11])(eff, primTemp);
 
-        if (*(byte *)(eff + 0xa9) & 0x10)
+        if ((eff->mFlags_b1) & 0x10)
             effectBlockSightCount++;
 
         /* Add to bolt or non-bolt list */
@@ -6069,7 +6069,7 @@ int FX_Restore(MemoryFile *memFile)
     }
 
     /* Close archive */
-    int bytesRead = *(int *)(arch + 0); /* assume first field is bytes read */
+    int bytesRead = (arch->memFile); /* assume first field is bytes read */
     return bytesRead;
 }
 #if 0 /* Original ASM (342 lines) */

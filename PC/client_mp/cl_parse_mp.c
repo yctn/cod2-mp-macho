@@ -241,7 +241,7 @@ void CL_ParseGamestate(msg_t *msg)
     FS_ConditionalRestart(clc->checksumFeed);
 
     /* line 720 */
-    if (*(byte *)((*cl_paused) + 8) == 0) {
+    if (((dvar_t *)(*cl_paused))->current.enabled == 0) {
         if (!Sys_IsLANAddress(*(int *)&clc->serverAddress, *(int *)((byte *)&clc->serverAddress + 4), *(int *)((byte *)&clc->serverAddress + 8))) {
             /* line 721 */
             CL_RequestAuthorization();
@@ -292,7 +292,7 @@ void CL_ParseDownload(msg_t *msg)
         clc->downloadSize = MSG_ReadLong(msg);
 
         /* line 762 */
-        *(int *)((*download_ui_ptr) + 0x10) = clc->downloadSize; /* downloadUI->downloadSize */
+        ((LegacyHacks *)(*download_ui_ptr))->cl_downloadSize = clc->downloadSize;
 
         /* line 764 */
         size = clc->downloadSize;
@@ -370,7 +370,7 @@ void CL_ParseDownload(msg_t *msg)
     clc->downloadCount += size;
 
     /* line 818 */
-    *(int *)((*download_ui_ptr) + 0x14) = clc->downloadCount; /* downloadUI->downloadCount */
+    ((LegacyHacks *)(*download_ui_ptr))->cl_downloadCount = clc->downloadCount;
 
     /* line 820 */
     if (size != 0) {
@@ -393,7 +393,7 @@ void CL_ParseDownload(msg_t *msg)
     clc->downloadTempName[0] = 0;
 
     /* line 831 */
-    *(byte *)((*download_ui_ptr) + 0x1c) = 0; /* downloadUI->downloadActive = false */
+    ((LegacyHacks *)(*download_ui_ptr))->cl_downloadName[0] = 0; /* clear download name = no active download */
 
     /* line 838 */
     CL_WritePacket();
@@ -534,7 +534,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* Logging */
-    if (*(int *)((*cl_shownet) + 8) > 1) {
+    if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
         Com_Printf("%3i:%s\n", msg->readcount - 1, "playerstate");
     }
 
@@ -547,7 +547,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* Logging */
-    if (*(int *)((*cl_shownet) + 8) > 1) {
+    if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
         Com_Printf("%3i:%s\n", msg->readcount - 1, "packet clients");
     }
 
@@ -591,7 +591,7 @@ void CL_ParseSnapshot(msg_t *msg)
                 break;
 
             /* Logging */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  unchanged: %i\n", msg->readcount, oldEntityNum);
             }
 
@@ -614,7 +614,7 @@ void CL_ParseSnapshot(msg_t *msg)
         /* line 201 */
         if (oldEntityNum == newnum) {
             /* line 204 - delta from old */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  delta: %i\n", msg->readcount, oldEntityNum);
             }
 
@@ -637,7 +637,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
         } else {
             /* line 227 - baseline entity */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  baseline: %i\n", msg->readcount, newnum);
             }
 
@@ -659,7 +659,7 @@ void CL_ParseSnapshot(msg_t *msg)
             break;
 
         /* line 238 */
-        if (*(int *)((*cl_shownet) + 8) == 3) {
+        if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
             Com_Printf("%3i:  unchanged: %i\n", msg->readcount, oldEntityNum);
         }
 
@@ -679,12 +679,12 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 257 */
-    if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
+    if (cl_showPackets && ((dvar_t *)(*cl_showPackets))->current.enabled != 0) {
         Com_Printf("Entities in packet: %i\n", newSnap->numEntities);
     }
 
     /* Logging */
-    if (*(int *)((*cl_shownet) + 8) > 1) {
+    if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
         Com_Printf("%3i:%s\n", msg->readcount - 1, "packet clients");
     }
 
@@ -725,7 +725,7 @@ void CL_ParseSnapshot(msg_t *msg)
         /* line 313 - copy unchanged old clients before this one */
         while (oldClientNum < newnum) {
             /* line 316 */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  unchanged: %i\n", msg->readcount, oldClientNum);
             }
 
@@ -748,7 +748,7 @@ void CL_ParseSnapshot(msg_t *msg)
         /* line 334 */
         if (oldClientNum == newnum) {
             /* line 337 - delta from old */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  delta: %i\n", msg->readcount, oldClientNum);
             }
 
@@ -771,7 +771,7 @@ void CL_ParseSnapshot(msg_t *msg)
             }
         } else {
             /* line 360 - baseline client */
-            if (*(int *)((*cl_shownet) + 8) == 3) {
+            if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
                 Com_Printf("%3i:  baseline: %i\n", msg->readcount, newnum);
             }
 
@@ -795,7 +795,7 @@ void CL_ParseSnapshot(msg_t *msg)
             break;
 
         /* line 372 */
-        if (*(int *)((*cl_shownet) + 8) == 3) {
+        if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
             Com_Printf("%3i:  unchanged: %i\n", msg->readcount, oldClientNum);
         }
 
@@ -815,7 +815,7 @@ void CL_ParseSnapshot(msg_t *msg)
     }
 
     /* line 391 */
-    if (cl_showPackets && *(byte *)((*cl_showPackets) + 8) != 0) {
+    if (cl_showPackets && ((dvar_t *)(*cl_showPackets))->current.enabled != 0) {
         Com_Printf("Clients in packet: %i\n", newSnap->numClients);
     }
 
@@ -882,7 +882,7 @@ void CL_ParseSnapshot(msg_t *msg)
     memcpy(&cla->snapshots[cla->snap.messageNum & 0x1f], &cla->snap, sizeof(clSnapshot_t));
 
     /* line 544 */
-    if (*(int *)((*cl_shownet) + 8) == 3) {
+    if (((dvar_t *)(*cl_shownet))->current.integer == 3) {
         Com_Printf("   snapshot:%i  delta:%i  ping:%i\n",
                     cla->snap.messageNum, cla->snap.deltaNum, cla->snap.ping);
     }
@@ -914,10 +914,10 @@ void CL_ParseServerMessage(msg_t *msg)
     msgCompressed_buf = (byte *)LargeLocal_GetBuf(&msgCompressed_buf_large_local);
 
     /* line 892 */
-    if (*(int *)((*cl_shownet) + 8) == 1) {
+    if (((dvar_t *)(*cl_shownet))->current.integer == 1) {
         /* line 894 */
         Com_Printf("%i ", msg->cursize);
-    } else if (*(int *)((*cl_shownet) + 8) > 1) {
+    } else if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
         /* line 898 */
         Com_Printf("------------------\n");
     }
@@ -938,14 +938,14 @@ void CL_ParseServerMessage(msg_t *msg)
         /* line 911 */
         if (cmd == 7) {
             /* svc_EOF */
-            if (*(int *)((*cl_shownet) + 8) > 1) {
+            if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
                 Com_Printf("%3i:%s\n", msgCompressed.readcount - 1, "END OF MESSAGE");
             }
             break;
         }
 
         /* line 917-921 */
-        if (*(int *)((*cl_shownet) + 8) > 1) {
+        if (((dvar_t *)(*cl_shownet))->current.integer > 1) {
             if (svc_strings[cmd] == NULL) {
                 Com_Printf("%3i:BAD CMD %i\n", msgCompressed.readcount - 1, cmd);
             } else {

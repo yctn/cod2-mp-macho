@@ -356,7 +356,7 @@ const char * CL_GetUsernameForLocalClient(int controllerIndex)
 void CL_AddReliableCommand(const char *cmd)
 {
     int index;
-    if (*(int *)((char *)&clientConnections + 304) - *(int *)((char *)&clientConnections + 308) - 128 > 0)
+    if (clientConnections.reliableSequence - clientConnections.reliableAcknowledge - 128 > 0)
     {
         Com_Error(1, "CL_AddReliableCommand: too many commands");
     }
@@ -388,9 +388,9 @@ void CL_StopRecord_f(void)
 /* line 1161 */
 void CL_ShutdownDemo(void)
 {
-    if (!*(int *)((char *)&clientConnections + 264112))
+    if (!clientConnections.demofile)
         return;
-    FS_FCloseFile(*(int *)((char *)&clientConnections + 264112));
+    FS_FCloseFile(clientConnections.demofile);
     ((clientConnection_t *)clc)->demofile = 0;
     ((clientConnection_t *)clc)->demoplaying = 0;
     ((clientConnection_t *)clc)->demorecording = 0;
@@ -666,7 +666,7 @@ Bool Voice_SendVoiceData(void)
 /* line 4979 */
 void CL_SyncGpu(void)
 {
-    ((void (*)(void))*(int *)((char *)&re + 340))();
+    re.SyncGpu();
 }
 
 /* line 3141 */
@@ -699,8 +699,8 @@ extern void StatMon_Reset(void);
 extern refexport_t re;
 void CL_ShutdownRef(void)
 {
-    void (*shutdownInput)(void) = *(void (**)(void))((char *)&re + 328);
-    void (*shutdown)(int) = *(void (**)(int))&re;
+    void (*shutdownInput)(void) = re.SyncRenderThread;
+    void (*shutdown)(int) = re.Shutdown;
 
     if (shutdownInput)
         shutdownInput();
@@ -719,7 +719,7 @@ void CL_InitRenderer(void)
     int fieldWidth;
 
     /* re.BeginRegistration */
-    ((void (*)(int *))*(int *)((char *)&re + 4))((int *)&cls.vidConfig);
+    re.BeginRegistration(&cls.vidConfig);
     /* Parameters: safeAreaH, safeAreaV, viewportX, viewportY, viewportW, viewportH */
     {
         int vw = cls.vidConfig.width; /* vidConfig.width from BeginRegistration output */
@@ -727,12 +727,12 @@ void CL_InitRenderer(void)
         SetScreenScaling(1.0f, 1.0f, 0, 0, vw, vh);
     }
 
-    /* cls.charSetShader = re.RegisterShaderNoMip("white", 3, 3) */
-    cls.whiteMaterial = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("white", 3, 3);
-    /* cls.whiteShader = re.RegisterShaderNoMip("console", 3, 3) */
-    cls.consoleMaterial = ((int (*)(const char *, int, int))*(int *)((char *)&re + 16))("console", 3, 3);
+    /* cls.charSetShader = re.RegisterMaterial("white", 3, 3) */
+    cls.whiteMaterial = re.RegisterMaterial("white", 3, 3);
+    /* cls.whiteShader = re.RegisterMaterial("console", 3, 3) */
+    cls.consoleMaterial = re.RegisterMaterial("console", 3, 3);
     /* cls.consoleFont = re.RegisterFont("fonts/consoleFont", 3) */
-    cls.consoleFont = ((int (*)(const char *, int))*(int *)((char *)&re + 224))("fonts/consoleFont", 3);
+    cls.consoleFont = re.RegisterFont("fonts/consoleFont", 3);
 
     fieldWidth = cls.vidConfig.width - 0x20;
     *(int *)imp_g_console_field_width = fieldWidth;
@@ -752,14 +752,14 @@ void CL_StartHunkUsers(void)
     if (!*(int *)(hacks + 4))
         return;
 
-    if (!*(int *)((char *)&cls + 268)) {
-        *(int *)((char *)&cls + 268) = 1;
+    if (!cls.soundStarted) {
+        cls.soundStarted = 1;
         SND_Init();
         Sys_LoadingKeepAlive();
     }
 
-    if (!*(int *)((char *)&cls + 264)) {
-        *(int *)((char *)&cls + 264) = 1;
+    if (!cls.rendererStarted) {
+        cls.rendererStarted = 1;
         CL_InitRenderer();
         Sys_LoadingKeepAlive();
     }
@@ -769,13 +769,13 @@ void CL_StartHunkUsers(void)
         Sys_LoadingKeepAlive();
     }
 
-    *(int *)((char *)&cls + 4) = 1;
+    cls.hunkUsersStarted = 1;
 }
 
 /* line 3386 */
 int CL_ScaledMilliseconds(void)
 {
-    return *(int *)((char *)&cls + 280);
+    return cls.realtime;
 }
 
 /* line 3422 */
@@ -1227,7 +1227,7 @@ void CL_StopLogo(void)
 /* line 3893 */
 void CL_ToggleMenu_f(void)
 {
-    if (*(int *)((char *)&clientConnections + 264096) != 0 || *(byte *)(*(int *)(*(int *)imp_legacyHacks) + 0xdc) != 0) {
+    if (clientConnections.demoplaying != 0 || (*(LegacyHacks **)imp_legacyHacks)->cl_serverloadwaiting != 0) {
         UI_SetActiveMenu(1);
     } else {
         UI_SetActiveMenu(2);
@@ -1406,7 +1406,7 @@ void CL_ShutdownDebugData(void)
     memset(c + 0x2a0a90, 0, 36);
 
     /* Call renderer debug shutdown if available */
-    shutdownDebug = *(void (**)(void))((char *)&re + 264);
+    shutdownDebug = re.ShutdownDebug;
     if (shutdownDebug)
         shutdownDebug();
 }
@@ -1688,14 +1688,14 @@ void CL_UpdateDebugData(void)
         return;
 
     if (((clientStatic_t *)c)->debug.strings) {
-        /* re.AddDebugString */
-        ((void (*)(void *, int, int))*(int *)((char *)&re + 252))(
+        /* re.LocateDebugStrings */
+        re.LocateDebugStrings(
             ((clientStatic_t *)c)->debug.strings, ((clientStatic_t *)c)->debug.numStrings, ((clientStatic_t *)c)->debug.maxStrings);
     }
 
     if (((clientStatic_t *)c)->debug.lines) {
-        /* re.AddDebugLine */
-        ((void (*)(void *, int, int))*(int *)((char *)&re + 256))(
+        /* re.LocateDebugLines */
+        re.LocateDebugLines(
             ((clientStatic_t *)c)->debug.lines, ((clientStatic_t *)c)->debug.numLines, ((clientStatic_t *)c)->debug.maxLines);
     }
 }
@@ -1705,19 +1705,19 @@ int CL_TextWidth(const char *text, int maxChars, FontHandle font)
 {
     if (!text || !font)
         return 0;
-    return ((int (*)(const char *, int, FontHandle))*(int *)((char *)&re + 276))(text, maxChars, font);
+    return re.TextWidth(text, maxChars, font);
 }
 
 /* line 5002 */
 int CL_TextHeight(FontHandle font)
 {
-    return ((int (*)(FontHandle))*(int *)((char *)&re + 280))(font);
+    return re.TextHeight(font);
 }
 
 /* line 5013 */
 float CL_NormalizedTextScale(FontHandle font, float scale)
 {
-    return ((float (*)(FontHandle, float))*(int *)((char *)&re + 272))(font, scale);
+    return re.NormalizedTextScale(font, scale);
 }
 
 /* line 5019 */
@@ -1725,7 +1725,7 @@ void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float 
 {
     if (!text || !font)
         return;
-    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)((char *)&re + 284))(text, maxChars, font, x, y, xScale, yScale, color, style);
+    re.DrawText(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
 /* line 5025 */
@@ -1735,7 +1735,7 @@ void CL_DrawText(const char *text, int maxChars, FontHandle font, float x, float
 {
     CalcSplitScreenTextOffset(font, &y);
     CalcScreenPlacement(&x, &y, &xScale, &yScale, horzAlign, vertAlign);
-    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)((char *)&re + 284))(text, maxChars, font, x, y, xScale, yScale, color, style);
+    re.DrawText(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
 /* line 5033 */
@@ -1744,7 +1744,7 @@ void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle fo
     if (!text || !font)
         return;
     cursor = (signed char)cursor;
-    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)((char *)&re + 300))(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
+    re.DrawTextWithCursor(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
 }
 
 /* line 5039 */
@@ -1753,25 +1753,25 @@ void CL_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
     cursor = (signed char)cursor;
     CalcSplitScreenTextOffset(font, &y);
     CalcScreenPlacement(&x, &y, &xScale, &yScale, horzAlign, vertAlign);
-    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)((char *)&re + 300))(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
+    re.DrawTextWithCursor(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
 }
 
 /* line 5052 */
 int CL_GetKeyCatchers(void)
 {
-    return *(int *)((char *)&clients + 4);
+    return clients[0].keyCatchers;
 }
 
 /* line 5062 */
 Bool CL_GetDisplayHUDWithKeycatchUI(void)
 {
-    return *(byte *)((char *)&clients + 8);
+    return clients[0].displayHUDWithKeycatchUI;
 }
 
 /* line 5072 */
 FontHandle CL_RegisterFont(const char *fontName, int imageTrack)
 {
-    return ((FontHandle (*)(const char *, int))*(int *)((char *)&re + 224))(fontName, imageTrack);
+    return re.RegisterFont(fontName, imageTrack);
 }
 
 /* line 676 */
@@ -2055,14 +2055,14 @@ void CL_Record_f(void)
 /* line 1100 */
 void CL_ShutdownHunkUsers(void)
 {
-    if (!*(int *)((char *)&cls + 4))
+    if (!cls.hunkUsersStarted)
         return;
     CL_ShutdownCGame();
     CL_ShutdownUI();
-    *(int *)((char *)&cls + 2755160) = 0;
-    *(int *)((char *)&cls + 2755164) = 0;
-    *(int *)((char *)&cls + 2755168) = 0;
-    *(int *)((char *)&cls + 4) = 0;
+    cls.whiteMaterial = 0;
+    cls.consoleMaterial = 0;
+    cls.consoleFont = 0;
+    cls.hunkUsersStarted = 0;
 }
 
 /* line 2705 */
@@ -4055,8 +4055,8 @@ void CL_Init(void)
 /* line 1139 */
 void CL_ShutdownAll(void)
 {
-    void (*shutdownInput)(void) = *(void (**)(void))((char *)&re + 328);
-    void (*shutdown)(int) = *(void (**)(int))&re;
+    void (*shutdownInput)(void) = re.SyncRenderThread;
+    void (*shutdown)(int) = re.Shutdown;
 
     if (shutdownInput)
         shutdownInput();

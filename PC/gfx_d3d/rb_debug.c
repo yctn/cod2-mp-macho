@@ -318,7 +318,7 @@ static JCOEF RB_DrawPolyInteriors(void)
     RB_BeginSurface(rgp.whiteMaterial, 3, 0);
 
     data = *(byte **)g_viewParms;
-    polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
+    polyCount = ((DebugGlobals *)(data + DBGGLOB_OFF))->polyCount;
 
     if (polyCount <= 0) {
         RB_EndSurface();
@@ -336,43 +336,46 @@ static JCOEF RB_DrawPolyInteriors(void)
         int vertIndex;
         D3DCOLOR colorBytes;
 
-        poly = data + *(int *)(data + DBGGLOB_OFF + 0x0C) + polyOffset;
+        poly = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->polys + polyOffset;
 
         /* Get polygon vertices */
         {
-            int firstVert = *(int *)(poly + 0x10);
-            vec3_t *vertsBase = *(vec3_t **)(data + DBGGLOB_OFF);
+            int firstVert = *(int *)(poly + 0x10); /* GfxDebugPoly.firstVert */
+            vec3_t *vertsBase = ((DebugGlobals *)(data + DBGGLOB_OFF))->verts;
             polyVerts = &vertsBase[firstVert];
         }
 
         /* Convert color */
         R_ConvertColorToBytes((const vec_t *)poly, (byte *)&colorBytes);
 
-        polyVertCount = *(int *)(poly + 0x14);
+        polyVertCount = *(int *)(poly + 0x14); /* GfxDebugPoly.vertCount */
         indexCount = polyVertCount * 3 - 6; /* triangle fan: (n-2) * 3 indices */
 
         /* Check if we need to overflow / restart the surface */
         {
-            int newVertTotal = polyVertCount + *(int *)(drawSurf + 0x5a7d4);
-            int newIndexTotal = indexCount + *(int *)(drawSurf + 0x5a7d0);
+            materialCommands_t *tess = (materialCommands_t *)drawSurf;
+            int newVertTotal = polyVertCount + tess->vertexCount;
+            int newIndexTotal = indexCount + tess->indexCount;
 
             if (newVertTotal > 0x154a || newIndexTotal > 0x100000) {
-                int oldBatch = *(int *)(drawSurf + 0x5a7cc);
+                int oldBatch = tess->declType;
 
                 RB_EndSurface();
                 RB_BeginSurface(
-                    *(const Material **)(drawSurf + 0x5a7bc),
-                    *(MaterialTechniqueType *)(drawSurf + 0x5a7c0),
-                    *(int *)(drawSurf + 0x5a7c4)
+                    tess->material,
+                    tess->techType,
+                    tess->lmapIndex
                 );
 
-                if (oldBatch != *(int *)(drawSurf + 0x5a7cc)) {
+                tess = (materialCommands_t *)drawSurf;
+                if (oldBatch != tess->declType) {
                     /* Batch counter changed - check pending tris */
-                    if (*(int *)(drawSurf + 0x5a7d0) != 0 || *(int *)(drawSurf + 0x5a7e0) != 0) {
+                    if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                         RB_EndSurface();
                     }
                     drawSurf = *(byte **)g_drawSurf;
-                    *(int *)(drawSurf + 0x5a7cc) = oldBatch;
+                    tess = (materialCommands_t *)drawSurf;
+                    tess->declType = oldBatch;
                 }
             }
         }
@@ -384,7 +387,7 @@ static JCOEF RB_DrawPolyInteriors(void)
             vec3_t *pv = polyVerts;
 
             for (vertIndex = 0; vertIndex < polyVertCount; vertIndex++) {
-                int baseVert = vertIndex + *(int *)(drawSurf + 0x5a7d4);
+                int baseVert = vertIndex + ((materialCommands_t *)drawSurf)->vertexCount;
 
                 if (surfaceType == 2) {
                     /* Type 2: 36-byte stride vertices (GfxWorldVertexDx7-like) */
@@ -450,32 +453,33 @@ static JCOEF RB_DrawPolyInteriors(void)
         /* Emit triangle fan indices */
         if (polyVertCount > 2) {
             for (vertIndex = 2; vertIndex < polyVertCount; vertIndex++) {
-                short *indices;
+                materialCommands_t *tess = (materialCommands_t *)drawSurf;
+                r_index_t *indices;
                 int indexBase;
-                short baseVertIdx;
+                r_index_t baseVertIdx;
 
                 /* Index 0: first vertex */
-                indexBase = *(int *)(drawSurf + 0x5a7d0);
-                indices = *(short **)(drawSurf + 0x5a7b0);
-                baseVertIdx = (short)*(int *)(drawSurf + 0x5a7d4);
+                indexBase = tess->indexCount;
+                indices = tess->indices;
+                baseVertIdx = (r_index_t)tess->vertexCount;
                 indices[indexBase] = baseVertIdx;
 
                 /* Index 1: current vertex */
-                indexBase = *(int *)(drawSurf + 0x5a7d0);
-                indices = *(short **)(drawSurf + 0x5a7b0);
-                indices[indexBase + 1] = (short)(vertIndex + *(int *)(drawSurf + 0x5a7d4));
+                indexBase = tess->indexCount;
+                indices = tess->indices;
+                indices[indexBase + 1] = (r_index_t)(vertIndex + tess->vertexCount);
 
                 /* Index 2: previous vertex */
-                indexBase = *(int *)(drawSurf + 0x5a7d0);
-                indices = *(short **)(drawSurf + 0x5a7b0);
-                indices[indexBase + 2] = (short)(vertIndex + *(int *)(drawSurf + 0x5a7d4) - 1);
+                indexBase = tess->indexCount;
+                indices = tess->indices;
+                indices[indexBase + 2] = (r_index_t)(vertIndex + tess->vertexCount - 1);
 
-                *(int *)(drawSurf + 0x5a7d0) += 3;
+                tess->indexCount += 3;
             }
         }
 
         /* Advance vertex base count */
-        *(int *)(drawSurf + 0x5a7d4) += polyVertCount;
+        ((materialCommands_t *)drawSurf)->vertexCount += polyVertCount;
 
         /* Next poly */
         polyOffset += 0x18;
@@ -499,10 +503,12 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
     byte *data;
     int plumeIndex;
     int plumeCount;
-    byte *backEndPtr;
 
     data = *(byte **)g_viewParms;
-    plumeCount = *(int *)(data + DBGGLOB_OFF + 0x4C); /* debugGlobals.plumeCount */
+    {
+        DebugGlobals *dbg = (DebugGlobals *)(data + DBGGLOB_OFF);
+        plumeCount = dbg->plumeCount;
+    }
 
     if (plumeCount > 0) {
         const vec_t *dir = viewParms->axis[1]; /* axis[1] at offset 0x18 */
@@ -517,12 +523,11 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
             vec3_t org;
 
             data = *(byte **)g_viewParms;
-            plume = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+            plume = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
 
-            backEndPtr = (byte *)&backEnd;
-            time = *(int *)(backEndPtr + 0x3b8); /* sceneDef.time */
+            time = backEnd.sceneDef.time;
 
-            startTime = *(int *)(plume + 0x20);
+            startTime = *(int *)(plume + 0x20); /* GfxDebugPlume.startTime */
             elapsed = time - startTime;
 
             if (elapsed < 0) {
@@ -530,24 +535,24 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
                 continue;
             }
 
-            duration = *(int *)(plume + 0x24);
+            duration = *(int *)(plume + 0x24); /* GfxDebugPlume.duration */
             if (elapsed > duration) {
                 plumeOffset += 0x28;
                 continue;
             }
 
             /* Set alpha based on fade */
-            *(float *)(plume + 0x18) = 1.0f;
+            *(float *)(plume + 0x18) = 1.0f; /* GfxDebugPlume.alpha */
 
             data = *(byte **)g_viewParms;
             {
-                byte *plumeData = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+                byte *plumeData = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
 
                 if (elapsed * 2 > duration) {
                     /* Fading out: alpha = -2*elapsed/duration + 2 */
                     float fElapsed = (float)elapsed;
                     float fDuration = (float)duration;
-                    *(float *)(plumeData + 0x18) = fElapsed * -2.0f / fDuration + 2.0f;
+                    *(float *)(plumeData + 0x18) = fElapsed * -2.0f / fDuration + 2.0f; /* GfxDebugPlume.alpha */
                 }
             }
 
@@ -559,9 +564,9 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 
                 data = *(byte **)g_viewParms;
                 {
-                    byte *plumeOrigin = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+                    byte *plumeOrigin = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
 
-                    /* org = plumeOrigin + height * viewParms->axis[1] */
+                    /* org = plumeOrigin.xyz + height * viewParms->axis[1] */
                     org[0] = height * viewParms->axis[1][0] + *(float *)(plumeOrigin + 0);
                     org[1] = height * viewParms->axis[1][1] + *(float *)(plumeOrigin + 4);
                     org[2] = height * viewParms->axis[1][2] + *(float *)(plumeOrigin + 8);
@@ -573,13 +578,13 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
                 /* Add debug string showing the score */
                 data = *(byte **)g_viewParms;
                 {
-                    byte *plumeData2 = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
-                    const char *scoreStr = va("%i", *(int *)(plumeData2 + 0x1c));
+                    byte *plumeData2 = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
+                    const char *scoreStr = va("%i", *(int *)(plumeData2 + 0x1c)); /* GfxDebugPlume.score */
 
                     R_AddDebugString(
                         (DebugGlobals *)(data + DBGGLOB_OFF),
                         org,
-                        (const vec_t *)(plumeData2 + 0xc), /* color */
+                        (const vec_t *)(plumeData2 + 0xc), /* GfxDebugPlume.color */
                         0.5f,
                         scoreStr
                     );
@@ -592,8 +597,7 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 
     /* Draw debug polys if any */
     data = *(byte **)g_viewParms;
-    if (*(int *)(data + DBGGLOB_OFF + 0x10) != 0) { /* debugGlobals.polyCount */
-        backEndPtr = (byte *)&backEnd;
+    if (((DebugGlobals *)(data + DBGGLOB_OFF))->polyCount != 0) {
         if (backEnd.projection2D != 0) {
             RB_Set3D();
         }
@@ -602,38 +606,38 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 
         /* Clear poly count */
         data = *(byte **)g_viewParms;
-        *(int *)(data + DBGGLOB_OFF + 0x10) = 0;
+        ((DebugGlobals *)(data + DBGGLOB_OFF))->polyCount = 0;
     }
 
     /* Draw debug lines (internal + external) */
     data = *(byte **)g_viewParms;
-    RB_DrawDebugLines(
-        *(trDebugLine_t **)(data + DBGGLOB_OFF + 0x30), /* debugGlobals.lines */
-        *(int *)(data + DBGGLOB_OFF + 0x34)              /* debugGlobals.lineCount */
-    );
+    {
+        DebugGlobals *dbg = (DebugGlobals *)(data + DBGGLOB_OFF);
+        RB_DrawDebugLines(dbg->lines, dbg->lineCount);
+    }
 
     data = *(byte **)g_viewParms;
-    RB_DrawDebugLines(
-        *(trDebugLine_t **)(data + DBGGLOB_OFF + 0x3C), /* debugGlobals.externLines */
-        *(int *)(data + DBGGLOB_OFF + 0x40)              /* debugGlobals.externLineCount */
-    );
+    {
+        DebugGlobals *dbg = (DebugGlobals *)(data + DBGGLOB_OFF);
+        RB_DrawDebugLines(dbg->externLines, dbg->externLineCount);
+    }
 
     /* Clear line count */
     data = *(byte **)g_viewParms;
-    *(int *)(data + DBGGLOB_OFF + 0x34) = 0;
+    ((DebugGlobals *)(data + DBGGLOB_OFF))->lineCount = 0;
 
     /* Draw debug strings (internal + external) */
     data = *(byte **)g_viewParms;
-    RB_DrawDebugStrings(
-        *(trDebugString_t **)(data + DBGGLOB_OFF + 0x18), /* debugGlobals.strings */
-        *(int *)(data + DBGGLOB_OFF + 0x1C)                /* debugGlobals.stringCount */
-    );
+    {
+        DebugGlobals *dbg = (DebugGlobals *)(data + DBGGLOB_OFF);
+        RB_DrawDebugStrings(dbg->strings, dbg->stringCount);
+    }
 
     data = *(byte **)g_viewParms;
-    RB_DrawDebugStrings(
-        *(trDebugString_t **)(data + DBGGLOB_OFF + 0x24), /* debugGlobals.externStrings */
-        *(int *)(data + DBGGLOB_OFF + 0x28)                /* debugGlobals.externStringCount */
-    );
+    {
+        DebugGlobals *dbg = (DebugGlobals *)(data + DBGGLOB_OFF);
+        RB_DrawDebugStrings(dbg->externStrings, dbg->externStringCount);
+    }
 
     return 0;
 }

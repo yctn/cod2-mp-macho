@@ -586,7 +586,7 @@ static void RB_CallCmd(GfxRenderCommandExecState *execState)
 static void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
 {
     byte *cmd = (byte *)execState->cmd;
-    int planeCount = *(int *)(cmd + 4);
+    int planeCount = ((GfxCmdSetClipPlanes *)cmd)->clipPlaneCount;
     void *device;
     void **vtable;
     int i;
@@ -604,9 +604,9 @@ static void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
         ((DxState *)imp_dxState)->clipPlaneCount = planeCount;
     }
 
-    /* Set each clip plane — planes start at cmd+8, 16 bytes each */
+    /* Set each clip plane from cmd->clipPlanes array */
     if (planeCount > 0) {
-        byte *planeData = cmd + 8;
+        byte *planeData = (byte *)((GfxCmdSetClipPlanes *)cmd)->clipPlanes;
         for (i = 0; i < planeCount; i++) {
             /* IDirect3DDevice9::SetClipPlane(i, planeData) — vtable 0xDC */
             do {
@@ -628,8 +628,8 @@ static void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
 static void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
 {
     byte *cmd = (byte *)execState->cmd;
-    int x     = *(int *)(cmd + 4);
-    int y     = *(int *)(cmd + 8);
+    int x     = ((GfxCmdStretchRaw *)cmd)->x;
+    int y     = ((GfxCmdStretchRaw *)cmd)->y;
     int w     = ((GfxCmdStretchRawCmd *)cmd)->w;
     int h     = ((GfxCmdStretchRawCmd *)cmd)->h;
     int cols  = ((GfxCmdStretchRawCmd *)cmd)->cols;
@@ -766,7 +766,10 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
 static void RB_ClearScreenCmd(GfxRenderCommandExecState *execState)
 {
     byte *cmd = (byte *)execState->cmd;
-    RB_ClearScreen(cmd[4], (const vec_t *)(cmd + 12), *(float *)(cmd + 8), cmd[5]);
+    RB_ClearScreen(((GfxCmdClearScreen *)cmd)->whichToClear,
+                   ((GfxCmdClearScreen *)cmd)->color,
+                   ((GfxCmdClearScreen *)cmd)->depth,
+                   ((GfxCmdClearScreen *)cmd)->stencil);
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
 }
@@ -1084,11 +1087,11 @@ static void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
         RB_EndSurface();
 
     cmd = (byte *)execState->cmd;
-    /* Copy vec4 material color from cmd+4 to codeConsts[27] */
-    *(int *)&backEnd.codeConsts[27][0] = *(int *)(cmd + 4);
-    *(int *)&backEnd.codeConsts[27][1] = *(int *)(cmd + 8);
-    *(int *)&backEnd.codeConsts[27][2] = *(int *)(cmd + 12);
-    *(int *)&backEnd.codeConsts[27][3] = *(int *)(cmd + 16);
+    /* Copy vec4 material color from cmd to codeConsts[27] */
+    *(int *)&backEnd.codeConsts[27][0] = *(int *)&((GfxCmdSetMaterialColor *)cmd)->color[0];
+    *(int *)&backEnd.codeConsts[27][1] = *(int *)&((GfxCmdSetMaterialColor *)cmd)->color[1];
+    *(int *)&backEnd.codeConsts[27][2] = *(int *)&((GfxCmdSetMaterialColor *)cmd)->color[2];
+    *(int *)&backEnd.codeConsts[27][3] = *(int *)&((GfxCmdSetMaterialColor *)cmd)->color[3];
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -1105,7 +1108,7 @@ static void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
         RB_EndSurface();
 
     cmd = (byte *)execState->cmd;
-    idx = *(int *)(cmd + 4);
+    idx = ((GfxCmdSetLightProperties *)cmd)->lightIndex;
 
     /* Copy light properties from cmd to backEnd.light[idx] */
     /* ambient (cmd+0x18) */
@@ -1161,7 +1164,7 @@ static void RB_SetStencilRefValueCmd(GfxRenderCommandExecState *execState)
         RB_EndSurface();
 
     cmd = (byte *)execState->cmd;
-    stencilRef = *(int *)(cmd + 4);
+    stencilRef = ((GfxCmdSetStencilRefValue *)cmd)->refValue;
 
     if (((DxState *)imp_dxState)->stencilRefValue != stencilRef) {
         /* D3D SetRenderState(D3DRS_STENCILREF, stencilRef) */
@@ -1202,7 +1205,7 @@ static void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
     backEnd.codeConsts[45][0] = 0.0f;
     backEnd.codeConsts[45][1] = 0.0f;
     backEnd.codeConsts[45][2] = 0.0f;
-    *(int *)&backEnd.codeConsts[45][3] = *(int *)(cmd + 0x44);
+    *(int *)&backEnd.codeConsts[45][3] = *(int *)&((GfxCmdSetShadowCookie *)cmd)->fade;
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -1559,7 +1562,7 @@ static void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
         RB_EndSurface();
 
     cmd = (byte *)execState->cmd;
-    RB_SetRenderTarget(*(int *)(cmd + 4));
+    RB_SetRenderTarget(((GfxCmdSetRenderTarget *)cmd)->renderTargetId);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -1955,10 +1958,10 @@ static void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
     }
 
     RB_RenderDrawSurfList(
-        *(GfxDrawSurf **)(cmd + 8),
-        ((GfxCmdDrawSurfsCmd *)cmd)->drawSurfCount,
-        ((GfxCmdDrawSurfsCmd *)cmd)->techType,
-        *(int *)(cmd + 4));
+        ((GfxCmdDrawSurfs *)cmd)->drawSurfs,
+        ((GfxCmdDrawSurfs *)cmd)->drawSurfCount,
+        ((GfxCmdDrawSurfs *)cmd)->techType,
+        ((GfxCmdDrawSurfs *)cmd)->order);
 }
 
 /* line 1991 */
@@ -1970,7 +1973,7 @@ static void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState)
         RB_EndSurface();
 
     cmd = (byte *)execState->cmd;
-    RB_DrawSunPostEffects(*(void **)(cmd + 4));
+    RB_DrawSunPostEffects((const void *)(uintptr_t)((GfxCmdDrawSunPostEffects *)cmd)->viewIndex); /* viewIndex used as pointer */
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -2016,19 +2019,21 @@ static void RB_Set2D(void)
     stackIdx = backEnd.codeMatrixStackLevel;
     am = (char *)&backEnd.codeMatrixStack[stackIdx];
 
-    /* Copy projection transform to activeMatrices+0x340 */
-    for (i = 0; i < 16; i++)
-        *(int *)(am + 0x340 + i * 4) = *(int *)&transform[i];
-    *(byte *)(am + 0x440) = 1; /* projection dirty */
-
-    /* Clear view matrix dirty flags for slots 1-3 */
-    for (i = 1; i < 4; i++)
-        *(byte *)(am + 0x441 + (i - 1)) = 0;
-
-    /* Copy identity matrix to 4 view matrix slots at am+0x10, stride 0x40 */
-    for (i = 0; i < 4; i++) {
-        memcpy(am + 0x10 + i * 0x40, identity, 64);
-        *(byte *)(am + 0x110 + i) = 1; /* view dirty */
+    /* Copy projection transform to activeMatrices.projection.matrix[0] */
+    {
+        GfxCodeMatrices *cm = (GfxCodeMatrices *)am;
+        for (i = 0; i < 16; i++)
+            *(int *)&((float *)&cm->projection.matrix[0])[i] = *(int *)&transform[i];
+        cm->projection.valid[0] = 1; /* projection dirty */
+        /* Clear projection dirty flags for slots 1-3 */
+        cm->projection.valid[1] = 0;
+        cm->projection.valid[2] = 0;
+        cm->projection.valid[3] = 0;
+        /* Copy identity matrix to 4 world matrix slots and mark dirty */
+        for (i = 0; i < 4; i++) {
+            memcpy(&cm->world.matrix[i], identity, 64);
+            cm->world.valid[i] = 1; /* view dirty */
+        }
     }
 
     /* Replicate view/projection blocks */
@@ -2531,10 +2536,10 @@ static void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
     cmd = (byte *)execState->cmd;
 
     /* Parse cmd header */
-    triMaterial = *(const Material **)(cmd + 4);
-    techType = *(MaterialTechniqueType *)(cmd + 8);
-    indexCount = ((GfxCmdDrawTrianglesCmd *)cmd)->indexCount;
-    vertexCount = ((GfxCmdDrawTrianglesCmd *)cmd)->vertexCount;
+    triMaterial = ((GfxCmdDrawTriangles *)cmd)->material;
+    techType = ((GfxCmdDrawTriangles *)cmd)->techType;
+    indexCount = ((GfxCmdDrawTriangles *)cmd)->indexCount;
+    vertexCount = ((GfxCmdDrawTriangles *)cmd)->vertexCount;
 
     /* Compute data array offsets within cmd buffer */
     {
@@ -2746,7 +2751,7 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
     if (!backEnd.projection2D)
         RB_Set3D();
 
-    spriteMaterial = *(const Material **)(cmd + 4);
+    spriteMaterial = (const Material *)((GfxCmdDrawSprite *)cmd)->material;
 
     /* Begin surface if material or technique changed */
     if (spriteMaterial != tess.material || tess.techType != 3) {
@@ -2763,8 +2768,8 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
     ((GfxEntity *)entity)->origin[1] = ((GfxCmdDrawSpriteCmd *)cmd)->pos[1];
     ((GfxEntity *)entity)->origin[2] = ((GfxCmdDrawSpriteCmd *)cmd)->pos[2];
 
-    /* material (entity+0x54) = cmd+4 */
-    ((GfxEntity *)entity)->customMaterial = *(int *)(cmd + 4);
+    /* material (entity+0x54) = cmd->material */
+    ((GfxEntity *)entity)->customMaterial = (int)(uintptr_t)((GfxCmdDrawSprite *)cmd)->material;
 
     /* surfaceType (entity+0x00) = 4 */
     ((GfxEntity *)entity)->reType = 4;
@@ -2779,8 +2784,8 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
     /* scale (entity+0x70) = cmd+0x1c */
     ((GfxEntity *)entity)->minScreenRadius = ((GfxCmdDrawSpriteCmd *)cmd)->minScreenRadius;
 
-    /* color (entity+0x58) = cmd+8 */
-    ((GfxEntity *)entity)->materialRGBA = *(int *)(cmd + 8);
+    /* color (entity+0x58) = cmd->rgbaColor */
+    ((GfxEntity *)entity)->materialRGBA = ((GfxCmdDrawSprite *)cmd)->rgbaColor.packed;
 
     RB_TessEntity(entity);
 
@@ -3412,7 +3417,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
     int (*Q_ReadToken)(const char **, int);
 
     /* Get font material */
-    material = *(const Material **)((byte *)font + 0xc); /* TODO: font->material (MaterialHandle type mismatch) */
+    material = (const Material *)font->material; /* font->material is MaterialHandle (pointer to Material) */
 
     /* Set view matrices for current viewParms */
     RB_SetMatricesForView(backEnd.viewParms);
@@ -4074,12 +4079,12 @@ static void RB_DrawTextInSpaceCmd(GfxRenderCommandExecState *execState)
     byte *cmd = (byte *)execState->cmd;
 
     RB_DrawTextInSpace(
-        (const char *)(cmd + 0x30),      /* text */
-        *(FontHandle *)(cmd + 0x10),     /* font */
-        (const vec_t *)(cmd + 4),        /* org */
-        (const vec_t *)(cmd + 0x14),     /* xPixelStep */
-        (const vec_t *)(cmd + 0x20),     /* yPixelStep */
-        *(D3DCOLOR *)(cmd + 0x2c));      /* color */
+        ((GfxCmdDrawTextInSpace *)cmd)->text,
+        ((GfxCmdDrawTextInSpace *)cmd)->font,
+        ((GfxCmdDrawTextInSpace *)cmd)->org,
+        ((GfxCmdDrawTextInSpace *)cmd)->xPixelStep,
+        ((GfxCmdDrawTextInSpace *)cmd)->yPixelStep,
+        ((GfxCmdDrawTextInSpace *)cmd)->color.packed);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -4439,11 +4444,11 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v2)->xyzw[1] = y + h;
         ((GfxVertex *)v2)->xyzw[2] = 0.0f;
         ((GfxVertex *)v2)->xyzw[3] = 1.0f;
-        *(float *)(v2 + 0x10) = 0.0f;
-        *(float *)(v2 + 0x14) = 0.0f;
-        *(float *)(v2 + 0x18) = 1.0f;
-        *(D3DCOLOR *)(v2 + 0x1c) = color;
-        *(float *)(v2 + 0x20) = s1;
+        ((GfxVertex *)v2)->normal[0] = 0.0f;
+        ((GfxVertex *)v2)->normal[1] = 0.0f;
+        ((GfxVertex *)v2)->normal[2] = 1.0f;
+        ((GfxVertex *)v2)->color = color;
+        ((GfxVertex *)v2)->texCoord[0] = s1;
         ((GfxVertex *)v2)->texCoord[1] = t1;
         ((GfxVertex *)v2)->binormal[0] = 0.0f;
         ((GfxVertex *)v2)->binormal[1] = 1.0f;
@@ -4453,15 +4458,15 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v2)->tangent[2] = 0.0f;
 
         /* Vertex 3: (x, y+h) texcoord (s0, t1) */
-        *(float *)(v3 + 0x00) = x;
-        *(float *)(v3 + 0x04) = y + h;
-        *(float *)(v3 + 0x08) = 0.0f;
-        *(float *)(v3 + 0x0c) = 1.0f;
-        *(float *)(v3 + 0x10) = 0.0f;
-        *(float *)(v3 + 0x14) = 0.0f;
-        *(float *)(v3 + 0x18) = 1.0f;
-        *(D3DCOLOR *)(v3 + 0x1c) = color;
-        *(float *)(v3 + 0x20) = s0;
+        ((GfxVertex *)v3)->xyzw[0] = x;
+        ((GfxVertex *)v3)->xyzw[1] = y + h;
+        ((GfxVertex *)v3)->xyzw[2] = 0.0f;
+        ((GfxVertex *)v3)->xyzw[3] = 1.0f;
+        ((GfxVertex *)v3)->normal[0] = 0.0f;
+        ((GfxVertex *)v3)->normal[1] = 0.0f;
+        ((GfxVertex *)v3)->normal[2] = 1.0f;
+        ((GfxVertex *)v3)->color = color;
+        ((GfxVertex *)v3)->texCoord[0] = s0;
         ((GfxVertex *)v3)->texCoord[1] = t1;
         ((GfxVertex *)v3)->binormal[0] = 0.0f;
         ((GfxVertex *)v3)->binormal[1] = 1.0f;
@@ -4481,17 +4486,17 @@ static void RB_StretchPicCmd(GfxRenderCommandExecState *execState)
     byte *cmd = (byte *)execState->cmd;
 
     RB_DrawStretchPic(
-        *(const Material **)(cmd + 4),  /* material */
-        *(float *)(cmd + 8),            /* x */
-        ((GfxCmdStretchPicCmd *)cmd)->y,          /* y */
-        ((GfxCmdStretchPicCmd *)cmd)->w,         /* w */
-        ((GfxCmdStretchPicCmd *)cmd)->h,         /* h */
-        ((GfxCmdStretchPicCmd *)cmd)->s0,         /* s0 */
-        ((GfxCmdStretchPicCmd *)cmd)->t0,         /* t0 */
-        ((GfxCmdStretchPicCmd *)cmd)->s1,         /* s1 */
-        ((GfxCmdStretchPicCmd *)cmd)->t1,         /* t1 */
-        ((GfxCmdStretchPicCmd *)cmd)->color,      /* color */
-        8);                             /* statsTarget */
+        ((GfxCmdStretchPic *)cmd)->material,
+        ((GfxCmdStretchPic *)cmd)->x,
+        ((GfxCmdStretchPic *)cmd)->y,
+        ((GfxCmdStretchPic *)cmd)->w,
+        ((GfxCmdStretchPic *)cmd)->h,
+        ((GfxCmdStretchPic *)cmd)->s0,
+        ((GfxCmdStretchPic *)cmd)->t0,
+        ((GfxCmdStretchPic *)cmd)->s1,
+        ((GfxCmdStretchPic *)cmd)->t1,
+        ((GfxCmdStretchPic *)cmd)->color.packed,
+        8);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -5716,11 +5721,13 @@ static void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState
     float h = (float)((DxState *)imp_dxState)->renderTargetHeight;
 
     RB_DrawStretchPic(
-        *(const Material **)(cmd + 4),
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->material,
         0.0f, 0.0f, w, h,
-        *(float *)(cmd + 8), *(float *)(cmd + 12),
-        *(float *)(cmd + 16), *(float *)(cmd + 20),
-        *(D3DCOLOR *)(cmd + 24), 0xa);
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->s0,
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->t0,
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->s1,
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->t1,
+        ((GfxCmdDrawFullScreenColoredQuad *)cmd)->color.packed, 0xa);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -5752,7 +5759,7 @@ static void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
 
     /* Check if saved screen is recent enough to blend */
     elapsed = backEnd.sceneDef.time - ((r_global_permanent_t *)rgp)->savedScreenTime;
-    fadeFrames = *(int *)(cmd + 4);
+    fadeFrames = ((GfxCmdBlendSavedScreen *)cmd)->fadeMsec;
 
     if (elapsed < 0 || elapsed >= fadeFrames)
         goto advance;
@@ -5889,7 +5896,7 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
 {
     int (*Q_ReadToken)(const char **, int) = (int (*)(const char **, int))((refimport_t *)imp_ri)->SEH_ReadCharFromString;
     int (*Sys_Milliseconds)(void) = (int (*)(void))((refimport_t *)imp_ri)->Milliseconds;
-    const Material *material = *(const Material **)((char *)font + 12); /* TODO: font->material (MaterialHandle type mismatch) */
+    const Material *material = (const Material *)font->material; /* font->material is MaterialHandle (pointer to Material) */
     GfxColor newColor = color;
     GfxColor newBlack;
     byte savedAlpha;
@@ -5934,7 +5941,7 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
 
         /* Newline */
         if (ch == '\n') {
-            yPos += (float)*(int *)((char *)font + 4) * yScale;
+            yPos += (float)font->pixelHeight * yScale;
             xPos = xOrig;
             continue;
         }
@@ -6148,7 +6155,7 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
 
     frameBufferTarget = ((DxState *)imp_dxState)->renderTargetId;
     backEnd.resolvedSceneTarget = 0xe;
-    blurRadius = *(float *)(cmd + 4);
+    blurRadius = ((GfxCmdApplyLatePostEffects *)cmd)->blurRadius;
 
     isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
     hasGlowSupport = !isDx7 && ((DxGlobals *)imp_dx)->hasSeparateAlphaBlend;
@@ -7261,7 +7268,7 @@ static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
     if (!backEnd.projection2D)
         RB_Set2D();
 
-    material = *(const Material **)(cmd + 4);
+    material = ((GfxCmdStretchPicRotate *)cmd)->material;
     RB_BeginSurface2D(t, material);
     vc = RB_CheckTessOverflow4(t);
 
@@ -7271,11 +7278,11 @@ static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
     RB_WriteQuadIndices(t, vc);
 
     /* Compute rotation parameters */
-    halfW = ((GfxCmdStretchPicRotateCmd *)cmd)->w * 0.5f;
-    halfH = ((GfxCmdStretchPicRotateCmd *)cmd)->h * 0.5f;
-    midX = *(float *)(cmd + 8) + halfW;
-    midY = ((GfxCmdStretchPicRotateCmd *)cmd)->y + halfH;
-    radians = ((GfxCmdStretchPicRotateCmd *)cmd)->rotation * (float)(3.14159265358979323846 / 180.0);
+    halfW = ((GfxCmdStretchPicRotate *)cmd)->w * 0.5f;
+    halfH = ((GfxCmdStretchPicRotate *)cmd)->h * 0.5f;
+    midX = ((GfxCmdStretchPicRotate *)cmd)->x + halfW;
+    midY = ((GfxCmdStretchPicRotate *)cmd)->y + halfH;
+    radians = ((GfxCmdStretchPicRotate *)cmd)->rotation * (float)(3.14159265358979323846 / 180.0);
     sinR = sinf(radians);
     cosR = cosf(radians);
 
@@ -7291,13 +7298,13 @@ static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
     v2x = midX + cx + sy;  v2y = midY + sx + cy;
     v3x = midX - cx + sy;  v3y = midY - sx + cy;
 
-    color = ((GfxCmdStretchPicRotateCmd *)cmd)->color;
+    color = ((GfxCmdStretchPicRotate *)cmd)->color.packed;
     isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
-    RB_SetVertex2D(t, vc + 0, isDx7, v0x, v0y, ((GfxCmdStretchPicRotateCmd *)cmd)->s0, ((GfxCmdStretchPicRotateCmd *)cmd)->t0, color);
-    RB_SetVertex2D(t, vc + 1, isDx7, v1x, v1y, ((GfxCmdStretchPicRotateCmd *)cmd)->s1, ((GfxCmdStretchPicRotateCmd *)cmd)->t0, color);
-    RB_SetVertex2D(t, vc + 2, isDx7, v2x, v2y, ((GfxCmdStretchPicRotateCmd *)cmd)->s1, ((GfxCmdStretchPicRotateCmd *)cmd)->t1, color);
-    RB_SetVertex2D(t, vc + 3, isDx7, v3x, v3y, ((GfxCmdStretchPicRotateCmd *)cmd)->s0, ((GfxCmdStretchPicRotateCmd *)cmd)->t1, color);
+    RB_SetVertex2D(t, vc + 0, isDx7, v0x, v0y, ((GfxCmdStretchPicRotate *)cmd)->s0, ((GfxCmdStretchPicRotate *)cmd)->t0, color);
+    RB_SetVertex2D(t, vc + 1, isDx7, v1x, v1y, ((GfxCmdStretchPicRotate *)cmd)->s1, ((GfxCmdStretchPicRotate *)cmd)->t0, color);
+    RB_SetVertex2D(t, vc + 2, isDx7, v2x, v2y, ((GfxCmdStretchPicRotate *)cmd)->s1, ((GfxCmdStretchPicRotate *)cmd)->t1, color);
+    RB_SetVertex2D(t, vc + 3, isDx7, v3x, v3y, ((GfxCmdStretchPicRotate *)cmd)->s0, ((GfxCmdStretchPicRotate *)cmd)->t1, color);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -7807,7 +7814,7 @@ static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
     if (!backEnd.projection2D)
         RB_Set2D();
 
-    material = *(const Material **)(cmd + 4);
+    material = ((GfxCmdDrawQuadPic *)cmd)->material;
     RB_BeginSurface2D(t, material);
     vc = RB_CheckTessOverflow4(t);
 
@@ -7816,14 +7823,14 @@ static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
     tess.indexCount += 6;
     RB_WriteQuadIndices(t, vc);
 
-    color = ((GfxCmdDrawQuadPicCmd *)cmd)->color;
+    color = ((GfxCmdDrawQuadPic *)cmd)->color.packed;
     isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     /* 4 explicit corner positions with fixed texcoords */
-    RB_SetVertex2D(t, vc + 0, isDx7, ((GfxCmdDrawQuadPicCmd *)cmd)->verts[0][0], ((GfxCmdDrawQuadPicCmd *)cmd)->verts[0][1], 0.0f, 0.0f, color);
-    RB_SetVertex2D(t, vc + 1, isDx7, ((GfxCmdDrawQuadPicCmd *)cmd)->verts[1][0], ((GfxCmdDrawQuadPicCmd *)cmd)->verts[1][1], 1.0f, 0.0f, color);
-    RB_SetVertex2D(t, vc + 2, isDx7, ((GfxCmdDrawQuadPicCmd *)cmd)->verts[2][0], ((GfxCmdDrawQuadPicCmd *)cmd)->verts[2][1], 1.0f, 1.0f, color);
-    RB_SetVertex2D(t, vc + 3, isDx7, ((GfxCmdDrawQuadPicCmd *)cmd)->verts[3][0], ((GfxCmdDrawQuadPicCmd *)cmd)->verts[3][1], 0.0f, 1.0f, color);
+    RB_SetVertex2D(t, vc + 0, isDx7, ((GfxCmdDrawQuadPic *)cmd)->verts[0][0], ((GfxCmdDrawQuadPic *)cmd)->verts[0][1], 0.0f, 0.0f, color);
+    RB_SetVertex2D(t, vc + 1, isDx7, ((GfxCmdDrawQuadPic *)cmd)->verts[1][0], ((GfxCmdDrawQuadPic *)cmd)->verts[1][1], 1.0f, 0.0f, color);
+    RB_SetVertex2D(t, vc + 2, isDx7, ((GfxCmdDrawQuadPic *)cmd)->verts[2][0], ((GfxCmdDrawQuadPic *)cmd)->verts[2][1], 1.0f, 1.0f, color);
+    RB_SetVertex2D(t, vc + 3, isDx7, ((GfxCmdDrawQuadPic *)cmd)->verts[3][0], ((GfxCmdDrawQuadPic *)cmd)->verts[3][1], 0.0f, 1.0f, color);
 
     cmd = (byte *)execState->cmd;
     execState->cmd = (const void *)(cmd + ((const GfxCmdHeader *)cmd)->byteCount);
@@ -7990,9 +7997,9 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
                 ((GfxVertexDx7 *)vp_)->xyz[2] = posA_z; ((GfxVertexDx7 *)vp_)->normal[0] = posA_w;
                 ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 0; ((GfxVertexDx7 *)vp_)->color = 1.0f;
                 ((GfxVertexDx7 *)vp_)->texCoord[0] = colA;
-                ((GfxVertexDx7 *)vp_)->texCoord[1] = 0; *(int *)(vp_+0x24) = 0;
-                *(int *)(vp_+0x28) = 0; *(float *)(vp_+0x2c) = 0.0f; *(int *)(vp_+0x30) = 0;
-                *(float *)(vp_+0x34) = 1.0f; *(int *)(vp_+0x38) = 0; *(int *)(vp_+0x3c) = 0;
+                ((GfxVertex *)vp_)->texCoord[0] = 0; ((GfxVertex *)vp_)->texCoord[1] = 0;
+                ((GfxVertex *)vp_)->binormal[0] = 0; ((GfxVertex *)vp_)->binormal[1] = 0.0f; ((GfxVertex *)vp_)->binormal[2] = 0;
+                ((GfxVertex *)vp_)->tangent[0] = 1.0f; ((GfxVertex *)vp_)->tangent[1] = 0; ((GfxVertex *)vp_)->tangent[2] = 0;
 
                 vp_ = t + (vc+1) * 64;
                 ((GfxVertex *)vp_)->xyzw[0] = v1x; ((GfxVertex *)vp_)->xyzw[1] = v1y;
@@ -8797,8 +8804,8 @@ static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
     stencilMaterial = ((r_global_permanent_t *)imp_rgp)->stencilPlaneMaterial;
     RB_BeginSurface2D(t, stencilMaterial);
 
-    planeCount = *(int *)(cmd + 8);
-    zOffset = *(float *)(cmd + 4);
+    planeCount = ((GfxCmdStencilPlanes *)cmd)->planeCount;
+    zOffset = ((GfxCmdStencilPlanes *)cmd)->nearDist;
 
     if (planeCount <= 0)
         goto done;
@@ -8806,7 +8813,7 @@ static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
     isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     for (planeIdx = 0; planeIdx < planeCount; planeIdx++) {
-        float d = *(float *)(cmd + 0xc + planeIdx * 4);
+        float d = ((GfxCmdStencilPlanes *)cmd)->planeDists[planeIdx];
         float negD = -d;
         float z = d - zOffset;
         int vc;

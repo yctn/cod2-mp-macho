@@ -287,21 +287,21 @@ void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 /* line 727 */
 int CG_CrosshairPlayer(void)
 {
-    if (*(int *)((char *)&cgArray + 154544) > *(int *)((char *)&cgArray + 179664) + 0x3e8) /* TODO: unknown offset */
+    if (cgArray[0].time > cgArray[0].crosshairClientTime + 0x3e8)
         return -1;
-    return *(int *)((char *)&cgArray + 179660);
+    return cgArray[0].crosshairClientNum;
 }
 
 /* line 737 */
 void CG_GameMessage(const char *msg)
 {
-    CL_ConsolePrint(1, msg, 0, *(int *)(*(int *)&cg_gameMessageWidth + 8));
+    CL_ConsolePrint(1, msg, 0, cg_gameMessageWidth->current.integer);
 }
 
 /* line 743 */
 void CG_BoldGameMessage(const char *msg)
 {
-    CL_ConsolePrint(2, msg, 0, *(int *)(*(int *)&cg_gameBoldMessageWidth + 8));
+    CL_ConsolePrint(2, msg, 0, cg_gameBoldMessageWidth->current.integer);
 }
 
 /* line 754 */
@@ -1135,9 +1135,9 @@ void CG_LoadHudMenu(void)
 
     if (menu != NULL) {
         /* menuDef_t/window layout is still partially suspect; keep the recovered rect offsets local here. */
-        *(float *)((byte *)cgs + 0xc208) = *(float *)((byte *)menu + 8); /* TODO: unknown offset */
-        *(float *)((byte *)cgs + 0xc20c) = *(float *)((byte *)menu + 12); /* TODO: unknown offset */
-        *(float *)((byte *)cgs + 0xc210) = *(float *)((byte *)menu + 4); /* TODO: unknown offset */
+        cgs->compassWidth  = menu->window.rect[0].w;
+        cgs->compassHeight = menu->window.rect[0].h;
+        cgs->compassY      = menu->window.rect[0].y;
     }
 }
 
@@ -1147,7 +1147,7 @@ void CG_InitVote(void)
     ((cgs_t *)cgs)->voteTime = atoi(CL_GetConfigString(0xf));
     ((cgs_t *)cgs)->voteYes = atoi(CL_GetConfigString(0x11));
     ((cgs_t *)cgs)->voteNo = atoi(CL_GetConfigString(0x12));
-    I_strncpyz((char *)cgs + 0x6094, SEH_LocalizeTextMessage(CL_GetConfigString(0x10), "vote string", 0), 0x100);
+    I_strncpyz(cgs->voteString, SEH_LocalizeTextMessage(CL_GetConfigString(0x10), "vote string", 0), 0x100);
 }
 
 /* line 1578 */
@@ -1297,18 +1297,12 @@ static int CG_PlayPickedAlias(const snd_alias_t *pAlias, int entitynum, const ve
 
 static int CG_LocalSoundEntityNum(void)
 {
-    const byte *localSoundState;
-
-    localSoundState = (const byte *)&cgArray + 36;
-    return *(const int *)(localSoundState + 0xd8); /* TODO: unknown offset */
+    return cgArray[0].nextSnap->ps.clientNum;
 }
 
 static const vec_t *CG_LocalSoundOrigin(void)
 {
-    const byte *localSoundState;
-
-    localSoundState = (const byte *)&cgArray + 36;
-    return (const vec_t *)(localSoundState + 0x20);
+    return (const vec_t *)cgArray[0].nextSnap->ps.origin;
 }
 
 /* line 1271 */
@@ -1327,7 +1321,7 @@ void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient)
         orient->origin[0] = ((const centity_t *)cent)->lerpOrigin[0];
         orient->origin[1] = ((const centity_t *)cent)->lerpOrigin[1];
         orient->origin[2] = ((const centity_t *)cent)->lerpOrigin[2];
-        AnglesToAxis((const vec_t *)(cent + 0x1f8), orient->axis);
+        AnglesToAxis((const vec_t *)((const centity_t *)cent)->lerpAngles, orient->axis);
         return;
     }
 
@@ -1335,10 +1329,10 @@ void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient)
         return;
     }
 
-    orient->origin[0] = *(const float *)((const byte *)&cgArray + 180412);
-    orient->origin[1] = *(const float *)((const byte *)&cgArray + 180416);
-    orient->origin[2] = *(const float *)((const byte *)&cgArray + 180420);
-    AxisCopy((vec3_t *)((byte *)cg + 0x2c0c8), orient->axis);
+    orient->origin[0] = cgArray[0].viewModelOrigin[0];
+    orient->origin[1] = cgArray[0].viewModelOrigin[1];
+    orient->origin[2] = cgArray[0].viewModelOrigin[2];
+    AxisCopy(cgArray[0].viewModelAxis, orient->axis);
 }
 
 /* line 1461 */
@@ -1577,7 +1571,7 @@ int CG_PlayEntitySoundAlias(int entitynum, snd_alias_list_t *aliasList)
 {
     const vec_t *origin;
 
-    origin = (const vec_t *)((const byte *)cg_entities + entitynum * 548 + 0x108);
+    origin = (const vec_t *)cg_entities[entitynum].nextState.pos.trBase;
     return CG_PlayPickedAlias(Com_PickSoundAliasFromList(aliasList), entitynum, origin, 0);
 }
 

@@ -926,7 +926,7 @@ void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIn
     char *t = (char *)tree;
 
     /* Check reference count at tree node */
-    if (*(short *)(t + nodeIndex * 4 + 0xc) == 0) {
+    if (((static_model_tree_t *)tree)->nodes[nodeIndex].usedVerts == 0) {
         /* No references: unlink leaf surface from doubly-linked list */
         int leafIdx = (nodeIndex + 1) << levelsToLeaf;
         char *surf = t + leafIdx * 16 - 0x80;
@@ -938,10 +938,10 @@ void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIn
     }
 
     /* Clear reference count */
-    *(short *)(t + nodeIndex * 4 + 0xc) = 0;
+    ((static_model_tree_t *)tree)->nodes[nodeIndex].usedVerts = 0;
 
     /* Check if node has cached surface data */
-    if (*(byte *)(t + nodeIndex * 4 + 0xe) != 0) {
+    if (((static_model_tree_t *)tree)->nodes[nodeIndex].inuse != 0) {
         /* Free cached surface: compute surface address */
         int leafIdx = (nodeIndex + 1) << levelsToLeaf;
         char *surf = t + leafIdx * 16 - 0x78;
@@ -961,14 +961,14 @@ void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIn
         }
 
         /* Update cache totals */
-        *(int *)((char *)cache + 0xc430) -= (1 << (levelsToLeaf + 5));
+        cache->stats.allocatedVerts -= (1 << (levelsToLeaf + 5));
         {
             short vertCount = *(short *)(*(char **)(surf + 8) + 2);
-            *(int *)((char *)cache + 0xc434) -= vertCount;
+            cache->stats.usedVerts -= vertCount;
         }
 
         /* Clear cached surface flag */
-        *(byte *)(t + nodeIndex * 4 + 0xe) = 0;
+        ((static_model_tree_t *)tree)->nodes[nodeIndex].inuse = 0;
     }
 
     /* Recurse on children */
@@ -2184,9 +2184,8 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
     /* Get smodelInst from rgp */
     {
-        byte *rgp = (byte *)imp_rgp;
-        byte *world = *(byte **)(rgp + 0x109c);
-        smodelInst = *(byte **)(world + 0xf8) + smodelIndex * 96;
+        GfxWorld *world = rgp.world;
+        smodelInst = (byte *)(world->smodelInsts + smodelIndex);
     }
 
     /* Get bone offset for this surface */
@@ -2196,9 +2195,9 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         byte *boneData;
         int boneOffset;
 
-        getBoneData = *(void *(**)(int, int))(ri_ptr + 0x1a4);
+        getBoneData = *(void *(**)(int, int))((byte *)imp_ri + 0x1a4); /* TODO: unknown refimport offset 0x1a4 */
         boneOffset = XSurfaceGetBoneOffset(xsurf);
-        boneData = (byte *)getBoneData(*(int *)(smodelInst + 0x10), boneOffset);
+        boneData = (byte *)getBoneData((int)(intptr_t)((GfxStaticModelInstance *)smodelInst)->model, boneOffset);
 
         /* Build bone rotation matrix from quaternion at boneData */
         {
@@ -2233,8 +2232,10 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
     {
         extern void R_GetRigidTransform(const float *boneMatrix, const float *origin,
             const float *axis, float scale, float *outAxis);
-        R_GetRigidTransform(boneMatrix, (float *)(smodelInst + 4),
-            (float *)(smodelInst + 0x2c), *(float *)(smodelInst + 0x50), useAxis);
+        R_GetRigidTransform(boneMatrix,
+            (float *)((GfxStaticModelInstance *)smodelInst)->origin,
+            (float *)((GfxStaticModelInstance *)smodelInst)->axis,
+            ((GfxStaticModelInstance *)smodelInst)->scale, useAxis);
     }
 
     /* Normalize useAxis rows into normAxis */
@@ -2278,63 +2279,43 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
             byte *dst = pSrc; /* writes back in-place into skinBuffers */
 
             for (i = 0; i < vertCount; i++) {
-                float *srcPos = (float *)(skinVerts + i * 0x40 + 0x30);
-                float *dstVert = (float *)(src + i * 0x40);
+                const XVertexInfo *sv = (const XVertexInfo *)skinVerts + i;
+                GfxSModelCachedVertex *dv = (GfxSModelCachedVertex *)src + i;
+                GfxSModelCachedVertex *dvd = (GfxSModelCachedVertex *)dst + i;
 
                 /* Transform position: pos = useAxis * srcPos + translation */
-                dstVert[0] = srcPos[0] * useAxis[0] + srcPos[1] * useAxis[3] + srcPos[2] * useAxis[6] + useAxis[9];
-                dstVert[1] = srcPos[0] * useAxis[1] + srcPos[1] * useAxis[4] + srcPos[2] * useAxis[7] + useAxis[10];
-                dstVert[2] = srcPos[0] * useAxis[2] + srcPos[1] * useAxis[5] + srcPos[2] * useAxis[8] + useAxis[11];
+                dv->xyz[0] = sv->offset[0] * useAxis[0] + sv->offset[1] * useAxis[3] + sv->offset[2] * useAxis[6] + useAxis[9];
+                dv->xyz[1] = sv->offset[0] * useAxis[1] + sv->offset[1] * useAxis[4] + sv->offset[2] * useAxis[7] + useAxis[10];
+                dv->xyz[2] = sv->offset[0] * useAxis[2] + sv->offset[1] * useAxis[5] + sv->offset[2] * useAxis[8] + useAxis[11];
 
                 /* Transform normal through normAxis */
-                {
-                    float nx = *(float *)(skinVerts + i * 0x40 + 0);
-                    float ny = *(float *)(skinVerts + i * 0x40 + 4);
-                    float nz = *(float *)(skinVerts + i * 0x40 + 8);
-                    float *dstNorm = (float *)(dst + i * 0x40 + 0xc);
-                    AxisTransformVector(normAxis, nx, ny, nz, dstNorm);
-                }
+                AxisTransformVector(normAxis, sv->normal[0], sv->normal[1], sv->normal[2], dvd->normal);
 
                 /* Copy color bytes */
-                {
-                    byte *srcColor = skinVerts + i * 0x40 + 0xc;
-                    byte *dstColor = dst + i * 0x40 + 0x18;
-                    dstColor[0] = srcColor[3];
-                    dstColor[1] = srcColor[0];
-                    dstColor[2] = srcColor[1];
-                    dstColor[3] = srcColor[2];
-                }
+                dvd->color.array[0] = sv->color[3];
+                dvd->color.array[1] = sv->color[0];
+                dvd->color.array[2] = sv->color[1];
+                dvd->color.array[3] = sv->color[2];
 
                 /* Copy texcoords */
-                *(int *)(dst + i * 0x40 + 0x1c) = *(int *)(skinVerts + i * 0x40 + 0x1c);
-                *(int *)(dst + i * 0x40 + 0x20) = *(int *)(skinVerts + i * 0x40 + 0x2c);
+                dvd->texCoord[0] = sv->texCoordX;
+                dvd->texCoord[1] = sv->texCoordY;
 
                 /* Store base lighting coords */
-                *(short *)(dst + i * 0x40 + 0x24) = baseLightingCoords[0];
-                *(short *)(dst + i * 0x40 + 0x26) = baseLightingCoords[1];
+                dvd->baseLightingCoords[0] = baseLightingCoords[0];
+                dvd->baseLightingCoords[1] = baseLightingCoords[1];
 
-                /* Transform tangent through normAxis */
-                {
-                    float tx = *(float *)(skinVerts + i * 0x40 + 0x10);
-                    float ty = *(float *)(skinVerts + i * 0x40 + 0x14);
-                    float tz = *(float *)(skinVerts + i * 0x40 + 0x18);
-                    AxisTransformVector(normAxis, tx, ty, tz, (float *)(dst + i * 0x40 + 0x28));
-                }
+                /* Transform tangent (binormal in XVertexInfo) through normAxis */
+                AxisTransformVector(normAxis, sv->binormal[0], sv->binormal[1], sv->binormal[2], dvd->binormal);
 
-                /* Transform binormal through normAxis */
-                {
-                    float bx = *(float *)(skinVerts + i * 0x40 + 0x20);
-                    float by = *(float *)(skinVerts + i * 0x40 + 0x24);
-                    float bz = *(float *)(skinVerts + i * 0x40 + 0x28);
-                    AxisTransformVector(normAxis, bx, by, bz, (float *)(dst + i * 0x40 + 0x34));
-                }
+                /* Transform binormal (tangent in XVertexInfo) through normAxis */
+                AxisTransformVector(normAxis, sv->tangent[0], sv->tangent[1], sv->tangent[2], dvd->tangent);
             }
         }
 
         /* Lock vertex buffer and copy data */
         {
-            byte *dx = (byte *)imp_dx;
-            byte *vb = *(byte **)(dx + 0x2dc4);
+            IDirect3DVertexBuffer9 *vb = ((DxGlobals *)imp_dx)->smodelCacheVb;
             void **vtable = *(void ***)vb;
             int lockSize = vertCount * 0x40;
             int lockOffset = baseVertIndex * 0x40;
@@ -2389,10 +2370,9 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
         /* Derive entity lights for Dx7 */
         {
-            byte *rgp3 = (byte *)imp_rgp;
-            byte *world3 = *(byte **)(rgp3 + 0x109c);
-            float *sunVisPtr = *(float **)(world3 + 0x130);
-            byte *lightingColors = *(byte **)(world3 + 0x12c);
+            GfxWorld *world3 = rgp.world;
+            float *sunVisPtr = world3->smodelLightingSunVisTable;
+            byte *lightingColors = (byte *)world3->smodelLightingColorTable;
 
             lightCount = RB_DeriveEntityLights(
                 (vec4_t *)(lightingColors + smodelIndex * 96),
@@ -2402,34 +2382,24 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
         /* Transform vertices: position + normal, then compute Dx7 lighting color */
         if (vertCount > 0) {
-            byte *pSrcDx7 = (byte *)skinBuffers + 0x200c;
-            byte *srcVert = skinVerts + 0xc;
+            GfxSModelCachedVertexDx7 *pSrcDx7 = (GfxSModelCachedVertexDx7 *)((byte *)skinBuffers + 0x2000);
+            (void)skinVerts; /* srcVert was unused */
 
             for (i = 0; i < vertCount; i++) {
-                float *srcPos = (float *)(skinVerts + i * 0x40 + 0x30);
+                const XVertexInfo *sv = (const XVertexInfo *)skinVerts + i;
                 float normal[3];
-                float dstPos[3];
 
                 /* Transform position */
-                dstPos[0] = srcPos[0] * useAxis[0] + srcPos[1] * useAxis[3] + srcPos[2] * useAxis[6] + useAxis[9];
-                dstPos[1] = srcPos[0] * useAxis[1] + srcPos[1] * useAxis[4] + srcPos[2] * useAxis[7] + useAxis[10];
-                dstPos[2] = srcPos[0] * useAxis[2] + srcPos[1] * useAxis[5] + srcPos[2] * useAxis[8] + useAxis[11];
-
-                *(float *)(pSrcDx7 + i * 0x18 - 0xc) = dstPos[0];
-                *(float *)(pSrcDx7 + i * 0x18 - 8) = dstPos[1];
-                *(float *)(pSrcDx7 + i * 0x18 - 4) = dstPos[2];
+                pSrcDx7[i].xyz[0] = sv->offset[0] * useAxis[0] + sv->offset[1] * useAxis[3] + sv->offset[2] * useAxis[6] + useAxis[9];
+                pSrcDx7[i].xyz[1] = sv->offset[0] * useAxis[1] + sv->offset[1] * useAxis[4] + sv->offset[2] * useAxis[7] + useAxis[10];
+                pSrcDx7[i].xyz[2] = sv->offset[0] * useAxis[2] + sv->offset[1] * useAxis[5] + sv->offset[2] * useAxis[8] + useAxis[11];
 
                 /* Transform normal */
-                {
-                    float nx = *(float *)(skinVerts + i * 0x40 + 0);
-                    float ny = *(float *)(skinVerts + i * 0x40 + 4);
-                    float nz = *(float *)(skinVerts + i * 0x40 + 8);
-                    AxisTransformVector(normAxis, nx, ny, nz, normal);
-                }
+                AxisTransformVector(normAxis, sv->normal[0], sv->normal[1], sv->normal[2], normal);
 
                 /* Copy texcoords */
-                *(int *)(pSrcDx7 + i * 0x18 + 4) = *(int *)(skinVerts + i * 0x40 + 0x1c);
-                *(int *)(pSrcDx7 + i * 0x18 + 8) = *(int *)(skinVerts + i * 0x40 + 0x2c);
+                pSrcDx7[i].texCoord[0] = sv->texCoordX;
+                pSrcDx7[i].texCoord[1] = sv->texCoordY;
 
                 /* Compute lighting color from entity lights */
                 {
@@ -2452,8 +2422,8 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
                     /* Quantize and clamp to [0, 255] */
                     {
-                        byte *srcColor = skinVerts + i * 0x40 + 0xc;
-                        byte *dstColor = pSrcDx7 + i * 0x18;
+                        const byte *srcColor = sv->color;
+                        byte *dstColor = (byte *)&pSrcDx7[i].color;
                         float oneOver255 = 0.003921568859368563f;
                         int ch;
 

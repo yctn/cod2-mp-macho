@@ -209,7 +209,7 @@ toggle:
     ((field_t *)field)->widthInPixels = g_console_field_width;
     ((field_t *)field)->charHeight = g_console_char_height;
     ((field_t *)field)->fixedSize = 1;
-    *(byte *)((char *)&con + 131100) = 0;
+    con.outputVisible = 0;
     ((clientActive_t *)imp_clients)->keyCatchers ^= 1;
 }
 
@@ -242,7 +242,7 @@ static void Con_ChatModeTeam_f(void)
 /* line 2032 */
 void Con_Bottom(void)
 {
-    *(int *)((char *)&con + 131084) = *(int *)((char *)&con + 131076);
+    con.display = con.currentLine;
 }
 
 /* line 354 */
@@ -1026,7 +1026,7 @@ void Con_DrawSay(int y)
 /* line 1873 */
 void Con_ToggleConsoleOutput(void)
 {
-    *(byte *)((char *)&con + 131100) = (*(byte *)((char *)&con + 131100) == 0) ? 1 : 0;
+    con.outputVisible = (con.outputVisible == 0) ? 1 : 0;
 }
 
 /* line 1952 */
@@ -1230,7 +1230,7 @@ void Con_Top(void)
 /* line 2060 */
 Bool Con_IsActive(void)
 {
-    return (*(int *)((char *)*(void **)imp_cl + 4) & 1) != 0;
+    return ((*(clientActive_t **)imp_cl)->keyCatchers & 1) != 0;
 }
 
 /* line 343 */
@@ -2398,7 +2398,7 @@ void Con_Close(void)
 
     Field_Clear(imp_g_consoleField);
     Con_ClearAllMessageWindows();
-    *(int *)((char *)imp_clients + 4) &= ~1;
+    ((clientActive_t *)imp_clients)->keyCatchers &= ~1;
 }
 
 /* line 1300 */
@@ -3078,7 +3078,7 @@ void CL_ConsolePrint(print_msg_type_t type, const char *txt, int duration, int l
 void CL_ConsoleFixPosition(void)
 {
     CL_ConsolePrint(0, "\n", 0, 0);
-    *(int *)((char *)&con + 131084) = *(int *)((char *)&con + 131076) - 1;
+    con.display = con.currentLine - 1;
 }
 
 /* line 1363 */
