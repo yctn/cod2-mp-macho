@@ -616,7 +616,7 @@ extern int R_BeginDrawGroupSection(int section);
 extern int R_BeginDrawGroupLoop(int section, int viewIndex);
 extern int R_EndDrawGroupLoop(int section, int viewIndex);
 extern void R_EndDrawGroupSection(int section);
-extern void R_AddCmdBeginView(int entityCount, const void *sceneDef, const void *viewParms, const void *lodOrigin);
+extern void R_AddCmdBeginView(int entityCount, const GfxSceneDef *sceneDef, const GfxViewParms *viewParms, const GfxLodParms *lodParms);
 extern void R_AddCmdSetRenderTarget(int target);
 extern void R_AddCmdDrawSurfs(void *drawSurfs, int drawSurfCount, int techType);
 extern void R_AddCmdDrawSun(int viewIndex);
@@ -784,7 +784,7 @@ void R_RenderScene(const refdef_t *refdef)
     {
         int isFullbright = (*(const dvar_t **)imp_r_fullbright)->current.enabled;
         int isDx7 = ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2);
-        char *lodOrigin = rg_p + 0x317c;
+        const GfxLodParms *lodParms = &rg_p->lodParms;
 
         if (isFullbright) {
             /* Fullbright path */
@@ -796,7 +796,7 @@ void R_RenderScene(const refdef_t *refdef)
                 R_AddClearCommandsForFrameBuffer(0);
             }
             R_BeginDrawGroupLoop(3, viewIndex);
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 3);
             R_AddCmdDrawSun(viewIndex);
             R_EndDrawGroupLoop(3, viewIndex);
@@ -807,10 +807,10 @@ void R_RenderScene(const refdef_t *refdef)
                 R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
             }
             R_BeginDrawGroupLoop(4, viewIndex);
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
         } else if (isDx7) {
             /* Dx7 path */
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
                 R_AddCmdSetRenderTarget(0);
                 R_AddClearCommandsForFrameBuffer(0);
                 {
@@ -823,7 +823,7 @@ void R_RenderScene(const refdef_t *refdef)
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 0x15);
         } else if ((*(const dvar_t **)imp_r_debugShader)->current.integer) {
             /* Debug shader path */
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
             R_AddCmdSetRenderTarget(0);
             R_AddClearCommandsForFrameBuffer(0);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 0x21);
@@ -841,7 +841,7 @@ void R_RenderScene(const refdef_t *refdef)
                 }
             }
             R_BeginDrawGroupLoop(2, viewIndex);
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 1);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 6);
             R_AddCmdDrawSun(viewIndex);
@@ -853,7 +853,7 @@ void R_RenderScene(const refdef_t *refdef)
             /* Section 3: lit surfaces */
             R_BeginDrawGroupSection(3);
             R_BeginDrawGroupLoop(3, viewIndex);
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
 
             /* Point light partitions */
             if (pointLightCount > 0) {
@@ -879,7 +879,7 @@ void R_RenderScene(const refdef_t *refdef)
                 R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
             }
             R_BeginDrawGroupLoop(4, viewIndex);
-            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, &scene.def, viewParms, lodParms);
             if (!isSplitscreen)
                 R_AddCmdApplyLatePostEffects(blurRadius);
             R_AddCmdDrawSunPostEffects(viewIndex);

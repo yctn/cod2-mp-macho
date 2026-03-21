@@ -12234,6 +12234,7 @@ struct mapInfo {
 
 struct materialCommands_t {
     union { union { GfxVertex generic[5450]; GfxWorldVertex world[5450]; } dx9; union { GfxVertexDx7 generic[5450]; GfxWorldVertexDx7 world[5450]; } dx7; } verts;
+    byte reserved[8];
     r_index_t *indices;
     r_index_t *optimizedIndices;
     GfxOptimizedVertexSource optimizedVertexSource;
