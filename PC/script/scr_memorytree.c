@@ -67,11 +67,12 @@ typedef struct { unsigned int w03; unsigned int w47; } NodeVal;
 #define LOG_BITS(i)  ((unsigned char)scrMemTreeGlob[0x80200 + (unsigned char)(i)])
 
 /* Treap bucket heads */
-#define HEAD(i)      (*(unsigned short *)(scrMemTreeGlob + 0x80300 + (unsigned)(i)*2))
+#define MEMTREE_GLOB ((struct scrMemTreeGlob_t *)(scrMemTreeGlob))
+#define HEAD(i)      (MEMTREE_GLOB->head[(unsigned)(i)])
 
 /* Allocation counters */
-#define TOTAL_ALLOC          (*(int *)(scrMemTreeGlob + 0x80324))
-#define TOTAL_ALLOC_BUCKETS  (*(int *)(scrMemTreeGlob + 0x80328))
+#define TOTAL_ALLOC          (MEMTREE_GLOB->totalAlloc)
+#define TOTAL_ALLOC_BUCKETS  (MEMTREE_GLOB->totalAllocBuckets)
 
 /* ============================================================
  * Helper functions

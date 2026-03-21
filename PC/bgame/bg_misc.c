@@ -181,11 +181,11 @@ void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerStat
     if (newEvent == 0)
         return;
 
-    seq = *(int *)((char *)ps + 0xa4);
+    seq = ps->eventSequence;
     index = seq & 3;
-    *(int *)((char *)ps + 0xa8 + index * 4) = (unsigned char)newEvent;
-    *(int *)((char *)ps + 0xb8 + index * 4) = (unsigned char)eventParm;
-    *(int *)((char *)ps + 0xa4) = seq + 1;
+    ps->events[index] = (unsigned char)newEvent;
+    ps->eventParms[index] = (unsigned char)eventParm;
+    ps->eventSequence = seq + 1;
 }
 
 /* line 819 */
@@ -709,15 +709,15 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
     int weapon;
     char *base;
 
-    index = *(int *)((const char *)ent + 0x8c);
+    index = ent->index.item;
     if (index <= 0 || index >= **(int **)imp_bg_numItems) {
-        Com_Error(ERR_DROP, va((const char *)str_0021be08, index, *(int *)((const char *)ent + 4)));
-        index = *(int *)((const char *)ent + 0x8c);
+        Com_Error(ERR_DROP, va((const char *)str_0021be08, index, ent->eType));
+        index = ent->index.item;
     }
 
     base = *(char **)imp_bg_itemlist;
 
-    if (*(int *)((const char *)ent + 0x90) == *(int *)((const char *)ps + 0xcc)) {
+    if (ent->clientNum == ps->clientNum) {
         return 0;
     }
 
@@ -731,7 +731,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
         case 1: /* IT_WEAPON */
             weapon = *(int *)(base + index * 44 + 0x20);
             if (BG_DoesWeaponNeedSlot(weapon)) {
-                if (!(*(int *)((const char *)ps + 0x544 + (weapon >> 5) * 4) & (1 << (weapon & 0x1f)))) {
+                if (!(ps->weapons[weapon >> 5] & (1 << (weapon & 0x1f)))) {
                     if (bTouched) {
                         return 0;
                     }
@@ -744,7 +744,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 
         case 2: /* IT_AMMO */
             weapon = *(int *)(base + index * 44 + 0x20);
-            if (!(*(int *)((const char *)ps + 0x544 + (weapon >> 5) * 4) & (1 << (weapon & 0x1f)))) {
+            if (!(ps->weapons[weapon >> 5] & (1 << (weapon & 0x1f)))) {
                 if (!BG_WeaponIsClipOnly(weapon)) {
                     return 0;
                 }
@@ -755,7 +755,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
             return 1;
 
         case 3: /* IT_HEALTH */
-            if (*(int *)((const char *)ps + 0x12c) >= *(int *)((const char *)ps + 0x134)) {
+            if (ps->stats[0] >= ps->stats[2]) {
                 return 0;
             }
             return 1;
@@ -1775,17 +1775,17 @@ qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime
     vec3_t origin;
     float dx, dy, dz;
 
-    BG_EvaluateTrajectory((const trajectory_t *)((char *)item + 0xc), atTime, origin);
+    BG_EvaluateTrajectory(&item->pos, atTime, origin);
 
-    dx = *(float *)((char *)ps + 0x14) - origin[0];
+    dx = ps->origin[0] - origin[0];
     if (dx > 36.0f || dx < -36.0f)
         return 0;
 
-    dy = *(float *)((char *)ps + 0x18) - origin[1];
+    dy = ps->origin[1] - origin[1];
     if (dy > 36.0f || dy < -36.0f)
         return 0;
 
-    dz = *(float *)((char *)ps + 0x1c) - origin[2];
+    dz = ps->origin[2] - origin[2];
     if (dz > 18.0f || dz < -88.0f)
         return 0;
 
@@ -1794,122 +1794,118 @@ qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime
 #else
 void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean snap, int handler)
 {
-    byte *psb = (byte *)ps;
-    byte *sb = (byte *)s;
     int eFlags;
     int i;
     int stance;
     int eventSequence;
     int eventOld;
     int event;
-    int evIdx;
     float lerpFrac;
     int lerpTime;
     int elapsed;
 
-    /* line 828-829: s->eType from ps->pm_type */
+    /* line 828-829: s->eType from ps->pm_flags */
     {
-        int pmFlags = *(int *)(psb + 0xc);
-        int val = pmFlags & 0xc00000;
+        int val = ps->pm_flags & 0xc00000;
         int eType;
         if (val != 0) {
             eType = 1;
         } else {
             eType = 5;
         }
-        *(int *)(sb + 4) = eType;
+        s->eType = eType;
     }
 
     /* line 836 */
-    *(int *)(sb + 0xc) = 1;
+    s->pos.trType = 1;
 
     /* line 837: VectorCopy(ps->origin, s->pos.trBase) */
-    *(int *)(sb + 0x18) = *(int *)(psb + 0x14);
-    *(int *)(sb + 0x1c) = *(int *)(psb + 0x18);
-    *(int *)(sb + 0x20) = *(int *)(psb + 0x1c);
+    s->pos.trBase[0] = ps->origin[0];
+    s->pos.trBase[1] = ps->origin[1];
+    s->pos.trBase[2] = ps->origin[2];
 
     /* line 840: snap */
     if (snap) {
         /* line 841: truncate to int and back to float */
-        *(float *)(sb + 0x18) = (float)(int)*(float *)(sb + 0x18);
-        *(float *)(sb + 0x1c) = (float)(int)*(float *)(sb + 0x1c);
-        *(float *)(sb + 0x20) = (float)(int)*(float *)(sb + 0x20);
+        s->pos.trBase[0] = (float)(int)s->pos.trBase[0];
+        s->pos.trBase[1] = (float)(int)s->pos.trBase[1];
+        s->pos.trBase[2] = (float)(int)s->pos.trBase[2];
     }
 
     /* line 844 */
-    *(int *)(sb + 0x30) = 1;
+    s->apos.trType = 1;
 
     /* line 845: VectorCopy(ps->viewangles, s->apos.trBase) */
-    *(int *)(sb + 0x3c) = *(int *)(psb + 0xe8);
-    *(int *)(sb + 0x40) = *(int *)(psb + 0xec);
-    *(int *)(sb + 0x44) = *(int *)(psb + 0xf0);
+    s->apos.trBase[0] = ps->viewangles[0];
+    s->apos.trBase[1] = ps->viewangles[1];
+    s->apos.trBase[2] = ps->viewangles[2];
 
     /* line 848: snap angles */
     if (snap) {
-        *(float *)(sb + 0x3c) = (float)(int)*(float *)(sb + 0x3c);
-        *(float *)(sb + 0x40) = (float)(int)*(float *)(sb + 0x40);
-        *(float *)(sb + 0x44) = (float)(int)*(float *)(sb + 0x44);
+        s->apos.trBase[0] = (float)(int)s->apos.trBase[0];
+        s->apos.trBase[1] = (float)(int)s->apos.trBase[1];
+        s->apos.trBase[2] = (float)(int)s->apos.trBase[2];
     }
 
-    /* line 853: s->leanf = (float)ps->viewHeightTarget */
-    *(float *)(sb + 0x6c) = (float)*(int *)(psb + 0x9c);
+    /* line 853: s->angles2[1] = (float)ps->movementDir */
+    s->angles2[1] = (float)ps->movementDir;
 
     /* line 856 */
-    *(int *)(sb + 0xcc) = *(int *)(psb + 0x7c);
+    s->legsAnim = ps->legsAnim;
     /* line 857 */
-    *(int *)(sb + 0xd0) = *(int *)(psb + 0x84);
+    s->torsoAnim = ps->torsoAnim;
 
     /* line 859 */
-    *(int *)(sb + 0x90) = *(int *)(psb + 0xcc);
+    s->groundEntityNum = ps->clientNum;
 
     /* line 863 */
-    eFlags = *(int *)(psb + 0xa0);
-    *(int *)(sb + 8) = eFlags;
+    eFlags = ps->eFlags;
+    s->eFlags = eFlags;
 
     /* line 867: check for melee */
     if (eFlags & 0x300) {
         /* line 868 */
-        *(int *)(sb + 0x74) = *(int *)(psb + 0x594);
+        s->otherEntityNum = ps->cursorHintEntIndex;
     }
 
     /* line 870 */
-    if (*(int *)(psb + 4) > 5) {
+    if (ps->pm_type > 5) {
         /* line 871 */
-        eFlags = *(int *)(sb + 8);
+        eFlags = s->eFlags;
         eFlags |= 0x20000;
-        *(int *)(sb + 8) = eFlags;
+        s->eFlags = eFlags;
     } else {
         /* line 873 */
-        eFlags = *(int *)(sb + 8);
+        eFlags = s->eFlags;
         eFlags &= ~0x20000;
-        *(int *)(sb + 8) = eFlags;
+        s->eFlags = eFlags;
     }
 
     /* line 876: check pm_flags crouch bit */
-    if (*(int *)(psb + 0xc) & 0x40) {
+    if (ps->pm_flags & 0x40) {
         /* line 877 */
         eFlags |= 0x40000;
-        *(int *)(sb + 8) = eFlags;
+        s->eFlags = eFlags;
     } else {
         /* line 879 */
         eFlags &= ~0x40000;
-        *(int *)(sb + 8) = eFlags;
+        s->eFlags = eFlags;
     }
 
     /* line 882 */
-    *(int *)(sb + 0xd4) = *(int *)(psb + 0x4c);
+    s->leanf = ps->leanf;
 
     /* line 885 */
     stance = PM_GetEffectiveStance(ps);
 
     if (stance == 1) {
         /* line 890: view height lerp */
-        int viewHeightLerpTarget = *(int *)(psb + 0xfc);
+        int viewHeightLerpTarget = ps->viewHeightLerpTime;
         if (viewHeightLerpTarget != 0) {
             /* line 892 */
-            lerpTime = PM_GetViewHeightLerpTime(ps, *(int *)(psb + 0x104), *(int *)(psb + 0x100));
+            lerpTime = PM_GetViewHeightLerpTime(ps, ps->viewHeightLerpDown, ps->viewHeightLerpTarget);
             /* line 893 */
-            elapsed = *(int *)(psb) - *(int *)(psb + 0xfc);
+            elapsed = ps->commandTime - ps->viewHeightLerpTime;
             lerpFrac = (float)elapsed / (float)lerpTime;
 
             /* line 894 */
@@ -1923,7 +1919,7 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
             }
 
             /* line 898 */
-            if (*(int *)(psb + 0x104) != 0) {
+            if (ps->viewHeightLerpDown != 0) {
                 /* going down: lerpFrac stays */
             } else {
                 /* line 899: going up: invert */
@@ -1934,56 +1930,56 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
         }
 
         /* line 906 */
-        *(float *)(sb + 0xe4) = lerpFrac * *(float *)(psb + 0x5a8);
+        s->fTorsoHeight = lerpFrac * ps->fTorsoHeight;
         /* line 907 */
-        *(float *)(sb + 0xe8) = AngleNormalize180(*(float *)(psb + 0x5ac)) * lerpFrac;
+        s->fTorsoPitch = AngleNormalize180(ps->fTorsoPitch) * lerpFrac;
         /* line 908 */
-        *(float *)(sb + 0xec) = AngleNormalize180(*(float *)(psb + 0x5b0)) * lerpFrac;
+        s->fWaistPitch = AngleNormalize180(ps->fWaistPitch) * lerpFrac;
     } else {
         /* line 912-914 */
-        *(int *)(sb + 0xe4) = 0;
-        *(int *)(sb + 0xe8) = 0;
-        *(int *)(sb + 0xec) = 0;
+        s->fTorsoHeight = 0;
+        s->fTorsoPitch = 0;
+        s->fWaistPitch = 0;
     }
 
     /* line 918: event handling */
-    eventOld = *(int *)(psb + 0x5cc);
-    eventSequence = *(int *)(psb + 0xa4);
+    eventOld = ps->entityEventSequence;
+    eventSequence = ps->eventSequence;
 
     if (eventOld < eventSequence) {
         /* line 922 */
         if (eventSequence - eventOld > 4) {
             /* line 923: too many events, skip */
             eventOld = eventSequence - 4;
-            *(int *)(psb + 0x5cc) = eventOld;
+            ps->entityEventSequence = eventOld;
         }
 
         /* line 927: copy first old event */
         {
             int idx = eventOld & 3;
-            *(int *)(sb + 0xa0) = (unsigned char)*(int *)(psb + 0xb8 + idx * 4);
-            *(int *)(psb + 0x5cc) = eventOld + 1;
+            s->eventParm = (unsigned char)ps->eventParms[idx];
+            ps->entityEventSequence = eventOld + 1;
         }
     } else {
         /* line 932 */
-        *(int *)(sb + 0xa0) = 0;
+        s->eventParm = 0;
     }
 
     /* line 939: copy events to entityState */
-    i = *(int *)(psb + 0xc8);
-    if (i != *(int *)(psb + 0xa4)) {
+    i = ps->oldEventSequence;
+    if (i != ps->eventSequence) {
         byte handlerIdx = (unsigned char)handler;
         byte *handlerTable = *(byte **)imp_pmoveHandlers + handlerIdx * 12;
 
-        while (i != *(int *)(psb + 0xa4)) {
+        while (i != ps->eventSequence) {
             int slot = i & 3;
-            event = (unsigned char)*(int *)(psb + 0xa8 + slot * 4);
+            event = (unsigned char)ps->events[slot];
 
             /* line 947-949: call pmoveHandler event callback if present */
             {
                 void (*eventCallback)(int, int) = *(void (**)(int, int))(handlerTable + 8);
                 if (eventCallback) {
-                    eventCallback(*(int *)(sb), event & 0xff);
+                    eventCallback(s->number, event & 0xff);
                 }
             }
 
@@ -2006,13 +2002,13 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
                     /* line 958: check flag */
                     if (singleClientEvents[j] < 0) {
                         /* line 961: copy event to entityState */
-                        int seqOut = *(int *)(sb + 0xa4);
+                        int seqOut = s->eventSequence;
                         int outSlot = seqOut & 3;
-                        *(int *)(sb + 0xa8 + outSlot * 4) = event & 0xff;
+                        s->events[outSlot] = event & 0xff;
                         /* line 962: copy event parm */
-                        *(int *)(sb + 0xb8 + outSlot * 4) = (unsigned char)*(int *)(psb + 0xb8 + slot * 4);
+                        s->eventParms[outSlot] = (unsigned char)ps->eventParms[slot];
                         /* line 963 */
-                        *(int *)(sb + 0xa4) = seqOut + 1;
+                        s->eventSequence = seqOut + 1;
                     }
                 }
             }
@@ -2022,11 +2018,11 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
     }
 
     /* line 965: sync event sequence */
-    *(int *)(psb + 0xc8) = i;
+    ps->oldEventSequence = i;
 
     /* line 967 */
-    *(int *)(sb + 0xc8) = (unsigned char)*(byte *)(psb + 0xd4);
+    s->weapon = (unsigned char)ps->weapon;
     /* line 968 */
-    *(int *)(sb + 0x7c) = (unsigned short)*(short *)(psb + 0x60);
+    s->groundEntityNum = (unsigned short)ps->groundEntityNum;
 }
 #endif

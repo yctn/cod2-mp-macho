@@ -200,7 +200,7 @@ void NetProf_UpdateStatistics(netProfileStream_t *pStream)
         pStream->iLargestPacket   = 0;
         pStream->iSmallestPacket  = 0;
         /* offset 0x2ec */
-        *(int *)((byte *)pStream + 0x2ec) = 0;
+        pStream->iSmallestPacket = 0;
         return;
     }
 
@@ -210,11 +210,11 @@ void NetProf_UpdateStatistics(netProfileStream_t *pStream)
         int fragPct = iNumFragments * 100 / iNumPackets;
         pStream->iLargestPacket   = fragPct;  /* 0x2e4 */
         pStream->iSmallestPacket  = iLargestSize; /* 0x2e8 */
-        *(int *)((byte *)pStream + 0x2ec) = iSmallestSize;
+        pStream->iSmallestPacket = iSmallestSize;
     } else {
         pStream->iLargestPacket   = 0;        /* 0x2e4 */
         pStream->iSmallestPacket  = iLargestSize; /* 0x2e8 */
-        *(int *)((byte *)pStream + 0x2ec) = iSmallestSize;
+        pStream->iSmallestPacket = iSmallestSize;
     }
 
     /* Rate update every 100ms */

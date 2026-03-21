@@ -25,7 +25,7 @@ void StatMon_Warning(int type, int duration, const char *materialName)
 
     stats[type].endtime = Sys_Milliseconds() + duration;
     if (!stats[type].material) {
-        if (*(int *)((char *)sm_mtl_init + 0x108)) {
+        if (((clientStatic_t *)sm_mtl_init)->rendererStarted) {
             stats[type].material = (MaterialHandle)((int (*)(const char *, int, int))((void **)sm_mtl_vtable)[4])(materialName, 0x30, 1);
         }
     }

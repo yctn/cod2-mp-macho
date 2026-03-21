@@ -47,18 +47,17 @@ void CM_SaveLump(int lumpnum, byte *newLump, int size, int *checksum);
 /* line 144 */
 void CM_LoadMap(const char *name, int *checksum)
 {
-    byte *cm_base = (byte *)&cm;
-    byte *phys;
+    clipMap_t *cm_base = &cm;
+    TraceThreadInfo *phys;
     void *alloc;
-    byte *src;
 
     if (name == NULL || *name == '\0') {
         Com_Error(1, "CM_LoadMap: NULL name");
     }
 
-    if (*(char **)cm_base != NULL) {
-        if (stricmp(*(char **)cm_base, name) == 0) {
-            *checksum = *(int *)(cm_base + 0x10c);
+    if (cm_base->name != NULL) {
+        if (stricmp(cm_base->name, name) == 0) {
+            *checksum = cm_base->checksum;
             return;
         }
     }
@@ -66,28 +65,27 @@ void CM_LoadMap(const char *name, int *checksum)
     CM_LoadMapFromBsp(name, 1);
     CM_LoadStaticModels();
 
-    phys = (byte *)g_traceThreadInfo;
-    *(int *)phys = 0;
+    phys = (TraceThreadInfo *)g_traceThreadInfo;
+    phys->checkcount.global = 0;
 
-    alloc = Hunk_AllocInternal(*(int *)(cm_base + 0x64) * 2);
-    *(void **)(phys + 0xc) = alloc;
+    alloc = Hunk_AllocInternal(cm_base->partitionCount * 2);
+    phys->checkcount.partitions = (unsigned short *)alloc;
 
-    alloc = Hunk_AllocInternal(*(int *)(cm_base + 0x4c) * 4);
-    *(void **)(phys + 4) = alloc;
+    alloc = Hunk_AllocInternal(cm_base->edgeCount * 4);
+    phys->checkcount.edges = (int *)alloc;
 
-    alloc = Hunk_AllocInternal(*(int *)(cm_base + 0x44) * 4);
-    *(void **)(phys + 8) = alloc;
+    alloc = Hunk_AllocInternal(cm_base->vertCount * 4);
+    phys->checkcount.verts = (int *)alloc;
 
     alloc = Hunk_AllocInternal(0x30);
-    *(void **)(phys + 0x10) = alloc;
-    src = *(byte **)(cm_base + 0x9c);
-    memcpy(alloc, src, 0x30);
+    phys->box_brush = (cbrush_t *)alloc;
+    memcpy(alloc, cm_base->box_brush, 0x30);
 
     alloc = Hunk_AllocInternal(0x48);
-    *(void **)(phys + 0x14) = alloc;
-    memcpy(alloc, cm_base + 0xa0, 0x48);
+    phys->box_model = (cmodel_t *)alloc;
+    memcpy(alloc, &cm_base->box_model, 0x48);
 
-    *checksum = *(int *)(cm_base + 0x10c);
+    *checksum = cm_base->checksum;
 }
 
 /* line 165 */
@@ -99,23 +97,20 @@ void CM_Shutdown(void)
 /* line 303 */
 int CM_NumInlineModels(void)
 {
-    byte *cm_base = (byte *)&cm;
-    return *(int *)(cm_base + 0x74);
+    return cm.numSubModels;
 }
 
 /* line 309 */
 const char * CM_EntityString(void)
 {
-    byte *cm_base = (byte *)&cm;
-    return *(const char **)(cm_base + 0x98);
+    return cm.entityString;
 }
 
 /* line 316 */
 int CM_LeafCluster(int leafnum)
 {
-    byte *cm_base = (byte *)&cm;
-    byte *leaves = *(byte **)(cm_base + 0x28);
-    return *(short *)(leaves + leafnum * 44 + 0x28);
+    cLeaf_t *leaves = cm.leafs;
+    return leaves[leafnum].cluster;
 }
 
 /* line 349 */
@@ -155,19 +150,19 @@ void CM_Hunk_ClearTempMemoryHigh(void)
 /* line 332 */
 void CM_ModelBounds(clipHandle_t model, vec_t *mins, vec_t *maxs)
 {
-    byte *cmod;
+    cmodel_t *cmod;
 
-    cmod = (byte *)CM_ClipHandleToModel(model);
+    cmod = CM_ClipHandleToModel(model);
 
-    /* VectorCopy cmod+0 to mins */
-    *(int *)&mins[0] = *(int *)(cmod);
-    *(int *)&mins[1] = *(int *)(cmod + 4);
-    *(int *)&mins[2] = *(int *)(cmod + 8);
+    /* VectorCopy cmod->mins to mins */
+    *(int *)&mins[0] = *(int *)&cmod->mins[0];
+    *(int *)&mins[1] = *(int *)&cmod->mins[1];
+    *(int *)&mins[2] = *(int *)&cmod->mins[2];
 
-    /* VectorCopy cmod+0xc to maxs */
-    *(int *)&maxs[0] = *(int *)(cmod + 0xc);
-    *(int *)&maxs[1] = *(int *)(cmod + 0x10);
-    *(int *)&maxs[2] = *(int *)(cmod + 0x14);
+    /* VectorCopy cmod->maxs to maxs */
+    *(int *)&maxs[0] = *(int *)&cmod->maxs[0];
+    *(int *)&maxs[1] = *(int *)&cmod->maxs[1];
+    *(int *)&maxs[2] = *(int *)&cmod->maxs[2];
 }
 
 /* line 206 */

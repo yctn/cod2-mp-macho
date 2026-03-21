@@ -78,7 +78,7 @@ void Dvar_ForEach(void (*callback)())
         return;
     do {
         ((void (*)(const char *))callback)(dvar->name);
-        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+        dvar = (dvar_t *)(intptr_t)dvar->next;
     } while (dvar);
 }
 
@@ -566,7 +566,7 @@ void Dvar_WriteVariables(fileHandle_t f)
                           Dvar_DisplayableLatchedValue(dvar));
             }
         }
-        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+        dvar = (dvar_t *)(intptr_t)dvar->next;
     }
 }
 
@@ -586,7 +586,7 @@ void Dvar_WriteDefaults(fileHandle_t f)
                           Dvar_DisplayableResetValue(dvar));
             }
         }
-        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+        dvar = (dvar_t *)(intptr_t)dvar->next;
     }
 }
 
@@ -607,7 +607,7 @@ void Dvar_List_f(void)
         /* filter by match string */
         if (match) {
             if (!Com_Filter(match, dvar->name, 0)) {
-                dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+                dvar = (dvar_t *)(intptr_t)dvar->next;
                 continue;
             }
         }
@@ -651,7 +651,7 @@ void Dvar_List_f(void)
 
         Com_Printf(" %s \"%s\"\n", dvar->name, Dvar_DisplayableValue(dvar));
 
-        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+        dvar = (dvar_t *)(intptr_t)dvar->next;
     }
 
     Com_Printf("\n%i total dvars\n", *(int *)imp_dvarCount);
@@ -690,7 +690,7 @@ void Com_DvarDump(print_msg_type_t type)
     while (var) {
         if (match) {
             if (!Com_Filter(match, var->name, 0)) {
-                var = (dvar_t *)*(int *)((char *)var + 0x1c);
+                var = (dvar_t *)(intptr_t)var->next;
                 i++;
                 continue;
             }
@@ -708,7 +708,7 @@ void Com_DvarDump(print_msg_type_t type)
         }
         Com_PrintMessage(type, message);
 
-        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+        var = (dvar_t *)(intptr_t)var->next;
         i++;
     }
 
@@ -737,7 +737,7 @@ void SV_SetConfig(int start, int max, int bit)
                                     dvar->name,
                                     Dvar_DisplayableValue(dvar));
         }
-        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+        dvar = (dvar_t *)(intptr_t)dvar->next;
     }
 }
 
@@ -753,7 +753,7 @@ char * Dvar_InfoString(int bit)
         if (var->flags & bit) {
             Info_SetValueForKey(info1, var->name, Dvar_DisplayableValue(var));
         }
-        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+        var = (dvar_t *)(intptr_t)var->next;
     }
 
     /* if bit has flag 2 (userinfo), also set name */
@@ -776,7 +776,7 @@ char * Dvar_InfoString_Big(int bit)
         if (var->flags & bit) {
             Info_SetValueForKey_Big(info2, var->name, Dvar_DisplayableValue(var));
         }
-        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+        var = (dvar_t *)(intptr_t)var->next;
     }
 
     return info2;

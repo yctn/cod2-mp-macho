@@ -70,7 +70,7 @@ void Scr_InitOpcodeLookup(void)
 }
 #else
 void Scr_InitOpcodeLookup(void) {
-    if (!*(unsigned char *)((byte *)imp_scrVarPub + 0xa))
+    if (!((struct scrVarPub_t *)imp_scrVarPub)->developer)
         return;
 
     *(int *)((byte *)&scrParserGlob + 44) = -1;

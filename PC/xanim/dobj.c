@@ -85,23 +85,23 @@ void DObjAbort(void)
 /* line 123 */
 Bool DObjIgnoreCollision(const DObj *obj, int modelIndex)
 {
-    return (*(unsigned char *)((byte *)obj + 0x1a) >> modelIndex) & 1;
+    return (obj->ignoreCollision >> modelIndex) & 1;
 }
 
 /* line 580 */
 int DObjSkelIsBoneUpToDate(DObj *obj, int boneIndex)
 {
-    int *skel = *(int **)((byte *)obj + 4);
-    return (*(int *)((byte *)skel + 0x20 + (boneIndex >> 5) * 4) >> (boneIndex & 0x1f)) & 1;
+    DSkel *skel = obj->skel;
+    return (skel->skelPartBits[boneIndex >> 5] >> (boneIndex & 0x1f)) & 1;
 }
 
 /* line 598 */
 int DObjSkelAreBonesUpToDate(const DObj *obj, int *partBits)
 {
     int i;
-    int *skel = *(int **)((char *)obj + 4);
+    DSkel *skel = obj->skel;
     for (i = 0; i < 4; i++) {
-        if (~*(int *)((char *)skel + 0x24 + i * 4) & partBits[i])
+        if (~skel->skelPartBits[1 + i] & partBits[i])
             return 0;
     }
     return 1;
@@ -156,18 +156,18 @@ void DObjFree(DObj_s *obj)
 }
 #else
 void DObjFree(DObj_s *obj) {
-    if (*(int *)obj) {
-        *(int *)((byte *)obj + 0xc) = 0;
-        *(int *)obj = 0;
+    if (obj->tree) {
+        obj->animToModel = NULL;
+        obj->tree = NULL;
     }
-    if (*(unsigned short *)((byte *)obj + 0x10)) {
-        unsigned short nameVal = *(unsigned short *)((byte *)obj + 0x10);
+    if (obj->duplicateParts) {
+        unsigned short nameVal = obj->duplicateParts;
         if ((unsigned int)nameVal != g_empty) {
             const char *str = SL_ConvertToString(nameVal);
             int len = strlen(str + 16) + 16;
             SL_RemoveRefToStringOfLen(nameVal, len);
         }
-        *(unsigned short *)((byte *)obj + 0x10) = 0;
+        obj->duplicateParts = 0;
     }
 }
 #endif
@@ -175,65 +175,66 @@ void DObjFree(DObj_s *obj) {
 /* line 1223 */
 int DObjGetAllocSkelSize(const DObj *obj)
 {
-    return (*(unsigned char *)((byte *)obj + 0x19) << 5) + 0x30;
+    return (obj->numBones << 5) + 0x30;
 }
 
 /* line 1236 */
 qboolean DObjSkelExists(const DObj *obj, int timeStamp)
 {
-    if (*(int *)((byte *)obj + 8) != timeStamp)
+    if (obj->timeStamp != timeStamp)
     {
-        *(int *)((byte *)obj + 4) = 0;
+        ((DObj *)obj)->skel = NULL;
         return 0;
     }
-    return *(int *)((byte *)obj + 4) != 0;
+    return obj->skel != NULL;
 }
 
 /* line 1261 */
 void DObjSkelClear(const DObj *obj)
 {
-    *(int *)((byte *)obj + 8) = 0;
-    *(int *)((byte *)obj + 4) = 0;
+    ((DObj *)obj)->timeStamp = 0;
+    ((DObj *)obj)->skel = NULL;
 }
 
 /* line 1273 */
 void DObjCreateSkel(const DObj *obj, char *buf, int timeStamp)
 {
     int i;
-    *(char **)((char *)obj + 4) = buf;
-    *(int *)((char *)obj + 8) = timeStamp;
+    DSkel *skel = (DSkel *)buf;
+    ((DObj *)obj)->skel = skel;
+    ((DObj *)obj)->timeStamp = timeStamp;
     for (i = 0; i < 4; i++) {
-        *(int *)(buf + i * 4) = 0;
-        *(int *)(buf + i * 4 + 0x10) = 0;
-        *(int *)(buf + i * 4 + 0x20) = 0;
+        skel->animPartBits[i] = 0;
+        skel->controlPartBits[i] = 0;
+        skel->skelPartBits[i] = 0;
     }
 }
 
 /* line 1301 */
 int DObjGetNumModels(const DObj *obj)
 {
-    return *(unsigned char *)((byte *)obj + 0x18);
+    return obj->numModels;
 }
 
 /* line 1312 */
 XModel * DObjGetModel(const DObj *obj, int modelIndex)
 {
-    return *(XModel **)((byte *)obj + 0x1c + modelIndex * 4);
+    return obj->models[modelIndex];
 }
 
 /* line 1337 */
 DObjAnimMat * DObjGetRotTransArray(const DObj *obj)
 {
-    int *skel = *(int **)((byte *)obj + 4);
+    DSkel *skel = obj->skel;
     if (skel)
-        return (DObjAnimMat *)((byte *)skel + 0x30);
+        return skel->mat;
     return 0;
 }
 
 /* line 1380 */
 int DObjGetMatOffset(const DObj *obj, int modelIndex)
 {
-    return *(unsigned char *)((byte *)obj + 0x44 + modelIndex);
+    return obj->matOffset[modelIndex];
 }
 
 /* line 1393 */
@@ -295,13 +296,13 @@ void DObjGetBoneInfo(const DObj *obj, XBoneInfo * *boneInfo)
 #else
 void DObjGetBoneInfo(const DObj *obj, XBoneInfo * *boneInfo) {
     int j, i;
-    int numModels = *(unsigned char *)((byte *)obj + 0x18);
+    int numModels = obj->numModels;
     int k = 0;
     for (j = 0; j < numModels; j++) {
-        int *model = *(int **)((byte *)obj + 0x1c + j * 4);
+        XModel *model = obj->models[j];
         int size = *(short *)(*(int *)model);
         for (i = 0; i < size; i++) {
-            boneInfo[k++] = (XBoneInfo *)((byte *)*(int *)((byte *)model + 0x60) + i * 0x28);
+            boneInfo[k++] = &model->boneInfo[i];
         }
     }
 }
@@ -374,15 +375,14 @@ int DObjGetNumSurfaces(const DObj *obj, char *lods)
 #else
 int DObjGetNumSurfaces(const DObj *obj, char *lods) {
     int numSurfaces = 0;
-    int numModels = *(unsigned char *)((byte *)obj + 0x18);
+    int numModels = obj->numModels;
     int i;
     for (i = numModels - 1; i >= 0; i--) {
         signed char lod = lods[i];
         if (lod >= 0) {
-            int *model = *(int **)((byte *)obj + 0x1c + i * 4);
-            byte *lodInfo = (byte *)model + (unsigned char)lod * 20 + 4;
-            if (*(int *)(lodInfo + 0x10)) {
-                numSurfaces += *(short *)(lodInfo + 8);
+            XModel *model = obj->models[i];
+            if (model->lodInfo[(unsigned char)lod].surfs) {
+                numSurfaces += model->lodInfo[(unsigned char)lod].numsurfs;
             }
         }
     }
@@ -393,9 +393,8 @@ int DObjGetNumSurfaces(const DObj *obj, char *lods) {
 /* line 1509 */
 struct XSurface_s * DObjGetSurface(const DObj *obj, int modelIndex, int subMatIndex, int lod)
 {
-    char *model = (char *)(*(int *)((char *)obj + 0x1c + modelIndex * 4));
-    char *lodInfo = model + lod * 20;
-    int *surfs = *(int **)(lodInfo + 0x14);
+    XModel *model = obj->models[modelIndex];
+    XModelSurfs *surfs = model->lodInfo[lod].surfs;
     int *surfList = *(int **)surfs;
     return (struct XSurface_s *)*(int *)(surfList + subMatIndex);
 }
@@ -553,13 +552,13 @@ int DObjBad(const DObj *obj)
 /* line 1728 */
 int DObjNumBones(const DObj *obj)
 {
-    return *(unsigned char *)((byte *)obj + 0x19);
+    return obj->numBones;
 }
 
 /* line 2125 */
 int DObjGetLodForDist(const DObj *obj, int modelIndex, float dist)
 {
-    return XModelGetLodForDist(*(XModel **)((byte *)obj + 0x1c + modelIndex * 4), dist);
+    return XModelGetLodForDist(obj->models[modelIndex], dist);
 }
 
 /* line 2131 */
@@ -669,9 +668,9 @@ int DObjHasContents(DObj *obj, int contentmask)
 /* line 2362 */
 void DObjSetModel(DObj *obj, const XModel *model)
 {
-    *(int *)((byte *)obj + 4) = *(int *)model + 0x14;
-    *(unsigned char *)((byte *)obj + 0x19) = (unsigned char)*(unsigned short *)*(int *)model;
-    *(const XModel **)((byte *)obj + 0x1c) = model;
+    obj->skel = (DSkel *)(*(int *)model + 0x14);
+    obj->numBones = (unsigned char)*(unsigned short *)*(int *)model;
+    obj->models[0] = (XModel *)model;
 }
 
 /* line 1323 */
@@ -4166,8 +4165,8 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
 
 #else
 const char * DObjGetSurfaceName(DObj *obj, int modelIndex, int subMatIndex, int lod) {
-    byte *model = *(byte **)((byte *)obj + 0x1c + modelIndex * 4);
-    unsigned short *matNames = *(unsigned short **)(model + lod * 20 + 0x10);
+    XModel *model = obj->models[modelIndex];
+    unsigned short *matNames = model->lodInfo[lod].surfNames;
     unsigned short name = matNames[subMatIndex];
     if (!name)
         return (const char *)str_00217dc0;

@@ -20,12 +20,12 @@ extern byte *cm_global; /* imp_cm */
 
 void CM_LoadStaticModels(void)
 {
-    byte *cm = (byte *)&cm_global;
-    const char *ptr = *(const char **)(cm + 0x98);
+    clipMap_t *cm = (clipMap_t *)&cm_global;
+    const char *ptr = cm->entityString;
 
     /* Reset counts */
-    *(int *)(cm + 4) = 0;
-    *(int *)(cm + 8) = 0;
+    cm->numStaticModels = 0;
+    cm->staticModelList = NULL;
 
     char modelName[64];
     char key[64];
@@ -71,20 +71,19 @@ void CM_LoadStaticModels(void)
         if (!Com_ValidXModelName(modelName))
             continue;
 
-        *(int *)(cm + 4) += 1;
+        cm->numStaticModels += 1;
     }
 
     /* Check if any models found */
-    int numStaticModels = *(int *)(cm + 4);
+    int numStaticModels = cm->numStaticModels;
     if (numStaticModels == 0)
         return;
 
     /* Allocate static model array (each entry is 0x50 = 80 bytes) */
-    byte *staticModels = (byte *)CM_Hunk_Alloc(numStaticModels * 80, "CM_CreateStaticModel", 0x19);
-    *(byte **)(cm + 8) = staticModels;
+    cm->staticModelList = (cStaticModel_t *)CM_Hunk_Alloc(numStaticModels * 80, "CM_CreateStaticModel", 0x19);
 
     /* Second pass: populate static models */
-    ptr = *(const char **)(cm + 0x98);
+    ptr = cm->entityString;
     int offset = 0;
 
     for (;;) {

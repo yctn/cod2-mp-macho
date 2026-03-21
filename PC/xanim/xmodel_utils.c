@@ -23,19 +23,19 @@ int XModelGetLodForDist(const XModel *model, float dist);
 /* line 23 */
 const char *XModelGetName(const XModel *model)
 {
-    return *(const char **)((byte *)model + 0x88);
+    return model->name;
 }
 
 /* line 34 */
 unsigned char XModelGetFlags(const XModel *model)
 {
-    return *(unsigned char *)((byte *)model + 0x8c);
+    return model->flags;
 }
 
 /* line 45 */
 const char *XModelGetSurfaceName(const XModel *model, int subMatIndex, int lod)
 {
-    unsigned short *materialNames = *(unsigned short **)((byte *)model + lod * 20 + 0x10);
+    unsigned short *materialNames = model->lodInfo[lod].surfNames;
     unsigned short name = materialNames[subMatIndex];
     if (name == 0)
         return "";
@@ -45,22 +45,21 @@ const char *XModelGetSurfaceName(const XModel *model, int subMatIndex, int lod)
 /* line 62 */
 int XModelGetSurfaces(const XModel *model, struct XSurface_s ***surfaces, int lod, int **partBits)
 {
-    byte *lodEntry = (byte *)model + lod * 20 + 4;
-    byte *surfData = *(byte **)(lodEntry + 0x10);
+    XModelSurfs *surfData = model->lodInfo[lod].surfs;
     if (!surfData) {
         *surfaces = NULL;
         *partBits = NULL;
         return 0;
     }
     *surfaces = *(struct XSurface_s ***)(surfData);
-    *partBits = (int *)(surfData + 4);
-    return *(short *)(lodEntry + 8);
+    *partBits = (int *)((byte *)surfData + 4);
+    return model->lodInfo[lod].numsurfs;
 }
 
 /* line 84 */
 int XModelGetNumLods(const XModel *model)
 {
-    return *(short *)((byte *)model + 0x7c);
+    return model->numLods;
 }
 
 /* line 95 */
@@ -91,17 +90,16 @@ void XModelSetTestLods(int lodLevel, float dist)
 /* line 135 */
 float XModelGetLodOutDist(const XModel *model)
 {
-    int lastLod = *(short *)((byte *)model + 0x7c) - 1;
+    int lastLod = model->numLods - 1;
     if (*(byte *)&g_testLods[lastLod] != 0)
         return *(float *)((byte *)&g_testLods[lastLod] + 4);
-    return *(float *)((byte *)model + lastLod * 20 + 4);
+    return model->lodInfo[lastLod].dist;
 }
 
 /* line 149 */
 int XModelGetLodForDist(const XModel *model, float dist)
 {
-    int numLods = *(short *)((byte *)model + 0x7c);
-    byte *lodEntry = (byte *)model + 4;
+    int numLods = model->numLods;
     int i;
 
     for (i = 0; i < numLods; i++) {
@@ -109,12 +107,10 @@ int XModelGetLodForDist(const XModel *model, float dist)
         if (*(byte *)&g_testLods[i] != 0)
             lodDist = *(float *)((byte *)&g_testLods[i] + 4);
         else
-            lodDist = *(float *)lodEntry;
+            lodDist = model->lodInfo[i].dist;
 
         if (lodDist == 0.0f || lodDist > dist)
             return i;
-
-        lodEntry += 20;
     }
     return -1;
 }

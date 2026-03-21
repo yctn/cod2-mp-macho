@@ -749,9 +749,9 @@ Bool Dvar_IsValidName(const char *dvarName)
 /* line 247 */
 const char * Dvar_EnumToString(const dvar_t *dvar)
 {
-    if (!*(int *)((byte *)dvar + 0x14))
+    if (!dvar->domain.enumeration.stringCount)
         return "";
-    return ((const char **)*(void **)((byte *)dvar + 0x18))[*(int *)((byte *)dvar + 8)];
+    return dvar->domain.enumeration.strings[dvar->current.integer];
 }
 
 /* C implementation of Dvar_ValueToString
@@ -855,19 +855,19 @@ Bool Dvar_IsAtDefaultValue(const dvar_t *dvar)
 /* line 1078 */
 void Dvar_ClearModified(const dvar_t *dvar)
 {
-    *(byte *)((byte *)dvar + 7) = 0;
+    ((dvar_t *)dvar)->modified = 0;
 }
 
 /* line 1085 */
 void Dvar_SetModified(const dvar_t *dvar)
 {
-    *(byte *)((byte *)dvar + 7) = 1;
+    ((dvar_t *)dvar)->modified = 1;
 }
 
 /* line 2319 */
 void Dvar_AddFlags(const dvar_t *dvar, int flags)
 {
-    *(unsigned short *)((byte *)dvar + 4) |= (unsigned short)flags;
+    ((dvar_t *)dvar)->flags |= (unsigned short)flags;
 }
 
 /* line 2388 */
@@ -875,8 +875,8 @@ void Dvar_ResetScriptInfo(void)
 {
     dvar_t *dvar = dvarPool;
     while (dvar) {
-        *(unsigned short *)((byte *)dvar + 4) &= ~0x0400;
-        dvar = (dvar_t *)*(int *)((byte *)dvar + 0x1c);
+        dvar->flags &= ~0x0400;
+        dvar = (dvar_t *)(uintptr_t)dvar->next;
     }
 }
 
@@ -3256,10 +3256,10 @@ static const dvar_t *Dvar_RegisterVariant_impl(
     /* line 1054: search hash table for existing dvar */
     existing = dvarHashTable[hash];
     while (existing) {
-        if (I_stricmp(dvarName, *(const char **)existing) == 0) {
+        if (I_stricmp(dvarName, existing->name) == 0) {
             goto found_existing;
         }
-        existing = *(dvar_t **)((byte *)existing + 0x20);
+        existing = (dvar_t *)(uintptr_t)existing->hashNext;
     }
 
     /* NOT FOUND: create new dvar */
@@ -3268,7 +3268,7 @@ static const dvar_t *Dvar_RegisterVariant_impl(
 found_existing:
     /* line 1708: dvar already exists */
     {
-        unsigned short oldFlags = *(unsigned short *)((byte *)existing + 4);
+        unsigned short oldFlags = existing->flags;
         unsigned short newFlags = (unsigned short)flags;
 
         /* line 1580: check if flag update types differ */
@@ -3282,11 +3282,11 @@ found_existing:
                 /* line 1522: unregister */
                 ((DvarPerformUnregistrationRegparmFn)Dvar_PerformUnregistration)(existing);
                 /* line 145: free old name */
-                Z_FreeInternal(*(char **)existing);
+                Z_FreeInternal((char *)existing->name);
                 /* line 1525 */
-                *(const char **)existing = dvarName;
+                existing->name = dvarName;
                 /* line 1526 */
-                *(unsigned short *)((byte *)existing + 4) &= ~0x4000;
+                existing->flags &= ~0x4000;
 
                 /* line 1528 */
                 {
@@ -3295,7 +3295,7 @@ found_existing:
                     ((void (*)(dvar_t *, const char *, int, unsigned short, DvarValue *, DvarLimits *))Dvar_MakeExplicitType)(
                         existing, dvarName, type, (unsigned short)flags, valuePtr, domainPtr);
                 }
-                oldFlags = *(unsigned short *)((byte *)existing + 4);
+                oldFlags = existing->flags;
                 goto check_flags_cont;
             } else {
                 if (newFlags & 0x4000) {
@@ -3305,12 +3305,11 @@ found_existing:
                 if (flags & 0x1000) {
                     if (!(oldFlags & 0x1000)) {
                         /* line 1540 */
-                        *(const char **)existing = dvarName;
+                        existing->name = dvarName;
                         /* line 1541 */
-                        if (*(byte *)((byte *)existing + 6) == 6) {
+                        if (existing->type == 6) {
                             /* line 1542: update enum domain */
-                            *(int *)((byte *)existing + 0x14) = *(int *)((byte *)&domain);
-                            *(int *)((byte *)existing + 0x18) = *(int *)((byte *)&domain + 4);
+                            existing->domain = domain;
                         }
                     }
                 }
@@ -3320,10 +3319,9 @@ found_existing:
 check_flags_cont:
             if (flags & 0x1000) {
                 if (!(oldFlags & 0x1000)) {
-                    *(const char **)existing = dvarName;
-                    if (*(byte *)((byte *)existing + 6) == 6) {
-                        *(int *)((byte *)existing + 0x14) = *(int *)((byte *)&domain);
-                        *(int *)((byte *)existing + 0x18) = *(int *)((byte *)&domain + 4);
+                    existing->name = dvarName;
+                    if (existing->type == 6) {
+                        existing->domain = domain;
                     }
                 }
             }
@@ -3331,34 +3329,34 @@ check_flags_cont:
 
 check_flags:
         /* line 1586: check READONLY flag mismatch */
-        if ((oldFlags & 0x4000) && type != *(byte *)((byte *)existing + 6)) {
+        if ((oldFlags & 0x4000) && type != existing->type) {
             /* line 1589: type mismatch, call MakeExplicitType */
             ((void (*)(dvar_t *, const char *, int, unsigned short, DvarValue *, DvarLimits *))Dvar_MakeExplicitType)(
                 existing, dvarName, type, (unsigned short)flags, (DvarValue *)&value, (DvarLimits *)&domain);
         }
 
         /* line 1595: merge flags */
-        *(unsigned short *)((byte *)existing + 4) |= (unsigned short)flags;
+        existing->flags |= (unsigned short)flags;
 
         /* line 1597: cheat enforcement */
-        if (*(unsigned short *)((byte *)existing + 4) & 0x80) {
-            if (dvar_cheats && *(byte *)((byte *)dvar_cheats + 8) == 0) {
+        if (existing->flags & 0x80) {
+            if (dvar_cheats && dvar_cheats->current.enabled == 0) {
                 /* line 1599: set to reset value */
                 {
-                    DvarValue resetVal = *(DvarValue *)((byte *)existing + 0x10);
+                    DvarValue resetVal = existing->reset;
                     ((DvarSetVariantRegparmFn)Dvar_SetVariant)(existing, resetVal, 0);
                 }
                 {
-                    DvarValue resetVal = *(DvarValue *)((byte *)existing + 0x10);
+                    DvarValue resetVal = existing->reset;
                     ((DvarUpdateResetValueRegparmFn)Dvar_SetLatchedValue)(existing, resetVal);
                 }
             }
         }
 
         /* line 1603: check LATCH flag */
-        if (*(unsigned short *)((byte *)existing + 4) & 0x20) {
+        if (existing->flags & 0x20) {
             /* line 1553: set variant from latched */
-            DvarValue latchedVal = *(DvarValue *)((byte *)existing + 0xc);
+            DvarValue latchedVal = existing->latched;
             ((DvarSetVariantRegparmFn)Dvar_SetVariant)(existing, latchedVal, 0);
         }
 
@@ -3379,26 +3377,26 @@ create_new:
     dvarCount++;
 
     /* line 1632: set type */
-    *(byte *)((byte *)dvar + 6) = (byte)newType;
+    dvar->type = (byte)newType;
 
     /* line 1633: check EXTERNAL flag */
     if (flags & 0x4000) {
         /* line 1634: copy name string */
-        *(const char **)dvar = CopyStringInternal(dvarName);
+        dvar->name = CopyStringInternal(dvarName);
     } else {
         /* line 1636: direct pointer */
-        *(const char **)dvar = dvarName;
+        dvar->name = dvarName;
     }
 
     /* line 1637: set value based on type */
     if (newType == DVAR_TYPE_VEC3) {
         /* line 125-127: allocate vec3 storage (3 components * 3 copies = 9 floats * 4 = 36) */
-        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int numComponents = (unsigned char)dvar->type;
         int allocSize = numComponents * 3 * 4;
         float *mem = (float *)Z_MallocInternal(allocSize);
-        *(float **)((byte *)dvar + 8) = mem;
-        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
-        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+        dvar->current.vector = mem;
+        dvar->latched.vector = mem + numComponents;
+        dvar->reset.vector = mem + numComponents * 2;
 
         /* Copy vec3 value to all three (current, latched, reset) */
         {
@@ -3407,24 +3405,24 @@ create_new:
             mem[1] = src[1];
             mem[2] = src[2];
 
-            float *latched = *(float **)((byte *)dvar + 0xc);
+            float *latched = dvar->latched.vector;
             latched[0] = src[0];
             latched[1] = src[1];
             latched[2] = src[2];
 
-            float *reset = *(float **)((byte *)dvar + 0x10);
+            float *reset = dvar->reset.vector;
             reset[0] = src[0];
             reset[1] = src[1];
             reset[2] = src[2];
         }
     } else if (newType == DVAR_TYPE_VEC2) {
         /* line 125-127 */
-        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int numComponents = (unsigned char)dvar->type;
         int allocSize = numComponents * 3 * 4;
         float *mem = (float *)Z_MallocInternal(allocSize);
-        *(float **)((byte *)dvar + 8) = mem;
-        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
-        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+        dvar->current.vector = mem;
+        dvar->latched.vector = mem + numComponents;
+        dvar->reset.vector = mem + numComponents * 2;
 
         /* Copy vec2 value */
         {
@@ -3432,22 +3430,22 @@ create_new:
             mem[0] = src[0];
             mem[1] = src[1];
 
-            float *latched = *(float **)((byte *)dvar + 0xc);
+            float *latched = dvar->latched.vector;
             latched[0] = src[0];
             latched[1] = src[1];
 
-            float *reset = *(float **)((byte *)dvar + 0x10);
+            float *reset = dvar->reset.vector;
             reset[0] = src[0];
             reset[1] = src[1];
         }
     } else if (newType == DVAR_TYPE_VEC4) {
         /* line 125-127 */
-        int numComponents = (unsigned char)*(byte *)((byte *)dvar + 6);
+        int numComponents = (unsigned char)dvar->type;
         int allocSize = numComponents * 3 * 4;
         float *mem = (float *)Z_MallocInternal(allocSize);
-        *(float **)((byte *)dvar + 8) = mem;
-        *(float **)((byte *)dvar + 0xc) = mem + numComponents;
-        *(float **)((byte *)dvar + 0x10) = mem + numComponents * 2;
+        dvar->current.vector = mem;
+        dvar->latched.vector = mem + numComponents;
+        dvar->reset.vector = mem + numComponents * 2;
 
         /* Copy vec4 value */
         {
@@ -3457,13 +3455,13 @@ create_new:
             mem[2] = src[2];
             mem[3] = src[3];
 
-            float *latched = *(float **)((byte *)dvar + 0xc);
+            float *latched = dvar->latched.vector;
             latched[0] = src[0];
             latched[1] = src[1];
             latched[2] = src[2];
             latched[3] = src[3];
 
-            float *reset = *(float **)((byte *)dvar + 0x10);
+            float *reset = dvar->reset.vector;
             reset[0] = src[0];
             reset[1] = src[1];
             reset[2] = src[2];
@@ -3472,23 +3470,22 @@ create_new:
     } else if (newType == DVAR_TYPE_STRING) {
         /* line 155-173: string dvar */
         const char *strVal = Dvar_ConvertStringValue(*(const char **)&value, newType);
-        *(const char **)((byte *)dvar + 8) = strVal;
-        *(const char **)((byte *)dvar + 0xc) = strVal;
-        *(const char **)((byte *)dvar + 0x10) = strVal;
+        dvar->current.string = strVal;
+        dvar->latched.string = strVal;
+        dvar->reset.string = strVal;
     } else {
         /* line 1668-1670: simple value types (bool, int, float, enum, color) */
         int val = *(int *)&value;
-        *(int *)((byte *)dvar + 8) = val;
-        *(int *)((byte *)dvar + 0xc) = val;
-        *(int *)((byte *)dvar + 0x10) = val;
+        dvar->current.integer = val;
+        dvar->latched.integer = val;
+        dvar->reset.integer = val;
     }
 
     /* line 1673: set domain */
-    *(int *)((byte *)dvar + 0x14) = *(int *)((byte *)&domain);
-    *(int *)((byte *)dvar + 0x18) = *(int *)((byte *)&domain + 4);
+    dvar->domain = domain;
 
     /* line 1674: clear modified */
-    *(byte *)((byte *)dvar + 7) = 0;
+    dvar->modified = 0;
 
     /* line 1677-1683: insert into sorted list */
     {
@@ -3496,23 +3493,23 @@ create_new:
         dvar_t *cur = sortedDvars;
 
         while (cur) {
-            if (stricmp(*(const char **)dvar, *(const char **)cur) < 0)
+            if (stricmp(dvar->name, cur->name) < 0)
                 break;
-            prevPtr = (dvar_t **)((byte *)cur + 0x1c);
-            cur = *(dvar_t **)((byte *)cur + 0x1c);
+            prevPtr = (dvar_t **)&cur->next;
+            cur = (dvar_t *)(uintptr_t)cur->next;
         }
 
-        *(dvar_t **)((byte *)dvar + 0x1c) = *prevPtr;
+        dvar->next = (int)(uintptr_t)*prevPtr;
         *prevPtr = dvar;
     }
 
     /* line 1685 */
-    *(unsigned short *)((byte *)dvar + 4) = (unsigned short)flags;
+    dvar->flags = (unsigned short)flags;
 
     /* line 1688-1689: insert into hash table */
     {
         unsigned char h = Dvar_HashName(dvarName);
-        *(dvar_t **)((byte *)dvar + 0x20) = dvarHashTable[h];
+        dvar->hashNext = (int)(uintptr_t)dvarHashTable[h];
         dvarHashTable[h] = dvar;
     }
 

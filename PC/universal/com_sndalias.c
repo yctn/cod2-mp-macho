@@ -1681,7 +1681,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
     /* line 1028: if system == 1 and sv_running, copy server aliases to client */
     if (system == 1) {
         const dvar_t *sv_running = *(const dvar_t **)imp_com_sv_running;
-        if (*(byte *)((byte *)sv_running + 8) != 0) {
+        if (sv_running->current.enabled != 0) {
             /* line 1068: copy server system counts to client */
             *(int *)((byte *)&g_sa + 4120) = *(int *)((byte *)&g_sa + 4136);
             *(int *)((byte *)&g_sa + 4124) = *(int *)((byte *)&g_sa + 4140);
@@ -1750,7 +1750,7 @@ after_load:
         /* line 1088 */
         if (missCount != 0) {
             const dvar_t *snd_errorOnMissing_dvar = *(const dvar_t **)imp_snd_errorOnMissing;
-            if (*(byte *)((byte *)snd_errorOnMissing_dvar + 8) != 0) {
+            if (snd_errorOnMissing_dvar->current.enabled != 0) {
                 /* line 1089 */
                 int errCode = (system != 0) ? 1 : 0;
                 { extern const char *va(const char *fmt, ...);

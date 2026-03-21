@@ -164,8 +164,7 @@ void PM_AddTouchEnt(pmove_t *pm, int entityNum) {
     if (entityNum == 0x3fe)
         return;
 
-    /* pm->numtouch is at offset 0x40, pm->touchents[] starts at offset 0x44 */
-    numtouch = *(int *)((byte *)pm + 0x40);
+    numtouch = pm->numtouch;
 
     /* MAX_TOUCHENTS = 32 */
     if (numtouch == 0x20)
@@ -173,13 +172,13 @@ void PM_AddTouchEnt(pmove_t *pm, int entityNum) {
 
     /* Check if entityNum is already in the touch list */
     for (i = 0; i < numtouch; i++) {
-        if (*(int *)((byte *)pm + 0x44 + i * 4) == entityNum)
+        if (pm->touchents[i] == entityNum)
             return;
     }
 
     /* Add the entity */
-    *(int *)((byte *)pm + 0x44 + numtouch * 4) = entityNum;
-    *(int *)((byte *)pm + 0x40) = numtouch + 1;
+    pm->touchents[numtouch] = entityNum;
+    pm->numtouch = numtouch + 1;
 }
 #endif
 
@@ -194,7 +193,7 @@ void PM_AddEvent(playerState_t *ps, int newEvent)
 /* line 348 */
 int PM_GetEffectiveStance(playerState_t *ps)
 {
-    int val = *(int *)((byte *)ps + 0xf4);
+    int val = ps->viewHeightTarget;
 
     if (val == 0x28)
         return 2;
@@ -204,7 +203,7 @@ int PM_GetEffectiveStance(playerState_t *ps)
 /* line 816 */
 int PM_GroundSurfaceType(pml_t *pml)
 {
-    int val = *(int *)((byte *)pml + 0x48);
+    int val = pml->groundTrace.surfaceFlags;
 
     if (val & 0x2000)
         return 0;
@@ -259,9 +258,9 @@ int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDow
 /* line 3954 */
 void PM_SetProneMovementOverride(playerState_t *ps)
 {
-    int flags = *(int *)((byte *)ps + 0xc);
+    int flags = ps->pm_flags;
     if (flags & 1)
-        *(int *)((byte *)ps + 0xc) = flags | 0x800;
+        ps->pm_flags = flags | 0x800;
 }
 
 /* line 4728 */
@@ -302,18 +301,18 @@ float BG_GetSpeed(const playerState_t *ps, int time)
 }
 #else
 float BG_GetSpeed(const playerState_t *ps, int time) {
-    /* ps+0xc flags: bit 5 (0x20) = noclip/moving */
-    if (*(int *)((byte *)ps + 0xc) & 0x20) {
-        /* Check if enough time has passed since ps+0x70 */
-        int elapsed = time - *(int *)((byte *)ps + 0x70);
+    /* pm_flags bit 5 (0x20) = noclip/spectator jump */
+    if (ps->pm_flags & 0x20) {
+        /* Check if enough time has passed since jumpTime */
+        int elapsed = time - ps->jumpTime;
         if (elapsed > 0x1f3) /* 499 */
-            return *(float *)((byte *)ps + 0x28); /* return ps->velocity[2] */
+            return ps->velocity[2];
         return 0.0f;
     }
     /* Compute 2D speed: sqrt(vx*vx + vy*vy) */
     {
-        float vx = *(float *)((byte *)ps + 0x20);
-        float vy = *(float *)((byte *)ps + 0x24);
+        float vx = ps->velocity[0];
+        float vy = ps->velocity[1];
         return sqrtf(vx * vx + vy * vy);
     }
 }
@@ -394,9 +393,10 @@ qboolean BG_CheckProneTurned(void)
 #else
 /* Register-convention: eax=ps, edx=handler, xmm0=newProneYaw.
    Only called from asm in x86 mode. In Emscripten, callers use _impl directly. */
-static qboolean BG_CheckProneTurned_impl(byte *ps, int handler, float newProneYaw)
+static qboolean BG_CheckProneTurned_impl(byte *ps_bytes, int handler, float newProneYaw)
 {
-    float oldProneYaw = *(float *)(ps + 0xec);
+    playerState_t *ps = (playerState_t *)ps_bytes;
+    float oldProneYaw = ps->viewangles[1];
     float delta = AngleDelta(newProneYaw, oldProneYaw);
     float absDelta = (float)fabs(delta);
     float t = absDelta / 240.0f;
@@ -406,16 +406,16 @@ static qboolean BG_CheckProneTurned_impl(byte *ps, int handler, float newProneYa
     float proneFeetDist = t * 45.0f + scale * 66.0f;
 
     return BG_CheckProne(
-        *(int *)(ps + 0xcc),                       /* passEntityNum */
-        (const vec_t *)(ps + 0x14),                /* vPos */
-        *(float *)(ps + 0x578),                    /* fSize */
+        ps->clientNum,                             /* passEntityNum */
+        ps->origin,                                /* vPos */
+        ps->maxs[0],                               /* fSize */
         30.0f,                                     /* fHeight */
         normalizedYaw,                             /* fYaw */
-        (float *)(ps + 0x5a8),                     /* pfTorsoHeight */
-        (float *)(ps + 0x5ac),                     /* pfTorsoPitch */
-        (float *)(ps + 0x5b0),                     /* pfWaistPitch */
+        &ps->fTorsoHeight,                         /* pfTorsoHeight */
+        &ps->fTorsoPitch,                          /* pfTorsoPitch */
+        &ps->fWaistPitch,                          /* pfWaistPitch */
         1,                                         /* bAlreadyProne */
-        *(int *)(ps + 0x60) != 0x3ff ? 1 : 0,     /* bOnGround */
+        ps->groundEntityNum != 0x3ff ? 1 : 0,     /* bOnGround */
         NULL,                                      /* vGroundNormal */
         (unsigned char)handler,                    /* handler */
         0,                                         /* proneCheckType */
@@ -467,14 +467,14 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm)
 }
 #else
 qboolean PM_ShouldMakeFootsteps(pmove_t *pm) {
-    playerState_t *ps = *(playerState_t **)pm; /* pm->ps at offset 0 */
+    playerState_t *ps = pm->ps;
     int flags, hasSprintFlag, stance;
 
-    flags = *(int *)((byte *)ps + 0xc);
+    flags = ps->pm_flags;
     hasSprintFlag = flags & 0x100;
 
-    /* Check stance: offset 0xf4 in ps */
-    stance = *(int *)((byte *)ps + 0xf4);
+    /* Check stance via viewHeightTarget */
+    stance = ps->viewHeightTarget;
     if (stance == 0x28)  /* stand height (40) */
         return 0;
     if (stance == 0xb)   /* prone height (11) */
@@ -484,12 +484,11 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm) {
     if (hasSprintFlag)
         return 0;
 
-    /* Compare pm->xyspeed (offset 0xdc) with footsteps threshold dvar */
+    /* Compare pm->xyspeed with footsteps threshold dvar */
     {
         void *threshDvar = *(void **)imp_player_footstepsThreshhold;
         float threshold = *(float *)((byte *)threshDvar + 8);
-        float xyspeed = *(float *)((byte *)pm + 0xdc);
-        return xyspeed >= threshold;
+        return pm->xyspeed >= threshold;
     }
 }
 #endif
@@ -9180,32 +9179,32 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
     float addspeed, accelspeed, currentspeed;
     vec_t *velocity;
 
-    /* ps+0xc flags: bit 5 (0x20) = noclip/spectator */
-    if (*(int *)((byte *)ps + 0xc) & 0x20) {
+    /* pm_flags bit 5 (0x20) = noclip/spectator */
+    if (ps->pm_flags & 0x20) {
         /* Noclip/spectator acceleration: direct velocity push */
         float pushDir[3], pushLen, push;
 
         /* wishvel = wishdir * wishspeed */
-        pushDir[0] = wishspeed * wishdir[0] - *(float *)((byte *)ps + 0x20);
-        pushDir[1] = wishspeed * wishdir[1] - *(float *)((byte *)ps + 0x24);
-        pushDir[2] = wishspeed * wishdir[2] - *(float *)((byte *)ps + 0x28);
+        pushDir[0] = wishspeed * wishdir[0] - ps->velocity[0];
+        pushDir[1] = wishspeed * wishdir[1] - ps->velocity[1];
+        pushDir[2] = wishspeed * wishdir[2] - ps->velocity[2];
 
         pushLen = Vec3Normalize(pushDir);
 
         /* push = min(pushLen, accel * pml->frametime * wishspeed) */
-        push = accel * *(float *)((byte *)pml + 0x24) * wishspeed;
+        push = accel * pml->frametime * wishspeed;
         if (pushLen < push)
             push = pushLen;
 
         /* velocity += pushDir * push */
-        *(float *)((byte *)ps + 0x20) += pushDir[0] * push;
-        *(float *)((byte *)ps + 0x24) += pushDir[1] * push;
-        *(float *)((byte *)ps + 0x28) += pushDir[2] * push;
+        ps->velocity[0] += pushDir[0] * push;
+        ps->velocity[1] += pushDir[1] * push;
+        ps->velocity[2] += pushDir[2] * push;
         return;
     }
 
     /* Normal acceleration */
-    velocity = (vec_t *)((byte *)ps + 0x20);
+    velocity = ps->velocity;
 
     /* currentspeed = DotProduct(velocity, wishdir) */
     currentspeed = velocity[0] * wishdir[0] + velocity[1] * wishdir[1] + velocity[2] * wishdir[2];
@@ -9221,7 +9220,7 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
         float maxspd = wishspeed;
         if (stopspeed_val > maxspd)
             maxspd = stopspeed_val;
-        accelspeed = accel * *(float *)((byte *)pml + 0x24) * maxspd;
+        accelspeed = accel * pml->frametime * maxspd;
     }
 
     /* Clamp accelspeed to addspeed */
@@ -9229,14 +9228,14 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
         accelspeed = addspeed;
 
     /* Inertia check: if not noclip mode 2 */
-    if (*(int *)((byte *)ps + 4) != 2) {
+    if (ps->pm_type != 2) {
         float inertiaMax_val = *(float *)((byte *)(*(void **)imp_inertiaMax) + 8);
         if (accelspeed > inertiaMax_val) {
             /* Check if direction change is significant */
             float oldVel[2], newVel[2], dot;
 
-            oldVel[0] = *(float *)((byte *)ps + 0x2c);
-            oldVel[1] = *(float *)((byte *)ps + 0x30);
+            oldVel[0] = ps->oldVelocity[0];
+            oldVel[1] = ps->oldVelocity[1];
 
             /* Check if old velocity magnitude is significant */
             {

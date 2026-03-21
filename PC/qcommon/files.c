@@ -517,16 +517,16 @@ double FS_SetRestrictions(void)
     while (path != NULL) {
         /* line 925 */
         if (FS_UseSearchPath(path)) {
-            iwd = *(void **)((char *)path + 4); /* line 928 */
+            iwd = ((searchpath_t *)path)->pack; /* line 928 */
             if (iwd != NULL) {
-                checksum = *(unsigned int *)((char *)iwd + 0x304); /* line 931 */
+                checksum = ((pack_t *)iwd)->checksum; /* line 931 */
                 if (checksum != 0xb1f595f5u) {
                     /* line 932 */
                     Com_Error(0, "Corrupted iw0.iwd: %u", checksum);
                 }
             }
         }
-        path = *(void **)path; /* line 923 | next */
+        path = (void *)(intptr_t)((searchpath_t *)path)->next; /* line 923 | next */
     }
 
     return 0.0; /* line 936 */
@@ -542,15 +542,15 @@ const char * FS_LoadedIwdChecksums(void)
     /* line 957 | walk search paths */
     search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 960 */
+        void *iwd = ((searchpath_t *)search)->pack; /* line 960 */
         if (iwd != NULL) {
-            void *localized = *(void **)((char *)search + 0xc); /* line 964 */
+            void *localized = (void *)(intptr_t)((searchpath_t *)search)->bLocalized; /* line 964 */
             if (localized == NULL) {
-                int checksum = *(int *)((char *)iwd + 0x304); /* line 967 */
+                int checksum = ((pack_t *)iwd)->checksum; /* line 967 */
                 I_strncat(info2, 0x2000, va("%i ", checksum)); /* line 967 */
             }
         }
-        search = *(void **)search; /* line 957 | next */
+        search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 957 | next */
     }
 
     return info2; /* line 971 */
@@ -566,19 +566,19 @@ const char * FS_LoadedIwdNames(void)
     /* line 988 | walk search paths */
     search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 991 */
+        void *iwd = ((searchpath_t *)search)->pack; /* line 991 */
         if (iwd != NULL) {
-            void *localized = *(void **)((char *)search + 0xc); /* line 995 */
+            void *localized = (void *)(intptr_t)((searchpath_t *)search)->bLocalized; /* line 995 */
             if (localized == NULL) {
                 /* line 998 | append separator if not first */
                 if (info3[0] != '\0') {
                     I_strncat(info3, 0x2000, " "); /* line 999 */
                 }
-                /* line 1001 | append iwd name (at offset 0x100 = gamename) */
-                I_strncat(info3, 0x2000, (char *)iwd + 0x100);
+                /* line 1001 | append iwd name (iwdBasename at offset 0x100) */
+                I_strncat(info3, 0x2000, ((pack_t *)iwd)->iwdBasename);
             }
         }
-        search = *(void **)search; /* line 988 | next */
+        search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 988 | next */
     }
 
     return info3; /* line 1005 */
@@ -594,15 +594,15 @@ const char * FS_LoadedIwdPureChecksums(void)
     /* line 1023 | walk search paths */
     search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 1026 */
+        void *iwd = ((searchpath_t *)search)->pack; /* line 1026 */
         if (iwd != NULL) {
-            void *localized = *(void **)((char *)search + 0xc); /* line 1030 */
+            void *localized = (void *)(intptr_t)((searchpath_t *)search)->bLocalized; /* line 1030 */
             if (localized == NULL) {
-                int checksum = *(int *)((char *)iwd + 0x308); /* line 1033 */
+                int checksum = ((pack_t *)iwd)->pure_checksum; /* line 1033 */
                 I_strncat(info4, 0x2000, va("%i ", checksum));
             }
         }
-        search = *(void **)search; /* line 1023 | next */
+        search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 1023 | next */
     }
 
     return info4; /* line 1037 */
@@ -618,27 +618,27 @@ const char * FS_ReferencedIwdChecksums(void)
     /* line 1054 | walk search paths */
     search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 1057 */
+        void *iwd = ((searchpath_t *)search)->pack; /* line 1057 */
         if (iwd != NULL) {
             /* line 1060 | skip if gamedir is "main" and no referenced flag */
-            int referenced = *(char *)((char *)iwd + 0x310);
+            int referenced = ((pack_t *)iwd)->referenced;
             if (!referenced) {
                 /* check if gamename == "main" */
-                if (I_strnicmp((char *)iwd + 0x200, "main", 4) == 0) {
+                if (I_strnicmp(((pack_t *)iwd)->iwdGamename, "main", 4) == 0) {
                     /* skip this entry */
-                    search = *(void **)search;
+                    search = (void *)(intptr_t)((searchpath_t *)search)->next;
                     continue;
                 }
                 /* re-fetch iwd after I_strnicmp path */
-                iwd = *(void **)((char *)search + 4);
+                iwd = ((searchpath_t *)search)->pack;
             }
             /* line 1061 */
             {
-                int checksum = *(int *)((char *)iwd + 0x304);
+                int checksum = ((pack_t *)iwd)->checksum;
                 I_strncat(info5, 0x2000, va("%i ", checksum));
             }
         }
-        search = *(void **)search; /* line 1054 | next */
+        search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 1054 | next */
     }
 
     return info5; /* line 1065 */
@@ -654,14 +654,14 @@ const char * FS_ReferencedIwdNames(void)
     /* line 1084 | walk search paths */
     search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
-        void *iwd = *(void **)((char *)search + 4); /* line 1087 */
+        void *iwd = ((searchpath_t *)search)->pack; /* line 1087 */
         if (iwd != NULL) {
-            int referenced = *(char *)((char *)iwd + 0x310); /* line 1090 */
+            int referenced = ((pack_t *)iwd)->referenced; /* line 1090 */
             if (!referenced) {
                 /* check if gamename == "main" */
-                if (I_strnicmp((char *)iwd + 0x200, "main", 4) == 0) {
+                if (I_strnicmp(((pack_t *)iwd)->iwdGamename, "main", 4) == 0) {
                     /* skip: move to next */
-                    search = *(void **)search;
+                    search = (void *)(intptr_t)((searchpath_t *)search)->next;
                     continue;
                 }
             }
@@ -669,13 +669,13 @@ const char * FS_ReferencedIwdNames(void)
             if (info8[0] != '\0') {
                 I_strncat(info8, 0x2000, " "); /* line 1093 */
             }
-            /* line 1095 | append gamedir (at offset 0x200) */
-            I_strncat(info8, 0x2000, (char *)iwd + 0x200);
+            /* line 1095 | append gamedir (iwdGamename) */
+            I_strncat(info8, 0x2000, ((pack_t *)iwd)->iwdGamename);
             I_strncat(info8, 0x2000, "/"); /* line 1096 | separator between gamedir and iwdname */
-            /* line 1097 | append iwd name (at offset 0x100) */
-            I_strncat(info8, 0x2000, (char *)iwd + 0x100);
+            /* line 1097 | append iwd name (iwdBasename) */
+            I_strncat(info8, 0x2000, ((pack_t *)iwd)->iwdBasename);
         }
-        search = *(void **)search; /* line 1084 | next */
+        search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 1084 | next */
     }
 
     return info8; /* line 1102 */
@@ -1181,15 +1181,15 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
             void *search = *(void **)imp_fs_searchpaths;
             int found = 0;
             while (search != NULL) {
-                void *iwd = *(void **)((char *)search + 4); /* line 795 */
+                void *iwd = ((searchpath_t *)search)->pack; /* line 795 */
                 if (iwd != NULL) {
-                    int chk = *(int *)((char *)iwd + 0x304);
+                    int chk = ((pack_t *)iwd)->checksum;
                     if (chk == iwdChecksum) { /* line 795 */
                         found = 1;
                         break;
                     }
                 }
-                search = *(void **)search; /* line 793 | next */
+                search = (void *)(intptr_t)((searchpath_t *)search)->next; /* line 793 | next */
             }
             if (found) {
                 goto next_iwd;

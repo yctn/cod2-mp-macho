@@ -697,7 +697,7 @@ void CM_LoadMapFromBsp(const char *name, int usePvs)
                 for (sideIdx = 0; sideIdx < 2; sideIdx++) {
                     if (sideIdx > 0) {
                         int val = *(const int *)inSides;
-                        *(int *)((byte *)outBrush + 0x10 + axialIdx * 4) = val;
+                        *(int *)&outBrush->maxs[axialIdx] = val;
                     }
 
                     materialNum = *(const int *)(inSides + 4);

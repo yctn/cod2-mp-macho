@@ -354,7 +354,7 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
                 : "=a"(uiStarted) :: "memory"
             );
 #else
-            uiStarted = *(int *)((byte *)imp_cls + 0x110);
+            uiStarted = ((clientStatic_t *)imp_cls)->uiStarted;
 #endif
             if (uiStarted) {
                 if (!UI_AnyFullScreenMenuVisible()) {
@@ -368,7 +368,7 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
                     : "=a"(uiStarted) :: "memory"
                 );
 #else
-                uiStarted = *(int *)((byte *)imp_cls + 0x110);
+                uiStarted = ((clientStatic_t *)imp_cls)->uiStarted;
 #endif
                 if (uiStarted) {
                     com_errorEntered = 0;
@@ -1325,7 +1325,7 @@ static void Com_ErrorCleanup(void)
         re = imp_re;
 #endif
         {
-            void (*fn)(void) = *(void(**)(void))((char*)re + 0x14c);
+            void (*fn)(void) = ((refexport_t *)re)->AbortRenderCommands;
             if (fn) fn();
         }
     }
@@ -1353,7 +1353,7 @@ static void Com_ErrorCleanup(void)
             : "=a"(rendererStarted) :: "memory"
         );
 #else
-        rendererStarted = *(int *)((byte *)imp_cls + 0x110);
+        rendererStarted = ((clientStatic_t *)imp_cls)->uiStarted;
 #endif
         if (rendererStarted)
             UI_SetActiveMenu(0);
@@ -1377,7 +1377,7 @@ static void Com_ErrorCleanup(void)
         re = imp_re;
 #endif
         {
-            void (*fn)(void) = *(void(**)(void))((char*)re + 0xe4);
+            void (*fn)(void) = ((refexport_t *)re)->ResetImageAllocations;
             if (fn) fn();
         }
     }
@@ -1429,7 +1429,7 @@ static void Com_ErrorCleanup(void)
             : "=a"(rendererStarted) :: "memory"
         );
 #else
-        rendererStarted = *(int *)((byte *)imp_cls + 0x110);
+        rendererStarted = ((clientStatic_t *)imp_cls)->uiStarted;
 #endif
         if (rendererStarted && !com_fixedConsolePosition)
             CL_ConsoleFixPosition();
@@ -2235,9 +2235,9 @@ void Com_Init_Try_Block_Function(char *commandLine)
 #else
                 cls_ptr = (char *)imp_cls;
 #endif
-                *(int *)(cls_ptr + 0x108) = 1; /* rendererStarted */
+                ((clientStatic_t *)cls_ptr)->rendererStarted = 1;
                 CL_InitRenderer();
-                *(int *)(cls_ptr + 0x10c) = 1; /* soundStarted */
+                ((clientStatic_t *)cls_ptr)->soundStarted = 1;
             }
             SND_Init();
             Sys_LoadingKeepAlive();

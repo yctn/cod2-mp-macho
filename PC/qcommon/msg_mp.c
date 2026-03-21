@@ -142,9 +142,9 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
 /* line 781 */
 void MSG_BeginReading(msg_t *msg)
 {
-    *(int *)msg = 0;
-    *(int *)((byte *)msg + 0x10) = 0;
-    *(int *)((byte *)msg + 0x14) = 0;
+    msg->overflowed = 0;
+    msg->readcount = 0;
+    msg->bit = 0;
 }
 
 /* line 804 */

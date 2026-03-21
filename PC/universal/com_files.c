@@ -136,13 +136,13 @@ int FS_LoadStack(void)
 /* line 415 */
 qboolean FS_UseSearchPath(const searchpath_t *pSearch)
 {
-    if (!*(int *)((byte *)pSearch + 0xc))
+    if (!pSearch->bLocalized)
         return 1;
 
-    if (*(byte *)((byte *)fs_ignoreLocalized + 8))
+    if (fs_ignoreLocalized->current.enabled)
         return 0;
 
-    if (*(int *)((byte *)pSearch + 0x10) != SEH_GetCurrentLanguage())
+    if (pSearch->language != SEH_GetCurrentLanguage())
         return 0;
 
     return 1;
@@ -152,8 +152,8 @@ qboolean FS_UseSearchPath(const searchpath_t *pSearch)
 qboolean FS_LanguageHasAssets(int iLanguage)
 {
     searchpath_t *sp;
-    for (sp = fs_searchpaths; sp; sp = *(searchpath_t **)sp) {
-        if (*(int *)((byte *)sp + 0xc) && *(int *)((byte *)sp + 0x10) == iLanguage)
+    for (sp = fs_searchpaths; sp; sp = (searchpath_t *)(uintptr_t)sp->next) {
+        if (sp->bLocalized && sp->language == iLanguage)
             return 1;
     }
     return 0;

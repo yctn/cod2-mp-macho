@@ -106,35 +106,35 @@ extern void RemoveRefToObject(unsigned int id);
 /* line 86 */
 void Scr_ClearErrorMessage(void)
 {
-    byte *p = (byte *)imp_scrVarPub;
-    *(int *)(p + 0x10) = 0;
+    struct scrVarPub_t *p = (struct scrVarPub_t *)imp_scrVarPub;
+    p->error_message = NULL;
     *(int *)((char *)&scrVmGlob + 16) = 0;
-    *(int *)(p + 0x14) = 0;
+    p->error_index = 0;
 }
 
 /* line 182 */
 void Scr_Settings(int developer, int developer_script, int abort_on_error)
 {
-    byte *p = (byte *)imp_scrVarPub;
-    *(byte *)(p + 0xa) = developer != 0;
-    *(byte *)(p + 0xb) = developer_script != 0;
+    struct scrVarPub_t *p = (struct scrVarPub_t *)imp_scrVarPub;
+    p->developer = developer != 0;
+    p->developer_script = developer_script != 0;
     *(byte *)((char *)&scrVmPub + 21) = abort_on_error != 0;
 }
 
 /* line 192 */
 void Scr_Shutdown(void)
 {
-    byte *base = (byte *)imp_scrVarPub;
+    struct scrVarPub_t *base = (struct scrVarPub_t *)imp_scrVarPub;
     unsigned int val;
 
-    if (!base[0x38])
+    if (!base->bInited)
         return;
 
-    base[0x38] = 0;
-    val = *(unsigned int *)(base + 0x34);
+    base->bInited = 0;
+    val = base->tempVariable;
     if (val) {
         FreeValue(val);
-        *(unsigned int *)(base + 0x34) = 0;
+        base->tempVariable = 0;
     }
     Var_Shutdown();
     SL_Shutdown();
@@ -143,9 +143,9 @@ void Scr_Shutdown(void)
 /* line 204 */
 void Scr_Abort(void)
 {
-    byte *p = (byte *)imp_scrVarPub;
-    *(int *)(p + 0x1c) = 0;
-    *(byte *)(p + 0x38) = 0;
+    struct scrVarPub_t *p = (struct scrVarPub_t *)imp_scrVarPub;
+    p->timeArrayId = 0;
+    p->bInited = 0;
 }
 
 /* line 211 */
@@ -953,7 +953,7 @@ void Scr_ShutdownSystem(int sys, int bComplete)
 /* line 4388 */
 int Scr_IsSystemActive(int sys)
 {
-    return *(int *)((byte *)imp_scrVarPub + 0x1c) != 0;
+    return ((struct scrVarPub_t *)imp_scrVarPub)->timeArrayId != 0;
 }
 
 /* line 4743 */
@@ -8275,19 +8275,19 @@ extern void Scr_FreeEntityList(void);
 /* Shared helper: run pending waittill threads if any */
 static void Scr_RunPendingThreads(void)
 {
-    byte *svp = (byte *)imp_scrVarPub;
-    unsigned int notifyId = *(unsigned int *)(svp + 0x1c);
+    struct scrVarPub_t *svp = (struct scrVarPub_t *)imp_scrVarPub;
+    unsigned int notifyId = svp->timeArrayId;
     unsigned int varId;
 
     if (!notifyId)
         return;
 
-    varId = FindVariable(notifyId, *(unsigned int *)(svp + 0x18));
+    varId = FindVariable(notifyId, (unsigned int)svp->time);
     if (!varId)
         return;
 
     VM_Resume(FindObject(varId));
-    SafeRemoveVariable(*(unsigned int *)(svp + 0x1c), *(unsigned int *)(svp + 0x18));
+    SafeRemoveVariable(svp->timeArrayId, (unsigned int)svp->time);
 }
 
 void Scr_RunCurrentThreads(void)
@@ -8298,13 +8298,13 @@ void Scr_RunCurrentThreads(void)
 /* line 5060 */
 void Scr_IncTime(void)
 {
-    byte *svp;
+    struct scrVarPub_t *svp;
 
     Scr_RunPendingThreads();
     Scr_FreeEntityList();
 
-    svp = (byte *)imp_scrVarPub;
-    *(unsigned int *)(svp + 0x18) = (*(unsigned int *)(svp + 0x18) + 1) & 0x00FFFFFF;
+    svp = (struct scrVarPub_t *)imp_scrVarPub;
+    svp->time = (svp->time + 1) & 0x00FFFFFF;
 }
 
 /* Reconstructed wrapper for the overloaded VM_Execute at 0x875ea.

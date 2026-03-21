@@ -168,13 +168,13 @@ int BG_GetNumWeapons(void)
 /* line 580 */
 int BG_GetAmmoTypeMax(int iAmmoIndex)
 {
-    return *(int *)((byte *)bg_weapAmmoTypes[iAmmoIndex] + 0x1d4);
+    return bg_weapAmmoTypes[iAmmoIndex]->iMaxAmmo;
 }
 
 /* line 604 */
 int BG_GetAmmoClipSize(int iClipIndex)
 {
-    return *(int *)((byte *)bg_weapClips[iClipIndex] + 0x1d8);
+    return bg_weapClips[iClipIndex]->iClipSize;
 }
 
 /* line 713 */
@@ -228,13 +228,13 @@ int BG_FindWeaponIndexForName(const char *name)
 /* line 889 */
 Bool BG_IsAnyEmptyPrimaryWeaponSlot(const playerState_t *ps)
 {
-    return *(byte *)((byte *)ps + 0x555) == 0 || *(byte *)((byte *)ps + 0x556) == 0;
+    return ps->weaponslots[1] == 0 || ps->weaponslots[2] == 0;
 }
 
 /* line 1425 */
 Bool PM_IsBinocularsADS(const playerState_t *ps)
 {
-    int val = *(int *)((byte *)ps + 0xd8) - 0x13;
+    int val = ps->weaponstate - 0x13;
     return (unsigned int)val <= 1;
 }
 
@@ -244,7 +244,7 @@ extern void PM_AddEvent(playerState_t *ps, int newEvent);
 void PM_ExitAimDownSight(playerState_t *ps)
 {
     PM_AddEvent(ps, 0x95);
-    *(int *)((byte *)ps + 0xc) &= ~0x40;
+    ps->pm_flags &= ~0x40;
 }
 
 /* line 4071 */
@@ -713,23 +713,23 @@ void BG_SetupAmmoIndexes(int weapIndex)
 /* line 870 */
 qboolean BG_IsAimDownSightWeapon(int iWeapon)
 {
-    return *(int *)((byte *)bg_weaponDefs[iWeapon] + 0x32c);
+    return bg_weaponDefs[iWeapon]->bADSPositionInfo;
 }
 
 /* line 880 */
 Bool BG_DoesWeaponRequireSlot(int weaponIndex)
 {
-    int val = *(int *)(*(byte **)((byte *)&bg_weaponDefs + weaponIndex * 4) + 0x80);
+    int val = bg_weaponDefs[weaponIndex]->weapSlot;
     return (unsigned int)(val - 1) <= 1;
 }
 
 /* line 920 */
 Bool BG_DoesWeaponNeedSlot(int weapIndex)
 {
-    void *weapDef = *(void **)((char *)&bg_weaponDefs + weapIndex * 4);
-    if (*(int *)((char *)weapDef + 0x7c) == 9)
+    const WeaponDef *weapDef = bg_weaponDefs[weapIndex];
+    if (weapDef->weapClass == 9)
         return 0;
-    if (*(int *)((char *)weapDef + 0x84) == 0)
+    if (weapDef->offhandClass == 0)
         return 1;
     return 0;
 }
@@ -945,38 +945,37 @@ void BG_GetSpreadForWeapon(const playerState_t *ps, int weaponIndex, float *minS
 /* line 1723 */
 int BG_ClipForWeapon(int weapon)
 {
-    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x1d0);
+    return bg_weaponDefs[weapon]->iClipIndex;
 }
 
 /* line 1734 */
 int BG_AmmoForWeapon(int weapon)
 {
-    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x1c8);
+    return bg_weaponDefs[weapon]->iAmmoIndex;
 }
 
 /* line 1745 */
 qboolean BG_WeaponIsClipOnly(int weapon)
 {
-    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x340);
+    return bg_weaponDefs[weapon]->bClipOnly;
 }
 
 /* line 1844 */
 int PM_WeaponAmmoAvailable(playerState_t *ps)
 {
-    int weapon = *(int *)((byte *)ps + 0xd4);
-    int clipIndex = *(int *)((byte *)bg_weaponDefs[weapon] + 0x1d0);
-    return *(int *)((byte *)ps + 0x344 + clipIndex * 4);
+    int weapon = ps->weapon;
+    int clipIndex = bg_weaponDefs[weapon]->iClipIndex;
+    return ps->ammoclip[clipIndex];
 }
 
 /* line 1758 */
 int BG_WeaponAmmo(const playerState_t *ps, int weapon)
 {
-    void *weapDef = *(void **)((byte *)&bg_weaponDefs + weapon * 4);
-    int ammoIndex = *(int *)((byte *)weapDef + 0x1c8);
-    int clipIndex = *(int *)((byte *)weapDef + 0x1d0);
+    const WeaponDef *weapDef = bg_weaponDefs[weapon];
+    int ammoIndex = weapDef->iAmmoIndex;
+    int clipIndex = weapDef->iClipIndex;
 
-    return *(int *)((byte *)ps + 0x144 + ammoIndex * 4) +
-           *(int *)((byte *)ps + 0x344 + clipIndex * 4);
+    return ps->ammo[ammoIndex] + ps->ammoclip[clipIndex];
 }
 
 /* line 1050 */

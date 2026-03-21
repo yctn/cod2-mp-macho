@@ -6267,17 +6267,17 @@ int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int for
 
     /* Handle legs animation (bodyPart == 1 LEGS or bodyPart == 3 BOTH) */
     if (bodyPart == 3 || bodyPart == 1) {
-        int legsTimer = *(int *)((byte *)ps + 0x78);
+        int legsTimer = ps->legsTimer;
         if (legsTimer <= 0x31 || force) {
             /* Timer allows setting or force override */
-            oldAnim = *(int *)((byte *)ps + 0x7c);
+            oldAnim = ps->legsAnim;
             if (!isContinue || (oldAnim & ~0x200) != animNum) {
                 /* Toggle bit 9 from old anim, combine with new animNum */
                 toggleBit = (oldAnim & 0x200) ^ 0x200;
-                *(int *)((byte *)ps + 0x88) = duration;
-                *(int *)((byte *)ps + 0x7c) = animNum | toggleBit;
+                ps->legsAnimDuration = duration;
+                ps->legsAnim = animNum | toggleBit;
                 if (setTimer)
-                    *(int *)((byte *)ps + 0x78) = duration;
+                    ps->legsTimer = duration;
                 wasSet = 1;
             }
         }
@@ -6288,15 +6288,15 @@ int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int for
 
     /* Handle torso animation (bodyPart == 2 TORSO or bodyPart == 3 BOTH) */
     if (bodyPart == 2 || bodyPart == 3) {
-        int torsoTimer = *(int *)((byte *)ps + 0x80);
+        int torsoTimer = ps->torsoTimer;
         if (torsoTimer <= 0x31 || force) {
-            oldAnim = *(int *)((byte *)ps + 0x84);
+            oldAnim = ps->torsoAnim;
             if (!isContinue || (oldAnim & ~0x200) != animNum) {
                 toggleBit = (oldAnim & 0x200) ^ 0x200;
-                *(int *)((byte *)ps + 0x84) = animNum | toggleBit;
+                ps->torsoAnim = animNum | toggleBit;
                 if (setTimer)
-                    *(int *)((byte *)ps + 0x80) = duration;
-                *(int *)((byte *)ps + 0x8c) = duration;
+                    ps->torsoTimer = duration;
+                ps->torsoAnimDuration = duration;
                 wasSet = 1;
             }
         }
@@ -6317,7 +6317,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
 
     /* line 2120: if event != 1 (not JUMP), check weapon state */
     if ((int)event != 1) {
-        if (*(int *)((byte *)ps + 4) > 5)
+        if (ps->pm_type > 5)
             return -1;
     }
 
@@ -6330,8 +6330,8 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
     if (numItems == 0)
         return -1;
 
-    /* line 2129: client index from ps+0xcc */
-    client = *(int *)((byte *)ps + 0xcc);
+    /* line 2129: client index from ps->clientNum */
+    client = ps->clientNum;
 
     /* Compute ci pointer: bgs + 0xb3bfc + client * 1208
        (client*5 → *16 → -client*5 → *2+client → *8 = client*(5*16-5)*2+client)*8 = client*1208) */

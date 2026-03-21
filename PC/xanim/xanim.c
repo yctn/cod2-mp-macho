@@ -163,13 +163,13 @@ void XAnimInit(void)
 void XAnimInit(void) {
     int i;
     for (i = 0; i < 4096; i++) {
-        *(unsigned short *)((byte *)&g_xAnimInfo[i] + 8) = (unsigned short)((i + 4095) % 4096);
-        *(unsigned short *)((byte *)&g_xAnimInfo[i] + 0xa) = (unsigned short)((i + 1) % 4096);
+        g_xAnimInfo[i].prev = (unsigned short)((i + 4095) % 4096);
+        g_xAnimInfo[i].next = (unsigned short)((i + 1) % 4096);
     }
-    *(int *)((byte *)&g_xAnimInfo[0] + 12) = 0;
-    *(int *)((byte *)&g_xAnimInfo[0] + 16) = 0;
-    *(unsigned short *)((byte *)&g_xAnimInfo[0] + 20) = 0;
-    *(unsigned short *)((byte *)&g_xAnimInfo[0] + 22) = 0;
+    g_xAnimInfo[0].s.time = 0.0f;
+    g_xAnimInfo[0].s.oldTime = 0.0f;
+    g_xAnimInfo[0].s.timeCount = 0;
+    g_xAnimInfo[0].s.oldTimeCount = 0;
     g_end = SL_GetString_(str_00217830, 0, 3);
     g_anim_developer = *(int *)(*(byte **)imp_com_developer + 8) != 0;
 }
@@ -258,8 +258,8 @@ void XAnimFree(XAnimParts *parts)
 }
 #else
 void XAnimFree(XAnimParts *parts) {
-    unsigned short *boneNames = *(unsigned short **)((byte *)parts + 0x10);
-    int boneCount = *(short *)((byte *)parts + 0xe);
+    unsigned short *boneNames = parts->names;
+    int boneCount = parts->boneCount;
     int i;
 
     if (boneCount > 0) {
@@ -268,11 +268,11 @@ void XAnimFree(XAnimParts *parts) {
         }
     }
 
-    if (*(unsigned char *)((byte *)parts + 0xc)) {
-        byte *notify = *(byte **)((byte *)parts + 0x1c);
-        int notifyCount = *(unsigned char *)((byte *)parts + 0xc);
+    if (parts->notifyCount) {
+        XAnimNotifyInfo *notify = parts->notify;
+        int notifyCount = parts->notifyCount;
         for (i = 0; i < notifyCount; i++) {
-            SL_RemoveRefToString(*(unsigned short *)(notify + i * 8));
+            SL_RemoveRefToString(*(unsigned short *)((byte *)notify + i * 8));
         }
     }
 }
@@ -344,22 +344,21 @@ void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned
 }
 #else
 void XAnimBlend(XAnim *anims, unsigned int animIndex, const char *name, unsigned int children, unsigned int num, unsigned int flags) {
-    byte *base = (byte *)anims;
     unsigned int j;
 
-    *(unsigned short *)(base + animIndex * 8 + 0xc) = (unsigned short)num;
-    *(unsigned short *)(base + animIndex * 8 + 0x10) = (unsigned short)flags;
-    *(unsigned short *)(base + animIndex * 8 + 0x12) = (unsigned short)children;
+    anims->entries[animIndex].numAnims = (unsigned short)num;
+    anims->entries[animIndex].u.s.flags = (unsigned short)flags;
+    anims->entries[animIndex].u.s.children = (unsigned short)children;
 
     for (j = 0; j < num; j++) {
-        *(unsigned short *)(base + (children + j) * 8 + 0xe) = (unsigned short)animIndex;
+        anims->entries[children + j].parent = (unsigned short)animIndex;
     }
 
-    if (*(char **)(base + 8)) {
+    if (anims->debugAnimNames) {
         int len = strlen(name) + 1;
         char *nameCopy = (char *)Z_MallocInternal(len);
         strcpy(nameCopy, name);
-        (*(char ***)(base + 8))[animIndex] = nameCopy;
+        ((char **)anims->debugAnimNames)[animIndex] = nameCopy;
     }
 }
 #endif
@@ -504,26 +503,26 @@ XAnim * XAnimGetAnims(const XAnimTree *tree)
 /* line 2832 */
 float XAnimGetLength(const XAnim *anims, unsigned int animIndex)
 {
-    byte *entry = *(byte **)((byte *)anims + 0x10 + animIndex * 8);
+    byte *entry = (byte *)anims->entries[animIndex].u.parts;
     return (float)*(unsigned short *)entry / *(float *)(entry + 4);
 }
 
 /* line 2868 */
 float XAnimGetTime(const XAnimTree *tree, unsigned int animIndex)
 {
-    unsigned short info = *(unsigned short *)((char *)tree + 8 + animIndex * 2);
+    unsigned short info = ((const XAnimTree_s *)tree)->infoArray[animIndex];
     if (!info)
         return 0.0f;
-    return *(float *)((char *)&g_xAnimInfo[0] + info * 40 + 0x0c);
+    return g_xAnimInfo[info].s.time;
 }
 
 /* line 2887 */
 float XAnimGetWeight(const XAnimTree *tree, unsigned int animIndex)
 {
-    unsigned short info = *(unsigned short *)((char *)tree + 8 + animIndex * 2);
+    unsigned short info = ((const XAnimTree_s *)tree)->infoArray[animIndex];
     if (!info)
         return 0.0f;
-    return *(float *)((char *)&g_xAnimInfo[0] + info * 40 + 0x20);
+    return g_xAnimInfo[info].s.weight;
 }
 
 /* line 2906 */
@@ -570,22 +569,22 @@ Bool XAnimHasFinished(const XAnimTree *tree, unsigned int animIndex)
 /* line 2930 */
 int XAnimGetNumChildren(const XAnim *anims, unsigned int animIndex)
 {
-    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0xc);
+    return anims->entries[animIndex].numAnims;
 }
 
 /* line 2944 */
 unsigned int XAnimGetChildAt(const XAnim *anims, unsigned int animIndex, unsigned int childIndex)
 {
-    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0x12) + childIndex;
+    return anims->entries[animIndex].u.s.children + childIndex;
 }
 
 /* line 2959 */
 const char * XAnimGetAnimName(const XAnim *anims, unsigned int animIndex)
 {
-    char *entry = (char *)anims + animIndex * 8 + 0xc;
-    if (*(unsigned short *)entry != 0)
+    const XAnimEntry *entry = &anims->entries[animIndex];
+    if (entry->numAnims != 0)
         return (const char *)str_002157b8;
-    return *(const char **)(*(void **)(entry + 4) + 0x24);
+    return entry->u.parts->name;
 }
 
 /* line 3021 */
@@ -616,7 +615,7 @@ static void * Hunk_AllocXAnimPrecache(int size)
 /* line 4131 */
 Bool XAnimIsPrimitive(XAnim *anims, unsigned int animIndex)
 {
-    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0xc) == 0;
+    return anims->entries[animIndex].numAnims == 0;
 }
 
 /* line 4137 */
@@ -652,8 +651,8 @@ void XAnimSetTime(XAnimTree *tree, unsigned int animIndex, float time)
 /* line 4272 */
 void XAnimSetAnimRate(XAnimTree *tree, unsigned int animIndex, float rate)
 {
-    unsigned short index = *(unsigned short *)((byte *)tree + 8 + animIndex * 2);
-    *(float *)((byte *)&g_xAnimInfo[index] + 0x24) = rate;
+    unsigned short index = ((XAnimTree_s *)tree)->infoArray[animIndex];
+    g_xAnimInfo[index].s.rate = rate;
 }
 
 /* line 4279 */
@@ -1726,7 +1725,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
 /* line 2857 */
 int XAnimGetLengthMsec(const XAnim *anims, unsigned int anim)
 {
-    byte *entry = *(byte **)((byte *)anims + 0x10 + anim * 8);
+    byte *entry = (byte *)anims->entries[anim].u.parts;
     return (int)((float)*(unsigned short *)entry / *(float *)(entry + 4) * 1000.0f);
 }
 
