@@ -283,10 +283,11 @@ static void HudElem_SetBoolean(game_hudelem_t *hud, int offset)
 static void HudElem_GetColor(game_hudelem_t *hud, int offset)
 {
     vec3_t color;
+    hudelem_t *elem = (hudelem_t *)hud;
 
-    color[0] = (float)((hudelem_t *)hud)->color * (1.0f / 255.0f);
-    color[1] = (float)*(unsigned char *)((byte *)hud + 0x21) * (1.0f / 255.0f); /* TODO: unknown offset */
-    color[2] = (float)*(unsigned char *)((byte *)hud + 0x22) * (1.0f / 255.0f); /* TODO: unknown offset */
+    color[0] = (float)elem->color.r * (1.0f / 255.0f);
+    color[1] = (float)elem->color.g * (1.0f / 255.0f);
+    color[2] = (float)elem->color.b * (1.0f / 255.0f);
     Scr_AddVector(color);
 }
 

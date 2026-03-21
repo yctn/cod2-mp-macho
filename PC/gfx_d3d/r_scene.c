@@ -811,12 +811,12 @@ void R_RenderScene(const refdef_t *refdef)
         } else if (isDx7) {
             /* Dx7 path */
             R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
-            R_AddCmdSetRenderTarget(0);
-            R_AddClearCommandsForFrameBuffer(0);
-            {
-                void *world = rgp_p->world;
-                R_AddCmdLightProperties(0, (char *)&world->sunLight);
-            }
+                R_AddCmdSetRenderTarget(0);
+                R_AddClearCommandsForFrameBuffer(0);
+                {
+                    GfxWorld *world = rgp_p->world;
+                    R_AddCmdLightProperties(0, (char *)&world->sunLight);
+                }
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 1);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 6);
             R_AddCmdDrawSun(viewIndex);
@@ -836,7 +836,7 @@ void R_RenderScene(const refdef_t *refdef)
                 }
                 R_AddClearCommandsForFrameBuffer(0);
                 {
-                    void *world = rgp_p->world;
+                    GfxWorld *world = rgp_p->world;
                     R_AddCmdLightProperties(0, (char *)&world->sunLight);
                 }
             }

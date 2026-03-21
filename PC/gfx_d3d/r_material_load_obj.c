@@ -4953,7 +4953,7 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
 
     /* Phase 2: Load technique set */
     { const char *tsName = (const char *)((int)mtl + *(int *)(mtl + 0x38));
-      void *techSet = Material_FindTechniqueSet(tsName);
+      MaterialTechniqueSet *techSet = (MaterialTechniqueSet *)Material_FindTechniqueSet(tsName);
       if (!techSet) {
           isDx7 = (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2);
           char tsFile[64];
@@ -4965,7 +4965,7 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
               goto storeTechSet;
           }
           int tsNLen = (int)strlen(tsName) + 1;
-          techSet = Material_Alloc(sizeof(MaterialTechniqueSet) + tsNLen);
+          techSet = (MaterialTechniqueSet *)Material_Alloc(sizeof(MaterialTechniqueSet) + tsNLen);
           techSet->name = (const char *)((byte *)techSet + sizeof(MaterialTechniqueSet));
           memcpy((byte *)techSet + sizeof(MaterialTechniqueSet), tsName, tsNLen);
           const char *tsText = (const char *)tsData;
@@ -4992,9 +4992,9 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
               }
               if (ttCount == 0) { Com_ScriptWarning("Unknown technique type '%s'\n", tok); techSet = NULL; break; }
               const char *techName = tok;
-              void *technique = NULL;
+              MaterialTechnique *technique = NULL;
               if (ttUsing) {
-                  technique = Material_FindTechnique(techName);
+                  technique = (MaterialTechnique *)Material_FindTechnique(techName);
                   if (!technique) {
                       isDx7 = (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2);
                       if (!isDx7) {
@@ -5087,7 +5087,7 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
                           if (terr) { techSet = NULL; goto endTsParse; }
                           if (lpc == 0) { Com_ScriptWarning("Technique '%s' has no passes.  The technique should be left out of the techset\n", techName); techSet = NULL; goto endTsParse; }
                           { int nl = (int)strlen(techName) + 1; int pds = (int)lpc * 0x1c;
-                            technique = Material_Alloc(8 + nl + pds);
+                            technique = (MaterialTechnique *)Material_Alloc(8 + nl + pds);
                             technique->name = (const char *)((byte *)technique + 8 + pds);
                             memcpy((byte *)technique + 8 + pds, techName, nl);
                             technique->flags = ltf;
@@ -5179,7 +5179,7 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
                           if (derr) { techSet = NULL; goto endTsParse; }
                           if (dpc == 0) { Com_ScriptWarning("Technique '%s' has no passes.  The technique should be left out of the techset\n", techName); techSet = NULL; goto endTsParse; }
                           { int nl = (int)strlen(techName) + 1; int pds = (int)dpc * 0x5c;
-                            technique = Material_Alloc(8 + nl + pds);
+                            technique = (MaterialTechnique *)Material_Alloc(8 + nl + pds);
                             technique->name = (const char *)((byte *)technique + 8 + pds);
                             memcpy((byte *)technique + 8 + pds, techName, nl);
                             technique->passCount = dpc;

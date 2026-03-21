@@ -1192,7 +1192,7 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
                         R_AddDebugBox(debugGlobals, (float *)modelRef->mins, (float *)modelRef->maxs, (const float *)imp_colorLtYellow);
                     }
                 }
-                R_AddBModelSurfaces(sceneEnt, entIndex);
+                R_AddBModelSurfaces(sceneEnt2, entIndex);
             }
 
         next_modelref:

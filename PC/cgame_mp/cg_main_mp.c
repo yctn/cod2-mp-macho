@@ -1135,9 +1135,9 @@ void CG_LoadHudMenu(void)
 
     if (menu != NULL) {
         /* menuDef_t/window layout is still partially suspect; keep the recovered rect offsets local here. */
-        cgs->compassWidth  = menu->window.rect[0].w;
-        cgs->compassHeight = menu->window.rect[0].h;
-        cgs->compassY      = menu->window.rect[0].y;
+        ((cgs_t *)cgs)->compassWidth  = menu->window.rect[0].w;
+        ((cgs_t *)cgs)->compassHeight = menu->window.rect[0].h;
+        ((cgs_t *)cgs)->compassY      = menu->window.rect[0].y;
     }
 }
 

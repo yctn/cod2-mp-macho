@@ -977,7 +977,10 @@ struct new_allocator_float;
 struct nodetype;
 struct objective_t;
 struct operator_s;
-struct orientation_t;
+struct orientation_t {
+    float origin[3];
+    float axis[3][3];
+};
 struct outPacket_t;
 struct pack_t;
 struct pair_UINT32_CVAOPacket;
@@ -2978,7 +2981,7 @@ typedef int roomtype;  /* opaque */
 typedef int root;  /* opaque */
 typedef int sampleTime;  /* opaque */
 typedef int scale;  /* opaque */
-typedef int script_t;  /* opaque */
+typedef struct script_s script_t;
 typedef int second;  /* opaque */
 typedef int self;  /* opaque */
 typedef int sensitivity;  /* opaque */
@@ -6037,7 +6040,10 @@ struct FxArchive {
 };
 
 struct FxBoltFramePtr {
-    int _placeholder;
+    union {
+        struct FxBoltFrame *value;
+        int _placeholder;
+    };
 };
 
 struct EffectPrimitive {
@@ -6053,7 +6059,13 @@ struct FxBoltInfo {
 
 struct FxBoltFrame {
     int refCount;              /* reference count at offset 0 */
+    union {
+        int cachedServerTime;
+        int mTime;
+    };
+    orientation_t orientation;
     struct FxBoltInfo mBolt;
+    struct FxBoltFrame *next;
 };
 
 struct FxCamera {
@@ -12690,11 +12702,6 @@ struct operator_s {
     int parentheses;
     int prev;
     int next;
-};
-
-struct orientation_t {
-    vec3_t origin;
-    vec3_t axis[3];
 };
 
 struct outPacket_t {

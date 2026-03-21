@@ -957,7 +957,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
         ENT_FREETIME(ed) = LEVEL_TIME;
 
         /* Check if entity is in the dynamic range */
-        if ((byte *)ed - LEVEL_GENTITIES > 0x9D7F) {
+        if ((byte *)ed - (byte *)LEVEL_GENTITIES > 0x9D7F) {
             /* Add to free list */
             if (LEVEL_LASTFREEENT) {
                 ENT_NEXTFREEENT(LEVEL_LASTFREEENT) = ed;

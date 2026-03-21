@@ -427,6 +427,7 @@ extern float Vec3Normalize(float *v);
 void Flash_Init(const Flash * _this)
 {
     byte *p = (byte *)_this;
+    Effect *effect = (Effect *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     float dif[3];
     float dist, dot, falloff;
@@ -434,9 +435,12 @@ void Flash_Init(const Flash * _this)
 
     /* line 2266: dif = this->origin - camera origin */
     camOrigin = ((FxHelper *)helper)->mCamera.vieworg;
-    dif[0] = (p->origin[0]) /* mRefEnt.customMaterial (localOrigin[0]) */ - camOrigin[0];
-    dif[1] = (p->origin[1]) /* mRefEnt.rotation (localOrigin[1]) */ - camOrigin[1];
-    dif[2] = ((Effect *)p)->mRefEnt.axis[0][0] /* localOrigin[2] */ - camOrigin[2];
+    dif[0] = effect->mRefEnt.origin[0];
+    dif[1] = effect->mRefEnt.origin[1];
+    dif[2] = effect->mRefEnt.origin[2];
+    dif[0] -= camOrigin[0];
+    dif[1] -= camOrigin[1];
+    dif[2] -= camOrigin[2];
 
     /* line 2270: normalize dif, get distance */
     dist = Vec3Normalize(dif);
@@ -477,7 +481,7 @@ static void GLOBAL__I__ZN11FxBoltFrame12g_mFrameListE(void) /* global constructo
 /* line 563 */
 void Particle_AddVisibility(const Particle * _this)
 {
-    byte *p = (byte *)_this;
+    const Effect *effect = (const Effect *)_this;
     int *countPtr = *(int **)imp_g_effectVisArrayCount;
     byte *visArray = *(byte **)imp_g_effectVisArray;
     int idx = *countPtr;
@@ -488,16 +492,16 @@ void Particle_AddVisibility(const Particle * _this)
     *countPtr = idx + 1;
 
     /* line 573: copy origin vec3 */
-    *(int *)(entry + 0) = ((Effect *)p)->mTimeStart /* worldOrigin[0] */;
-    *(int *)(entry + 4) = ((Effect *)p)->mTimeEnd /* worldOrigin[1] */;
-    *(int *)(entry + 8) = ((Effect *)p)->mBolt._placeholder /* worldOrigin[2] */;
+    *(float *)(entry + 0) = effect->worldOrigin[0];
+    *(float *)(entry + 4) = effect->worldOrigin[1];
+    *(float *)(entry + 8) = effect->worldOrigin[2];
 
     /* line 574: radius squared */
-    radius = (p->radius[0]) /* worldRadius[0] */;
+    radius = effect->worldRadius[0];
     *(float *)(entry + 12) = radius * radius;
 
     /* line 575: visibility from alpha byte */
-    alpha = (float)((p->materialRGBA[3]) /* worldRGBA[3] */);
+    alpha = (float)effect->worldRGBA[3];
     *(float *)(entry + 16) = alpha * (-0.003921568859368563f) + 1.0f;
 }
 
@@ -566,12 +570,13 @@ static void FX_AddFxToScene(void) { }
 /* line 1820 */
 void Emitter_Draw(const Emitter * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     /* line 1823: if not (flags & 0x10), return */
-    if (!((p->mFlags) /* mFlags */ & 0x10))
+    if (!(effect->mFlags & 0x10))
         return;
     /* line 1827: if alpha == 0, return */
-    if ((p->materialTime2) /* worldScale */ == 0.0f)
+    if (effect->worldScale == 0.0f)
         return;
     /* FX_AddFxToScene(this, 1) via register convention */
 #ifndef __EMSCRIPTEN__
@@ -665,9 +670,10 @@ void OrientedParticle_Draw(const OrientedParticle * _this)
 /* line 401 */
 void Particle_Draw(const Particle * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
-    float radius = (p->radius[0]) /* worldRadius[0] */;
-    float height = (p->radius[1]) /* worldRadius[1] */;
+    float radius = effect->worldRadius[0];
+    float height = effect->worldRadius[1];
     /* line 403: if both radius and height are zero, skip */
     if (radius == 0.0f && height == 0.0f)
         return;
@@ -686,9 +692,9 @@ void Particle_Draw(const Particle * _this)
 /* line 227 */
 Bool Effect_Update(const Effect * _this)
 {
-    byte *p = (byte *)_this;
+    Effect *effect = (Effect *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
-    int startTime = (p->mTimeStart) /* mTimeStart */;
+    int startTime = effect->mTimeStart;
     int curTime = ((FxHelper *)helper)->mTime;
     int endTime;
     float normDuration;
@@ -698,17 +704,17 @@ Bool Effect_Update(const Effect * _this)
         return 0;
 
     /* line 239: compute normalized duration */
-    endTime = (p->mTimeEnd) /* mTimeEnd */;
+    endTime = effect->mTimeEnd;
     normDuration = (float)(curTime - startTime) / (float)(endTime - startTime);
-    ((Effect *)p)->mRefEnt.materialTime /* normTime */ = normDuration;
+    effect->mRefEnt.materialTime /* normTime */ = normDuration;
 
     /* line 241: clamp to 1.0 */
     if (normDuration > 1.0f)
-        ((Effect *)p)->mRefEnt.materialTime /* normTime */ = 1.0f;
+        effect->mRefEnt.materialTime /* normTime */ = 1.0f;
 
     /* line 243: clamp to 0.0 */
-    if (0.0f > ((Effect *)p)->mRefEnt.materialTime /* normTime */)
-        ((Effect *)p)->mRefEnt.materialTime /* normTime */ = 0.0f;
+    if (0.0f > effect->mRefEnt.materialTime /* normTime */)
+        effect->mRefEnt.materialTime /* normTime */ = 0.0f;
 
     return 1;
 }
@@ -717,6 +723,7 @@ Bool Effect_Update(const Effect * _this)
 extern unsigned char FxHelper_CullSphere(void *helper, float *origin, float radius, int cullType);
 Bool Particle_Cull(const Particle * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -725,12 +732,13 @@ Bool Particle_Cull(const Particle * _this)
         if (cullType >= 5)
             cullType = 5;
     }
-    return (Bool)FxHelper_CullSphere(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, (p->radius[0]) /* worldRadius[0] */, cullType);
+    return (Bool)FxHelper_CullSphere(helper, (float *)effect->worldOrigin, effect->worldRadius[0], cullType);
 }
 
 /* line 1270 */
 Bool OrientedParticle_Cull(const OrientedParticle * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -738,12 +746,13 @@ Bool OrientedParticle_Cull(const OrientedParticle * _this)
         if (cullType >= 5)
             cullType = 5;
     }
-    return (Bool)FxHelper_CullSphere(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, (p->radius[0]) /* worldRadius[0] */, cullType);
+    return (Bool)FxHelper_CullSphere(helper, (float *)effect->worldOrigin, effect->worldRadius[0], cullType);
 }
 
 /* line 1357 */
 Bool Cloud_Cull(const Cloud * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -755,18 +764,19 @@ Bool Cloud_Cull(const Cloud * _this)
     }
 
     /* line 1359: compute cull radius = max(radius, height) + halfLen */
-    halfLen = (p->materialTime2) /* worldScale */;
-    height = (p->radius[1]) /* worldRadius[1] */;
-    radius = (p->radius[0]) /* worldRadius[0] */;
+    halfLen = effect->worldScale;
+    height = effect->worldRadius[1];
+    radius = effect->worldRadius[0];
     cullRadius = (radius - height < 0.0f ? height : radius) + halfLen;
 
-    return (Bool)FxHelper_CullSphere(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, cullRadius, cullType);
+    return (Bool)FxHelper_CullSphere(helper, (float *)effect->worldOrigin, cullRadius, cullType);
 }
 
 /* line 1514 */
 extern unsigned char FxHelper_CullCylinder(void *helper, float *origin1, float *origin2, float radius1, float radius2, int cullType);
 Bool Line_Cull(const Line * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -775,13 +785,14 @@ Bool Line_Cull(const Line * _this)
         if (cullType >= 5)
             cullType = 5;
     }
-    radius = (p->radius[0]) /* worldRadius[0] */;
-    return (Bool)FxHelper_CullCylinder(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, (float *)(p + 0x9c) /* worldEndpos */, radius, radius, cullType);
+    radius = effect->worldRadius[0];
+    return (Bool)FxHelper_CullCylinder(helper, (float *)effect->worldOrigin, (float *)effect->worldEndpos, radius, radius, cullType);
 }
 
 /* line 1596 */
 Bool Tail_Cull(const Tail * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -790,8 +801,8 @@ Bool Tail_Cull(const Tail * _this)
         if (cullType >= 5)
             cullType = 5;
     }
-    radius = (p->radius[0]) /* worldRadius[0] */;
-    return (Bool)FxHelper_CullCylinder(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, (float *)(p + 0x9c) /* worldEndpos */, radius, radius, cullType);
+    radius = effect->worldRadius[0];
+    return (Bool)FxHelper_CullCylinder(helper, (float *)effect->worldOrigin, (float *)effect->worldEndpos, radius, radius, cullType);
 }
 
 /* line 1737 */
@@ -811,6 +822,7 @@ Bool Cylinder_Cull(const Cylinder * _this)
 /* line 2152 */
 Bool Light_Cull(const Light * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
     int cullType = ((FxHelper *)helper)->mCamera.numPlanes;
@@ -818,7 +830,7 @@ Bool Light_Cull(const Light * _this)
         if (cullType >= 5)
             cullType = 5;
     }
-    return (Bool)FxHelper_CullSphere(helper, (float *)&((Effect *)p)->mTimeStart /* worldOrigin */, (p->radius[0]) /* worldRadius[0] */, cullType);
+    return (Bool)FxHelper_CullSphere(helper, (float *)effect->worldOrigin, effect->worldRadius[0], cullType);
 }
 
 /* line 509 */
@@ -833,8 +845,8 @@ void Particle_SetRandomVelocityWeights(const Particle * _this, float weight1, fl
 extern float Vec3DistanceSq(float *a, float *b);
 float Particle_GetVisibility(const Particle * _this, const vec_t *start, const vec_t *dir, float halfLen)
 {
-    byte *p = (byte *)_this;
-    float *origin = (float *)&((Effect *)p)->mTimeStart /* worldOrigin */;
+    const Effect *effect = (const Effect *)_this;
+    float *origin = (float *)effect->worldOrigin;
     float *s = (float *)start;
     float *d = (float *)dir;
     float dot, absDist, projPt[3], distSq, radiusSq;
@@ -857,13 +869,13 @@ float Particle_GetVisibility(const Particle * _this, const vec_t *start, const v
     distSq = Vec3DistanceSq(origin, projPt);
 
     /* line 554: if distance > radius, return 1.0 (fully visible) */
-    radiusSq = (p->radius[0]) /* worldRadius[0] */;
+    radiusSq = effect->worldRadius[0];
     radiusSq *= radiusSq;
     if (radiusSq <= distSq)
         return 1.0f;
 
     /* line 555: return alpha-based visibility */
-    return (float)((p->materialRGBA[3]) /* worldRGBA[3] */) * (-0.003921568859368563f) + 1.0f;
+    return (float)effect->worldRGBA[3] * (-0.003921568859368563f) + 1.0f;
 }
 
 /* line 1225 */
@@ -1238,6 +1250,7 @@ extern float flrand(float min, float max);
 extern void FxScheduler_PlayEffect(void *scheduler, void *fx, float *origin, float *dir);
 void Particle_Die(const Particle * _this)
 {
+    const Effect *effect = (const Effect *)_this;
     byte *p = (byte *)_this;
     int flags;
     float x, y, z, lenSq, len, scale;
@@ -1245,7 +1258,7 @@ void Particle_Die(const Particle * _this)
     void *scheduler;
 
     /* line 376: check death effect flags */
-    flags = (p->mFlags) /* mFlags */;
+    flags = effect->mFlags;
     if (!(flags & 0x200))  /* testb $2, %ah  => bit 9 of flags */
         return;
     if (flags & 0x400)     /* testb $4, %ah  => bit 10 */
@@ -2351,9 +2364,9 @@ void Particle_UpdateRGB_asm(const Particle * _this)
 /* line 2251 */
 Bool Flash_Update(const Flash * _this)
 {
-    byte *p = (byte *)_this;
+    Effect *effect = (Effect *)_this;
     byte *helper = *(byte **)imp_theFxHelper;
-    int startTime = (p->mTimeStart) /* mTimeStart */;
+    int startTime = effect->mTimeStart;
     int curTime = ((FxHelper *)helper)->mTime;
     int endTime;
     float normDuration;
@@ -2361,15 +2374,15 @@ Bool Flash_Update(const Flash * _this)
     if (startTime > curTime)
         return 0;
 
-    endTime = (p->mTimeEnd) /* mTimeEnd */;
+    endTime = effect->mTimeEnd;
     normDuration = (float)(curTime - startTime) / (float)(endTime - startTime);
-    ((Effect *)p)->mRefEnt.materialTime /* normTime */ = normDuration;
+    effect->mRefEnt.materialTime /* normTime */ = normDuration;
 
     if (normDuration > 1.0f)
-        ((Effect *)p)->mRefEnt.materialTime /* normTime */ = 1.0f;
+        effect->mRefEnt.materialTime /* normTime */ = 1.0f;
 
-    if (0.0f > ((Effect *)p)->mRefEnt.materialTime /* normTime */)
-        ((Effect *)p)->mRefEnt.materialTime /* normTime */ = 0.0f;
+    if (0.0f > effect->mRefEnt.materialTime /* normTime */)
+        effect->mRefEnt.materialTime /* normTime */ = 0.0f;
 
     /* line 2257: update RGB */
     Light_UpdateRGB((const Light *)_this, (const Light *)_this);
@@ -2601,7 +2614,7 @@ void Particle_IntegrateVelocity2(const Particle *_this, float normDuration, vec_
     int useBlend = (*(byte *)(self + 0xaa) /* mFlags byte2 */ & 8) != 0;
     float vx, vy, vz;
 
-    /* Velocity2 channels are at offsets 0x204, 0x210 /* velocity2YCI */, 0x21c with blend variants at 0x228, 0x234 /* velocity2YRandCI */, 0x240 */
+    /* Velocity2 channels are at offsets 0x204, 0x210, 0x21c with blend variants at 0x228, 0x234, 0x240. */
     if (useBlend) {
         vx = IntegrateChannel(self, 0x204 /* velocity2XCI */, 0x228 /* velocity2XRandCI */, *(float *)(self + 0x138) /* Particle.velocity2WeightX */, 0x20c /* velocity2XCI.scale */, normDuration, 1);
         vy = IntegrateChannel(self, 0x210 /* velocity2YCI */, 0x234 /* velocity2YRandCI */, *(float *)(self + 0x13c) /* Particle.velocity2WeightY */, 0x218 /* velocity2YCI.scale */, normDuration, 1);
@@ -6957,7 +6970,7 @@ Bool Cylinder_Update(const Cylinder *_this)
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
-            if ((boltFrame->mTime) /* FxBoltFrame.lastTime */ != clTime) {
+            if (*(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */ != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
                     { ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle = -1; ((FxBoltFrame *)boltFrame)->mBolt.boneIndex = -1; }
@@ -7732,7 +7745,7 @@ Bool Tail_Update(const Tail *_this)
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
-            if ((boltFrame->mTime) /* FxBoltFrame.lastTime */ != clTime) {
+            if (*(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */ != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
                     { ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle = -1; ((FxBoltFrame *)boltFrame)->mBolt.boneIndex = -1; }
@@ -8335,7 +8348,7 @@ Bool Line_Update(const Line *_this)
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
-            if ((boltFrame->mTime) /* FxBoltFrame.lastTime */ != clTime) {
+            if (*(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */ != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
                     { ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle = -1; ((FxBoltFrame *)boltFrame)->mBolt.boneIndex = -1; }
@@ -8704,7 +8717,7 @@ Bool Cloud_Update(const Cloud *_this)
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
-            if ((boltFrame->mTime) /* FxBoltFrame.lastTime */ != clTime) {
+            if (*(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */ != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
                     { ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle = -1; ((FxBoltFrame *)boltFrame)->mBolt.boneIndex = -1; }
@@ -9688,7 +9701,7 @@ Bool OrientedParticle_Update(const OrientedParticle *_this)
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
-            if ((boltFrame->mTime) /* FxBoltFrame.lastTime */ != clTime) {
+            if (*(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */ != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
                     { ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle = -1; ((FxBoltFrame *)boltFrame)->mBolt.boneIndex = -1; }
@@ -10516,7 +10529,7 @@ Bool Particle_Update(const Particle *_this, const Particle *_this_1, const Cloud
         /* Get cached orientation from bolt frame */
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int cachedTime = (boltFrame->mTime) /* FxBoltFrame.lastTime */;
+            int cachedTime = *(int *)(boltFrame + 4) /* FxBoltFrame.lastTime */;
             int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (cachedTime != clTime) {
                 *(int *)((byte *)boltFrame + 4) /* FxBoltFrame.lastTime */ = clTime;

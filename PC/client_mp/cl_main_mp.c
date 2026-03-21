@@ -356,7 +356,7 @@ const char * CL_GetUsernameForLocalClient(int controllerIndex)
 void CL_AddReliableCommand(const char *cmd)
 {
     int index;
-    if (clientConnections.reliableSequence - clientConnections.reliableAcknowledge - 128 > 0)
+    if (clientConnections[0].reliableSequence - clientConnections[0].reliableAcknowledge - 128 > 0)
     {
         Com_Error(1, "CL_AddReliableCommand: too many commands");
     }
@@ -388,9 +388,9 @@ void CL_StopRecord_f(void)
 /* line 1161 */
 void CL_ShutdownDemo(void)
 {
-    if (!clientConnections.demofile)
+    if (!clientConnections[0].demofile)
         return;
-    FS_FCloseFile(clientConnections.demofile);
+    FS_FCloseFile(clientConnections[0].demofile);
     ((clientConnection_t *)clc)->demofile = 0;
     ((clientConnection_t *)clc)->demoplaying = 0;
     ((clientConnection_t *)clc)->demorecording = 0;
@@ -1227,7 +1227,7 @@ void CL_StopLogo(void)
 /* line 3893 */
 void CL_ToggleMenu_f(void)
 {
-    if (clientConnections.demoplaying != 0 || (*(LegacyHacks **)imp_legacyHacks)->cl_serverloadwaiting != 0) {
+    if (clientConnections[0].demoplaying != 0 || (*(LegacyHacks **)imp_legacyHacks)->cl_serverloadwaiting != 0) {
         UI_SetActiveMenu(1);
     } else {
         UI_SetActiveMenu(2);

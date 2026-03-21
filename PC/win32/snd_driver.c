@@ -2001,6 +2001,8 @@ void SND_Update3DChannel(int i, int frametime)
     }
 }
 
+}
+
 /* line 1214 */
 void SND_Set2DChannelFromSaveInfo(int index, snd_save_2D_sample_t *info)
 {

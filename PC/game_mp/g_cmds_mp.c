@@ -279,7 +279,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
 qboolean G_IsPlaying(gentity_t *ent)
 {
     /* Returns true if client's session state is SESS_STATE_PLAYING (0) */
-    return ((gclient_t *)client)->sess.sessionState == SESS_STATE_PLAYING;
+    return ent->client && ent->client->sess.sessionState == SESS_STATE_PLAYING;
 }
 
 /* line 1059 */

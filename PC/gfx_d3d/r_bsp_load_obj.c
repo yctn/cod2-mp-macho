@@ -118,7 +118,7 @@ static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
         surfCount = aabbTree->surfaceCount;
 
         for (i = 0; i < surfCount; i++) {
-            byte *surfData = (byte *)surfPtr[i].u.data;
+            byte *surfData = (byte *)surfPtr[i].data;
             ExpandBounds(surfData + 4, surfData + 0x10, aabbTree->mins, aabbTree->maxs);
         }
     }

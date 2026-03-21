@@ -9,7 +9,7 @@ extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float 
 extern int Dvar_GetInt(const char *dvarName);
 extern int Hunk_Used(void);
 
-extern unsigned char sharedUiInfo[]; /* BSS 115392-byte struct */
+extern sharedUiInfo_t sharedUiInfo; /* BSS 115392-byte struct */
 
 float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle hMaterial);
 float UI_DrawLoadBar(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);

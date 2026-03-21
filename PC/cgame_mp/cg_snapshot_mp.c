@@ -490,7 +490,7 @@ static void CG_TransitionSnapshot_Inline(void)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
+            int entNum = ((entityState_t *)snapEnt)->number;
             char *cent = (char *)&cg_ents[entNum];
             memcpy(cent, cent + ES_BINSIZE, ES_BINSIZE) /* copy nextState -> currentState */;
         }
@@ -524,7 +524,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
             for (i = 0; i < numEnts; i++)
             {
                 char *snapEnt = (char *)&((snapshot_t *)prevSnap)->entities[i];
-                int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
+                int entNum = ((entityState_t *)snapEnt)->number;
                 char *cent = (char *)&cg_ents[entNum];
 
                 /* line 325: cent->nextValid = 0 */
@@ -795,7 +795,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
+            int entNum = ((entityState_t *)snapEnt)->number;
             char *cent = CG_EntityPtr(entNum);
 
             /* line 451: copy snap entity to cent->nextState */
@@ -893,7 +893,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                     for (i = 0; i < numEnts; i++)
                     {
                         char *snapEnt = (char *)&((snapshot_t *)nextSnap)->entities[i];
-                        int entNum = ((entityState_t *)snapEnt)->pos;
+                        int entNum = ((entityState_t *)snapEnt)->number;
                         char *cent = CG_EntityPtr(entNum);
 
                         /* line 206: check if eType == 2 (corpse) */
@@ -943,7 +943,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = ((entityState_t *)snapEnt)->pos;
+            int entNum = ((entityState_t *)snapEnt)->number;
             CG_CheckEvents(CG_EntityPtr(entNum));
         }
     }

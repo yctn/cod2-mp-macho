@@ -509,6 +509,7 @@ int R_BeginDelayedDrawing(void)
 /* line 1013 */
 void R_EndDelayedDrawing(int marker)
 {
+    char *cmdList = (char *)s_cmdList;
     int used = s_cmdList->usedTotal;
     if ((int)sizeof(s_cmdList->cmds) - used > 3) {
         char *cmd = (char *)s_cmdList->cmds + used;

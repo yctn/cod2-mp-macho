@@ -1672,7 +1672,7 @@ void UI_KeyEvent_impl(int key, qboolean down)
         if (Dvar_GetBool("cl_bypassMouseInput"))
             bypassKeyClear = 1;
 
-        if (key == 0x1b && down && !Menus_AnyFullScreenVisible(uiInfo) && ((menuDef_t *)menu)->window.onESC == 0) {
+        if (key == 0x1b && down && !Menus_AnyFullScreenVisible(uiInfo) && ((menuDef_t *)menu)->onESC == 0) {
             /* ESC on non-fullscreen menu with no parent */
             Menus_CloseAll(uiInfo);
         } else {

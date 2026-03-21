@@ -544,13 +544,13 @@ qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t 
 
     if (!(svFlags & 0x60)) {
         /* Standard trace-based contact check */
-        char trace[0x24];
+        trace_t trace;
         int clipHandle = SV_ClipHandleForEntity(gEnt);
         vec_t *vec3_origin = (vec_t *)*(char **)imp_vec3_origin;
-        CM_TransformedBoxTraceExternal(trace, vec3_origin, vec3_origin,
+        CM_TransformedBoxTraceExternal(&trace, vec3_origin, vec3_origin,
             mins, maxs, clipHandle, -1,
             gEnt->r.currentOrigin, gEnt->r.currentAngles);
-        return trace->startsolid;
+        return trace.startsolid;
     }
 
     if (svFlags & 0x20) {
@@ -896,4 +896,3 @@ qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits)
     DObjCreateSkel(obj, buf, sv->skelTimeStamp);
     return 0;
 }
-

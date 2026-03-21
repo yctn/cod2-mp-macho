@@ -201,7 +201,7 @@ static inline void RB_SetVertex2D(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertexDx7 *)v)->normal[0] = 0;
         ((GfxVertexDx7 *)v)->normal[1] = 0;
         ((GfxVertexDx7 *)v)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v)->color = color;
+        ((GfxVertexDx7 *)v)->color.packed = color;
         ((GfxVertexDx7 *)v)->texCoord[0] = s;
         ((GfxVertexDx7 *)v)->texCoord[1] = t;
     } else {
@@ -213,7 +213,7 @@ static inline void RB_SetVertex2D(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertex *)v)->normal[0] = 0;
         ((GfxVertex *)v)->normal[1] = 0;
         ((GfxVertex *)v)->normal[2] = 1.0f;
-        ((GfxVertex *)v)->color = color;
+        ((GfxVertex *)v)->color.packed = color;
         ((GfxVertex *)v)->texCoord[0] = s;
         ((GfxVertex *)v)->texCoord[1] = t;
         ((GfxVertex *)v)->binormal[0] = 0;
@@ -630,11 +630,11 @@ static void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
     byte *cmd = (byte *)execState->cmd;
     int x     = ((GfxCmdStretchRaw *)cmd)->x;
     int y     = ((GfxCmdStretchRaw *)cmd)->y;
-    int w     = ((GfxCmdStretchRawCmd *)cmd)->w;
-    int h     = ((GfxCmdStretchRawCmd *)cmd)->h;
-    int cols  = ((GfxCmdStretchRawCmd *)cmd)->cols;
-    int rows  = ((GfxCmdStretchRawCmd *)cmd)->rows;
-    byte *data = ((GfxCmdStretchRawCmd *)cmd)->data;
+    int w     = ((GfxCmdStretchRaw *)cmd)->w;
+    int h     = ((GfxCmdStretchRaw *)cmd)->h;
+    int cols  = ((GfxCmdStretchRaw *)cmd)->cols;
+    int rows  = ((GfxCmdStretchRaw *)cmd)->rows;
+    byte *data = ((GfxCmdStretchRaw *)cmd)->data;
     void *rawTexture = NULL;
     void *device;
     void **devVtable;
@@ -1112,31 +1112,31 @@ static void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
 
     /* Copy light properties from cmd to backEnd.light[idx] */
     /* ambient (cmd+0x18) */
-    *(int *)&backEnd.light[idx].ambient[0] = ((GfxCmdSetLightPropertiesCmd *)cmd)->ambient[0];
-    *(int *)&backEnd.light[idx].ambient[1] = ((GfxCmdSetLightPropertiesCmd *)cmd)->ambient[1];
-    *(int *)&backEnd.light[idx].ambient[2] = ((GfxCmdSetLightPropertiesCmd *)cmd)->ambient[2];
-    *(int *)&backEnd.light[idx].ambient[3] = ((GfxCmdSetLightPropertiesCmd *)cmd)->ambient[3];
+    *(int *)&backEnd.light[idx].ambient[0] = ((GfxCmdSetLightProperties *)cmd)->ambient[0];
+    *(int *)&backEnd.light[idx].ambient[1] = ((GfxCmdSetLightProperties *)cmd)->ambient[1];
+    *(int *)&backEnd.light[idx].ambient[2] = ((GfxCmdSetLightProperties *)cmd)->ambient[2];
+    *(int *)&backEnd.light[idx].ambient[3] = ((GfxCmdSetLightProperties *)cmd)->ambient[3];
 
     /* color (cmd+0x28) */
-    *(int *)&backEnd.light[idx].color[0] = ((GfxCmdSetLightPropertiesCmd *)cmd)->color[0];
-    *(int *)&backEnd.light[idx].color[1] = ((GfxCmdSetLightPropertiesCmd *)cmd)->color[1];
-    *(int *)&backEnd.light[idx].color[2] = ((GfxCmdSetLightPropertiesCmd *)cmd)->color[2];
-    *(int *)&backEnd.light[idx].color[3] = ((GfxCmdSetLightPropertiesCmd *)cmd)->color[3];
+    *(int *)&backEnd.light[idx].color[0] = ((GfxCmdSetLightProperties *)cmd)->color[0];
+    *(int *)&backEnd.light[idx].color[1] = ((GfxCmdSetLightProperties *)cmd)->color[1];
+    *(int *)&backEnd.light[idx].color[2] = ((GfxCmdSetLightProperties *)cmd)->color[2];
+    *(int *)&backEnd.light[idx].color[3] = ((GfxCmdSetLightProperties *)cmd)->color[3];
 
     /* specular (cmd+0x38) */
-    *(int *)&backEnd.light[idx].specular[0] = ((GfxCmdSetLightPropertiesCmd *)cmd)->specular[0];
-    *(int *)&backEnd.light[idx].specular[1] = ((GfxCmdSetLightPropertiesCmd *)cmd)->specular[1];
-    *(int *)&backEnd.light[idx].specular[2] = ((GfxCmdSetLightPropertiesCmd *)cmd)->specular[2];
-    *(int *)&backEnd.light[idx].specular[3] = ((GfxCmdSetLightPropertiesCmd *)cmd)->specular[3];
+    *(int *)&backEnd.light[idx].specular[0] = ((GfxCmdSetLightProperties *)cmd)->specular[0];
+    *(int *)&backEnd.light[idx].specular[1] = ((GfxCmdSetLightProperties *)cmd)->specular[1];
+    *(int *)&backEnd.light[idx].specular[2] = ((GfxCmdSetLightProperties *)cmd)->specular[2];
+    *(int *)&backEnd.light[idx].specular[3] = ((GfxCmdSetLightProperties *)cmd)->specular[3];
 
     /* def pointer (cmd+0x48) */
-    *(int *)&backEnd.light[idx].def = ((GfxCmdSetLightPropertiesCmd *)cmd)->lightDef;
+    *(int *)&backEnd.light[idx].def = ((GfxCmdSetLightProperties *)cmd)->lightDef;
 
     /* position (cmd+0x08) */
-    *(int *)&backEnd.light[idx].position[0] = ((GfxCmdSetLightPropertiesCmd *)cmd)->position[0];
-    *(int *)&backEnd.light[idx].position[1] = ((GfxCmdSetLightPropertiesCmd *)cmd)->position[1];
-    *(int *)&backEnd.light[idx].position[2] = ((GfxCmdSetLightPropertiesCmd *)cmd)->position[2];
-    *(int *)&backEnd.light[idx].position[3] = ((GfxCmdSetLightPropertiesCmd *)cmd)->position[3];
+    *(int *)&backEnd.light[idx].position[0] = ((GfxCmdSetLightProperties *)cmd)->position[0];
+    *(int *)&backEnd.light[idx].position[1] = ((GfxCmdSetLightProperties *)cmd)->position[1];
+    *(int *)&backEnd.light[idx].position[2] = ((GfxCmdSetLightProperties *)cmd)->position[2];
+    *(int *)&backEnd.light[idx].position[3] = ((GfxCmdSetLightProperties *)cmd)->position[3];
 
     /* Copy per-light data to code constants: position → codeConsts[3+idx] */
     memcpy(&backEnd.codeConsts[3 + idx], &backEnd.light[idx].position, 16);
@@ -1228,7 +1228,7 @@ static void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
     cmd = (const GfxCmdBeginView *)execState->cmd;
 
     /* Copy view parameters from cmd to backEnd */
-    backEnd.viewCount = ((GfxCmdBeginViewCmd *)cmd)->viewCount; /* cmd->viewCount */
+    backEnd.viewCount = ((GfxCmdBeginView *)cmd)->viewCount; /* cmd->viewCount */
     backEnd.sceneDef = cmd->sceneDef;
     backEnd.viewParms = cmd->viewParms;
     backEnd.lodParms = cmd->lodParms;
@@ -1947,8 +1947,8 @@ static void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
     rb_drawsurfscmd_count++;
     idx = rb_drawsurfscmd_count - 1;
     if (idx < 3) {
-        g_dsc_techtype[idx] = ((GfxCmdDrawSurfsCmd *)cmd)->techType;
-        g_dsc_surfcount[idx] = ((GfxCmdDrawSurfsCmd *)cmd)->drawSurfCount;
+        g_dsc_techtype[idx] = ((GfxCmdDrawSurfs *)cmd)->techType;
+        g_dsc_surfcount[idx] = ((GfxCmdDrawSurfs *)cmd)->drawSurfCount;
     }
 
     /* Check dxState skip flag */
@@ -2613,7 +2613,7 @@ static void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
             ((GfxVertexDx7 *)v)->normal[0] = nx;
             ((GfxVertexDx7 *)v)->normal[1] = ny;
             ((GfxVertexDx7 *)v)->normal[2] = nzf;
-            ((GfxVertexDx7 *)v)->color = color;
+            ((GfxVertexDx7 *)v)->color.packed = color;
             ((GfxVertexDx7 *)v)->texCoord[0] = s;
             ((GfxVertexDx7 *)v)->texCoord[1] = tt;
         } else {
@@ -2626,7 +2626,7 @@ static void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
             ((GfxVertex *)v)->normal[0] = nx;
             ((GfxVertex *)v)->normal[1] = ny;
             ((GfxVertex *)v)->normal[2] = nzf;
-            ((GfxVertex *)v)->color = color;
+            ((GfxVertex *)v)->color.packed = color;
             ((GfxVertex *)v)->texCoord[0] = s;
             ((GfxVertex *)v)->texCoord[1] = tt;
             /* tangent = (1,0,0) */
@@ -2764,9 +2764,9 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
     memset(entity, 0, 0x74);
 
     /* origin (entity+0x3c) = cmd+0x0c (vec3) */
-    ((GfxEntity *)entity)->origin[0] = ((GfxCmdDrawSpriteCmd *)cmd)->pos[0];
-    ((GfxEntity *)entity)->origin[1] = ((GfxCmdDrawSpriteCmd *)cmd)->pos[1];
-    ((GfxEntity *)entity)->origin[2] = ((GfxCmdDrawSpriteCmd *)cmd)->pos[2];
+    ((GfxEntity *)entity)->origin[0] = ((GfxCmdDrawSprite *)cmd)->pos[0];
+    ((GfxEntity *)entity)->origin[1] = ((GfxCmdDrawSprite *)cmd)->pos[1];
+    ((GfxEntity *)entity)->origin[2] = ((GfxCmdDrawSprite *)cmd)->pos[2];
 
     /* material (entity+0x54) = cmd->material */
     ((GfxEntity *)entity)->customMaterial = (int)(uintptr_t)((GfxCmdDrawSprite *)cmd)->material;
@@ -2775,17 +2775,17 @@ static void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
     ((GfxEntity *)entity)->reType = 4;
 
     /* materialTime (entity+0x04) = cmd+0x20 */
-    ((GfxEntity *)entity)->renderFxFlags = ((GfxCmdDrawSpriteCmd *)cmd)->renderFxFlags;
+    ((GfxEntity *)entity)->renderFxFlags = ((GfxCmdDrawSprite *)cmd)->renderFxFlags;
 
     /* radius[0] = radius[1] = cmd+0x18 */
-    ((GfxEntity *)entity)->radius[0] = ((GfxCmdDrawSpriteCmd *)cmd)->radius;
-    ((GfxEntity *)entity)->radius[1] = ((GfxCmdDrawSpriteCmd *)cmd)->radius;
+    ((GfxEntity *)entity)->radius[0] = ((GfxCmdDrawSprite *)cmd)->radius;
+    ((GfxEntity *)entity)->radius[1] = ((GfxCmdDrawSprite *)cmd)->radius;
 
     /* scale (entity+0x70) = cmd+0x1c */
-    ((GfxEntity *)entity)->minScreenRadius = ((GfxCmdDrawSpriteCmd *)cmd)->minScreenRadius;
+    ((GfxEntity *)entity)->minScreenRadius = ((GfxCmdDrawSprite *)cmd)->minScreenRadius;
 
     /* color (entity+0x58) = cmd->rgbaColor */
-    ((GfxEntity *)entity)->materialRGBA = ((GfxCmdDrawSprite *)cmd)->rgbaColor.packed;
+    *(unsigned int *)((GfxEntity *)entity)->materialRGBA = ((GfxCmdDrawSprite *)cmd)->rgbaColor.packed;
 
     RB_TessEntity(entity);
 
@@ -2807,7 +2807,7 @@ static inline void RB_SetLineVertex(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertexDx7 *)v)->normal[0] = 0;
         ((GfxVertexDx7 *)v)->normal[1] = 0;
         ((GfxVertexDx7 *)v)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v)->color = color;
+        ((GfxVertexDx7 *)v)->color.packed = color;
         ((GfxVertexDx7 *)v)->texCoord[0] = s;
         ((GfxVertexDx7 *)v)->texCoord[1] = t;
     } else {
@@ -2819,7 +2819,7 @@ static inline void RB_SetLineVertex(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertex *)v)->normal[0] = 0;
         ((GfxVertex *)v)->normal[1] = 0;
         ((GfxVertex *)v)->normal[2] = 1.0f;
-        ((GfxVertex *)v)->color = color;
+        ((GfxVertex *)v)->color.packed = color;
         ((GfxVertex *)v)->texCoord[0] = s;
         ((GfxVertex *)v)->texCoord[1] = t;
         ((GfxVertex *)v)->binormal[0] = 0;
@@ -3383,7 +3383,7 @@ static inline void RB_SetVertex3DWorld(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertexDx7 *)v)->normal[0] = 0;
         ((GfxVertexDx7 *)v)->normal[1] = 0;
         ((GfxVertexDx7 *)v)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v)->color = color;
+        ((GfxVertexDx7 *)v)->color.packed = color;
         ((GfxVertexDx7 *)v)->texCoord[0] = s;
         ((GfxVertexDx7 *)v)->texCoord[1] = t;
     } else {
@@ -3395,7 +3395,7 @@ static inline void RB_SetVertex3DWorld(char *tessBase, int vertIndex, int isDx7,
         ((GfxVertex *)v)->normal[0] = 0;
         ((GfxVertex *)v)->normal[1] = 0;
         ((GfxVertex *)v)->normal[2] = 1.0f;
-        ((GfxVertex *)v)->color = color;
+        ((GfxVertex *)v)->color.packed = color;
         ((GfxVertex *)v)->texCoord[0] = s;
         ((GfxVertex *)v)->texCoord[1] = t;
         ((GfxVertex *)v)->binormal[0] = 0;
@@ -4155,13 +4155,13 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     if (isDx7) {
         ((GfxVertexDx7 *)t)->xyz[0] = x;  ((GfxVertexDx7 *)t)->xyz[1] = y;  ((GfxVertexDx7 *)t)->xyz[2] = z;
         ((GfxVertexDx7 *)t)->normal[0] = 0;  ((GfxVertexDx7 *)t)->normal[1] = 0;  ((GfxVertexDx7 *)t)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)t)->color = white;
+        ((GfxVertexDx7 *)t)->color.packed = white;
         ((GfxVertexDx7 *)t)->texCoord[0] = 0;  ((GfxVertexDx7 *)t)->texCoord[1] = 0;
     } else {
         ((GfxVertex *)t)->xyzw[0] = x;  ((GfxVertex *)t)->xyzw[1] = y;  ((GfxVertex *)t)->xyzw[2] = z;
         ((GfxVertex *)t)->xyzw[3] = 1.0f;
         ((GfxVertex *)t)->normal[0] = 0;  ((GfxVertex *)t)->normal[1] = 0;  ((GfxVertex *)t)->normal[2] = 1.0f;
-        ((GfxVertex *)t)->color = white;
+        ((GfxVertex *)t)->color.packed = white;
         ((GfxVertex *)t)->texCoord[0] = 0;  ((GfxVertex *)t)->texCoord[1] = 0;
         ((GfxVertex *)t)->tangent[0] = 1.0f;  ((GfxVertex *)t)->tangent[1] = 0;  ((GfxVertex *)t)->tangent[2] = 0;
         ((GfxVertex *)t)->binormal[0] = 0;  ((GfxVertex *)t)->binormal[1] = 1.0f;  ((GfxVertex *)t)->binormal[2] = 0;
@@ -4174,13 +4174,13 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     if (isDx7) {
         ((GfxVertexDx7 *)t)->xyz[0] = x;  ((GfxVertexDx7 *)t)->xyz[1] = y;  ((GfxVertexDx7 *)t)->xyz[2] = z;
         ((GfxVertexDx7 *)t)->normal[0] = 0;  ((GfxVertexDx7 *)t)->normal[1] = 0;  ((GfxVertexDx7 *)t)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)t)->color = white;
+        ((GfxVertexDx7 *)t)->color.packed = white;
         ((GfxVertexDx7 *)t)->texCoord[0] = 1.0f;  ((GfxVertexDx7 *)t)->texCoord[1] = 0;
     } else {
         ((GfxVertex *)t)->xyzw[0] = x;  ((GfxVertex *)t)->xyzw[1] = y;  ((GfxVertex *)t)->xyzw[2] = z;
         ((GfxVertex *)t)->xyzw[3] = 1.0f;
         ((GfxVertex *)t)->normal[0] = 0;  ((GfxVertex *)t)->normal[1] = 0;  ((GfxVertex *)t)->normal[2] = 1.0f;
-        ((GfxVertex *)t)->color = white;
+        ((GfxVertex *)t)->color.packed = white;
         ((GfxVertex *)t)->texCoord[0] = 1.0f;  ((GfxVertex *)t)->texCoord[1] = 0;
     }
 
@@ -4191,13 +4191,13 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     if (isDx7) {
         ((GfxVertexDx7 *)t)->xyz[0] = x;  ((GfxVertexDx7 *)t)->xyz[1] = y;  ((GfxVertexDx7 *)t)->xyz[2] = z;
         ((GfxVertexDx7 *)t)->normal[0] = 0;  ((GfxVertexDx7 *)t)->normal[1] = 0;  ((GfxVertexDx7 *)t)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)t)->color = white;
+        ((GfxVertexDx7 *)t)->color.packed = white;
         ((GfxVertexDx7 *)t)->texCoord[0] = 1.0f;  ((GfxVertexDx7 *)t)->texCoord[1] = 1.0f;
     } else {
         ((GfxVertex *)t)->xyzw[0] = x;  ((GfxVertex *)t)->xyzw[1] = y;  ((GfxVertex *)t)->xyzw[2] = z;
         ((GfxVertex *)t)->xyzw[3] = 1.0f;
         ((GfxVertex *)t)->normal[0] = 0;  ((GfxVertex *)t)->normal[1] = 0;  ((GfxVertex *)t)->normal[2] = 1.0f;
-        ((GfxVertex *)t)->color = white;
+        ((GfxVertex *)t)->color.packed = white;
         ((GfxVertex *)t)->texCoord[0] = 1.0f;  ((GfxVertex *)t)->texCoord[1] = 1.0f;
         ((GfxVertex *)t)->tangent[0] = 1.0f;  ((GfxVertex *)t)->tangent[1] = 0;  ((GfxVertex *)t)->tangent[2] = 0;
         ((GfxVertex *)t)->binormal[0] = 0;  ((GfxVertex *)t)->binormal[1] = 1.0f;  ((GfxVertex *)t)->binormal[2] = 0;
@@ -4210,13 +4210,13 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     if (isDx7) {
         ((GfxVertexDx7 *)t)->xyz[0] = x;  ((GfxVertexDx7 *)t)->xyz[1] = y;  ((GfxVertexDx7 *)t)->xyz[2] = z;
         ((GfxVertexDx7 *)t)->normal[0] = 0;  ((GfxVertexDx7 *)t)->normal[1] = 0;  ((GfxVertexDx7 *)t)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)t)->color = white;
+        ((GfxVertexDx7 *)t)->color.packed = white;
         ((GfxVertexDx7 *)t)->texCoord[0] = 0;  ((GfxVertexDx7 *)t)->texCoord[1] = 1.0f;
     } else {
         ((GfxVertex *)t)->xyzw[0] = x;  ((GfxVertex *)t)->xyzw[1] = y;  ((GfxVertex *)t)->xyzw[2] = z;
         ((GfxVertex *)t)->xyzw[3] = 1.0f;
         ((GfxVertex *)t)->normal[0] = 0;  ((GfxVertex *)t)->normal[1] = 0;  ((GfxVertex *)t)->normal[2] = 1.0f;
-        ((GfxVertex *)t)->color = white;
+        ((GfxVertex *)t)->color.packed = white;
         ((GfxVertex *)t)->texCoord[0] = 0;  ((GfxVertex *)t)->texCoord[1] = 1.0f;
     }
 
@@ -4358,7 +4358,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertexDx7 *)v0)->normal[0] = 0.0f;
         ((GfxVertexDx7 *)v0)->normal[1] = 0.0f;
         ((GfxVertexDx7 *)v0)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v0)->color = color;
+        ((GfxVertexDx7 *)v0)->color.packed = color;
         ((GfxVertexDx7 *)v0)->texCoord[0] = s0;
         ((GfxVertexDx7 *)v0)->texCoord[1] = t0;
 
@@ -4369,7 +4369,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertexDx7 *)v1)->normal[0] = 0.0f;
         ((GfxVertexDx7 *)v1)->normal[1] = 0.0f;
         ((GfxVertexDx7 *)v1)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v1)->color = color;
+        ((GfxVertexDx7 *)v1)->color.packed = color;
         ((GfxVertexDx7 *)v1)->texCoord[0] = s1;
         ((GfxVertexDx7 *)v1)->texCoord[1] = t0;
 
@@ -4380,7 +4380,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertexDx7 *)v2)->normal[0] = 0.0f;
         ((GfxVertexDx7 *)v2)->normal[1] = 0.0f;
         ((GfxVertexDx7 *)v2)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v2)->color = color;
+        ((GfxVertexDx7 *)v2)->color.packed = color;
         ((GfxVertexDx7 *)v2)->texCoord[0] = s1;
         ((GfxVertexDx7 *)v2)->texCoord[1] = t1;
 
@@ -4391,7 +4391,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertexDx7 *)v3)->normal[0] = 0.0f;
         ((GfxVertexDx7 *)v3)->normal[1] = 0.0f;
         ((GfxVertexDx7 *)v3)->normal[2] = 1.0f;
-        ((GfxVertexDx7 *)v3)->color = color;
+        ((GfxVertexDx7 *)v3)->color.packed = color;
         ((GfxVertexDx7 *)v3)->texCoord[0] = s0;
         ((GfxVertexDx7 *)v3)->texCoord[1] = t1;
     } else {
@@ -4411,7 +4411,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v0)->normal[0] = 0.0f;
         ((GfxVertex *)v0)->normal[1] = 0.0f;
         ((GfxVertex *)v0)->normal[2] = 1.0f;
-        ((GfxVertex *)v0)->color = color;
+        ((GfxVertex *)v0)->color.packed = color;
         ((GfxVertex *)v0)->texCoord[0] = s0;
         ((GfxVertex *)v0)->texCoord[1] = t0;
         ((GfxVertex *)v0)->binormal[0] = 0.0f;  /* binormal */
@@ -4429,7 +4429,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v1)->normal[0] = 0.0f;
         ((GfxVertex *)v1)->normal[1] = 0.0f;
         ((GfxVertex *)v1)->normal[2] = 1.0f;
-        ((GfxVertex *)v1)->color = color;
+        ((GfxVertex *)v1)->color.packed = color;
         ((GfxVertex *)v1)->texCoord[0] = s1;
         ((GfxVertex *)v1)->texCoord[1] = t0;
         ((GfxVertex *)v1)->binormal[0] = 0.0f;
@@ -4447,7 +4447,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v2)->normal[0] = 0.0f;
         ((GfxVertex *)v2)->normal[1] = 0.0f;
         ((GfxVertex *)v2)->normal[2] = 1.0f;
-        ((GfxVertex *)v2)->color = color;
+        ((GfxVertex *)v2)->color.packed = color;
         ((GfxVertex *)v2)->texCoord[0] = s1;
         ((GfxVertex *)v2)->texCoord[1] = t1;
         ((GfxVertex *)v2)->binormal[0] = 0.0f;
@@ -4465,7 +4465,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ((GfxVertex *)v3)->normal[0] = 0.0f;
         ((GfxVertex *)v3)->normal[1] = 0.0f;
         ((GfxVertex *)v3)->normal[2] = 1.0f;
-        ((GfxVertex *)v3)->color = color;
+        ((GfxVertex *)v3)->color.packed = color;
         ((GfxVertex *)v3)->texCoord[0] = s0;
         ((GfxVertex *)v3)->texCoord[1] = t1;
         ((GfxVertex *)v3)->binormal[0] = 0.0f;
@@ -7973,29 +7973,29 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
                 vp_ = t + (vc+0) * 36;
                 ((GfxVertexDx7 *)vp_)->xyz[0] = v0x/posA_w; ((GfxVertexDx7 *)vp_)->xyz[1] = v0y/posA_w; ((GfxVertexDx7 *)vp_)->xyz[2] = posA_z/posA_w;
                 ((GfxVertexDx7 *)vp_)->normal[0] = 0; ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 1.0f;
-                ((GfxVertexDx7 *)vp_)->color = colA; ((GfxVertexDx7 *)vp_)->texCoord[0] = 0; ((GfxVertexDx7 *)vp_)->texCoord[1] = 0;
+                ((GfxVertexDx7 *)vp_)->color.packed = colA; ((GfxVertexDx7 *)vp_)->texCoord[0] = 0; ((GfxVertexDx7 *)vp_)->texCoord[1] = 0;
 
                 vp_ = t + (vc+1) * 36;
                 ((GfxVertexDx7 *)vp_)->xyz[0] = v1x/posB_w; ((GfxVertexDx7 *)vp_)->xyz[1] = v1y/posB_w; ((GfxVertexDx7 *)vp_)->xyz[2] = posB_z/posB_w;
                 ((GfxVertexDx7 *)vp_)->normal[0] = 0; ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 1.0f;
-                ((GfxVertexDx7 *)vp_)->color = colB; ((GfxVertexDx7 *)vp_)->texCoord[0] = 0; ((GfxVertexDx7 *)vp_)->texCoord[1] = 1.0f;
+                ((GfxVertexDx7 *)vp_)->color.packed = colB; ((GfxVertexDx7 *)vp_)->texCoord[0] = 0; ((GfxVertexDx7 *)vp_)->texCoord[1] = 1.0f;
 
                 vp_ = t + (vc+2) * 36;
                 ((GfxVertexDx7 *)vp_)->xyz[0] = v2x/posB_w; ((GfxVertexDx7 *)vp_)->xyz[1] = v2y/posB_w; ((GfxVertexDx7 *)vp_)->xyz[2] = posB_z/posB_w;
                 ((GfxVertexDx7 *)vp_)->normal[0] = 0; ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 1.0f;
-                ((GfxVertexDx7 *)vp_)->color = colB; ((GfxVertexDx7 *)vp_)->texCoord[0] = 1.0f; ((GfxVertexDx7 *)vp_)->texCoord[1] = 1.0f;
+                ((GfxVertexDx7 *)vp_)->color.packed = colB; ((GfxVertexDx7 *)vp_)->texCoord[0] = 1.0f; ((GfxVertexDx7 *)vp_)->texCoord[1] = 1.0f;
 
                 vp_ = t + (vc+3) * 36;
                 ((GfxVertexDx7 *)vp_)->xyz[0] = v3x/posA_w; ((GfxVertexDx7 *)vp_)->xyz[1] = v3y/posA_w; ((GfxVertexDx7 *)vp_)->xyz[2] = posA_z/posA_w;
                 ((GfxVertexDx7 *)vp_)->normal[0] = 0; ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 1.0f;
-                ((GfxVertexDx7 *)vp_)->color = colA; ((GfxVertexDx7 *)vp_)->texCoord[0] = 1.0f; ((GfxVertexDx7 *)vp_)->texCoord[1] = 0;
+                ((GfxVertexDx7 *)vp_)->color.packed = colA; ((GfxVertexDx7 *)vp_)->texCoord[0] = 1.0f; ((GfxVertexDx7 *)vp_)->texCoord[1] = 0;
             } else {
                 /* Non-Dx7: raw clip coords, stride 64 */
                 char *vp_;
                 vp_ = t + (vc+0) * 64;
                 ((GfxVertexDx7 *)vp_)->xyz[0] = v0x; ((GfxVertexDx7 *)vp_)->xyz[1] = v0y;
                 ((GfxVertexDx7 *)vp_)->xyz[2] = posA_z; ((GfxVertexDx7 *)vp_)->normal[0] = posA_w;
-                ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 0; ((GfxVertexDx7 *)vp_)->color = 1.0f;
+                ((GfxVertexDx7 *)vp_)->normal[1] = 0; ((GfxVertexDx7 *)vp_)->normal[2] = 0; ((GfxVertexDx7 *)vp_)->color.packed = 1.0f;
                 ((GfxVertexDx7 *)vp_)->texCoord[0] = colA;
                 ((GfxVertex *)vp_)->texCoord[0] = 0; ((GfxVertex *)vp_)->texCoord[1] = 0;
                 ((GfxVertex *)vp_)->binormal[0] = 0; ((GfxVertex *)vp_)->binormal[1] = 0.0f; ((GfxVertex *)vp_)->binormal[2] = 0;
@@ -8005,7 +8005,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
                 ((GfxVertex *)vp_)->xyzw[0] = v1x; ((GfxVertex *)vp_)->xyzw[1] = v1y;
                 ((GfxVertex *)vp_)->xyzw[2] = posB_z; ((GfxVertex *)vp_)->xyzw[3] = posB_w;
                 ((GfxVertex *)vp_)->normal[0] = 0; ((GfxVertex *)vp_)->normal[1] = 0; ((GfxVertex *)vp_)->normal[2] = 1.0f;
-                ((GfxVertex *)vp_)->color = colB;
+                ((GfxVertex *)vp_)->color.packed = colB;
                 ((GfxVertex *)vp_)->texCoord[0] = 0; ((GfxVertex *)vp_)->texCoord[1] = 1.0f;
                 ((GfxVertex *)vp_)->binormal[0] = 0; ((GfxVertex *)vp_)->binormal[1] = 1.0f; ((GfxVertex *)vp_)->binormal[2] = 0;
                 ((GfxVertex *)vp_)->tangent[0] = 1.0f; ((GfxVertex *)vp_)->tangent[1] = 0; ((GfxVertex *)vp_)->tangent[2] = 0;
@@ -8014,7 +8014,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
                 ((GfxVertex *)vp_)->xyzw[0] = v2x; ((GfxVertex *)vp_)->xyzw[1] = v2y;
                 ((GfxVertex *)vp_)->xyzw[2] = posB_z; ((GfxVertex *)vp_)->xyzw[3] = posB_w;
                 ((GfxVertex *)vp_)->normal[0] = 0; ((GfxVertex *)vp_)->normal[1] = 0; ((GfxVertex *)vp_)->normal[2] = 1.0f;
-                ((GfxVertex *)vp_)->color = colB;
+                ((GfxVertex *)vp_)->color.packed = colB;
                 ((GfxVertex *)vp_)->texCoord[0] = 1.0f; ((GfxVertex *)vp_)->texCoord[1] = 1.0f;
                 ((GfxVertex *)vp_)->binormal[0] = 1.0f; ((GfxVertex *)vp_)->binormal[1] = 1.0f; ((GfxVertex *)vp_)->binormal[2] = 0;
                 ((GfxVertex *)vp_)->tangent[0] = 1.0f; ((GfxVertex *)vp_)->tangent[1] = 0; ((GfxVertex *)vp_)->tangent[2] = 0;
@@ -8023,7 +8023,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
                 ((GfxVertex *)vp_)->xyzw[0] = v3x; ((GfxVertex *)vp_)->xyzw[1] = v3y;
                 ((GfxVertex *)vp_)->xyzw[2] = posA_z; ((GfxVertex *)vp_)->xyzw[3] = posA_w;
                 ((GfxVertex *)vp_)->normal[0] = 0; ((GfxVertex *)vp_)->normal[1] = 0; ((GfxVertex *)vp_)->normal[2] = 1.0f;
-                ((GfxVertex *)vp_)->color = colA;
+                ((GfxVertex *)vp_)->color.packed = colA;
                 ((GfxVertex *)vp_)->texCoord[0] = 1.0f; ((GfxVertex *)vp_)->texCoord[1] = 0;
                 ((GfxVertex *)vp_)->binormal[0] = 1.0f; ((GfxVertex *)vp_)->binormal[1] = 0; ((GfxVertex *)vp_)->binormal[2] = 0;
                 ((GfxVertex *)vp_)->tangent[0] = 1.0f; ((GfxVertex *)vp_)->tangent[1] = 0; ((GfxVertex *)vp_)->tangent[2] = 0;
@@ -8770,7 +8770,7 @@ static inline void RB_SetClipSpaceVertex(char *tessBase, int vertIndex, int isDx
         ((GfxVertexDx7 *)v)->normal[0] = 0;          /* normal.x */
         ((GfxVertexDx7 *)v)->normal[1] = 0;          /* normal.y */
         ((GfxVertexDx7 *)v)->normal[2] = 1.0f;     /* normal.z */
-        ((GfxVertexDx7 *)v)->color = color;
+        ((GfxVertexDx7 *)v)->color.packed = color;
         ((GfxVertexDx7 *)v)->texCoord[0] = 0;          /* s */
         ((GfxVertexDx7 *)v)->texCoord[1] = 0;          /* t */
     } else {
@@ -8778,8 +8778,8 @@ static inline void RB_SetClipSpaceVertex(char *tessBase, int vertIndex, int isDx
         ((GfxVertexDx7 *)v)->xyz[0] = px;        ((GfxVertexDx7 *)v)->xyz[1] = py;
         ((GfxVertexDx7 *)v)->xyz[2] = pz;        ((GfxVertexDx7 *)v)->normal[0] = pw;
         ((GfxVertexDx7 *)v)->normal[1] = 0;           ((GfxVertexDx7 *)v)->normal[2] = 0;
-        ((GfxVertexDx7 *)v)->color = 1.0f;     /* normal = (0,0,1) */
-        ((GfxVertex *)v)->color = color;
+        ((GfxVertexDx7 *)v)->color.packed = 1.0f;     /* normal = (0,0,1) */
+        ((GfxVertex *)v)->color.packed = color;
         ((GfxVertex *)v)->texCoord[0] = 0;           ((GfxVertex *)v)->texCoord[1] = 0; /* texcoord = (0,0) */
         ((GfxVertex *)v)->binormal[0] = 0;           ((GfxVertex *)v)->binormal[1] = 1.0f;
         ((GfxVertex *)v)->binormal[2] = 0;           /* binormal = (0,1,0) */
@@ -9377,29 +9377,29 @@ static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
             if (isDx7) {
                 char *v;
                 v=t+(vc+0)*36; ((GfxVertexDx7 *)v)->xyz[0]=(cx-ox)/cw; ((GfxVertexDx7 *)v)->xyz[1]=(cy-oy)/cw; ((GfxVertexDx7 *)v)->xyz[2]=cz/cw;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=0;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=0;
                 v=t+(vc+1)*36; ((GfxVertexDx7 *)v)->xyz[0]=(cx-ox)/cw; ((GfxVertexDx7 *)v)->xyz[1]=(cy+oy)/cw; ((GfxVertexDx7 *)v)->xyz[2]=cz/cw;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
                 v=t+(vc+2)*36; ((GfxVertexDx7 *)v)->xyz[0]=(cx+ox)/cw; ((GfxVertexDx7 *)v)->xyz[1]=(cy+oy)/cw; ((GfxVertexDx7 *)v)->xyz[2]=cz/cw;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
                 v=t+(vc+3)*36; ((GfxVertexDx7 *)v)->xyz[0]=(cx+ox)/cw; ((GfxVertexDx7 *)v)->xyz[1]=(cy-oy)/cw; ((GfxVertexDx7 *)v)->xyz[2]=cz/cw;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=0;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=0;
             } else {
                 char *v;
                 v=t+(vc+0)*64; ((GfxVertex *)v)->xyzw[0]=cx-ox; ((GfxVertex *)v)->xyzw[1]=cy-oy; ((GfxVertex *)v)->xyzw[2]=cz; ((GfxVertex *)v)->xyzw[3]=cw;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=0; ((GfxVertex *)v)->texCoord[1]=0; ((GfxVertex *)v)->binormal[0]=0; ((GfxVertex *)v)->binormal[1]=0.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+1)*64; ((GfxVertex *)v)->xyzw[0]=cx-ox; ((GfxVertex *)v)->xyzw[1]=cy+oy; ((GfxVertex *)v)->xyzw[2]=cz; ((GfxVertex *)v)->xyzw[3]=cw;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=0; ((GfxVertex *)v)->texCoord[1]=1.0f; ((GfxVertex *)v)->binormal[0]=0; ((GfxVertex *)v)->binormal[1]=1.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+2)*64; ((GfxVertex *)v)->xyzw[0]=cx+ox; ((GfxVertex *)v)->xyzw[1]=cy+oy; ((GfxVertex *)v)->xyzw[2]=cz; ((GfxVertex *)v)->xyzw[3]=cw;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=1.0f; ((GfxVertex *)v)->texCoord[1]=1.0f; ((GfxVertex *)v)->binormal[0]=1.0f; ((GfxVertex *)v)->binormal[1]=1.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+3)*64; ((GfxVertex *)v)->xyzw[0]=cx+ox; ((GfxVertex *)v)->xyzw[1]=cy-oy; ((GfxVertex *)v)->xyzw[2]=cz; ((GfxVertex *)v)->xyzw[3]=cw;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=1.0f; ((GfxVertex *)v)->texCoord[1]=0; ((GfxVertex *)v)->binormal[0]=1.0f; ((GfxVertex *)v)->binormal[1]=0; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
             }
@@ -9430,29 +9430,29 @@ static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
             if (isDx7) {
                 char *v;
                 v=t+(vc+0)*36; ((GfxVertexDx7 *)v)->xyz[0]=px-size; ((GfxVertexDx7 *)v)->xyz[1]=py-size; ((GfxVertexDx7 *)v)->xyz[2]=pz_i;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=0;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=0;
                 v=t+(vc+1)*36; ((GfxVertexDx7 *)v)->xyz[0]=px-size; ((GfxVertexDx7 *)v)->xyz[1]=py+size; ((GfxVertexDx7 *)v)->xyz[2]=pz_i;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=0; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
                 v=t+(vc+2)*36; ((GfxVertexDx7 *)v)->xyz[0]=px+size; ((GfxVertexDx7 *)v)->xyz[1]=py+size; ((GfxVertexDx7 *)v)->xyz[2]=pz_i;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=1.0f;
                 v=t+(vc+3)*36; ((GfxVertexDx7 *)v)->xyz[0]=px+size; ((GfxVertexDx7 *)v)->xyz[1]=py-size; ((GfxVertexDx7 *)v)->xyz[2]=pz_i;
-                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color=color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=0;
+                ((GfxVertexDx7 *)v)->normal[0]=0; ((GfxVertexDx7 *)v)->normal[1]=0; ((GfxVertexDx7 *)v)->normal[2]=1.0f; ((GfxVertexDx7 *)v)->color.packed = color; ((GfxVertexDx7 *)v)->texCoord[0]=1.0f; ((GfxVertexDx7 *)v)->texCoord[1]=0;
             } else {
                 char *v;
                 v=t+(vc+0)*64; ((GfxVertex *)v)->xyzw[0]=px-size; ((GfxVertex *)v)->xyzw[1]=py-size; ((GfxVertex *)v)->xyzw[2]=pz_i; ((GfxVertex *)v)->xyzw[3]=1.0f;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=0; ((GfxVertex *)v)->texCoord[1]=0; ((GfxVertex *)v)->binormal[0]=0; ((GfxVertex *)v)->binormal[1]=0.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+1)*64; ((GfxVertex *)v)->xyzw[0]=px-size; ((GfxVertex *)v)->xyzw[1]=py+size; ((GfxVertex *)v)->xyzw[2]=pz_i; ((GfxVertex *)v)->xyzw[3]=1.0f;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=0; ((GfxVertex *)v)->texCoord[1]=1.0f; ((GfxVertex *)v)->binormal[0]=0; ((GfxVertex *)v)->binormal[1]=1.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+2)*64; ((GfxVertex *)v)->xyzw[0]=px+size; ((GfxVertex *)v)->xyzw[1]=py+size; ((GfxVertex *)v)->xyzw[2]=pz_i; ((GfxVertex *)v)->xyzw[3]=1.0f;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=1.0f; ((GfxVertex *)v)->texCoord[1]=1.0f; ((GfxVertex *)v)->binormal[0]=1.0f; ((GfxVertex *)v)->binormal[1]=1.0f; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
                 v=t+(vc+3)*64; ((GfxVertex *)v)->xyzw[0]=px+size; ((GfxVertex *)v)->xyzw[1]=py-size; ((GfxVertex *)v)->xyzw[2]=pz_i; ((GfxVertex *)v)->xyzw[3]=1.0f;
-                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color=color;
+                ((GfxVertex *)v)->normal[0]=0; ((GfxVertex *)v)->normal[1]=0; ((GfxVertex *)v)->normal[2]=1.0f; ((GfxVertex *)v)->color.packed = color;
                 ((GfxVertex *)v)->texCoord[0]=1.0f; ((GfxVertex *)v)->texCoord[1]=0; ((GfxVertex *)v)->binormal[0]=1.0f; ((GfxVertex *)v)->binormal[1]=0; ((GfxVertex *)v)->binormal[2]=0;
                 ((GfxVertex *)v)->tangent[0]=1.0f; ((GfxVertex *)v)->tangent[1]=0; ((GfxVertex *)v)->tangent[2]=0;
             }

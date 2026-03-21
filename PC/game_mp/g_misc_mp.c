@@ -396,7 +396,7 @@ void turret_controller(gentity_t *self, int *partBits)
     DObj_s *obj;
     unsigned short *tagNames = (unsigned short *)*(int *)imp_scr_const;
 
-    angles[0] = self->s.angles2;
+    angles[0] = self->s.angles2[0];
     angles[1] = self->s.angles2[1];
     angles[2] = 0;
 
@@ -417,7 +417,7 @@ void TeleportPlayer(gentity_t *player, vec_t *origin, vec_t *angles)
     unsigned char linked;
     playerState_t *ps;
 
-    linked = ((gentity_t *)player)->r;
+    linked = player->r.linked;
 
     SV_UnlinkEntity(player);
 
