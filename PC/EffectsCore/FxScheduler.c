@@ -298,7 +298,7 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
         }
         if (newFrame) {
             /* AddRef */
-            *(int *)newFrame += 1;
+            newFrame->refCount += 1;
             boltFrame->_placeholder = (int)(size_t)(void *)newFrame;
             /* Release the acquired ref */
             if (newFrame) {
@@ -610,18 +610,18 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
 
     /* Check fx_freeze and fx_enable dvars */
     {
-        byte *freezeDvar = *(byte **)&imp_fx_freeze;
-        byte *enableDvar = *(byte **)&imp_fx_enable;
-        if (*(byte *)(*(void **)freezeDvar + 8) != 0)
+        dvar_t *freezeDvar = *(dvar_t **)&imp_fx_freeze;
+        dvar_t *enableDvar = *(dvar_t **)&imp_fx_enable;
+        if (freezeDvar->current.enabled != 0)
             return;
-        if (*(byte *)(*(void **)enableDvar + 8) == 0)
+        if (enableDvar->current.enabled == 0)
             return;
     }
 
     /* Get origin and axis from bolt or params */
     if (bolt) {
         /* Check bolt validity */
-        if (*(int *)bolt < 0)
+        if (bolt->dobjHandle < 0)
             return;
         if (!FX_GetBoneOrientation(bolt, &or_))
             return;
@@ -765,8 +765,8 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
 
     /* Display debug count */
     if (numAdded) {
-        byte *countDvar = *(byte **)&imp_fx_count;
-        if (*(byte *)(*(void **)countDvar + 8) != 0) {
+        dvar_t *countDvar = *(dvar_t **)&imp_fx_count;
+        if (countDvar->current.enabled != 0) {
             void (*debugAddNum)(const vec_t *, int, const vec_t *, int);
             byte *rePtr = *(byte **)&imp_re;
             debugAddNum = *(void (**)(const vec_t *, int, const vec_t *, int))((byte *)rePtr + 0x104); /* TODO: unknown struct offset for re->debugAddNum */
@@ -798,7 +798,7 @@ void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTe
         ((FxScheduler *)_this)->mScheduledCount = sfx->mScheduledNext;
         __ZdaPv(sfx);
     }
-    *(int *)(self + 8) = 0; /* scheduledEffectCount = 0 */
+    ((FxScheduler *)_this)->mScheduledCount = 0;
 
     /* Remove templates if requested */
     if (!(byte)bRemoveTemplates)

@@ -1957,14 +1957,14 @@ void CG_RegisterWeapon(int weaponNum)
 
     /* line 447: check if hand model name is set */
     if (((WeaponDef *)weapDef)->szHandXModel == 0 || *(char *)((WeaponDef *)weapDef)->szHandXModel == '\0') {
-        Com_Error(1, (const char *)str_002b7be8, *(char **)(weapDef + 4));
+        Com_Error(1, (const char *)str_002b7be8, ((WeaponDef *)weapDef)->szDisplayName);
     }
 
     /* line 450-453: init dobjModels */
     dobjModels[0].model = NULL;
     dobjModels[0].boneName = NULL;
     dobjModels[0].ignoreCollision = (int)str_002b6e38; /* boneName constant */
-    *(int *)((byte *)dobjModels + 0x0c) = 0;
+    ((DObjModel_s *)dobjModels)[1].model = NULL;
 
     /* line 456: build hand model path */
     sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, ((WeaponDef *)weapDef)->szHandXModel);
@@ -1981,7 +1981,7 @@ void CG_RegisterWeapon(int weaponNum)
 
     /* line 467: check if idle anim specified */
     if (((WeaponDef *)weapDef)->szXAnims[1] == 0 || *(char *)((WeaponDef *)weapDef)->szXAnims[1] == '\0') {
-        Com_Error(1, (const char *)str_002b7c20, *(char **)(weapDef + 4));
+        Com_Error(1, (const char *)str_002b7c20, ((WeaponDef *)weapDef)->szDisplayName);
     }
 
     /* line 471: create anim tree */
@@ -2015,12 +2015,9 @@ void CG_RegisterWeapon(int weaponNum)
 
     /* line 506-507: set rate = 1.0 for all 0x17 anims */
     {
-        byte *ratePtr = weapInfo;
-        int count = 0x17;
-        while (count > 0) {
-            *(int *)(ratePtr + 4) = 0x3f800000; /* 1.0f */
-            ratePtr += 4;
-            count--;
+        int idx;
+        for (idx = 0; idx < 0x17; idx++) {
+            ((weaponInfo_t *)weapInfo)->viewModelAnimRates[idx] = 1.0f;
         }
     }
 
@@ -2174,13 +2171,13 @@ void CG_RegisterWeapon(int weaponNum)
     /* line 588: set goal weight for idle anim */
     {
         float w_1f = 1.0f;
-        XAnimSetGoalWeight(pAnimTree, 0, w_1f, 0, *(float *)(weapInfo + 4), 0, 0, 1);
+        XAnimSetGoalWeight(pAnimTree, 0, w_1f, 0, ((weaponInfo_t *)weapInfo)->viewModelAnimRates[0], 0, 0, 1);
     }
 
     /* line 589: set goal weight for second anim */
     {
         float w_1f = 1.0f;
-        XAnimSetGoalWeight(pAnimTree, 1, w_1f, 0, *(float *)(weapInfo + 8), 0, 0, 1);
+        XAnimSetGoalWeight(pAnimTree, 1, w_1f, 0, ((weaponInfo_t *)weapInfo)->viewModelAnimRates[1], 0, 0, 1);
     }
 
     /* line 591: if ADS up anim exists */
@@ -2323,13 +2320,13 @@ after_viewmodel:
         ((weaponInfo_t *)weapInfo)->hHudIcon = CL_RegisterMaterial(((WeaponDef *)weapDef)->szHudIcon, 7);
         /* line 683 */
         {
-            byte *cgsPtr = *(byte **)imp_cgs;
-            *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = ((weaponInfo_t *)weapInfo)->hHudIcon; /* TODO: unknown offset */
+            cgs_t *cgsPtr = CGS_PTR;
+            cgsPtr->media.hintMaterials[4 + weaponNum] = ((weaponInfo_t *)weapInfo)->hHudIcon;
         }
     } else {
         /* line 688: use hint_usable as fallback icon */
-        byte *cgsPtr = *(byte **)imp_cgs;
-        *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(cgsPtr + 0xba4c); /* TODO: unknown offset */
+        cgs_t *cgsPtr = CGS_PTR;
+        cgsPtr->media.hintMaterials[4 + weaponNum] = cgsPtr->media.hintMaterials[2];
     }
 
     /* line 691: register kill icon */
@@ -2344,24 +2341,24 @@ after_viewmodel:
     }
 
     /* line 702: translate display name */
-    ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 4));
+    ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = (int)SEH_StringEd_GetString(((WeaponDef *)weapDef)->szDisplayName);
     if (((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName == 0) {
-        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
-            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
-                Com_Error(6, (const char *)str_002b7d3c, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 4));
+        if (((dvar_t *)*(void **)imp_loc_warnings)->current.enabled != 0) {
+            if (((dvar_t *)*(void **)imp_loc_warningsAsErrors)->current.enabled != 0) {
+                Com_Error(6, (const char *)str_002b7d3c, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szDisplayName);
             } else {
-                Com_Printf((const char *)str_002b7d70, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 4));
+                Com_Printf((const char *)str_002b7d70, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szDisplayName);
             }
         }
         /* line 712 */
-        ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = *(int *)(weapDef + 4);
+        ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = (int)((WeaponDef *)weapDef)->szDisplayName;
     }
 
     /* line 715: translate mode name */
     ((weaponInfo_t *)weapInfo)->pszTranslatedModename = (int)SEH_StringEd_GetString(((WeaponDef *)weapDef)->szModeName);
     if (((weaponInfo_t *)weapInfo)->pszTranslatedModename == 0) {
-        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
-            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
+        if (((dvar_t *)*(void **)imp_loc_warnings)->current.enabled != 0) {
+            if (((dvar_t *)*(void **)imp_loc_warningsAsErrors)->current.enabled != 0) {
                 Com_Error(6, (const char *)str_002b7db0, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szModeName);
             } else {
                 Com_Printf((const char *)str_002b7de0, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szModeName);
@@ -2372,17 +2369,17 @@ after_viewmodel:
     }
 
     /* line 728: translate AI overlay description */
-    ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 8));
+    ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = (int)SEH_StringEd_GetString(((WeaponDef *)weapDef)->szOverlayName);
     if (((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription == 0) {
-        if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
-            if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
-                Com_Error(6, (const char *)str_002b7e1c, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 8));
+        if (((dvar_t *)*(void **)imp_loc_warnings)->current.enabled != 0) {
+            if (((dvar_t *)*(void **)imp_loc_warningsAsErrors)->current.enabled != 0) {
+                Com_Error(6, (const char *)str_002b7e1c, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szOverlayName);
             } else {
-                Com_Printf((const char *)str_002b7e58, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 8));
+                Com_Printf((const char *)str_002b7e58, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szOverlayName);
             }
         }
         /* line 738 */
-        ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = *(int *)(weapDef + 8);
+        ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = (int)((WeaponDef *)weapDef)->szOverlayName;
     }
 }
 #endif
@@ -7097,7 +7094,7 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
     CG_SetWeaponDefToDefaultWeapon(weaponNum);
     weapDef = (byte *)BG_GetWeaponDef(weaponNum);
     Com_Printf("WARNING: gun and/or hand model file for weapon [%s] could not be found\n",
-               *(const char **)(weapDef + 4));
+               ((WeaponDef *)weapDef)->szDisplayName);
 
     handModel = ((WeaponDef *)weapDef)->szGunXModel;
     if (!handModel || handModel[0] == '\0') {
@@ -7111,7 +7108,7 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
 
     viewModel = ((WeaponDef *)weapDef)->szHandXModel;
     sprintf(modelFile, "%s%s", "xmodel/", viewModel);
-    *(void **)dobjModels = CL_RegisterModel(modelFile);
+    ((DObjModel_s *)dobjModels)[0].model = (struct XModel *)CL_RegisterModel(modelFile);
 
     handModel = ((WeaponDef *)weapDef)->szGunXModel;
     sprintf(modelFile, "%s%s", "xmodel/", handModel);

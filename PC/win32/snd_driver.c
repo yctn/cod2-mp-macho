@@ -493,7 +493,7 @@ void SND_UpdateStreamChannelReverb(int index)
     if (pAlias != NULL) {
         byte *sndGlob2 = *(byte **)imp_snd_enableReverb;
         byte *ptr = *(byte **)sndGlob2;
-        if (*(byte *)(ptr + 8) == 0 || (pAlias->flags & 0x10)) {
+        if (((dvar_t *)ptr)->current.enabled == 0 || (pAlias->flags & 0x10)) {
             AIL_set_stream_reverb_levels(milesGlob.handle_stream[index - 0x20], 1.0f, 0.0f);
             return;
         }
@@ -746,7 +746,7 @@ void SND_Update2DChannelReverb(int index)
     const snd_alias_t *pAlias = chaninfo->pAlias0;
     float reverbLevel;
 
-    if (pAlias == NULL || (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(pAlias->flags & 0x10))) {
+    if (pAlias == NULL || (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = sndGlob->effect->wetlevel;
@@ -762,7 +762,7 @@ void SND_Update3DChannelReverb(int index)
     const snd_alias_t *pAlias = chaninfo->pAlias0;
     float reverbLevel;
 
-    if (pAlias == NULL || (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(pAlias->flags & 0x10))) {
+    if (pAlias == NULL || (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = sndGlob->effect->wetlevel;
@@ -1186,7 +1186,7 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     int bits, channels, format;
     float reverbLevel;
 
-    aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+    aliasFlags = pAlias0->flags;
     channel = (aliasFlags & 0x780) >> 7;
     index = SND_FindFree2DChannel(entnum, channel);
     if (pChannel != NULL) {
@@ -1201,9 +1201,9 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     AIL_init_sample(handle);
 
     /* Determine sample type from sound format */
-    bits = *(int *)(sound + 0x10);
-    channels = *(int *)(sound + 0x14);
-    format = *(int *)(sound);
+    bits = (int)((MssSound *)sound)->info.bits;
+    channels = (int)((MssSound *)sound)->info.channels;
+    format = (int)((MssSound *)sound)->info.format;
 
     if (channels == 1) {
         if (format == 0x11) sampleType = 5;
@@ -1218,20 +1218,20 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     }
 
     AIL_set_sample_type(handle, sampleType, 0);
-    AIL_set_sample_address(handle, *(void **)(sound + 4), *(int *)(sound + 8));
-    AIL_set_sample_adpcm_block_size(handle, *(int *)(sound + 0x1c));
+    AIL_set_sample_address(handle, (void *)((MssSound *)sound)->info.data_ptr, (int)((MssSound *)sound)->info.data_len);
+    AIL_set_sample_adpcm_block_size(handle, (int)((MssSound *)sound)->info.block_size);
 
     sndGlob = *(byte **)imp_g_snd;
-    AIL_set_sample_playback_rate(handle, (int)floorf((float)(*(int *)(sound + 0xc)) * pitch * *(float *)(sndGlob + 0x10) + 0.5f));
+    AIL_set_sample_playback_rate(handle, (int)floorf((float)(int)((MssSound *)sound)->info.rate * pitch * ((snd_local_t *)sndGlob)->timescale + 0.5f));
 
-    aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
-    volTable = *(float **)(sndGlob + 0x254);
+    aliasFlags = pAlias0->flags;
+    volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
     channel = (aliasFlags & 0x780) >> 7;
-    scaledVol = volume * *(float *)(sndGlob + 0x24) * volTable[channel * 3];
+    scaledVol = volume * ((snd_local_t *)sndGlob)->volume * volTable[channel * 3];
 
     /* Slave volume modulation */
-    if (*(float *)(sndGlob + 0x274) != 0.0f && !master && (aliasFlags & 4)) {
-        scaledVol *= SND_GetLerpedSlavePercentage(*(void **)((byte *)pAlias0 + 0x30));
+    if (((snd_local_t *)sndGlob)->slaveLerp != 0.0f && !master && (aliasFlags & 4)) {
+        scaledVol *= SND_GetLerpedSlavePercentage((void *)&pAlias0->fSlavePercentage);
     }
 
     /* Mono halving */
@@ -1239,11 +1239,11 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     AIL_set_sample_volume_levels(handle, volMul * scaledVol, volMul * scaledVol);
 
     /* Loop count */
-    AIL_set_sample_loop_count(handle, (*(byte *)((byte *)pAlias0 + 0x2c) & 1) ^ 1);
+    AIL_set_sample_loop_count(handle, ((byte)(pAlias0->flags) & 1) ^ 1);
 
     /* Reverb */
-    if (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
-        reverbLevel = *(float *)(*(byte **)(*(byte **)imp_g_snd + 0x2d8) + 0x10);
+    if (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
+        reverbLevel = ((snd_local_t *)*(snd_local_t **)imp_g_snd)->effect->wetlevel;
     } else {
         reverbLevel = 0;
     }
@@ -1270,14 +1270,14 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
 
     if (startDelay == 0) {
         sndGlob = *(byte **)imp_g_snd;
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
         channel = (aliasFlags & 0x780) >> 7;
-        if (*(byte *)(sndGlob + 2) == 0 || *(byte *)(sndGlob + 0x2e7 + channel) == 0) {
+        if (((snd_local_t *)sndGlob)->paused == 0 || ((snd_local_t *)sndGlob)->pauseSettings[channel] == 0) {
             AIL_resume_sample(handle);
         }
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     } else {
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     }
 
     total_msec += startDelay;
@@ -1285,7 +1285,7 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
         total_msec = 0;
     }
 
-    SND_SetChannelInfo(index, entnum, pAlias0, pAlias1, lerp, NULL, volume, pitch, channels, *(int *)(sound + 0xc), total_msec, start_msec, startDelay, master, system);
+    SND_SetChannelInfo(index, entnum, pAlias0, pAlias1, lerp, NULL, volume, pitch, channels, (int)((MssSound *)sound)->info.rate, total_msec, start_msec, startDelay, master, system);
     return (int)total_msec;
 }
 
@@ -1303,7 +1303,7 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     int playbackRate, total_msec, start_msec;
     int soundSamples;
 
-    aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+    aliasFlags = pAlias0->flags;
     channel = (aliasFlags & 0x780) >> 7;
     index = SND_FindFree3DChannel(entnum, channel);
     if (pChannel != NULL) {
@@ -1317,8 +1317,8 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     sound = (byte *)Com_GetSoundFileMem(pAlias0);
 
     oneMinusLerp = 1.0f - lerp;
-    fDistMin = oneMinusLerp * *(float *)((byte *)pAlias0 + 0x24) + lerp * *(float *)((byte *)pAlias1 + 0x24);
-    fDistMax = oneMinusLerp * *(float *)((byte *)pAlias0 + 0x28) + lerp * *(float *)((byte *)pAlias1 + 0x28);
+    fDistMin = oneMinusLerp * pAlias0->fDistMin + lerp * pAlias1->fDistMin;
+    fDistMax = oneMinusLerp * pAlias0->fDistMax + lerp * pAlias1->fDistMax;
 
     AIL_set_3D_sample_info(handle, sound);
 
@@ -1326,37 +1326,37 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     {
         int listenerIdx = SND_GetListenerIndexNearestToOrigin(org);
         sndGlob = *(byte **)imp_g_snd;
-        dist = Vec3Distance(org, (float *)(sndGlob + 0x2f4 + listenerIdx * 56));
+        dist = Vec3Distance(org, ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.origin);
     }
-    attenuation = SND_Attenuate(*(void **)((byte *)pAlias0 + 0x40), dist, fDistMin, fDistMax);
+    attenuation = SND_Attenuate(pAlias0->volumeFalloffCurve, dist, fDistMin, fDistMax);
 
-    aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+    aliasFlags = pAlias0->flags;
     sndGlob = *(byte **)imp_g_snd;
-    volTable = *(float **)(sndGlob + 0x254);
+    volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
     channel = (aliasFlags & 0x780) >> 7;
-    scaledVol = attenuation * volume * volTable[channel * 3] * *(float *)(sndGlob + 0x24);
+    scaledVol = attenuation * volume * volTable[channel * 3] * ((snd_local_t *)sndGlob)->volume;
 
     /* Slave volume modulation */
-    if (*(float *)(sndGlob + 0x274) != 0.0f && !master && (aliasFlags & 4)) {
-        scaledVol *= SND_GetLerpedSlavePercentage(*(void **)((byte *)pAlias0 + 0x30));
+    if (((snd_local_t *)sndGlob)->slaveLerp != 0.0f && !master && (aliasFlags & 4)) {
+        scaledVol *= SND_GetLerpedSlavePercentage((void *)&pAlias0->fSlavePercentage);
     }
 
     AIL_set_3D_sample_volume(handle, scaledVol);
-    AIL_set_3D_sample_distances(handle, *(float *)((byte *)pAlias0 + 0x24), *(float *)((byte *)pAlias0 + 0x28));
+    AIL_set_3D_sample_distances(handle, pAlias0->fDistMin, pAlias0->fDistMax);
 
     playbackRate = AIL_3D_sample_playback_rate(handle);
     sndGlob = *(byte **)imp_g_snd;
-    AIL_set_3D_sample_playback_rate(handle, (int)floorf((float)playbackRate * pitch * *(float *)(sndGlob + 0x10) + 0.5f));
+    AIL_set_3D_sample_playback_rate(handle, (int)floorf((float)playbackRate * pitch * ((snd_local_t *)sndGlob)->timescale + 0.5f));
     SND_Set3DPosition(index, org);
 
-    AIL_set_3D_sample_loop_count(handle, (*(byte *)((byte *)pAlias0 + 0x2c) & 1) ^ 1);
-    AIL_set_3D_sample_effects_level(handle, *(float *)(*(byte **)(sndGlob + 0x2d8) + 0x10));
+    AIL_set_3D_sample_loop_count(handle, ((byte)(pAlias0->flags) & 1) ^ 1);
+    AIL_set_3D_sample_effects_level(handle, ((snd_local_t *)sndGlob)->effect->wetlevel);
 
     /* Compute total_msec from sound samples */
-    soundSamples = *(int *)(sound + 0x18);
+    soundSamples = (int)((MssSound *)sound)->info.samples;
     {
         int val = soundSamples * 5 * 5 * 5 * 8; /* *1000 */
-        float totalFloat = (float)val * *(float *)(*(byte **)imp_g_snd + 0x10) / (float)playbackRate + 0.5f;
+        float totalFloat = (float)val * ((snd_local_t *)*(snd_local_t **)imp_g_snd)->timescale / (float)playbackRate + 0.5f;
         total_msec = (int)floorf(totalFloat);
     }
 
@@ -1378,21 +1378,21 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
 
     /* Set 3D sample offset using byte position */
     {
-        int datasize = *(int *)(sound + 8);
+        int datasize = (int)((MssSound *)sound)->info.data_len;
         float bytePos = (float)datasize * fraction + 0.5f;
         AIL_set_3D_sample_offset(handle, (int)floorf(bytePos));
     }
 
     if (startDelay == 0) {
         sndGlob = *(byte **)imp_g_snd;
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
         channel = (aliasFlags & 0x780) >> 7;
-        if (*(byte *)(sndGlob + 2) == 0 || *(byte *)(sndGlob + 0x2e7 + channel) == 0) {
+        if (((snd_local_t *)sndGlob)->paused == 0 || ((snd_local_t *)sndGlob)->pauseSettings[channel] == 0) {
             AIL_resume_3D_sample(handle);
         }
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     } else {
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     }
 
     total_msec += startDelay;
@@ -1400,7 +1400,7 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
         total_msec = 0;
     }
 
-    SND_SetChannelInfo(index, entnum, pAlias0, pAlias1, lerp, org, volume, pitch, *(int *)(sound + 0x14), *(int *)(sound + 0xc), total_msec, start_msec, startDelay, master, system);
+    SND_SetChannelInfo(index, entnum, pAlias0, pAlias1, lerp, org, volume, pitch, (int)((MssSound *)sound)->info.channels, (int)((MssSound *)sound)->info.rate, total_msec, start_msec, startDelay, master, system);
     return total_msec;
 }
 
@@ -1732,8 +1732,8 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
     float *to;
 
     /* Check if sound file data exists */
-    if (*(byte *)(*(byte **)((byte *)pAlias0 + 0xc) + 8) == 0) {
-        Com_DPrintf((const char *)str_00219a0c, Com_GetSoundFileName(pAlias0), *(const char **)pAlias0);
+    if (pAlias0->soundFile->isStreamFound == 0) {
+        Com_DPrintf((const char *)str_00219a0c, Com_GetSoundFileName(pAlias0), pAlias0->pszAliasName);
         return 0;
     }
 
@@ -1748,17 +1748,17 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
     sprintf(realname, (const char *)str_00219968, Com_GetSoundFileName(pAlias0));
 
     /* Try to open stream - first try mss_q3fs path, then filesystem path */
-    if (*(byte *)((byte *)mss_q3fs + 8) != 0) {
-        handle = AIL_open_stream(*(void **)&milesGlob, realname, 0);
+    if (mss_q3fs->current.enabled != 0) {
+        handle = AIL_open_stream(milesGlob.driver_2D, realname, 0);
         if (handle != NULL) {
             goto got_handle;
         }
         /* Fall through to try FS path */
     }
 
-    handle = AIL_open_stream(*(void **)&milesGlob, FS_ShortOSFilePath(realname), 0);
+    handle = AIL_open_stream(milesGlob.driver_2D, FS_ShortOSFilePath(realname), 0);
     if (handle == NULL) {
-        Com_Printf((const char *)str_00219a64, realname, *(const char **)pAlias0, AIL_last_error());
+        Com_Printf((const char *)str_00219a64, realname, pAlias0->pszAliasName, AIL_last_error());
         return 0;
     }
 
@@ -1773,19 +1773,19 @@ got_handle:
     /* Set playback rate */
     baserate = AIL_stream_playback_rate(handle);
     sndGlob = *(byte **)imp_g_snd;
-    AIL_set_stream_playback_rate(handle, (int)floorf((float)baserate * pitch * *(float *)(sndGlob + 0x10) + 0.5f));
+    AIL_set_stream_playback_rate(handle, (int)floorf((float)baserate * pitch * ((snd_local_t *)sndGlob)->timescale + 0.5f));
 
     /* Calculate volume */
-    aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
-    scaledVol = *(float *)(sndGlob + 0x24) * volume;
-    volTable = *(float **)(sndGlob + 0x254);
+    aliasFlags = pAlias0->flags;
+    scaledVol = ((snd_local_t *)sndGlob)->volume * volume;
+    volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
     channel = (aliasFlags & 0x780) >> 7;
     scaledVol *= volTable[channel * 3];
 
     /* Slave volume modulation */
-    if (*(float *)(sndGlob + 0x274) != 0.0f && !master) {
+    if (((snd_local_t *)sndGlob)->slaveLerp != 0.0f && !master) {
         if (aliasFlags & 4) {
-            scaledVol *= SND_GetLerpedSlavePercentage(*(void **)((byte *)pAlias0 + 0x30));
+            scaledVol *= SND_GetLerpedSlavePercentage((void *)&pAlias0->fSlavePercentage);
         }
     }
 
@@ -1798,11 +1798,11 @@ got_handle:
     AIL_set_stream_volume_levels(handle, pan * scaledVol, pan * scaledVol);
 
     /* Loop count */
-    AIL_set_stream_loop_count(handle, (*(byte *)((byte *)pAlias0 + 0x2c) & 1) ^ 1);
+    AIL_set_stream_loop_count(handle, ((byte)(pAlias0->flags) & 1) ^ 1);
 
     /* Reverb */
-    if (*(byte *)((byte *)(*(byte **)imp_snd_enableReverb) + 8) != 0 && !(*(byte *)((byte *)pAlias0 + 0x2c) & 0x10)) {
-        reverbLevel = *(float *)(*(byte **)(*(byte **)imp_g_snd + 0x2d8) + 0x10);
+    if (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
+        reverbLevel = ((snd_local_t *)*(snd_local_t **)imp_g_snd)->effect->wetlevel;
     } else {
         reverbLevel = 0;
     }
@@ -1835,14 +1835,14 @@ got_handle:
     /* Start playback if no delay */
     if (startDelay == 0) {
         sndGlob = *(byte **)imp_g_snd;
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
         channel = (aliasFlags & 0x780) >> 7;
-        if (*(byte *)(sndGlob + 2) == 0 || *(byte *)(sndGlob + 0x2e7 + channel) == 0) {
+        if (((snd_local_t *)sndGlob)->paused == 0 || ((snd_local_t *)sndGlob)->pauseSettings[channel] == 0) {
             AIL_pause_stream(handle, 0);
         }
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     } else {
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     }
 
     /* Adjust total_msec for looping */
@@ -1854,7 +1854,7 @@ got_handle:
     /* Copy org to channel position */
     {
         sndGlob = *(byte **)imp_g_snd;
-        to = (float *)(sndGlob + index * 80 + 0x364);
+        to = ((snd_local_t *)sndGlob)->chaninfo[index].org;
         to[0] = org[0];
         to[1] = org[1];
         to[2] = org[2];
@@ -1866,7 +1866,7 @@ got_handle:
     /* Check if 3D alias channel */
     {
         sndGlob = *(byte **)imp_g_snd;
-        int chFlags = *(int *)(*(byte **)(sndGlob + index * 80 + 0x358) + 0x2c);
+        int chFlags = ((snd_local_t *)sndGlob)->chaninfo[index].pAlias0->flags;
         channel = (chFlags & 0x780) >> 7;
     }
 
@@ -1877,13 +1877,13 @@ got_handle:
         /* If 3D stream, set 3D position */
         if (AIL_is_3D_stream(*(void **)(0x4a3c28 + streamIdx * 4))) {
             sndGlob = *(byte **)imp_g_snd;
-            to = (float *)(sndGlob + index * 80 + 0x364);
+            to = ((snd_local_t *)sndGlob)->chaninfo[index].org;
             {
                 int listenerIdx = SND_GetListenerIndexNearestToOrigin(to);
-                float *listenerOrigin = (float *)(sndGlob + 0x2f0 + listenerIdx * 56 + 4);
-                float *right = (float *)(sndGlob + 0x2f0 + listenerIdx * 56 + 0x10);
-                float *up = (float *)(sndGlob + 0x2fc + listenerIdx * 56 + 0x10);
-                float *forward = (float *)(sndGlob + 0x308 + listenerIdx * 56 + 0x10);
+                float *listenerOrigin = ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.origin;
+                float *right = ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.axis[0];
+                float *up = ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.axis[1];
+                float *forward = ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.axis[2];
                 float dx = to[0] - listenerOrigin[0];
                 float dy = to[1] - listenerOrigin[1];
                 float dz = to[2] - listenerOrigin[2];
@@ -1897,14 +1897,14 @@ got_handle:
 
         /* Recalculate volume with spatialize results */
         sndGlob = *(byte **)imp_g_snd;
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
-        scaledVol = *(float *)(sndGlob + 0x24) * volume;
-        volTable = *(float **)(sndGlob + 0x254);
+        aliasFlags = pAlias0->flags;
+        scaledVol = ((snd_local_t *)sndGlob)->volume * volume;
+        volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
         channel = (aliasFlags & 0x780) >> 7;
         scaledVol *= volTable[channel * 3];
 
-        if (*(float *)(sndGlob + 0x274) != 0.0f && !master && (aliasFlags & 4)) {
-            scaledVol *= SND_GetLerpedSlavePercentage(*(void **)((byte *)pAlias0 + 0x30));
+        if (((snd_local_t *)sndGlob)->slaveLerp != 0.0f && !master && (aliasFlags & 4)) {
+            scaledVol *= SND_GetLerpedSlavePercentage((void *)&pAlias0->fSlavePercentage);
         }
 
         {
@@ -1922,7 +1922,7 @@ void SND_Update3DChannel(int i, int frametime)
 {
     byte *sndGlob;
     byte *ch;
-    void *pAlias0, *pAlias1;
+    const snd_alias_t *pAlias0, *pAlias1;
     float lerp, oneMinusLerp;
     float volume;
     float fDistMin, fDistMax;
@@ -1936,62 +1936,64 @@ void SND_Update3DChannel(int i, int frametime)
     sndGlob = *(byte **)imp_g_snd;
     ch = sndGlob + i * 80;
 
-    if (*(byte *)(ch + 0x370 + 0xc) != 0) {
+    {
+        snd_channel_info_t *ci = &((snd_local_t *)sndGlob)->chaninfo[i];
+
+    if (ci->paused != 0) {
         return;
     }
 
-    pAlias0 = *(void **)(ch + 0x358);
-    pAlias1 = *(void **)(ch + 0x35c);
+    pAlias0 = ci->pAlias0;
+    pAlias1 = ci->pAlias1;
     if (pAlias0 == NULL || pAlias1 == NULL) {
         return;
     }
 
-    lerp = *(float *)(ch + 0x360);
-    volume = *(float *)(ch + 0x348);
+    lerp = ci->lerp;
+    volume = ci->basevolume;
 
-    SND_GetCurrent3DPosition(*(int *)(ch + 0x334), (float *)(ch + 0x380), org);
+    SND_GetCurrent3DPosition(ci->entnum, (float *)&ci->system, org);
     SND_Set3DPosition(i, org);
 
     oneMinusLerp = 1.0f - lerp;
-    fDistMin = oneMinusLerp * *(float *)((byte *)pAlias0 + 0x24) + lerp * *(float *)((byte *)pAlias1 + 0x24);
-    fDistMax = oneMinusLerp * *(float *)((byte *)pAlias0 + 0x28) + lerp * *(float *)((byte *)pAlias1 + 0x28);
+    fDistMin = oneMinusLerp * pAlias0->fDistMin + lerp * pAlias1->fDistMin;
+    fDistMax = oneMinusLerp * pAlias0->fDistMax + lerp * pAlias1->fDistMax;
 
     {
         int listenerIdx = SND_GetListenerIndexNearestToOrigin(org);
         sndGlob = *(byte **)imp_g_snd;
-        dist = Vec3Distance(org, (float *)(sndGlob + 0x2f4 + listenerIdx * 56));
+        dist = Vec3Distance(org, ((snd_local_t *)sndGlob)->listeners[listenerIdx].orient.origin);
     }
-    attenuation = SND_Attenuate(*(void **)((byte *)pAlias0 + 0x40), dist, fDistMin, fDistMax);
+    attenuation = SND_Attenuate(pAlias0->volumeFalloffCurve, dist, fDistMin, fDistMax);
     volume *= attenuation;
 
     /* Slave volume modulation */
     sndGlob = *(byte **)imp_g_snd;
-    if (*(float *)(sndGlob + 0x274) != 0.0f && *(byte *)(ch + 0x370 + 0xd) == 0) {
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+    if (((snd_local_t *)sndGlob)->slaveLerp != 0.0f && ci->master == 0) {
+        aliasFlags = pAlias0->flags;
         if (aliasFlags & 4) {
-            volume *= SND_GetLerpedSlavePercentage(*(void **)((byte *)pAlias0 + 0x30));
+            volume *= SND_GetLerpedSlavePercentage((void *)&pAlias0->fSlavePercentage);
         }
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     } else {
-        aliasFlags = *(int *)((byte *)pAlias0 + 0x2c);
+        aliasFlags = pAlias0->flags;
     }
 
     sndGlob = *(byte **)imp_g_snd;
-    volTable = *(float **)(sndGlob + 0x254);
+    volTable = (float *)((snd_local_t *)sndGlob)->channelvol;
     channel = (aliasFlags & 0x780) >> 7;
-    scaledVol = volume * volTable[channel * 3] * *(float *)(sndGlob + 0x24);
+    scaledVol = volume * volTable[channel * 3] * ((snd_local_t *)sndGlob)->volume;
     AIL_set_3D_sample_volume(*(void **)(0x4a3ba8 + i * 4), scaledVol);
 
     /* Update start delay */
     {
-        byte *delayBase = sndGlob + i * 80 + 0x330;
-        startDelay = *(int *)(delayBase + 0xc);
+        startDelay = ((snd_local_t *)sndGlob)->chaninfo[i].startDelay;
         if (startDelay != 0) {
             newDelay = startDelay - frametime;
             if (frametime >= startDelay) {
                 newDelay = 0;
             }
-            *(int *)(delayBase + 0xc) = newDelay;
+            ((snd_local_t *)sndGlob)->chaninfo[i].startDelay = newDelay;
             if (newDelay == 0) {
                 AIL_resume_3D_sample(*(void **)(0x4a3ba8 + i * 4));
             }
@@ -2003,9 +2005,9 @@ void SND_Update3DChannel(int i, int frametime)
 void SND_Set2DChannelFromSaveInfo(int index, snd_save_2D_sample_t *info)
 {
     float pan = info->pan;
-    float vol = info->volume * *(float *)(*(byte **)imp_g_snd + 0x24);
+    float vol = info->volume * ((snd_local_t *)*(snd_local_t **)imp_g_snd)->volume;
 
-    if (*(int *)(*(byte **)imp_g_snd + index * 80 + 0x354) == 2) {
+    if (((snd_local_t *)*(snd_local_t **)imp_g_snd)->chaninfo[index].srcChannelCount == 2) {
         AIL_set_sample_volume_levels(*(void **)(0x4a3ad4 + index * 4), vol, vol);
     } else {
         float leftVol = (1.0f - pan) * vol;
@@ -2034,7 +2036,7 @@ Bool SND_InitDriver(void)
 
     /* Register mss_q3fs dvar */
     mss_q3fs = Dvar_RegisterBool((const char *)str_00219a94, 1, 0x1020);
-    if (*(byte *)((byte *)mss_q3fs + 8) != 0) {
+    if (mss_q3fs->current.enabled != 0) {
         AIL_set_file_callbacks((void *)MSS_FileOpenCallback, (void *)MSS_FileCloseCallback, (void *)MSS_FileSeekCallback, (void *)MSS_FileReadCallback);
     }
 
@@ -2048,7 +2050,7 @@ Bool SND_InitDriver(void)
     mss_3d_provider = Dvar_RegisterString((const char *)str_00219b04, (const char *)str_00219ae4, 0x1021);
 
     /* Read snd_khz */
-    sndKhzVal = *(int *)((byte *)(*(byte **)imp_snd_khz) + 8);
+    sndKhzVal = ((dvar_t *)*(void **)imp_snd_khz)->current.integer;
     switch (sndKhzVal) {
         case 0x2c: /* 44 khz */
             freq = 0xac44;
@@ -2072,7 +2074,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_bits */
-    sndBitsVal = *(int *)((byte *)(*(byte **)imp_snd_bits) + 8);
+    sndBitsVal = ((dvar_t *)*(void **)imp_snd_bits)->current.integer;
     if (sndBitsVal == 8) {
         bytes = 1;
         bits = 8;
@@ -2085,7 +2087,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_channels (stereo) */
-    if (*(byte *)((byte *)(*(byte **)imp_snd_stereo) + 8) != 0) {
+    if (((dvar_t *)*(void **)imp_snd_stereo)->current.enabled != 0) {
         channelStr = (const char *)str_00219b90; /* "stereo" */
         numChannels = 2;
     } else {
@@ -2098,32 +2100,32 @@ Bool SND_InitDriver(void)
 
     /* Open digital driver */
     AIL_set_preference(1, 0x35);
-    *(void **)&milesGlob = AIL_open_digital_driver(rate, bytes, numChannels, 0);
+    milesGlob.driver_2D = AIL_open_digital_driver(rate, bytes, numChannels, 0);
 
-    if (*(void **)&milesGlob == NULL) {
+    if (milesGlob.driver_2D == NULL) {
         Com_Printf((const char *)str_00219bc4, AIL_last_error());
         goto shutdown_and_fail;
     }
 
     /* Configure sound globals */
     sndGlob = *(byte **)imp_g_snd;
-    *(byte *)sndGlob = 1;
-    *(int *)(sndGlob + 0x13c4) = 8;
-    *(int *)(sndGlob + 0x13cc) = 0xd;
+    ((snd_local_t *)sndGlob)->Initialized2d = 1;
+    ((snd_local_t *)sndGlob)->max_2D_channels = 8;
+    ((snd_local_t *)sndGlob)->max_stream_channels = 0xd;
 
     /* Calculate max rate: min(freq + freq/2, 0x7fffffff) */
     maxRate = ((unsigned int)freq >> 1) + (unsigned int)freq;
     if (maxRate < 0xac44) {
-        *(int *)(sndGlob + 4) = (int)maxRate;
+        ((snd_local_t *)sndGlob)->playback_rate = (int)maxRate;
     } else {
-        *(int *)(sndGlob + 4) = 0x7fffffff;
+        ((snd_local_t *)sndGlob)->playback_rate = 0x7fffffff;
     }
-    *(int *)(sndGlob + 8) = bits;
-    *(int *)(sndGlob + 0xc) = numChannels;
-    *(int *)(sndGlob + 0x10) = 0x3f800000; /* 1.0f */
+    ((snd_local_t *)sndGlob)->playback_bits = bits;
+    ((snd_local_t *)sndGlob)->playback_channels = numChannels;
+    ((snd_local_t *)sndGlob)->timescale = 1.0f;
 
     /* Enumerate 3D providers */
-    wantedName = *(const char **)((byte *)mss_3d_provider + 8);
+    wantedName = mss_3d_provider->current.string;
     Com_Printf((const char *)str_00219bec);
     providerIter = NULL;
     wantedHandle = NULL;
@@ -2144,7 +2146,7 @@ Bool SND_InitDriver(void)
         } while (AIL_enumerate_3D_providers(&providerIter, &handle, &name));
     }
 
-    *(void * *)((char *)&milesGlob + 4) = NULL;
+    milesGlob.provider_3D = NULL;
 
     /* Try to open wanted provider */
     if (wantedHandle != NULL) {
@@ -2152,12 +2154,12 @@ Bool SND_InitDriver(void)
             Com_Printf((const char *)str_00219c08, wantedName, AIL_last_error());
             /* provider stays NULL */
         } else {
-            *(void * *)((char *)&milesGlob + 4) = wantedHandle;
+            milesGlob.provider_3D = wantedHandle;
         }
     }
 
     /* If provider is open, skip to configure */
-    if (*(void * *)((char *)&milesGlob + 4) != NULL) {
+    if (milesGlob.provider_3D != NULL) {
         goto configure_provider;
     }
 
@@ -2175,13 +2177,13 @@ Bool SND_InitDriver(void)
 
     if (AIL_open_3D_provider(defaultHandle) != 0) {
         Com_Printf((const char *)str_00219c08, (const char *)str_00219ae4, AIL_last_error());
-        if (*(void * *)((char *)&milesGlob + 4) == NULL) {
+        if (milesGlob.provider_3D == NULL) {
             goto shutdown_and_fail;
         }
     } else {
-        *(void * *)((char *)&milesGlob + 4) = defaultHandle;
+        milesGlob.provider_3D = defaultHandle;
         Dvar_SetString(mss_3d_provider, (const char *)str_00219ae4);
-        if (*(void * *)((char *)&milesGlob + 4) == NULL) {
+        if (milesGlob.provider_3D == NULL) {
             goto shutdown_and_fail;
         }
     }
@@ -2189,38 +2191,38 @@ Bool SND_InitDriver(void)
 configure_provider:
     /* Configure 3D provider */
     sndGlob = *(byte **)imp_g_snd;
-    *(byte *)(sndGlob + 1) = 1;
-    AIL_3D_provider_attribute(*(void * *)((char *)&milesGlob + 4), (const char *)str_00219c6c, (void *)(sndGlob + 0x13c8));
-    if (*(int *)(sndGlob + 0x13c8) > 0x20) {
-        *(int *)(sndGlob + 0x13c8) = 0x20;
+    ((snd_local_t *)sndGlob)->Initialized3d = 1;
+    AIL_3D_provider_attribute(milesGlob.provider_3D, (const char *)str_00219c6c, (void *)&((snd_local_t *)sndGlob)->max_3D_channels);
+    if (((snd_local_t *)sndGlob)->max_3D_channels > 0x20) {
+        ((snd_local_t *)sndGlob)->max_3D_channels = 0x20;
     }
-    Com_Printf((const char *)str_00219c88, *(int *)(sndGlob + 0x13c8));
+    Com_Printf((const char *)str_00219c88, ((snd_local_t *)sndGlob)->max_3D_channels);
     {
         int distFactor = 0x3cd013a9;
-        AIL_set_3D_distance_factor(*(void * *)((char *)&milesGlob + 4), *(float *)&distFactor);
+        AIL_set_3D_distance_factor(milesGlob.provider_3D, *(float *)&distFactor);
     }
-    AIL_set_3D_rolloff_factor(*(void * *)((char *)&milesGlob + 4), 0.0f);
+    AIL_set_3D_rolloff_factor(milesGlob.provider_3D, 0.0f);
 
     /* Allocate 2D sample handles */
     sndGlob = *(byte **)imp_g_snd;
-    for (i = 0; i < *(int *)(sndGlob + 0x13c4); i++) {
-        *(void **)(((byte *)&milesGlob) + 8 + i * 4) = AIL_allocate_sample_handle(*(void **)&milesGlob);
-        if (*(void **)(((byte *)&milesGlob) + 8 + i * 4) == NULL) {
+    for (i = 0; i < ((snd_local_t *)sndGlob)->max_2D_channels; i++) {
+        milesGlob.handle_2D[i] = AIL_allocate_sample_handle(milesGlob.driver_2D);
+        if (milesGlob.handle_2D[i] == NULL) {
             Com_Error(1, (const char *)str_00219c9c, i + 1);
         }
     }
 
     /* Allocate 3D sample handles */
     sndGlob = *(byte **)imp_g_snd;
-    for (i = 0; i < *(int *)(sndGlob + 0x13c8); i++) {
-        *(void **)(0x4a3ba8 + i * 4) = AIL_allocate_3D_sample_handle(*(void * *)((char *)&milesGlob + 4));
+    for (i = 0; i < ((snd_local_t *)sndGlob)->max_3D_channels; i++) {
+        *(void **)(0x4a3ba8 + i * 4) = AIL_allocate_3D_sample_handle(milesGlob.provider_3D);
         if (*(void **)(0x4a3ba8 + i * 4) == NULL) {
             Com_Error(1, (const char *)str_00219cd4, i + 1);
         }
     }
 
     sndGlob = *(byte **)imp_g_snd;
-    *(int *)(sndGlob + 0x270) = 2;
+    ((snd_local_t *)sndGlob)->ambient_track = 2;
     return 1;
 
 shutdown_and_fail:
@@ -2633,13 +2635,11 @@ startup_failed:
 void SND_SetStreamChannelFromSaveInfo(int index, snd_save_stream_t *info)
 {
     float pan = info->pan;
-    float vol = info->volume * *(float *)(*(byte **)imp_g_snd + 0x24);
+    float vol = info->volume * ((snd_local_t *)*(snd_local_t **)imp_g_snd)->volume;
     byte *sndGlob = *(byte **)imp_g_snd;
-    byte *chanBase = sndGlob + index * 80 + 0x350;
-
-    if (*(int *)(chanBase + 4) == 2) {
-        void *pA = *(void **)(chanBase + 8);
-        int ch = (*(int *)((byte *)pA + 0x2c) & 0x780) >> 7;
+    if (((snd_local_t *)sndGlob)->chaninfo[index].srcChannelCount == 2) {
+        const snd_alias_t *pA = ((snd_local_t *)sndGlob)->chaninfo[index].pAlias0;
+        int ch = (pA->flags & 0x780) >> 7;
         if (!SND_IsAliasChannel3D(ch)) {
             AIL_set_stream_volume_levels(*(void **)(0x4a3ba8 + index * 4), vol, vol);
             return;
@@ -2659,29 +2659,29 @@ void SND_DriverPostUpdate(int frametime)
     float vol;
     int bufNum;
 
-    rawHandle = *(void * *)((char *)&milesGlob + 220);
+    rawHandle = milesGlob.raw.handle;
     if (rawHandle == NULL) {
         return;
     }
 
-    vol = 0.5f * *(float *)(*(byte **)imp_g_snd + 0x24);
+    vol = 0.5f * ((snd_local_t *)*(snd_local_t **)imp_g_snd)->volume;
     AIL_set_sample_volume_levels(rawHandle, vol, vol);
 
-    if (*(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 280)) == 0) {
+    if (milesGlob.raw.bufReady[milesGlob.raw.readBuf] == 0) {
         return;
     }
 
-    bufNum = AIL_sample_buffer_ready(*(void * *)((char *)&milesGlob + 220));
+    bufNum = AIL_sample_buffer_ready(milesGlob.raw.handle);
     if (bufNum == -1) {
         return;
     }
 
-    *(double *)((char *)&milesGlob + 288) += (double)(*(int *)((char *)&milesGlob + 272)) * *(double *)((char *)&milesGlob + 296);
+    milesGlob.raw.sampleTime += (double)milesGlob.raw.bufSize * milesGlob.raw.bufRate;
 
-    AIL_load_sample_buffer(*(void * *)((char *)&milesGlob + 220), bufNum,
-        (void *)(*(byte * *)((char *)&milesGlob + 236) + *(int *)((char *)&milesGlob + 280) * *(int *)((char *)&milesGlob + 272)),
-        *(int *)((char *)&milesGlob + 272));
+    AIL_load_sample_buffer(milesGlob.raw.handle, bufNum,
+        (void *)(milesGlob.raw.buf + milesGlob.raw.readBuf * milesGlob.raw.bufSize),
+        milesGlob.raw.bufSize);
 
-    *(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 280)) = 0;
-    *(int *)((char *)&milesGlob + 280) = (*(int *)((char *)&milesGlob + 280) + 1) % 32;
+    milesGlob.raw.bufReady[milesGlob.raw.readBuf] = 0;
+    milesGlob.raw.readBuf = (milesGlob.raw.readBuf + 1) % 32;
 }

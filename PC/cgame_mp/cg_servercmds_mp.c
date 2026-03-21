@@ -840,7 +840,7 @@ void CG_MapRestart(qboolean savepersist)
     cgs_t *cgs;
     LegacyHacks *cgui;
 
-    if (*(int *)(*(char **)*(void **)imp_cg_showmiss + 8) != 0) {
+    if (((dvar_t *)*(void **)imp_cg_showmiss)->current.integer != 0) {
         Com_Printf((const char *)str_002b8228);
     }
 
@@ -866,9 +866,9 @@ void CG_MapRestart(qboolean savepersist)
 
     memset(cg->viewDamage, 0, sizeof(cg->viewDamage));
 
-    *(int *)&cg->fWeapSelectFrac[0] = 0;
-    *(int *)&cg->fWeapSelectFrac[1] = 0;
-    *(int *)&cg->fWeapSelectFrac[2] = 0;
+    cg->fWeapSelectFrac[0] = 0.0f;
+    cg->fWeapSelectFrac[1] = 0.0f;
+    cg->fWeapSelectFrac[2] = 0.0f;
     cg->iWeapSelectLastDrawTime = 0;
 
     Dvar_SetBool(*(void **)*(void **)imp_cg_thirdPerson, 0);
@@ -1893,8 +1893,8 @@ void CG_ExecuteNewServerCommands(int latestSequence)
 #else
 static void CG_AddToTeamChat_impl(const char *str)
 {
-    byte *cgs_p;
-    byte *cg_p;
+    cgs_t *cgs_lp;
+    cg_t *cg_lp;
     int chatHeight;
     int chatCount;
     int row;
@@ -1905,19 +1905,19 @@ static void CG_AddToTeamChat_impl(const char *str)
     const char *p;
 
     /* line 547: get chat height dvar */
-    chatHeight = *(int *)(*(byte **)imp_cg_chatHeight + 8);
+    chatHeight = ((dvar_t *)*(void **)imp_cg_chatHeight)->current.integer;
     if (chatHeight == 0)
         goto zero_out;
 
-    if (*(int *)(*(byte **)imp_cg_chatTime + 8) <= 0)
+    if (((dvar_t *)*(void **)imp_cg_chatTime)->current.integer <= 0)
         goto zero_out;
 
     /* line 557: compute destination row */
-    cgs_p = *(byte **)imp_cgs;
-    chatCount = ((cgs_t *)cgs_p)->teamChatPos;
+    cgs_lp = CGS_PTR;
+    chatCount = cgs_lp->teamChatPos;
     row = chatCount % chatHeight;
 
-    dst = ((cgs_t *)cgs_p)->teamChatMsgs[row];
+    dst = cgs_lp->teamChatMsgs[row];
 
     /* line 558 */
     dst[0xc] = '\0';
@@ -1926,7 +1926,7 @@ static void CG_AddToTeamChat_impl(const char *str)
     lastcolor = 0x37; /* '7' */
     ls = NULL;
     p = str;
-    dst = ((cgs_t *)cgs_p)->teamChatMsgs[row] + 0xc;
+    dst = cgs_lp->teamChatMsgs[row] + 0xc;
 
     while (*p != '\0') {
         char ch;
@@ -1946,21 +1946,21 @@ static void CG_AddToTeamChat_impl(const char *str)
             *dst = '\0';
 
             /* line 575: advance to next row */
-            cgs_p = *(byte **)imp_cgs;
-            chatCount = ((cgs_t *)cgs_p)->teamChatPos;
+            cgs_lp = CGS_PTR;
+            chatCount = cgs_lp->teamChatPos;
             {
                 int r = chatCount % chatHeight;
-                cg_p = *(byte **)imp_cg;
-                ((cgs_t *)cgs_p)->teamChatMsgTimes[r] = ((cg_t *)cg_p)->time;
+                cg_lp = CG_PTR;
+                cgs_lp->teamChatMsgTimes[r] = cg_lp->time;
             }
 
             /* line 577 */
             chatCount += 1;
-            ((cgs_t *)cgs_p)->teamChatPos = chatCount;
+            cgs_lp->teamChatPos = chatCount;
 
             /* line 578: new row */
             row = chatCount % chatHeight;
-            dst = ((cgs_t *)cgs_p)->teamChatMsgs[row] + 0xc;
+            dst = cgs_lp->teamChatMsgs[row] + 0xc;
 
             /* line 580: prepend color code */
             *dst++ = '^';
@@ -2025,30 +2025,30 @@ check_space:
     *dst = '\0';
 
     /* line 602: record timestamp */
-    cgs_p = *(byte **)imp_cgs;
-    chatCount = ((cgs_t *)cgs_p)->teamChatPos;
+    cgs_lp = CGS_PTR;
+    chatCount = cgs_lp->teamChatPos;
     {
         int r = chatCount % chatHeight;
-        cg_p = *(byte **)imp_cg;
-        ((cgs_t *)cgs_p)->teamChatMsgTimes[r] = ((cg_t *)cg_p)->time;
+        cg_lp = CG_PTR;
+        cgs_lp->teamChatMsgTimes[r] = cg_lp->time;
     }
 
     /* line 603 */
     chatCount += 1;
-    ((cgs_t *)cgs_p)->teamChatPos = chatCount;
+    cgs_lp->teamChatPos = chatCount;
 
     /* line 605 */
-    if (chatHeight < chatCount - ((cgs_t *)cgs_p)->teamLastChatPos) {
+    if (chatHeight < chatCount - cgs_lp->teamLastChatPos) {
         /* line 606 */
-        ((cgs_t *)cgs_p)->teamLastChatPos = chatCount - chatHeight;
+        cgs_lp->teamLastChatPos = chatCount - chatHeight;
     }
     return;
 
 zero_out:
     /* line 551 */
-    cgs_p = *(byte **)imp_cgs;
-    ((cgs_t *)cgs_p)->teamLastChatPos = 0;
-    ((cgs_t *)cgs_p)->teamChatPos = 0;
+    cgs_lp = CGS_PTR;
+    cgs_lp->teamLastChatPos = 0;
+    cgs_lp->teamChatPos = 0;
 }
 
 #endif

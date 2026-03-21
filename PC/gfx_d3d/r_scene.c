@@ -678,7 +678,7 @@ void R_RenderScene(const refdef_t *refdef)
     /* Check splitscreen */
     {
         char *vidCfg = (char *)imp_vidConfig;
-        if (*(int *)((const char *)refdef + 8) == *(int *)vidCfg)
+        if (((const refdef_t *)refdef)->width == ((const vidConfig_t *)imp_vidConfig)->width)
             isSplitscreen = 0;
         else
             isSplitscreen = 0; /* simplified — original checks height match */
@@ -696,7 +696,7 @@ void R_RenderScene(const refdef_t *refdef)
         GfxFog *fogActive = &rg_ptr->fogSettings[2]; /* interpolated/active fog */
         GfxFog *fogPrev = &rg_ptr->fogSettings[3];   /* previous fog state */
         GfxFog *fogTarget = &rg_ptr->fogSettings[4];  /* target fog state */
-        int sceneTime = *(int *)((char *)&scene + 4);
+        int sceneTime = scene.def.time;
         int sunTime = fogTarget->finishTime;
 
         if (sceneTime >= sunTime) {
@@ -764,14 +764,14 @@ void R_RenderScene(const refdef_t *refdef)
     CG_AddMarks();
     FX_DrawScheduledEffects();
 
-    drawSurfStart = *(int *)((char *)&scene + 1468);
-    drawSurfCount = *(int *)((char *)&scene + 1464);
+    drawSurfStart = (int)(intptr_t)scene.drawSurfs;
+    drawSurfCount = scene.drawSurfCount;
     qsortDrawSurfs((GfxDrawSurf *)(intptr_t)drawSurfStart, drawSurfCount);
 
     /* Dynamic lights */
     {
         int isDx7 = ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2);
-        if (!isDx7 && *(int *)(*(char **)imp_r_dlightLimit + 8)) {
+        if (!isDx7 && (*(const dvar_t **)imp_r_dlightLimit)->current.integer) {
             pointLightCount = R_GetPointLightPartitions(
                 (void *)(intptr_t)drawSurfStart, drawSurfCount,
                 pointLightPartitions, 0x100);
@@ -791,13 +791,12 @@ void R_RenderScene(const refdef_t *refdef)
             if (!R_BeginDrawGroupSection(3)) {
                 R_AddCmdSetRenderTarget(0);
                 {
-                    char *vc = (char *)imp_vidConfig;
-                    R_AddCmdSetViewport(0, 0, *(int *)vc, *(int *)(vc + 4));
+                    R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
                 }
                 R_AddClearCommandsForFrameBuffer(0);
             }
             R_BeginDrawGroupLoop(3, viewIndex);
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 3);
             R_AddCmdDrawSun(viewIndex);
             R_EndDrawGroupLoop(3, viewIndex);
@@ -805,14 +804,13 @@ void R_RenderScene(const refdef_t *refdef)
 
             /* Section 4 */
             if (!R_BeginDrawGroupSection(4)) {
-                char *vc = (char *)imp_vidConfig;
-                R_AddCmdSetViewport(0, 0, *(int *)vc, *(int *)(vc + 4));
+                R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
             }
             R_BeginDrawGroupLoop(4, viewIndex);
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
         } else if (isDx7) {
             /* Dx7 path */
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
             R_AddCmdSetRenderTarget(0);
             R_AddClearCommandsForFrameBuffer(0);
             {
@@ -823,9 +821,9 @@ void R_RenderScene(const refdef_t *refdef)
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 6);
             R_AddCmdDrawSun(viewIndex);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 0x15);
-        } else if (*(int *)(*(char **)imp_r_debugShader + 8)) {
+        } else if ((*(const dvar_t **)imp_r_debugShader)->current.integer) {
             /* Debug shader path */
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
             R_AddCmdSetRenderTarget(0);
             R_AddClearCommandsForFrameBuffer(0);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 0x21);
@@ -834,8 +832,7 @@ void R_RenderScene(const refdef_t *refdef)
             if (!R_BeginDrawGroupSection(2)) {
                 R_AddCmdSetRenderTarget(0);
                 {
-                    char *vc = (char *)imp_vidConfig;
-                    R_AddCmdSetViewport(0, 0, *(int *)vc, *(int *)(vc + 4));
+                    R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
                 }
                 R_AddClearCommandsForFrameBuffer(0);
                 {
@@ -844,7 +841,7 @@ void R_RenderScene(const refdef_t *refdef)
                 }
             }
             R_BeginDrawGroupLoop(2, viewIndex);
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 1);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 6);
             R_AddCmdDrawSun(viewIndex);
@@ -856,7 +853,7 @@ void R_RenderScene(const refdef_t *refdef)
             /* Section 3: lit surfaces */
             R_BeginDrawGroupSection(3);
             R_BeginDrawGroupLoop(3, viewIndex);
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
 
             /* Point light partitions */
             if (pointLightCount > 0) {
@@ -879,11 +876,10 @@ void R_RenderScene(const refdef_t *refdef)
 
             /* Section 4: post-effects */
             if (!R_BeginDrawGroupSection(4)) {
-                char *vc = (char *)imp_vidConfig;
-                R_AddCmdSetViewport(0, 0, *(int *)vc, *(int *)(vc + 4));
+                R_AddCmdSetViewport(0, 0, ((const vidConfig_t *)imp_vidConfig)->width, ((const vidConfig_t *)imp_vidConfig)->height);
             }
             R_BeginDrawGroupLoop(4, viewIndex);
-            R_AddCmdBeginView(*(int *)&scene, (void *)((char *)&scene + 4), viewParms, lodOrigin);
+            R_AddCmdBeginView(scene.viewCount, (void *)&scene.def, viewParms, lodOrigin);
             if (!isSplitscreen)
                 R_AddCmdApplyLatePostEffects(blurRadius);
             R_AddCmdDrawSunPostEffects(viewIndex);
@@ -891,7 +887,7 @@ void R_RenderScene(const refdef_t *refdef)
 
         /* Show tris */
         {
-            int showTris = *(int *)(*(char **)imp_r_showTris + 8);
+            int showTris = (*(const dvar_t **)imp_r_showTris)->current.integer;
             if (showTris) {
                 if (showTris & 2)
                     R_AddCmdClearScreen(6, (const vec_t *)imp_colorWhite, 1.0f, 0);
@@ -904,8 +900,8 @@ void R_RenderScene(const refdef_t *refdef)
 
     /* Debug entity counts */
     {
-        int debugEntCounts = *(int *)(*(char **)imp_r_debugEntCounts + 8);
-        if (debugEntCounts && debugEntCounts < *(int *)((char *)&scene + 12)) {
+        int debugEntCounts = (*(const dvar_t **)imp_r_debugEntCounts)->current.integer;
+        if (debugEntCounts && debugEntCounts < scene.def.entityCount) {
             /* Reset dvar */
             ((refimport_t *)imp_ri)->Dvar_SetInt(*(const dvar_t **)imp_r_debugEntCounts, 0);
             /* Detailed entity debug output omitted for brevity — uses qsort + Com_Printf loop */
@@ -1884,8 +1880,8 @@ int R_AddStaticModelToScene(int smodelIndex)
 
     if ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2) {
         /* DX7: index into world pre-computed static model lighting table */
-        *(int *)&backEndRefEnt->lighting = smodelIndex + *(int *)&world->smodelLightingColorTable;
-        *((int *)&backEndRefEnt->lighting + 1) = ((int *)world->smodelLightingSunVisTable)[smodelIndex];
+        backEndRefEnt->lighting.dx7.colorForDir = (FxMemMgr_Emitter *(*)[2])((intptr_t)smodelIndex + (intptr_t)world->smodelLightingColorTable);
+        *(int *)&backEndRefEnt->lighting.dx7.sunVisibility = ((int *)world->smodelLightingSunVisTable)[smodelIndex];
     } else {
         backEndRefEnt->lighting.baseCoords[0] = smodelInst->baseLightingCoords[0];
         backEndRefEnt->lighting.baseCoords[1] = smodelInst->baseLightingCoords[1];

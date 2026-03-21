@@ -6052,6 +6052,7 @@ struct FxBoltInfo {
 };
 
 struct FxBoltFrame {
+    int refCount;              /* reference count at offset 0 */
     struct FxBoltInfo mBolt;
 };
 
@@ -7376,15 +7377,24 @@ struct FxGfxEntity {
 };
 
 struct Effect {
-    int _vptr$Effect;
-    struct FxGfxEntity mRefEnt;
-    int mFlags;
-    int mClusterId;
-    int mSortGroup;
-    struct XModel *mModel;
-    int mTimeStart;
-    int mTimeEnd;
-    struct FxBoltFramePtr mBolt;
+    int _vptr$Effect;           /* 0x00 */
+    struct FxGfxEntity mRefEnt; /* 0x04 - local-space ref entity (104 bytes) */
+    /* 0x6c: FxGfxEntity ends here */
+    vec3_t worldColor;          /* 0x6c - world-space RGB color (3 floats = 12 bytes) */
+    struct XModel *mModel;      /* 0x78 - sort group / model handle */
+    vec3_t worldOrigin;         /* 0x7c - world-space origin (3 floats = 12 bytes) */
+    float worldRadius[2];       /* 0x88 - world-space radius[0] and radius[1] */
+    byte worldRGBA[4];          /* 0x90 - world-space RGBA color bytes */
+    float worldSubimageIndex;   /* 0x94 - world-space subimage index / rotation */
+    float worldScale;           /* 0x98 - world-space scale */
+    vec3_t worldEndpos;         /* 0x9c - world-space endpoint (3 floats = 12 bytes) */
+    int mFlags;                 /* 0xa8 */
+    int mClusterId;             /* 0xac */
+    int mSortGroup;             /* 0xb0 */
+    struct XModel *mModelPtr;   /* 0xb4 - precached XModel */
+    int mTimeStart;             /* 0xb8 */
+    int mTimeEnd;               /* 0xbc */
+    struct FxBoltFramePtr mBolt;/* 0xc0 */
 };
 
 struct GfxCmdDrawText {

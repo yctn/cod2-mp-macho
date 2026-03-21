@@ -475,7 +475,7 @@ qboolean RB_IsGpuFenceFinished(void)
 /* line 3214 */
 void RB_GpuWaited(int ticks)
 {
-    *(int *)((byte *)(void *)imp_dx + 0x2d64) = ticks;
+    ((DxGlobals *)imp_dx)->gpuSyncAlreadyWaited = ticks;
 }
 
 /* line 3710 */
@@ -517,15 +517,15 @@ skip_present:
     r_gamma_cvar = *(char **)imp_r_gamma;
     r_ignoreHwGamma_cvar = *(char **)imp_r_ignoreHwGamma;
 
-    if (*(byte *)(r_gamma_cvar + 7) || *(byte *)(r_ignoreHwGamma_cvar + 7)) {
-        /* Clear modified flags via ri->Cvar_ClearModified (offset 0x88) */
-        Cvar_ClearModified = *(void (**)(void *))((char *)imp_ri + 0x88);
+    if (((const dvar_t *)r_gamma_cvar)->modified || ((const dvar_t *)r_ignoreHwGamma_cvar)->modified) {
+        /* Clear modified flags via ri->Dvar_ClearModified */
+        Cvar_ClearModified = ((refimport_t *)imp_ri)->Dvar_ClearModified;
         Cvar_ClearModified(r_gamma_cvar);
 
         r_ignoreHwGamma_cvar = *(char **)imp_r_ignoreHwGamma;
         Cvar_ClearModified(r_ignoreHwGamma_cvar);
 
-        if (!*(byte *)(r_ignoreHwGamma_cvar + 8)) {
+        if (!((const dvar_t *)r_ignoreHwGamma_cvar)->current.enabled) {
             R_SetColorMappings();
             return;
         }
@@ -1189,7 +1189,7 @@ static void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
     cmd = (byte *)execState->cmd;
     RB_SetShadowLookupMatrix(cmd + 4);
 
-    shadowMapSize = (float)*(int *)((byte *)imp_dx + 0x2c8c);
+    shadowMapSize = (float)((DxGlobals *)imp_dx)->renderTargets[R_RENDERTARGET_SHADOWCOOKIE].width;
     invSize = 1.0f / shadowMapSize;
 
     /* Shadow map size constants → codeConsts[44] */
@@ -1244,8 +1244,8 @@ static void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
     backEnd.tileCount = 1;
 
     /* Copy screen dimensions from vidConfig */
-    backEnd.width = *(int *)((char *)imp_vidConfig);
-    backEnd.height = *(int *)((char *)imp_vidConfig + 4);
+    backEnd.width = ((const vidConfig_t *)imp_vidConfig)->width;
+    backEnd.height = ((const vidConfig_t *)imp_vidConfig)->height;
 
     /* Update viewport constants if no render target is set */
     if (!((DxState *)imp_dxState)->viewportBehavior)
@@ -1781,7 +1781,7 @@ check_material:
     if (materialTime != materialTimePrev || materialTime != materialTime) {
         float w = backEnd.sceneDef.floatTime - materialTime;
         float frac = w - floorf(w);
-        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        int isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
         if (isDx7) {
             backEnd.texScrollAmountDx7 = frac;
         } else {
@@ -2066,7 +2066,7 @@ static void RB_Set2D(void)
     }
 
     /* Dx7: set D3D transforms directly */
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
     if (isDx7) {
         char *dx = (char *)imp_dx;
         /* SetTransform: vtable[0xb0/4] = index 44 */
@@ -2584,7 +2584,7 @@ static void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         indices[ic + i] = (r_index_t)(vc + indexData[i]);
 
     /* Copy vertices */
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     for (i = 0; i < vertexCount; i++) {
         float px = xyzwData[i * 4 + 0];
@@ -2698,10 +2698,10 @@ static void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
 
     if (!needCopy) {
         /* Check glow support: not Dx7, hardware supports it, glow enabled, not fullbright */
-        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
-        if (!isDx7 && *(byte *)((char *)imp_dx + 0x2d7d)) {
-            if (*(byte *)(*(char **)imp_r_glow + 8)) {
-                needCopy = !*(byte *)(*(char **)imp_r_fullbright + 8);
+        int isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+        if (!isDx7 && ((DxGlobals *)imp_dx)->hasSeparateAlphaBlend) {
+            if (((const dvar_t *)*(void **)imp_r_glow)->current.enabled) {
+                needCopy = !((const dvar_t *)*(void **)imp_r_fullbright)->current.enabled;
             }
         }
     }
@@ -2855,7 +2855,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
     if (count <= 0)
         return;
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     for (lineIdx = 0; lineIdx < count; lineIdx++) {
         const GfxPointVertex *p0 = &verts[lineIdx * 2];
@@ -3412,7 +3412,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
     int (*Q_ReadToken)(const char **, int);
 
     /* Get font material */
-    material = *(const Material **)((byte *)font + 0xc);
+    material = *(const Material **)((byte *)font + 0xc); /* TODO: font->material (MaterialHandle type mismatch) */
 
     /* Set view matrices for current viewParms */
     RB_SetMatricesForView(backEnd.viewParms);
@@ -3423,9 +3423,9 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
     startZ = org[2] - 0.5f * xPixelStep[2] - 0.5f * yPixelStep[2];
 
     /* Function to read next character code from text string */
-    Q_ReadToken = *(int (**)(const char **, int))((byte *)imp_ri + 0x118);
+    Q_ReadToken = (int (*)(const char **, int))((refimport_t *)imp_ri)->SEH_ReadCharFromString;
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     while (*text) {
         int charCode;
@@ -4135,7 +4135,7 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     origin[1] += axis[1];
     origin[2] += axis[2];
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
     x0 = origin[0];
     y0 = origin[1];
     z0 = origin[2];
@@ -4336,7 +4336,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
     indices[ic + 4] = (r_index_t)vc;
     indices[ic + 5] = (r_index_t)(vc + 1);
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     if (isDx7) {
         /* Dx7 vertex layout: stride 36 (0x24)
@@ -4616,25 +4616,25 @@ void RB_ExecuteRenderCommands(const void *data)
     {
         char *dvar;
         dvar = *(char **)imp_r_textureMode;
-        if (*(byte *)(dvar + 7)) {
-            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar); /* Cvar_ClearModified */
+        if (((const dvar_t *)dvar)->modified) {
+            ((refimport_t *)imp_ri)->Dvar_ClearModified((const dvar_t *)dvar);
             RB_DecideDefaultSamplerState();
         }
         dvar = *(char **)imp_r_anisotropy;
-        if (*(byte *)(dvar + 7)) {
-            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+        if (((const dvar_t *)dvar)->modified) {
+            ((refimport_t *)imp_ri)->Dvar_ClearModified((const dvar_t *)dvar);
             RB_SetAnisotropy();
         }
         dvar = *(char **)imp_r_cosinePowerMapShift;
-        if (*(byte *)(dvar + 7)) {
-            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
-            Image_RebuildCosinePowerMap(*(float *)(dvar + 8));
+        if (((const dvar_t *)dvar)->modified) {
+            ((refimport_t *)imp_ri)->Dvar_ClearModified((const dvar_t *)dvar);
+            Image_RebuildCosinePowerMap(((const dvar_t *)dvar)->current.value);
         }
         dvar = *(char **)imp_r_outdoorFeather;
-        if (*(byte *)(dvar + 7)) {
-            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+        if (((const dvar_t *)dvar)->modified) {
+            ((refimport_t *)imp_ri)->Dvar_ClearModified((const dvar_t *)dvar);
             {
-                float val = *(float *)(dvar + 8);
+                float val = ((const dvar_t *)dvar)->current.value;
                 /* codeConsts[50] = outdoor feather value */
                 backEnd.codeConsts[50][0] = val;
                 backEnd.codeConsts[50][1] = val;
@@ -4643,8 +4643,8 @@ void RB_ExecuteRenderCommands(const void *data)
             }
         }
         dvar = *(char **)imp_r_aaAlpha;
-        if (*(byte *)(dvar + 7)) {
-            ((void (*)(void *))*(void **)((char *)imp_ri + 0x88))(dvar);
+        if (((const dvar_t *)dvar)->modified) {
+            ((refimport_t *)imp_ri)->Dvar_ClearModified((const dvar_t *)dvar);
             dx = (char *)imp_dx;
             if (((DxGlobals *)dx)->hasTransparencyMsaa) {
                 char *dxSt = (char *)imp_dxState;
@@ -4668,7 +4668,7 @@ void RB_ExecuteRenderCommands(const void *data)
         /* Skip to done after fence wait for state 3 */
         glGenFencesAPPLE(1, &g_FenceID);
         glSetFenceAPPLE(g_FenceID);
-        *(byte *)((char *)imp_dx + 0x2d68) = 1;
+        ((DxGlobals *)imp_dx)->flushGpuQueryIssued = 1;
         goto done;
     } else if (deviceState == 1) {
         /* Fence wait loop before sync */
@@ -4701,7 +4701,7 @@ void RB_ExecuteRenderCommands(const void *data)
         RB_TouchAllImages();
 
     /* Check r_skipBackEnd */
-    if (*(byte *)(*(char **)imp_r_skipBackEnd + 8)) {
+    if (((const dvar_t *)*(void **)imp_r_skipBackEnd)->current.enabled) {
         g_rb_skip_reason = 3;
         diag_rb_skip_this_frame = 3;
         goto post_render;
@@ -4742,7 +4742,7 @@ post_render:
     {
         const GfxViewParms *vp = backEnd.viewParms;
         if (vp) {
-            int dev = *(int *)(*(char **)imp_developer + 8);
+            int dev = ((const dvar_t *)*(void **)imp_developer)->current.integer;
             if (dev)
                 RB_DrawDebug(vp);
         }
@@ -4781,9 +4781,9 @@ post_render:
 
     /* r_testFill benchmark */
     {
-        int testFillCount = *(int *)(*(char **)imp_r_testFill + 8);
+        int testFillCount = ((const dvar_t *)*(void **)imp_r_testFill)->current.integer;
         if (testFillCount > 0) {
-            if (!*(byte *)(*(char **)imp_r_testFillEnable + 8)) {
+            if (!((const dvar_t *)*(void **)imp_r_testFillEnable)->current.enabled) {
                 typedef int (*PrintFunc)(int, const char *, ...);
                 PrintFunc ri_printf = *(PrintFunc *)imp_ri;
                 ri_printf(0, "Fill testing uses extra textures and materials, so it is usu");
@@ -4835,13 +4835,13 @@ post_render:
                 ri_printf(0, "-----------------------------------------------\n");
             }
             /* Reset dvar */
-            ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x98))(*(void **)imp_r_testFill, 0);
+            ((refimport_t *)imp_ri)->Dvar_SetInt(*(const dvar_t **)imp_r_testFill, 0);
         }
     }
 
     /* r_testTransform benchmark */
     {
-        int testTransformCount = *(int *)(*(char **)imp_r_testTransform + 8);
+        int testTransformCount = ((const dvar_t *)*(void **)imp_r_testTransform)->current.integer;
         if (testTransformCount > 0) {
             typedef int (*PrintFunc)(int, const char *, ...);
             PrintFunc ri_printf = *(PrintFunc *)imp_ri;
@@ -4859,7 +4859,7 @@ post_render:
             ri_printf(0, "dynamic vertex data   %8.0f verts/sec @ 60Hz\n", (double)(dynRate * 4.0f));
             ri_printf(0, "dynamic vertex data   %8.0f tris/sec @ 60Hz\n", (double)(dynRate * 2.0f));
             ri_printf(0, "-----------------------------------------------\n");
-            ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x98))(*(void **)imp_r_testTransform, 0);
+            ((refimport_t *)imp_ri)->Dvar_SetInt(*(const dvar_t **)imp_r_testTransform, 0);
         }
     }
 
@@ -5779,7 +5779,7 @@ static void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
     }
 
     /* Set feedback texture to saved screen image */
-    backEnd.currentFeedbackImage = *(GfxImage **)((char *)imp_dx + 0x2cbc);
+    backEnd.currentFeedbackImage = ((DxGlobals *)imp_dx)->renderTargets[R_RENDERTARGET_SAVED_SCREEN].image;
 
     blendMaterial = ((r_global_permanent_t *)rgp)->shellShockMaterial;
 
@@ -5887,9 +5887,9 @@ static void RB_DrawTextWithCursor_impl(const char *text, int maxChars, FontHandl
                                         float x, float y, float xScale, float yScale,
                                         GfxColor color, int style, int cursorPos, int cursor)
 {
-    int (*Q_ReadToken)(const char **, int) = *(int (**)(const char **, int))((byte *)imp_ri + 0x118);
-    int (*Sys_Milliseconds)(void) = *(int (**)(void))((byte *)imp_ri + 8);
-    const Material *material = *(const Material **)((char *)font + 12);
+    int (*Q_ReadToken)(const char **, int) = (int (*)(const char **, int))((refimport_t *)imp_ri)->SEH_ReadCharFromString;
+    int (*Sys_Milliseconds)(void) = (int (*)(void))((refimport_t *)imp_ri)->Milliseconds;
+    const Material *material = *(const Material **)((char *)font + 12); /* TODO: font->material (MaterialHandle type mismatch) */
     GfxColor newColor = color;
     GfxColor newBlack;
     byte savedAlpha;
@@ -6150,8 +6150,8 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
     backEnd.resolvedSceneTarget = 0xe;
     blurRadius = *(float *)(cmd + 4);
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
-    hasGlowSupport = !isDx7 && *(byte *)((char *)imp_dx + 0x2d7d);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    hasGlowSupport = !isDx7 && ((DxGlobals *)imp_dx)->hasSeparateAlphaBlend;
 
     /* Determine if we need to copy backbuffer for effects */
     needCopy = 0;
@@ -6225,7 +6225,7 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
                 RB_SetRenderTarget(0);
 
                 /* Draw blurred result fullscreen */
-                backEnd.currentFeedbackImage = *(GfxImage **)((char *)imp_dx + 0x2cd0);
+                backEnd.currentFeedbackImage = ((DxGlobals *)imp_dx)->renderTargets[R_RENDERTARGET_BLURRED_SCREEN].image;
                 {
                     char *rgp = (char *)imp_rgp;
                     const Material *blurMaterial = ((r_global_permanent_t *)rgp)->feedbackBlendMaterial;
@@ -7292,7 +7292,7 @@ static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
     v3x = midX - cx + sy;  v3y = midY - sx + cy;
 
     color = ((GfxCmdStretchPicRotateCmd *)cmd)->color;
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     RB_SetVertex2D(t, vc + 0, isDx7, v0x, v0y, ((GfxCmdStretchPicRotateCmd *)cmd)->s0, ((GfxCmdStretchPicRotateCmd *)cmd)->t0, color);
     RB_SetVertex2D(t, vc + 1, isDx7, v1x, v1y, ((GfxCmdStretchPicRotateCmd *)cmd)->s1, ((GfxCmdStretchPicRotateCmd *)cmd)->t0, color);
@@ -7817,7 +7817,7 @@ static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
     RB_WriteQuadIndices(t, vc);
 
     color = ((GfxCmdDrawQuadPicCmd *)cmd)->color;
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     /* 4 explicit corner positions with fixed texcoords */
     RB_SetVertex2D(t, vc + 0, isDx7, ((GfxCmdDrawQuadPicCmd *)cmd)->verts[0][0], ((GfxCmdDrawQuadPicCmd *)cmd)->verts[0][1], 0.0f, 0.0f, color);
@@ -7882,7 +7882,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         invHeight = fWidth / screenH;
     }
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     /* Process each line */
     for (lineIndex = 0; lineIndex < count; lineIndex++) {
@@ -8803,7 +8803,7 @@ static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
     if (planeCount <= 0)
         goto done;
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     for (planeIdx = 0; planeIdx < planeCount; planeIdx++) {
         float d = *(float *)(cmd + 0xc + planeIdx * 4);
@@ -9316,7 +9316,7 @@ static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         RB_BeginSurface(debugMtl, 3, 0x1f);
     }
 
-    isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
 
     if (backEnd.projection2D) {
         /* === 3D path: transform through viewProjection matrix === */

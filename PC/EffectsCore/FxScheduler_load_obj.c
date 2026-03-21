@@ -81,43 +81,43 @@ float FX_CreateDefaultEffect(void)
 /* line 620 */
 float MediaHandles_Shutdown(const MediaHandles * _this)
 {
-    byte *self = (byte *)_this;
+    MediaHandles *self = (MediaHandles *)_this;
 
-    if (*(void **)self != NULL) {
-        Z_FreeInternal(*(void **)self);
-        *(void **)self = NULL;
-        *(short *)(self + 4) = 0;
-        *(short *)(self + 6) = 0;
+    if (self->mMediaList.elements != NULL) {
+        Z_FreeInternal(self->mMediaList.elements);
+        self->mMediaList.elements = NULL;
+        self->mMediaList.size = 0;
+        self->mMediaList.maxSize = 0;
     }
 }
 
 /* line 631 */
 float MediaHandles_AddHandle(const MediaHandles * _this, TMediaElement item)
 {
-    byte *self = (byte *)_this;
+    MediaHandles *self = (MediaHandles *)_this;
     unsigned short count;
     unsigned short capacity;
     void *newElements;
 
-    count = *(unsigned short *)(self + 4);
-    capacity = *(unsigned short *)(self + 6);
+    count = self->mMediaList.size;
+    capacity = self->mMediaList.maxSize;
 
     if (count == capacity) {
         if (count == 0) {
-            *(unsigned short *)(self + 6) = 4;
+            self->mMediaList.maxSize = 4;
         } else {
-            *(unsigned short *)(self + 6) = count * 2;
+            self->mMediaList.maxSize = count * 2;
         }
-        newElements = Z_MallocInternal(*(unsigned short *)(self + 6) * 4);
-        if (*(void **)self != NULL) {
-            memcpy(newElements, *(void **)self, *(unsigned short *)(self + 4) * 4);
-            Z_FreeInternal(*(void **)self);
+        newElements = Z_MallocInternal(self->mMediaList.maxSize * 4);
+        if (self->mMediaList.elements != NULL) {
+            memcpy(newElements, self->mMediaList.elements, self->mMediaList.size * 4);
+            Z_FreeInternal(self->mMediaList.elements);
         }
-        *(void **)self = newElements;
+        self->mMediaList.elements = newElements;
     }
 
-    ((void **)(*(void **)self))[*(unsigned short *)(self + 4)] = item.data;
-    *(unsigned short *)(self + 4) += 1;
+    ((void **)self->mMediaList.elements)[self->mMediaList.size] = item.data;
+    self->mMediaList.size += 1;
 }
 
 /* line 522 */
@@ -271,28 +271,28 @@ EffectTemplate * FX_RegisterEffect(const char *fileName)
 /* line 657 */
 float MediaHandles_AddEffect(const MediaHandles * _this, EffectTemplate *fx)
 {
-    byte *self = (byte *)_this;
+    MediaHandles *self = (MediaHandles *)_this;
     unsigned short count;
     unsigned short capacity;
     void *newElements;
 
-    count = *(unsigned short *)(self + 4);
-    capacity = *(unsigned short *)(self + 6);
+    count = self->mMediaList.size;
+    capacity = self->mMediaList.maxSize;
 
     if (count == capacity) {
         if (count == 0) {
-            *(unsigned short *)(self + 6) = 4;
+            self->mMediaList.maxSize = 4;
         } else {
-            *(unsigned short *)(self + 6) = count * 2;
+            self->mMediaList.maxSize = count * 2;
         }
-        newElements = Z_MallocInternal(*(unsigned short *)(self + 6) * 4);
-        if (*(void **)self != NULL) {
-            memcpy(newElements, *(void **)self, *(unsigned short *)(self + 4) * 4);
-            Z_FreeInternal(*(void **)self);
+        newElements = Z_MallocInternal(self->mMediaList.maxSize * 4);
+        if (self->mMediaList.elements != NULL) {
+            memcpy(newElements, self->mMediaList.elements, self->mMediaList.size * 4);
+            Z_FreeInternal(self->mMediaList.elements);
         }
-        *(void **)self = newElements;
+        self->mMediaList.elements = newElements;
     }
 
-    ((void **)(*(void **)self))[*(unsigned short *)(self + 4)] = (void *)fx;
-    *(unsigned short *)(self + 4) += 1;
+    ((void **)self->mMediaList.elements)[self->mMediaList.size] = (void *)fx;
+    self->mMediaList.size += 1;
 }

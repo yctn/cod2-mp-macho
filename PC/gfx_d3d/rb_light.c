@@ -566,8 +566,7 @@ void RB_ShowLightVisCachePoints(const vec_t *viewOrigin, const DpvsPlane *clipPl
                     debugColor = colorRed;
                 }
 
-                debugGlobals = *(void **)g_viewParms;
-                debugGlobals = (char *)debugGlobals + 0x249d18;
+                debugGlobals = &((GfxBackEndData *)(*(void **)g_viewParms))->debugGlobals;
                 R_AddDebugString(debugGlobals, origin, debugColor, 1.0f, ".");
 
             next_dx:
@@ -684,7 +683,7 @@ float RB_GetLightingAtPoint(const GfxLightGrid *lightGrid, const vec_t *samplePo
         boxMaxs[1] = boxMins[1] + 32.0f;
         boxMaxs[2] = boxMins[2] + 64.0f;
 
-        debugGlobals = (char *)(*(void **)g_viewParms) + 0x249d18;
+        debugGlobals = &((GfxBackEndData *)(*(void **)g_viewParms))->debugGlobals;
         R_AddDebugBox(debugGlobals, boxMins, boxMaxs, colorWhite);
 
         /* Draw sample position box */
@@ -806,7 +805,7 @@ float RB_GetLightingAtPoint(const GfxLightGrid *lightGrid, const vec_t *samplePo
                     bmax[0] = gridPosX + 1.1f;
                     bmax[1] = gridPosY + 1.1f;
                     bmax[2] = gridPosZ + 1.1f;
-                    R_AddDebugBox((char *)(*(void **)g_viewParms) + 0x249d18, bmin, bmax, colorRed);
+                    R_AddDebugBox(&((GfxBackEndData *)(*(void **)g_viewParms))->debugGlobals, bmin, bmax, colorRed);
                 }
                 continue;
             }
@@ -821,7 +820,7 @@ float RB_GetLightingAtPoint(const GfxLightGrid *lightGrid, const vec_t *samplePo
                 bmax[0] = gridPosX + 1.0f;
                 bmax[1] = gridPosY + 1.0f;
                 bmax[2] = gridPosZ + 1.0f;
-                R_AddDebugBox((char *)(*(void **)g_viewParms) + 0x249d18, bmin, bmax, colorRed);
+                R_AddDebugBox(&((GfxBackEndData *)(*(void **)g_viewParms))->debugGlobals, bmin, bmax, colorRed);
             }
         } else {
             /* needsTrace bit not set - check debug draw */
@@ -837,7 +836,7 @@ float RB_GetLightingAtPoint(const GfxLightGrid *lightGrid, const vec_t *samplePo
                 bmax[0] = gridPosX + 0.9f;
                 bmax[1] = gridPosY + 0.9f;
                 bmax[2] = gridPosZ + 0.9f;
-                R_AddDebugBox((char *)(*(void **)g_viewParms) + 0x249d18, bmin, bmax, colorGreen);
+                R_AddDebugBox(&((GfxBackEndData *)(*(void **)g_viewParms))->debugGlobals, bmin, bmax, colorGreen);
             }
         }
 

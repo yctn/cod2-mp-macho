@@ -1201,12 +1201,12 @@ void FxArchive_ArchiveChannelInstance(const FxArchive * _this, FxChannelInstance
         /* Read 4 bytes (a float) into local f */
         FxArchive_ReadData(_this, &f, 4);
         /* line 117 */
-        *(int *)&channelInstance->scale = f;
+        memcpy(&channelInstance->scale, &f, 4);
         /* line 119 */
-        *(int *)&channelInstance->curveIterator.master = 0;
+        channelInstance->curveIterator.master = NULL;
     } else {
         /* Writing path: line 119 */
-        f = *(int *)&channelInstance->scale;
+        memcpy(&f, &channelInstance->scale, 4);
         FxArchive_WriteData(_this, &f, 4); /* line 144 */
     }
 }

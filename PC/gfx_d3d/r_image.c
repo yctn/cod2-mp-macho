@@ -65,14 +65,14 @@ static void R_AddImageToList(union XAssetHeader header, void *data)
 /* line 194 */
 void R_GetImageList(ImageList *imageList)
 {
-    *(int *)imageList = 0;
+    imageList->count = 0;
     DB_EnumXAssets(3, R_AddImageToList, imageList, 1);
 }
 
 /* line 255 */
 int R_GetMinSpecImageMemory(void)
 {
-    return *(int *)((char *)&imageGlobals + 8208);
+    return imageGlobals[2052];
 }
 
 /* line 637 */
@@ -98,15 +98,15 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
     image->width = (unsigned short)width;
     image->height = (unsigned short)height;
     image->depth = 1;
-    *(int *)img = 3; /* texture type = 2D */
+    image->mapType = 3; /* texture type = 2D */
 
     /* IDirect3DDevice9::CreateTexture — vtable 0x5C */
     device = ((DxGlobals *)imp_dx)->device;
-    if (!device) { *(int *)(img + 4) = 0; return 0; }
+    if (!device) { image->texture.map = NULL; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
         device, (unsigned short)width, (unsigned short)height,
-        mipmapCount, usage, imageFormat, memPool, (void **)(img + 4), NULL);
+        mipmapCount, usage, imageFormat, memPool, (void **)&image->texture.map, NULL);
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
@@ -128,15 +128,15 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
     image->width = (unsigned short)width;
     image->height = (unsigned short)height;
     image->depth = (unsigned short)depth;
-    *(int *)img = 4; /* texture type = 3D/volume */
+    image->mapType = 4; /* texture type = 3D/volume */
 
     /* IDirect3DDevice9::CreateVolumeTexture — vtable 0x60 */
     device = ((DxGlobals *)imp_dx)->device;
-    if (!device) { *(int *)(img + 4) = 0; return 0; }
+    if (!device) { image->texture.map = NULL; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x60 / 4]))(
         device, (unsigned short)width, (unsigned short)height, (unsigned short)depth,
-        mipmapCount, usage, imageFormat, memPool, (void **)(img + 4), NULL);
+        mipmapCount, usage, imageFormat, memPool, (void **)&image->texture.map, NULL);
 
     if (hr < 0) {
         R_Error(1, "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s",
@@ -161,22 +161,21 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
     image->width = (unsigned short)edgeLen;
     image->height = (unsigned short)edgeLen;
     image->depth = 1;
-    *(int *)img = 5; /* texture type = cube */
+    image->mapType = 5; /* texture type = cube */
 
     /* Check if cubemap mipmaps are supported */
-    dx = (byte *)imp_dx;
-    if (dx[0x2d7b])
+    if (((DxGlobals *)imp_dx)->canMipCubemaps)
         actualMipCount = mipmapCount;
     else
         actualMipCount = 1;
 
     /* IDirect3DDevice9::CreateCubeTexture — vtable 0x64 */
-    device = *(void **)(dx + 8);
-    if (!device) { *(int *)(img + 4) = 0; return 0; }
+    device = ((DxGlobals *)imp_dx)->device;
+    if (!device) { image->texture.map = NULL; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x64 / 4]))(
         device, (unsigned short)edgeLen, actualMipCount, 0, imageFormat, memPool,
-        (void **)(img + 4), NULL);
+        (void **)&image->texture.map, NULL);
 
     if (hr < 0) {
         R_Error(1, "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s",
@@ -224,7 +223,7 @@ IDirect3DSurface9 * Image_GetSurface(GfxImage *image)
 
     /* IDirect3DTexture9::GetSurfaceLevel(0, &surface) — vtable 0x48 */
     do {
-        texture = *(void **)((char *)image + 4);
+        texture = image->texture.map;
         vtable = *(void ***)texture;
         ((HRESULT (*)(void *, UINT, IDirect3DSurface9 **))(vtable[0x48 / 4]))(texture, 0, &surface);
     } while (*(volatile int *)imp_alwaysfails);
@@ -249,12 +248,12 @@ void R_SetPicmip(void)
     sysMemInMegs = Cvar_VariableIntegerValue("sys_sysMB");
 
     /* Manual picmip override */
-    if (*(byte *)(*(char **)imp_r_picmip_manual + 8)) {
+    if ((*(const dvar_t **)imp_r_picmip_manual)->current.enabled) {
         ri_Printf(0, "Using manual picmip settings\n");
-        imageGlobals[2048] = *(int *)(*(char **)imp_r_picmip + 8);
-        imageGlobals[2049] = *(int *)(*(char **)imp_r_picmip_bump + 8);
-        imageGlobals[2050] = *(int *)(*(char **)imp_r_picmip_spec + 8);
-    } else if (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2) {
+        imageGlobals[2048] = (*(const dvar_t **)imp_r_picmip)->current.integer;
+        imageGlobals[2049] = (*(const dvar_t **)imp_r_picmip_bump)->current.integer;
+        imageGlobals[2050] = (*(const dvar_t **)imp_r_picmip_spec)->current.integer;
+    } else if ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2) {
         /* Dx7 renderer */
         ri_Printf(0, "Dx7 renderer: using low-res textures\n");
         if (texMemInMegs > 128) {
@@ -444,17 +443,17 @@ void Image_Release(GfxImage *image)
     }
 
     /* Release COM texture object if present */
-    texture = *(void **)(img + 4);
+    texture = image->texture.map;
     if (texture) {
         vtable = *(void ***)texture;
         if (vtable && vtable[8 / 4])
             ((ULONG (*)(void *))(vtable[8 / 4]))(texture); /* Release — vtable 0x08 */
-        *(void **)(img + 4) = NULL;
+        image->texture.map = NULL;
         image->cardMemory.platform[0] = 0;
         image->cardMemory.platform[1] = 0;
     }
 
-    *(int *)img = 0;
+    image->mapType = 0;
 }
 
 /* line 935 */
@@ -477,7 +476,7 @@ void R_ReloadLostImages(void)
             continue;
 
         /* Skip images that already have a texture */
-        if (*(void **)((char *)image + 4) != NULL)
+        if (image->texture.map != NULL)
             continue;
 
         /* Check if image is in g_imageProgs range */
@@ -512,7 +511,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
     if (!(imageFlags & 1)) {
         /* Multi-platform path: iterate per-platform picmip levels */
         for (i = 0; i < 2; i++) {
-            int picmipLevel = *(byte *)(img + 8 + i);
+            int picmipLevel = image->picmip.platform[i];
             int mipW = width >> picmipLevel;
             int mipH = height >> picmipLevel;
             int mipD = depth >> picmipLevel;
@@ -675,8 +674,8 @@ void R_ImageList_f(void)
             count = imageListBuf[0];
             if ((unsigned int)count > 0x7ff)
                 break;
-            if (*(int *)((char *)&g_imageProgs + j * 36) != 0) {
-                imageListBuf[1 + count] = (int)((char *)&g_imageProgs + j * 36);
+            if (g_imageProgs[j].mapType != 0) {
+                imageListBuf[1 + count] = (int)&g_imageProgs[j];
                 imageListBuf[0] = count + 1;
             }
         }
@@ -726,19 +725,19 @@ void R_ImageList_f(void)
         /* Print each image */
         for (i = 0; i < count; i++) {
             GfxImage *image = first[i];
-            int imageKind = *(int *)image; /* image->type at +0 */
+            int imageKind = image->mapType;
             int format;
             void *d3dRes;
 
             /* Get D3D format via GetLevelDesc */
             if (imageKind == 4) {
                 /* Volume texture */
-                d3dRes = *(void **)((char *)image + 4);
+                d3dRes = image->texture.map;
                 (*(GetDescFunc **)d3dRes)[0x44/4](d3dRes, 0, desc);
                 format = desc[0];
             } else if (imageKind == 5 || imageKind == 3) {
                 /* Cube or regular texture */
-                d3dRes = *(void **)((char *)image + 4);
+                d3dRes = image->texture.map;
                 (*(GetDescFunc **)d3dRes)[0x44/4](d3dRes, 0, desc);
                 format = desc[0];
             } else {
@@ -1397,7 +1396,7 @@ void R_InitImages(void)
     rgp = (byte *)imp_rgp;
     ((r_global_permanent_t *)rgp)->blackImage = Image_Register("$black", 1, 0);
 
-    rendererType = *(int *)(*(char **)imp_r_rendererInUse + 8);
+    rendererType = (*(const dvar_t **)imp_r_rendererInUse)->current.integer;
     if (rendererType == 2) {
         /* Dx7 path */
         ((r_global_permanent_t *)rgp)->waterColorImage = Image_Register("$watercolor", 1, 0);
@@ -1436,7 +1435,6 @@ void R_InitImages(void)
 /* line 715 */
 void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT imageFormat)
 {
-    byte *img = (byte *)image;
     unsigned short w = (unsigned short)width;
     unsigned short h = (unsigned short)height;
     void *device;
@@ -1446,14 +1444,14 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
     image->width = w;
     image->height = h;
     image->depth = 1;
-    *(int *)img = 3;
+    image->mapType = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_RENDERTARGET(1), Pool=D3DPOOL_DEFAULT(0) */
     device = ((DxGlobals *)imp_dx)->device;
-    if (!device) { *(int *)(img + 4) = 0; return 0; }
+    if (!device) { image->texture.map = NULL; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
-        device, w, h, 1, 1, imageFormat, 0, (void **)(img + 4), NULL);
+        device, w, h, 1, 1, imageFormat, 0, (void **)&image->texture.map, NULL);
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
@@ -1467,7 +1465,6 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
 /* line 733 */
 void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFormat)
 {
-    byte *img = (byte *)image;
     unsigned short w = (unsigned short)width;
     unsigned short h = (unsigned short)height;
     void *device;
@@ -1477,14 +1474,14 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
     image->width = w;
     image->height = h;
     image->depth = 1;
-    *(int *)img = 3;
+    image->mapType = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_DYNAMIC(0x200), Pool=D3DPOOL_SYSTEMMEM(2) */
     device = ((DxGlobals *)imp_dx)->device;
-    if (!device) { *(int *)(img + 4) = 0; return 0; }
+    if (!device) { image->texture.map = NULL; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
-        device, w, h, 1, 0x200, imageFormat, 2, (void **)(img + 4), NULL);
+        device, w, h, 1, 0x200, imageFormat, 2, (void **)&image->texture.map, NULL);
 
     if (hr < 0) {
         R_Error(1, "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s",
@@ -1504,13 +1501,12 @@ void Image_RebuildCosinePowerMap(float shift)
 {
     byte *rgp;
     GfxImage *image;
-    byte *img;
     void *texture;
     void **vtable;
     byte pic[0x2000]; /* 32*256*1 pixel buffer */
 
     /* Dx7 renderer has no specularity map */
-    if (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2)
+    if ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2)
         return;
 
     rgp = (byte *)imp_rgp;
@@ -1518,12 +1514,11 @@ void Image_RebuildCosinePowerMap(float shift)
     RB_UnbindImage(image);
 
     /* Release existing texture */
-    img = (byte *)image;
     do {
-        texture = *(void **)(img + 4);
+        texture = image->texture.map;
         vtable = *(void ***)texture;
         ((ULONG (*)(void *))(vtable[8 / 4]))(texture);
-        *(void **)(img + 4) = NULL;
+        image->texture.map = NULL;
     } while (*(volatile int *)imp_alwaysfails);
 
     /* Recreate as 32x256 D3DFMT_L8(0x32) texture */
@@ -1550,13 +1545,10 @@ void R_ShutdownImages(void)
     /* Pass 1: release all images, saving prog images for re-insertion */
     for (i = 0; i < 2048; i++) {
         GfxImage *image = (GfxImage *)imageGlobals[i];
-        byte *img;
         int isProg;
 
         if (!image)
             continue;
-
-        img = (byte *)image;
 
         /* Check if this is a g_imageProgs image */
         isProg = ((char *)image >= (char *)g_imageProgs &&
@@ -1578,18 +1570,18 @@ void R_ShutdownImages(void)
             }
 
             {
-                void *texture = *(void **)(img + 4);
+                void *texture = image->texture.map;
                 if (texture) {
                     void **vtable = *(void ***)texture;
                     if (vtable && vtable[8 / 4]) {
                         ((ULONG (*)(void *))(vtable[8 / 4]))(texture);
-                        *(void **)(img + 4) = NULL;
+                        image->texture.map = NULL;
                         image->cardMemory.platform[0] = 0;
                         image->cardMemory.platform[1] = 0;
                     }
                 }
             }
-            *(int *)img = 0;
+            image->mapType = 0;
         }
     }
 
@@ -1633,19 +1625,18 @@ extern void Image_GetPicmip(const GfxImage *image, Picmip *picmip);
 void Image_UpdatePicmip(GfxImage *image)
 {
     Picmip picmip;
-    byte *img = (byte *)image;
 
     Image_GetPicmip(image, &picmip);
 
     /* If picmip level hasn't changed, nothing to do */
-    if (img[8] == ((byte *)&picmip)[0])
+    if (image->picmip.platform[0] == picmip.platform[0])
         return;
 
     /* Release current texture and reload with new picmip */
     Image_Release(image);
 
     /* Set new picmip value (copy 2 bytes) */
-    *(unsigned short *)(img + 8) = *(unsigned short *)&picmip;
+    image->picmip = picmip;
 
     if (!Image_LoadFromFile(image)) {
         R_Error(1, "failed to load image '%s'",

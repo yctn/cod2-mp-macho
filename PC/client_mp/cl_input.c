@@ -413,13 +413,13 @@ void IN_UpDown(void)
 {
     int *stance;
 
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xf0));
+    IN_KeyDown(&kb[12]);
     if (kb[25].active || kb[11].active /* prone || down */)
     {
         return;
     }
 
-    stance = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    stance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     if (*stance > 1)
     {
         *stance = 1;
@@ -432,13 +432,13 @@ void IN_UpDown(void)
         return;
     }
 
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xc8));
+    IN_KeyDown(&kb[10]);
 }
 
 /* line 300 */
 void IN_UpUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0xc8));
+    IN_KeyUp(&kb[10]);
 }
 
 /* line 322 */
@@ -456,267 +456,267 @@ void IN_LeftUp(void)
 /* line 334 */
 void IN_RightDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x14));
+    IN_KeyDown(&kb[1]);
 }
 
 /* line 340 */
 void IN_RightUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x14));
+    IN_KeyUp(&kb[1]);
 }
 
 /* line 346 */
 void IN_ForwardDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x28));
+    IN_KeyDown(&kb[2]);
 }
 
 /* line 352 */
 void IN_ForwardUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x28));
+    IN_KeyUp(&kb[2]);
 }
 
 /* line 358 */
 void IN_BackDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x3c));
+    IN_KeyDown(&kb[3]);
 }
 
 /* line 364 */
 void IN_BackUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x3c));
+    IN_KeyUp(&kb[3]);
 }
 
 /* line 370 */
 void IN_LookupDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x50));
+    IN_KeyDown(&kb[4]);
 }
 
 /* line 376 */
 void IN_LookupUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x50));
+    IN_KeyUp(&kb[4]);
 }
 
 /* line 382 */
 void IN_LookdownDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x64));
+    IN_KeyDown(&kb[5]);
 }
 
 /* line 388 */
 void IN_LookdownUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x64));
+    IN_KeyUp(&kb[5]);
 }
 
 /* line 394 */
 void IN_MoveleftDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x78));
+    IN_KeyDown(&kb[6]);
 }
 
 /* line 400 */
 void IN_MoveleftUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x78));
+    IN_KeyUp(&kb[6]);
 }
 
 /* line 406 */
 void IN_MoverightDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x8c));
+    IN_KeyDown(&kb[7]);
 }
 
 /* line 412 */
 void IN_MoverightUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x8c));
+    IN_KeyUp(&kb[7]);
 }
 
 /* line 418 */
 void IN_SpeedDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xb4));
+    IN_KeyDown(&kb[9]);
 }
 
 /* line 424 */
 void IN_SpeedUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0xb4));
+    IN_KeyUp(&kb[9]);
 }
 
 /* line 430 */
 void IN_StrafeDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xa0));
+    IN_KeyDown(&kb[8]);
 }
 
 /* line 436 */
 void IN_StrafeUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0xa0));
+    IN_KeyUp(&kb[8]);
 }
 
 /* line 442 */
 void IN_Attack_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x118));
+    IN_KeyDown(&kb[14]);
 }
 
 /* line 448 */
 void IN_Attack_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x118));
+    IN_KeyUp(&kb[14]);
 }
 
 /* line 454 */
 void IN_Breath_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x12c));
+    IN_KeyDown(&kb[15]);
 }
 
 /* line 460 */
 void IN_Breath_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x12c));
+    IN_KeyUp(&kb[15]);
 }
 
 /* line 466 */
 void IN_MeleeBreath_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x17c));
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x12c));
+    IN_KeyDown(&kb[19]);
+    IN_KeyDown(&kb[15]);
 }
 
 /* line 473 */
 void IN_MeleeBreath_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x12c));
+    IN_KeyUp(&kb[15]);
 }
 
 /* line 480 */
 void IN_Frag_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x140));
+    IN_KeyDown(&kb[16]);
 }
 
 /* line 486 */
 void IN_Frag_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x140));
+    IN_KeyUp(&kb[16]);
 }
 
 /* line 492 */
 void IN_Smoke_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x154));
+    IN_KeyDown(&kb[17]);
 }
 
 /* line 498 */
 void IN_Smoke_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x154));
+    IN_KeyUp(&kb[17]);
 }
 
 /* line 504 */
 void IN_Binoculars_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x168));
+    IN_KeyDown(&kb[18]);
 }
 
 /* line 510 */
 void IN_Binoculars_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x168));
+    IN_KeyUp(&kb[18]);
 }
 
 /* line 516 */
 void IN_BreathBinoculars_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x12c));
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x168));
+    IN_KeyDown(&kb[15]);
+    IN_KeyDown(&kb[18]);
 }
 
 /* line 523 */
 void IN_BreathBinoculars_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x168));
+    IN_KeyUp(&kb[18]);
 }
 
 /* line 530 */
 void IN_Melee_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x17c));
+    IN_KeyDown(&kb[19]);
 }
 
 /* line 536 */
 void IN_Melee_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x17c));
+    IN_KeyUp(&kb[19]);
 }
 
 /* line 542 */
 void IN_Activate_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x190));
+    IN_KeyDown(&kb[20]);
 }
 
 /* line 548 */
 void IN_Activate_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x190));
+    IN_KeyUp(&kb[20]);
 }
 
 /* line 554 */
 void IN_Reload_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x1a4));
+    IN_KeyDown(&kb[21]);
 }
 
 /* line 560 */
 void IN_Reload_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1a4));
+    IN_KeyUp(&kb[21]);
 }
 
 /* line 566 */
 void IN_UseReload_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x1b8));
+    IN_KeyDown(&kb[22]);
 }
 
 /* line 572 */
 void IN_UseReload_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1b8));
+    IN_KeyUp(&kb[22]);
 }
 
 /* line 578 */
 void IN_LeanLeft_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x1cc));
+    IN_KeyDown(&kb[23]);
 }
 
 /* line 584 */
 void IN_LeanLeft_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1cc));
+    IN_KeyUp(&kb[23]);
 }
 
 /* line 590 */
 void IN_LeanRight_Down(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x1e0));
+    IN_KeyDown(&kb[24]);
 }
 
 /* line 596 */
 void IN_LeanRight_Up(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1e0));
+    IN_KeyUp(&kb[24]);
 }
 
 /* line 616 */
@@ -731,11 +731,11 @@ void IN_Stance_Down(void)
 
     cl = *(clientActive_t **)imp_cl;
     cl->stanceHeld = 1;
-    cl->stancePosition = *(int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    cl->stancePosition = (*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     cl->stanceTime = *(int *)imp_com_frameTime;
     if (cl->stancePosition != 1)
     {
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 1;
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stance = 1;
     }
 }
 
@@ -748,7 +748,7 @@ void IN_Stance_Up(void)
     ptr = *(clientActive_t **)imp_cl;
     if (ptr->stanceHeld && ptr->stancePosition == 1)
     {
-        *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 0;
+        (*(LegacyHacks **)imp_legacyHacks)->cl_stance = 0;
         ptr = *(clientActive_t **)imp_cl;
     }
     ptr->stanceHeld = 0;
@@ -774,7 +774,7 @@ void IN_LowerStance(void)
     int val;
     if (kb[25].active || kb[11].active /* prone || down */)
         return;
-    statePtr = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    statePtr = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     val = *statePtr;
     if (val <= 0)
         *statePtr = 1;
@@ -787,7 +787,7 @@ void IN_RaiseStance(void)
 {
     if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
-    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
+    int *stance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     if (*stance > 1)
         *stance = 1;
     else if (*stance == 1)
@@ -799,7 +799,7 @@ void IN_ToggleCrouch(void)
 {
     if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
-    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
+    int *stance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     *stance = (*stance != 1) ? 1 : 0;
 }
 
@@ -808,7 +808,7 @@ void IN_ToggleProne(void)
 {
     if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
-    int *stance = (int *)((byte *)*(void **)imp_legacyHacks + 8);
+    int *stance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     *stance = (*stance != 2) ? 2 : 0;
 }
 
@@ -817,7 +817,7 @@ void IN_GoProne(void)
 {
     if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
-    *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 2;
+    (*(LegacyHacks **)imp_legacyHacks)->cl_stance = 2;
 }
 
 /* line 760 */
@@ -825,7 +825,7 @@ void IN_GoCrouch(void)
 {
     if (kb[25].active != 0 || kb[11].active != 0 /* prone || down */)
         return;
-    *(int *)((byte *)*(void **)imp_legacyHacks + 8) = 1;
+    (*(LegacyHacks **)imp_legacyHacks)->cl_stance = 1;
 }
 
 /* line 776 */
@@ -833,11 +833,11 @@ void IN_GoStandDown(void)
 {
     int *stance;
 
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0xf0));
-    stance = (int *)((byte *)(*(void **)imp_legacyHacks) + 8);
+    IN_KeyDown(&kb[12]);
+    stance = &(*(LegacyHacks **)imp_legacyHacks)->cl_stance;
     if (!*stance)
     {
-        IN_KeyDown((kbutton_t *)((byte *)kb + 0xc8));
+        IN_KeyDown(&kb[10]);
         return;
     }
 
@@ -852,19 +852,19 @@ void IN_GoStandDown(void)
 /* line 801 */
 void IN_GoStandUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0xc8));
+    IN_KeyUp(&kb[10]);
 }
 
 /* line 837 */
 void IN_TalkDown(void)
 {
-    IN_KeyDown((kbutton_t *)((byte *)kb + 0x21c));
+    IN_KeyDown(&kb[27]);
 }
 
 /* line 842 */
 void IN_TalkUp(void)
 {
-    IN_KeyUp((kbutton_t *)((byte *)kb + 0x21c));
+    IN_KeyUp(&kb[27]);
 }
 
 /* line 847 */
@@ -878,7 +878,7 @@ void CL_MouseEvent(const int dx, const int dy)
 {
     clientActive_t *ptr = *(clientActive_t **)imp_cl;
     int index;
-    if (!(ptr->keyCatchers & 8) || *(byte *)((byte *)cl_bypassMouseInput + 8))
+    if (!(ptr->keyCatchers & 8) || cl_bypassMouseInput->current.enabled)
     {
         index = ptr->mouseIndex;
         ptr->mouseDx[index] += dx;
@@ -1004,7 +1004,7 @@ void CL_WritePacket(void)
     /* show send debug */
     {
         const dvar_t *showSend = *(const dvar_t **)imp_cl_showSend;
-        if (*(byte *)((byte *)showSend + 8))
+        if (showSend->current.enabled)
         {
             Com_Printf((const char *)str_002af654, compressedSize);
         }
@@ -1016,7 +1016,7 @@ void CL_WritePacket(void)
         byte *cl3 = *(byte **)imp_cl;
         int snap = ((clientActive_t *)cl3)->snap.valid;
 
-        if (*(byte *)((byte *)nodelta + 8) || !snap)
+        if (nodelta->current.enabled || !snap)
         {
             goto write_nodelta;
         }
@@ -1095,7 +1095,7 @@ write_footer:
 
         {
             const dvar_t *showSend2 = *(const dvar_t **)imp_cl_showSend;
-            if (*(byte *)((byte *)showSend2 + 8))
+            if (showSend2->current.enabled)
             {
                 Com_Printf((const char *)str_00217fac, compressedSize);
             }

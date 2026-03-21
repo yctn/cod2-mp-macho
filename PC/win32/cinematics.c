@@ -62,7 +62,7 @@ void ROQ_PlayCinematic_f(void);
 
 static qboolean ROQ_SoundEnabled(void)
 {
-    byte *sndGlob = *(byte **)imp_g_snd;
+    byte *sndGlob = (byte *)*(snd_local_t **)imp_g_snd;
     return sndGlob != NULL && *sndGlob != 0;
 }
 
@@ -197,7 +197,7 @@ static void RoQShutdown(void)
             *clcState = cinTable[currentHandle].previousGameState;
             CL_handle = -1;
             if (*clcState == 0) {
-                nextMapStr = *(char **)((char *)*(void **)imp_nextmap + 8);
+                nextMapStr = ((dvar_t *)*(void **)imp_nextmap)->current.string;
                 if (*nextMapStr != '\0') {
                     if (!sAspyrIntroPlayed) {
                         if (strstr(nextMapStr, "IW_logo")) {
