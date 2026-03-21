@@ -76,88 +76,67 @@ static byte *ClientEntity(byte *pSelf)
 /* line 20 */
 static void ClientScr_ReadOnly(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *fb = (byte *)pField;
-    Scr_Error(va("player field %s is read-only", *(const char **)fb));
+    Scr_Error(va("player field %s is read-only", pField->name));
 }
 
 /* line 33 */
 static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
+    gclient_s *client = (gclient_s *)pSelf;
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
     unsigned short str;
-    int clientNum;
 
     str = Scr_GetConstString(0);
 
-    if (str == *(unsigned short *)(scr + 4)) {
-        /* allies */
-        *(int *)(pb + 0x274c) = 1;
-    } else if (str == *(unsigned short *)(scr + 2)) {
-        /* axis */
-        *(int *)(pb + 0x274c) = 2;
-    } else if (str == *(unsigned short *)(scr + 0x48)) {
-        /* spectator */
-        *(int *)(pb + 0x274c) = 3;
-    } else if (str == *(unsigned short *)(scr + 0x74)) {
-        /* none */
-        *(int *)(pb + 0x274c) = 0;
+    if (str == sc->allies) {
+        client->sess.cs.team = 1;
+    } else if (str == sc->axis) {
+        client->sess.cs.team = 2;
+    } else if (str == sc->spectator) {
+        client->sess.cs.team = 3;
+    } else if (str == sc->none) {
+        client->sess.cs.team = 0;
     } else {
         Scr_Error(va("'%s' is an illegal sessionteam string. Must be allies, axis, none, or spectator.", SL_ConvertToString((unsigned short)str)));
     }
 
-    clientNum = ClientNum(pb);
-    ClientUserinfoChanged(clientNum);
+    ClientUserinfoChanged(ClientNum((byte *)client));
     CalculateRanks();
 }
 
 /* line 62 */
 static void ClientScr_GetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
-    int team = *(int *)(pb + 0x274c);
+    gclient_s *client = (gclient_s *)pSelf;
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
 
-    switch (team) {
-    case 1:
-        Scr_AddConstString(*(unsigned short *)(scr + 4));
-        break;
-    case 2:
-        Scr_AddConstString(*(unsigned short *)(scr + 2));
-        break;
-    case 3:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x48));
-        break;
-    case 0:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x74));
-        break;
-    default:
-        break;
+    switch (client->sess.cs.team) {
+    case 1: Scr_AddConstString(sc->allies); break;
+    case 2: Scr_AddConstString(sc->axis); break;
+    case 3: Scr_AddConstString(sc->spectator); break;
+    case 0: Scr_AddConstString(sc->none); break;
+    default: break;
     }
 }
 
 /* line 89 */
 static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
+    gclient_s *client = (gclient_s *)pSelf;
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
     unsigned short str;
 
     str = Scr_GetConstString(0);
 
-    if (str == *(unsigned short *)(scr + 0x72)) {
-        /* playing */
-        *(int *)(pb + 0x26a8) = 0;
-    } else if (str == *(unsigned short *)(scr + 0x76)) {
-        /* dead */
-        *(int *)(pb + 0x26a8) = 1;
-    } else if (str == *(unsigned short *)(scr + 0x48)) {
-        /* spectator */
-        *(int *)(pb + 0x26a8) = 2;
-    } else if (str == *(unsigned short *)(scr + 0x6e)) {
-        /* intermission */
-        *(int *)(pb + 0xa0) ^= 2;
-        *(int *)(pb + 0x26a8) = 3;
+    if (str == sc->playing) {
+        client->sess.sessionState = 0; /* SESS_STATE_PLAYING */
+    } else if (str == sc->dead) {
+        client->sess.sessionState = 1; /* SESS_STATE_DEAD */
+    } else if (str == sc->spectator) {
+        client->sess.sessionState = 2; /* SESS_STATE_SPECTATOR */
+    } else if (str == sc->intermission) {
+        *(int *)((byte *)client + 0xa0) ^= 2; /* ps.pm_flags toggle */
+        client->sess.sessionState = 3; /* SESS_STATE_INTERMISSION */
     } else {
         Scr_Error(va("'%s' is an illegal sessionstate string. Must be playing, dead, spectator, or intermission.", SL_ConvertToString((unsigned short)str)));
     }
@@ -166,130 +145,107 @@ static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *p
 /* line 125 */
 static void ClientScr_GetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
-    int state = *(int *)(pb + 0x26a8);
+    gclient_s *client = (gclient_s *)pSelf;
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
 
-    switch (state) {
-    case 0:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x72));
-        break;
-    case 1:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x76));
-        break;
-    case 2:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x48));
-        break;
-    case 3:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x6e));
-        break;
-    default:
-        break;
+    switch (client->sess.sessionState) {
+    case 0: Scr_AddConstString(sc->playing); break;
+    case 1: Scr_AddConstString(sc->dead); break;
+    case 2: Scr_AddConstString(sc->spectator); break;
+    case 3: Scr_AddConstString(sc->intermission); break;
+    default: break;
     }
 }
 
 /* line 153 */
 static void ClientScr_SetMaxHealth(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
+    gclient_s *client = (gclient_s *)pSelf;
     int val;
     int health;
-    byte *ent;
 
     val = Scr_GetInt(0);
     if (val <= 0)
         val = 1;
 
-    *(int *)(pb + 0x2728) = val;
+    client->sess.maxHealth = val;
 
     /* Cap current health to max */
-    health = *(int *)(pb + 0x12c);
+    health = *(int *)((byte *)client + 0x12c); /* ps.health — offset needs verification */
     if (health > val)
         health = val;
 
     /* Update entity health */
-    ent = ClientEntity(pb);
-    *(int *)(ent + 0x194) = health;
+    {
+        gentity_s *ent = (gentity_s *)ClientEntity((byte *)client);
+        ent->health = health;
 
     /* Update maxHealth in playerState */
-    *(int *)(pb + 0x134) = *(int *)(pb + 0x2728);
+        *(int *)((byte *)client + 0x134) = client->sess.maxHealth; /* ps.stats[STAT_MAX_HEALTH] */
+    }
 }
 
 /* line 179 */
 static void ClientScr_SetScore(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-
-    *(int *)(pb + 0x26b8) = Scr_GetInt(0);
+    gclient_s *client = (gclient_s *)pSelf;
+    client->sess.score = Scr_GetInt(0);
     CalculateRanks();
 }
 
 /* line 194 */
 static void ClientScr_SetSpectatorClient(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    int iNewSpectatorClient;
+    gclient_s *client = (gclient_s *)pSelf;
+    int iNewSpectatorClient = Scr_GetInt(0);
 
-    iNewSpectatorClient = Scr_GetInt(0);
     if ((unsigned int)(iNewSpectatorClient + 1) > 0x40) {
         Scr_Error("spectatorclient can only be set to -1, or a valid client number");
     }
 
-    *(int *)(pb + 0x26ac) = iNewSpectatorClient;
+    client->sess.forceSpectatorClient = iNewSpectatorClient;
 }
 
 /* line 214 */
 static void ClientScr_SetStatusIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-
-    *(int *)(pb + 0x26b0) = GScr_GetStatusIconIndex(Scr_GetString(0));
+    gclient_s *client = (gclient_s *)pSelf;
+    client->sess.status_icon = GScr_GetStatusIconIndex(Scr_GetString(0));
 }
 
 /* line 230 */
 static void ClientScr_GetStatusIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
+    gclient_s *client = (gclient_s *)pSelf;
     char szConfigString[1024];
-    int icon = *(int *)(pb + 0x26b0);
 
-    if (icon == 0) {
+    if (client->sess.status_icon == 0) {
         Scr_AddString("");
         return;
     }
 
-    SV_GetConfigstring(icon + 0x16, szConfigString, 1024);
+    SV_GetConfigstring(client->sess.status_icon + 0x16, szConfigString, 1024);
     Scr_AddString(szConfigString);
 }
 
 /* line 254 */
 static void ClientScr_SetHeadIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *pEnt;
-
-    pEnt = ClientEntity(pb);
-    *(int *)(pEnt + 0x94) = GScr_GetHeadIconIndex(Scr_GetString(0));
+    /* headicon is stored on the entity, not the client */
+    gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
+    *(int *)((byte *)ent + 0x94) = GScr_GetHeadIconIndex(Scr_GetString(0)); /* ent.headicon */
 }
 
 /* line 273 */
 static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *entities = (byte *)g_entities_ptr;
-    int clientNum = ClientNum(pb);
+    int clientNum = ClientNum((byte *)pSelf);
+    gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
     char szConfigString[1024];
-    int icon;
+    int icon = *(int *)((byte *)ent + 0x94); /* ent.headicon */
 
-    icon = *(int *)(entities + clientNum * ENTITY_STRIDE + 0x94);
-
-    if (icon == 0) {
-        Scr_AddString("");
-        return;
-    }
-    if (icon > 0xf) {
-        return;
-    }
+    if (icon == 0) { Scr_AddString(""); return; }
+    if (icon > 0xf) { return; }
 
     SV_GetConfigstring(icon + 0x1e, szConfigString, 1024);
     Scr_AddString(szConfigString);
@@ -298,54 +254,37 @@ static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 /* line 298 */
 static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
-    byte *pEnt;
-    unsigned short str;
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
+    unsigned short str = Scr_GetConstString(0);
 
-    pEnt = ClientEntity(pb);
-    str = Scr_GetConstString(0);
-
-    if (str == *(unsigned short *)(scr + 0x74)) {
-        /* none */
-        *(int *)(pEnt + 0x98) = 0;
-    } else if (str == *(unsigned short *)(scr + 2)) {
-        /* axis */
-        *(int *)(pEnt + 0x98) = 2;
-    } else if (str == *(unsigned short *)(scr + 4)) {
-        /* allies */
-        *(int *)(pEnt + 0x98) = 1;
-    } else if (str == *(unsigned short *)(scr + 0x48)) {
-        /* spectator */
-        Scr_Error(va("'%s' is an illegal head icon team string. Must be none, allies, axis, or spectator.", SL_ConvertToString((unsigned short)str)));
+    if (str == sc->none) {
+        *(int *)((byte *)ent + 0x98) = 0; /* ent.headiconteam = TEAM_NONE */
+    } else if (str == sc->axis) {
+        *(int *)((byte *)ent + 0x98) = 2;
+    } else if (str == sc->allies) {
+        *(int *)((byte *)ent + 0x98) = 1;
+    } else if (str == sc->spectator) {
+        Scr_Error(va("'%s' is an illegal head icon team string.", SL_ConvertToString((unsigned short)str)));
     } else {
-        *(int *)(pEnt + 0x98) = 3;
+        *(int *)((byte *)ent + 0x98) = 3;
     }
 }
 
 /* line 326 */
 static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    byte *scr = imp_scr_const;
-    byte *entities = (byte *)g_entities_ptr;
-    int clientNum = ClientNum(pb);
-    int team;
-
-    team = *(int *)(entities + clientNum * ENTITY_STRIDE + 0x98);
+    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    int clientNum = ClientNum((byte *)pSelf);
+    gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
+    int team = *(int *)((byte *)ent + 0x98); /* ent.headiconteam */
 
     switch (team) {
-    case 1:
-        Scr_AddConstString(*(unsigned short *)(scr + 4));
-        break;
-    case 2:
-        Scr_AddConstString(*(unsigned short *)(scr + 2));
-        break;
-    case 3:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x48));
-        break;
+    case 1: Scr_AddConstString(sc->allies); break;
+    case 2: Scr_AddConstString(sc->axis); break;
+    case 3: Scr_AddConstString(sc->spectator); break;
     default:
-        Scr_AddConstString(*(unsigned short *)(scr + 0x74));
+        Scr_AddConstString(sc->none);
         break;
     }
 }
@@ -353,33 +292,29 @@ static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
 /* line 357 */
 static void ClientScr_SetArchiveTime(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    float val;
-
-    val = Scr_GetFloat(0);
-    *(int *)(pb + 0x26b4) = (int)(val * 1000.0f);
+    gclient_s *client = (gclient_s *)pSelf;
+    client->sess.archiveTime = (int)(Scr_GetFloat(0) * 1000.0f);
 }
 
 /* line 370 */
 static void ClientScr_GetArchiveTime(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-
-    Scr_AddFloat((float)*(int *)(pb + 0x26b4) * 0.001f);
+    gclient_s *client = (gclient_s *)pSelf;
+    Scr_AddFloat((float)client->sess.archiveTime * 0.001f);
 }
 
 /* line 380 */
 static void ClientScr_SetPSOffsetTime(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    *(int *)(pb + 0x27a4) = Scr_GetInt(0);
+    gclient_s *client = (gclient_s *)pSelf;
+    client->sess.psOffsetTime = Scr_GetInt(0);
 }
 
 /* line 393 */
 static void ClientScr_GetPSOffsetTime(gclient_t *pSelf, const client_fields_s *pField)
 {
-    byte *pb = (byte *)pSelf;
-    Scr_AddInt(*(int *)(pb + 0x26b4));
+    gclient_s *client = (gclient_s *)pSelf;
+    Scr_AddInt(client->sess.archiveTime);
 }
 
 /* line 428 */
