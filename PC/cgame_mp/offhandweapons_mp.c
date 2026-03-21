@@ -134,7 +134,7 @@ void CG_UseOffHand(centity_t *cent, int event, int eventParam)
         /* Local player - try view model tag */
         void *viewModel = wi->viewModelDObj;
         if (viewModel != NULL) {
-            if (CG_DObjGetViewModelTagPos(viewModel, *(unsigned short *)(*(byte **)cg_tags_ptr + 0x8c) /* TODO: unknown scr_const_t offset */, origin)) {
+            if (CG_DObjGetViewModelTagPos(viewModel, (*(scr_const_t **)cg_tags_ptr)->tag_flash, origin)) {
                 goto play_sound;
             }
         }
@@ -142,7 +142,7 @@ void CG_UseOffHand(centity_t *cent, int event, int eventParam)
         /* Remote player - try world tag */
         dobj = Com_GetClientDObj(clientNum, cent->localClientNum);
         if (dobj != NULL) {
-            if (CG_DObjGetWorldTagPos(cent, dobj, *(unsigned short *)(*(byte **)cg_tags_ptr + 0x8c) /* TODO: unknown scr_const_t offset */, origin)) {
+            if (CG_DObjGetWorldTagPos(cent, dobj, (*(scr_const_t **)cg_tags_ptr)->tag_flash, origin)) {
                 goto play_sound;
             }
         }
@@ -178,7 +178,7 @@ void CG_SwitchOffHandCmd(void)
         return;
 
     weapDef = BG_GetWeaponDef(currentWeapon);
-    newWeapon = BG_GetFirstAvailableOffhand((void *)&cg->predictedPlayerState, *(int *)((byte *)weapDef + 0x84) /* TODO: unknown WeaponDef offset */);
+    newWeapon = BG_GetFirstAvailableOffhand((void *)&cg->predictedPlayerState, ((WeaponDef *)weapDef)->offhandClass);
 
     if (newWeapon == 0)
         return;
@@ -227,7 +227,7 @@ void CG_DrawOffHandIcon(rectDef_s *rect, float scale, vec_t *color, MaterialHand
     /* Check if equipped offhand matches this weapon type */
     if (cg->equippedOffHand != 0) {
         weapDef = BG_GetWeaponDef(cg->equippedOffHand);
-        if (*(int *)((byte *)weapDef + 0x84) /* TODO: unknown WeaponDef offset */ == weaponType) {
+        if (((WeaponDef *)weapDef)->offhandClass == weaponType) {
             weapon = cg->equippedOffHand;
             if (weapon == 0)
                 goto find_weapon;
@@ -296,7 +296,7 @@ void CG_DrawOffHandHighlight(rectDef_s *rect, float scale, vec_t *color, Materia
         return;
 
     weapDef = BG_GetWeaponDef(cg->equippedOffHand);
-    if (*(int *)((byte *)weapDef + 0x84) /* TODO: unknown WeaponDef offset */ != weaponType)
+    if (((WeaponDef *)weapDef)->offhandClass != weaponType)
         return;
 
     /* Count total ammo for this weapon type */
@@ -306,7 +306,7 @@ void CG_DrawOffHandHighlight(rectDef_s *rect, float scale, vec_t *color, Materia
         if (!((cg->predictedPlayerState.weapons[i >> 5] >> (i & 0x1f)) & 1))
             continue;
         weapDef = BG_GetWeaponDef(i);
-        if (*(int *)((byte *)weapDef + 0x84) /* TODO: unknown WeaponDef offset */ != weaponType)
+        if (((WeaponDef *)weapDef)->offhandClass != weaponType)
             continue;
         clip = BG_ClipForWeapon(i);
         ammoCount += cg->predictedPlayerState.ammoclip[clip];
@@ -385,7 +385,7 @@ void CG_DrawOffHandAmmo(rectDef_s *rect, struct Font_s *font, float scale, vec_t
         if (!((cg->predictedPlayerState.weapons[i >> 5] >> (i & 0x1f)) & 1))
             continue;
         weapDef = BG_GetWeaponDef(i);
-        if (*(int *)((byte *)weapDef + 0x84) /* TODO: unknown WeaponDef offset */ != weaponType)
+        if (((WeaponDef *)weapDef)->offhandClass != weaponType)
             continue;
         clip = BG_ClipForWeapon(i);
         ammoCount += cg->predictedPlayerState.ammoclip[clip];

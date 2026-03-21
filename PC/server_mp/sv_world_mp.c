@@ -2132,24 +2132,24 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             int ownerNum;
 
             /* Copy start/end */
-            *(float *)(clip + 0x00) = start[0];
-            *(float *)(clip + 0x04) = start[1];
-            *(float *)(clip + 0x08) = start[2];
-            *(float *)(clip + 0x0c) = end[0];
-            *(float *)(clip + 0x10) = end[1];
-            *(float *)(clip + 0x14) = end[2];
+            ((pointtrace_t *)clip)->extents.start[0] = start[0];
+            ((pointtrace_t *)clip)->extents.start[1] = start[1];
+            ((pointtrace_t *)clip)->extents.start[2] = start[2];
+            ((pointtrace_t *)clip)->extents.end[0] = end[0];
+            ((pointtrace_t *)clip)->extents.end[1] = end[1];
+            ((pointtrace_t *)clip)->extents.end[2] = end[2];
 
             /* Calculate trace extents */
             CM_CalcTraceEntents((const void *)clip);
 
             /* Set passEntityNum */
-            *(int *)(clip + 0x24) = passEntityNum;
+            ((pointtrace_t *)clip)->passEntityNum = passEntityNum;
 
             /* Set locational */
-            *(int *)(clip + 0x30) = locational;
+            ((pointtrace_t *)clip)->bLocational = locational;
 
             /* Set priorityMap */
-            *(int *)(clip + 0x34) = (int)(intptr_t)priorityMap;
+            ((pointtrace_t *)clip)->priorityMap = (int)(intptr_t)priorityMap;
 
             /* Look up ownerNum */
             if (passEntityNum == 0x3ff) {
@@ -2160,10 +2160,10 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }
-            *(int *)(clip + 0x28) = ownerNum;
+            ((pointtrace_t *)clip)->passOwnerNum = ownerNum;
 
             /* Set contentmask */
-            *(int *)(clip + 0x2c) = contentmask;
+            ((pointtrace_t *)clip)->contentmask = contentmask;
 
             /* Call CM_PointTraceToEntities */
             CM_PointTraceToEntities((const pointtrace_t *)clip, results);
@@ -2183,10 +2183,10 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             midZ = (maxs[2] + mins[2]) * 0.5f;
 
             /* Set contentmask */
-            *(int *)(clip + 0x50) = contentmask;
+            *(int *)(clip + 0x50) = contentmask; /* TODO: unknown offset */
 
             /* Set passEntityNum */
-            *(int *)(clip + 0x48) = passEntityNum;
+            *(int *)(clip + 0x48) = passEntityNum; /* TODO: unknown offset */
 
             /* Look up ownerNum */
             if (passEntityNum == 0x3ff) {
@@ -2197,32 +2197,32 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }
-            *(int *)(clip + 0x4c) = ownerNum;
+            *(int *)(clip + 0x4c) = ownerNum; /* TODO: unknown offset */
 
             /* mins = -halfExtent */
-            *(float *)(clip + 0x00) = -halfX;
-            *(float *)(clip + 0x04) = -halfY;
-            *(float *)(clip + 0x08) = -halfZ;
+            ((pointtrace_t *)clip)->extents.start[0] = -halfX;
+            ((pointtrace_t *)clip)->extents.start[1] = -halfY;
+            ((pointtrace_t *)clip)->extents.start[2] = -halfZ;
 
             /* maxs = halfExtent */
-            *(float *)(clip + 0x0c) = halfX;
-            *(float *)(clip + 0x10) = halfY;
-            *(float *)(clip + 0x14) = halfZ;
+            ((pointtrace_t *)clip)->extents.end[0] = halfX;
+            ((pointtrace_t *)clip)->extents.end[1] = halfY;
+            ((pointtrace_t *)clip)->extents.end[2] = halfZ;
 
             /* outerSize = halfExtent + 1.0 */
-            *(float *)(clip + 0x18) = halfX + 1.0f;
-            *(float *)(clip + 0x1c) = halfY + 1.0f;
-            *(float *)(clip + 0x20) = halfZ + 1.0f;
+            ((pointtrace_t *)clip)->extents.invDelta[0] = halfX + 1.0f;
+            ((pointtrace_t *)clip)->extents.invDelta[1] = halfY + 1.0f;
+            ((pointtrace_t *)clip)->extents.invDelta[2] = halfZ + 1.0f;
 
             /* start = midpoint + start */
-            *(float *)(clip + 0x24) = midX + start[0];
-            *(float *)(clip + 0x28) = midY + start[1];
-            *(float *)(clip + 0x2c) = midZ + start[2];
+            ((pointtrace_t *)clip)->passEntityNum = midX + start[0];
+            ((pointtrace_t *)clip)->passOwnerNum = midY + start[1];
+            ((pointtrace_t *)clip)->contentmask = midZ + start[2];
 
             /* end = midpoint + end */
-            *(float *)(clip + 0x30) = midX + end[0];
-            *(float *)(clip + 0x34) = midY + end[1];
-            *(float *)(clip + 0x38) = midZ + end[2];
+            ((pointtrace_t *)clip)->bLocational = midX + end[0];
+            ((pointtrace_t *)clip)->priorityMap = midY + end[1];
+            *(float *)(clip + 0x38) = midZ + end[2]; /* TODO: unknown offset */
 
             /* Calculate trace extents */
             CM_CalcTraceEntents((const void *)(clip + 0x24));

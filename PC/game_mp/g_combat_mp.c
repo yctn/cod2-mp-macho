@@ -277,7 +277,7 @@ static float G_GetHitLocDamageMult(int weapon, hitLocation_t hitLoc)
     }
 
     weapDef = BG_GetWeaponDef(weapon);
-    if (weapDef == NULL || *(int *)((byte *)weapDef + 0x78) == 0) { /* TODO: unknown weaponDef_t field at 0x78 */
+    if (weapDef == NULL || ((WeaponDef *)weapDef)->weapType == 0) { /* TODO: unknown weaponDef_t field at 0x78 */
         return g_fHitLocDamageMult[hitLoc];
     }
 
@@ -396,7 +396,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
         int entType = targ->handler;
         byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*pain)(gentity_t *, gentity_t *, int, const vec_t *, int, hitLocation_t) =
-            *(void (**)())(handlers + 0x14);
+            *(void (**)())(handlers + 0x14); /* TODO: unknown offset */
         if (pain != NULL) {
             pain(targ, attacker, damage, point, mod, hitLoc);
         }
@@ -410,14 +410,14 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
         Scr_AddEntity(attacker);
         {
             byte *scr_data = imp_scr_const;
-            Scr_Notify(targ, *(unsigned short *)(scr_data + 0xa), 1);
+            Scr_Notify(targ, *(unsigned short *)(scr_data + 0xa), 1); /* TODO: unknown offset */
         }
 
         /* Call die callback via entity handler table */
         int entType = targ->handler;
         byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*die)(gentity_t *, gentity_t *, gentity_t *, int, int, int, const vec_t *, hitLocation_t, int) =
-            *(void (**)())(handlers + 0x18);
+            *(void (**)())(handlers + 0x18); /* TODO: unknown offset */
         if (die != NULL) {
             int iWeapon = inflictor->s.weapon;
             die(targ, inflictor, attacker, damage, mod, iWeapon, localdir, hitLoc, timeOffset);
@@ -622,7 +622,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     Scr_AddEntity(attacker);
     {
         byte *scr_data = imp_scr_const;
-        Scr_Notify(self, *(unsigned short *)(scr_data + 0xa), 1);
+        Scr_Notify(self, *(unsigned short *)(scr_data + 0xa), 1); /* TODO: unknown offset */
     }
 
     /* Check if attacker is player on turret - get turret weapon */

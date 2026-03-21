@@ -183,19 +183,19 @@ void Svcmd_EntityList_f(void)
     unsigned short classname;
 
     level = (byte *)level_ptr;
-    numEntities = *(int *)(level + 0xc);
+    numEntities = ((level_locals_t *)level)->num_entities;
 
     for (e = 1; e < numEntities; e++) {
         ent = (byte *)g_entities_ptr + e * 0x230;
 
         /* Check r.inuse at offset 0xFC */
-        if (*(byte *)(ent + 0xfc) == 0)
+        if (((gentity_t *)ent)->r.inuse == 0)
             continue;
 
         Com_Printf("%3i:", e);
 
         /* s.eType at offset 0x04 */
-        eType = *(int *)(ent + 0x04);
+        eType = ((gentity_t *)ent)->s.eType;
 
         switch (eType) {
             case 0: Com_Printf("ET_GENERAL             "); break;
@@ -209,7 +209,7 @@ void Svcmd_EntityList_f(void)
         }
 
         /* classname at offset 0x168 (scr_string_t) */
-        classname = *(unsigned short *)(ent + 0x168);
+        classname = ((gentity_t *)ent)->classname;
         if (classname != 0)
             Com_Printf("%s", SL_ConvertToString(classname));
 

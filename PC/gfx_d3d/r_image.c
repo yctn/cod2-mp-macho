@@ -58,7 +58,7 @@ static void R_AddImageToList(union XAssetHeader header, void *data)
 {
     int *list = (int *)data;
     int count = list[0];
-    *(int *)((byte *)data + 4 + count * 4) = (int)header.data;
+    list[1 + count] = (int)header.data;
     list[0] = count + 1;
 }
 
@@ -101,7 +101,7 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
     *(int *)img = 3; /* texture type = 2D */
 
     /* IDirect3DDevice9::CreateTexture — vtable 0x5C */
-    device = *(void **)((char *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
@@ -131,7 +131,7 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
     *(int *)img = 4; /* texture type = 3D/volume */
 
     /* IDirect3DDevice9::CreateVolumeTexture — vtable 0x60 */
-    device = *(void **)((char *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x60 / 4]))(
@@ -604,7 +604,7 @@ GfxImage * Image_AllocProg(int imageProgType, int category)
 GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack)
 {
     int nameLen = strlen(name) + 1; /* including null terminator */
-    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    void *(*hunkAlloc)(int) = ((refimport_t *)imp_ri)->Hunk_AllocInternal;
     byte *image;
     char *nameDst;
     int hash;
@@ -642,8 +642,8 @@ void R_ImageList_f(void)
     typedef HRESULT (__attribute__((stdcall)) *GetDescFunc)(void *, UINT, void *);
 
     PrintFunc Com_Printf = *(PrintFunc *)((char *)imp_ri);
-    CmdArgcFunc Cmd_Argc = *(CmdArgcFunc *)((char *)imp_ri + 0x100);
-    CmdArgvFunc Cmd_Argv = *(CmdArgvFunc *)((char *)imp_ri + 0x104);
+    CmdArgcFunc Cmd_Argc = (CmdArgcFunc)((refimport_t *)imp_ri)->Cmd_Argc;
+    CmdArgvFunc Cmd_Argv = (CmdArgvFunc)((refimport_t *)imp_ri)->Cmd_Argv;
 
     int imageListBuf[2049]; /* [0]=count, [1..2048]=GfxImage* pointers */
     int imageTrack[20];     /* [imageType*2 + platform] per-type per-platform size */
@@ -1449,7 +1449,7 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
     *(int *)img = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_RENDERTARGET(1), Pool=D3DPOOL_DEFAULT(0) */
-    device = *(void **)((char *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(
@@ -1480,7 +1480,7 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
     *(int *)img = 3;
 
     /* CreateTexture: Levels=1, Usage=D3DUSAGE_DYNAMIC(0x200), Pool=D3DPOOL_SYSTEMMEM(2) */
-    device = *(void **)((char *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     if (!device) { *(int *)(img + 4) = 0; return 0; }
     vtable = *(void ***)device;
     hr = ((HRESULT (*)(void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void *))(vtable[0x5C / 4]))(

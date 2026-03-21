@@ -135,7 +135,7 @@ static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *p
     } else if (str == sc->spectator) {
         client->sess.sessionState = 2; /* SESS_STATE_SPECTATOR */
     } else if (str == sc->intermission) {
-        *(int *)((byte *)client + 0xa0) ^= 2; /* ps.pm_flags toggle */
+        ((gclient_t *)client)->ps.eFlags ^= 2; /* ps.pm_flags toggle */
         client->sess.sessionState = 3; /* SESS_STATE_INTERMISSION */
     } else {
         Scr_Error(va("'%s' is an illegal sessionstate string. Must be playing, dead, spectator, or intermission.", SL_ConvertToString((unsigned short)str)));
@@ -233,7 +233,7 @@ static void ClientScr_SetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 {
     /* headicon is stored on the entity, not the client */
     gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
-    *(int *)((byte *)ent + 0x94) = GScr_GetHeadIconIndex(Scr_GetString(0)); /* ent.headicon */
+    ((ent)->s.iHeadIcon) = GScr_GetHeadIconIndex(Scr_GetString(0)); /* ent.headicon */
 }
 
 /* line 273 */
@@ -242,7 +242,7 @@ static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
     int clientNum = ClientNum((byte *)pSelf);
     gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
     char szConfigString[1024];
-    int icon = *(int *)((byte *)ent + 0x94); /* ent.headicon */
+    int icon = ((ent)->s.iHeadIcon); /* ent.headicon */
 
     if (icon == 0) { Scr_AddString(""); return; }
     if (icon > 0xf) { return; }
@@ -259,15 +259,15 @@ static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
     unsigned short str = Scr_GetConstString(0);
 
     if (str == sc->none) {
-        *(int *)((byte *)ent + 0x98) = 0; /* ent.headiconteam = TEAM_NONE */
+        ((ent)->s.iHeadIconTeam) = 0; /* ent.headiconteam = TEAM_NONE */
     } else if (str == sc->axis) {
-        *(int *)((byte *)ent + 0x98) = 2;
+        ((ent)->s.iHeadIconTeam) = 2;
     } else if (str == sc->allies) {
-        *(int *)((byte *)ent + 0x98) = 1;
+        ((ent)->s.iHeadIconTeam) = 1;
     } else if (str == sc->spectator) {
         Scr_Error(va("'%s' is an illegal head icon team string.", SL_ConvertToString((unsigned short)str)));
     } else {
-        *(int *)((byte *)ent + 0x98) = 3;
+        ((ent)->s.iHeadIconTeam) = 3;
     }
 }
 
@@ -277,7 +277,7 @@ static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
     scr_const_t *sc = (scr_const_t *)imp_scr_const;
     int clientNum = ClientNum((byte *)pSelf);
     gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
-    int team = *(int *)((byte *)ent + 0x98); /* ent.headiconteam */
+    int team = ((ent)->s.iHeadIconTeam); /* ent.headiconteam */
 
     switch (team) {
     case 1: Scr_AddConstString(sc->allies); break;
@@ -371,7 +371,7 @@ void Scr_SetClientField(gclient_t *client, int offset)
         return;
 
     entry = (byte *)fields + offset * 20;
-    setter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0xc);
+    setter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0xc); /* TODO: unknown offset */
 
     if (setter != NULL) {
         setter(client, (const client_fields_s *)entry);
@@ -392,7 +392,7 @@ void Scr_GetClientField(gclient_t *client, int offset)
     }
 
     entry = (byte *)fields + offset * 20;
-    getter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0x10);
+    getter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0x10); /* TODO: unknown offset */
 
     if (getter != NULL) {
         getter(client, (const client_fields_s *)entry);

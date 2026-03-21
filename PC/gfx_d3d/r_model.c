@@ -119,20 +119,20 @@ struct XModel * R_RegisterModel(const char *name)
 /* line 200 */
 GfxBrushModel * R_RegisterInlineModel(int modelIndex)
 {
-    int *world = *(int **)((byte *)imp_rgp + 0x109c);
-    return (GfxBrushModel *)(*(int *)((byte *)world + 0x138) + modelIndex * 32);
+    GfxWorld *world = *(GfxWorld **)((byte *)imp_rgp + 0x109c); /* TODO: unknown rgp offset 0x109c */
+    return &world->models[modelIndex];
 }
 
 /* line 218 */
 void R_SetIgnorePrecacheErrors(qboolean ignore)
 {
-    *(byte *)((byte *)imp_rg + 2) = (ignore != 0);
+    ((r_globals_t *)imp_rg)->ignorePrecacheErrors = (ignore != 0);
 }
 
 /* line 224 */
 qboolean R_GetIgnorePrecacheErrors(void)
 {
-    return *(byte *)((byte *)imp_rg + 2) != 0;
+    return ((r_globals_t *)imp_rg)->ignorePrecacheErrors != 0;
 }
 
 /* line 587 */
@@ -159,12 +159,12 @@ void R_UnlockSkinnedCache(void)
 /* line 2246 */
 struct DObj_s * R_GetGfxEntityDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 {
-    struct DObj_s *obj = *(struct DObj_s **)ent;
+    struct DObj_s *obj = (struct DObj_s *)(intptr_t)ent->reType;
     if (!obj) {
-        obj = *(struct DObj_s **)((byte *)sceneEnt + 4);
+        obj = (struct DObj_s *)sceneEnt->u.obj;
     } else {
-        obj = *(struct DObj_s **)((byte *)imp_rg + 0x3110);
-        DObjSetModel(obj, *(void **)((byte *)sceneEnt + 4));
+        obj = ((r_globals_t *)imp_rg)->modelDObj;
+        DObjSetModel(obj, (void *)sceneEnt->u.data);
     }
     return obj;
 }
@@ -359,7 +359,7 @@ void R_DObjGetSurfMaterials(struct DObj_s *obj, int lod, MaterialHandle *matHand
  * then get surfaces for all LODs. Register convention: eax=ent, edx=obj, ecx=surfaces. */
 static int R_GetSurfaceData_impl(const byte *ent, const void *obj, void *surfaces, int *partBits, char *lods)
 {
-    char *rg = (char *)imp_rg;
+    r_globals_t *rg = (r_globals_t *)imp_rg;
     int modelCount, i;
     float dist, scale;
 
@@ -367,8 +367,8 @@ static int R_GetSurfaceData_impl(const byte *ent, const void *obj, void *surface
     scale = ((GfxEntity *)ent)->scale;
 
     /* Compute distance from entity origin to camera, scaled by LOD parameters */
-    dist = Vec3Distance(ent + 0x3c, rg + 0x317c);
-    dist = dist * *(float *)(rg + 0x3188) + *(float *)(rg + 0x318c);
+    dist = Vec3Distance(((GfxEntity *)ent)->origin, rg->lodParms.origin);
+    dist = dist * rg->lodParms.scale + rg->lodParms.bias;
 
     /* Apply entity scale if non-zero */
     if (scale != 0.0f)
@@ -717,7 +717,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         return;
 
     /* Atomic compare-exchange: try to claim state 0→1 */
-    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 0, 1) != 0) {
+    if (InterlockedCompareExchange(&((GfxSceneEntity *)se)->cullState, 0, 1) != 0) {
         /* Someone else is processing — spin until done */
         while (((GfxSceneEntity *)se)->cullState <= 1)
             ;
@@ -725,13 +725,12 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     }
 
     /* Handle entity type override */
-    if (*(int *)e != 0) {
-        char *rg = (char *)imp_rg;
-        void *defaultModel = *(void **)(rg + 0x3110);
-        obj = *(void **)(se + 4);
+    if (((GfxEntity *)e)->reType != 0) {
+        void *defaultModel = ((r_globals_t *)imp_rg)->modelDObj;
+        obj = (void *)((GfxSceneEntity *)se)->u.data;
         DObjSetModel(defaultModel, obj);
     } else {
-        obj = *(void **)(se + 4);
+        obj = (void *)((GfxSceneEntity *)se)->u.data;
     }
 
     /* Check for bad DObj */
@@ -784,7 +783,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 
     /* Calculate pose if animation exists */
     {
-        void *anim = *(void **)(se + 8);
+        void *anim = (void *)((GfxSceneEntity *)se)->cent;
         if (anim)
             CG_DObjCalcPose(anim, obj, partBits);
     }
@@ -853,19 +852,19 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         }
 
         /* Transform bounds by entity orientation */
-        GetRotatedBounds(bounds, (float *)(e + 0x3c), (float *)(e + 0x14), (float *)(se + 0x14));
+        GetRotatedBounds(bounds, ((GfxEntity *)e)->origin, (float *)((GfxEntity *)e)->axis, ((GfxSceneEntity *)se)->curMins);
         ((GfxSceneEntity *)se)->cullState = 2;
         return;
     }
 
 set_origin_bounds:
     /* Degenerate bounds: min = max = entity origin */
-    *(float *)(se + 0x14) = ((GfxEntity *)e)->origin[0];
-    *(float *)(se + 0x18) = ((GfxEntity *)e)->origin[1];
-    *(float *)(se + 0x1c) = ((GfxEntity *)e)->origin[2];
-    *(float *)(se + 0x20) = ((GfxEntity *)e)->origin[0];
-    *(float *)(se + 0x24) = ((GfxEntity *)e)->origin[1];
-    *(float *)(se + 0x28) = ((GfxEntity *)e)->origin[2];
+    ((GfxSceneEntity *)se)->curMins[0] = ((GfxEntity *)e)->origin[0];
+    ((GfxSceneEntity *)se)->curMins[1] = ((GfxEntity *)e)->origin[1];
+    ((GfxSceneEntity *)se)->curMins[2] = ((GfxEntity *)e)->origin[2];
+    ((GfxSceneEntity *)se)->curMaxs[0] = ((GfxEntity *)e)->origin[0];
+    ((GfxSceneEntity *)se)->curMaxs[1] = ((GfxEntity *)e)->origin[1];
+    ((GfxSceneEntity *)se)->curMaxs[2] = ((GfxEntity *)e)->origin[2];
     ((GfxSceneEntity *)se)->cullState = 2;
 }
 
@@ -1563,7 +1562,7 @@ extern int DObjGetMatOffset(const void *obj, int surfIndex);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 {
     char *se = (char *)sceneEnt;
-    void *obj = *(void **)(se + 4);
+    void *obj = (void *)sceneEnt->u.data;
     int surfaceCount, boneCount;
     const DObjAnimMat *boneMatrix;
     short surfaces[67];
@@ -1576,7 +1575,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         return;
 
     /* Atomic compare-exchange: claim state 2→3 */
-    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
+    if (InterlockedCompareExchange(&((GfxSceneEntity *)se)->cullState, 2, 3) != 2) {
         while (((GfxSceneEntity *)se)->cullState <= 3)
             ;
         return;
@@ -2068,7 +2067,7 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
     }
 
     /* Check for static model cached surface (SMC) */
-    if (*(int *)ent == 2 && *(byte *)(*(char **)imp_r_smc_enable + 8)) {
+    if (ent->reType == 2 && *(byte *)(*(char **)imp_r_smc_enable + 8)) {
         void *xsurfMat = (void *)xsurf;
         if (XSurfaceGetBoneOffset((int)(intptr_t)xsurfMat) != -1) {
             int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
@@ -2082,8 +2081,7 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
                 }
             } else {
                 try_smc: {
-                    char *rg_p = (char *)imp_rg;
-                    void *smcData = *(void **)(rg_p + 0x3194);
+                    void *smcData = ((r_globals_t *)imp_rg)->smodelDyncs;
                     char *staticSurf = (char *)*(void **)((char *)smcData + smodelIndex * 8 + 4) + surfaceIndex * 16;
                     void *cached = *(void **)(staticSurf + lod * 4);
                     if (!cached) {
@@ -2422,7 +2420,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
 {
     char *se = (char *)sceneEnt;
     char *e = (char *)ent;
-    void *model = *(void **)(se + 4);
+    void *model = (void *)((GfxSceneEntity *)se)->u.data;
     int boneCount, surfaceCount, lod;
     void *surfacesPtr;
     int partBits[4];
@@ -2430,15 +2428,14 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
     byte surfBuf[3520];
 
     if (((GfxSceneEntity *)se)->cullState > 3) return;
-    if (InterlockedCompareExchange((volatile int *)(se + 0xc), 2, 3) != 2) {
+    if (InterlockedCompareExchange(&((GfxSceneEntity *)se)->cullState, 2, 3) != 2) {
         while (((GfxSceneEntity *)se)->cullState <= 3) ;
         return;
     }
 
     if (XModelBad(*(union XAssetHeader *)&model)) {
         if (*(int *)(*(char **)imp_developer + 8)) {
-            char *rg = (char *)imp_rg;
-            void *defaultObj = *(void **)(rg + 0x3110);
+            void *defaultObj = ((r_globals_t *)imp_rg)->modelDObj;
             DObjSetModel((struct DObj_s *)defaultObj, model);
 #ifndef __EMSCRIPTEN__
             __asm__ __volatile__ (
@@ -2461,10 +2458,10 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
 
     /* Compute LOD based on distance */
     {
-        char *rg = (char *)imp_rg;
-        float dist = Vec3Distance((const void *)(e + 0x3c), (const void *)(rg + 0x317c));
-        dist = dist * *(float *)(rg + 0x3188) + *(float *)(rg + 0x318c);
-        float scale = *(float *)(e + 0x38);
+        r_globals_t *rg = (r_globals_t *)imp_rg;
+        float dist = Vec3Distance(((GfxEntity *)e)->origin, rg->lodParms.origin);
+        dist = dist * rg->lodParms.scale + rg->lodParms.bias;
+        float scale = ((GfxEntity *)e)->scale;
         if (scale != 0.0f)
             dist /= scale;
         lod = XModelGetLodForDist(model, dist);
@@ -2487,7 +2484,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
             }
             ((GfxSceneEntity *)se)->cullState = 4; return;
         }
-        *(void **)(se + 0x2c) = (void *)(scene + 0x1a560 + startIdx * 4);
+        ((GfxSceneEntity *)se)->materials = (const Material **)(scene + 0x1a560 + startIdx * 4);
     }
 
     /* Pre-skin each surface */
@@ -2526,8 +2523,7 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
     {
         int xdebug = *(int *)(*(char **)imp_r_xdebug + 8);
         if (xdebug) {
-            char *rg = (char *)imp_rg;
-            void *defaultObj = *(void **)(rg + 0x3110);
+            void *defaultObj = ((r_globals_t *)imp_rg)->modelDObj;
             DObjSetModel((struct DObj_s *)defaultObj, model);
             if (xdebug & 1) {
 #ifndef __EMSCRIPTEN__
@@ -2933,7 +2929,7 @@ void R_SkinStaticModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex
 /* line 2639 */
 void R_SkinSceneEnt(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 {
-    if (*(int *)ent == 1)
+    if (ent->reType == 1)
         R_SkinXModel(sceneEnt, ent, -1);
     else
         R_SkinSceneDObj(sceneEnt, ent);
@@ -3619,9 +3615,9 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
                 GfxEntity *refEnt = skinCmd->e;
                 R_GetRigidTransform(
                     (const DObjSkelMat *)((const char *)boneMatrix + boneOffset),
-                    (const vec_t *)((const byte *)refEnt + 0x3c),
-                    (vec3_t *)((const byte *)refEnt + 0x14),
-                    *(float *)((const byte *)refEnt + 0x38),
+                    refEnt->origin,
+                    refEnt->axis,
+                    refEnt->scale,
                     (vec3_t *)(rigidSurf + 8));
             }
         }
@@ -3862,11 +3858,11 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
     mtx[4]  = xy - zw;          mtx[5]  = 1.0f - xx - zz;   mtx[6]  = yz + xw;          mtx[7]  = 0.0f;
     mtx[8]  = xz + yw;          mtx[9]  = yz - xw;          mtx[10] = 1.0f - xx - yy;   mtx[11] = 0.0f;
 
-    /* Copy translation into matrix row 3 (offset 0x30 = 48 bytes from start) */
+    /* Copy translation into matrix row 3 */
     mtx[12] = skinRigidCmd->mat.trans[0];
-    *(float *)((byte *)mtx + 0x34) = skinRigidCmd->mat.trans[1];
-    *(float *)((byte *)mtx + 0x38) = skinRigidCmd->mat.trans[2];
-    *(float *)((byte *)mtx + 0x3c) = 1.0f; /* homogeneous w */
+    mtx[13] = skinRigidCmd->mat.trans[1];
+    mtx[14] = skinRigidCmd->mat.trans[2];
+    mtx[15] = 1.0f; /* homogeneous w */
 
     /* Iterate through surfaces */
     byte *surfPos = (byte *)skinRigidCmd->surfs;
@@ -3886,12 +3882,12 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
             /* Rigid transform path: get bone offset, compute transform, advance by 0x38 */
             byte *rigidSurf = surfPos;
             surfPos += 0x38;
-            float entScale = *(float *)((byte *)refEnt + 0x38);
+            float entScale = refEnt->scale;
             int boneOffset = XSurfaceGetBoneOffset(*(int *)(rigidSurf + 4));
             R_GetRigidTransform(
                 (const DObjSkelMat *)((byte *)mtx + boneOffset),
-                (const vec_t *)((byte *)refEnt + 0x3c),
-                (vec3_t *)((byte *)refEnt + 0x14),
+                refEnt->origin,
+                refEnt->axis,
                 entScale,
                 (vec3_t *)(rigidSurf + 8)
             );

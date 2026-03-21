@@ -259,7 +259,7 @@ void R_BeginDebugFrame(void)
         return;
     *(GfxCmdArray **)&s_debugFrameGlob = s_cmdList;
     *(GfxBackEndData * *)((char *)&s_debugFrameGlob + 4) = frontEndDataOut;
-    if (*(int *)((char *)imp_dx + 0x2dc0)) {
+    if (((DxGlobals *)imp_dx)->dynamicBufferFrame) { /* TODO: verify offset 0x2dc0 maps to dynamicBufferFrame */
         *(char *)((char *)&s_debugFrameGlob + 8) = 1;
         R_UnlockSkinnedCache();
     }
@@ -635,7 +635,7 @@ void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandle font,
     cmd->cursor = (char)cursor;
     cmd->maxChars = maxChars;
 
-    cmdText = (char *)((byte *)cmd + 0x2c);
+    cmdText = cmd->text;
     for (textIndex = 0; textIndex < len; ++textIndex) {
         cmdText[textIndex] = text[textIndex];
     }
@@ -678,7 +678,7 @@ void R_AddCmdDrawTextInSpace(const char *text, FontHandle font, const vec_t *org
     cmd->yPixelStep[2] = yPixelStep[2];
     R_ConvertColorToBytes(color, cmd->color.array);
 
-    cmdText = (char *)((byte *)cmd + 0x30);
+    cmdText = cmd->text;
     for (textIndex = 0; textIndex < len; ++textIndex) {
         cmdText[textIndex] = text[textIndex];
     }

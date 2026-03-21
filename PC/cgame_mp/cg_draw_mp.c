@@ -323,15 +323,15 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
 Bool CG_GetWeapReticleZoom(float *pfZoom)
 {
     cg_t *cg;
-    byte *weaponDef;
+    WeaponDef *weaponDef;
     float zoom;
 
     cg = (cg_t *)*cg_glob;
-    weaponDef = (byte *)BG_GetWeaponDef(BG_GetViewmodelWeaponIndex(&cg->predictedPlayerState));
+    weaponDef = BG_GetWeaponDef(BG_GetViewmodelWeaponIndex(&cg->predictedPlayerState));
     zoom = cg->predictedPlayerState.fWeaponPosFrac;
     *pfZoom = 0.0f;
 
-    if (!*(char *)(*(int *)(weaponDef + 0x274)) && !*(int *)(weaponDef + 0x278)) /* TODO: unknown WeaponDef offsets */
+    if (!*weaponDef->szOverlayMaterial && !weaponDef->overlayReticle)
     {
         return 0;
     }
@@ -343,18 +343,18 @@ Bool CG_GetWeapReticleZoom(float *pfZoom)
 
     if (*(int *)((byte *)&cg->playerEntity + 4) /* TODO: identify playerEntity_t field */)
     {
-        *pfZoom = zoom - (1.0f - *(float *)(weaponDef + 0x26c) /* TODO: unknown WeaponDef offset */);
+        *pfZoom = zoom - (1.0f - weaponDef->fAdsZoomInFrac);
         if (*pfZoom > 0.0f)
         {
-            *pfZoom /= *(float *)(weaponDef + 0x26c) /* TODO: unknown WeaponDef offset */;
+            *pfZoom /= weaponDef->fAdsZoomInFrac;
         }
     }
     else
     {
-        *pfZoom = zoom - (1.0f - *(float *)(weaponDef + 0x270) /* TODO: unknown WeaponDef offset */);
+        *pfZoom = zoom - (1.0f - weaponDef->fAdsZoomOutFrac);
         if (*pfZoom > 0.0f)
         {
-            *pfZoom /= *(float *)(weaponDef + 0x270) /* TODO: unknown WeaponDef offset */;
+            *pfZoom /= weaponDef->fAdsZoomOutFrac;
         }
     }
 
@@ -379,8 +379,8 @@ unsigned int CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerT
     float screenHeight;
 
     cls = (byte *)imp_cls;
-    screenWidth = (float)*(int *)(cls + 0x2a0a64) /* TODO: unknown cls offset (screen width?) */;
-    screenHeight = (float)*(int *)(cls + 0x2a0a68) /* TODO: unknown cls offset (screen height?) */;
+    screenWidth = (float)((clientStatic_t *)cls)->vidConfig.width; /* cls + 0x2a0a64 */
+    screenHeight = (float)((clientStatic_t *)cls)->vidConfig.height; /* cls + 0x2a0a68 */
 
     if (innerLeft > 0.0f)
     {
@@ -1036,8 +1036,8 @@ unsigned int CG_CheckTimedMenus(void)
     CL_GetUserCmd(cmdNum, &curCmd);
 
     /* line 2238: extract button bits */
-    buttonBits = *(int *)((byte *)&curCmd + 4);
-    buttonChanged = buttonBits ^ *(int *)((byte *)&prevCmd + 4);
+    buttonBits = curCmd.buttons;
+    buttonChanged = buttonBits ^ prevCmd.buttons;
 
     /* line 2240: copy both usercmds for memcmp */
     memcpy(&prevCopy, &prevCmd, sizeof(usercmd_t));
@@ -1048,7 +1048,7 @@ unsigned int CG_CheckTimedMenus(void)
         hasChange = 1;
     } else {
         /* line 2140: check if buttons changed */
-        if (*(unsigned short *)((byte *)&curCopy + 0x10) /* TODO: unknown hudelem_t offset */ != 0) {
+        if ((unsigned short)curCopy.angles[1] != 0) {
             hasChange = 1;
         } else {
             hasChange = 0;
@@ -1062,7 +1062,7 @@ unsigned int CG_CheckTimedMenus(void)
             /* line 2197 */
             CG_MenuShowNotify(1);
             hasChange = 1;
-            buttonBits = *(int *)((byte *)&curCmd + 4);
+            buttonBits = curCmd.buttons;
         }
     }
 
@@ -1070,13 +1070,13 @@ unsigned int CG_CheckTimedMenus(void)
     if (buttonBits & 0x30) {
         byte *cg2 = *(byte **)imp_cg;
         if (!((byte)(((cg_t *)cg2)->predictedPlayerState.pm_flags) & 0x4)) {
-            byte *weapDef = (byte *)(((cg_t *)cg2)->snap);
-            if (!(*(byte *)(weapDef + 0x5a4) /* TODO: unknown WeaponDef offset */ & 0x2)) {
+            snapshot_t *snap = ((cg_t *)cg2)->snap;
+            if (!(snap->ps.cursorHint & 0x2)) {
                 if (!(((cg_t *)cg2)->predictedPlayerState.eFlags & 0x300)) {
                     /* line 2197 */
                     CG_MenuShowNotify(1);
                     hasChange = 1;
-                    buttonBits = *(int *)((byte *)&curCmd + 4);
+                    buttonBits = curCmd.buttons;
                 }
             }
         }
@@ -1087,7 +1087,7 @@ unsigned int CG_CheckTimedMenus(void)
         /* line 2208 */
         CG_MenuShowNotify(4);
         hasChange = 1;
-        buttonBits = *(int *)((byte *)&curCmd + 4);
+        buttonBits = curCmd.buttons;
     }
 
     /* line 2149: stance buttons (new pressed) */

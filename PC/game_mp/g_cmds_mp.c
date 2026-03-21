@@ -279,7 +279,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
 qboolean G_IsPlaying(gentity_t *ent)
 {
     /* Returns true if client's session state is SESS_STATE_PLAYING (0) */
-    return *(int *)((byte *)ent->client + 0x26A8) == SESS_STATE_PLAYING;
+    return ((gclient_t *)client)->sess.sessionState == SESS_STATE_PLAYING;
 }
 
 /* line 1059 */
@@ -3287,17 +3287,17 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
         Com_Error(1, str_002b3724, dir);
     }
 
-    client = *(gclient_t **)((byte *)ent + 0x158);
+    client = ent->client;
     /* Check session state == 2 (spectating) */
-    if (*(int *)((byte *)client + 0x26a8) != 2)
+    if (((gclient_t *)client)->sess.sessionState != 2)
         return 0;
 
     /* Check forceSpectatorClient >= 0 */
-    if (*(int *)((byte *)client + 0x26ac) >= 0)
+    if (((gclient_t *)client)->sess.forceSpectatorClient >= 0)
         return 0;
 
     /* Get spectatorClient */
-    clientnum = *(int *)((byte *)client + 0x27a8);
+    clientnum = ((gclient_t *)client)->spectatorClient;
     if (clientnum < 0)
         clientnum = 0;
 
@@ -3306,7 +3306,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
     for (;;) {
         clientnum += dir;
 
-        maxclients = *(int *)((byte *)imp_level + 0x1e4);
+        maxclients = ((level_locals_t *)imp_level)->maxclients;
         if (clientnum >= maxclients) {
             clientnum = 0;
         }
@@ -3315,13 +3315,13 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
         }
 
         /* Try to get archived client info */
-        client = *(gclient_t **)((byte *)ent + 0x158);
+        client = ent->client;
         if (SV_GetArchivedClientInfo(clientnum, (byte *)client + 0x26b4, &ps, &cs)) {
             /* Check if we can spectate this team */
-            if (G_ClientCanSpectateTeam(*(gclient_t **)((byte *)ent + 0x158), *(int *)((byte *)&cs + 4))) {
+            if (G_ClientCanSpectateTeam(ent->client, *(int *)((byte *)&cs + 4))) {
                 /* Set spectatorClient and session state */
-                *(int *)((byte *)(*(gclient_t **)((byte *)ent + 0x158)) + 0x27a8) = clientnum;
-                *(int *)((byte *)(*(gclient_t **)((byte *)ent + 0x158)) + 0x26a8) = 2;
+                ((gclient_t *)client)->spectatorClient = clientnum;
+                ((gclient_t *)client)->sess.sessionState = 2;
                 return 1;
             }
         }

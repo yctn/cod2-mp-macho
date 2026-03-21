@@ -94,34 +94,32 @@ extern void Vec3Cross(const void *plane, const vec_t *perp, vec_t *crossOut);
 /* Uses register calling convention: eax=tree, edx=totalTreesUsed */
 static int R_FinishLoadingAabbTrees_r_impl(byte *tree, int totalTreesUsed)
 {
-    byte *treeMins = tree;
-    byte *treeMaxs = tree + 0xc;
+    GfxAabbTree *aabbTree = (GfxAabbTree *)tree;
     int childCount, surfCount, i;
 
-    ClearBounds(treeMins, treeMaxs);
+    ClearBounds(aabbTree->mins, aabbTree->maxs);
 
-    childCount = *(int *)(tree + 0x28);
+    childCount = aabbTree->childCount;
     if (childCount) {
         /* Has children — assign child array from rgl pool */
-        *(byte **)(tree + 0x2c) = *(byte **)((byte *)&rgl + 16) + totalTreesUsed * 48;
+        aabbTree->children = (int)(intptr_t)((byte *)rgl.aabbTrees + totalTreesUsed * sizeof(GfxAabbTree));
         totalTreesUsed += childCount;
 
         /* Recurse into each child */
         for (i = 0; i < childCount; i++) {
-            byte *child = *(byte **)(tree + 0x2c) + i * 0x30;
+            byte *child = (byte *)(intptr_t)aabbTree->children + i * sizeof(GfxAabbTree);
             totalTreesUsed = R_FinishLoadingAabbTrees_r_impl(child, totalTreesUsed);
-            ExpandBounds(child, child + 0xc, treeMins, treeMaxs);
+            ExpandBounds(child, child + 0xc, aabbTree->mins, aabbTree->maxs);
         }
     } else {
         /* Leaf node — expand bounds from surface data */
-        int firstSurf = *(int *)(tree + 0x1c);
-        byte *surfPtr = (byte *)*(void **)((byte *)&s_world + 20) + firstSurf * 12;
-        surfCount = *(int *)(tree + 0x18);
+        int firstSurf = aabbTree->startSurfIndex;
+        GfxSurface *surfPtr = s_world.surfaces + firstSurf;
+        surfCount = aabbTree->surfaceCount;
 
         for (i = 0; i < surfCount; i++) {
-            byte *surfData = *(byte **)(surfPtr + 8);
-            ExpandBounds(surfData + 4, surfData + 0x10, treeMins, treeMaxs);
-            surfPtr += 0xc;
+            byte *surfData = (byte *)surfPtr[i].u.data;
+            ExpandBounds(surfData + 4, surfData + 0x10, aabbTree->mins, aabbTree->maxs);
         }
     }
 
@@ -155,7 +153,6 @@ int R_FinishLoadingAabbTrees_r(void)
  * diffuseColorLinear, specularColor, angles, sunLight. */
 const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 {
-    byte *p = (byte *)params;
     char keyname[0x800];
     char value[0x800];
     const char *token;
@@ -167,14 +164,14 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 
         if (token[0] == '{') {
             /* Initialize sun light params */
-            *(float *)(p + 0x40) = 0.0f;       /* ambient */
-            *(float *)(p + 0x54) = 0.0f;        /* sunAngleOverride */
-            *(float *)(p + 0x50) = 0.5f;         /* sunIntensity */
-            *(byte *)(p + 0x70) = 0;             /* hasDiffuseColorLinear */
-            /* Clear sunDir, diffuseColor, diffuseColorLinear (3 vec3s) */
-            *(float *)(p + 0x44) = 0; *(float *)(p + 0x48) = 0; *(float *)(p + 0x4c) = 0;
-            *(float *)(p + 0x58) = 0; *(float *)(p + 0x5c) = 0; *(float *)(p + 0x60) = 0;
-            *(float *)(p + 0x64) = 0; *(float *)(p + 0x68) = 0; *(float *)(p + 0x6c) = 0;
+            params->ambientScale = 0.0f;
+            params->sunLight = 0.0f;
+            params->diffuseFraction = 0.5f;
+            params->diffuseColorHasBeenSet = 0;
+            /* Clear ambientColor, sunColor, diffuseColor */
+            params->ambientColor[0] = 0; params->ambientColor[1] = 0; params->ambientColor[2] = 0;
+            params->sunColor[0] = 0; params->sunColor[1] = 0; params->sunColor[2] = 0;
+            params->diffuseColor[0] = 0; params->diffuseColor[1] = 0; params->diffuseColor[2] = 0;
             continue;
         }
 
@@ -189,35 +186,32 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 
         /* Match key */
         if (!I_stricmp(keyname, "ambient")) {
-            *(float *)(p + 0x40) = (float)atof(value);
-            if (*(float *)(p + 0x40) > 2.0f) {
+            params->ambientScale = (float)atof(value);
+            if (params->ambientScale > 2.0f) {
                 Com_Printf("^3WARNING: ambient too big, assuming it uses the old 0-255 s", value);
-                *(float *)(p + 0x40) *= 0.01568627543747425f; /* 4.0/255.0 */
+                params->ambientScale *= 0.01568627543747425f; /* 4.0/255.0 */
             }
         } else if (!I_stricmp(keyname, "sunColor")) {
-            *(float *)(p + 0x44) = 0; *(float *)(p + 0x48) = 0; *(float *)(p + 0x4c) = 0;
-            sscanf(value, "%f %f %f", (float *)(p + 0x44), (float *)(p + 0x48), (float *)(p + 0x4c));
+            params->ambientColor[0] = 0; params->ambientColor[1] = 0; params->ambientColor[2] = 0;
+            sscanf(value, "%f %f %f", &params->ambientColor[0], &params->ambientColor[1], &params->ambientColor[2]);
         } else if (!I_stricmp(keyname, "sunIntensity")) {
-            *(float *)(p + 0x50) = (float)atof(value);
+            params->diffuseFraction = (float)atof(value);
         } else if (!I_stricmp(keyname, "sunDir")) {
-            float *v = (float *)(p + 0x58);
-            v[0] = 0; v[1] = 0; v[2] = 0;
-            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
-            ColorNormalize(v, v);
+            params->sunColor[0] = 0; params->sunColor[1] = 0; params->sunColor[2] = 0;
+            sscanf(value, "%f %f %f", &params->sunColor[0], &params->sunColor[1], &params->sunColor[2]);
+            ColorNormalize(params->sunColor, params->sunColor);
         } else if (!I_stricmp(keyname, "diffuseColor")) {
-            float *v = (float *)(p + 0x64);
-            v[0] = 0; v[1] = 0; v[2] = 0;
-            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
-            ColorNormalize(v, v);
-            *(byte *)(p + 0x70) = 1; /* hasDiffuseColorLinear */
+            params->diffuseColor[0] = 0; params->diffuseColor[1] = 0; params->diffuseColor[2] = 0;
+            sscanf(value, "%f %f %f", &params->diffuseColor[0], &params->diffuseColor[1], &params->diffuseColor[2]);
+            ColorNormalize(params->diffuseColor, params->diffuseColor);
+            params->diffuseColorHasBeenSet = 1;
         } else if (!I_stricmp(keyname, "sunAngleOverride")) {
-            *(float *)(p + 0x54) = (float)atof(value);
+            params->sunLight = (float)atof(value);
         } else if (!I_stricmp(keyname, "specularColor")) {
-            float *v = (float *)(p + 0x74);
-            v[0] = 0; v[1] = 0; v[2] = 0;
-            sscanf(value, "%f %f %f", &v[0], &v[1], &v[2]);
+            params->angles[0] = 0; params->angles[1] = 0; params->angles[2] = 0;
+            sscanf(value, "%f %f %f", &params->angles[0], &params->angles[1], &params->angles[2]);
         } else if (!I_stricmp(keyname, "sunLight")) {
-            I_strncpyz((char *)params, value, 0x40);
+            I_strncpyz(params->name, value, 0x40);
         }
     }
 
@@ -459,30 +453,26 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
 /* line 1911 — Convert parsed sun light parameters into a GfxLight structure. */
 snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *sunParse, GfxLight *sunLight)
 {
-    byte *sp = (byte *)sunParse;
-    byte *sl = (byte *)sunLight;
     vec_t sunDirection[3];
     float ambient, sunIntensity, sunAngleOverride;
-    float *sunColor;
     float ambientR, ambientG, ambientB;
     float scale;
     float diffR, diffG, diffB;
 
-    /* Compute sun direction from angles (sunParse+0x74) */
-    AngleVectors((vec_t *)(sp + 0x74), sunDirection, NULL, NULL);
+    /* Compute sun direction from angles */
+    AngleVectors(sunParse->angles, sunDirection, NULL, NULL);
 
-    ambient = *(float *)(sp + 0x40);
-    sunIntensity = *(float *)(sp + 0x50);
-    sunAngleOverride = *(float *)(sp + 0x54);
-    sunColor = (float *)(sp + 0x44);
+    ambient = sunParse->ambientScale;
+    sunIntensity = sunParse->diffuseFraction;
+    sunAngleOverride = sunParse->sunLight;
 
     /* Compute ambient color contribution */
     if (ambient != 0.0f) {
-        float normLen = ColorNormalize(sunColor, sunColor);
+        float normLen = ColorNormalize(sunParse->ambientColor, sunParse->ambientColor);
         if (normLen != 0.0f) {
-            ambientR = ambient * sunColor[0];
-            ambientG = ambient * sunColor[1];
-            ambientB = ambient * sunColor[2];
+            ambientR = ambient * sunParse->ambientColor[0];
+            ambientG = ambient * sunParse->ambientColor[1];
+            ambientB = ambient * sunParse->ambientColor[2];
         } else {
             ambientR = ambientG = ambientB = 0.0f;
         }
@@ -492,9 +482,9 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
 
     /* Diffuse: sunDir * (sunAngleOverride - ambient) * (1 - sunIntensity) */
     scale = (sunAngleOverride - ambient) * (1.0f - sunIntensity);
-    diffR = scale * *(float *)(sp + 0x58);
-    diffG = scale * *(float *)(sp + 0x5c);
-    diffB = scale * *(float *)(sp + 0x60);
+    diffR = scale * sunParse->sunColor[0];
+    diffG = scale * sunParse->sunColor[1];
+    diffB = scale * sunParse->sunColor[2];
 
     /* Fill GfxLight if provided.
        Guard against read-only pointers — R_LoadWorldInternal (naked ASM)
@@ -507,20 +497,19 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
         if ((unsigned int)sunLight < 0x1000 ||
             ((unsigned int)sunLight >= 0x08200000 && (unsigned int)sunLight < 0x08800000)) {
             sunLight = &sunLightScratch;
-            sl = (byte *)sunLight;
         }
     }
     if (sunLight) {
-        *(float *)(sl + 0x04) = sunDirection[0];
-        *(float *)(sl + 0x08) = sunDirection[1];
-        *(float *)(sl + 0x0c) = sunDirection[2];
-        *(float *)(sl + 0x10) = 0.0f;
-        *(float *)(sl + 0x14) = diffR;
-        *(float *)(sl + 0x18) = diffG;
-        *(float *)(sl + 0x1c) = diffB;
-        *(float *)(sl + 0x20) = ambientR;
-        *(float *)(sl + 0x24) = ambientG;
-        *(float *)(sl + 0x28) = ambientB;
+        sunLight->position[0] = sunDirection[0];
+        sunLight->position[1] = sunDirection[1];
+        sunLight->position[2] = sunDirection[2];
+        sunLight->position[3] = 0.0f;
+        sunLight->color[0] = diffR;
+        sunLight->color[1] = diffG;
+        sunLight->color[2] = diffB;
+        sunLight->u.dir.ambientColor[0] = ambientR;
+        sunLight->u.dir.ambientColor[1] = ambientG;
+        sunLight->u.dir.ambientColor[2] = ambientB;
     }
 }
 
@@ -1967,60 +1956,58 @@ static void R_LoadPortals_impl(const int *load)
 
     for (i = 0; i < portalCount; i++) {
         const int *src = (const int *)(srcData + i * 16);
-        byte *d = dst + i * 68;
+        GfxPortal *portal = (GfxPortal *)(dst + i * 68);
         const float *plane;
 
         /* Get plane pointer from index */
         plane = (const float *)CM_GetPlaneNum(src[0]);
 
-        /* Copy plane normal to dst+8 (vec3) */
-        *(float *)(d + 0x08) = plane[0];
-        *(float *)(d + 0x0c) = plane[1];
-        *(float *)(d + 0x10) = plane[2];
+        /* Copy plane normal */
+        portal->plane.coeffs[0] = plane[0];
+        portal->plane.coeffs[1] = plane[1];
+        portal->plane.coeffs[2] = plane[2];
 
-        /* Negate plane distance: dst+0x14 = -(plane[3]) (flip sign bit) */
-        *(int *)(d + 0x14) = *(int *)&plane[3] ^ 0x80000000;
+        /* Negate plane distance (flip sign bit) */
+        *(int *)&portal->plane.coeffs[3] = *(int *)&plane[3] ^ 0x80000000;
 
         /* Compute axis permutation for broadphase (which axis is dominant) */
-        /* hintAxis[0]: plane.x > 0 ? 0xC : 0, hintAxis[1]: plane.y > 0 ? 0x10 : 4, hintAxis[2]: plane.z > 0 ? 0x14 : 8 */
-        *(byte *)(d + 0x18) = (plane[0] > 0.0f) ? 0x0c : 0x00;
-        *(byte *)(d + 0x19) = (plane[1] > 0.0f) ? 0x10 : 0x04;
-        *(byte *)(d + 0x1a) = (plane[2] > 0.0f) ? 0x14 : 0x08;
+        portal->plane.side[0] = (plane[0] > 0.0f) ? 0x0c : 0x00;
+        portal->plane.side[1] = (plane[1] > 0.0f) ? 0x10 : 0x04;
+        portal->plane.side[2] = (plane[2] > 0.0f) ? 0x14 : 0x08;
 
-        /* Cell pointer: src[1] (cellIndex) → s_world+256 + cellIndex * 60 */
+        /* Cell pointer */
         {
             int cellIdx = src[1];
-            *(void **)(d + 0x1c) = (byte *)*(void **)((byte *)&s_world + 256) + cellIdx * 60;
+            portal->cell = &s_world.cells[cellIdx];
         }
 
-        /* Vertex pointer: src[2] (firstVertIndex) → rgl+12 + index * 12 */
+        /* Vertex pointer */
         {
             int vertIdx = src[2];
-            *(void **)(d + 0x20) = (byte *)*(void **)((byte *)&rgl + 12) + vertIdx * 12;
+            portal->vertices = rgl.portalVerts + vertIdx;
         }
 
         /* Vertex count */
-        *(byte *)(d + 0x24) = (byte)src[3];
-        *(byte *)(d + 0x25) = 0;
-        *(int *)(d + 0x28) = 0;
+        portal->vertexCount = (byte)src[3];
+        portal->hullPointCount = 0;
+        portal->hullPoints = NULL;
 
         /* Compute perpendicular and cross product axes */
-        PerpendicularVector(plane, (vec_t *)(d + 0x2c));
-        Vec3Cross(plane, (vec_t *)(d + 0x2c), (vec_t *)(d + 0x38));
+        PerpendicularVector(plane, portal->hullAxis[0]);
+        Vec3Cross(plane, portal->hullAxis[0], portal->hullAxis[1]);
     }
 
     /* Fixup cell portal pointers: each cell's portalOffset becomes base+offset */
     {
-        int cellCount = *(int *)((byte *)&s_world + 252);
-        byte *cells = *(byte **)((byte *)&s_world + 256);
+        int cellCount = s_world.cellCount;
+        GfxCell *cells = s_world.cells;
         for (i = 0; i < cellCount; i++) {
-            byte *cell = cells + i * 60;
-            int portalCountInCell = *(int *)(cell + 0x20);
-            if (portalCountInCell != 0) {
-                /* cell+0x24 currently holds byte offset; add base pointer */
-                *(void **)(cell + 0x24) = dst + *(int *)(cell + 0x24);
+            GfxCell *cell = &cells[i];
+            if (cell->portalCount != 0) {
+                /* portals field currently holds byte offset; add base pointer */
+                cell->portals = (GfxPortal *)(dst + (int)(intptr_t)cell->portals);
             } else {
-                *(void **)(cell + 0x24) = NULL;
+                cell->portals = NULL;
             }
         }
     }
@@ -2251,57 +2238,57 @@ static void R_LoadCells_impl(const int *load)
     byte *dst;
     int i;
 
-    /* Allocate: cellCount * (64 - 4) = cellCount * 60 = cellCount * 0x3C */
-    dst = (byte *)Hunk_AllocInternal(cellCount * 60);
-    *(void **)((byte *)&s_world + 256) = dst;
-    *(int *)((byte *)&s_world + 252) = cellCount;
+    /* Allocate: cellCount * sizeof(GfxCell) */
+    dst = (byte *)Hunk_AllocInternal(cellCount * sizeof(GfxCell));
+    s_world.cells = (GfxCell *)dst;
+    s_world.cellCount = cellCount;
 
     for (i = 0; i < cellCount; i++) {
         const byte *src = srcData + i * 52;
-        byte *d = dst + i * 60;
-        int aabbTreeIdx, portalCountAndOfs, surfCount;
+        GfxCell *cell = &((GfxCell *)dst)[i];
+        int aabbTreeIdx, portalCountAndOfs;
         int occluderCount, reflectionProbeCount;
 
-        /* Copy mins[3] (floats at src+0..0x0B → dst+4..0x0F) */
-        *(int *)(d + 0x04) = *(int *)(src + 0x00);
-        *(int *)(d + 0x08) = *(int *)(src + 0x04);
-        *(int *)(d + 0x0c) = *(int *)(src + 0x08);
+        /* Copy mins[3] */
+        *(int *)&cell->mins[0] = *(int *)(src + 0x00);
+        *(int *)&cell->mins[1] = *(int *)(src + 0x04);
+        *(int *)&cell->mins[2] = *(int *)(src + 0x08);
 
-        /* Copy maxs[3] (floats at src+0x0C..0x17 → dst+0x10..0x1B) */
-        *(int *)(d + 0x10) = *(int *)(src + 0x0c);
-        *(int *)(d + 0x14) = *(int *)(src + 0x10);
-        *(int *)(d + 0x18) = *(int *)(src + 0x14);
+        /* Copy maxs[3] */
+        *(int *)&cell->maxs[0] = *(int *)(src + 0x0c);
+        *(int *)&cell->maxs[1] = *(int *)(src + 0x10);
+        *(int *)&cell->maxs[2] = *(int *)(src + 0x14);
 
-        /* AABB tree pointer: src+0x18 (index) → rgl+16 + index*48 */
+        /* AABB tree pointer */
         aabbTreeIdx = *(int *)(src + 0x18);
-        *(void **)(d + 0x1c) = (byte *)*(void **)((byte *)&rgl + 16) + aabbTreeIdx * 48;
+        cell->aabbTree = &rgl.aabbTrees[aabbTreeIdx];
 
-        /* Portal byte offset: src+0x1C → dest+0x24 as byte offset into portal array */
+        /* Portal byte offset: stored temporarily as byte offset, fixed up later */
         portalCountAndOfs = *(int *)(src + 0x1c);
-        *(int *)(d + 0x24) = portalCountAndOfs * 68; /* 0x44 bytes per portal */
+        cell->portals = (GfxPortal *)(intptr_t)(portalCountAndOfs * sizeof(GfxPortal));
 
-        /* Portal/surface count */
-        *(int *)(d + 0x20) = *(int *)(src + 0x20);
+        /* Portal count */
+        cell->portalCount = *(int *)(src + 0x20);
 
         /* Occluder index list */
         occluderCount = *(int *)(src + 0x28);
         if (occluderCount != 0) {
             int occluderOfs = *(int *)(src + 0x24);
-            *(void **)(d + 0x2c) = (byte *)*(void **)((byte *)&rgl + 4) + occluderOfs * 4;
+            cell->cullGroups = (int *)((byte *)rgl.cullGroupIndices + occluderOfs * 4);
         } else {
-            *(void **)(d + 0x2c) = NULL;
+            cell->cullGroups = NULL;
         }
-        *(int *)(d + 0x28) = occluderCount;
+        cell->cullGroupCount = occluderCount;
 
         /* Reflection probe index list */
         reflectionProbeCount = *(int *)(src + 0x30);
         if (reflectionProbeCount != 0) {
             int reflOfs = *(int *)(src + 0x2c);
-            *(void **)(d + 0x34) = (byte *)*(void **)((byte *)&rgl) + reflOfs * 4;
+            cell->occluders = (GfxOccluder **)((byte *)rgl.occluderIndices + reflOfs * 4);
         } else {
-            *(void **)(d + 0x34) = NULL;
+            cell->occluders = NULL;
         }
-        *(int *)(d + 0x30) = reflectionProbeCount;
+        cell->occluderCount = reflectionProbeCount;
     }
 }
 
@@ -2503,30 +2490,30 @@ static void R_LoadAabbTrees_impl(const int *load)
     byte *dst;
     int i;
 
-    dst = (byte *)Hunk_AllocInternal(count * 48);
-    *(void **)((byte *)&rgl + 16) = dst;
-    *(int *)((byte *)&rgl + 20) = count;
+    dst = (byte *)Hunk_AllocInternal(count * sizeof(GfxAabbTree));
+    rgl.aabbTrees = (GfxAabbTree *)dst;
+    rgl.aabbTreeCount = count;
 
     for (i = 0; i < count; i++) {
         const int *src = (const int *)(srcData + i * 12);
-        byte *d = dst + i * 48;
+        GfxAabbTree *aabb = &((GfxAabbTree *)dst)[i];
         int childCount = src[1];
         int smodelCount = src[2];
 
-        /* childFirst → child pointer or -1 if no children */
+        /* childFirst → startSurfIndex or -1 if no children */
         if (childCount == 0) {
-            *(int *)(d + 0x1c) = -1;
+            aabb->startSurfIndex = -1;
         } else {
-            *(int *)(d + 0x1c) = src[0]; /* childFirst index */
+            aabb->startSurfIndex = src[0]; /* childFirst index */
         }
-        *(int *)(d + 0x18) = childCount;
-        *(int *)(d + 0x28) = smodelCount;
+        aabb->surfaceCount = childCount;
+        aabb->childCount = smodelCount;
     }
 
     /* Recursively compute AABB bounds for each root tree */
     {
         extern int R_FinishLoadingAabbTrees_r(void); /* uses register convention: eax=tree, edx=treeIndex */
-        byte *trees = *(byte **)((byte *)&rgl + 16);
+        byte *trees = (byte *)rgl.aabbTrees;
         for (i = 0; i < count; ) {
             __asm__ __volatile__ (
                 "movl %1, %%edx\n"
@@ -2732,8 +2719,8 @@ static void R_LoadOccluders_impl(const byte *loadState)
     const byte *diskEdges = bspData + *(int *)(bspHeader + 0xAC);
     byte *edges = (byte *)Hunk_AllocInternal(edgeCount * 16);
 
-    *(byte **)((byte *)&rgl + 8) = occluders;
-    byte *vertBase = *(byte **)((byte *)&rgl + 12);
+    rgl.occluders = (GfxOccluder *)occluders;
+    byte *vertBase = (byte *)rgl.portalVerts;
 
     /* Build each occluder (input 20 bytes, output 36 bytes) */
     /* Output layout (relative to base+0xc for esi pointer style):
@@ -2825,7 +2812,7 @@ static void R_LoadPortalVerts_impl(const int *load)
     int i;
 
     dst = (float *)Hunk_AllocInternal(vertCount * 12);
-    *(float **)((byte *)&rgl + 12) = dst;
+    rgl.portalVerts = (vec3_t *)dst;
 
     for (i = 0; i < vertCount; i++) {
         dst[i * 3 + 0] = *(float *)(srcData + i * 12 + 0);
@@ -2968,29 +2955,29 @@ static void R_LoadCullGroups_impl(const int *load)
     int i;
 
     dst = (byte *)Hunk_AllocInternal(count * 32);
-    *(void **)((byte *)&s_world + 240) = dst;
-    *(int *)((byte *)&s_world + 236) = count;
+    s_world.cullGroups = (GfxCullGroup *)dst;
+    s_world.cullGroupCount = count;
 
     for (i = 0; i < count; i++) {
         const byte *src = srcData + i * 32;
-        byte *d = dst + i * 32;
+        GfxCullGroup *cg = &((GfxCullGroup *)dst)[i];
         int j;
 
-        /* Copy mins[3] and maxs[3] (6 floats at offsets 0,4,8 and 0xC,0x10,0x14) */
+        /* Copy mins[3] and maxs[3] */
         for (j = 0; j < 3; j++) {
-            *(int *)(d + j * 4) = *(int *)(src + j * 4);
-            *(int *)(d + j * 4 + 12) = *(int *)(src + j * 4 + 12);
+            *(int *)&cg->mins[j] = *(int *)(src + j * 4);
+            *(int *)&cg->maxs[j] = *(int *)(src + j * 4 + 12);
         }
 
-        /* surfaceCount (offset 0x18): 0 → -1, else copy from src offset 0x18 */
+        /* surfaceCount / startSurfIndex */
         {
             int surfCount = *(int *)(src + 0x1c);
             if (surfCount == 0) {
-                *(int *)(d + 0x1c) = -1;
+                cg->startSurfIndex = -1;
             } else {
-                *(int *)(d + 0x1c) = *(int *)(src + 0x18);
+                cg->startSurfIndex = *(int *)(src + 0x18);
             }
-            *(int *)(d + 0x18) = surfCount;
+            cg->surfaceCount = surfCount;
         }
     }
 }

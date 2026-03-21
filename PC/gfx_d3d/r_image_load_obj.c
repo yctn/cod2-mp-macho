@@ -924,7 +924,7 @@ static void Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, by
 
     Vec3NormalizeTo(facePos, dirFromEye);
 
-    drawSurfs = *(char **)((char *)imp_rgp + 0x109c);
+    drawSurfs = (char *)((r_global_permanent_t *)imp_rgp)->world;
     sunDir = (const vec_t *)(drawSurfs + 0xb8);
 
     halfAngle[0] = sunDir[0] - dirFromEye[0];

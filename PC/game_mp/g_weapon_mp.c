@@ -410,17 +410,17 @@ int weapon_grenadelauncher_fire(gentity_s (*ent)[16], int grenType, weaponParms 
 
     /* Get weapon def for projectile speed/up-velocity */
     weapDef = (void *)wp->weapDef;
-    scale = (float)*(int *)((byte *)weapDef + 0x384); /* weapDef->iProjectileSpeed */
+    scale = (float)((WeaponDef *)weapDef)->iProjectileSpeed;
     /* vTossVel = forward * scale */
     vTossVel[0] = wp->forward[0] * scale;
     vTossVel[1] = wp->forward[1] * scale;
     vTossVel[2] = wp->forward[2] * scale;
 
     /* Add upward velocity component */
-    vTossVel[2] += (float)*(int *)((byte *)weapDef + 0x388); /* weapDef->iProjectileSpeedUp */
+    vTossVel[2] += (float)((WeaponDef *)weapDef)->iProjectileSpeedUp;
 
     /* Get fuse time */
-    fuseTime = *(int *)((byte *)weapDef + 0x248); /* weapDef->iFuseTime */
+    fuseTime = ((WeaponDef *)weapDef)->iFuseTime;
 
     /* Fire the grenade */
     m = (gentity_t *)fire_grenade((gentity_t *)ent, wp->muzzleTrace, vTossVel, grenType, fuseTime);
@@ -2082,7 +2082,7 @@ void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float widt
 
     /* Get melee damage from weapon def */
     weaponIndex = ((gentity_t *)ent)->s.weapon;
-    damage = *(int *)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1f4); /* weapDef->iMeleeDamage */
+    damage = ((WeaponDef *)BG_GetWeaponDef(weaponIndex))->iMeleeDamage;
 
     if (!Melee_Trace(ent, wp, damage, range, width, height, &tr, endpos))
         return;

@@ -100,7 +100,7 @@ static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
     backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
-    if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+    if (backEnd.projection2D != 0) {
         RB_Set3D();
     }
 
@@ -260,7 +260,7 @@ static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
     backEndPtr = (byte *)&backEnd;
 
     /* If currently in 2D projection, switch to 3D */
-    if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+    if (backEnd.projection2D != 0) {
         RB_Set3D();
     }
 
@@ -614,7 +614,7 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
     data = *(byte **)g_viewParms;
     if (*(int *)(data + DBGGLOB_OFF + 0x10) != 0) { /* debugGlobals.polyCount */
         backEndPtr = (byte *)&backEnd;
-        if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+        if (backEnd.projection2D != 0) {
             RB_Set3D();
         }
         RB_DrawPolyInteriors();

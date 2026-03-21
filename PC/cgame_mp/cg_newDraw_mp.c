@@ -741,7 +741,7 @@ const char * CG_GetKillerText(void)
 /* line 1768 */
 const char * CG_GameTypeString(void)
 {
-    return (const char *)((byte *)*(void **)imp_cgs + 0x5ea4);
+    return (*(cgs_t **)imp_cgs)->gametype;
 }
 
 /* line 1926 */
@@ -921,7 +921,7 @@ void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fon
     }
 
     weaponDef = (byte *)BG_GetWeaponDef(BG_GetViewmodelWeaponIndex(ps));
-    if (!*(int *)(weaponDef + 0x278) || *(int *)(weaponDef + 0x7c) == 9)
+    if (!((WeaponDef *)weaponDef)->overlayReticle || ((WeaponDef *)weaponDef)->weapClass == 9)
     {
         return;
     }
@@ -4343,14 +4343,14 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
         weapDef = (byte *)BG_GetWeaponDef(weapIdx);
 
         /* line 1474: check dual wield flag */
-        if (*(int *)(weapDef + 0x344)) {
+        if (((WeaponDef *)weapDef)->bWideListIcon) {
             /* line 1477: dual wield - double width, offset */
             widthOfs = rect->w * -0.5f;
             widthScale = 2.0f;
         }
 
         /* line 1480: check if weapon type is melee (type == 7) */
-        if (*(int *)(weapDef + 0x7c) == 7) {
+        if (((WeaponDef *)weapDef)->weapClass == 7) {
             /* line 1482: melee weapon - use cursorHintString */
             cg = (byte *)*(void **)imp_cg;
             cursorHintString = ((cg_t *)cg)->cursorHintString;
@@ -4380,7 +4380,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
                     currentWeapDef = (byte *)BG_GetWeaponDef(currentWeap);
 
                     /* line 1346: compare weapon type */
-                    if (*(int *)(currentWeapDef + 0x80) == *(int *)(pickupWeapDef + 0x80)) {
+                    if (((WeaponDef *)currentWeapDef)->weapSlot == ((WeaponDef *)pickupWeapDef)->weapSlot) {
                         /* line 1348: same type - check if same weapon */
                         if (((cg_t *)cgPtr)->predictedPlayerState.weapon == weapIdx) {
                             text = NULL; /* same weapon, no text */
@@ -4392,7 +4392,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
                     }
 
                     /* line 1353: different weapon type - check if it's the same slot */
-                    if ((signed char)((cg_t *)cgPtr)->predictedPlayerState.weaponslots[*(int *)(pickupWeapDef + 0x80)] == weapIdx) {
+                    if ((signed char)((cg_t *)cgPtr)->predictedPlayerState.weaponslots[((WeaponDef *)pickupWeapDef)->weapSlot] == weapIdx) {
                         text = NULL; /* same weapon in slot */
                         goto draw_icon;
                     }

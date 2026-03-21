@@ -1689,7 +1689,7 @@ found:;
 
     /* Leaf: store final sampler source index */
     offset += entry->source;
-    *(int *)((byte *)arg + 4) = offset; /* arg->u.codeSampler = offset */
+    arg->u.codeSampler = offset;
     return 1;
 }
 
@@ -1738,8 +1738,8 @@ static Bool Material_ParseSamplerSource_impl(const char **text, MaterialShaderAr
             return 0;
         const char *texName = Com_Parse(text);
         arg->type = 4;
-        *(const char **)((byte *)arg + 4) = Material_RegisterString(texName); /* arg->u.name */
-        return *(const char **)((byte *)arg + 4) != NULL;
+        arg->u.name = Material_RegisterString(texName);
+        return arg->u.name != NULL;
     }
 
     Com_ScriptWarning("expected 'sampler' or 'material', found '%s' instead\n", token);
@@ -1975,10 +1975,10 @@ static Bool Material_SetPassShaderArguments_impl(const char **text, const byte *
               while (ce->name) { if (!ce->subtable && strcmp(cn, ce->name) == 0) {
                   int src = (unsigned char)ce->source;
                   if (src > 0xBA) { int adj = src ^ 2; if (*(const unsigned short *)dti == 3) src = adj;
-                      *(unsigned short *)((byte *)da + 4) = (unsigned short)src; *((byte *)da + 6) = 0;
-                      *((byte *)da + 7) = (byte)*(const unsigned short *)(entry + 8);
-                  } else { *(unsigned short *)((byte *)da + 4) = (unsigned short)src;
-                      *((byte *)da + 6) = 0; *((byte *)da + 7) = drw; }
+                      da->u.codeConst.index = (unsigned short)src; da->u.codeConst.firstRow = 0;
+                      da->u.codeConst.rowCount = (byte)*(const unsigned short *)(entry + 8);
+                  } else { da->u.codeConst.index = (unsigned short)src;
+                      da->u.codeConst.firstRow = 0; da->u.codeConst.rowCount = drw; }
                   df = 1; break; }
                 ci++; ce = &s_codeConsts[ci]; }
             }
@@ -1986,10 +1986,10 @@ static Bool Material_SetPassShaderArguments_impl(const char **text, const byte *
               while (de->name) { if (!de->subtable && strcmp(cn, de->name) == 0) {
                   int src = (unsigned char)de->source;
                   if (src > 0xBA) { int adj = src ^ 2; if (*(const unsigned short *)dti == 3) src = adj;
-                      *(unsigned short *)((byte *)da + 4) = (unsigned short)src; *((byte *)da + 6) = 0;
-                      *((byte *)da + 7) = (byte)*(const unsigned short *)(entry + 8);
-                  } else { *(unsigned short *)((byte *)da + 4) = (unsigned short)src;
-                      *((byte *)da + 6) = 0; *((byte *)da + 7) = drw; }
+                      da->u.codeConst.index = (unsigned short)src; da->u.codeConst.firstRow = 0;
+                      da->u.codeConst.rowCount = (byte)*(const unsigned short *)(entry + 8);
+                  } else { da->u.codeConst.index = (unsigned short)src;
+                      da->u.codeConst.firstRow = 0; da->u.codeConst.rowCount = drw; }
                   df = 1; break; }
                 di++; de = &s_defaultCodeConsts[di]; }
             }
@@ -4270,7 +4270,7 @@ static MaterialShader *Material_LoadPassShader_impl(const char **text, int shade
 
                 /* Create D3D shader via device vtable */
                 {
-                    void *device = *(void **)((byte *)imp_dx + 8);
+                    void *device = ((DxGlobals *)imp_dx)->device;
                     void **devVtable = *(void ***)device;
                     typedef HRESULT (*CreateShaderFn)(void *, const void *, void **);
                     int vtableOffset = (shaderType == 0) ? (0x16C / 4) : (0x1A8 / 4);
@@ -4943,8 +4943,8 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
 
     /* Fix up and process constant table */
     ((Material *)mtl)->constants = (MaterialConstantDef *)((int)((Material *)mtl)->constants + (int)mtl);
-    { unsigned short cc = *(unsigned short *)(mtl + 0x36);
-      byte *ce = (byte *)*(int *)(mtl + 0x40);
+    { unsigned short cc = ((Material *)mtl)->constantCount;
+      byte *ce = (byte *)((Material *)mtl)->constants;
       for (i = 0; i < cc; i++, ce += 0x14) {
           *(int *)ce = (int)Material_RegisterString((const char *)((int)mtl + *(int *)ce));
           if (!*(int *)ce) return 0;
@@ -4965,9 +4965,9 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
               goto storeTechSet;
           }
           int tsNLen = (int)strlen(tsName) + 1;
-          techSet = Material_Alloc(0x8c + tsNLen);
-          *(int *)techSet = (int)((byte *)techSet + 0x8c);
-          memcpy((byte *)techSet + 0x8c, tsName, tsNLen);
+          techSet = Material_Alloc(sizeof(MaterialTechniqueSet) + tsNLen);
+          techSet->name = (const char *)((byte *)techSet + sizeof(MaterialTechniqueSet));
+          memcpy((byte *)techSet + sizeof(MaterialTechniqueSet), tsName, tsNLen);
           const char *tsText = (const char *)tsData;
           Com_BeginParseSession(tsFile);
           Com_SetScriptWarningPrefix("^1ERROR: ");
@@ -5088,11 +5088,11 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
                           if (lpc == 0) { Com_ScriptWarning("Technique '%s' has no passes.  The technique should be left out of the techset\n", techName); techSet = NULL; goto endTsParse; }
                           { int nl = (int)strlen(techName) + 1; int pds = (int)lpc * 0x1c;
                             technique = Material_Alloc(8 + nl + pds);
-                            *(int *)technique = (int)((byte *)technique + 8 + pds);
+                            technique->name = (const char *)((byte *)technique + 8 + pds);
                             memcpy((byte *)technique + 8 + pds, techName, nl);
-                            *(unsigned short *)((byte *)technique + 4) = ltf;
-                            *(unsigned short *)((byte *)technique + 6) = lpc;
-                            memcpy((byte *)technique + 8, lpd, pds);
+                            technique->flags = ltf;
+                            technique->passCount = lpc;
+                            memcpy((byte *)&technique->passArray, lpd, pds);
                           }
                           Material_SetTechnique(techName, technique);
                       } else {
@@ -5180,16 +5180,16 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
                           if (dpc == 0) { Com_ScriptWarning("Technique '%s' has no passes.  The technique should be left out of the techset\n", techName); techSet = NULL; goto endTsParse; }
                           { int nl = (int)strlen(techName) + 1; int pds = (int)dpc * 0x5c;
                             technique = Material_Alloc(8 + nl + pds);
-                            *(int *)technique = (int)((byte *)technique + 8 + pds);
+                            technique->name = (const char *)((byte *)technique + 8 + pds);
                             memcpy((byte *)technique + 8 + pds, techName, nl);
-                            *(unsigned short *)((byte *)technique + 6) = dpc;
-                            memcpy((byte *)technique + 8, dpd, pds);
+                            technique->passCount = dpc;
+                            memcpy((byte *)&technique->passArray, dpd, pds);
                           }
                           Material_SetTechnique(techName, technique);
                       }
                   }
               }
-              if (technique && ttCount > 0) { int ti; for (ti = 0; ti < ttCount; ti++) *(int *)((byte *)techSet + 4 + ttSlots[ti] * 4) = (int)technique; }
+              if (technique && ttCount > 0) { int ti; for (ti = 0; ti < ttCount; ti++) techSet->techniques[ttSlots[ti]] = technique; }
               if (!Com_MatchToken(&tsText, ";", 1)) { techSet = NULL; break; }
               ttCount = 0; ttUsing = 0;
           }
@@ -5202,14 +5202,13 @@ static Bool Material_FinishLoadingInstance_impl(MaterialObj *material, int image
       if (!techSet) return 0;
 
       /* Phase 3: Validate techniques */
-      { byte *tsPtr = (byte *)techSet;
-        const char *tsNameStr = (const char *)*(int *)tsPtr;
+      { const char *tsNameStr = techSet->name;
         for (i = 0; i < 34; i++) {
-            void *tech = (void *)*(int *)(tsPtr + 4 + i * 4);
+            MaterialTechnique *tech = techSet->techniques[i];
             if (!tech) continue;
-            unsigned short passCount = *(unsigned short *)((byte *)tech + 6);
+            unsigned short passCount = tech->passCount;
             if (passCount == 0) continue;
-            isDx7 = (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2);
+            isDx7 = ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2);
             if (isDx7) {
                 byte *pb = (byte *)tech + 8;
                 int pi; for (pi = 0; pi < passCount; pi++, pb += 0x5c)

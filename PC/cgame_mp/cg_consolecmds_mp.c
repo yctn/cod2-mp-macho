@@ -208,7 +208,7 @@ static void CG_QuickMessage_f(void)
 
     if (nextSnap == NULL)
         return;
-    if (!(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) /* TODO: unknown offset 0x1a in snapshot_t */
+    if (!(nextSnap->ps.pm_flags & 0x800000))
         return;
 
     CL_Popup("UIMENU_WM_QUICKMESSAGE");
@@ -227,7 +227,7 @@ static void CG_VoiceChat_f(void)
     cg = *(cg_t **)cg_ptr;
     nextSnap = cg->nextSnap;
 
-    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) { /* TODO: unknown offset 0x1a in snapshot_t */
+    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(nextSnap->ps.pm_flags & 0x800000)) {
         Com_Printf("%s\n", UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT"));
         return;
     }
@@ -249,7 +249,7 @@ static void CG_TeamVoiceChat_f(void)
     cg = *(cg_t **)cg_ptr;
     nextSnap = cg->nextSnap;
 
-    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(*(byte *)((byte *)nextSnap + 0x1a) & 0x80)) { /* TODO: unknown offset 0x1a in snapshot_t */
+    if (nextSnap != NULL && nextSnap->ps.pm_type != 5 && !(nextSnap->ps.pm_flags & 0x800000)) {
         Com_Printf("%s\n", UI_SafeTranslateString("CGAME_NOSPECTATORVOICECHAT"));
         return;
     }

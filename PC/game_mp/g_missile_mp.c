@@ -67,7 +67,7 @@ extern int rand(void);
 #define ENT_HEALTH(e)           (_ENT(e)->health)
 #define ENT_MAXHEALTH(e)        (_ENT(e)->maxHealth)
 #define ENT_COUNT(e)            (_ENT(e)->count)
-#define ENT_MISSILESPEED(e)     (*(float *)((byte *)(e) + 0x1A8)) /* inside anonymous union, no named field */
+#define ENT_MISSILESPEED(e)     (_ENT(e)->grenade.time) /* missile speed stored in grenade union member */
 
 #define ENTITY_STRIDE sizeof(gentity_s)
 
@@ -80,8 +80,8 @@ extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
 extern byte *pPriorityMap;      /* imp_bulletPriorityMap */
 
 /* level_ptr field access */
-#define LEVEL_TIME          (*(int *)(level_ptr + 0x1EC))
-#define LEVEL_PREVIOUSTIME  (*(int *)(level_ptr + 0x1F0))
+#define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
+#define LEVEL_PREVIOUSTIME  (((level_locals_t *)level_ptr)->previousTime)
 
 /* Handler table access: entityHandlers_ptr[handler * 40 + offset] */
 #define HANDLER_ENTRY(h)    (entityHandlers_ptr + (h) * 40)
@@ -307,10 +307,10 @@ gentity_t *fire_grenade(gentity_t *self, vec_t *start, vec_t *dir, int grenadeWP
 
     cl = ENT_CLIENT(self);
 
-    if (cl && *(int *)((byte *)cl + 0x3C) != 0) {
+    if (cl && ((gclient_t *)cl)->ps.grenadeTimeLeft != 0) {
         /* Client has a fuse time override */
-        ENT_NEXTTHINK(bolt) = LEVEL_TIME + *(int *)((byte *)cl + 0x3C);
-        *(int *)((byte *)cl + 0x3C) = 0;
+        ENT_NEXTTHINK(bolt) = LEVEL_TIME + ((gclient_t *)cl)->ps.grenadeTimeLeft;
+        ((gclient_t *)cl)->ps.grenadeTimeLeft = 0;
         cl = ENT_CLIENT(self);
     } else {
         /* Default: level time + time parameter */
@@ -318,7 +318,7 @@ gentity_t *fire_grenade(gentity_t *self, vec_t *start, vec_t *dir, int grenadeWP
     }
 
     if (cl) {
-        *(int *)((byte *)cl + 0x3C) = 0;
+        ((gclient_t *)cl)->ps.grenadeTimeLeft = 0;
     }
 
     /* Set entity type to grenade (7) */
@@ -343,7 +343,7 @@ gentity_t *fire_grenade(gentity_t *self, vec_t *start, vec_t *dir, int grenadeWP
     weapDef = BG_GetWeaponDef(grenadeWPID);
 
     /* Set classname to grenade string */
-    Scr_SetString(&ENT_CLASSNAME(bolt), *(unsigned short *)(scr_const_ptr + 0x1A));
+    Scr_SetString(&ENT_CLASSNAME(bolt), ((scr_const_t *)scr_const_ptr)->grenade);
 
     /* Set damage from weapon def */
     ENT_COUNT(bolt) = weapDef->damage;
@@ -414,7 +414,7 @@ gentity_t *fire_rocket(gentity_t *self, vec_t *start, vec_t *dir)
     bolt = G_Spawn();
 
     /* Set classname to rocket */
-    Scr_SetString(&ENT_CLASSNAME(bolt), *(unsigned short *)(scr_const_ptr + 0x3E));
+    Scr_SetString(&ENT_CLASSNAME(bolt), ((scr_const_t *)scr_const_ptr)->rocket);
 
     /* Set nextthink to level time + 30000 */
     ENT_NEXTTHINK(bolt) = LEVEL_TIME + 30000;
@@ -770,14 +770,14 @@ after_trace:
         gentity_t *tent = G_TempEntity(ENT_CURRENTORIGIN(ent), 0xB6);
 
         /* Set direction and splash direction on temp entity */
-        *(int *)((byte *)tent + 0xA0) = DirToByte(tr.normal);
-        *(int *)((byte *)tent + 0xD8) = DirToByte(splashDir);
+        ((gentity_t *)tent)->s.eventParm = DirToByte(tr.normal);
+        ((tent)->s.scale) = DirToByte(splashDir);
 
         /* Set surface type on temp entity */
-        *(int *)((byte *)tent + 0x88) = (tr.surfaceFlags & 0x1F00000) >> 20;
+        ((tent)->s.surfType) = (tr.surfaceFlags & 0x1F00000) >> 20;
 
         /* Set source entity number */
-        *(int *)((byte *)tent + 0x74) = ENT_NUMBER(ent);
+        ((gentity_t *)tent)->s.otherEntityNum = ENT_NUMBER(ent);
 
         /* Re-trace without water mask */
         G_LocationalTrace(&tr, ENT_CURRENTORIGIN(ent), origin,
@@ -798,10 +798,10 @@ after_trace:
         gentity_t *other = G_ENTITY(tr.entityNum);
 
         /* Check if entity is a player (health < 0 => dead) */
-        if (*(short *)((byte *)other + 0x174) < 0) {
+        if (((other)->flags) < 0) {
             /* Save and zero health of other entity for re-trace */
-            int savedHealth = *(int *)((byte *)other + 0x11C);
-            *(int *)((byte *)other + 0x11C) = 0;
+            int savedHealth = ((other)->r.contents);
+            ((other)->r.contents) = 0;
 
             /* Re-trace to pass through dead bodies */
             G_LocationalTrace(&tr, ENT_CURRENTORIGIN(ent), origin,
@@ -813,7 +813,7 @@ after_trace:
             }
 
             /* Restore health */
-            *(int *)((byte *)other + 0x11C) = savedHealth;
+            ((other)->r.contents) = savedHealth;
         }
     }
 
@@ -831,8 +831,8 @@ after_trace:
             /* Special grenade ground check: trace downward */
             VectorCopy(endpos, origin);
             origin[0] = ENT_CURRENTORIGIN(ent)[0];
-            origin[1] = *(vec_t *)((byte *)ent + 0x13C);
-            origin[2] = *(vec_t *)((byte *)ent + 0x140) - 1.5f;
+            origin[1] = ((ent)->r.currentOrigin[1]);
+            origin[2] = ((ent)->r.currentOrigin[2]) - 1.5f;
 
             G_LocationalTrace(&trDown, ENT_CURRENTORIGIN(ent), origin,
                               ENT_OWNERNUM(ent), ENT_CLIPMASK(ent), pPriorityMap);
@@ -850,13 +850,13 @@ after_trace:
                 LerpPosition(ENT_CURRENTORIGIN(ent), origin, fraction, endpos);
 
                 /* Adjust vertical position */
-                *(vec_t *)((byte *)ent + 0x20) += endpos[2] + 1.5f - *(vec_t *)((byte *)ent + 0x140);
+                ((ent)->s.origin2[0]) += endpos[2] + 1.5f - ((ent)->r.currentOrigin[2]);
 
                 /* Update current origin */
                 VectorCopy(endpos, ENT_CURRENTORIGIN(ent));
 
                 /* Add 1.5 back to Z */
-                *(vec_t *)((byte *)ent + 0x140) += 1.5f;
+                ((ent)->r.currentOrigin[2]) += 1.5f;
             }
         }
     }
@@ -928,10 +928,10 @@ after_trace:
             /* Update missile speed */
             if (ENT_FLAGS(ent) & 0x10000) {
                 /* Already guided: apply decay factor */
-                ENT_MISSILESPEED(ent) *= *(float *)((byte *)weaponDef + 0x5A4);
+                ENT_MISSILESPEED(ent) *= ((WeaponDef *)weaponDef)->destabilizationTimeReductionRatio;
             } else {
                 /* First guidance: set initial speed */
-                ENT_MISSILESPEED(ent) = 1000.0f * *(float *)((byte *)weaponDef + 0x5A0);
+                ENT_MISSILESPEED(ent) = 1000.0f * ((WeaponDef *)weaponDef)->destabilizationBaseTime;
             }
 
             /* Set guided flag */

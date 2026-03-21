@@ -72,14 +72,13 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
 Bool PrimitiveTemplate_ParsePrimitive(const PrimitiveTemplate * _this, GPGroup *grp);
 
 /* ==================== Helper macros for GPValue field access ==================== */
-/* GPValue: offset 0x00 = value string, offset 0x04 = next, offset 0x10 = list */
-#define GPV_STRING(v) (*(const char **)((byte *)(v)))
-#define GPV_NEXT(v)   (*(GPValue **)((byte *)(v) + 4))
-#define GPV_LIST(v)   (*(GPValue **)((byte *)(v) + 0x10))
+#define GPV_STRING(v) (((GPValue *)(v))->name)
+#define GPV_NEXT(v)   ((GPValue *)((GPObject *)(v))->next)
+#define GPV_LIST(v)   (((GPValue *)(v))->valueList)
 
-/* GPGroup: offset 0x10 = pairs, offset 0x1c = subgroups */
-#define GPG_PAIRS(g)     (*(GPValue **)((byte *)(g) + 0x10))
-#define GPG_SUBGROUPS(g) (*(GPValue **)((byte *)(g) + 0x1c))
+/* GPGroup field access macros */
+#define GPG_PAIRS(g)     (((GPGroup *)(g))->pairList)
+#define GPG_SUBGROUPS(g) ((GPValue *)((GPGroup *)(g))->subGroupList)
 
 /* ==================== Helper: parse "%f %f" with fallback ==================== */
 /* Returns 0 on sscanf==0 (error), otherwise sets min/max (if 1 arg, max=min) */
@@ -147,10 +146,10 @@ static void CreateTwoKeyCurve(byte *_this, int channelOffset, float initialValue
     keys[2] = 1.0f;
     keys[3] = keys[1];
 
-    const FxCurve *curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
-    *(const FxCurve **)(_this + channelOffset) = curve;
-    *(float *)(_this + channelOffset + 4) = maxRange;
-    *(float *)(_this + channelOffset + 8) = maxRange;
+    FxChannel *chan = (FxChannel *)(_this + channelOffset);
+    chan->curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
+    chan->scaleRange.mMin = maxRange;
+    chan->scaleRange.mMax = maxRange;
 }
 
 /* Helper: create a 2-key accel curve with scale
@@ -168,10 +167,10 @@ static void CreateAccelCurve(byte *_this, int channelOffset, float initialValue,
         keys[3] = 0.0f;
     }
 
-    const FxCurve *curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
-    *(const FxCurve **)(_this + channelOffset) = curve;
-    *(float *)(_this + channelOffset + 4) = maxRange;
-    *(float *)(_this + channelOffset + 8) = maxRange;
+    FxChannel *chan = (FxChannel *)(_this + channelOffset);
+    chan->curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
+    chan->scaleRange.mMin = maxRange;
+    chan->scaleRange.mMax = maxRange;
 }
 
 /* Helper: create a 2-key accel curve with 1.0 scale range */
@@ -188,10 +187,10 @@ static void CreateAccelCurveUnit(byte *_this, int channelOffset, float initialVa
         keys[3] = 0.0f;
     }
 
-    const FxCurve *curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
-    *(const FxCurve **)(_this + channelOffset) = curve;
-    *(float *)(_this + channelOffset + 4) = 1.0f;
-    *(float *)(_this + channelOffset + 8) = 1.0f;
+    FxChannel *chan = (FxChannel *)(_this + channelOffset);
+    chan->curve = FxCurve_AllocAndCreateWithKeys(keys, 1, 2);
+    chan->scaleRange.mMin = 1.0f;
+    chan->scaleRange.mMax = 1.0f;
 }
 
 /* ==================== Non-naked functions (unchanged) ==================== */
@@ -199,25 +198,25 @@ static void CreateAccelCurveUnit(byte *_this, int channelOffset, float initialVa
 /* line 2199 */
 void FxRange_SetRange(const FxRange * _this, float min, float max)
 {
-    *(float *)_this = min;
-    *(float *)((byte *)_this + 4) = max;
+    ((FxRange *)_this)->mMin = min;
+    ((FxRange *)_this)->mMax = max;
 }
 
 /* line 151 */
 void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this)
 {
-    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x68));
-    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x70));
-    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x78));
-    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x80));
-    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x88));
+    MediaHandles_Shutdown(&((PrimitiveTemplate *)_this)->mMediaHandles);
+    MediaHandles_Shutdown(&((PrimitiveTemplate *)_this)->mImpactFxHandles);
+    MediaHandles_Shutdown(&((PrimitiveTemplate *)_this)->mDeathFxHandles);
+    MediaHandles_Shutdown(&((PrimitiveTemplate *)_this)->mEmitterFxHandles);
+    MediaHandles_Shutdown(&((PrimitiveTemplate *)_this)->mPlayFxHandles);
 }
 
 /* line 2213 */
 float FxRange_GetValPct(const FxRange * _this, float percent)
 {
-    float base = *(float *)((byte *)_this);
-    float range = *(float *)((byte *)_this + 4) - base;
+    float base = _this->mMin;
+    float range = _this->mMax - base;
     return base + range * percent;
 }
 
@@ -304,62 +303,62 @@ float FxRange_GetVal(const FxRange * _this)
 /* line 94 */
 void PrimitiveTemplate_Init(const PrimitiveTemplate * _this)
 {
-    byte *t = (byte *)_this;
+    PrimitiveTemplate *pt = (PrimitiveTemplate *)_this;
 
     /* Set scale ranges to 1.0 */
-    *(float *)(t + 0x58) = 1.0f;  /* mLife.mMin */
-    *(float *)(t + 0x5c) = 1.0f;  /* mLife.mMax */
-    *(float *)(t + 0x50) = 1.0f;  /* mSpawnCount.mMin */
-    *(float *)(t + 0x54) = 1.0f;  /* mSpawnCount.mMax */
-    *(float *)(t + 0xe8) = 1.0f;  /* mRadius.mMin */
-    *(float *)(t + 0xec) = 1.0f;  /* mRadius.mMax */
-    *(float *)(t + 0xf0) = 1.0f;  /* mHeight.mMin */
-    *(float *)(t + 0xf4) = 1.0f;  /* mHeight.mMax */
+    pt->mLife.mMin = 1.0f;
+    pt->mLife.mMax = 1.0f;
+    pt->mSpawnCount.mMin = 1.0f;
+    pt->mSpawnCount.mMax = 1.0f;
+    pt->mRadius.mMin = 1.0f;
+    pt->mRadius.mMax = 1.0f;
+    pt->mHeight.mMin = 1.0f;
+    pt->mHeight.mMax = 1.0f;
 
     /* Create default channels */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x100), 3, 1.0f, 0.0f);  /* line 105: color */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x10c), 3, 1.0f, 0.0f);  /* line 106: colorRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x118), 1, 1.0f, 0.0f);  /* line 107: alpha */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x124), 1, 1.0f, 0.0f);  /* line 108: alphaRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x130), 1, 1.0f, 0.0f);  /* line 109: size */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x13c), 1, 1.0f, 0.0f);  /* line 110: sizeRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x148), 1, 1.0f, 0.0f);  /* line 111: size2 */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x154), 1, 1.0f, 0.0f);  /* line 112: size2Rand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x160), 1, 1.0f, 0.0f);  /* line 113: length */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x16c), 1, 1.0f, 0.0f);  /* line 114: lengthRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x178), 1, 0.0f, 0.0f);  /* line 115: rotationDelta */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x184), 1, 0.0f, 0.0f);  /* line 116: rotationDeltaRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x190), 1, 0.0f, 0.0f);  /* line 118: velocityX */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x19c), 1, 0.0f, 0.0f);  /* line 119: velocityY */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1a8), 1, 0.0f, 0.0f);  /* line 120: velocityZ */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1b4), 1, 0.0f, 0.0f);  /* line 121: velocityXRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1c0), 1, 0.0f, 0.0f);  /* line 122: velocityYRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1cc), 1, 0.0f, 0.0f);  /* line 123: velocityZRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1d8), 1, 0.0f, 0.0f);  /* line 125: velocity2X */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1e4), 1, 0.0f, 0.0f);  /* line 126: velocity2Y */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1f0), 1, 0.0f, 0.0f);  /* line 127: velocity2Z */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x1fc), 1, 0.0f, 0.0f);  /* line 128: velocity2XRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x208), 1, 0.0f, 0.0f);  /* line 129: velocity2YRand */
-    FxChannel_CreateDefault((FxChannel *)(t + 0x214), 1, 0.0f, 0.0f);  /* line 130: velocity2ZRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[0], 3, 1.0f, 0.0f);   /* line 105: color */
+    FxChannel_CreateDefault(&pt->mFxChannels[1], 3, 1.0f, 0.0f);   /* line 106: colorRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[2], 1, 1.0f, 0.0f);   /* line 107: alpha */
+    FxChannel_CreateDefault(&pt->mFxChannels[3], 1, 1.0f, 0.0f);   /* line 108: alphaRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[4], 1, 1.0f, 0.0f);   /* line 109: size */
+    FxChannel_CreateDefault(&pt->mFxChannels[5], 1, 1.0f, 0.0f);   /* line 110: sizeRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[6], 1, 1.0f, 0.0f);   /* line 111: size2 */
+    FxChannel_CreateDefault(&pt->mFxChannels[7], 1, 1.0f, 0.0f);   /* line 112: size2Rand */
+    FxChannel_CreateDefault(&pt->mFxChannels[8], 1, 1.0f, 0.0f);   /* line 113: length */
+    FxChannel_CreateDefault(&pt->mFxChannels[9], 1, 1.0f, 0.0f);   /* line 114: lengthRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[10], 1, 0.0f, 0.0f);  /* line 115: rotationDelta */
+    FxChannel_CreateDefault(&pt->mFxChannels[11], 1, 0.0f, 0.0f);  /* line 116: rotationDeltaRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[12], 1, 0.0f, 0.0f);  /* line 118: velocityX */
+    FxChannel_CreateDefault(&pt->mFxChannels[13], 1, 0.0f, 0.0f);  /* line 119: velocityY */
+    FxChannel_CreateDefault(&pt->mFxChannels[14], 1, 0.0f, 0.0f);  /* line 120: velocityZ */
+    FxChannel_CreateDefault(&pt->mFxChannels[15], 1, 0.0f, 0.0f);  /* line 121: velocityXRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[16], 1, 0.0f, 0.0f);  /* line 122: velocityYRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[17], 1, 0.0f, 0.0f);  /* line 123: velocityZRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[18], 1, 0.0f, 0.0f);  /* line 125: velocity2X */
+    FxChannel_CreateDefault(&pt->mFxChannels[19], 1, 0.0f, 0.0f);  /* line 126: velocity2Y */
+    FxChannel_CreateDefault(&pt->mFxChannels[20], 1, 0.0f, 0.0f);  /* line 127: velocity2Z */
+    FxChannel_CreateDefault(&pt->mFxChannels[21], 1, 0.0f, 0.0f);  /* line 128: velocity2XRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[22], 1, 0.0f, 0.0f);  /* line 129: velocity2YRand */
+    FxChannel_CreateDefault(&pt->mFxChannels[23], 1, 0.0f, 0.0f);  /* line 130: velocity2ZRand */
 
     /* Set remaining ranges */
-    *(float *)(t + 0x270) = 1.0f;
-    *(float *)(t + 0x274) = 1.0f;
-    *(float *)(t + 0x278) = 1.0f;
-    *(float *)(t + 0x27c) = 1.0f;
-    *(float *)(t + 0x268) = 1.0f;
-    *(float *)(t + 0x26c) = 1.0f;
-    *(float *)(t + 0x260) = 10.0f;  /* 0x41200000 */
-    *(float *)(t + 0x264) = 10.0f;
+    pt->mTexCoordS.mMin = 1.0f;
+    pt->mTexCoordS.mMax = 1.0f;
+    pt->mTexCoordT.mMin = 1.0f;
+    pt->mTexCoordT.mMax = 1.0f;
+    pt->mVariance.mMin = 1.0f;
+    pt->mVariance.mMax = 1.0f;
+    pt->mDensity.mMin = 10.0f;
+    pt->mDensity.mMax = 10.0f;
 
     /* line 138-148 */
-    *(int *)(t + 0x288) = 0;    /* mSequenceStartFrameMode */
-    *(int *)(t + 0x28c) = 1;    /* mSequenceFixedFrameValue */
-    *(int *)(t + 0x290) = 0;    /* mSequencePlayRateMode */
-    *(float *)(t + 0x294) = 1.0f; /* mSequenceFixedFpsValue */
-    *(int *)(t + 0x298) = 0;    /* mSequenceLoopMode */
-    *(int *)(t + 0x29c) = 1;    /* mSequenceLoopTimes */
-    *(float *)(t + 0x2a0) = 0.0f; /* spawnFrustumCullRadius */
+    pt->mSequenceStartFrameMode = 0;
+    pt->mSequenceFixedFrameValue = 1;
+    pt->mSequencePlayRateMode = 0;
+    pt->mSequenceFixedFpsValue = 1.0f;
+    pt->mSequenceLoopMode = 0;
+    pt->mSequenceLoopTimes = 1;
+    pt->spawnFrustumCullRadius = 0.0f;
 }
 
 #if 0 /* Original ASM for PrimitiveTemplate_Init preserved for reference */
@@ -414,8 +413,7 @@ void PrimitiveTemplate_ParseChannelCurve(const PrimitiveTemplate * _this, GPValu
     }
 
     /* Create curve and store */
-    int channelOffset = channel * 3;
-    *(const FxCurve **)(thisPtr + 0x100 + channelOffset * 4) =
+    ((PrimitiveTemplate *)_this)->mFxChannels[channel].curve =
         FxCurve_AllocAndCreateWithKeys(keys, 1, keyCount);
 
     /* Free temp memory (tail call) */
@@ -441,7 +439,7 @@ static Bool ParseFxStringsHelper(byte *_this, GPValue *grp, int handleOffset, in
             list = GPV_NEXT(list);
         }
         if (flagBits)
-            *(int *)(_this + 0x90) |= flagBits;
+            ((PrimitiveTemplate *)_this)->mAttributeFlags |= flagBits;
         return 1;
     } else {
         const char *val = GPValue_GetTopValue(grp);
@@ -456,7 +454,7 @@ static Bool ParseFxStringsHelper(byte *_this, GPValue *grp, int handleOffset, in
         }
         MediaHandles_AddEffect((MediaHandles *)(_this + handleOffset), fx);
         if (flagBits)
-            *(int *)(_this + 0x90) |= flagBits;
+            ((PrimitiveTemplate *)_this)->mAttributeFlags |= flagBits;
         return 1;
     }
 }
@@ -533,8 +531,7 @@ void PrimitiveTemplate_ParseChannelRgbCurve(const PrimitiveTemplate * _this, GPV
     }
 
     /* Create curve and store */
-    int channelOffset = channel * 3;
-    *(const FxCurve **)(thisPtr + 0x100 + channelOffset * 4) =
+    ((PrimitiveTemplate *)_this)->mFxChannels[channel].curve =
         FxCurve_AllocAndCreateWithKeys(keys, 3, keyCount);
 
     /* Free temp memory (tail call) */
@@ -595,13 +592,12 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
     }
 
     /* Store curve */
-    int chanOff = channelId * 3 * 4;
-    *(const FxCurve **)(thisPtr + 0x100 + chanOff) =
+    ((PrimitiveTemplate *)_this)->mFxChannels[channelId].curve =
         FxCurve_AllocAndCreateWithKeys(keys, 1, 20);
 
     /* Store graph scale as the range */
-    *(unsigned int *)(thisPtr + 0x100 + chanOff + 4) = *(unsigned int *)&graphScale;
-    *(unsigned int *)(thisPtr + 0x100 + chanOff + 8) = *(unsigned int *)&graphScale;
+    ((PrimitiveTemplate *)_this)->mFxChannels[channelId].scaleRange.mMin = graphScale;
+    ((PrimitiveTemplate *)_this)->mFxChannels[channelId].scaleRange.mMax = graphScale;
 }
 
 #if 0 /* Original ASM for PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve */
@@ -621,7 +617,7 @@ Bool PrimitiveTemplate_ParseMaterials(const PrimitiveTemplate * _this, GPValue *
             MaterialHandle h = Material_RegisterHandle(GPV_STRING(list), 3, 6);
             TMediaElement elem;
             elem.material = (struct Material *)(uintptr_t)h;
-            MediaHandles_AddHandle((MediaHandles *)(thisPtr + 0x68), elem);
+            MediaHandles_AddHandle(&((PrimitiveTemplate *)_this)->mMediaHandles, elem);
             list = GPV_NEXT(list);
         }
         return 1;
@@ -634,7 +630,7 @@ Bool PrimitiveTemplate_ParseMaterials(const PrimitiveTemplate * _this, GPValue *
         MaterialHandle h = Material_RegisterHandle(val, 3, 6);
         TMediaElement elem;
         elem.material = (struct Material *)(uintptr_t)h;
-        MediaHandles_AddHandle((MediaHandles *)(thisPtr + 0x68), elem);
+        MediaHandles_AddHandle(&((PrimitiveTemplate *)_this)->mMediaHandles, elem);
         return 1;
     }
 }
@@ -673,8 +669,8 @@ Bool PrimitiveTemplate_ParseFlags(const PrimitiveTemplate * _this, const char *l
         int found = 0;
         for (entryIndex = 0; entryIndex < flagEntryCount; entryIndex++) {
             if (stricmp(flagEntries[entryIndex].flag, flag) == 0) {
-                *(unsigned int *)(thisPtr + 0x90) |= flagEntries[entryIndex].masks[0];
-                *(unsigned int *)(thisPtr + 0x94) |= flagEntries[entryIndex].masks[1];
+                ((PrimitiveTemplate *)_this)->mAttributeFlags |= flagEntries[entryIndex].masks[0];
+                ((PrimitiveTemplate *)_this)->mSpawnFlags |= flagEntries[entryIndex].masks[1];
                 found = 1;
                 break;
             }
@@ -715,7 +711,7 @@ Bool PrimitiveTemplate_ParseModels(const PrimitiveTemplate * _this, GPValue *grp
             }
             TMediaElement elem;
             elem.model = model;
-            MediaHandles_AddHandle((MediaHandles *)(thisPtr + 0x68), elem);
+            MediaHandles_AddHandle(&((PrimitiveTemplate *)_this)->mMediaHandles, elem);
             list = GPV_NEXT(list);
         }
         return 1;
@@ -736,7 +732,7 @@ Bool PrimitiveTemplate_ParseModels(const PrimitiveTemplate * _this, GPValue *grp
         }
         TMediaElement elem;
         elem.model = model;
-        MediaHandles_AddHandle((MediaHandles *)(thisPtr + 0x68), elem);
+        MediaHandles_AddHandle(&((PrimitiveTemplate *)_this)->mMediaHandles, elem);
         return 1;
     }
 }
@@ -767,13 +763,13 @@ Bool PrimitiveTemplate_ParseRotationDelta(const PrimitiveTemplate * _this, const
     keyScaleVal = keyScaleVal + keyScaleVal; /* doubled */
 
     /* Create rotation delta curve (channel 10 = FXCHAN_ROTATION_DELTA) */
-    float lifetime = *(float *)(thisPtr + 0x58); /* mLife.mMin */
+    float lifetime = ((PrimitiveTemplate *)_this)->mLife.mMin;
     PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(_this, minVal, keyScaleVal, lifetime, 0xa, keyScaleVal);
 
     /* If min != max, also create ROTATION_DELTA_RAND curve (channel 11) */
     if (minVal != maxVal) {
-        *(unsigned int *)(thisPtr + 0x90) |= 0x40000; /* useRandomRotationDelta flag */
-        float lifetime2 = *(float *)(thisPtr + 0x5c); /* mLife.mMax */
+        ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x40000; /* useRandomRotationDelta flag */
+        float lifetime2 = ((PrimitiveTemplate *)_this)->mLife.mMax;
         PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(_this, maxVal, keyScaleVal, lifetime2, 0xb, 1.0f);
     }
 
@@ -880,13 +876,13 @@ Bool PrimitiveTemplate_ParseVelocity(const PrimitiveTemplate * _this, const char
         totalMax = maxZ;
 
     /* Create velocity X curve (channel at offset 0x190) */
-    CreateTwoKeyCurve(thisPtr, 0x190, minV[1], totalMax);
+    CreateTwoKeyCurve((byte *)_this, 0x190, minV[1], totalMax);  /* mFxChannels[12]: velocityX */
 
-    /* Create velocity Y curve (channel at offset 0x19c) */
-    CreateTwoKeyCurve(thisPtr, 0x19c, minV[2], totalMax);
+    /* Create velocity Y curve */
+    CreateTwoKeyCurve((byte *)_this, 0x19c, minV[2], totalMax);  /* mFxChannels[13]: velocityY */
 
-    /* Create velocity Z curve (channel at offset 0x1a8) */
-    CreateTwoKeyCurve(thisPtr, 0x1a8, minV[0], totalMax);
+    /* Create velocity Z curve */
+    CreateTwoKeyCurve((byte *)_this, 0x1a8, minV[0], totalMax);  /* mFxChannels[14]: velocityZ */
 
     /* Check if min == max (all axes) */
     int allEqual = 1;
@@ -895,16 +891,16 @@ Bool PrimitiveTemplate_ParseVelocity(const PrimitiveTemplate * _this, const char
 
     if (!allEqual) {
         /* Set useRandomVelocity flag */
-        *(unsigned int *)(thisPtr + 0x90) |= 0x80000;
+        ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x80000;
 
-        /* Create velocity X rand curve (channel at offset 0x1b4) */
-        CreateTwoKeyCurve(thisPtr, 0x1b4, maxV[0], 1.0f);
+        /* Create velocity X rand curve */
+        CreateTwoKeyCurve((byte *)_this, 0x1b4, maxV[0], 1.0f);  /* mFxChannels[15]: velocityXRand */
 
-        /* Create velocity Y rand curve (channel at offset 0x1c0) */
-        CreateTwoKeyCurve(thisPtr, 0x1c0, maxV[1], 1.0f);
+        /* Create velocity Y rand curve */
+        CreateTwoKeyCurve((byte *)_this, 0x1c0, maxV[1], 1.0f);  /* mFxChannels[16]: velocityYRand */
 
-        /* Create velocity Z rand curve (channel at offset 0x1cc) */
-        CreateTwoKeyCurve(thisPtr, 0x1cc, maxV[2], 1.0f);
+        /* Create velocity Z rand curve */
+        CreateTwoKeyCurve((byte *)_this, 0x1cc, maxV[2], 1.0f);  /* mFxChannels[17]: velocityZRand */
     }
 
     return 1;
@@ -928,7 +924,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
     EnsureMinMax(&minV[1], &maxV[1]);
     EnsureMinMax(&minV[2], &maxV[2]);
 
-    float maxScale = *(float *)(thisPtr + 0x5c); /* mLife.mMax */
+    float maxScale = ((PrimitiveTemplate *)_this)->mLife.mMax;
 
     /* Compute max range per axis */
     float maxX = AbsCeil(minV[0]);
@@ -955,14 +951,14 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
     /* Scale by maxScale * 0.001 */
     float rangeScale = totalMax * maxScale * 0.001f;
 
-    /* Create accel X curve (channel at offset 0x1d8) */
-    CreateAccelCurve(thisPtr, 0x1d8, minV[0], maxScale, rangeScale);
+    /* Create accel X curve */
+    CreateAccelCurve((byte *)_this, 0x1d8, minV[0], maxScale, rangeScale);  /* mFxChannels[18]: velocity2X */
 
-    /* Create accel Y curve (channel at offset 0x1e4) */
-    CreateAccelCurve(thisPtr, 0x1e4, minV[1], maxScale, rangeScale);
+    /* Create accel Y curve */
+    CreateAccelCurve((byte *)_this, 0x1e4, minV[1], maxScale, rangeScale);  /* mFxChannels[19]: velocity2Y */
 
-    /* Create accel Z curve (channel at offset 0x1f0) */
-    CreateAccelCurve(thisPtr, 0x1f0, minV[2], maxScale, rangeScale);
+    /* Create accel Z curve */
+    CreateAccelCurve((byte *)_this, 0x1f0, minV[2], maxScale, rangeScale);  /* mFxChannels[20]: velocity2Z */
 
     /* Check if min == max (all axes) */
     int allEqual = 1;
@@ -971,16 +967,16 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
 
     if (!allEqual) {
         /* Set flag */
-        *(unsigned int *)(thisPtr + 0x90) |= 0x100000;
+        ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x100000;
 
-        /* Create accel X rand (channel at offset 0x1fc) */
-        CreateAccelCurveUnit(thisPtr, 0x1fc, maxV[0], maxScale, rangeScale);
+        /* Create accel X rand */
+        CreateAccelCurveUnit((byte *)_this, 0x1fc, maxV[0], maxScale, rangeScale);  /* mFxChannels[21]: velocity2XRand */
 
-        /* Create accel Y rand (channel at offset 0x208) */
-        CreateAccelCurveUnit(thisPtr, 0x208, maxV[1], maxScale, rangeScale);
+        /* Create accel Y rand */
+        CreateAccelCurveUnit((byte *)_this, 0x208, maxV[1], maxScale, rangeScale);  /* mFxChannels[22]: velocity2YRand */
 
-        /* Create accel Z rand (channel at offset 0x214) */
-        CreateAccelCurveUnit(thisPtr, 0x214, maxV[2], maxScale, rangeScale);
+        /* Create accel Z rand */
+        CreateAccelCurveUnit((byte *)_this, 0x214, maxV[2], maxScale, rangeScale);  /* mFxChannels[23]: velocity2ZRand */
     }
 
     return 1;
@@ -1034,8 +1030,8 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         if (stricmp(key, "count") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
-            *(float *)(thisPtr + 0x50) = minVal;
-            *(float *)(thisPtr + 0x54) = maxVal;
+            ((PrimitiveTemplate *)_this)->mSpawnCount.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mSpawnCount.mMax = maxVal;
         }
         /* "shaders" or "shader" */
         else if (stricmp(key, "shaders") == 0 || stricmp(key, "shader") == 0) {
@@ -1072,12 +1068,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
             /* Note: reversed storage order from normal — mMin=max, mMax=min */
-            *(float *)(thisPtr + 0x58) = maxVal;
-            *(float *)(thisPtr + 0x5c) = minVal;
+            ((PrimitiveTemplate *)_this)->mLife.mMin = maxVal;
+            ((PrimitiveTemplate *)_this)->mLife.mMax = minVal;
         }
         /* "cullrange" */
         else if (stricmp(key, "cullrange") == 0) {
-            *(float *)(thisPtr + 0x64) = (float)atof(val);
+            ((PrimitiveTemplate *)_this)->mSpawnRange.mMax = (float)atof(val);
         }
         /* "spawnRange" */
         else if (stricmp(key, "spawnRange") == 0) {
@@ -1085,16 +1081,16 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
                 goto error_key;
             if (minVal > maxVal)
                 goto error_key;
-            *(float *)(thisPtr + 0x60) = minVal;
-            *(float *)(thisPtr + 0x64) = maxVal;
+            ((PrimitiveTemplate *)_this)->mSpawnRange.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mSpawnRange.mMax = maxVal;
         }
         /* "delay" */
         else if (stricmp(key, "delay") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
             /* reversed storage */
-            *(float *)(thisPtr + 0x48) = maxVal;
-            *(float *)(thisPtr + 0x4c) = minVal;
+            ((PrimitiveTemplate *)_this)->mSpawnDelay.mMin = maxVal;
+            ((PrimitiveTemplate *)_this)->mSpawnDelay.mMax = minVal;
         }
         /* "bounce" / "intensity" */
         else if (stricmp(key, "bounce") == 0 || stricmp(key, "intensity") == 0) {
@@ -1110,9 +1106,9 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
                 goto error_key;
             if (maxVal > 1.0f)
                 goto error_key;
-            *(float *)(thisPtr + 0x280) = minVal;
-            *(float *)(thisPtr + 0x284) = maxVal;
-            *(unsigned int *)(thisPtr + 0x90) |= 0x20;
+            ((PrimitiveTemplate *)_this)->mElasticity.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mElasticity.mMax = maxVal;
+            ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x20;
         }
         /* "min" — bounding box min */
         else if (stricmp(key, "min") == 0) {
@@ -1121,10 +1117,10 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
                        &maxV[0], &maxV[1], &maxV[2]);
             if (n <= 2 || n == 4 || n == 5)
                 goto error_key;
-            *(float *)(thisPtr + 0xa0) = minV[0];
-            *(float *)(thisPtr + 0xa4) = minV[1];
-            *(float *)(thisPtr + 0xa8) = minV[2];
-            *(unsigned int *)(thisPtr + 0x90) |= 0x60;
+            ((PrimitiveTemplate *)_this)->mMin[0] = minV[0];
+            ((PrimitiveTemplate *)_this)->mMin[1] = minV[1];
+            ((PrimitiveTemplate *)_this)->mMin[2] = minV[2];
+            ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x60;
         }
         /* "max" — bounding box max */
         else if (stricmp(key, "max") == 0) {
@@ -1133,10 +1129,10 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
                        &minV[0], &minV[1], &minV[2]);
             if (n <= 2 || n == 4 || n == 5)
                 goto error_key;
-            *(float *)(thisPtr + 0xac) = maxV[0];
-            *(float *)(thisPtr + 0xb0) = maxV[1];
-            *(float *)(thisPtr + 0xb4) = maxV[2];
-            *(unsigned int *)(thisPtr + 0x90) |= 0x60;
+            ((PrimitiveTemplate *)_this)->mMax[0] = maxV[0];
+            ((PrimitiveTemplate *)_this)->mMax[1] = maxV[1];
+            ((PrimitiveTemplate *)_this)->mMax[2] = maxV[2];
+            ((PrimitiveTemplate *)_this)->mAttributeFlags |= 0x60;
         }
         /* "angle" / "angles" */
         else if (stricmp(key, "angle") == 0 || stricmp(key, "angles") == 0) {
@@ -1144,24 +1140,24 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
             if (!n)
                 goto error_key;
             /* Store angle ranges */
-            *(float *)(thisPtr + 0x228) = maxV[0];
-            *(float *)(thisPtr + 0x22c) = minV[0];
-            *(float *)(thisPtr + 0x230) = maxV[1];
-            *(float *)(thisPtr + 0x234) = minV[1];
-            *(float *)(thisPtr + 0x238) = maxV[2];
-            *(float *)(thisPtr + 0x23c) = minV[2];
+            ((PrimitiveTemplate *)_this)->mAngle1.mMin = maxV[0];
+            ((PrimitiveTemplate *)_this)->mAngle1.mMax = minV[0];
+            ((PrimitiveTemplate *)_this)->mAngle2.mMin = maxV[1];
+            ((PrimitiveTemplate *)_this)->mAngle2.mMax = minV[1];
+            ((PrimitiveTemplate *)_this)->mAngle3.mMin = maxV[2];
+            ((PrimitiveTemplate *)_this)->mAngle3.mMax = minV[2];
         }
         /* "angleDelta" */
         else if (stricmp(key, "angleDelta") == 0) {
             n = ParseVec3Range(val, minV, maxV);
             if (!n)
                 goto error_key;
-            *(float *)(thisPtr + 0x240) = minV[0];
-            *(float *)(thisPtr + 0x244) = maxV[0];
-            *(float *)(thisPtr + 0x248) = minV[1];
-            *(float *)(thisPtr + 0x24c) = maxV[1];
-            *(float *)(thisPtr + 0x250) = minV[2];
-            *(float *)(thisPtr + 0x254) = maxV[2];
+            ((PrimitiveTemplate *)_this)->mAngle1Delta.mMin = minV[0];
+            ((PrimitiveTemplate *)_this)->mAngle1Delta.mMax = maxV[0];
+            ((PrimitiveTemplate *)_this)->mAngle2Delta.mMin = minV[1];
+            ((PrimitiveTemplate *)_this)->mAngle2Delta.mMax = maxV[1];
+            ((PrimitiveTemplate *)_this)->mAngle3Delta.mMin = minV[2];
+            ((PrimitiveTemplate *)_this)->mAngle3Delta.mMax = maxV[2];
         }
         /* "velocity" / "vel" */
         else if (stricmp(key, "velocity") == 0 || stricmp(key, "vel") == 0) {
@@ -1177,36 +1173,36 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         else if (stricmp(key, "gravity") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
-            *(float *)(thisPtr + 0x258) = minVal;
-            *(float *)(thisPtr + 0x25c) = maxVal;
+            ((PrimitiveTemplate *)_this)->mGravity.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mGravity.mMax = maxVal;
         }
         /* "density" */
         else if (stricmp(key, "density") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
             /* reversed */
-            *(float *)(thisPtr + 0x260) = maxVal;
-            *(float *)(thisPtr + 0x264) = minVal;
+            ((PrimitiveTemplate *)_this)->mDensity.mMin = maxVal;
+            ((PrimitiveTemplate *)_this)->mDensity.mMax = minVal;
         }
         /* "variance" */
         else if (stricmp(key, "variance") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
             /* reversed */
-            *(float *)(thisPtr + 0x268) = maxVal;
-            *(float *)(thisPtr + 0x26c) = minVal;
+            ((PrimitiveTemplate *)_this)->mVariance.mMin = maxVal;
+            ((PrimitiveTemplate *)_this)->mVariance.mMax = minVal;
         }
         /* "origin" */
         else if (stricmp(key, "origin") == 0) {
             n = ParseVec3Range(val, minV, maxV);
             if (!n)
                 goto error_key;
-            *(float *)(thisPtr + 0xb8) = minV[0];
-            *(float *)(thisPtr + 0xbc) = maxV[0];
-            *(float *)(thisPtr + 0xc0) = minV[1];
-            *(float *)(thisPtr + 0xc4) = maxV[1];
-            *(float *)(thisPtr + 0xc8) = minV[2];
-            *(float *)(thisPtr + 0xcc) = maxV[2];
+            ((PrimitiveTemplate *)_this)->mOrigin1X.mMin = minV[0];
+            ((PrimitiveTemplate *)_this)->mOrigin1X.mMax = maxV[0];
+            ((PrimitiveTemplate *)_this)->mOrigin1Y.mMin = minV[1];
+            ((PrimitiveTemplate *)_this)->mOrigin1Y.mMax = maxV[1];
+            ((PrimitiveTemplate *)_this)->mOrigin1Z.mMin = minV[2];
+            ((PrimitiveTemplate *)_this)->mOrigin1Z.mMax = maxV[2];
         }
         /* "origin2" */
         else if (stricmp(key, "origin2") == 0) {
@@ -1214,41 +1210,41 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
             if (!n)
                 goto error_key;
             /* reversed: max first, then min */
-            *(float *)(thisPtr + 0xd0) = maxV[0];
-            *(float *)(thisPtr + 0xd4) = minV[0];
-            *(float *)(thisPtr + 0xd8) = maxV[1];
-            *(float *)(thisPtr + 0xdc) = minV[1];
-            *(float *)(thisPtr + 0xe0) = maxV[2];
-            *(float *)(thisPtr + 0xe4) = minV[2];
+            ((PrimitiveTemplate *)_this)->mOrigin2X.mMin = maxV[0];
+            ((PrimitiveTemplate *)_this)->mOrigin2X.mMax = minV[0];
+            ((PrimitiveTemplate *)_this)->mOrigin2Y.mMin = maxV[1];
+            ((PrimitiveTemplate *)_this)->mOrigin2Y.mMax = minV[1];
+            ((PrimitiveTemplate *)_this)->mOrigin2Z.mMin = maxV[2];
+            ((PrimitiveTemplate *)_this)->mOrigin2Z.mMax = minV[2];
         }
         /* "radius" */
         else if (stricmp(key, "radius") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
-            *(float *)(thisPtr + 0xe8) = minVal;
-            *(float *)(thisPtr + 0xec) = maxVal;
+            ((PrimitiveTemplate *)_this)->mRadius.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mRadius.mMax = maxVal;
         }
         /* "height" */
         else if (stricmp(key, "height") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
             /* reversed */
-            *(float *)(thisPtr + 0xf0) = maxVal;
-            *(float *)(thisPtr + 0xf4) = minVal;
+            ((PrimitiveTemplate *)_this)->mHeight.mMin = maxVal;
+            ((PrimitiveTemplate *)_this)->mHeight.mMax = minVal;
         }
         /* "wind" */
         else if (stricmp(key, "wind") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
-            *(float *)(thisPtr + 0xf8) = minVal;
-            *(float *)(thisPtr + 0xfc) = maxVal;
+            ((PrimitiveTemplate *)_this)->mWindModifier.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mWindModifier.mMax = maxVal;
         }
         /* "rotation" */
         else if (stricmp(key, "rotation") == 0) {
             if (!ParseFloatRange(val, &minVal, &maxVal))
                 goto error_key;
-            *(float *)(thisPtr + 0x220) = minVal;
-            *(float *)(thisPtr + 0x224) = maxVal;
+            ((PrimitiveTemplate *)_this)->mRotation.mMin = minVal;
+            ((PrimitiveTemplate *)_this)->mRotation.mMax = maxVal;
         }
         /* "rotationDelta" — I_stricmp used here in the original */
         else if (I_stricmp(key, "rotationDelta") == 0) {
@@ -1267,33 +1263,33 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         }
         /* "nonUniformScale" */
         else if (stricmp(key, "nonUniformScale") == 0) {
-            *(Bool *)(thisPtr + 0x9c) = (atoi(val) != 0);
+            ((PrimitiveTemplate *)_this)->mNonUniformScale = (atoi(val) != 0);
         }
         /* "useLength" */
         else if (stricmp(key, "useLength") == 0) {
-            *(Bool *)(thisPtr + 0x9d) = (atoi(val) != 0);
+            ((PrimitiveTemplate *)_this)->useLength = (atoi(val) != 0);
         }
         /* "name" */
         else if (stricmp(key, "name") == 0) {
             if (!val)
                 goto error_key;
-            I_strncpyz((char *)thisPtr, val, 0x20);
+            I_strncpyz(((PrimitiveTemplate *)_this)->mName, val, 0x20);
         }
         /* "shaderImpact" */
         else if (stricmp(key, "shaderImpact") == 0) {
-            I_strncpyz((char *)(thisPtr + 0x20), val, 0x20);
+            I_strncpyz(((PrimitiveTemplate *)_this)->mMaterialImpact, val, 0x20);
         }
         /* "sequenceStartFrameMode" */
         else if (stricmp(key, "sequenceStartFrameMode") == 0) {
             n = atoi(val);
             if ((unsigned int)n > 2)
                 goto error_key;
-            *(int *)(thisPtr + 0x288) = n;
+            ((PrimitiveTemplate *)_this)->mSequenceStartFrameMode = n;
         }
         /* "sequenceFixedFrameValue" */
         else if (stricmp(key, "sequenceFixedFrameValue") == 0) {
             n = atoi(val);
-            *(int *)(thisPtr + 0x28c) = n;
+            ((PrimitiveTemplate *)_this)->mSequenceFixedFrameValue = n;
             if (n <= 0)
                 goto error_key;
         }
@@ -1302,12 +1298,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
             n = atoi(val);
             if ((unsigned int)n > 1)
                 goto error_key;
-            *(int *)(thisPtr + 0x290) = n;
+            ((PrimitiveTemplate *)_this)->mSequencePlayRateMode = n;
         }
         /* "sequenceFixedFpsValue" */
         else if (stricmp(key, "sequenceFixedFpsValue") == 0) {
             float fpsVal = (float)atof(val);
-            *(float *)(thisPtr + 0x294) = fpsVal;
+            ((PrimitiveTemplate *)_this)->mSequenceFixedFpsValue = fpsVal;
             if (fpsVal < 0.0f)
                 goto error_key;
         }
@@ -1316,19 +1312,19 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
             n = atoi(val);
             if ((unsigned int)n > 1)
                 goto error_key;
-            *(int *)(thisPtr + 0x298) = n;
+            ((PrimitiveTemplate *)_this)->mSequenceLoopMode = n;
         }
         /* "sequenceLoopTimes" */
         else if (stricmp(key, "sequenceLoopTimes") == 0) {
             n = atoi(val);
-            *(int *)(thisPtr + 0x29c) = n;
+            ((PrimitiveTemplate *)_this)->mSequenceLoopTimes = n;
             if (n < 0)
                 goto error_key;
         }
         /* "spawnFrustumCullRadius" */
         else if (stricmp(key, "spawnFrustumCullRadius") == 0) {
             float radius = (float)atof(val);
-            *(float *)(thisPtr + 0x2a0) = radius;
+            ((PrimitiveTemplate *)_this)->spawnFrustumCullRadius = radius;
             if (radius < 0.0f)
                 goto error_key;
         }
@@ -1691,8 +1687,8 @@ do_migration:
     {
         int channelId;
         byte *bcp = (byte *)backCompatibleParameters;
-        FxChannel *channels = (FxChannel *)(thisPtr + 0x100);
-        float *lifePtr = (float *)(thisPtr + 0x58);
+        FxChannel *channels = ((PrimitiveTemplate *)_this)->mFxChannels;
+        FxRange *lifeRange = &((PrimitiveTemplate *)_this)->mLife;
 
         for (channelId = 0; channelId < 24; channelId++) {
             FxChannelBackwardCompatible *bc = (FxChannelBackwardCompatible *)(bcp + channelId * 0x40);
@@ -1719,8 +1715,8 @@ do_migration:
             }
 
             /* Compute lifetime midpoint */
-            float lifetime = lifePtr[0]; /* mLife.mMin */
-            float lifeMax = lifePtr[1]; /* mLife.mMax */
+            float lifetime = lifeRange->mMin;
+            float lifeMax = lifeRange->mMax;
             float lifeMid = lifetime + (lifeMax - lifetime) * 0.5f;
 
             FxChannel_CreateViaMigration(bc, dimensions, lifeMid, forceUnitScale, &channels[channelId]);
@@ -1729,21 +1725,21 @@ do_migration:
 
     /* Bounding box validation */
     {
-        float *thisf = (float *)thisPtr;
-        float minX = *(float *)(thisPtr + 0xa0);
-        float maxX = *(float *)(thisPtr + 0xac);
+        PrimitiveTemplate *pt = (PrimitiveTemplate *)_this;
+        float minX = pt->mMin[0];
+        float maxX = pt->mMax[0];
         if (minX > maxX) {
             FX_Print("^1FX bounding box mins / maxs invalid for effect '%s'\n", _this);
             return 0;
         }
-        float minY = *(float *)(thisPtr + 0xa4);
-        float maxY = *(float *)(thisPtr + 0xb0);
+        float minY = pt->mMin[1];
+        float maxY = pt->mMax[1];
         if (minY > maxY) {
             FX_Print("^1FX bounding box mins / maxs invalid for effect '%s'\n", _this);
             return 0;
         }
-        float minZ = *(float *)(thisPtr + 0xa8);
-        float maxZ = *(float *)(thisPtr + 0xb4);
+        float minZ = pt->mMin[2];
+        float maxZ = pt->mMax[2];
         if (minZ > maxZ) {
             FX_Print("^1FX bounding box mins / maxs invalid for effect '%s'\n", _this);
             return 0;
@@ -1811,8 +1807,8 @@ Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const ch
         for (j = 0; j < flagEntryCount; j++) {
             if (stricmp(flagEntries[j].flag, tok) == 0) {
                 /* OR in both mask words */
-                *(unsigned int *)(thisPtr + 0x90) |= flagEntries[j].masks[0];
-                *(unsigned int *)(thisPtr + 0x94) |= flagEntries[j].masks[1];
+                ((PrimitiveTemplate *)_this)->mAttributeFlags |= flagEntries[j].masks[0];
+                ((PrimitiveTemplate *)_this)->mSpawnFlags |= flagEntries[j].masks[1];
                 found = 1;
                 break;
             }

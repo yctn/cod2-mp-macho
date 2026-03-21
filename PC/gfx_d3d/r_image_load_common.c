@@ -298,9 +298,9 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
 
     /* No D3D device (com_skipRenderer 1) — skip GPU upload. */
     {
-        int dev = *(int *)((byte *)imp_dx + 8);
+        void *dev = ((DxGlobals *)imp_dx)->device;
         int devvt = dev ? *(int *)dev : 0;
-        if (dev == 0 || devvt == 0) {
+        if (dev == NULL || devvt == 0) {
             return;
         }
     }
@@ -414,7 +414,7 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
 
     if (image->mapType == 5) {
         /* line 305: Skip non-zero mip levels if device doesn't support them */
-        if (mipLevel != 0 && *(byte *)((byte *)imp_dx + 0x2d7b) == 0) {
+        if (mipLevel != 0 && ((DxGlobals *)imp_dx)->canMipCubemaps == 0) { /* TODO: verify offset 0x2d7b maps to canMipCubemaps */
             return;
         }
         /* Fall through to default 2D/cube upload path */

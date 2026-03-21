@@ -22,23 +22,23 @@ static OutdoorGlob outdoorGlob; /* outdoorGlob */
 
 void R_RegisterOutdoorImage(GfxWorld *world)
 {
-    byte *dxCaps = *(byte **)imp_r_rendererInUse;
-    if (*(int *)(dxCaps + 8) == 2) {
-        *(void **)((byte *)world + 0x200) = NULL;
+    const dvar_t *rendererInUse = *(const dvar_t **)imp_r_rendererInUse;
+    if (rendererInUse->current.integer == 2) {
+        world->outdoorImage = NULL;
         return;
     }
 
     ClearBounds(outdoorGlob.bbox[0], outdoorGlob.bbox[1]);
 
-    int surfCount = *(int *)((byte *)world + 0x10);
-    byte *surfData = *(byte **)((byte *)world + 0x14);
+    int surfCount = world->surfaceCount;
+    byte *surfData = (byte *)world->surfaces;
 
     int i;
     for (i = 0; i < surfCount; i++) {
         byte *surf = surfData + i * 12;
         byte *material = *(byte **)surf;
 
-        if (*(byte *)(material + 0xc) & 8)
+        if (((Material *)material)->info.gameFlags & 8)
             continue;
 
         byte *bounds = *(byte **)(surf + 8);
@@ -79,7 +79,7 @@ void R_RegisterOutdoorImage(GfxWorld *world)
         outdoorTranslate[axis] = -outdoorGlob.bbox[0][axis] * outdoorScale[axis];
     }
 
-    float *matrix = (float *)((byte *)world + 0x1c0);
+    float *matrix = (float *)world->outdoorLookupMatrix;
     MatrixIdentity44(matrix);
     matrix[0] = outdoorScale[0];
     matrix[5] = outdoorScale[1];
@@ -88,7 +88,7 @@ void R_RegisterOutdoorImage(GfxWorld *world)
     matrix[13] = outdoorTranslate[1];
     matrix[14] = outdoorTranslate[2];
 
-    *(void **)((byte *)world + 0x200) = Image_Register("$outdoor", 1, 0);
+    world->outdoorImage = (GfxImage *)Image_Register("$outdoor", 1, 0);
 }
 
 void R_GenerateOutdoorImage(GfxImage *outdoorImage)

@@ -2292,8 +2292,8 @@ void PlayerCmd_setEnterTime(scr_entref_t entref)
 void BodyEnd(gentity_t *ent)
 {
     *(int *)((byte *)ent + 8) &= 0xfff7ffff;
-    *(int *)((byte *)ent + 0x11c) = 0x4000000;
-    *(byte *)((byte *)ent + 0xf2) = 0;
+    ent->r.contents = 0x4000000;
+    ent->r.svFlags = 0;
 }
 
 /* line 1484 */
@@ -5575,7 +5575,7 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
         pSelf = NULL;
     } else {
         pSelf = (gentity_t *)((byte *)imp_g_entities + (unsigned int)entnum * 0x230);
-        if (*(int *)((byte *)pSelf + 0x158) == 0) {
+        if (*(int *)((byte *)pSelf + 0x158) == 0) { /* TODO: unknown offset */
             Scr_ObjectError(va(str_002b5dd4, (int)entnum));
         }
     }
@@ -5583,14 +5583,14 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
     weaponName = (const char *)Scr_GetString(0);
     iWeaponIndex = G_GetWeaponIndexForName(weaponName);
 
-    client = *(void **)((byte *)pSelf + 0x158);
+    client = *(void **)((byte *)pSelf + 0x158); /* TODO: unknown offset */
     ammoIndex = BG_AmmoForWeapon(iWeaponIndex);
-    *(int *)((byte *)client + 0x144 + ammoIndex * 4) = 0;
+    *(int *)((byte *)client + 0x144 + ammoIndex * 4) = 0; /* TODO: unknown offset */
 
-    client = *(void **)((byte *)pSelf + 0x158);
+    client = *(void **)((byte *)pSelf + 0x158); /* TODO: unknown offset */
     clipIndex = BG_ClipForWeapon(iWeaponIndex);
-    *(int *)((byte *)client + 0x344 + clipIndex * 4) = 0;
+    *(int *)((byte *)client + 0x344 + clipIndex * 4) = 0; /* TODO: unknown offset */
 
-    BG_TakePlayerWeapon(*(void **)((byte *)pSelf + 0x158), iWeaponIndex);
+    BG_TakePlayerWeapon(*(void **)((byte *)pSelf + 0x158), iWeaponIndex); /* TODO: unknown offset */
 }
 #endif

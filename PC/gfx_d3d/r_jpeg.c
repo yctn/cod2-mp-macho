@@ -152,9 +152,9 @@ void R_SaveJpg(const char *filename, int quality, int image_width, int image_hei
     jpeg_finish_compress(cinfo);
 
     /* Write file and free buffer */
-    sys = *(byte **)r_sys_ptr;
-    ((void (*)(const char *, byte *, int))*(void **)(sys + 0x140))(filename, out, hackSize);
-    ((void (*)(byte *))*(void **)(sys + 0x30))(out);
+    refimport_t *ri = *(refimport_t **)r_sys_ptr;
+    ((void (*)(const char *, byte *, int))ri->FS_WriteFile)(filename, out, hackSize);
+    ri->Hunk_FreeTempMemory(out);
 
     jpeg_destroy_compress(cinfo);
 }
@@ -198,22 +198,22 @@ void R_LoadJpg(const char *filepath, byte * *file, byte * *pic, int *width, int 
     output_height = *(int *)(cinfo + 0x6c);
 
     /* Check max texture size */
-    limits = *(byte **)r_limits_ptr;
-    maxSize = *(int *)(limits + 0x18);
+    vidConfig_t *vidCfg = *(vidConfig_t **)r_limits_ptr;
+    maxSize = vidCfg->maxTextureSize;
     if (output_width > maxSize || output_height > maxSize) {
-        ((void (*)(int, const char *, ...))*(void **)(sys))(2, "WARNING: image '%s' is larger than %i on at least one side\n", filepath, maxSize);
+        ((refimport_t *)sys)->Printf(2, "WARNING: image '%s' is larger than %i on at least one side\n", filepath, maxSize);
         jpeg_destroy_decompress(cinfo);
-        ((void (*)(byte *))*(void **)(sys + 0x12c))(fbuffer);
+        ((refimport_t *)sys)->FS_FreeFile(fbuffer);
         return;
     }
 
     /* Check color space */
     num_components = *(int *)(cinfo + 0x74);
     if (num_components != 3) {
-        sys = *(byte **)r_sys_ptr;
-        ((void (*)(int, const char *, ...))*(void **)(sys))(2, "WARNING: jpeg image '%s' is not RGB\n", filepath);
+        refimport_t *ri2 = *(refimport_t **)r_sys_ptr;
+        ri2->Printf(2, "WARNING: jpeg image '%s' is not RGB\n", filepath);
         jpeg_destroy_decompress(cinfo);
-        ((void (*)(byte *))*(void **)((*(byte **)r_sys_ptr) + 0x12c))(fbuffer);
+        ri2->FS_FreeFile(fbuffer);
         return;
     }
 

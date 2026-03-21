@@ -56,14 +56,13 @@ extern float floorf(float x);
 int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float *sunVisibility, vec4_t *colorForDir)
 {
     float lightingOrigin[3];
-    byte *inst = (byte *)smodelInst;
 
-    /* lightingOrigin = midpoint of absmin and absmax (offsets 0x14 and 0x20) */
-    lightingOrigin[0] = (((GfxStaticModelInstance *)inst)->mins[0] + ((GfxStaticModelInstance *)inst)->maxs[0]) * 0.5f;
-    lightingOrigin[1] = (((GfxStaticModelInstance *)inst)->mins[1] + ((GfxStaticModelInstance *)inst)->maxs[1]) * 0.5f;
-    lightingOrigin[2] = (((GfxStaticModelInstance *)inst)->mins[2] + ((GfxStaticModelInstance *)inst)->maxs[2]) * 0.5f;
+    /* lightingOrigin = midpoint of absmin and absmax */
+    lightingOrigin[0] = (smodelInst->mins[0] + smodelInst->maxs[0]) * 0.5f;
+    lightingOrigin[1] = (smodelInst->mins[1] + smodelInst->maxs[1]) * 0.5f;
+    lightingOrigin[2] = (smodelInst->mins[2] + smodelInst->maxs[2]) * 0.5f;
 
-    *sunVisibility = RB_GetLightingAtPoint((byte *)world + 0x11c, lightingOrigin, colorForDir);
+    *sunVisibility = RB_GetLightingAtPoint(&world->lightGrid, lightingOrigin, colorForDir);
     return 0;
 }
 
@@ -77,9 +76,9 @@ int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
 
     if (rendererType == 2) {
         /* Dx7 path: allocate via ri->hunkAlloc */
-        hunkAlloc = *(void *(**)(int))((byte *)imp_ri + 0xc);
-        *(void **)((byte *)world + 0x12c) = hunkAlloc(smodelCount * 3 * 32);
-        *(void **)((byte *)world + 0x130) = hunkAlloc(smodelCount * 4);
+        hunkAlloc = ((refimport_t *)imp_ri)->Hunk_AllocInternal;
+        world->smodelLightingColorTable = (vec4_t (*)[6])hunkAlloc(smodelCount * 3 * 32);
+        world->smodelLightingSunVisTable = (float *)hunkAlloc(smodelCount * 4);
     } else {
         /* Non-Dx7: compute image dimensions for lighting cache texture */
         int width = 1;
@@ -514,7 +513,6 @@ int R_FilterStaticModelIntoCells_r(GfxStaticModelInstance *smodelInst, const vec
  * from accumulated lighting data. Only for non-Dx7 renderer. */
 int R_FinishStaticModelLightingCache(GfxWorld *world)
 {
-    byte *w = (byte *)world;
     int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
 
     if (!isDx7) {
@@ -523,17 +521,17 @@ int R_FinishStaticModelLightingCache(GfxWorld *world)
 
         /* Allocate image: "*smodel_lighting", category=2, semantic=1, track=4 */
         image = Image_Alloc("*smodel_lighting", 2, 1, 4);
-        *(GfxImage **)(w + 0x10c) = image;
+        world->smodelLightingImage = image;
 
         /* Generate 3D texture from cached lighting data:
          * width = sg[0]*2, height = sg[1]*2, depth = sg[4], format = A8R8G8B8 */
         Image_Generate3D(image, (byte *)(void *)(long)sg[4], sg[0] * 2, sg[1] * 2, 2, 0x15);
 
-        /* Store texel size as vec3 at world+0x110:
+        /* Store texel size as vec3:
          * x = sg[2] * 0.5, y = sg[3] * 0.5, z = 0.25 */
-        *(float *)(w + 0x110) = *(float *)&sg[2] * 0.5f;
-        *(float *)(w + 0x114) = *(float *)&sg[3] * 0.5f;
-        *(float *)(w + 0x118) = 0.25f;
+        world->smodelLightingLookupScale[0] = *(float *)&sg[2] * 0.5f;
+        world->smodelLightingLookupScale[1] = *(float *)&sg[3] * 0.5f;
+        world->smodelLightingLookupScale[2] = 0.25f;
 
         /* Clear smodelLoadGlob */
         sg[0] = 0; sg[1] = 0; sg[2] = 0; sg[3] = 0; sg[4] = 0;
@@ -574,25 +572,24 @@ extern void XSurfaceGetVerts(void *xsurf, void *matArray, void *vertBuf, void *,
 extern float XModelGetLodOutDist(const void *model);
 int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *origin, const vec_t *angles, vec_t scale, GfxStaticModelInstance *smodelInst)
 {
-    char *si = (char *)smodelInst;
     void *surfacesPtr;
     int partBits[4];
     int surfaceCount, numBones, i;
     char *matArray, *vertBuf;
 
-    /* Set model, origin, angles→axis, scale */
-    ((GfxStaticModelInstance *)si)->model = (struct XModel *)model;
-    memcpy(si + 4, origin, 12);
-    AnglesToAxis(angles, si + 0x2c);
-    ((GfxStaticModelInstance *)si)->scale = scale;
+    /* Set model, origin, angles->axis, scale */
+    smodelInst->model = (struct XModel *)model;
+    memcpy(smodelInst->origin, origin, 12);
+    AnglesToAxis(angles, smodelInst->axis);
+    smodelInst->scale = scale;
 
     /* Init bounds to FLT_MAX / -FLT_MAX */
-    *(int *)&((GfxStaticModelInstance *)si)->mins[0] = 0x7f7fffff;
-    *(int *)&((GfxStaticModelInstance *)si)->mins[1] = 0x7f7fffff;
-    *(int *)&((GfxStaticModelInstance *)si)->mins[2] = 0x7f7fffff;
-    *(int *)&((GfxStaticModelInstance *)si)->maxs[0] = 0xff7fffff;
-    *(int *)&((GfxStaticModelInstance *)si)->maxs[1] = 0xff7fffff;
-    *(int *)&((GfxStaticModelInstance *)si)->maxs[2] = 0xff7fffff;
+    *(int *)&smodelInst->mins[0] = 0x7f7fffff;
+    *(int *)&smodelInst->mins[1] = 0x7f7fffff;
+    *(int *)&smodelInst->mins[2] = 0x7f7fffff;
+    *(int *)&smodelInst->maxs[0] = 0xff7fffff;
+    *(int *)&smodelInst->maxs[1] = 0xff7fffff;
+    *(int *)&smodelInst->maxs[2] = 0xff7fffff;
 
     /* Get surfaces for LOD 0 */
     surfaceCount = XModelGetSurfaces(model, &surfacesPtr, partBits, 0);
@@ -626,8 +623,6 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
     /* Compute bounds from all surface vertices */
     {
         void **surfs = (void **)surfacesPtr;
-        float *mins = (float *)(si + 0x14);
-        float *maxs = (float *)(si + 0x20);
         for (i = 0; i < surfaceCount; i++) {
             int vertCount = XSurfaceGetNumVerts(surfs[i]);
             XSurfaceGetVerts(surfs[i], matArray, vertBuf, NULL, NULL);
@@ -638,8 +633,8 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
                     int axis;
                     for (axis = 0; axis < 3; axis++) {
                         float val = v[vi * 3 + axis];
-                        if (val < mins[axis]) mins[axis] = val;
-                        if (val > maxs[axis]) maxs[axis] = val;
+                        if (val < smodelInst->mins[axis]) smodelInst->mins[axis] = val;
+                        if (val > smodelInst->maxs[axis]) smodelInst->maxs[axis] = val;
                     }
                 }
             }
@@ -651,35 +646,33 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
 
     /* Apply scale + origin to bounds */
     {
-        float *mins = (float *)(si + 0x14);
-        float *maxs = (float *)(si + 0x20);
         int a;
         for (a = 0; a < 3; a++) {
-            mins[a] = mins[a] * scale + origin[a];
-            maxs[a] = maxs[a] * scale + origin[a];
+            smodelInst->mins[a] = smodelInst->mins[a] * scale + origin[a];
+            smodelInst->maxs[a] = smodelInst->maxs[a] * scale + origin[a];
         }
     }
 
     /* Get LOD out distance */
     {
         float lodOutDist = XModelGetLodOutDist(model);
-        *(float *)si = lodOutDist * scale;
+        smodelInst->cullDist = lodOutDist * scale;
     }
 
     /* Filter into BSP cells */
     {
-        char *cells = *(char **)((char *)world + 0xc);
-        float *mins = (float *)(si + 0x14);
-        float *maxs = (float *)(si + 0x20);
+        mnode_t *nodes = world->nodes;
+        float *mins = smodelInst->mins;
+        float *maxs = smodelInst->maxs;
         __asm__ __volatile__ (
             "movl %[si], %%ecx\n"
-            "movl %[cells], %%edx\n"
+            "movl %[nd], %%edx\n"
             "movl %[world], %%eax\n"
             "pushl %[maxs]\n"
             "pushl %[mins]\n"
             "calll R_FilterStaticModelIntoCells_r\n"
             "addl $8, %%esp\n"
-            : : [world]"m"(world), [cells]"r"(cells), [si]"m"(smodelInst),
+            : : [world]"m"(world), [nd]"r"(nodes), [si]"m"(smodelInst),
                 [mins]"r"(mins), [maxs]"r"(maxs)
             : "eax", "ecx", "edx", "memory"
         );
@@ -1030,15 +1023,13 @@ static inline byte R_ClampByte(int v)
 
 int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *smodelInst, float sunVisibility, vec4_t *colorForDir)
 {
-    byte *worldBytes = (byte *)world;
-    int smodelIndex = *(int *)(worldBytes + 0xf4) - 1; /* world->smodelCount - 1 */
+    int smodelIndex = world->smodelCount - 1;
 
     /* Dx7 path: direct copy from world lighting tables */
     if (*(int *)(*(int *)imp_r_rendererInUse + 8) == 2) {
-        byte *lightingColors = *(byte **)(worldBytes + 0x12c) + smodelIndex * 96;
+        byte *lightingColors = (byte *)world->smodelLightingColorTable + smodelIndex * 96;
         memcpy(colorForDir, lightingColors, 0x60);
-        float *sunVisTable = *(float **)(worldBytes + 0x130);
-        sunVisTable[smodelIndex] = sunVisibility;
+        world->smodelLightingSunVisTable[smodelIndex] = sunVisibility;
         return 0;
     }
 
@@ -1109,35 +1100,34 @@ extern void *Hunk_AllocAlignInternal(int size, int align);
 extern void qsort(void *, unsigned int, unsigned int, int (*)(const void *, const void *));
 int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
 {
-    char *t = (char *)tree;
     int smodelCount, childCount_existing, i;
     float mins[3], maxs[3];
 
     /* Sort static model indices */
-    qsort(*(void **)(t + 0x24), *(int *)(t + 0x20), 4, (int (*)(const void *, const void *))CompareStaticModels);
+    qsort(tree->staticModels, tree->staticModelCount, 4, (int (*)(const void *, const void *))CompareStaticModels);
 
     /* If tree has existing children, recurse on them first */
-    childCount_existing = *(int *)(t + 0x28);
+    childCount_existing = tree->childCount;
     if (childCount_existing > 0) {
-        char *children = *(char **)(t + 0x2c);
+        byte *children = (byte *)(intptr_t)tree->children;
         for (i = 0; i < childCount_existing; i++)
-            R_SortGfxAabbTree(world, (GfxAabbTree *)(children + i * 0x30));
+            R_SortGfxAabbTree(world, (GfxAabbTree *)(children + i * sizeof(GfxAabbTree)));
         return 0;
     }
 
     /* Compute bounds from static model instances */
     mins[0] = mins[1] = mins[2] = 3.4028234663852886e+38f;
     maxs[0] = maxs[1] = maxs[2] = -3.4028234663852886e+38f;
-    smodelCount = *(int *)(t + 0x20);
+    smodelCount = tree->staticModelCount;
     {
-        int *indices = *(int **)(t + 0x24);
-        char *smodelInsts = *(char **)((char *)world + 0xf8);
+        int *indices = tree->staticModels;
+        GfxStaticModelInstance *smodelInsts = world->smodelInsts;
         for (i = 0; i < smodelCount; i++) {
-            char *inst = smodelInsts + indices[i] * 96;
+            GfxStaticModelInstance *inst = &smodelInsts[indices[i]];
             int a;
             for (a = 0; a < 3; a++) {
-                float lo = ((GfxStaticModelInstance *)inst)->mins[a];
-                float hi = ((GfxStaticModelInstance *)inst)->maxs[a];
+                float lo = inst->mins[a];
+                float hi = inst->maxs[a];
                 if (lo < mins[a]) mins[a] = lo;
                 if (hi > maxs[a]) maxs[a] = hi;
             }
@@ -1145,9 +1135,9 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
     }
 
     /* Set bounds if no existing child bounds */
-    if (!*(int *)(t + 0x18)) {
-        memcpy(t, mins, 12);
-        memcpy(t + 0xc, maxs, 12);
+    if (!tree->surfaceCount) {
+        memcpy(tree->mins, mins, 12);
+        memcpy(tree->maxs, maxs, 12);
     }
 
     /* If <= 7 models, this is a leaf — done */
@@ -1160,8 +1150,8 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
     {
         float midX = (mins[0] + maxs[0]) * 0.5f;
         float midY = (mins[1] + maxs[1]) * 0.5f;
-        int *indices = *(int **)(t + 0x24);
-        char *smodelInsts = *(char **)((char *)world + 0xf8);
+        int *indices = tree->staticModels;
+        GfxStaticModelInstance *smodelInstsBase = world->smodelInsts;
         int counts[4] = {0, 0, 0, 0};
         int remaining = smodelCount;
         int *ptr = indices;
@@ -1185,14 +1175,14 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
             int *front = indices + partStart;
             for (i = 0; i < remaining; i++) {
                 int idx = ptr[i];
-                char *inst = smodelInsts + idx * 96;
+                GfxStaticModelInstance *inst = &smodelInstsBase[idx];
                 /* Test if instance fits in this quadrant */
-                if (((GfxStaticModelInstance *)inst)->mins[0] >= testMins[q][0] &&
-                    ((GfxStaticModelInstance *)inst)->mins[1] >= testMins[q][1] &&
-                    ((GfxStaticModelInstance *)inst)->mins[2] >= testMins[q][2] &&
-                    ((GfxStaticModelInstance *)inst)->maxs[0] <= testMaxs[q][0] &&
-                    ((GfxStaticModelInstance *)inst)->maxs[1] <= testMaxs[q][1] &&
-                    ((GfxStaticModelInstance *)inst)->maxs[2] <= testMaxs[q][2])
+                if (inst->mins[0] >= testMins[q][0] &&
+                    inst->mins[1] >= testMins[q][1] &&
+                    inst->mins[2] >= testMins[q][2] &&
+                    inst->maxs[0] <= testMaxs[q][0] &&
+                    inst->maxs[1] <= testMaxs[q][1] &&
+                    inst->maxs[2] <= testMaxs[q][2])
                 {
                     /* Swap to front */
                     int tmp = *front;
@@ -1214,46 +1204,46 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
         int numChildren = 0;
         for (q = 0; q < 4; q++)
             if (counts[q]) numChildren++;
-        if (*(int *)(t + 0x18)) numChildren++;
+        if (tree->surfaceCount) numChildren++;
         if (remaining > 0) numChildren++;
 
         if (numChildren == 0)
             return 0;
 
-        char *childNodes = (char *)Hunk_AllocAlignInternal(numChildren * 0x30, 4);
-        *(void **)(t + 0x2c) = childNodes;
+        byte *childNodes = (byte *)Hunk_AllocAlignInternal(numChildren * sizeof(GfxAabbTree), 4);
+        tree->children = (int)(intptr_t)childNodes;
 
         /* Copy existing node data to first child if needed */
-        if (*(int *)(t + 0x18)) {
-            int ci = *(int *)(t + 0x28);
-            char *child = childNodes + ci * 0x30;
-            memcpy(child, t, 0x18);
-            *(int *)(child + 0x1c) = *(int *)(t + 0x1c);
-            *(int *)(child + 0x18) = *(int *)(t + 0x18);
-            *(int *)(t + 0x28) = ci + 1;
+        if (tree->surfaceCount) {
+            int ci = tree->childCount;
+            GfxAabbTree *child = (GfxAabbTree *)(childNodes + ci * sizeof(GfxAabbTree));
+            memcpy(child, tree, 0x18);
+            child->startSurfIndex = tree->startSurfIndex;
+            child->surfaceCount = tree->surfaceCount;
+            tree->childCount = ci + 1;
         }
 
         /* Create child nodes for each non-empty partition */
         int *partPtr = indices;
         for (q = 0; q < 4; q++) {
             if (!counts[q]) continue;
-            int ci = *(int *)(t + 0x28);
-            char *child = childNodes + ci * 0x30;
-            *(int *)(t + 0x28) = ci + 1;
-            *(int *)(child + 0x20) = counts[q];
-            *(void **)(child + 0x24) = partPtr;
-            R_SortGfxAabbTree(world, (GfxAabbTree *)child);
+            int ci = tree->childCount;
+            GfxAabbTree *child = (GfxAabbTree *)(childNodes + ci * sizeof(GfxAabbTree));
+            tree->childCount = ci + 1;
+            child->staticModelCount = counts[q];
+            child->staticModels = partPtr;
+            R_SortGfxAabbTree(world, child);
             partPtr += counts[q];
         }
 
         /* Remaining models become a leaf child */
         if (remaining > 0) {
-            int ci = *(int *)(t + 0x28);
-            char *child = childNodes + ci * 0x30;
-            *(int *)(t + 0x28) = ci + 1;
-            *(int *)(child + 0x20) = remaining;
-            *(void **)(child + 0x24) = partPtr;
-            tree = (GfxAabbTree *)child;
+            int ci = tree->childCount;
+            GfxAabbTree *child = (GfxAabbTree *)(childNodes + ci * sizeof(GfxAabbTree));
+            tree->childCount = ci + 1;
+            child->staticModelCount = remaining;
+            child->staticModels = partPtr;
+            tree = child;
             goto recurse_top;
         }
     }
@@ -1741,30 +1731,30 @@ recurse_top:
 /* line 28 — Recursively allocate permanent Hunk memory for static model index
  * arrays in each AABB tree node. Replaces temp pointers with Hunk-allocated copies.
  * GfxAabbTree layout: +0x20=smodelCount, +0x24=smodelIndices, +0x28=childCount, +0x2c=children */
-static void R_AllocStaticModels_node(byte *node)
+static void R_AllocStaticModels_node(GfxAabbTree *node)
 {
-    int smodelCount = *(int *)(node + 0x20);
+    int smodelCount = node->staticModelCount;
     int childCount, i;
 
     /* Allocate and copy static model indices if this node has any */
     if (smodelCount > 0) {
         int size = smodelCount * 4;
-        void *dst = Hunk_AllocAlignInternal(size, 4);
-        memcpy(dst, *(void **)(node + 0x24), size);
-        *(void **)(node + 0x24) = dst;
+        int *dst = (int *)Hunk_AllocAlignInternal(size, 4);
+        memcpy(dst, node->staticModels, size);
+        node->staticModels = dst;
     }
 
-    /* Recurse into children (each child node is 0x30 bytes) */
-    childCount = *(int *)(node + 0x28);
+    /* Recurse into children */
+    childCount = node->childCount;
     for (i = 0; i < childCount; i++) {
-        byte *child = *(byte **)(node + 0x2c) + i * 0x30;
+        GfxAabbTree *child = (GfxAabbTree *)((byte *)(intptr_t)node->children + i * sizeof(GfxAabbTree));
         R_AllocStaticModels_node(child);
     }
 }
 
 int R_AllocStaticModels(GfxAabbTree *tree)
 {
-    R_AllocStaticModels_node((byte *)tree);
+    R_AllocStaticModels_node(tree);
     return 0;
 }
 
@@ -2214,23 +2204,24 @@ int R_AllocStaticModels(GfxAabbTree *tree)
 static int R_AddStaticModelToAabbTree_r_impl(byte *world, byte *tree, int smodelIndex)
 {
     int smodelInstOffset;
-    byte *smodelInst;
+    GfxStaticModelInstance *smodelInst;
+    GfxAabbTree *aabb;
     int count;
 
-    /* smodelIndex * 96 (leal (%ecx, %ecx, 2), %eax; shll $5, %eax) */
+    /* smodelIndex * sizeof(GfxStaticModelInstance) */
     smodelInstOffset = smodelIndex * 96;
 
 top:
-    count = *(int *)(tree + 0x20);
+    aabb = (GfxAabbTree *)tree;
+    count = aabb->staticModelCount;
 
     /* Check if count is a power of 2 (needs reallocation) or non-power-of-2 (append) */
     {
         int test = count - 1;
         if ((test & count) != 0) {
             /* Non-power-of-2: existing array has room, just append */
-            int *indices = *(int **)(tree + 0x24);
-            indices[count] = smodelIndex;
-            *(int *)(tree + 0x20) = count + 1;
+            aabb->staticModels[count] = smodelIndex;
+            aabb->staticModelCount = count + 1;
         } else {
             /* Power of 2 (or 0): need to allocate a new, larger array */
             int allocCount;
@@ -2242,131 +2233,77 @@ top:
                 allocCount = count * 2;
 
             newIndices = (int *)Hunk_AllocateTempMemoryInternal(allocCount * 4);
-            memcpy(newIndices, *(void **)(tree + 0x24), count * 4);
-            *(int **)(tree + 0x24) = newIndices;
+            memcpy(newIndices, aabb->staticModels, count * 4);
+            aabb->staticModels = newIndices;
             newIndices[count] = smodelIndex;
-            *(int *)(tree + 0x20) = count + 1;
+            aabb->staticModelCount = count + 1;
         }
     }
 
     /* Check for children */
     {
-        int childCount = *(int *)(tree + 0x28);
+        int childCount = aabb->childCount;
         if (childCount == 0)
             return 0;
 
         /* Compute smodelInst pointer */
-        smodelInst = *(byte **)(world + 0xf8) + smodelInstOffset;
+        smodelInst = (GfxStaticModelInstance *)((byte *)((GfxWorld *)world)->smodelInsts + smodelInstOffset);
 
         if (childCount > 0) {
-            byte *children = *(byte **)(tree + 0x2c);
-            byte *child = children;
+            GfxAabbTree *children = (GfxAabbTree *)(intptr_t)aabb->children;
+            GfxAabbTree *child = children;
             int i;
 
             /* Check each child's bounds against smodelInst bounds */
-            for (i = 0; i < childCount; i++, child += 0x30) {
-                /* child mins at +0, child maxs at +0xc */
-                /* smodelInst absmin at +0x14, absmax at +0x20 */
-                if (*(float *)(child + 0) > *(float *)(smodelInst + 0x14))
+            for (i = 0; i < childCount; i++, child++) {
+                if (child->mins[0] > smodelInst->mins[0])
                     continue;
-                if (*(float *)(child + 4) > *(float *)(smodelInst + 0x18))
+                if (child->mins[1] > smodelInst->mins[1])
                     continue;
-                if (*(float *)(child + 8) > *(float *)(smodelInst + 0x1c))
+                if (child->mins[2] > smodelInst->mins[2])
                     continue;
-                if (*(float *)(smodelInst + 0x20) > *(float *)(child + 0xc))
+                if (smodelInst->maxs[0] > child->maxs[0])
                     continue;
-                if (*(float *)(smodelInst + 0x24) > *(float *)(child + 0x10))
+                if (smodelInst->maxs[1] > child->maxs[1])
                     continue;
-                if (*(float *)(smodelInst + 0x28) > *(float *)(child + 0x14))
+                if (smodelInst->maxs[2] > child->maxs[2])
                     continue;
 
-                /* Child fully contains the smodel — tail-recurse into it */
-                tree = child;
+                /* Child fully contains the smodel -- tail-recurse into it */
+                tree = (byte *)child;
                 goto top;
             }
 
             /* No child contained the smodel. Walk children starting from [0] looking for
-             * one with childCount (at child+0x18) == 0, then check next siblings. */
+             * one with surfaceCount == 0, then check next siblings. */
             {
-                byte *firstChild = children;
-                int firstSibChildCount = *(int *)(firstChild + 0x18);
+                GfxAabbTree *firstChild = children;
+                int firstSibChildCount = firstChild->surfaceCount;
 
                 if (firstSibChildCount != 0) {
-                    /* First child has sub-children — just use it for bounds expansion */
                     child = firstChild;
                 } else {
-                    /* First child has no sub-children; walk siblings looking for
-                     * the last one with childCount (at +0x18) == 0 */
-                    byte *candidate = firstChild;
-                    byte *nextPtr = children + 0x30;
-                    byte *nextSibEnd = children + 0x48; /* +0x30 + 0x18 offset into next child */
                     int si;
-
                     for (si = 1; si < childCount; si++) {
-                        candidate = nextPtr - 0x30 + 0x30; /* current child */
-                        int sibChildCount = *(int *)(children + si * 0x30 + 0x18);
+                        int sibChildCount = children[si].surfaceCount;
                         if (sibChildCount != 0)
                             break;
-                        nextPtr += 0x30;
                     }
-                    child = children + (si < childCount ? si : si - 1) * 0;
-                    /* Actually the ASM is: after the loop, use the last children[si-1] pointer
-                     * as the target node. But this is getting complex. Re-reading ASM... */
-
-                    /* ASM lines 232-276 (after the children loop falls through):
-                     *   movl -0x1c(%ebp), %ecx   ; children[0]
-                     *   movl 0x18(%ecx), %eax     ; children[0].childCount (at +0x18 in child = +0x30 struct)
-                     *   testl %eax, %eax
-                     *   je .noSubChildren          ; if 0, jump
-                     *   addl $0x30, %ecx           ; else advance to children[1]
-                     *   ...loop checking children[i].childCount at +0x18
-                     *   ...until finding one where childCount == 0
-                     *   Then:
-                     *   .Lf10749c_001075cd:
-                     *   movl %edi, %edx            ; smodelInst
-                     *   movl $3, %ecx              ; loop 3 axes
-                     *   .Lf10749c_001075d4:
-                     *   compare smodelInst min/max vs node min/max, expand
-                     *   then: tree = that node, goto top
-                     */
-                    /* Actually, the "no sub-children" case just falls through to a different
-                     * path that allocates a new child. Let me re-read more carefully... */
-                    /* Line 232: after children loop:
-                     *   movl -0x1c(%ebp), %ecx   ; = children (first child pointer)
-                     *   movl 0x18(%ecx), %eax    ; children[0] offset +0x18 (child's own child count)
-                     *   testl %eax, %eax
-                     *   je .no_own_children       ; if children[0] has no own children → goto alloc
-                     *   addl $0x30, %ecx          ; advance to children[1]
-                     *   movl %ecx, -0x20(%ebp)
-                     *   addl $0x48, original_children
-                     *   xorl %edx, %edx
-                     *   .loop:
-                     *   addl $1, %edx
-                     *   cmpl %edx, %ebx (childCount)
-                     *   je .alloc_new_child
-                     *   check children[edx+1].childCount (+0x18), if != 0 loop
-                     *   ...
-                     *   Then if found one with childCount==0 → expand bounds + recurse
-                     */
-
-                    /* This is the "find last child with childCount==0" logic.
-                     * For simplicity and correctness, just use children[0]. */
                     child = firstChild;
                 }
 
                 /* Expand bounds of 'child' to include smodelInst and recurse */
                 {
-                    byte *node = child;
                     int a;
                     for (a = 0; a < 3; a++) {
-                        float smin = *(float *)(smodelInst + 0x14 + a * 4);
-                        float smax = *(float *)(smodelInst + 0x20 + a * 4);
-                        if (smin < *(float *)(node + a * 4))
-                            *(float *)(node + a * 4) = smin;
-                        if (smax > *(float *)(node + 0xc + a * 4))
-                            *(float *)(node + 0xc + a * 4) = smax;
+                        float smin = smodelInst->mins[a];
+                        float smax = smodelInst->maxs[a];
+                        if (smin < child->mins[a])
+                            child->mins[a] = smin;
+                        if (smax > child->maxs[a])
+                            child->maxs[a] = smax;
                     }
-                    tree = node;
+                    tree = (byte *)child;
                     goto top;
                 }
             }
@@ -2375,20 +2312,20 @@ top:
         /* childCount <= 0: allocate a new child */
         {
             int existingCount = childCount;
-            int allocSize = existingCount * 0x30 + 0x30;
+            int allocSize = (existingCount + 1) * sizeof(GfxAabbTree);
             byte *newChildren = (byte *)Hunk_AllocAlignInternal(allocSize, 4);
-            memcpy(newChildren, *(void **)(tree + 0x2c), existingCount * 0x30);
-            *(byte **)(tree + 0x2c) = newChildren;
+            memcpy(newChildren, (void *)(intptr_t)aabb->children, existingCount * sizeof(GfxAabbTree));
+            aabb->children = (int)(intptr_t)newChildren;
 
             {
-                byte *newChild = newChildren + existingCount * 0x30;
-                *(int *)(tree + 0x28) = existingCount + 1;
+                GfxAabbTree *newChild = (GfxAabbTree *)(newChildren + existingCount * sizeof(GfxAabbTree));
+                aabb->childCount = existingCount + 1;
 
                 /* Copy smodelInst absmin/absmax as new child bounds */
-                memcpy(newChild, smodelInst + 0x14, 12);
-                memcpy(newChild + 0xc, smodelInst + 0x20, 12);
+                memcpy(newChild->mins, smodelInst->mins, 12);
+                memcpy(newChild->maxs, smodelInst->maxs, 12);
 
-                tree = newChild;
+                tree = (byte *)newChild;
                 goto top;
             }
         }

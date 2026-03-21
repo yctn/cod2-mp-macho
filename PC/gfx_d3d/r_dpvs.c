@@ -187,13 +187,13 @@ void R_DrawModel(int entIndex)
 
     /* Fix #143: was *(byte **)imp_scene — double-deref reads scene.viewCount as ptr.
      * imp_scene stores &scene, so (byte *)imp_scene = &scene directly. */
-    byte *base = (byte *)imp_scene;
-    byte *sceneEnt = base + 0x5c4 + entIndex * 52;
-    byte *ent = *(byte **)(base + 0x10) + entIndex * 116;
+    GfxScene *scene = (GfxScene *)imp_scene;
+    GfxSceneEntity *sceneEnt = &scene->sceneEnts[entIndex];
+    GfxEntity *ent = &scene->def.entities[entIndex];
 
     R_UpdateXModelBounds(sceneEnt, ent);
     R_SkinSceneEnt(sceneEnt, ent);
-    *(int *)(sceneEnt + 0xc) = 5;
+    sceneEnt->cullState = 5;
     R_AddXModelSurfaces(entIndex);
 }
 
@@ -203,9 +203,8 @@ float R_GetFarPlaneDist(void)
     float farPlaneDist = *(float *)(*(int *)(*(int *)imp_r_zfar) + 8);
 
     if (farPlaneDist == 0.0f) {
-        byte *scene = (byte *)&rg;
-        if (*(int *)(scene + 0x150c) && *(byte *)(scene + 0x14c8) && *(int *)(scene + 0x14ac) == 1) {
-            farPlaneDist = *(float *)(scene + 0x14c0);
+        if (rg.fogIndex && rg.fogSettings[2].registered && rg.fogSettings[2].techniqueOffset == 1) {
+            farPlaneDist = rg.fogSettings[2].fogEnd;
         }
     }
 
@@ -347,31 +346,31 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
 /* line 925 */
 int R_CellForPoint(const vec_t *origin)
 {
-    byte *world;
-    byte *node;
+    GfxWorld *world;
+    mnode_t *node;
     float *plane;
     float dot;
 
-    world = *(byte **)((byte *)imp_rgp + 0x109c);
+    world = ((r_global_permanent_t *)imp_rgp)->world;
     if (!world) {
         R_Error(1, str_002259d0);
-        world = *(byte **)((byte *)imp_rgp + 0x109c);
+        world = ((r_global_permanent_t *)imp_rgp)->world;
     }
 
-    node = *(byte **)(world + 0xc);
+    node = world->nodes;
     for (;;) {
         /* Leaf node: return cell index */
-        if (*(int *)node != -1)
-            return *(int *)(node + 8);
+        if (node->contents != -1)
+            return node->cellIndex;
 
         /* Internal node: test against split plane */
-        plane = *(float **)(node + 0xc);
+        plane = (float *)node->u.node.plane;
         dot = origin[0] * plane[0] + origin[1] * plane[1] + origin[2] * plane[2] - plane[3];
 
         if (dot > 0.0f)
-            node = *(byte **)(node + 0x10); /* front child */
+            node = node->u.node.children[0]; /* front child */
         else
-            node = *(byte **)(node + 0x14); /* back child */
+            node = node->u.node.children[1]; /* back child */
     }
 }
 
@@ -569,8 +568,7 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
  * On success: marks frame, adds to scene, skins, and dispatches XModel surfaces. */
 static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
-    byte *rg_ptr = (byte *)&rg;
-    int *smodelDync = (int *)(*(int *)(rg_ptr + 0x3194) + smodelIndex * 8);
+    int *smodelDync = (int *)((byte *)rg.smodelDyncs + smodelIndex * 8);
     int viewCount = *(int *)imp_scene;
 
     /* Already processed this frame? */
@@ -582,8 +580,8 @@ static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *plan
 
     /* LOD distance check (only if cullDist != 0) */
     if (smodelInst->cullDist != 0.0f) {
-        float dist = Vec3Distance(smodelInst->origin, (const vec_t *)(rg_ptr + 0x317c));
-        float scaledDist = dist * *(float *)(rg_ptr + 0x3188) + *(float *)(rg_ptr + 0x318c);
+        float dist = Vec3Distance(smodelInst->origin, rg.lodParms.origin);
+        float scaledDist = dist * rg.lodParms.scale + rg.lodParms.bias;
         if (scaledDist > smodelInst->cullDist) {
             smodelDync[0] = viewCount; /* mark as visited (LOD culled) */
             return;
@@ -613,15 +611,13 @@ static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *plan
     if (entIndex < 0)
         return;
 
-    /* Build scene entity: sceneEnt = scene + 0x5c4 + entIndex * 52 */
-    byte *scene = (byte *)imp_scene;
-    byte *sceneEnt = scene + 0x5c4 + entIndex * 52;
-    /* ent = scene->entities + entIndex * 116 */
-    byte *entities = *(byte **)(scene + 0x10);
-    byte *ent = entities + entIndex * 116;
+    /* Build scene entity */
+    GfxScene *scene = (GfxScene *)imp_scene;
+    GfxSceneEntity *sceneEnt = &scene->sceneEnts[entIndex];
+    GfxEntity *ent = &scene->def.entities[entIndex];
 
     R_SkinStaticModel(sceneEnt, ent, smodelIndex);
-    *(int *)(sceneEnt + 0xc) = 5; /* surfaceType = 5 */
+    sceneEnt->cullState = 5; /* surfaceType = 5 */
 
     R_AddXModelSurfaces(entIndex);
 }
@@ -684,10 +680,8 @@ void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int s
  * tests global occluders, then dispatches via R_AddDrawSurfForSurface. */
 static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel)
 {
-    byte *rg_ptr = (byte *)&rg;
-
     /* Per-surface visibility data: skip if already visited this frame */
-    int *surfVisData = *(int **)(rg_ptr + 0x3198);
+    int *surfVisData = (int *)rg.surfaces;
     int viewCount = *(int *)imp_scene;
 
     if (!surfVisData)
@@ -756,8 +750,7 @@ void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int plane
 /* Helper: add a static model directly to the scene (no frustum/occluder culling) */
 static void R_AddStaticModelDirect(int smodelIndex)
 {
-    byte *rg_ptr = (byte *)&rg;
-    int *smodelDync = (int *)(*(int *)(rg_ptr + 0x3194) + smodelIndex * 8);
+    int *smodelDync = (int *)((byte *)rg.smodelDyncs + smodelIndex * 8);
     int viewCount = *(int *)imp_scene;
 
     if (smodelDync[0] == viewCount)
@@ -768,8 +761,8 @@ static void R_AddStaticModelDirect(int smodelIndex)
 
     /* LOD distance check */
     if (inst->cullDist != 0.0f) {
-        float dist = Vec3Distance(inst->origin, (const vec_t *)(rg_ptr + 0x317c));
-        float scaledDist = dist * *(float *)(rg_ptr + 0x3188) + *(float *)(rg_ptr + 0x318c);
+        float dist = Vec3Distance(inst->origin, rg.lodParms.origin);
+        float scaledDist = dist * rg.lodParms.scale + rg.lodParms.bias;
         if (scaledDist > inst->cullDist)
             return;
     }
@@ -785,18 +778,18 @@ static void R_AddStaticModelDirect(int smodelIndex)
     if (entIndex < 0)
         return;
 
-    byte *scene = (byte *)imp_scene;
-    byte *sceneEnt = scene + 0x5c4 + entIndex * 52;
-    byte *ent = *(byte **)(scene + 0x10) + entIndex * 116;
+    GfxScene *scene2 = (GfxScene *)imp_scene;
+    GfxSceneEntity *sceneEnt = &scene2->sceneEnts[entIndex];
+    GfxEntity *ent = &scene2->def.entities[entIndex];
     R_SkinStaticModel(sceneEnt, ent, smodelIndex);
-    *(int *)(sceneEnt + 0xc) = 5;
+    sceneEnt->cullState = 5;
     R_AddXModelSurfaces(entIndex);
 }
 
 /* Helper: add a world surface directly (no frustum culling, just frame check) */
 static void R_AddWorldSurfaceDirect(int surfIndex)
 {
-    int *surfVisData = *(int **)((byte *)&rg + 0x3198);
+    int *surfVisData = (int *)rg.surfaces;
     int viewCount = *(int *)imp_scene;
     if (surfVisData[surfIndex] == viewCount)
         return;
@@ -1144,8 +1137,8 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
         while (modelRef) {
             int entIndex = modelRef->entIndex;
             byte *scene = (byte *)imp_scene;
-            byte *sceneEnt = scene + 0x5c4 + entIndex * 52;
-            int surfaceType = *(int *)(sceneEnt + 0xc);
+            GfxSceneEntity *sceneEnt2 = &((GfxScene *)scene)->sceneEnts[entIndex];
+            int surfaceType = sceneEnt2->cullState;
 
             if (surfaceType == 5) {
                 /* Already processed */
@@ -1153,15 +1146,14 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
                 continue;
             }
 
-            byte *entities = *(byte **)(scene + 0x10);
-            byte *ent = entities + entIndex * 116;
-            int entType = *(int *)ent;
+            GfxEntity *ent = &((GfxScene *)scene)->def.entities[entIndex];
+            int entType = ent->reType;
 
             if (entType <= 1) {
                 /* Dynamic model entity */
                 if (*(byte *)((byte *)&dpvsGlob + 103)) {
                     /* Check if entity has more than 1 LOD — needs bounds culling */
-                    int lodLevel = *(int *)(ent + 0xc);
+                    int lodLevel = *(int *)&ent->lighting.dx7.sunVisibility; /* TODO: verify union interpretation */
                     if (lodLevel > 1) {
                         /* Frustum cull against entity bounds (at modelRef+4 = mins/maxs) */
                         float *bounds = (float *)modelRef->mins;
@@ -1170,20 +1162,20 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
                         if (!R_CullByOccluders(0, bounds))
                             goto next_modelref;
                     } else {
-                        /* Use sceneEnt bounds (at sceneEnt+0x14) */
-                        float *bounds = (float *)(sceneEnt + 0x14);
+                        /* Use sceneEnt bounds */
+                        float *bounds = (float *)sceneEnt2->curMins;
                         if (!R_CullByFrustumPlanes((DpvsPlane *)planes, planeCount, 0, bounds))
                             goto next_modelref;
                         if (!R_CullByOccluders(0, bounds))
                             goto next_modelref;
                     }
-                    CG_UsedDObjCalcPose(*(void **)(sceneEnt + 8));
-                    R_UpdateXModelBounds(sceneEnt, ent);
+                    CG_UsedDObjCalcPose((void *)sceneEnt2->cent);
+                    R_UpdateXModelBounds(sceneEnt2, ent);
                 }
                 /* Bounds passed — cull in, skin, add surfaces */
-                CG_CullIn(*(void **)(sceneEnt + 8));
-                R_SkinSceneEnt(sceneEnt, ent);
-                *(int *)(sceneEnt + 0xc) = 5;
+                CG_CullIn((void *)sceneEnt2->cent);
+                R_SkinSceneEnt(sceneEnt2, ent);
+                sceneEnt2->cullState = 5;
                 R_AddXModelSurfaces(entIndex);
 
             } else if (entType == 3) {
@@ -1216,7 +1208,7 @@ static void R_AddVisibleSurfacesInCell_impl(const GfxCell *cell, const DpvsPlane
             for (i = 0; i < cullGroupCount; i++) {
                 int groupIdx = cullGroups[i];
                 /* Check frame visit */
-                int *groupVisData = *(int **)((byte *)&rg + 0x319c);
+                int *groupVisData = (int *)rg.cullGroups;
                 int viewCount = *(int *)imp_scene;
                 if (groupVisData[groupIdx] == viewCount)
                     continue;
@@ -4372,9 +4364,9 @@ static inline int R_CullBoundsAgainstFrustumAndOccluders(const float *bounds, co
     if (occCount > 0) {
         int **occTable = *(int ***)((byte *)&dpvsGlob + 60);
         for (i = 0; i < occCount; i++) {
-            byte *occ = (byte *)occTable[i];
-            int planeCount = *(int *)(occ + 0x1c);
-            DpvsPlane *planes = *(DpvsPlane **)(occ + 0x20);
+            GfxOccluder *occ = (GfxOccluder *)occTable[i];
+            int planeCount = occ->viewPlaneCount;
+            DpvsPlane *planes = occ->viewPlanes;
             if (planeCount <= 0)
                 return 0;
             int j;
@@ -4492,9 +4484,8 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
     /* Get far plane distance */
     float farPlaneDist = (*(const dvar_t **)imp_r_zfar)->current.value;
     if (farPlaneDist == 0.0f) {
-        byte *rg_ptr = (byte *)&rg;
-        if (*(int *)(rg_ptr + 0x150c) && *(byte *)(rg_ptr + 0x14c8) && *(int *)(rg_ptr + 0x14ac) == 1) {
-            farPlaneDist = *(float *)(rg_ptr + 0x14c0);
+        if (rg.fogIndex && rg.fogSettings[2].registered && rg.fogSettings[2].techniqueOffset == 1) {
+            farPlaneDist = rg.fogSettings[2].fogEnd;
         }
     }
     float cullDist = *(float *)&dpvsConfig;
@@ -4528,38 +4519,37 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
     }
 
     /* Store viewParms in rg */
-    byte *rg_ptr2 = (byte *)&rg;
-    *(const GfxViewParms **)(rg_ptr2 + 0x3190) = viewParms;
+    rg.debugViewParms = viewParms;
 
     /* Process entities: brush models and dynamic entities */
     {
-        byte *scene = (byte *)imp_scene;
-        int entityCount = *(int *)(scene + 0xc);
-        byte *entities = *(byte **)(scene + 0x10);
+        GfxScene *scene = (GfxScene *)imp_scene;
+        int entityCount = scene->def.entityCount;
+        GfxEntity *entities = scene->def.entities;
 
         for (i = 0; i < entityCount; i++) {
-            byte *ent = entities + i * 116;
-            int entType = *(int *)ent;
+            GfxEntity *ent = &entities[i];
+            int entType = ent->reType;
 
             if (entType <= 1) {
                 /* Dynamic XModel entity */
-                byte *sceneEnt = scene + 0x5c4 + i * 52;
+                GfxSceneEntity *sceneEnt = &scene->sceneEnts[i];
                 void *dobj = R_GetGfxEntityDObj(sceneEnt, ent);
 
                 vec3_t objmins, objmaxs;
                 /* Call DObjGetBounds through refimport function pointer table */
-                ((void (*)(void *, vec3_t *, vec3_t *))*(void **)((byte *)imp_ri + 0x1b0))(dobj, &objmins, &objmaxs);
+                ((void (*)(void *, vec3_t *, vec3_t *))*(void **)((byte *)imp_ri + 0x1b0))(dobj, &objmins, &objmaxs); /* ri.DObjGetBounds */
 
-                float scale = *(float *)(ent + 0x38);
+                float scale = ent->scale;
                 float bounds[6];
                 /* bounds = scale * objmins + origin */
-                bounds[0] = scale * objmins[0] + *(float *)(ent + 0x3c);
-                bounds[1] = scale * objmins[1] + *(float *)(ent + 0x40);
-                bounds[2] = scale * objmins[2] + *(float *)(ent + 0x44);
+                bounds[0] = scale * objmins[0] + ent->origin[0];
+                bounds[1] = scale * objmins[1] + ent->origin[1];
+                bounds[2] = scale * objmins[2] + ent->origin[2];
                 /* bounds+3 = scale * objmaxs + origin */
-                bounds[3] = scale * objmaxs[0] + *(float *)(ent + 0x3c);
-                bounds[4] = scale * objmaxs[1] + *(float *)(ent + 0x40);
-                bounds[5] = scale * objmaxs[2] + *(float *)(ent + 0x44);
+                bounds[3] = scale * objmaxs[0] + ent->origin[0];
+                bounds[4] = scale * objmaxs[1] + ent->origin[1];
+                bounds[5] = scale * objmaxs[2] + ent->origin[2];
 
                 /* Frustum cull */
                 if (!R_CullBoundsAgainstFrustumAndOccluders(bounds, frustumPlanes, frustumPlaneCount))
@@ -4590,24 +4580,24 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
 
             entity_filter_cells:
                 {
-                    byte *world = *(byte **)((byte *)&rgp + 0x109c);
-                    mnode_t *bspNodes = *(mnode_t **)(world + 0xc);
+                    GfxWorld *world = rgp.world;
+                    mnode_t *bspNodes = world->nodes;
                     int cell = R_FilterEntityIntoCells_r_impl(bspNodes, i, bounds, bounds + 3);
                     if (cell != -1)
                         continue;
                 }
 
             entity_process:
-                R_UpdateXModelBounds(scene + 0x5c4 + i * 52, ent);
-                CG_CullIn(*(void **)(scene + 0x5c4 + i * 52 + 8));
-                R_SkinSceneEnt(scene + 0x5c4 + i * 52, ent);
-                *(int *)(scene + 0x5c4 + i * 52 + 0xc) = 5;
+                R_UpdateXModelBounds(&scene->sceneEnts[i], ent);
+                CG_CullIn((void *)scene->sceneEnts[i].cent);
+                R_SkinSceneEnt(&scene->sceneEnts[i], ent);
+                scene->sceneEnts[i].cullState = 5;
                 R_AddXModelSurfaces(i);
 
             } else if (entType == 3) {
                 /* Brush model entity */
-                byte *sceneEnt = scene + 0x5c4 + i * 52;
-                void *bmodel = *(void **)(sceneEnt + 4);
+                GfxSceneEntity *sceneEnt = &scene->sceneEnts[i];
+                void *bmodel = (void *)sceneEnt->u.data;
                 vec3_t boundsMin, boundsMax, transformed;
 
                 if (!bmodel || (unsigned int)bmodel < 0x1000)
@@ -4625,9 +4615,9 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
                     float localZ = ((float *)bmodel)[zi * 3 + 2];
 
                     /* Transform by entity axes + origin */
-                    transformed[0] = *(float *)(ent + 0x3c) + localX * *(float *)(ent + 0x14) + localY * *(float *)(ent + 0x20) + localZ * *(float *)(ent + 0x2c);
-                    transformed[1] = *(float *)(ent + 0x40) + localX * *(float *)(ent + 0x18) + localY * *(float *)(ent + 0x24) + localZ * *(float *)(ent + 0x30);
-                    transformed[2] = *(float *)(ent + 0x44) + localX * *(float *)(ent + 0x1c) + localY * *(float *)(ent + 0x28) + localZ * *(float *)(ent + 0x34);
+                    transformed[0] = ent->origin[0] + localX * ent->axis[0][0] + localY * ent->axis[1][0] + localZ * ent->axis[2][0];
+                    transformed[1] = ent->origin[1] + localX * ent->axis[0][1] + localY * ent->axis[1][1] + localZ * ent->axis[2][1];
+                    transformed[2] = ent->origin[2] + localX * ent->axis[0][2] + localY * ent->axis[1][2] + localZ * ent->axis[2][2];
 
                     AddPointToBounds(transformed, boundsMin, boundsMax);
                 }
@@ -4641,8 +4631,8 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
                     continue;
 
                 /* Filter into BSP cells */
-                byte *world = *(byte **)((byte *)&rgp + 0x109c);
-                mnode_t *bspNodes = *(mnode_t **)(world + 0xc);
+                GfxWorld *world = rgp.world;
+                mnode_t *bspNodes = world->nodes;
                 int cell = R_FilterEntityIntoCells_r_impl(bspNodes, i, boundsMin, boundsMax);
                 if (cell != -1)
                     continue;
@@ -4655,8 +4645,8 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
     /* Add world surfaces: camera cell + portal-visible cells */
     if (!(*(const dvar_t **)imp_r_skipPvs)->current.enabled) {
         if (cameraCellIndex >= 0) {
-            byte *world = *(byte **)((byte *)&rgp + 0x109c);
-            GfxCell *cells = *(GfxCell **)(world + 0x100);
+            GfxWorld *world = rgp.world;
+            GfxCell *cells = world->cells;
             GfxCell *cameraCell = &cells[cameraCellIndex];
 
             /* Add surfaces from camera cell */
@@ -4669,9 +4659,9 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
             R_dpvs_diag_print(cameraCellIndex, *(byte *)((byte *)&dpvsGlob + 100), cameraCell);
         } else {
             /* Unknown cell — fallback to all cells */
-            byte *world = *(byte **)((byte *)&rgp + 0x109c);
-            int cellCount = *(int *)(world + 0xfc);
-            GfxCell *cells = *(GfxCell **)(world + 0x100);
+            GfxWorld *world = rgp.world;
+            int cellCount = world->cellCount;
+            GfxCell *cells = world->cells;
             for (i = 0; i < cellCount; i++)
                 R_AddVisibleSurfacesInCell_impl(&cells[i], frustumPlanes, frustumPlaneCount);
         }
@@ -4679,10 +4669,10 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
 
     /* Process sorted world surfaces (sky surfaces) — always add */
     {
-        byte *world = *(byte **)((byte *)&rgp + 0x109c);
-        int skySurfCount = *(int *)(world + 0x18);
+        GfxWorld *world = rgp.world;
+        int skySurfCount = world->skySurfCount;
         if (skySurfCount > 0) {
-            int *skyStartSurfs = *(int **)(world + 0x1c);
+            int *skyStartSurfs = world->skyStartSurfs;
             for (i = 0; i < skySurfCount; i++) {
                 int surfIndex = skyStartSurfs[i];
                 R_AddWorldSurfaceWithCull_impl(surfIndex, frustumPlanes, 0, 0);
@@ -4692,15 +4682,14 @@ static void R_AddWorldSurfacesDpvs_impl(const GfxViewParms *viewParms, int camer
 
     /* Process dynamic lights */
     {
-        byte *scene = (byte *)imp_scene;
-        int dlightCount = *(int *)(scene + 0x14);
+        GfxScene *dlScene = (GfxScene *)imp_scene;
+        int dlightCount = dlScene->dlightCount;
         if (dlightCount > 0) {
             for (i = 0; i < dlightCount; i++) {
-                byte *dlightBase = scene + 0x10 + i * 44;
-                float *dlightOrigin = (float *)(dlightBase + 0xc);
-                float dlightRadius = *(float *)(dlightBase + 0x18);
+                float *dlightOrigin = (float *)dlScene->dlights[i].position;
+                float dlightRadius = dlScene->dlights[i].position[3]; /* w = radius */
                 int result = R_CullPointAndRadius(dlightOrigin, dlightRadius, frustumPlanes, frustumPlaneCount);
-                *(byte *)(scene + 0x598 + i) = (result == 2) ? 1 : 0;
+                dlScene->dlightCulled[i] = (result == 2) ? 1 : 0;
             }
         }
     }

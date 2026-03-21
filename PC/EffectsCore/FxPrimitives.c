@@ -247,8 +247,8 @@ void Effect_Draw(const Effect * _this)
 /* line 250 */
 void Effect_SetTimeStartEnd(const Effect * _this, int start, int end)
 {
-    *(int *)((byte *)_this + 0xb8) = start;
-    *(int *)((byte *)_this + 0xbc) = end;
+    ((Effect *)_this)->mTimeStart = start;
+    ((Effect *)_this)->mTimeEnd = end;
 }
 
 /* line 278 */
@@ -280,36 +280,36 @@ void Particle_CreateChannelInstances(const Particle * _this, const PrimitiveTemp
 {
     byte *t = (byte *)_this;
     byte *p = (byte *)primTemp;
-    FxChannelInstance_Create((const FxChannel *)(p + 0x100), (FxChannelInstance *)(t + 0x144)); /* line 482 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x10c), (FxChannelInstance *)(t + 0x150)); /* line 483 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x118), (FxChannelInstance *)(t + 0x15c)); /* line 484 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x124), (FxChannelInstance *)(t + 0x168)); /* line 485 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x130), (FxChannelInstance *)(t + 0x174)); /* line 486 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x13c), (FxChannelInstance *)(t + 0x180)); /* line 487 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x148), (FxChannelInstance *)(t + 0x18c)); /* line 488 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x154), (FxChannelInstance *)(t + 0x198)); /* line 489 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x178), (FxChannelInstance *)(t + 0x1a4)); /* line 490 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x184), (FxChannelInstance *)(t + 0x1b0)); /* line 491 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x190), (FxChannelInstance *)(t + 0x1bc)); /* line 493 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x19c), (FxChannelInstance *)(t + 0x1c8)); /* line 494 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1a8), (FxChannelInstance *)(t + 0x1d4)); /* line 495 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1b4), (FxChannelInstance *)(t + 0x1e0)); /* line 496 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1c0), (FxChannelInstance *)(t + 0x1ec)); /* line 497 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1cc), (FxChannelInstance *)(t + 0x1f8)); /* line 498 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1d8), (FxChannelInstance *)(t + 0x204)); /* line 500 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1e4), (FxChannelInstance *)(t + 0x210)); /* line 501 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1f0), (FxChannelInstance *)(t + 0x21c)); /* line 502 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x1fc), (FxChannelInstance *)(t + 0x228)); /* line 503 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x208), (FxChannelInstance *)(t + 0x234)); /* line 504 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x214), (FxChannelInstance *)(t + 0x240)); /* line 505 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[0], &((Particle *)_this)->colorChannelInstance); /* line 482 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[1], &((Particle *)_this)->colorRandChannelInstance); /* line 483 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[2], &((Particle *)_this)->alphaChannelInstance); /* line 484 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[3], &((Particle *)_this)->alphaRandChannelInstance); /* line 485 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[4], &((Particle *)_this)->sizeChannelInstance); /* line 486 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[5], &((Particle *)_this)->sizeRandChannelInstance); /* line 487 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[6], &((Particle *)_this)->size2ChannelInstance); /* line 488 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[7], &((Particle *)_this)->size2RandChannelInstance); /* line 489 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[10], &((Particle *)_this)->rotationDeltaChannelInstance); /* line 490 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[11], &((Particle *)_this)->rotationDeltaRandChannelInstance); /* line 491 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[12], &((Particle *)_this)->velocityXChannelInstance); /* line 493 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[13], &((Particle *)_this)->velocityYChannelInstance); /* line 494 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[14], &((Particle *)_this)->velocityZChannelInstance); /* line 495 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[15], &((Particle *)_this)->velocityXRandChannelInstance); /* line 496 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[16], &((Particle *)_this)->velocityYRandChannelInstance); /* line 497 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[17], &((Particle *)_this)->velocityZRandChannelInstance); /* line 498 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[18], &((Particle *)_this)->velocity2XChannelInstance); /* line 500 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[19], &((Particle *)_this)->velocity2YChannelInstance); /* line 501 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[20], &((Particle *)_this)->velocity2ZChannelInstance); /* line 502 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[21], &((Particle *)_this)->velocity2XRandChannelInstance); /* line 503 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[22], &((Particle *)_this)->velocity2YRandChannelInstance); /* line 504 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[23], &((Particle *)_this)->velocity2ZRandChannelInstance); /* line 505 */
 }
 
 /* line 522 */
 void Particle_SetRandomVelocity2Weights(const Particle * _this, float weight1, float weight2, float weight3)
 {
-    *(float *)((byte *)_this + 0x138) = weight1;
-    *(float *)((byte *)_this + 0x13c) = weight2;
-    *(float *)((byte *)_this + 0x140) = weight3;
+    *(float *)((byte *)_this + 0x138) = weight1;  /* TODO: Particle subclass velocity2 weight X */
+    *(float *)((byte *)_this + 0x13c) = weight2;  /* TODO: Particle subclass velocity2 weight Y */
+    *(float *)((byte *)_this + 0x140) = weight3;  /* TODO: Particle subclass velocity2 weight Z */
 }
 
 /* line 1160 */
@@ -335,8 +335,8 @@ void Cloud_CreateChannelInstances(const Cloud * _this, const PrimitiveTemplate *
     byte *t = (byte *)_this;
     byte *p = (byte *)primTemp;
     Particle_CreateChannelInstances((const Particle *)_this, primTemp); /* line 1399 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x160), (FxChannelInstance *)(t + 0x264)); /* line 1401 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x16c), (FxChannelInstance *)(t + 0x270)); /* line 1402 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[8], (FxChannelInstance *)((byte *)_this + 0x264) /* TODO: Cloud.lengthChannelInstance */); /* line 1401 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[9], (FxChannelInstance *)((byte *)_this + 0x270) /* TODO: Cloud.lengthRandChannelInstance */); /* line 1402 */
 }
 
 /* line 1466 */
@@ -362,8 +362,8 @@ void Tail_CreateChannelInstances(const Tail * _this, const PrimitiveTemplate *pr
     byte *t = (byte *)_this;
     byte *p = (byte *)primTemp;
     Particle_CreateChannelInstances((const Particle *)_this, primTemp); /* line 1606 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x160), (FxChannelInstance *)(t + 0x260)); /* line 1608 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x16c), (FxChannelInstance *)(t + 0x26c)); /* line 1609 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[8], (FxChannelInstance *)((byte *)_this + 0x260) /* TODO: Tail.lengthChannelInstance */); /* line 1608 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[9], (FxChannelInstance *)((byte *)_this + 0x26c) /* TODO: Tail.lengthRandChannelInstance */); /* line 1609 */
 }
 
 /* line 1693 */
@@ -395,10 +395,10 @@ void Light_CreateChannelInstances(const Light * _this, const PrimitiveTemplate *
 {
     byte *t = (byte *)_this;
     byte *p = (byte *)primTemp;
-    FxChannelInstance_Create((const FxChannel *)(p + 0x100), (FxChannelInstance *)(t + 0xcc)); /* line 2145 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x10c), (FxChannelInstance *)(t + 0xd8)); /* line 2146 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x130), (FxChannelInstance *)(t + 0xe4)); /* line 2147 */
-    FxChannelInstance_Create((const FxChannel *)(p + 0x13c), (FxChannelInstance *)(t + 0xf0)); /* line 2148 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[0], &((Light *)_this)->colorChannelInstance); /* line 2145 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[1], &((Light *)_this)->colorRandChannelInstance); /* line 2146 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[4], &((Light *)_this)->sizeChannelInstance); /* line 2147 */
+    FxChannelInstance_Create(&((PrimitiveTemplate *)primTemp)->mFxChannels[5], &((Light *)_this)->sizeRandChannelInstance); /* line 2148 */
 }
 
 /* line 2158 */
@@ -434,7 +434,7 @@ void Flash_Init(const Flash * _this)
     float *camOrigin, *camDir;
 
     /* line 2266: dif = this->origin - camera origin */
-    camOrigin = (float *)(helper + 0x14);
+    camOrigin = ((FxHelper *)helper)->mCamera.vieworg;
     dif[0] = *(float *)(p + 4) - camOrigin[0];
     dif[1] = *(float *)(p + 8) - camOrigin[1];
     dif[2] = *(float *)(p + 0xc) - camOrigin[2];
@@ -443,7 +443,7 @@ void Flash_Init(const Flash * _this)
     dist = Vec3Normalize(dif);
 
     /* dot product with camera direction */
-    camDir = (float *)(helper + 0x20);
+    camDir = ((FxHelper *)helper)->mCamera.frustum[0]; /* camera forward direction */
     dot = dif[0] * camDir[0] + dif[1] * camDir[1] + dif[2] * camDir[2];
 
     /* line 2274-2277: visibility based on distance and angle */
@@ -510,32 +510,33 @@ static void FX_AddFxToScene_impl(byte *effect, int reType)
 {
     byte ent[0x74];
     memset(ent, 0, 0x74);
+    Effect *eff = (Effect *)effect;
     *(int *)(ent + 0x00) = reType;                       /* ent.reType */
-    *(int *)(ent + 0x54) = *(int *)(effect + 0x40);      /* ent.hModel (material) */
-    *(int *)(ent + 0x6c) = *(int *)(effect + 0x44);      /* ent.customShader */
-    AxisCopy((vec_t *)(effect + 0x48), (vec_t *)(ent + 0x14)); /* ent.axis */
+    *(int *)(ent + 0x54) = (int)(size_t)eff->mRefEnt.customMaterial; /* ent.hModel */
+    *(int *)(ent + 0x6c) = *(int *)(effect + 0x44);      /* ent.customShader = mRefEnt.rotation */
+    AxisCopy((vec_t *)eff->mRefEnt.axis, (vec_t *)(ent + 0x14)); /* ent.axis */
     /* Copy origin */
-    *(float *)(ent + 0x3c) = *(float *)(effect + 0x7c);
-    *(float *)(ent + 0x40) = *(float *)(effect + 0x80);
-    *(float *)(ent + 0x44) = *(float *)(effect + 0x84);
-    /* Copy additional fields */
-    *(int *)(ent + 0x64) = *(int *)(effect + 0x88);      /* radius */
-    *(int *)(ent + 0x68) = *(int *)(effect + 0x8c);      /* rotation */
-    *(byte *)(ent + 0x58) = *(byte *)(effect + 0x90);     /* shaderRGBA[0] */
-    *(byte *)(ent + 0x59) = *(byte *)(effect + 0x91);     /* shaderRGBA[1] */
-    *(byte *)(ent + 0x5a) = *(byte *)(effect + 0x92);     /* shaderRGBA[2] */
-    *(byte *)(ent + 0x5b) = *(byte *)(effect + 0x93);     /* shaderRGBA[3] */
-    *(int *)(ent + 0x60) = *(int *)(effect + 0x94);       /* shaderTexCoord */
-    *(int *)(ent + 0x38) = *(int *)(effect + 0x98);       /* frame */
-    /* Copy oldorigin */
-    *(float *)(ent + 0x48) = *(float *)(effect + 0x9c);
-    *(float *)(ent + 0x4c) = *(float *)(effect + 0xa0);
-    *(float *)(ent + 0x50) = *(float *)(effect + 0xa4);
+    *(float *)(ent + 0x3c) = eff->mRefEnt.origin[0];
+    *(float *)(ent + 0x40) = eff->mRefEnt.origin[1];
+    *(float *)(ent + 0x44) = eff->mRefEnt.origin[2];
+    /* Copy additional fields from mRefEnt */
+    *(int *)(ent + 0x64) = *(int *)&eff->mRefEnt.radius[0];   /* radius[0] */
+    *(int *)(ent + 0x68) = *(int *)&eff->mRefEnt.radius[1];   /* radius[1] */
+    *(byte *)(ent + 0x58) = eff->mRefEnt.materialRGBA[0];
+    *(byte *)(ent + 0x59) = eff->mRefEnt.materialRGBA[1];
+    *(byte *)(ent + 0x5a) = eff->mRefEnt.materialRGBA[2];
+    *(byte *)(ent + 0x5b) = eff->mRefEnt.materialRGBA[3];
+    *(int *)(ent + 0x60) = eff->mRefEnt.materialSubimageIndex;
+    *(int *)(ent + 0x38) = *(int *)(effect + 0x98);       /* TODO: mRefEnt field at 0x98 */
+    /* Copy endpos */
+    *(float *)(ent + 0x48) = eff->mRefEnt.endpos[0];
+    *(float *)(ent + 0x4c) = eff->mRefEnt.endpos[1];
+    *(float *)(ent + 0x50) = eff->mRefEnt.endpos[2];
     /* Flags */
-    int flags = *(int *)(effect + 0xa8);
+    int flags = eff->mFlags;
     if (flags & 1) *(int *)(ent + 0x04) |= 8;
     if (flags & 0x4000000) *(int *)(ent + 0x04) |= 0x80;
-    FxHelper_AddFxToScene(*(void **)imp_theFxHelper, ent, *(int *)(effect + 0xb4));
+    FxHelper_AddFxToScene(*(void **)imp_theFxHelper, ent, (int)(size_t)eff->mModel);
 }
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
@@ -820,9 +821,9 @@ Bool Light_Cull(const Light * _this)
 /* line 509 */
 void Particle_SetRandomVelocityWeights(const Particle * _this, float weight1, float weight2, float weight3)
 {
-    *(float *)((byte *)_this + 0x12c) = weight1;
-    *(float *)((byte *)_this + 0x130) = weight2;
-    *(float *)((byte *)_this + 0x134) = weight3;
+    *(float *)((byte *)_this + 0x12c) = weight1;  /* TODO: Particle subclass velocity weight X */
+    *(float *)((byte *)_this + 0x130) = weight2;  /* TODO: Particle subclass velocity weight Y */
+    *(float *)((byte *)_this + 0x134) = weight3;  /* TODO: Particle subclass velocity weight Z */
 }
 
 /* line 535 */
@@ -2817,11 +2818,11 @@ void Particle_IntegrateTotalVelocity(const Particle *_this, int duration, vec_t 
 /* line 360 */
 void Particle_Particle(const Particle * _this)
 {
-    *(int *)((byte *)_this + 0xc0) = 0;
-    *(int *)_this = 0x32ffc8;
-    *(int *)((byte *)_this + 0xc4) = 0;
-    *(int *)((byte *)_this + 0xc8) = 0;
-    *(int *)((byte *)_this + 0xcc) = 0;
+    ((Effect *)_this)->mBolt._placeholder = 0;  /* offset 0xc0 */
+    *(int *)_this = 0x32ffc8;  /* vtable pointer */
+    *(int *)((byte *)_this + 0xc4) = 0;  /* TODO: unknown offset 0xc4 in Particle */
+    *(int *)((byte *)_this + 0xc8) = 0;  /* TODO: unknown offset 0xc8 in Particle */
+    *(int *)((byte *)_this + 0xcc) = 0;  /* TODO: unknown offset 0xcc in Particle */
 }
 
 /* overload skip: Particle_Particle (0xa2e3c) */
@@ -2874,8 +2875,8 @@ void ZN8ParticleD0Ev(void) /* Particle_~Particle */
 /* line 2131 */
 void Light_Light(const Light * _this)
 {
-    *(int *)((byte *)_this + 0xc0) = 0;
-    *(int *)_this = 0x330188;
+    ((Effect *)_this)->mBolt._placeholder = 0;  /* offset 0xc0 */
+    *(int *)_this = 0x330188;  /* vtable pointer */
 }
 
 /* overload skip: Light_Light (0xa2f4c) */
@@ -2949,7 +2950,7 @@ void Tail_InitEndPoint(const Tail *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -3217,7 +3218,7 @@ Bool Light_Update(const Light *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -6125,7 +6126,7 @@ Bool Emitter_Update(const Emitter *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -6950,7 +6951,7 @@ Bool Cylinder_Update(const Cylinder *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -7725,7 +7726,7 @@ Bool Tail_Update(const Tail *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -8328,7 +8329,7 @@ Bool Line_Update(const Line *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -8697,7 +8698,7 @@ Bool Cloud_Update(const Cloud *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -9681,7 +9682,7 @@ Bool OrientedParticle_Update(const OrientedParticle *_this)
     if (boltFrame) {
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (*(int *)(boltFrame + 4) != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8)))
@@ -10511,7 +10512,7 @@ Bool Particle_Update(const Particle *_this, const Particle *_this_1, const Cloud
         int boneIdx = *(int *)(boltFrame + 0x3c);
         if (boneIdx >= 0) {
             int cachedTime = *(int *)(boltFrame + 4);
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c);
+            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
             if (cachedTime != clTime) {
                 *(int *)(boltFrame + 4) = clTime;
                 Bool ok = FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8));

@@ -132,7 +132,7 @@ static void RB_SetTextureStageStateDx7(int samplerIndex, D3DTEXTURESTAGESTATETYP
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetTextureStageStateFn)VTABLE(device)[0x10c / 4])(device, samplerIndex, state, value);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -142,7 +142,7 @@ static void RB_SetRenderStateDx7(DWORD state, DWORD value)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, state, value);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -152,7 +152,7 @@ static void RB_SetTransformDx7(D3DTRANSFORMSTATETYPE state, const D3DMATRIX *mat
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetTransformFn)VTABLE(device)[0xb0 / 4])(device, state, matrix);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -162,7 +162,7 @@ static void RB_SetViewportDx7(const D3DVIEWPORT9 *viewport)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetViewportFn)VTABLE(device)[0xbc / 4])(device, viewport);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -172,7 +172,7 @@ static void RB_SetMaterialDx7(const D3DMATERIAL9 *material)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     ((SetMaterialFn)VTABLE(device)[0xc4 / 4])(device, material);
 }
 
@@ -180,7 +180,7 @@ static void RB_SetRenderTargetSurfaceDx7(IDirect3DSurface9 *surface)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetRenderTargetFn)VTABLE(device)[0x94 / 4])(device, 0, surface);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -190,7 +190,7 @@ static void RB_SetDepthStencilSurfaceDx7(IDirect3DSurface9 *surface)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetDepthStencilSurfaceFn)VTABLE(device)[0x9c / 4])(device, surface);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -200,7 +200,7 @@ static void RB_SetTextureDx7(int samplerIndex, IDirect3DBaseTexture9 *texture)
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetTextureFn)VTABLE(device)[0x104 / 4])(device, samplerIndex, texture);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -210,7 +210,7 @@ static void RB_SetSamplerStateDx7(int samplerIndex, DWORD samplerState, DWORD va
 {
     void *device;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetSamplerStateFn)VTABLE(device)[0x114 / 4])(device, samplerIndex, samplerState, value);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -282,14 +282,12 @@ static Bool RB_UsingDx7Renderer(void)
 
 static Bool RB_SupportsSlopeScaleDepthBias(void)
 {
-    /* This capability flag is still only recovered as a raw DxGlobals offset. */
-    return *(const byte *)((const byte *)imp_dx + 0x2d7a) != 0;
+    return ((DxGlobals *)imp_dx)->slopeScaleDepthBias != 0; /* TODO: verify offset 0x2d7a maps to slopeScaleDepthBias */
 }
 
 static Bool RB_SupportsAlphaToCoverage(void)
 {
-    /* This capability flag is still only recovered as a raw DxGlobals offset. */
-    return *(const byte *)((const byte *)imp_dx + 0x2d7e) != 0;
+    return ((DxGlobals *)imp_dx)->hasTransparencyMsaa != 0; /* TODO: verify offset 0x2d7e maps to hasTransparencyMsaa */
 }
 
 static int RB_NextPowerOfTwo(int value)
@@ -333,7 +331,7 @@ void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib)
     dxState.indexBufferDeselecting = dxState.indexBuffer;
     dxState.indexBuffer = ib;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetIndicesFn)VTABLE(device)[0x1a0 / 4])(device, ib);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -347,13 +345,13 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
     DxTrackedStreamState *streamState;
     void *device;
 
-    streamState = (DxTrackedStreamState *)((byte *)&dxState + 8400 + streamIndex * sizeof(*streamState));
+    streamState = (DxTrackedStreamState *)&dxState.streams[streamIndex];
     dxState.vertexBufferDeselecting = streamState->vb;
     streamState->vb = vb;
     streamState->offset = vertexOffset;
     streamState->stride = vertexStride;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetStreamSourceFn)VTABLE(device)[0x190 / 4])(device, streamIndex, vb, vertexOffset, vertexStride);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -364,8 +362,8 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 /* line 899 */
 void RB_DecideDefaultSamplerState(void)
 {
-    int idx = *(int *)((byte *)*(void **)imp_r_textureMode + 8);
-    *((byte *)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
+    int idx = (*(const dvar_t **)imp_r_textureMode)->current.integer;
+    ((r_backEndGlobals_t *)imp_backEnd)->defaultSamplerState = defaultSamplerStateTable[idx]; /* TODO: verify field name for offset 0x4be */
 }
 
 /* line 907 */
@@ -393,12 +391,12 @@ void RB_SetAnisotropy(void)
         anisotropy = 1;
     }
 
-    samplerCount = *(int *)((byte *)imp_vidConfig + 0x1c);
+    samplerCount = ((vidConfig_t *)imp_vidConfig)->maxTextureMaps;
     if (samplerCount <= 0) {
         return;
     }
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     for (samplerIndex = 0; samplerIndex < samplerCount; ++samplerIndex) {
         do {
             ((SetSamplerStateFn)VTABLE(device)[0x114 / 4])(device, samplerIndex, 0xa, anisotropy);
@@ -420,7 +418,7 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
         aaAlphaFormat = 0x434f5441; /* 'ATOC' */
     }
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, 0xb5, aaAlphaFormat);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -497,7 +495,7 @@ void RB_SetSamplerConstantDx7(unsigned int color)
     }
 
     dxState.textureFactor = color;
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetRenderStateFn)VTABLE(device)[0xe4 / 4])(device, 0x3c, color);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -657,10 +655,10 @@ void RB_PopMatrixStack(void)
 /* line 1472 */
 void RB_InitSceneViewport(void)
 {
-    byte *ecx = (byte *)imp_backEnd;
-    byte *edx = (byte *)imp_vidConfig;
-    *(int *)(ecx + 0x3e8) = *(int *)edx;
-    *(int *)(ecx + 0x3ec) = *(int *)(edx + 4);
+    r_backEndGlobals_t *be = (r_backEndGlobals_t *)imp_backEnd;
+    vidConfig_t *vc = (vidConfig_t *)imp_vidConfig;
+    be->sceneViewport.width = vc->width;
+    be->sceneViewport.height = vc->height;
 }
 
 /* line 1480 */
@@ -672,11 +670,11 @@ Bool RB_GetViewport(GfxViewport *outViewport)
         outViewport->width = dxState.renderTargetWidth;
         outViewport->height = dxState.renderTargetHeight;
     } else {
-        byte *backEnd = (byte *)imp_backEnd;
-        outViewport->x = *(int *)(backEnd + 0x3e0);
-        outViewport->y = *(int *)(backEnd + 0x3e4);
-        outViewport->width = *(int *)(backEnd + 0x3e8);
-        outViewport->height = *(int *)(backEnd + 0x3ec);
+        r_backEndGlobals_t *be = (r_backEndGlobals_t *)imp_backEnd;
+        outViewport->x = be->sceneViewport.x;
+        outViewport->y = be->sceneViewport.y;
+        outViewport->width = be->sceneViewport.width;
+        outViewport->height = be->sceneViewport.height;
     }
 
     return 1;
@@ -721,7 +719,7 @@ void RB_ReleaseVertexDecl(void)
         return;
     }
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetVertexDeclarationFn)VTABLE(device)[0x164 / 4])(device, NULL);
     } while (*(volatile int *)imp_alwaysfails != 0);
@@ -907,20 +905,20 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
 /* line 1777 */
 void RB_BindDefaultImages(void)
 {
-    void *defaultImage = *(void **)((byte *)imp_rgp + 0x1008);
+    void *defaultImage = ((r_global_permanent_t *)imp_rgp)->whiteImage;
 
     for (int i = 0; i < 16; i++) {
-        RB_SetSampler(i, *((byte *)&dxState + 0x20e4 + i), defaultImage);
+        RB_SetSampler(i, dxState.samplerState[i], defaultImage);
     }
 }
 
 /* line 1030 */
 void RB_UnbindAllImages(void)
 {
-    if (*(byte *)((byte *)imp_dx + 0x2d3c))
+    if (((DxGlobals *)imp_dx)->deviceLost) /* TODO: verify offset 0x2d3c maps to deviceLost */
         return;
 
-    int count = *(int *)((byte *)imp_vidConfig + 0x1c);
+    int count = ((vidConfig_t *)imp_vidConfig)->maxTextureMaps;
     for (int i = 0; i < count; i++) {
         RB_SetSampler(i, 0, NULL);
     }
@@ -929,10 +927,10 @@ void RB_UnbindAllImages(void)
 /* line 1020 */
 void RB_UnbindImage(const GfxImage *image)
 {
-    int count = *(int *)((byte *)imp_vidConfig + 0x1c);
+    int count = ((vidConfig_t *)imp_vidConfig)->maxTextureMaps;
 
     for (int i = 0; i < count; i++) {
-        if (*(const GfxImage **)((byte *)&dxState + 0x20f4 + i * 4) == image) {
+        if (dxState.samplerImage[i] == image) {
             RB_SetSampler(i, 0, NULL);
         }
     }
@@ -994,7 +992,7 @@ void RB_InitImages(void)
     int samplerIndex;
 
     for (samplerIndex = 0; samplerIndex < 16; ++samplerIndex) {
-        RB_SetSampler(samplerIndex, dxState.samplerState[samplerIndex], *(GfxImage **)((byte *)imp_rgp + 0x1008));
+        RB_SetSampler(samplerIndex, dxState.samplerState[samplerIndex], ((r_global_permanent_t *)imp_rgp)->whiteImage);
     }
 }
 
@@ -1081,7 +1079,7 @@ void RB_ClearAllStreamSources(void)
     dxState.streams[0].offset = 0;
     dxState.streams[0].stride = 0;
 
-    device = *(void **)((byte *)imp_dx + 8);
+    device = ((DxGlobals *)imp_dx)->device;
     do {
         ((SetStreamSourceFn)VTABLE(device)[0x190 / 4])(device, 0, NULL, 0, 0);
     } while (*(volatile int *)imp_alwaysfails != 0);

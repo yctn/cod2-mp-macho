@@ -6026,7 +6026,14 @@ struct FreeRequest {
 };
 
 struct FxArchive {
-    int _placeholder;
+    struct MemoryFile *memFile;    /* 0x00 */
+    char isReading;                /* 0x04 */
+    char unusedFlag;               /* 0x05 */
+    char pad[2];                   /* 0x06-0x07 */
+    int byteCounter;               /* 0x08 */
+    int repeatCount;               /* 0x0c */
+    int zeroCount;                 /* 0x10 */
+    int startPos;                  /* 0x14 */
 };
 
 struct FxBoltFramePtr {
@@ -6174,20 +6181,40 @@ struct FxScheduler {
     int mScheduledCount;
 };
 
-struct GPGroup {
-    int _placeholder;
-};
-
 struct GPObject {
-    int _placeholder;
+    const char *name;
+    struct GPObject *next;
+    struct GPObject *sortedNext;
+    struct GPObject *sortedPrev;
 };
 
 struct GPValue {
-    int _placeholder;
+    const char *name;
+    struct GPObject *next;
+    struct GPObject *sortedNext;
+    struct GPObject *sortedPrev;
+    struct GPValue *valueList;
+};
+
+struct GPGroup {
+    const char *name;
+    struct GPObject *nextUnsorted;
+    struct GPObject *sortedNext;
+    struct GPObject *sortedPrev;
+    struct GPValue *pairList;
+    struct GPValue *pairSorted;
+    struct GPValue *pairLast;
+    struct GPGroup *subGroupList;
+    struct GPGroup *subGroupSorted;
+    struct GPGroup *subGroupLast;
+    void *parent;
+    byte cleanFlag;
 };
 
 struct GenericParser2 {
-    int _placeholder;
+    struct GPGroup group;
+    struct TextPool *textPoolList;
+    byte writeable;
 };
 
 struct GetVolParmsInfoBuffer {

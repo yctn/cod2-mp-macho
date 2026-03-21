@@ -858,7 +858,7 @@ qboolean UI_CheckExecKey(int key)
     while (node) {
         if (*node == key)
             return 1;
-        node = *(int **)((byte *)node + 8);
+        node = (int *)((ItemKeyHandler *)node)->next;
     }
     return 0;
 }
@@ -896,10 +896,10 @@ const char * UI_SafeTranslateString(const char *reference)
         return translated;
 
     /* Translation failed — check warning settings */
-    byte *locWarn = *(byte **)imp_loc_warnings;
-    if (*(byte *)(locWarn + 8)) {
-        byte *locErr = *(byte **)imp_loc_warningsAsErrors;
-        if (*(byte *)(locErr + 8)) {
+    dvar_t *locWarn = *(dvar_t **)imp_loc_warnings;
+    if (locWarn->current.enabled) {
+        dvar_t *locErr = *(dvar_t **)imp_loc_warningsAsErrors;
+        if (locErr->current.enabled) {
             Com_Error(6, "Could not translate string \"%s\"", ref);
         } else {
             Com_Printf(0, "^3WARNING: Could not translate string \"%s\"\n", ref);
@@ -1375,7 +1375,7 @@ map_found:
             sharedUiInfo.serverStatus.currentServer = index;
 
         LAN_GetServerInfo(ui_netSource->current.integer,
-                          *(int *)(sharedUiInfo.serverStatus.displayServers + index * 4),
+                          sharedUiInfo.serverStatus.displayServers[index],
                           info, 0x400);
         name = (char *)va("levelshots/%s", Info_ValueForKey(info, "mapname"));
 
@@ -1472,7 +1472,7 @@ static void UI_GetGameTypesList(void)
                 int gt2 = sharedUiInfo.numGameTypes;
                 sharedUiInfo.gameTypes[gt2].gameTypeName = String_Alloc(parsed);
                 {
-                    const char *displayName = *(const char **)((byte *)&sharedUiInfo + 4432 + sharedUiInfo.numGameTypes * 8);
+                    const char *displayName = sharedUiInfo.gameTypes[sharedUiInfo.numGameTypes].gameTypeName;
                     int nameIdx2 = sharedUiInfo.numJoinGameTypes;
                     sharedUiInfo.joinGameTypes[nameIdx2].gameTypeName = displayName;
                 }
@@ -1481,7 +1481,7 @@ static void UI_GetGameTypesList(void)
                 int gt3 = sharedUiInfo.numGameTypes;
                 sharedUiInfo.gameTypes[gt3].gameTypeName = sharedUiInfo.gameTypes[gt3].gameType;
                 {
-                    const char *displayName2 = *(const char **)((byte *)&sharedUiInfo + 4432 + sharedUiInfo.numGameTypes * 8);
+                    const char *displayName2 = sharedUiInfo.gameTypes[sharedUiInfo.numGameTypes].gameTypeName;
                     int nameIdx3 = sharedUiInfo.numJoinGameTypes;
                     sharedUiInfo.joinGameTypes[nameIdx3].gameTypeName = displayName2;
                 }
@@ -1583,16 +1583,16 @@ void UI_Init(void)
     ui_playerProfileSelected = Dvar_RegisterString_mac("ui_playerProfileSelected", str_002157b8, 0x1040);
     ui_playerProfileNameNew = Dvar_RegisterString_mac("ui_playerProfileNameNew", str_002157b8, 0x1000);
 
-    /* initialize legacy hacks state */
+    /* initialize legacy hacks state — TODO: unknown offset into legacyHacksArray struct */
     legacyBase = (byte *)imp_legacyHacksArray;
-    *(byte *)(legacyBase + 0x2e4) = 0;
-    *(int *)(legacyBase + 0x3e4) = -1;
-    *(byte *)(legacyBase + 0x1de) = 0;
-    *(int *)(legacyBase + 0x2e0) = -1;
-    *(byte *)(legacyBase + 0x4ed) = 1;
-    *(byte *)(legacyBase + 0x3e8) = 0;
-    *(int *)(legacyBase + 0x4e8) = -1;
-    *(byte *)(legacyBase + 0x4ec) = 0;
+    *(byte *)(legacyBase + 0x2e4) = 0;  /* TODO: unknown offset */
+    *(int *)(legacyBase + 0x3e4) = -1;  /* TODO: unknown offset */
+    *(byte *)(legacyBase + 0x1de) = 0;  /* TODO: unknown offset */
+    *(int *)(legacyBase + 0x2e0) = -1;  /* TODO: unknown offset */
+    *(byte *)(legacyBase + 0x4ed) = 1;  /* TODO: unknown offset */
+    *(byte *)(legacyBase + 0x3e8) = 0;  /* TODO: unknown offset */
+    *(int *)(legacyBase + 0x4e8) = -1;  /* TODO: unknown offset */
+    *(byte *)(legacyBase + 0x4ec) = 0;  /* TODO: unknown offset */
 
     String_Init();
     Menu_Setup(uiInfo);
@@ -1702,8 +1702,8 @@ void UI_KeyEvent(int key, qboolean down)
 /* line 4340 */
 void UI_MouseEvent(int dx, int dy)
 {
-    int *cursorX = (int *)((byte *)uiInfo + 0xc);
-    int *cursorY = (int *)((byte *)uiInfo + 0x10);
+    int *cursorX = &uiInfo->uiDC.cursorx;
+    int *cursorY = &uiInfo->uiDC.cursory;
 
     *cursorX += dx;
     if (*cursorX < 0)
@@ -1765,7 +1765,7 @@ qboolean UI_SetActiveMenu(int menu)
     case 2: /* UIMENU_INGAME */
         {
             int opened;
-            const char *cgMenuName = (const char *)(*(byte **)imp_cg + 0x2adfc);
+            const char *cgMenuName = (const char *)(*(byte **)imp_cg + 0x2adfc); /* TODO: unknown offset into cg globals */
             Key_SetCatcher(8);
             Menus_CloseAll(uiInfo);
             /* Menus_OpenByName actually returns success in eax despite void decl */
@@ -1807,7 +1807,7 @@ qboolean UI_SetActiveMenu(int menu)
         uiInfo->uiDC.cursorx = 0x27f;
         uiInfo->uiDC.cursory = 0x1df;
         Key_SetCatcher(8);
-        *(byte *)(*(byte **)imp_cl + 8) = 1;
+        ((clientActive_t *)*(void **)imp_cl)->displayHUDWithKeycatchUI = 1;
         Menus_CloseAll(uiInfo);
         Menus_OpenByName(uiInfo, "quickmessage");
         return 1;
@@ -1825,7 +1825,7 @@ qboolean UI_SetActiveMenu(int menu)
 
         if (pFocus) {
             /* check if focused menu name matches buf */
-            if (I_stricmp(((menuDef_t *)pFocus)->window.name, (const char *)(legacyBase + 0x2e4)) == 0)
+            if (I_stricmp(((menuDef_t *)pFocus)->window.name, (const char *)(legacyBase + 0x2e4)) == 0) /* TODO: unknown offset into legacyHacks */
                 return 1;
         }
 
@@ -1839,13 +1839,13 @@ qboolean UI_SetActiveMenu(int menu)
         Key_SetCatcher(8);
         Menus_CloseAll(uiInfo);
 
-        /* copy buf to secondary location, save/clear state */
+        /* copy buf to secondary location, save/clear state — TODO: unknown offsets into legacyHacks */
         strcpy((char *)(legacyBase + 0x1de), (const char *)(legacyBase + 0x2e4));
         *(int *)(legacyBase + 0x2e0) = *(int *)(legacyBase + 0x3e4);
         *(byte *)(legacyBase + 0x2e4) = 0;
         *(int *)(legacyBase + 0x3e4) = -1;
 
-        Menus_OpenByName(uiInfo, (const char *)(legacyBase + 0x1de));
+        Menus_OpenByName(uiInfo, (const char *)(legacyBase + 0x1de)); /* TODO: unknown offset into legacyHacks */
         return 1;
 
     case 11: /* player_profile */
@@ -2538,7 +2538,7 @@ static void UI_InsertServerAtPosition(int serverIndex, int position)
 {
     int numServers = sharedUiInfo.serverStatus.numDisplayServers;
     int *displayServers = (int *)(sharedUiInfo.serverStatus.displayServers);
-    int *selectedServer = (int *)((byte *)&sharedUiInfo + 28656);
+    int *selectedServer = &sharedUiInfo.serverStatus.currentServer;
     int j;
 
     if (position < 0 || numServers < position)
@@ -2633,7 +2633,7 @@ static void UI_BuildServerDisplayList(qboolean force)
 
     /* check if we should update */
     if (!force) {
-        if (*(int *)((byte *)uiInfo + 4) <= sharedUiInfo.serverStatus.nextDisplayRefresh)
+        if (uiInfo->uiDC.realTime <= sharedUiInfo.serverStatus.nextDisplayRefresh)
             return;
     } else if (force == 2) {
         /* force == 2 treated same as force */
@@ -2645,18 +2645,18 @@ static void UI_BuildServerDisplayList(qboolean force)
     {
         const char *motdString = Dvar_GetString("cl_motdString");
         int motdLen;
-        I_strncpyz((char *)((byte *)&sharedUiInfo + 108712), motdString, 0x400);
-        motdLen = strlen((const char *)((byte *)&sharedUiInfo + 108712));
+        I_strncpyz(sharedUiInfo.serverStatus.motd, motdString, 0x400);
+        motdLen = strlen(sharedUiInfo.serverStatus.motd);
 
         if (motdLen == 0) {
             const char *translated = UI_SafeTranslateString("EXE_COD_MULTIPLAYER");
-            strcpy((char *)((byte *)&sharedUiInfo + 108712), va("%s - %s", translated, "1.3"));
-            motdLen = strlen((const char *)((byte *)&sharedUiInfo + 108712));
+            strcpy(sharedUiInfo.serverStatus.motd, va("%s - %s", translated, "1.3"));
+            motdLen = strlen(sharedUiInfo.serverStatus.motd);
         }
 
-        if (motdLen != *(int *)((byte *)&sharedUiInfo + 108688)) {
-            *(int *)((byte *)&sharedUiInfo + 108688) = motdLen;
-            *(int *)((byte *)&sharedUiInfo + 108692) = -1;
+        if (motdLen != sharedUiInfo.serverStatus.motdLen) {
+            sharedUiInfo.serverStatus.motdLen = motdLen;
+            sharedUiInfo.serverStatus.motdWidth = -1;
         }
     }
 
@@ -2681,7 +2681,7 @@ static void UI_BuildServerDisplayList(qboolean force)
         sharedUiInfo.serverStatus.numDisplayServers = 0;
         sharedUiInfo.serverStatus.numPlayersOnServers = 0;
         sharedUiInfo.serverStatus.serverCount = LAN_GetServerCount(ui_netSource->current.integer);
-        sharedUiInfo.serverStatus.nextDisplayRefresh = *(int *)((byte *)uiInfo + 4) + 500;
+        sharedUiInfo.serverStatus.nextDisplayRefresh = uiInfo->uiDC.realTime + 500;
         return;
     }
 
@@ -2707,35 +2707,35 @@ static void UI_BuildServerDisplayList(qboolean force)
             goto reject;
 
         /* show empty filter */
-        if (!*(byte *)((byte *)ui_browserShowEmpty + 8) && clients == 0)
+        if (!ui_browserShowEmpty->current.enabled && clients == 0)
             goto reject;
 
         /* show full filter */
-        if (!*(byte *)((byte *)ui_browserShowFull + 8)) {
+        if (!ui_browserShowFull->current.enabled) {
             if (clients == atoi(Info_ValueForKey(info_buf, "sv_maxclients")))
                 goto reject;
         }
 
         /* show password filter */
-        if (!*(byte *)((byte *)ui_browserShowPassword + 8)) {
+        if (!ui_browserShowPassword->current.enabled) {
             if (atoi(Info_ValueForKey(info_buf, "pswrd")) != 0)
                 goto reject;
         }
 
         /* show no password filter */
-        if (!*(byte *)((byte *)ui_browserShowNoPassword + 8)) {
+        if (!ui_browserShowNoPassword->current.enabled) {
             if (atoi(Info_ValueForKey(info_buf, "pswrd")) == 0)
                 goto reject;
         }
 
         /* show pure filter */
-        if (*(byte *)((byte *)ui_browserShowPure + 8)) {
+        if (ui_browserShowPure->current.enabled) {
             if (atoi(Info_ValueForKey(info_buf, "pure")) == 0)
                 goto reject;
         }
 
         /* show dedicated filter */
-        if (*(byte *)((byte *)ui_browserShowDedicated + 8)) {
+        if (ui_browserShowDedicated->current.enabled) {
             if ((unsigned)(atoi(Info_ValueForKey(info_buf, "hw")) - 1) > 2)
                 goto reject;
         }
@@ -2771,7 +2771,7 @@ static void UI_BuildServerDisplayList(qboolean force)
 
         /* server filter type */
         if (ui_serverFilterType > 0) {
-            const char *filterBaseName = *(const char **)((byte *)serverFilters + ui_serverFilterType * 8 + 4);
+            const char *filterBaseName = serverFilters[ui_serverFilterType].basedir;
             if (I_stricmp(Info_ValueForKey(info_buf, "game"), filterBaseName) != 0)
                 goto reject;
         }
@@ -2795,7 +2795,7 @@ reject:
         LAN_MarkServerDirty(ui_netSource->current.integer, i, 0);
     }
 
-    *(int *)((byte *)&sharedUiInfo + 28632) = *(int *)((byte *)uiInfo + 4);
+    sharedUiInfo.serverStatus.refreshtime = uiInfo->uiDC.realTime;
 }
 
 
@@ -2810,13 +2810,12 @@ static int UI_UpdateMapVisibility(int listIndex)
 {
     int numMaps = sharedUiInfo.mapCount;
     int i, visCount = 0;
-    byte *p = (byte *)&sharedUiInfo;
 
     for (i = 0; i < numMaps; i++) {
-        *(int *)(p + 0x13f4 + i * 0xa4) = 0;
-        if ((*(int *)(p + 0x1368 + i * 0xa4) >> listIndex) & 1) {
+        sharedUiInfo.mapList[i].active = 0;
+        if ((sharedUiInfo.mapList[i].typeBits >> listIndex) & 1) {
             visCount++;
-            *(int *)(p + 0x13f4 + i * 0xa4) = 1;
+            sharedUiInfo.mapList[i].active = 1;
         }
     }
     return visCount;
@@ -2827,16 +2826,14 @@ static void UI_SelectFirstVisibleMap(int currentMapIdx)
 {
     int numMaps = sharedUiInfo.mapCount;
     int i, firstVisible = -1;
-    byte *p = (byte *)&sharedUiInfo;
 
     /* check if current map is still visible */
     if (currentMapIdx >= 0 && currentMapIdx < numMaps) {
-        int off = currentMapIdx * 0xa4;
-        if (*(int *)(p + 5108 + off) != 0) {
+        if (sharedUiInfo.mapList[currentMapIdx].active != 0) {
             /* map is still visible - find its list index */
             int listIdx = 0;
             for (i = 0; i < numMaps; i++) {
-                if (*(int *)(p + 0x13f4 + i * 0xa4) != 0) {
+                if (sharedUiInfo.mapList[i].active != 0) {
                     if (i == currentMapIdx)
                         break;
                     listIdx++;
@@ -2853,11 +2850,11 @@ static void UI_SelectFirstVisibleMap(int currentMapIdx)
 
     /* find first visible map */
     if (numMaps > 0) {
-        if (*(int *)(p + 5108) != 0) {
+        if (sharedUiInfo.mapList[0].active != 0) {
             firstVisible = 0;
         } else {
             for (i = 1; i < numMaps; i++) {
-                if (*(int *)(p + 0x1498 + (i - 1) * 0xa4) != 0) {
+                if (sharedUiInfo.mapList[i].active != 0) {
                     firstVisible = i;
                     break;
                 }
@@ -2979,7 +2976,7 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
             }
 
             Dvar_SetInt(ui_netGameType, newVal);
-            Dvar_SetString(ui_netGameTypeName, *(const char **)((byte *)&sharedUiInfo + 4428 + ui_netGameType->current.integer * 8));
+            Dvar_SetString(ui_netGameTypeName, sharedUiInfo.gameTypes[ui_netGameType->current.integer].gameType);
 
             UI_UpdateMapVisibility(ui_netGameType->current.integer);
             UI_SelectFirstVisibleMap(ui_currentNetMap->current.integer);
@@ -3029,11 +3026,10 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
             return "";
 
         for (i = 0; i < numMaps; i++) {
-            byte *entry = (byte *)&sharedUiInfo + i * 0xa4;
-            if (*(int *)(entry + 0x13f4)) {
+            if (sharedUiInfo.mapList[i].active) {
                 if (count == index) {
                     /* found the matching entry - return its display name */
-                    return *(const char **)(entry + 0x13f8);
+                    return sharedUiInfo.mapList[i].mapName;
                 }
                 count++;
             }
@@ -3060,12 +3056,12 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
 
         /* refresh info if column changed or timeout elapsed */
         if (column != lastColumn ||
-            *(int *)((byte *)uiInfo + 4) + 5000 < lastTime) {
+            uiInfo->uiDC.realTime + 5000 < lastTime) {
             LAN_GetServerInfo(ui_netSource->current.integer,
-                              *(int *)(sharedUiInfo.serverStatus.displayServers + index * 4),
+                              sharedUiInfo.serverStatus.displayServers[index],
                               info, 0x400);
             lastColumn = column;
-            lastTime = *(int *)((byte *)uiInfo + 4);
+            lastTime = uiInfo->uiDC.realTime;
         }
 
         pingVal = atoi(Info_ValueForKey(info, "ping"));
@@ -3080,7 +3076,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
                 int hw = atoi(Info_ValueForKey(info, "hw"));
                 if ((unsigned)hw > 7)
                     return "";
-                *handle = *(MaterialHandle *)((byte *)&sharedUiInfo + 25940 + hw * 4);
+                *handle = sharedUiInfo.serverHardwareIconList[hw];
                 return "";
             }
             case 2: /* hostname */
@@ -3095,9 +3091,8 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
                 if (numM <= 0)
                     return mapName;
                 for (mi = 0; mi < numM; mi++) {
-                    byte *entry = (byte *)&sharedUiInfo + mi * 0xa4;
-                    if (I_stricmp(mapName, *(const char **)(entry + 0x1358)) == 0) {
-                        return *(const char **)(entry + 0x13f8);
+                    if (I_stricmp(mapName, sharedUiInfo.mapList[mi].mapLoadName) == 0) {
+                        return sharedUiInfo.mapList[mi].mapName;
                     }
                 }
                 return mapName;
@@ -3134,12 +3129,12 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         }
     } else if (feederID == 13.0f) {
         /* server status feeder */
-        if (index < 0 || index >= *(int *)((byte *)&sharedUiInfo + 113128))
+        if (index < 0 || index >= sharedUiInfo.serverStatusInfo.numLines)
             return "";
         if ((unsigned)column > 3)
             return "";
         {
-            const char *text = *(const char **)((byte *)&sharedUiInfo + 109864 + (column + index * 4) * 4);
+            const char *text = sharedUiInfo.serverStatusInfo.lines[index][column];
             if (text[0] == '@')
                 return UI_SafeTranslateString(text + 1);
             return text;
@@ -3148,13 +3143,13 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         /* player list feeder - column 0 = name */
         if (index < 0 || index >= sharedUiInfo.playerCount)
             return "";
-        return (const char *)((byte *)&sharedUiInfo + 72 + index * 32);
+        return sharedUiInfo.playerNames[index];
     } else if (feederID == 9.0f) {
         /* mod list feeder */
         if (index < 0 || index >= sharedUiInfo.modCount)
             return "";
         {
-            const char *desc = *(const char **)((byte *)&sharedUiInfo + 25976 + index * 8);
+            const char *desc = sharedUiInfo.modList[index].modDescr;
             if (desc && desc[0] != '\0')
                 return desc;
             return sharedUiInfo.modList[index].modName;
@@ -3165,7 +3160,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
             return "";
         if (column - 1 == 0) {
             /* column 1 = name */
-            return (const char *)((byte *)&sharedUiInfo + 72 + index * 32);
+            return sharedUiInfo.playerNames[index];
         }
         /* column 2 = muted status */
         if (CL_IsPlayerMuted(sharedUiInfo.playerClientNums[index]))
@@ -3301,7 +3296,7 @@ int UI_OwnerDrawWidth(int ownerDraw, FontHandle font, float scale)
         s = CG_GetKillerText();
         break;
     case 0xcd: /* 205: game type name */
-        s = *(const char **)((byte *)&sharedUiInfo + 4432 + ui_gametype->current.integer * 8);
+        s = sharedUiInfo.gameTypes[ui_gametype->current.integer].gameTypeName;
         break;
     case 0xdc: { /* 220: net source */
         int netSrcVal = ui_netSource->current.integer;
@@ -3367,7 +3362,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
     switch (ownerDraw) {
     case 205: /* gametype name */
     {
-        const char *gtName = *(const char **)((byte *)&sharedUiInfo + 4432 + ui_gametype->current.integer * 8);
+        const char *gtName = sharedUiInfo.gameTypes[ui_gametype->current.integer].gameTypeName;
         if (gtName[0] == '\0')
             gtName = "EXE_ALL";
         text = UI_SafeTranslateString(gtName);
@@ -3477,7 +3472,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
             lowLight[3] = color[3] * 0.8f;
 
             {
-                int realTime = *(int *)((byte *)uiInfo + 4);
+                int realTime = uiInfo->uiDC.realTime;
                 float phase = (float)(realTime % 1000);
                 float sinVal;
                 {
@@ -3567,7 +3562,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         if (cinHandle <= -2)
             return;
         cinHandle = CIN_PlayCinematic(
-            *(const char **)((byte *)&sharedUiInfo + 26492 + sharedUiInfo.movieIndex * 4),
+            sharedUiInfo.movieList[sharedUiInfo.movieIndex],
             0, 0, 0, 0, 10);
         sharedUiInfo.previewMovie = cinHandle;
         if (cinHandle < 0) {
@@ -3642,7 +3637,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
             UI_BuildPlayerList();
 
             for (num = 0; num < 64; num++) {
-                if (*(int *)((byte *)&sharedUiInfo + 0x1048 + num * 4) == clientNum)
+                if (sharedUiInfo.playerClientNums[num] == clientNum)
                     break;
             }
             if (num >= 64)
@@ -3658,7 +3653,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
                 float scaledHeight = (float)((int)((float)textHeight * actualScale));
                 float textY = rect[1] + (rect[3] - scaledHeight) * 0.5f + scaledHeight;
                 float textX = rect[0] + rect[2] + 2.0f;
-                UI_DrawText((const char *)((byte *)&sharedUiInfo + 72 + num * 32), 32, font, textX, textY, *(int *)&rect[4], *(int *)&rect[5], scale, color, textStyle);
+                UI_DrawText(sharedUiInfo.playerNames[num], 32, font, textX, textY, *(int *)&rect[4], *(int *)&rect[5], scale, color, textStyle);
             }
         }
         return;
@@ -4442,18 +4437,18 @@ static void UI_BuildFindPlayerList(void)
     nextRefresh = uiInfo->nextFindPlayerRefresh;
     if (!nextRefresh)
         return;
-    if (nextRefresh > *(int *)((byte *)uiInfo + 4))
+    if (nextRefresh > uiInfo->uiDC.realTime)
         return;
 
     /* inline server count update */
     UI_UpdateServerCount();
 
     for (i = 0; i < 16; i++) {
-        slotBase = (byte *)&sharedUiInfo + i * 0x8c;
-        serverAddr = (byte *)&sharedUiInfo + 113140 + i * 0x8c;
-        hostName = (byte *)&sharedUiInfo + 113204 + i * 0x8c;
-        hostName2 = (byte *)&sharedUiInfo + 113204 + i * 0x8c;
-        pendingFlag = (int *)((byte *)&sharedUiInfo + 0x1ba7c + i * 0x8c);
+        slotBase = (byte *)&sharedUiInfo.pendingServerStatus.server[i];
+        serverAddr = (byte *)sharedUiInfo.pendingServerStatus.server[i].adrstr;
+        hostName = (byte *)sharedUiInfo.pendingServerStatus.server[i].name;
+        hostName2 = (byte *)sharedUiInfo.pendingServerStatus.server[i].name;
+        pendingFlag = &sharedUiInfo.pendingServerStatus.server[i].valid;
 
         if (!*pendingFlag) {
             /* not pending: clear and update */
@@ -4470,16 +4465,16 @@ static void UI_BuildFindPlayerList(void)
             /* inline server count update */
             UI_UpdateServerCount();
 
-            if (*(int *)((byte *)&sharedUiInfo + 113136) < sharedUiInfo.serverStatus.numDisplayServers) {
+            if (sharedUiInfo.pendingServerStatus.num < sharedUiInfo.serverStatus.numDisplayServers) {
                 /* need to fetch next server */
-                int curServer = *(int *)((byte *)&sharedUiInfo + 113136);
+                int curServer = sharedUiInfo.pendingServerStatus.num;
                 int dispServer;
 
                 /* set timestamp */
-                *(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) = *(int *)((byte *)uiInfo + 4);
+                sharedUiInfo.pendingServerStatus.server[i].startTime = uiInfo->uiDC.realTime;
 
                 /* get server address string */
-                dispServer = *(int *)(sharedUiInfo.serverStatus.displayServers + curServer * 4);
+                dispServer = sharedUiInfo.serverStatus.displayServers[curServer];
                 LAN_GetServerAddressString(ui_netSource->current.integer, dispServer, (char *)serverAddr, 0x40);
 
                 /* get server info */
@@ -4493,11 +4488,11 @@ static void UI_BuildFindPlayerList(void)
 
                 /* advance to next server */
                 curServer++;
-                *(int *)((byte *)&sharedUiInfo + 113136) = curServer;
+                sharedUiInfo.pendingServerStatus.num = curServer;
 
                 /* update status string */
                 numResults = uiInfo->numFoundPlayerServers;
-                Com_sprintf((char *)((byte *)uiInfo + 0xc60 + numResults * 64), 0x40, "searching %d/%d...", curServer, numFound);
+                Com_sprintf(uiInfo->foundPlayerServerNames[numResults], 0x40, "searching %d/%d...", curServer, numFound);
             }
             continue;
         }
@@ -4519,8 +4514,8 @@ static void UI_BuildFindPlayerList(void)
                 continue; /* retry */
 
             {
-                int timeoutVal = *(int *)((byte *)uiInfo + 4) - *(int *)((byte *)ui_serverStatusTimeOut + 8);
-                if (*(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) >= timeoutVal)
+                int timeoutVal = uiInfo->uiDC.realTime - ui_serverStatusTimeOut->current.integer;
+                if (sharedUiInfo.pendingServerStatus.server[i].startTime >= timeoutVal)
                     continue; /* still within timeout */
             }
             numTimeOuts++;
@@ -4538,7 +4533,7 @@ static void UI_BuildFindPlayerList(void)
                 I_strncpyz(name, info.lines[j][3], 0x22);
                 I_CleanStr(name);
 
-                charset = (const char *)((byte *)uiInfo + 0x4a0);
+                charset = uiInfo->findPlayerName;
 
                 if (name[0] == '\0')
                     continue;
@@ -4548,13 +4543,13 @@ static void UI_BuildFindPlayerList(void)
                     numResults = uiInfo->numFoundPlayerServers;
                     if (numResults > 14) {
                         /* too many results, set num to max */
-                        *(int *)((byte *)&sharedUiInfo + 113136) = sharedUiInfo.serverStatus.numDisplayServers;
+                        sharedUiInfo.pendingServerStatus.num = sharedUiInfo.serverStatus.numDisplayServers;
                         continue;
                     }
 
                     /* store result: server address and host name */
-                    I_strncpyz((char *)((byte *)uiInfo + 0x860 + numResults * 64), (const char *)serverAddr, 0x40);
-                    I_strncpyz((char *)((byte *)uiInfo + 0xc60 + numResults * 64), (const char *)hostName2, 0x40);
+                    I_strncpyz(uiInfo->foundPlayerServerAddresses[numResults], (const char *)serverAddr, 0x40);
+                    I_strncpyz(uiInfo->foundPlayerServerNames[numResults], (const char *)hostName2, 0x40);
                     uiInfo->numFoundPlayerServers += 1;
                     continue;
                 }
@@ -4562,7 +4557,7 @@ static void UI_BuildFindPlayerList(void)
         }
 
         /* update searching status */
-        Com_sprintf((char *)((byte *)uiInfo + 0xc60 + uiInfo->numFoundPlayerServers * 64), 0x40, "searching %d/%d...", *(int *)((byte *)&sharedUiInfo + 113136), numFound);
+        Com_sprintf(uiInfo->foundPlayerServerNames[uiInfo->numFoundPlayerServers], 0x40, "searching %d/%d...", sharedUiInfo.pendingServerStatus.num, numFound);
         *pendingFlag = 0;
 
         /* check if still pending and not timed out */
@@ -4570,8 +4565,8 @@ static void UI_BuildFindPlayerList(void)
             continue; /* retry - slot cleared */
 
         {
-            int timeoutVal = *(int *)((byte *)uiInfo + 4) - *(int *)((byte *)ui_serverStatusTimeOut + 8);
-            if (*(int *)((byte *)&sharedUiInfo + 0x1ba74 + i * 0x8c) >= timeoutVal)
+            int timeoutVal = uiInfo->uiDC.realTime - ui_serverStatusTimeOut->current.integer;
+            if (sharedUiInfo.pendingServerStatus.server[i].startTime >= timeoutVal)
                 continue;
         }
         numTimeOuts++;
@@ -4580,9 +4575,9 @@ static void UI_BuildFindPlayerList(void)
 
     /* all 16 slots processed: check if any still pending */
     for (i = 0; i < 16; i++) {
-        if (*(int *)((byte *)&sharedUiInfo + 0x1ba7c + i * 0x8c) != 0) {
+        if (sharedUiInfo.pendingServerStatus.server[i].valid != 0) {
             /* still pending - schedule next check */
-            uiInfo->nextFindPlayerRefresh = *(int *)((byte *)uiInfo + 4) + 25;
+            uiInfo->nextFindPlayerRefresh = uiInfo->uiDC.realTime + 25;
             return;
         }
     }
@@ -4590,10 +4585,10 @@ static void UI_BuildFindPlayerList(void)
     /* all done */
     numResults = uiInfo->numFoundPlayerServers;
     if (numResults == 0) {
-        Com_sprintf((char *)((byte *)uiInfo + 0xc60), 0x40, "no servers found");
+        Com_sprintf(uiInfo->foundPlayerServerNames[0], 0x40, "no servers found");
     } else {
         const char *plural = (numResults == 2) ? str_002157b8 : "s";
-        Com_sprintf((char *)((byte *)uiInfo + 0xca0 + (numResults - 1) * 64), 0x40, "%d server%s found with player %s", numResults - 1, plural, (const char *)((byte *)uiInfo + 0x4a0));
+        Com_sprintf(uiInfo->foundPlayerServerNames[numResults], 0x40, "%d server%s found with player %s", numResults - 1, plural, uiInfo->findPlayerName);
     }
     uiInfo->nextFindPlayerRefresh = 0;
 }
@@ -4609,13 +4604,13 @@ static void UI_BuildServerStatus_impl(int force)
     if (force) {
         /* force: reset feeder selection and clear server status */
         Menu_SetFeederSelection(uiInfo, 0, 0xd, 0, 0);
-        *(int *)((byte *)&sharedUiInfo + 113128) = 0;
+        sharedUiInfo.serverStatusInfo.numLines = 0;
         LAN_GetServerStatus(0, 0, 0);
     } else {
         int nextRefresh = sharedUiInfo.nextServerStatusRefresh;
         if (nextRefresh == 0)
             return;
-        if (nextRefresh > *(int *)((byte *)uiInfo + 4))
+        if (nextRefresh > uiInfo->uiDC.realTime)
             return;
     }
 
@@ -4645,8 +4640,8 @@ static void UI_BuildServerStatus_impl(int force)
         /* call UI_GetServerStatusInfo with register args: eax=serverAddress, edx=info */
         {
             int result;
-            byte *serverAddress = (byte *)&sharedUiInfo + 109736;
-            byte *statusInfo = (byte *)&sharedUiInfo + 109800;
+            byte *serverAddress = (byte *)sharedUiInfo.serverStatusAddress;
+            byte *statusInfo = (byte *)&sharedUiInfo.serverStatusInfo;
             __asm__ __volatile__ (
                 "movl %1, %%edx\n"
                 "movl %2, %%eax\n"
@@ -4669,7 +4664,7 @@ static void UI_BuildServerStatus_impl(int force)
                 );
             } else {
                 /* failed: set retry timer */
-                sharedUiInfo.nextServerStatusRefresh = *(int *)((byte *)uiInfo + 4) + 500;
+                sharedUiInfo.nextServerStatusRefresh = uiInfo->uiDC.realTime + 500;
             }
         }
     }
@@ -4861,7 +4856,7 @@ void UI_Refresh(void) {
     }
 
     /* Check if time hasn't passed the refresh interval */
-    if (*(int *)((byte *)uiInfo + 4) < *(int *)((byte *)&sharedUiInfo + 28632)) {
+    if (uiInfo->uiDC.realTime < sharedUiInfo.serverStatus.refreshtime) {
         if (needRebuild)
             goto after_browser;
     }
@@ -4878,7 +4873,7 @@ void UI_Refresh(void) {
 
     /* LAN_UpdateDirtyPings (line 5061) */
     if (LAN_UpdateDirtyPings(ui_netSource->current.integer)) {
-        *(int *)((byte *)&sharedUiInfo + 28632) = *(int *)((byte *)uiInfo + 4) + 1000;
+        sharedUiInfo.serverStatus.refreshtime = uiInfo->uiDC.realTime + 1000;
     } else {
         if (needRebuild)
             goto rebuild;
@@ -4908,9 +4903,8 @@ after_browser:
 
     /* Draw cursor */
     {
-        byte *edx = (byte *)uiInfo;
-        float x = (float)(*(int *)(edx + 0xc) - 16);
-        float y = (float)(*(int *)(edx + 0x10) - 16);
+        float x = (float)(uiInfo->uiDC.cursorx - 16);
+        float y = (float)(uiInfo->uiDC.cursory - 16);
         UI_DrawHandlePic(x, y, 32.0f, 32.0f, 4, 4, 0, sharedUiInfo.assets.cursor);
     }
 }
@@ -4939,11 +4933,10 @@ void UI_RunMenuScript(const char * *args)
         Dvar_SetFromStringByNameFromSource("dedicated",
             va("%i", ui_dedicated->current.integer), 1);
         Dvar_SetStringByName("g_gametype",
-            *(const char **)((byte *)&sharedUiInfo + 4428 + ui_netGameType->current.integer * 8));
+            sharedUiInfo.gameTypes[ui_netGameType->current.integer].gameType);
         {
             int mapIdx = ui_currentNetMap->current.integer;
-            int offset = mapIdx * 41 + mapIdx;
-            const char *mapName = *(const char **)((byte *)&sharedUiInfo + 4952 + offset * 4);
+            const char *mapName = sharedUiInfo.mapList[mapIdx].mapLoadName;
             Cbuf_ExecuteText(2, va("wait ; wait ; map %s\n", mapName));
         }
         return;
@@ -5039,10 +5032,9 @@ void UI_RunMenuScript(const char * *args)
             int numMaps = sharedUiInfo.mapCount;
             if (numMaps > 0) {
                 for (i = 0; i < numMaps; i++) {
-                    byte *entry = (byte *)&sharedUiInfo + i * 0xa4;
-                    *(int *)(entry + 0x13f4) = 0;
-                    if ((*(int *)(entry + 0x1368) >> gtIdx) & 1) {
-                        *(int *)(entry + 0x13f4) = 1;
+                    sharedUiInfo.mapList[i].active = 0;
+                    if ((sharedUiInfo.mapList[i].typeBits >> gtIdx) & 1) {
+                        sharedUiInfo.mapList[i].active = 1;
                     }
                 }
             }
@@ -5085,7 +5077,7 @@ void UI_RunMenuScript(const char * *args)
             sharedUiInfo.modList[modCount].modName = String_Alloc(modName);
 
             modCount = sharedUiInfo.modCount;
-            *(const char **)((byte *)&sharedUiInfo + 25976 + modCount * 8) = String_Alloc(modDesc);
+            sharedUiInfo.modList[modCount].modDescr = String_Alloc(modDesc);
 
             /* advance past desc */
             for (descLen = 0; modDesc[descLen]; descLen++) ;
@@ -5101,9 +5093,8 @@ void UI_RunMenuScript(const char * *args)
 
     if (I_stricmp(name, "voteTypeMap") == 0) {
         int mapIdx = ui_currentNetMap->current.integer;
-        int offset = mapIdx * 41 + mapIdx;
-        const char *mapName = *(const char **)((byte *)&sharedUiInfo + 4952 + offset * 4);
-        const char *gtName = *(const char **)((byte *)&sharedUiInfo + 4428 + ui_netGameType->current.integer * 8);
+        const char *mapName = sharedUiInfo.mapList[mapIdx].mapLoadName;
+        const char *gtName = sharedUiInfo.gameTypes[ui_netGameType->current.integer].gameType;
         Cbuf_ExecuteText(2, va("callvote typemap %s %s\n", gtName, mapName));
         return;
     }
@@ -5113,15 +5104,14 @@ void UI_RunMenuScript(const char * *args)
         if (mapIdx < 0 || mapIdx >= sharedUiInfo.mapCount)
             return;
         {
-            int offset = mapIdx * 41 + mapIdx;
-            const char *mapName = *(const char **)((byte *)&sharedUiInfo + 4952 + offset * 4);
+            const char *mapName = sharedUiInfo.mapList[mapIdx].mapLoadName;
             Cbuf_ExecuteText(2, va("callvote map %s\n", mapName));
         }
         return;
     }
 
     if (I_stricmp(name, "voteGame") == 0) {
-        const char *gtName = *(const char **)((byte *)&sharedUiInfo + 4428 + ui_netGameType->current.integer * 8);
+        const char *gtName = sharedUiInfo.gameTypes[ui_netGameType->current.integer].gameType;
         Cbuf_ExecuteText(2, va("callvote g_gametype %s\n", gtName));
         return;
     }
@@ -5258,7 +5248,7 @@ void UI_RunMenuScript(const char * *args)
     }
 
     if (I_stricmp(name, "createPlayerProfile") == 0) {
-        const char *newName = *(const char **)((byte *)ui_playerProfileNameNew + 8);
+        const char *newName = ui_playerProfileNameNew->current.string;
         int i, numProfiles;
 
         if (newName[0] == '\0')
@@ -5336,7 +5326,7 @@ void UI_RunMenuScript(const char * *args)
         if (numProfiles == 0)
             return;
 
-        selIdx = *(int *)((byte *)ui_playerProfileSelected + 8);
+        selIdx = ui_playerProfileSelected->current.integer;
         if (!Com_DeletePlayerProfile(selIdx)) {
             Menus_OpenByName(uiInfo, "profile_delete_fail_popmenu");
             return;
@@ -5345,7 +5335,7 @@ void UI_RunMenuScript(const char * *args)
         /* find profile in sorted list */
         {
             int found = -1;
-            const char *selName = *(const char **)(*(byte **)((byte *)ui_playerProfileSelected) + 8);
+            const char *selName = ui_playerProfileSelected->current.string;
             for (i = 0; i < numProfiles; i++) {
                 int si = uiInfo->playerProfileStatus.displayProfile[i];
                 if (I_stricmp(selName, uiInfo->playerProfileName[si]) == 0) {
@@ -5356,7 +5346,7 @@ void UI_RunMenuScript(const char * *args)
             }
             if (found < 0) {
                 found = -1;
-                sortedIdx = *(int *)((byte *)uiInfo + 0x388 - 4); /* fallback */
+                sortedIdx = uiInfo->playerProfileStatus.sortDir; /* fallback */
             }
 
             /* remove from list */
@@ -5397,7 +5387,7 @@ void UI_RunMenuScript(const char * *args)
     }
 
     if (I_stricmp(name, "loadPlayerProfile") == 0) {
-        const char *selProfile = *(const char **)((byte *)ui_playerProfileSelected + 8);
+        const char *selProfile = ui_playerProfileSelected->current.string;
         if (selProfile[0] == '\0')
             return;
         Com_ChangePlayerProfile((int)selProfile);
@@ -5443,13 +5433,13 @@ void UI_RunMenuScript(const char * *args)
         if (cinHandle >= 0)
             CIN_StopCinematic(cinHandle);
         Cbuf_ExecuteText(2, va("cinematic %s 2\n",
-            *(const char **)((byte *)&sharedUiInfo + 26492 + sharedUiInfo.movieIndex * 4)));
+            sharedUiInfo.movieList[sharedUiInfo.movieIndex]));
         return;
     }
 
     if (I_stricmp(name, "RunMod") == 0) {
         Dvar_SetStringByName("fs_game",
-            *(const char **)((byte *)&sharedUiInfo + 25972 + sharedUiInfo.modIndex * 8));
+            sharedUiInfo.modList[sharedUiInfo.modIndex].modName);
         Cbuf_ExecuteText(2, "vid_restart;");
         return;
     }
@@ -5507,8 +5497,8 @@ void UI_RunMenuScript(const char * *args)
                 return;
 
             LAN_GetServerAddressString(ui_netSource->current.integer,
-                *(int *)(sharedUiInfo.serverStatus.displayServers + selectedServer * 4),
-                (char *)((byte *)&sharedUiInfo + 109736), 0x40);
+                sharedUiInfo.serverStatus.displayServers[selectedServer],
+                sharedUiInfo.serverStatusAddress, 0x40);
             { int _force = 1; __asm__ __volatile__("calll UI_BuildServerStatus" : : "a"(_force) : "ecx", "edx", "memory"); }
         }
         return;
@@ -5534,7 +5524,7 @@ void UI_RunMenuScript(const char * *args)
                 return;
 
             LAN_GetServerAddressString(ui_netSource->current.integer,
-                *(int *)(sharedUiInfo.serverStatus.displayServers + selectedServer * 4),
+                sharedUiInfo.serverStatus.displayServers[selectedServer],
                 buff, 0x400);
             Cbuf_ExecuteText(2, va("connect %s\n", buff));
         }
@@ -5596,7 +5586,7 @@ void UI_RunMenuScript(const char * *args)
         if (sel < 0 || sel >= sharedUiInfo.playerCount)
             return;
         Cbuf_ExecuteText(2, va("callvote kick \"%s\"\n",
-            (const char *)((byte *)&sharedUiInfo + 72 + sel * 32)));
+            sharedUiInfo.playerNames[sel]));
         return;
     }
 
@@ -5605,7 +5595,7 @@ void UI_RunMenuScript(const char * *args)
         if (sel < 0 || sel >= sharedUiInfo.playerCount)
             return;
         Cbuf_ExecuteText(2, va("callvote tempBanUser \"%s\"\n",
-            (const char *)((byte *)&sharedUiInfo + 72 + sel * 32)));
+            sharedUiInfo.playerNames[sel]));
         return;
     }
 
@@ -5623,7 +5613,7 @@ void UI_RunMenuScript(const char * *args)
             if (selectedServer >= 0 && selectedServer < sharedUiInfo.serverStatus.numDisplayServers) {
                 /* get server info */
                 LAN_GetServerInfo(ui_netSource->current.integer,
-                    *(int *)(sharedUiInfo.serverStatus.displayServers + selectedServer * 4),
+                    sharedUiInfo.serverStatus.displayServers[selectedServer],
                     buff, 0x400);
                 I_strncpyz(out, Info_ValueForKey(buff, "hostname"), 0x20);
                 I_strncpyz(addr, Info_ValueForKey(buff, "addr"), 0x20);
@@ -5645,7 +5635,7 @@ void UI_RunMenuScript(const char * *args)
             UI_UpdateServerCount();
 
             LAN_GetServerInfo(ui_netSource->current.integer,
-                *(int *)(sharedUiInfo.serverStatus.displayServers + selectedServer * 4),
+                sharedUiInfo.serverStatus.displayServers[selectedServer],
                 buff, 0x400);
             addr[0] = '\0';
             I_strncpyz(addr, Info_ValueForKey(buff, "addr"), 0x20);
@@ -7672,11 +7662,10 @@ int UI_FeederCount(float feederID)
             return 0;
 
         for (i = 0; i < numMaps; i++) {
-            byte *entry = (byte *)&sharedUiInfo + i * 0xa4;
-            *(int *)(entry + 0x13f4) = 0;
-            if ((*(int *)(entry + 0x1368) >> gameType) & 1) {
+            sharedUiInfo.mapList[i].active = 0;
+            if ((sharedUiInfo.mapList[i].typeBits >> gameType) & 1) {
                 count++;
-                *(int *)(entry + 0x13f4) = 1;
+                sharedUiInfo.mapList[i].active = 1;
             }
         }
         return count;
@@ -7694,10 +7683,10 @@ int UI_FeederCount(float feederID)
         }
         return sharedUiInfo.serverStatus.numDisplayServers;
     } else if (feederID == 13.0f) {
-        return *(int *)((byte *)&sharedUiInfo + 113128);
+        return sharedUiInfo.serverStatusInfo.numLines;
     } else if (feederID == 7.0f || feederID == 20.0f) {
         /* player list count */
-        int curTime = *(int *)((byte *)uiInfo + 4);
+        int curTime = uiInfo->uiDC.realTime;
         if (curTime > uiInfo->playerRefresh) {
             uiInfo->playerRefresh = curTime + 3000;
             UI_BuildPlayerList();
@@ -7735,9 +7724,9 @@ static
 void UI_DisplayDownloadInfo(const char *downloadName, float centerPoint, float yStart, FontHandle font, float scale)
 {
     byte *legacyBase = *(byte **)imp_legacyHacks;
-    int downloadSize = *(int *)(legacyBase + 0x10);
-    int downloadCount = *(int *)(legacyBase + 0x14);
-    int downloadTime = *(int *)(legacyBase + 0x18);
+    int downloadSize = *(int *)(legacyBase + 0x10);  /* TODO: unknown offset into legacyHacks */
+    int downloadCount = *(int *)(legacyBase + 0x14); /* TODO: unknown offset into legacyHacks */
+    int downloadTime = *(int *)(legacyBase + 0x18);  /* TODO: unknown offset into legacyHacks */
     vec_t color[4];
     float y1, y2, y3;
     int xferRate = 0;
@@ -7804,7 +7793,7 @@ void UI_DisplayDownloadInfo(const char *downloadName, float centerPoint, float y
 
         if (downloadCount > 0xfff && downloadTime != 0) {
             /* have enough data and download time to compute transfer rate */
-            int elapsedMs = *(int *)((byte *)uiInfo + 4) - downloadTime;
+            int elapsedMs = uiInfo->uiDC.realTime - downloadTime;
 
             if ((unsigned)(elapsedMs + 999) <= 1998) {
                 /* elapsed too short, rate = 0 */
@@ -7929,7 +7918,7 @@ void UI_DrawConnectScreen(void)
     /* determine loading flag */
     {
         int loading = 0;
-        if (legacyBase[0x5c] != 0 || legacyBase[0x9c] != 0)
+        if (legacyBase[0x5c] != 0 || legacyBase[0x9c] != 0) /* TODO: unknown offsets into legacyHacks */
             loading = 1;
         CG_DrawInformation(loading);
     }
@@ -7947,9 +7936,8 @@ void UI_DrawConnectScreen(void)
 
         if (numGameTypes > 0) {
             int gi;
-            byte *base = (byte *)&sharedUiInfo;
             for (gi = 0; gi < numGameTypes; gi++) {
-                if (I_stricmp(g_gametype, *(const char **)(base + 0x114c + gi * 8)) == 0) {
+                if (I_stricmp(g_gametype, sharedUiInfo.gameTypes[gi].gameType) == 0) {
                     pszGameType = sharedUiInfo.gameTypes[gi].gameTypeName;
                     break;
                 }
@@ -7967,9 +7955,8 @@ void UI_DrawConnectScreen(void)
             if (numMaps > 0) {
                 int mi;
                 for (mi = 0; mi < numMaps; mi++) {
-                    byte *entry = (byte *)&sharedUiInfo + mi * 0xa4;
-                    if (I_stricmp(g_mapname, *(const char **)(entry + 0x1358)) == 0) {
-                        mapDisplayName = *(const char **)(entry + 0x13f8);
+                    if (I_stricmp(g_mapname, sharedUiInfo.mapList[mi].mapLoadName) == 0) {
+                        mapDisplayName = sharedUiInfo.mapList[mi].mapName;
                         break;
                     }
                 }
@@ -8103,9 +8090,9 @@ check_connection_state:
             /* CA_CONNECTED - downloading */
             /* Reload legacyBase: stack corruption can zero the local */
             legacyBase = *(byte **)imp_legacyHacks;
-            if (!legacyBase || legacyBase[0x1c] == 0)
+            if (!legacyBase || legacyBase[0x1c] == 0) /* TODO: unknown offset into legacyHacks */
                 return;
-            UI_DisplayDownloadInfo((const char *)(legacyBase + 0x1c), 320.0f, 89.0f, font, connectScale);
+            UI_DisplayDownloadInfo((const char *)(legacyBase + 0x1c), 320.0f, 89.0f, font, connectScale); /* TODO: unknown offset into legacyHacks */
         } else if (cs == 3) {
             /* CA_CONNECTING */
             if (bConnectInfoDisplayed)

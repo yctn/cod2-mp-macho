@@ -103,20 +103,21 @@ TMediaElement MediaHandles_GetHandle(const MediaHandles * _this)
 /* line 90 */
 void FxScheduler_FxScheduler(const FxScheduler * _this)
 {
-    *(int *)((byte *)_this + 4) = 0;
-    *(int *)((byte *)_this + 8) = 0;
+    /* FxScheduler: offset 0 = mScheduledHead (ptr), offset 4 = mScheduledCount (int) + offset 8 = padding/extra */
+    ((FxScheduler *)_this)->mScheduledCount = 0;
+    *(int *)((byte *)_this + 8) = 0; /* scheduledEffectCount */
 }
 
 /* line 459 */
 float FxScheduler_GetEffectLength(const FxScheduler * _this, EffectTemplate *fx)
 {
-    int count = *(int *)((byte *)fx + 4);
+    int count = fx->mPrimitiveCount;
     float maxLen = 0.0f;
     int i;
 
     for (i = 0; i < count; i++) {
-        PrimitiveTemplate *prim = *(PrimitiveTemplate **)((byte *)fx + 8 + i * 4);
-        float len = *(float *)((byte *)prim + 0x4c) + *(float *)((byte *)prim + 0x5c);
+        PrimitiveTemplate *prim = fx->mPrimitives[i];
+        float len = prim->mSpawnDelay.mMax + prim->mLife.mMax;
         if (len > maxLen)
             maxLen = len;
     }
@@ -275,7 +276,7 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
     FxBoltFrame *curFrame;
 
     /* Check if bolting is enabled and valid */
-    if (!(*(byte *)((byte *)primTemp + 0x90) & 2) || !bolt || *(int *)bolt < 0) {
+    if (!(primTemp->mAttributeFlags & 2) || !bolt || bolt->dobjHandle < 0) {
         return 1; /* true - no bolting needed */
     }
 
@@ -415,7 +416,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
     AxisCopy((const vec_t *)axis, (vec_t *)ax);
 
     /* Handle random rotation around forward axis */
-    if (*(byte *)((byte *)primTemp + 0x95) & 1) {
+    if (primTemp->mSpawnFlags & 1) {
         vec3_t rotated;
         float angle = flrand(0.0f, 360.0f);
         RotatePointAroundVector(rotated, (const vec_t *)ax, (const vec_t *)axis + 3, angle);
@@ -432,7 +433,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
     prim.primTemp = primTemp;
 
     /* Dispatch based on primitive type (offset 0x40) */
-    primType = *(int *)((byte *)primTemp + 0x40);
+    primType = primTemp->mType;
     if (primType > 12) {
         goto cleanup;
     }
@@ -642,21 +643,21 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
     numAdded = 0;
     seedOffset = 0;
 
-    for (i = 0; i < *(int *)((byte *)fx + 4); i++) {
+    for (i = 0; i < fx->mPrimitiveCount; i++) {
         int count;
         int t;
         float spawnDistSq;
         float cullDistSq;
         int flags;
 
-        prim = *(PrimitiveTemplate **)((byte *)fx + 8 + i * 4);
+        prim = fx->mPrimitives[i];
         factor = 0.0f;
 
         /* Cull distance check (mSpawnRange offset 0x60) */
-        if (*(float *)((byte *)prim + 0x60) != 0.0f) {
+        if (prim->mSpawnRange.mMin != 0.0f) {
             /* Far cull check */
-            distSq = Vec3DistanceSq(origin, (const vec_t *)((byte *)helper + 0x14));
-            culldist = *(float *)((byte *)prim + 0x60) * *(float *)((byte *)helper + 0xf8);
+            distSq = Vec3DistanceSq(origin, helper->mCamera.vieworg);
+            culldist = prim->mSpawnRange.mMin * helper->adsZoomFactor;
             if (distSq > culldist * culldist) {
                 continue;
             }
@@ -666,36 +667,36 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         }
 
         /* Near cull check (mSpawnRange.max offset 0x64) */
-        if (*(float *)((byte *)prim + 0x64) != 0.0f) {
+        if (prim->mSpawnRange.mMax != 0.0f) {
             if (!rangeCheck) {
-                distSq = Vec3DistanceSq(origin, (const vec_t *)((byte *)helper + 0x14));
+                distSq = Vec3DistanceSq(origin, helper->mCamera.vieworg);
             }
-            culldist = *(float *)((byte *)prim + 0x64) * *(float *)((byte *)helper + 0xf8);
+            culldist = prim->mSpawnRange.mMax * helper->adsZoomFactor;
             if (distSq > culldist * culldist) {
                 continue;
             }
         }
 
         /* CullSphere check */
-        if (*(byte *)((byte *)prim + 0x95) & 4) {
-            if (FxHelper_CullSpherePreviousFrame(helper, origin, *(float *)((byte *)prim + 0x2a0))) {
+        if (prim->mSpawnFlags & 4) {
+            if (FxHelper_CullSpherePreviousFrame(helper, origin, prim->spawnFrustumCullRadius)) {
                 continue;
             }
         }
 
         /* Get spawn count */
         {
-            float fcount = FxRange_GetVal((FxRange *)((byte *)prim + 0x50));
+            float fcount = FxRange_GetVal(&prim->mSpawnCount);
             count = (int)(fcount + 0.5f);
         }
         if (count == 0)
             continue;
 
         /* Calculate delay factor if FLAG_USE_EVEN_DISTRIBUTION (flag bit 0x200 at offset 0x94) */
-        flags = *(int *)((byte *)prim + 0x94);
+        flags = prim->mSpawnFlags;
         if (flags & 0x200) {
-            float start = *(float *)((byte *)prim + 0x48);
-            float end = *(float *)((byte *)prim + 0x4c);
+            float start = prim->mSpawnDelay.mMin;
+            float end = prim->mSpawnDelay.mMax;
             factor = end - start;
             if (factor < 0.0f)
                 factor = -factor;
@@ -708,13 +709,13 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         for (t = 0; t < count; t++) {
             int delay;
 
-            flags = *(int *)((byte *)prim + 0x94);
+            flags = prim->mSpawnFlags;
             if (flags & 0x200) {
                 /* Even distribution delay */
                 delay = (int)((float)t * factor);
             } else {
                 /* Random delay from FxRange */
-                float fdelay = FxRange_GetVal((FxRange *)((byte *)prim + 0x48));
+                float fdelay = FxRange_GetVal(&prim->mSpawnDelay);
                 delay = (int)fdelay;
             }
 
@@ -726,32 +727,32 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
                 memset(sfx, 0, 0x50);
 
                 /* Set start time = current time + delay */
-                *(int *)((byte *)sfx + 8) = *(int *)((byte *)helper + 4) + delay;
+                sfx->mStartTime = helper->mTime + delay;
                 /* Set fx */
-                *(const EffectTemplate **)((byte *)sfx + 0) = fx;
+                sfx->mFx = fx;
                 /* Set prim index */
-                *(int *)((byte *)sfx + 4) = i;
+                sfx->mPrimIndex = i;
                 /* Set index in batch */
-                *(int *)((byte *)sfx + 0x48) = t;
+                sfx->mIndexInBatch = t;
                 /* Set seed */
-                *(int *)((byte *)sfx + 0x44) = FxHelper_GetSeed(helper) + seedOffset;
+                sfx->mSeed = FxHelper_GetSeed(helper) + seedOffset;
                 /* Set bolt info */
                 if (bolt) {
-                    *(int *)((byte *)sfx + 0x0c) = *(int *)((byte *)bolt + 0);
-                    *(int *)((byte *)sfx + 0x10) = *(int *)((byte *)bolt + 4);
+                    sfx->mBolt.dobjHandle = bolt->dobjHandle;
+                    sfx->mBolt.boneIndex = bolt->boneIndex;
                 } else {
-                    *(int *)((byte *)sfx + 0x0c) = -1;
-                    *(int *)((byte *)sfx + 0x10) = -1;
+                    sfx->mBolt.dobjHandle = -1;
+                    sfx->mBolt.boneIndex = -1;
                 }
                 /* Copy origin */
-                *(float *)((byte *)sfx + 0x14) = or_.origin[0];
-                *(float *)((byte *)sfx + 0x18) = or_.origin[1];
-                *(float *)((byte *)sfx + 0x1c) = or_.origin[2];
+                sfx->mOrigin[0] = or_.origin[0];
+                sfx->mOrigin[1] = or_.origin[1];
+                sfx->mOrigin[2] = or_.origin[2];
                 /* Copy axis */
-                AxisCopy((const vec_t *)ax, (vec_t *)((byte *)sfx + 0x20));
+                AxisCopy((const vec_t *)ax, (vec_t *)sfx->mAxis);
                 /* Link into scheduler list */
-                *(int *)((byte *)sfx + 0x4c) = *(int *)((byte *)_this + 4);
-                *(int *)((byte *)_this + 4) = (int)(size_t)sfx;
+                sfx->mScheduledNext = ((FxScheduler *)_this)->mScheduledCount; /* link into list */
+                ((FxScheduler *)_this)->mScheduledCount = (int)(size_t)sfx;
                 *(int *)((byte *)_this + 8) += 1;
             } else {
                 /* Spawn immediately */
@@ -793,11 +794,11 @@ void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTe
     int foundTemplateToPreserve;
 
     /* Free all scheduled effects */
-    while ((sfx = *(ScheduledEffect **)((byte *)self + 4)) != NULL) {
-        *(int *)(self + 4) = *(int *)((byte *)sfx + 0x4c); /* next */
+    while ((sfx = (ScheduledEffect *)(size_t)((FxScheduler *)_this)->mScheduledCount) != NULL) {
+        ((FxScheduler *)_this)->mScheduledCount = sfx->mScheduledNext;
         __ZdaPv(sfx);
     }
-    *(int *)(self + 8) = 0; /* count = 0 */
+    *(int *)(self + 8) = 0; /* scheduledEffectCount = 0 */
 
     /* Remove templates if requested */
     if (!(byte)bRemoveTemplates)
@@ -968,13 +969,13 @@ void FxScheduler_GetDecalColor(const FxScheduler * _this, const PrimitiveTemplat
     float t;
 
     /* Create color channel instance from primTemp offset 0x100 */
-    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x100), &colorChannelInstance);
+    FxChannelInstance_Create(&primTemp->mFxChannels[0], &colorChannelInstance); /* color channel */
 
-    if (*(byte *)((byte *)primTemp + 0x91) & 0x20) {
+    if (primTemp->mAttributeFlags & 0x2000) { /* bit 13 = use random color */
         /* Random color path */
         float randomWeight = flrand(0.0f, 1.0f);
         FxChannelInstance colorRandChannelInstance;
-        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x10c), &colorRandChannelInstance);
+        FxChannelInstance_Create(&primTemp->mFxChannels[1], &colorRandChannelInstance); /* colorRand channel */
 
         /* Evaluate main color channel at t=0 */
         curve = colorChannelInstance.curveIterator.master;
@@ -1062,15 +1063,15 @@ float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTempla
     float result;
 
     /* Create alpha channel instance from primTemp offset 0x118 */
-    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x118), &alphaChannelInstance);
+    FxChannelInstance_Create(&primTemp->mFxChannels[2], &alphaChannelInstance); /* alpha channel */
 
-    if (*(byte *)((byte *)primTemp + 0x91) & 0x40) {
+    if (primTemp->mAttributeFlags & 0x4000) { /* bit 14 = use random alpha */
         /* Random alpha path */
         float randomWeight = flrand(0.0f, 1.0f);
         FxChannelInstance alphaRandChannelInstance;
         float baseVal, randVal;
 
-        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x124), &alphaRandChannelInstance);
+        FxChannelInstance_Create(&primTemp->mFxChannels[3], &alphaRandChannelInstance); /* alphaRand channel */
 
         /* Evaluate main alpha channel at t=0 */
         curve = alphaChannelInstance.curveIterator.master;
@@ -1125,15 +1126,15 @@ float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplat
     float result;
 
     /* Create size channel instance from primTemp offset 0x130 */
-    FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x130), &sizeChannelInstance);
+    FxChannelInstance_Create(&primTemp->mFxChannels[4], &sizeChannelInstance); /* size channel */
 
-    if (*(short *)((byte *)primTemp + 0x90) < 0) {
+    if ((short)primTemp->mAttributeFlags < 0) { /* bit 15 = use random size */
         /* Random size path (bit 15 set = signed negative) */
         float randomWeight = flrand(0.0f, 1.0f);
         FxChannelInstance sizeRandChannelInstance;
         float baseVal, randVal;
 
-        FxChannelInstance_Create((const FxChannel *)((byte *)primTemp + 0x13c), &sizeRandChannelInstance);
+        FxChannelInstance_Create(&primTemp->mFxChannels[5], &sizeRandChannelInstance); /* sizeRand channel */
 
         /* Evaluate main size channel at t=0 */
         curve = sizeChannelInstance.curveIterator.master;
@@ -1175,14 +1176,14 @@ float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplat
 /* line 69 */
 EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
 {
-    unsigned short count = *(unsigned short *)((byte *)_this + 4);
+    unsigned short count = *(unsigned short *)((byte *)_this + 4); /* mMediaList.count */
     TMediaElement *elements;
 
     if (!count) {
         return NULL;
     }
 
-    elements = *(TMediaElement **)((byte *)_this);
+    elements = *(TMediaElement **)_this; /* mMediaList.elements */
     return (EffectTemplate *)elements[irand(0, count)].data;
 }
 
@@ -1232,7 +1233,7 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
     TMediaElement *elements;
 
     /* Get rotation from primTemp offset 0x220 (mRotation range) */
-    rotation = FxRange_GetVal((FxRange *)((byte *)primTemp + 0x220));
+    rotation = FxRange_GetVal(&((PrimitiveTemplate *)primTemp)->mRotation);
 
     /* Get decal color */
     FxScheduler_GetDecalColor(_this, primTemp, rgba);
@@ -1245,11 +1246,11 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
     size = FxScheduler_GetDecalSize(_this, primTemp);
 
     /* Get mark material from MediaHandles at primTemp offset 0x68 */
-    count = *(unsigned short *)((byte *)primTemp + 0x6c);
+    count = *(unsigned short *)((byte *)&primTemp->mMediaHandles + 4); /* mMediaHandles.mMediaList.count */
     if (!count) {
         markMaterial = NULL;
     } else {
-        elements = *(TMediaElement **)((byte *)primTemp + 0x68);
+        elements = *(TMediaElement **)&primTemp->mMediaHandles; /* mMediaHandles.mMediaList.elements */
         markMaterial = (MaterialHandle)elements[irand(0, count)].data;
     }
 
@@ -1358,34 +1359,34 @@ static void FxArchive_ArchiveVec3(const FxArchive *arch, vec_t *v)
 /* line 759 */
 void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch)
 {
-    byte *self = (byte *)_this;
+    ScheduledEffect *sfxPtr = (ScheduledEffect *)_this;
 
     /* Archive effect template pointer */
-    FxArchive_ArchiveEffect(arch, (const EffectTemplate **)self);
+    FxArchive_ArchiveEffect(arch, &sfxPtr->mFx);
 
-    /* Archive mPrimIndex (offset 4) */
-    FxArchive_ArchiveInt(arch, (int *)(self + 4));
+    /* Archive mPrimIndex */
+    FxArchive_ArchiveInt(arch, &sfxPtr->mPrimIndex);
 
-    /* Archive mStartTime (offset 8) */
-    FxArchive_ArchiveInt(arch, (int *)(self + 8));
+    /* Archive mStartTime */
+    FxArchive_ArchiveInt(arch, &sfxPtr->mStartTime);
 
-    /* Archive bolt info (offset 0xc) */
-    FxArchive_ArchiveFxBoltInfo(arch, (FxBoltInfo *)(self + 0xc));
+    /* Archive bolt info */
+    FxArchive_ArchiveFxBoltInfo(arch, &sfxPtr->mBolt);
 
-    /* Archive mOrigin (offset 0x14) */
-    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x14));
+    /* Archive mOrigin */
+    FxArchive_ArchiveVec3(arch, sfxPtr->mOrigin);
 
-    /* Archive mAxis[0] (offset 0x20) */
-    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x20));
+    /* Archive mAxis[0] */
+    FxArchive_ArchiveVec3(arch, sfxPtr->mAxis[0]);
 
-    /* Archive mAxis[1] (offset 0x2c) */
-    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x2c));
+    /* Archive mAxis[1] */
+    FxArchive_ArchiveVec3(arch, sfxPtr->mAxis[1]);
 
-    /* Archive mAxis[2] (offset 0x38) */
-    FxArchive_ArchiveVec3(arch, (vec_t *)(self + 0x38));
+    /* Archive mAxis[2] */
+    FxArchive_ArchiveVec3(arch, sfxPtr->mAxis[2]);
 
-    /* Archive mSeed (offset 0x44) */
-    FxArchive_ArchiveInt(arch, (int *)(self + 0x44));
+    /* Archive mSeed */
+    FxArchive_ArchiveInt(arch, &sfxPtr->mSeed);
 }
 
 #if 0
@@ -1418,14 +1419,14 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
 
             /* Validate: fx must exist and primIndex must be valid */
             {
-                const EffectTemplate *fx = *(const EffectTemplate **)newSfx;
-                int primIndex = *(int *)((byte *)newSfx + 4);
-                if (fx && primIndex >= 0 && primIndex < *(int *)((byte *)fx + 4)) {
+                const EffectTemplate *fx = newSfx->mFx;
+                int primIndex = newSfx->mPrimIndex;
+                if (fx && primIndex >= 0 && primIndex < fx->mPrimitiveCount) {
                     /* Get the primitive template */
-                    PrimitiveTemplate *prim = *(PrimitiveTemplate **)((byte *)fx + 8 + primIndex * 4);
+                    PrimitiveTemplate *prim = fx->mPrimitives[primIndex];
                     (void)prim;
                     /* Link into scheduler list */
-                    *(int *)((byte *)newSfx + 0x4c) = *(int *)(self + 4);
+                    newSfx->mScheduledNext = *(int *)(self + 4);
                     *(int *)(self + 4) = (int)(size_t)newSfx;
                     *(int *)(self + 8) += 1;
                 } else {
@@ -1443,10 +1444,10 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
         /* Iterate linked list and archive each */
         {
             FxScheduler *sched = *(FxScheduler **)&imp_theFxScheduler;
-            sfx = *(ScheduledEffect **)((byte *)sched + 4);
+            sfx = (ScheduledEffect *)(size_t)sched->mScheduledCount; /* head of list */
             while (sfx) {
                 ScheduledEffect_Archive(sfx, arch);
-                sfx = *(ScheduledEffect **)((byte *)sfx + 0x4c);
+                sfx = (ScheduledEffect *)(size_t)sfx->mScheduledNext;
             }
         }
     }

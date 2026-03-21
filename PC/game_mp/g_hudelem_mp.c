@@ -233,8 +233,8 @@ static void HudElem_SetEnumString_impl(game_hudelem_t *hud_base, const game_hude
     for (nameIndex = 0; nameIndex < nameCount; nameIndex++) {
         if (I_stricmp(selectedName, names[nameIndex]) == 0) {
             /* Found match: clear old bits, set new bits */
-            mask = *(int *)((byte *)f + 0xc);
-            shift = *(int *)((byte *)f + 0x10);
+            mask = ((game_hudelem_field_t *)f)->mask;
+            shift = ((game_hudelem_field_t *)f)->shift;
             *value = *value & ~(mask << shift);
             *value = *value | (nameIndex << shift);
             return;
@@ -284,16 +284,16 @@ static void HudElem_GetColor(game_hudelem_t *hud, int offset)
 {
     vec3_t color;
 
-    color[0] = (float)*(unsigned char *)((byte *)hud + 0x20) * (1.0f / 255.0f);
-    color[1] = (float)*(unsigned char *)((byte *)hud + 0x21) * (1.0f / 255.0f);
-    color[2] = (float)*(unsigned char *)((byte *)hud + 0x22) * (1.0f / 255.0f);
+    color[0] = (float)((hudelem_t *)hud)->color * (1.0f / 255.0f);
+    color[1] = (float)*(unsigned char *)((byte *)hud + 0x21) * (1.0f / 255.0f); /* TODO: unknown offset */
+    color[2] = (float)*(unsigned char *)((byte *)hud + 0x22) * (1.0f / 255.0f); /* TODO: unknown offset */
     Scr_AddVector(color);
 }
 
 /* line 427 */
 static void HudElem_GetAlpha(game_hudelem_t *hud, int offset)
 {
-    Scr_AddFloat((float)*(unsigned char *)((byte *)hud + 0x23) * (1.0f / 255.0f));
+    Scr_AddFloat((float)*(unsigned char *)((byte *)hud + 0x23) * (1.0f / 255.0f)); /* TODO: unknown offset */
 }
 
 /* line 440 */
@@ -303,7 +303,7 @@ static void HudElem_SetFontScale(game_hudelem_t *hud, int offset)
 
     if (scale <= 0.0f)
         Scr_Error(va("font scale was %g; should be > 0", (double)scale));
-    *(float *)((byte *)hud + 0x10) = scale;
+    ((hudelem_t *)hud)->fontScale = scale;
 }
 
 /* line 458 */
@@ -2884,8 +2884,8 @@ void GScr_NewTeamHudElem(void)
 static void HudElem_GetVertAlign(game_hudelem_t *hud, int offset) {
     const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
     int fieldOffset = *(int *)((byte *)f + 4);
-    int shift = *(int *)((byte *)f + 0x10);
-    int mask = *(int *)((byte *)f + 0xc);
+    int shift = ((game_hudelem_field_t *)f)->shift;
+    int mask = ((game_hudelem_field_t *)f)->mask;
     int value = *(int *)((byte *)hud + fieldOffset);
     value = (value >> shift) & mask;
     Scr_AddString(g_he_vertalign[value]);

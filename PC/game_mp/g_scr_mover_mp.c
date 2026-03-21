@@ -104,9 +104,9 @@ static gentity_t *GetScriptMoverEntity(scr_entref_t entref) {
 
     pSelf = &g_entities[entnum];
 
-    if (pSelf->classname != *(unsigned short *)(imp_scr_const + 0x42) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x44) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x46)) {
+    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
@@ -188,19 +188,19 @@ void ScriptEntCmd_Solid(scr_entref_t entref)
         pSelf = &g_entities[entnum];
     }
 
-    if (pSelf->classname != *(unsigned short *)(imp_scr_const + 0x42) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x44) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x46)) {
+    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
-    if (pSelf->classname == *(unsigned short *)(imp_scr_const + 0x46)) {
+    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_origin) {
         /* script_origin - cannot use solid */
         Com_DPrintf("cannot use the solid/notsolid commands on a script_origin entity( number %i )\n", pSelf->s.number);
         return;
     }
 
-    if (pSelf->classname == *(unsigned short *)(imp_scr_const + 0x44)) {
+    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_model) {
         /* script_model */
         pSelf->r.contents = 0x2080;
     } else {
@@ -226,20 +226,20 @@ void ScriptEntCmd_NotSolid(scr_entref_t entref)
         pSelf = &g_entities[entnum];
     }
 
-    if (pSelf->classname != *(unsigned short *)(imp_scr_const + 0x42) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x44) &&
-        pSelf->classname != *(unsigned short *)(imp_scr_const + 0x46)) {
+    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
+        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
-    if (pSelf->classname == *(unsigned short *)(imp_scr_const + 0x46)) {
+    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_origin) {
         /* script_origin */
         Com_DPrintf("cannot use the solid/notsolid commands on a script_origin entity( number %i )\n", pSelf->s.number);
         return;
     }
 
     pSelf->r.contents = 0;
-    if (pSelf->classname != *(unsigned short *)(imp_scr_const + 0x44)) {
+    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model) {
         /* script_brushmodel */
         pSelf->s.eFlags |= 1;
     }
@@ -271,7 +271,7 @@ void InitScriptMover(gentity_t *pSelf)
     qboolean bLightSet;
     int r, g, b, a;
 
-    if (*(byte *)((byte *)&level + 0x1348)) {
+    if (*(byte *)((byte *)&level + 0x1348)) { /* TODO: unknown offset */
         bLightSet = G_SpawnFloat("light", "100", &fLight);
         if (bLightSet | G_SpawnVector("color", "1 1 1", vColor)) {
             r = (int)(vColor[0] * 255.0f);
@@ -542,7 +542,7 @@ void Reached_ScriptMover(gentity_t *pEnt)
             SV_LinkEntity(pEnt);
 
             if (bMoveFinished) {
-                Scr_Notify(pEnt, *(unsigned short *)(imp_scr_const + 0x28), 0);
+                Scr_Notify(pEnt, ((scr_const_t *)imp_scr_const)->movedone, 0);
             }
         }
     }
@@ -568,7 +568,7 @@ void Reached_ScriptMover(gentity_t *pEnt)
     pEnt->r.currentAngles[1] = AngleNormalize360(pEnt->r.currentAngles[1]);
     pEnt->r.currentAngles[2] = AngleNormalize180(pEnt->r.currentAngles[2]);
 
-    Scr_Notify(pEnt, *(unsigned short *)(imp_scr_const + 0x40), 0);
+    Scr_Notify(pEnt, ((scr_const_t *)imp_scr_const)->rotatedone, 0);
 }
 
 /* line 118 */

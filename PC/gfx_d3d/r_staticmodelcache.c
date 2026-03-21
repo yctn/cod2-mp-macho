@@ -35,8 +35,8 @@ void R_FlushStaticModelCache(void);
 /* line 781 */
 void R_InitStaticModelIndexCache(void)
 {
-    void *mem = ((void *(*)(int))(*(void **)((char *)imp_ri + 0xc)))(0xc0000);
-    *(void **)((char *)imp_dx + 0x2dc8) = mem;
+    void *mem = ((refimport_t *)imp_ri)->Hunk_AllocInternal(0xc0000);
+    ((DxGlobals *)imp_dx)->smodelCacheIndices = (r_index_t *)mem; /* TODO: verify offset 0x2dc8 maps to smodelCacheIndices */
 }
 
 /* line 819 */
@@ -886,10 +886,10 @@ void R_InitStaticModelCache(void)
 
     /* Create vertex buffer (retry loop for device lost) */
     do {
-        device = *(void **)((byte *)imp_dx + 8);
+        device = ((DxGlobals *)imp_dx)->device;
         vtable = *(void ***)device;
         ((int (*)(void *, int, int, int, int, void *, int))vtable[0x68 / 4])(
-            device, size, 0x400208, 0, 0, (void *)((byte *)imp_dx + 0x2dc4), 0);
+            device, size, 0x400208, 0, 0, &((DxGlobals *)imp_dx)->smodelCacheVb, 0); /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */
     } while (*(volatile int *)imp_alwaysfails != 0);
 
     /* Reset the cache */
@@ -1804,14 +1804,14 @@ void R_ShutdownStaticModelCache(void)
 
 release_vb:
     /* Release the smodel cache vertex buffer */
-    vb = *(void **)((byte *)imp_dx + 0x2dc4);
+    vb = ((DxGlobals *)imp_dx)->smodelCacheVb /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */;
     if (vb) {
         do {
-            vb = *(void **)((byte *)imp_dx + 0x2dc4);
+            vb = ((DxGlobals *)imp_dx)->smodelCacheVb /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */;
             vtable = *(void ***)vb;
             if (vtable && vtable[8 / 4])
                 ((int (*)(void *))vtable[8 / 4])(vb);
-            *(void **)((byte *)imp_dx + 0x2dc4) = NULL;
+            ((DxGlobals *)imp_dx)->smodelCacheVb = NULL; /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */
         } while (*(volatile int *)imp_alwaysfails != 0);
     }
 }
@@ -1957,7 +1957,7 @@ GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *static
     SkinStaticModelCachedCmd skinCmd;
 
     /* Check if device is lost */
-    if (*((byte *)imp_dx + 0x2d3c) != 0)
+    if (((DxGlobals *)imp_dx)->deviceLost != 0) /* TODO: verify offset 0x2d3c maps to deviceLost */
         return NULL;
 
     /* Check vertex count limit */
@@ -2043,7 +2043,7 @@ GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *static
     /* Copy and offset indices */
     twoBaseOffsets = (baseVertIndex << 16) | (baseVertIndex & 0xFFFF);
     twoSrcIndices = (int *)xsurf->triIndices;
-    twoDstIndices = (int *)(*(int *)((byte *)imp_dx + 0x2dc8) + baseVertIndex * 12);
+    twoDstIndices = (int *)((byte *)((DxGlobals *)imp_dx)->smodelCacheIndices + baseVertIndex * 12); /* TODO: verify offset 0x2dc8 maps to smodelCacheIndices */
     numTriPairs = (short)((xsurf->triCount + (((unsigned short)xsurf->triCount) >> 15)) >> 1);
 
     for (i = 0; i < numTriPairs; i++) {

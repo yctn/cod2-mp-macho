@@ -115,7 +115,7 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
 #else
 struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
 {
-    void *weapDef;
+    WeaponDef *weapDef;
     struct XAnim_s *pAnims;
 
     /* line 259: get weapon def from cent->currentState.weapon (offset 0x1b8) */
@@ -127,17 +127,17 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
     /* line 265: blend root node: index 0, name "root", children 1, num 2, flags 0 */
     XAnimBlend(pAnims, 0, (const char *)str_0021df18, 1, 2, 0);
 
-    /* line 269: precache first anim (weapDef+0x18) */
-    XAnimPrecache(*(const char **)((byte *)weapDef + 0x18), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+    /* line 269: precache first anim (szXAnims[1]) */
+    XAnimPrecache(weapDef->szXAnims[1], (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
 
     /* line 271: create anim at index 1 */
-    XAnimCreate(pAnims, 1, *(const char **)((byte *)weapDef + 0x18));
+    XAnimCreate(pAnims, 1, weapDef->szXAnims[1]);
 
-    /* line 275: precache second anim (weapDef+0x20) */
-    XAnimPrecache(*(const char **)((byte *)weapDef + 0x20), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+    /* line 275: precache second anim (szXAnims[3]) */
+    XAnimPrecache(weapDef->szXAnims[3], (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
 
     /* line 277: create anim at index 2 */
-    XAnimCreate(pAnims, 2, *(const char **)((byte *)weapDef + 0x20));
+    XAnimCreate(pAnims, 2, weapDef->szXAnims[3]);
 
     /* line 280 */
     return pAnims;
@@ -2772,11 +2772,11 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     }
 
     /* line 319: set tag_turret control tag angles */
-    scr = *(byte **)imp_scr_const;
-    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0x9e), angles);
+    scr = *(scr_const_t **)imp_scr_const;
+    DObjSetControlTagAngles(obj, partBits, scr->tag_aim, angles);
 
     /* line 320: set tag_turret_pitch control tag angles */
-    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0xa0), angles);
+    DObjSetControlTagAngles(obj, partBits, scr->tag_aim_animated, angles);
 
     /* line 322: lerp barrel angle */
     cg_s = *(byte **)imp_cg;
@@ -2784,7 +2784,7 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     angles[1] = 0.0f;
 
     /* line 325: set tag_barrel control tag angles */
-    DObjSetControlTagAngles(obj, partBits, *(unsigned short *)(scr + 0x8c), angles);
+    DObjSetControlTagAngles(obj, partBits, scr->tag_flash, angles);
 
     /* line 327: get anim tree */
     tree = (struct XAnim_s *)DObjGetTree(obj);

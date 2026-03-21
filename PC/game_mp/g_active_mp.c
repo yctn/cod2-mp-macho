@@ -58,11 +58,11 @@ extern const dvar_t *g_synchronousClients;
 /* gclient_t field access macros */
 #define _GC(c)                      ((gclient_t *)(c))
 #define CLIENT_SESS_STATE(c)        (_GC(c)->sess.sessionState)
-#define CLIENT_SESS_NOSPECTATE(c)   (*(int *)((byte *)(c) + 0x2740)) /* inside clientSession_t */
+#define CLIENT_SESS_NOSPECTATE(c)   (_GC(c)->sess.noSpectate)
 #define CLIENT_UFO(c)               (_GC(c)->noclip) /* 0x27AC per STABS */
 #define CLIENT_BFROZEN(c)           (_GC(c)->ufo) /* 0x27B0 per STABS */
-#define CLIENT_LASTSERVERTIME(c)    (*(int *)((byte *)(c) + 0x289C)) /* deep in gclient_t */
-#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E)) /* unaligned read spanning pm_flags */
+#define CLIENT_LASTSERVERTIME(c)    (_GC(c)->lastServerTime)
+#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E)) /* unaligned byte-level read of pm_flags */
 #define CLIENT_PS_PM_TYPE(c)        (_GC(c)->ps.pm_type)
 #define CLIENT_PS_KICKAVEL(c)       ((float *)((byte *)(c) + 0x288C)) /* deep in gclient_t */
 
@@ -2354,7 +2354,7 @@ void G_RunClient(gentity_t *ent)
     /* If synchronous clients, set cmd.serverTime = level.time and run think */
     if (g_synchronousClients->current.enabled) {
         client = ent->client;
-        *(int *)((byte *)client + 0x26C8) = level.time;  /* sess.cmd.serverTime */
+        ((gclient_t *)client)->sess.cmd.serverTime = level.time;  /* sess.cmd.serverTime */
         ClientThink_real(ent, (usercmd_t *)((byte *)client + 0x26C8));
     }
 
@@ -2375,9 +2375,9 @@ void G_RunClient(gentity_t *ent)
         ent->s.apos.trType = TR_INTERPOLATE;
         SV_LinkEntity(ent);
         /* Copy currentOrigin to ps.origin */
-        *(vec_t *)((byte *)client + 0x14) = ent->r.currentOrigin[0];
-        *(vec_t *)((byte *)client + 0x18) = ent->r.currentOrigin[1];
-        *(vec_t *)((byte *)client + 0x1C) = ent->r.currentOrigin[2];
+        ((gclient_t *)client)->ps.origin[0] = ent->r.currentOrigin[0];
+        ((gclient_t *)client)->ps.origin[1] = ent->r.currentOrigin[1];
+        ((gclient_t *)client)->ps.origin[2] = ent->r.currentOrigin[2];
     } else {
         /* No tag - if pm_type is 1 or 7, decrement it */
         pm_type = CLIENT_PS_PM_TYPE(client);
@@ -2988,9 +2988,9 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
 
     /* Get entTouch handler: entityHandlers[ent->handler].touch at offset 0xc in 40-byte entries */
     entTouch = (void (*)(gentity_t *, gentity_t *, int))
-        *(void **)((byte *)imp_entityHandlers + *(unsigned char *)((byte *)ent + 0x166) * 40 + 0xc);
+        *(void **)((byte *)imp_entityHandlers + ent->handler * 40 + 0xc); /* TODO: unknown offset */
 
-    numtouch = *(int *)((byte *)pm + 0x40);
+    numtouch = ((pmove_t *)pm)->numtouch;
     if (numtouch <= 0)
         return;
 
@@ -3004,14 +3004,14 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
         /* Notify scripts about the touch event */
         if (((int (*)(int))Scr_IsSystemActive)(1)) {
             Scr_AddEntity(other);
-            Scr_Notify(ent, (int)*(unsigned short *)((byte *)imp_scr_const + 0x52), 1);
+            Scr_Notify(ent, (int)((scr_const_t *)imp_scr_const)->touch, 1);
             Scr_AddEntity(ent);
-            Scr_Notify(other, (int)*(unsigned short *)((byte *)imp_scr_const + 0x52), 1);
+            Scr_Notify(other, (int)((scr_const_t *)imp_scr_const)->touch, 1);
         }
 
         /* Call other entity's touch handler */
         otherTouch = (void (*)(gentity_t *, gentity_t *, int))
-            *(void **)((byte *)imp_entityHandlers + *(unsigned char *)((byte *)other + 0x166) * 40 + 0xc);
+            *(void **)((byte *)imp_entityHandlers + ((other)->handler) * 40 + 0xc); /* TODO: unknown offset */
         if (otherTouch) {
             otherTouch(other, ent, 1);
         }
@@ -3023,7 +3023,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
 
 next_iteration:
         i++;
-        if (i >= *(int *)((byte *)pm + 0x40))
+        if (i >= ((pmove_t *)pm)->numtouch)
             break;
 
         /* Duplicate check: scan previous entries */

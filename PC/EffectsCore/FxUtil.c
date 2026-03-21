@@ -134,15 +134,15 @@ static int CompareSortedEffects(const void *e0, const void *e1)
     Effect *fx1 = *(Effect **)e1;
     int result;
 
-    result = *(int *)((byte *)fx0 + 0xb0) - *(int *)((byte *)fx1 + 0xb0);
+    result = fx0->mSortGroup - fx1->mSortGroup;
     if (result)
         return result;
 
-    result = clusterSort[*(int *)((byte *)fx0 + 0xac)] - clusterSort[*(int *)((byte *)fx1 + 0xac)];
+    result = clusterSort[fx0->mClusterId] - clusterSort[fx1->mClusterId];
     if (result)
         return result;
 
-    result = *(int *)((byte *)fx0 + 0x40) - *(int *)((byte *)fx1 + 0x40);
+    result = (int)(size_t)fx0->mRefEnt.customMaterial - (int)(size_t)fx1->mRefEnt.customMaterial;
     if (result)
         return result;
 
@@ -160,9 +160,9 @@ static int CompareSortedClusters(const void *e0, const void *e1)
 /* line 1549 */
 void FX_SetSortGroup(Effect *fx)
 {
-    *(int *)((byte *)fx + 0xb0) = 0;
-    if (*(MaterialHandle *)((byte *)fx + 0x40) && FxHelper_IsMaterialRefractive(theFxHelper, *(MaterialHandle *)((byte *)fx + 0x40))) {
-        *(int *)((byte *)fx + 0xb0) = -1;
+    fx->mSortGroup = 0;
+    if (fx->mRefEnt.customMaterial && FxHelper_IsMaterialRefractive(theFxHelper, fx->mRefEnt.customMaterial)) {
+        fx->mSortGroup = -1;
     }
 }
 
@@ -202,7 +202,7 @@ int FX_GetCluster(const vec_t *origin)
 void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax)
 {
     byte *pt = (byte *)primTemp;
-    int flags = *(int *)(pt + 0x94);
+    int flags = ((PrimitiveTemplate *)pt)->mSpawnFlags;
 
     if (flags & 0x08) {
         /* Project to infinity: temp = org + ax[0] * 16384 */
@@ -214,9 +214,9 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
 
         if (flags & 0x20) {
             /* Add endpoint offset to temp */
-            float z = FxRange_GetVal(pt + 0xe0);
-            float y = FxRange_GetVal(pt + 0xd8);
-            float x = FxRange_GetVal(pt + 0xd0);
+            float z = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2Z);
+            float y = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2Y);
+            float x = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2X);
             if (flags & 0x80) {
                 /* Axis-aligned offset added directly */
                 org2[0] = x; org2[1] = y; org2[2] = z;
@@ -241,15 +241,15 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
 
         /* Play death effect at endpoint if flag 0x10 */
         if (flags & 0x10) {
-            void *effect = MediaHandles_GetEffect(pt + 0x70);
+            void *effect = MediaHandles_GetEffect(&((PrimitiveTemplate *)pt)->mImpactFxHandles);
             vec_t *traceNormal = (vec_t *)(trace + 0x24);
             FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, effect, org2, (vec3_t *)traceNormal, NULL);
         }
     } else {
         /* No projectToInfinity: compute org2 from range values */
-        float z = FxRange_GetVal(pt + 0xe0);
-        float y = FxRange_GetVal(pt + 0xd8);
-        float x = FxRange_GetVal(pt + 0xd0);
+        float z = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2Z);
+        float y = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2Y);
+        float x = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)pt)->mOrigin2X);
 
         if (flags & 0x80) {
             /* Axis-aligned: org2 = {x,y,z} + origin */
@@ -532,7 +532,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         /* orient->origin = position from CG_GetDObjOrientation result */
         /* Actually the ASM copies from -0x54(%ebp) which is a local holding the position */
         /* For simplicity: copy axis to orient->axis, set orient position */
-        float *oa = (float *)((byte *)orient + 0xc);
+        float *oa = (float *)orient->axis; /* offset 0x0c */
         AxisCopy((vec_t *)axis, (vec_t *)oa);
         /* orient->origin already set by CG_GetDObjOrientation path */
         return 1;
@@ -582,7 +582,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
     tagAxis[8] = 1.0f - (xx + yy);
 
     /* Multiply tagAxis by entity axis → orient->axis */
-    MatrixMultiply(tagAxis, axis, (byte *)orient + 0xc);
+    MatrixMultiply(tagAxis, axis, (vec_t *)orient->axis);
 
     /* Transform bone position by entity axis → orient->origin */
     MatrixTransformVector43(mtx + 0x10, axis, orient);
@@ -591,7 +591,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
     float debugDist = *(float *)(*(byte *)imp_fx_debugBolt + 8);
     if (debugDist != 0.0f) {
         float *oo = (float *)orient;
-        float *oaxis = (float *)((byte *)orient + 0xc);
+        float *oaxis = (float *)orient->axis; /* offset 0x0c */
         oo[0] += oaxis[0] * debugDist;
         oo[1] += oaxis[1] * debugDist;
         oo[2] += oaxis[2] * debugDist;
@@ -875,7 +875,7 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         int curTime = *(int *)((byte *)theFxHelper + 4);
         if (startTime > curTime) {
             /* Not yet due — advance to next */
-            prevNext = (byte **)(scheduled + 0x4c);
+            prevNext = (byte **)&((ScheduledEffect *)scheduled)->mScheduledNext;
             scheduled = *prevNext;
             continue;
         }
@@ -886,16 +886,16 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         byte *primTemp = *(byte **)(fx + 8 + primIndex * 4);
 
         /* Init random seed */
-        Rand_Init(*(int *)(scheduled + 0x44));
+        Rand_Init(((ScheduledEffect *)scheduled)->mSeed);
 
         /* Unlink from list */
-        *prevNext = *(byte **)(scheduled + 0x4c);
+        *prevNext = *(byte **)&((ScheduledEffect *)scheduled)->mScheduledNext;
         *(int *)(scheduler + 8) -= 1;
 
         /* Dispatch effect */
         int boltEntity = *(int *)(scheduled + 0xc);
         int lateTime = curTime - startTime;
-        int indexInBatch = *(int *)(scheduled + 0x48);
+        int indexInBatch = ((ScheduledEffect *)scheduled)->mIndexInBatch;
 
         if (boltEntity >= 0) {
             /* Bolt-based: get bone orientation */
@@ -909,7 +909,7 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         } else {
             /* Origin-based */
             FxScheduler_CreateEffect(scheduler, fx, primTemp,
-                scheduled + 0xc, scheduled + 0x14, scheduled + 0x20,
+                &((ScheduledEffect *)scheduled)->mBolt, ((ScheduledEffect *)scheduled)->mOrigin, ((ScheduledEffect *)scheduled)->mAxis,
                 lateTime, indexInBatch);
         }
 
@@ -1262,21 +1262,21 @@ static void FX_CalcOriginAndAxis_impl(byte *prim, vec_t *orgOut, vec3_t *ax)
      * We'll receive it from the callers via inline ASM which passes ecx. */
 
     vec3_t up = {0.0f, 0.0f, 1.0f};
-    int flags = *(int *)(primTemp + 0x94);
+    int flags = ((PrimitiveTemplate *)primTemp)->mSpawnFlags;
     vec3_t org;
 
     /* Compute origin offset from range values */
     if (flags & 0x40) {
         /* Axis-aligned offset */
-        float z = FxRange_GetVal(primTemp + 0xc8);
-        float y = FxRange_GetVal(primTemp + 0xc0);
-        float x = FxRange_GetVal(primTemp + 0xb8);
+        float z = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1Z);
+        float y = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1Y);
+        float x = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1X);
         org[0] = x; org[1] = y; org[2] = z;
     } else {
         /* Transform offset through axis */
-        float z = FxRange_GetVal(primTemp + 0xc8);
-        float y = FxRange_GetVal(primTemp + 0xc0);
-        float x = FxRange_GetVal(primTemp + 0xb8);
+        float z = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1Z);
+        float y = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1Y);
+        float x = FxRange_GetVal((FxRange *)&((PrimitiveTemplate *)primTemp)->mOrigin1X);
         AxisTransformVector(ax, x, y, z, org);
     }
 
@@ -2011,7 +2011,7 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
     void *effect = MediaHandles_GetEffect(primTemp + 0x88);
     void *scheduler = *(void **)imp_theFxScheduler;
     if (bolt) {
-        FxScheduler_PlayEffect(scheduler, effect, newOrigin, NULL, (byte *)bolt + 0x3c);
+        FxScheduler_PlayEffect(scheduler, effect, newOrigin, NULL, (byte *)bolt + 0x3c); /* TODO: bolt frame offset */
     } else {
         FxScheduler_PlayEffect(scheduler, effect, newOrigin, ax, NULL);
     }
@@ -2064,7 +2064,7 @@ void FX_DrawAll(void)
             }
             int idx = visibleEffectCountNonBolt;
             ((void **)visibleEffectsNonBolt)[idx * 2] = eff;
-            float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+            float dist = Vec3DistanceSq((vec_t *)&((Effect *)eff)->mRefEnt.origin, theFxHelper->mCamera.vieworg);
             *(float *)((byte *)visibleEffectsNonBolt + idx * 8 + 4) = dist;
             visibleEffectCountNonBolt++;
         }
@@ -2079,7 +2079,7 @@ void FX_DrawAll(void)
         }
         int idx = visibleEffectCountBolt;
         ((void **)visibleEffectsBolt)[idx * 2] = eff;
-        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        float dist = Vec3DistanceSq((vec_t *)&((Effect *)eff)->mRefEnt.origin, theFxHelper->mCamera.vieworg);
         *(float *)((byte *)visibleEffectsBolt + idx * 8 + 4) = dist;
         visibleEffectCountBolt++;
     }
@@ -2115,7 +2115,7 @@ void FX_DrawAll(void)
         byte sortedClusters[1800 * 8]; /* {clusterId, distSq} pairs */
         for (i = 0; i < effectClusterCount; i++) {
             *(int *)(sortedClusters + i * 8) = i;
-            float dist = Vec3DistanceSq((vec_t *)((byte *)effectClusters + i * 16), (vec_t *)((byte *)theFxHelper + 0x14));
+            float dist = Vec3DistanceSq((vec_t *)((byte *)effectClusters + i * 16), theFxHelper->mCamera.vieworg);
             *(float *)(sortedClusters + i * 8 + 4) = dist;
         }
         qsort(sortedClusters, effectClusterCount, 8, CompareSortedClusters);
@@ -4440,7 +4440,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
         }
         int idx = visibleEffectCountNonBolt;
         ((void **)visibleEffectsNonBolt)[idx * 2] = eff;
-        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        float dist = Vec3DistanceSq((vec_t *)&((Effect *)eff)->mRefEnt.origin, theFxHelper->mCamera.vieworg);
         *(float *)((byte *)visibleEffectsNonBolt + idx * 8 + 4) = dist;
         visibleEffectCountNonBolt++;
     }
@@ -4496,7 +4496,7 @@ void FX_UpdateScheduledEffectsBolt(void)
         }
         int idx = visibleEffectCountBolt;
         ((void **)visibleEffectsBolt)[idx * 2] = eff;
-        float dist = Vec3DistanceSq((vec_t *)(eff + 0x7c), (vec_t *)((byte *)theFxHelper + 0x14));
+        float dist = Vec3DistanceSq((vec_t *)&((Effect *)eff)->mRefEnt.origin, theFxHelper->mCamera.vieworg);
         *(float *)((byte *)visibleEffectsBolt + idx * 8 + 4) = dist;
         visibleEffectCountBolt++;
     }

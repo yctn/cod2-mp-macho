@@ -326,8 +326,8 @@ static void CG_ResetEntity(char *cent)
                 {
                     if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
                     {
-                        *(char *)(modelDst + 0x80) /* attachModelNames relative */ = 0;   /* attachModelNames[i][0] = 0 */
-                        *(char *)(modelDst + 0x200) /* attachTagNames relative */ = 0;   /* attachTagNames[i][0] = 0 */
+                        ((clientInfo_t *)modelDst)->attachModelNames[0][0] = 0;   /* attachModelNames[i][0] = 0 */
+                        ((clientInfo_t *)modelDst)->attachTagNames[0][0] = 0;   /* attachTagNames[i][0] = 0 */
                     }
                     tagSrc += 0x40;
                     modelDst += 0x40;
@@ -376,8 +376,8 @@ static void CG_ResetEntity(char *cent)
                         {
                             if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
                             {
-                                *(char *)(modelDst + 0x80) /* attachModelNames relative */ = 0;
-                                *(char *)(modelDst + 0x200) /* attachTagNames relative */ = 0;
+                                ((clientInfo_t *)modelDst)->attachModelNames[0][0] = 0;
+                                ((clientInfo_t *)modelDst)->attachTagNames[0][0] = 0;
                             }
                             tagSrc += 0x40;
                             modelDst += 0x40;
@@ -423,8 +423,8 @@ static void CG_ClearClientInfos_Inline(char *dest, char *src, char *tagBase, int
     {
         if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
         {
-            *(char *)(dst + 0x80) /* attachModelNames relative */ = 0;
-            *(char *)(dst + 0x200) /* attachTagNames relative */ = 0;
+            ((clientInfo_t *)dst)->attachModelNames[0][0] = 0;
+            ((clientInfo_t *)dst)->attachTagNames[0][0] = 0;
         }
         tagSrc += 0x40;
         dst += 0x40;
@@ -450,7 +450,7 @@ static void CG_TransitionSnapshot_Inline(void)
     for (i = 0; i < numClients; i++)
     {
         char *clState = (char *)snap + SNAP_CLIENTS + i * CLSTATE_STRIDE;
-        int clientNum = *(int *)(clState + 0xc) /* TODO: unknown clientState_t offset */; /* TODO: unknown clientState_t offset (clientNum?) */
+        int clientNum = ((clientState_t *)clState)->attachModelIndex[0]; /* TODO: unknown clientState_t offset (clientNum?) */
         char *ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum];
 
         /* line 248: check ci->nextValid */
@@ -490,7 +490,7 @@ static void CG_TransitionSnapshot_Inline(void)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = *(int *)(snapEnt + 0xc) /* TODO: unknown snapshot entity offset */; /* TODO: unknown snapshot entity offset 0xc */
+            int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
             char *cent = (char *)&cg_ents[entNum];
             memcpy(cent, cent + ES_BINSIZE, ES_BINSIZE) /* copy nextState -> currentState */;
         }
@@ -524,7 +524,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
             for (i = 0; i < numEnts; i++)
             {
                 char *snapEnt = (char *)&((snapshot_t *)prevSnap)->entities[i];
-                int entNum = *(int *)(snapEnt + 0xc) /* TODO: unknown snapshot entity offset */; /* TODO: unknown snapshot entity offset 0xc */
+                int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
                 char *cent = (char *)&cg_ents[entNum];
 
                 /* line 325: cent->nextValid = 0 */
@@ -587,12 +587,12 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                 char *clData = clState + 0xc;  /* skip to client data portion */
 
                 /* line 368: get clientNum from clientState */
-                clientNum = *(int *)(clState + 0xc) /* TODO: unknown clientState_t offset */;
+                clientNum = ((clientState_t *)clState)->attachModelIndex[0];
                 ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum];
 
                 /* line 369: check ci->infoValid. If not valid, use clState->oldteam instead */
                 if (((clientInfo_t *)ci)->infoValid == 0)
-                    modelIndex = *(int *)(clState + 0x10) /* TODO: unknown clientState_t offset */;  /* oldteam / some field */
+                    modelIndex = ((clientState_t *)clState)->attachModelIndex[1];  /* oldteam / some field */
                 else
                     modelIndex = ((clientInfo_t *)ci)->team;  /* team field at CI + 0x2c = 0x30 (model count?) */
 
@@ -600,8 +600,8 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                 ((clientInfo_t *)ci)->oldteam = modelIndex;
                 ((clientInfo_t *)ci)->infoValid = 1;
                 ((clientInfo_t *)ci)->nextValid = 1;
-                ((clientInfo_t *)ci)->clientNum = *(int *)(clState + 0xc) /* TODO: unknown clientState_t offset */;
-                ((clientInfo_t *)ci)->team = *(int *)(clState + 0x10) /* TODO: unknown clientState_t offset */;
+                ((clientInfo_t *)ci)->clientNum = ((clientState_t *)clState)->attachModelIndex[0];
+                ((clientInfo_t *)ci)->team = ((clientState_t *)clState)->attachModelIndex[1];
 
                 /* line 380: compare ci->name with clData+0x3c (name from clientState) */
                 {
@@ -626,7 +626,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
 
                 /* line 387: get config string for model */
                 {
-                    int configIndex = *(int *)(clState + 0x14) /* TODO: unknown clientState_t offset */;
+                    int configIndex = ((clientState_t *)clState)->attachModelIndex[2];
                     configStr = CL_GetConfigString(configIndex + 0x14e);
                 }
 
@@ -795,7 +795,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = *(int *)(snapEnt + 0xc) /* TODO: unknown snapshot entity offset */; /* TODO: unknown snapshot entity offset 0xc */
+            int entNum = ((entityState_t *)snapEnt)->pos; /* TODO: unknown snapshot entity offset 0xc */
             char *cent = CG_EntityPtr(entNum);
 
             /* line 451: copy snap entity to cent->nextState */
@@ -808,7 +808,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
             if (centInPrevSnapshot[entNum])
             {
                 /* Check if eFlags changed for bit 2 */
-                if ((((centity_t *)cent)->currentState.eFlags ^ *(int *)(snapEnt + 0x08) /* entityState_s.eFlags */) & 2)
+                if ((((centity_t *)cent)->currentState.eFlags ^ ((entityState_t *)snapEnt)->eFlags) & 2)
                 {
                     /* eFlags bit 2 changed: reset entity */
                     CG_ResetEntity(cent);
@@ -829,7 +829,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         for (i = 0; i < numClients; i++)
         {
             char *clState = (char *)snap + SNAP_CLIENTS + i * CLSTATE_STRIDE;
-            int clientNum = *(int *)(clState + 0xc) /* TODO: unknown clientState_t offset */;
+            int clientNum = ((clientState_t *)clState)->attachModelIndex[0];
             CG_UpdatePlayerDObj(CG_EntityPtr(clientNum));
         }
     }
@@ -893,7 +893,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                     for (i = 0; i < numEnts; i++)
                     {
                         char *snapEnt = (char *)&((snapshot_t *)nextSnap)->entities[i];
-                        int entNum = *(int *)(snapEnt + 0xc) /* TODO: unknown snapshot entity offset */;
+                        int entNum = ((entityState_t *)snapEnt)->pos;
                         char *cent = CG_EntityPtr(entNum);
 
                         /* line 206: check if eType == 2 (corpse) */
@@ -943,7 +943,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         for (i = 0; i < numEnts; i++)
         {
             char *snapEnt = (char *)&((snapshot_t *)snap)->entities[i];
-            int entNum = *(int *)(snapEnt + 0xc) /* TODO: unknown snapshot entity offset */;
+            int entNum = ((entityState_t *)snapEnt)->pos;
             CG_CheckEvents(CG_EntityPtr(entNum));
         }
     }

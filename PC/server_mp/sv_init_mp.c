@@ -414,7 +414,7 @@ void SV_Init(void)
     {
         byte *svDedicated = (byte *)imp_com_dedicated;
         byte *dvar = *(byte **)svDedicated;
-        *(char *)(dvar + 0xdd) = 0;
+        *(char *)(dvar + 0xdd) = 0; /* TODO: unknown offset */
     }
 
     *(dvar_t **)imp_sv_allowedClan1 = Dvar_RegisterString("sv_allowedClan1", "", (int)&__mh_execute_header);
@@ -1013,9 +1013,9 @@ void SV_SpawnServer(const char *server)
 
             /* Copy entity state to baseline */
             memcpy(basePtr + 0x2590, &gent->s, sizeof(entityState_t));
-            *(int *)(basePtr + 0x2680) = (unsigned char)gent->r.svFlags;
-            *(int *)(basePtr + 0x2684) = gent->r.clientMask[0];
-            *(int *)(basePtr + 0x2688) = gent->r.clientMask[1];
+            *(int *)(basePtr + 0x2680) = (unsigned char)gent->r.svFlags; /* TODO: unknown offset */
+            *(int *)(basePtr + 0x2684) = gent->r.clientMask[0]; /* TODO: unknown offset */
+            *(int *)(basePtr + 0x2688) = gent->r.clientMask[1]; /* TODO: unknown offset */
 
             /* Copy origin (absmin) */
             entOff = i * 0x174;

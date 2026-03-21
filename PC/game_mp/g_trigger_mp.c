@@ -72,7 +72,7 @@ void G_Trigger(gentity_t *self, gentity_t *other)
 
     if (triggerCount == 0x100) {
         Scr_AddEntity(other);
-        Scr_Notify(self, *(unsigned short *)(imp_scr_const + 0x54), 1); /* unknown scr_const offset 0x54 */
+        Scr_Notify(self, ((scr_const_t *)imp_scr_const)->trigger, 1); /* unknown scr_const offset 0x54 */
         return;
     }
 
@@ -433,7 +433,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
     for (i = 0; i < iNum; i++) {
         pHit = &G_ENTITIES[iTouch[i]];
 
-        if (pHit->classname != *(unsigned short *)(imp_scr_const + 0x5a)) /* unknown scr_const offset 0x5a */
+        if (pHit->classname != ((scr_const_t *)imp_scr_const)->trigger_damage) /* unknown scr_const offset 0x5a */
             continue;
 
         if (!(pHit->flags & 0x4000)) /* flags bit 14 */
@@ -475,7 +475,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
     for (i = 0; i < iNum; i++) {
         pHit = &G_ENTITIES[iTouch[i]];
 
-        if (pHit->classname != *(unsigned short *)(imp_scr_const + 0x5a)) /* unknown scr_const offset 0x5a */
+        if (pHit->classname != ((scr_const_t *)imp_scr_const)->trigger_damage) /* unknown scr_const offset 0x5a */
             continue;
 
         if (!SV_SightTraceToEntity(vStart, (vec_t *)g_trace_zero_ptr, (vec_t *)g_trace_zero_ptr,

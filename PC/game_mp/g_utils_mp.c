@@ -127,13 +127,13 @@ extern byte scr_const_ptr[];          /* imp_scr_const */
 extern byte entityHandlers_ptr[];     /* imp_entityHandlers */
 extern byte playerCorpseInfo_ptr[];   /* imp_g_scr_data */
 
-#define LEVEL_GENTITIES     (*(byte **)(level_ptr + 0x04))
-#define LEVEL_NUMENTS       (*(int *)(level_ptr + 0x0C))
-#define LEVEL_FIRSTFREEENT  (*(gentity_t **)(level_ptr + 0x10))
-#define LEVEL_LASTFREEENT   (*(gentity_t **)(level_ptr + 0x14))
-#define LEVEL_INITIALIZING  (*(int *)(level_ptr + 0x1C))
-#define LEVEL_TIME          (*(int *)(level_ptr + 0x1EC))
-#define LEVEL_SERVERTIME    (*(int *)(level_ptr + 0x1F4))
+#define LEVEL_GENTITIES     (((level_locals_t *)level_ptr)->gentities)
+#define LEVEL_NUMENTS       (((level_locals_t *)level_ptr)->num_entities)
+#define LEVEL_FIRSTFREEENT  (((level_locals_t *)level_ptr)->firstFreeEnt)
+#define LEVEL_LASTFREEENT   (((level_locals_t *)level_ptr)->lastFreeEnt)
+#define LEVEL_INITIALIZING  (((level_locals_t *)level_ptr)->initializing)
+#define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
+#define LEVEL_SERVERTIME    (((level_locals_t *)level_ptr)->frametime)
 #define LEVEL_CLONEIDX      (*(int *)(level_ptr + 0x1DE4))
 
 /* Handler table: each entry is 40 bytes */
@@ -410,7 +410,7 @@ unsigned char G_InitGentity(gentity_t *e)
 {
     ENT_NEXTFREEENT(e) = 0;
     ENT_INUSE(e) = 1;
-    Scr_SetString((scr_string_t *)((byte *)e + 0x168), *(unsigned short *)(scr_const_ptr + 0x2A));
+    Scr_SetString((scr_string_t *)((byte *)e + 0x168), ((scr_const_t *)scr_const_ptr)->noclass);
     /* e->s.number = (e - g_entities) / ENTITY_STRIDE — magic multiply */
     ENT_NUMBER(e) = ((int)((byte *)e - g_entities_ptr) >> 4) * (int)0x8AF8AF8B;
     ENT_OWNERNUM(e) = 0x3FF;
@@ -926,8 +926,8 @@ unsigned char G_FreeEntity(gentity_t *ed)
         byte *p = level_ptr;
         byte *end = level_ptr + 0x80;
         while (p < end) {
-            if (*(gentity_t **)(p + 0x1D58) == ed) {
-                *(gentity_t **)(p + 0x1D58) = 0;
+            if (*(gentity_t **)(p + 0x1D58) == ed) { /* TODO: unknown offset */
+                *(gentity_t **)(p + 0x1D58) = 0; /* TODO: unknown offset */
             }
             p += 4;
         }
@@ -945,7 +945,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
         {
             int offset = (corpseIdx * 9);
             offset = (offset * 16 + offset) * 8;
-            *(int *)((byte *)playerCorpseInfo_ptr + 0x10BC + offset) = -1;
+            *(int *)((byte *)playerCorpseInfo_ptr + 0x10BC + offset) = -1; /* TODO: unknown offset */
         }
     }
 
@@ -981,7 +981,7 @@ int G_GetFreePlayerCorpseIndex(void)
     float bestDistSq;
     int bestIdx;
 
-    match = *(unsigned short *)(scr_const_ptr + 0x32);
+    match = ((scr_const_t *)scr_const_ptr)->player;
 
     /* Find the player entity with matching classname (inline G_FindEntityByConstString) */
     {
@@ -1032,10 +1032,10 @@ int G_GetFreePlayerCorpseIndex(void)
         int offset = (bestIdx * 9);
         int off2 = (offset * 16 + offset) * 8;
         byte *entry = playerCorpseInfo_ptr + 0x10B0 + off2;
-        int entnum2 = *(int *)(entry + 0x0C);
+        int entnum2 = *(int *)(entry + 0x0C); /* TODO: unknown offset */
         byte *corpseEnt2 = LEVEL_GENTITIES + ((entnum2 * 5) * 8 - entnum2 * 5) * 16;
         G_FreeEntity((gentity_t *)corpseEnt2);
-        *(int *)(entry + 0x0C) = -1;
+        *(int *)(entry + 0x0C) = -1; /* TODO: unknown offset */
     }
 
     return bestIdx;
@@ -1262,7 +1262,7 @@ gentity_t * G_TempEntity(const vec_t *origin, int event)
     e = G_Spawn();
     ENT_ETYPE(e) = event + 10;
 
-    Scr_SetString((scr_string_t *)((byte *)e + 0x168), *(unsigned short *)(scr_const_ptr + 0x50));
+    Scr_SetString((scr_string_t *)((byte *)e + 0x168), ((scr_const_t *)scr_const_ptr)->tempEntity);
 
     ENT_FREETIME(e) = LEVEL_TIME;
     ENT_EVENTTIME(e) = LEVEL_TIME;

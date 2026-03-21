@@ -396,8 +396,8 @@ void turret_controller(gentity_t *self, int *partBits)
     DObj_s *obj;
     unsigned short *tagNames = (unsigned short *)*(int *)imp_scr_const;
 
-    angles[0] = *(float *)((byte *)self + 0x68);
-    angles[1] = *(float *)((byte *)self + 0x6c);
+    angles[0] = self->s.angles2;
+    angles[1] = self->s.angles2[1];
     angles[2] = 0;
 
     obj = Com_GetServerDObj(*(int *)self);
@@ -405,7 +405,7 @@ void turret_controller(gentity_t *self, int *partBits)
     DObjSetControlTagAngles(obj, partBits, tagNames[0x9e / 2], angles);
     DObjSetControlTagAngles(obj, partBits, tagNames[0xa0 / 2], angles);
 
-    angles[0] = *(float *)((byte *)self + 0x70);
+    angles[0] = self->s.angles2[2];
     angles[1] = 0;
 
     DObjSetControlTagAngles(obj, partBits, tagNames[0x8c / 2], angles);
@@ -417,33 +417,33 @@ void TeleportPlayer(gentity_t *player, vec_t *origin, vec_t *angles)
     unsigned char linked;
     playerState_t *ps;
 
-    linked = *(unsigned char *)((byte *)player + 0xf0);
+    linked = ((gentity_t *)player)->r;
 
     SV_UnlinkEntity(player);
 
     /* VectorCopy origin to ps->origin */
-    ps = *(playerState_t **)((byte *)player + 0x158);
-    *(float *)((byte *)ps + 0x14) = origin[0];
-    *(float *)((byte *)ps + 0x18) = origin[1];
-    *(float *)((byte *)ps + 0x1c) = origin[2];
+    ps = ((gentity_t *)player)->client;
+    ps->origin[0] = origin[0];
+    ps->origin[1] = origin[1];
+    ps->origin[2] = origin[2];
 
     /* Increment origin[2] by 1.0 */
-    ps = *(playerState_t **)((byte *)player + 0x158);
-    *(float *)((byte *)ps + 0x1c) += 1.0f;
+    ps = ((gentity_t *)player)->client;
+    ps->origin[2] += 1.0f;
 
     /* Toggle EF_TELEPORT_BIT */
-    ps = *(playerState_t **)((byte *)player + 0x158);
-    *(int *)((byte *)ps + 0xa0) ^= 2;
+    ps = ((gentity_t *)player)->client;
+    ps->eFlags ^= 2;
 
     SetClientViewAngle(player, angles);
 
-    BG_PlayerStateToEntityState(*(playerState_t **)((byte *)player + 0x158), player, 1, 1);
+    BG_PlayerStateToEntityState(((gentity_t *)player)->client, player, 1, 1);
 
     /* VectorCopy ps->origin to currentOrigin */
-    ps = *(playerState_t **)((byte *)player + 0x158);
-    *(float *)((byte *)player + 0x138) = *(float *)((byte *)ps + 0x14);
-    *(float *)((byte *)player + 0x13c) = *(float *)((byte *)ps + 0x18);
-    *(float *)((byte *)player + 0x140) = *(float *)((byte *)ps + 0x1c);
+    ps = ((gentity_t *)player)->client;
+    ((gentity_t *)player)->r.currentOrigin[0] = ps->origin[0];
+    ((gentity_t *)player)->r.currentOrigin[1] = ps->origin[1];
+    ((gentity_t *)player)->r.currentOrigin[2] = ps->origin[2];
 
     if (linked)
         SV_LinkEntity(player);

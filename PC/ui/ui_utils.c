@@ -52,14 +52,12 @@ qboolean Rect_Parse(const char * *p, rectDef_t *r);
 /* line 155 */
 void Window_SetStaticFlags(Window *w, const int flags)
 {
-    byte *wb = (byte *)w;
-    *(int *)(wb + 0xe4) = flags;
+    w->staticFlags = flags;
 }
 
 /* line 260 */
 qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag)
 {
-    byte *ib = (byte *)item;
     char script[1024];
     char val[1024];
     const char *testValue;
@@ -69,24 +67,24 @@ qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag)
 
     if (!item)
         return 1;
-    if (*(char **)(ib + 0x2cc) == NULL)
+    if (item->enableDvar == NULL)
         return 1;
-    if (**(char **)(ib + 0x2cc) == '\0')
+    if (*item->enableDvar == '\0')
         return 1;
-    if (*(char **)(ib + 0x2c4) == NULL)
+    if (item->dvarTest == NULL)
         return 1;
-    if (**(char **)(ib + 0x2c4) == '\0')
+    if (*item->dvarTest == '\0')
         return 1;
 
-    testValue = Dvar_GetVariantString(*(char **)(ib + 0x2c4));
+    testValue = Dvar_GetVariantString(item->dvarTest);
 
-    I_strncat(script, 1024, *(char **)(ib + 0x2cc));
+    I_strncat(script, 1024, item->enableDvar);
     p = script;
 
     for (;;) {
         if (!String_Parse(&p, val, 1024)) {
             /* Ran out of values to parse */
-            if (*(int *)(ib + 0x2d0) & flag)
+            if (item->dvarFlags & flag)
                 return 0;
             return 1;
         }
@@ -94,13 +92,13 @@ qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag)
         /* Skip semicolons (single ';' char) */
         if (val[0] == ';' && val[1] == '\0') {
             if (!String_Parse(&p, val, 1024)) {
-                if (*(int *)(ib + 0x2d0) & flag)
+                if (item->dvarFlags & flag)
                     return 0;
                 return 1;
             }
         }
 
-        if (*(int *)(ib + 0x2d0) & flag) {
+        if (item->dvarFlags & flag) {
             /* Flag set: match means show (return 1) */
             if (I_stricmp(testValue, val) == 0)
                 return 1;
@@ -115,8 +113,7 @@ qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag)
 /* line 515 */
 qboolean Item_IsEditFieldDef(itemDef_t *item)
 {
-    byte *ib = (byte *)item;
-    int type = *(int *)(ib + 0x274);
+    int type = item->dataType;
 
     if (type > 0x12)
         return 0;
@@ -128,20 +125,17 @@ qboolean Item_IsEditFieldDef(itemDef_t *item)
 /* line 536 */
 listBoxDef_t * Item_GetListBoxDef(itemDef_t *item)
 {
-    byte *ib = (byte *)item;
-
-    if (*(int *)(ib + 0x274) != 6) {
+    if (item->dataType != 6) {
         Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_LISTBOX\n");
         return NULL;
     }
-    return *(listBoxDef_t **)(ib + 0x2ec);
+    return item->typeData.listBox;
 }
 
 /* line 554 */
 multiDef_t * Item_GetMultiDef(itemDef_t *item)
 {
-    byte *ib = (byte *)item;
-    return *(multiDef_t **)(ib + 0x2ec);
+    return item->typeData.multi;
 }
 
 /* line 591 */
@@ -185,8 +179,7 @@ qboolean Float_Parse(const char * *p, float *f)
 /* line 41 */
 void Window_SetOffsetTime(Window *w, int offsetTime)
 {
-    byte *wb = (byte *)w;
-    *(int *)(wb + 0x1b8) = offsetTime;
+    w->offsetTime[0] = offsetTime;
 }
 
 /* Helper: copy 6 ints (UiRectangle) from src to dst */
@@ -209,60 +202,52 @@ void Window_SetRect(Window *w, const UiRectangle *rect)
 /* line 69 */
 void Window_SetRectClient(Window *w, const UiRectangle *rectClient)
 {
-    byte *wb = (byte *)w;
-    CopyRect(wb + 0x60, (const byte *)rectClient);
+    CopyRect((byte *)w->rectClient, (const byte *)rectClient);
 }
 
 /* line 85 */
 void Window_SetRectEffects0(Window *w, const UiRectangle *rectEffects0)
 {
-    byte *wb = (byte *)w;
-    CopyRect(wb + 0xf8, (const byte *)rectEffects0);
+    CopyRect((byte *)w->rectEffects0, (const byte *)rectEffects0);
 }
 
 /* line 101 */
 void Window_SetRectEffects1(Window *w, const UiRectangle *rectEffects1)
 {
-    byte *wb = (byte *)w;
-    CopyRect(wb + 0x158, (const byte *)rectEffects1);
+    CopyRect((byte *)w->rectEffects1, (const byte *)rectEffects1);
 }
 
 /* line 117 */
 void Window_SetDynamicFlags(Window *w, const int flags)
 {
-    byte *wb = (byte *)w;
-    *(int *)(wb + 0xe8) = flags;
+    w->dynamicFlags[0] = flags;
 }
 
 /* line 163 */
 void Menu_SetCursorItem(menuDef_t *menu, int cursorItem)
 {
-    byte *mb = (byte *)menu;
-    *(int *)(mb + 0x220) = cursorItem;
+    menu->cursorItem[0] = cursorItem;
 }
 
 /* line 312 */
 void Item_SetTextRect(itemDef_t *item, const rectDef_t *textRect)
 {
-    byte *ib = (byte *)item;
-    CopyRect(ib + 0x210, (const byte *)textRect);
+    CopyRect((byte *)item->textRect, (const byte *)textRect);
 }
 
 /* line 328 */
 void Item_SetCursorPos(itemDef_t *item, int cursorPos)
 {
-    byte *ib = (byte *)item;
-    *(int *)(ib + 0x2dc) = cursorPos;
+    item->cursorPos[0] = cursorPos;
 }
 
 /* line 342 */
 int Item_GetCursorPosOffset(const itemDef_t *item, const char *text, int delta)
 {
-    byte *ib = (byte *)item;
     int pos;
     unsigned char c;
 
-    pos = *(int *)(ib + 0x2dc);
+    pos = item->cursorPos[0];
 
     if (delta > 0) {
         /* Moving forward */
@@ -310,33 +295,29 @@ int Item_GetCursorPosOffset(const itemDef_t *item, const char *text, int delta)
 /* line 380 */
 void ListBox_SetCursorPos(listBoxDef_t *listBox, int cursorPos)
 {
-    byte *lb = (byte *)listBox;
-    *(int *)(lb + 0x24) = cursorPos;
+    listBox->cursorPos[0] = cursorPos;
 }
 
 /* line 393 */
 void ListBox_SetStartPos(listBoxDef_t *listBox, int startPos)
 {
-    byte *lb = (byte *)listBox;
-    *(int *)(lb) = startPos;
+    listBox->startPos[0] = startPos;
 }
 
 /* line 406 */
 void ListBox_SetEndPos(listBoxDef_t *listBox, int endPos)
 {
-    byte *lb = (byte *)listBox;
-    *(int *)(lb + 0x10) = endPos;
+    listBox->endPos[0] = endPos;
 }
 
 /* line 419 */
 Bool ListBox_HasValidCursorPos(const listBoxDef_t *listBox)
 {
-    byte *lb = (byte *)listBox;
-    int cursor = *(int *)(lb + 0x24);
+    int cursor = listBox->cursorPos[0];
 
-    if (cursor >= *(int *)(lb + 0x10))
+    if (cursor >= listBox->endPos[0])
         return 0;
-    if (cursor >= *(int *)(lb))
+    if (cursor >= listBox->startPos[0])
         return 1;
     return 0;
 }
@@ -344,31 +325,27 @@ Bool ListBox_HasValidCursorPos(const listBoxDef_t *listBox)
 /* line 131 */
 void Window_AddDynamicFlags(Window *w, const int newFlags)
 {
-    byte *wb = (byte *)w;
-    *(int *)(wb + 0xe8) |= newFlags;
+    w->dynamicFlags[0] |= newFlags;
 }
 
 /* line 140 */
 void Window_RemoveDynamicFlags(Window *w, const int newFlags)
 {
-    byte *wb = (byte *)w;
-    int flags = *(int *)(wb + 0xe8);
+    int flags = w->dynamicFlags[0];
     int mask = newFlags;
 
     if (mask & 4)
         mask |= 2;
 
     flags &= ~mask;
-    *(int *)(wb + 0xe8) = flags;
+    w->dynamicFlags[0] = flags;
 }
 
 /* line 545 */
 editFieldDef_t * Item_GetEditFieldDef(itemDef_t *item)
 {
-    byte *ib = (byte *)item;
-
     if (Item_IsEditFieldDef(item)) {
-        return *(editFieldDef_t **)(ib + 0x2ec);
+        return item->typeData.editField;
     }
 
     Com_Printf("^1Menu Error: Expecting type: ITEM_TYPE_EDITFIELD, ITEM_TYPE_NUMERICFIELD, ITEM_TYPE_DECIMALFIELD, ITEM_TYPE_VALIDFILEFIELD, ITEM_TYPE_UPREDITFIELD, ITEM_TYPE_YESNO, ITEM_TYPE_BIND, ITEM_TYPE_SLIDER, or ITEM_TYPE_TEXT\n");
@@ -447,110 +424,103 @@ void Item_SetScreenCoords(itemDef_t *item, float x, float y, int horzAlign, int 
         return;
 
     /* Check parent offset */
-    if (*(int *)(ib + 0xd4) != 0) {
-        float offset = *(float *)(ib + 0xe0);
+    if (item->window.border != 0) {
+        float offset = item->window.borderSize;
         x += offset;
         y += offset;
     }
 
     /* Compute new rect from client rect */
-    newRect[0] = *(int *)(ib + 0x60);  /* rectClient.x */
-    newRect[1] = *(int *)(ib + 0x64);  /* rectClient.y */
-    *(float *)&newRect[0] += x;
-    *(float *)&newRect[1] += y;
-    newRect[2] = *(int *)(ib + 0x68);  /* rectClient.w */
-    newRect[3] = *(int *)(ib + 0x6c);  /* rectClient.h */
+    *(float *)&newRect[0] = item->window.rectClient[0].x + x;
+    *(float *)&newRect[1] = item->window.rectClient[0].y + y;
+    *(float *)&newRect[2] = item->window.rectClient[0].w;
+    *(float *)&newRect[3] = item->window.rectClient[0].h;
 
     /* horzAlign/vertAlign from rectClient or params */
-    if (*(int *)(ib + 0x70) != 0 || *(int *)(ib + 0x74) != 0) {
-        newRect[4] = *(int *)(ib + 0x70);
-        newRect[5] = *(int *)(ib + 0x74);
+    if (item->window.rectClient[0].horzAlign != 0 || item->window.rectClient[0].vertAlign != 0) {
+        newRect[4] = item->window.rectClient[0].horzAlign;
+        newRect[5] = item->window.rectClient[0].vertAlign;
     } else {
         newRect[4] = horzAlign;
         newRect[5] = vertAlign;
     }
 
-    /* Window_SetRect inline: copy 6 ints to item base */
-    *(int *)(ib)      = newRect[0];
-    *(int *)(ib + 4)  = newRect[1];
-    *(int *)(ib + 8)  = newRect[2];
-    *(int *)(ib + 12) = newRect[3];
-    *(int *)(ib + 16) = newRect[4];
-    *(int *)(ib + 20) = newRect[5];
+    /* Window_SetRect inline: copy rect to window */
+    item->window.rect[0].x = *(float *)&newRect[0];
+    item->window.rect[0].y = *(float *)&newRect[1];
+    item->window.rect[0].w = *(float *)&newRect[2];
+    item->window.rect[0].h = *(float *)&newRect[3];
+    item->window.rect[0].horzAlign = newRect[4];
+    item->window.rect[0].vertAlign = newRect[5];
 
     /* Update textRect: keep x, y, horzAlign, vertAlign; zero w, h */
-    newRect[0] = *(int *)(ib + 0x210);
-    newRect[1] = *(int *)(ib + 0x214);
-    newRect[4] = *(int *)(ib + 0x220);
-    newRect[5] = *(int *)(ib + 0x224);
+    *(float *)&newRect[0] = item->textRect[0].x;
+    *(float *)&newRect[1] = item->textRect[0].y;
+    newRect[4] = item->textRect[0].horzAlign;
+    newRect[5] = item->textRect[0].vertAlign;
     newRect[2] = 0;
     newRect[3] = 0;
 
     /* Item_SetTextRect inline */
-    *(int *)(ib + 0x210) = newRect[0];
-    *(int *)(ib + 0x214) = newRect[1];
-    *(int *)(ib + 0x218) = newRect[2];
-    *(int *)(ib + 0x21c) = newRect[3];
-    *(int *)(ib + 0x220) = newRect[4];
-    *(int *)(ib + 0x224) = newRect[5];
+    item->textRect[0].x = *(float *)&newRect[0];
+    item->textRect[0].y = *(float *)&newRect[1];
+    item->textRect[0].w = *(float *)&newRect[2];
+    item->textRect[0].h = *(float *)&newRect[3];
+    item->textRect[0].horzAlign = newRect[4];
+    item->textRect[0].vertAlign = newRect[5];
 }
 
 /* line 488 */
 void Menu_UpdatePosition(menuDef_t *menu)
 {
-    byte *mb = (byte *)menu;
     float x, y;
     int i;
-    int itemCount;
 
     if (menu == NULL)
         return;
 
-    x = *(float *)(mb);
-    y = *(float *)(mb + 4);
+    x = menu->window.rect[0].x;
+    y = menu->window.rect[0].y;
 
-    if (*(int *)(mb + 0xd4) != 0) {
-        float offset = *(float *)(mb + 0xe0);
+    if (menu->window.border != 0) {
+        float offset = menu->window.borderSize;
         x += offset;
         y += offset;
     }
 
-    itemCount = *(int *)(mb + 0x218);
-    if (itemCount <= 0)
+    if (menu->itemCount <= 0)
         return;
 
-    for (i = 0; i < itemCount; i++) {
-        int **itemArray = *(int ***)(mb + 0x27c);
-        Item_SetScreenCoords((itemDef_t *)itemArray[i], x, y,
-                             *(int *)(mb + 0x10), *(int *)(mb + 0x14));
+    for (i = 0; i < menu->itemCount; i++) {
+        Item_SetScreenCoords(menu->items[i], x, y,
+                             menu->window.rect[0].horzAlign, menu->window.rect[0].vertAlign);
     }
 }
 
 /* line 715 */
 qboolean Rect_Parse(const char * *p, rectDef_t *r)
 {
-    byte *rb = (byte *)r;
     const char *token;
 
     token = Com_ParseOnLine(p);
     if (!token || *token == '\0')
         return 0;
-    *(float *)(rb) = (float)atof(token);
+    r->x = (float)atof(token);
 
     token = Com_ParseOnLine(p);
     if (!token || *token == '\0')
         return 0;
-    *(float *)(rb + 4) = (float)atof(token);
+    r->y = (float)atof(token);
 
     token = Com_ParseOnLine(p);
     if (!token || *token == '\0')
         return 0;
-    *(float *)(rb + 8) = (float)atof(token);
+    r->w = (float)atof(token);
 
     token = Com_ParseOnLine(p);
     if (!token || *token == '\0')
         return 0;
-    *(float *)(rb + 12) = (float)atof(token);
+    r->h = (float)atof(token);
 
     return 1;
 }

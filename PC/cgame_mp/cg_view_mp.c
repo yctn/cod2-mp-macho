@@ -109,7 +109,7 @@ float CG_GetViewFov(void)
 
             if (BG_IsAimDownSightWeapon(weapIndex)) {
                 float fPosLerp = cg->predictedPlayerState.fWeaponPosFrac;
-                float adsFov = *(float *)(weapDef + 0x268);
+                float adsFov = ((WeaponDef *)weapDef)->fAdsZoomFov;
 
                 if (fPosLerp == 1.0f) {
                     fov_x = adsFov;
@@ -118,9 +118,9 @@ float CG_GetViewFov(void)
                     float normalizedLerp;
 
                     if (cg->playerEntity.bPositionToADS != 0) {
-                        transTime = *(float *)(weapDef + 0x26c);
+                        transTime = ((WeaponDef *)weapDef)->fAdsZoomInFrac;
                     } else {
-                        transTime = *(float *)(weapDef + 0x270);
+                        transTime = ((WeaponDef *)weapDef)->fAdsZoomOutFrac;
                     }
 
                     normalizedLerp = fPosLerp - (1.0f - transTime);
@@ -171,7 +171,7 @@ static void CG_CalcFov(void)
     cg_s = (char *)*(int *)imp_cg;
     {
         cg_t *cg = (cg_t *)cg_s;
-        fov_x = (float)((double)atanf(tanVal * *(float *)((char *)*(int *)imp_cgs + 0x5e94)) * 57.29577951308232 * 2.0);
+        fov_x = (float)((double)atanf(tanVal * (*(cgs_t **)imp_cgs)->viewAspect) * 57.29577951308232 * 2.0);
         fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
 
         if (CG_PointContents((const vec_t *)cg->refdef.vieworg, -1, 0x20)) {

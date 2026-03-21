@@ -59,17 +59,17 @@ int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId);
  *   +12 = int width
  *   +16 = int height
  */
-#define DX_RT_IMAGE(id)     (*(GfxImage **)((byte *)dx + 0x2c30 + (id) * 20))
-#define DX_RT_WIDTH(id)     (*(int *)((byte *)dx + 0x2c3c + (id) * 20))
-#define DX_RT_HEIGHT(id)    (*(int *)((byte *)dx + 0x2c40 + (id) * 20))
+#define DX_RT_IMAGE(id)     (((DxGlobals *)dx)->renderTargets[id].image)
+#define DX_RT_WIDTH(id)     (((DxGlobals *)dx)->renderTargets[id].width)
+#define DX_RT_HEIGHT(id)    (((DxGlobals *)dx)->renderTargets[id].height)
 
 /*
  * r_global_permanent_t accessors:
  *   symmetricFilterMaterial[i] at offset 0x10b0 + i*4
  *   glowSetupMaterial at offset 0x10d4
  */
-#define RGP_SYM_FILTER_MAT(i) (*(Material **)((byte *)rgp + 0x10b0 + (i) * 4))
-#define RGP_GLOW_SETUP_MAT()  (*(Material **)((byte *)rgp + 0x10d4))
+#define RGP_SYM_FILTER_MAT(i) (((r_global_permanent_t *)rgp)->symmetricFilterMaterial[i])
+#define RGP_GLOW_SETUP_MAT()  (((r_global_permanent_t *)rgp)->glowSetupMaterial)
 
 /*
  * r_backEndGlobals_t accessors (confirmed matching offsets):

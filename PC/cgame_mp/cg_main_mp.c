@@ -287,7 +287,7 @@ void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 /* line 727 */
 int CG_CrosshairPlayer(void)
 {
-    if (*(int *)((char *)&cgArray + 154544) > *(int *)((char *)&cgArray + 179664) + 0x3e8)
+    if (*(int *)((char *)&cgArray + 154544) > *(int *)((char *)&cgArray + 179664) + 0x3e8) /* TODO: unknown offset */
         return -1;
     return *(int *)((char *)&cgArray + 179660);
 }
@@ -770,11 +770,11 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
         int baseIdx = 3;
         for (i = 1; i < numInlineModels; i++) {
             int j;
-            *(int *)(cgsPtr + 0x718c + i * 4) = CL_RegisterInlineModel(i);
-            CL_ModelBounds(*(int *)(cgsPtr + 0x718c + i * 4), localMins, localMaxs);
+            ((cgs_t *)cgsPtr)->inlineDrawModel[i] = CL_RegisterInlineModel(i);
+            CL_ModelBounds((int)((cgs_t *)cgsPtr)->inlineDrawModel[i], localMins, localMaxs);
             for (j = 0; j < 3; j++) {
                 float center = (float)((double)localMins[j] + (double)(localMaxs[j] - localMins[j]) * 0.5);
-                *(float *)(cgsPtr + 0x8188 + (baseIdx + j) * 4) = center;
+                ((float *)((cgs_t *)cgsPtr)->inlineModelMidpoints)[baseIdx + j] = center;
             }
             baseIdx += 3;
         }
@@ -789,7 +789,7 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
         if (*(const char *)modelName == '\0')
             continue;
         SCR_UpdateScreen();
-        *(int *)((byte *)cgs + 0x63c0 + i * 4) = (int)CL_RegisterModel(modelName);
+        ((cgs_t *)cgs)->gameModels[i] = (struct XModel *)CL_RegisterModel(modelName);
     }
 
     /* line 980-987: register effects */
@@ -797,7 +797,7 @@ static void CG_RegisterGraphics_C_DISABLED(const char *mapname)
         const char *fxName = CL_GetConfigString(0x34e + i);
         if (*fxName == '\0')
             continue;
-        *(int *)((byte *)cgs + 0x67c0 + i * 4) = FX_RegisterEffect(fxName);
+        ((cgs_t *)cgs)->fxs[i] = (struct EffectTemplate *)FX_RegisterEffect(fxName);
     }
 
     /* line 990 */
@@ -1135,18 +1135,18 @@ void CG_LoadHudMenu(void)
 
     if (menu != NULL) {
         /* menuDef_t/window layout is still partially suspect; keep the recovered rect offsets local here. */
-        *(float *)((byte *)cgs + 0xc208) = *(float *)((byte *)menu + 8);
-        *(float *)((byte *)cgs + 0xc20c) = *(float *)((byte *)menu + 12);
-        *(float *)((byte *)cgs + 0xc210) = *(float *)((byte *)menu + 4);
+        *(float *)((byte *)cgs + 0xc208) = *(float *)((byte *)menu + 8); /* TODO: unknown offset */
+        *(float *)((byte *)cgs + 0xc20c) = *(float *)((byte *)menu + 12); /* TODO: unknown offset */
+        *(float *)((byte *)cgs + 0xc210) = *(float *)((byte *)menu + 4); /* TODO: unknown offset */
     }
 }
 
 /* line 1563 */
 void CG_InitVote(void)
 {
-    *(int *)((byte *)cgs + 0x6088) = atoi(CL_GetConfigString(0xf));
-    *(int *)((byte *)cgs + 0x608c) = atoi(CL_GetConfigString(0x11));
-    *(int *)((byte *)cgs + 0x6090) = atoi(CL_GetConfigString(0x12));
+    ((cgs_t *)cgs)->voteTime = atoi(CL_GetConfigString(0xf));
+    ((cgs_t *)cgs)->voteYes = atoi(CL_GetConfigString(0x11));
+    ((cgs_t *)cgs)->voteNo = atoi(CL_GetConfigString(0x12));
     I_strncpyz((char *)cgs + 0x6094, SEH_LocalizeTextMessage(CL_GetConfigString(0x10), "vote string", 0), 0x100);
 }
 
@@ -1165,7 +1165,7 @@ static void CG_CreateDObj(DObjModel_s *dobjModels, int numModels, struct XAnimTr
     weaponNum = ci->iDObjWeapon;
     if (weaponNum) {
         /* weaponInfo_t is still partially inaccurate here; 0xbc is the weapon world model slot. */
-        weaponModel = *(struct XModel **)((byte *)&cg_weapons[weaponNum] + 0xbc);
+        weaponModel = cg_weapons[weaponNum].worldSurfModel;
         if (weaponModel) {
             dobjModels[numModels].model = weaponModel;
             dobjModels[numModels].boneName = ci->leftHandGun ? cg_weaponleftbone->current.string : cg_weaponrightbone->current.string;
@@ -1189,9 +1189,9 @@ void CG_FreeWeapons(void)
 
     for (i = 1; i <= weaponCount; ++i, weaponInfo += 0x1b4) {
         Com_SafeClientDObjFree(CG_WeaponDObjHandle(i));
-        if (*(struct XAnimTree_s **)(weaponInfo + 0xa4)) {
-            XAnimFreeTree(*(struct XAnimTree_s **)(weaponInfo + 0xa4), 0);
-            *(struct XAnimTree_s **)(weaponInfo + 0xa4) = NULL;
+        if (((weaponInfo_t *)weaponInfo)->tree) {
+            XAnimFreeTree(((weaponInfo_t *)weaponInfo)->tree, 0);
+            ((weaponInfo_t *)weaponInfo)->tree = NULL;
         }
     }
 
@@ -1219,23 +1219,23 @@ void CG_Shutdown(void)
 
     cgBase = (byte *)cg;
     for (i = 0; i < 64; ++i, cgBase += 0x4b8) {
-        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgBase + 0xe0db8);
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgBase + 0xe0db8); /* TODO: unknown offset */
         if (tree) {
             XAnimFreeTree(tree, 0);
-            *(struct XAnimTree_s **)(cgBase + 0xe0db8) = NULL;
+            *(struct XAnimTree_s **)(cgBase + 0xe0db8) = NULL; /* TODO: unknown offset */
         }
     }
 
     cgsBase = (byte *)cgs;
     for (i = 0; i < 8; ++i, cgsBase += 0x4b8) {
-        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgsBase + 0xc6b8);
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgsBase + 0xc6b8); /* TODO: unknown offset */
         if (tree) {
             XAnimFreeTree(tree, 0);
-            *(struct XAnimTree_s **)(cgsBase + 0xc6b8) = NULL;
+            *(struct XAnimTree_s **)(cgsBase + 0xc6b8) = NULL; /* TODO: unknown offset */
         }
     }
 
-    if (*(int *)((byte *)cgs + 0x5ea0) == 0) {
+    if (((cgs_t *)cgs)->localServer == 0) {
         Scr_ShutdownGameStrings();
     }
 
@@ -1263,7 +1263,7 @@ static void CG_PrintAliasSubtitle(const snd_alias_t *pAlias, int msec)
         return;
     }
 
-    if (*(const float *)((const byte *)cgs + 0x5e94) > 1.3333334f) {
+    if (((cgs_t *)cgs)->viewAspect > 1.3333334f) {
         subtitleWidth = cg_subtitleWidthWidescreen->current.integer;
     } else {
         subtitleWidth = cg_subtitleWidthStandard->current.integer;
@@ -1300,7 +1300,7 @@ static int CG_LocalSoundEntityNum(void)
     const byte *localSoundState;
 
     localSoundState = (const byte *)&cgArray + 36;
-    return *(const int *)(localSoundState + 0xd8);
+    return *(const int *)(localSoundState + 0xd8); /* TODO: unknown offset */
 }
 
 static const vec_t *CG_LocalSoundOrigin(void)
@@ -1324,9 +1324,9 @@ void CG_GetDObjOrientation(int dobjHandle, orientation_t *orient)
 
     if ((unsigned int)dobjHandle <= 0x3ff) {
         cent = (const byte *)cg_entities + dobjHandle * 548;
-        orient->origin[0] = *(const float *)(cent + 0x1ec);
-        orient->origin[1] = *(const float *)(cent + 0x1f0);
-        orient->origin[2] = *(const float *)(cent + 0x1f4);
+        orient->origin[0] = ((const centity_t *)cent)->lerpOrigin[0];
+        orient->origin[1] = ((const centity_t *)cent)->lerpOrigin[1];
+        orient->origin[2] = ((const centity_t *)cent)->lerpOrigin[2];
         AnglesToAxis((const vec_t *)(cent + 0x1f8), orient->axis);
         return;
     }

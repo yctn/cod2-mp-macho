@@ -869,7 +869,7 @@ void ClientUserinfoChanged(int clientNum)
 
             *(int *)(si + 8) = clientNum;
             I_strncpyz((char *)(si + 0x18 - 0xc), longName, 0x20);
-            *(int *)(si + 0x2c) = client->sess.cs.team;
+            *(int *)(si + 0x2c) = client->sess.cs.team; /* TODO: unknown offset */
         }
     }
 }
@@ -896,9 +896,9 @@ char * ClientConnect(int clientNum, int scriptPersId)
     }
 
     /* Save and restore anim tree */
-    pXAnimTree = *(int *)(ci + 0x4a4);
+    pXAnimTree = *(int *)(ci + 0x4a4); /* TODO: unknown offset */
     memset(ci, 0, 0x4b8);
-    *(int *)(ci + 0x4a4) = pXAnimTree;
+    *(int *)(ci + 0x4a4) = pXAnimTree; /* TODO: unknown offset */
 
     *(int *)(ci - 0xc + 0xc) = 1;  /* ci base valid */
     *(int *)(ci + 4) = 1;

@@ -143,21 +143,21 @@ IDirect3DVertexBuffer9 * R_CreateWorldVertexBuffer(GfxWorldVertex *vertices, int
         /* Non-DX9: direct memcpy */
         Com_Memcpy(dataPtr, vertices, sizeVerts);
     } else {
-        /* DX9: convert 0x44-byte vertices to 0x20-byte format */
+        /* DX9: convert GfxWorldVertex (0x44) to GfxWorldVertexDx7 (0x20) */
         for (vertIndex = 0; vertIndex < vertexCount; vertIndex++) {
-            byte *src = (byte *)vertices + vertIndex * 0x44;
-            byte *dst = dataPtr + vertIndex * 0x20;
+            GfxWorldVertex *src = &vertices[vertIndex];
+            GfxWorldVertexDx7 *dst = (GfxWorldVertexDx7 *)(dataPtr + vertIndex * sizeof(GfxWorldVertexDx7));
 
             /* Copy position xyz */
-            *(int *)(dst + 0x00) = *(int *)(src + 0x00);
-            *(int *)(dst + 0x04) = *(int *)(src + 0x04);
-            *(int *)(dst + 0x08) = *(int *)(src + 0x08);
-            /* Copy selected attributes */
-            *(int *)(dst + 0x0c) = *(int *)(src + 0x18);
-            *(int *)(dst + 0x10) = *(int *)(src + 0x1c);
-            *(int *)(dst + 0x14) = *(int *)(src + 0x20);
-            *(int *)(dst + 0x18) = *(int *)(src + 0x24);
-            *(int *)(dst + 0x1c) = *(int *)(src + 0x28);
+            *(int *)&dst->xyz[0] = *(int *)&src->xyz[0];
+            *(int *)&dst->xyz[1] = *(int *)&src->xyz[1];
+            *(int *)&dst->xyz[2] = *(int *)&src->xyz[2];
+            /* Copy color, texCoord, lmapCoord */
+            *(int *)&dst->color = *(int *)&src->color;
+            *(int *)&dst->texCoord[0] = *(int *)&src->texCoord[0];
+            *(int *)&dst->texCoord[1] = *(int *)&src->texCoord[1];
+            *(int *)&dst->lmapCoord[0] = *(int *)&src->lmapCoord[0];
+            *(int *)&dst->lmapCoord[1] = *(int *)&src->lmapCoord[1];
         }
     }
 
@@ -329,11 +329,11 @@ void R_LoadWorld(const char *name, int *checksum)
     frontEnd = r_frontEndData_ptr;
     world = R_GetWorld();
 
-    *(void **)(frontEnd + 0x3194) = Hunk_AllocInternal(world->smodelCount * 8);
+    ((r_globals_t *)frontEnd)->smodelDyncs = (GfxStaticModelDynamic *)Hunk_AllocInternal(world->smodelCount * 8);
     world = R_GetWorld();
-    *(void **)(frontEnd + 0x3198) = Hunk_AllocInternal(world->surfaceCount * 4);
+    ((r_globals_t *)frontEnd)->surfaces = (GfxSurfaceDynamic *)Hunk_AllocInternal(world->surfaceCount * 4);
     world = R_GetWorld();
-    *(void **)(frontEnd + 0x319c) = Hunk_AllocInternal(world->cullGroupCount * 4);
+    ((r_globals_t *)frontEnd)->cullGroups = (GfxCullGroupDynamic *)Hunk_AllocInternal(world->cullGroupCount * 4);
 
     /* Init static model dynamic data */
     world = R_GetWorld();

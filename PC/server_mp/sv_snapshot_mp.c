@@ -1344,16 +1344,16 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
             serverStatic_t *svsPtr = (serverStatic_t *)imp_svs;
             for (i = 0; i < 31; i++) {
                 if (*(int *)(p + 0x1790) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1790) += deltaTime;
+                    *(int *)(p + 0x1790) += deltaTime; /* TODO: unknown offset */
                 if (*(int *)(p + 0x1750) != 0) { /* TODO: unknown offset */
-                    *(int *)(p + 0x1750) += deltaTime;
-                    if (*(int *)(p + 0x1750) > svsPtr->time)
-                        *(int *)(p + 0x1750) = svsPtr->time;
+                    *(int *)(p + 0x1750) += deltaTime; /* TODO: unknown offset */
+                    if (*(int *)(p + 0x1750) > svsPtr->time) /* TODO: unknown offset */
+                        *(int *)(p + 0x1750) = svsPtr->time; /* TODO: unknown offset */
                 }
                 if (*(int *)(p + 0x1770) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1770) += deltaTime;
+                    *(int *)(p + 0x1770) += deltaTime; /* TODO: unknown offset */
                 if (*(int *)(p + 0x1788) != 0) /* TODO: unknown offset */
-                    *(int *)(p + 0x1788) += deltaTime;
+                    *(int *)(p + 0x1788) += deltaTime; /* TODO: unknown offset */
                 p += 0x80;
             }
         }

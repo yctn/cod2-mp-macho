@@ -126,7 +126,7 @@ void R_SkinGfxEntity(GfxEntity *ent)
 void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *material, int *lmapIndex)
 {
     int ent, matIndex;
-    int *base = (int *)imp_rgp;
+    r_global_permanent_t *rgpPtr = (r_global_permanent_t *)imp_rgp;
 
     if ((int)sortValue >= 0) {
         ent = (sortValue >> 4) & 0xfff;
@@ -134,7 +134,7 @@ void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *ma
             ent = 0x7fe;
         *entIndex = ent;
         matIndex = (sortValue >> 21) & 0x3ff;
-        *material = (const Material *)*(void **)((byte *)base + 8 + matIndex * 4);
+        *material = rgpPtr->sortedMaterials[matIndex];
         *lmapIndex = (sortValue >> 16) & 0x1f;
     } else {
         ent = (sortValue >> 19) & 0xfff;
@@ -142,7 +142,7 @@ void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *ma
             ent = 0x7fe;
         *entIndex = ent;
         matIndex = (sortValue >> 9) & 0x3ff;
-        *material = (const Material *)*(void **)((byte *)base + 8 + matIndex * 4);
+        *material = rgpPtr->sortedMaterials[matIndex];
         *lmapIndex = (sortValue >> 4) & 0x1f;
     }
 }
@@ -297,21 +297,21 @@ void R_AddXModelSurfaces(int entIndex)
     if ((*(const dvar_t **)imp_r_showTriCounts)->current.enabled) {
         R_AddScaledDebugString(
             (char *)frontEndDataOut + 0x249d18,
-            *(char **)((byte *)&rg + 0x3190),
+            (char *)rg.debugViewParms,
             (const char *)&ent->origin,
             (const char *)imp_colorCyan,
             va("%i", totalTriCount));
     } else if ((*(const dvar_t **)imp_r_showVertCounts)->current.enabled) {
         R_AddScaledDebugString(
             (char *)frontEndDataOut + 0x249d18,
-            *(char **)((byte *)&rg + 0x3190),
+            (char *)rg.debugViewParms,
             (const char *)&ent->origin,
             (const char *)imp_colorCyan,
             va("%i", totalVertCount));
     } else if ((*(const dvar_t **)imp_r_showSurfCounts)->current.enabled) {
         R_AddScaledDebugString(
             (char *)frontEndDataOut + 0x249d18,
-            *(char **)((byte *)&rg + 0x3190),
+            (char *)rg.debugViewParms,
             (const char *)&ent->origin,
             (const char *)imp_colorCyan,
             va("%i", surfCount));
@@ -550,12 +550,12 @@ R_AddClearCommandsForFrameBuffer(int dynamicShadowType)
     const float inv255 = 0.003921568859368563f;
 
     whichToClear = 7;
-    if (*(int *)((byte *)imp_dx + 0x2c28) != 0 && dynamicShadowType == 1) {
+    if (((DxGlobals *)imp_dx)->sunSpriteSamples != 0 && dynamicShadowType == 1) { /* TODO: verify offset 0x2c28 maps to sunSpriteSamples */
         whichToClear = 1;
     }
 
-    if (*((byte *)&rg + 0x14c8) != 0) {
-        const byte *sceneColor = (const byte *)&rg + 0x14b8;
+    if (rg.fogSettings[2].registered != 0) {
+        const byte *sceneColor = (const byte *)&rg.fogSettings[2].color;
 
         clearColor[0] = sceneColor[2] * inv255;
         clearColor[1] = sceneColor[1] * inv255;
@@ -587,16 +587,15 @@ static void R_WorldCheck_diag(void *rgp_field, void *cell_ptr, int cellIdx)
 {
     static int diag = 0;
     if (diag < 10 || (diag % 120 == 0 && diag < 600)) {
-        int cellCount = rgp_field ? *(int *)((char *)rgp_field + 0xfc) : -1;
-        void *cells = rgp_field ? *(void **)((char *)rgp_field + 0x100) : 0;
-        /* Check actual cell for this cellIdx, not always cell 0 */
-        int cellSize = 0x3c; /* sizeof(GfxCell) = 60: cellIdx*64 - cellIdx*4 */
-        void *thisCell = cells ? (char *)cells + cellIdx * cellSize : 0;
-        void *tree = 0;
+        GfxWorld *w = (GfxWorld *)rgp_field;
+        int cellCount = w ? w->cellCount : -1;
+        GfxCell *cells = w ? w->cells : NULL;
+        GfxCell *thisCell = cells ? &cells[cellIdx] : NULL;
+        GfxAabbTree *tree = NULL;
         int treeSC = 0;
         if (thisCell) {
-            tree = *(void **)((char *)thisCell + 0x1c);
-            if (tree) treeSC = *(int *)((char *)tree + 0x28);
+            tree = thisCell->aabbTree;
+            if (tree) treeSC = tree->childCount;
         }
         fprintf(stderr, "[WORLD#%d] ci=%d cc=%d cell=%p tree=%p tsc=%d dsc=%d\n",
                 diag, cellIdx, cellCount, thisCell, tree, treeSC, scene.drawSurfCount);
@@ -632,8 +631,8 @@ extern void R_AddCmdSetViewport(int x, int y, int w, int h);
 extern void Com_Printf(const char *fmt, ...);
 void R_RenderScene(const refdef_t *refdef)
 {
-    char *rg_p = (char *)imp_rg;
-    char *rgp_p = (char *)imp_rgp;
+    r_globals_t *rg_p = (r_globals_t *)imp_rg;
+    r_global_permanent_t *rgp_p = (r_global_permanent_t *)imp_rgp;
     void *viewParms;
     void *viewParmsDraw;
     int drawSurfStart, drawSurfCount;
@@ -644,18 +643,18 @@ void R_RenderScene(const refdef_t *refdef)
     int pointLightCount;
     int debugEntIndices[2048];
 
-    R_RenderScene_diag(*(byte *)rg_p, *(byte *)(*(char **)imp_r_norefresh + 8),
-        *(int *)(rgp_p + 0x109c) ? 1 : 0);
+    R_RenderScene_diag(rg_p->registered, (*(const dvar_t **)imp_r_norefresh)->current.enabled,
+        (int)rgp_p->world ? 1 : 0);
 
     /* Early exit checks */
-    if (!*(byte *)rg_p)
+    if (!rg_p->registered)
         return;
-    if (*(byte *)(*(char **)imp_r_norefresh + 8))
+    if ((*(const dvar_t **)imp_r_norefresh)->current.enabled)
         return;
 
     drawSurfCount = 0;
     {
-        void *world = *(void **)(rgp_p + 0x109c);
+        void *world = rgp_p->world;
         if (!world) {
             R_Error(1, "R_RenderScene: no world loaded");
             /* falls through after error */
@@ -667,8 +666,8 @@ void R_RenderScene(const refdef_t *refdef)
     *(float *)((char *)&scene + 8) = (float)*(int *)((const char *)refdef + 0x48) * 0.001f;
 
     /* Copy refdef origin and axis to rg */
-    memcpy(rg_p + 4, (const char *)refdef + 0x18, 12); /* origin */
-    memcpy(rg_p + 0x10, (const char *)refdef + 0x24, 12); /* axis[0] */
+    memcpy(rg_p->viewOrg, (const char *)refdef + 0x18, 12); /* origin */
+    memcpy(rg_p->viewDir, (const char *)refdef + 0x24, 12); /* axis[0] */
 
     /* Allocate and set view parameters */
     viewParms = R_AllocViewParms();
@@ -688,21 +687,24 @@ void R_RenderScene(const refdef_t *refdef)
 
     /* Handle r_lockPvs */
     viewParmsDraw = viewParms;
-    if (*(byte *)(*(char **)imp_r_lockPvs + 8))
+    if ((*(const dvar_t **)imp_r_lockPvs)->current.enabled)
         viewParmsDraw = &lockPvsViewParms;
 
     /* Sun light timing/interpolation */
     {
-        char *rg_c = (char *)imp_rg;
+        r_globals_t *rg_ptr = (r_globals_t *)imp_rg;
+        GfxFog *fogActive = &rg_ptr->fogSettings[2]; /* interpolated/active fog */
+        GfxFog *fogPrev = &rg_ptr->fogSettings[3];   /* previous fog state */
+        GfxFog *fogTarget = &rg_ptr->fogSettings[4];  /* target fog state */
         int sceneTime = *(int *)((char *)&scene + 4);
-        int sunTime = *(int *)(rg_c + 0x14f4);
+        int sunTime = fogTarget->finishTime;
 
         if (sceneTime >= sunTime) {
             /* Copy current sun state to active */
-            memcpy(rg_c + 0x14ac, rg_c + 0x14ec, 32);
+            memcpy(fogActive, fogTarget, sizeof(GfxFog));
         } else {
-            int prevTime = *(int *)(rg_c + 0x14f0);
-            if (prevTime != *(int *)(rg_c + 0x14ec)) {
+            int prevTime = fogTarget->startTime;
+            if (prevTime != fogTarget->techniqueOffset) {
                 /* Interpolate sun between prev and current */
                 int duration = sunTime - prevTime;
                 float frac;
@@ -712,32 +714,32 @@ void R_RenderScene(const refdef_t *refdef)
                     frac = (float)(sceneTime - prevTime) / (float)duration;
                     if (frac > 1.0f) frac = 1.0f;
                 }
-                /* Interpolate color components */
+                /* Interpolate float components (fogStart, fogEnd, density) */
                 int i;
                 for (i = 0; i < 3; i++) {
-                    float prev = *(float *)(rg_c + 0x14dc + i*4);
-                    float curr = *(float *)(rg_c + 0x14fc + i*4);
-                    *(float *)(rg_c + 0x14bc + i*4) = prev + (curr - prev) * frac;
+                    float prev = *((float *)&fogPrev->fogStart + i);
+                    float curr = *((float *)&fogTarget->fogStart + i);
+                    *((float *)&fogActive->fogStart + i) = prev + (curr - prev) * frac;
                 }
                 /* Interpolate color bytes */
                 for (i = 0; i < 4; i++) {
-                    byte prev = *(byte *)(rg_c + 0x14d8 + i);
-                    byte curr = *(byte *)(rg_c + 0x14f8 + i);
-                    *(byte *)(rg_c + 0x14b8 + i) = (byte)(prev + (int)(curr - prev) * frac);
+                    byte prev = ((byte *)&fogPrev->color)[i];
+                    byte curr = ((byte *)&fogTarget->color)[i];
+                    ((byte *)&fogActive->color)[i] = (byte)(prev + (int)(curr - prev) * frac);
                 }
-                *(int *)(rg_c + 0x14ac) = *(int *)(rg_c + 0x14ec);
-                *(byte *)(rg_c + 0x14c8) = 1;
-                *(byte *)(rg_c + 0x14ca) = *(byte *)(rg_c + 0x150a) ? 1 : *(byte *)(rg_c + 0x14ea);
+                fogActive->techniqueOffset = fogTarget->techniqueOffset;
+                fogActive->registered = 1;
+                fogActive->clearScreen = fogTarget->clearScreen ? 1 : fogPrev->clearScreen;
             } else {
-                memcpy(rg_c + 0x14ac, rg_c + 0x14ec, 32);
-                *(int *)(rg_c + 0x14f4) = 0;
+                memcpy(fogActive, fogTarget, sizeof(GfxFog));
+                fogTarget->finishTime = 0;
             }
         }
 
         /* Copy sun data to front-end */
-        if (*(int *)(rg_c + 0x150c)) {
+        if (rg_ptr->fogIndex) {
             char *fed = *(char **)imp_frontEndDataOut;
-            memcpy(fed + 0x219cec, rg_c + 0x14ac, 32);
+            memcpy(fed + 0x219cec, fogActive, sizeof(GfxFog));
         } else {
             char *fed = *(char **)imp_frontEndDataOut;
             *(int *)(fed + 0x219cec) = 0;
@@ -749,11 +751,11 @@ void R_RenderScene(const refdef_t *refdef)
     /* DPVS: add world surfaces */
     {
         int cellIdx;
-        R_WorldCheck_diag(*(void **)(rgp_p + 0x109c), NULL, 0);
+        R_WorldCheck_diag(rgp_p->world, NULL, 0);
         cellIdx = R_CellForPoint(viewParmsDraw);
         {
-            void *world = *(void **)(rgp_p + 0x109c);
-            if (world && *(void **)((char *)world + 0x100)) {
+            GfxWorld *world = rgp_p->world;
+            if (world && world->cells) {
                 R_AddWorldSurfacesDpvs(viewParmsDraw, cellIdx);
             }
         }
@@ -768,7 +770,7 @@ void R_RenderScene(const refdef_t *refdef)
 
     /* Dynamic lights */
     {
-        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        int isDx7 = ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2);
         if (!isDx7 && *(int *)(*(char **)imp_r_dlightLimit + 8)) {
             pointLightCount = R_GetPointLightPartitions(
                 (void *)(intptr_t)drawSurfStart, drawSurfCount,
@@ -780,8 +782,8 @@ void R_RenderScene(const refdef_t *refdef)
 
     /* Rendering path selection and command submission */
     {
-        int isFullbright = *(byte *)(*(char **)imp_r_fullbright + 8);
-        int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
+        int isFullbright = (*(const dvar_t **)imp_r_fullbright)->current.enabled;
+        int isDx7 = ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2);
         char *lodOrigin = rg_p + 0x317c;
 
         if (isFullbright) {
@@ -814,8 +816,8 @@ void R_RenderScene(const refdef_t *refdef)
             R_AddCmdSetRenderTarget(0);
             R_AddClearCommandsForFrameBuffer(0);
             {
-                void *world = *(void **)(rgp_p + 0x109c);
-                R_AddCmdLightProperties(0, (char *)world + 0xb4);
+                void *world = rgp_p->world;
+                R_AddCmdLightProperties(0, (char *)&world->sunLight);
             }
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 1);
             R_AddCmdDrawSurfs((void *)(intptr_t)drawSurfStart, drawSurfCount, 6);
@@ -837,8 +839,8 @@ void R_RenderScene(const refdef_t *refdef)
                 }
                 R_AddClearCommandsForFrameBuffer(0);
                 {
-                    void *world = *(void **)(rgp_p + 0x109c);
-                    R_AddCmdLightProperties(0, (char *)world + 0xb4);
+                    void *world = rgp_p->world;
+                    R_AddCmdLightProperties(0, (char *)&world->sunLight);
                 }
             }
             R_BeginDrawGroupLoop(2, viewIndex);
@@ -864,8 +866,8 @@ void R_RenderScene(const refdef_t *refdef)
                     void *light = (void *)(intptr_t)part[0];
                     void *pDrawSurfs = (void *)((char *)(intptr_t)*(int *)((char *)&scene + 1468) + part[1] * 8);
                     int pDrawSurfCount = part[2];
-                    void *world = *(void **)(rgp_p + 0x109c);
-                    R_AddCmdDrawFullScreenColoredQuad(0, 0, 1.0f, 1.0f, *(void **)((char *)rgp_p + 0x1048), (const float *)imp_colorWhite);
+                    void *world = rgp_p->world;
+                    R_AddCmdDrawFullScreenColoredQuad(0, 0, 1.0f, 1.0f, ((r_global_permanent_t *)rgp_p)->clearAlphaStencilMaterial, (const float *)imp_colorWhite);
                     R_AddCmdLightProperties(0, light);
                     R_AddCmdDrawSurfs(pDrawSurfs, pDrawSurfCount, 0x12);
                 }
@@ -905,7 +907,7 @@ void R_RenderScene(const refdef_t *refdef)
         int debugEntCounts = *(int *)(*(char **)imp_r_debugEntCounts + 8);
         if (debugEntCounts && debugEntCounts < *(int *)((char *)&scene + 12)) {
             /* Reset dvar */
-            ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x98))(*(void **)imp_r_debugEntCounts, 0);
+            ((refimport_t *)imp_ri)->Dvar_SetInt(*(const dvar_t **)imp_r_debugEntCounts, 0);
             /* Detailed entity debug output omitted for brevity — uses qsort + Com_Printf loop */
         }
     }
@@ -1882,8 +1884,8 @@ int R_AddStaticModelToScene(int smodelIndex)
 
     if ((*(const dvar_t **)imp_r_rendererInUse)->current.integer == 2) {
         /* DX7: index into world pre-computed static model lighting table */
-        *(int *)&backEndRefEnt->lighting = smodelIndex + *(int *)((byte *)world + 0x12c);
-        *((int *)&backEndRefEnt->lighting + 1) = (*(int **)((byte *)world + 0x130))[smodelIndex];
+        *(int *)&backEndRefEnt->lighting = smodelIndex + *(int *)&world->smodelLightingColorTable;
+        *((int *)&backEndRefEnt->lighting + 1) = ((int *)world->smodelLightingSunVisTable)[smodelIndex];
     } else {
         backEndRefEnt->lighting.baseCoords[0] = smodelInst->baseLightingCoords[0];
         backEndRefEnt->lighting.baseCoords[1] = smodelInst->baseLightingCoords[1];

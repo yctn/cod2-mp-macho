@@ -164,7 +164,7 @@ static void CG_PlayerFloatSprite(centity_t *cent, MaterialHandle material, float
     /* Try to get head tag position */
     obj = Com_GetClientDObj(clientNum, cent->localClientNum);
     if (obj) {
-        unsigned short tag = *(unsigned short *)(cg_tags_ptr + 0x96);
+        unsigned short tag = ((scr_const_t *)cg_tags_ptr)->j_head;
         if (CG_DObjGetWorldTagPos(cent, obj, tag, origin)) {
             origin[2] += (float)height + 21.0f;
             goto draw;
@@ -418,7 +418,7 @@ void CG_Player(centity_t *cent)
 
             /* line 219: get tag matrix */
             tagMat = CG_DObjGetLocalTagMatrix(pTurretCEnt, turretObj,
-                (unsigned int)*(unsigned short *)(cg_tags_ptr + 0x98));
+                (unsigned int)((scr_const_t *)cg_tags_ptr)->tag_weapon);
             if (!tagMat) {
                 /* line 222 */
                 Com_Printf("CG_Player: turret tag not found\n");
@@ -520,7 +520,7 @@ void CG_Player(centity_t *cent)
 
                 /* line 269: compute horizontal blend */
                 rawBlend = (float)numHorChildren * 0.5f
-                    - localYaw / *(float *)((byte *)weapDef + 0x564);
+                    - localYaw / ((WeaponDef *)weapDef)->fAnimHorRotateInc;
 
                 /* line 271: clamp */
                 if (rawBlend < 0.0f) {

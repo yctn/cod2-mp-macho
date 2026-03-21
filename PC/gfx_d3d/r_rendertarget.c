@@ -41,23 +41,24 @@ extern void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format
  *   0x00 = Printf function pointer
  */
 
-/* Helper to get DxGlobals byte pointer */
+/* Helper to get DxGlobals byte pointer (for legacy offset arithmetic) */
 #define DX()          ((byte *)imp_dx)
-#define VIDCONFIG()   ((byte *)imp_vidConfig)
+#define DX_PTR()      ((DxGlobals *)imp_dx)
+#define VIDCONFIG()   ((vidConfig_t *)imp_vidConfig)
 
 /* DxGlobals field accessors */
-#define DX_DEVICE(dx)                     (*(void **)((dx) + 0x08))
-#define DX_BACKBUFFER_FORMAT(dx)          (*(D3DFORMAT *)((dx) + 0x10))
-#define DX_MULTISAMPLE_TYPE(dx)           (*(int *)((dx) + 0x2c24))
-#define DX_MULTISAMPLE_QUALITY(dx)        (*(DWORD *)((dx) + 0x2c28))
-#define DX_RENDERTARGET(dx, i)            ((dx) + 0x2c30 + (i) * 20)
+#define DX_DEVICE(dx)                     ((DxGlobals *)(dx))->device
+#define DX_BACKBUFFER_FORMAT(dx)          ((DxGlobals *)(dx))->backBufferFormat
+#define DX_MULTISAMPLE_TYPE(dx)           ((DxGlobals *)(dx))->multiSampleType  /* TODO: verify offset 0x2c24 */
+#define DX_MULTISAMPLE_QUALITY(dx)        ((DxGlobals *)(dx))->multiSampleQuality  /* TODO: verify offset 0x2c28 */
+#define DX_RENDERTARGET(dx, i)            ((byte *)&((DxGlobals *)(dx))->renderTargets[i])
 #define DX_RT_IMAGE(rt)                   (*(GfxImage **)((rt) + 0))
 #define DX_RT_COLOR_SURFACE(rt)           (*(IDirect3DSurface9 **)((rt) + 4))
 #define DX_RT_DEPTH_SURFACE(rt)           (*(IDirect3DSurface9 **)((rt) + 8))
 #define DX_RT_WIDTH(rt)                   (*(int *)((rt) + 12))
 #define DX_RT_HEIGHT(rt)                  (*(int *)((rt) + 16))
-#define DX_SINGLE_SAMPLE_DS(dx)           (*(IDirect3DSurface9 **)((dx) + 0x2d34))
-#define DX_WINDOWS(dx)                    ((dx) + 0x2d50)
+#define DX_SINGLE_SAMPLE_DS(dx)           ((DxGlobals *)(dx))->singleSampleDepthStencilSurface  /* TODO: verify offset 0x2d34 */
+#define DX_WINDOWS(dx)                    ((byte *)&((DxGlobals *)(dx))->windows)  /* TODO: verify offset 0x2d50 */
 
 /* COM vtable call helpers */
 #define VTABLE(obj)         (*(void ***)obj)
@@ -146,9 +147,9 @@ static IDirect3DSurface9 *R_GetOrCreateDepthStencil(byte *dxPtr, int fullWidth, 
 /* line 412 */
 static void R_InitFullscreenRenderTargetImage(int imageProgId, int picmip, D3DFORMAT format, RenderTargetUsage usage, GfxRenderTarget *renderTarget)
 {
-    byte *vidCfg = VIDCONFIG();
-    int fullWidth = *(int *)(vidCfg + 0);
-    int fullHeight = *(int *)(vidCfg + 4);
+    vidConfig_t *vidCfg = VIDCONFIG();
+    int fullWidth = vidCfg->width;
+    int fullHeight = vidCfg->height;
     int width, height;
 
     width = fullWidth >> (byte)picmip;
@@ -268,7 +269,7 @@ long int R_ShutdownRenderTargets(void)
 long int R_InitRenderTargets(void)
 {
     byte *dxPtr;
-    byte *vidCfg;
+    vidConfig_t *vidCfg;
     int fullWidth, fullHeight;
     void *device;
     void **vtable;
@@ -280,16 +281,16 @@ long int R_InitRenderTargets(void)
     /* line 210-211: Store display dimensions */
     dxPtr = DX();
     vidCfg = VIDCONFIG();
-    fullWidth = *(int *)(vidCfg + 0);
-    *(int *)(dxPtr + 0x2c3c) = fullWidth;
-    fullHeight = *(int *)(vidCfg + 4);
-    *(int *)(dxPtr + 0x2c40) = fullHeight;
+    fullWidth = vidCfg->width;
+    DX_PTR()->renderTargets[0].width = fullWidth;
+    fullHeight = vidCfg->height;
+    DX_PTR()->renderTargets[0].height = fullHeight;
 
     /* line 213: Get back buffer - device->GetBackBuffer(0, 0, &dx.windows[0]) */
     device = DX_DEVICE(dxPtr);
     vtable = VTABLE(device);
     hr = ((HRESULT (*)(void *, UINT, byte *))vtable[0x38 / 4])(
-        device, 0, dxPtr + 0x2d50);
+        device, 0, (byte *)&DX_PTR()->windows[0]); /* TODO: verify offset 0x2d50 */
 
     /* line 214 */
     if (hr < 0) {
@@ -303,15 +304,15 @@ long int R_InitRenderTargets(void)
         device = DX_DEVICE(dxPtr);
         vtable = VTABLE(device);
         hr = ((HRESULT (*)(void *, DWORD, DWORD, DWORD, byte *))vtable[0x48 / 4])(
-            device, 0, 0, 0, dxPtr + 0x2c34);
+            device, 0, 0, 0, (byte *)&DX_PTR()->renderTargets[0].colorSurface);
 
         /* Check if iteration needed */
     } while (*(int *)imp_alwaysfails != 0);
 
     /* line 108-109: Get full screen dimensions from vidConfig */
     vidCfg = VIDCONFIG();
-    fullWidth = *(int *)(vidCfg + 0);
-    fullHeight = *(int *)(vidCfg + 4);
+    fullWidth = vidCfg->width;
+    fullHeight = vidCfg->height;
 
     /* line 223-226: Create main depth stencil surface */
     {

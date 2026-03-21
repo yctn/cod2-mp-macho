@@ -1509,10 +1509,10 @@ int G_ShutdownGame(qboolean freeScripts)
 
         /* Free XAnimTrees in level_bgs (stride 0x4b8) */
         for (ptr = (char *)&level_bgs; ptr != (char *)((char *)&level_bgs + 77312); ptr += 0x4b8) {
-            struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0xb40a0);
+            struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0xb40a0); /* TODO: unknown offset */
             if (tree) {
                 XAnimFreeTree(tree, 0);
-                *(struct XAnimTree_s **)(ptr + 0xb40a0) = NULL;
+                *(struct XAnimTree_s **)(ptr + 0xb40a0) = NULL; /* TODO: unknown offset */
             }
         }
 
@@ -1521,10 +1521,10 @@ int G_ShutdownGame(qboolean freeScripts)
             char *clients_base = (char *)imp_g_scr_data;
             char *clients_end = clients_base + 0x2640;
             for (ptr = clients_base; ptr != clients_end; ptr += 0x4c8) {
-                struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0x10b8);
+                struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0x10b8); /* TODO: unknown offset */
                 if (tree) {
                     XAnimFreeTree(tree, 0);
-                    *(struct XAnimTree_s **)(ptr + 0x10b8) = NULL;
+                    *(struct XAnimTree_s **)(ptr + 0x10b8) = NULL; /* TODO: unknown offset */
                 }
             }
         }
@@ -2141,7 +2141,7 @@ int G_RunFrame(int levelTime) {
                             /* Fire trigger */
                             entIndex[entNum] = index;
                             Scr_AddEntity(otherEnt);
-                            Scr_Notify(entPtr, (int)*(unsigned short *)((byte *)imp_scr_const + 0x54), 1);
+                            Scr_Notify(entPtr, (int)((scr_const_t *)imp_scr_const)->trigger, 1);
                             /* Remove this trigger entry */
                             {
                                 int last = level.currentTriggerListSize - 1;
@@ -2218,21 +2218,21 @@ int G_RunFrame(int levelTime) {
             byte *dst = dstBase;
             while (src < levelEnd) {
                 int srcKey = *(int *)src;
-                if (srcKey == 0 || *(int *)(src + 0x14) == 0) {
-                    if (srcKey != 0 && *(int *)(src + 0x14) == lastObjId) {
+                if (srcKey == 0 || *(int *)(src + 0x14) == 0) { /* TODO: unknown offset */
+                    if (srcKey != 0 && *(int *)(src + 0x14) == lastObjId) { /* TODO: unknown offset */
                         /* Copy 28 bytes of objective data */
                         int k;
                         for (k = 0; k < 7; k++) {
-                            *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4);
+                            *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4); /* TODO: unknown offset */
                         }
                     } else {
-                        *(int *)(dst + 0x5e4) = 0;
+                        *(int *)(dst + 0x5e4) = 0; /* TODO: unknown offset */
                     }
                 } else {
                     /* Copy 28 bytes */
                     int k;
                     for (k = 0; k < 7; k++) {
-                        *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4);
+                        *(int *)(dst + 0x5e4 + k * 4) = *(int *)(src + k * 4); /* TODO: unknown offset */
                     }
                 }
                 src += 0x1c;

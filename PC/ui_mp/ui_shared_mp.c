@@ -628,7 +628,7 @@ void Script_ScriptMenuResponse(displayContextDef_t *dc, itemDef_t *item, const c
     int iIndex;
     (void)dc;
 
-    if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed))
+    if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed)) /* TODO: unknown offset into legacyHacks */
         return;
 
     if (!String_Parse(args, val, 0x400))
@@ -687,11 +687,11 @@ void Item_RunScript(displayContextDef_t *dc, itemDef_t *item, const char *s)
 /* Controls_GetConfig — scan all keys for bindings matching g_bindings commands */
 void Controls_GetConfig(void)
 {
-    byte *entry = (byte *)g_bindings;
+    int bi;
     char b[0x100];
 
-    while (entry != (byte *)updateScreenCalled) {
-        const char *command = *(const char **)entry;
+    for (bi = 0; (byte *)&g_bindings[bi] != (byte *)updateScreenCalled; bi++) {
+        const char *command = g_bindings[bi].command;
         int twokeys[2] = { -1, -1 };
         int count = 0;
         int j;
@@ -708,9 +708,8 @@ void Controls_GetConfig(void)
                 break;
         }
 
-        *(int *)(entry + 0xc) = twokeys[0];
-        *(int *)(entry + 0x10) = twokeys[1];
-        entry += 0x14;
+        g_bindings[bi].bind1 = twokeys[0];
+        g_bindings[bi].bind2 = twokeys[1];
     }
 }
 
@@ -720,17 +719,12 @@ extern byte szShotName[];
 void Controls_SetConfig(qboolean restart)
 {
     (void)restart;
-    /* g_bindings: 20-byte entries {name, ?, ?, key1, key2}. offset 12 = key1, 16 = key2, 0 = command */
-    byte *entry = (byte *)g_bindings + 12;
-    byte *endPtr = szShotName + 8;
-    while (entry != endPtr) {
-        int key1 = *(int *)entry;
-        if (key1 != -1)
-            Key_SetBinding(key1, *(const char **)(entry - 12));
-        int key2 = *(int *)(entry + 4);
-        if (key2 != -1)
-            Key_SetBinding(key2, *(const char **)(entry - 12));
-        entry += 20;
+    int i;
+    for (i = 0; (byte *)&g_bindings[i].bind1 != szShotName + 8; i++) {
+        if (g_bindings[i].bind1 != -1)
+            Key_SetBinding(g_bindings[i].bind1, g_bindings[i].command);
+        if (g_bindings[i].bind2 != -1)
+            Key_SetBinding(g_bindings[i].bind2, g_bindings[i].command);
     }
     Cbuf_ExecuteText(2, "bindingsave\n");
 }
@@ -738,12 +732,11 @@ void Controls_SetConfig(qboolean restart)
 /* line 4381 */
 void Controls_SetDefaults(void)
 {
-    byte *p = (byte *)g_bindings;
-    do {
-        *(int *)(p + 0xc) = *(int *)(p + 4);
-        ((menuDef_t *)p)->window.rect[0].horzAlign = *(int *)(p + 8);
-        p += 0x14;
-    } while (p != (byte *)updateScreenCalled);
+    int bi;
+    for (bi = 0; (byte *)&g_bindings[bi] != (byte *)updateScreenCalled; bi++) {
+        g_bindings[bi].bind1 = g_bindings[bi].defaultbind1;
+        g_bindings[bi].bind2 = g_bindings[bi].defaultbind2;
+    }
 }
 
 /* BindingFromName — find key binding for a command name, format display string */
@@ -751,18 +744,17 @@ void BindingFromName(const char *dvar, char *nameBind)
 {
     int i;
     for (i = 0; i < 0x38; i++) {
-        byte *entry = (byte *)g_bindings + i * 0x14;
-        if (I_stricmp(dvar, *(const char **)entry) != 0)
+        if (I_stricmp(dvar, g_bindings[i].command) != 0)
             continue;
 
-        int key1 = *(int *)(entry + 12);
+        int key1 = g_bindings[i].bind1;
         if (key1 == -1)
             break;
 
         Key_KeynumToStringBuf(key1, nameBind, 0x20);
         I_strncpyz(nameBind, UI_SafeTranslateString(nameBind), 0x80);
 
-        int key2 = *(int *)(entry + 16);
+        int key2 = g_bindings[i].bind2;
         if (key2 == -1)
             return;
 
@@ -783,9 +775,8 @@ qboolean GetCommandHasBinding(const char *command)
     /* g_bindings: 20-byte entries, offset 0=command name, offset 12=key1, offset 16=key2 */
     int i;
     for (i = 0; i < 56; i++) {
-        byte *entry = (byte *)g_bindings + i * 20;
-        if (I_stricmp(command, *(const char **)entry) == 0) {
-            if (*(int *)(entry + 12) != -1)
+        if (I_stricmp(command, g_bindings[i].command) == 0) {
+            if (g_bindings[i].bind1 != -1)
                 return 1;
         }
     }
@@ -800,17 +791,16 @@ int GetKeyBindings(const char *command, char (*bindings)[128])
     bindings[1][0] = '\0';
 
     for (i = 0; i < 0x38; i++) {
-        byte *entry = (byte *)g_bindings + i * 0x14;
-        if (I_stricmp(command, *(const char **)entry) != 0)
+        if (I_stricmp(command, g_bindings[i].command) != 0)
             continue;
 
-        int key1 = *(int *)(entry + 12);
+        int key1 = g_bindings[i].bind1;
         if (key1 == -1)
             break;
 
         Key_KeynumToStringBuf(key1, bindings[0], 0x80);
 
-        int key2 = *(int *)(entry + 16);
+        int key2 = g_bindings[i].bind2;
         if (key2 == -1)
             return 1;
 
@@ -875,11 +865,11 @@ void UI_AddMenuList(displayContextDef_t *dc, MenuList *menuList)
 
     if (!menuList)
         return;
-    if (*(int *)menuList <= 0)
+    if (menuList->menuCount <= 0)
         return;
 
-    for (i = 0; i < *(int *)menuList; i++) {
-        void *menu = ((void **)*(int *)((byte *)menuList + 4))[i];
+    for (i = 0; i < menuList->menuCount; i++) {
+        void *menu = (void *)menuList->menus[i];
         if (*menuCount > 0x7f)
             Com_Error(1, "UI_AddMenu: Maximum number of menus %d exceeded.", 0x80);
         (void *)dc->Menus[*menuCount] = menu;
@@ -940,7 +930,7 @@ qboolean Menu_CheckOnKey(displayContextDef_t *dc, menuDef_t *menu, int key)
     byte *node = (byte *)menu->onKey;
     while (node) {
         if (*(int *)node == key) {
-            *(void **)(tempItem + 0x29c) = menu;
+            ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
             Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(node + 4));
             return 1;
         }
@@ -963,7 +953,7 @@ qboolean Menu_CheckOnKey(displayContextDef_t *dc, menuDef_t *menu, int key)
         node = (byte *)item->onKey;
         while (node) {
             if (*(int *)node == key) {
-                *(void **)(tempItem + 0x29c) = menu;
+                ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
                 Item_RunScript(dc, (itemDef_t *)tempItem, *(const char **)(node + 4));
                 return 1;
             }
@@ -1218,7 +1208,7 @@ void Menus_Close(displayContextDef_t *dc, menuDef_t *menu)
     /* Run onClose script if visible */
     int flags = menu->window.dynamicFlags[0];
     if ((flags & 4) && (void *)menu->onClose) {
-        *(void **)(tempItem + 0x29c) = menu;
+        ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
         Item_RunScript(dc, (itemDef_t *)tempItem, menu->onClose);
         openCount = dc->openMenuCount;
     }
@@ -1374,7 +1364,7 @@ void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *co
     int style = item->textStyle;
     int horzAlign = item->window.rect[0].horzAlign;
     int vertAlign = item->window.rect[0].vertAlign;
-    byte *textRect = it + 0x210;
+    float *textRect = (float *)item->textRect;
     float lineHeight;
     int iTargetLineWidth;
     float y;
@@ -1499,7 +1489,7 @@ void Item_Text_Wrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color)
     int style = item->textStyle;
     int horzAlign = item->window.rect[0].horzAlign;
     int vertAlign = item->window.rect[0].vertAlign;
-    byte *textRect = it + 0x210;
+    float *textRect = (float *)item->textRect;
     float y = *(float *)(textRect + 4);
     float lineHeight = (float)(height + 5);
 
@@ -1597,12 +1587,12 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         float hy_bottom = item->window.rect[0].y;
         hy_bottom = hy_bottom + item->window.rect[0].h - 16.0f - 1.0f;
 
-        uiInfo = (byte *)imp_sharedUiInfo;
+        sharedUiInfo_t *sharedInfo = (sharedUiInfo_t *)imp_sharedUiInfo;
 
         /* Left arrow */
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             hx, hy_bottom, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 8));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarArrowLeft);
 
         float trackX = hx + 15.0f;
 
@@ -1610,13 +1600,13 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         float trackW = item->window.rect[0].w - 32.0f;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             trackX, hy_bottom, trackW + 1.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 0x10));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBar);
 
         /* Right arrow */
         float rightArrowX = trackW - 1.0f + trackX;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             rightArrowX, hy_bottom, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 0x0c));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarArrowRight);
 
         /* Thumb */
         int thumbPos = Item_ListBox_ThumbDrawPosition(dc, item);
@@ -1626,7 +1616,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
             thumbX = thumbMax;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             thumbX, hy_bottom, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 0x14));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarThumb);
 
         /* ListBox_SetEndPos */
         ListBox_SetEndPos((void *)listPtr, listPtr->startPos[0]);
@@ -1689,12 +1679,12 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
 
         float scrollY = item->window.rect[0].y + 1.0f;
 
-        uiInfo = (byte *)imp_sharedUiInfo;
+        sharedUiInfo_t *sharedInfo = (sharedUiInfo_t *)imp_sharedUiInfo;
 
         /* Up arrow */
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             scrollX, scrollY, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)uiInfo);
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarArrowUp);
 
         float trackY = scrollY + 15.0f;
 
@@ -1705,13 +1695,13 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         float trackH = item->window.rect[0].h - 32.0f;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             scrollX, trackY, 16.0f, trackH + 1.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 0x10));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBar);
 
         /* Down arrow */
         float downArrowY = trackH - 1.0f + trackY;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             scrollX, downArrowY, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 4));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarArrowDown);
 
         /* Thumb */
         int thumbPos2 = Item_ListBox_ThumbDrawPosition(dc, item);
@@ -1721,7 +1711,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
             thumbY = thumbMax2;
         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
             scrollX, thumbY, 16.0f, 16.0f,
-            horzAlign, vertAlign, 0, *(int *)(uiInfo + 0x14));
+            horzAlign, vertAlign, 0, (int)sharedInfo->assets.scrollBarThumb);
     }
 
     /* --- Item rendering (both with and without columns) --- */
@@ -1792,7 +1782,6 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
 
             if (colCount > 0) {
                 /* With columns */
-                byte *col = listPtr;
                 j = 0;
                 while (j < listPtr->numColumns) {
                     /* Get text and optional image for this column */
@@ -1800,9 +1789,9 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
 
                     if (optionalImage) {
                         /* Draw optional image */
-                        float imgSize = (float)(*(int *)(col + 0x48));
+                        float imgSize = (float)listPtr->columnInfo[j].width;
                         ((void (*)(float, float, float, float, int, int, int, int))UI_DrawHandlePic)(
-                            (float)(*(int *)(col + 0x44)) + preX2b,
+                            (float)listPtr->columnInfo[j].pos + preX2b,
                             y + 3.0f,
                             imgSize, imgSize,
                             horzAlign, vertAlign, 0, (int)(uintptr_t)optionalImage);
@@ -1810,17 +1799,16 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
                         /* Draw text */
                         float textScale = item->textscale;
                         FontHandle font = UI_GetFontHandle(item->fontEnum, textScale);
-                        float drawX = (float)(*(int *)(col + 0x44)) + preX4 + item->textalignx;
+                        float drawX = (float)listPtr->columnInfo[j].pos + preX4 + item->textalignx;
                         float drawY = y + listPtr->elementHeight + item->textaligny;
-                        UI_DrawText(text, *(int *)(col + 0x4c), font,
+                        UI_DrawText(text, listPtr->columnInfo[j].maxChars, font,
                             drawX, drawY,
                             horzAlign, vertAlign,
                             textScale,
-                            (float *)(it + 0x1cc),
+                            item->window.foreColor,
                             item->textStyle);
                     }
                     j++;
-                    col += 0xc;
                 }
             } else {
                 /* No columns — single text item */
@@ -1844,7 +1832,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
                         drawX2, drawY2,
                         horzAlign, vertAlign,
                         textScale2,
-                        (float *)(it + 0x1cc),
+                        item->window.foreColor,
                         item->textStyle);
                 }
             }
@@ -1977,7 +1965,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAm
                 /* No background: fill rect with foreColor */
                 UI_FillRect(x, y, ww, hh,
                     ((Window *)w)->rect[0].horzAlign, ((Window *)w)->rect[0].vertAlign,
-                    (const vec_t *)(w + 0x1dc));
+                    ((Window *)w)->backColor);
                 break;
             }
 
@@ -2024,7 +2012,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAm
             /* Draw with tiled flag check */
             float *fillColor = NULL;
             if (((byte *)&((Window*)w)->dynamicFlags)[2] & 1)
-                fillColor = (float *)(w + 0x1cc);
+                fillColor = ((Window *)w)->foreColor;
             ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
                 x, y, ww, hh,
                 ((Window *)w)->rect[0].horzAlign, ((Window *)w)->rect[0].vertAlign,
@@ -2064,7 +2052,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAm
             {
                 float *fillColor = NULL;
                 if (((byte *)&((Window*)w)->dynamicFlags)[2] & 1)
-                    fillColor = (float *)(w + 0x1cc);
+                    fillColor = ((Window *)w)->foreColor;
                 ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
                     x, y, ww, hh,
                     ((Window *)w)->rect[0].horzAlign, ((Window *)w)->rect[0].vertAlign,
@@ -2077,7 +2065,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAm
             /* Load bar */
             float *fillColor = NULL;
             if (((byte *)&((Window*)w)->dynamicFlags)[2] & 1)
-                fillColor = (float *)(w + 0x1cc);
+                fillColor = ((Window *)w)->foreColor;
             ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawLoadBar)(
                 x, y, ww, hh,
                 ((Window *)w)->rect[0].horzAlign, ((Window *)w)->rect[0].vertAlign,
@@ -2114,7 +2102,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w_param)[4][32], float fadeAm
             color[3] = 1.0f;
             borderColor = color;
         } else {
-            borderColor = (float *)(w + 0x1ec);
+            borderColor = ((Window *)w)->borderColor;
         }
         UI_DrawRect(
             ((Window *)w)->rect[0].x, ((Window *)w)->rect[0].y,
@@ -2404,7 +2392,7 @@ void Menus_Open(displayContextDef_t *dc, menuDef_t *menu)
     dc->openMenuCount = idx + 1;
     Window_AddDynamicFlags((void *)menu, 6);
     if ((void *)menu->onOpen) {
-        *(void **)(tempItem + 0x29c) = menu;
+        ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
         Item_RunScript(dc, (itemDef_t *)tempItem, menu->onOpen);
     }
     if ((void *)menu->soundName)
@@ -2493,7 +2481,7 @@ qboolean Display_MouseMove(displayContextDef_t *dc, void *p, int x, int y)
         }
     }
     for (i = 0; i <= startIdx; i++) {
-        byte *menu = *(byte **)(d + 0x230 + (startIdx - i) * 4);
+        byte *menu = (byte *)dc->menuStack[startIdx - i];
         if (Menu_HandleMouseMove(dc, (menuDef_t *)menu, (float)x, (float)y)) return 1;
     }
     return 1;
@@ -2862,7 +2850,7 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         yesNoStr = UI_SafeTranslateString("EXE_NO");
 
     /* Draw the text */
-    byte *textRect = it + 0x210;
+    float *textRect = (float *)item->textRect;
     FontHandle font = UI_GetFontHandle(item->fontEnum, item->textscale);
     float textX, textY;
 
@@ -2935,18 +2923,18 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
     }
 
     /* Draw slider bar — real signature: (x, y, w, h, horzAlign, vertAlign, color, material) */
-    byte *uiInfo = (byte *)imp_sharedUiInfo;
+    sharedUiInfo_t *sharedInfo = (sharedUiInfo_t *)imp_sharedUiInfo;
     ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
         x, y, 96.0f, 16.0f,
         item->window.rect[0].horzAlign, item->window.rect[0].vertAlign, newColor,
-        *(int *)(uiInfo + 0x18));
+        (int)sharedInfo->assets.sliderBar);
 
     /* Draw slider thumb */
     float thumbX = Item_Slider_ThumbPosition(item);
     ((void (*)(float, float, float, float, int, int, float *, int))UI_DrawHandlePic)(
         thumbX - 5.0f, y - 2.0f, 10.0f, 20.0f,
         item->window.rect[0].horzAlign, item->window.rect[0].vertAlign, newColor,
-        *(int *)(uiInfo + 0x1c));
+        (int)sharedInfo->assets.sliderThumb);
 }
 
 /* Item_Bind_Paint — paint key binding item with pulsing focus color */
@@ -3003,7 +2991,7 @@ void Item_Bind_Paint(displayContextDef_t *dc, itemDef_t *item)
 
 draw:;
     /* Paint text label first if present */
-    byte *textRect = it + 0x210;
+    float *textRect = (float *)item->textRect;
     if ((int)(uintptr_t)item->text) {
         Item_Text_Paint(dc, item);
         /* Draw bind text after label */
@@ -3123,14 +3111,14 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
     if ((int)(uintptr_t)item->text && ((const char *)(int)(uintptr_t)item->text)[0]) {
         /* Has text label — paint text first */
         Item_Text_Paint(dc, item);
-        byte *textRect = it + 0x210;
+        float *textRect = (float *)item->textRect;
         float ownerX = item->textRect[0].x + *(float *)(textRect + 8) + 8.0f;
         UI_OwnerDraw(ownerX, item->window.rect[0].y, item->window.rect[0].w, item->window.rect[0].h,
             item->window.rect[0].horzAlign, item->window.rect[0].vertAlign, 0.0f, item->textaligny,
             ownerDraw, ownerDrawFlags, scale, color, (MaterialHandle)(intptr_t)material, style);
     } else if ((int)(uintptr_t)item->text) {
         /* Has text pointer but empty — use textRect x + w offset */
-        byte *textRect = it + 0x210;
+        float *textRect = (float *)item->textRect;
         float ownerX = item->textRect[0].x + *(float *)(textRect + 8);
         UI_OwnerDraw(ownerX, item->window.rect[0].y, item->window.rect[0].w, item->window.rect[0].h,
             item->window.rect[0].horzAlign, item->window.rect[0].vertAlign, 0.0f, item->textaligny,
@@ -3455,7 +3443,7 @@ qboolean Item_SetFocus(displayContextDef_t *dc, itemDef_t *item, float x, float 
     byte *d = (byte *)dc;
     int i;
 
-    int defaultSound = *(int *)((byte *)imp_sharedUiInfo + 0x40);
+    int defaultSound = (int)((sharedUiInfo_t *)imp_sharedUiInfo)->assets.itemFocusSound;
 
     /* Validation */
     if (!item) return 0;
@@ -3542,7 +3530,7 @@ check_dvar:;
     int itemType = item->type;
     if (itemType == 0) {
         /* Type 0: hit-test text rect */
-        byte *textRect = it + 0x210;
+        float *textRect = (float *)item->textRect;
         float tw = *(float *)(textRect + 8);
         float th = ((UiRectangle *)textRect)->h;
         float tx = item->textRect[0].x;
@@ -4123,7 +4111,7 @@ static void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
 {
     byte *d = (byte *)dc;
     byte *scroll = (byte *)p;
-    itemDef_t *scrollItem = *(itemDef_t **)(scroll + 0x18);
+    itemDef_t *scrollItem = ((scrollInfo_t *)scroll)->item;
     byte *it = (byte *)scrollItem;
     byte *listPtr = (byte *)Item_GetListBoxDef(scrollItem);
 
@@ -4132,7 +4120,7 @@ static void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
     if (((byte *)&item->window.staticFlags)[2] & 0x20) {
         /* Horizontal */
         float cursorX = (float)dc->cursorx;
-        if (cursorX == *(float *)(scroll + 0x10))
+        if (cursorX == ((scrollInfo_t *)scroll)->xStart)
             goto check_auto;
         /* Compute new start pos from cursor position */
         float startX = item->window.rect[0].x + 16.0f + 1.0f;
@@ -4143,11 +4131,11 @@ static void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
         if (newStart < 0) newStart = 0;
         else if (newStart > maxScroll) newStart = maxScroll;
         ListBox_SetStartPos((itemDef_t *)listPtr, newStart);
-        *(float *)(scroll + 0x10) = cursorX;
+        ((scrollInfo_t *)scroll)->xStart = cursorX;
     } else {
         /* Vertical */
         float cursorY = (float)dc->cursory;
-        if (cursorY == *(float *)(scroll + 0x14))
+        if (cursorY == ((scrollInfo_t *)scroll)->yStart)
             goto check_auto;
         /* Compute new start pos from cursor position */
         float startY = item->window.rect[0].y + 16.0f + 1.0f;
@@ -4158,42 +4146,42 @@ static void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
         if (newStart < 0) newStart = 0;
         else if (newStart > maxScroll) newStart = maxScroll;
         ListBox_SetStartPos((itemDef_t *)listPtr, newStart);
-        *(float *)(scroll + 0x14) = cursorY;
+        ((scrollInfo_t *)scroll)->yStart = cursorY;
     }
 
 check_auto:;
     /* Auto-scroll: if past hold time, trigger key repeat */
     int curTime = dc->realTime;
-    while (curTime > *(int *)scroll) {
-        Item_ListBox_HandleKey(dc, *(void **)(scroll + 0x18), *(int *)(scroll + 0xc), 1, 0);
-        *(int *)scroll = curTime + *(int *)(scroll + 8);
+    while (curTime > ((scrollInfo_t *)scroll)->nextScrollTime) {
+        Item_ListBox_HandleKey(dc, ((scrollInfo_t *)scroll)->item, ((scrollInfo_t *)scroll)->scrollKey, 1, 0);
+        ((scrollInfo_t *)scroll)->nextScrollTime = curTime + ((scrollInfo_t *)scroll)->adjustValue;
     }
 
-    if (curTime > *(int *)(scroll + 4)) {
-        *(int *)(scroll + 4) = curTime + 150;
-        if (*(int *)(scroll + 8) > 20)
-            *(int *)(scroll + 8) -= 40;
+    if (curTime > ((scrollInfo_t *)scroll)->nextAdjustTime) {
+        ((scrollInfo_t *)scroll)->nextAdjustTime = curTime + 150;
+        if (((scrollInfo_t *)scroll)->adjustValue > 20)
+            ((scrollInfo_t *)scroll)->adjustValue -= 40;
     }
 }
 
 /* Scroll_ListBox_AutoFunc — auto-scroll list box: handle key repeat, adjust timing */
 static void Scroll_ListBox_AutoFunc(displayContextDef_t *dc, void *p)
 {
-    byte *d = (byte *)dc;
-    byte *scroll = (byte *)p;
+    (void)dc;
+    scrollInfo_t *scroll = (scrollInfo_t *)p;
     int curTime = dc->realTime;
 
     /* If past next scroll time, handle key and advance */
-    while (curTime > *(int *)scroll) {
-        Item_ListBox_HandleKey(dc, *(void **)(scroll + 0x18), *(int *)(scroll + 0xc), 1, 0);
-        *(int *)scroll = curTime + *(int *)(scroll + 8);
+    while (curTime > scroll->nextScrollTime) {
+        Item_ListBox_HandleKey(dc, scroll->item, scroll->scrollKey, 1, 0);
+        scroll->nextScrollTime = curTime + scroll->adjustValue;
     }
 
     /* Adjust next scroll time if past hold time */
-    if (curTime > *(int *)(scroll + 4)) {
-        *(int *)(scroll + 4) = curTime + 150;
-        if (*(int *)(scroll + 8) > 20)
-            *(int *)(scroll + 8) -= 40;
+    if (curTime > scroll->nextAdjustTime) {
+        scroll->nextAdjustTime = curTime + 150;
+        if (scroll->adjustValue > 20)
+            scroll->adjustValue -= 40;
     }
 }
 
@@ -4240,21 +4228,20 @@ enter_bind:
         const char *dvarName = item->dvar;
         /* Find binding index */
         for (i = 0; i < 0x38; i++) {
-            if (I_stricmp(dvarName, *(const char **)((byte *)g_bindings + i * 0x14)) == 0)
+            if (I_stricmp(dvarName, g_bindings[i].command) == 0)
                 break;
         }
         if (i < 0x38) {
             /* Unbind both keys */
-            int idx = i * 0x14;
-            int key1 = *(int *)((byte *)g_bindings + idx + 12);
+            int key1 = g_bindings[i].bind1;
             if (key1 != -1) {
                 Key_SetBinding(key1, str_002157b8);
-                *(int *)((byte *)g_bindings + idx + 12) = -1;
+                g_bindings[i].bind1 = -1;
             }
-            int key2 = *(int *)((byte *)g_bindings + idx + 16);
+            int key2 = g_bindings[i].bind2;
             if (key2 != -1) {
                 Key_SetBinding(key2, str_002157b8);
-                *(int *)((byte *)g_bindings + idx + 16) = -1;
+                g_bindings[i].bind2 = -1;
             }
         }
         Controls_SetConfig(0);
@@ -4273,17 +4260,16 @@ enter_bind:
     /* Regular key — unbind old instances and assign new binding */
     if (key != -1) {
         /* Walk g_bindings and remove this key from any existing bindings */
-        byte *entry = (byte *)g_bindings;
-        while (entry != (byte *)updateScreenCalled) {
-            if (*(int *)(entry + 0x10) == key) {
-                *(int *)(entry + 0x10) = -1;
+        int bi;
+        for (bi = 0; (byte *)&g_bindings[bi] != (byte *)updateScreenCalled; bi++) {
+            if (g_bindings[bi].bind2 == key) {
+                g_bindings[bi].bind2 = -1;
             }
-            if (*(int *)(entry + 0xc) == key) {
-                /* Shift key2 to key1, clear key2 */
-                *(int *)(entry + 0xc) = *(int *)(entry + 0x10);
-                *(int *)(entry + 0x10) = -1;
+            if (g_bindings[bi].bind1 == key) {
+                /* Shift bind2 to bind1, clear bind2 */
+                g_bindings[bi].bind1 = g_bindings[bi].bind2;
+                g_bindings[bi].bind2 = -1;
             }
-            entry += 0x14;
         }
     }
 
@@ -4291,18 +4277,17 @@ enter_bind:
     const char *bindName = item->dvar;
     int bindIdx = -1;
     for (i = 0; i < 0x38; i++) {
-        if (I_stricmp(bindName, *(const char **)((byte *)g_bindings + i * 0x14)) == 0) {
+        if (I_stricmp(bindName, g_bindings[i].command) == 0) {
             bindIdx = i;
             break;
         }
     }
 
     if (bindIdx >= 0 && key != -1) {
-        int offset = bindIdx * 0x14;
-        if (*(int *)((byte *)g_bindings + offset + 12) == -1) {
-            *(int *)((byte *)g_bindings + offset + 12) = key;
+        if (g_bindings[bindIdx].bind1 == -1) {
+            g_bindings[bindIdx].bind1 = key;
         } else {
-            *(int *)((byte *)g_bindings + offset + 16) = key;
+            g_bindings[bindIdx].bind2 = key;
         }
     }
 
@@ -4410,7 +4395,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
 
     case 8: /* ITEM_TYPE_OWNERDRAW */
         return UI_OwnerDrawHandleKey(item->window.ownerDraw, item->window.ownerDrawFlags,
-                                     (int *)(it + 0x2d8), key);
+                                     (int *)&item->special, key);
 
     case 0xa: /* ITEM_TYPE_SLIDER */
         return Item_Slider_HandleKey(dc, item, key, down);
@@ -4528,12 +4513,12 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
             /* Enum dvar type — resolve current index */
             const char *enumString = Dvar_GetVariantString(item->dvar);
             current = atoi(enumString);
-            if (current < 0 || current >= *(int *)((byte *)enumDvar + 0x14)) {
+            if (current < 0 || current >= enumDvar->domain.enumeration.stringCount) {
                 /* Invalid numeric index — search by string */
-                int numStrings = *(int *)((byte *)enumDvar + 0x14);
+                int numStrings = enumDvar->domain.enumeration.stringCount;
                 current = 0;
                 if (numStrings > 0) {
-                    const char **strings = *(const char ***)((byte *)enumDvar + 0x18);
+                    const char **strings = enumDvar->domain.enumeration.strings;
                     int i;
                     for (i = 0; i < numStrings; i++) {
                         if (I_stricmp(enumString, strings[i]) == 0) {
@@ -4548,8 +4533,8 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         /* Get total count */
         struct dvar_s *dv = Dvar_FindVar(item->typeData.enumDvarName);
         int totalCount;
-        if (*(byte *)((byte *)dv + 6) == 6)
-            totalCount = *(int *)((byte *)dv + 0x14);
+        if (dv->type == 6)
+            totalCount = dv->domain.enumeration.stringCount;
         else
             totalCount = 0;
 
@@ -5021,7 +5006,7 @@ update_scroll:;
         /* Run onAccept script */
         if ((void *)item->onAccept) {
             byte tempItem[0x2a0];
-            *(void **)(tempItem + 0x29c) = (void *)item->parent;
+            ((itemDef_t *)tempItem)->parent = item->parent;
             Item_RunScript(dc, (itemDef_t *)tempItem, item->onAccept);
         }
         return 1;
@@ -5156,7 +5141,7 @@ dispatch_item:
     if (key == 0x1b) {
         if (!g_waitingForKey && (void *)menu->onESC) {
             byte tempItem[0x2a0];
-            *(void **)(tempItem + 0x29c) = menu;
+            ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
             Item_RunScript(dc, (itemDef_t *)tempItem, menu->onESC);
         }
         return;
@@ -5329,8 +5314,8 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
             item->window.nextTime = dcTime + item->window.offsetTime[0];
 
             /* Target = effects0 rect at 0xf8, step = effects1 rect at 0x158 */
-            float *target = (float *)(it + 0xf8);
-            float *step = (float *)(it + 0x158);
+            float *target = (float *)item->window.rectEffects0;
+            float *step = (float *)item->window.rectEffects1;
             int done = 0;
 
             /* Copy current rect to newRect */
@@ -5574,31 +5559,31 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
                 text = str_002ac3b0; /* "<dvarEnumList not set>" */
             } else {
                 struct dvar_s *dvar = Dvar_FindVar(enumDvarName);
-                if (*(byte *)((byte *)dvar + 6) != 6) {
+                if (dvar->type != 6) {
                     /* Not an enum dvar */
                     text = str_002ac3c8; /* "<not an enum dvar>" */
-                } else if (*(int *)((byte *)dvar + 0x14) == 0) {
+                } else if (dvar->domain.enumeration.stringCount == 0) {
                     /* No enum entries */
                     text = str_002157b8; /* empty string */
                 } else {
                     /* Try to match by integer index first */
                     struct dvar_s *dvar2 = Dvar_FindVar(item->typeData.enumDvarName);
-                    if (*(byte *)((byte *)dvar2 + 6) != 6) {
+                    if (dvar2->type != 6) {
                         goto enum_not_found;
                     }
                     {
                         const char *enumString = Dvar_GetVariantString(item->dvar);
                         int idx = atoi(enumString);
-                        int enumCount = *(int *)((byte *)dvar2 + 0x14);
+                        int enumCount = dvar2->domain.enumeration.stringCount;
                         if (idx >= 0 && idx < enumCount) {
-                            const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                            const char **strings = dvar->domain.enumeration.strings;
                             text = strings[idx];
                         } else {
                             /* Try string match */
                             int j;
                             text = str_002157b8;
                             for (j = 0; j < enumCount; j++) {
-                                const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                                const char **strings = dvar->domain.enumeration.strings;
                                 if (I_stricmp(enumString, strings[j]) == 0) {
                                     text = strings[j];
                                     goto enum_found;
@@ -5607,7 +5592,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
                             enum_not_found:
                             idx = 0;
                             {
-                                const char **strings = *(const char ***)((byte *)dvar + 0x18);
+                                const char **strings = dvar->domain.enumeration.strings;
                                 text = strings[idx];
                             }
                         }
@@ -5804,7 +5789,7 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
             /* Run onClose script if visible */
             if ((((byte *)&menu->window.dynamicFlags[0])[0] & 4) && (void *)menu->onClose) {
                 byte tempItem[0x2a0];
-                *(void **)(tempItem + 0x29c) = menu;
+                ((itemDef_t *)tempItem)->parent = (menuDef_t *)menu;
                 Item_RunScript(dc, (itemDef_t *)tempItem, menu->onClose);
             }
             Window_RemoveDynamicFlags((void *)menu, 6);

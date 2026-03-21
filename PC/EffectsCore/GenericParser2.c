@@ -14,6 +14,46 @@ extern void *Z_MallocInternal(int size);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern int strcmpi(const char *str1, const char *str2);
 
+
+/*
+ * Reconstructed struct layouts from offset analysis:
+ *
+ * GPObject (base for GPValue/GPGroup linked list nodes):
+ *   0x00: const char *name
+ *   0x04: GPObject *next         (unsorted list link)
+ *   0x08: GPObject *sortedNext   (sorted list link)
+ *   0x0c: GPObject *sortedPrev   (sorted list back-link)
+ *
+ * GPValue (0x14 bytes, extends GPObject):
+ *   0x00-0x0c: GPObject fields
+ *   0x10: GPValue *valueList     (head of value node list)
+ *
+ * GPGroup (0x30 bytes):
+ *   0x00: const char *name
+ *   0x04: GPObject *nextUnsorted
+ *   0x08: GPObject *sortedNext
+ *   0x0c: GPObject *sortedPrev
+ *   0x10: GPValue *pairList      (head of unsorted pair list)
+ *   0x14: GPValue *pairSorted    (head of sorted pair list)
+ *   0x18: GPValue *pairLast      (tail of sorted pair list)
+ *   0x1c: GPGroup *subGroupList  (head of unsorted sub-group list)
+ *   0x20: GPGroup *subGroupSorted (head of sorted sub-group list)
+ *   0x24: GPGroup *subGroupLast  (tail of sorted sub-group list)
+ *   0x28: void *parent
+ *   0x2c: byte cleanFlag         (writeable flag)
+ *
+ * TextPool_ (0x10 bytes):
+ *   0x00: char *data
+ *   0x04: TextPool_ *next
+ *   0x08: int capacity
+ *   0x0c: int used
+ *
+ * GenericParser2_ (extends GPGroup):
+ *   0x00-0x2c: GPGroup fields
+ *   0x30: TextPool_ *textPoolList
+ *   0x34: byte writeable
+ */
+
 static char token[1024]; /* token */
 
 const char * GPValue_GetTopValue(const GPValue * _this);
@@ -488,20 +528,18 @@ char * GetToken(Bool readUntilEOL)
 /* line 335 */
 const char * GPValue_GetTopValue(const GPValue * _this)
 {
-    void *p = *(void **)((byte *)_this + 0x10);
-    if (p)
-        return *(const char **)p;
-    return (const char *)p;
+    GPValue *list = ((GPValue *)_this)->valueList; /* offset 0x10 */
+    if (list)
+        return list->name;
+    return NULL;
 }
 
 /* line 324 */
 Bool GPValue_IsList(const GPValue * _this)
 {
-    byte *self = (byte *)_this;
-    void *p = *(void **)(self + 0x10);
-    if (p) {
-        void *next = *(void **)((byte *)p + 4);
-        if (next) {
+    GPValue *list = ((GPValue *)_this)->valueList; /* offset 0x10 */
+    if (list) {
+        if (list->next) { /* offset 0x04 */
             return 1;
         }
     }
@@ -553,7 +591,7 @@ void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *uns
 
     /* Link: lastObject->next(sorted) = object  (offset 4 of the linked node at *lastObject) */
     /* Actually from the ASM: *((*lastObject) + 4) = object — that's the "next" field at offset 4 */
-    *(GPObject **)((byte *)(*lastObject) + 4) = object;
+    (*lastObject)->next = object; /* offset 0x04 */
 
     /* Walk the sorted list to find insertion point */
     test = (byte *)(*sortedList);
@@ -572,12 +610,12 @@ void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *uns
         int cmp = strcmpi(objName, testName);
         if (cmp < 0) {
             /* Insert before test */
-            *(GPObject **)((byte *)test + 0x0c) = object;  /* test->prev = object */
-            *(GPObject **)(obj + 0x08) = (GPObject *)test;  /* object->next(sorted) = test */
+            ((GPObject *)test)->sortedPrev = object;  /* offset 0x0c */
+            object->sortedNext = (GPObject *)test;  /* offset 0x08 */
             if (last) {
                 /* Insert after last */
-                *(GPObject **)(last + 0x08) = object;       /* last->next(sorted) = object */
-                *(GPObject **)(obj + 0x0c) = (GPObject *)last;  /* object->prev = last */
+                ((GPObject *)last)->sortedNext = object;       /* offset 0x08 */
+                object->sortedPrev = (GPObject *)last;  /* offset 0x0c */
                 *lastObject = object;
             } else {
                 /* Object becomes new head of sorted list */
@@ -588,7 +626,7 @@ void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *uns
         }
         /* Move to next in sorted list */
         {
-            void *nextSorted = *(void **)((byte *)test + 8); /* offset 0x08 = next(sorted) */
+            void *nextSorted = ((GPObject *)test)->sortedNext; /* offset 0x08 */
             if (!nextSorted) {
                 /* End of sorted list, insert after test */
                 last = test;
@@ -600,8 +638,8 @@ void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *uns
     }
 
     /* Insert after last (at end of sorted list) */
-    *(GPObject **)(last + 0x08) = object;       /* last->next(sorted) = object */
-    *(GPObject **)(obj + 0x0c) = (GPObject *)last; /* object->prev = last */
+    ((GPObject *)last)->sortedNext = object;       /* offset 0x08 */
+    object->sortedPrev = (GPObject *)last; /* offset 0x0c */
     *lastObject = object;
 
 #if 0 /* Original ASM */
@@ -718,20 +756,21 @@ void GPGroup_Clean(const GPGroup * _this)
     byte *subGroup;
     byte *nextSubGroup;
 
-    /* Free all pairs (GPValues) at offset 0x10 */
-    pair = *(byte **)(self + 0x10);
-    while (pair) {
-        /* Save the next pointer (offset 4 of pair = next unsorted) */
-        nextPair = *(byte **)(pair + 4);
-        *(byte **)(self + 0x18) = nextPair;
+    GPGroup *grp = (GPGroup *)_this;
 
-        /* Free all value nodes in this pair's value list (offset 0x10 of GPValue) */
+    /* Free all pairs (GPValues) */
+    pair = (byte *)grp->pairList;
+    while (pair) {
+        nextPair = (byte *)((GPObject *)pair)->next;
+        grp->pairLast = (GPValue *)nextPair;
+
+        /* Free all value nodes in this pair's value list */
         {
-            byte *valNode = *(byte **)(pair + 0x10);
+            byte *valNode = (byte *)((GPValue *)pair)->valueList;
             while (valNode) {
-                byte *nextVal = *(byte **)(valNode + 4);
+                byte *nextVal = (byte *)((GPObject *)valNode)->next;
                 Z_FreeInternal(valNode);
-                *(byte **)(pair + 0x10) = nextVal;
+                ((GPValue *)pair)->valueList = (GPValue *)nextVal;
                 valNode = nextVal;
             }
         }
@@ -740,16 +779,15 @@ void GPGroup_Clean(const GPGroup * _this)
         Z_FreeInternal(pair);
 
         /* Move to next pair */
-        pair = *(byte **)(self + 0x18);
-        *(byte **)(self + 0x10) = pair;
+        pair = (byte *)grp->pairLast;
+        grp->pairList = (GPValue *)pair;
     }
 
-    /* Free all sub-groups (GPGroups) at offset 0x1c */
-    subGroup = *(byte **)(self + 0x1c);
+    /* Free all sub-groups (GPGroups) */
+    subGroup = (byte *)grp->subGroupList;
     while (subGroup) {
-        /* Save next pointer (offset 4 of subgroup = next unsorted) */
-        nextSubGroup = *(byte **)(subGroup + 4);
-        *(byte **)(self + 0x24) = nextSubGroup;
+        nextSubGroup = (byte *)((GPObject *)subGroup)->next;
+        grp->subGroupLast = (GPGroup *)nextSubGroup;
 
         /* Recursively clean the sub-group */
         GPGroup_Clean((const GPGroup *)subGroup);
@@ -758,19 +796,19 @@ void GPGroup_Clean(const GPGroup * _this)
         Z_FreeInternal(subGroup);
 
         /* Move to next sub-group */
-        subGroup = *(byte **)(self + 0x24);
-        *(byte **)(self + 0x1c) = subGroup;
+        subGroup = (byte *)grp->subGroupLast;
+        grp->subGroupList = (GPGroup *)subGroup;
     }
 
     /* Zero out all internal pointers */
-    *(void **)(self + 0x18) = 0;
-    *(void **)(self + 0x14) = 0;
-    *(void **)(self + 0x10) = 0;
-    *(void **)(self + 0x24) = 0;
-    *(void **)(self + 0x20) = 0;
-    *(void **)(self + 0x1c) = 0;
-    *(void **)(self + 0x28) = 0;
-    *(byte *)(self + 0x2c) = 0;
+    grp->pairLast = NULL;
+    grp->pairSorted = NULL;
+    grp->pairList = NULL;
+    grp->subGroupLast = NULL;
+    grp->subGroupSorted = NULL;
+    grp->subGroupList = NULL;
+    grp->parent = NULL;
+    grp->cleanFlag = 0;
 
 #if 0 /* Original ASM */
     __asm__ __volatile__ (
@@ -878,21 +916,24 @@ void GPGroup_Clean(const GPGroup * _this)
  */
 void GenericParser2_GenericParser2(const GenericParser2 * _this)
 {
+    /* GenericParser2 extends GPGroup with textPoolList and writeable */
+    GPGroup *grp = (GPGroup *)_this;
+    grp->name = str_0021e4f8; /* "Top Level" */
+    grp->nextUnsorted = NULL;
+    grp->sortedNext = NULL;
+    grp->sortedPrev = NULL;
+    grp->pairList = NULL;
+    grp->pairSorted = NULL;
+    grp->pairLast = NULL;
+    grp->subGroupList = NULL;
+    grp->subGroupSorted = NULL;
+    grp->subGroupLast = NULL;
+    grp->parent = NULL;
+    grp->cleanFlag = 0;
+    /* GenericParser2-specific fields (beyond GPGroup) */
     byte *self = (byte *)_this;
-    *(const char **)(self + 0x00) = str_0021e4f8; /* "Top Level" */
-    *(int *)(self + 0x04) = 0;
-    *(int *)(self + 0x08) = 0;
-    *(int *)(self + 0x0c) = 0;
-    *(int *)(self + 0x10) = 0;
-    *(int *)(self + 0x14) = 0;
-    *(int *)(self + 0x18) = 0;
-    *(int *)(self + 0x1c) = 0;
-    *(int *)(self + 0x20) = 0;
-    *(int *)(self + 0x24) = 0;
-    *(int *)(self + 0x28) = 0;
-    *(byte *)(self + 0x2c) = 0;
-    *(int *)(self + 0x30) = 0;
-    *(byte *)(self + 0x34) = 0;
+    *(void **)(self + 0x30) = NULL;  /* textPoolList */
+    *(byte *)(self + 0x34) = 0;     /* writeable */
 
 #if 0 /* Original ASM */
     __asm__ __volatile__ (
@@ -931,6 +972,7 @@ void GenericParser2_GenericParser2(const GenericParser2 * _this)
  */
 char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextPool * *poolPtr)
 {
+    /* TextPool layout: { char *data, TextPool *next, int capacity, int used } */
     byte *pool = (byte *)_this;
     int length;
     int extra;
@@ -940,20 +982,20 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
     extra = addNULL ? 1 : 0;
     length = strlen(text) + extra;
 
-    used = *(int *)(pool + 0x0c);
-    if (used + length + 1 <= *(int *)(pool + 0x08)) {
+    used = *(int *)(pool + 0x0c);   /* pool->used */
+    if (used + length + 1 <= *(int *)(pool + 0x08)) {  /* pool->capacity */
         /* Fits in current pool */
-        dest = *(char **)pool + used;
+        dest = *(char **)pool + used;  /* pool->data + used */
         strcpy(dest, text);
         used += length;
-        *(int *)(pool + 0x0c) = used;
+        *(int *)(pool + 0x0c) = used;  /* pool->used = used */
         /* Null terminate at end */
         (*(char **)pool)[used] = '\0';
         /* Return pointer to start of allocated text */
         return *(char **)pool + used - length;
     }
 
-    /* Doesn't fit — need a new pool */
+    /* Doesn't fit -- need a new pool */
     if (!poolPtr) {
         return NULL;
     }
@@ -964,23 +1006,23 @@ char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextP
         TextPool *prev;
         TextPool *newNode;
 
-        initSize = *(int *)(pool + 0x08);
+        initSize = *(int *)(pool + 0x08);  /* pool->capacity */
 
         /* Allocate new TextPool node (0x10 bytes) */
         newPool = (byte *)Z_MallocInternal(0x10);
 
         /* Initialize new pool */
-        *(void **)(newPool + 0x04) = NULL;
-        *(int *)(newPool + 0x08) = initSize;
-        *(int *)(newPool + 0x0c) = 0;
-        *(void **)newPool = Z_MallocInternal(initSize);
+        *(void **)(newPool + 0x04) = NULL;        /* newPool->next = NULL */
+        *(int *)(newPool + 0x08) = initSize;      /* newPool->capacity = initSize */
+        *(int *)(newPool + 0x0c) = 0;             /* newPool->used = 0 */
+        *(void **)newPool = Z_MallocInternal(initSize);  /* newPool->data */
 
         /* Link: current pool's next = newPool */
         prev = (TextPool *)(*poolPtr);
-        *(void **)((byte *)prev + 0x04) = (void *)newPool;
+        *(void **)((byte *)prev + 0x04) = (void *)newPool;  /* prev->next = newPool */
 
         /* Update poolPtr to point to new pool */
-        newNode = (TextPool *)(*(void **)((byte *)(*poolPtr) + 0x04));
+        newNode = (TextPool *)(*(void **)((byte *)(*poolPtr) + 0x04));  /* (*poolPtr)->next */
         *poolPtr = newNode;
 
         /* Recurse into new pool with no poolPtr (NULL) to avoid infinite recursion */
@@ -1112,24 +1154,30 @@ GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *
     newGroup = (byte *)Z_MallocInternal(0x30);
 
     /* Initialize: name at offset 0, rest zeroed */
-    *(const char **)(newGroup + 0x00) = allocName;
-    *(int *)(newGroup + 0x04) = 0;
-    *(int *)(newGroup + 0x08) = 0;
-    *(int *)(newGroup + 0x0c) = 0;
-    *(int *)(newGroup + 0x10) = 0;
-    *(int *)(newGroup + 0x14) = 0;
-    *(int *)(newGroup + 0x18) = 0;
-    *(int *)(newGroup + 0x1c) = 0;
-    *(int *)(newGroup + 0x20) = 0;
-    *(int *)(newGroup + 0x24) = 0;
-    *(int *)(newGroup + 0x28) = 0;
-    *(byte *)(newGroup + 0x2c) = 0;
+    {
+        GPGroup *ng = (GPGroup *)newGroup;
+        ng->name = allocName;
+        ng->nextUnsorted = NULL;
+        ng->sortedNext = NULL;
+        ng->sortedPrev = NULL;
+        ng->pairList = NULL;
+        ng->pairSorted = NULL;
+        ng->pairLast = NULL;
+        ng->subGroupList = NULL;
+        ng->subGroupSorted = NULL;
+        ng->subGroupLast = NULL;
+        ng->parent = NULL;
+        ng->cleanFlag = 0;
+    }
 
     /* Insert into sorted sub-group list */
-    GPGroup_SortObject(_this, (GPObject *)newGroup,
-                       (GPObject **)(self + 0x1c),
-                       (GPObject **)(self + 0x20),
-                       (GPObject **)(self + 0x24));
+    {
+        GPGroup *grp = (GPGroup *)_this;
+        GPGroup_SortObject(_this, (GPObject *)newGroup,
+                           (GPObject **)&grp->subGroupList,
+                           (GPObject **)&grp->subGroupSorted,
+                           (GPObject **)&grp->subGroupLast);
+    }
 
     return (GPGroup *)newGroup;
 
@@ -1218,36 +1266,37 @@ void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *t
         allocValue = TextPool_AllocText(*textPool, (char *)newValue, 1, textPool);
     }
 
-    head = *(byte **)(self + 0x10);
+    GPValue *gpv = (GPValue *)_this;
+    head = (byte *)gpv->valueList;
     if (head) {
-        /* Value list already exists — append new node */
+        /* Value list already exists -- append new node */
         newNode = (byte *)Z_MallocInternal(0x10);
-        *(const char **)(newNode + 0x00) = allocValue;
-        *(void **)(newNode + 0x04) = NULL;
-        *(void **)(newNode + 0x08) = NULL;
-        *(void **)(newNode + 0x0c) = NULL;
+        ((GPValue *)newNode)->name = allocValue;          /* offset 0x00 */
+        ((GPObject *)newNode)->next = NULL;               /* offset 0x04 */
+        ((GPObject *)newNode)->sortedNext = NULL;         /* offset 0x08 */
+        ((GPObject *)newNode)->sortedPrev = NULL;         /* offset 0x0c */
 
         /* Link: last->next = newNode */
         {
-            byte *lastNode = *(byte **)(head + 0x08); /* head's "last" pointer */
-            *(void **)(lastNode + 0x04) = newNode;
+            byte *lastNode = (byte *)((GPObject *)head)->sortedNext; /* head's "last" pointer at 0x08 */
+            ((GPObject *)lastNode)->next = (GPObject *)newNode;
         }
 
         /* Update head's "last" pointer to point to newNode */
         {
-            byte *lastNode = *(byte **)(head + 0x08);
-            byte *nextOfLast = *(byte **)(lastNode + 0x04);
-            *(byte **)(head + 0x08) = nextOfLast;
+            byte *lastNode = (byte *)((GPObject *)head)->sortedNext;
+            byte *nextOfLast = (byte *)((GPObject *)lastNode)->next;
+            ((GPObject *)head)->sortedNext = (GPObject *)nextOfLast;
         }
     } else {
-        /* First value — create head node */
+        /* First value -- create head node */
         newNode = (byte *)Z_MallocInternal(0x10);
-        *(const char **)(newNode + 0x00) = allocValue;
-        *(void **)(newNode + 0x04) = NULL;
-        *(void **)(newNode + 0x0c) = NULL;
-        *(byte **)(self + 0x10) = newNode;
+        ((GPValue *)newNode)->name = allocValue;          /* offset 0x00 */
+        ((GPObject *)newNode)->next = NULL;               /* offset 0x04 */
+        ((GPObject *)newNode)->sortedPrev = NULL;         /* offset 0x0c */
+        gpv->valueList = (GPValue *)newNode;              /* offset 0x10 */
         /* Head's "last" pointer points to itself */
-        *(byte **)(newNode + 0x08) = newNode;
+        ((GPObject *)newNode)->sortedNext = (GPObject *)newNode; /* offset 0x08 */
     }
 
 #if 0 /* Original ASM */
@@ -1337,11 +1386,14 @@ GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *v
 
     /* Allocate new GPValue (0x14 bytes) */
     newPair = (byte *)Z_MallocInternal(0x14);
-    *(const char **)(newPair + 0x00) = allocName;
-    *(int *)(newPair + 0x04) = 0;
-    *(int *)(newPair + 0x08) = 0;
-    *(int *)(newPair + 0x0c) = 0;
-    *(int *)(newPair + 0x10) = 0;
+    {
+        GPValue *np = (GPValue *)newPair;
+        np->name = allocName;        /* offset 0x00 */
+        ((GPObject *)np)->next = NULL;       /* offset 0x04 */
+        ((GPObject *)np)->sortedNext = NULL;  /* offset 0x08 */
+        ((GPObject *)np)->sortedPrev = NULL;  /* offset 0x0c */
+        np->valueList = NULL;        /* offset 0x10 */
+    }
 
     /* Add the value if present */
     if (allocValue) {
@@ -1349,10 +1401,13 @@ GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *v
     }
 
     /* Insert into sorted pair list */
-    GPGroup_SortObject(_this, (GPObject *)newPair,
-                       (GPObject **)(self + 0x10),
-                       (GPObject **)(self + 0x14),
-                       (GPObject **)(self + 0x18));
+    {
+        GPGroup *grp = (GPGroup *)_this;
+        GPGroup_SortObject(_this, (GPObject *)newPair,
+                           (GPObject **)&grp->pairList,
+                           (GPObject **)&grp->pairSorted,
+                           (GPObject **)&grp->pairLast);
+    }
 
     return (GPValue *)newPair;
 
@@ -1443,17 +1498,17 @@ static void GenericParser2_Destroy(byte *self)
     GPGroup_Clean((const GPGroup *)self);
 
     /* Free all text pools */
-    pool = *(byte **)(self + 0x30);
+    pool = *(byte **)(self + 0x30);   /* textPoolList */
     while (pool) {
         next = *(byte **)(pool + 0x04); /* pool->next */
         /* Free pool data buffer */
-        Z_FreeInternal(*(void **)pool);
+        Z_FreeInternal(*(void **)pool); /* pool->data */
         /* Free pool node */
         Z_FreeInternal(pool);
         pool = next;
     }
 
-    *(void **)(self + 0x30) = NULL;
+    *(void **)(self + 0x30) = NULL;   /* textPoolList = NULL */
 
     /* Clean again (tail call in original) */
     GPGroup_Clean((const GPGroup *)self);
@@ -1584,7 +1639,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         if (tok[0] == '\0') {
             /* End of data */
             /* If this->field_0x28 (parent) is non-null, we hit EOF inside a group = error */
-            if (*(void **)(self + 0x28) != NULL) {
+            if (((GPGroup *)_this)->parent != NULL) {
                 return 0;
             }
             return 1;
@@ -1606,7 +1661,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
             GPGroup *newGroup;
             newGroup = GPGroup_AddGroup(_this, lastToken, textPool);
             /* Copy writeable flag from parent */
-            *(byte *)((byte *)newGroup + 0x2c) = *(byte *)(self + 0x2c);
+            ((GPGroup *)newGroup)->cleanFlag = ((GPGroup *)_this)->cleanFlag;
             /* Recursively parse sub-group */
             if (!GPGroup_Parse((const GPGroup *)newGroup, dataPtr, textPool)) {
                 return 0;
@@ -1802,33 +1857,33 @@ Bool GenericParser2_Parse(const GenericParser2 * _this, char * *dataPtr, int cle
 
         /* Free all text pools */
         {
-            byte *pool = *(byte **)(self + 0x30);
+            byte *pool = *(byte **)(self + 0x30);  /* textPoolList */
             while (pool) {
-                byte *next = *(byte **)(pool + 0x04);
-                Z_FreeInternal(*(void **)pool);
+                byte *next = *(byte **)(pool + 0x04);  /* pool->next */
+                Z_FreeInternal(*(void **)pool);  /* pool->data */
                 Z_FreeInternal(pool);
                 pool = next;
             }
-            *(void **)(self + 0x30) = NULL;
+            *(void **)(self + 0x30) = NULL;  /* textPoolList = NULL */
         }
     }
 
     /* Ensure a text pool exists */
-    if (*(void **)(self + 0x30) == NULL) {
+    if (*(void **)(self + 0x30) == NULL) {  /* textPoolList == NULL */
         byte *newPool = (byte *)Z_MallocInternal(0x10);
-        *(void **)(newPool + 0x04) = NULL;
-        *(int *)(newPool + 0x08) = 0x2800;
-        *(int *)(newPool + 0x0c) = 0;
-        *(void **)newPool = Z_MallocInternal(0x2800);
-        *(void **)(self + 0x30) = newPool;
+        *(void **)(newPool + 0x04) = NULL;        /* newPool->next = NULL */
+        *(int *)(newPool + 0x08) = 0x2800;        /* newPool->capacity = 10240 */
+        *(int *)(newPool + 0x0c) = 0;             /* newPool->used = 0 */
+        *(void **)newPool = Z_MallocInternal(0x2800);  /* newPool->data */
+        *(void **)(self + 0x30) = newPool;  /* textPoolList = newPool */
     }
 
     /* Set writeable flags */
-    *(byte *)(self + 0x34) = (byte)writeable;
-    *(byte *)(self + 0x2c) = (byte)writeable;
+    *(byte *)(self + 0x34) = (byte)writeable;  /* GenericParser2.writeable */
+    ((GPGroup *)_this)->cleanFlag = (byte)writeable;
 
     /* Parse using the top pool */
-    topPool = *(TextPool **)(self + 0x30);
+    topPool = *(TextPool **)(self + 0x30);  /* textPoolList */
     return (Bool)GPGroup_Parse((const GPGroup *)self, dataPtr, &topPool);
 
 #if 0 /* Original ASM */

@@ -78,8 +78,8 @@ extern byte g_entities_ptr[];    /* imp_g_entities */
 extern byte *entityHandlers_ptr; /* imp_entityHandlers */
 
 /* level_ptr field access */
-#define LEVEL_TIME          (*(int *)(level_ptr + 0x1EC))
-#define LEVEL_PREVIOUSTIME  (*(int *)(level_ptr + 0x1F0))
+#define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
+#define LEVEL_PREVIOUSTIME  (((level_locals_t *)level_ptr)->previousTime)
 
 /* Handler table access: each entry is 40 bytes */
 #define HANDLER_ENTRY(h)    (entityHandlers_ptr + (h) * 40)
@@ -185,7 +185,7 @@ static void trigger_use_shared(gentity_t *ent)
     /* line 536 */
     SV_LinkEntity(ent);
     /* line 538 - set spawnflags area to ENTITYNUM_NONE */
-    *(int *)((byte *)ent + 0x1b4) = 0x3ff;
+    ent->tagInfo = 0x3ff;
     /* line 539 */
     ENT_POS_TRTYPE(ent) = 0;
     /* line 540 - VectorCopy(currentOrigin, pos.trBase) */
@@ -407,7 +407,7 @@ advance_fy_done:
         /* line 185: add amove[1] * 182.044... to client delta yaw */
         int deltaYaw = (int)(amove[1] * 182.04444885253906f);
         deltaYaw &= 0xffff;
-        *(int *)(client + 0x58) += deltaYaw;
+        ((gclient_t *)client)->ps.delta_angles[1] += deltaYaw;
 
         /* line 186: copy origin to client origin */
         client = ENT_CLIENT(check);
@@ -433,7 +433,7 @@ try_push_success:
     if (client != NULL) {
         int deltaYaw = (int)(amove[1] * 182.04444885253906f);
         deltaYaw &= 0xffff;
-        *(int *)(client + 0x58) += deltaYaw;
+        ((gclient_t *)client)->ps.delta_angles[1] += deltaYaw;
 
         client = ENT_CLIENT(check);
         VectorCopy(org2, (vec_t *)(client + 0x14));
@@ -673,7 +673,7 @@ skip_entity:
                 /* line 455: undo deltayaw */
                 int deltaYaw = (int)(p->deltayaw * 182.04444885253906f);
                 deltaYaw &= 0xffff;
-                *(int *)(client + 0x58) -= deltaYaw;
+                ((gclient_t *)client)->ps.delta_angles[1] -= deltaYaw;
 
                 /* line 456: restore client origin */
                 client = ENT_CLIENT(checkEnt);

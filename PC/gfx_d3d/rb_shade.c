@@ -69,15 +69,15 @@ void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, i
     char *tess = RB_TessBase();
     g_begin_surface_calls++;
     g_tess_since_begin = 0;
-    *(int *)(tess + 0x5a7cc) = 0;
-    *(int *)(tess + 0x5a7b8) = 0;
-    *(int *)(tess + 0x5a7d0) = 0;
-    *(int *)(tess + 0x5a7d4) = 0;
+    *(int *)(tess + 0x5a7cc) = 0; /* tess.vertDeclType */
+    *(int *)(tess + 0x5a7b8) = 0; /* tess.optimizedVertexSource */
+    *(int *)(tess + 0x5a7d0) = 0; /* tess.indexCount */
+    *(int *)(tess + 0x5a7d4) = 0; /* tess.vertexCount */
     *(int *)(tess + 0x5a7d8) = 0;
     *(int *)(tess + 0x5a7dc) = 0;
-    *(const Material **)(tess + 0x5a7bc) = material;
-    *(MaterialTechniqueType *)(tess + 0x5a7c0) = techType;
-    *(int *)(tess + 0x5a7c4) = lmapIndex;
+    *(const Material **)(tess + 0x5a7bc) = material; /* tess.material */
+    *(MaterialTechniqueType *)(tess + 0x5a7c0) = techType; /* tess.techType */
+    *(int *)(tess + 0x5a7c4) = lmapIndex; /* tess.lmapIndex */
 }
 
 /* line 132 */
@@ -143,12 +143,12 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
 
 static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samplerState)
 {
-    char *rgp = (char *)imp_rgp;
+    r_global_permanent_t *rgp = (r_global_permanent_t *)imp_rgp;
     char *tess;
     char *backEnd = (char *)imp_backEnd;
     char *dx = (char *)imp_dx;
     int lmapIdx;
-    char *drawSurfs;
+    GfxWorld *world;
     int idx;
 
     switch (codeTexture) {
@@ -158,42 +158,42 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
         return;
 
     case 0: /* white image */
-        *image = *(void **)(rgp + 0x100c);
+        *image = rgp->blackImage; /* NOTE: struct field names may be swapped in common_types.h; offset 0x100c */
         *samplerState = 1;
         return;
 
     case 1: /* black image */
-        *image = *(void **)(rgp + 0x1008);
+        *image = rgp->whiteImage; /* NOTE: struct field names may be swapped in common_types.h; offset 0x1008 */
         *samplerState = 1;
         return;
 
     case 2:
-        *image = *(void **)(rgp + 0x1010);
+        *image = rgp->identityNormalMapImage;
         *samplerState = 1;
         return;
 
     case 3:
-        *image = *(void **)(rgp + 0x1014);
+        *image = rgp->specularityImage;
         *samplerState = 0x32;
         return;
 
     case 4: { /* smodelLighting */
-        char *surfs = *(char **)(rgp + 0x109c);
-        if (!surfs || !*(void **)(surfs + 0x10c))
+        GfxWorld *w = rgp->world;
+        if (!w || !w->smodelLightingImage)
             Com_Error(1, str_002266cc);
-        *image = *(void **)((char *)*(char **)(rgp + 0x109c) + 0x10c);
+        *image = rgp->world->smodelLightingImage;
         *samplerState = 0x72;
         return;
     }
 
     case 5:
     case 6:
-        *image = *(void **)(rgp + 0x1008 + codeTexture * 4);
+        *image = *(&rgp->whiteImage + codeTexture);
         *samplerState = 0x32;
         return;
 
     case 7:
-        *image = *(void **)(rgp + 0x1018);
+        *image = rgp->lightmapWeightsImage;
         *samplerState = 0x32;
         return;
 
@@ -209,17 +209,17 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
             tess = (char *)imp_tess;
             lmapIdx = *(int *)(tess + 0x5a7c4);
         }
-        drawSurfs = *(char **)(rgp + 0x109c);
-        *image = *(void **)(*(char **)(drawSurfs + 0x108) + lmapIdx * 16 + codeTexture * 4 - 0x20);
+        world = rgp->world;
+        *image = *(void **)((char *)world->lightmaps + lmapIdx * 16 + codeTexture * 4 - 0x20);
         *samplerState = 0x32;
         /* r_lightMap debug mode override */
         {
             int mode = *(int *)((char *)*(void **)imp_r_lightMap + 8);
             if (mode == 1) {
-                *image = *(void **)(rgp + 0x1008);
+                *image = rgp->whiteImage;
                 *samplerState = 1;
             } else if (mode == 2) {
-                *image = *(void **)(rgp + 0x100c);
+                *image = rgp->blackImage;
                 *samplerState = 1;
             }
         }
@@ -249,12 +249,12 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
         return;
 
     case 16: { /* sky sampler */
-        drawSurfs = *(char **)(rgp + 0x109c);
-        if (!drawSurfs || !*(void **)(drawSurfs + 0x20))
+        world = rgp->world;
+        if (!world || !world->skyImage)
             R_Error(1, str_00226828);
-        drawSurfs = *(char **)(rgp + 0x109c);
-        *image = *(void **)(drawSurfs + 0x20);
-        *samplerState = *(byte *)(drawSurfs + 0x24);
+        world = rgp->world;
+        *image = world->skyImage;
+        *samplerState = world->skySamplerState;
         return;
     }
 
@@ -282,16 +282,16 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
                 return;
             }
         }
-        *image = *(void **)(rgp + 0x1008);
+        *image = rgp->whiteImage;
         *samplerState = 0x32;
         return;
     }
 
     case 20: { /* outdoor sampler */
-        drawSurfs = *(char **)(rgp + 0x109c);
-        if (!drawSurfs || !*(void **)(drawSurfs + 0x200))
+        world = rgp->world;
+        if (!world || !world->outdoorImage)
             R_Error(1, str_002267f4);
-        *image = *(void **)((char *)*(char **)(rgp + 0x109c) + 0x200);
+        *image = rgp->world->outdoorImage;
         *samplerState = 0x32;
         return;
     }
@@ -302,12 +302,12 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
         return;
 
     case 22:
-        *image = *(void **)(rgp + 0x10a0);
+        *image = rgp->sunHalfAngleImage;
         *samplerState = 0x32;
         return;
 
     case 23:
-        *image = *(void **)(rgp + 0x10a4);
+        *image = rgp->waterColorImage;
         *samplerState = 0x32;
         return;
     }
@@ -349,7 +349,7 @@ static void RB_SetEntityHwLightsDx7_impl(vec4_t *colorForDir, float sunVisibilit
     void **vtable;
     int i;
 
-    material = *(const Material **)((char *)imp_tess + 0x5a7bc);
+    material = *(const Material **)((char *)imp_tess + 0x5a7bc); /* tess.material */
     lightCount = RB_DeriveEntityLights(colorForDir, sunVisibility, material, lights, 8);
 
     /* Enable and configure each active light */
@@ -407,10 +407,10 @@ void RB_SetEntityHwLightsDx7(void)
 /* line 1785 */
 void RB_CreateDynamicBuffers(void)
 {
-    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc);
+    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc); /* ri.Hunk_Alloc */
     byte *t = (byte *)imp_tess;
-    *(void **)(t + 0x5a7b0) = hunkAlloc(0x200000);
-    *(void **)(t + 0x5a7b4) = hunkAlloc(0x200000);
+    *(void **)(t + 0x5a7b0) = hunkAlloc(0x200000); /* tess.indexBuffer */
+    *(void **)(t + 0x5a7b4) = hunkAlloc(0x200000); /* tess.vertexBuffer */
 }
 
 /* line 1500 */
@@ -484,16 +484,16 @@ static void RB_SetupLighting_impl(void)
         entity = *(char **)(backEnd + 0x440);
         if (*(int *)entity == 2) {
             /* Static model: copy light grid dir and entity origin */
-            char *smodel = *(char **)((char *)imp_rgp + 0x109c);
+            GfxWorld *world = ((r_global_permanent_t *)imp_rgp)->world;
 
-            *(float *)(backEnd + 0x190) = *(float *)(smodel + 0x110);
-            *(float *)(backEnd + 0x194) = *(float *)(smodel + 0x114);
-            *(float *)(backEnd + 0x198) = *(float *)(smodel + 0x118);
+            *(float *)(backEnd + 0x190) = world->smodelLightingLookupScale[0];
+            *(float *)(backEnd + 0x194) = world->smodelLightingLookupScale[1];
+            *(float *)(backEnd + 0x198) = world->smodelLightingLookupScale[2];
             *(float *)(backEnd + 0x19c) = 0.0f;
 
-            *(float *)(backEnd + 0x180) = *(float *)(entity + 0x08);
-            *(float *)(backEnd + 0x184) = *(float *)(entity + 0x0c);
-            *(float *)(backEnd + 0x188) = *(float *)(entity + 0x10);
+            *(float *)(backEnd + 0x180) = ((GfxEntity *)entity)->lighting.origin[0];
+            *(float *)(backEnd + 0x184) = ((GfxEntity *)entity)->lighting.origin[1];
+            *(float *)(backEnd + 0x188) = ((GfxEntity *)entity)->lighting.origin[2];
             *(float *)(backEnd + 0x18c) = 0.0f;
         }
     }
@@ -1354,7 +1354,7 @@ static const float *RB_GetCodeMatrix_impl(int source, int firstRow)
         if (!*(byte *)(codeMatrix + 0x100)) {
             const float *worldMat = RB_GetCodeMatrix_impl(0xBC, 0);
             const float *viewProj = RB_GetCodeMatrix_impl(0xC1, 0); /* ViewProjection w/ some variant */
-            char *rgp = (char *)imp_rgp;
+            GfxWorld *world = ((r_global_permanent_t *)imp_rgp)->world;
             int awayBias = *(int *)(*(char **)imp_r_outdoorAwayBias + 8);
             float downBias = *(float *)(*(char **)imp_r_outdoorDownBias + 8);
             /* Build bias direction vector: (0, 0, -awayBias, 0) */
@@ -1365,10 +1365,10 @@ static const float *RB_GetCodeMatrix_impl(int source, int firstRow)
             biasWorld[1] += downBias;
             /* Transform through outdoor lookup matrix */
             MatrixTransformVector44(biasWorld,
-                (char *)*(void **)(rgp + 0x109c) + 0x1c0, biasResult);
+                world->outdoorLookupMatrix, biasResult);
             /* Compute outdoor matrix = world * outdoorLookup */
             MatrixMultiply44(worldMat,
-                (char *)*(void **)(rgp + 0x109c) + 0x1c0, codeMatrix);
+                world->outdoorLookupMatrix, codeMatrix);
             /* Add bias to translation row */
             *(float *)(am + 0xbf0 + 0) += biasResult[0];
             *(float *)(am + 0xbf0 + 4) += biasResult[1];
@@ -4056,8 +4056,7 @@ void RB_EndSurface(void)
         if (*(int *)(tess + 0x5a7b8) == 1) {
             /* VERTDECL_WORLD: vertex data in world vertex buffer */
             vertexStride = isDx7 ? 0x20 : 0x44;
-            vb = *(IDirect3DVertexBuffer9 **)
-                ((char *)*(void **)((char *)imp_rgp + 0x109c) + 0x30);
+            vb = ((r_global_permanent_t *)imp_rgp)->world->vd.worldVb;
             cachedVertDeclType = 1; /* VERTDECL_WORLD */
         } else {
             /* VERTDECL_STATICMODELCACHE: vertex data in static model cache VB */
@@ -4134,18 +4133,18 @@ void RB_EndSurface(void)
      * We fix this by pre-binding the correct texture here. */
     {
 #define RB_GL_TEXTURE_2D 0x0DE1
-        const Material *mat = *(const Material **)(tess + 0x5a7bc);
+        const Material *mat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
 
         if (mat) {
-            int texCount = *(unsigned short *)((byte *)mat + 0x34);
-            byte *textures = *(byte **)((byte *)mat + 0x3c);
+            int texCount = mat->textureCount;
+            byte *textures = (byte *)mat->textures;
             if (texCount > 0 && textures) {
                 /* MaterialTextureDef is 0xc bytes; image pointer at +0x08 */
                 byte *texEntry = textures; /* textures[0] */
                 void *image = *(void **)(texEntry + 8); /* GfxImage* from union u */
                 if (image) {
-                    /* GfxImage: texture union (IDirect3DBaseTexture9*) at +0x04 */
-                    void *d3dTexture = *(void **)((byte *)image + 4);
+                    /* GfxImage: texture union (IDirect3DBaseTexture9*) */
+                    void *d3dTexture = ((GfxImage *)image)->texture.basemap;
                     if (d3dTexture) {
                         /* Call SetTexture on D3D device (vtable[0x104/4] = vtable[65]) */
                         void *device = *(void **)((byte *)imp_dx + 8);
@@ -4285,10 +4284,10 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
     void **vtable = *(void ***)device;
     volatile int *alwaysfails = (volatile int *)imp_alwaysfails;
 
-    /* Set pixel shader (pass+0xc -> programData -> pixelShader at offset 0xc) */
+    /* Set pixel shader (pass->pixelShader -> shader ptr) */
     {
-        byte *programData = *(byte **)(pass + 0xc);
-        void *pixelShader = *(void **)(programData + 0xc);
+        MaterialShader *psShader = ((MaterialPassDx9 *)pass)->pixelShader;
+        void *pixelShader = (void *)psShader->u.ps;
 
         if (pixelShader != *(void **)(dxState + 0x2138)) {
             do {
@@ -4300,10 +4299,10 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         }
     }
 
-    /* Set vertex shader (pass+0x8 -> programData -> vertexShader at offset 0xc) */
+    /* Set vertex shader (pass->vertexShader -> shader ptr) */
     {
-        byte *programData = *(byte **)(pass + 0x8);
-        void *vertexShader = *(void **)(programData + 0xc);
+        MaterialShader *vsShader = ((MaterialPassDx9 *)pass)->vertexShader;
+        void *vertexShader = (void *)vsShader->u.vs;
 
         if (vertexShader != *(void **)(dxState + 0x213c)) {
             do {
@@ -4315,9 +4314,9 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         }
     }
 
-    /* Set vertex declaration (pass+0x4 -> declArray -> decl at [vertDeclType] offset 8) */
+    /* Set vertex declaration (pass->vertexDecl -> decl at [vertDeclType] offset 8) */
     {
-        byte *declArray = *(byte **)(pass + 0x4);
+        byte *declArray = (byte *)((MaterialPassDx9 *)pass)->vertexDecl;
         void *decl = *(void **)(declArray + 8 + vertDeclType * 4);
 
         if (decl != *(void **)(dxState + 0x2140)) {
@@ -4414,7 +4413,10 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             byte *stateMap;
 
             tess = RB_TessBase();
-            refStateBits = (byte *)(*(byte **)(tess + 0x5a7bc)) + 0x2c;
+            {
+                const Material *tessMat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                refStateBits = (byte *)tessMat->stateBits;
+            }
             stateMap = *(byte **)(pass + 8);
 
             /* Evaluate state map */
@@ -4450,7 +4452,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     }
 
                     if (!matched) {
-                        const Material *mat2 = *(const Material **)(RB_TessBase() + 0x5a7bc);
+                        const Material *mat2 = *(const Material **)(RB_TessBase() + 0x5a7bc); /* tess.material */
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
                             *(char **)stateMap, rsi, mat2->info.name);
                     }
@@ -4625,14 +4627,14 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
             /* Check that vertex type supports this shader */
             {
-                byte *declArray = *(byte **)(pass + 4);
-                void *decl = *(void **)(declArray + 8 + vertDeclType * 4);
+                MaterialVertexDeclaration *declArray = ((MaterialPassDx9 *)pass)->vertexDecl;
+                void *decl = declArray->decl[vertDeclType];
                 if (!decl) {
                     tess = RB_TessBase();
-                    const Material *mat3 = *(const Material **)(tess + 0x5a7bc);
-                    byte *pgm = *(byte **)(pass + 8);
+                    const Material *mat3 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                    MaterialShader *pgm = ((MaterialPassDx9 *)pass)->vertexShader;
                     R_Error(0, "Vertex type %i doesn't have the information used by shader %",
-                        vertDeclType, *(char **)pgm, mat3->info.name);
+                        vertDeclType, pgm->name, mat3->info.name);
                     tess = RB_TessBase();
                     continue;
                 }
@@ -4640,8 +4642,11 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
             /* Get material refStateBits and stateMap */
             tess = RB_TessBase();
-            refStateBits = (byte *)(*(byte **)(tess + 0x5a7bc)) + 0x2c;
-            stateMap = *(byte **)(pass + 8);
+            {
+                const Material *tessMat = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                refStateBits = (byte *)tessMat->stateBits;
+            }
+            stateMap = (byte *)((MaterialPassDx9 *)pass)->stateMap;
 
             /* Evaluate state bits from state map rule sets */
             stateBits[0] = *(int *)(refStateBits + 0);
@@ -4675,7 +4680,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     }
 
                     if (!matched) {
-                        const Material *mat4 = *(const Material **)(RB_TessBase() + 0x5a7bc);
+                        const Material *mat4 = *(const Material **)(RB_TessBase() + 0x5a7bc); /* tess.material */
                         R_Error(0, "No rule in stateMap '%s' rule set %i matched the current mat",
                             *(char **)stateMap, rsi, mat4->info.name);
                     }
@@ -4715,8 +4720,8 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             RB_SetShaderAndDecl(pass, vertDeclType, dxState);
 
             /* Process texture routing entries */
-            textureRoutingCount = *(unsigned short *)(pass + 0x10);
-            textureRouting = *(byte **)(pass + 0x14);
+            textureRoutingCount = ((MaterialPassDx9 *)pass)->vertexArgCount;
+            textureRouting = (byte *)((MaterialPassDx9 *)pass)->vertexArgs;
 
             {
                 int routingIndex;
@@ -4787,9 +4792,9 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         /* Find constant in material's constant table */
                         {
                             tess = RB_TessBase();
-                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc);
-                            int constCount = *(unsigned short *)((byte *)mat5 + 0x36);
-                            byte *consts = *(byte **)((byte *)mat5 + 0x40);
+                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            int constCount = mat5->constantCount;
+                            byte *consts = (byte *)mat5->constants;
                             int ci;
                             for (ci = 0; ci < constCount; ci++) {
                                 if (*(int *)(consts + ci * 0x14) == literalName) {
@@ -4823,8 +4828,8 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             }
 
             /* Process constant routing entries */
-            constantRoutingCount = *(unsigned short *)(pass + 0x12);
-            constantRouting = *(byte **)(pass + 0x18);
+            constantRoutingCount = ((MaterialPassDx9 *)pass)->pixelArgCount;
+            constantRouting = (byte *)((MaterialPassDx9 *)pass)->pixelArgs;
 
             {
                 int routingIndex;
@@ -4890,9 +4895,9 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
                         {
                             tess = RB_TessBase();
-                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc);
-                            int constCount = *(unsigned short *)((byte *)mat5 + 0x36);
-                            byte *consts = *(byte **)((byte *)mat5 + 0x40);
+                            const Material *mat5 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            int constCount = mat5->constantCount;
+                            byte *consts = (byte *)mat5->constants;
                             int ci;
                             for (ci = 0; ci < constCount; ci++) {
                                 if (*(int *)(consts + ci * 0x14) == literalName) {
@@ -4940,24 +4945,23 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         /* Find texture in material's texture table */
                         {
                             tess = RB_TessBase();
-                            const Material *mat6 = *(const Material **)(tess + 0x5a7bc);
-                            int texCount = *(unsigned short *)((byte *)mat6 + 0x34);
-                            byte *textures = *(byte **)((byte *)mat6 + 0x3c);
+                            const Material *mat6 = *(const Material **)(tess + 0x5a7bc); /* tess.material */
+                            int texCount = mat6->textureCount;
+                            MaterialTextureDef *textures = mat6->textures;
                             int ti;
                             for (ti = 0; ti < texCount; ti++) {
-                                byte *texEntry = textures + ti * 0xc;
-                                if (*(int *)texEntry == textureName) {
-                                    /* Check semantic (offset +5) */
-                                    byte semantic = texEntry[5];
+                                MaterialTextureDef *texDef = &textures[ti];
+                                if (*(int *)texDef == textureName) {
+                                    /* Check semantic */
+                                    byte semantic = texDef->semantic;
                                     if (semantic == 5) {
                                         /* Water texture */
-                                        void *img = *(void **)(texEntry + 8);
-                                        void *water = *(void **)(*(byte **)(texEntry + 8) + 0x1c);
-                                        image = *(void **)(water + 0x40);
+                                        MaterialWaterDef *water = texDef->u.water;
+                                        image = water->map->image;
                                     } else {
-                                        image = *(void **)(texEntry + 8);
+                                        image = texDef->u.image;
                                     }
-                                    samplerState = texEntry[4];
+                                    samplerState = texDef->samplerState;
 
                                     /* Check for colorMap/specularMap/normalMap override (semantic 3 at image+0) */
                                     if (image && *(int *)image == 3) {

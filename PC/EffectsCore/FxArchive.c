@@ -45,25 +45,27 @@ void FxArchive_ArchiveFxGfxEntity(const FxArchive * _this, FxGfxEntity *entity);
 /* line 22 */
 void FxArchive_FxArchive(const FxArchive * _this)
 {
-    *(int *)((byte *)_this + 0) = 0;
-    *(char *)((byte *)_this + 4) = 0;
-    *(char *)((byte *)_this + 5) = 0;
-    *(int *)((byte *)_this + 8) = 0;
-    *(int *)((byte *)_this + 0x14) = 0;
-    *(int *)((byte *)_this + 0xc) = 0;
-    *(int *)((byte *)_this + 0x10) = 0;
+    byte *arch = (byte *)_this;
+    *(MemoryFile **)(arch + 0x00) = NULL;    /* memFile */
+    *(char *)(arch + 0x04) = 0;              /* isReading */
+    *(char *)(arch + 0x05) = 0;              /* unused flag */
+    *(int *)(arch + 0x08) = 0;               /* byteCounter */
+    *(int *)(arch + 0x14) = 0;               /* startPos */
+    *(int *)(arch + 0x0c) = 0;               /* repeatCount */
+    *(int *)(arch + 0x10) = 0;               /* zeroCount */
 }
 
 /* line 35 */
 void FxArchive_BeginReading(const FxArchive * _this, MemoryFile *memFile)
 {
-    *(MemoryFile **)((byte *)_this + 0) = memFile;
-    *(char *)((byte *)_this + 4) = 1;
-    *(char *)((byte *)_this + 5) = 0;
-    *(int *)((byte *)_this + 8) = 0;
-    *(int *)((byte *)_this + 0x14) = *(int *)((byte *)memFile + 8);
-    *(int *)((byte *)_this + 0xc) = 0;
-    *(int *)((byte *)_this + 0x10) = 0;
+    byte *arch = (byte *)_this;
+    *(MemoryFile **)(arch + 0x00) = memFile;          /* memFile */
+    *(char *)(arch + 0x04) = 1;                       /* isReading = true */
+    *(char *)(arch + 0x05) = 0;                       /* unused flag */
+    *(int *)(arch + 0x08) = 0;                        /* byteCounter */
+    *(int *)(arch + 0x14) = *(int *)((byte *)memFile + 8); /* startPos = memFile->bytesUsed */
+    *(int *)(arch + 0x0c) = 0;                        /* repeatCount */
+    *(int *)(arch + 0x10) = 0;                        /* zeroCount */
 }
 
 /*
@@ -79,20 +81,20 @@ static void FxArchive_DecodeControlByte(const FxArchive *_this, unsigned char va
     int bits = value & 0xC0;
     switch (bits) {
     case 0x00:
-        *(int *)((byte *)_this + 0xc) = 1;
-        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1;
+        *(int *)((byte *)_this + 0x0c) = 1;              /* repeatCount = 1 */
+        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1; /* zeroCount */
         break;
     case 0x40:
-        *(int *)((byte *)_this + 0xc) = 2;
-        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1;
+        *(int *)((byte *)_this + 0x0c) = 2;              /* repeatCount = 2 */
+        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1; /* zeroCount */
         break;
     case 0x80:
-        *(int *)((byte *)_this + 0xc) = 4;
-        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1;
+        *(int *)((byte *)_this + 0x0c) = 4;              /* repeatCount = 4 */
+        *(int *)((byte *)_this + 0x10) = (value & 0x3f) + 1; /* zeroCount */
         break;
     default: /* 0xC0 */
-        *(int *)((byte *)_this + 0xc) = (value & 0x3f) + 1;
-        *(int *)((byte *)_this + 0x10) = 0;
+        *(int *)((byte *)_this + 0x0c) = (value & 0x3f) + 1; /* repeatCount */
+        *(int *)((byte *)_this + 0x10) = 0;               /* zeroCount = 0 */
         break;
     }
 }
@@ -105,16 +107,16 @@ void FxArchive_ReadData(const FxArchive * _this, void *p, int byteCount)
     unsigned char value;
     int offset;
 
-    *(int *)((byte *)_this + 8) += byteCount; /* line 132 */
+    *(int *)((byte *)_this + 0x08) += byteCount; /* byteCounter += byteCount */
     data = (byte *)p;
 
     remaining = byteCount;
     while (remaining > 0) {
         /* Check repeatCount */
-        if (*(int *)((byte *)_this + 0xc) != 0) {
+        if (*(int *)((byte *)_this + 0x0c) != 0) { /* repeatCount != 0 */
             /* Decrement repeatCount, read one real byte from the MemFile */
-            *(int *)((byte *)_this + 0xc) -= 1; /* line 139 */
-            MemFile_ReadData(*(MemoryFile **)((byte *)_this + 0), 1, &value);
+            *(int *)((byte *)_this + 0x0c) -= 1; /* repeatCount-- */
+            MemFile_ReadData(*(MemoryFile **)((byte *)_this + 0x00), 1, &value); /* memFile */
             *data++ = value; /* line 141 */
             remaining--;
             continue;
@@ -122,8 +124,8 @@ void FxArchive_ReadData(const FxArchive * _this, void *p, int byteCount)
 
         /* repeatCount is 0 -- fill zeros from zeroCount */
         offset = 0;
-        while (*(int *)((byte *)_this + 0x10) != 0 && offset < remaining) {
-            *(int *)((byte *)_this + 0x10) -= 1; /* line 147 */
+        while (*(int *)((byte *)_this + 0x10) != 0 && offset < remaining) { /* zeroCount != 0 */
+            *(int *)((byte *)_this + 0x10) -= 1; /* zeroCount-- */
             *data++ = 0; /* line 149 */
             offset++;
         }
@@ -133,7 +135,7 @@ void FxArchive_ReadData(const FxArchive * _this, void *p, int byteCount)
             break;
 
         /* Need a new control byte */
-        MemFile_ReadData(*(MemoryFile **)((byte *)_this + 0), 1, &value);
+        MemFile_ReadData(*(MemoryFile **)((byte *)_this + 0x00), 1, &value); /* memFile */
         FxArchive_DecodeControlByte(_this, value);
     }
 }
@@ -266,12 +268,12 @@ void FxArchive_WriteData(const FxArchive * _this, const void *p, int byteCount)
     const byte *data;
     int i;
 
-    *(int *)((byte *)_this + 8) += byteCount; /* line 247 */
+    *(int *)((byte *)_this + 0x08) += byteCount; /* byteCounter += byteCount */
     data = (const byte *)p;
-    memFile = *(MemoryFile **)((byte *)_this + 0);
+    memFile = *(MemoryFile **)((byte *)_this + 0x00); /* memFile */
 
     /* Check if startPos matches memFile->bytesUsed */
-    if (*(int *)((byte *)_this + 0x14) == *(int *)((byte *)memFile + 8)) {
+    if (*(int *)((byte *)_this + 0x14) == *(int *)((byte *)memFile + 8)) { /* startPos == memFile->bytesUsed */
         /* First write: write via MemFile archiveProc */
         /* Fall through to direct write */
     }
@@ -283,7 +285,7 @@ void FxArchive_WriteData(const FxArchive * _this, const void *p, int byteCount)
     for (i = 0; i < byteCount; i++) {
         /* Check the control byte at current position in the buffer */
         byte *buf = *(byte **)((byte *)memFile + 0);
-        int pos = *(int *)((byte *)_this + 0x14);
+        int pos = *(int *)((byte *)_this + 0x14); /* startPos */
         unsigned char ctrl = buf[pos];
         int bits = ctrl & 0xC0;
 
@@ -353,7 +355,7 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
     char filename[64]; /* -0x5a(%ebp) ... */
     int len;
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 378 */
         /* Reading path */
@@ -373,7 +375,7 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
     } else {
         /* Writing path: line 381 */
         if (*fx != (void *)0) {
-            effectName = *(const char **)(*fx); /* line 186 -- first field is the name */
+            effectName = (*fx)->mEffectName; /* line 186 -- first field is the name */
         } else {
             effectName = str_002157b8; /* empty string */
         }
@@ -635,7 +637,7 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
     char chMaterialName[64]; /* -0x5a(%ebp) */
     int len;
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 387 */
         /* Reading path */
@@ -915,7 +917,7 @@ void FxArchive_ArchiveModel(const FxArchive * _this, struct XModel * *model)
     char chModelName[64]; /* -0x5a(%ebp) */
     int len;
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 396 */
         /* Reading path */
@@ -1188,7 +1190,7 @@ void FxArchive_ArchiveChannelInstance(const FxArchive * _this, FxChannelInstance
     char isReading;
     int f;
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 405 */
         /* Reading path: line 115 */
@@ -1341,7 +1343,7 @@ void FxArchive_ArchiveFxBoltInfo(const FxArchive * _this, FxBoltInfo *bolt)
     char isReading;
     byte temp[8];
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 444 */
         /* Reading path: read 8 bytes into bolt */
@@ -1485,7 +1487,7 @@ void FxArchive_ArchiveFxGfxEntity(const FxArchive * _this, FxGfxEntity *entity)
     char isReading;
     byte temp[0x68];
 
-    isReading = *(char *)((byte *)_this + 4);
+    isReading = *(char *)((byte *)_this + 0x04); /* isReading */
 
     if (isReading) { /* line 460 */
         /* Reading path: read 0x68 bytes into entity */

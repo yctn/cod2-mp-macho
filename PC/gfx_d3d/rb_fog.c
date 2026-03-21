@@ -48,9 +48,8 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
             return 0;
 
         /* Set fog color via D3D device */
-        byte *dxPtr = (byte *)imp_dx;
         do {
-            void *device = *(void **)(dxPtr + 8);
+            void *device = ((DxGlobals *)imp_dx)->device;
             void **vtable = *(void ***)device;
             typedef int (*SetRenderStateFn)(void *, int, unsigned int);
             ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
@@ -72,9 +71,8 @@ int RB_UpdateFogColor(FogColorSrcEnum fogColorSrc)
         if (*(unsigned int *)(backEndData + 0x2158) == fogColor)
             return 0;
 
-        byte *dxPtr = (byte *)imp_dx;
         do {
-            void *device = *(void **)(dxPtr + 8);
+            void *device = ((DxGlobals *)imp_dx)->device;
             void **vtable = *(void ***)device;
             typedef int (*SetRenderStateFn)(void *, int, unsigned int);
             ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
@@ -120,9 +118,8 @@ int RB_SetIteratorFog(void)
         fogColor |= 0xff000000;
 
         if (*(unsigned int *)(backEndData + 0x2158) != fogColor) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, unsigned int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x22, fogColor);
@@ -176,9 +173,8 @@ int RB_SetIteratorFog(void)
         /* Exponential fog */
         byte *bd = *(byte **)g_backEndData;
         if (*(int *)(bd + 0x215c) != 3) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x8c, 3);
@@ -189,9 +185,8 @@ int RB_SetIteratorFog(void)
 
         /* Set fog start */
         if (*(float *)(bd + 0x2160) != fogStart) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x24, *(int *)&fog->fogStart);
@@ -202,9 +197,8 @@ int RB_SetIteratorFog(void)
 
         /* Set fog end */
         if (*(float *)(bd + 0x2164) != fogEnd) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x25, *(int *)&fogEnd);
@@ -216,9 +210,8 @@ int RB_SetIteratorFog(void)
         /* Linear fog */
         byte *bd = *(byte **)g_backEndData;
         if (*(int *)(bd + 0x215c) != 1) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x8c, 1);
@@ -229,9 +222,8 @@ int RB_SetIteratorFog(void)
 
         /* Set fog density */
         if (*(float *)(bd + 0x2168) != density) {
-            byte *dxPtr = (byte *)imp_dx;
             do {
-                void *device = *(void **)(dxPtr + 8);
+                void *device = ((DxGlobals *)imp_dx)->device;
                 void **vtable = *(void ***)device;
                 typedef int (*SetRenderStateFn)(void *, int, int);
                 ((SetRenderStateFn)vtable[0xe4 / 4])(device, 0x26, *(int *)&fog->density);

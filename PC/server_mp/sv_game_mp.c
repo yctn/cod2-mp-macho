@@ -486,7 +486,7 @@ static void SV_InitGameVM(int restart, int savepersist)
     svs = (serverStatic_t *)imp_svs;
     for (i = 0; i < maxclients; i++) {
         /* offset 0x20c44 in client_t - gentity pointer / oldServerTime */
-        *(int *)((char *)&svs->clients[i] + 0x20c44) = 0;
+        *(int *)((char *)&svs->clients[i] + 0x20c44) = 0; /* TODO: unknown offset */
     }
 
     /* Dump dvars if dedicated */
@@ -550,7 +550,7 @@ qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t 
         CM_TransformedBoxTraceExternal(trace, vec3_origin, vec3_origin,
             mins, maxs, clipHandle, -1,
             gEnt->r.currentOrigin, gEnt->r.currentAngles);
-        return *(unsigned char *)(trace + 0x23);
+        return trace->startsolid;
     }
 
     if (svFlags & 0x20) {

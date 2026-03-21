@@ -37,9 +37,9 @@ extern float sinf(float x);
 extern float cosf(float x);
 extern float floorf(float x);
 
-static inline char *RB_TessBase(void)
+static inline materialCommands_t *RB_TessBase(void)
 {
-    return (char *)imp_tess;
+    return (materialCommands_t *)imp_tess;
 }
 
 void RB_TessBad(const surfaceType_t *surfType);
@@ -80,11 +80,10 @@ void RB_TessBad(const surfaceType_t *surfType)
 /* line 1063 */
 void RB_TessParticleCloud(const GfxEntity *re)
 {
-    char *dxCaps;
-    char *tess;
-    char *backEnd;
-    char *backEndData;
-    char *dxGlobals;
+    materialCommands_t *tess;
+    r_backEndGlobals_t *backEnd;
+    DxState *dxState;
+    DxGlobals *dxGlobals;
     GfxDrawPrimArgs args;
     float viewAxis[4]; /* 2D view axis for particle orientation */
     vec3_t worldUp, scaledWorldUp, viewUp;
@@ -96,15 +95,13 @@ void RB_TessParticleCloud(const GfxEntity *re)
     IDirect3DVertexBuffer9 *vb;
 
     /* Check DX level - particle clouds not supported in DX7 */
-    dxCaps = *(char **)imp_r_rendererInUse;
-    dxCaps = *(char **)dxCaps;
-    if (*(int *)(dxCaps + 8) == 2) {
+    if ((*(int **)imp_r_rendererInUse)[2] == 2) {
         return;
     }
 
     /* Flush if surface has existing data */
     tess = RB_TessBase();
-    if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+    if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
         RB_EndSurface();
     }
 
@@ -136,9 +133,9 @@ void RB_TessParticleCloud(const GfxEntity *re)
         scaledWorldUp[1] = worldUp[1] * scale;
         scaledWorldUp[2] = worldUp[2] * scale;
 
-        /* Copy camera view axis (3x3 matrix at backEnd->viewParms+0x48) */
-        backEnd = (char *)imp_backEnd;
-        camAxis = (float *)(*(char **)(backEnd + 0x3c8) + 0x48);
+        /* Copy camera view axis (3x3 from viewParms->viewMatrix) */
+        backEnd = (r_backEndGlobals_t *)imp_backEnd;
+        camAxis = (float *)&backEnd->viewParms->viewMatrix;
         localViewAxis[0] = camAxis[0];
         localViewAxis[1] = camAxis[1];
         localViewAxis[2] = camAxis[2];
@@ -188,31 +185,31 @@ void RB_TessParticleCloud(const GfxEntity *re)
         }
     }
 
-    /* Store viewAxis to backEnd+0x310 */
-    backEnd = (char *)imp_backEnd;
-    *(float *)(backEnd + 0x310) = viewAxis[0];
-    *(float *)(backEnd + 0x314) = viewAxis[1];
-    *(float *)(backEnd + 0x318) = viewAxis[2];
-    *(float *)(backEnd + 0x31c) = viewAxis[3];
+    /* Store viewAxis to backEnd->codeConsts[49] */
+    backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    backEnd->codeConsts[49][0] = viewAxis[0];
+    backEnd->codeConsts[49][1] = viewAxis[1];
+    backEnd->codeConsts[49][2] = viewAxis[2];
+    backEnd->codeConsts[49][3] = viewAxis[3];
 
-    /* Convert materialRGBA to float color and store to backEnd+0x300 */
-    *(float *)(backEnd + 0x300) = (float)re->materialRGBA[0] * oneOver255;
-    *(float *)(backEnd + 0x304) = (float)re->materialRGBA[1] * oneOver255;
-    *(float *)(backEnd + 0x308) = (float)re->materialRGBA[2] * oneOver255;
-    *(float *)(backEnd + 0x30c) = (float)re->materialRGBA[3] * oneOver255;
+    /* Convert materialRGBA to float color and store to backEnd->codeConsts[48] */
+    backEnd->codeConsts[48][0] = (float)re->materialRGBA[0] * oneOver255;
+    backEnd->codeConsts[48][1] = (float)re->materialRGBA[1] * oneOver255;
+    backEnd->codeConsts[48][2] = (float)re->materialRGBA[2] * oneOver255;
+    backEnd->codeConsts[48][3] = (float)re->materialRGBA[3] * oneOver255;
 
     /* Set up index and vertex buffers from DxGlobals */
-    dxGlobals = (char *)imp_dx;
-    ib = *(IDirect3DIndexBuffer9 **)(dxGlobals + 0x2dbc);
-    backEndData = (char *)imp_dxState;
-    if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+    dxGlobals = (DxGlobals *)imp_dx;
+    ib = dxGlobals->particleCloudIndexBuffer;
+    dxState = (DxState *)imp_dxState;
+    if (ib != dxState->indexBuffer) {
         RB_ChangeIndices(ib);
     }
 
-    vb = *(IDirect3DVertexBuffer9 **)(dxGlobals + 0x2db8);
-    if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
-        *(int *)(backEndData + 0x20d4) != 0 ||
-        *(int *)(backEndData + 0x20d8) != 0x14) {
+    vb = dxGlobals->particleCloudVertexBuffer;
+    if (vb != dxState->streams[0].vb ||
+        dxState->streams[0].offset != 0 ||
+        dxState->streams[0].stride != 0x14) {
         RB_ChangeStreamSource(0, vb, 0, 0x14);
     }
 
@@ -222,27 +219,27 @@ void RB_TessParticleCloud(const GfxEntity *re)
 /* line 1406 */
 void RB_TessXModelRigid(const surfaceType_t *surfType)
 {
-    char *tess;
-    char *backEndData;
-    char *dxCaps;
+    materialCommands_t *tess;
+    DxState *dxState;
+    r_backEndGlobals_t *backEnd;
+    GfxModelRigidSurface *rigidSurf;
     XSurface *xsurf;
     GfxDrawPrimArgs args;
     IDirect3DVertexBuffer9 *vb;
     IDirect3DIndexBuffer9 *ib;
     int vertexStride;
     D3DMATRIX *worldMatrix;
-    float *boneAxis;
-    char *entity;
 
     tess = RB_TessBase();
 
     /* Flush if surface has existing data */
-    if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+    if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
         RB_EndSurface();
     }
 
     /* Get XSurface from surfType (GfxModelRigidSurface: +0 surfType, +4 xsurf) */
-    xsurf = *(XSurface **)((byte *)surfType + 4);
+    rigidSurf = (GfxModelRigidSurface *)surfType;
+    xsurf = rigidSurf->surf.xsurf;
 
     /* Set up draw prim args */
     args.firstVertexFromBase = 0;
@@ -253,57 +250,54 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
 
     /* Change index buffer if needed */
     ib = xsurf->indexBuffer;
-    backEndData = (char *)imp_dxState;
-    if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+    dxState = (DxState *)imp_dxState;
+    if (ib != dxState->indexBuffer) {
         RB_ChangeIndices(ib);
     }
 
     /* Determine vertex stride based on DX level */
     vb = xsurf->surfRigid.vb;
-    dxCaps = *(char **)imp_r_rendererInUse;
-    dxCaps = *(char **)dxCaps;
-    if (*(int *)(dxCaps + 8) == 2) {
+    if ((*(int **)imp_r_rendererInUse)[2] == 2) {
         vertexStride = 0x24;
     } else {
         vertexStride = 0x40;
     }
 
     /* Change stream source if needed */
-    if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
-        *(int *)(backEndData + 0x20d4) != 0 ||
-        *(int *)(backEndData + 0x20d8) != vertexStride) {
+    if (vb != dxState->streams[0].vb ||
+        dxState->streams[0].offset != 0 ||
+        dxState->streams[0].stride != vertexStride) {
         RB_ChangeStreamSource(0, vb, 0, vertexStride);
     }
 
     /* Push matrix and set up world transform from boneAxis */
     RB_PushMatrixStack();
 
-    entity = *(char **)((byte *)(void *)imp_backEnd + 0x440);
-    boneAxis = (float *)((byte *)surfType + 8);
+    backEnd = (r_backEndGlobals_t *)imp_backEnd;
 
     worldMatrix = RB_GetActiveWorldMatrix();
     /* Row 0: boneAxis[0] */
-    ((float *)worldMatrix)[0] = boneAxis[0];
-    ((float *)worldMatrix)[1] = boneAxis[1];
-    ((float *)worldMatrix)[2] = boneAxis[2];
+    ((float *)worldMatrix)[0] = rigidSurf->boneAxis[0][0];
+    ((float *)worldMatrix)[1] = rigidSurf->boneAxis[0][1];
+    ((float *)worldMatrix)[2] = rigidSurf->boneAxis[0][2];
     ((float *)worldMatrix)[3] = 0.0f;
     /* Row 1: boneAxis[1] */
-    ((float *)worldMatrix)[4] = boneAxis[3];
-    ((float *)worldMatrix)[5] = boneAxis[4];
-    ((float *)worldMatrix)[6] = boneAxis[5];
+    ((float *)worldMatrix)[4] = rigidSurf->boneAxis[1][0];
+    ((float *)worldMatrix)[5] = rigidSurf->boneAxis[1][1];
+    ((float *)worldMatrix)[6] = rigidSurf->boneAxis[1][2];
     ((float *)worldMatrix)[7] = 0.0f;
     /* Row 2: boneAxis[2] */
-    ((float *)worldMatrix)[8] = boneAxis[6];
-    ((float *)worldMatrix)[9] = boneAxis[7];
-    ((float *)worldMatrix)[10] = boneAxis[8];
+    ((float *)worldMatrix)[8] = rigidSurf->boneAxis[2][0];
+    ((float *)worldMatrix)[9] = rigidSurf->boneAxis[2][1];
+    ((float *)worldMatrix)[10] = rigidSurf->boneAxis[2][2];
     ((float *)worldMatrix)[11] = 0.0f;
     /* Row 3: boneAxis[3] (translation) */
-    ((float *)worldMatrix)[12] = boneAxis[9];
-    ((float *)worldMatrix)[13] = boneAxis[10];
-    ((float *)worldMatrix)[14] = boneAxis[11];
+    ((float *)worldMatrix)[12] = rigidSurf->boneAxis[3][0];
+    ((float *)worldMatrix)[13] = rigidSurf->boneAxis[3][1];
+    ((float *)worldMatrix)[14] = rigidSurf->boneAxis[3][2];
     ((float *)worldMatrix)[15] = 1.0f;
 
-    RB_ChangedWorldMatrix(*(float *)(entity + 0x38));
+    RB_ChangedWorldMatrix(backEnd->currentEntity->scale);
 
     RB_DrawTechnique(0, &args);
     RB_PopMatrixStack();
@@ -321,34 +315,35 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
 static void RB_AddQuadStampDx7_impl(const vec_t *origin, const vec_t *left, const vec_t *up,
                                      int nativeColor, float s0, float t0, float s1, float t1)
 {
-    char *tess, *backEnd, *viewParms;
+    materialCommands_t *tess;
+    r_backEndGlobals_t *backEnd;
+    const GfxViewParms *viewParms;
     unsigned short *indices;
-    char *v0, *v1, *v2, *v3;
+    GfxVertexDx7 *v0, *v1, *v2, *v3;
     int vc, ic;
     float lx, ly, lz, ux, uy, uz, nx, ny, nz;
-    float *from;
-    void *savedMat;
+    MaterialVertexDeclType savedDeclType;
 
     tess = RB_TessBase();
 
     /* Flush tessellation buffer on vertex/index overflow */
-    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
-        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
-        savedMat = *(void **)(tess + 0x5a7cc);
+    if (tess->vertexCount + 4 > 0x154a ||
+        tess->indexCount + 6 > 0x100000) {
+        savedDeclType = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(*(void **)(tess + 0x5a7bc),
-                        *(int *)(tess + 0x5a7c0),
-                        *(int *)(tess + 0x5a7c4));
-        if (*(void **)(tess + 0x5a7cc) != savedMat) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+        RB_BeginSurface(tess->material,
+                        tess->techType,
+                        tess->lmapIndex);
+        if (tess->declType != savedDeclType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0)
                 RB_EndSurface();
-            *(void **)(tess + 0x5a7cc) = savedMat;
+            tess->declType = savedDeclType;
         }
     }
 
-    vc = *(int *)(tess + 0x5a7d4);
-    ic = *(int *)(tess + 0x5a7d0);
-    indices = *(unsigned short **)(tess + 0x5a7b0);
+    vc = tess->vertexCount;
+    ic = tess->indexCount;
+    indices = tess->indices;
 
     /* 6 indices for 2 triangles: (v0,v1,v3) and (v3,v1,v2) */
     indices[ic + 0] = (unsigned short)vc;
@@ -359,57 +354,55 @@ static void RB_AddQuadStampDx7_impl(const vec_t *origin, const vec_t *left, cons
     indices[ic + 5] = (unsigned short)(vc + 2);
 
     /* Vertex base pointer: Dx7 stride = 36 bytes */
-    v0 = (char *)imp_tess + (unsigned short)vc * 36;
-    v1 = v0 + 36;
-    v2 = v0 + 72;
-    v3 = v0 + 108;
+    v0 = &tess->verts.dx7.generic[(unsigned short)vc];
+    v1 = v0 + 1;
+    v2 = v0 + 2;
+    v3 = v0 + 3;
 
     /* 4 corners: origin +/- left +/- up */
     lx = left[0]; ly = left[1]; lz = left[2];
     ux = up[0];   uy = up[1];   uz = up[2];
 
-    *(float *)(v0 + 0x00) = origin[0] + lx + ux;
-    *(float *)(v0 + 0x04) = origin[1] + ly + uy;
-    *(float *)(v0 + 0x08) = origin[2] + lz + uz;
+    v0->xyz[0] = origin[0] + lx + ux;
+    v0->xyz[1] = origin[1] + ly + uy;
+    v0->xyz[2] = origin[2] + lz + uz;
 
-    *(float *)(v1 + 0x00) = origin[0] - lx + ux;
-    *(float *)(v1 + 0x04) = origin[1] - ly + uy;
-    *(float *)(v1 + 0x08) = origin[2] - lz + uz;
+    v1->xyz[0] = origin[0] - lx + ux;
+    v1->xyz[1] = origin[1] - ly + uy;
+    v1->xyz[2] = origin[2] - lz + uz;
 
-    *(float *)(v2 + 0x00) = origin[0] - lx - ux;
-    *(float *)(v2 + 0x04) = origin[1] - ly - uy;
-    *(float *)(v2 + 0x08) = origin[2] - lz - uz;
+    v2->xyz[0] = origin[0] - lx - ux;
+    v2->xyz[1] = origin[1] - ly - uy;
+    v2->xyz[2] = origin[2] - lz - uz;
 
-    *(float *)(v3 + 0x00) = origin[0] + lx - ux;
-    *(float *)(v3 + 0x04) = origin[1] + ly - uy;
-    *(float *)(v3 + 0x08) = origin[2] + lz - uz;
+    v3->xyz[0] = origin[0] + lx - ux;
+    v3->xyz[1] = origin[1] + ly - uy;
+    v3->xyz[2] = origin[2] + lz - uz;
 
-    /* Normal: negate viewParms "from" direction
-     * (faceAxis+112 = 0x80000000 sign-flip mask, i.e. negation) */
-    backEnd = (char *)imp_backEnd;
-    viewParms = *(char **)(backEnd + 0x3c8);
-    from = (float *)(viewParms + 0x0c);
-    nx = -from[0]; ny = -from[1]; nz = -from[2];
+    /* Normal: negate viewParms forward axis direction */
+    backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    viewParms = backEnd->viewParms;
+    nx = -viewParms->axis[0][0]; ny = -viewParms->axis[0][1]; nz = -viewParms->axis[0][2];
 
-    *(float *)(v0 + 0x0c) = nx; *(float *)(v0 + 0x10) = ny; *(float *)(v0 + 0x14) = nz;
-    *(float *)(v1 + 0x0c) = nx; *(float *)(v1 + 0x10) = ny; *(float *)(v1 + 0x14) = nz;
-    *(float *)(v2 + 0x0c) = nx; *(float *)(v2 + 0x10) = ny; *(float *)(v2 + 0x14) = nz;
-    *(float *)(v3 + 0x0c) = nx; *(float *)(v3 + 0x10) = ny; *(float *)(v3 + 0x14) = nz;
+    v0->normal[0] = nx; v0->normal[1] = ny; v0->normal[2] = nz;
+    v1->normal[0] = nx; v1->normal[1] = ny; v1->normal[2] = nz;
+    v2->normal[0] = nx; v2->normal[1] = ny; v2->normal[2] = nz;
+    v3->normal[0] = nx; v3->normal[1] = ny; v3->normal[2] = nz;
 
-    /* Color at +0x18 */
-    *(int *)(v0 + 0x18) = nativeColor;
-    *(int *)(v1 + 0x18) = nativeColor;
-    *(int *)(v2 + 0x18) = nativeColor;
-    *(int *)(v3 + 0x18) = nativeColor;
+    /* Color */
+    v0->color.packed = nativeColor;
+    v1->color.packed = nativeColor;
+    v2->color.packed = nativeColor;
+    v3->color.packed = nativeColor;
 
-    /* Texcoords at +0x1c/+0x20: (s0,t0), (s1,t0), (s1,t1), (s0,t1) */
-    *(float *)(v0 + 0x1c) = s0; *(float *)(v0 + 0x20) = t0;
-    *(float *)(v1 + 0x1c) = s1; *(float *)(v1 + 0x20) = t0;
-    *(float *)(v2 + 0x1c) = s1; *(float *)(v2 + 0x20) = t1;
-    *(float *)(v3 + 0x1c) = s0; *(float *)(v3 + 0x20) = t1;
+    /* Texcoords: (s0,t0), (s1,t0), (s1,t1), (s0,t1) */
+    v0->texCoord[0] = s0; v0->texCoord[1] = t0;
+    v1->texCoord[0] = s1; v1->texCoord[1] = t0;
+    v2->texCoord[0] = s1; v2->texCoord[1] = t1;
+    v3->texCoord[0] = s0; v3->texCoord[1] = t1;
 
-    *(int *)(tess + 0x5a7d4) = vc + 4;  /* vertexCount += 4 */
-    *(int *)(tess + 0x5a7d0) = ic + 6;  /* indexCount += 6 */
+    tess->vertexCount = vc + 4;
+    tess->indexCount = ic + 6;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -462,34 +455,35 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
 static void RB_AddQuadStamp_impl(const vec_t *origin, const vec_t *left, const vec_t *up,
                                   int nativeColor, float s0, float t0, float s1, float t1)
 {
-    char *tess, *backEnd, *viewParms;
+    materialCommands_t *tess;
+    r_backEndGlobals_t *backEnd;
+    const GfxViewParms *viewParms;
     unsigned short *indices;
-    char *v0, *v1, *v2, *v3;
+    GfxVertex *v0, *v1, *v2, *v3;
     int vc, ic;
     float lx, ly, lz, ux, uy, uz, nx, ny, nz;
-    float *from;
-    void *savedMat;
+    MaterialVertexDeclType savedDeclType;
 
     tess = RB_TessBase();
 
     /* Flush tessellation buffer on vertex/index overflow */
-    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
-        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
-        savedMat = *(void **)(tess + 0x5a7cc);
+    if (tess->vertexCount + 4 > 0x154a ||
+        tess->indexCount + 6 > 0x100000) {
+        savedDeclType = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(*(void **)(tess + 0x5a7bc),
-                        *(int *)(tess + 0x5a7c0),
-                        *(int *)(tess + 0x5a7c4));
-        if (*(void **)(tess + 0x5a7cc) != savedMat) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+        RB_BeginSurface(tess->material,
+                        tess->techType,
+                        tess->lmapIndex);
+        if (tess->declType != savedDeclType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0)
                 RB_EndSurface();
-            *(void **)(tess + 0x5a7cc) = savedMat;
+            tess->declType = savedDeclType;
         }
     }
 
-    vc = *(int *)(tess + 0x5a7d4);
-    ic = *(int *)(tess + 0x5a7d0);
-    indices = *(unsigned short **)(tess + 0x5a7b0);
+    vc = tess->vertexCount;
+    ic = tess->indexCount;
+    indices = tess->indices;
 
     /* 6 indices for 2 triangles: (v0,v1,v3) and (v3,v1,v2) */
     indices[ic + 0] = (unsigned short)vc;
@@ -500,75 +494,73 @@ static void RB_AddQuadStamp_impl(const vec_t *origin, const vec_t *left, const v
     indices[ic + 5] = (unsigned short)(vc + 2);
 
     /* Vertex base pointer: non-Dx7 stride = 64 bytes */
-    v0 = (char *)imp_tess + (unsigned short)vc * 64;
-    v1 = v0 + 64;
-    v2 = v0 + 128;
-    v3 = v0 + 192;
+    v0 = &tess->verts.dx9.generic[(unsigned short)vc];
+    v1 = v0 + 1;
+    v2 = v0 + 2;
+    v3 = v0 + 3;
 
     /* 4 corners: origin +/- left +/- up */
     lx = left[0]; ly = left[1]; lz = left[2];
     ux = up[0];   uy = up[1];   uz = up[2];
 
-    *(float *)(v0 + 0x00) = origin[0] + lx + ux;
-    *(float *)(v0 + 0x04) = origin[1] + ly + uy;
-    *(float *)(v0 + 0x08) = origin[2] + lz + uz;
+    v0->xyzw[0] = origin[0] + lx + ux;
+    v0->xyzw[1] = origin[1] + ly + uy;
+    v0->xyzw[2] = origin[2] + lz + uz;
 
-    *(float *)(v1 + 0x00) = origin[0] - lx + ux;
-    *(float *)(v1 + 0x04) = origin[1] - ly + uy;
-    *(float *)(v1 + 0x08) = origin[2] - lz + uz;
+    v1->xyzw[0] = origin[0] - lx + ux;
+    v1->xyzw[1] = origin[1] - ly + uy;
+    v1->xyzw[2] = origin[2] - lz + uz;
 
-    *(float *)(v2 + 0x00) = origin[0] - lx - ux;
-    *(float *)(v2 + 0x04) = origin[1] - ly - uy;
-    *(float *)(v2 + 0x08) = origin[2] - lz - uz;
+    v2->xyzw[0] = origin[0] - lx - ux;
+    v2->xyzw[1] = origin[1] - ly - uy;
+    v2->xyzw[2] = origin[2] - lz - uz;
 
-    *(float *)(v3 + 0x00) = origin[0] + lx - ux;
-    *(float *)(v3 + 0x04) = origin[1] + ly - uy;
-    *(float *)(v3 + 0x08) = origin[2] + lz - uz;
+    v3->xyzw[0] = origin[0] + lx - ux;
+    v3->xyzw[1] = origin[1] + ly - uy;
+    v3->xyzw[2] = origin[2] + lz - uz;
 
-    /* Scalar 1.0f at +0x0c in each vertex */
-    *(float *)(v0 + 0x0c) = 1.0f;
-    *(float *)(v1 + 0x0c) = 1.0f;
-    *(float *)(v2 + 0x0c) = 1.0f;
-    *(float *)(v3 + 0x0c) = 1.0f;
+    /* W component = 1.0f */
+    v0->xyzw[3] = 1.0f;
+    v1->xyzw[3] = 1.0f;
+    v2->xyzw[3] = 1.0f;
+    v3->xyzw[3] = 1.0f;
 
-    /* Normal at +0x10: negate viewParms "from" direction
-     * (faceAxis+128 = 0x80000000 sign-flip = negate) */
-    backEnd = (char *)imp_backEnd;
-    viewParms = *(char **)(backEnd + 0x3c8);
-    from = (float *)(viewParms + 0x0c);
-    nx = -from[0]; ny = -from[1]; nz = -from[2];
+    /* Normal: negate viewParms forward axis direction */
+    backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    viewParms = backEnd->viewParms;
+    nx = -viewParms->axis[0][0]; ny = -viewParms->axis[0][1]; nz = -viewParms->axis[0][2];
 
-    *(float *)(v0 + 0x10) = nx; *(float *)(v0 + 0x14) = ny; *(float *)(v0 + 0x18) = nz;
-    *(float *)(v1 + 0x10) = nx; *(float *)(v1 + 0x14) = ny; *(float *)(v1 + 0x18) = nz;
-    *(float *)(v2 + 0x10) = nx; *(float *)(v2 + 0x14) = ny; *(float *)(v2 + 0x18) = nz;
-    *(float *)(v3 + 0x10) = nx; *(float *)(v3 + 0x14) = ny; *(float *)(v3 + 0x18) = nz;
+    v0->normal[0] = nx; v0->normal[1] = ny; v0->normal[2] = nz;
+    v1->normal[0] = nx; v1->normal[1] = ny; v1->normal[2] = nz;
+    v2->normal[0] = nx; v2->normal[1] = ny; v2->normal[2] = nz;
+    v3->normal[0] = nx; v3->normal[1] = ny; v3->normal[2] = nz;
 
-    /* Color at +0x1c */
-    *(int *)(v0 + 0x1c) = nativeColor;
-    *(int *)(v1 + 0x1c) = nativeColor;
-    *(int *)(v2 + 0x1c) = nativeColor;
-    *(int *)(v3 + 0x1c) = nativeColor;
+    /* Color */
+    v0->color.packed = nativeColor;
+    v1->color.packed = nativeColor;
+    v2->color.packed = nativeColor;
+    v3->color.packed = nativeColor;
 
-    /* Texcoords at +0x20/+0x24: (s0,t0), (s1,t0), (s1,t1), (s0,t1) */
-    *(float *)(v0 + 0x20) = s0; *(float *)(v0 + 0x24) = t0;
-    *(float *)(v1 + 0x20) = s1; *(float *)(v1 + 0x24) = t0;
-    *(float *)(v2 + 0x20) = s1; *(float *)(v2 + 0x24) = t1;
-    *(float *)(v3 + 0x20) = s0; *(float *)(v3 + 0x24) = t1;
+    /* Texcoords: (s0,t0), (s1,t0), (s1,t1), (s0,t1) */
+    v0->texCoord[0] = s0; v0->texCoord[1] = t0;
+    v1->texCoord[0] = s1; v1->texCoord[1] = t0;
+    v2->texCoord[0] = s1; v2->texCoord[1] = t1;
+    v3->texCoord[0] = s0; v3->texCoord[1] = t1;
 
-    /* Up vector at +0x28 (stored as-is, no sign flip) */
-    *(float *)(v0 + 0x28) = up[0]; *(float *)(v0 + 0x2c) = up[1]; *(float *)(v0 + 0x30) = up[2];
-    *(float *)(v1 + 0x28) = up[0]; *(float *)(v1 + 0x2c) = up[1]; *(float *)(v1 + 0x30) = up[2];
-    *(float *)(v2 + 0x28) = up[0]; *(float *)(v2 + 0x2c) = up[1]; *(float *)(v2 + 0x30) = up[2];
-    *(float *)(v3 + 0x28) = up[0]; *(float *)(v3 + 0x2c) = up[1]; *(float *)(v3 + 0x30) = up[2];
+    /* Binormal = up vector (stored as-is) */
+    v0->binormal[0] = up[0]; v0->binormal[1] = up[1]; v0->binormal[2] = up[2];
+    v1->binormal[0] = up[0]; v1->binormal[1] = up[1]; v1->binormal[2] = up[2];
+    v2->binormal[0] = up[0]; v2->binormal[1] = up[1]; v2->binormal[2] = up[2];
+    v3->binormal[0] = up[0]; v3->binormal[1] = up[1]; v3->binormal[2] = up[2];
 
-    /* Left vector at +0x34 (sign-flipped: faceAxis+128 = 0x80000000 = negate) */
-    *(float *)(v0 + 0x34) = -left[0]; *(float *)(v0 + 0x38) = -left[1]; *(float *)(v0 + 0x3c) = -left[2];
-    *(float *)(v1 + 0x34) = -left[0]; *(float *)(v1 + 0x38) = -left[1]; *(float *)(v1 + 0x3c) = -left[2];
-    *(float *)(v2 + 0x34) = -left[0]; *(float *)(v2 + 0x38) = -left[1]; *(float *)(v2 + 0x3c) = -left[2];
-    *(float *)(v3 + 0x34) = -left[0]; *(float *)(v3 + 0x38) = -left[1]; *(float *)(v3 + 0x3c) = -left[2];
+    /* Tangent = negated left vector */
+    v0->tangent[0] = -left[0]; v0->tangent[1] = -left[1]; v0->tangent[2] = -left[2];
+    v1->tangent[0] = -left[0]; v1->tangent[1] = -left[1]; v1->tangent[2] = -left[2];
+    v2->tangent[0] = -left[0]; v2->tangent[1] = -left[1]; v2->tangent[2] = -left[2];
+    v3->tangent[0] = -left[0]; v3->tangent[1] = -left[1]; v3->tangent[2] = -left[2];
 
-    *(int *)(tess + 0x5a7d4) = vc + 4;  /* vertexCount += 4 */
-    *(int *)(tess + 0x5a7d0) = ic + 6;  /* indexCount += 6 */
+    tess->vertexCount = vc + 4;
+    tess->indexCount = ic + 6;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -610,41 +602,41 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
 /* Calling convention: eax=re, edx=worldRadius (float[2]) */
 static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
 {
+    const GfxEntity *ent = (const GfxEntity *)re;
     float worldOrigin[3], left[3], up[3];
     float scale, angle, sinA, cosA;
     int nativeColor;
     int ncols, nrows, totalFrames, frame, row, col;
     float s0, t0, s1, t1;
-    char *backEnd, *viewParms;
-    char *material;
-    char *r_rendererInUse;
+    r_backEndGlobals_t *backEnd;
+    const GfxViewParms *viewParms;
 
-    /* Copy origin from re->0x3c */
-    worldOrigin[0] = *(float *)(re + 0x3c);
-    worldOrigin[1] = *(float *)(re + 0x40);
-    worldOrigin[2] = *(float *)(re + 0x44);
+    /* Copy origin from entity */
+    worldOrigin[0] = ent->origin[0];
+    worldOrigin[1] = ent->origin[1];
+    worldOrigin[2] = ent->origin[2];
 
-    /* Flag at re+5 bit 0x10: if set, offset z by worldRadius[1] */
-    if (*(unsigned char *)(re + 5) & 0x10) {
+    /* renderFxFlags bit 0x10: if set, offset z by worldRadius[1] */
+    if (((byte *)&ent->renderFxFlags)[1] & 0x10) {
         worldOrigin[2] += worldRadius[1];
     }
 
-    /* re->0x6c = rotation angle */
-    angle = *(float *)(re + 0x6c);
+    /* rotation angle */
+    angle = ent->rotation;
 
-    backEnd = (char *)imp_backEnd;
-    viewParms = *(char **)(backEnd + 0x3c8);
+    backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    viewParms = backEnd->viewParms;
 
     if (angle == 0.0f) {
         /* Scale left axis by worldRadius[0], up axis by worldRadius[1] */
         scale = worldRadius[0];
-        left[0] = *(float *)(viewParms + 0x18) * scale;
-        left[1] = *(float *)(viewParms + 0x1c) * scale;
-        left[2] = *(float *)(viewParms + 0x20) * scale;
+        left[0] = viewParms->axis[1][0] * scale;
+        left[1] = viewParms->axis[1][1] * scale;
+        left[2] = viewParms->axis[1][2] * scale;
         scale = worldRadius[1];
-        up[0] = *(float *)(viewParms + 0x24) * scale;
-        up[1] = *(float *)(viewParms + 0x28) * scale;
-        up[2] = *(float *)(viewParms + 0x2c) * scale;
+        up[0] = viewParms->axis[2][0] * scale;
+        up[1] = viewParms->axis[2][1] * scale;
+        up[2] = viewParms->axis[2][2] * scale;
     } else {
         /* Apply rotation: angle in degrees -> radians */
         float radians = (float)((double)angle * 0.017453292519943295);
@@ -652,32 +644,31 @@ static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
         cosA = cosf(radians);
 
         /* left = cos*worldRadius[0]*leftAxis + (-sin)*worldRadius[0]*upAxis */
-        left[0] = cosA * worldRadius[0] * *(float *)(viewParms + 0x18)
-                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x24);
-        left[1] = cosA * worldRadius[0] * *(float *)(viewParms + 0x1c)
-                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x28);
-        left[2] = cosA * worldRadius[0] * *(float *)(viewParms + 0x20)
-                + (-sinA) * worldRadius[0] * *(float *)(viewParms + 0x2c);
+        left[0] = cosA * worldRadius[0] * viewParms->axis[1][0]
+                + (-sinA) * worldRadius[0] * viewParms->axis[2][0];
+        left[1] = cosA * worldRadius[0] * viewParms->axis[1][1]
+                + (-sinA) * worldRadius[0] * viewParms->axis[2][1];
+        left[2] = cosA * worldRadius[0] * viewParms->axis[1][2]
+                + (-sinA) * worldRadius[0] * viewParms->axis[2][2];
 
         /* up = cos*worldRadius[1]*upAxis + sin*worldRadius[1]*leftAxis */
-        up[0] = cosA * worldRadius[1] * *(float *)(viewParms + 0x24)
-              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x18);
-        up[1] = cosA * worldRadius[1] * *(float *)(viewParms + 0x28)
-              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x1c);
-        up[2] = cosA * worldRadius[1] * *(float *)(viewParms + 0x2c)
-              + sinA  * worldRadius[1] * *(float *)(viewParms + 0x20);
+        up[0] = cosA * worldRadius[1] * viewParms->axis[2][0]
+              + sinA  * worldRadius[1] * viewParms->axis[1][0];
+        up[1] = cosA * worldRadius[1] * viewParms->axis[2][1]
+              + sinA  * worldRadius[1] * viewParms->axis[1][1];
+        up[2] = cosA * worldRadius[1] * viewParms->axis[2][2]
+              + sinA  * worldRadius[1] * viewParms->axis[1][2];
     }
 
-    /* nativeColor from re->0x5b,0x58,0x59,0x5a (byte order) */
-    ((unsigned char *)&nativeColor)[0] = *(unsigned char *)(re + 0x5b);
-    ((unsigned char *)&nativeColor)[1] = *(unsigned char *)(re + 0x58);
-    ((unsigned char *)&nativeColor)[2] = *(unsigned char *)(re + 0x59);
-    ((unsigned char *)&nativeColor)[3] = *(unsigned char *)(re + 0x5a);
+    /* nativeColor from entity materialRGBA (BGRA byte order) */
+    ((unsigned char *)&nativeColor)[0] = ent->materialRGBA[3];
+    ((unsigned char *)&nativeColor)[1] = ent->materialRGBA[0];
+    ((unsigned char *)&nativeColor)[2] = ent->materialRGBA[1];
+    ((unsigned char *)&nativeColor)[3] = ent->materialRGBA[2];
 
     /* Animation frame UVs */
-    material = *(char **)(re + 0x54);
-    ncols = *(unsigned char *)(material + 0x0e);
-    nrows = *(unsigned char *)(material + 0x0f);
+    ncols = ent->customMaterial->info.textureAtlasRowCount;
+    nrows = ent->customMaterial->info.textureAtlasColumnCount;
     totalFrames = ncols * nrows;
 
     if (totalFrames == 1) {
@@ -685,7 +676,7 @@ static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
     } else {
         float inv_nrows = 1.0f / (float)nrows;
         float inv_ncols = 1.0f / (float)ncols;
-        frame = *(int *)(re + 0x60);
+        frame = ent->materialSubimageIndex;
         row = frame / nrows;
         col = frame % nrows;
         s0 = (float)col * inv_nrows;
@@ -695,8 +686,7 @@ static void RB_BuildSprite_impl(const char *re, const float *worldRadius)
     }
 
     /* Dispatch to renderer */
-    r_rendererInUse = *(char **)imp_r_rendererInUse;
-    if (*(int *)(r_rendererInUse + 8) == 2) {
+    if ((*(int **)imp_r_rendererInUse)[2] == 2) {
         RB_AddQuadStampDx7_impl(worldOrigin, left, up, nativeColor, s0, t0, s1, t1);
     } else {
         RB_AddQuadStamp_impl(worldOrigin, left, up, nativeColor, s0, t0, s1, t1);
@@ -739,30 +729,30 @@ void RB_BuildSprite(void)
 static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width,
                                 D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
-    char *tess = RB_TessBase();
-    char *backEnd = (char *)imp_backEnd;
-    void *savedMat;
+    materialCommands_t *tess = RB_TessBase();
+    r_backEndGlobals_t *backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    MaterialVertexDeclType savedDeclType;
     int vc, ic;
     unsigned short *indices;
-    char *v0, *v1, *v2, *v3;
+    GfxVertexDx7 *v0, *v1, *v2, *v3;
     float v1v[3], v2v[3], tangent[3], halfTangent[3], binormal[3], normal[3];
     float *viewOrigin;
 
     /* Flush tessellation buffer on overflow */
-    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
-        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
-        savedMat = *(void **)(tess + 0x5a7cc);
+    if (tess->vertexCount + 4 > 0x154a ||
+        tess->indexCount + 6 > 0x100000) {
+        savedDeclType = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(*(void **)(tess + 0x5a7bc), *(int *)(tess + 0x5a7c0), *(int *)(tess + 0x5a7c4));
-        if (*(void **)(tess + 0x5a7cc) != savedMat) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+        RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
+        if (tess->declType != savedDeclType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0)
                 RB_EndSurface();
-            *(void **)(tess + 0x5a7cc) = savedMat;
+            tess->declType = savedDeclType;
         }
     }
 
     /* Compute tangent = cross(start-view, end-view), normalize */
-    viewOrigin = (float *)(*(char **)(backEnd + 0x3c8));
+    viewOrigin = (float *)&backEnd->viewParms->origin;
     v1v[0] = start[0] - viewOrigin[0]; v1v[1] = start[1] - viewOrigin[1]; v1v[2] = start[2] - viewOrigin[2];
     v2v[0] = end[0]   - viewOrigin[0]; v2v[1] = end[1]   - viewOrigin[1]; v2v[2] = end[2]   - viewOrigin[2];
     Vec3Cross(v1v, v2v, tangent);
@@ -779,9 +769,9 @@ static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width
     /* normal = cross(tangent, binormal) */
     Vec3Cross(tangent, binormal, normal);
 
-    vc = *(int *)(tess + 0x5a7d4);
-    ic = *(int *)(tess + 0x5a7d0);
-    indices = *(unsigned short **)(tess + 0x5a7b0);
+    vc = tess->vertexCount;
+    ic = tess->indexCount;
+    indices = tess->indices;
 
     indices[ic + 0] = (unsigned short)vc;
     indices[ic + 1] = (unsigned short)(vc + 1);
@@ -791,37 +781,37 @@ static void RB_AddLineDx7_impl(const vec_t *start, const vec_t *end, float width
     indices[ic + 5] = (unsigned short)(vc + 3);
 
     /* Vertex base: Dx7 stride = 36 bytes */
-    v0 = tess + (unsigned short)vc * 36;
-    v1 = v0 + 36;
-    v2 = v0 + 72;
-    v3 = v0 + 108;
+    v0 = &tess->verts.dx7.generic[(unsigned short)vc];
+    v1 = v0 + 1;
+    v2 = v0 + 2;
+    v3 = v0 + 3;
 
     /* Positions */
-    *(float *)(v0 + 0x00) = start[0] + halfTangent[0]; *(float *)(v0 + 0x04) = start[1] + halfTangent[1]; *(float *)(v0 + 0x08) = start[2] + halfTangent[2];
-    *(float *)(v1 + 0x00) = start[0] - halfTangent[0]; *(float *)(v1 + 0x04) = start[1] - halfTangent[1]; *(float *)(v1 + 0x08) = start[2] - halfTangent[2];
-    *(float *)(v2 + 0x00) = end[0]   + halfTangent[0]; *(float *)(v2 + 0x04) = end[1]   + halfTangent[1]; *(float *)(v2 + 0x08) = end[2]   + halfTangent[2];
-    *(float *)(v3 + 0x00) = end[0]   - halfTangent[0]; *(float *)(v3 + 0x04) = end[1]   - halfTangent[1]; *(float *)(v3 + 0x08) = end[2]   - halfTangent[2];
+    v0->xyz[0] = start[0] + halfTangent[0]; v0->xyz[1] = start[1] + halfTangent[1]; v0->xyz[2] = start[2] + halfTangent[2];
+    v1->xyz[0] = start[0] - halfTangent[0]; v1->xyz[1] = start[1] - halfTangent[1]; v1->xyz[2] = start[2] - halfTangent[2];
+    v2->xyz[0] = end[0]   + halfTangent[0]; v2->xyz[1] = end[1]   + halfTangent[1]; v2->xyz[2] = end[2]   + halfTangent[2];
+    v3->xyz[0] = end[0]   - halfTangent[0]; v3->xyz[1] = end[1]   - halfTangent[1]; v3->xyz[2] = end[2]   - halfTangent[2];
 
-    /* Normals at +0x0c */
-    *(float *)(v0 + 0x0c) = normal[0]; *(float *)(v0 + 0x10) = normal[1]; *(float *)(v0 + 0x14) = normal[2];
-    *(float *)(v1 + 0x0c) = normal[0]; *(float *)(v1 + 0x10) = normal[1]; *(float *)(v1 + 0x14) = normal[2];
-    *(float *)(v2 + 0x0c) = normal[0]; *(float *)(v2 + 0x10) = normal[1]; *(float *)(v2 + 0x14) = normal[2];
-    *(float *)(v3 + 0x0c) = normal[0]; *(float *)(v3 + 0x10) = normal[1]; *(float *)(v3 + 0x14) = normal[2];
+    /* Normals */
+    v0->normal[0] = normal[0]; v0->normal[1] = normal[1]; v0->normal[2] = normal[2];
+    v1->normal[0] = normal[0]; v1->normal[1] = normal[1]; v1->normal[2] = normal[2];
+    v2->normal[0] = normal[0]; v2->normal[1] = normal[1]; v2->normal[2] = normal[2];
+    v3->normal[0] = normal[0]; v3->normal[1] = normal[1]; v3->normal[2] = normal[2];
 
-    /* Colors at +0x18 */
-    *(int *)(v0 + 0x18) = nativeColor;
-    *(int *)(v1 + 0x18) = nativeColor;
-    *(int *)(v2 + 0x18) = nativeColor;
-    *(int *)(v3 + 0x18) = nativeColor;
+    /* Colors */
+    v0->color.packed = nativeColor;
+    v1->color.packed = nativeColor;
+    v2->color.packed = nativeColor;
+    v3->color.packed = nativeColor;
 
-    /* UVs at +0x1c/+0x20: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
-    *(float *)(v0 + 0x1c) = s0; *(float *)(v0 + 0x20) = t0;
-    *(float *)(v1 + 0x1c) = s1; *(float *)(v1 + 0x20) = t0;
-    *(float *)(v2 + 0x1c) = s0; *(float *)(v2 + 0x20) = t1;
-    *(float *)(v3 + 0x1c) = s1; *(float *)(v3 + 0x20) = t1;
+    /* UVs: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
+    v0->texCoord[0] = s0; v0->texCoord[1] = t0;
+    v1->texCoord[0] = s1; v1->texCoord[1] = t0;
+    v2->texCoord[0] = s0; v2->texCoord[1] = t1;
+    v3->texCoord[0] = s1; v3->texCoord[1] = t1;
 
-    *(int *)(tess + 0x5a7d4) = vc + 4;
-    *(int *)(tess + 0x5a7d0) = ic + 6;
+    tess->vertexCount = vc + 4;
+    tess->indexCount = ic + 6;
 }
 
 /* line 877 */
@@ -874,30 +864,30 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
 static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width,
                              D3DCOLOR nativeColor, float s0, float t0, float s1, float t1)
 {
-    char *tess = RB_TessBase();
-    char *backEnd = (char *)imp_backEnd;
-    void *savedMat;
+    materialCommands_t *tess = RB_TessBase();
+    r_backEndGlobals_t *backEnd = (r_backEndGlobals_t *)imp_backEnd;
+    MaterialVertexDeclType savedDeclType;
     int vc, ic;
     unsigned short *indices;
-    char *v0, *v1, *v2, *v3;
+    GfxVertex *v0, *v1, *v2, *v3;
     float v1v[3], v2v[3], tangent[3], halfTangent[3], binormal[3], normal[3];
     float *viewOrigin;
 
     /* Flush tessellation buffer on overflow */
-    if (*(int *)(tess + 0x5a7d4) + 4 > 0x154a ||
-        *(int *)(tess + 0x5a7d0) + 6 > 0x100000) {
-        savedMat = *(void **)(tess + 0x5a7cc);
+    if (tess->vertexCount + 4 > 0x154a ||
+        tess->indexCount + 6 > 0x100000) {
+        savedDeclType = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(*(void **)(tess + 0x5a7bc), *(int *)(tess + 0x5a7c0), *(int *)(tess + 0x5a7c4));
-        if (*(void **)(tess + 0x5a7cc) != savedMat) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0)
+        RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
+        if (tess->declType != savedDeclType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0)
                 RB_EndSurface();
-            *(void **)(tess + 0x5a7cc) = savedMat;
+            tess->declType = savedDeclType;
         }
     }
 
     /* Compute tangent = cross(start-view, end-view), normalize */
-    viewOrigin = (float *)(*(char **)(backEnd + 0x3c8));
+    viewOrigin = (float *)&backEnd->viewParms->origin;
     v1v[0] = start[0] - viewOrigin[0]; v1v[1] = start[1] - viewOrigin[1]; v1v[2] = start[2] - viewOrigin[2];
     v2v[0] = end[0]   - viewOrigin[0]; v2v[1] = end[1]   - viewOrigin[1]; v2v[2] = end[2]   - viewOrigin[2];
     Vec3Cross(v1v, v2v, tangent);
@@ -914,9 +904,9 @@ static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width,
     /* normal = cross(tangent, binormal) */
     Vec3Cross(tangent, binormal, normal);
 
-    vc = *(int *)(tess + 0x5a7d4);
-    ic = *(int *)(tess + 0x5a7d0);
-    indices = *(unsigned short **)(tess + 0x5a7b0);
+    vc = tess->vertexCount;
+    ic = tess->indexCount;
+    indices = tess->indices;
 
     indices[ic + 0] = (unsigned short)vc;
     indices[ic + 1] = (unsigned short)(vc + 1);
@@ -926,55 +916,55 @@ static void RB_AddLine_impl(const vec_t *start, const vec_t *end, float width,
     indices[ic + 5] = (unsigned short)(vc + 3);
 
     /* Vertex base: non-Dx7 stride = 64 bytes */
-    v0 = tess + (unsigned short)vc * 64;
-    v1 = v0 + 64;
-    v2 = v0 + 128;
-    v3 = v0 + 192;
+    v0 = &tess->verts.dx9.generic[(unsigned short)vc];
+    v1 = v0 + 1;
+    v2 = v0 + 2;
+    v3 = v0 + 3;
 
     /* Positions */
-    *(float *)(v0 + 0x00) = start[0] + halfTangent[0]; *(float *)(v0 + 0x04) = start[1] + halfTangent[1]; *(float *)(v0 + 0x08) = start[2] + halfTangent[2];
-    *(float *)(v1 + 0x00) = start[0] - halfTangent[0]; *(float *)(v1 + 0x04) = start[1] - halfTangent[1]; *(float *)(v1 + 0x08) = start[2] - halfTangent[2];
-    *(float *)(v2 + 0x00) = end[0]   + halfTangent[0]; *(float *)(v2 + 0x04) = end[1]   + halfTangent[1]; *(float *)(v2 + 0x08) = end[2]   + halfTangent[2];
-    *(float *)(v3 + 0x00) = end[0]   - halfTangent[0]; *(float *)(v3 + 0x04) = end[1]   - halfTangent[1]; *(float *)(v3 + 0x08) = end[2]   - halfTangent[2];
+    v0->xyzw[0] = start[0] + halfTangent[0]; v0->xyzw[1] = start[1] + halfTangent[1]; v0->xyzw[2] = start[2] + halfTangent[2];
+    v1->xyzw[0] = start[0] - halfTangent[0]; v1->xyzw[1] = start[1] - halfTangent[1]; v1->xyzw[2] = start[2] - halfTangent[2];
+    v2->xyzw[0] = end[0]   + halfTangent[0]; v2->xyzw[1] = end[1]   + halfTangent[1]; v2->xyzw[2] = end[2]   + halfTangent[2];
+    v3->xyzw[0] = end[0]   - halfTangent[0]; v3->xyzw[1] = end[1]   - halfTangent[1]; v3->xyzw[2] = end[2]   - halfTangent[2];
 
-    /* W = 1.0 at +0x0c */
-    *(float *)(v0 + 0x0c) = 1.0f;
-    *(float *)(v1 + 0x0c) = 1.0f;
-    *(float *)(v2 + 0x0c) = 1.0f;
-    *(float *)(v3 + 0x0c) = 1.0f;
+    /* W = 1.0 */
+    v0->xyzw[3] = 1.0f;
+    v1->xyzw[3] = 1.0f;
+    v2->xyzw[3] = 1.0f;
+    v3->xyzw[3] = 1.0f;
 
-    /* Normals at +0x10 */
-    *(float *)(v0 + 0x10) = normal[0]; *(float *)(v0 + 0x14) = normal[1]; *(float *)(v0 + 0x18) = normal[2];
-    *(float *)(v1 + 0x10) = normal[0]; *(float *)(v1 + 0x14) = normal[1]; *(float *)(v1 + 0x18) = normal[2];
-    *(float *)(v2 + 0x10) = normal[0]; *(float *)(v2 + 0x14) = normal[1]; *(float *)(v2 + 0x18) = normal[2];
-    *(float *)(v3 + 0x10) = normal[0]; *(float *)(v3 + 0x14) = normal[1]; *(float *)(v3 + 0x18) = normal[2];
+    /* Normals */
+    v0->normal[0] = normal[0]; v0->normal[1] = normal[1]; v0->normal[2] = normal[2];
+    v1->normal[0] = normal[0]; v1->normal[1] = normal[1]; v1->normal[2] = normal[2];
+    v2->normal[0] = normal[0]; v2->normal[1] = normal[1]; v2->normal[2] = normal[2];
+    v3->normal[0] = normal[0]; v3->normal[1] = normal[1]; v3->normal[2] = normal[2];
 
-    /* Colors at +0x1c */
-    *(int *)(v0 + 0x1c) = nativeColor;
-    *(int *)(v1 + 0x1c) = nativeColor;
-    *(int *)(v2 + 0x1c) = nativeColor;
-    *(int *)(v3 + 0x1c) = nativeColor;
+    /* Colors */
+    v0->color.packed = nativeColor;
+    v1->color.packed = nativeColor;
+    v2->color.packed = nativeColor;
+    v3->color.packed = nativeColor;
 
-    /* UVs at +0x20/+0x24: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
-    *(float *)(v0 + 0x20) = s0; *(float *)(v0 + 0x24) = t0;
-    *(float *)(v1 + 0x20) = s1; *(float *)(v1 + 0x24) = t0;
-    *(float *)(v2 + 0x20) = s0; *(float *)(v2 + 0x24) = t1;
-    *(float *)(v3 + 0x20) = s1; *(float *)(v3 + 0x24) = t1;
+    /* UVs: v0=(s0,t0), v1=(s1,t0), v2=(s0,t1), v3=(s1,t1) */
+    v0->texCoord[0] = s0; v0->texCoord[1] = t0;
+    v1->texCoord[0] = s1; v1->texCoord[1] = t0;
+    v2->texCoord[0] = s0; v2->texCoord[1] = t1;
+    v3->texCoord[0] = s1; v3->texCoord[1] = t1;
 
-    /* Binormals at +0x28 */
-    *(float *)(v0 + 0x28) = binormal[0]; *(float *)(v0 + 0x2c) = binormal[1]; *(float *)(v0 + 0x30) = binormal[2];
-    *(float *)(v1 + 0x28) = binormal[0]; *(float *)(v1 + 0x2c) = binormal[1]; *(float *)(v1 + 0x30) = binormal[2];
-    *(float *)(v2 + 0x28) = binormal[0]; *(float *)(v2 + 0x2c) = binormal[1]; *(float *)(v2 + 0x30) = binormal[2];
-    *(float *)(v3 + 0x28) = binormal[0]; *(float *)(v3 + 0x2c) = binormal[1]; *(float *)(v3 + 0x30) = binormal[2];
+    /* Binormals */
+    v0->binormal[0] = binormal[0]; v0->binormal[1] = binormal[1]; v0->binormal[2] = binormal[2];
+    v1->binormal[0] = binormal[0]; v1->binormal[1] = binormal[1]; v1->binormal[2] = binormal[2];
+    v2->binormal[0] = binormal[0]; v2->binormal[1] = binormal[1]; v2->binormal[2] = binormal[2];
+    v3->binormal[0] = binormal[0]; v3->binormal[1] = binormal[1]; v3->binormal[2] = binormal[2];
 
-    /* Tangents at +0x34 */
-    *(float *)(v0 + 0x34) = tangent[0]; *(float *)(v0 + 0x38) = tangent[1]; *(float *)(v0 + 0x3c) = tangent[2];
-    *(float *)(v1 + 0x34) = tangent[0]; *(float *)(v1 + 0x38) = tangent[1]; *(float *)(v1 + 0x3c) = tangent[2];
-    *(float *)(v2 + 0x34) = tangent[0]; *(float *)(v2 + 0x38) = tangent[1]; *(float *)(v2 + 0x3c) = tangent[2];
-    *(float *)(v3 + 0x34) = tangent[0]; *(float *)(v3 + 0x38) = tangent[1]; *(float *)(v3 + 0x3c) = tangent[2];
+    /* Tangents */
+    v0->tangent[0] = tangent[0]; v0->tangent[1] = tangent[1]; v0->tangent[2] = tangent[2];
+    v1->tangent[0] = tangent[0]; v1->tangent[1] = tangent[1]; v1->tangent[2] = tangent[2];
+    v2->tangent[0] = tangent[0]; v2->tangent[1] = tangent[1]; v2->tangent[2] = tangent[2];
+    v3->tangent[0] = tangent[0]; v3->tangent[1] = tangent[1]; v3->tangent[2] = tangent[2];
 
-    *(int *)(tess + 0x5a7d4) = vc + 4;
-    *(int *)(tess + 0x5a7d0) = ic + 6;
+    tess->vertexCount = vc + 4;
+    tess->indexCount = ic + 6;
 }
 
 /* line 803 */
@@ -2333,20 +2323,20 @@ void RB_TessEntity(const GfxEntity *re)
 /* line 1193 */
 void RB_TessBackEndEntity(const surfaceType_t *surfType)
 {
-    RB_TessEntity((const GfxEntity *)*(void **)((byte *)(void *)imp_backEnd + 0x440));
+    RB_TessEntity(((r_backEndGlobals_t *)imp_backEnd)->currentEntity);
 }
 
 /* line 75 */
 void RB_TessPoly(const surfaceType_t *surfType)
 {
-    char *tess;
-    int sortedIndex;
+    materialCommands_t *tess;
+    MaterialVertexDeclType sortedIndex;
     int vertCount;
     int indexCount;
     int vertBase;
     int i;
     int triCount;
-    char *dxCaps;
+    srfPoly_t *poly = (srfPoly_t *)surfType;
     char *src;
     char *dest;
     unsigned short *indices;
@@ -2354,50 +2344,44 @@ void RB_TessPoly(const surfaceType_t *surfType)
     tess = RB_TessBase();
 
     /* Check if sorted index matches (poly mode = 1) */
-    if (*(int *)(tess + 0x5a7cc) != 1) {
-        if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+    if (tess->declType != 1) {
+        if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
             RB_EndSurface();
         }
         tess = RB_TessBase();
-        *(int *)(tess + 0x5a7cc) = 1;
+        tess->declType = 1;
     }
 
-    vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+    vertCount = (int)poly->vertCount;
     indexCount = vertCount * 3 - 6;
 
     /* RB_CheckOverflow */
-    if (vertCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
-        indexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
-        sortedIndex = *(int *)(tess + 0x5a7cc);
+    if (vertCount + tess->vertexCount > 0x154a ||
+        indexCount + tess->indexCount > 0x100000) {
+        sortedIndex = tess->declType;
         RB_EndSurface();
         tess = RB_TessBase();
-        RB_BeginSurface(
-            *(const Material **)(tess + 0x5a7bc),
-            *(MaterialTechniqueType *)(tess + 0x5a7c0),
-            *(int *)(tess + 0x5a7c4));
+        RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
         tess = RB_TessBase();
-        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        if (sortedIndex != tess->declType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                 RB_EndSurface();
             }
             tess = RB_TessBase();
-            *(int *)(tess + 0x5a7cc) = sortedIndex;
-            vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+            tess->declType = sortedIndex;
+            vertCount = (int)poly->vertCount;
         }
     }
 
     /* Check DX level for vertex copy method */
-    dxCaps = *(char **)imp_r_rendererInUse;
-    dxCaps = *(char **)dxCaps;
-
-    if (*(int *)(dxCaps + 8) == 2) {
+    if ((*(int **)imp_r_rendererInUse)[2] == 2) {
         /* DX7 mode: per-vertex copy, dest stride = 32, src stride = 0x44 */
-        src = *(char **)((byte *)surfType + 0xc);
+        src = (char *)poly->verts;
         for (i = 0; i < vertCount; i++) {
             char *srcVert = src + i * 0x44;
             tess = RB_TessBase();
-            vertBase = *(int *)(tess + 0x5a7d4);
-            dest = tess + (vertBase + i) * 32;
+            vertBase = tess->vertexCount;
+            dest = (char *)tess + (vertBase + i) * 32;
 
             /* Copy position (vec3 = 12 bytes) */
             *(int *)(dest + 0) = *(int *)(srcVert + 0);
@@ -2418,9 +2402,9 @@ void RB_TessPoly(const surfaceType_t *surfType)
     } else {
         /* DX9 mode: memcpy with stride 68 (0x44) */
         tess = RB_TessBase();
-        vertBase = *(int *)(tess + 0x5a7d4);
-        dest = tess + vertBase * 68;
-        src = *(char **)((byte *)surfType + 0xc);
+        vertBase = tess->vertexCount;
+        dest = (char *)tess + vertBase * 68;
+        src = (char *)poly->verts;
         memcpy(dest, src, vertCount * 68);
     }
 
@@ -2429,68 +2413,72 @@ void RB_TessPoly(const surfaceType_t *surfType)
     if (triCount > 0) {
         tess = RB_TessBase();
         for (i = 0; i < triCount; i++) {
-            int idxOff = *(int *)(tess + 0x5a7d0);
-            indices = (unsigned short *)(*(char **)(tess + 0x5a7b0) + idxOff * 2);
-            vertBase = *(unsigned short *)(tess + 0x5a7d4);
+            int idxOff = tess->indexCount;
+            indices = (unsigned short *)((char *)tess->indices + idxOff * 2);
+            vertBase = (unsigned short)tess->vertexCount;
 
             indices[0] = (unsigned short)vertBase;
             indices[1] = (unsigned short)(i + vertBase + 1);
             indices[2] = (unsigned short)(i + vertBase + 2);
-            *(int *)(tess + 0x5a7d0) += 3;
+            tess->indexCount += 3;
         }
     }
 
     /* Update vertex count */
-    vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+    vertCount = (int)poly->vertCount;
     tess = RB_TessBase();
-    *(int *)(tess + 0x5a7d4) += vertCount;
+    tess->vertexCount += vertCount;
 }
 
 /* line 1485 */
 void RB_TessStaticModelCached(const surfaceType_t *surfType)
 {
-    char *tess;
+    materialCommands_t *tess;
+    DxGlobals *dxGlobals;
     int triIndexCount;
-    int sortedIndex;
+    MaterialVertexDeclType sortedIndex;
     int baseVertIndex;
     char *dest;
     char *src;
 
-    /* surfType[1] is a pointer (XSurface*), triCount is signed short at offset 4 */
-    triIndexCount = (int)(*(short *)((byte *)*(void **)((byte *)surfType + 4) + 4)) * 3;
+    /* Get triCount from the XSurface pointer at surfType offset 4 (GfxModelSurface.xsurf) */
+    {
+        const GfxModelSurface *modelSurf = (const GfxModelSurface *)surfType;
+        triIndexCount = (int)modelSurf->xsurf->triCount * 3;
+    }
 
     tess = RB_TessBase();
 
     /* RB_CheckOverflow for cached triangles */
-    if (triIndexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
-        sortedIndex = *(int *)(tess + 0x5a7cc);
+    if (triIndexCount + tess->optimizedIndexCount > 0x100000) {
+        sortedIndex = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(
-            *(const Material **)(tess + 0x5a7bc),
-            *(MaterialTechniqueType *)(tess + 0x5a7c0),
-            *(int *)(tess + 0x5a7c4));
+        RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
         tess = RB_TessBase();
-        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        if (sortedIndex != tess->declType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                 RB_EndSurface();
                 tess = RB_TessBase();
             }
-            *(int *)(tess + 0x5a7cc) = sortedIndex;
+            tess->declType = sortedIndex;
         }
     }
 
     /* Set cached mode */
-    *(int *)(tess + 0x5a7b8) = 2;
-    *(int *)(tess + 0x5a7e8) = 0;
-    *(int *)(tess + 0x5a7e4) = 0x10000;
+    tess->optimizedVertexSource = 2;
+    tess->firstOptimizedVertex = 0;
+    tess->optimizedVertexCount = 0x10000;
 
     /* Compute dest and update triIndexCount */
-    baseVertIndex = *(int *)(tess + 0x5a7e0);
-    dest = *(char **)(tess + 0x5a7b4) + baseVertIndex * 2;
-    *(int *)(tess + 0x5a7e0) = baseVertIndex + triIndexCount;
+    baseVertIndex = tess->optimizedIndexCount;
+    dest = (char *)tess->optimizedIndices + baseVertIndex * 2;
+    tess->optimizedIndexCount = baseVertIndex + triIndexCount;
 
     /* Copy cached triangle data from DxGlobals static model cache */
-    src = *(char **)((char *)imp_dx + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
+    /* surfType+8 points to a GfxStaticSurface* whose first field (cachedLods[0]->baseVertIndex)
+     * provides the index offset into the static model cache */
+    dxGlobals = (DxGlobals *)imp_dx;
+    src = (char *)dxGlobals->smodelCacheIndices + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
     Com_Memcpy(dest, src, triIndexCount * 2);
 }
 
@@ -2499,13 +2487,12 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
 {
     GfxModelSkinnedSurface *skinSurf = (GfxModelSkinnedSurface *)surfType;
     XSurface *xsurf;
-    char *tess;
-    char *backEndData;
-    char *dxCaps;
+    materialCommands_t *tess;
+    DxState *dxState;
     int vertexStride;
     GfxDrawPrimArgs args;
     IDirect3DVertexBuffer9 *vb;
-    int sortedIndex;
+    MaterialVertexDeclType sortedIndex;
     int vertexCount;
     int triIndexCount;
     int vertBase;
@@ -2519,14 +2506,12 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         tess = RB_TessBase();
 
         /* Flush if surface has existing data */
-        if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
             RB_EndSurface();
         }
 
         /* Determine vertex stride based on DX level */
-        dxCaps = *(char **)imp_r_rendererInUse;
-        dxCaps = *(char **)dxCaps;
-        isDx7 = (*(int *)(dxCaps + 8) == 2);
+        isDx7 = ((*(int **)imp_r_rendererInUse)[2] == 2);
         vertexStride = isDx7 ? 0x24 : 0x40;
 
         /* Set up draw prim args */
@@ -2537,18 +2522,19 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         args.primCount = (int)xsurf->triCount;
 
         /* Change index buffer if needed */
-        backEndData = (char *)imp_dxState;
-        if (xsurf->indexBuffer != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+        dxState = (DxState *)imp_dxState;
+        if (xsurf->indexBuffer != dxState->indexBuffer) {
             RB_ChangeIndices(xsurf->indexBuffer);
         }
 
-        /* Get skinned vertex buffer from viewParms */
+        /* Get skinned vertex buffer from backEndData */
+        /* TODO: offset 0x217c78+8 into GfxBackEndData is skinnedCacheVb->buffer */
         vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)((char *)imp_backEndData) + 0x217c78 + 8);
 
         /* Change stream source if needed */
-        if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
-            *(int *)(backEndData + 0x20d4) != 0 ||
-            *(int *)(backEndData + 0x20d8) != vertexStride) {
+        if (vb != dxState->streams[0].vb ||
+            dxState->streams[0].offset != 0 ||
+            dxState->streams[0].stride != vertexStride) {
             RB_ChangeStreamSource(0, vb, 0, vertexStride);
         }
 
@@ -2560,68 +2546,60 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
 
         /* RB_CheckOverflow */
         tess = RB_TessBase();
-        if (vertexCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
-            triIndexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
-            sortedIndex = *(int *)(tess + 0x5a7cc);
+        if (vertexCount + tess->vertexCount > 0x154a ||
+            triIndexCount + tess->indexCount > 0x100000) {
+            sortedIndex = tess->declType;
             RB_EndSurface();
             tess = RB_TessBase();
-            RB_BeginSurface(
-                *(const Material **)(tess + 0x5a7bc),
-                *(MaterialTechniqueType *)(tess + 0x5a7c0),
-                *(int *)(tess + 0x5a7c4));
+            RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
             tess = RB_TessBase();
-            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+            if (sortedIndex != tess->declType) {
+                if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                     RB_EndSurface();
                 }
                 tess = RB_TessBase();
-                *(int *)(tess + 0x5a7cc) = sortedIndex;
+                tess->declType = sortedIndex;
             }
         }
 
         /* Flush if index count is odd (alignment issue) */
-        if (*(int *)(tess + 0x5a7d0) & 1) {
-            sortedIndex = *(int *)(tess + 0x5a7cc);
+        if (tess->indexCount & 1) {
+            sortedIndex = tess->declType;
             RB_EndSurface();
             tess = RB_TessBase();
-            RB_BeginSurface(
-                *(const Material **)(tess + 0x5a7bc),
-                *(MaterialTechniqueType *)(tess + 0x5a7c0),
-                *(int *)(tess + 0x5a7c4));
+            RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
             tess = RB_TessBase();
-            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+            if (sortedIndex != tess->declType) {
+                if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                     RB_EndSurface();
                 }
                 tess = RB_TessBase();
-                *(int *)(tess + 0x5a7cc) = sortedIndex;
+                tess->declType = sortedIndex;
             }
         }
 
         /* Copy vertex data into tess buffer */
-        vertBase = *(unsigned short *)(tess + 0x5a7d4);
-        dxCaps = *(char **)imp_r_rendererInUse;
-        dxCaps = *(char **)dxCaps;
+        vertBase = (unsigned short)tess->vertexCount;
 
-        if (*(int *)(dxCaps + 8) == 2) {
+        if ((*(int **)imp_r_rendererInUse)[2] == 2) {
             /* DX7 mode: vertex size = 0x24 (36 bytes), stride = vertCount * 36 */
-            Com_Memcpy(tess + vertBase * 36, (void *)skinSurf->skinnedVert.variant, vertexCount * 36);
+            Com_Memcpy((char *)tess + vertBase * 36, (void *)skinSurf->skinnedVert.variant, vertexCount * 36);
         } else {
             /* DX9 mode: vertex size = 0x40 (64 bytes), stride = vertCount * 64 */
-            Com_Memcpy(tess + vertBase * 64, (void *)skinSurf->skinnedVert.variant, vertexCount * 64);
+            Com_Memcpy((char *)tess + vertBase * 64, (void *)skinSurf->skinnedVert.variant, vertexCount * 64);
         }
 
         /* Update vertex count */
         tess = RB_TessBase();
-        *(int *)(tess + 0x5a7d4) += vertexCount;
+        tess->vertexCount += vertexCount;
 
         /* Copy triangle indices with vertex offset */
         XSurfaceGetTris(xsurf,
-            (r_index_t *)(*(char **)(tess + 0x5a7b0) + *(int *)(tess + 0x5a7d0) * 2),
+            (r_index_t *)((char *)tess->indices + tess->indexCount * 2),
             vertBase);
 
         /* Update index count */
-        *(int *)(tess + 0x5a7d0) += triIndexCount;
+        tess->indexCount += triIndexCount;
     }
 }
 
@@ -2632,53 +2610,47 @@ int g_tt_seq = 0;
 int g_tt_last_seq = 0;
 void RB_TessTriangles(const surfaceType_t *surfType)
 {
-    char *tess;
-    int sortedIndex;
+    materialCommands_t *tess;
+    MaterialVertexDeclType sortedIndex;
     srfTriangles_t *tri = (srfTriangles_t *)surfType;
 
     tess = RB_TessBase();
 
     /* Check if we need to flush existing cached data due to buffer mismatch */
-    if (*(int *)(tess + 0x5a7e0) != 0) {
-        if (*(int *)(tess + 0x5a7e8) != tri->firstVertex ||
-            *(int *)(tess + 0x5a7e4) != (int)tri->vertexCount) {
+    if (tess->optimizedIndexCount != 0) {
+        if (tess->firstOptimizedVertex != tri->firstVertex ||
+            tess->optimizedVertexCount != (int)tri->vertexCount) {
             /* Buffer mismatch - flush and restart */
-            sortedIndex = *(int *)(tess + 0x5a7cc);
+            sortedIndex = tess->declType;
             RB_EndSurface();
-            RB_BeginSurface(
-                *(const Material **)(tess + 0x5a7bc),
-                *(MaterialTechniqueType *)(tess + 0x5a7c0),
-                *(int *)(tess + 0x5a7c4));
-            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+            RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
+            if (sortedIndex != tess->declType) {
+                if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                     RB_EndSurface();
                 }
                 tess = RB_TessBase();
-                *(int *)(tess + 0x5a7cc) = sortedIndex;
+                tess->declType = sortedIndex;
             }
         }
     }
 
     /* Check overflow for cached indices */
-    if ((int)tri->indexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
-        sortedIndex = *(int *)(tess + 0x5a7cc);
+    if ((int)tri->indexCount + tess->optimizedIndexCount > 0x100000) {
+        sortedIndex = tess->declType;
         RB_EndSurface();
-        RB_BeginSurface(
-            *(const Material **)(tess + 0x5a7bc),
-            *(MaterialTechniqueType *)(tess + 0x5a7c0),
-            *(int *)(tess + 0x5a7c4));
+        RB_BeginSurface(tess->material, tess->techType, tess->lmapIndex);
         tess = RB_TessBase();
-        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
-            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        if (sortedIndex != tess->declType) {
+            if (tess->indexCount != 0 || tess->optimizedIndexCount != 0) {
                 RB_EndSurface();
                 tess = RB_TessBase();
             }
-            *(int *)(tess + 0x5a7cc) = sortedIndex;
+            tess->declType = sortedIndex;
         }
     }
 
     /* Set triangle mode */
-    *(int *)(tess + 0x5a7b8) = 1;
+    tess->optimizedVertexSource = 1;
 
     /* diagnostic: log first few TessTriangles calls */
     {
@@ -2686,35 +2658,34 @@ void RB_TessTriangles(const surfaceType_t *surfType)
         if (tess_tri_diag < 20) {
             fprintf(stderr, "[TessTri#%d] ic=%d vc=%d fv=%d tess=%p cached_before=%d\n",
                     tess_tri_diag, (int)tri->indexCount, (int)tri->vertexCount,
-                    tri->firstVertex, (void *)tess, *(int *)(tess + 0x5a7e0));
+                    tri->firstVertex, (void *)tess, tess->optimizedIndexCount);
             tess_tri_diag++;
         }
     }
 
     /* Copy index data */
     Com_Memcpy(
-        *(char **)(tess + 0x5a7b4) + *(int *)(tess + 0x5a7e0) * 2,
+        (char *)tess->optimizedIndices + tess->optimizedIndexCount * 2,
         (void *)tri->indices,
         (int)tri->indexCount * 2);
 
     /* Update state */
     {
-        int *cached_ptr = (int *)(tess + 0x5a7e0);
-        *cached_ptr += (int)tri->indexCount;
-        g_tt_last_cached = *cached_ptr;
+        tess->optimizedIndexCount += (int)tri->indexCount;
+        g_tt_last_cached = tess->optimizedIndexCount;
         g_tt_last_tess = tess;
         g_tt_last_seq = ++g_tt_seq;
         {
             static int ttwaddr = 0;
             if (ttwaddr < 3) {
                 fprintf(stderr, "[TT-WRITE#%d] ptr=%p val=%d ic=%d tess=%p\n",
-                        ttwaddr, (void *)cached_ptr, *cached_ptr, (int)tri->indexCount, (void *)tess);
+                        ttwaddr, (void *)&tess->optimizedIndexCount, tess->optimizedIndexCount, (int)tri->indexCount, (void *)tess);
                 ttwaddr++;
             }
         }
     }
-    *(int *)(tess + 0x5a7e8) = tri->firstVertex;
-    *(int *)(tess + 0x5a7e4) = (int)tri->vertexCount;
+    tess->firstOptimizedVertex = tri->firstVertex;
+    tess->optimizedVertexCount = (int)tri->vertexCount;
 }
 #else
 /* RB_TessEntity — Entity tessellation dispatch. Large switch over entity reType
@@ -2732,16 +2703,15 @@ void RB_TessTriangles(const surfaceType_t *surfType)
  */
 void RB_TessEntity(const GfxEntity *re)
 {
-    char *tess = RB_TessBase();
-    byte *ent = (byte *)re;
-    int reType = *(int *)ent;
+    materialCommands_t *tess = RB_TessBase();
+    int reType = re->reType;
     int isDx7;
     int color = 0;
 
     if ((unsigned)(reType - 4) > 5)
         return;
 
-    isDx7 = (*(int *)(*(byte **)imp_r_rendererInUse + 8) == 2);
+    isDx7 = ((*(int **)imp_r_rendererInUse)[2] == 2);
 
     switch (reType) {
     case 4: /* Sprite */
@@ -2750,18 +2720,18 @@ void RB_TessEntity(const GfxEntity *re)
         float screenOffset[2];
 
         /* Check for screen-space sprite (flag 0x20) */
-        if (ent[5] & 0x20) {
+        if (((byte *)&re->renderFxFlags)[1] & 0x20) {
             /* Screen-space sprite path */
-            float screenHeight = *(float *)(ent + 0x68);
-            byte *backEnd = (byte *)imp_backEnd;
-            int *viewParms = (int *)(*(int *)(backEnd + 0x3c8));
-            float *projMatrix = (float *)(viewParms + 0xc8/4);
+            float screenHeight = re->radius[1];
+            r_backEndGlobals_t *backEnd = (r_backEndGlobals_t *)imp_backEnd;
+            const GfxViewParms *viewParms = backEnd->viewParms;
+            float *projMatrix = (float *)&viewParms->viewProjectionMatrix;
             float w;
 
-            /* Compute W from view matrix */
-            w = *(float *)(ent + 0x3c) * projMatrix[0xc/4] +
-                *(float *)(ent + 0x40) * projMatrix[0x1c/4] +
-                *(float *)(ent + 0x44) * projMatrix[0x2c/4] +
+            /* Compute W from view-projection matrix */
+            w = re->origin[0] * projMatrix[0xc/4] +
+                re->origin[1] * projMatrix[0x1c/4] +
+                re->origin[2] * projMatrix[0x2c/4] +
                 projMatrix[0x3c/4];
 
             if (w <= 0.0f)
@@ -2769,18 +2739,17 @@ void RB_TessEntity(const GfxEntity *re)
 
             /* Compute screen-space size */
             {
-                float *orthoRow = (float *)(viewParms + 0x108/4);
+                float *invVPMatrix = (float *)&viewParms->inverseViewProjectionMatrix;
                 int k;
                 screenHeight *= 2.0f;
                 for (k = 0; k < 3; k++)
-                    worldRadius[k] = screenHeight * orthoRow[0x10/4 + k];
+                    worldRadius[k] = screenHeight * invVPMatrix[0x10/4 + k];
 
                 /* Compute dot product with view right axis */
                 {
-                    float *viewRight = (float *)(viewParms + 0x24/4);
-                    float dotRight = worldRadius[0] * viewRight[0] +
-                                     worldRadius[1] * viewRight[1] +
-                                     worldRadius[2] * viewRight[2];
+                    float dotRight = worldRadius[0] * viewParms->axis[2][0] +
+                                     worldRadius[1] * viewParms->axis[2][1] +
+                                     worldRadius[2] * viewParms->axis[2][2];
                     dotRight *= w;
                     screenOffset[0] = dotRight;
                 }
@@ -2793,20 +2762,20 @@ void RB_TessEntity(const GfxEntity *re)
         }
 
         /* World-space sprite path */
-        worldRadius[0] = *(float *)(ent + 0x64);
-        worldRadius[1] = *(float *)(ent + 0x68);
+        worldRadius[0] = re->radius[0];
+        worldRadius[1] = re->radius[1];
 
-        /* Check if has non-zero screenScale (offset 0x70) */
-        if (*(float *)(ent + 0x70) > 0.0f) {
-            byte *backEnd = (byte *)imp_backEnd;
-            int *viewParms = (int *)(*(int *)(backEnd + 0x3c8));
-            float *projMatrix = (float *)(viewParms + 0xc8/4);
+        /* Check if has non-zero minScreenRadius */
+        if (re->minScreenRadius > 0.0f) {
+            r_backEndGlobals_t *backEnd = (r_backEndGlobals_t *)imp_backEnd;
+            const GfxViewParms *viewParms = backEnd->viewParms;
+            float *projMatrix = (float *)&viewParms->viewProjectionMatrix;
             float w;
 
             /* Compute W */
-            w = *(float *)(ent + 0x3c) * projMatrix[0xc/4] +
-                *(float *)(ent + 0x40) * projMatrix[0x1c/4] +
-                *(float *)(ent + 0x44) * projMatrix[0x2c/4] +
+            w = re->origin[0] * projMatrix[0xc/4] +
+                re->origin[1] * projMatrix[0x1c/4] +
+                re->origin[2] * projMatrix[0x2c/4] +
                 projMatrix[0x3c/4];
 
             if (w <= 0.0f)
@@ -2814,16 +2783,13 @@ void RB_TessEntity(const GfxEntity *re)
 
             /* Project to screen */
             {
-                float *origin = (float *)(ent + 0x3c);
-                float *viewOrg = (float *)(backEnd + 0x3cc);
                 float sx, sy;
                 float scale;
-                int *proj = viewParms;
                 int k;
 
                 /* Compute screen-space offset from view-space transform */
                 for (k = 0; k < 2; k++) {
-                    float val = (origin[0] - viewOrg[0]) * 0.0f; /* simplified */
+                    float val = (re->origin[0] - backEnd->lodParms.origin[0]) * 0.0f; /* simplified */
                     screenOffset[k] = val;
                 }
 
@@ -2831,12 +2797,12 @@ void RB_TessEntity(const GfxEntity *re)
                 screenOffset[0] *= scale;
                 screenOffset[1] *= scale;
 
-                /* Check if entity's screenScale exceeds half the screen */
+                /* Check if entity's minScreenRadius exceeds half the screen */
                 float halfScreen = screenOffset[1] * 0.5f;
-                if (*(float *)(ent + 0x70) > halfScreen) {
-                    float ratio = *(float *)(ent + 0x70) / halfScreen;
-                    worldRadius[0] = *(float *)(ent + 0x64) * ratio;
-                    worldRadius[1] = *(float *)(ent + 0x68) * ratio;
+                if (re->minScreenRadius > halfScreen) {
+                    float ratio = re->minScreenRadius / halfScreen;
+                    worldRadius[0] = re->radius[0] * ratio;
+                    worldRadius[1] = re->radius[1] * ratio;
                 }
             }
         }
@@ -2858,17 +2824,17 @@ void RB_TessEntity(const GfxEntity *re)
 
     case 7: /* Quad (oriented sprite) */
     {
-        float scaleX = *(float *)(ent + 0x64);
-        float scaleY = *(float *)(ent + 0x68);
+        float scaleX = re->radius[0];
+        float scaleY = re->radius[1];
         float left[3], up[3];
         byte rgba[4];
         int nativeColor;
         float s0, t0, s1, t1;
 
-        /* Check rotation angle (offset 0x6c) */
-        if (*(float *)(ent + 0x6c) == 0.0f) {
+        /* Check rotation angle */
+        if (re->rotation == 0.0f) {
             /* No rotation: use entity's forward direction to generate left/up */
-            MakeNormalVectors((float *)(ent + 0x14), left, up);
+            MakeNormalVectors((float *)re->axis[0], left, up);
             /* Scale left by scaleX, up by scaleY */
             left[0] *= scaleX; left[1] *= scaleX; left[2] *= scaleX;
             up[0] *= scaleY; up[1] *= scaleY; up[2] *= scaleY;
@@ -2877,9 +2843,9 @@ void RB_TessEntity(const GfxEntity *re)
             float right[3], fwd[3];
             float angle, sinA, cosA;
 
-            MakeNormalVectors((float *)(ent + 0x14), right, fwd);
+            MakeNormalVectors((float *)re->axis[0], right, fwd);
 
-            angle = *(float *)(ent + 0x6c) * 0.017453292519943295f;
+            angle = re->rotation * 0.017453292519943295f;
             sinA = sinf(angle);
             cosA = cosf(angle);
 
@@ -2899,18 +2865,17 @@ void RB_TessEntity(const GfxEntity *re)
         }
 
         /* Build RGBA color */
-        rgba[0] = ent[0x5b]; /* b */
-        rgba[1] = ent[0x58]; /* r */
-        rgba[2] = ent[0x59]; /* g */
-        rgba[3] = ent[0x5a]; /* a */
+        rgba[0] = re->materialRGBA[3]; /* b */
+        rgba[1] = re->materialRGBA[0]; /* r */
+        rgba[2] = re->materialRGBA[1]; /* g */
+        rgba[3] = re->materialRGBA[2]; /* a */
 
         nativeColor = *(int *)rgba;
 
         /* Compute animation UVs */
         {
-            byte *texInfo = *(byte **)(ent + 0x54);
-            int cols = texInfo[0xe];
-            int rows = texInfo[0xf];
+            int cols = re->customMaterial->info.textureAtlasRowCount;
+            int rows = re->customMaterial->info.textureAtlasColumnCount;
             int totalFrames = cols * rows;
 
             if (totalFrames <= 1) {
@@ -2918,7 +2883,7 @@ void RB_TessEntity(const GfxEntity *re)
             } else {
                 float invCols = 1.0f / (float)cols;
                 float invRows = 1.0f / (float)rows;
-                int frame = *(int *)(ent + 0x60);
+                int frame = re->materialSubimageIndex;
                 int col = frame % cols;
                 int row = frame / cols;
                 s0 = (float)col * invCols;
@@ -2930,9 +2895,9 @@ void RB_TessEntity(const GfxEntity *re)
 
         /* Call appropriate quad stamp function */
         if (isDx7) {
-            RB_AddQuadStampDx7_impl((float *)(ent + 0x3c), left, up, nativeColor, s0, t0, s1, t1);
+            RB_AddQuadStampDx7_impl((float *)re->origin, left, up, nativeColor, s0, t0, s1, t1);
         } else {
-            RB_AddQuadStamp_impl((float *)(ent + 0x3c), left, up, nativeColor, s0, t0, s1, t1);
+            RB_AddQuadStamp_impl((float *)re->origin, left, up, nativeColor, s0, t0, s1, t1);
         }
         return;
     }
@@ -2940,16 +2905,15 @@ void RB_TessEntity(const GfxEntity *re)
     case 8: /* Beam (line entity) */
     {
         /* Build BGRA color from entity color bytes */
-        color = (ent[0x5b]) |
-                (ent[0x58] << 8) |
-                (ent[0x59] << 16) |
-                (ent[0x5a] << 24);
+        color = (re->materialRGBA[3]) |
+                (re->materialRGBA[0] << 8) |
+                (re->materialRGBA[1] << 16) |
+                (re->materialRGBA[2] << 24);
 
         /* Get animation UVs */
         {
-            byte *texInfo = *(byte **)(ent + 0x54);
-            int cols = texInfo[0xe];
-            int rows = texInfo[0xf];
+            int cols = re->customMaterial->info.textureAtlasRowCount;
+            int rows = re->customMaterial->info.textureAtlasColumnCount;
             float s0, t0, s1, t1;
 
             if (cols * rows <= 1) {
@@ -2957,7 +2921,7 @@ void RB_TessEntity(const GfxEntity *re)
             } else {
                 float invCols = 1.0f / (float)cols;
                 float invRows = 1.0f / (float)rows;
-                int frame = *(int *)(ent + 0x60);
+                int frame = re->materialSubimageIndex;
                 int col = frame % cols;
                 int row = frame / cols;
                 s0 = (float)col * invCols;
@@ -2968,11 +2932,11 @@ void RB_TessEntity(const GfxEntity *re)
 
             /* Call line function */
             if (isDx7) {
-                RB_AddLineDx7_impl((float *)(ent + 0x3c), (float *)(ent + 0x48),
-                    *(float *)(ent + 0x64), color, s0, t0, s1, t1);
+                RB_AddLineDx7_impl((float *)re->origin, (float *)re->endpos,
+                    re->radius[0], color, s0, t0, s1, t1);
             } else {
-                RB_AddLine_impl((float *)(ent + 0x3c), (float *)(ent + 0x48),
-                    *(float *)(ent + 0x64), color, s0, t0, s1, t1);
+                RB_AddLine_impl((float *)re->origin, (float *)re->endpos,
+                    re->radius[0], color, s0, t0, s1, t1);
             }
         }
         return;
@@ -2985,23 +2949,21 @@ void RB_TessEntity(const GfxEntity *re)
         float right[3], up[3];
         int numSegments;
         float segLen;
-        byte *b_start = ent + 0x3c;
-        byte *b_end = ent + 0x48;
 
         /* Compute direction and length */
         {
-            float dx = *(float *)(b_end) - *(float *)(b_start);
-            float dy = *(float *)(b_end + 4) - *(float *)(b_start + 4);
-            float dz = *(float *)(b_end + 8) - *(float *)(b_start + 8);
+            float dx = re->endpos[0] - re->origin[0];
+            float dy = re->endpos[1] - re->origin[1];
+            float dz = re->endpos[2] - re->origin[2];
             segLen = dx*dx + dy*dy + dz*dz;
             segLen = sqrtf(segLen);
         }
 
         /* Build color */
-        color = (ent[0x58]) |
-                (ent[0x59] << 8) |
-                (ent[0x5a] << 16) |
-                (ent[0x5b] << 24);
+        color = (re->materialRGBA[0]) |
+                (re->materialRGBA[1] << 8) |
+                (re->materialRGBA[2] << 16) |
+                (re->materialRGBA[3] << 24);
 
         /* Draw rail core */
         {
@@ -3012,10 +2974,10 @@ void RB_TessEntity(const GfxEntity *re)
             float invLen = segLen * 0.00390625f; /* 1/256 */
 
             if (isDx7) {
-                RB_AddLineDx7_impl((float *)b_start, (float *)b_end,
+                RB_AddLineDx7_impl((float *)re->origin, (float *)re->endpos,
                     railWidth, color, 0.0f, 0.0f, invLen, 1.0f);
             } else {
-                RB_AddLine_impl((float *)b_start, (float *)b_end,
+                RB_AddLine_impl((float *)re->origin, (float *)re->endpos,
                     railWidth, color, 0.0f, 0.0f, invLen, 1.0f);
             }
         }

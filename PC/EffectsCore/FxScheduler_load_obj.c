@@ -53,12 +53,12 @@ float FX_CleanTemplate(EffectTemplate *fx)
     int count;
     int j;
 
-    count = *(int *)((byte *)fx + 4);
+    count = fx->mPrimitiveCount;
     if (count <= 0)
         return 0;
 
     for (j = 0; j < count; j++) {
-        PrimitiveTemplate_Shutdown(*(void **)((byte *)fx + 8 + j * 4));
+        PrimitiveTemplate_Shutdown(fx->mPrimitives[j]);
     }
 }
 
@@ -74,7 +74,7 @@ float FX_CreateDefaultEffect(void)
         memset(defaultEffect, 0, 0x68);
         nameBuf = (char *)Hunk_AllocAlignInternal(11, 4);
         strcpy(nameBuf, "default_fx");
-        *(char **)defaultEffect = nameBuf;
+        defaultEffect->mEffectName = nameBuf;
     }
 }
 
@@ -158,10 +158,10 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
     effect = (EffectTemplate *)Hunk_AllocAlignInternal(0x68, 4);
 
     nameBuf = (char *)Hunk_AllocAlignInternal(strlen(name) + 1, 4);
-    *(char **)effect = nameBuf;
+    effect->mEffectName = nameBuf;
     strcpy(nameBuf, name);
 
-    primitiveGroup = *(void **)((byte *)parser + 0x1c);
+    primitiveGroup = (void *)((GPGroup *)parser)->subGroupList;
     if (primitiveGroup == NULL)
         return effect;
 
@@ -200,14 +200,14 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
 
         prim = Hunk_AllocAlignInternal(0x2a4, 4);
         PrimitiveTemplate_Init(prim);
-        *(int *)((byte *)prim + 0x40) = type;
-        *(int *)((byte *)prim + 0x44) = currentPrimitiveIndex;
+        ((PrimitiveTemplate *)prim)->mType = type;
+        ((PrimitiveTemplate *)prim)->mParentPrimIndex = currentPrimitiveIndex;
 
         if (!PrimitiveTemplate_ParsePrimitive(prim, primitiveGroup)) {
             PrimitiveTemplate_Shutdown(prim);
-            count = *(int *)((byte *)effect + 4);
+            count = effect->mPrimitiveCount;
             for (j = 0; j < count; j++) {
-                PrimitiveTemplate_Shutdown(*(void **)((byte *)effect + 8 + j * 4));
+                PrimitiveTemplate_Shutdown(effect->mPrimitives[j]);
             }
             FX_Print("^1FX Error while parsing segment type '%s'\n", *(char **)primitiveGroup);
             return NULL;
@@ -215,12 +215,12 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
 
         /* Validate materials for particle/tail/sound types */
         if (type == 1 || type == 7 || type == 3) {
-            if (*fx_developer_check_ptr != 0 && *(short *)((byte *)prim + 0x6c) == 0) {
+            if (*fx_developer_check_ptr != 0 && *(short *)((byte *)prim + 0x6c) == 0) { /* mMediaHandles.mMediaList.count */
                 FX_Print("^1FX Error, no materials defined for primitive template of type %d\n", type);
                 PrimitiveTemplate_Shutdown(prim);
-                count = *(int *)((byte *)effect + 4);
+                count = effect->mPrimitiveCount;
                 for (j = 0; j < count; j++) {
-                    PrimitiveTemplate_Shutdown(*(void **)((byte *)effect + 8 + j * 4));
+                    PrimitiveTemplate_Shutdown(effect->mPrimitives[j]);
                 }
                 FX_Print("^1FX Error, invalid primitive template for effect '%s'\n", name);
                 return NULL;
@@ -228,16 +228,16 @@ EffectTemplate * FX_ParseEffect(GenericParser2 *parser, const char *name)
         }
 
         /* Add primitive to effect */
-        count = *(int *)((byte *)effect + 4);
+        count = effect->mPrimitiveCount;
         if (count > 0x17) {
             FX_Print("^1FX Error, too many primitives in effect\n");
         } else {
-            *(void **)((byte *)effect + 8 + count * 4) = prim;
-            *(int *)((byte *)effect + 4) = count + 1;
+            effect->mPrimitives[count] = (PrimitiveTemplate *)prim;
+            effect->mPrimitiveCount = count + 1;
         }
 
     next_group:
-        primitiveGroup = *(void **)((byte *)primitiveGroup + 4);
+        primitiveGroup = *(void **)((byte *)primitiveGroup + 4); /* GPObject->next */
         currentPrimitiveIndex++;
     }
 

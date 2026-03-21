@@ -1922,7 +1922,7 @@ void CG_RegisterWeapon(int weaponNum)
     weapDef = (byte *)BG_GetWeaponDef(weaponNum);
 
     /* line 427: check if already registered */
-    if (*(int *)(weapInfo + 0xa8) != 0)
+    if (((weaponInfo_t *)weapInfo)->registered != 0)
         return;
 
     /* line 430 */
@@ -1931,12 +1931,12 @@ void CG_RegisterWeapon(int weaponNum)
     /* line 432 */
     memset(weapInfo, 0, 0x1b4);
     /* line 433 */
-    *(int *)(weapInfo + 0xa8) = 1;
+    ((weaponInfo_t *)weapInfo)->registered = 1;
 
     /* line 436: itemInfo = bg_itemlist + weaponNum * 0x2c */
     {
         byte *bg_items = (byte *)*(int *)imp_bg_itemlist;
-        *(int *)(weapInfo + 0xac) = (int)(bg_items + weaponNum * 0x2c);
+        ((weaponInfo_t *)weapInfo)->item = (int)(bg_items + weaponNum * 0x2c);
     }
 
     /* line 438: itemInfo = cg_items + weaponNum * 0x24 */
@@ -1949,14 +1949,14 @@ void CG_RegisterWeapon(int weaponNum)
     CG_RegisterItemVisuals(weaponNum);
 
     /* line 442 */
-    *(int *)(weapInfo + 0xa0) = -1;
+    ((weaponInfo_t *)weapInfo)->iPrevAnim = -1;
 
     /* line 444: check if viewmodel hand model is specified */
-    if (*(char *)*(int *)(weapDef + 0xc) == '\0')
+    if (*(char *)((WeaponDef *)weapDef)->szGunXModel == '\0')
         goto after_viewmodel;
 
     /* line 447: check if hand model name is set */
-    if (*(int *)(weapDef + 0x10) == 0 || *(char *)*(int *)(weapDef + 0x10) == '\0') {
+    if (((WeaponDef *)weapDef)->szHandXModel == 0 || *(char *)((WeaponDef *)weapDef)->szHandXModel == '\0') {
         Com_Error(1, (const char *)str_002b7be8, *(char **)(weapDef + 4));
     }
 
@@ -1967,20 +1967,20 @@ void CG_RegisterWeapon(int weaponNum)
     *(int *)(dobjModels + 0x0c) = 0; /* ignoreCollision for slot 0 */
 
     /* line 456: build hand model path */
-    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, *(char **)(weapDef + 0x10));
-    *(int *)(dobjModels + 0x00) = (int)CL_RegisterModel(szModelFile);
+    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, ((WeaponDef *)weapDef)->szHandXModel);
+    *(int *)(dobjModels + 0x00) = (int)CL_RegisterModel(szModelFile); /* TODO: unknown offset */
 
     /* line 460: build viewmodel path */
-    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, *(char **)(weapDef + 0xc));
-    *(int *)(dobjModels + 0x10) = (int)CL_RegisterModel(szModelFile);
+    sprintf(szModelFile, (const char *)str_00215f50, (const char *)str_002b7b28, ((WeaponDef *)weapDef)->szGunXModel);
+    *(int *)(dobjModels + 0x10) = (int)CL_RegisterModel(szModelFile); /* TODO: unknown offset */
 
     /* line 463: check if models are bad */
-    if (XModelBad(*(void **)(dobjModels + 0x00)) || XModelBad(*(void **)(dobjModels + 0x10))) {
+    if (XModelBad(*(void **)(dobjModels + 0x00)) || XModelBad(*(void **)(dobjModels + 0x10))) { /* TODO: unknown offset */
         CG_Weapons_SetToDefault(weaponNum, (weaponInfo_s (*)[4])dobjModels);
     }
 
     /* line 467: check if idle anim specified */
-    if (*(int *)(weapDef + 0x18) == 0 || *(char *)*(int *)(weapDef + 0x18) == '\0') {
+    if (((WeaponDef *)weapDef)->szXAnims[1] == 0 || *(char *)((WeaponDef *)weapDef)->szXAnims[1] == '\0') {
         Com_Error(1, (const char *)str_002b7c20, *(char **)(weapDef + 4));
     }
 
@@ -1995,14 +1995,14 @@ void CG_RegisterWeapon(int weaponNum)
         byte *animPtr = weapDef;
         i = 1;
         while (i < 0x17) {
-            const char *animName = *(const char **)(animPtr + 0x18);
+            const char *animName = *(const char **)(animPtr + 0x18); /* TODO: unknown offset */
             if (*animName != '\0') {
                 XAnimPrecache(animName, (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
                 XAnimCreate(pAnims, i, animName);
             } else {
                 /* line 492: use default idle anim */
-                XAnimPrecache(*(const char **)(weapDef + 0x18), (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
-                XAnimCreate(pAnims, i, *(const char **)(weapDef + 0x18));
+                XAnimPrecache(((WeaponDef *)weapDef)->szXAnims[1], (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);
+                XAnimCreate(pAnims, i, ((WeaponDef *)weapDef)->szXAnims[1]);
             }
             i++;
             animPtr += 4;
@@ -2013,7 +2013,7 @@ void CG_RegisterWeapon(int weaponNum)
     pAnimTree = XAnimCreateTree((void *)pAnims, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
 
     /* line 503 */
-    *(int *)(weapInfo + 0xa4) = (int)pAnimTree;
+    ((weaponInfo_t *)weapInfo)->tree = (int)pAnimTree;
 
     /* line 506-507: set rate = 1.0 for all 0x17 anims */
     {
@@ -2029,134 +2029,134 @@ void CG_RegisterWeapon(int weaponNum)
     /* line 510-512: compute fire rate */
     {
         float fireRate = 0.0f;
-        if (*(int *)(weapDef + 0x210) > 0) {
+        if (((WeaponDef *)weapDef)->iHoldFireTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 4);
-            fireRate = (float)msec / (float)*(int *)(weapDef + 0x210);
+            fireRate = (float)msec / (float)((WeaponDef *)weapDef)->iHoldFireTime;
         }
-        *(float *)(weapInfo + 0x14) = fireRate;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[4] = fireRate;
     }
 
     /* line 515-517: melee rate */
     {
         float meleeRate = 0.0f;
-        if (*(int *)(weapDef + 0x214) > 0) {
+        if (((WeaponDef *)weapDef)->iMeleeTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 7);
-            meleeRate = (float)msec / (float)*(int *)(weapDef + 0x214);
+            meleeRate = (float)msec / (float)((WeaponDef *)weapDef)->iMeleeTime;
         }
-        *(float *)(weapInfo + 0x20) = meleeRate;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[7] = meleeRate;
     }
 
     /* line 520-522 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x218) > 0) {
+        if (((WeaponDef *)weapDef)->iReloadTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 8);
-            r = (float)msec / (float)*(int *)(weapDef + 0x218);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iReloadTime;
         }
-        *(float *)(weapInfo + 0x24) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[8] = r;
     }
 
     /* line 525-527 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x21c) > 0) {
+        if (((WeaponDef *)weapDef)->iReloadEmptyTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 9);
-            r = (float)msec / (float)*(int *)(weapDef + 0x21c);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iReloadEmptyTime;
         }
-        *(float *)(weapInfo + 0x28) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[9] = r;
     }
 
     /* line 530-532 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x224) > 0) {
+        if (((WeaponDef *)weapDef)->iReloadStartTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xa);
-            r = (float)msec / (float)*(int *)(weapDef + 0x224);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iReloadStartTime;
         }
-        *(float *)(weapInfo + 0x2c) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[10] = r;
     }
 
     /* line 535-537 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x218) > 0) {
+        if (((WeaponDef *)weapDef)->iReloadTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xb);
-            r = (float)msec / (float)*(int *)(weapDef + 0x218);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iReloadTime;
         }
-        *(float *)(weapInfo + 0x30) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[11] = r;
     }
 
     /* line 540-542 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x234) > 0) {
+        if (((WeaponDef *)weapDef)->iRaiseTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xc);
-            r = (float)msec / (float)*(int *)(weapDef + 0x234);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iRaiseTime;
         }
-        *(float *)(weapInfo + 0x34) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[12] = r;
     }
 
     /* line 545-547 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x230) > 0) {
+        if (((WeaponDef *)weapDef)->iDropTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xd);
-            r = (float)msec / (float)*(int *)(weapDef + 0x230);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iDropTime;
         }
-        *(float *)(weapInfo + 0x38) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[13] = r;
     }
 
     /* line 550-552 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x23c) > 0) {
+        if (((WeaponDef *)weapDef)->iAltRaiseTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xe);
-            r = (float)msec / (float)*(int *)(weapDef + 0x23c);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iAltRaiseTime;
         }
-        *(float *)(weapInfo + 0x3c) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[14] = r;
     }
 
     /* line 555-557 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x238) > 0) {
+        if (((WeaponDef *)weapDef)->iAltDropTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0xf);
-            r = (float)msec / (float)*(int *)(weapDef + 0x238);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->iAltDropTime;
         }
-        *(float *)(weapInfo + 0x40) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[15] = r;
     }
 
     /* line 560-562 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x244) > 0) {
+        if (((WeaponDef *)weapDef)->quickRaiseTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0x10);
-            r = (float)msec / (float)*(int *)(weapDef + 0x244);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->quickRaiseTime;
         }
-        *(float *)(weapInfo + 0x44) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[16] = r;
     }
 
     /* line 565-567 */
     {
         float r = 0.0f;
-        if (*(int *)(weapDef + 0x240) > 0) {
+        if (((WeaponDef *)weapDef)->quickDropTime > 0) {
             int msec = XAnimGetLengthMsec(pAnims, 0x11);
-            r = (float)msec / (float)*(int *)(weapDef + 0x240);
+            r = (float)msec / (float)((WeaponDef *)weapDef)->quickDropTime;
         }
-        *(float *)(weapInfo + 0x48) = r;
+        ((weaponInfo_t *)weapInfo)->viewModelAnimRates[17] = r;
     }
 
     /* line 570: check if ADS fire anim (0x15) is looped */
-    if (*(char *)*(int *)(weapDef + 0x68) != '\0') {
+    if (*(char *)((WeaponDef *)weapDef)->szXAnims[21] != '\0') {
         if (XAnimIsLooped(pAnims, 0x15)) {
-            Com_Error(1, (const char *)str_002b7c60, *(char **)(weapDef + 0x68));
+            Com_Error(1, (const char *)str_002b7c60, ((WeaponDef *)weapDef)->szXAnims[21]);
         }
     }
 
     /* line 573: check if ADS up anim (0x16) is looped */
-    if (*(char *)*(int *)(weapDef + 0x6c) != '\0') {
+    if (*(char *)((WeaponDef *)weapDef)->szXAnims[22] != '\0') {
         if (XAnimIsLooped(pAnims, 0x16)) {
-            Com_Error(1, (const char *)str_002b7c60, *(char **)(weapDef + 0x6c));
+            Com_Error(1, (const char *)str_002b7c60, ((WeaponDef *)weapDef)->szXAnims[22]);
         }
     }
 
@@ -2165,10 +2165,10 @@ void CG_RegisterWeapon(int weaponNum)
     Com_ClientDObjCreate((DObjModel_s *)dobjModels, 2, (struct XAnimTree_s *)pAnimTree, dobjHandle);
 
     /* line 582 */
-    *(int *)(weapInfo + 0x00) = (int)Com_GetClientDObj(dobjHandle, 0);
+    ((weaponInfo_t *)weapInfo)->viewModelDObj = (int)Com_GetClientDObj(dobjHandle, 0);
 
     /* line 584 */
-    I_strncpyz((char *)(weapInfo + 0x60), *(const char **)(weapDef + 0x10), 0x40);
+    I_strncpyz((char *)(weapInfo + 0x60), ((WeaponDef *)weapDef)->szHandXModel, 0x40);
 
     /* line 587 */
     XAnimClearTreeGoalWeights(pAnimTree, 0, 0);
@@ -2186,7 +2186,7 @@ void CG_RegisterWeapon(int weaponNum)
     }
 
     /* line 591: if ADS up anim exists */
-    if (*(char *)*(int *)(weapDef + 0x6c) != '\0') {
+    if (*(char *)((WeaponDef *)weapDef)->szXAnims[22] != '\0') {
         /* line 593 */
         float w_1f = 1.0f;
         XAnimSetGoalWeight(pAnimTree, 0x16, w_1f, 0, 0, 0, 0, 1);
@@ -2195,196 +2195,196 @@ void CG_RegisterWeapon(int weaponNum)
     }
 
     /* line 597: update client info with timescale 0.05 */
-    DObjUpdateClientInfo(*(struct DObj_s **)(weapInfo + 0x00), 0.05f);
+    DObjUpdateClientInfo(((weaponInfo_t *)weapInfo)->viewModelDObj, 0.05f);
 
 after_viewmodel:
     /* line 601: register world model */
-    if (*(char *)*(int *)(weapDef + 0x1b4) != '\0') {
-        *(int *)(weapInfo + 0xbc) = (int)CL_RegisterModel(*(const char **)(weapDef + 0x1b4));
+    if (*(char *)((WeaponDef *)weapDef)->szWorldModel != '\0') {
+        ((weaponInfo_t *)weapInfo)->worldSurfModel = (int)CL_RegisterModel(((WeaponDef *)weapDef)->szWorldModel);
         /* line 607 */
-        if (*(char *)*(int *)(weapDef + 0x1b4) != '\0' && *(int *)(weapInfo + 0xbc) == 0) {
-            Com_Printf((const char *)str_002b7c94, *(char **)(weapDef + 0x1b4));
+        if (*(char *)((WeaponDef *)weapDef)->szWorldModel != '\0' && ((weaponInfo_t *)weapInfo)->worldSurfModel == 0) {
+            Com_Printf((const char *)str_002b7c94, ((WeaponDef *)weapDef)->szWorldModel);
         }
     }
 
     /* line 610: register ammo counter material */
-    if (*(char *)*(int *)(weapDef + 0x118) != '\0') {
-        *(int *)(weapInfo + 0x178) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x118), 7);
+    if (*(char *)((WeaponDef *)weapDef)->szReticleCenter != '\0') {
+        ((weaponInfo_t *)weapInfo)->hReticleCenter = CL_RegisterMaterialNoMip(((WeaponDef *)weapDef)->szReticleCenter, 7);
     }
 
     /* line 612: register ammo counter clip material */
-    if (*(char *)*(int *)(weapDef + 0x11c) != '\0') {
-        *(int *)(weapInfo + 0x17c) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x11c), 7);
+    if (*(char *)((WeaponDef *)weapDef)->szReticleSide != '\0') {
+        ((weaponInfo_t *)weapInfo)->hReticleSide = CL_RegisterMaterialNoMip(((WeaponDef *)weapDef)->szReticleSide, 7);
     }
 
     /* line 614: register overlay material */
-    if (*(char *)*(int *)(weapDef + 0x274) != '\0') {
-        *(int *)(weapInfo + 0x180) = CL_RegisterMaterialNoMip(*(const char **)(weapDef + 0x274), 7);
+    if (*(char *)((WeaponDef *)weapDef)->szOverlayMaterial != '\0') {
+        ((weaponInfo_t *)weapInfo)->hADSOverlay = CL_RegisterMaterialNoMip(((WeaponDef *)weapDef)->szOverlayMaterial, 7);
     }
 
     /* line 617: register flash effect */
-    if (*(char *)*(int *)(weapDef + 0x90) != '\0') {
-        *(int *)(weapInfo + 0xc0) = FX_RegisterEffect(*(const char **)(weapDef + 0x90));
+    if (*(char *)((WeaponDef *)weapDef)->szViewFlashEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->viewFlashEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szViewFlashEffect);
     }
 
     /* line 619: register ads flash effect */
-    if (*(char *)*(int *)(weapDef + 0x94) != '\0') {
-        *(int *)(weapInfo + 0xc4) = FX_RegisterEffect(*(const char **)(weapDef + 0x94));
+    if (*(char *)((WeaponDef *)weapDef)->szWorldFlashEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->worldFlashEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szWorldFlashEffect);
     }
 
     /* line 623-638: register sound aliases */
-    *(int *)(weapInfo + 0xd4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa0));
-    *(int *)(weapInfo + 0xd8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa4));
-    *(int *)(weapInfo + 0xdc) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xa8));
-    *(int *)(weapInfo + 0xe0) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xac));
-    *(int *)(weapInfo + 0xe4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc0));
-    *(int *)(weapInfo + 0xe8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc4));
-    *(int *)(weapInfo + 0xec) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xc8));
-    *(int *)(weapInfo + 0xf0) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xcc));
-    *(int *)(weapInfo + 0xf4) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd0));
-    *(int *)(weapInfo + 0xf8) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd4));
-    *(int *)(weapInfo + 0xfc) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xd8));
-    *(int *)(weapInfo + 0x100) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xdc));
-    *(int *)(weapInfo + 0x104) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe0));
-    *(int *)(weapInfo + 0x108) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe4));
-    *(int *)(weapInfo + 0x10c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xe8));
-    *(int *)(weapInfo + 0x110) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xec));
-    *(int *)(weapInfo + 0x114) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf0));
+    ((weaponInfo_t *)weapInfo)->missileSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szProjectileSound);
+    ((weaponInfo_t *)weapInfo)->pullbackSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szPullbackSound);
+    ((weaponInfo_t *)weapInfo)->flashSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szFireSound);
+    ((weaponInfo_t *)weapInfo)->flashSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szFireSoundPlayer);
+    ((weaponInfo_t *)weapInfo)->lastShotSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szFireLastSound);
+    ((weaponInfo_t *)weapInfo)->lastShotSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szFireLastSoundPlayer);
+    ((weaponInfo_t *)weapInfo)->meleeSwipeSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->meleeSwipeSound);
+    ((weaponInfo_t *)weapInfo)->rechamberSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szRechamberSound);
+    ((weaponInfo_t *)weapInfo)->rechamberSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szRechamberSoundPlayer);
+    ((weaponInfo_t *)weapInfo)->reloadSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadSound);
+    ((weaponInfo_t *)weapInfo)->reloadSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadSoundPlayer);
+    ((weaponInfo_t *)weapInfo)->reloadEmptySound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadEmptySound);
+    ((weaponInfo_t *)weapInfo)->reloadEmptySoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadEmptySoundPlayer);
+    ((weaponInfo_t *)weapInfo)->reloadStartSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadStartSound);
+    ((weaponInfo_t *)weapInfo)->reloadStartSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadStartSoundPlayer);
+    ((weaponInfo_t *)weapInfo)->reloadEndSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadEndSound);
+    ((weaponInfo_t *)weapInfo)->reloadEndSoundPlayer = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szReloadEndSoundPlayer);
 
     /* line 640: last fire sound */
-    *(int *)(weapInfo + 0x118) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf4));
-    if (*(int *)(weapInfo + 0x118) == 0) {
+    ((weaponInfo_t *)weapInfo)->raiseSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szRaiseSound);
+    if (((weaponInfo_t *)weapInfo)->raiseSound == 0) {
         /* line 642: fallback */
-        *(int *)(weapInfo + 0x118) = (int)Com_FindSoundAlias((const char *)str_002b7cc4);
+        ((weaponInfo_t *)weapInfo)->raiseSound = (int)Com_FindSoundAlias((const char *)str_002b7cc4);
     }
 
     /* line 643-644 */
-    *(int *)(weapInfo + 0x11c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xf8));
-    *(int *)(weapInfo + 0x120) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0xfc));
-    if (*(int *)(weapInfo + 0x120) == 0) {
+    ((weaponInfo_t *)weapInfo)->altSwitchSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szAltSwitchSound);
+    ((weaponInfo_t *)weapInfo)->putawaySound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szPutawaySound);
+    if (((weaponInfo_t *)weapInfo)->putawaySound == 0) {
         /* line 646: fallback */
-        *(int *)(weapInfo + 0x120) = (int)Com_FindSoundAlias((const char *)str_002b7cd0);
+        ((weaponInfo_t *)weapInfo)->putawaySound = (int)Com_FindSoundAlias((const char *)str_002b7cd0);
     }
 
     /* line 647-650 */
-    *(int *)(weapInfo + 0x124) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x100));
-    *(int *)(weapInfo + 0x128) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x104));
-    *(int *)(weapInfo + 0x12c) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x108));
-    *(int *)(weapInfo + 0x130) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x10c));
+    ((weaponInfo_t *)weapInfo)->noteTrackSound[0] = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szNoteTrackSoundA);
+    ((weaponInfo_t *)weapInfo)->noteTrackSound[1] = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szNoteTrackSoundB);
+    ((weaponInfo_t *)weapInfo)->noteTrackSound[2] = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szNoteTrackSoundC);
+    ((weaponInfo_t *)weapInfo)->noteTrackSound[3] = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szNoteTrackSoundD);
 
     /* line 652: pickup sound */
-    if (*(int *)(itemInfo + 0x1c) == 0) {
-        *(int *)(itemInfo + 0x1c) = (int)Com_FindSoundAlias((const char *)str_002b7ce0);
+    if (((gitem_t *)itemInfo)->giType == 0) {
+        ((gitem_t *)itemInfo)->giType = (int)Com_FindSoundAlias((const char *)str_002b7ce0);
     }
 
     /* line 654 */
-    *(int *)(itemInfo + 0x20) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x9c));
-    if (*(int *)(itemInfo + 0x20) == 0) {
-        *(int *)(itemInfo + 0x20) = (int)Com_FindSoundAlias((const char *)str_002b7cec);
+    ((gitem_t *)itemInfo)->giTag = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szAmmoPickupSound);
+    if (((gitem_t *)itemInfo)->giTag == 0) {
+        ((gitem_t *)itemInfo)->giTag = (int)Com_FindSoundAlias((const char *)str_002b7cec);
     }
 
     /* line 658: register shell eject effect */
-    if (*(char *)*(int *)(weapDef + 0x110) != '\0') {
-        *(int *)(weapInfo + 0x15c) = FX_RegisterEffect(*(const char **)(weapDef + 0x110));
+    if (*(char *)((WeaponDef *)weapDef)->szShellEjectEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->shellEjectEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szShellEjectEffect);
     }
 
     /* line 661: register second shell eject effect */
-    if (*(char *)*(int *)(weapDef + 0x114) != '\0') {
-        *(int *)(weapInfo + 0x160) = FX_RegisterEffect(*(const char **)(weapDef + 0x114));
+    if (*(char *)((WeaponDef *)weapDef)->szLastShotEjectEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->lastShotEjectEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szLastShotEjectEffect);
     } else {
         /* line 664: copy first to second */
-        *(int *)(weapInfo + 0x160) = *(int *)(weapInfo + 0x15c);
+        ((weaponInfo_t *)weapInfo)->lastShotEjectEffect = ((weaponInfo_t *)weapInfo)->shellEjectEffect;
     }
 
     /* line 666: register projectile model */
-    if (*(char *)*(int *)(weapDef + 0x38c) != '\0') {
-        *(int *)(weapInfo + 0x140) = (int)CL_RegisterModel(*(const char **)(weapDef + 0x38c));
-        if (*(int *)(weapInfo + 0x140) == 0) {
-            Com_Error(1, (const char *)str_002b7d00, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x1b4));
+    if (*(char *)((WeaponDef *)weapDef)->szProjectileModel != '\0') {
+        ((weaponInfo_t *)weapInfo)->missileSurfModel = (int)CL_RegisterModel(((WeaponDef *)weapDef)->szProjectileModel);
+        if (((weaponInfo_t *)weapInfo)->missileSurfModel == 0) {
+            Com_Error(1, (const char *)str_002b7d00, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szWorldModel);
         }
     }
 
     /* line 673: register projectile trail effect */
-    if (*(char *)*(int *)(weapDef + 0x394) != '\0') {
-        *(int *)(weapInfo + 0x164) = FX_RegisterEffect(*(const char **)(weapDef + 0x394));
+    if (*(char *)((WeaponDef *)weapDef)->szProjExplosionEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->projExplosionEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szProjExplosionEffect);
     }
 
     /* line 675: register projectile impact sound */
-    *(int *)(weapInfo + 0x168) = (int)Com_FindSoundAlias(*(const char **)(weapDef + 0x398));
+    ((weaponInfo_t *)weapInfo)->projExplosionSound = (int)Com_FindSoundAlias(((WeaponDef *)weapDef)->szProjExplosionSound);
 
     /* line 676: register turret overheat effect */
-    if (*(char *)*(int *)(weapDef + 0x458) != '\0') {
-        *(int *)(weapInfo + 0x16c) = FX_RegisterEffect(*(const char **)(weapDef + 0x458));
+    if (*(char *)((WeaponDef *)weapDef)->szProjTrailEffect != '\0') {
+        ((weaponInfo_t *)weapInfo)->projTrailEffect = FX_RegisterEffect(((WeaponDef *)weapDef)->szProjTrailEffect);
     }
 
     /* line 678: turret barrel spin speed */
-    *(float *)(weapInfo + 0x148) = (float)*(int *)(weapDef + 0x45c);
+    ((weaponInfo_t *)weapInfo)->missileDlight = (float)((WeaponDef *)weapDef)->iProjectileDLight;
 
     /* line 680: register weapon icon material */
-    if (*(char *)*(int *)(weapDef + 0x1b8) != '\0') {
-        *(int *)(weapInfo + 0x138) = CL_RegisterMaterial(*(const char **)(weapDef + 0x1b8), 7);
+    if (*(char *)((WeaponDef *)weapDef)->szHudIcon != '\0') {
+        ((weaponInfo_t *)weapInfo)->hHudIcon = CL_RegisterMaterial(((WeaponDef *)weapDef)->szHudIcon, 7);
         /* line 683 */
         {
             byte *cgsPtr = *(byte **)imp_cgs;
-            *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(weapInfo + 0x138);
+            *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = ((weaponInfo_t *)weapInfo)->hHudIcon; /* TODO: unknown offset */
         }
     } else {
         /* line 688: use hint_usable as fallback icon */
         byte *cgsPtr = *(byte **)imp_cgs;
-        *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(cgsPtr + 0xba4c);
+        *(int *)(cgsPtr + 0xba54 + weaponNum * 4) = *(int *)(cgsPtr + 0xba4c); /* TODO: unknown offset */
     }
 
     /* line 691: register kill icon */
-    if (*(char *)*(int *)(weapDef + 0x34c) != '\0') {
-        CL_RegisterMaterial(*(const char **)(weapDef + 0x34c), 7);
-        CL_RegisterHudMsgIconMaterial(*(const char **)(weapDef + 0x34c));
+    if (*(char *)((WeaponDef *)weapDef)->killIcon != '\0') {
+        CL_RegisterMaterial(((WeaponDef *)weapDef)->killIcon, 7);
+        CL_RegisterHudMsgIconMaterial(((WeaponDef *)weapDef)->killIcon);
     }
 
     /* line 697: register ammo icon */
-    if (*(char *)*(int *)(weapDef + 0x1bc) != '\0') {
-        *(int *)(weapInfo + 0x13c) = CL_RegisterMaterial(*(const char **)(weapDef + 0x1bc), 7);
+    if (*(char *)((WeaponDef *)weapDef)->szModeIcon != '\0') {
+        ((weaponInfo_t *)weapInfo)->hModeIcon = CL_RegisterMaterial(((WeaponDef *)weapDef)->szModeIcon, 7);
     }
 
     /* line 702: translate display name */
-    *(int *)(weapInfo + 0xb0) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 4));
-    if (*(int *)(weapInfo + 0xb0) == 0) {
+    ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 4));
+    if (((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName == 0) {
         if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
             if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
-                Com_Error(6, (const char *)str_002b7d3c, *(char **)(weapDef + 0x00), *(char **)(weapDef + 4));
+                Com_Error(6, (const char *)str_002b7d3c, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 4));
             } else {
-                Com_Printf((const char *)str_002b7d70, *(char **)(weapDef + 0x00), *(char **)(weapDef + 4));
+                Com_Printf((const char *)str_002b7d70, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 4));
             }
         }
         /* line 712 */
-        *(int *)(weapInfo + 0xb0) = *(int *)(weapDef + 4);
+        ((weaponInfo_t *)weapInfo)->pszTranslatedDisplayName = *(int *)(weapDef + 4);
     }
 
     /* line 715: translate mode name */
-    *(int *)(weapInfo + 0xb4) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 0x70));
-    if (*(int *)(weapInfo + 0xb4) == 0) {
+    ((weaponInfo_t *)weapInfo)->pszTranslatedModename = (int)SEH_StringEd_GetString(((WeaponDef *)weapDef)->szModeName);
+    if (((weaponInfo_t *)weapInfo)->pszTranslatedModename == 0) {
         if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
             if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
-                Com_Error(6, (const char *)str_002b7db0, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x70));
+                Com_Error(6, (const char *)str_002b7db0, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szModeName);
             } else {
-                Com_Printf((const char *)str_002b7de0, *(char **)(weapDef + 0x00), *(char **)(weapDef + 0x70));
+                Com_Printf((const char *)str_002b7de0, ((WeaponDef *)weapDef)->szInternalName, ((WeaponDef *)weapDef)->szModeName);
             }
         }
         /* line 725 */
-        *(int *)(weapInfo + 0xb4) = *(int *)(weapDef + 0x70);
+        ((weaponInfo_t *)weapInfo)->pszTranslatedModename = ((WeaponDef *)weapDef)->szModeName;
     }
 
     /* line 728: translate AI overlay description */
-    *(int *)(weapInfo + 0xb8) = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 8));
-    if (*(int *)(weapInfo + 0xb8) == 0) {
+    ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = (int)SEH_StringEd_GetString(*(const char **)(weapDef + 8));
+    if (((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription == 0) {
         if (*(byte *)(*(byte **)imp_loc_warnings + 8) != 0) {
             if (*(byte *)(*(byte **)imp_loc_warningsAsErrors + 8) != 0) {
-                Com_Error(6, (const char *)str_002b7e1c, *(char **)(weapDef + 0x00), *(char **)(weapDef + 8));
+                Com_Error(6, (const char *)str_002b7e1c, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 8));
             } else {
-                Com_Printf((const char *)str_002b7e58, *(char **)(weapDef + 0x00), *(char **)(weapDef + 8));
+                Com_Printf((const char *)str_002b7e58, ((WeaponDef *)weapDef)->szInternalName, *(char **)(weapDef + 8));
             }
         }
         /* line 738 */
-        *(int *)(weapInfo + 0xb8) = *(int *)(weapDef + 8);
+        ((weaponInfo_t *)weapInfo)->pszTranslatedAIOverlayDescription = *(int *)(weapDef + 8);
     }
 }
 #endif
@@ -7101,22 +7101,22 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
     Com_Printf("WARNING: gun and/or hand model file for weapon [%s] could not be found\n",
                *(const char **)(weapDef + 4));
 
-    handModel = *(const char **)(weapDef + 0xc);
+    handModel = ((WeaponDef *)weapDef)->szGunXModel;
     if (!handModel || handModel[0] == '\0') {
         Com_Error(1, "could not find default weapon model");
     } else {
-        viewModel = *(const char **)(weapDef + 0x10);
+        viewModel = ((WeaponDef *)weapDef)->szHandXModel;
         if (!viewModel || viewModel[0] == '\0') {
             Com_Error(1, "could not find default weapon model");
         }
     }
 
-    viewModel = *(const char **)(weapDef + 0x10);
+    viewModel = ((WeaponDef *)weapDef)->szHandXModel;
     sprintf(modelFile, "%s%s", "xmodel/", viewModel);
     *(void **)dobjModels = CL_RegisterModel(modelFile);
 
-    handModel = *(const char **)(weapDef + 0xc);
+    handModel = ((WeaponDef *)weapDef)->szGunXModel;
     sprintf(modelFile, "%s%s", "xmodel/", handModel);
-    *(void **)((byte *)dobjModels + 0xc) = CL_RegisterModel(modelFile);
+    *(void **)((byte *)dobjModels + 0xc) = CL_RegisterModel(modelFile); /* TODO: unknown offset */
 }
 #endif

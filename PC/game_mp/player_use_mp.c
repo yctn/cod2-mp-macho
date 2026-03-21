@@ -180,7 +180,7 @@ check_activate:
             /* Set use entity and time */
             *(int *)(client + CLIENT_USE_ENTNUM) = *(int *)(client + PS_CURSORHINTENTINDEX);
             client = (byte *)ent->client;
-            levelTime = *(int *)((byte *)level_ptr + 0x1EC);
+            levelTime = ((level_locals_t *)level_ptr)->time;
             *(int *)(client + CLIENT_USE_TIME) = levelTime;
             activated = 1;
             client = (byte *)ent->client;
@@ -221,7 +221,7 @@ check_held_use:
         return;
 
     /* Check hold time */
-    levelTime = *(int *)((byte *)level_ptr + 0x1EC);
+    levelTime = ((level_locals_t *)level_ptr)->time;
     if (levelTime - *(int *)(client + CLIENT_USE_HOLD_TIME) < *(int *)(*(byte **)&g_useActivateHoldTime + 8))
         return;
 
@@ -534,16 +534,16 @@ void Player_UpdateCursorHints(gentity_t *ent)
             itemEntry = bg_itemlist_ptr + weaponIndex * 44;
 
             /* Check giType == 1 (IT_WEAPON) */
-            if (*(int *)(itemEntry + 0x1C) != 1)
+            if (((gitem_t *)itemEntry)->giType != 1)
                 continue;
 
             /* Check weapon class */
-            weapDef = (WeaponDef *)BG_GetWeaponDef(*(int *)(itemEntry + 0x20));
+            weapDef = (WeaponDef *)BG_GetWeaponDef(((gitem_t *)itemEntry)->giTag);
             if (weapDef->weapType == 1)
                 continue;
 
             /* Check if player already has this weapon */
-            weaponIndex = *(int *)(itemEntry + 0x20);
+            weaponIndex = ((gitem_t *)itemEntry)->giTag;
             if ((*(int *)(client + PS_WEAPONS + (weaponIndex >> 5) * 4) >> (weaponIndex & 0x1F)) & 1)
                 continue;
 

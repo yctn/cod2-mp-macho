@@ -3494,10 +3494,10 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
         return;
 
     /* If not initializing, check if the item has a valid classname */
-    if (!*(int *)((byte *)imp_level + 0x1c)) {
+    if (!*(int *)((byte *)imp_level + 0x1c)) { /* TODO: unknown offset */
         /* item = bg_itemlist + iItemIndex * 44 */
         item = (byte *)imp_bg_itemlist + iItemIndex * 44;
-        name = *(const char **)(item + 0x14);
+        name = ((gitem_t *)item)->pickup_name;
         if (!name || *name == '\0') {
             name = str_002b4984; /* "" or unknown */
         }
@@ -3516,13 +3516,13 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
     }
 
     /* Register view model if present */
-    if (*(const char **)(item + 0xc)) {
-        G_ModelIndex(*(const char **)(item + 0xc));
+    if (((gitem_t *)item)->world_model[1]) {
+        G_ModelIndex(((gitem_t *)item)->world_model[1]);
     }
 
     /* If bUpdateCS, set level flag */
     if (bUpdateCS) {
-        *(int *)((byte *)imp_level + 0x3600) = 1;
+        *(int *)((byte *)imp_level + 0x3600) = 1; /* TODO: unknown offset */
     }
 }
 #endif

@@ -199,10 +199,9 @@ void UI_LoadArenas(void)
 
         arenaIdx = sharedUiInfo.mapCount;
         {
-            int off = arenaIdx * 41;
-            const char *ls = sharedUiInfo.mapList[off/41].imageName;
+            const char *ls = sharedUiInfo.mapList[arenaIdx].imageName;
             MaterialHandle mat = CL_RegisterMaterialNoMip(ls, 3);
-            *(MaterialHandle *)(uiInfo + 0x13f0 + off * 4) = mat;
+            sharedUiInfo.mapList[arenaIdx].levelShot = mat;
         }
 
         /* Parse gametype string */
@@ -226,7 +225,7 @@ void UI_LoadArenas(void)
             {
                 const char *pszText = gametypes;
                 const char *gtMap;
-                Com_BeginParseSession(va(".arena files : %s", *(const char **)(uiInfo + 0x1358 + arenaIdx * 41 * 4)));
+                Com_BeginParseSession(va(".arena files : %s", sharedUiInfo.mapList[arenaIdx].mapLoadName));
 
                 while (1) {
                     token = Com_Parse(&pszText);

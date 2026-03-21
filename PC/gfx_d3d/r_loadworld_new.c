@@ -68,17 +68,16 @@ typedef void (*loader_regparm_fn)(void *) __attribute__((regparm(1)));
 
 /* ---- Helper macros for accessing renderer import table ---- */
 #define RI_PRINTF(fmt, ...)   ((void (*)(int, const char *, ...))*(void **)(((byte *)&imp_ri)[0]))(0, fmt, ##__VA_ARGS__)
-#define UPDATE_SCREEN()       ((void (*)(int, const char *))*(void **)((byte *)*(void **)&imp_ri + 0x108))(0, "updatescreen\n")
+#define UPDATE_SCREEN()       ((refimport_t *)imp_ri)->Cbuf_ExecuteText(0, "updatescreen\n")
 
 /*
  * R_PrintLoadProgress - Print a "Loading ..." message and update the screen.
  */
 static void R_PrintLoadProgress(const char *what)
 {
-    void (*Printf)(int, const char *, ...) = (void (*)(int, const char *, ...))*(void **)*(byte **)&imp_ri;
-    Printf(0, "Loading %s...\n", what);
-    void (*CmdExec)(int, const char *) = (void (*)(int, const char *))*(void **)((byte *)*(void **)&imp_ri + 0x108);
-    CmdExec(0, "updatescreen\n");
+    refimport_t *ri = (refimport_t *)imp_ri;
+    ri->Printf(0, "Loading %s...\n", what);
+    ri->Cbuf_ExecuteText(0, "updatescreen\n");
 }
 
 /*
@@ -572,7 +571,7 @@ GfxWorld *R_LoadWorldInternal(const char *name)
                 }
 
                 /* Generate GPU images for this lightmap group */
-                int rendererInUse = *(int *)((byte *)*(void **)&imp_r_rendererInUse + 8);
+                int rendererInUse = (*(const dvar_t **)imp_r_rendererInUse)->current.integer;
 
                 if (rendererInUse == 2) {
                     /* DX9 path: generate a single combined low-res image */
