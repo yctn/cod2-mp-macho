@@ -13,8 +13,23 @@ extern void Com_EndParseSession(void);
 extern const char *Com_Parse(const char **buf);
 extern void Com_Printf(const char *fmt, ...);
 extern void *Hunk_AllocLowAlignInternal(int size, int align);
+extern const char str_002b8750[];
+extern const char str_002b8758[];
 
-extern const char *accuracyDirName[3]; /* accuracyDirName */
+__attribute__((used, packed, aligned(4)))
+UInt32 accuracyDirName_storage[9] __asm__("accuracyDirName") = {
+    (UInt32)str_002b8750,
+    (UInt32)str_002b8758,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x314b40 */
+
+#define accuracyDirName ((const char * const *)accuracyDirName_storage)
 
 static Bool G_ParseWeaponAccuracyGraph(const char *dirName, const char *graphName,
                                        float accuracyGraphKnots[16][2],

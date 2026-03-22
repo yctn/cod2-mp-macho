@@ -12,8 +12,12 @@
  *   #include "PC/xanim/xanim_public.h"
  */
 
-extern vec3_t mins; /* mins */
-extern vec3_t maxs; /* maxs */
+__attribute__((used, aligned(4))) vec_t maxs[3] = {
+    4.0f, 4.0f, 4.0f,
+}; /* 0x314660 */
+__attribute__((used, aligned(4))) vec_t mins[5] = {
+    -4.0f, -4.0f, -4.0f, 0.0f, 0.0f,
+}; /* 0x31466c */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void FX_FreeSystem(void);

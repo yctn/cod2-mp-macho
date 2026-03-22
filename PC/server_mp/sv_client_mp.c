@@ -5,7 +5,17 @@
 #include "imports.h"
 
 static int botport; /* botport */
-extern ucmd_t ucmds[12]; /* ucmds */
+extern const char str_00228e90[];
+extern const char str_002a96d4[];
+extern const char str_002a98b0[];
+extern const char str_002adea0[];
+extern const char str_002adeac[];
+extern const char str_002adeb0[];
+extern const char str_002adebc[];
+extern const char str_002adec4[];
+extern const char str_002adecc[];
+extern const char str_002aded8[];
+extern const char str_002adee4[];
 
 extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
 extern void Com_DPrintf(const char *fmt, ...);
@@ -66,6 +76,21 @@ void SV_BeginDownload_f(client_t *cl);
 void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta);
 void SV_ExecuteClientMessage(client_t *cl, msg_t *msg);
 gentity_t * SV_AddTestClient(void);
+
+__attribute__((used)) ucmd_t ucmds[12] = {
+    { (char *)str_002adea0, (void (*)())SV_UpdateUserinfo_f },
+    { (char *)str_00228e90, (void (*)())SV_Disconnect_f },
+    { (char *)str_002adeac, (void (*)())SV_VerifyIwds_f },
+    { (char *)str_002a96d4, (void (*)())SV_ResetPureClient_f },
+    { (char *)str_002adeb0, (void (*)())SV_BeginDownload_f },
+    { (char *)str_002adebc, (void (*)())SV_NextDownload_f },
+    { (char *)str_002adec4, (void (*)())SV_StopDownload_f },
+    { (char *)str_002a98b0, (void (*)())SV_DoneDownload_f },
+    { (char *)str_002adecc, (void (*)())SV_RetransmitDownload_f },
+    { (char *)str_002aded8, (void (*)())SV_MutePlayer_f },
+    { (char *)str_002adee4, (void (*)())SV_UnmutePlayer_f },
+    { 0, 0 },
+}; /* 0x312ca0 */
 
 /* line 138 */
 #ifndef __EMSCRIPTEN__

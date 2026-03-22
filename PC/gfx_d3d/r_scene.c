@@ -14,8 +14,15 @@ extern struct GfxScene scene; /* 0x0 */
 static int warnCount; /* warnCount */
 static int warnCount_007f1dd0; /* warnCount */
 static GfxViewParms lockPvsViewParms; /* lockPvsViewParms */
-extern surfaceType_t s_entitySurface; /* s_entitySurface */
-extern byte s_XModelSurfaceSize[8]; /* s_XModelSurfaceSize */
+__attribute__((used)) byte s_XModelSurfaceSize[8] = {
+    0x00, 0x00, 0x00, 0x10, 0x38, 0x10, 0x00, 0x00,
+}; /* 0x311080 */
+__attribute__((used, aligned(4)))
+surfaceType_t s_entitySurface_storage[6] __asm__("s_entitySurface") = {
+    2, 0, 0, 0, 0, 0,
+}; /* 0x311088 */
+
+#define s_entitySurface (s_entitySurface_storage[0])
 
 extern GfxBackEndData *frontEndDataOut;
 extern r_global_permanent_t rgp;       /* imp_rgp */

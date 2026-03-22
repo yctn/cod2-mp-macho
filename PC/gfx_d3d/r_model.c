@@ -38,7 +38,20 @@ extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
 extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 extern Bool R_ValidXModelName(const char *name);
 extern refimport_t ri; /* imp_ri */
-extern const int boxVerts[24][3]; /* boxVerts — 12 pairs of box edge start/end vertex indices */
+__attribute__((used)) const int boxVerts[24][3] = {
+    { 0, 0, 0 }, { 1, 0, 0 },
+    { 0, 0, 0 }, { 0, 1, 0 },
+    { 1, 1, 0 }, { 1, 0, 0 },
+    { 1, 1, 0 }, { 0, 1, 0 },
+    { 0, 0, 1 }, { 1, 0, 1 },
+    { 0, 0, 1 }, { 0, 1, 1 },
+    { 1, 1, 1 }, { 1, 0, 1 },
+    { 1, 1, 1 }, { 0, 1, 1 },
+    { 0, 0, 0 }, { 0, 0, 1 },
+    { 1, 0, 0 }, { 1, 0, 1 },
+    { 0, 1, 0 }, { 0, 1, 1 },
+    { 1, 1, 0 }, { 1, 1, 1 },
+}; /* 0x2f24c0 */
 extern const int s_streamSourceInfo[]; /* end sentinel for boxVerts iteration */
 extern int DObjNumBones(const void *obj);
 extern void DObjGetBoneInfo(const void *obj, void **boneInfoArray);

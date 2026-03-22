@@ -9,7 +9,7 @@
  *   #include "Mac/Tools/MacMemory.h"
  */
 
-extern Boolean sSystemCursorVisible; /* 0x308080 */
+__attribute__((used)) static UInt8 sSystemCursorVisible[32] = { 1 }; /* 0x308080 */
 static Point sGlobalMouse; /* 0x334b80 */
 
 void MacTools_SetCursorID(int inCursorID);
@@ -1782,4 +1782,3 @@ void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS
 void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<FSRef, std_allocator<FSRef> >__M_insert_aux */
 { }
 #endif
-

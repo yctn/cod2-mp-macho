@@ -15,7 +15,13 @@ extern const char * Com_ParseOnLine(const char **p);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void Com_Printf(const char *fmt, ...);
 
-extern const char *staticNULL; /* staticNULL */
+extern const char str_002157b8[];
+__attribute__((used, packed, aligned(4)))
+UInt32 staticNULL_storage[8] __asm__("staticNULL") = {
+    (UInt32)str_002157b8,
+    0, 0, 0, 0, 0, 0, 0,
+}; /* 0x3131a0 */
+#define staticNULL (*(const char **)&staticNULL_storage[0])
 static stringDef_t * g_strHandle[2048]; /* g_strHandle */
 
 void Window_SetStaticFlags(Window *w, const int flags);

@@ -16,7 +16,21 @@ extern const dvar_t *showpackets; /* 0x0 */
 extern const dvar_t *showdrop; /* 0x0 */
 extern const dvar_t *packetDebug; /* 0x0 */
 static char s[64]; /* s */
-extern char * netsrcString[2]; /* netsrcString */
+extern const char str_002ab028[];
+extern const char str_002ab030[];
+
+__attribute__((used, packed, aligned(4)))
+UInt32 netsrcString_storage[7] __asm__("netsrcString") = {
+    (UInt32)str_002ab028,
+    (UInt32)str_002ab030,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x312044 */
+
+#define netsrcString ((char **)netsrcString_storage)
 static int net_iProfilingOn; /* net_iProfilingOn */
 extern loopback_t loopbacks[2]; /* loopbacks — must be extern to share
                                     with the binary's loopback buffer */

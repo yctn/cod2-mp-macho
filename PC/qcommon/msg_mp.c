@@ -12,7 +12,19 @@ static char string_00f0ec60[8192]; /* string */
 static char string_00f10c60[1024]; /* string */
 static struct huffman_t msgHuff; /* msgHuff */
 static qboolean msgInit; /* msgInit */
-extern unsigned int kbitmask[33]; /* kbitmask */
+__attribute__((used)) unsigned int kbitmask_storage[40] __asm__("kbitmask") = {
+    0x00000000, 0x00000001, 0x00000003, 0x00000007,
+    0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
+    0x000000FF, 0x000001FF, 0x000003FF, 0x000007FF,
+    0x00000FFF, 0x00001FFF, 0x00003FFF, 0x00007FFF,
+    0x0000FFFF, 0x0001FFFF, 0x0003FFFF, 0x0007FFFF,
+    0x000FFFFF, 0x001FFFFF, 0x003FFFFF, 0x007FFFFF,
+    0x00FFFFFF, 0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF,
+    0x0FFFFFFF, 0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF,
+    0xFFFFFFFF,
+    0, 0, 0, 0, 0, 0, 0,
+}; /* 0x312c00 */
+#define kbitmask kbitmask_storage
 extern void Com_Printf(const char *fmt, ...);
 extern int I_CleanChar(int ch);
 

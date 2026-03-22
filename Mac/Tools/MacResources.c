@@ -8,7 +8,11 @@
 /* Forward declarations */
 HCURSOR SetWinCursor(HCURSOR hCursor);
 
-extern int sResult; /* cached CFStringRef for MacResources_Get* */
+__attribute__((used, packed, aligned(4)))
+UInt32 sResult_storage[8] __asm__("sResult") = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+}; /* 0x308060 */
+#define sResult (*(int *)&sResult_storage[0])
 extern int sSavedWinCursor;
 extern int sCurrentCursor; /* WinCursor* */
 static CFStringRef sResult_00334b04; /* 0x334b04 */
@@ -34,10 +38,6 @@ CFStringRef MacResources_GetMissingDataFolderError(void);
 CFStringRef MacResources_GetInsertDiscError(void);
 CFStringRef MacResources_GetNeeds32BitError(void);
 CFStringRef MacResources_GetCantRunFromDiscError(void);
-void SwitchToWinCursor(void);
-void SwitchToMacCursor(void);
-void game_dprintf(const char *inFormat);
-void CursorTimerProc(void);
 
 /* MacResources helper: get localized string from main bundle */
 static int MacResources_GetLocalizedString(int keyAddr, int tableAddr)
@@ -509,62 +509,3 @@ CFStringRef MacResources_GetCantRunFromDiscError(void)
     return 0;
 }
 #endif
-
-void SwitchToWinCursor(void)
-{
-    int saveWinCursor = sSavedWinCursor;
-    sSavedWinCursor = 0;
-    SetWinCursor((HCURSOR)(intptr_t)saveWinCursor);
-}
-
-void SwitchToMacCursor(void)
-{
-    if (sSavedWinCursor)
-        return;
-
-    sSavedWinCursor = (int)(intptr_t)SetWinCursor((HCURSOR)(intptr_t)-1);
-}
-
-/* game_dprintf is a no-op stub */
-void game_dprintf(const char *inFormat)
-{
-}
-
-void CursorTimerProc(void)
-{
-    char *cursor = (char *)sCurrentCursor;
-    if (!cursor || !sSavedWinCursor)
-        return;
-
-    /* Check if animated cursor with more than 1 frame, or needs update */
-    int numFrames = *(int *)(cursor + 0xc);
-    if (numFrames <= 1 && !*(unsigned char *)(cursor + 0x40))
-        return;
-
-    int now = TickCount();
-    if (now < *(unsigned int *)(cursor + 0x3c))
-        return;
-
-    int frameIndex = *(int *)(cursor + 0x38) + 1;
-    if (frameIndex >= *(int *)(cursor + 0x10))
-    {
-        frameIndex = 0;
-        *(int *)(cursor + 0x38) = 0;
-    }
-    else
-    {
-        *(int *)(cursor + 0x38) = frameIndex;
-    }
-
-    /* Set next tick time */
-    int *delayTable = *(int **)(cursor + 0x30);
-    *(int *)(cursor + 0x3c) = now + delayTable[frameIndex];
-
-    /* Set cursor to the right pixmap */
-    int *frameIdxTable = *(int **)(cursor + 0x34);
-    int pixIdx = frameIdxTable[frameIndex];
-    int *pixmapTable = *(int **)(cursor + 0x2c);
-    QDSetNamedPixMapCursor(pixmapTable[pixIdx]);
-
-    *(unsigned char *)(cursor + 0x40) = 0;
-}

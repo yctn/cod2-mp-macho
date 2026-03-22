@@ -9,11 +9,11 @@
 extern void PrimitiveTemplate_Shutdown(void *prim);
 extern void PrimitiveTemplate_Init(void *prim);
 extern int PrimitiveTemplate_ParsePrimitive(void *prim, void *group);
-/* FX_TryRegisterEffect stub: the binary ASM version has stale Mac
-   address relocations that crash during FX template iteration.
-   Return NULL to force fallback to the default empty effect. */
-EffectTemplate *FX_TryRegisterEffect(const char *name)
+/* Keep the load_obj fallback local so FxScheduler.c remains the sole owner
+   of the exported FX_TryRegisterEffect symbol. */
+static EffectTemplate *FX_TryRegisterEffect_stub(const char *name)
 {
+    (void)name;
     return NULL;
 }
 extern void Com_Error(int level, const char *fmt, ...);
@@ -65,7 +65,7 @@ float FX_CleanTemplate(EffectTemplate *fx)
 /* line 108 */
 float FX_CreateDefaultEffect(void)
 {
-    defaultEffect = FX_TryRegisterEffect("default_fx");
+    defaultEffect = FX_TryRegisterEffect_stub("default_fx");
     if (defaultEffect == NULL) {
         /* default_fx.efx not in any IWD; pure mode blocks loose .efx files.
            Create a minimal empty effect template in-memory. */
@@ -261,7 +261,7 @@ EffectTemplate * FX_RegisterEffect(const char *fileName)
     Com_StripExtension(fileName + 3, strippedFileName);
     strlwr(strippedFileName);
 
-    result = FX_TryRegisterEffect(strippedFileName);
+    result = FX_TryRegisterEffect_stub(strippedFileName);
     if (result == NULL)
         return defaultEffect;
 

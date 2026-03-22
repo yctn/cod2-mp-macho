@@ -11,9 +11,21 @@ void *__Znam(unsigned long size);
  *   #include "Mac/Tools/MacMemory.h"
  */
 
-extern const char *kFirstTimeKey; /* 0x30804c */
-extern const char *kDisplayIndexKey; /* 0x308048 */
-extern const char *kDisplayRectKey; /* 0x308044 */
+extern const char str_00215810[]; /* "mac.display.rect" */
+extern const char str_00215824[]; /* "mac.display.index" */
+extern const char str_00215838[]; /* "mac.display.first" */
+
+typedef struct {
+    const char *value;
+    UInt32 reserved[4];
+} MacDisplayPreferenceKeyStorage;
+
+__attribute__((used)) static MacDisplayPreferenceKeyStorage kFirstTimeKey = {
+    str_00215838,
+    {0, 0, 0, 0},
+}; /* 0x30804c */
+__attribute__((used)) static const char *kDisplayIndexKey = str_00215824; /* 0x308048 */
+__attribute__((used)) static const char *kDisplayRectKey = str_00215810; /* 0x308044 */
 static Boolean sInitialized; /* 0x3348f0 */
 static CGDirectDisplayID sDisplayID; /* 0x3348c8 */
 size_t sDisplayIndex; /* 0x3348e8 */
@@ -22,7 +34,7 @@ static SInt32 sDisplayDepth; /* 0x3348e4 */
 static SInt32 sDisplayRefreshRate; /* 0x3348e0 */
 Boolean sInWindowMode; /* 0x3348d8 */
 static ContextRef sScreenContext; /* 0x3348dc */
-extern Boolean sEnableSwap; /* 0x308040 */
+__attribute__((used)) static UInt32 sEnableSwap = 1; /* 0x308040 */
 static UInt32 sSwapCount; /* 0x334798 */
 static WindowRef sMainWindow; /* 0x3347a4 */
 static CGGammaValue *sSystemGammaRed; /* 0x3348d4 */

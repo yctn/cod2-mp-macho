@@ -14,7 +14,25 @@
 
 extern qboolean scr_initialized; /* 0x0 */
 extern Bool updateScreenCalled; /* 0x0 */
-extern const char * szShotName[6]; /* szShotName */
+extern const char str_002acd00[];
+extern const char str_002acd04[];
+extern const char str_002acd08[];
+extern const char str_002acd0c[];
+extern const char str_002acd10[];
+extern const char str_002acd14[];
+
+__attribute__((used, packed, aligned(4)))
+UInt32 szShotName_storage[7] __asm__("szShotName") = {
+    (UInt32)str_002acd00,
+    (UInt32)str_002acd04,
+    (UInt32)str_002acd08,
+    (UInt32)str_002acd0c,
+    (UInt32)str_002acd10,
+    (UInt32)str_002acd14,
+    0,
+}; /* 0x312604 */
+
+#define szShotName ((const char * const *)szShotName_storage)
 
 /* Global pointers */
 /* decompiler alias for imp_re; use the live import pointer rather than the zeroed stub */

@@ -9,8 +9,17 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-extern int startOffset; /* startOffset */
-extern int endOffset; /* endOffset */
+__attribute__((used, aligned(4)))
+int endOffset_storage[1] __asm__("endOffset") = {
+    1,
+}; /* 0x312620 */
+__attribute__((used, aligned(4)))
+int startOffset_storage[7] __asm__("startOffset") = {
+    2, 0, 0, 0, 0, 0, 0,
+}; /* 0x312624 */
+
+#define endOffset (endOffset_storage[0])
+#define startOffset (startOffset_storage[0])
 
 /* Global pointers accessed by absolute address */
 extern byte svs_ptr[];              /* imp_svs - serverStatic_t */

@@ -451,7 +451,7 @@ HRESULT D3DXCompileShader(
 /* The renderer's Material_PreLoadSingleShaderText creates an include handler.
    IncludeClass_Open is called during shader compilation to resolve #include directives. */
 
-int IncludeClass_Open(void *_this, int IncludeType, const char *pFileName,
+static int IncludeClass_Open(void *_this, int IncludeType, const char *pFileName,
     const void *pParentData, const void **ppData, UINT *pBytes)
 {
     (void)_this; (void)IncludeType; (void)pParentData;
@@ -462,7 +462,7 @@ int IncludeClass_Open(void *_this, int IncludeType, const char *pFileName,
     return 0;
 }
 
-int IncludeClass_Close(void *_this, const void *pData)
+static int IncludeClass_Close(void *_this, const void *pData)
 {
     (void)_this; (void)pData;
     return 0;

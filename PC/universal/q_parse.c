@@ -11,8 +11,33 @@ extern void Com_Printf(const char *fmt, ...);
 extern void Com_Error(int level, const char *fmt, ...);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 
-extern const char * punctuation[15]; /* punctuation */
-extern ParseThreadInfo g_parse[1]; /* g_parse */
+extern const char str_0021e844[];
+extern const char str_0021e848[];
+extern const char str_0021e84c[];
+extern const char str_0021e850[];
+extern const char str_0021e854[];
+extern const char str_0021e858[];
+extern const char str_0021e85c[];
+extern const char str_0021e860[];
+extern const char str_00216c3c[];
+extern const char str_0021e864[];
+extern const char str_0021e868[];
+extern const char str_0021e86c[];
+extern const char str_0021e870[];
+extern const char str_0021e874[];
+
+__attribute__((used, aligned(4)))
+UInt32 punctuation_storage[16] __asm__("punctuation") = {
+    (UInt32)str_0021e844, (UInt32)str_0021e848, (UInt32)str_0021e84c, (UInt32)str_0021e850,
+    (UInt32)str_0021e854, (UInt32)str_0021e858, (UInt32)str_0021e85c, (UInt32)str_0021e860,
+    (UInt32)str_00216c3c, (UInt32)str_0021e864, (UInt32)str_0021e868, (UInt32)str_0021e86c,
+    (UInt32)str_0021e870, (UInt32)str_0021e874, 0, 0,
+}; /* 0x30f540 */
+__attribute__((used, aligned(4)))
+UInt32 g_parse_storage[4728] __asm__("g_parse"); /* 0x30ab60 */
+
+#define punctuation ((const char * const *)punctuation_storage)
+#define g_parse ((ParseThreadInfo *)g_parse_storage)
 
 int Com_Compress(char *data_p);
 void Com_BeginParseSession(const char *filename);

@@ -555,46 +555,9 @@ SpeexMode speex_uwb_mode = {
 
 
 
-void *speex_encoder_init(SpeexMode *mode)
-{
-   return mode->enc_init(mode);
-}
-
-void *speex_decoder_init(SpeexMode *mode)
-{
-   return mode->dec_init(mode);
-}
-
-void speex_encoder_destroy(void *state)
-{
-   (*((SpeexMode**)state))->enc_destroy(state);
-}
-
 int speex_encode(void *state, float *in, SpeexBits *bits)
 {
    return (*((SpeexMode**)state))->enc(state, in, bits);
-}
-
-int speex_encode_int(void *state, short *in, SpeexBits *bits)
-{
-   int i;
-   int N;
-   /* FIXME: Do some dynamic allocation here */
-   float float_in[MAX_IN_SAMPLES];
-   speex_encoder_ctl(state, SPEEX_GET_FRAME_SIZE, &N);
-   for (i=0;i<N;i++)
-      float_in[i] = in[i];
-   return (*((SpeexMode**)state))->enc(state, float_in, bits);
-}
-
-void speex_decoder_destroy(void *state)
-{
-   (*((SpeexMode**)state))->dec_destroy(state);
-}
-
-int speex_decode(void *state, SpeexBits *bits, float *out)
-{
-   return (*((SpeexMode**)state))->dec(state, bits, out);
 }
 
 int speex_decode_int(void *state, SpeexBits *bits, short *out)
@@ -616,16 +579,6 @@ int speex_decode_int(void *state, SpeexBits *bits, short *out)
          out[i] = (short)floor(.5+float_out[i]);
    }
    return ret;
-}
-
-int speex_encoder_ctl(void *state, int request, void *ptr)
-{
-   return (*((SpeexMode**)state))->enc_ctl(state, request, ptr);
-}
-
-int speex_decoder_ctl(void *state, int request, void *ptr)
-{
-   return (*((SpeexMode**)state))->dec_ctl(state, request, ptr);
 }
 
 

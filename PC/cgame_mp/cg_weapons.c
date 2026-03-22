@@ -38,8 +38,21 @@ extern const char *SEH_StringEd_GetString(const char *str);
 extern int Com_ClientDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern void CL_RegisterHudMsgIconMaterial(const char *name);
+extern byte scr_const[];
 static const int iSlotPreferenceOrder[2]; /* iSlotPreferenceOrder */
-extern weapSlot_t (*s_barrelTags[4])[64]; /* s_barrelTags */
+__attribute__((used, packed, aligned(4)))
+UInt32 s_barrelTags_storage[8] __asm__("s_barrelTags") = {
+    (UInt32)(scr_const + 140),
+    (UInt32)(scr_const + 142),
+    (UInt32)(scr_const + 144),
+    (UInt32)(scr_const + 146),
+    0,
+    0,
+    0,
+    0,
+}; /* 0x314b00 */
+
+#define s_barrelTags ((weapSlot_t (**)[64])s_barrelTags_storage)
 
 static void CG_PlayADSAnim(void);
 int CG_WeaponDObjHandle(int weaponNum);

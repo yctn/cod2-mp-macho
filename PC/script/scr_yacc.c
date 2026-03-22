@@ -49,6 +49,13 @@ extern yy_state_type yy_last_accepting_state; /* yy_last_accepting_state - BSS *
 extern char *yy_last_accepting_cpos; /* yy_last_accepting_cpos - BSS */
 extern char ch_buf[]; /* ch_buf - BSS */
 
+__attribute__((used, aligned(4)))
+int yy_init_storage[6] __asm__("yy_init") = {
+    1, 0, 0, 0, 0, 0,
+}; /* 0x311468 */
+
+#define yy_init (yy_init_storage[0])
+
 YY_BUFFER_STATE yy_create_buffer(FILE *file, int size);
 int yyparse(void);
 void ScriptParse(sval_t *parseData, int user);

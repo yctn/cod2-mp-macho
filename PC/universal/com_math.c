@@ -23,7 +23,11 @@ extern vec3_t bytedirs[162];
 extern vec2_t vec2_origin;
 extern vec3_t vec3_origin;
 extern const float identityMatrix44[4][4];
-extern long unsigned int holdrand;
+__attribute__((used)) UInt32 holdrand_storage[2] __asm__("holdrand") = {
+    0x89abcdef,
+    0,
+}; /* 0x308b58 */
+#define holdrand (*(unsigned long *)holdrand_storage)
 
 /* Forward declarations */
 const qboolean VecNCompareCustomEpsilon(const vec_t *v0, const vec_t *v1, vec_t epsilon, int coordCount);

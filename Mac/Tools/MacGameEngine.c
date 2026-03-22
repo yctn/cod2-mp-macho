@@ -6,6 +6,20 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern const char str_00215cf8[]; /* "Posted-04/18/06" */
+extern const char str_00215d08[]; /* "2FF037E8990B11DAA29C000A95675086" */
+
+typedef struct {
+    const char *value;
+    UInt32 reserved[6];
+} MacGameEngineProductTagStorage;
+
+__attribute__((used)) static const char *kBuildTag = str_00215cf8; /* 0x3083a0 */
+__attribute__((used)) static MacGameEngineProductTagStorage kProductTag = {
+    str_00215d08,
+    {0, 0, 0, 0, 0, 0},
+}; /* 0x3083a4 */
+
 Boolean CMacGameEngine_ProcessAllEvents(void)
 {
     /* On Linux we don't have a Carbon event loop */

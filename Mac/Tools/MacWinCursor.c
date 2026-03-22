@@ -9,8 +9,8 @@
  */
 
 static EventLoopTimerRef sTimerRef; /* 0x334c14 */
-extern HCURSOR sCurrentWinCursor; /* 0x3080a4 */
-extern bool sVisibleCursor; /* 0x3080a0 */
+__attribute__((used)) static bool sVisibleCursor = 1; /* 0x3080a0 */
+__attribute__((used)) static HCURSOR sCurrentWinCursor = (HCURSOR)-1; /* 0x3080a4 */
 static TCursorList sCursorList; /* 0x334c00 */
 static WinCursor *sCurrentCursor; /* 0x334c0c */
 static HCURSOR sSavedWinCursor; /* 0x334c10 */
@@ -2397,5 +2397,4 @@ void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterato
 void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void) /* std_vector<WinCursor, std_allocator<WinCursor> >__M_insert_aux */
 { }
 #endif
-
 

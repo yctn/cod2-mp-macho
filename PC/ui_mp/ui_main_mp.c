@@ -54,23 +54,61 @@ static qboolean bypassKeyClear; /* bypassKeyClear */
 static int numclean; /* numclean */
 static char info_00ecf960[1024]; /* info */
 static char clientBuff[32]; /* clientBuff */
-extern int lastColumn; /* lastColumn */
+__attribute__((used)) int lastColumn = -1; /* 0x311ebc */
 static int lastTime; /* lastTime */
 static char info_00ecf960[1024]; /* info */
 static char info_00ecf960[1024]; /* info */
 static char info_00ecf960[1024]; /* info */
 static int numFound; /* numFound */
 static int numTimeOuts; /* numTimeOuts */
-extern char dlText[16]; /* dlText */
-extern char etaText[18]; /* etaText */
-extern char xferText[15]; /* xferText */
-extern int tleEstimates[80]; /* tleEstimates */
+__attribute__((used, aligned(1))) char dlText[31] = "EXE_DOWNLOADING"; /* 0x312021 */
+__attribute__((used, aligned(1))) char etaText[18] = "EXE_EST_TIME_LEFT"; /* 0x31200f */
+__attribute__((used, aligned(1))) char xferText[15] = "EXE_TRANS_RATE"; /* 0x312000 */
+__attribute__((used)) int tleEstimates[80] = { [0 ... 79] = 60 }; /* 0x311ec0 */
 static int tleIndex; /* tleIndex */
 static char g_mapname[64]; /* g_mapname */
 static char g_gametype[64]; /* g_gametype */
 static Bool g_ingameMenusLoaded; /* g_ingameMenusLoaded */
-extern const char * MonthAbbrev[12]; /* MonthAbbrev */
-extern const char * netSources[3]; /* netSources */
+extern const char str_002a9d68[];
+extern const char str_002a9d80[];
+extern const char str_002a9d98[];
+extern const char str_002a9dac[];
+extern const char str_002a9dc0[];
+extern const char str_002a9dd4[];
+extern const char str_002a9de8[];
+extern const char str_002a9dfc[];
+extern const char str_002a9e14[];
+extern const char str_002a9e2c[];
+extern const char str_002a9e44[];
+extern const char str_002a9e5c[];
+extern const char str_002a9e74[];
+extern const char str_002a9e80[];
+extern const char str_002a9e90[];
+
+__attribute__((used, packed, aligned(4)))
+UInt32 MonthAbbrev_storage[12] __asm__("MonthAbbrev") = {
+    (UInt32)str_002a9d68,
+    (UInt32)str_002a9d80,
+    (UInt32)str_002a9d98,
+    (UInt32)str_002a9dac,
+    (UInt32)str_002a9dc0,
+    (UInt32)str_002a9dd4,
+    (UInt32)str_002a9de8,
+    (UInt32)str_002a9dfc,
+    (UInt32)str_002a9e14,
+    (UInt32)str_002a9e2c,
+    (UInt32)str_002a9e44,
+    (UInt32)str_002a9e5c,
+}; /* 0x311e80 */
+__attribute__((used, packed, aligned(4)))
+UInt32 netSources_storage[3] __asm__("netSources") = {
+    (UInt32)str_002a9e74,
+    (UInt32)str_002a9e80,
+    (UInt32)str_002a9e90,
+}; /* 0x311eb0 */
+
+#define MonthAbbrev ((const char * const *)MonthAbbrev_storage)
+#define netSources ((const char * const *)netSources_storage)
 static const serverFilter_t serverFilters[1]; /* serverFilters */
 static char menuBuf2[32768]; /* menuBuf2 */
 static int ui_serverFilterType; /* ui_serverFilterType */

@@ -24,11 +24,23 @@ extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
 extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern struct scrParserPub_t scrParserPub; /* 0x0 */
 extern struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob - BSS */
-static const char *propertyNames[3] = {
-    "loopsync",
-    "nonloopsync",
-    "complete",
-};
+extern const char str_0021dd64[];
+extern const char str_0021dd70[];
+extern const char str_0021dd7c[];
+
+__attribute__((used, packed, aligned(4)))
+UInt32 propertyNames_storage[8] __asm__("propertyNames") = {
+    (UInt32)str_0021dd64,
+    (UInt32)str_0021dd70,
+    (UInt32)str_0021dd7c,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x30aa80 */
+
+#define propertyNames ((const char * const *)propertyNames_storage)
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
 

@@ -127,7 +127,12 @@ static itemDef_t *itemCapture; /* itemCapture */
 static itemDef_t *g_bindItem; /* g_bindItem */
 static qboolean debugMode; /* debugMode */
 static int lastListBoxClickTime; /* lastListBoxClickTime */
-extern bind_t g_bindings[56]; /* g_bindings */
+#include "ui_shared_mp_g_bindings_decls.inc"
+__attribute__((used, packed, aligned(4)))
+UInt32 g_bindings_storage[280] __asm__("g_bindings") = {
+#include "ui_shared_mp_g_bindings.inc"
+}; /* 0x3121a0 */
+#define g_bindings ((bind_t *)g_bindings_storage)
 
 void LerpColor(vec_t *a, vec_t *b, vec_t *c, float t);
 qboolean String_Parse(const char * *p, char *out, int len);

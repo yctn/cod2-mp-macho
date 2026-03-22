@@ -4,36 +4,42 @@
 
 .section .text
 
+.section .text.ZThn4_N20CDirect3DCubeTextureD1Ev, "ax"
 .globl ZThn4_N20CDirect3DCubeTextureD1Ev
 .type ZThn4_N20CDirect3DCubeTextureD1Ev, @function
 ZThn4_N20CDirect3DCubeTextureD1Ev:
     subl $4, 4(%esp)
     jmp ZN20CDirect3DCubeTextureD1Ev
 
+.section .text.ZThn4_N20CDirect3DCubeTextureD0Ev, "ax"
 .globl ZThn4_N20CDirect3DCubeTextureD0Ev
 .type ZThn4_N20CDirect3DCubeTextureD0Ev, @function
 ZThn4_N20CDirect3DCubeTextureD0Ev:
     subl $4, 4(%esp)
     jmp ZN20CDirect3DCubeTextureD0Ev
 
+.section .text.ZThn4_N16CDirect3DTextureD1Ev, "ax"
 .globl ZThn4_N16CDirect3DTextureD1Ev
 .type ZThn4_N16CDirect3DTextureD1Ev, @function
 ZThn4_N16CDirect3DTextureD1Ev:
     subl $4, 4(%esp)
     jmp ZN16CDirect3DTextureD1Ev
 
+.section .text.ZThn4_N16CDirect3DTextureD0Ev, "ax"
 .globl ZThn4_N16CDirect3DTextureD0Ev
 .type ZThn4_N16CDirect3DTextureD0Ev, @function
 ZThn4_N16CDirect3DTextureD0Ev:
     subl $4, 4(%esp)
     jmp ZN16CDirect3DTextureD0Ev
 
+.section .text.ZThn4_N21CDirect3DVertexShaderD1Ev, "ax"
 .globl ZThn4_N21CDirect3DVertexShaderD1Ev
 .type ZThn4_N21CDirect3DVertexShaderD1Ev, @function
 ZThn4_N21CDirect3DVertexShaderD1Ev:
     subl $4, 4(%esp)
     jmp ZN21CDirect3DVertexShaderD1Ev
 
+.section .text.ZThn4_N21CDirect3DVertexShaderD0Ev, "ax"
 .globl ZThn4_N21CDirect3DVertexShaderD0Ev
 .type ZThn4_N21CDirect3DVertexShaderD0Ev, @function
 ZThn4_N21CDirect3DVertexShaderD0Ev:
@@ -42,6 +48,7 @@ ZThn4_N21CDirect3DVertexShaderD0Ev:
 
 .section .data
 
+.section .data.vtbl_StdConverterARGB, "aw"
 .globl vtbl_StdConverterARGB
 .type vtbl_StdConverterARGB, @object
 .align 4
@@ -56,6 +63,7 @@ vtbl_StdConverterARGB: /* orig: 0x32f5c8 */
     .long ZN16StdConverterARGBD0Ev /* [28] */
 .size vtbl_StdConverterARGB, .-vtbl_StdConverterARGB
 
+.section .data.vtbl_StdConverterABGR, "aw"
 .globl vtbl_StdConverterABGR
 .type vtbl_StdConverterABGR, @object
 .align 4
@@ -70,6 +78,7 @@ vtbl_StdConverterABGR: /* orig: 0x32f608 */
     .long ZN16StdConverterABGRD0Ev /* [28] */
 .size vtbl_StdConverterABGR, .-vtbl_StdConverterABGR
 
+.section .data.vtbl_ATI4CompsConverterARGB, "aw"
 .globl vtbl_ATI4CompsConverterARGB
 .type vtbl_ATI4CompsConverterARGB, @object
 .align 4
@@ -84,6 +93,7 @@ vtbl_ATI4CompsConverterARGB: /* orig: 0x32f648 */
     .long ZN22ATI4CompsConverterARGBD0Ev /* [28] */
 .size vtbl_ATI4CompsConverterARGB, .-vtbl_ATI4CompsConverterARGB
 
+.section .data.vtbl_ATI4CompsConverterABGR, "aw"
 .globl vtbl_ATI4CompsConverterABGR
 .type vtbl_ATI4CompsConverterABGR, @object
 .align 4
@@ -98,6 +108,7 @@ vtbl_ATI4CompsConverterABGR: /* orig: 0x32f688 */
     .long ZN22ATI4CompsConverterABGRD0Ev /* [28] */
 .size vtbl_ATI4CompsConverterABGR, .-vtbl_ATI4CompsConverterABGR
 
+.section .data.vtbl_CDirect3D, "aw"
 .globl vtbl_CDirect3D
 .type vtbl_CDirect3D, @object
 .align 4
@@ -123,6 +134,7 @@ vtbl_CDirect3D: /* orig: 0x32f6c8 */
     .long ZN9CDirect3DD0Ev /* [72] */
 .size vtbl_CDirect3D, .-vtbl_CDirect3D
 
+.section .data.vtbl_CDirect3DCubeTexture, "aw"
 .globl vtbl_CDirect3DCubeTexture
 .type vtbl_CDirect3DCubeTexture, @object
 .align 4
@@ -153,6 +165,7 @@ vtbl_CDirect3DCubeTexture: /* orig: 0x32f728 */
     .long ZN20CDirect3DCubeTextureD0Ev /* [92] */
 .size vtbl_CDirect3DCubeTexture, .-vtbl_CDirect3DCubeTexture
 
+.section .data.vtbl_CDirect3DCubeTexture_secondary, "aw"
 .globl vtbl_CDirect3DCubeTexture_secondary
 .type vtbl_CDirect3DCubeTexture_secondary, @object
 .align 4
@@ -162,6 +175,7 @@ vtbl_CDirect3DCubeTexture_secondary: /* orig: 0x32f790 */
     .long COpenGLTexture_UpdateOpenGLSurfaces /* [8] */
 .size vtbl_CDirect3DCubeTexture_secondary, .-vtbl_CDirect3DCubeTexture_secondary
 
+.section .data.vtbl_CDirect3DDevice, "aw"
 .globl vtbl_CDirect3DDevice
 .type vtbl_CDirect3DDevice, @object
 .align 4
@@ -290,6 +304,7 @@ vtbl_CDirect3DDevice: /* orig: 0x32f7a8 */
     .long 0 /* [484] NULL */
 .size vtbl_CDirect3DDevice, .-vtbl_CDirect3DDevice
 
+.section .data.vtbl_CDirect3DIndexBuffer, "aw"
 .globl vtbl_CDirect3DIndexBuffer
 .type vtbl_CDirect3DIndexBuffer, @object
 .align 4
@@ -312,6 +327,7 @@ vtbl_CDirect3DIndexBuffer: /* orig: 0x32f9a8 */
     .long ZN20CDirect3DIndexBufferD0Ev /* [60] */
 .size vtbl_CDirect3DIndexBuffer, .-vtbl_CDirect3DIndexBuffer
 
+.section .data.vtbl_CDirect3DPixelShader_base, "aw"
 .globl vtbl_CDirect3DPixelShader_base
 .type vtbl_CDirect3DPixelShader_base, @object
 .align 4
@@ -325,6 +341,7 @@ vtbl_CDirect3DPixelShader_base: /* orig: 0x32fa08 */
     .long ZN20CDirect3DPixelShaderD0Ev /* [24] */
 .size vtbl_CDirect3DPixelShader_base, .-vtbl_CDirect3DPixelShader_base
 
+.section .data.vtbl_CDirect3DPixelShader_ATI, "aw"
 .globl vtbl_CDirect3DPixelShader_ATI
 .type vtbl_CDirect3DPixelShader_ATI, @object
 .align 4
@@ -341,6 +358,7 @@ vtbl_CDirect3DPixelShader_ATI: /* orig: 0x32fa48 */
     .long COpenGLATITextFragmentShader_SetConstants /* [36] */
 .size vtbl_CDirect3DPixelShader_ATI, .-vtbl_CDirect3DPixelShader_ATI
 
+.section .data.vtbl_CDirect3DPixelShader_NVidia, "aw"
 .globl vtbl_CDirect3DPixelShader_NVidia
 .type vtbl_CDirect3DPixelShader_NVidia, @object
 .align 4
@@ -357,6 +375,7 @@ vtbl_CDirect3DPixelShader_NVidia: /* orig: 0x32fa88 */
     .long COpenGLNVidiaRegisterCombinersProgram_SetConstants /* [36] */
 .size vtbl_CDirect3DPixelShader_NVidia, .-vtbl_CDirect3DPixelShader_NVidia
 
+.section .data.vtbl_CDirect3DPixelShader_ARB, "aw"
 .globl vtbl_CDirect3DPixelShader_ARB
 .type vtbl_CDirect3DPixelShader_ARB, @object
 .align 4
@@ -373,6 +392,7 @@ vtbl_CDirect3DPixelShader_ARB: /* orig: 0x32fac8 */
     .long COpenGLARBFragmentProgram_SetConstants /* [36] */
 .size vtbl_CDirect3DPixelShader_ARB, .-vtbl_CDirect3DPixelShader_ARB
 
+.section .data.vtbl_CDirect3DSurface, "aw"
 .globl vtbl_CDirect3DSurface
 .type vtbl_CDirect3DSurface, @object
 .align 4
@@ -398,6 +418,7 @@ vtbl_CDirect3DSurface: /* orig: 0x32fb08 */
     .long ZN16CDirect3DSurfaceD0Ev /* [72] */
 .size vtbl_CDirect3DSurface, .-vtbl_CDirect3DSurface
 
+.section .data.vtbl_CDirect3DSwapChain, "aw"
 .globl vtbl_CDirect3DSwapChain
 .type vtbl_CDirect3DSwapChain, @object
 .align 4
@@ -416,6 +437,7 @@ vtbl_CDirect3DSwapChain: /* orig: 0x32fb68 */
     .long ZN18CDirect3DSwapChainD0Ev /* [44] */
 .size vtbl_CDirect3DSwapChain, .-vtbl_CDirect3DSwapChain
 
+.section .data.vtbl_CDirect3DTexture, "aw"
 .globl vtbl_CDirect3DTexture
 .type vtbl_CDirect3DTexture, @object
 .align 4
@@ -446,6 +468,7 @@ vtbl_CDirect3DTexture: /* orig: 0x32fba8 */
     .long ZN16CDirect3DTextureD0Ev /* [92] */
 .size vtbl_CDirect3DTexture, .-vtbl_CDirect3DTexture
 
+.section .data.vtbl_CDirect3DTexture_secondary, "aw"
 .globl vtbl_CDirect3DTexture_secondary
 .type vtbl_CDirect3DTexture_secondary, @object
 .align 4
@@ -455,6 +478,7 @@ vtbl_CDirect3DTexture_secondary: /* orig: 0x32fc10 */
     .long COpenGLTexture_UpdateOpenGLSurfaces /* [8] */
 .size vtbl_CDirect3DTexture_secondary, .-vtbl_CDirect3DTexture_secondary
 
+.section .data.vtbl_CStaticCacheInfo, "aw"
 .globl vtbl_CStaticCacheInfo
 .type vtbl_CStaticCacheInfo, @object
 .align 4
@@ -463,6 +487,7 @@ vtbl_CStaticCacheInfo: /* orig: 0x32fc28 */
     .long ZN16CStaticCacheInfoD0Ev /* [4] */
 .size vtbl_CStaticCacheInfo, .-vtbl_CStaticCacheInfo
 
+.section .data.vtbl_CDirect3DVertexBuffer, "aw"
 .globl vtbl_CDirect3DVertexBuffer
 .type vtbl_CDirect3DVertexBuffer, @object
 .align 4
@@ -485,6 +510,7 @@ vtbl_CDirect3DVertexBuffer: /* orig: 0x32fc48 */
     .long ZN21CDirect3DVertexBufferD0Ev /* [60] */
 .size vtbl_CDirect3DVertexBuffer, .-vtbl_CDirect3DVertexBuffer
 
+.section .data.vtbl_CDirect3DVertexDeclaration, "aw"
 .globl vtbl_CDirect3DVertexDeclaration
 .type vtbl_CDirect3DVertexDeclaration, @object
 .align 4
@@ -498,6 +524,7 @@ vtbl_CDirect3DVertexDeclaration: /* orig: 0x32fca8 */
     .long ZN26CDirect3DVertexDeclarationD0Ev /* [24] */
 .size vtbl_CDirect3DVertexDeclaration, .-vtbl_CDirect3DVertexDeclaration
 
+.section .data.vtbl_CDirect3DVertexShader, "aw"
 .globl vtbl_CDirect3DVertexShader
 .type vtbl_CDirect3DVertexShader, @object
 .align 4
@@ -511,6 +538,7 @@ vtbl_CDirect3DVertexShader: /* orig: 0x32fce8 */
     .long ZN21CDirect3DVertexShaderD0Ev /* [24] */
 .size vtbl_CDirect3DVertexShader, .-vtbl_CDirect3DVertexShader
 
+.section .data.vtbl_CDirect3DVertexShader_secondary, "aw"
 .globl vtbl_CDirect3DVertexShader_secondary
 .type vtbl_CDirect3DVertexShader_secondary, @object
 .align 4
@@ -519,6 +547,7 @@ vtbl_CDirect3DVertexShader_secondary: /* orig: 0x32fd0c */
     .long ZThn4_N21CDirect3DVertexShaderD0Ev /* [4] thunk */
 .size vtbl_CDirect3DVertexShader_secondary, .-vtbl_CDirect3DVertexShader_secondary
 
+.section .data.vtbl_CMemoryBuffer, "aw"
 .globl vtbl_CMemoryBuffer
 .type vtbl_CMemoryBuffer, @object
 .align 4
@@ -527,6 +556,7 @@ vtbl_CMemoryBuffer: /* orig: 0x32fd28 */
     .long ZN13CMemoryBufferD0Ev /* [4] */
 .size vtbl_CMemoryBuffer, .-vtbl_CMemoryBuffer
 
+.section .data.vtbl_COpenGL, "aw"
 .globl vtbl_COpenGL
 .type vtbl_COpenGL, @object
 .align 4
@@ -535,6 +565,7 @@ vtbl_COpenGL: /* orig: 0x32fd48 */
     .long ZN7COpenGLD0Ev /* [4] */
 .size vtbl_COpenGL, .-vtbl_COpenGL
 
+.section .data.vtbl_COpenGLVertexProgram, "aw"
 .globl vtbl_COpenGLVertexProgram
 .type vtbl_COpenGLVertexProgram, @object
 .align 4
@@ -543,6 +574,7 @@ vtbl_COpenGLVertexProgram: /* orig: 0x32fd58 */
     .long ZN20COpenGLVertexProgramD0Ev /* [4] */
 .size vtbl_COpenGLVertexProgram, .-vtbl_COpenGLVertexProgram
 
+.section .data.vtbl_CVAOPacket, "aw"
 .globl vtbl_CVAOPacket
 .type vtbl_CVAOPacket, @object
 .align 4
@@ -552,6 +584,7 @@ vtbl_CVAOPacket: /* orig: 0x3322a8 */
     .long CVAOPacket_IsFixedFunction /* [8] IsFixedFunction */
 .size vtbl_CVAOPacket, .-vtbl_CVAOPacket
 
+.section .data.vtbl_CD3DXBuffer, "aw"
 .globl vtbl_CD3DXBuffer
 .type vtbl_CD3DXBuffer, @object
 .align 4
@@ -565,6 +598,7 @@ vtbl_CD3DXBuffer: /* orig: 0x332428 */
     .long ZN11CD3DXBufferD0Ev           /* [0x18] D0 destructor */
 .size vtbl_CD3DXBuffer, .-vtbl_CD3DXBuffer
 
+.section .data.vtbl_CD3DXConstantTable, "aw"
 .globl vtbl_CD3DXConstantTable
 .type vtbl_CD3DXConstantTable, @object
 .align 4
@@ -599,4 +633,3 @@ vtbl_CD3DXConstantTable: /* orig: 0x332468 */
     .long ZN18CD3DXConstantTableD1Ev           /* [0x6c] D1 destructor */
     .long ZN18CD3DXConstantTableD0Ev           /* [0x70] D0 destructor */
 .size vtbl_CD3DXConstantTable, .-vtbl_CD3DXConstantTable
-

@@ -8,7 +8,8 @@
  *   #include "Mac/Tools/MacSwap.h"
  */
 
-extern const char *kHighQualityKey; /* 0x311480 */
+extern const char str_00228dbc[]; /* "mac.sound.high.quality" */
+__attribute__((used)) static const char *kHighQualityKey = str_00228dbc; /* 0x311480 */
 static Boolean sHighQualityEngine; /* 0xceb304 */
 static CSoundEngine *sSoundEngine; /* 0xceb300 */
 

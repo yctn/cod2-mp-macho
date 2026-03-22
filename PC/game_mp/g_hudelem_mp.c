@@ -10,11 +10,68 @@
 
 extern game_hudelem_t g_hudelems[1024]; /* 0x0 */
 static const game_hudelem_field_t fields[16]; /* fields */
-extern const char * g_he_font[3]; /* g_he_font */
-extern const char * g_he_alignx[3]; /* g_he_alignx */
-extern const char * g_he_aligny[3]; /* g_he_aligny */
-extern const char * g_he_horzalign[8]; /* g_he_horzalign */
-extern const char * g_he_vertalign[8]; /* g_he_vertalign */
+extern const char str_00220284[]; /* "default" */
+extern const char str_00227904[]; /* "left" */
+extern const char str_002b3f60[]; /* "fullscreen" */
+extern const char str_002b4cd8[]; /* "subtop" */
+extern const char str_002b4ce0[]; /* "top" */
+extern const char str_002b4ce4[]; /* "middle" */
+extern const char str_002b4cec[]; /* "bottom" */
+extern const char str_002b4cf4[]; /* "noscale" */
+extern const char str_002b4cfc[]; /* "alignto480" */
+extern const char str_002b4d08[]; /* "center_safearea" */
+extern const char str_002b4d18[]; /* "subleft" */
+extern const char str_002b4d20[]; /* "center" */
+extern const char str_002b4d28[]; /* "right" */
+extern const char str_002b4d30[]; /* "alignto640" */
+extern const char str_002b4d3c[]; /* "bigfixed" */
+extern const char str_002b4d48[]; /* "smallfixed" */
+
+__attribute__((used)) const char *g_he_vertalign[8] = {
+    str_002b4cd8,
+    str_002b4ce0,
+    str_002b4ce4,
+    str_002b4cec,
+    str_002b3f60,
+    str_002b4cf4,
+    str_002b4cfc,
+    str_002b4d08,
+}; /* 0x314480 */
+__attribute__((used)) const char *g_he_horzalign[8] = {
+    str_002b4d18,
+    str_00227904,
+    str_002b4d20,
+    str_002b4d28,
+    str_002b3f60,
+    str_002b4cf4,
+    str_002b4d30,
+    str_002b4d08,
+}; /* 0x3144a0 */
+__attribute__((used)) const char *g_he_aligny[3] = {
+    str_002b4ce0,
+    str_002b4ce4,
+    str_002b4cec,
+}; /* 0x3144c0 */
+__attribute__((used)) const char *g_he_alignx[3] = {
+    str_00227904,
+    str_002b4d20,
+    str_002b4d28,
+}; /* 0x3144cc */
+__attribute__((used, aligned(4)))
+UInt32 g_he_font_storage[10] __asm__("g_he_font") = {
+    (UInt32)str_00220284,
+    (UInt32)str_002b4d3c,
+    (UInt32)str_002b4d48,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x3144d8 */
+
+#define g_he_font ((const char * const *)g_he_font_storage)
 static void HECmd_SetText(scr_entref_t entref);
 static void HECmd_SetPlayerNameString(scr_entref_t entref);
 static void HECmd_SetMapNameString(scr_entref_t entref);

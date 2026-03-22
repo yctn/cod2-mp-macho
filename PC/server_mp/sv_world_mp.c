@@ -44,8 +44,12 @@ extern int SV_SvEntityForGentity(const gentity_t *gEnt);
  *   #include "PC/universal/com_math.h"
  */
 
-extern vec3_t actorLocationalMins; /* actorLocationalMins */
-extern vec3_t actorLocationalMaxs; /* actorLocationalMaxs */
+__attribute__((used, aligned(4))) vec_t actorLocationalMaxs[3] = {
+    64.0f, 64.0f, 72.0f,
+}; /* 0x311e40 */
+__attribute__((used, aligned(4))) vec_t actorLocationalMins[5] = {
+    -64.0f, -64.0f, -32.0f, 0.0f, 0.0f,
+}; /* 0x311e4c */
 
 clipHandle_t SV_ClipHandleForEntity(const gentity_t *ent);
 int SV_UnlinkEntity(gentity_t *gEnt);

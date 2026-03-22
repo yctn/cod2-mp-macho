@@ -28,7 +28,12 @@ extern const char *UI_SafeTranslateString(const char *key);
 extern void CL_AddReliableCommand(const char *cmd);
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 
-extern int lastLeadTeam; /* lastLeadTeam */
+__attribute__((used, aligned(4)))
+int lastLeadTeam_storage[8] __asm__("lastLeadTeam") = {
+    2, 0, 0, 0, 0, 0, 0, 0,
+}; /* 0x314640 */
+
+#define lastLeadTeam (lastLeadTeam_storage[0])
 /* The decompiler dropped the original scoreboard column table. */
 static const listColumnInfo_t columnInfo[6] = {
     {LCT_NAME, 0.46f, "", 0},

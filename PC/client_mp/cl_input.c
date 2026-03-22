@@ -71,7 +71,19 @@ void CL_WritePacketDbg(const char *fmt, int serverId) {
 }
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */
-extern kbutton_t *kb; /* kb */
+__attribute__((used, packed, aligned(4)))
+UInt32 kb_storage[8] __asm__("kb") = {
+    (UInt32)playersKb,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x313180 */
+
+#define kb ((kbutton_t *)kb_storage[0])
 
 typedef struct
 {

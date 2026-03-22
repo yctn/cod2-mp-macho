@@ -304,8 +304,8 @@ int dynamic_cast(); /* ___dynamic_cast */
 int keymgr_dwarf2_register_sections(); /* ___keymgr_dwarf2_register_sections */
 int maskrune(); /* ___maskrune */
 int sF(); /* ___sF */
-int tolower(); /* ___tolower */
-int toupper(); /* ___toupper */
+/* tolower() — provided by system headers */
+/* toupper() — provided by system headers */
 int udivdi3(); /* ___udivdi3 */
 int cthread_init_routine(); /* __cthread_init_routine */
 /* access() — provided by system headers */

@@ -10,8 +10,90 @@
 
 extern struct saLoadObjGlob_type saLoadObjGlob; /* 0x0 */
 static char szReference[1024]; /* szReference */
-extern const char * g_pszSndAliasKeyNames[24]; /* g_pszSndAliasKeyNames */
-extern const char * g_pszChannelNames[11]; /* g_pszChannelNames */
+extern const char str_00216cd8[];
+extern const char str_002182a8[];
+extern const char str_002194b4[];
+extern const char str_0021eaec[];
+extern const char str_0021eaf8[];
+extern const char str_0021eb00[];
+extern const char str_0021eb0c[];
+extern const char str_0021eb14[];
+extern const char str_0021eb1c[];
+extern const char str_0021eb24[];
+extern const char str_0021eb30[];
+extern const char str_0021eb3c[];
+extern const char str_0021eb48[];
+extern const char str_0021eb54[];
+extern const char str_0021eb5c[];
+extern const char str_0021eb64[];
+extern const char str_0021eb6c[];
+extern const char str_0021eb78[];
+extern const char str_0021eb84[];
+extern const char str_0021eb90[];
+extern const char str_0021eba4[];
+extern const char str_0021ebb8[];
+extern const char str_0021ebc4[];
+extern const char str_0021ebd0[];
+extern const char str_0021ebd8[];
+extern const char str_0021ebe8[];
+extern const char str_0021ebf0[];
+extern const char str_0021ebf8[];
+extern const char str_0021ec00[];
+extern const char str_0021ec08[];
+extern const char str_0021ec10[];
+extern const char str_0021ec18[];
+extern const char str_0021ec20[];
+extern const char str_0021ec28[];
+
+__attribute__((used, packed, aligned(4)))
+UInt32 g_pszSndAliasKeyNames_storage[24] __asm__("g_pszSndAliasKeyNames") = {
+    0,
+    (UInt32)str_002194b4,
+    (UInt32)str_0021eaec,
+    (UInt32)str_0021eaf8,
+    (UInt32)str_0021eb00,
+    (UInt32)str_0021eb0c,
+    (UInt32)str_0021eb14,
+    (UInt32)str_0021eb1c,
+    (UInt32)str_0021eb24,
+    (UInt32)str_0021eb30,
+    (UInt32)str_0021eb3c,
+    (UInt32)str_0021eb48,
+    (UInt32)str_0021eb54,
+    (UInt32)str_0021eb5c,
+    (UInt32)str_0021eb64,
+    (UInt32)str_0021eb6c,
+    (UInt32)str_0021eb78,
+    (UInt32)str_0021eb84,
+    (UInt32)str_0021eb90,
+    (UInt32)str_0021eba4,
+    (UInt32)str_0021ebb8,
+    (UInt32)str_0021ebc4,
+    (UInt32)str_0021ebd0,
+    (UInt32)str_0021ebd8,
+}; /* 0x3128bc */
+__attribute__((used, packed, aligned(4)))
+UInt32 g_pszChannelNames_storage[16] __asm__("g_pszChannelNames") = {
+    (UInt32)str_0021ebe8,
+    (UInt32)str_0021ebf0,
+    (UInt32)str_00216cd8,
+    (UInt32)str_0021ebf8,
+    (UInt32)str_0021ec00,
+    (UInt32)str_0021ec08,
+    (UInt32)str_0021ec10,
+    (UInt32)str_0021ec18,
+    (UInt32)str_0021ec20,
+    (UInt32)str_0021ec28,
+    (UInt32)str_002182a8,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x31291c */
+
+#define g_pszSndAliasKeyNames ((const char * const *)g_pszSndAliasKeyNames_storage)
+#define g_pszChannelNames ((const char * const *)g_pszChannelNames_storage)
 
 extern int I_stricmp(const char *s0, const char *s1);
 extern void Com_Printf(const char *fmt, ...);

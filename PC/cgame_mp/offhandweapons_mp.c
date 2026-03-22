@@ -31,8 +31,23 @@ extern byte *cg_ptr;           /* imp_cg */
 extern byte *cg_tags_ptr;      /* imp_scr_const */
 extern byte *cg_weapons;       /* 0x0 */
 extern const dvar_t *hud_fade_offhand; /* 0x0 */
+extern const char str_002157b8[];
+extern const char str_002b51bc[];
+extern const char str_002b51d0[];
 
-extern const char * offhandStrings[3]; /* offhandStrings */
+__attribute__((used, packed, aligned(4)))
+UInt32 offhandStrings_storage[8] __asm__("offhandStrings") = {
+    (UInt32)str_002157b8,
+    (UInt32)str_002b51bc,
+    (UInt32)str_002b51d0,
+    0,
+    0,
+    0,
+    0,
+    0,
+}; /* 0x314500 */
+
+#define offhandStrings ((const char * const *)offhandStrings_storage)
 static const dvar_t *hud_flash_time_offhand; /* hud_flash_time_offhand */
 static const dvar_t *hud_flash_period_offhand; /* hud_flash_period_offhand */
 

@@ -19,10 +19,34 @@ extern float Vec2Normalize(vec_t *v);
 extern void Com_Printf(const char *fmt, ...);
 
 extern pmoveHandler_t pmoveHandlers[2]; /* 0x0 */
-extern viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* viewLerp_StandCrouch */
-extern viewLerpWaypoint_t viewLerp_CrouchStand[9]; /* viewLerp_CrouchStand */
-extern viewLerpWaypoint_t viewLerp_CrouchProne[11]; /* viewLerp_CrouchProne */
-extern viewLerpWaypoint_t viewLerp_ProneCrouch[8]; /* viewLerp_ProneCrouch */
+__attribute__((used, aligned(4)))
+UInt32 viewLerp_StandCrouch_storage[32] __asm__("viewLerp_StandCrouch") = {
+    0x00000000, 0x42700000, 0x00000000, 0x00000001, 0x426e0000, 0x00000000, 0x00000004, 0x426a0000,
+    0x00000000, 0x0000001e, 0x42600000, 0x00000000, 0x00000050, 0x42300000, 0x00000000, 0x0000005a,
+    0x42260000, 0x00000000, 0x0000005f, 0x42220000, 0x00000000, 0x00000064, 0x42200000, 0x00000000,
+    0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+}; /* 0x30a880 */
+__attribute__((used, aligned(4)))
+UInt32 viewLerp_CrouchStand_storage[32] __asm__("viewLerp_CrouchStand") = {
+    0x00000000, 0x42200000, 0x00000000, 0x00000005, 0x42220000, 0x00000000, 0x0000000a, 0x42260000,
+    0x00000000, 0x00000014, 0x42300000, 0x00000000, 0x00000046, 0x42600000, 0x00000000, 0x00000060,
+    0x426a0000, 0x00000000, 0x00000063, 0x426e0000, 0x00000000, 0x00000064, 0x42700000, 0x00000000,
+    0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+}; /* 0x30a7a0 */
+__attribute__((used, aligned(4)))
+UInt32 viewLerp_CrouchProne_storage[40] __asm__("viewLerp_CrouchProne") = {
+    0x00000000, 0x42200000, 0x00000000, 0x0000000b, 0x42180000, 0x00000000, 0x00000016, 0x42040000,
+    0x00000000, 0x00000022, 0x41c80000, 0x00000000, 0x0000002d, 0x41800000, 0x00000000, 0x00000032,
+    0x41700000, 0x00000000, 0x00000037, 0x41800000, 0x00000000, 0x00000046, 0x41900000, 0x00000000,
+    0x0000005a, 0x41880000, 0x00000000, 0x00000064, 0x41300000, 0x00000000, 0xffffffff, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+}; /* 0x30a900 */
+__attribute__((used, aligned(4)))
+UInt32 viewLerp_ProneCrouch_storage[24] __asm__("viewLerp_ProneCrouch") = {
+    0x00000000, 0x41300000, 0x00000000, 0x00000005, 0x41200000, 0x00000000, 0x0000001e, 0x41a80000,
+    0x00000000, 0x00000032, 0x41c80000, 0x00000000, 0x00000043, 0x41f80000, 0x00000000, 0x00000053,
+    0x42080000, 0x00000000, 0x00000064, 0x42200000, 0x00000000, 0xffffffff, 0x00000000, 0x00000000,
+}; /* 0x30a820 */
 static vec3_t CorrectSolidDeltas[26]; /* CorrectSolidDeltas */
 
 void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask);

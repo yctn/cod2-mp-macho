@@ -24,7 +24,11 @@ typedef struct {
     ULONG refCount;
 } CDirect3DImpl;
 
-static CDirect3DImpl g_d3d9;
+__attribute__((used, aligned(4))) static UInt32 D3DToOpenGLPrimitive[13] = {
+    0x00000000, 0x00000000, 0x00000001, 0x00000003, 0x00000004, 0x00000005, 0x00000006,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+}; /* 0x30824c */
+static CDirect3DImpl sDirect3DInterface;
 
 /* --- IUnknown --- */
 
@@ -35,8 +39,8 @@ HRESULT CDirect3D_QueryInterface(const void *_this, const IID *iid, void **ppvOb
     return 0;
 }
 
-ULONG CDirect3D_AddRef(const void *_this) { (void)_this; return ++g_d3d9.refCount; }
-ULONG CDirect3D_Release(const void *_this) { (void)_this; return --g_d3d9.refCount; }
+ULONG CDirect3D_AddRef(const void *_this) { (void)_this; return ++sDirect3DInterface.refCount; }
+ULONG CDirect3D_Release(const void *_this) { (void)_this; return --sDirect3DInterface.refCount; }
 
 /* --- IDirect3D9 --- */
 
@@ -158,7 +162,7 @@ void ZN9CDirect3DD0Ev(const void *_this) { (void)_this; }
 int Direct3DCreate9(int sdkVersion)
 {
     (void)sdkVersion;
-    g_d3d9.vtable = vtbl_CDirect3D;
-    g_d3d9.refCount = 1;
-    return (int)(unsigned long)&g_d3d9;
+    sDirect3DInterface.vtable = vtbl_CDirect3D;
+    sDirect3DInterface.refCount = 1;
+    return (int)(unsigned long)&sDirect3DInterface;
 }
