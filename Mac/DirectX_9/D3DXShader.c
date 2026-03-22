@@ -305,15 +305,20 @@ static const char *arb_ps_lightmap_alpha =
     "MOV oC0AfterFog.w, oC0.w;\n"
     "END\n";
 
-/* Textured PS: sample colorMap, add bright ambient to see dark textures. */
+/* Textured PS: sample colorMap and modulate by vertex color/alpha. */
 static const char *arb_ps_textured =
     "!!ARBfp1.0\n"
-    "PARAM bright = {0.3, 0.3, 0.3, 0.0};\n"
-    "OUTPUT oC0 = result.color;\n"
-    "TEMP r0;\n"
+    "OPTION ARB_precision_hint_fastest;\n"
+    "OUTPUT oC0AfterFog = result.color;\n"
+    "TEMP r0, r1;\n"
+    "ATTRIB v0 = fragment.color.primary;\n"
     "ATTRIB t0 = fragment.texcoord[0];\n"
     "TEX r0, t0, texture[0], 2D;\n"
-    "ADD oC0, r0, bright;\n"  /* texture + ambient so even dark textures show */
+    "MUL r0, r0, v0;\n"
+    "MAX r1.x, fragment.fogcoord.x, {0}.x;\n"
+    "MIN r1.x, r1.x, {1}.x;\n"
+    "LRP oC0AfterFog.xyz, r1.x, r0, state.fog.color;\n"
+    "MOV oC0AfterFog.w, r0.w;\n"
     "END\n";
 
 /* Vertex color only PS: just pass vertex color */
@@ -417,7 +422,9 @@ HRESULT D3DXCompileShader(
         if (hlsl_has(pSrcData, len, "texCUBE")) {
             arbCode = arb_ps_sky;
         } else if (hlsl_has(pSrcData, len, "lightmapSampler") || hlsl_has(pSrcData, len, "lmapCoords")
-                   || hlsl_has(pSrcData, len, "colorMapSampler") || hlsl_has(pSrcData, len, "tex2D")) {
+                   || hlsl_has(pSrcData, len, "lightmap")) {
+            arbCode = arb_ps_lightmap;
+        } else if (hlsl_has(pSrcData, len, "colorMapSampler") || hlsl_has(pSrcData, len, "tex2D")) {
             arbCode = arb_ps_textured;
         } else {
             arbCode = arb_ps_vertcolor;

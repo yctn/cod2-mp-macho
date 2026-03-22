@@ -284,6 +284,31 @@ static DWORD g_textureStageState[8][33];
 static DWORD g_samplerState[16][14];
 unsigned int g_prebind_texID = 0; /* Set by RB_EndSurface texture pre-binding */
 
+static void CDirect3DDevice_EnableProgrammableShaders(DeviceImpl *dev)
+{
+    if (g_activeVertexShader) {
+        GLuint vpProgram = *(GLuint *)((byte *)g_activeVertexShader + 8);
+        if (vpProgram) {
+            glEnable(0x8620); /* GL_VERTEX_PROGRAM_ARB */
+            glBindProgramARB(0x8620, vpProgram);
+        } else {
+            glDisable(0x8620);
+            glBindProgramARB(0x8620, 0);
+        }
+    } else {
+        glDisable(0x8620);
+        glBindProgramARB(0x8620, 0);
+    }
+
+    if (dev->pixelShader) {
+        void **vtbl = *(void ***)dev->pixelShader;
+        ((void (*)(const void *))vtbl[7])((const void *)dev->pixelShader);
+    } else {
+        glDisable(0x8804); /* GL_FRAGMENT_PROGRAM_ARB */
+        glBindProgramARB(0x8804, 0);
+    }
+}
+
 #define GL_NEAREST              0x2600
 #define GL_LINEAR               0x2601
 #define GL_REPEAT               0x2901
@@ -1220,6 +1245,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
     UINT stride, offset;
     int indexCount;
     GLenum glMode;
+    int useProgrammable;
 
     (void)PrimitiveType; /* Always D3DPT_TRIANGLELIST (4) from the game */
 
@@ -1250,11 +1276,13 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice *_this,
 
     {
         /* Shader path selection:
-         * For world geometry (stride 0x44): use programmable shaders if available.
-         * The backend (rb_shade.c) calls SetPixelShader/SetVertexShader before
-         * each draw, setting up the ARB programs. We enable them here.
-         * For 2D/HUD: always use fixed-function. */
-        if (0 /* programmable path disabled — using fixed-function for all */) {
+         * The backend already sets non-Dx7 ARB shaders through the D3D device.
+         * Honor that here instead of forcing everything through fixed-function. */
+        useProgrammable = (g_activeVertexShader != NULL || dev->pixelShader != NULL);
+
+        if (useProgrammable) {
+            CDirect3DDevice_EnableProgrammableShaders(dev);
+
             /* Bind textures: diffuse from material, lightmap from world.
              * Material texture[0] → GL_TEXTURE0 (diffuse)
              * World lightmap[lmapIndex][0] → GL_TEXTURE1 (lightmap) */

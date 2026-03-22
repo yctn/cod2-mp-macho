@@ -718,7 +718,7 @@ void Material_ReloadAll(void)
             int vertDeclType;
 
             for (vertDeclType = 0; vertDeclType < 4; vertDeclType++) {
-                const byte *sourceInfo = sourceInfoBase + vertDeclType * 21;
+                const byte *sourceInfo = sourceInfoBase;
                 int elemCount = *(int *)(routingPtr);
                 const byte *routingData = *(const byte **)(routingPtr - 4);
                 D3DVERTEXELEMENT9 elemTable[256];
@@ -779,6 +779,7 @@ writeEnd2:
 
 storeDecl2:
                 *(void **)(vertDeclPtr + vertDeclType * 4) = decl;
+                sourceInfoBase += 21;
             }
         }
 
@@ -1075,7 +1076,7 @@ void Load_BuildVertexDecl(MaterialVertexDeclaration **mtlVertDecl)
         const byte *routingPtr;
         const byte *sourceInfo;
 
-        sourceInfo = sourceInfoBase + vertDeclType * 21; /* s_streamSourceInfo stride = 21 (0x15) */
+        sourceInfo = sourceInfoBase;
         routingPtr = routingData;
 
         if (elemCount == 0)
