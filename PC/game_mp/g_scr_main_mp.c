@@ -76,6 +76,9 @@ extern int G_EffectIndex(const char *name);
 extern const char *SL_ConvertToString(unsigned int stringValue);
 extern BuiltinFunctionDef functions[145]; /* 0x0 */
 extern BuiltinMethodDef methods[]; /* methods - defined in data.S */
+extern const dvar_t *g_NoScriptSpam;
+extern level_locals_t level;
+extern gentity_t g_entities[1024];
 
 unsigned int GScr_AllocString(const char *s);
 unsigned int Scr_LoadLevel(void);
@@ -316,7 +319,7 @@ unsigned int GScr_AllocString(const char *s)
 /* line 57 */
 unsigned int Scr_LoadLevel(void)
 {
-    unsigned int handle = *(unsigned int *)&g_scr_data;
+    unsigned int handle = g_scr_data.levelscript;
     if (handle)
     {
         unsigned int threadId = Scr_ExecThread(handle, 0);
@@ -429,7 +432,7 @@ unsigned int print(void) {
     int num;
     int i;
 
-    if (*(byte *)(*(int *)(*(int *)imp_g_NoScriptSpam) + 8))
+    if (g_NoScriptSpam->current.enabled)
         return 0;
 
     num = Scr_GetNumParam();
@@ -535,7 +538,7 @@ unsigned int GScr_GetDvarFloat(void)
 /* line 836 */
 unsigned int GScr_GetTime(void)
 {
-    Scr_AddInt(((level_locals_t *)imp_level)->time);
+    Scr_AddInt(level.time);
     return 0;
 }
 
@@ -547,7 +550,7 @@ unsigned int Scr_GetEntByNum(void)
 
     if (num > 0x3ff)
         return 0;
-    ent = (gentity_t *)((byte *)*(void **)imp_g_entities + num * 560);
+    ent = &g_entities[num];
     if (ent->r.inuse)
         Scr_AddEntity(ent);
     return 0;
@@ -560,7 +563,7 @@ unsigned int Scr_GetWeaponModel(void)
     int weaponIndex = G_GetWeaponIndexForName(pszWeaponName);
 
     if (weaponIndex) {
-        Scr_AddString(*(const char **)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1b4)); /* TODO: unknown weaponDef offset 0x1b4 */
+        Scr_AddString(((WeaponDef *)BG_GetWeaponDef(weaponIndex))->szWorldModel);
     } else {
         if (pszWeaponName[0] && I_stricmp(pszWeaponName, "none") != 0) {
             Com_Printf(va("unknown weapon '%s' in getWeaponModel\n", pszWeaponName));
@@ -599,7 +602,7 @@ unsigned int GScr_AnimHasNotetrack(void)
 /* line 1031 */
 unsigned int GScr_PrecacheTurret(void)
 {
-    if (!((level_locals_t *)imp_level)->initializing)
+    if (!level.initializing)
         Scr_Error("PrecacheTurret must be called before any wait statements in the gametype or level script");
     G_GetWeaponIndexForName(Scr_GetString(0));
     return 0;
@@ -804,7 +807,7 @@ unsigned int SetObjectiveIcon(void)
     );
 }
 #else
-static void SetObjectiveIcon_impl(byte *obj, int paramNum) {
+static void SetObjectiveIcon_impl(objective_t *obj, int paramNum) {
     const char *shaderName;
     int i;
     unsigned char ch;
@@ -823,7 +826,7 @@ static void SetObjectiveIcon_impl(byte *obj, int paramNum) {
             Scr_ParamError(3, va("Objective icon name is too long (> %i): %s\n", 0x3f, shaderName));
         }
     }
-    ((objective_t *)obj)->icon = G_ShaderIndex(shaderName);
+    obj->icon = G_ShaderIndex(shaderName);
 }
 unsigned int SetObjectiveIcon(void) { return 0; /* naked caller only */ }
 #endif
@@ -867,15 +870,14 @@ unsigned int Scr_Objective_Icon(void)
 #else
 unsigned int Scr_Objective_Icon(void) {
     int objIndex;
-    byte *obj;
+    objective_t *obj;
 
     objIndex = Scr_GetInt(0);
     if ((unsigned int)objIndex > 0xf) {
         Scr_ParamError(0, va("index %i is an illegal objective index. Valid indexes are 0 to %i\n", objIndex, 0xf));
     }
 
-    /* obj = &level.objectives[objIndex] */
-    obj = (byte *)&((level_locals_t *)imp_level)->objectives[objIndex];
+    obj = &level.objectives[objIndex];
     SetObjectiveIcon_impl(obj, 1);
     return 0;
 }
@@ -1267,7 +1269,7 @@ unsigned int GScr_Obituary(void)
 /* line 2541 */
 unsigned int GScr_getStartTime(void)
 {
-    Scr_AddInt(((level_locals_t *)imp_level)->startTime);
+    Scr_AddInt(level.startTime);
     return 0;
 }
 
@@ -2457,7 +2459,7 @@ unsigned int Scr_SoundFade(void)
 /* line 3506 */
 unsigned int Scr_PrecacheModel(void)
 {
-    if (!((level_locals_t *)imp_level)->initializing)
+    if (!level.initializing)
         Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
     G_ModelIndex(Scr_GetString(0));
     return 0;
@@ -2466,7 +2468,7 @@ unsigned int Scr_PrecacheModel(void)
 /* line 3520 */
 unsigned int Scr_PrecacheShellShock(void)
 {
-    if (!((level_locals_t *)imp_level)->initializing)
+    if (!level.initializing)
         Scr_Error("PrecacheShellShock must be called before any wait statements in the gametype or level script");
     G_ShellShockIndex(Scr_GetString(0));
     return 0;
@@ -2547,7 +2549,7 @@ unsigned int Scr_PrecacheItem(void)
 unsigned int Scr_PrecacheShader(void)
 {
     const char *shaderName;
-    if (!((level_locals_t *)imp_level)->initializing)
+    if (!level.initializing)
         Scr_Error("PrecacheShader must be called before any wait statements in the gametype or level script");
     {
         int ptype = Scr_GetType(0);
@@ -2564,7 +2566,7 @@ unsigned int Scr_PrecacheShader(void)
 unsigned int Scr_PrecacheString(void)
 {
     const char *s;
-    if (!((level_locals_t *)imp_level)->initializing)
+    if (!level.initializing)
         Scr_Error("PrecacheString must be called before any wait statements in the gametype or level script");
     s = Scr_GetIString(0);
     if (s[0])
@@ -2630,7 +2632,7 @@ unsigned int GScr_RadiusDamage(void)
 /* line 3734 */
 unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
 {
-    *(int *)((byte *)(void *)imp_level + 0x35f8) = Scr_GetInt(0); /* TODO: level offset 0x35f8 - likely bPlayerIgnoreRadiusDamage or bPlayerIgnoreRadiusDamageLatched */
+    level.bPlayerIgnoreRadiusDamageLatched = Scr_GetInt(0);
     return 0;
 }
 
@@ -2822,7 +2824,7 @@ unsigned int Scr_LoadFX(void)
 {
     int id;
     id = G_EffectIndex(Scr_GetString(0));
-    if (!id && !((level_locals_t *)imp_level)->initializing)
+    if (!id && !level.initializing)
         Scr_Error("loadfx must be called before any wait statements in the gametype or level script");
     Scr_AddInt(id);
     return 0;
@@ -5384,8 +5386,8 @@ extern void DBG_PrintFreeVars(const char *label);
 unsigned int Scr_LoadGameType(void)
 {
     unsigned int handle = g_scr_data.gametype.main;
-    extern void *imp_scrVarPub;
-    unsigned int codeBase = (unsigned int)((scrVarPub_t *)imp_scrVarPub)->programBuffer;
+    scrVarPub_t *scrVarPub = (scrVarPub_t *)imp_scrVarPub;
+    unsigned int codeBase = (unsigned int)scrVarPub->programBuffer;
     /* Print all g_scr_data handles for debugging */
     Com_Printf("[Scr_LoadGameType] g_scr_data handles: +0=%u +4=%u +8=%u +12=%u +16=%u +20=%u +24=%u +28=%u\n",
         (unsigned int)g_scr_data.levelscript,
@@ -5406,8 +5408,8 @@ unsigned int Scr_LoadGameType(void)
         pos[16], pos[17], pos[18], pos[19], pos[20], pos[21], pos[22], pos[23],
         pos[24], pos[25], pos[26], pos[27], pos[28], pos[29], pos[30], pos[31]);
     /* Dump compiled builtin function table */
-    extern void *imp_scrCompilePub;
-    unsigned int *ftable = (unsigned int *)((scrCompilePub_t *)imp_scrCompilePub)->func_table;
+    scrCompilePub_t *scrCompilePub = (scrCompilePub_t *)imp_scrCompilePub;
+    unsigned int *ftable = (unsigned int *)scrCompilePub->func_table;
     Com_Printf("[Scr_LoadGameType] scrCompilePub builtins: [0]=%p [1]=%p [2]=%p [3]=%p [4]=%p [5]=%p [6]=%p [7]=%p\n",
         (void *)ftable[0], (void *)ftable[1], (void *)ftable[2], (void *)ftable[3],
         (void *)ftable[4], (void *)ftable[5], (void *)ftable[6], (void *)ftable[7]);
@@ -5418,13 +5420,12 @@ unsigned int Scr_LoadGameType(void)
     extern int dbg_getvar_counter;
     dbg_alloc_counter = 0;
     dbg_getvar_counter = 0;
-    extern void *imp_scrVarPub;
-    unsigned int levelId = ((scrVarPub_t *)imp_scrVarPub)->levelId;
-    unsigned int timeArrayId = ((scrVarPub_t *)imp_scrVarPub)->timeArrayId;
-    unsigned int pauseArrayId = ((scrVarPub_t *)imp_scrVarPub)->pauseArrayId;
+    unsigned int levelId = scrVarPub->levelId;
+    unsigned int timeArrayId = scrVarPub->timeArrayId;
+    unsigned int pauseArrayId = scrVarPub->pauseArrayId;
     Com_Printf("[Scr_LoadGameType] scrVarPub: levelId=%u timeArrayId=%u pauseArrayId=%u\n", levelId, timeArrayId, pauseArrayId);
     /* Dump first 80 bytes of scrVarPub */
-    unsigned char *svp = (unsigned char *)imp_scrVarPub;
+    unsigned char *svp = (unsigned char *)scrVarPub;
     Com_Printf("[Scr_LoadGameType] scrVarPub raw: ");
     for (int i = 0; i < 80; i++) Com_Printf("%02x ", svp[i]);
     Com_Printf("\n");
@@ -5439,15 +5440,15 @@ unsigned int Scr_LoadGameType(void)
 /* line 6356 */
 unsigned int Scr_StartupGameType(void)
 {
-    extern void *imp_scrVarPub;
+    scrVarPub_t *scrVarPub = (scrVarPub_t *)imp_scrVarPub;
     unsigned int handle = g_scr_data.gametype.startupgametype;
-    const char *codeBase = ((scrVarPub_t *)imp_scrVarPub)->programBuffer;
-    const char *endBuf = ((scrVarPub_t *)imp_scrVarPub)->endScriptBuffer;
+    const char *codeBase = scrVarPub->programBuffer;
+    const char *endBuf = scrVarPub->endScriptBuffer;
     const char *pos = codeBase + handle;
     {
         int i;
         Com_Printf("DBG [Scr_StartupGameType] handle=%u codeBase=%p endBuf=%p pos=%p level_init=%d\n",
-                   handle, codeBase, endBuf, pos, ((level_locals_t *)imp_level)->initializing);
+                   handle, codeBase, endBuf, pos, level.initializing);
         {
             extern unsigned char scrCompilePub_bss[];
             __asm__(".set scrCompilePub_bss, scrCompilePub");
@@ -5524,8 +5525,9 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
 /* line 6469 */
 unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 {
+    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
     Scr_AddString(option);
-    Scr_Notify(self, ((scr_const_t *)imp_scr_const)->vote, 1);
+    Scr_Notify(self, scr->vote, 1);
     return 0;
 }
 
@@ -12194,12 +12196,12 @@ unsigned int Scr_Objective_OnEntity(void) {
     }
 
     /* obj = &level.objectives[objIndex] */
-    obj = (byte *)&((level_locals_t *)imp_level)->objectives[objIndex];
+    obj = (byte *)&level.objectives[objIndex];
 
     /* Clear old entity's objective flag */
     oldEntityNum = ((objective_t *)obj)->entNum;
     if (oldEntityNum != 0x3ff) {
-        oldEnt = (gentity_t *)((byte *)imp_g_entities + oldEntityNum * 0x230);
+        oldEnt = &g_entities[oldEntityNum];
         if (oldEnt->r.inuse) {
             /* Clear EF_OBJECTIVE flag (0x10) */
             oldEnt->r.svFlags &= ~0x10;

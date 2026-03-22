@@ -28,6 +28,8 @@ extern void SV_GetConfigstring(int index, char *buf, int bufSize);
 extern byte level_ptr[];      /* imp_level - points to level struct */
 extern byte g_entities_ptr[]; /* imp_g_entities - points to entity array */
 
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
+
 #define CLIENT_STRIDE sizeof(gclient_s)
 #define ENTITY_STRIDE sizeof(gentity_s)
 
@@ -83,7 +85,7 @@ static void ClientScr_ReadOnly(gclient_t *pSelf, const client_fields_s *pField)
 static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     gclient_s *client = (gclient_s *)pSelf;
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
     unsigned short str;
 
     str = Scr_GetConstString(0);
@@ -108,7 +110,7 @@ static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pF
 static void ClientScr_GetSessionTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     gclient_s *client = (gclient_s *)pSelf;
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
 
     switch (client->sess.cs.team) {
     case 1: Scr_AddConstString(sc->allies); break;
@@ -123,7 +125,7 @@ static void ClientScr_GetSessionTeam(gclient_t *pSelf, const client_fields_s *pF
 static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
     gclient_s *client = (gclient_s *)pSelf;
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
     unsigned short str;
 
     str = Scr_GetConstString(0);
@@ -146,7 +148,7 @@ static void ClientScr_SetSessionState(gclient_t *pSelf, const client_fields_s *p
 static void ClientScr_GetSessionState(gclient_t *pSelf, const client_fields_s *pField)
 {
     gclient_s *client = (gclient_s *)pSelf;
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
 
     switch (client->sess.sessionState) {
     case 0: Scr_AddConstString(sc->playing); break;
@@ -171,7 +173,7 @@ static void ClientScr_SetMaxHealth(gclient_t *pSelf, const client_fields_s *pFie
     client->sess.maxHealth = val;
 
     /* Cap current health to max */
-    health = *(int *)((byte *)client + 0x12c); /* ps.health — offset needs verification */
+    health = client->ps.stats[0];
     if (health > val)
         health = val;
 
@@ -181,7 +183,7 @@ static void ClientScr_SetMaxHealth(gclient_t *pSelf, const client_fields_s *pFie
         ent->health = health;
 
     /* Update maxHealth in playerState */
-        *(int *)((byte *)client + 0x134) = client->sess.maxHealth; /* ps.stats[STAT_MAX_HEALTH] */
+        client->ps.stats[2] = client->sess.maxHealth;
     }
 }
 
@@ -254,7 +256,7 @@ static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 /* line 298 */
 static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
     gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
     unsigned short str = Scr_GetConstString(0);
 
@@ -274,7 +276,7 @@ static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
 /* line 326 */
 static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
-    scr_const_t *sc = (scr_const_t *)imp_scr_const;
+    const scr_const_t *sc = SCR_CONST();
     int clientNum = ClientNum((byte *)pSelf);
     gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
     int team = ((ent)->s.iHeadIconTeam); /* ent.headiconteam */
@@ -337,53 +339,54 @@ void GScr_AddFieldsForClient(void)
         CF(11, "psoffsettime",    0x27a4, F_INT,     ClientScr_SetPSOffsetTime, ClientScr_GetPSOffsetTime);
         CF(12, "pers",            0x26c0, F_OBJECT,  ClientScr_ReadOnly,        NULL);
     }
-    byte *fb = (byte *)fields;
-    int i;
-    const char *name;
+    for (int fieldIndex = 0; fieldIndex < (int)(sizeof(fields) / sizeof(fields[0])); ++fieldIndex) {
+        const client_fields_t *field = &fields[fieldIndex];
+        int fieldWordOffset;
+        int idx;
+        int mult;
+        int encoded;
 
-    name = *(const char **)fb;
-    i = 0;
-    while (name != NULL) {
-        /* Compute encoded offset from field index */
-        int idx = i / 4;
-        int mult = idx * 3;
+        if (!field->name) {
+            break;
+        }
+
+        /* Original encoding uses the field's word offset in the table. */
+        fieldWordOffset = fieldIndex * (sizeof(client_fields_t) / sizeof(int));
+        idx = fieldWordOffset;
+        mult = idx * 3;
         mult = mult + (mult << 4);
         mult = mult + (mult << 8);
         mult = mult + (mult << 16);
-        int encoded = (idx + mult * 4) | 0xc000;
+        encoded = (idx + mult * 4) | 0xc000;
         encoded &= 0xffff;
 
-        Scr_AddClassField(0, name, encoded);
-
-        i += 0x14;
-        fb += 0x14;
-        name = *(const char **)fb;
+        Scr_AddClassField(0, field->name, encoded);
     }
 }
 
 /* line 446 */
 void Scr_SetClientField(gclient_t *client, int offset)
 {
-    byte *entry;
+    const client_fields_t *field;
     void (*setter)(gclient_t *, const client_fields_s *);
 
     if (!client || offset < 0 || offset >= 13 || !fields[offset].name)
         return;
 
-    entry = (byte *)fields + offset * 20;
-    setter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0xc); /* TODO: unknown offset */
+    field = &fields[offset];
+    setter = (void (*)(gclient_t *, const client_fields_s *))field->setter;
 
     if (setter != NULL) {
-        setter(client, (const client_fields_s *)entry);
+        setter(client, field);
     } else {
-        Scr_SetGenericField(client, *(int *)(entry + 4), *(int *)(entry + 8));
+        Scr_SetGenericField(client, field->ofs, field->type);
     }
 }
 
 /* line 471 */
 void Scr_GetClientField(gclient_t *client, int offset)
 {
-    byte *entry;
+    const client_fields_t *field;
     void (*getter)(gclient_t *, const client_fields_s *);
 
     if (!client || offset < 0 || offset >= 13 || !fields[offset].name) {
@@ -391,12 +394,12 @@ void Scr_GetClientField(gclient_t *client, int offset)
         return;
     }
 
-    entry = (byte *)fields + offset * 20;
-    getter = *(void (**)(gclient_t *, const client_fields_s *))(entry + 0x10); /* TODO: unknown offset */
+    field = &fields[offset];
+    getter = (void (*)(gclient_t *, const client_fields_s *))field->getter;
 
     if (getter != NULL) {
-        getter(client, (const client_fields_s *)entry);
+        getter(client, field);
     } else {
-        Scr_GetGenericField(client, *(int *)(entry + 4), *(int *)(entry + 8));
+        Scr_GetGenericField(client, field->ofs, field->type);
     }
 }

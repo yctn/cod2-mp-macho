@@ -524,8 +524,8 @@ void G_UseOffHand(gentity_s (*ent)[16]) {
     viewang[2] = client->ps.viewangles[2];
 
     /* Override pitch/yaw with view command angles */
-    viewang[0] = *(float *)((byte *)client + 0x27d8); /* unknown: cmd viewangles override pitch */
-    viewang[1] = *(float *)((byte *)client + 0x27dc); /* unknown: cmd viewangles override yaw */
+    viewang[0] = client->fGunPitch;
+    viewang[1] = client->fGunYaw;
 
     /* Build direction vectors */
     AngleVectors(viewang, (float *)&wp, right, up);
@@ -2089,7 +2089,7 @@ void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float widt
 
     /* Get trace entity */
     traceEntNum = tr.entityNum;
-    traceEnt = (gentity_t *)((byte *)imp_g_entities + traceEntNum * 0x230);
+    traceEnt = &((gentity_t *)imp_g_entities)[traceEntNum];
 
     /* Create temp entity for melee effect */
     if (traceEnt->client != NULL) {

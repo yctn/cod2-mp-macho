@@ -85,7 +85,7 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define ENT_CURRENTANGLES(e)   (_ENT(e)->r.currentAngles)
 #define ENT_OWNERNUM(e)        (_ENT(e)->r.ownerNum)
 #define ENT_EVENTTIME(e)       (_ENT(e)->r.eventTime)
-#define ENT_CLIENT(e)          ((byte *)(_ENT(e)->client))
+#define ENT_CLIENT(e)          (_ENT(e)->client)
 #define ENT_TURRET(e)          (*(int *)&_ENT(e)->pTurretInfo)
 #define ENT_MODELINDEX(e)      (_ENT(e)->model)
 #define ENT_IGNORECOLLISION(e) (_ENT(e)->attachIgnoreCollision)
@@ -95,7 +95,7 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define ENT_FREETIME(e)        (_ENT(e)->eventTime)
 #define ENT_FREEAFTEREVENT(e)  (_ENT(e)->freeAfterEvent)
 #define ENT_PARENT(e)          (*(gentity_t **)&_ENT(e)->parent)
-#define ENT_TAGINFO(e)         (*(byte **)&_ENT(e)->tagInfo)
+#define ENT_TAGINFO(e)         (*(tagInfo_t **)&_ENT(e)->tagInfo)
 #define ENT_TAGCHILDREN(e)     (*(gentity_t **)&_ENT(e)->tagChildren)
 #define ENT_ATTACHMODEL(e, i)  (_ENT(e)->attachModelNames[i])
 #define ENT_ATTACHTAG(e, i)    (_ENT(e)->attachTagNames[i])
@@ -104,28 +104,19 @@ static struct XModel * cached_models[256]; /* cached_models */
 
 #define ENTITY_STRIDE sizeof(gentity_s)
 
-/* TagInfo structure (0x70 bytes allocated with MT_Alloc):
- *   0x00  parent (gentity_t *)
- *   0x04  next (gentity_t *)
- *   0x08  tagName (scr_string_t - unsigned short)
- *   0x0C  boneIndex (int)
- *   0x10  axis (vec3_t[3] = 36 bytes) - relative rotation
- *   0x34  origin (vec3_t = 12 bytes) - relative offset
- *   0x40  padding (48 bytes)
- */
-#define TAGINFO_PARENT(ti)     (*(gentity_t **)((byte *)(ti) + 0x00))
-#define TAGINFO_NEXT(ti)       (*(gentity_t **)((byte *)(ti) + 0x04))
-#define TAGINFO_TAGNAME(ti)    (*(unsigned short *)((byte *)(ti) + 0x08))
-#define TAGINFO_BONEINDEX(ti)  (*(int *)((byte *)(ti) + 0x0C))
-#define TAGINFO_AXIS(ti)       ((vec_t *)((byte *)(ti) + 0x10))
-#define TAGINFO_ORIGIN(ti)     ((vec_t *)((byte *)(ti) + 0x34))
+#define TAGINFO_PARENT(ti)     ((ti)->parent)
+#define TAGINFO_NEXT(ti)       ((ti)->next)
+#define TAGINFO_TAGNAME(ti)    ((ti)->name)
+#define TAGINFO_BONEINDEX(ti)  ((ti)->index)
+#define TAGINFO_AXIS(ti)       ((vec_t *)(ti)->axis)
+#define TAGINFO_ORIGIN(ti)     ((ti)->axis[3])
 
 /* External globals */
 extern byte level_ptr[];              /* imp_level */
 extern byte g_entities_ptr[];         /* imp_g_entities */
 extern byte scr_const_ptr[];          /* imp_scr_const */
-extern byte entityHandlers_ptr[];     /* imp_entityHandlers */
-extern byte playerCorpseInfo_ptr[];   /* imp_g_scr_data */
+extern entityHandler_t entityHandlers[20];
+extern struct scr_data_t g_scr_data;
 
 #define LEVEL_GENTITIES     (((level_locals_t *)level_ptr)->gentities)
 #define LEVEL_NUMENTS       (((level_locals_t *)level_ptr)->num_entities)
@@ -134,15 +125,14 @@ extern byte playerCorpseInfo_ptr[];   /* imp_g_scr_data */
 #define LEVEL_INITIALIZING  (((level_locals_t *)level_ptr)->initializing)
 #define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
 #define LEVEL_SERVERTIME    (((level_locals_t *)level_ptr)->frametime)
-#define LEVEL_CLONEIDX      (*(int *)(level_ptr + 0x1DE4))
+#define LEVEL_DROPPED_WEAPON_CUE (((level_locals_t *)level_ptr)->droppedWeaponCue)
+#define LEVEL_CLONEIDX      (((level_locals_t *)level_ptr)->currentPlayerClone)
 
-/* Handler table: each entry is 40 bytes */
-#define HANDLER_ENTRY(h)       (entityHandlers_ptr + (h) * 40)
-#define HANDLER_CALCPOSE(h)    (*(void (**)(gentity_t *, int *))(HANDLER_ENTRY(h) + 0x1C))
+#define HANDLER_CALCPOSE(h)    (entityHandlers[(h)].controller)
 
-/* PlayerCorpseInfo: stride 0x4C8, field 0x10AC = callback, 0x10BC = entnum */
-#define CORPSE_ENTNUM(ptr, i)  (*(int *)((byte *)(ptr) + (i) * 0x4C8 + 0x10BC))
-#define CORPSE_CALLBACK(ptr)   (*(int *)((byte *)(ptr) + 0x10AC))
+#define CORPSE_INFO(i)         (g_scr_data.playerCorpseInfo[(i)])
+#define CORPSE_ENTNUM(i)       (CORPSE_INFO(i).entnum)
+#define CORPSE_CALLBACK()      (g_scr_data.delete_)
 
 /* Client (gclient_t) field access macros */
 #define CLIENT_EVENTSEQ(c)     (((gclient_t *)(c))->ps.eventSequence)
@@ -151,7 +141,7 @@ extern byte playerCorpseInfo_ptr[];   /* imp_g_scr_data */
 #define CLIENT_VIEWANGLES(c)   (((gclient_t *)(c))->ps.viewangles)
 #define CLIENT_OWNERENT(c)     (((gclient_t *)(c))->pLookatEnt)
 #define CLIENT_OWNERNUM(c)     (((gclient_t *)(c))->useHoldEntity)
-#define CLIENT_WEAPENT(c)      (*(int *)((byte *)(c) + 0x5A0)) /* deep in playerState_s */
+#define CLIENT_WEAPENT(c)      (((gclient_t *)(c))->ps.cursorHintEntIndex)
 
 /* VectorCopy / VectorClear */
 #define VectorCopy(a, b) ((b)[0]=(a)[0], (b)[1]=(a)[1], (b)[2]=(a)[2])
@@ -448,7 +438,7 @@ int G_GetPlayerCorpseIndex(gentity_t *ent)
     int entnum = ENT_NUMBER(ent);
 
     for (i = 0; i < 8; i++) {
-        if (CORPSE_ENTNUM(playerCorpseInfo_ptr, i) == entnum) {
+        if (CORPSE_ENTNUM(i) == entnum) {
             return i;
         }
     }
@@ -459,23 +449,23 @@ int G_GetPlayerCorpseIndex(gentity_t *ent)
 unsigned char G_FreeEntityDelay(gentity_t *ed)
 {
     unsigned short thread;
-    thread = (unsigned short)Scr_ExecEntThread(ed, CORPSE_CALLBACK(playerCorpseInfo_ptr), 0);
+    thread = (unsigned short)Scr_ExecEntThread(ed, CORPSE_CALLBACK(), 0);
     Scr_FreeThread(thread);
 }
 
 /* line 1492 */
 unsigned char G_AddPredictableEvent(gentity_t *ent, int event, int eventParm)
 {
-    byte *ps = ENT_CLIENT(ent);
-    if (ps) {
-        BG_AddPredictableEventToPlayerstate(event, eventParm, ps);
+    gclient_t *client = ENT_CLIENT(ent);
+    if (client) {
+        BG_AddPredictableEventToPlayerstate(event, eventParm, &client->ps);
     }
 }
 
 /* line 1509 */
 unsigned char G_AddEvent(gentity_t *ent, int event, int eventParm)
 {
-    byte *client = ENT_CLIENT(ent);
+    gclient_t *client = ENT_CLIENT(ent);
 
     if (client) {
         int seq = CLIENT_EVENTSEQ(client);
@@ -532,7 +522,7 @@ unsigned char G_SetOrigin(gentity_t *ent, const vec_t *origin)
 unsigned char G_PlaySoundAlias(gentity_t *ent, int index)
 {
     byte soundIndex = (byte)index;
-    byte *client;
+    gclient_t *client;
 
     if (!soundIndex) {
         return 0;
@@ -568,15 +558,15 @@ unsigned char G_OverrideModel(int modelindex, const char *defaultModelName)
 int G_AnimScriptSound(int client, snd_alias_list_t *aliasList)
 {
     byte soundIndex;
-    byte *ent;
+    gentity_t *ent;
 
     soundIndex = (byte)G_FindConfigstringIndex(*(const char **)aliasList, 0x24e, 0x100, 1, 0);
 
     /* compute entity pointer: g_entities + client * ENTITY_STRIDE */
-    ent = g_entities_ptr + ((client * 5) * 8 - client * 5) * 16;
+    ent = &((gentity_t *)g_entities_ptr)[client];
 
     if (soundIndex) {
-        byte *cl = ENT_CLIENT(ent);
+        gclient_t *cl = ENT_CLIENT(ent);
         if (cl) {
             int seq = CLIENT_EVENTSEQ(cl);
             CLIENT_EVENTS(cl, seq & 3) = 0xB3;
@@ -599,7 +589,7 @@ int G_AnimScriptSound(int client, snd_alias_list_t *aliasList)
 /* line 674 */
 unsigned char G_CalcTagParentAxis(gentity_t *ent, vec3_t *parentAxis)
 {
-    byte *tagInfo = ENT_TAGINFO(ent);
+    tagInfo_t *tagInfo = ENT_TAGINFO(ent);
     gentity_t *parent = TAGINFO_PARENT(tagInfo);
     int boneIndex = TAGINFO_BONEINDEX(tagInfo);
 
@@ -655,7 +645,7 @@ unsigned char G_CalcTagParentAxis(gentity_t *ent, vec3_t *parentAxis)
 unsigned char G_SetFixedLink(gentity_t *ent, int eAngles)
 {
     vec3_t parentAxis[4]; /* 3x3 rotation + origin */
-    byte *tagInfo;
+    tagInfo_t *tagInfo;
     vec3_t axis[4]; /* 3x3 rotation + origin */
 
     G_CalcTagParentAxis(ent, parentAxis);
@@ -683,7 +673,7 @@ unsigned char G_CalcTagAxis(gentity_t *ent, qboolean bAnglesOnly)
 {
     vec3_t parentAxis[4];
     vec3_t axis[3];
-    byte *tagInfo;
+    tagInfo_t *tagInfo;
     vec3_t invParentAxis[4];
 
     G_CalcTagParentAxis(ent, parentAxis);
@@ -704,7 +694,7 @@ unsigned char G_CalcTagAxis(gentity_t *ent, qboolean bAnglesOnly)
 /* line 552 */
 unsigned char G_EntUnlink(gentity_t *ent)
 {
-    byte *tagInfo = ENT_TAGINFO(ent);
+    tagInfo_t *tagInfo = ENT_TAGINFO(ent);
     if (!tagInfo) {
         return 0;
     }
@@ -725,7 +715,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
 
     /* Set client view angle if has client */
     if (ENT_CLIENT(ent)) {
-        byte *client = ENT_CLIENT(ent);
+        gclient_t *client = ENT_CLIENT(ent);
         vec3_t viewAngles;
         viewAngles[0] = CLIENT_VIEWANGLES(client)[0];
         viewAngles[1] = CLIENT_VIEWANGLES(client)[1];
@@ -744,7 +734,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
         } else {
             /* Find in linked list */
             while (child) {
-                byte *childTag = ENT_TAGINFO(child);
+                tagInfo_t *childTag = ENT_TAGINFO(child);
                 gentity_t *next = TAGINFO_NEXT(childTag);
                 if (next == ent) {
                     TAGINFO_NEXT(childTag) = TAGINFO_NEXT(tagInfo);
@@ -756,7 +746,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
     }
 
     ENT_TAGINFO(ent) = 0;
-    Scr_SetString((scr_string_t *)&TAGINFO_TAGNAME(tagInfo), 0);
+    Scr_SetString(&TAGINFO_TAGNAME(tagInfo), 0);
     MT_Free(tagInfo, 0x70);
 }
 
@@ -800,7 +790,7 @@ static qboolean G_EntLinkToInternal(gentity_t *ent, gentity_t *parent, unsigned 
     tagInfo->index = index;
     memset(tagInfo->axis, 0, sizeof(tagInfo->axis));
     ENT_TAGCHILDREN(parent) = ent;
-    ENT_TAGINFO(ent) = (byte *)tagInfo;
+    ENT_TAGINFO(ent) = tagInfo;
     memset(tagInfo->parentInvAxis, 0, sizeof(tagInfo->parentInvAxis));
     return 1;
 }
@@ -814,7 +804,7 @@ qboolean G_EntLinkToWithOffset(gentity_t *ent, gentity_t *parent, unsigned int t
         return 0;
     }
 
-    tagInfo = (tagInfo_s *)ENT_TAGINFO(ent);
+    tagInfo = ENT_TAGINFO(ent);
     AnglesToAxis(anglesOffset, (vec_t *)tagInfo->axis);
     VectorCopy(originOffset, tagInfo->axis[3]);
     return 1;
@@ -859,7 +849,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
 {
     int entnum;
     int i;
-    byte *ent;
+    gentity_t *ent;
 
     G_EntUnlink(ed);
 
@@ -882,8 +872,8 @@ unsigned char G_FreeEntity(gentity_t *ed)
     /* Clear references from other entities */
     entnum = ENT_NUMBER(ed);
 
-    ent = g_entities_ptr;
-    for (i = 0; i < LEVEL_NUMENTS; i++, ent += ENTITY_STRIDE) {
+    ent = (gentity_t *)g_entities_ptr;
+    for (i = 0; i < LEVEL_NUMENTS; i++, ent++) {
         if (!ENT_INUSE(ent)) {
             continue;
         }
@@ -902,12 +892,12 @@ unsigned char G_FreeEntity(gentity_t *ed)
     }
 
     /* Clear references from clients */
-    ent = g_entities_ptr;
-    for (i = 0; i < 64; i++, ent += ENTITY_STRIDE) {
+    ent = (gentity_t *)g_entities_ptr;
+    for (i = 0; i < 64; i++, ent++) {
         if (!ENT_INUSE(ent)) {
             continue;
         }
-        byte *client = ENT_CLIENT(ent);
+        gclient_t *client = ENT_CLIENT(ent);
         if (!client) continue;
         if (CLIENT_OWNERENT(client) == ed) {
             CLIENT_OWNERENT(client) = 0;
@@ -922,13 +912,10 @@ unsigned char G_FreeEntity(gentity_t *ed)
 
     /* Clear from level entity references */
     {
-        byte *p = level_ptr;
-        byte *end = level_ptr + 0x80;
-        while (p < end) {
-            if (*(gentity_t **)(p + 0x1D58) == ed) { /* TODO: unknown offset */
-                *(gentity_t **)(p + 0x1D58) = 0; /* TODO: unknown offset */
+        for (i = 0; i < 32; i++) {
+            if (LEVEL_DROPPED_WEAPON_CUE[i] == ed) {
+                LEVEL_DROPPED_WEAPON_CUE[i] = 0;
             }
-            p += 4;
         }
     }
 
@@ -940,12 +927,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
     /* Handle player corpse type */
     if (ENT_ETYPE(ed) == 2) {
         int corpseIdx = G_GetPlayerCorpseIndex(ed);
-        /* Clear corpse entry: stride = 0x4C8 * 9/8... complex offset math */
-        {
-            int offset = (corpseIdx * 9);
-            offset = (offset * 16 + offset) * 8;
-            *(int *)((byte *)playerCorpseInfo_ptr + 0x10BC + offset) = -1; /* TODO: unknown offset */
-        }
+        CORPSE_ENTNUM(corpseIdx) = -1;
     }
 
     Scr_FreeEntity(ed);
@@ -1010,15 +992,15 @@ int G_GetFreePlayerCorpseIndex(void)
     bestIdx = 0;
 
     for (i = 0; i < 8; i++) {
-        int entnum = CORPSE_ENTNUM(playerCorpseInfo_ptr, i);
+        int entnum = CORPSE_ENTNUM(i);
         if (entnum == -1) {
             return i;
         }
 
         {
             /* Compute entity origin from entity number */
-            byte *corpseEnt = LEVEL_GENTITIES + ((entnum * 5) * 8 - entnum * 5) * 16 + 0x138;
-            float distSq = Vec3DistanceSq((vec_t *)corpseEnt, playerPos);
+            gentity_t *corpseEnt = &LEVEL_GENTITIES[entnum];
+            float distSq = Vec3DistanceSq(ENT_CURRENTORIGIN(corpseEnt), playerPos);
             if (distSq > bestDistSq) {
                 bestDistSq = distSq;
                 bestIdx = i;
@@ -1028,13 +1010,10 @@ int G_GetFreePlayerCorpseIndex(void)
 
     /* Free the farthest corpse */
     {
-        int offset = (bestIdx * 9);
-        int off2 = (offset * 16 + offset) * 8;
-        byte *entry = playerCorpseInfo_ptr + 0x10B0 + off2;
-        int entnum2 = *(int *)(entry + 0x0C); /* TODO: unknown offset */
-        byte *corpseEnt2 = LEVEL_GENTITIES + ((entnum2 * 5) * 8 - entnum2 * 5) * 16;
-        G_FreeEntity((gentity_t *)corpseEnt2);
-        *(int *)(entry + 0x0C) = -1; /* TODO: unknown offset */
+        int entnum2 = CORPSE_ENTNUM(bestIdx);
+        gentity_t *corpseEnt2 = &LEVEL_GENTITIES[entnum2];
+        G_FreeEntity(corpseEnt2);
+        CORPSE_ENTNUM(bestIdx) = -1;
     }
 
     return bestIdx;
@@ -1058,7 +1037,7 @@ unsigned char G_DObjUpdate(gentity_t *ent)
         /* No model - check children for unlink */
         gentity_t *child = ENT_TAGCHILDREN(ent);
         while (child) {
-            byte *childTag = ENT_TAGINFO(child);
+            tagInfo_t *childTag = ENT_TAGINFO(child);
             gentity_t *next = TAGINFO_NEXT(childTag);
             if (!TAGINFO_TAGNAME(childTag)) {
                 TAGINFO_BONEINDEX(childTag) = -1;
@@ -1096,7 +1075,7 @@ unsigned char G_DObjUpdate(gentity_t *ent)
     {
         gentity_t *child = ENT_TAGCHILDREN(ent);
         while (child) {
-            byte *childTag = ENT_TAGINFO(child);
+            tagInfo_t *childTag = ENT_TAGINFO(child);
             gentity_t *next = TAGINFO_NEXT(childTag);
             if (!TAGINFO_TAGNAME(childTag)) {
                 TAGINFO_BONEINDEX(childTag) = -1;
@@ -1300,13 +1279,11 @@ gentity_t * G_TempEntity(const vec_t *origin, int event)
 gentity_t * G_SpawnPlayerClone(void)
 {
     int idx;
-    byte *base;
     gentity_t *e;
     int oldEFlags;
 
     idx = LEVEL_CLONEIDX;
-    base = LEVEL_GENTITIES + ((idx * 5) * 8 - idx * 5) * 16;
-    e = (gentity_t *)(base + 0x8C00);
+    e = &LEVEL_GENTITIES[idx + 64];
 
     idx = (idx + 1) & 0x80000007;
     if (idx < 0) {

@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stddef.h>
 #include <string.h>
 
 /* Original includes (from N_BINCL debug info):
@@ -29,6 +30,7 @@ extern void SV_UnlinkEntity(gentity_t *ent);
 
 /* External globals */
 extern gentity_t g_entities[];
+extern entityHandler_t entityHandlers[20];
 extern struct level_locals_t level;
 extern const dvar_t *g_synchronousClients;
 
@@ -43,28 +45,31 @@ extern const dvar_t *g_synchronousClients;
  *   0x26E4  sess.oldcmd
  *   0x2700  sess.localClient
  *   0x2740  sess.noSpectate
- *   0x27A4  spectatorClient
- *   0x27A8  noclip
- *   0x27AC  ufo
- *   0x27B0  bFrozen
+ *   0x27A8  spectatorClient
+ *   0x27AC  noclip
+ *   0x27B0  ufo
+ *   0x27B4  bFrozen
  *   0x27B8  buttons
  *   0x27BC  oldbuttons
  *   0x27C0  latched_buttons
  *   0x27C4  buttonsSinceLastFrame
- *   0x27C8  oldOrigin (vec3)
+ *   0x27CC  oldOrigin (vec3)
+ *   0x288C  vGunSpeed (vec3)
  *   0x289C  lastServerTime
  */
 
 /* gclient_t field access macros */
 #define _GC(c)                      ((gclient_t *)(c))
+#define GACTIVE_PMFLAGS_BYTE2_0X80  0x00800000
 #define CLIENT_SESS_STATE(c)        (_GC(c)->sess.sessionState)
 #define CLIENT_SESS_NOSPECTATE(c)   (_GC(c)->sess.noSpectate)
-#define CLIENT_UFO(c)               (_GC(c)->noclip) /* 0x27AC per STABS */
-#define CLIENT_BFROZEN(c)           (_GC(c)->ufo) /* 0x27B0 per STABS */
+#define CLIENT_SESS_CMD(c)          (&_GC(c)->sess.cmd)
+#define CLIENT_UFO(c)               (_GC(c)->ufo)
+#define CLIENT_BFROZEN(c)           (_GC(c)->bFrozen)
 #define CLIENT_LASTSERVERTIME(c)    (_GC(c)->lastServerTime)
-#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E)) /* unaligned byte-level read of pm_flags */
+#define CLIENT_PS_FLAGS(c)          (_GC(c)->ps.pm_flags)
 #define CLIENT_PS_PM_TYPE(c)        (_GC(c)->ps.pm_type)
-#define CLIENT_PS_KICKAVEL(c)       ((float *)((byte *)(c) + 0x288C)) /* deep in gclient_t */
+#define CLIENT_VGUNSPEED(c)         (_GC(c)->vGunSpeed)
 
 void ClientImpacts(gentity_t *ent, pmove_t *pm);
 qboolean G_ClientCanSpectateTeam(gclient_t *client, team_t team);
@@ -366,15 +371,14 @@ qboolean GetFollowPlayerState(int clientNum, playerState_t *ps)
     gentity_t *ent = &g_entities[clientNum];
     gclient_t *client = ent->client;
 
-    /* Check if ps.eFlags has EF_CROUCHING (0x80) at byte offset 0x0E */
-    if (!(CLIENT_PS_FLAGS(client) & 0x80))
+    /* The binary checks byte 2 bit 0x80, which maps to pm_flags bit 0x00800000. */
+    if (!(CLIENT_PS_FLAGS(client) & GACTIVE_PMFLAGS_BYTE2_0X80))
         return 0;
 
-    /* Copy playerState_t (0x26A8 bytes) */
-    memcpy(ps, client, 0x26A8);
+    memcpy(ps, &client->ps, sizeof(client->ps));
 
-    /* Zero out portion from offset 0x7A8 (0xF80 bytes) */
-    memset((byte *)ps + 0x7A8, 0, 0xF80);
+    /* Zero everything from ps.hud onward. */
+    memset(&ps->hud, 0, sizeof(*ps) - offsetof(playerState_t, hud));
 
     return 1;
 }
@@ -439,8 +443,8 @@ void G_PlayerEvent(int clientNum, int event)
     if (!((1 << idx) & 0x20007))
         return;
 
-    /* Call BG_WeaponFireRecoil(ps, kickAVel_in, kickAVel_out) */
-    BG_WeaponFireRecoil((playerState_t *)client, CLIENT_PS_KICKAVEL(client), kickAVel);
+    /* Call BG_WeaponFireRecoil(ps, kickAVel_in, kickAVel_out). */
+    BG_WeaponFireRecoil(&client->ps, CLIENT_VGUNSPEED(client), kickAVel);
 }
 
 /* line 249 */
@@ -2354,8 +2358,8 @@ void G_RunClient(gentity_t *ent)
     /* If synchronous clients, set cmd.serverTime = level.time and run think */
     if (g_synchronousClients->current.enabled) {
         client = ent->client;
-        ((gclient_t *)client)->sess.cmd.serverTime = level.time;  /* sess.cmd.serverTime */
-        ClientThink_real(ent, (usercmd_t *)((byte *)client + 0x26C8));
+        client->sess.cmd.serverTime = level.time;
+        ClientThink_real(ent, CLIENT_SESS_CMD(client));
     }
 
     client = ent->client;
@@ -2981,37 +2985,33 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
     gentity_t *other;
     void (*entTouch)(gentity_t *, gentity_t *, int);
     void (*otherTouch)(gentity_t *, gentity_t *, int);
+    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
     int numtouch;
     int *touchents;
     int entityNum;
     int duplicate;
 
-    /* Get entTouch handler: entityHandlers[ent->handler].touch at offset 0xc in 40-byte entries */
-    entTouch = (void (*)(gentity_t *, gentity_t *, int))
-        *(void **)((byte *)imp_entityHandlers + ent->handler * 40 + 0xc); /* TODO: unknown offset */
+    entTouch = entityHandlers[ent->handler].touch;
 
-    numtouch = ((pmove_t *)pm)->numtouch;
+    numtouch = pm->numtouch;
     if (numtouch <= 0)
         return;
 
-    touchents = (int *)((byte *)pm + 0x44);
+    touchents = pm->touchents;
     entityNum = touchents[0];
 
     for (i = 0; ; ) {
-        /* Compute other entity pointer: entityNum * 0x230 + g_entities */
-        other = (gentity_t *)((byte *)imp_g_entities + entityNum * 0x230);
+        other = &g_entities[entityNum];
 
         /* Notify scripts about the touch event */
         if (((int (*)(int))Scr_IsSystemActive)(1)) {
             Scr_AddEntity(other);
-            Scr_Notify(ent, (int)((scr_const_t *)imp_scr_const)->touch, 1);
+            Scr_Notify(ent, scr->touch, 1);
             Scr_AddEntity(ent);
-            Scr_Notify(other, (int)((scr_const_t *)imp_scr_const)->touch, 1);
+            Scr_Notify(other, scr->touch, 1);
         }
 
-        /* Call other entity's touch handler */
-        otherTouch = (void (*)(gentity_t *, gentity_t *, int))
-            *(void **)((byte *)imp_entityHandlers + ((other)->handler) * 40 + 0xc); /* TODO: unknown offset */
+        otherTouch = entityHandlers[other->handler].touch;
         if (otherTouch) {
             otherTouch(other, ent, 1);
         }
@@ -3023,7 +3023,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
 
 next_iteration:
         i++;
-        if (i >= ((pmove_t *)pm)->numtouch)
+        if (i >= pm->numtouch)
             break;
 
         /* Duplicate check: scan previous entries */

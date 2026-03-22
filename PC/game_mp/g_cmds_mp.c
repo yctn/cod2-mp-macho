@@ -3292,7 +3292,7 @@ void ClientCommand(int clientNum)
 }
 #else
 extern void Com_Error(int code, const char *fmt, ...);
-extern int SV_GetArchivedClientInfo(int clientNum, void *cmd, void *ps, void *cs);
+extern qboolean SV_GetArchivedClientInfo(int clientNum, int *archiveTime, playerState_t *ps, clientState_t *cs);
 extern qboolean G_ClientCanSpectateTeam(gclient_t *client, int team);
 
 qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
@@ -3326,7 +3326,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
     for (;;) {
         clientnum += dir;
 
-        maxclients = ((level_locals_t *)imp_level)->maxclients;
+        maxclients = level.maxclients;
         if (clientnum >= maxclients) {
             clientnum = 0;
         }
@@ -3336,9 +3336,9 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
 
         /* Try to get archived client info */
         client = ent->client;
-        if (SV_GetArchivedClientInfo(clientnum, (byte *)client + 0x26b4, &ps, &cs)) {
+        if (SV_GetArchivedClientInfo(clientnum, &client->sess.archiveTime, &ps, &cs)) {
             /* Check if we can spectate this team */
-            if (G_ClientCanSpectateTeam(ent->client, *(int *)((byte *)&cs + 4))) {
+            if (G_ClientCanSpectateTeam(ent->client, cs.team)) {
                 /* Set spectatorClient and session state */
                 ((gclient_t *)client)->spectatorClient = clientnum;
                 ((gclient_t *)client)->sess.sessionState = 2;

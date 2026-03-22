@@ -59,7 +59,6 @@ extern int rand(void);
 #define ENT_TEAM(e)             (_ENT(e)->nopickup) /* 0x163: nopickup in STABS, used as team in game code */
 #define ENT_CLASSNAME(e)        (_ENT(e)->classname)
 #define ENT_FLAGS(e)            (_ENT(e)->flags)
-#define ENT_FLAGS_BYTE2(e)      (*(byte *)((byte *)&_ENT(e)->flags + 2))
 #define ENT_FREEAFTEREVENT(e)   (_ENT(e)->freeAfterEvent)
 #define ENT_CLIPMASK(e)         (_ENT(e)->clipmask)
 #define ENT_PARENT(e)           (_ENT(e)->parent)
@@ -75,7 +74,7 @@ extern int rand(void);
 extern byte level_ptr[];         /* imp_level */
 extern byte scr_const_ptr[];     /* imp_scr_const */
 extern byte g_entities_ptr[];    /* imp_g_entities */
-extern byte *entityHandlers_ptr; /* imp_entityHandlers */
+extern entityHandler_t entityHandlers[20];
 extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
 extern byte *pPriorityMap;      /* imp_bulletPriorityMap */
 
@@ -83,13 +82,17 @@ extern byte *pPriorityMap;      /* imp_bulletPriorityMap */
 #define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
 #define LEVEL_PREVIOUSTIME  (((level_locals_t *)level_ptr)->previousTime)
 
-/* Handler table access: entityHandlers_ptr[handler * 40 + offset] */
-#define HANDLER_ENTRY(h)    (entityHandlers_ptr + (h) * 40)
-#define HANDLER_MOD(h)      (*(int *)(HANDLER_ENTRY(h) + 0x20))
-#define HANDLER_SPLASHMOD(h) (*(int *)(HANDLER_ENTRY(h) + 0x24))
+#define HANDLER_MOD(h)       (entityHandlers[(h)].methodOfDeath)
+#define HANDLER_SPLASHMOD(h) (entityHandlers[(h)].splashMethodOfDeath)
 
 /* g_entities_ptr entity access by number */
 #define G_ENTITY(num) ((gentity_t *)(g_entities_ptr + (num) * ENTITY_STRIDE))
+
+enum {
+    GMISSILE_ENTITYNUM_WORLD = 0x3fe,
+    GMISSILE_FL_GUIDED = 0x10000,
+    GMISSILE_FL_TURRET = 0x20000,
+};
 
 /* Forward declarations */
 void G_ExplodeMissile(gentity_t *ent);
@@ -475,7 +478,7 @@ gentity_t *fire_rocket(gentity_t *self, vec_t *start, vec_t *dir)
     ENT_MISSILESPEED(bolt) = (float)weapDef->iProjectileSpeedUp / (float)weapDef->iProjectileSpeed * 1000.0f;
 
     /* Copy FL_TURRET flag from self */
-    ENT_FLAGS(bolt) |= (ENT_FLAGS(self) & 0x20000);
+    ENT_FLAGS(bolt) |= (ENT_FLAGS(self) & GMISSILE_FL_TURRET);
 
     return bolt;
 }
@@ -884,8 +887,8 @@ after_trace:
         /* Missile is still moving: check for re-guidance */
         ENT_GROUNDENTNUM(ent) = 0x3FF;
 
-        /* Check if weapon class allows guidance (weapClass == 2) and not already guided */
-        if (weapDef->weapClass == 2 && !(ENT_FLAGS_BYTE2(ent) & 2)) {
+        /* Check if weapon class allows guidance and the missile is not turret-fired. */
+        if (weapDef->weapClass == 2 && !(ENT_FLAGS(ent) & GMISSILE_FL_TURRET)) {
             /* Check if total flight time hasn't expired */
             int totalTime = (int)ENT_MISSILESPEED(ent) + ENT_POS(ent)->trTime;
             if (totalTime < LEVEL_TIME) {
@@ -926,7 +929,7 @@ after_trace:
             ENT_POS(ent)->trTime = LEVEL_TIME;
 
             /* Update missile speed */
-            if (ENT_FLAGS(ent) & 0x10000) {
+            if (ENT_FLAGS(ent) & GMISSILE_FL_GUIDED) {
                 /* Already guided: apply decay factor */
                 ENT_MISSILESPEED(ent) *= ((WeaponDef *)weaponDef)->destabilizationTimeReductionRatio;
             } else {
@@ -935,7 +938,7 @@ after_trace:
             }
 
             /* Set guided flag */
-            ENT_FLAGS(ent) |= 0x10000;
+            ENT_FLAGS(ent) |= GMISSILE_FL_GUIDED;
         }
 
         goto run_think;
@@ -1026,7 +1029,7 @@ after_trace:
             if (ENT_COUNT(ent)) {
                 gentity_t *trigAttacker;
                 if (ENT_OWNERNUM(ent) == 0x3FF) {
-                    trigAttacker = (gentity_t *)(g_entities_ptr + 0x8BBA0);
+                    trigAttacker = G_ENTITY(GMISSILE_ENTITYNUM_WORLD);
                 } else {
                     trigAttacker = G_ENTITY(ENT_OWNERNUM(ent));
                 }

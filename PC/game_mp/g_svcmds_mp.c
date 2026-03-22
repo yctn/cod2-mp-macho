@@ -20,10 +20,11 @@ extern char *ConcatArgs(int start);
 extern void SV_GameSendServerCommand(int clientNum, int type, const char *text);
 extern void Cbuf_ExecuteText(int exec_when, const char *text);
 
+extern level_locals_t level;
 extern byte g_entities_ptr[]; /* imp_g_entities */
 extern byte level_ptr[];      /* imp_level */
-extern byte *g_banIPs_dvar;  /* imp_g_banIPs */
-extern void *imp_g_cheats;  /* import pointer to g_cheats dvar */
+extern const dvar_t *g_banIPs;
+extern const dvar_t *g_cheats;
 
 static ipFilter_t ipFilters[1024]; /* ipFilters */
 static int numIPFilters; /* numIPFilters */
@@ -98,7 +99,7 @@ static void UpdateIPBans(void)
                     "%i.%i.%i.%i ", ip[0], ip[1], ip[2], ip[3]);
     }
 
-    Dvar_SetString(*(void **)&g_banIPs_dvar, iplist);
+    Dvar_SetString((void *)g_banIPs, iplist);
 }
 
 /* line 137 */
@@ -175,27 +176,24 @@ void Svcmd_RemoveIP_f(void)
 /* line 255 */
 void Svcmd_EntityList_f(void)
 {
-    byte *level;
-    byte *ent;
+    gentity_t *ent;
     int numEntities;
     int e;
     int eType;
     unsigned short classname;
 
-    level = (byte *)level_ptr;
-    numEntities = ((level_locals_t *)level)->num_entities;
+    numEntities = level.num_entities;
 
     for (e = 1; e < numEntities; e++) {
-        ent = (byte *)g_entities_ptr + e * 0x230;
+        ent = &((gentity_t *)g_entities_ptr)[e];
 
-        /* Check r.inuse at offset 0xFC */
-        if (((gentity_t *)ent)->r.inuse == 0)
+        if (ent->r.inuse == 0)
             continue;
 
         Com_Printf("%3i:", e);
 
         /* s.eType at offset 0x04 */
-        eType = ((gentity_t *)ent)->s.eType;
+        eType = ent->s.eType;
 
         switch (eType) {
             case 0: Com_Printf("ET_GENERAL             "); break;
@@ -209,7 +207,7 @@ void Svcmd_EntityList_f(void)
         }
 
         /* classname at offset 0x168 (scr_string_t) */
-        classname = ((gentity_t *)ent)->classname;
+        classname = ent->classname;
         if (classname != 0)
             Com_Printf("%s", SL_ConvertToString(classname));
 
@@ -226,8 +224,7 @@ void G_ProcessIPBans(void)
 
     numIPFilters = 0;
 
-    /* Read dvar string value: *(*(dvar_ptr) + 8) */
-    I_strncpyz(str, *(const char **)(*(int *)&g_banIPs_dvar + 8), 0x400);
+    I_strncpyz(str, g_banIPs->current.string, 0x400);
 
     s = str;
     t = str;
@@ -285,8 +282,7 @@ qboolean ConsoleCommand(void)
         return 1;
     }
 
-    /* Check if cheats are enabled: *(*(cheats_dvar) + 8) */
-    if (*(int *)(*(int *)imp_g_cheats + 8) == 0)
+    if (!g_cheats->current.enabled)
         return 0;
 
     if (I_stricmp(cmd, "say") == 0) {

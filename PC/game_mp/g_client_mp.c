@@ -33,7 +33,7 @@ extern int SV_ClientHasClientMuted(int clientNum, int mutedClientNum);
 extern int SV_ClientWantsVoiceData(int clientNum);
 extern void SV_QueueVoicePacket(int talkerNum, int clientNum, VoicePacket_t *voicePacket);
 extern void SV_GetUserinfo(int clientNum, char *buffer, int bufSize);
-extern void SV_GetUsercmd(int clientNum, byte *dest);
+extern void SV_GetUsercmd(int clientNum, usercmd_t *dest);
 extern int SV_IsLocalClient(int clientNum);
 extern int Info_Validate(const char *s);
 extern const char *Info_ValueForKey(const char *s, const char *key);
@@ -41,13 +41,13 @@ extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern int I_stricmp(const char *s1, const char *s2);
 extern void Scr_SetString(unsigned short *dest, unsigned short value);
 extern void ClientEndFrame(gentity_t *ent);
-extern void ClientThink_real(gentity_t *ent, byte *ucmd);
-extern void BG_PlayerStateToEntityState(byte *ps, gentity_t *ent, int snap, int forceOverride);
-extern float BG_GetBobCycle(byte *ps);
-extern float BG_GetSpeed(byte *ps, int serverTime);
-extern float BG_GetVerticalBobFactor(byte *ps, float bobCycle, float xyspeed, int bobMax);
-extern float BG_GetHorizontalBobFactor(byte *ps, float bobCycle, float xyspeed, int bobMax);
-extern void AddLeanToPosition(vec_t *origin, int viewAngle, int leanFrac, float maxStand, float maxCrouch);
+extern void ClientThink_real(gentity_t *ent, usercmd_t *ucmd);
+extern void BG_PlayerStateToEntityState(playerState_t *ps, gentity_t *ent, int snap, int forceOverride);
+extern float BG_GetBobCycle(const playerState_t *ps);
+extern float BG_GetSpeed(const playerState_t *ps, int serverTime);
+extern float BG_GetVerticalBobFactor(const playerState_t *ps, float bobCycle, float xyspeed, float bobMax);
+extern float BG_GetHorizontalBobFactor(const playerState_t *ps, float bobCycle, float xyspeed, float bobMax);
+extern void AddLeanToPosition(vec_t *origin, float viewAngle, float leanFrac, float maxStand, float maxCrouch);
 extern int ColorIndex(int c);
 extern void Com_Error(int level, const char *fmt, ...);
 
@@ -62,13 +62,13 @@ extern unsigned char g_clients[]; /* BSS client array - used for client data acc
    In decomp, level and g_clients are separate BSS arrays.
    Client data access must use g_clients, not level_ptr. */
 #define CLIENT_BASE g_clients
-extern byte *g_sv_running_ptr; /* imp_voice_global */
-extern byte *g_deadChat_ptr; /* imp_voice_deadChat */
-extern byte *g_voiceChatsAllowed_ptr; /* imp_voice_localEcho */
-extern byte *g_voiceChatTalkingDuration_ptr; /* imp_g_inactivity */
-extern byte *g_bobMax_ptr; /* imp_bg_bobMax */
+extern const dvar_t *voice_global; /* imp_voice_global */
+extern const dvar_t *voice_deadChat; /* imp_voice_deadChat */
+extern const dvar_t *voice_localEcho; /* imp_voice_localEcho */
+extern const dvar_t *g_voiceChatTalkingDuration; /* imp_g_inactivity */
+extern const dvar_t *bg_bobMax; /* imp_bg_bobMax */
 extern int __mh_execute_header;
-extern int g_time; /* imp_level_bgs */
+extern bgs_t level_bgs; /* imp_level_bgs */
 
 void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up);
 void ClientBegin(int clientNum);
@@ -107,13 +107,14 @@ void ClientBegin(int clientNum)
 {
     gclient_s *client = G_ClientForNum(clientNum);
     gentity_s *ent = G_EntityForNum(clientNum);
+    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
 
     client->sess.connected = 2; /* CON_CONNECTED */
     client->ps.pm_type = 4; /* PM_INTERMISSION */
 
     CalculateRanks();
 
-    Scr_Notify(ent, ((scr_const_t *)imp_scr_const)->begin, 0);
+    Scr_Notify(ent, scr->begin, 0);
 }
 
 /* line 596 */
@@ -122,12 +123,13 @@ void ClientDisconnect(int clientNum)
     gclient_s *client = G_ClientForNum(clientNum);
     gentity_s *ent = G_EntityForNum(clientNum);
     level_locals_t *level = G_Level();
+    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
     int i;
 
     if (Scr_IsSystemActive(1)) {
         Scr_AddString("disconnect");
         Scr_AddString("^1teleport");
-        Scr_Notify(ent, ((scr_const_t *)imp_scr_const)->menuresponse, 2);
+        Scr_Notify(ent, scr->menuresponse, 2);
     }
 
     /* Stop other players following this client */
@@ -325,9 +327,7 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
 
         /* Check sv_voice_enabled dvar */
         {
-            byte *dvar = *(byte **)g_sv_running_ptr;
-            dvar = *(byte **)dvar;
-            if (*(byte *)(dvar + 8) != 0)
+            if (voice_global->current.enabled)
                 goto check_team;
         }
 
@@ -350,9 +350,7 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
                 goto check_can_send;
 
             if (otherSessState - 1 == 0 || talkerSessState - 1 == 0) {
-                byte *deadChatDvar = *(byte **)g_deadChat_ptr;
-                deadChatDvar = *(byte **)deadChatDvar;
-                if (*(byte *)(deadChatDvar + 8) == 0)
+                if (!voice_deadChat->current.enabled)
                     continue;
             }
         }
@@ -360,9 +358,7 @@ void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket)
     check_can_send:
         /* Don't send to self unless voiceChatsAllowed */
         if (otherEnt == (gentity_s *)talker) {
-            byte *dvar = *(byte **)g_voiceChatsAllowed_ptr;
-            dvar = *(byte **)dvar;
-            if (*(byte *)(dvar + 8) == 0)
+            if (!voice_localEcho->current.enabled)
                 continue;
         }
 
@@ -390,7 +386,7 @@ void SetClientViewAngle(gentity_t *ent, const vec_t *angle)
 
     client = ent->client;
 
-    if ((*(byte *)(&client->ps.pm_flags) & 1) == 0 || (client->ps.eFlags & 0x300) != 0) {
+    if ((client->ps.pm_flags & 1) == 0 || (client->ps.eFlags & 0x300) != 0) {
         /* Pitch angle clamping vs vehicle turret limits */
         delta = AngleNormalize180(AngleDelta(client->ps.proneDirection, newAngle[1]));
 
@@ -472,7 +468,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     lev = G_Level();
 
     /* Check if player is in turret */
-    if (*(byte *)(&client->ps.pm_flags) & 0x80) {
+    if (client->ps.pm_flags & 0x80) {
         if (client->ps.eFlags & 0x300) {
             /* Stop using turret first */
             int turretEntNum = client->ps.viewlocked_entNum;
@@ -488,7 +484,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     ent->s.groundEntityNum = 0x3ff;
 
-    scr_data = (scr_const_t *)imp_scr_const;
+    scr_data = (const scr_const_t *)imp_scr_const;
     Scr_SetString(&ent->classname, scr_data->player);
 
     ent->clipmask = 0x2810011;
@@ -513,7 +509,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     iFlags = client->ps.eFlags & 0x100002;
 
     memcpy(savedSess, &client->sess, 0x100);
-    savedSpawnCount = *(int *)((byte *)client + 0x140); /* ps.stats[5] */
+    savedSpawnCount = client->ps.stats[5];
 
     /* Clear client */
     memset(client, 0, CLIENT_STRIDE);
@@ -525,9 +521,9 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     client->useHoldEntity = 0x3ff;
 
     savedSpawnCount++;
-    *(int *)((byte *)client + 0x140) = savedSpawnCount; /* ps.stats[5] */
+    client->ps.stats[5] = savedSpawnCount;
 
-    *(int *)((byte *)client + 0x134) = client->sess.maxHealth; /* ps.stats[2] */
+    client->ps.stats[2] = client->sess.maxHealth;
     client->ps.eFlags = iFlags;
 
     client->sess.cs.clientIndex = clientNum;
@@ -535,7 +531,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     client->ps.viewlocked_entNum = 0x3ff;
 
     /* Get user command */
-    SV_GetUsercmd(clientNum, (byte *)&client->sess.cmd);
+    SV_GetUsercmd(clientNum, &client->sess.cmd);
 
     client->ps.eFlags ^= 2;
 
@@ -549,7 +545,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     client->ps.maxs[2] = ent->r.maxs[2];
 
     client->ps.viewHeightTarget = 0x3c;
-    *(int *)(&client->ps.viewHeightCurrent) = 0x42700000;  /* 60.0f */
+    client->ps.viewHeightCurrent = 60.0f;
     client->ps.viewHeightLerpTime = 0;
     client->ps.viewHeightLerpPosAdj = 0;
 
@@ -566,9 +562,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     /* Set spawn time */
     {
-        byte *dvar = *(byte **)g_voiceChatTalkingDuration_ptr;
-        dvar = *(byte **)dvar;
-        int dvarVal = *(int *)(dvar + 8);
+        int dvarVal = g_voiceChatTalkingDuration->current.integer;
         int time = dvarVal * 5 * 5 * 5;  /* dvarVal * 125 */
         client->inactivityTime = lev->time + time * 8;
     }
@@ -582,11 +576,11 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
         client->ps.commandTime = lev->time - 100;
 
         ClientEndFrame(ent);
-        ClientThink_real(ent, (byte *)&client->sess.cmd);
+        ClientThink_real(ent, &client->sess.cmd);
 
         lev->clientIsSpawning = 0;
 
-        BG_PlayerStateToEntityState((byte *)client, ent, 1, 1);
+        BG_PlayerStateToEntityState(&client->ps, ent, 1, 1);
     }
 }
 
@@ -597,13 +591,13 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
     float fBobCycle, xyspeed;
     float vertBob, horzBob;
     vec3_t vRight;
-    int bobMax;
+    float bobMax;
 
     client = ent->client;
 
     if (client->ps.eFlags & 0x300) {
         /* Turret - use tag position */
-        scr_const_t *scr_data = (scr_const_t *)imp_scr_const;
+        const scr_const_t *scr_data = (const scr_const_t *)imp_scr_const;
         int turretEntNum = client->ps.viewlocked_entNum;
         gentity_s *turretEnt = G_EntityForNum(turretEntNum);
 
@@ -622,28 +616,24 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
     origin[2] += client->ps.viewHeightCurrent;
 
     /* Bob calculations */
-    fBobCycle = BG_GetBobCycle((byte *)&client->ps);
+    fBobCycle = BG_GetBobCycle(&client->ps);
 
     {
         level_locals_t *lev = G_Level();
-        xyspeed = BG_GetSpeed((byte *)&client->ps, lev->time);
+        xyspeed = BG_GetSpeed(&client->ps, lev->time);
     }
 
     /* Vertical bob */
     {
-        byte *bobMaxDvar = *(byte **)g_bobMax_ptr;
-        bobMaxDvar = *(byte **)bobMaxDvar;
-        bobMax = *(int *)(bobMaxDvar + 8);
-        vertBob = BG_GetVerticalBobFactor((byte *)&client->ps, fBobCycle, xyspeed, bobMax);
+        bobMax = bg_bobMax->current.value;
+        vertBob = BG_GetVerticalBobFactor(&client->ps, fBobCycle, xyspeed, bobMax);
     }
     origin[2] += vertBob;
 
     /* Horizontal bob */
     {
-        byte *bobMaxDvar = *(byte **)g_bobMax_ptr;
-        bobMaxDvar = *(byte **)bobMaxDvar;
-        bobMax = *(int *)(bobMaxDvar + 8);
-        horzBob = BG_GetHorizontalBobFactor((byte *)&client->ps, fBobCycle, xyspeed, bobMax);
+        bobMax = bg_bobMax->current.value;
+        horzBob = BG_GetHorizontalBobFactor(&client->ps, fBobCycle, xyspeed, bobMax);
     }
 
     /* Apply horizontal bob via right vector */
@@ -654,7 +644,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
     origin[2] += horzBob * vRight[2];
 
     /* Add lean */
-    AddLeanToPosition(origin, *(int *)&client->ps.viewangles[1], *(int *)&client->ps.leanf, 20.0f, 16.0f);
+    AddLeanToPosition(origin, client->ps.viewangles[1], client->ps.leanf, 20.0f, 16.0f);
 
     /* Clamp to ground + 8 */
     {
@@ -863,13 +853,11 @@ void ClientUserinfoChanged(int clientNum)
     do_score_update:
         /* Update score board info */
         {
-            byte *g_time_base = *(byte **)&g_time;
-            byte *scoreInfo = g_time_base + 0xb3bf0 + clientNum * GENTITY_STRIDE;
-            byte *si = scoreInfo + 0xc;
+            clientInfo_t *ci = &level_bgs.clientinfo[clientNum];
 
-            *(int *)(si + 8) = clientNum;
-            I_strncpyz((char *)(si + 0x18 - 0xc), longName, 0x20);
-            *(int *)(si + 0x2c) = client->sess.cs.team; /* TODO: unknown offset */
+            ci->clientNum = clientNum;
+            I_strncpyz(ci->name, longName, sizeof(ci->name));
+            ci->team = client->sess.cs.team;
         }
     }
 }
@@ -879,7 +867,7 @@ char * ClientConnect(int clientNum, int scriptPersId)
 {
     gentity_s *ent;
     gclient_s *client;
-    byte *ci;
+    clientInfo_t *ci;
     int pXAnimTree;
     char userinfo[0x400];
 
@@ -890,18 +878,15 @@ char * ClientConnect(int clientNum, int scriptPersId)
     memset(client, 0, CLIENT_STRIDE);
 
     /* Get client info pointer */
-    {
-        byte *g_time_base = *(byte **)&g_time;
-        ci = g_time_base + 0xb3bf0 + clientNum * GENTITY_STRIDE + 0xc;
-    }
+    ci = &level_bgs.clientinfo[clientNum];
 
     /* Save and restore anim tree */
-    pXAnimTree = *(int *)(ci + 0x4a4); /* TODO: unknown offset */
-    memset(ci, 0, 0x4b8);
-    *(int *)(ci + 0x4a4) = pXAnimTree; /* TODO: unknown offset */
+    pXAnimTree = (int)ci->pXAnimTree;
+    memset(ci, 0, sizeof(*ci));
+    ci->pXAnimTree = (XAnimTree_s *)pXAnimTree;
 
-    *(int *)(ci - 0xc + 0xc) = 1;  /* ci base valid */
-    *(int *)(ci + 4) = 1;
+    ci->infoValid = 1;
+    ci->nextValid = 1;
 
     client->sess.connected = 1;  /* CS_CONNECTED */
     client->sess.scriptPersId = (unsigned short)scriptPersId;

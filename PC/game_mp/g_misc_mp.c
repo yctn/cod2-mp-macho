@@ -48,6 +48,7 @@ extern void G_DObjUpdate(gentity_t *ent);
 extern void G_SetAngle(gentity_t *ent, const vec_t *angles);
 extern struct level_locals_t level;
 extern struct bgs_t level_bgs;
+extern gentity_t g_entities[];
 extern void Com_Printf(const char *fmt, ...);
 extern qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, unsigned int tagName, vec3_t *tagMat);
 extern void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin);
@@ -110,6 +111,8 @@ enum {
 #define GMISC_TRIGGER_DOWN(info) ((info)->pitchCap)
 
 static const vec3_t g_misc_vec3_origin = {0.0f, 0.0f, 0.0f};
+
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 
 static inline float GMisc_Fabs(float value)
 {
@@ -202,7 +205,7 @@ void SP_info_null(gentity_t *self)
 /* line 23 */
 void SP_info_notnull(gentity_t *self)
 {
-    G_SetOrigin(self, (vec_t *)((byte *)self + 0x138));
+    G_SetOrigin(self, self->r.currentOrigin);
 }
 
 /* line 29 */
@@ -376,13 +379,13 @@ static qboolean turret_behind(gentity_t *self, gentity_t *other)
 /* line 724 */
 void turret_think(gentity_t *self)
 {
-    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+    self->nextthink = level.time + 50;
 
     if (self->tagInfo) {
         G_GeneralLink(self);
     }
 
-    if (!((gentity_t *)imp_g_entities)[self->r.ownerNum].client) {
+    if (!g_entities[self->r.ownerNum].client) {
         turret_UpdateSound(self);
         self->s.eFlags &= ~GMISC_EF_FIRING;
         turret_ReturnToDefaultPos(self, 0);
@@ -394,21 +397,21 @@ void turret_controller(gentity_t *self, int *partBits)
 {
     vec3_t angles;
     DObj_s *obj;
-    unsigned short *tagNames = (unsigned short *)*(int *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
 
     angles[0] = self->s.angles2[0];
     angles[1] = self->s.angles2[1];
     angles[2] = 0;
 
-    obj = Com_GetServerDObj(*(int *)self);
+    obj = Com_GetServerDObj(self->s.number);
 
-    DObjSetControlTagAngles(obj, partBits, tagNames[0x9e / 2], angles);
-    DObjSetControlTagAngles(obj, partBits, tagNames[0xa0 / 2], angles);
+    DObjSetControlTagAngles(obj, partBits, scr->tag_aim, angles);
+    DObjSetControlTagAngles(obj, partBits, scr->tag_aim_animated, angles);
 
     angles[0] = self->s.angles2[2];
     angles[1] = 0;
 
-    DObjSetControlTagAngles(obj, partBits, tagNames[0x8c / 2], angles);
+    DObjSetControlTagAngles(obj, partBits, scr->tag_flash, angles);
 }
 
 /* line 42 */
@@ -422,28 +425,28 @@ void TeleportPlayer(gentity_t *player, vec_t *origin, vec_t *angles)
     SV_UnlinkEntity(player);
 
     /* VectorCopy origin to ps->origin */
-    ps = ((gentity_t *)player)->client;
+    ps = &player->client->ps;
     ps->origin[0] = origin[0];
     ps->origin[1] = origin[1];
     ps->origin[2] = origin[2];
 
     /* Increment origin[2] by 1.0 */
-    ps = ((gentity_t *)player)->client;
+    ps = &player->client->ps;
     ps->origin[2] += 1.0f;
 
     /* Toggle EF_TELEPORT_BIT */
-    ps = ((gentity_t *)player)->client;
+    ps = &player->client->ps;
     ps->eFlags ^= 2;
 
     SetClientViewAngle(player, angles);
 
-    BG_PlayerStateToEntityState(((gentity_t *)player)->client, player, 1, 1);
+    BG_PlayerStateToEntityState(&player->client->ps, player, 1, 1);
 
     /* VectorCopy ps->origin to currentOrigin */
-    ps = ((gentity_t *)player)->client;
-    ((gentity_t *)player)->r.currentOrigin[0] = ps->origin[0];
-    ((gentity_t *)player)->r.currentOrigin[1] = ps->origin[1];
-    ((gentity_t *)player)->r.currentOrigin[2] = ps->origin[2];
+    ps = &player->client->ps;
+    player->r.currentOrigin[0] = ps->origin[0];
+    player->r.currentOrigin[1] = ps->origin[1];
+    player->r.currentOrigin[2] = ps->origin[2];
 
     if (linked)
         SV_LinkEntity(player);
@@ -456,7 +459,7 @@ void G_ClientStopUsingTurret(gentity_t *self)
     gentity_t *owner;
 
     pTurretInfo = self->pTurretInfo;
-    owner = &((gentity_t *)imp_g_entities)[self->r.ownerNum];
+    owner = &g_entities[self->r.ownerNum];
 
     pTurretInfo->fireSndDelay = 0;
     self->s.loopSound = 0;
@@ -489,7 +492,7 @@ void G_ClientStopUsingTurret(gentity_t *self)
 /* line 861 */
 void G_FreeTurret(gentity_t *self)
 {
-    if (((gentity_t *)imp_g_entities)[self->r.ownerNum].client) {
+    if (g_entities[self->r.ownerNum].client) {
         G_ClientStopUsingTurret(self);
     }
 
@@ -516,14 +519,14 @@ void turret_think_init(gentity_t *self)
 
     info = self->pTurretInfo;
     self->handler = GMISC_ENT_HANDLER_TURRET;
-    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+    self->nextthink = level.time + 50;
 
-    aimMtx = G_DObjGetLocalTagMatrix(self, ((scr_const_t *)imp_scr_const)->tag_aim);
+    aimMtx = G_DObjGetLocalTagMatrix(self, SCR_CONST()->tag_aim);
     if (!aimMtx) {
         return;
     }
 
-    weaponMtx = G_DObjGetLocalTagMatrix(self, ((scr_const_t *)imp_scr_const)->tag_butt);
+    weaponMtx = G_DObjGetLocalTagMatrix(self, SCR_CONST()->tag_butt);
     if (!weaponMtx) {
         return;
     }
@@ -687,7 +690,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         Scr_Error(va("G_SpawnTurret: weapon '%s' isn't a turret. This usually indicates that the weapon failed to load.", weaponinfoname));
     }
 
-    if (!((level_locals_t *)imp_level)->initializing && !IsItemRegistered((unsigned int)self->s.weapon)) {
+    if (!level.initializing && !IsItemRegistered((unsigned int)self->s.weapon)) {
         Scr_Error(va("turret '%s' not precached", weaponinfoname));
     }
 
@@ -709,7 +712,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         info->stopSndPlayer = G_SoundAliasIndex(weapDef->szFireStopSoundPlayer);
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("rightarc", "", &info->arcmin[1])) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnFloat("rightarc", "", &info->arcmin[1])) {
         info->arcmin[1] = weapDef->rightArc;
     }
     info->arcmin[1] = -info->arcmin[1];
@@ -717,14 +720,14 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         info->arcmin[1] = 0.0f;
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("leftarc", "", &info->arcmax[1])) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnFloat("leftarc", "", &info->arcmax[1])) {
         info->arcmax[1] = weapDef->leftArc;
     }
     if (info->arcmax[1] < 0.0f) {
         info->arcmax[1] = 0.0f;
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("toparc", "", &info->arcmin[0])) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnFloat("toparc", "", &info->arcmin[0])) {
         info->arcmin[0] = weapDef->topArc;
     }
     info->arcmin[0] = -info->arcmin[0];
@@ -732,7 +735,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         info->arcmin[0] = 0.0f;
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("bottomarc", "", &info->arcmax[0])) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnFloat("bottomarc", "", &info->arcmax[0])) {
         info->arcmax[0] = weapDef->bottomArc;
     }
     if (info->arcmax[0] < 0.0f) {
@@ -745,14 +748,14 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         self->health = 100;
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnInt("damage", "0", &self->damage)) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnInt("damage", "0", &self->damage)) {
         self->damage = weapDef->damage;
     }
     if (self->damage < 0) {
         self->damage = 0;
     }
 
-    if (!((level_locals_t *)imp_level)->spawnVar.spawnVarsValid || !G_SpawnFloat("playerSpread", "1", &info->playerSpread)) {
+    if (!level.spawnVar.spawnVarsValid || !G_SpawnFloat("playerSpread", "1", &info->playerSpread)) {
         info->playerSpread = weapDef->playerSpread;
     }
     if (info->playerSpread < 0.0f) {
@@ -784,7 +787,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
     self->s.angles2[2] = 0.0f;
 
     self->handler = GMISC_ENT_HANDLER_TURRET_INIT;
-    self->nextthink = ((level_locals_t *)imp_level)->time + 50;
+    self->nextthink = level.time + 50;
 
     self->s.apos.trType = TR_LINEAR_STOP;
     self->takedamage = 0;
@@ -832,7 +835,7 @@ static void Turret_FillWeaponParms(gentity_t *ent, gentity_t *activator, weaponP
     vec3_t playerPos;
     float flashTag[4][3];
 
-    if (!G_DObjGetWorldTagMatrix(ent, ((scr_const_t *)imp_scr_const)->tag_flash, (vec3_t *)flashTag)) {
+    if (!G_DObjGetWorldTagMatrix(ent, SCR_CONST()->tag_flash, (vec3_t *)flashTag)) {
         Com_Error(1, "Couldn't find %s on turret (entity %d, classname '%s').\n",
             "tag_flash", ent->s.number, SL_ConvertToString(ent->classname));
     }
@@ -888,7 +891,7 @@ static void G_PlayerTurretPositionAndBlend(gentity_t *ent, gentity_t *pTurretEnt
         return;
     }
 
-    tagMat = G_DObjGetLocalTagMatrix(pTurretEnt, ((scr_const_t *)imp_scr_const)->tag_weapon);
+    tagMat = G_DObjGetLocalTagMatrix(pTurretEnt, SCR_CONST()->tag_weapon);
     if (!tagMat) {
         Com_Printf("WARNING: aborting player positioning on turret since 'tag_weapon' does not exist\n");
         return;
@@ -1019,8 +1022,8 @@ static void Fire_Lead(gentity_t *ent, gentity_t *activator)
 {
     weaponParms wp;
 
-    if (activator == &((gentity_t *)imp_g_entities)[GMISC_ENTITYNUM_NONE]) {
-        activator = &((gentity_t *)imp_g_entities)[GMISC_ENTITYNUM_WORLD];
+    if (activator == &g_entities[GMISC_ENTITYNUM_NONE]) {
+        activator = &g_entities[GMISC_ENTITYNUM_WORLD];
     }
 
     Turret_FillWeaponParms(ent, activator, &wp);
@@ -1079,7 +1082,7 @@ void turret_think_client(gentity_t *self)
 {
     gentity_t *owner;
 
-    owner = &((gentity_t *)imp_g_entities)[self->r.ownerNum];
+    owner = &g_entities[self->r.ownerNum];
 
     if (owner->active != 1 || owner->client->sess.sessionState != SESS_STATE_PLAYING) {
         G_ClientStopUsingTurret(self);

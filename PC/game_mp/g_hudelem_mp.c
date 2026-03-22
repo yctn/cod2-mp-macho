@@ -279,12 +279,10 @@ static void HudElem_SetEnumString_impl(game_hudelem_t *hud_base, const game_hude
     int *value;
     const char *selectedName;
     int nameIndex;
-    int fieldOffset;
     int mask;
     int shift;
 
-    fieldOffset = *(int *)((byte *)f + 4);
-    value = (int *)((byte *)hud_base + fieldOffset);
+    value = (int *)((byte *)hud_base + f->ofs);
     selectedName = (const char *)Scr_GetString(0);
 
     for (nameIndex = 0; nameIndex < nameCount; nameIndex++) {
@@ -299,7 +297,7 @@ static void HudElem_SetEnumString_impl(game_hudelem_t *hud_base, const game_hude
     }
 
     /* Not found: build error message */
-    sprintf(errormsg, str_002b4d54, selectedName, *(const char **)((byte *)f + 0));
+    sprintf(errormsg, str_002b4d54, selectedName, f->name);
     for (nameIndex = 0; nameIndex < nameCount; nameIndex++) {
         strncat(errormsg, va(str_002abc2c, names[nameIndex]), 0x800);
         errormsg[0x800 - 1] = '\0';
@@ -316,24 +314,22 @@ static void HudElem_SetEnumString(const char * *names, int nameCount) {
 static void HudElem_SetLocalizedString(game_hudelem_t *hud, int offset)
 {
     int str;
-    int fieldOffset;
     int idx;
+    const game_hudelem_field_t *f = &fields[offset];
 
     str = Scr_GetIString(0);
-    fieldOffset = *(int *)((char *)&fields + offset * 28 + 4);
     idx = G_LocalizedStringIndex(str);
-    *(int *)((byte *)hud + fieldOffset) = idx;
+    *(int *)((byte *)hud + f->ofs) = idx;
 }
 
 /* line 359 */
 static void HudElem_SetBoolean(game_hudelem_t *hud, int offset)
 {
     int value;
-    int fieldOffset;
+    const game_hudelem_field_t *f = &fields[offset];
 
     value = Scr_GetInt(0);
-    fieldOffset = *(int *)((char *)&fields + offset * 28 + 4);
-    *(int *)((byte *)hud + fieldOffset) = value;
+    *(int *)((byte *)hud + f->ofs) = value;
 }
 
 /* line 393 */
@@ -351,7 +347,7 @@ static void HudElem_GetColor(game_hudelem_t *hud, int offset)
 /* line 427 */
 static void HudElem_GetAlpha(game_hudelem_t *hud, int offset)
 {
-    Scr_AddFloat((float)*(unsigned char *)((byte *)hud + 0x23) * (1.0f / 255.0f)); /* TODO: unknown offset */
+    Scr_AddFloat((float)((hudelem_t *)hud)->color.a * (1.0f / 255.0f));
 }
 
 /* line 440 */
@@ -386,7 +382,7 @@ void HudElem_SetFont(game_hudelem_t *hud, int offset)
 }
 #else
 static void HudElem_SetFont(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
+    const game_hudelem_field_t *f = &fields[offset];
     HudElem_SetEnumString_impl(hud, f, g_he_font, 3);
 }
 #endif
@@ -413,7 +409,7 @@ void HudElem_SetAlignX(game_hudelem_t *hud, int offset)
 }
 #else
 static void HudElem_SetAlignX(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
+    const game_hudelem_field_t *f = &fields[offset];
     HudElem_SetEnumString_impl(hud, f, g_he_alignx, 3);
 }
 #endif
@@ -440,7 +436,7 @@ void HudElem_SetAlignY(game_hudelem_t *hud, int offset)
 }
 #else
 static void HudElem_SetAlignY(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
+    const game_hudelem_field_t *f = &fields[offset];
     HudElem_SetEnumString_impl(hud, f, g_he_aligny, 3);
 }
 #endif
@@ -467,7 +463,7 @@ void HudElem_SetHorzAlign(game_hudelem_t *hud, int offset)
 }
 #else
 static void HudElem_SetHorzAlign(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
+    const game_hudelem_field_t *f = &fields[offset];
     HudElem_SetEnumString_impl(hud, f, g_he_horzalign, 8);
 }
 #endif
@@ -494,7 +490,7 @@ void HudElem_SetVertAlign(game_hudelem_t *hud, int offset)
 }
 #else
 static void HudElem_SetVertAlign(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
+    const game_hudelem_field_t *f = &fields[offset];
     HudElem_SetEnumString_impl(hud, f, g_he_vertalign, 8);
 }
 #endif
@@ -2940,11 +2936,10 @@ void GScr_NewTeamHudElem(void)
 
 #else
 static void HudElem_GetVertAlign(game_hudelem_t *hud, int offset) {
-    const game_hudelem_field_t *f = (const game_hudelem_field_t *)((byte *)&fields + offset * 28);
-    int fieldOffset = *(int *)((byte *)f + 4);
-    int shift = ((game_hudelem_field_t *)f)->shift;
-    int mask = ((game_hudelem_field_t *)f)->mask;
-    int value = *(int *)((byte *)hud + fieldOffset);
+    const game_hudelem_field_t *f = &fields[offset];
+    int shift = f->shift;
+    int mask = f->mask;
+    int value = *(int *)((byte *)hud + f->ofs);
     value = (value >> shift) & mask;
     Scr_AddString(g_he_vertalign[value]);
 }

@@ -19,6 +19,11 @@ extern float Vec2Normalize(vec_t *v);
 extern void Com_Printf(const char *fmt, ...);
 
 extern pmoveHandler_t pmoveHandlers[2]; /* 0x0 */
+extern const dvar_t *player_footstepsThreshhold; /* 0x0 */
+extern const dvar_t *stopspeed; /* 0x0 */
+extern const dvar_t *inertiaMax; /* 0x0 */
+extern const dvar_t *inertiaAngle; /* 0x0 */
+extern const dvar_t *inertiaDebug; /* 0x0 */
 __attribute__((used, aligned(4)))
 UInt32 viewLerp_StandCrouch_storage[32] __asm__("viewLerp_StandCrouch") = {
     0x00000000, 0x42700000, 0x00000000, 0x00000001, 0x426e0000, 0x00000000, 0x00000004, 0x426a0000,
@@ -509,8 +514,7 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm) {
 
     /* Compare pm->xyspeed with footsteps threshold dvar */
     {
-        void *threshDvar = *(void **)imp_player_footstepsThreshhold;
-        float threshold = *(float *)((byte *)threshDvar + 8);
+        float threshold = player_footstepsThreshhold->current.value;
         return pm->xyspeed >= threshold;
     }
 }
@@ -9239,7 +9243,7 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
 
     /* accelspeed = accel * max(wishspeed, stopspeed) * frametime */
     {
-        float stopspeed_val = *(float *)((byte *)(*(void **)imp_stopspeed) + 8);
+        float stopspeed_val = stopspeed->current.value;
         float maxspd = wishspeed;
         if (stopspeed_val > maxspd)
             maxspd = stopspeed_val;
@@ -9252,7 +9256,7 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
 
     /* Inertia check: if not noclip mode 2 */
     if (ps->pm_type != 2) {
-        float inertiaMax_val = *(float *)((byte *)(*(void **)imp_inertiaMax) + 8);
+        float inertiaMax_val = inertiaMax->current.value;
         if (accelspeed > inertiaMax_val) {
             /* Check if direction change is significant */
             float oldVel[2], newVel[2], dot;
@@ -9281,7 +9285,7 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
             dot = oldVel[0] * newVel[0] + oldVel[1] * newVel[1];
 
             {
-                float inertiaAngle_val = *(float *)((byte *)(*(void **)imp_inertiaAngle) + 8);
+                float inertiaAngle_val = inertiaAngle->current.value;
                 if (dot >= inertiaAngle_val) {
                     /* Direction change within tolerance */
                     goto apply;
@@ -9289,15 +9293,15 @@ static void PM_Accelerate_impl(playerState_t *ps, pml_t *pml, const vec_t *wishd
             }
 
             /* Direction change too large, clamp to inertiaMax */
-            if (*(byte *)((byte *)(*(void **)imp_inertiaDebug) + 8)) {
+            if (inertiaDebug->current.enabled) {
                 Com_Printf("angle is %f (oldVel is (%f,%f), vel is (%f, %f))\n",
                     (double)dot, (double)oldVel[0], (double)oldVel[1],
                     (double)newVel[0], (double)newVel[1]);
                 Com_Printf("clamping acceleration from %f to %f\n",
                     (double)accelspeed,
-                    (double)*(float *)((byte *)(*(void **)imp_inertiaMax) + 8));
+                    (double)inertiaMax->current.value);
             }
-            accelspeed = *(float *)((byte *)(*(void **)imp_inertiaMax) + 8);
+            accelspeed = inertiaMax->current.value;
         }
     }
 

@@ -31,6 +31,8 @@ extern gentity_t *g_entities;       /* imp_g_entities */
 extern level_locals_t level;        /* imp_level */
 /* imp_scr_const declared in generated_syms.h as void* */
 
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
+
 void ScriptEntCmd_MoveTo(scr_entref_t entref);
 void ScriptEntCmd_MoveX(scr_entref_t entref);
 void ScriptEntCmd_MoveY(scr_entref_t entref);
@@ -59,8 +61,8 @@ static const BuiltinMethodDef methods[] = {
     {"notsolid", (BuiltinMethod)ScriptEntCmd_NotSolid, 0},
 };
 
-/* Helper to get mover_ent_t from gentity - overlaid at offset 0x1A8 */
-#define MOVER(ent) ((mover_ent_t *)((byte *)(ent) + 0x1A8))
+/* Helper to access the mover union member in gentity_t. */
+#define MOVER(ent) (&(ent)->mover)
 
 static void VectorCopy(const vec3_t src, vec3_t dst) {
     dst[0] = src[0];
@@ -96,6 +98,7 @@ static gentity_t *GetScriptMoverEntity(scr_entref_t entref) {
     unsigned short entnum = entref.entnum;
     unsigned short classnum = entref.classnum;
     gentity_t *pSelf;
+    const scr_const_t *sc = SCR_CONST();
 
     if (classnum != 0) {
         Scr_ObjectError("not an entity");
@@ -104,9 +107,9 @@ static gentity_t *GetScriptMoverEntity(scr_entref_t entref) {
 
     pSelf = &g_entities[entnum];
 
-    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
+    if (pSelf->classname != sc->script_brushmodel &&
+        pSelf->classname != sc->script_model &&
+        pSelf->classname != sc->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
@@ -180,6 +183,7 @@ void ScriptEntCmd_Solid(scr_entref_t entref)
     gentity_t *pSelf;
     unsigned short entnum = entref.entnum;
     unsigned short classnum = entref.classnum;
+    const scr_const_t *sc = SCR_CONST();
 
     if (classnum != 0) {
         Scr_ObjectError("not an entity");
@@ -188,19 +192,19 @@ void ScriptEntCmd_Solid(scr_entref_t entref)
         pSelf = &g_entities[entnum];
     }
 
-    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
+    if (pSelf->classname != sc->script_brushmodel &&
+        pSelf->classname != sc->script_model &&
+        pSelf->classname != sc->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
-    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_origin) {
+    if (pSelf->classname == sc->script_origin) {
         /* script_origin - cannot use solid */
         Com_DPrintf("cannot use the solid/notsolid commands on a script_origin entity( number %i )\n", pSelf->s.number);
         return;
     }
 
-    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_model) {
+    if (pSelf->classname == sc->script_model) {
         /* script_model */
         pSelf->r.contents = 0x2080;
     } else {
@@ -218,6 +222,7 @@ void ScriptEntCmd_NotSolid(scr_entref_t entref)
     gentity_t *pSelf;
     unsigned short entnum = entref.entnum;
     unsigned short classnum = entref.classnum;
+    const scr_const_t *sc = SCR_CONST();
 
     if (classnum != 0) {
         Scr_ObjectError("not an entity");
@@ -226,20 +231,20 @@ void ScriptEntCmd_NotSolid(scr_entref_t entref)
         pSelf = &g_entities[entnum];
     }
 
-    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_brushmodel &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model &&
-        pSelf->classname != ((scr_const_t *)imp_scr_const)->script_origin) {
+    if (pSelf->classname != sc->script_brushmodel &&
+        pSelf->classname != sc->script_model &&
+        pSelf->classname != sc->script_origin) {
         Scr_ObjectError(va("entity %i is not a script_brushmodel, script_model, or script_origin", entnum));
     }
 
-    if (pSelf->classname == ((scr_const_t *)imp_scr_const)->script_origin) {
+    if (pSelf->classname == sc->script_origin) {
         /* script_origin */
         Com_DPrintf("cannot use the solid/notsolid commands on a script_origin entity( number %i )\n", pSelf->s.number);
         return;
     }
 
     pSelf->r.contents = 0;
-    if (pSelf->classname != ((scr_const_t *)imp_scr_const)->script_model) {
+    if (pSelf->classname != sc->script_model) {
         /* script_brushmodel */
         pSelf->s.eFlags |= 1;
     }
@@ -271,7 +276,7 @@ void InitScriptMover(gentity_t *pSelf)
     qboolean bLightSet;
     int r, g, b, a;
 
-    if (*(byte *)((byte *)&level + 0x1348)) { /* TODO: unknown offset */
+    if (level.spawnVar.spawnVarsValid) {
         bLightSet = G_SpawnFloat("light", "100", &fLight);
         if (bLightSet | G_SpawnVector("color", "1 1 1", vColor)) {
             r = (int)(vColor[0] * 255.0f);
@@ -542,7 +547,7 @@ void Reached_ScriptMover(gentity_t *pEnt)
             SV_LinkEntity(pEnt);
 
             if (bMoveFinished) {
-                Scr_Notify(pEnt, ((scr_const_t *)imp_scr_const)->movedone, 0);
+                Scr_Notify(pEnt, SCR_CONST()->movedone, 0);
             }
         }
     }
@@ -568,7 +573,7 @@ void Reached_ScriptMover(gentity_t *pEnt)
     pEnt->r.currentAngles[1] = AngleNormalize360(pEnt->r.currentAngles[1]);
     pEnt->r.currentAngles[2] = AngleNormalize180(pEnt->r.currentAngles[2]);
 
-    Scr_Notify(pEnt, ((scr_const_t *)imp_scr_const)->rotatedone, 0);
+    Scr_Notify(pEnt, SCR_CONST()->rotatedone, 0);
 }
 
 /* line 118 */

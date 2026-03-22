@@ -31,15 +31,15 @@ extern void *BG_GetWeaponDef(int weapon);
 extern byte g_entities_ptr[];    /* imp_g_entities */
 extern byte level_ptr[];         /* imp_level */
 extern byte scr_const_ptr[];     /* imp_scr_const */
-extern byte *entityHandlers_ptr; /* imp_entityHandlers */
+extern entityHandler_t entityHandlers[20];
 extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
 extern byte *bg_itemlist_ptr;   /* imp_bg_itemlist */
-extern byte *g_useActivateHoldTime; /* imp_g_useholdspawndelay */
-extern byte *g_useActivateReuseTime; /* imp_g_useholdtime */
+extern const dvar_t *g_useholdspawndelay;
+extern const dvar_t *g_useholdtime;
 extern byte *pPriorityMap;      /* imp_bulletPriorityMap */
 extern byte *pPriorityMapAlt;   /* imp_riflePriorityMap */
-extern byte *g_friendlylookDist; /* imp_g_friendlyNameDist */
-extern byte *g_enemylookDist;   /* imp_g_friendlyfireDist */
+extern const dvar_t *g_friendlyNameDist;
+extern const dvar_t *g_friendlyfireDist;
 
 /* Function declarations */
 void Player_UpdateActivate(gentity_t *ent);
@@ -51,64 +51,60 @@ void Player_UpdateLookAtEntity(gentity_t *ent);
 /* Entity stride in binary */
 #define GENTITY_SIZE 0x230
 
-/* Entity byte pointer offsets (binary layout) */
-#define ENT_S_NUMBER     0x00
-#define ENT_S_ETYPE      0x04
-#define ENT_S_WEAPON     0xC8
-#define ENT_S_DMGFLAGS   0xD8
-#define ENT_S_ANIMMOVETYPE 0xDC
-#define ENT_S_INDEX      0x8C
-#define ENT_R_SVFLAGS    0x11E
-#define ENT_R_ABSMIN     0x120
-#define ENT_R_ABSMAX     0x12C
-#define ENT_R_CURORIGIN  0x138
-#define ENT_CLIENT       0x158
-#define ENT_ACTIVE       0x162
-#define ENT_HANDLER      0x166
-#define ENT_TEAM         0x167
-#define ENT_CLASSNAME    0x168
-#define ENT_HEALTH       0x194
-#define ENT_ATTACHMODELS 0x1AC
-#define ENT_ATTACHTAGS   0x1B4
+#define GENTITY(num)            ((gentity_t *)(g_entities_ptr + (num) * GENTITY_SIZE))
 
-/* Client/playerState byte pointer offsets (binary layout) */
-#define PS_PM_FLAGS      0x0C
-#define PS_ORIGIN        0x14
-#define PS_EFLAGS        0xA0
-#define PS_CLIENTNUM     0xCC
-#define PS_WEAPON        0xD4
-#define PS_WEAPONSTATE   0xD8
-#define PS_WEAPONS       0x544
-#define PS_MINS          0x56C
-#define PS_MAXS          0x578
-#define PS_VIEWLOCKED_ENTNUM 0x594
-#define PS_CURSORHINT    0x598
-#define PS_CURSORHINTSTRING 0x59C
-#define PS_CURSORHINTENTINDEX 0x5A0
+/* Typed binary-backed entity accessors. */
+#define ENT_S_NUMBER(e)         (((gentity_t *)(e))->s.number)
+#define ENT_S_ETYPE(e)          (((gentity_t *)(e))->s.eType)
+#define ENT_S_WEAPON(e)         (((gentity_t *)(e))->s.weapon)
+#define ENT_S_DMGFLAGS(e)       (((gentity_t *)(e))->s.dmgFlags)
+#define ENT_S_ANIMMOVETYPE(e)   (((gentity_t *)(e))->s.animMovetype)
+#define ENT_S_INDEX(e)          (((gentity_t *)(e))->s.index)
+#define ENT_R_SVFLAGS(e)        (((gentity_t *)(e))->r.svFlags)
+#define ENT_R_ABSMIN(e)         (((gentity_t *)(e))->r.absmin)
+#define ENT_R_ABSMAX(e)         (((gentity_t *)(e))->r.absmax)
+#define ENT_R_CURORIGIN(e)      (((gentity_t *)(e))->r.currentOrigin)
+#define ENT_CLIENT(e)           (((gentity_t *)(e))->client)
+#define ENT_ACTIVE(e)           (((gentity_t *)(e))->active)
+#define ENT_HANDLER(e)          (((gentity_t *)(e))->handler)
+#define ENT_TEAM(e)             (((gentity_t *)(e))->team)
+#define ENT_CLASSNAME(e)        (((gentity_t *)(e))->classname)
+#define ENT_HEALTH(e)           (((gentity_t *)(e))->health)
+#define ENT_ITEM_INDEX(e)       (((gentity_t *)(e))->item.index)
+#define ENT_TRIGGER_SINGLEUSER(e) (((gentity_t *)(e))->trigger.singleUserEntIndex)
 
-/* scr_const offsets */
-#define SCR_TOUCH              0x52
-#define SCR_TRIGGER            0x54
-#define SCR_TRIGGER_USE        0x56
-#define SCR_TRIGGER_USE_TOUCH  0x58
-#define SCR_TRIGGER_LOOKAT     0x5C
-#define SCR_TAG_AIM            0x9E
+/* Typed playerState_t accessors. */
+#define PS_PM_FLAGS(ps)         (((playerState_t *)(ps))->pm_flags)
+#define PS_ORIGIN(ps)           (((playerState_t *)(ps))->origin)
+#define PS_EFLAGS(ps)           (((playerState_t *)(ps))->eFlags)
+#define PS_CLIENTNUM(ps)        (((playerState_t *)(ps))->clientNum)
+#define PS_WEAPON(ps)           (((playerState_t *)(ps))->weapon)
+#define PS_WEAPONSTATE(ps)      (((playerState_t *)(ps))->weaponstate)
+#define PS_WEAPONS(ps)          (((playerState_t *)(ps))->weapons)
+#define PS_MINS(ps)             (((playerState_t *)(ps))->mins)
+#define PS_MAXS(ps)             (((playerState_t *)(ps))->maxs)
+#define PS_VIEWLOCKED_ENTNUM(ps) (((playerState_t *)(ps))->viewlocked_entNum)
+#define PS_CURSORHINT(ps)       (((playerState_t *)(ps))->cursorHint)
+#define PS_CURSORHINTSTRING(ps) (((playerState_t *)(ps))->cursorHintString)
+#define PS_CURSORHINTENTINDEX(ps) (((playerState_t *)(ps))->cursorHintEntIndex)
 
-/* Deep client offsets */
-#define CLIENT_TEAM           0x274C
-#define CLIENT_USE_ENTNUM     0x2830
-#define CLIENT_USE_TIME       0x2834
-#define CLIENT_BUTTONS        0x27BC
-#define CLIENT_OLDBUTTONS     0x27C0
-#define CLIENT_LATCHED_BUTTONS 0x27C4
-#define CLIENT_USE_HOLD_TIME  0x28A0
-#define CLIENT_LOOKAT_ENT     0x282C
+#define SCR_CONST()             ((const scr_const_t *)scr_const_ptr)
+
+/* Typed gclient_t accessors. */
+#define CLIENT_TEAM(c)          (((gclient_t *)(c))->sess.cs.team)
+#define CLIENT_USE_ENTNUM(c)    (((gclient_t *)(c))->useHoldEntity)
+#define CLIENT_USE_TIME(c)      (((gclient_t *)(c))->useHoldTime)
+#define CLIENT_BUTTONS(c)       (((gclient_t *)(c))->buttons)
+#define CLIENT_OLDBUTTONS(c)    (((gclient_t *)(c))->oldbuttons)
+#define CLIENT_LATCHED_BUTTONS(c) (((gclient_t *)(c))->latched_buttons)
+#define CLIENT_USE_HOLD_TIME(c) (((gclient_t *)(c))->lastSpawnTime) /* 0x28A0 in the binary */
+#define CLIENT_LOOKAT_ENT(c)    (((gclient_t *)(c))->pLookatEnt)
 
 /* line 150 */
 void Player_UpdateActivate(gentity_t *ent)
 {
-    byte *client;
-    byte *useEnt;
+    gclient_t *client;
+    gentity_t *useEnt;
     entityHandler_t *handlers;
     fn_use useFn;
     fn_touch touchFn;
@@ -118,72 +114,72 @@ void Player_UpdateActivate(gentity_t *ent)
     int eType;
     int activated;
 
-    client = (byte *)ent->client;
+    client = ent->client;
 
     /* Clear the +use flag from pm_flags */
-    *(int *)(client + PS_PM_FLAGS) &= ~0x8;
+    client->ps.pm_flags &= ~0x8;
 
     /* Check if player is in a special movement state (mantling, etc) */
-    pm_type = *(int *)(client + PS_WEAPONSTATE);
+    pm_type = client->ps.weaponstate;
     if ((unsigned)(pm_type - 0x11) <= 5)
         return;
 
     /* Check if use button was just pressed */
-    if (*(int *)(client + CLIENT_USE_ENTNUM) != 0x3FF) {
+    if (CLIENT_USE_ENTNUM(client) != 0x3FF) {
         /* Already using something */
-        if (!(*(byte *)(client + CLIENT_OLDBUTTONS) & 0x20))
+        if (!(CLIENT_OLDBUTTONS(client) & 0x20))
             goto check_activate;
-        if (!(*(byte *)(client + CLIENT_BUTTONS) & 0x20)) {
+        if (!(CLIENT_BUTTONS(client) & 0x20)) {
             /* Use button released - set flag */
-            *(int *)(client + PS_PM_FLAGS) |= 0x8;
+            client->ps.pm_flags |= 0x8;
             return;
         }
     }
 
 check_activate:
     /* Check for activate (use+attack) buttons */
-    if (*(byte *)(client + CLIENT_LATCHED_BUTTONS) & 0x28) {
+    if (CLIENT_LATCHED_BUTTONS(client) & 0x28) {
         /* Activate button pressed */
         if (!Scr_IsSystemActive(1)) {
-            client = (byte *)ent->client;
+            client = ent->client;
             activated = 0;
             goto check_use_hold;
         }
 
         /* Clear use entity */
-        *(int *)((byte *)ent->client + CLIENT_USE_ENTNUM) = 0x3FF;
+        CLIENT_USE_ENTNUM(ent->client) = 0x3FF;
 
         /* Check if entity has active hold state */
-        if (*(byte *)((byte *)ent + ENT_ACTIVE) != 0) {
-            client = (byte *)ent->client;
-            if (*(int *)(client + PS_EFLAGS) & 0x300) {
+        if (ENT_ACTIVE(ent) != 0) {
+            client = ent->client;
+            if (client->ps.eFlags & 0x300) {
                 /* In vehicle/turret - set active to 2 */
-                *(byte *)((byte *)ent + ENT_ACTIVE) = 2;
+                ENT_ACTIVE(ent) = 2;
                 activated = 1;
                 goto check_use_hold;
             }
             /* Clear active flag */
-            *(byte *)((byte *)ent + ENT_ACTIVE) = 0;
+            ENT_ACTIVE(ent) = 0;
             activated = 1;
-            client = (byte *)ent->client;
+            client = ent->client;
             goto check_use_hold;
         }
 
         /* Check if pm_flags has the flag indicating entity in use */
-        client = (byte *)ent->client;
-        if (!(*(int *)(client + PS_PM_FLAGS) & 0x4)) {
+        client = ent->client;
+        if (!(client->ps.pm_flags & 0x4)) {
             /* Check viewlocked entity */
-            if (*(int *)(client + PS_CURSORHINTENTINDEX) == 0x3FF) {
+            if (client->ps.cursorHintEntIndex == 0x3FF) {
                 activated = 0;
                 goto check_use_hold;
             }
             /* Set use entity and time */
-            *(int *)(client + CLIENT_USE_ENTNUM) = *(int *)(client + PS_CURSORHINTENTINDEX);
-            client = (byte *)ent->client;
+            CLIENT_USE_ENTNUM(client) = client->ps.cursorHintEntIndex;
+            client = ent->client;
             levelTime = ((level_locals_t *)level_ptr)->time;
-            *(int *)(client + CLIENT_USE_TIME) = levelTime;
+            CLIENT_USE_TIME(client) = levelTime;
             activated = 1;
-            client = (byte *)ent->client;
+            client = ent->client;
             goto check_use_hold;
         }
         activated = 1;
@@ -194,11 +190,11 @@ check_activate:
 
 check_use_hold:
     /* Check if use entity is still valid */
-    if (*(int *)(client + CLIENT_USE_ENTNUM) == 0x3FF) {
+    if (CLIENT_USE_ENTNUM(client) == 0x3FF) {
         if (!activated) {
-            if (*(byte *)(client + CLIENT_LATCHED_BUTTONS) & 0x20) {
+            if (CLIENT_LATCHED_BUTTONS(client) & 0x20) {
                 /* Only the use button is latched */
-                *(int *)(client + PS_PM_FLAGS) |= 0x8;
+                client->ps.pm_flags |= 0x8;
             }
             return;
         }
@@ -208,48 +204,48 @@ check_use_hold:
 
 check_held_use:
     /* Check held use button */
-    if (!(*(byte *)(client + CLIENT_BUTTONS) & 0x28))
+    if (!(CLIENT_BUTTONS(client) & 0x28))
         return;
 
     /* Check if scripting system is active */
     if (!Scr_IsSystemActive(1))
         return;
 
-    client = (byte *)ent->client;
-    useEntNum = *(int *)(client + CLIENT_USE_ENTNUM);
+    client = ent->client;
+    useEntNum = CLIENT_USE_ENTNUM(client);
     if (useEntNum == 0x3FF)
         return;
 
     /* Check hold time */
     levelTime = ((level_locals_t *)level_ptr)->time;
-    if (levelTime - *(int *)(client + CLIENT_USE_HOLD_TIME) < *(int *)(*(byte **)&g_useActivateHoldTime + 8))
+    if (levelTime - CLIENT_USE_HOLD_TIME(client) < g_useholdspawndelay->current.integer)
         return;
 
     /* Check reuse time */
-    if (levelTime - *(int *)(client + CLIENT_USE_TIME) < *(int *)(*(byte **)&g_useActivateReuseTime + 8))
+    if (levelTime - CLIENT_USE_TIME(client) < g_useholdtime->current.integer)
         return;
 
     /* Get entity pointer for use entity */
-    useEnt = g_entities_ptr + useEntNum * GENTITY_SIZE;
+    useEnt = GENTITY(useEntNum);
 
-    /* Get entity handlers */
-    handlers = (entityHandler_t *)(entityHandlers_ptr + *(byte *)(useEnt + ENT_HANDLER) * sizeof(entityHandler_t));
+    /* Get entity handlers. */
+    handlers = &entityHandlers[ENT_HANDLER(useEnt)];
     useFn = handlers->use;
     touchFn = handlers->touch;
 
     /* Check entity type */
-    eType = *(int *)(useEnt + ENT_S_ETYPE);
+    eType = ENT_S_ETYPE(useEnt);
     if (eType == 3) {
         /* ET_ITEM - touch notification */
         Scr_AddEntity(ent);
-        Scr_Notify((gentity_t *)useEnt, *(unsigned short *)(scr_const_ptr + SCR_TOUCH), 1);
-        *(byte *)(useEnt + ENT_ACTIVE) = 1;
+        Scr_Notify(useEnt, SCR_CONST()->touch, 1);
+        ENT_ACTIVE(useEnt) = 1;
         if (touchFn) {
-            touchFn((gentity_t *)useEnt, ent, 0);
+            touchFn(useEnt, ent, 0);
         }
     } else if (eType == 9) {
         /* ET_TURRET */
-        if (!G_IsTurretUsable((gentity_t *)useEnt, ent))
+        if (!G_IsTurretUsable(useEnt, ent))
             goto finish_use;
         /* Fall through to trigger notification */
         goto send_trigger;
@@ -257,15 +253,15 @@ check_held_use:
 send_trigger:
         /* Send trigger notification */
         Scr_AddEntity(ent);
-        Scr_Notify((gentity_t *)useEnt, *(unsigned short *)(scr_const_ptr + SCR_TRIGGER), 1);
+        Scr_Notify(useEnt, SCR_CONST()->trigger, 1);
         if (useFn) {
-            useFn((gentity_t *)useEnt, ent, ent);
+            useFn(useEnt, ent, ent);
         }
     }
 
 finish_use:
     /* Clear use entity */
-    *(int *)((byte *)ent->client + CLIENT_USE_ENTNUM) = 0x3FF;
+    CLIENT_USE_ENTNUM(ent->client) = 0x3FF;
 }
 
 /* line 194 */
@@ -279,7 +275,7 @@ static int compare_use(const void *pe1, const void *pe2)
 /* line 206 */
 static int Player_GetUseList(gentity_t *ent, useList_t *useList)
 {
-    byte *ps;
+    playerState_t *ps;
     vec3_t origin;
     vec3_t forward;
     vec3_t playerMin, playerMax;
@@ -293,24 +289,24 @@ static int Player_GetUseList(gentity_t *ent, useList_t *useList)
     int invalidUseCount;
     float dist;
     float dot;
-    byte *hitEnt;
-    byte *traceEnt;
+    gentity_t *hitEnt;
+    gentity_t *traceEnt;
     useList_t *curUse;
 
-    ps = (byte *)ent->client;
+    ps = &ent->client->ps;
 
     /* Get player view origin and direction */
     G_GetPlayerViewOrigin(ent, origin);
     G_GetPlayerViewDirection(ent, forward, NULL, NULL);
 
     /* Compute player bounding box in world space */
-    playerMin[0] = *(float *)(ps + PS_ORIGIN) + *(float *)(ps + PS_MINS);
-    playerMin[1] = *(float *)(ps + PS_ORIGIN + 4) + *(float *)(ps + PS_MINS + 4);
-    playerMin[2] = *(float *)(ps + PS_ORIGIN + 8) + *(float *)(ps + PS_MINS + 8);
+    playerMin[0] = ps->origin[0] + ps->mins[0];
+    playerMin[1] = ps->origin[1] + ps->mins[1];
+    playerMin[2] = ps->origin[2] + ps->mins[2];
 
-    playerMax[0] = *(float *)(ps + PS_ORIGIN) + *(float *)(ps + PS_MAXS);
-    playerMax[1] = *(float *)(ps + PS_ORIGIN + 4) + *(float *)(ps + PS_MAXS + 4);
-    playerMax[2] = *(float *)(ps + PS_ORIGIN + 8) + *(float *)(ps + PS_MAXS + 8);
+    playerMax[0] = ps->origin[0] + ps->maxs[0];
+    playerMax[1] = ps->origin[1] + ps->maxs[1];
+    playerMax[2] = ps->origin[2] + ps->maxs[2];
 
     /* Compute search area */
     mins[0] = origin[0] - 192.0f;
@@ -331,50 +327,50 @@ static int Player_GetUseList(gentity_t *ent, useList_t *useList)
 
     curUse = useList;
     for (i = 0; i < num; i++) {
-        hitEnt = g_entities_ptr + touchEnts[i] * GENTITY_SIZE;
+        hitEnt = GENTITY(touchEnts[i]);
 
         /* Skip self */
-        if ((gentity_t *)hitEnt == ent)
+        if (hitEnt == ent)
             continue;
 
         /* Check if entity is usable: must be ET_ITEM or have SVF_USE flag */
-        if (*(int *)(hitEnt + ENT_S_ETYPE) != 3) {
-            if (!(*(byte *)(hitEnt + ENT_R_SVFLAGS) & 0x20))
+        if (ENT_S_ETYPE(hitEnt) != 3) {
+            if (!(ENT_R_SVFLAGS(hitEnt) & 0x20))
                 continue;
         }
 
         /* Check classname against trigger_use_touch */
-        if (*(unsigned short *)(hitEnt + ENT_CLASSNAME) == *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_USE_TOUCH)) {
+        if (ENT_CLASSNAME(hitEnt) == SCR_CONST()->trigger_use_touch) {
             /* Touch trigger - check AABB overlap */
-            if (*(float *)(hitEnt + ENT_R_ABSMIN) > playerMax[0])
+            if (ENT_R_ABSMIN(hitEnt)[0] > playerMax[0])
                 continue;
-            if (playerMin[0] > *(float *)(hitEnt + ENT_R_ABSMAX))
+            if (playerMin[0] > ENT_R_ABSMAX(hitEnt)[0])
                 continue;
-            if (*(float *)(hitEnt + ENT_R_ABSMIN + 4) > playerMax[1])
+            if (ENT_R_ABSMIN(hitEnt)[1] > playerMax[1])
                 continue;
-            if (playerMin[1] > *(float *)(hitEnt + ENT_R_ABSMAX + 4))
+            if (playerMin[1] > ENT_R_ABSMAX(hitEnt)[1])
                 continue;
-            if (*(float *)(hitEnt + ENT_R_ABSMIN + 8) > playerMax[2])
+            if (ENT_R_ABSMIN(hitEnt)[2] > playerMax[2])
                 continue;
-            if (playerMin[2] > *(float *)(hitEnt + ENT_R_ABSMAX + 8))
+            if (playerMin[2] > ENT_R_ABSMAX(hitEnt)[2])
                 continue;
 
             /* Full AABB contact test */
-            if (!SV_EntityContact(playerMin, playerMax, (gentity_t *)hitEnt))
+            if (!SV_EntityContact(playerMin, playerMax, hitEnt))
                 continue;
 
             /* Add with very negative score (high priority) */
             curUse->score = -256.0f;
-            curUse->ent = (gentity_t *)hitEnt;
+            curUse->ent = hitEnt;
             useCount++;
             curUse++;
             continue;
         }
 
         /* Non-touch trigger: compute center of entity */
-        usePos[0] = (*(float *)(hitEnt + ENT_R_ABSMIN) + *(float *)(hitEnt + ENT_R_ABSMAX)) * 0.5f;
-        usePos[1] = (*(float *)(hitEnt + ENT_R_ABSMIN + 4) + *(float *)(hitEnt + ENT_R_ABSMAX + 4)) * 0.5f;
-        usePos[2] = (*(float *)(hitEnt + ENT_R_ABSMIN + 8) + *(float *)(hitEnt + ENT_R_ABSMAX + 8)) * 0.5f;
+        usePos[0] = (ENT_R_ABSMIN(hitEnt)[0] + ENT_R_ABSMAX(hitEnt)[0]) * 0.5f;
+        usePos[1] = (ENT_R_ABSMIN(hitEnt)[1] + ENT_R_ABSMAX(hitEnt)[1]) * 0.5f;
+        usePos[2] = (ENT_R_ABSMIN(hitEnt)[2] + ENT_R_ABSMAX(hitEnt)[2]) * 0.5f;
 
         /* Direction from player to entity center */
         useDir[0] = usePos[0] - origin[0];
@@ -394,20 +390,20 @@ static int Player_GetUseList(gentity_t *ent, useList_t *useList)
         curUse->score = ((1.0f + dot) * -0.5f + 1.0f) * 256.0f;
 
         /* Check if it's a trigger_use (prefer over trigger_use_touch) */
-        if (*(unsigned short *)(hitEnt + ENT_CLASSNAME) == *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_USE)) {
+        if (ENT_CLASSNAME(hitEnt) == SCR_CONST()->trigger_use) {
             curUse->score -= 256.0f;
         }
 
         /* Check if item can be grabbed */
-        if (*(int *)(hitEnt + ENT_S_ETYPE) == 3) {
-            if (!BG_CanItemBeGrabbed((entityState_t *)hitEnt, (playerState_t *)ps, 0)) {
+        if (ENT_S_ETYPE(hitEnt) == 3) {
+            if (!BG_CanItemBeGrabbed(&hitEnt->s, ps, 0)) {
                 curUse->score += 10000.0f;
                 ignoredFullItems++;
             }
         }
 
         /* Add to use list */
-        curUse->ent = (gentity_t *)hitEnt;
+        curUse->ent = hitEnt;
         curUse->score += dist;
         useCount++;
         curUse++;
@@ -421,24 +417,24 @@ sort_and_validate:
     if (useCount - ignoredFullItems > 0) {
         invalidUseCount = 0;
         for (i = 0; i < useCount - ignoredFullItems; i++) {
-            traceEnt = (byte *)useList[i].ent;
+            traceEnt = useList[i].ent;
 
             /* Skip trigger_use_touch entities */
-            if (*(unsigned short *)(traceEnt + ENT_CLASSNAME) == *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_USE_TOUCH))
+            if (ENT_CLASSNAME(traceEnt) == SCR_CONST()->trigger_use_touch)
                 continue;
 
             /* Compute entity center for trace */
-            usePos[0] = (*(float *)(traceEnt + ENT_R_ABSMIN) + *(float *)(traceEnt + ENT_R_ABSMAX)) * 0.5f;
-            usePos[1] = (*(float *)(traceEnt + ENT_R_ABSMIN + 4) + *(float *)(traceEnt + ENT_R_ABSMAX + 4)) * 0.5f;
-            usePos[2] = (*(float *)(traceEnt + ENT_R_ABSMIN + 8) + *(float *)(traceEnt + ENT_R_ABSMAX + 8)) * 0.5f;
+            usePos[0] = (ENT_R_ABSMIN(traceEnt)[0] + ENT_R_ABSMAX(traceEnt)[0]) * 0.5f;
+            usePos[1] = (ENT_R_ABSMIN(traceEnt)[1] + ENT_R_ABSMAX(traceEnt)[1]) * 0.5f;
+            usePos[2] = (ENT_R_ABSMIN(traceEnt)[2] + ENT_R_ABSMAX(traceEnt)[2]) * 0.5f;
 
             /* For turrets, use tag_aim position */
-            if (*(int *)(traceEnt + ENT_S_ETYPE) == 9) {
-                G_DObjGetWorldTagPos((gentity_t *)traceEnt, *(unsigned short *)(scr_const_ptr + SCR_TAG_AIM), usePos);
+            if (ENT_S_ETYPE(traceEnt) == 9) {
+                G_DObjGetWorldTagPos(traceEnt, SCR_CONST()->tag_aim, usePos);
             }
 
             /* Trace from origin to entity center */
-            if (!G_TraceCapsuleComplete(origin, (vec_t *)vec3_origin_ptr, (vec_t *)vec3_origin_ptr, usePos, *(int *)(ps + PS_CLIENTNUM), 0x11)) {
+            if (!G_TraceCapsuleComplete(origin, (vec_t *)vec3_origin_ptr, (vec_t *)vec3_origin_ptr, usePos, ps->clientNum, 0x11)) {
                 /* Trace blocked - penalize score */
                 useList[i].score += 10000.0f;
                 invalidUseCount++;
@@ -459,11 +455,11 @@ sort_and_validate:
 /* line 428 */
 void Player_UpdateCursorHints(gentity_t *ent)
 {
-    byte *ps;
-    byte *client;
-    byte *traceEnt;
-    byte *turretEnt;
-    byte *itemEntry;
+    playerState_t *ps;
+    gclient_t *client;
+    gentity_t *traceEnt;
+    gentity_t *turretEnt;
+    gitem_t *itemEntry;
     useList_t useList[1024];
     int numUsable;
     int i;
@@ -473,44 +469,44 @@ void Player_UpdateCursorHints(gentity_t *ent)
     int team;
     WeaponDef *weapDef;
 
-    ps = (byte *)ent->client;
+    ps = &ent->client->ps;
 
     /* Reset cursor hints */
-    *(int *)(ps + PS_CURSORHINT) = 0;
-    *(int *)(ps + PS_CURSORHINTSTRING) = -1;
-    *(int *)(ps + PS_CURSORHINTENTINDEX) = 0x3FF;
+    ps->cursorHint = 0;
+    ps->cursorHintString = -1;
+    ps->cursorHintEntIndex = 0x3FF;
 
     /* Check if entity is alive */
-    if (*(int *)((byte *)ent + ENT_HEALTH) <= 0)
+    if (ENT_HEALTH(ent) <= 0)
         return;
 
     /* Check movement state */
-    client = (byte *)ent->client;
-    if ((unsigned)(*(int *)(client + PS_WEAPONSTATE) - 0x11) <= 5)
+    client = ent->client;
+    if ((unsigned)(client->ps.weaponstate - 0x11) <= 5)
         return;
 
     /* Check if entity has active hold state */
-    if (*(byte *)((byte *)ent + ENT_ACTIVE) != 0) {
+    if (ENT_ACTIVE(ent) != 0) {
         /* Active hold - check if in vehicle/turret */
-        if (!(*(int *)(ps + PS_EFLAGS) & 0x300))
+        if (!(ps->eFlags & 0x300))
             return;
 
         /* Show turret weapon hint */
-        turretEnt = g_entities_ptr + *(int *)(client + PS_VIEWLOCKED_ENTNUM) * GENTITY_SIZE;
-        weaponIndex = *(int *)(turretEnt + ENT_S_WEAPON);
+        turretEnt = GENTITY(ps->viewlocked_entNum);
+        weaponIndex = ENT_S_WEAPON(turretEnt);
         weapDef = (WeaponDef *)BG_GetWeaponDef(weaponIndex);
         if (*(char *)weapDef->dropHintString == '\0')
             return;
 
-        *(int *)(client + PS_CURSORHINTENTINDEX) = 0x3FF;
-        *(int *)(client + PS_CURSORHINT) = weaponIndex + 4;
+        ps->cursorHintEntIndex = 0x3FF;
+        ps->cursorHint = weaponIndex + 4;
         weapDef = (WeaponDef *)BG_GetWeaponDef(weaponIndex);
-        *(int *)(client + PS_CURSORHINTSTRING) = weapDef->dropHintStringIndex;
+        ps->cursorHintString = weapDef->dropHintStringIndex;
         return;
     }
 
     /* Check if pm_flags indicate entity use */
-    if (*(int *)(client + PS_PM_FLAGS) & 0x4)
+    if (client->ps.pm_flags & 0x4)
         return;
 
     /* Get usable entities */
@@ -520,31 +516,31 @@ void Player_UpdateCursorHints(gentity_t *ent)
 
     /* Iterate through usable entities */
     for (i = 0; i < numUsable; i++) {
-        traceEnt = (byte *)useList[i].ent;
+        traceEnt = useList[i].ent;
 
         /* Check entity type */
-        if (*(int *)(traceEnt + ENT_S_ETYPE) == 3) {
+        if (ENT_S_ETYPE(traceEnt) == 3) {
             /* ET_ITEM */
-            client = (byte *)ent->client;
+            client = ent->client;
 
             /* Check if player can pick up this item */
-            weaponIndex = *(unsigned short *)(traceEnt + ENT_ATTACHMODELS);
+            weaponIndex = ENT_ITEM_INDEX(traceEnt);
 
             /* Compute item entry: index * 44 (sizeof gitem_s) + bg_itemlist base */
-            itemEntry = bg_itemlist_ptr + weaponIndex * 44;
+            itemEntry = (gitem_t *)(bg_itemlist_ptr + weaponIndex * 44);
 
             /* Check giType == 1 (IT_WEAPON) */
-            if (((gitem_t *)itemEntry)->giType != 1)
+            if (itemEntry->giType != 1)
                 continue;
 
             /* Check weapon class */
-            weapDef = (WeaponDef *)BG_GetWeaponDef(((gitem_t *)itemEntry)->giTag);
+            weapDef = (WeaponDef *)BG_GetWeaponDef(itemEntry->giTag);
             if (weapDef->weapType == 1)
                 continue;
 
             /* Check if player already has this weapon */
-            weaponIndex = ((gitem_t *)itemEntry)->giTag;
-            if ((*(int *)(client + PS_WEAPONS + (weaponIndex >> 5) * 4) >> (weaponIndex & 0x1F)) & 1)
+            weaponIndex = itemEntry->giTag;
+            if ((client->ps.weapons[weaponIndex >> 5] >> (weaponIndex & 0x1F)) & 1)
                 continue;
 
             /* Valid weapon pickup */
@@ -552,66 +548,62 @@ void Player_UpdateCursorHints(gentity_t *ent)
             if (hintType == 0)
                 continue;
             hintString = -1;
-        } else if (*(int *)(traceEnt + ENT_S_ETYPE) == 9) {
+        } else if (ENT_S_ETYPE(traceEnt) == 9) {
             /* ET_TURRET */
-            if (!G_IsTurretUsable((gentity_t *)traceEnt, ent))
+            if (!G_IsTurretUsable(traceEnt, ent))
                 continue;
 
-            weaponIndex = *(int *)(traceEnt + ENT_S_WEAPON);
+            weaponIndex = ENT_S_WEAPON(traceEnt);
             hintType = weaponIndex + 4;
 
             weapDef = (WeaponDef *)BG_GetWeaponDef(weaponIndex);
             if (*(char *)weapDef->szUseHintString != '\0') {
-                weapDef = (WeaponDef *)BG_GetWeaponDef(*(int *)(traceEnt + ENT_S_WEAPON));
+                weapDef = (WeaponDef *)BG_GetWeaponDef(ENT_S_WEAPON(traceEnt));
                 hintString = weapDef->iUseHintStringIndex;
             } else {
                 hintString = -1;
             }
-        } else if (*(int *)(traceEnt + ENT_S_ETYPE) == 0) {
+        } else if (ENT_S_ETYPE(traceEnt) == 0) {
             /* ET_GENERAL - check classname */
-            if (*(unsigned short *)(traceEnt + ENT_CLASSNAME) != *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_USE) &&
-                *(unsigned short *)(traceEnt + ENT_CLASSNAME) != *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_USE_TOUCH)) {
+            if (ENT_CLASSNAME(traceEnt) != SCR_CONST()->trigger_use &&
+                ENT_CLASSNAME(traceEnt) != SCR_CONST()->trigger_use_touch) {
                 /* Not a trigger_use or trigger_use_touch */
                 hintType = 0;
                 hintString = -1;
             } else {
                 /* Check team hint */
-                if (*(byte *)(traceEnt + ENT_TEAM) == 0) {
+                if (ENT_TEAM(traceEnt) == 0) {
                     /* No team restriction - check target entity */
-                    if (*(int *)(traceEnt + ENT_ATTACHTAGS) == 0x3FF) {
+                    if (ENT_TRIGGER_SINGLEUSER(traceEnt) == 0x3FF) {
                         /* No target entity - use traceEnt directly */
-                        traceEnt = traceEnt;
                     } else {
                         /* Has target entity - check clientNum matches */
-                        if (*(int *)(traceEnt + ENT_ATTACHTAGS) != *(int *)((byte *)ent->client + PS_CLIENTNUM))
+                        if (ENT_TRIGGER_SINGLEUSER(traceEnt) != ent->client->ps.clientNum)
                             continue;
                     }
 
-                    hintType = *(int *)(traceEnt + ENT_S_ANIMMOVETYPE);
+                    hintType = ENT_S_ANIMMOVETYPE(traceEnt);
                     if (hintType == 0) {
                         hintString = -1;
                     } else {
-                        hintString = *(int *)(traceEnt + ENT_S_DMGFLAGS);
+                        hintString = ENT_S_DMGFLAGS(traceEnt);
                         if (hintString == 0xFF)
                             hintString = -1;
                     }
                 } else {
                     /* Has team restriction */
-                    team = *(byte *)(traceEnt + ENT_TEAM);
-                    if (team != *(int *)((byte *)ent->client + CLIENT_TEAM)) {
+                    team = ENT_TEAM(traceEnt);
+                    if (team != CLIENT_TEAM(ent->client)) {
                         /* Wrong team - check through target chain */
-                        if (*(int *)(traceEnt + ENT_ATTACHTAGS) == 0x3FF) {
-                            traceEnt = traceEnt;
-                        } else {
-                            if (*(int *)(traceEnt + ENT_ATTACHTAGS) != *(int *)((byte *)ent->client + PS_CLIENTNUM))
-                                continue;
-                        }
+                        if (ENT_TRIGGER_SINGLEUSER(traceEnt) != 0x3FF &&
+                            ENT_TRIGGER_SINGLEUSER(traceEnt) != ent->client->ps.clientNum)
+                            continue;
 
-                        hintType = *(int *)(traceEnt + ENT_S_ANIMMOVETYPE);
+                        hintType = ENT_S_ANIMMOVETYPE(traceEnt);
                         if (hintType == 0) {
                             hintString = -1;
                         } else {
-                            hintString = *(int *)(traceEnt + ENT_S_DMGFLAGS);
+                            hintString = ENT_S_DMGFLAGS(traceEnt);
                             if (hintString == 0xFF)
                                 hintString = -1;
                         }
@@ -625,12 +617,12 @@ void Player_UpdateCursorHints(gentity_t *ent)
         }
 
         /* Set cursor hint */
-        *(int *)(ps + PS_CURSORHINTENTINDEX) = *(int *)(traceEnt + ENT_S_NUMBER);
-        *(int *)(ps + PS_CURSORHINT) = hintType;
-        *(int *)(ps + PS_CURSORHINTSTRING) = hintString;
+        ps->cursorHintEntIndex = ENT_S_NUMBER(traceEnt);
+        ps->cursorHint = hintType;
+        ps->cursorHintString = hintString;
 
         if (hintType == 0) {
-            *(int *)(ps + PS_CURSORHINTENTINDEX) = 0x3FF;
+            ps->cursorHintEntIndex = 0x3FF;
         }
         return;
     }
@@ -639,9 +631,9 @@ void Player_UpdateCursorHints(gentity_t *ent)
 /* line 562 */
 void Player_UpdateLookAtEntity(gentity_t *ent)
 {
-    byte *ps;
-    byte *hitEnt;
-    byte *hitClient;
+    playerState_t *ps;
+    gentity_t *hitEnt;
+    gclient_t *hitClient;
     vec3_t start, end, forward;
     vec3_t contactEnd;
     trace_t trace;
@@ -654,29 +646,29 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
     unsigned char *priorityMap;
     int traceEntNum;
 
-    ps = (byte *)ent->client;
+    ps = &ent->client->ps;
 
     /* Clear look-at flags */
-    *(int *)(ps + PS_PM_FLAGS) &= ~0x300000;
+    ps->pm_flags &= ~0x300000;
 
     /* Clear look-at entity */
-    *(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) = 0;
+    CLIENT_LOOKAT_ENT(ent->client) = NULL;
 
     /* Get view origin and direction */
     G_GetPlayerViewOrigin(ent, start);
     G_GetPlayerViewDirection(ent, forward, NULL, NULL);
 
     /* Get weapon definition */
-    if (*(int *)(ps + PS_EFLAGS) & 0x300) {
+    if (ps->eFlags & 0x300) {
         /* In vehicle/turret */
-        hitEnt = g_entities_ptr + *(int *)(ps + PS_VIEWLOCKED_ENTNUM) * GENTITY_SIZE;
-        weapDef = (WeaponDef *)BG_GetWeaponDef(*(int *)(hitEnt + ENT_S_WEAPON));
+        hitEnt = GENTITY(ps->viewlocked_entNum);
+        weapDef = (WeaponDef *)BG_GetWeaponDef(ENT_S_WEAPON(hitEnt));
     } else {
-        weapDef = (WeaponDef *)BG_GetWeaponDef(*(int *)((byte *)ent->client + PS_WEAPON));
+        weapDef = (WeaponDef *)BG_GetWeaponDef(ps->weapon);
     }
 
     /* Check weapon and determine priority map */
-    if (*(int *)((byte *)ent->client + PS_WEAPON) == 0 || !weapDef->bRifleBullet) {
+    if (ps->weapon == 0 || !weapDef->bRifleBullet) {
         priorityMap = (unsigned char *)pPriorityMap;
     } else {
         priorityMap = (unsigned char *)pPriorityMapAlt;
@@ -688,7 +680,7 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
     end[2] = start[2] + forward[2] * 15000.0f;
 
     /* First trace */
-    G_LocationalTrace(&trace, start, end, *(int *)((byte *)ent), 0x22802801, priorityMap);
+    G_LocationalTrace(&trace, start, end, ent->s.number, 0x22802801, priorityMap);
     if (trace.entityNum > 0x3FD)
         return;
 
@@ -705,20 +697,20 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
 
     /* Get trace entity */
     traceEntNum = trace.entityNum;
-    hitEnt = g_entities_ptr + traceEntNum * GENTITY_SIZE;
+    hitEnt = GENTITY(traceEntNum);
     if (hitEnt == NULL)
         return;
 
     /* Check if it's a trigger_lookat entity */
-    if (*(unsigned short *)(hitEnt + ENT_CLASSNAME) == *(unsigned short *)(scr_const_ptr + SCR_TRIGGER_LOOKAT)) {
+    if (ENT_CLASSNAME(hitEnt) == SCR_CONST()->trigger_lookat) {
         /* Store look-at entity */
-        *(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) = (int)(hitEnt);
+        CLIENT_LOOKAT_ENT(ent->client) = hitEnt;
 
         /* Trigger the entity */
-        G_Trigger((gentity_t *)hitEnt, ent);
+        G_Trigger(hitEnt, ent);
 
         /* Second trace (past the trigger) */
-        G_LocationalTrace(&trace, start, end, *(int *)((byte *)ent), 0x2802801, priorityMap);
+        G_LocationalTrace(&trace, start, end, ent->s.number, 0x2802801, priorityMap);
         if (trace.entityNum > 0x3FD)
             return;
 
@@ -731,13 +723,13 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
         if (vis < 0.2f)
             return;
 
-        hitEnt = g_entities_ptr + trace.entityNum * GENTITY_SIZE;
+        hitEnt = GENTITY(trace.entityNum);
         if (hitEnt == NULL)
             return;
     }
 
     /* Must be ET_PLAYER (eType == 1) */
-    if (*(int *)(hitEnt + ENT_S_ETYPE) != 1)
+    if (ENT_S_ETYPE(hitEnt) != 1)
         return;
 
     /* Check trace surface flags (not through glass/etc) */
@@ -745,30 +737,30 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
         return;
 
     /* Compute direction to entity */
-    dx = *(float *)(hitEnt + ENT_R_CURORIGIN) - start[0];
-    dy = *(float *)(hitEnt + ENT_R_CURORIGIN + 4) - start[1];
-    dz = *(float *)(hitEnt + ENT_R_CURORIGIN + 8) - start[2];
+    dx = ENT_R_CURORIGIN(hitEnt)[0] - start[0];
+    dy = ENT_R_CURORIGIN(hitEnt)[1] - start[1];
+    dz = ENT_R_CURORIGIN(hitEnt)[2] - start[2];
 
     /* Check if same team */
-    hitClient = *(byte **)(hitEnt + ENT_CLIENT);
-    if (*(int *)(hitClient + CLIENT_TEAM) == *(int *)((byte *)ent->client + CLIENT_TEAM) && *(int *)(hitClient + CLIENT_TEAM) != 0) {
+    hitClient = ENT_CLIENT(hitEnt);
+    if (CLIENT_TEAM(hitClient) == CLIENT_TEAM(ent->client) && CLIENT_TEAM(hitClient) != 0) {
         /* Same team - friendly */
         distSq = dx * dx + dy * dy + dz * dz;
 
         /* Check friendly look distance */
-        rangeSq = *(float *)(*(byte **)&g_friendlylookDist + 8);
+        rangeSq = g_friendlyNameDist->current.value;
         rangeSq *= rangeSq;
         if (rangeSq > distSq) {
-            if (*(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) == 0) {
-                *(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) = (int)hitEnt;
+            if (CLIENT_LOOKAT_ENT(ent->client) == NULL) {
+                CLIENT_LOOKAT_ENT(ent->client) = hitEnt;
             }
         }
 
         /* Check enemy look distance (for cross-hair) */
-        rangeSq = *(float *)(*(byte **)&g_enemylookDist + 8);
+        rangeSq = g_friendlyfireDist->current.value;
         rangeSq *= rangeSq;
         if (rangeSq > distSq) {
-            *(int *)(ps + PS_PM_FLAGS) |= 0x100000;
+            ps->pm_flags |= 0x100000;
         }
         return;
     }
@@ -780,8 +772,8 @@ void Player_UpdateLookAtEntity(gentity_t *ent)
     if (rangeSq <= distSq)
         return;
 
-    if (*(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) == 0) {
-        *(int *)((byte *)ent->client + CLIENT_LOOKAT_ENT) = (int)hitEnt;
+    if (CLIENT_LOOKAT_ENT(ent->client) == NULL) {
+        CLIENT_LOOKAT_ENT(ent->client) = hitEnt;
     }
-    *(int *)(ps + PS_PM_FLAGS) |= 0x200000;
+    ps->pm_flags |= 0x200000;
 }

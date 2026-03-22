@@ -3486,7 +3486,7 @@ extern const char *va(const char *fmt, ...);
 extern int G_ModelIndex(const char *name);
 
 void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
-    byte *item;
+    gitem_t *item;
     const char *name;
 
     /* Already registered? */
@@ -3494,10 +3494,9 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
         return;
 
     /* If not initializing, check if the item has a valid classname */
-    if (!*(int *)((byte *)imp_level + 0x1c)) { /* TODO: unknown offset */
-        /* item = bg_itemlist + iItemIndex * 44 */
-        item = (byte *)imp_bg_itemlist + iItemIndex * 44;
-        name = ((gitem_t *)item)->pickup_name;
+    if (!level.initializing) {
+        item = (gitem_t *)imp_bg_itemlist + iItemIndex;
+        name = item->pickup_name;
         if (!name || *name == '\0') {
             name = str_002b4984; /* "" or unknown */
         }
@@ -3507,22 +3506,21 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
     /* Mark as registered */
     itemRegistered[iItemIndex] = 1;
 
-    /* item = bg_itemlist + iItemIndex * 44 */
-    item = (byte *)imp_bg_itemlist + iItemIndex * 44;
+    item = (gitem_t *)imp_bg_itemlist + iItemIndex;
 
     /* Register world model if present */
-    if (*(const char **)(item + 8)) {
-        G_ModelIndex(*(const char **)(item + 8));
+    if (item->world_model[0]) {
+        G_ModelIndex(item->world_model[0]);
     }
 
     /* Register view model if present */
-    if (((gitem_t *)item)->world_model[1]) {
-        G_ModelIndex(((gitem_t *)item)->world_model[1]);
+    if (item->world_model[1]) {
+        G_ModelIndex(item->world_model[1]);
     }
 
     /* If bUpdateCS, set level flag */
     if (bUpdateCS) {
-        *(int *)((byte *)imp_level + 0x3600) = 1; /* TODO: unknown offset */
+        level.bRegisterItems = 1;
     }
 }
 #endif

@@ -57,13 +57,12 @@
 #define ENT_MINS(e)           (_ENT(e)->r.mins)
 #define ENT_MAXS(e)           (_ENT(e)->r.maxs)
 #define ENT_CONTENTS(e)       (_ENT(e)->r.contents)
-#define ENT_CONTENTS_BYTE3(e) (*(byte *)((byte *)&_ENT(e)->r.contents + 3))
 #define ENT_ABSMIN(e)         (_ENT(e)->r.absmin)
 #define ENT_ABSMAX(e)         (_ENT(e)->r.absmax)
 #define ENT_CURRENTORIGIN(e)  (_ENT(e)->r.currentOrigin)
 #define ENT_CURRENTANGLES(e)  (_ENT(e)->r.currentAngles)
 #define ENT_OWNERNUM(e)       (_ENT(e)->r.ownerNum)
-#define ENT_CLIENT(e)         ((byte *)(_ENT(e)->client))
+#define ENT_CLIENT(e)         (_ENT(e)->client)
 #define ENT_PHYSICSOBJECT(e)  (_ENT(e)->physicsObject)
 #define ENT_TAKEDAMAGE(e)     (_ENT(e)->takedamage)
 #define ENT_HANDLER(e)        (_ENT(e)->handler)
@@ -71,20 +70,19 @@
 #define ENT_TAGINFO(e)        (_ENT(e)->tagInfo)
 
 #define ENTITY_STRIDE sizeof(gentity_s)
+#define GMOVER_CONTENTS_0X04000000 0x04000000
 
 /* External globals (BSS/data pointers) */
 extern byte level_ptr[];         /* imp_level */
 extern byte g_entities_ptr[];    /* imp_g_entities */
-extern byte *entityHandlers_ptr; /* imp_entityHandlers */
+extern entityHandler_t entityHandlers[20];
 
 /* level_ptr field access */
 #define LEVEL_TIME          (((level_locals_t *)level_ptr)->time)
 #define LEVEL_PREVIOUSTIME  (((level_locals_t *)level_ptr)->previousTime)
 
-/* Handler table access: each entry is 40 bytes */
-#define HANDLER_ENTRY(h)    (entityHandlers_ptr + (h) * 40)
-#define HANDLER_REACHED(h)  (*(void (**)())(HANDLER_ENTRY(h) + 4))
-#define HANDLER_BLOCKED(h)  (*(void (**)(gentity_t *, gentity_t *))(HANDLER_ENTRY(h) + 8))
+#define HANDLER_REACHED(h)  (entityHandlers[(h)].reached)
+#define HANDLER_BLOCKED(h)  (entityHandlers[(h)].blocked)
 
 /* g_entities_ptr entity access by number */
 #define G_ENTITY(num) ((gentity_t *)(g_entities_ptr + (num) * ENTITY_STRIDE))
@@ -135,7 +133,7 @@ static void G_TraceCapsuleForEntity(trace_t *tr, gentity_t *check, vec_t *origin
 
     mask = ENT_CLIPMASK(check);
     if (mask != 0) {
-        if (ENT_CONTENTS_BYTE3(check) & 4) {
+        if (ENT_CONTENTS(check) & GMOVER_CONTENTS_0X04000000) {
             /* Use entity's ownerNum as passEntityNum */
             if (ENT_ETYPE(check) == 4) {
                 passEntityNum = ENT_OWNERNUM(check);
@@ -159,10 +157,9 @@ static void G_TraceCapsuleForEntity(trace_t *tr, gentity_t *check, vec_t *origin
 
 /*
  * Helper: trace_is_stuck
- * Returns non-zero if the trace indicates the entity is stuck (allsolid or startsolid).
- * Checks the 16-bit word covering both allsolid and startsolid bytes.
+ * Returns non-zero if the trace indicates the entity is stuck.
  */
-#define TRACE_IS_STUCK(tr) (*(unsigned short *)&(tr)->allsolid)
+#define TRACE_IS_STUCK(tr) ((tr)->allsolid || (tr)->startsolid)
 
 /* line 522 */
 void use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
@@ -273,7 +270,7 @@ qboolean G_TryPushingEntity(gentity_t *check, gentity_t *pusher, vec_t *move, ve
     float fx, fy, fz;
     float halfSize;
     gentity_t *hitEnt;
-    byte *client;
+    gclient_t *client;
     vec_t *savedOrigin;
 
     savedOrigin = ENT_CURRENTORIGIN(check);
@@ -407,11 +404,11 @@ advance_fy_done:
         /* line 185: add amove[1] * 182.044... to client delta yaw */
         int deltaYaw = (int)(amove[1] * 182.04444885253906f);
         deltaYaw &= 0xffff;
-        ((gclient_t *)client)->ps.delta_angles[1] += deltaYaw;
+        client->ps.delta_angles[1] += deltaYaw;
 
         /* line 186: copy origin to client origin */
         client = ENT_CLIENT(check);
-        VectorCopy(vOrigin, (vec_t *)(client + 0x14));
+        VectorCopy(vOrigin, client->ps.origin);
     }
 
     /* line 227: advance pushed_p */
@@ -433,10 +430,10 @@ try_push_success:
     if (client != NULL) {
         int deltaYaw = (int)(amove[1] * 182.04444885253906f);
         deltaYaw &= 0xffff;
-        ((gclient_t *)client)->ps.delta_angles[1] += deltaYaw;
+        client->ps.delta_angles[1] += deltaYaw;
 
         client = ENT_CLIENT(check);
-        VectorCopy(org2, (vec_t *)(client + 0x14));
+        VectorCopy(org2, client->ps.origin);
     }
 
     pushed_p++;
@@ -461,7 +458,7 @@ void G_MoverTeam(gentity_t *ent)
     gentity_t *obstacle;
     int i;
     float radius;
-    byte *client;
+    gclient_t *client;
 
     /* line 434: reset pushed_p to beginning of pushed array */
     pushed_p = pushed;
@@ -673,11 +670,11 @@ skip_entity:
                 /* line 455: undo deltayaw */
                 int deltaYaw = (int)(p->deltayaw * 182.04444885253906f);
                 deltaYaw &= 0xffff;
-                ((gclient_t *)client)->ps.delta_angles[1] -= deltaYaw;
+                client->ps.delta_angles[1] -= deltaYaw;
 
                 /* line 456: restore client origin */
                 client = ENT_CLIENT(checkEnt);
-                VectorCopy(p->origin, (vec_t *)(client + 0x14));
+                VectorCopy(p->origin, client->ps.origin);
             }
 
             /* line 459 */
@@ -701,7 +698,7 @@ skip_entity:
         /* line 470: call blocked handler */
         {
             byte handlerIdx = ENT_HANDLER(ent);
-            void (*blocked)(gentity_t *, gentity_t *) = *(void (**)(gentity_t *, gentity_t *))(HANDLER_ENTRY(handlerIdx) + 8);
+            void (*blocked)(gentity_t *, gentity_t *) = HANDLER_BLOCKED(handlerIdx);
             if (blocked != NULL) {
                 blocked(ent, obstacle);
             }
@@ -713,7 +710,7 @@ skip_entity:
             if (ENT_POS_TRTIME(ent) + ENT_POS_TRDURATION(ent) <= LEVEL_TIME) {
                 /* line 485-487: call reached handler for pos */
                 byte handlerIdx = ENT_HANDLER(ent);
-                void (*reached)(gentity_t *) = *(void (**)(gentity_t *))(HANDLER_ENTRY(handlerIdx) + 4);
+                void (*reached)(gentity_t *) = HANDLER_REACHED(handlerIdx);
                 if (reached != NULL) {
                     reached(ent);
                 }
@@ -726,7 +723,7 @@ skip_entity:
             if (ENT_APOS_TRTIME(ent) + ENT_APOS_TRDURATION(ent) <= LEVEL_TIME) {
                 /* line 496-497: call reached handler for apos */
                 byte handlerIdx = ENT_HANDLER(ent);
-                void (*reached)(gentity_t *) = *(void (**)(gentity_t *))(HANDLER_ENTRY(handlerIdx) + 4);
+                void (*reached)(gentity_t *) = HANDLER_REACHED(handlerIdx);
                 if (reached != NULL) {
                     reached(ent);
                 }

@@ -96,8 +96,8 @@ static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 
 extern gentity_t g_entities[];       /* imp_g_entities - g_entities base (aliased via linker as g_entities_ptr) */
 extern struct level_locals_t level;  /* imp_level (aliased via linker as level_ptr) */
-extern byte *g_clients_ptr;          /* imp_entityHandlers */
-extern byte *g_debug_damage_ptr;     /* imp_g_debugDamage */
+extern entityHandler_t entityHandlers[20];
+extern const dvar_t *g_debugDamage;
 /* imp_scr_const declared in generated_syms.h as void* */
 extern int g_sNextDmgTableId; /* 0x195b048 */
 extern int g_time; /* imp_level_bgs */
@@ -329,14 +329,13 @@ static float G_GetHitLocDamageMult(int weapon, hitLocation_t hitLoc)
         return g_fHitLocDamageMult[hitLoc];
     }
 
-    return *(float *)((byte *)weapDef + 0x5b0 + hitLoc * 4); /* TODO: unknown weaponDef_t hitLocDamageMult array at 0x5b0 */
+    return ((WeaponDef *)weapDef)->locationDamageMultipliers[hitLoc];
 }
 
 /* Helper: check if player can take damage */
 static int G_IsPlayerDamageable(gclient_t *client)
 {
-    /* 0xe = byte 2 of ps.pm_flags (bits 16-23 on little-endian) */
-    if (*(byte *)((byte *)&client->ps.pm_flags + 2) != 0) {
+    if (((byte *)&client->ps.pm_flags)[2] != 0) {
         if (client->noclip == 0 && client->ufo == 0) {
             if (client->sess.connected == 2) {
                 return 1;
@@ -420,9 +419,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
 
     /* Debug damage print */
     {
-        byte *dvar = *(byte **)g_debug_damage_ptr;
-        dvar = *(byte **)dvar;
-        if (*(byte *)(dvar + 8) != 0) {
+        if (g_debugDamage->current.enabled) {
             Com_Printf("target:%i health:%i damage:%i\n", targ->s.number, health, damage);
         }
     }
@@ -434,17 +431,12 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     /* Notify "damage" */
     Scr_AddEntity(attacker);
     Scr_AddInt(damage);
-    {
-        byte *scr_data = imp_scr_const;
-        Scr_Notify(targ, *(unsigned short *)(scr_data + 8), 2);
-    }
+    Scr_Notify(targ, ((const scr_const_t *)imp_scr_const)->damage, 2);
 
     if (health > 0) {
         /* Still alive - call pain callback via entity handler table */
-        int entType = targ->handler;
-        byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*pain)(gentity_t *, gentity_t *, int, const vec_t *, int, hitLocation_t) =
-            *(void (**)())(handlers + 0x14); /* TODO: unknown offset */
+            entityHandlers[targ->handler].pain;
         if (pain != NULL) {
             pain(targ, attacker, damage, point, mod, hitLoc);
         }
@@ -456,16 +448,11 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
 
         /* Notify "death" */
         Scr_AddEntity(attacker);
-        {
-            byte *scr_data = imp_scr_const;
-            Scr_Notify(targ, *(unsigned short *)(scr_data + 0xa), 1); /* TODO: unknown offset */
-        }
+        Scr_Notify(targ, ((const scr_const_t *)imp_scr_const)->death, 1);
 
         /* Call die callback via entity handler table */
-        int entType = targ->handler;
-        byte *handlers = *(byte **)g_clients_ptr + entType * 40;
         void (*die)(gentity_t *, gentity_t *, gentity_t *, int, int, int, const vec_t *, hitLocation_t, int) =
-            *(void (**)())(handlers + 0x18); /* TODO: unknown offset */
+            entityHandlers[targ->handler].die;
         if (die != NULL) {
             int iWeapon = inflictor->s.weapon;
             die(targ, inflictor, attacker, damage, mod, iWeapon, localdir, hitLoc, timeOffset);
@@ -647,7 +634,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
         return;
     }
     /* 0xe = byte 2 of ps.pm_flags (bits 16-23 on little-endian), check flag 0x40 */
-    if (*(byte *)((byte *)&cl->ps.pm_flags + 2) & 0x40) {
+    if (((byte *)&cl->ps.pm_flags)[2] & 0x40) {
         return;
     }
 
@@ -668,10 +655,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
     /* Notify "death" to attacker */
     Scr_AddEntity(attacker);
-    {
-        byte *scr_data = imp_scr_const;
-        Scr_Notify(self, *(unsigned short *)(scr_data + 0xa), 1); /* TODO: unknown offset */
-    }
+    Scr_Notify(self, ((const scr_const_t *)imp_scr_const)->death, 1);
 
     /* Check if attacker is player on turret - get turret weapon */
     if (iWeapon != 0) {
