@@ -6427,7 +6427,7 @@ int BG_PlayAnim(playerState_t *ps, int animNum, animBodyPart_t bodyPart, int for
 int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean isContinue, qboolean force) {
     int client;
     int numItems;
-    byte *ci;
+    clientInfo_t *ci;
     int i;
     animScriptItem_t **ppScriptItem;
 
@@ -6446,7 +6446,7 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
     client = ps->clientNum;
 
     /* Compute ci pointer: &bgs->clientinfo[client] */
-    ci = (byte *)&bgs->clientinfo[client];
+    ci = &bgs->clientinfo[client];
 
     /* line 1796: ppScriptItem = scriptEvents[event].items array */
     ppScriptItem = globalScriptData->scriptEvents[event].items;
@@ -6455,23 +6455,24 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
     for (i = 0; i < numItems; i++) {
         animScriptItem_t *scriptItem = ppScriptItem[i];
         int numConds = scriptItem->numConditions;
-        byte *cond = (byte *)scriptItem->conditions;
+        animScriptCondition_t *cond = scriptItem->conditions;
         int j;
         int allMatch = 1;
 
         /* Check all conditions for this script item */
-        for (j = 0; j < numConds; j++, cond += 12) {
-            int condType = *(int *)cond;
-            int testType = *(int *)((byte *)animConditionsTable + condType * 8);
+        for (j = 0; j < numConds; j++) {
+            animScriptCondition_t *condition = &cond[j];
+            int condType = condition->index;
+            int testType = animConditionsTable[condType].type;
 
             if (testType == 0) {
                 /* Mask check: condition passes if either mask pair has matching bits */
-                int mask1 = ((clientInfo_t *)ci)->clientConditions[condType][0];
-                if (mask1 & *(int *)(cond + 4))
+                int mask1 = ci->clientConditions[condType][0];
+                if (mask1 & condition->value[0])
                     continue; /* condition matched */
                 {
-                    int mask2 = ((clientInfo_t *)ci)->clientConditions[condType][1];
-                    if (mask2 & *(int *)(cond + 8))
+                    int mask2 = ci->clientConditions[condType][1];
+                    if (mask2 & condition->value[1])
                         continue; /* condition matched */
                 }
                 /* Neither mask matched — condition failed */
@@ -6479,8 +6480,8 @@ int BG_AnimScriptEvent(playerState_t *ps, scriptAnimEventTypes_t event, qboolean
                 break;
             } else if (testType == 1) {
                 /* Exact match: condition passes if values are equal */
-                int val = ((clientInfo_t *)ci)->clientConditions[condType][0];
-                if (val == *(int *)(cond + 4))
+                int val = ci->clientConditions[condType][0];
+                if (val == condition->value[0])
                     continue; /* condition matched */
                 /* Not equal — condition failed */
                 allMatch = 0;

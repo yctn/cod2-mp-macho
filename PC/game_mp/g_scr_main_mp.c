@@ -5,6 +5,8 @@
 #include "imports.h"
 #include <stdlib.h>
 
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/q_shared.h"
  *   #include "PC/universal/com_math.h"
@@ -5525,7 +5527,7 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
 /* line 6469 */
 unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 {
-    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
     Scr_AddString(option);
     Scr_Notify(self, scr->vote, 1);
     return 0;
@@ -12185,7 +12187,7 @@ unsigned int GScr_LoadScripts(void)
 #else
 unsigned int Scr_Objective_OnEntity(void) {
     int objIndex;
-    byte *obj;
+    objective_t *obj;
     int oldEntityNum;
     gentity_t *oldEnt;
     gentity_t *newEnt;
@@ -12195,18 +12197,17 @@ unsigned int Scr_Objective_OnEntity(void) {
         Scr_ParamError(0, va("index %i is an illegal objective index. Valid indexes are 0 to %i\n", objIndex, 0xf));
     }
 
-    /* obj = &level.objectives[objIndex] */
-    obj = (byte *)&level.objectives[objIndex];
+    obj = &level.objectives[objIndex];
 
     /* Clear old entity's objective flag */
-    oldEntityNum = ((objective_t *)obj)->entNum;
+    oldEntityNum = obj->entNum;
     if (oldEntityNum != 0x3ff) {
         oldEnt = &g_entities[oldEntityNum];
         if (oldEnt->r.inuse) {
             /* Clear EF_OBJECTIVE flag (0x10) */
             oldEnt->r.svFlags &= ~0x10;
         }
-        ((objective_t *)obj)->entNum = 0x3ff;
+        obj->entNum = 0x3ff;
     }
 
     /* Set new entity */
@@ -12214,7 +12215,7 @@ unsigned int Scr_Objective_OnEntity(void) {
     /* Set EF_OBJECTIVE flag */
     newEnt->r.svFlags |= 0x10;
     /* Store entity number */
-    ((objective_t *)obj)->entNum = newEnt->s.number;
+    obj->entNum = newEnt->s.number;
 
     return 0;
 }

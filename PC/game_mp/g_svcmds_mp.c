@@ -74,8 +74,16 @@ static qboolean StringToFilter(const char *s, ipFilter_t *f)
         s++;
     }
 
-    f->mask = *(unsigned int *)m;
-    f->compare = *(unsigned int *)b;
+    f->mask =
+        (unsigned int)m[0] |
+        ((unsigned int)m[1] << 8) |
+        ((unsigned int)m[2] << 16) |
+        ((unsigned int)m[3] << 24);
+    f->compare =
+        (unsigned int)b[0] |
+        ((unsigned int)b[1] << 8) |
+        ((unsigned int)b[2] << 16) |
+        ((unsigned int)b[3] << 24);
     return 1;
 }
 
@@ -85,18 +93,23 @@ static void UpdateIPBans(void)
     char iplist[0x400];
     int i;
     int len;
-    byte *ip;
 
     iplist[0] = '\0';
 
     for (i = 0; i < numIPFilters; i++) {
+        unsigned int compare;
+
         if (ipFilters[i].compare == 0xffffffff)
             continue;
 
-        ip = (byte *)&ipFilters[i].compare;
+        compare = ipFilters[i].compare;
         len = strlen(iplist);
         Com_sprintf(iplist + len, 0x400 - len,
-                    "%i.%i.%i.%i ", ip[0], ip[1], ip[2], ip[3]);
+                    "%i.%i.%i.%i ",
+                    compare & 0xff,
+                    (compare >> 8) & 0xff,
+                    (compare >> 16) & 0xff,
+                    (compare >> 24) & 0xff);
     }
 
     Dvar_SetString((void *)g_banIPs, iplist);

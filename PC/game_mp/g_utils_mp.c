@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdint.h>
 
 extern const char * SV_GetConfigstringConst(int index);
 extern void SV_SetConfigstring(int index, const char *val);
@@ -48,7 +49,7 @@ extern void BG_AddPredictableEventToPlayerstate(int event, int eventParm, void *
 extern qboolean XModelBad(struct XModel *model);
 extern void Hunk_OverrideDataForFile(int type, const char *name, void *data);
 extern float Vec3DistanceSq(const vec_t *a, const vec_t *b);
-extern void Com_ServerDObjCreate(void *models, unsigned short numModels, int unused, int entnum);
+extern int Com_ServerDObjCreate(DObjModel_s *dobjModels, int numModels, struct XAnimTree_s *tree, int handle);
 extern void SV_LocateGameData(void *gEnts, int numGEntities, int sizeofGEntity, void *clients, int sizeofGameClient);
 extern qboolean SV_DObjExists(gentity_t *ent);
 
@@ -76,7 +77,7 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define ENT_APOS_TRBASE(e)     (_ENT(e)->s.apos.trBase)
 #define ENT_APOS_TRDELTA(e)    (_ENT(e)->s.apos.trDelta)
 #define ENT_GROUNDENTNUM(e)    (_ENT(e)->s.groundEntityNum)
-#define ENT_INDEX(e)           (*(int *)&_ENT(e)->s.index)
+#define ENT_INDEX(e)           (_ENT(e)->s.index.brushmodel)
 #define ENT_EVENTSEQ(e)        (_ENT(e)->s.eventSequence)
 #define ENT_EVENTS(e, i)       (_ENT(e)->s.events[i])
 #define ENT_EVENTPARMS(e, i)   (_ENT(e)->s.eventParms[i])
@@ -86,7 +87,7 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define ENT_OWNERNUM(e)        (_ENT(e)->r.ownerNum)
 #define ENT_EVENTTIME(e)       (_ENT(e)->r.eventTime)
 #define ENT_CLIENT(e)          (_ENT(e)->client)
-#define ENT_TURRET(e)          (*(int *)&_ENT(e)->pTurretInfo)
+#define ENT_TURRET(e)          (_ENT(e)->pTurretInfo)
 #define ENT_MODELINDEX(e)      (_ENT(e)->model)
 #define ENT_IGNORECOLLISION(e) (_ENT(e)->attachIgnoreCollision)
 #define ENT_HANDLER(e)         (_ENT(e)->handler)
@@ -94,13 +95,17 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define ENT_FLAGS(e)           (_ENT(e)->flags)
 #define ENT_FREETIME(e)        (_ENT(e)->eventTime)
 #define ENT_FREEAFTEREVENT(e)  (_ENT(e)->freeAfterEvent)
-#define ENT_PARENT(e)          (*(gentity_t **)&_ENT(e)->parent)
-#define ENT_TAGINFO(e)         (*(tagInfo_t **)&_ENT(e)->tagInfo)
-#define ENT_TAGCHILDREN(e)     (*(gentity_t **)&_ENT(e)->tagChildren)
+#define ENT_PARENT(e)          ((gentity_t *)(uintptr_t)_ENT(e)->parent)
+#define SET_ENT_PARENT(e, v)   (_ENT(e)->parent = (int)(uintptr_t)(v))
+#define ENT_TAGINFO(e)         ((tagInfo_t *)(uintptr_t)_ENT(e)->tagInfo)
+#define SET_ENT_TAGINFO(e, v)  (_ENT(e)->tagInfo = (int)(uintptr_t)(v))
+#define ENT_TAGCHILDREN(e)     ((gentity_t *)(uintptr_t)_ENT(e)->tagChildren)
+#define SET_ENT_TAGCHILDREN(e, v) (_ENT(e)->tagChildren = (int)(uintptr_t)(v))
 #define ENT_ATTACHMODEL(e, i)  (_ENT(e)->attachModelNames[i])
 #define ENT_ATTACHTAG(e, i)    (_ENT(e)->attachTagNames[i])
 #define ENT_USECOUNT(e)        (_ENT(e)->useCount)
-#define ENT_NEXTFREEENT(e)     (*(gentity_t **)&_ENT(e)->nextFree)
+#define ENT_NEXTFREEENT(e)     ((gentity_t *)(uintptr_t)_ENT(e)->nextFree)
+#define SET_ENT_NEXTFREEENT(e, v) (_ENT(e)->nextFree = (int)(uintptr_t)(v))
 
 #define ENTITY_STRIDE sizeof(gentity_s)
 
@@ -119,6 +124,7 @@ extern entityHandler_t entityHandlers[20];
 extern struct scr_data_t g_scr_data;
 
 #define LEVEL_GENTITIES     (((level_locals_t *)level_ptr)->gentities)
+#define LEVEL_CLIENTS       (((level_locals_t *)level_ptr)->clients)
 #define LEVEL_NUMENTS       (((level_locals_t *)level_ptr)->num_entities)
 #define LEVEL_FIRSTFREEENT  (((level_locals_t *)level_ptr)->firstFreeEnt)
 #define LEVEL_LASTFREEENT   (((level_locals_t *)level_ptr)->lastFreeEnt)
@@ -128,11 +134,15 @@ extern struct scr_data_t g_scr_data;
 #define LEVEL_DROPPED_WEAPON_CUE (((level_locals_t *)level_ptr)->droppedWeaponCue)
 #define LEVEL_CLONEIDX      (((level_locals_t *)level_ptr)->currentPlayerClone)
 
+#define GUTILS_PLAYER_CLONE_BASE     64
+#define GUTILS_DYNAMIC_ENTITY_START  72
+
 #define HANDLER_CALCPOSE(h)    (entityHandlers[(h)].controller)
 
 #define CORPSE_INFO(i)         (g_scr_data.playerCorpseInfo[(i)])
 #define CORPSE_ENTNUM(i)       (CORPSE_INFO(i).entnum)
 #define CORPSE_CALLBACK()      (g_scr_data.delete_)
+#define SCR_CONST()            ((const scr_const_t *)scr_const_ptr)
 
 /* Client (gclient_t) field access macros */
 #define CLIENT_EVENTSEQ(c)     (((gclient_t *)(c))->ps.eventSequence)
@@ -392,16 +402,16 @@ DObjAnimMat_s * G_DObjGetLocalTagMatrix(gentity_t *ent, unsigned int tagName)
 
     G_DObjCalcBone(ent, boneIndex);
 
-    return (DObjAnimMat_s *)((byte *)SV_DObjGetMatrixArray(ent) + boneIndex * 32);
+    return &((DObjAnimMat_s *)SV_DObjGetMatrixArray(ent))[boneIndex];
 }
 
 /* line 1070 */
 unsigned char G_InitGentity(gentity_t *e)
 {
-    ENT_NEXTFREEENT(e) = 0;
+    SET_ENT_NEXTFREEENT(e, NULL);
     ENT_INUSE(e) = 1;
-    Scr_SetString(&e->classname, ((scr_const_t *)scr_const_ptr)->noclass);
-    ENT_NUMBER(e) = (int)(((byte *)e - g_entities_ptr) / ENTITY_STRIDE);
+    Scr_SetString(&e->classname, SCR_CONST()->noclass);
+    ENT_NUMBER(e) = (int)(e - LEVEL_GENTITIES);
     ENT_OWNERNUM(e) = 0x3FF;
     ENT_FREETIME(e) = 0;
     ENT_FREEAFTEREVENT(e) = 0;
@@ -411,10 +421,9 @@ unsigned char G_InitGentity(gentity_t *e)
 unsigned char G_PrintEntities(void)
 {
     int entityIndex;
-    byte *ent;
+    gentity_t *ent = LEVEL_GENTITIES;
 
-    ent = g_entities_ptr;
-    for (entityIndex = 0; entityIndex < LEVEL_NUMENTS; entityIndex++) {
+    for (entityIndex = 0; entityIndex < LEVEL_NUMENTS; entityIndex++, ent++) {
         const char *classStr;
         unsigned short cn = ENT_CLASSNAME(ent);
         if (!cn) {
@@ -427,7 +436,6 @@ unsigned char G_PrintEntities(void)
             (double)ENT_CURRENTORIGIN(ent)[0],
             (double)ENT_CURRENTORIGIN(ent)[1],
             (double)ENT_CURRENTORIGIN(ent)[2]);
-        ent += ENTITY_STRIDE;
     }
 }
 
@@ -487,7 +495,7 @@ unsigned char G_AddEvent(gentity_t *ent, int event, int eventParm)
 unsigned char G_SetConstString(scr_string_t *to, const char *from)
 {
     Scr_SetString(to, 0);
-    *(unsigned short *)to = (unsigned short)SL_GetString(from, 0);
+    *to = (scr_string_t)SL_GetString(from, 0);
 }
 
 /* line 1617 */
@@ -562,8 +570,7 @@ int G_AnimScriptSound(int client, snd_alias_list_t *aliasList)
 
     soundIndex = (byte)G_FindConfigstringIndex(*(const char **)aliasList, 0x24e, 0x100, 1, 0);
 
-    /* compute entity pointer: g_entities + client * ENTITY_STRIDE */
-    ent = &((gentity_t *)g_entities_ptr)[client];
+    ent = &LEVEL_GENTITIES[client];
 
     if (soundIndex) {
         gclient_t *cl = ENT_CLIENT(ent);
@@ -607,7 +614,7 @@ unsigned char G_CalcTagParentAxis(gentity_t *ent, vec3_t *parentAxis)
         VectorCopy(ENT_CURRENTORIGIN(parent), origin);
 
         G_DObjCalcBone(parent, boneIndex);
-        mat = (DObjAnimMat_s *)((byte *)SV_DObjGetMatrixArray(parent) + boneIndex * 32);
+        mat = &((DObjAnimMat_s *)SV_DObjGetMatrixArray(parent))[boneIndex];
 
         /* QuatToAxis inline - convert quaternion mat to axis */
         {
@@ -730,7 +737,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
 
         if (child == ent) {
             /* First child - just update parent's first child pointer */
-            ENT_TAGCHILDREN(parent) = TAGINFO_NEXT(tagInfo);
+            SET_ENT_TAGCHILDREN(parent, TAGINFO_NEXT(tagInfo));
         } else {
             /* Find in linked list */
             while (child) {
@@ -745,7 +752,7 @@ unsigned char G_EntUnlink(gentity_t *ent)
         }
     }
 
-    ENT_TAGINFO(ent) = 0;
+    SET_ENT_TAGINFO(ent, NULL);
     Scr_SetString(&TAGINFO_TAGNAME(tagInfo), 0);
     MT_Free(tagInfo, 0x70);
 }
@@ -789,8 +796,8 @@ static qboolean G_EntLinkToInternal(gentity_t *ent, gentity_t *parent, unsigned 
     tagInfo->next = ENT_TAGCHILDREN(parent);
     tagInfo->index = index;
     memset(tagInfo->axis, 0, sizeof(tagInfo->axis));
-    ENT_TAGCHILDREN(parent) = ent;
-    ENT_TAGINFO(ent) = tagInfo;
+    SET_ENT_TAGCHILDREN(parent, ent);
+    SET_ENT_TAGINFO(ent, tagInfo);
     memset(tagInfo->parentInvAxis, 0, sizeof(tagInfo->parentInvAxis));
     return 1;
 }
@@ -872,13 +879,13 @@ unsigned char G_FreeEntity(gentity_t *ed)
     /* Clear references from other entities */
     entnum = ENT_NUMBER(ed);
 
-    ent = (gentity_t *)g_entities_ptr;
+    ent = LEVEL_GENTITIES;
     for (i = 0; i < LEVEL_NUMENTS; i++, ent++) {
         if (!ENT_INUSE(ent)) {
             continue;
         }
         if (ENT_PARENT(ent) == ed) {
-            ENT_PARENT(ent) = 0;
+            SET_ENT_PARENT(ent, NULL);
         }
         if (ENT_OWNERNUM(ent) == entnum) {
             ENT_OWNERNUM(ent) = 0x3FF;
@@ -892,7 +899,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
     }
 
     /* Clear references from clients */
-    ent = (gentity_t *)g_entities_ptr;
+    ent = LEVEL_GENTITIES;
     for (i = 0; i < 64; i++, ent++) {
         if (!ENT_INUSE(ent)) {
             continue;
@@ -938,15 +945,15 @@ unsigned char G_FreeEntity(gentity_t *ed)
         ENT_FREETIME(ed) = LEVEL_TIME;
 
         /* Only dynamic entities live on the free list; client slots stay reserved. */
-        if ((byte *)ed - (byte *)LEVEL_GENTITIES > 0x9D7F) {
+        if (ed >= &LEVEL_GENTITIES[GUTILS_DYNAMIC_ENTITY_START]) {
             /* Add to free list */
             if (LEVEL_LASTFREEENT) {
-                ENT_NEXTFREEENT(LEVEL_LASTFREEENT) = ed;
+                SET_ENT_NEXTFREEENT(LEVEL_LASTFREEENT, ed);
             } else {
                 LEVEL_FIRSTFREEENT = ed;
             }
             LEVEL_LASTFREEENT = ed;
-            ENT_NEXTFREEENT(ed) = 0;
+            SET_ENT_NEXTFREEENT(ed, NULL);
         }
 
         ENT_USECOUNT(ed) = useCount + 1;
@@ -962,23 +969,23 @@ int G_GetFreePlayerCorpseIndex(void)
     float bestDistSq;
     int bestIdx;
 
-    match = ((scr_const_t *)scr_const_ptr)->player;
+    match = SCR_CONST()->player;
 
     /* Find the player entity with matching classname (inline G_FindEntityByConstString) */
     {
-        byte *ent = g_entities_ptr;
-        byte *end = g_entities_ptr + LEVEL_NUMENTS * ENTITY_STRIDE;
+        gentity_t *ent = LEVEL_GENTITIES;
+        gentity_t *end = LEVEL_GENTITIES + LEVEL_NUMENTS;
         gentity_t *found = 0;
 
         while (ent < end) {
             if (ENT_INUSE(ent)) {
                 unsigned short cn = ENT_CLASSNAME(ent);
                 if (cn && cn == match) {
-                    found = (gentity_t *)ent;
+                    found = ent;
                     break;
                 }
             }
-            ent += ENTITY_STRIDE;
+            ++ent;
         }
 
         if (found) {
@@ -1024,7 +1031,7 @@ unsigned char G_DObjUpdate(gentity_t *ent)
 {
     int i;
     int numModels;
-    byte *dobjModels[8 * 3]; /* XModel*, boneName, ignoreCollision - 8 models max */
+    DObjModel_s dobjModels[8];
 
     if (ENT_CLIENT(ent)) {
         return 0;
@@ -1049,9 +1056,9 @@ unsigned char G_DObjUpdate(gentity_t *ent)
         return 0;
     }
 
-    dobjModels[0] = (byte *)cached_models[ENT_MODELINDEX(ent)];
-    dobjModels[1] = 0;
-    dobjModels[2] = 0;
+    dobjModels[0].model = cached_models[ENT_MODELINDEX(ent)];
+    dobjModels[0].boneName = 0;
+    dobjModels[0].ignoreCollision = 0;
 
     if (ENT_ETYPE(ent) == 0 || ENT_ETYPE(ent) == 6 || ENT_ETYPE(ent) == 9) {
         ENT_INDEX(ent) = ENT_MODELINDEX(ent);
@@ -1063,13 +1070,13 @@ unsigned char G_DObjUpdate(gentity_t *ent)
         if (!modelIdx) {
             continue;
         }
-        dobjModels[numModels * 3 + 0] = (byte *)cached_models[modelIdx];
-        dobjModels[numModels * 3 + 1] = (byte *)SL_ConvertToString(ENT_ATTACHTAG(ent, i));
-        dobjModels[numModels * 3 + 2] = (byte *)(int)((ENT_IGNORECOLLISION(ent) >> i) & 1);
+        dobjModels[numModels].model = cached_models[modelIdx];
+        dobjModels[numModels].boneName = SL_ConvertToString(ENT_ATTACHTAG(ent, i));
+        dobjModels[numModels].ignoreCollision = (ENT_IGNORECOLLISION(ent) >> i) & 1;
         numModels++;
     }
 
-    Com_ServerDObjCreate((void *)dobjModels, (unsigned short)numModels, 0, ENT_NUMBER(ent));
+    Com_ServerDObjCreate(dobjModels, numModels, 0, ENT_NUMBER(ent));
 
     /* Re-resolve bone indices for children */
     {
@@ -1095,7 +1102,6 @@ unsigned char G_DObjUpdate(gentity_t *ent)
 unsigned char G_EntDetachAll(gentity_t *ent)
 {
     int i;
-    byte *base = (byte *)ent;
 
     for (i = 0; i < 7; i++) {
         ENT_ATTACHMODEL(ent, i) = 0;
@@ -1199,14 +1205,14 @@ qboolean G_EntAttach(gentity_t *ent, const char *modelName, unsigned int tagName
 gentity_t * G_Spawn(void)
 {
     gentity_t *e;
-    byte *base;
-    int offset;
+    uintptr_t entityOffset;
 
     e = LEVEL_FIRSTFREEENT;
-    base = (byte *)LEVEL_GENTITIES;
     if (e) {
-        offset = (int)((byte *)e - base);
-        if (offset < 0 || offset >= 0x3FE * ENTITY_STRIDE || (offset % ENTITY_STRIDE) != 0) {
+        entityOffset = (uintptr_t)e - (uintptr_t)LEVEL_GENTITIES;
+        if ((uintptr_t)e < (uintptr_t)LEVEL_GENTITIES ||
+            entityOffset >= (uintptr_t)(0x3FE * ENTITY_STRIDE) ||
+            (entityOffset % ENTITY_STRIDE) != 0) {
             LEVEL_FIRSTFREEENT = 0;
             LEVEL_LASTFREEENT = 0;
             e = 0;
@@ -1218,7 +1224,7 @@ gentity_t * G_Spawn(void)
             if (!ENT_NEXTFREEENT(e)) {
                 LEVEL_LASTFREEENT = 0;
             }
-            ENT_NEXTFREEENT(e) = 0;
+            SET_ENT_NEXTFREEENT(e, NULL);
             goto init;
         }
     }
@@ -1232,9 +1238,9 @@ gentity_t * G_Spawn(void)
     /* Allocate from end */
     {
         int num = LEVEL_NUMENTS;
-        e = (gentity_t *)(base + num * ENTITY_STRIDE);
+        e = &LEVEL_GENTITIES[num];
         LEVEL_NUMENTS = num + 1;
-        SV_LocateGameData(LEVEL_GENTITIES, num + 1, ENTITY_STRIDE, *(byte **)(level_ptr), 0x28A4);
+        SV_LocateGameData(LEVEL_GENTITIES, num + 1, ENTITY_STRIDE, LEVEL_CLIENTS, 0x28A4);
     }
 
 init:
@@ -1251,7 +1257,7 @@ gentity_t * G_TempEntity(const vec_t *origin, int event)
     e = G_Spawn();
     ENT_ETYPE(e) = event + 10;
 
-    Scr_SetString(&e->classname, ((scr_const_t *)scr_const_ptr)->tempEntity);
+    Scr_SetString(&e->classname, SCR_CONST()->tempEntity);
 
     ENT_FREETIME(e) = LEVEL_TIME;
     ENT_EVENTTIME(e) = LEVEL_TIME;
@@ -1283,7 +1289,7 @@ gentity_t * G_SpawnPlayerClone(void)
     int oldEFlags;
 
     idx = LEVEL_CLONEIDX;
-    e = &LEVEL_GENTITIES[idx + 64];
+    e = &LEVEL_GENTITIES[idx + GUTILS_PLAYER_CLONE_BASE];
 
     idx = (idx + 1) & 0x80000007;
     if (idx < 0) {
@@ -1319,7 +1325,7 @@ qboolean G_DObjGetWorldTagMatrix(gentity_t *ent, unsigned int tagName, vec3_t *t
         return 0;
     }
     G_DObjCalcBone(ent, boneIndex);
-    mat = (DObjAnimMat_s *)((byte *)SV_DObjGetMatrixArray(ent) + boneIndex * 32);
+    mat = &((DObjAnimMat_s *)SV_DObjGetMatrixArray(ent))[boneIndex];
     if (!mat) {
         return 0;
     }
@@ -1374,7 +1380,7 @@ qboolean G_DObjGetWorldTagPos(gentity_t *ent, unsigned int tagName, vec_t *pos)
         return 0;
     }
     G_DObjCalcBone(ent, boneIndex);
-    mat = (DObjAnimMat_s *)((byte *)SV_DObjGetMatrixArray(ent) + boneIndex * 32);
+    mat = &((DObjAnimMat_s *)SV_DObjGetMatrixArray(ent))[boneIndex];
     if (!mat) {
         return 0;
     }

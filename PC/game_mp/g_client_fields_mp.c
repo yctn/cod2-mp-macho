@@ -30,9 +30,6 @@ extern byte g_entities_ptr[]; /* imp_g_entities - points to entity array */
 
 #define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 
-#define CLIENT_STRIDE sizeof(gclient_s)
-#define ENTITY_STRIDE sizeof(gentity_s)
-
 static client_fields_t fields[14]; /* initialized at runtime in GScr_AddFieldsForClient */
 static int fields_inited = 0;
 #define CF(i,n,o,t,s,g) do{fields[i].name=n;fields[i].ofs=o;fields[i].type=t;fields[i].setter=(ScriptCallbackClient)(s);fields[i].getter=(ScriptCallbackClient)(g);}while(0)
@@ -60,19 +57,26 @@ void Scr_SetClientField(gclient_t *client, int offset);
 void Scr_GetClientField(gclient_t *client, int offset);
 
 /* Helper: compute client number from gclient_t pointer */
-static int ClientNum(byte *pSelf)
+static level_locals_t *G_Level(void)
 {
-    byte *level = (byte *)level_ptr;
-    byte *clients = *(byte **)level;
-    return ((int)((byte *)pSelf - clients)) / CLIENT_STRIDE;
+    return (level_locals_t *)level_ptr;
+}
+
+static gentity_t *G_Entities(void)
+{
+    return (gentity_t *)g_entities_ptr;
+}
+
+/* Helper: compute client number from gclient_t pointer */
+static int ClientNum(const gclient_t *client)
+{
+    return (int)(client - G_Level()->clients);
 }
 
 /* Helper: get entity pointer for a client */
-static byte *ClientEntity(byte *pSelf)
+static gentity_t *ClientEntity(const gclient_t *client)
 {
-    int num = ClientNum(pSelf);
-    byte *entities = (byte *)g_entities_ptr;
-    return entities + num * ENTITY_STRIDE;
+    return &G_Entities()[ClientNum(client)];
 }
 
 /* line 20 */
@@ -102,7 +106,7 @@ static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pF
         Scr_Error(va("'%s' is an illegal sessionteam string. Must be allies, axis, none, or spectator.", SL_ConvertToString((unsigned short)str)));
     }
 
-    ClientUserinfoChanged(ClientNum((byte *)client));
+    ClientUserinfoChanged(ClientNum(client));
     CalculateRanks();
 }
 
@@ -179,7 +183,7 @@ static void ClientScr_SetMaxHealth(gclient_t *pSelf, const client_fields_s *pFie
 
     /* Update entity health */
     {
-        gentity_s *ent = (gentity_s *)ClientEntity((byte *)client);
+        gentity_s *ent = ClientEntity(client);
         ent->health = health;
 
     /* Update maxHealth in playerState */
@@ -234,15 +238,15 @@ static void ClientScr_GetStatusIcon(gclient_t *pSelf, const client_fields_s *pFi
 static void ClientScr_SetHeadIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
     /* headicon is stored on the entity, not the client */
-    gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
+    gentity_s *ent = ClientEntity(pSelf);
     ((ent)->s.iHeadIcon) = GScr_GetHeadIconIndex(Scr_GetString(0)); /* ent.headicon */
 }
 
 /* line 273 */
 static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pField)
 {
-    int clientNum = ClientNum((byte *)pSelf);
-    gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
+    int clientNum = ClientNum(pSelf);
+    gentity_s *ent = &G_Entities()[clientNum];
     char szConfigString[1024];
     int icon = ((ent)->s.iHeadIcon); /* ent.headicon */
 
@@ -257,7 +261,7 @@ static void ClientScr_GetHeadIcon(gclient_t *pSelf, const client_fields_s *pFiel
 static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     const scr_const_t *sc = SCR_CONST();
-    gentity_s *ent = (gentity_s *)ClientEntity((byte *)pSelf);
+    gentity_s *ent = ClientEntity(pSelf);
     unsigned short str = Scr_GetConstString(0);
 
     if (str == sc->none) {
@@ -277,8 +281,8 @@ static void ClientScr_SetHeadIconTeam(gclient_t *pSelf, const client_fields_s *p
 static void ClientScr_GetHeadIconTeam(gclient_t *pSelf, const client_fields_s *pField)
 {
     const scr_const_t *sc = SCR_CONST();
-    int clientNum = ClientNum((byte *)pSelf);
-    gentity_s *ent = &((gentity_s *)g_entities_ptr)[clientNum];
+    int clientNum = ClientNum(pSelf);
+    gentity_s *ent = &G_Entities()[clientNum];
     int team = ((ent)->s.iHeadIconTeam); /* ent.headiconteam */
 
     switch (team) {

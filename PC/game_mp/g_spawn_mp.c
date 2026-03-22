@@ -139,14 +139,232 @@ static scr_data_t *G_ScrData(void)
     return (scr_data_t *)imp_g_scr_data;
 }
 
-static scr_const_t *G_ScrConst(void)
+static const scr_const_t *G_ScrConst(void)
 {
-    return (scr_const_t *)imp_scr_const;
+    return (const scr_const_t *)imp_scr_const;
 }
 
 static gentity_t *G_Entities(void)
 {
     return (gentity_t *)imp_g_entities;
+}
+
+static scr_string_t *G_EntityStringField(gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, classname):
+        return &ent->classname;
+    case offsetof(gentity_t, target):
+        return &ent->target;
+    case offsetof(gentity_t, targetname):
+        return &ent->targetname;
+    default:
+        return NULL;
+    }
+}
+
+static const scr_string_t *G_EntityConstStringField(const gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, classname):
+        return &ent->classname;
+    case offsetof(gentity_t, target):
+        return &ent->target;
+    case offsetof(gentity_t, targetname):
+        return &ent->targetname;
+    default:
+        return NULL;
+    }
+}
+
+static int *G_EntityIntField(gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, spawnflags):
+        return &ent->spawnflags;
+    case offsetof(gentity_t, health):
+        return &ent->health;
+    case offsetof(gentity_t, damage):
+        return &ent->damage;
+    case offsetof(gentity_t, count):
+        return &ent->count;
+    default:
+        return NULL;
+    }
+}
+
+static const int *G_EntityConstIntField(const gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, spawnflags):
+        return &ent->spawnflags;
+    case offsetof(gentity_t, health):
+        return &ent->health;
+    case offsetof(gentity_t, damage):
+        return &ent->damage;
+    case offsetof(gentity_t, count):
+        return &ent->count;
+    default:
+        return NULL;
+    }
+}
+
+static vec3_t *G_EntityVectorField(gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, r.currentOrigin):
+        return &ent->r.currentOrigin;
+    case offsetof(gentity_t, r.currentAngles):
+        return &ent->r.currentAngles;
+    default:
+        return NULL;
+    }
+}
+
+static const vec3_t *G_EntityConstVectorField(const gentity_t *ent, int ofs)
+{
+    switch (ofs) {
+    case offsetof(gentity_t, r.currentOrigin):
+        return &ent->r.currentOrigin;
+    case offsetof(gentity_t, r.currentAngles):
+        return &ent->r.currentAngles;
+    default:
+        return NULL;
+    }
+}
+
+static byte *G_EntityModelField(gentity_t *ent, int ofs)
+{
+    if (ofs == offsetof(gentity_t, model)) {
+        return &ent->model;
+    }
+    return NULL;
+}
+
+static const byte *G_EntityConstModelField(const gentity_t *ent, int ofs)
+{
+    if (ofs == offsetof(gentity_t, model)) {
+        return &ent->model;
+    }
+    return NULL;
+}
+
+static void G_SetEntityFieldValue(gentity_t *ent, const ent_field_t *field)
+{
+    int *intField;
+    scr_string_t *stringField;
+    vec3_t *vectorField;
+    byte *modelField;
+    vec3_t vec;
+
+    switch (field->type) {
+    case F_INT:
+        intField = G_EntityIntField(ent, field->ofs);
+        if (intField) {
+            *intField = Scr_GetInt(0);
+            return;
+        }
+        break;
+    case F_STRING:
+        stringField = G_EntityStringField(ent, field->ofs);
+        if (stringField) {
+            Scr_SetString(stringField, Scr_GetConstStringIncludeNull(0));
+            return;
+        }
+        break;
+    case F_VECTOR:
+        vectorField = G_EntityVectorField(ent, field->ofs);
+        if (vectorField) {
+            Scr_GetVector(0, *vectorField);
+            return;
+        }
+        break;
+    case F_MODEL:
+        modelField = G_EntityModelField(ent, field->ofs);
+        if (modelField) {
+            const char *modelName = Scr_GetString(0);
+
+            if (*modelName == '*') {
+                *modelField = (byte)(unsigned short)atoi(modelName + 1);
+            } else {
+                G_SetModel(ent, modelName);
+            }
+            return;
+        }
+        break;
+    case F_VECTORHACK:
+        vectorField = G_EntityVectorField(ent, field->ofs);
+        if (vectorField) {
+            Scr_GetVector(0, vec);
+            (*vectorField)[0] = 0.0f;
+            (*vectorField)[1] = vec[1];
+            (*vectorField)[2] = 0.0f;
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+
+    Scr_SetGenericField((byte *)ent, field->type, field->ofs);
+}
+
+static void G_GetEntityFieldValue(const gentity_t *ent, const ent_field_t *field)
+{
+    const int *intField;
+    const scr_string_t *stringField;
+    const vec3_t *vectorField;
+    const byte *modelField;
+    vec3_t vec;
+
+    switch (field->type) {
+    case F_INT:
+        intField = G_EntityConstIntField(ent, field->ofs);
+        if (intField) {
+            Scr_AddInt(*intField);
+            return;
+        }
+        break;
+    case F_STRING:
+        stringField = G_EntityConstStringField(ent, field->ofs);
+        if (stringField) {
+            if (*stringField) {
+                Scr_AddConstString(*stringField);
+            } else {
+                Scr_AddString("");
+            }
+            return;
+        }
+        break;
+    case F_VECTOR:
+        vectorField = G_EntityConstVectorField(ent, field->ofs);
+        if (vectorField) {
+            Scr_AddVector((const float *)vectorField);
+            return;
+        }
+        break;
+    case F_MODEL:
+        modelField = G_EntityConstModelField(ent, field->ofs);
+        if (modelField) {
+            Scr_AddString(G_ModelName(*modelField));
+            return;
+        }
+        break;
+    case F_VECTORHACK:
+        vectorField = G_EntityConstVectorField(ent, field->ofs);
+        if (vectorField) {
+            vec[0] = 0.0f;
+            vec[1] = (*vectorField)[1];
+            vec[2] = 0.0f;
+            Scr_AddVector(vec);
+            return;
+        }
+        break;
+    default:
+        break;
+    }
+
+    Scr_GetGenericField((byte *)ent, field->type, field->ofs);
 }
 
 static int G_HudElemIndex(const game_hudelem_t *hud)
@@ -173,7 +391,7 @@ static qboolean Scr_SetEntityField(int entnum, int offset)
     if (field->callback) {
         ((void (*)(gentity_t *, int))field->callback)(ent, offset);
     } else {
-        Scr_SetGenericField((byte *)ent, field->type, field->ofs);
+        G_SetEntityFieldValue(ent, field);
     }
 
     return 1;
@@ -197,7 +415,7 @@ static void Scr_GetEntityField(int entnum, int offset)
         return;
     }
 
-    Scr_GetGenericField((byte *)ent, fields[offset].type, fields[offset].ofs);
+    G_GetEntityFieldValue(ent, &fields[offset]);
 }
 
 static void Scr_FreeEntityConstStrings(gentity_t *ent)
@@ -207,7 +425,13 @@ static void Scr_FreeEntityConstStrings(gentity_t *ent)
 
     for (field = fields; field->name; ++field) {
         if (field->type == F_STRING) {
-            Scr_SetString((scr_string_t *)((byte *)ent + field->ofs), 0);
+            scr_string_t *stringField = G_EntityStringField(ent, field->ofs);
+
+            if (stringField) {
+                Scr_SetString(stringField, 0);
+            } else {
+                Scr_SetString((scr_string_t *)((byte *)ent + field->ofs), 0);
+            }
         }
     }
 
@@ -301,16 +525,41 @@ void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
     for (field = fields; field->name; ++field) {
         switch (field->type) {
         case F_INT:
+        {
+            int *destInt = G_EntityIntField(dest, field->ofs);
+            const int *sourceInt = G_EntityConstIntField(source, field->ofs);
+
+            if (destInt && sourceInt) {
+                *destInt = *sourceInt;
+            } else {
+                *(int *)((byte *)dest + field->ofs) = *(const int *)((const byte *)source + field->ofs);
+            }
+            break;
+        }
         case F_FLOAT:
             *(int *)((byte *)dest + field->ofs) = *(const int *)((const byte *)source + field->ofs);
             break;
         case F_STRING:
-            Scr_SetString((scr_string_t *)((byte *)dest + field->ofs), *(const scr_string_t *)((const byte *)source + field->ofs));
+        {
+            scr_string_t *destString = G_EntityStringField(dest, field->ofs);
+            const scr_string_t *sourceString = G_EntityConstStringField(source, field->ofs);
+
+            if (destString && sourceString) {
+                Scr_SetString(destString, *sourceString);
+            } else {
+                Scr_SetString((scr_string_t *)((byte *)dest + field->ofs), *(const scr_string_t *)((const byte *)source + field->ofs));
+            }
             break;
+        }
         case F_VECTOR:
         {
-            vec3_t *destVec = (vec3_t *)((byte *)dest + field->ofs);
-            const vec3_t *sourceVec = (const vec3_t *)((const byte *)source + field->ofs);
+            vec3_t *destVec = G_EntityVectorField(dest, field->ofs);
+            const vec3_t *sourceVec = G_EntityConstVectorField(source, field->ofs);
+
+            if (!destVec || !sourceVec) {
+                destVec = (vec3_t *)((byte *)dest + field->ofs);
+                sourceVec = (const vec3_t *)((const byte *)source + field->ofs);
+            }
 
             (*destVec)[0] = (*sourceVec)[0];
             (*destVec)[1] = (*sourceVec)[1];
@@ -318,8 +567,17 @@ void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
             break;
         }
         case F_MODEL:
-            *(byte *)((byte *)dest + field->ofs) = *(const byte *)((const byte *)source + field->ofs);
+        {
+            byte *destModel = G_EntityModelField(dest, field->ofs);
+            const byte *sourceModel = G_EntityConstModelField(source, field->ofs);
+
+            if (destModel && sourceModel) {
+                *destModel = *sourceModel;
+            } else {
+                *(byte *)((byte *)dest + field->ofs) = *(const byte *)((const byte *)source + field->ofs);
+            }
             break;
+        }
         default:
             break;
         }
@@ -458,31 +716,59 @@ static void __attribute_regparm__(3) G_ParseEntityField(const char *key, const c
 
     for (field = fields; field->name; ++field) {
         if (!I_stricmp(field->name, key)) {
-            byte *fieldData = (byte *)ent + field->ofs;
+            int *intField;
+            scr_string_t *stringField;
+            vec3_t *vectorField;
+            byte *modelField;
 
             switch (field->type) {
             case F_INT:
-                *(int *)fieldData = atoi(value);
+                intField = G_EntityIntField(ent, field->ofs);
+                if (intField) {
+                    *intField = atoi(value);
+                } else {
+                    *(int *)((byte *)ent + field->ofs) = atoi(value);
+                }
                 break;
             case F_FLOAT:
-                *(float *)fieldData = (float)atof(value);
+                *(float *)((byte *)ent + field->ofs) = (float)atof(value);
                 break;
             case F_STRING:
-                Scr_SetString((scr_string_t *)fieldData, 0);
-                *(scr_string_t *)fieldData = (scr_string_t)G_NewString(value);
+                stringField = G_EntityStringField(ent, field->ofs);
+                if (stringField) {
+                    Scr_SetString(stringField, 0);
+                    *stringField = (scr_string_t)G_NewString(value);
+                } else {
+                    scr_string_t *fieldString = (scr_string_t *)((byte *)ent + field->ofs);
+
+                    Scr_SetString(fieldString, 0);
+                    *fieldString = (scr_string_t)G_NewString(value);
+                }
                 break;
             case F_VECTOR:
             {
                 vec3_t vec = {0.0f, 0.0f, 0.0f};
                 sscanf(value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
-                ((vec3_t *)fieldData)[0][0] = vec[0];
-                ((vec3_t *)fieldData)[0][1] = vec[1];
-                ((vec3_t *)fieldData)[0][2] = vec[2];
+                vectorField = G_EntityVectorField(ent, field->ofs);
+                if (vectorField) {
+                    (*vectorField)[0] = vec[0];
+                    (*vectorField)[1] = vec[1];
+                    (*vectorField)[2] = vec[2];
+                } else {
+                    ((vec3_t *)((byte *)ent + field->ofs))[0][0] = vec[0];
+                    ((vec3_t *)((byte *)ent + field->ofs))[0][1] = vec[1];
+                    ((vec3_t *)((byte *)ent + field->ofs))[0][2] = vec[2];
+                }
                 break;
             }
             case F_MODEL:
+                modelField = G_EntityModelField(ent, field->ofs);
                 if (*value == '*') {
-                    ent->model = (byte)(unsigned short)atoi(value + 1);
+                    if (modelField) {
+                        *modelField = (byte)(unsigned short)atoi(value + 1);
+                    } else {
+                        ent->model = (byte)(unsigned short)atoi(value + 1);
+                    }
                 } else {
                     G_SetModel(ent, value);
                 }
@@ -593,7 +879,15 @@ void Scr_GetEnt(void)
             continue;
         }
 
-        fieldValue = *(scr_string_t *)((byte *)ent + field->ofs);
+        {
+            const scr_string_t *stringField = G_EntityConstStringField(ent, field->ofs);
+
+            if (stringField) {
+                fieldValue = *stringField;
+            } else {
+                fieldValue = *(scr_string_t *)((byte *)ent + field->ofs);
+            }
+        }
         if (!fieldValue || fieldValue != name) {
             continue;
         }
@@ -653,7 +947,15 @@ void Scr_GetEntArray(void)
                 continue;
             }
 
-            fieldValue = *(scr_string_t *)((byte *)&gentities[i] + field->ofs);
+            {
+                const scr_string_t *stringField = G_EntityConstStringField(&gentities[i], field->ofs);
+
+                if (stringField) {
+                    fieldValue = *stringField;
+                } else {
+                    fieldValue = *(scr_string_t *)((byte *)&gentities[i] + field->ofs);
+                }
+            }
             if (!fieldValue || fieldValue != name) {
                 continue;
             }

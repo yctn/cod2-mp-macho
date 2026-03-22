@@ -38,6 +38,7 @@ extern byte *g_trace_zero_ptr;  /* imp_vec3_origin */
 
 #define LEVEL ((level_locals_t *)level_ptr)
 #define G_ENTITIES ((gentity_t *)g_entities_ptr)
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 
 void G_Trigger(gentity_t *self, gentity_t *other);
 void hurt_use(gentity_t *self, gentity_t *other, gentity_t *activator);
@@ -72,7 +73,7 @@ void G_Trigger(gentity_t *self, gentity_t *other)
 
     if (triggerCount == 0x100) {
         Scr_AddEntity(other);
-        Scr_Notify(self, ((const scr_const_t *)imp_scr_const)->trigger, 1);
+        Scr_Notify(self, SCR_CONST()->trigger, 1);
         return;
     }
 
@@ -433,7 +434,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
     for (i = 0; i < iNum; i++) {
         pHit = &G_ENTITIES[iTouch[i]];
 
-        if (pHit->classname != ((const scr_const_t *)imp_scr_const)->trigger_damage)
+        if (pHit->classname != SCR_CONST()->trigger_damage)
             continue;
 
         if (!(pHit->flags & 0x4000)) /* flags bit 14 */
@@ -445,7 +446,7 @@ void G_GrenadeTouchTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vE
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify(pHit, ((const scr_const_t *)imp_scr_const)->damage, 2);
+        Scr_Notify(pHit, SCR_CONST()->damage, 2);
 
         Activate_trigger_damage(pHit, pActivator, iDamage, iMOD);
 
@@ -475,7 +476,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
     for (i = 0; i < iNum; i++) {
         pHit = &G_ENTITIES[iTouch[i]];
 
-        if (pHit->classname != ((const scr_const_t *)imp_scr_const)->trigger_damage)
+        if (pHit->classname != SCR_CONST()->trigger_damage)
             continue;
 
         if (!SV_SightTraceToEntity(vStart, (vec_t *)g_trace_zero_ptr, (vec_t *)g_trace_zero_ptr,
@@ -484,7 +485,7 @@ void G_CheckHitTriggerDamage(gentity_t *pActivator, vec_t *vStart, vec_t *vEnd, 
 
         Scr_AddEntity(pActivator);
         Scr_AddInt(iDamage);
-        Scr_Notify(pHit, ((const scr_const_t *)imp_scr_const)->damage, 2);
+        Scr_Notify(pHit, SCR_CONST()->damage, 2);
 
         Activate_trigger_damage(pHit, pActivator, iDamage, iMOD);
 

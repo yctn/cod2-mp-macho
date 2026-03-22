@@ -1144,6 +1144,8 @@ extern unsigned char scrVmPub[];
 extern void Scr_AddEntity(void *ent);
 extern void Scr_Notify(void *ent, int stringValue, unsigned int paramcount);
 
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
+
 static scrVarPub_t *G_ScrVarPubRef(void)
 {
     return (scrVarPub_t *)scrVarPub;
@@ -1264,7 +1266,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     if (!restart || !savepersist) {
         /* Set gametype team flags */
-        G_SetGametypeTeamFlags(teamFlags, (const char *)g_gametype->current.integer);
+        G_SetGametypeTeamFlags(teamFlags, g_gametype->current.string);
     }
 
     G_ProcessIPBans();
@@ -1277,7 +1279,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     level_bgs.anim_user = 1;
 
     /* Log file setup */
-    logFile = (const char *)g_log->current.integer;
+    logFile = g_log->current.string;
     if (*logFile != '\0') {
         if (g_logSync->current.integer) {
             FS_FOpenFileByMode(logFile, &level.logFile, 3);
@@ -1295,9 +1297,9 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     /* Initialize scrVarPub */
     {
-        int *p = Hunk_AllocLowInternal(0);
-        G_ScrVarPubRef()->fieldBuffer = (const char *)p;
-        *(byte *)p = 0;
+        char *p = (char *)Hunk_AllocLowInternal(0);
+        G_ScrVarPubRef()->fieldBuffer = p;
+        p[0] = '\0';
     }
 
     SV_LocateGameData((void *)g_clients, 0x400, 0xa04, (void *)g_entities);
@@ -1310,7 +1312,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         level.maxclients, 0);
 
     /* Log gametype */
-    G_LogPrintf("gametype: %s\n", (const char *)g_gametype->current.integer);
+    G_LogPrintf("gametype: %s\n", g_gametype->current.string);
 
     G_InitTurrets();
     G_SpawnTriggerHurt(SV_GetBrushModelCount() + 1);
@@ -1351,11 +1353,11 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     /* Update connected clients' userinfo */
     for (i = 0; i < g_maxclients->current.integer; i++) {
-        cl = (gclient_t *)((byte *)level.clients + (unsigned int)i * 0x28a4);
+        cl = &level.clients[i];
         if (cl->sess.connected == CON_CONNECTED) {
             /* ClientUserinfoChanged(clientNum, ent, client) */
             ClientUserinfoChanged(i,
-                (gentity_t *)((byte *)g_entities + (unsigned int)i * 0x230),
+                &g_entities[i],
                 cl);
         }
     }
@@ -1365,7 +1367,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     /* Password notice for dedicated servers */
     if (g_dedicated->current.integer > 0) {
-        const char *pw = (const char *)g_password->current.integer;
+        const char *pw = g_password->current.string;
         if (*pw != '\0') {
             Com_sprintf(info, sizeof(info), "password: %s\n", pw);
         }
@@ -2067,7 +2069,7 @@ int G_RunFrame(int levelTime) {
     trigger_info_t *triggerInfo;
     unsigned short entNum, otherNum;
     int savedTriggerCount;
-    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
 
     /* Update level timing */
     level.framenum += 1;

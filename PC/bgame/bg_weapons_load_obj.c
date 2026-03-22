@@ -418,26 +418,24 @@ WeaponDef * BG_LoadWeaponDefInternal(const char *folder, const char *name)
     if (weapDef->iFireTime > 0) {
         weapDef->fOOPosAnimLength[0] = 1.0f / (float)weapDef->iFireTime;
     } else {
-        /* Default: ~1/300 */
-        *(int *)&weapDef->fOOPosAnimLength[0] = 0x3b5a740e;
+        weapDef->fOOPosAnimLength[0] = 0x1.b4e81cp-9f;
     }
 
     /* Compute rechamber time rate */
     if (weapDef->iRechamberTime > 0) {
         weapDef->fOOPosAnimLength[1] = 1.0f / (float)weapDef->iRechamberTime;
     } else {
-        /* Default: ~1/500 */
-        *(int *)&weapDef->fOOPosAnimLength[1] = 0x3b03126f;
+        weapDef->fOOPosAnimLength[1] = 0x1.0624dep-9f;
     }
 
     /* Default destabilization base time if not set */
     if (weapDef->destabilizationBaseTime <= 0.0f) {
-        *(int *)&weapDef->destabilizationBaseTime = 0x497423f0; /* 999999.0f */
+        weapDef->destabilizationBaseTime = 0x1.e847ep+19f;
     }
 
     /* Default destabilization time reduction ratio if not set */
     if (weapDef->destabilizationTimeReductionRatio <= 0.0f) {
-        *(int *)&weapDef->destabilizationTimeReductionRatio = 0x497423f2; /* ~999999.0f */
+        weapDef->destabilizationTimeReductionRatio = 0x1.e847e4p+19f;
     }
 
     /* Validate enemy crosshair range */

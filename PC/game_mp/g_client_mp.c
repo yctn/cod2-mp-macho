@@ -83,6 +83,7 @@ char * ClientConnect(int clientNum, int scriptPersId);
 
 #define GENTITY_STRIDE sizeof(gentity_s)
 #define CLIENT_STRIDE sizeof(gclient_s)
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 
 /* Helper: get typed pointers from raw BSS arrays */
 static inline gclient_s *G_ClientForNum(int clientNum) {
@@ -107,7 +108,7 @@ void ClientBegin(int clientNum)
 {
     gclient_s *client = G_ClientForNum(clientNum);
     gentity_s *ent = G_EntityForNum(clientNum);
-    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
 
     client->sess.connected = 2; /* CON_CONNECTED */
     client->ps.pm_type = 4; /* PM_INTERMISSION */
@@ -123,7 +124,7 @@ void ClientDisconnect(int clientNum)
     gclient_s *client = G_ClientForNum(clientNum);
     gentity_s *ent = G_EntityForNum(clientNum);
     level_locals_t *level = G_Level();
-    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
     int i;
 
     if (Scr_IsSystemActive(1)) {
@@ -460,7 +461,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
     int iFlags;
     int savedSpawnCount;
     byte savedSess[0x100];
-    scr_const_t *scr_data;
+    const scr_const_t *scr_data;
 
     clientNum = ent->s.number;
 
@@ -484,7 +485,7 @@ void ClientSpawn(gentity_t *ent, const vec_t *spawn_origin, const vec_t *spawn_a
 
     ent->s.groundEntityNum = 0x3ff;
 
-    scr_data = (const scr_const_t *)imp_scr_const;
+    scr_data = SCR_CONST();
     Scr_SetString(&ent->classname, scr_data->player);
 
     ent->clipmask = 0x2810011;
@@ -597,7 +598,7 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin)
 
     if (client->ps.eFlags & 0x300) {
         /* Turret - use tag position */
-        const scr_const_t *scr_data = (const scr_const_t *)imp_scr_const;
+        const scr_const_t *scr_data = SCR_CONST();
         int turretEntNum = client->ps.viewlocked_entNum;
         gentity_s *turretEnt = G_EntityForNum(turretEntNum);
 

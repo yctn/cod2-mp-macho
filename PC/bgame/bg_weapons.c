@@ -123,8 +123,8 @@ void BG_ClearWeaponDef(void)
 #else
 void BG_ClearWeaponDef(void) {
     WeaponDef *defaultDef;
-    byte *itemList;
-    byte *end;
+    gitem_t *itemList;
+    int i;
 
     /* Load the default weapon definition */
     defaultDef = (WeaponDef *)BG_LoadDefaultWeaponDef();
@@ -144,14 +144,11 @@ void BG_ClearWeaponDef(void) {
     bg_weapClips[0] = defaultDef;
     bg_iNumWeapClips = 1;
 
-    /* Clear an unknown field at offset 0x48 for all items in bg_itemlist.
-       Each item is 0x2c (44) bytes, 0x1600/0x2c = 128 items.
-       NOTE: 0x48 exceeds sizeof(gitem_t)=0x2c; this may be an extended game-side struct. */
-    itemList = (byte *)(*(void **)imp_bg_itemlist);
-    end = itemList + 0x1600;
-    while (itemList != end) {
-        *(int *)(itemList + 0x48) = 0; /* TODO: unknown offset - exceeds gitem_t size */
-        itemList += 0x2c;
+    /* The original loop writes base+0x48, then advances by sizeof(gitem_t).
+       That maps to giType for item slots 1..128, leaving slot 0 untouched. */
+    itemList = (gitem_t *)(*(void **)imp_bg_itemlist);
+    for (i = 1; i <= 128; i++) {
+        itemList[i].giType = 0;
     }
 
     /* Load player animation types and weapon strings */
@@ -251,7 +248,7 @@ void PM_ExitAimDownSight(playerState_t *ps)
 /* line 4071 */
 float BG_GetBobCycle(const playerState_t *ps)
 {
-    double val = (float)(*(unsigned char *)((byte *)ps + 8)) / 255.0f;
+    double val = (float)ps->bobCycle / 255.0f;
     return (float)(val * 3.141592653589793 * 2.0 + 6.283185307179586);
 }
 

@@ -72,7 +72,7 @@ extern void XAnimCalcAbsDelta(XAnimTree_s *tree, unsigned int animIndex, float *
 extern float XAnimGetWeight(const XAnimTree_s *tree, unsigned int animIndex);
 extern const char *XAnimGetAnimDebugName(const XAnim_s *anims, unsigned int animIndex);
 
-extern unsigned char turretInfo[]; /* turretInfo - bss.c */
+extern turretInfo_s turretInfo[32]; /* turretInfo - bss.c */
 
 enum {
     GMISC_TURRET_STANCE_INVALID = -1,
@@ -231,7 +231,7 @@ void G_InitTurrets(void)
 {
     int i;
     for (i = 0; i < 32; i++)
-        *(int *)&turretInfo[i] = 0;
+        turretInfo[i].inuse = 0;
 }
 
 static qboolean turret_UpdateTargetAngles(gentity_t *self, const float *desiredAngles, qboolean bManned)
@@ -666,7 +666,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
 
     info = 0;
     for (i = 0; i < 32; ++i) {
-        info = (turretInfo_s *)&turretInfo[i * (int)sizeof(turretInfo_s)];
+        info = &turretInfo[i];
         if (!info->inuse) {
             break;
         }

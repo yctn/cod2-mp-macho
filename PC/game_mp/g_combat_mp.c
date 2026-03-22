@@ -93,14 +93,15 @@ UInt32 g_HitLocNames_storage[24] __asm__("g_HitLocNames") = {
 
 #define g_HitLocNames ((const char * const *)g_HitLocNames_storage)
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
+#define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 
 extern gentity_t g_entities[];       /* imp_g_entities - g_entities base (aliased via linker as g_entities_ptr) */
 extern struct level_locals_t level;  /* imp_level (aliased via linker as level_ptr) */
+extern bgs_t level_bgs;              /* imp_level_bgs */
 extern entityHandler_t entityHandlers[20];
 extern const dvar_t *g_debugDamage;
 /* imp_scr_const declared in generated_syms.h as void* */
 extern int g_sNextDmgTableId; /* 0x195b048 */
-extern int g_time; /* imp_level_bgs */
 extern byte g_time_ptr[]; /* imp_bgs */
 extern int g_phys_world; /* imp_vec3_origin */
 
@@ -335,7 +336,7 @@ static float G_GetHitLocDamageMult(int weapon, hitLocation_t hitLoc)
 /* Helper: check if player can take damage */
 static int G_IsPlayerDamageable(gclient_t *client)
 {
-    if (((byte *)&client->ps.pm_flags)[2] != 0) {
+    if ((client->ps.pm_flags & 0x00ff0000) != 0) {
         if (client->noclip == 0 && client->ufo == 0) {
             if (client->sess.connected == 2) {
                 return 1;
@@ -431,7 +432,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
     /* Notify "damage" */
     Scr_AddEntity(attacker);
     Scr_AddInt(damage);
-    Scr_Notify(targ, ((const scr_const_t *)imp_scr_const)->damage, 2);
+    Scr_Notify(targ, SCR_CONST()->damage, 2);
 
     if (health > 0) {
         /* Still alive - call pain callback via entity handler table */
@@ -448,7 +449,7 @@ void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const 
 
         /* Notify "death" */
         Scr_AddEntity(attacker);
-        Scr_Notify(targ, ((const scr_const_t *)imp_scr_const)->death, 1);
+        Scr_Notify(targ, SCR_CONST()->death, 1);
 
         /* Call die callback via entity handler table */
         void (*die)(gentity_t *, gentity_t *, gentity_t *, int, int, int, const vec_t *, hitLocation_t, int) =
@@ -620,6 +621,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     int animResult;
     int i;
     float yaw;
+    const scr_const_t *scr = SCR_CONST();
 
     /* Check DObj exists */
     cl = self->client;
@@ -633,16 +635,13 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     if (cl->ps.pm_type > 1) {
         return;
     }
-    /* 0xe = byte 2 of ps.pm_flags (bits 16-23 on little-endian), check flag 0x40 */
-    if (((byte *)&cl->ps.pm_flags)[2] & 0x40) {
+    if (cl->ps.pm_flags & 0x00400000) {
         return;
     }
 
     /* Update level time */
     {
-        int levelTime = *(int *)&g_time;
-        byte *timePtr = *(byte **)g_time_ptr;
-        *(int *)timePtr = levelTime;
+        (*(bgs_t **)g_time_ptr)->time = level_bgs.time;
     }
 
     /* Check attacker type - if turret, resolve to user */
@@ -655,7 +654,7 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 
     /* Notify "death" to attacker */
     Scr_AddEntity(attacker);
-    Scr_Notify(self, ((const scr_const_t *)imp_scr_const)->death, 1);
+    Scr_Notify(self, scr->death, 1);
 
     /* Check if attacker is player on turret - get turret weapon */
     if (iWeapon != 0) {
@@ -684,9 +683,8 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
         launchvel[1] = lv_y * 160.0f;
         launchvel[2] = lv_z * 160.0f;
 
-        /* Copy origin (bitwise copy via int to preserve exact float bits) */
-        *(int *)&launchspot[0] = *(int *)&self->r.currentOrigin[0];
-        *(int *)&launchspot[1] = *(int *)&self->r.currentOrigin[1];
+        launchspot[0] = self->r.currentOrigin[0];
+        launchspot[1] = self->r.currentOrigin[1];
         launchspot[2] = self->r.currentOrigin[2] + 40.0f;
 
         fire_grenade(self, launchspot, launchvel,
@@ -754,13 +752,10 @@ void player_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
     vectoyaw(dir); /* called twice in original */
 
 after_yaw:
-    /* Copy currentAngles to viewangles (bitwise copy to preserve exact float bits) */
     cl = self->client;
-    {
-        *(int *)&cl->ps.viewangles[0] = *(int *)&self->r.currentAngles[0];
-        *(int *)&cl->ps.viewangles[1] = *(int *)&self->r.currentAngles[1];
-        *(int *)&cl->ps.viewangles[2] = *(int *)&self->r.currentAngles[2];
-    }
+    cl->ps.viewangles[0] = self->r.currentAngles[0];
+    cl->ps.viewangles[1] = self->r.currentAngles[1];
+    cl->ps.viewangles[2] = self->r.currentAngles[2];
 
     self->s.loopSound = 0;
     SV_UnlinkEntity(self);

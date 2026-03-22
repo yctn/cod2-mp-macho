@@ -70,6 +70,7 @@ extern const dvar_t *g_synchronousClients;
 #define CLIENT_PS_FLAGS(c)          (_GC(c)->ps.pm_flags)
 #define CLIENT_PS_PM_TYPE(c)        (_GC(c)->ps.pm_type)
 #define CLIENT_VGUNSPEED(c)         (_GC(c)->vGunSpeed)
+#define SCR_CONST()                 ((const scr_const_t *)imp_scr_const)
 
 void ClientImpacts(gentity_t *ent, pmove_t *pm);
 qboolean G_ClientCanSpectateTeam(gclient_t *client, team_t team);
@@ -2985,7 +2986,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm) {
     gentity_t *other;
     void (*entTouch)(gentity_t *, gentity_t *, int);
     void (*otherTouch)(gentity_t *, gentity_t *, int);
-    const scr_const_t *scr = (const scr_const_t *)imp_scr_const;
+    const scr_const_t *scr = SCR_CONST();
     int numtouch;
     int *touchents;
     int entityNum;
