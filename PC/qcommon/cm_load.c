@@ -192,8 +192,8 @@ void CM_SaveLump(int lumpnum, byte *newLump, int size, int *checksum)
 
     memcpy(header, buf, 0x140);
 
-    if (*(int *)(header + 4) != 4 && *(int *)(header + 4) != 0x3d) {
-        Com_Error(1, "bad bsp version %d", *(int *)(header + 4));
+    if (*(int *)(header + 0x04) != 4 && *(int *)(header + 0x04) != 0x3d) { /* header->version */
+        Com_Error(1, "bad bsp version %d", *(int *)(header + 0x04));
     }
 
     memcpy(oldHeader, header, 0x140);
@@ -207,10 +207,10 @@ void CM_SaveLump(int lumpnum, byte *newLump, int size, int *checksum)
     offset = 0x140;
     for (i = 0; i < 39; i++) {
         if (i == lumpnum) {
-            *(int *)(header + 8 + i * 8) = size;
+            *(int *)(header + 0x08 + i * 8) = size;     /* lump[i].filelen */
         }
-        *(int *)(header + 0xc + i * 8) = offset;
-        lumpSize = *(int *)(header + 8 + i * 8);
+        *(int *)(header + 0x0c + i * 8) = offset;       /* lump[i].fileofs */
+        lumpSize = *(int *)(header + 0x08 + i * 8);     /* lump[i].filelen */
         offset += (lumpSize + 3) & ~3;
     }
 
@@ -220,14 +220,14 @@ void CM_SaveLump(int lumpnum, byte *newLump, int size, int *checksum)
     /* Write each lump's data */
     zero = 0;
     for (i = 0; i < 39; i++) {
-        lumpSize = *(int *)(header + 8 + i * 8);
+        lumpSize = *(int *)(header + 0x08 + i * 8); /* lump[i].filelen */
         if (lumpSize == 0)
             continue;
 
         if (i == lumpnum) {
             data = newLump;
         } else {
-            data = buf + *(int *)(oldHeader + 0xc + i * 8);
+            data = buf + *(int *)(oldHeader + 0x0c + i * 8); /* lump[i].fileofs */
         }
 
         FS_Write(data, lumpSize, h);

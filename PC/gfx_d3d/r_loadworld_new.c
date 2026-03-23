@@ -778,7 +778,7 @@ GfxWorld *R_LoadWorldInternal(const char *name)
     {
         /* Check if occluder lump exists before calling the ASM loader,
            which has an inline validation that fatally errors on empty lumps. */
-        int occLumpSize = *(int *)(header + 0xA8); /* lump 20 (occluders) */
+        int occLumpSize = *(int *)(header + 0xA8); /* occluder lump size (lump 20) */
         if (occLumpSize > 0)
             CALL_LOADER_EAX(R_LoadOccluders, &load);
     }

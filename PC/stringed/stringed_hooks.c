@@ -397,7 +397,7 @@ static int SEH_IsDigit(int c) {
     if ((unsigned int)c > 0xFF) {
         return 0;
     }
-    return (*(int *)(__DefaultRuneLocale + 0x34 + (unsigned int)c * 4) >> 0) & 4;
+    return (((unsigned long *)((byte *)__DefaultRuneLocale + 0x34))[(unsigned char)c] >> 0) & 4;
 }
 
 const char * SEH_LocalizeTextMessage(const char *pszInputBuffer, const char *pszMessageType, msgLocErrType_t errType) {

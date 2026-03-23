@@ -245,7 +245,7 @@ static void CG_ResetEntity(char *cent)
 
         /* line 75: compute clientInfo pointer from nextState.clientNum */
         clientNum = ((centity_t *)cent)->nextState.clientNum;
-        ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum] - 0x14 /* TODO: verify offset */;
+        ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum] - 0x14; /* clientInfo base (0x14 before clientinfo[] entry) */
 
         /* line 76: ci->legs.oldFrameModel = cent->nextState.index (at 0x15c from cent) */
         /* ci + 0x14 + 0x3e0 = ci + 0x3f4 = leftHandGun offset */
@@ -256,10 +256,10 @@ static void CG_ResetEntity(char *cent)
          * entityState offset 0x6c = angles2[0] (angles2 at 0x68, so 0x6c = angles2[1])
          * Hmm, actually 0x15c = 0xf0 + 0x6c. entityState offset 0x6c = angles2[1]
          */
-        *(int *)(ci + 0x14 + 0x3e0) /* TODO: unknown clientInfo offset */ = *(int *)(cent + 0x15c) /* TODO: unknown centity offset */;
+        *(int *)(ci + 0x14 + 0x3e0) /* ci->leftHandGun at ci+0x3f4 */ = *(int *)(cent + 0x15c) /* cent->nextState.angles2[1] at 0x15c */;
 
         /* line 77: ci + 0x14 + 0x3e4 = cent + 0x1c4 (nextState.leanf) */
-        *(int *)(ci + 0x14 + 0x3e4) /* TODO: unknown clientInfo offset */ = ((centity_t *)cent)->nextState.leanf;
+        *(int *)(ci + 0x14 + 0x3e4) /* ci->leanf at ci+0x3f8 */ = ((centity_t *)cent)->nextState.leanf;
 
         /* line 78: VectorCopy cent->lerpAngles to ci + 0x3fc */
         {
@@ -450,7 +450,7 @@ static void CG_TransitionSnapshot_Inline(void)
     for (i = 0; i < numClients; i++)
     {
         char *clState = (char *)snap + SNAP_CLIENTS + i * CLSTATE_STRIDE;
-        int clientNum = ((clientState_t *)clState)->attachModelIndex[0]; /* TODO: unknown clientState_t offset (clientNum?) */
+        int clientNum = ((clientState_t *)clState)->clientNum; /* clientState_t->clientNum */
         char *ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum];
 
         /* line 248: check ci->nextValid */
@@ -651,7 +651,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                     for (slot = 0; slot < 6; slot++)
                     {
                         /* line 396: get config string for attachment model */
-                        int attachModelIdx = *(int *)(clStateSlots + 0x0c) /* TODO: unknown clientState slot offset */;
+                        int attachModelIdx = *(int *)(clStateSlots + 0x0c); /* clientState slot: attachModelIndex at +0x0c */
                         configStr = CL_GetConfigString(attachModelIdx + 0x14e);
 
                         if (strcmp(ciAttachModel, configStr) != 0)
@@ -663,7 +663,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
 
                         /* line 403: get config string for attachment tag */
                         {
-                            int attachTagIdx = *(int *)(clStateSlots + 0x24) /* TODO: unknown clientState slot offset */;
+                            int attachTagIdx = *(int *)(clStateSlots + 0x24); /* clientState slot: attachTagIndex at +0x24 */
                             const char *tagStr = CL_GetConfigString(attachTagIdx + 0x6e);
 
                             if (strcmp(ciAttachTag, tagStr) != 0)
@@ -911,7 +911,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                             void *savedTree = *(void **)(corpseCI + CI_PXANIMTREE);
 
                             /* line 214: get animation state, mask out bit 9 */
-                            int animState = *(int *)(corpseCI + 0x390) /* TODO: unknown corpse clientInfo anim offset */ & ~0x200;
+                            int animState = *(int *)(corpseCI + 0x390) /* clientInfo->animState at 0x390 */ & ~0x200;
 
                             /* line 215: get anims from tree */
                             void *anims = XAnimGetAnims(savedTree);
@@ -956,7 +956,7 @@ void CG_SetNextSnap(snapshot_t *snap_param)
         if (!isDemo)
         {
             char *nextSnap = (char *)cgBase->nextSnap;
-            if (!(*(int *)((char *)&((snapshot_t *)nextSnap)->ps.pm_flags + 2) /* TODO: verify byte offset */ & 0x40))
+            if (!(*(int *)((char *)&((snapshot_t *)nextSnap)->ps.pm_flags + 2) /* ps.pm_flags high word at +2 */ & 0x40))
             {
                 /* Check two dvars */
                 char *dv1 = cg_dvar1 ? *cg_dvar1 : NULL;

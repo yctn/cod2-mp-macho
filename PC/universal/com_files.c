@@ -601,7 +601,7 @@ int FS_filelength(fileHandle_t f)
 
     /* If zipfile, return stored size */
     if (*(int *)(entry + 20))
-        return *(int *)(*(byte **)entry + 0x44);
+        return *(int *)(*(byte **)entry + 0x44); /* directory entry size at 0x44 */
 
     /* Otherwise seek to end and back */
     h = *(void **)entry;

@@ -652,7 +652,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         rect->horzAlign,
         rect->vertAlign,
         color,
-        *(MaterialHandle *)(cgs + 0xbc78)); /* TODO: unknown cgs_t offset - likely cgs->media field */
+        *(MaterialHandle *)(cgs + 0xbc78)); /* cgs->media.breathHintMaterial at 0xbc78 */
 }
 
 /* line 1615 */
@@ -4284,7 +4284,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
     /* line 1431: get hint icon material */
     cgs = (byte *)*(void **)imp_cgs;
     cursorHintValue = ((cg_t *)cg)->cursorHintIcon;
-    hintIcon = *(MaterialHandle *)(cgs + 0xba44 + cursorHintValue * 4); /* TODO: unknown cgs_t offset - likely cgs->media hint icons array */
+    hintIcon = ((MaterialHandle *)(cgs + 0xba44))[cursorHintValue]; /* cgs->media.hintIcons[cursorHintValue] at 0xba44 */
     if (!hintIcon)
         return;
 

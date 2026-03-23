@@ -7397,7 +7397,8 @@ struct Effect {
 
 struct Light {
     struct Effect base;                     /* 0x00-0xc3 */
-    byte _pad_0xc4[8];                      /* 0xc4-0xcb */
+    float colorBlendFactor;                 /* 0xc4 */
+    float sizeBlendFactor;                  /* 0xc8 */
     FxChannelInstance colorChannelInstance;     /* 0xcc */
     FxChannelInstance colorRandChannelInstance; /* 0xd8 */
     FxChannelInstance sizeChannelInstance;      /* 0xe4 */
@@ -7788,7 +7789,9 @@ struct Particle {
     int mTimeEnd;                    /* 0xbc */
     struct FxBoltFramePtr mBolt;     /* 0xc0 */
     /* Particle-specific: 0xc4+ */
-    byte _pad_0xc4[12];              /* 0xc4-0xcf */
+    int subclassField0;              /* 0xc4 */
+    int subclassField1;              /* 0xc8 */
+    int subclassField2;              /* 0xcc */
     float displayAxis[3][3];         /* 0xd0 */
     float gravity;                   /* 0xf4 */
     float windModifier;              /* 0xf8 */
@@ -7836,7 +7839,10 @@ struct Cloud {
     struct Particle base;               /* 0x00-0x24b, size 0x24c */
     Bool useLength;                     /* 0x24c */
     float randomLengthWeight;           /* 0x250 */
-    byte _pad_0x254[16];                /* 0x254-0x263 */
+    float _unk_0x254;                   /* 0x254 */
+    float _unk_0x258;                   /* 0x258 */
+    float lengthBlendFactor;            /* 0x25c */
+    float randomLengthBlend;            /* 0x260 */
     FxChannelInstance lengthChannelInstance;     /* 0x264 */
     FxChannelInstance lengthRandChannelInstance; /* 0x270 */
     /* total: 0x27c */
@@ -8856,7 +8862,7 @@ struct Tail {
     struct Particle base;               /* 0x00-0x24b, size 0x24c */
     float endpoint[3];                  /* 0x24c */
     float tailLength;                   /* 0x258 */
-    byte _pad_0x25c[4];                 /* 0x25c-0x25f */
+    float lengthBlendFactor;            /* 0x25c */
     FxChannelInstance lengthChannelInstance;     /* 0x260 */
     FxChannelInstance lengthRandChannelInstance; /* 0x26c */
     /* total: 0x278 */

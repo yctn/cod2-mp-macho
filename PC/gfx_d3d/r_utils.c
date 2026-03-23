@@ -169,7 +169,7 @@ qboolean R_PickMaterial(const vec_t *org, const vec_t *dir, char *name, char *su
             surfaceFlagsLen = surfaceFlagsLen + 1 + strlen(appendPos);
         }
 
-        if (*(int *)(table + entryOff + 0xc) & contFlags) {
+        if (*(int *)(table + entryOff + 0xc) & contFlags) { /* table entry flags at +0xc */
             contents[contentsLen] = ' ';
             appendPos = contents + contentsLen + 1;
             strncpy(appendPos, *(char **)(table + entryOff), charLimit - contentsLen - 1);

@@ -120,7 +120,7 @@ void __attribute__((regparm(1))) CG_RegisterGraphics(const char *mapname)
 
             for (j = 0; j < 3; j++) {
                 float mid = (mins[j] + maxs[j]) * 0.5f;
-                *(float *)(cgs + 0x8188 + (offset + j) * 4) = mid; /* TODO: cgs->inlineModelMidpoints access */
+                ((float *)(cgs + 0x8188))[offset + j] = mid; /* cgs->inlineModelMidpoints at 0x8188 */
             }
             offset += 3;
         }

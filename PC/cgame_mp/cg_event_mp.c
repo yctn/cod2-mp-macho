@@ -546,10 +546,10 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
             /* line 492 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
+            if (*(int *)(ui + 0x0c) /* uiGlob->stanceChangeLocked at 0x0c */ != 0)
                 return;
             /* line 493 */
-            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 0;
+            *(int *)(ui + 0x08) /* uiGlob->stanceChangeRequest at 0x08 */ = 0;
             return;
         }
 
@@ -564,10 +564,10 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
             /* line 501 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
+            if (*(int *)(ui + 0x0c) /* uiGlob->stanceChangeLocked at 0x0c */ != 0)
                 return;
             /* line 502 */
-            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 1;
+            *(int *)(ui + 0x08) /* uiGlob->stanceChangeRequest at 0x08 */ = 1;
             return;
         }
 
@@ -582,10 +582,10 @@ void CG_EntityEvent(centity_t *cent, int event)
             }
             /* line 510 */
             char *ui = *cg_uiglob;
-            if (*(int *)(ui + 0xc) /* TODO: unknown offset in UI globals */ != 0)
+            if (*(int *)(ui + 0x0c) /* uiGlob->stanceChangeLocked at 0x0c */ != 0)
                 return;
             /* line 511 */
-            *(int *)(ui + 0x8) /* TODO: unknown offset in UI globals */ = 2;
+            *(int *)(ui + 0x08) /* uiGlob->stanceChangeRequest at 0x08 */ = 2;
             return;
         }
 

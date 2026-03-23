@@ -2528,7 +2528,9 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         }
 
         /* Get skinned vertex buffer from backEndData */
-        /* TODO: offset 0x217c78+8 into GfxBackEndData is skinnedCacheVb->buffer */
+        /* NOTE: offset 0x217c78+8 far exceeds GfxBackEndData (surfsBuffer is only 0x20000 bytes).
+         * This likely accesses a field in a larger/different struct overlaid at the same pointer.
+         * Cannot cleanly convert without full struct definition. */
         vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)((char *)imp_backEndData) + 0x217c78 + 8);
 
         /* Change stream source if needed */

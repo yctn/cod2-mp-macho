@@ -165,8 +165,8 @@ void * Material_Alloc(int size)
 /* line 314 */
 const float * Material_RegisterLiteral(const vec_t *literal)
 {
-    int literalCount = *(int *)((byte *)materialGlobals + 0x230c);
-    float *literals = (float *)((byte *)materialGlobals + 0x2310);
+    int literalCount = *(int *)(materialGlobals + 0x230c); /* literalCount */
+    float *literals = (float *)(materialGlobals + 0x2310);  /* literals */
     int i;
 
     for (i = 0; i < literalCount; i++) {
@@ -211,20 +211,20 @@ static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 /* line 581 */
 void Material_SetTechnique(const char *name, MaterialTechnique *technique)
 {
-    if (*(int *)((char *)materialGlobals + 4872) == 0x3ff) {
+    if (*(int *)(materialGlobals + 0x1308) == 0x3ff) { /* techniqueCount */
         R_Error(1, "More than %i techniques in use", 0x3ff);
     }
 
     int hash = R_HashAssetName(name) & 0x3ff;
 
-    while (*(void **)((char *)materialGlobals + 0x130C + hash * 4) != NULL) {
-        if (stricmp(*(char **)((char *)materialGlobals + 0x130C + hash * 4), name) == 0)
+    while (((MaterialTechnique **)(materialGlobals + 0x130C))[hash] != NULL) {
+        if (stricmp(((MaterialTechnique **)(materialGlobals + 0x130C))[hash]->name, name) == 0)
             break;
         hash = (hash + 1) & 0x3ff;
     }
 
-    (*(int *)((char *)materialGlobals + 4872))++;
-    *(MaterialTechnique **)((char *)materialGlobals + 0x130C + hash * 4) = technique;
+    (*(int *)(materialGlobals + 0x1308))++; /* techniqueCount */
+    ((MaterialTechnique **)(materialGlobals + 0x130C))[hash] = technique; /* techniqueTable */
 }
 
 /* line 647 */
@@ -232,13 +232,13 @@ void Material_SetTechniqueSet(const char *name, MaterialTechniqueSet *techniqueS
 {
     int hash = R_HashAssetName(name) & 0x3ff;
 
-    while (*(void **)((char *)materialGlobals + 0x308 + hash * 4) != NULL) {
-        if (stricmp(*(char **)((char *)materialGlobals + 0x308 + hash * 4), name) == 0)
+    while (((MaterialTechniqueSet **)(materialGlobals + 0x308))[hash] != NULL) {
+        if (stricmp(((MaterialTechniqueSet **)(materialGlobals + 0x308))[hash]->name, name) == 0)
             break;
         hash = (hash + 1) & 0x3ff;
     }
 
-    *(MaterialTechniqueSet **)((char *)materialGlobals + 0x308 + hash * 4) = techniqueSet;
+    ((MaterialTechniqueSet **)(materialGlobals + 0x308))[hash] = techniqueSet; /* techSetTable */
 }
 
 /* line 709 */
@@ -246,37 +246,37 @@ void Material_SetStateMap(const char *name, MaterialStateMap *stateMap)
 {
     int hash = R_HashAssetName(name) & 0x1f;
 
-    while (*(void **)((char *)materialGlobals + 0x2414 + hash * 4) != NULL) {
-        if (strcmp(*(char **)((char *)materialGlobals + 0x2414 + hash * 4), name) == 0)
+    while (((MaterialStateMap **)(materialGlobals + 0x2414))[hash] != NULL) {
+        if (strcmp(((MaterialStateMap **)(materialGlobals + 0x2414))[hash]->name, name) == 0)
             break;
         hash = (hash + 1) & 0x1f;
     }
 
-    *(MaterialStateMap **)((char *)materialGlobals + 0x2414 + hash * 4) = stateMap;
+    ((MaterialStateMap **)(materialGlobals + 0x2414))[hash] = stateMap; /* stateMapTable */
 }
 
 /* line 793 */
 void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion, MaterialShader *mtlShader)
 {
-    (*(int *)((char *)materialGlobals + 9624))++;
-    if (*(int *)((char *)materialGlobals + 9624) == 0x100) {
+    (*(int *)(materialGlobals + 0x2598))++; /* shaderCount */
+    if (*(int *)(materialGlobals + 0x2598) == 0x100) { /* shaderCount */
         R_Error(1, "More than %i unique pixel and vertex shaders", 0xff);
     }
 
     int hash = R_HashAssetName(shaderName);
     hash = ((int)shaderType * 97 + shaderVersion + hash) & 0xff;
 
-    void *entry = *(void **)((char *)materialGlobals + 0x259C + hash * 4);
+    MaterialShader *entry = ((MaterialShader **)(materialGlobals + 0x259C))[hash]; /* shaderTable */
     while (entry != NULL) {
-        if (((MaterialShader *)entry)->shaderType == (byte)shaderType &&
-            ((MaterialShader *)entry)->shaderVersion == (byte)shaderVersion &&
-            strcmp(*(char **)entry, shaderName) == 0)
+        if (entry->shaderType == (byte)shaderType &&
+            entry->shaderVersion == (byte)shaderVersion &&
+            strcmp(entry->name, shaderName) == 0)
             break;
         hash = (hash + 1) & 0xff;
-        entry = *(void **)((char *)materialGlobals + 0x259C + hash * 4);
+        entry = ((MaterialShader **)(materialGlobals + 0x259C))[hash]; /* shaderTable */
     }
 
-    *(MaterialShader **)((char *)materialGlobals + 0x259C + hash * 4) = mtlShader;
+    ((MaterialShader **)(materialGlobals + 0x259C))[hash] = mtlShader; /* shaderTable */
 }
 
 /* line 981 */
@@ -484,17 +484,17 @@ const char * Material_RegisterString(const char *string)
     char *copy;
 
     /* Search hash table for existing string */
-    existing = *(const char **)(materialGlobals + 9368 + hash * 4);
+    existing = ((const char **)(materialGlobals + 0x2498))[hash]; /* stringIdentTable */
     while (existing) {
         if (strcmp(existing, string) == 0)
             return existing;
         hash = (hash + 1) & 0x3f;
-        existing = *(const char **)(materialGlobals + 9368 + hash * 4);
+        existing = ((const char **)(materialGlobals + 0x2498))[hash]; /* stringIdentTable */
     }
 
     /* Not found — register new string */
-    count = *(int *)(materialGlobals + 9364) + 1;
-    *(int *)(materialGlobals + 9364) = count;
+    count = *(int *)(materialGlobals + 0x2494) + 1; /* stringIdentCount */
+    *(int *)(materialGlobals + 0x2494) = count;     /* stringIdentCount */
     if (count == 64) {
         R_Error(1, "More than %i string identifiers used by shaders", 63);
     }
@@ -506,7 +506,7 @@ const char * Material_RegisterString(const char *string)
     memcpy(copy, string, nameLen);
 
     /* Insert into hash table */
-    *(const char **)(materialGlobals + 9368 + hash * 4) = copy;
+    ((const char **)(materialGlobals + 0x2498))[hash] = copy; /* stringIdentTable */
 
     return copy;
 }
@@ -569,12 +569,12 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
 MaterialStateMap * Material_FindStateMap(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x1f;
-    MaterialStateMap *entry = ((MaterialStateMap * *)((char *)materialGlobals + 9236))[hash];
+    MaterialStateMap *entry = ((MaterialStateMap **)(materialGlobals + 0x2414))[hash]; /* stateMapTable */
     while (entry) {
         if (strcmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x1f;
-        entry = ((MaterialStateMap * *)((char *)materialGlobals + 9236))[hash];
+        entry = ((MaterialStateMap **)(materialGlobals + 0x2414))[hash]; /* stateMapTable */
     }
     return NULL;
 }
@@ -583,12 +583,12 @@ MaterialStateMap * Material_FindStateMap(const char *name)
 MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechniqueSet *entry = ((MaterialTechniqueSet * *)((char *)materialGlobals + 776))[hash];
+    MaterialTechniqueSet *entry = ((MaterialTechniqueSet **)(materialGlobals + 0x308))[hash]; /* techSetTable */
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechniqueSet * *)((char *)materialGlobals + 776))[hash];
+        entry = ((MaterialTechniqueSet **)(materialGlobals + 0x308))[hash]; /* techSetTable */
     }
     return NULL;
 }
@@ -597,12 +597,12 @@ MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 MaterialTechnique * Material_FindTechnique(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechnique *entry = ((MaterialTechnique * *)((char *)materialGlobals + 4876))[hash];
+    MaterialTechnique *entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash]; /* techniqueTable */
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechnique * *)((char *)materialGlobals + 4876))[hash];
+        entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash]; /* techniqueTable */
     }
     return NULL;
 }
@@ -611,12 +611,12 @@ MaterialTechnique * Material_FindTechnique(const char *name)
 MaterialShader * Material_FindShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion)
 {
     int hash = (R_HashAssetName(shaderName) + shaderType * 97 + shaderVersion) & 0xff;
-    MaterialShader *entry = ((MaterialShader * *)((char *)materialGlobals + 9628))[hash];
+    MaterialShader *entry = ((MaterialShader **)(materialGlobals + 0x259C))[hash]; /* shaderTable */
     while (entry) {
         if (entry->shaderType == shaderType && entry->shaderVersion == shaderVersion && strcmp(entry->name, shaderName) == 0)
             return entry;
         hash = (hash + 1) & 0xff;
-        entry = ((MaterialShader * *)((char *)materialGlobals + 9628))[hash];
+        entry = ((MaterialShader **)(materialGlobals + 0x259C))[hash]; /* shaderTable */
     }
     return NULL;
 }
@@ -648,16 +648,16 @@ void Material_Shutdown(void)
 
     /* Clear all hash tables */
     for (i = 0; i < 256; i++)
-        *(void **)(materialGlobals + 0x259c + i * 4) = NULL;
-    *(int *)(materialGlobals + 8972) = 0;
+        ((MaterialShader **)(materialGlobals + 0x259C))[i] = NULL;       /* shaderTable */
+    *(int *)(materialGlobals + 0x230C) = 0;                              /* literalCount */
     for (i = 0; i < 64; i++)
-        *(void **)(materialGlobals + 0x2498 + i * 4) = NULL;
+        ((const char **)(materialGlobals + 0x2498))[i] = NULL;           /* stringIdentTable */
     for (i = 0; i < 32; i++)
-        *(void **)(materialGlobals + 0x2414 + i * 4) = NULL;
+        ((MaterialStateMap **)(materialGlobals + 0x2414))[i] = NULL;     /* stateMapTable */
     for (i = 0; i < 1024; i++)
-        *(void **)(materialGlobals + 0x130c + i * 4) = NULL;
+        ((MaterialTechnique **)(materialGlobals + 0x130C))[i] = NULL;    /* techniqueTable */
     for (i = 0; i < 1024; i++)
-        *(void **)(materialGlobals + 0x308 + i * 4) = NULL;
+        ((MaterialTechniqueSet **)(materialGlobals + 0x308))[i] = NULL;  /* techSetTable */
 
     memset(materialGlobals, 0, 0x299c);
     memset(((r_globals_t *)imp_rg)->materialHashTable, 0, sizeof(((r_globals_t *)imp_rg)->materialHashTable));

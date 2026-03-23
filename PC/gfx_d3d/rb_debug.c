@@ -380,7 +380,7 @@ static JCOEF RB_DrawPolyInteriors(void)
         /* Emit vertices */
         if (polyVertCount > 0) {
             byte *dxCapsData = *(byte **)imp_r_rendererInUse;
-            int surfaceType = *(int *)(dxCapsData + 8);
+            int surfaceType = *(int *)(dxCapsData + 8); /* opaque renderer caps struct: surface type at +8 */
             vec3_t *pv = polyVerts;
 
             for (vertIndex = 0; vertIndex < polyVertCount; vertIndex++) {
@@ -397,16 +397,16 @@ static JCOEF RB_DrawPolyInteriors(void)
                     *(float *)(to + 8) = (*pv)[2];
 
                     /* normal = {0, 0, 1} */
-                    *(float *)(to + 0x0c) = 0.0f;
-                    *(float *)(to + 0x10) = 0.0f;
-                    *(float *)(to + 0x14) = 1.0f;
+                    ((GfxVertexDx7 *)to)->normal[0] = 0.0f;
+                    ((GfxVertexDx7 *)to)->normal[1] = 0.0f;
+                    ((GfxVertexDx7 *)to)->normal[2] = 1.0f;
 
                     /* color */
-                    *(D3DCOLOR *)(to + 0x18) = colorBytes;
+                    ((GfxVertexDx7 *)to)->color.packed = colorBytes;
 
                     /* texcoord = {0, 0} */
-                    *(float *)(to + 0x0c + 0x10) = 0.0f;
-                    *(float *)(to + 0x10 + 0x10) = 0.0f;
+                    ((GfxVertexDx7 *)to)->texCoord[0] = 0.0f;
+                    ((GfxVertexDx7 *)to)->texCoord[1] = 0.0f;
                 } else {
                     /* Type != 2: 64-byte stride vertices (GfxVertex-like) */
                     int vertOff = baseVert * 64;
@@ -418,29 +418,27 @@ static JCOEF RB_DrawPolyInteriors(void)
                     *(float *)(to + 8) = (*pv)[2];
 
                     /* w = 1.0 */
-                    *(float *)(to + 0x0c) = 1.0f;
+                    ((GfxVertex *)to)->xyzw[3] = 1.0f;
 
                     /* normal = {0, 0, 1} at offset 0x10 */
-                    *(float *)(to + 0x10) = 0.0f;
-                    *(float *)(to + 0x14) = 0.0f;
-                    *(float *)(to + 0x18) = 1.0f;
+                    ((GfxVertex *)to)->normal[0] = 0.0f;
+                    ((GfxVertex *)to)->normal[1] = 0.0f;
+                    ((GfxVertex *)to)->normal[2] = 1.0f;
 
                     /* color */
-                    *(D3DCOLOR *)(to + 0x1c) = colorBytes;
+                    ((GfxVertex *)to)->color.packed = colorBytes;
 
-                    /* binormal at offset 0x20 */
-                    *(float *)(to + 0x20) = 0.0f;
-                    *(float *)(to + 0x24) = 1.0f;
-                    *(float *)(to + 0x28) = 0.0f;
+                    /* texcoord = {0, 0} at offset 0x20 */
+                    ((GfxVertex *)to)->texCoord[0] = 0.0f;
+                    ((GfxVertex *)to)->texCoord[1] = 0.0f;
 
-                    /* tangent at offset 0x30 */
-                    *(float *)(to + 0x30) = 1.0f;
-                    *(float *)(to + 0x34) = 0.0f;
-                    *(float *)(to + 0x38) = 0.0f;
+                    /* binormal[0] at offset 0x28 */
+                    ((GfxVertex *)to)->binormal[0] = 0.0f;
 
-                    /* texcoord at offset 0x20 */
-                    *(float *)(to + 0x20) = 0.0f;
-                    *(float *)(to + 0x24) = 0.0f;
+                    /* tangent at offset 0x34 */
+                    ((GfxVertex *)to)->tangent[0] = 1.0f;
+                    ((GfxVertex *)to)->tangent[1] = 0.0f;
+                    ((GfxVertex *)to)->tangent[2] = 0.0f;
                 }
 
                 pv++;

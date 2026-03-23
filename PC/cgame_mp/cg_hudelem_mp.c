@@ -682,7 +682,7 @@ void CG_Draw2dHudElems(qboolean foreground)
     byte *endPtr = (byte *)snap + 0x0C + 0x1734;
 
     for (i = 0; i < 31; i++) {
-        if (*(int *)(elemPtr + 0x1728) != 0) { /* TODO: unknown offset */
+        if (*(int *)(elemPtr + 0x1728) != 0) { /* snap->hudelems[i].type at +0x1728 from elemBase */
             elems[elemCount++] = (hudelem_t *)endPtr;
             endPtr += 0x80;
             elemPtr += 0x80;
@@ -885,7 +885,7 @@ void CG_Draw3dHudElems(void)
     byte *endPtr = (byte *)snap + 0x0C + 0x1734;
 
     for (i = 0; i < 31; i++) {
-        if (*(int *)(elemPtr + 0x1728) != 0) { /* TODO: unknown offset */
+        if (*(int *)(elemPtr + 0x1728) != 0) { /* snap->hudelems[i].type at +0x1728 from elemBase */
             elems[elemCount++] = (hudelem_t *)endPtr;
             endPtr += 0x80;
             elemPtr += 0x80;

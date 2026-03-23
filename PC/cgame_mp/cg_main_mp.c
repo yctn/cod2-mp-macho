@@ -1297,19 +1297,19 @@ void CG_Shutdown(void)
 
     cgBase = (byte *)cg;
     for (i = 0; i < 64; ++i, cgBase += 0x4b8) {
-        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgBase + 0xe0db8); /* TODO: unknown offset */
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgBase + 0xe0db8); /* cg->bgs.pXAnimTree at 0xe0db8 */
         if (tree) {
             XAnimFreeTree(tree, 0);
-            *(struct XAnimTree_s **)(cgBase + 0xe0db8) = NULL; /* TODO: unknown offset */
+            *(struct XAnimTree_s **)(cgBase + 0xe0db8) = NULL; /* cg->bgs.pXAnimTree at 0xe0db8 */
         }
     }
 
     cgsBase = (byte *)cgs;
     for (i = 0; i < 8; ++i, cgsBase += 0x4b8) {
-        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgsBase + 0xc6b8); /* TODO: unknown offset */
+        struct XAnimTree_s *tree = *(struct XAnimTree_s **)(cgsBase + 0xc6b8); /* cgs->bgs.pXAnimTree at 0xc6b8 */
         if (tree) {
             XAnimFreeTree(tree, 0);
-            *(struct XAnimTree_s **)(cgsBase + 0xc6b8) = NULL; /* TODO: unknown offset */
+            *(struct XAnimTree_s **)(cgsBase + 0xc6b8) = NULL; /* cgs->bgs.pXAnimTree at 0xc6b8 */
         }
     }
 

@@ -321,11 +321,11 @@ void Field_AdjustScroll(field_t *edit) {
         font = UI_GetFontHandle(0, fontScale);
     }
 
-    actualScale = ((GetFontHeightFn)(*(void **)((byte *)imp_re + 0x110)))(font, fontScale);
+    actualScale = ((refexport_t *)imp_re)->NormalizedTextScale(font, fontScale);
     bufStart = edit->buffer;
 
     {
-        int totalWidth = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart, 0, font);
+        int totalWidth = ((refexport_t *)imp_re)->TextWidth(bufStart, 0, font);
         float totalWidthScaled = (float)totalWidth * actualScale;
         if (totalWidthScaled < lineWidth) {
             edit->scroll = 0;
@@ -341,7 +341,7 @@ void Field_AdjustScroll(field_t *edit) {
 
     scroll = edit->scroll;
     while (scroll > 0) {
-        int endWidth = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll - 1, 0, font);
+        int endWidth = ((refexport_t *)imp_re)->TextWidth(bufStart + scroll - 1, 0, font);
         float endWidthScaled = (float)endWidth * actualScale;
         if (endWidthScaled >= lineWidth)
             break;
@@ -354,8 +354,8 @@ compute_visible:
         int textLen, textLenFromScroll;
         float scrolledWidth, cursorWidth, diff;
 
-        textLen = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll, 0, font);
-        textLenFromScroll = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + edit->cursor, 0, font);
+        textLen = ((refexport_t *)imp_re)->TextWidth(bufStart + scroll, 0, font);
+        textLenFromScroll = ((refexport_t *)imp_re)->TextWidth(bufStart + edit->cursor, 0, font);
 
         scrolledWidth = (float)textLen * actualScale;
         cursorWidth = (float)textLenFromScroll * actualScale;
@@ -383,7 +383,7 @@ compute_drawWidth:
 
             if (lineWidth > 0.0f && visChars < len) {
                 while (visChars < len) {
-                    int w = ((TextWidthFn)(*(void **)((byte *)imp_re + 0x114)))(bufStart + scroll, visChars + 1, font);
+                    int w = ((refexport_t *)imp_re)->TextWidth(bufStart + scroll, visChars + 1, font);
                     float wScaled = (float)w * actualScale;
                     if (wScaled >= lineWidth)
                         break;
@@ -2581,7 +2581,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         {
             typedef float (*GetFontYSizeFn)(void *font, float scale);
             float fontYSize;
-            GetFontYSizeFn fn = (GetFontYSizeFn)(*(void **)(*(byte **)imp_re + 0x110));
+            GetFontYSizeFn fn = (GetFontYSizeFn)(*(refexport_t **)imp_re)->NormalizedTextScale;
             fontYSize = fn(font, rawScale);
             (void)fontYSize; /* used below */
 
@@ -2615,7 +2615,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
     /* line 436: re.R_GetFontHeight */
     {
         typedef int (*GetFontHeightFn)(void *font);
-        GetFontHeightFn fn = (GetFontHeightFn)(*(void **)(*(byte **)imp_re + 0x118));
+        GetFontHeightFn fn = (GetFontHeightFn)(*(refexport_t **)imp_re)->TextHeight;
         int fontHeight = fn(font);
         yAdj = (float)y + (float)fontHeight * yScale;
     }

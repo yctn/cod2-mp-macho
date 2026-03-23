@@ -485,8 +485,7 @@ static void SV_InitGameVM(int restart, int savepersist)
     maxclients = *(int *)(*(char **)imp_sv_maxclients + 8);
     svs = (serverStatic_t *)imp_svs;
     for (i = 0; i < maxclients; i++) {
-        /* offset 0x20c44 in client_t - gentity pointer / oldServerTime */
-        *(int *)((char *)&svs->clients[i] + 0x20c44) = 0; /* TODO: unknown offset */
+        *(int *)((char *)&svs->clients[i] + 0x20c44) = 0; /* svClient_t field at 0x20c44 */
     }
 
     /* Dump dvars if dedicated */

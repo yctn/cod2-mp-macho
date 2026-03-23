@@ -39,7 +39,7 @@ cmodel_t * CM_ClipHandleToModel(clipHandle_t handle)
     if (handle < cm->numSubModels) {
         return &cm->cmodels[handle];
     }
-    return *(cmodel_t **)((char *)Sys_GetValue(3) + 0x14); /* TODO: unknown offset 0x14 */
+    return *(cmodel_t **)((char *)Sys_GetValue(3) + 0x14); /* Sys_GetValue(3)->clipMap at 0x14 */
 }
 
 /* line 254 */

@@ -708,7 +708,7 @@ have_parts:
         model->flags = config.flags;
 
         /* Check renderer for loading surfs */
-        if (!*(char *)(g_renderer_ptr + 0x144)) { /* TODO: unknown offset - renderer struct field */
+        if (!*(char *)(g_renderer_ptr + 0x144)) { /* renderer flag at 0x144 */
             goto done;
         }
 

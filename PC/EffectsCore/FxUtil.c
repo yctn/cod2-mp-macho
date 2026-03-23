@@ -1752,7 +1752,7 @@ static void FX_InitParticle_impl(byte *prim, byte *particle, vec_t *newOrigin, c
     /* Copy primTemp fields to particle */
     ((Particle *)particle)->nonUniformScale = ((PrimitiveTemplate *)primTemp)->mNonUniformScale;
     ((Particle *)particle)->elasticity = FxRange_GetVal(&((PrimitiveTemplate *)primTemp)->mElasticity);
-    *(float *)(particle + 0x44) = FxRange_GetVal(&((PrimitiveTemplate *)primTemp)->mRotation);  /* size */
+    ((Effect *)particle)->mRefEnt.origin[1] = FxRange_GetVal(&((PrimitiveTemplate *)primTemp)->mRotation);  /* size */
 }
 #ifndef __EMSCRIPTEN__
 static __attribute__((naked))
@@ -2468,7 +2468,7 @@ static void FX_SetMaterialAndSequenceParams_impl(byte *primTemp, byte *particle,
     ((Particle *)particle)->frameRate = frameRate;
     ((Particle *)particle)->sequenceLoopMode = ((PrimitiveTemplate *)primTemp)->mSequenceLoopMode;
     ((Particle *)particle)->sequenceLoopTimes = ((PrimitiveTemplate *)primTemp)->mSequenceLoopTimes;
-    *(void **)(particle + 0x40) = material;
+    *(void **)&((Effect *)particle)->mRefEnt.origin[0] = material;
     ((Effect *)particle)->mSortGroup = 0;
 
     if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
@@ -2554,21 +2554,21 @@ find_cluster:;
     Effect_SetTimeStartEnd(particle, curTime, endTime);
 
     /* Copy effect template references */
-    *(int *)(particle + 0x34) = *(int *)prim; /* effect template */
-    *(int *)(particle + 0x38) = ((PrimitiveTemplate *)primTemp)->mParentPrimIndex;
-    *(int *)(particle + 0x10) = ((PrimitiveTemplate *)primTemp)->mGroupFlags;
+    *(int *)&((Effect *)particle)->mRefEnt.dlightColor[2] = *(int *)prim; /* effect template */
+    *(int *)&((Effect *)particle)->mRefEnt.materialTime = ((PrimitiveTemplate *)primTemp)->mParentPrimIndex;
+    *(int *)&((Effect *)particle)->mRefEnt.axis[0][1] = ((PrimitiveTemplate *)primTemp)->mGroupFlags;
 
     /* Copy min/max from primTemp */
-    *(float *)(particle + 0x14) = ((PrimitiveTemplate *)primTemp)->mMin[0]; /* TODO: particle subclass fields 0x14-0x28 */
-    *(float *)(particle + 0x18) = ((PrimitiveTemplate *)primTemp)->mMin[1];
-    *(float *)(particle + 0x1c) = ((PrimitiveTemplate *)primTemp)->mMin[2];
-    *(float *)(particle + 0x20) = ((PrimitiveTemplate *)primTemp)->mMax[0];
-    *(float *)(particle + 0x24) = ((PrimitiveTemplate *)primTemp)->mMax[1];
-    *(float *)(particle + 0x28) = ((PrimitiveTemplate *)primTemp)->mMax[2];
+    ((Effect *)particle)->mRefEnt.axis[0][2] = ((PrimitiveTemplate *)primTemp)->mMin[0]; /* TODO: particle subclass fields 0x14-0x28 */
+    ((Effect *)particle)->mRefEnt.axis[1][0] = ((PrimitiveTemplate *)primTemp)->mMin[1];
+    ((Effect *)particle)->mRefEnt.axis[1][1] = ((PrimitiveTemplate *)primTemp)->mMin[2];
+    ((Effect *)particle)->mRefEnt.axis[1][2] = ((PrimitiveTemplate *)primTemp)->mMax[0];
+    ((Effect *)particle)->mRefEnt.axis[2][0] = ((PrimitiveTemplate *)primTemp)->mMax[1];
+    ((Effect *)particle)->mRefEnt.axis[2][1] = ((PrimitiveTemplate *)primTemp)->mMax[2];
 
     /* Get effects from MediaHandles */
-    *(void **)(particle + 0x30) = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mDeathFxHandles); /* emit effect */
-    *(void **)(particle + 0x2c) = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mImpactFxHandles); /* death effect */
+    *(void **)&((Effect *)particle)->mRefEnt.dlightColor[1] = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mDeathFxHandles); /* emit effect */
+    *(void **)&((Effect *)particle)->mRefEnt.dlightColor[0] = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mImpactFxHandles); /* death effect */
 
     /* Call vtable CreateChannelInstances */
     typedef void (*CreateChFn)(void *, void *);
@@ -2870,9 +2870,9 @@ void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         Particle_IntegrateTotalVelocity(p, lateTime, velSum);
         newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
     }
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
-    *(float *)(p + 0x260) = flrand(0.0f, 1.0f);
-    *(byte *)(p + 0x25c) = ((PrimitiveTemplate *)primTemp)->useLength; /* TODO: subclass field at 0x25c */
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
+    ((Cloud *)p)->randomLengthBlend = flrand(0.0f, 1.0f);
+    *(byte *)&((Cloud *)p)->lengthBlendFactor = ((PrimitiveTemplate *)primTemp)->useLength; /* TODO: subclass field at 0x25c */
 }
 
 /* line 2063 */
@@ -2907,21 +2907,21 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
 
     /* Copy origin to p+4 */
     if (origin) {
-        *(float *)(p + 4) = origin[0]; *(float *)(p + 8) = origin[1]; *(float *)(p + 0xc) = origin[2];
+        *(float *)&((Effect *)p)->mRefEnt.customMaterial = origin[0]; ((Effect *)p)->mRefEnt.rotation = origin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = origin[2];
     } else {
-        *(float *)(p + 4) = 0; *(float *)(p + 8) = 0; *(float *)(p + 0xc) = 0;
+        *(float *)&((Effect *)p)->mRefEnt.customMaterial = 0; ((Effect *)p)->mRefEnt.rotation = 0; ((Effect *)p)->mRefEnt.axis[0][0] = 0;
     }
 
-    *(void **)(p + 0x40) = material;
+    *(void **)&((Effect *)p)->mRefEnt.origin[0] = material;
 
     /* Check flags for random weight */
     if (((PrimitiveTemplate *)primTemp)->mAttributeFlags & 0x2000)
-        *(float *)(p + 0xc4) = flrand(0.0f, 1.0f);
+        ((Light *)p)->colorBlendFactor = flrand(0.0f, 1.0f);
 
     /* Set refractive flag */
-    *(int *)(p + 0xb0) = 0;
+    ((Effect *)p)->mSortGroup = 0;
     if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
-        *(int *)(p + 0xb0) = -1;
+        ((Effect *)p)->mSortGroup = -1;
 
     Flash_Init(p);
 }
@@ -3104,16 +3104,16 @@ void FX_AddLight(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
 #else
     FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
 #endif
-    *(float *)(light + 4) = newOrigin[0];
-    *(float *)(light + 8) = newOrigin[1];
-    *(float *)(light + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)light)->mRefEnt.customMaterial = newOrigin[0];
+    ((Effect *)light)->mRefEnt.rotation = newOrigin[1];
+    ((Effect *)light)->mRefEnt.axis[0][0] = newOrigin[2];
 
     byte *primTemp = (byte *)prim->primTemp;
     int flags = ((PrimitiveTemplate *)primTemp)->mAttributeFlags;
     if (flags & 0x2000) /* bit 13 */
-        *(float *)(light + 0xc4) = flrand(0.0f, 1.0f);
+        ((Light *)light)->colorBlendFactor = flrand(0.0f, 1.0f);
     if ((short)flags < 0) /* bit 15 */
-        *(float *)(light + 0xc8) = flrand(0.0f, 1.0f);
+        ((Light *)light)->sizeBlendFactor = flrand(0.0f, 1.0f);
 }
 
 /* FX_AddCylinder — allocate Cylinder, add, init, set material, copy normal/origin */
@@ -3158,11 +3158,11 @@ void FX_AddCylinder(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         void *orient = FxBoltFrame_GetOrientation(bolt);
         vec3_t localNormal;
         OrientationDirFromWorldDir(orient, normal, localNormal);
-        *(float *)(p + 0x48) = localNormal[0]; *(float *)(p + 0x4c) = localNormal[1]; *(float *)(p + 0x50) = localNormal[2];
+        ((Effect *)p)->mRefEnt.radius[0] = localNormal[0]; ((Effect *)p)->mRefEnt.radius[1] = localNormal[1]; *(float *)&((Effect *)p)->mRefEnt.materialRGBA = localNormal[2];
     } else {
-        *(float *)(p + 0x48) = normal[0]; *(float *)(p + 0x4c) = normal[1]; *(float *)(p + 0x50) = normal[2];
+        ((Effect *)p)->mRefEnt.radius[0] = normal[0]; ((Effect *)p)->mRefEnt.radius[1] = normal[1]; *(float *)&((Effect *)p)->mRefEnt.materialRGBA = normal[2];
     }
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
 }
 #if 0 /* Original ASM preserved */
 __attribute__((naked))
@@ -3351,26 +3351,26 @@ void FX_AddLine(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         void *orient = FxBoltFrame_GetOrientation(bolt);
         vec3_t localEnd;
         OrientationPosFromWorldPos(orient, org2, localEnd);
-        *(float *)(p + 0x24c) = localEnd[0]; *(float *)(p + 0x250) = localEnd[1]; *(float *)(p + 0x254) = localEnd[2];
+        ((Tail *)p)->endpoint[0] = localEnd[0]; ((Tail *)p)->endpoint[1] = localEnd[1]; ((Tail *)p)->endpoint[2] = localEnd[2];
     } else {
-        *(float *)(p + 0x24c) = org2[0]; *(float *)(p + 0x250) = org2[1]; *(float *)(p + 0x254) = org2[2];
+        ((Tail *)p)->endpoint[0] = org2[0]; ((Tail *)p)->endpoint[1] = org2[1]; ((Tail *)p)->endpoint[2] = org2[2];
     }
 
     /* Copy origin */
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
-    *(void **)(p + 0x40) = material;
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
+    *(void **)&((Effect *)p)->mRefEnt.origin[0] = material;
 
     /* Random weights based on flags */
     int flags = ((PrimitiveTemplate *)primTemp)->mAttributeFlags;
-    if (flags & 0x2000) *(float *)(p + 0x118) = flrand(0.0f, 1.0f);
-    if (flags & 0x4000) *(float *)(p + 0x11c) = flrand(0.0f, 1.0f);
-    if ((short)flags < 0) *(float *)(p + 0x120) = flrand(0.0f, 1.0f);
-    if (flags & 0x10000) *(float *)(p + 0x124) = flrand(0.0f, 1.0f);
+    if (flags & 0x2000) ((Particle *)p)->blendWeight[0] = flrand(0.0f, 1.0f);
+    if (flags & 0x4000) ((Particle *)p)->blendWeight[1] = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) ((Particle *)p)->blendWeight[2] = flrand(0.0f, 1.0f);
+    if (flags & 0x10000) ((Particle *)p)->blendWeight[3] = flrand(0.0f, 1.0f);
 
     /* Refractive check */
-    *(int *)(p + 0xb0) = 0;
+    ((Effect *)p)->mSortGroup = 0;
     if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
-        *(int *)(p + 0xb0) = -1;
+        ((Effect *)p)->mSortGroup = -1;
 }
 #if 0 /* Original ASM */
 __attribute__((naked))
@@ -3637,9 +3637,9 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
     }
 
     /* Copy newOrigin to particle origin at offset 4 */
-    *(float *)(p + 4) = newOrigin[0];
-    *(float *)(p + 8) = newOrigin[1];
-    *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0];
+    ((Effect *)p)->mRefEnt.rotation = newOrigin[1];
+    ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
 }
 
 /* FX_AddTail — allocate Tail, add to system, init, late time, endpoint setup */
@@ -3679,14 +3679,14 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         newOrigin[0] += velSum[0] * dt; newOrigin[1] += velSum[1] * dt; newOrigin[2] += velSum[2] * dt;
     }
     /* Copy origin */
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
     /* Copy endpoint direction = newOrigin - ax[0]*something */
     float ny = newOrigin[1]; /* saved for below */
-    *(float *)(p + 0x24c) = newOrigin[0] - ((float *)ax)[0];
-    *(float *)(p + 0x250) = ny - ((float *)ax)[1];
-    *(float *)(p + 0x254) = newOrigin[2] - ((float *)ax)[2];
+    ((Tail *)p)->endpoint[0] = newOrigin[0] - ((float *)ax)[0];
+    ((Tail *)p)->endpoint[1] = ny - ((float *)ax)[1];
+    ((Tail *)p)->endpoint[2] = newOrigin[2] - ((float *)ax)[2];
     /* Random weight */
-    *(float *)(p + 0x25c) = flrand(0.0f, 1.0f);
+    ((Tail *)p)->lengthBlendFactor = flrand(0.0f, 1.0f);
     Tail_InitEndPoint(p);
 }
 #if 0 /* Original ASM */
@@ -3876,32 +3876,32 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
     /* Get material */
     void *material = MediaHandles_GetHandle(&((PrimitiveTemplate *)primTemp)->mMediaHandles);
     /* Copy origin */
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
     /* Copy endpoint = origin (same position for emitter) */
-    *(float *)(p + 0x24c) = newOrigin[0]; *(float *)(p + 0x250) = newOrigin[1]; *(float *)(p + 0x254) = newOrigin[2];
+    ((Tail *)p)->endpoint[0] = newOrigin[0]; ((Tail *)p)->endpoint[1] = newOrigin[1]; ((Tail *)p)->endpoint[2] = newOrigin[2];
     /* Get velocity at t=0 for emit direction */
     vec3_t vel;
     Particle_GetTotalVelocityAtTime0(p, vel);
-    *(float *)(p + 0x258) = vel[0]; *(float *)(p + 0x25c) = vel[1]; *(float *)(p + 0x260) = vel[2];
+    ((Tail *)p)->tailLength = vel[0]; ((Tail *)p)->lengthBlendFactor = vel[1]; *(float *)&((Tail *)p)->lengthChannelInstance = vel[2];
     /* Store spawn parameters */
     *(float *)(p + 0x278) = spawnSize;
     *(float *)(p + 0x284) = spawnDensity;
     *(float *)(p + 0x28c) = spawnStep;
     *(float *)(p + 0x294) = spawnVariance;
     /* Set model reference from primTemp */
-    *(int *)(p + 0xb4) = *(int *)&((PrimitiveTemplate *)primTemp)->mAngle3Delta; /* TODO: subclass field at 0xb4 */
+    *(int *)&((Effect *)p)->mModelPtr = *(int *)&((PrimitiveTemplate *)primTemp)->mAngle3Delta; /* TODO: subclass field at 0xb4 */
     /* Set emitter effect template */
     *(int *)(p + 0x290) = *(int *)&((PrimitiveTemplate *)primTemp)->mPlayFxHandles; /* TODO: subclass field at 0x290 */
     /* Set material + refractive flag */
-    *(void **)(p + 0x40) = material;
-    *(int *)(p + 0xb0) = 0;
+    *(void **)&((Effect *)p)->mRefEnt.origin[0] = material;
+    ((Effect *)p)->mSortGroup = 0;
     if (material && FxHelper_IsMaterialRefractive(theFxHelper, (MaterialHandle)material))
-        *(int *)(p + 0xb0) = -1;
+        ((Effect *)p)->mSortGroup = -1;
     /* Random weights based on flags */
     int flags = ((PrimitiveTemplate *)primTemp)->mAttributeFlags;
-    if (flags & 0x2000) *(float *)(p + 0x118) = flrand(0.0f, 1.0f);
-    if (flags & 0x4000) *(float *)(p + 0x11c) = flrand(0.0f, 1.0f);
-    if ((short)flags < 0) *(float *)(p + 0x120) = flrand(0.0f, 1.0f);
+    if (flags & 0x2000) ((Particle *)p)->blendWeight[0] = flrand(0.0f, 1.0f);
+    if (flags & 0x4000) ((Particle *)p)->blendWeight[1] = flrand(0.0f, 1.0f);
+    if ((short)flags < 0) ((Particle *)p)->blendWeight[2] = flrand(0.0f, 1.0f);
 }
 #if 0 /* Original ASM (257 lines) */
 __attribute__((naked))
@@ -4207,11 +4207,11 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
         void *orient = FxBoltFrame_GetOrientation(bolt);
         vec3_t localNormal;
         OrientationDirFromWorldDir(orient, normal, localNormal);
-        *(float *)(p + 0x24c) = localNormal[0]; *(float *)(p + 0x250) = localNormal[1]; *(float *)(p + 0x254) = localNormal[2];
+        ((Tail *)p)->endpoint[0] = localNormal[0]; ((Tail *)p)->endpoint[1] = localNormal[1]; ((Tail *)p)->endpoint[2] = localNormal[2];
     } else {
-        *(float *)(p + 0x24c) = normal[0]; *(float *)(p + 0x250) = normal[1]; *(float *)(p + 0x254) = normal[2];
+        ((Tail *)p)->endpoint[0] = normal[0]; ((Tail *)p)->endpoint[1] = normal[1]; ((Tail *)p)->endpoint[2] = normal[2];
     }
-    *(float *)(p + 4) = newOrigin[0]; *(float *)(p + 8) = newOrigin[1]; *(float *)(p + 0xc) = newOrigin[2];
+    *(float *)&((Effect *)p)->mRefEnt.customMaterial = newOrigin[0]; ((Effect *)p)->mRefEnt.rotation = newOrigin[1]; ((Effect *)p)->mRefEnt.axis[0][0] = newOrigin[2];
 }
 #if 0 /* Original ASM */
 __attribute__((naked))
@@ -4562,7 +4562,7 @@ void FX_UpdateAllBolt(void)
         byte *eff = ((byte **)effectListBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0) {
             FX_RemoveCluster(clusterId);
         }
@@ -4766,7 +4766,7 @@ void FX_Rewind(int time)
             byte *removed = *slot;
             *slot = ((byte **)effectListBolt)[count];
             ((byte **)effectListBolt)[count] = removed;
-            if (*(byte *)(removed + 0xa9) & 0x10)
+            if (((byte *)&((Effect *)removed)->mFlags)[1] & 0x10)
                 effectBlockSightCount--;
             count = privateEffectActiveCountBolt;
         } else {
@@ -4780,7 +4780,7 @@ void FX_Rewind(int time)
         byte *eff = ((byte **)effectListBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
@@ -4804,7 +4804,7 @@ void FX_Rewind(int time)
             byte *removed = *slot;
             *slot = ((byte **)effectListNonBolt)[count];
             ((byte **)effectListNonBolt)[count] = removed;
-            if (*(byte *)(removed + 0xa9) & 0x10)
+            if (((byte *)&((Effect *)removed)->mFlags)[1] & 0x10)
                 effectBlockSightCount--;
             count = privateEffectActiveCountNonBolt;
         } else {
@@ -4818,7 +4818,7 @@ void FX_Rewind(int time)
         byte *eff = ((byte **)effectListNonBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
@@ -5156,7 +5156,7 @@ void FX_UpdateAllNonBolt(void)
         byte *eff = ((byte **)effectListNonBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
@@ -5353,7 +5353,7 @@ void FX_DrawScheduledEffects(void)
         byte *eff = ((byte **)effectListNonBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
@@ -5368,7 +5368,7 @@ void FX_DrawScheduledEffects(void)
         byte *eff = ((byte **)effectListBolt)[i];
         int clusterId = ((Effect *)eff)->mClusterId;
         byte *cluster = (byte *)effectClusters + clusterId * 16;
-        *(int *)(cluster + 0xc) -= 1;
+        ((EffectCluster *)cluster)->refCount -= 1;
         if (((EffectCluster *)cluster)->refCount <= 0)
             FX_RemoveCluster(clusterId);
         ((VtFn)(*(void ***)eff)[1])(eff);
@@ -6042,11 +6042,11 @@ int FX_Restore(MemoryFile *memFile)
         ((ArchFn)(*(void ***)eff)[10])(eff, arch); /* vtable[10] = Archive */
 
         /* Get primTemplate from effect template */
-        byte *fxTemplate = *(byte **)(eff + 0x34);
-        int primIdx = *(int *)(eff + 0x38);
+        byte *fxTemplate = *(byte **)&((Effect *)eff)->mRefEnt.dlightColor[2];
+        int primIdx = *(int *)&((Effect *)eff)->mRefEnt.materialTime;
         byte *primTemp = NULL;
-        if (fxTemplate && primIdx < *(int *)(fxTemplate + 4))
-            primTemp = *(byte **)(fxTemplate + 8 + primIdx * 4);
+        if (fxTemplate && primIdx < ((EffectTemplate *)fxTemplate)->mPrimitiveCount)
+            primTemp = (byte *)((EffectTemplate *)fxTemplate)->mPrimitives[primIdx];
 
         if (!primTemp) continue;
 

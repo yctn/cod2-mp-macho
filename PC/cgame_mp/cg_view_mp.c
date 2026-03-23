@@ -1439,8 +1439,8 @@ void CG_InitView(void)
     int renderPlayerState;
 
     cg = (cg_t *)*(int *)imp_cg;
-    *(int *)((char *)cg + 0x285b8) = cg->time; /* TODO: unknown offset 0x285b8 */
-    *(int *)((char *)cg + 0x285bc) = 0x3f800000; /* TODO: unknown offset 0x285bc */
+    *(int *)((char *)cg + 0x285b8) = cg->time;       /* cg->frameTime at 0x285b8 */
+    *(int *)((char *)cg + 0x285bc) = 0x3f800000;     /* cg->frameTimeScale (1.0f) at 0x285bc */
 
     if (*(unsigned char *)((char *)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
         renderPlayerState = 1;

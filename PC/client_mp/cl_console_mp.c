@@ -2682,7 +2682,7 @@ static void ConDrawInput_CmdMatch(const char *str)
     if (I_strnicmp(str, conDrawInputGlob.inputText, conDrawInputGlob.inputTextLen) != 0)
         return;
 
-    drawText = (DrawTextFunc)(*(void **)((char *)imp_re + 0x11c));
+    drawText = (DrawTextFunc)((refexport_t *)imp_re)->DrawText;
     font = (void *)((clientStatic_t *)imp_cls)->consoleFont;
 
     drawText(str, 0x7fffffff, font, conDrawInputGlob.x, conDrawInputGlob.y + conDrawInputGlob.fontHeight, 1.0f, 1.0f, con_inputCommandMatchColor, 0);

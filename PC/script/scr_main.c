@@ -113,7 +113,7 @@ Bool Scr_IsIdentifier(const char *token)
         if (sch & ~0x7f) {
             isAlnum = ___maskrune(sch, 0x500) != 0;
         } else {
-            isAlnum = (*(int *)(runeLocale + 0x34 + sch * 4) & 0x500) != 0;
+            isAlnum = (((unsigned long *)((byte *)runeLocale + 0x34))[(unsigned char)sch] & 0x500) != 0;
         }
 
         if (!isAlnum && ch != '_')

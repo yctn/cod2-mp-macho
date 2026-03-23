@@ -14242,8 +14242,8 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
 
 #else
 static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2) {
-    int count1 = *(int *)((byte *)info1 + 0x80); /* TODO: unknown offset - JCOEF* treated as opaque struct */
-    int count2 = *(int *)((byte *)info2 + 0x80); /* TODO: unknown offset - JCOEF* treated as opaque struct */
+    int count1 = *(int *)((byte *)info1 + 0x80); /* JCOEF count at 0x80 */
+    int count2 = *(int *)((byte *)info2 + 0x80); /* JCOEF count at 0x80 */
     int i;
 
     if (count1 <= 0 || count2 <= 0)

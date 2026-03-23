@@ -3038,7 +3038,7 @@ static void R_VisitPortals_impl(const GfxCell *cell, const DpvsPlane *parentPlan
     for (i = 0; i < 255; i++) {
         *(void **)(poolBuf + i * 0x200) = poolBuf + (i + 1) * 0x200;
     }
-    *(void **)(poolBuf + 0x1FE00) = 0;
+    *(void **)(poolBuf + 0x1FE00) = 0; /* null-terminate pool at last slot */
 
     *(void **)((byte *)&dpvsGlob + 96) = poolBuf;
 

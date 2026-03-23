@@ -283,7 +283,7 @@ static void SCR_UpdateFrame(void)
     static int s_prevConnstate = -1;
 
     /* Guard: skip if renderer function table not populated */
-    if (!re || !*(void **)((byte *)re + 0xa8)) {
+    if (!re || !((refexport_t *)re)->BeginFrame) {
         return;
     }
 
@@ -467,8 +467,8 @@ end_frame_draw:
     RE_FUNC(re, 0xbc, re_void_func)();
     Con_DrawConsole();
     {
-        void *fn = *(void **)((byte *)re + 0xac);
-        if (fn) ((re_void_func)fn)();
+        re_void_func fn = ((refexport_t *)re)->EndFrame;
+        if (fn) fn();
     }
     Sys_IsMainThread();
     return;
@@ -478,8 +478,8 @@ end_frame:
     Con_DrawConsole();
     {
         byte *re2 = re_ptr_195eca8;
-        void *fn = *(void **)((byte *)re2 + 0xac);
-        if (fn) ((re_void_func)fn)();
+        re_void_func fn = ((refexport_t *)re2)->EndFrame;
+        if (fn) fn();
     }
     Sys_IsMainThread();
 }

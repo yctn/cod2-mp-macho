@@ -111,12 +111,12 @@ void CG_ResetPlayerEntity(centity_t *cent)
         pAnimTree = ((clientInfo_t *)ci)->pXAnimTree /* TODO: unknown offset - clientInfo anim tree */;
         if (pAnimTree) {
             /* Clear tree goal weights */
-            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cg + 0xe08e4) /* TODO: unknown offset - bgs anim index */, 0);
+            XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cg + 0xe08e4) /* cg->bgs.animIndex[death] at 0xe08e4 */, 0);
 
             /* Set complete goal weights for 3 anim indices */
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d0) /* TODO: unknown offset - bgs anim index */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d2) /* TODO: unknown offset - bgs anim index */, 1.0f, 0.0f, 1.0f, 0, 0, 0);
-            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d4) /* TODO: unknown offset - bgs anim index */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d0) /* cg->bgs.animIndex[stand] at 0xe08d0 */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d2) /* cg->bgs.animIndex[crouch] at 0xe08d2 */, 1.0f, 0.0f, 1.0f, 0, 0, 0);
+            XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cg + 0xe08d4) /* cg->bgs.animIndex[prone] at 0xe08d4 */, 0.0f, 0.0f, 1.0f, 0, 0, 0);
         }
 
         /* Zero out lerpAnim ranges */
@@ -251,7 +251,7 @@ check_local_player:
         if (((cg_t *)cg)->inKillCam) {
             /* Show "you" indicator */
             height = (int)additionalRadiusSize;
-            material = *(MaterialHandle *)(cg + 0xba38) /* TODO: unknown offset - likely cgs->media.youInKillCamMaterial */;
+            material = *(MaterialHandle *)(cg + 0xba38); /* cg->media.youInKillCamMaterial at 0xba38 */
             CG_PlayerFloatSprite(cent, material,
                 *(float *)(*(byte **)cg_sprite5_ptr + 8), height, 1);
             return;
@@ -262,7 +262,7 @@ check_local_player:
     eFlags = cent->nextState.eFlags;
     if (eFlags & 0x80) {
         height = (int)additionalRadiusSize;
-        material = *(MaterialHandle *)(cg + 0xba34) /* TODO: unknown offset - likely cgs->media.connectionMaterial */;
+        material = *(MaterialHandle *)(cg + 0xba34); /* cg->media.connectionMaterial at 0xba34 */
         CG_PlayerFloatSprite(cent, material,
             *(float *)(*(byte **)cg_sprite6_ptr + 8), height, 0);
         return;
@@ -288,7 +288,7 @@ check_local_player:
     /* Show friendly indicator */
     additionalRadiusSize -= 5.0f;
     height = (int)additionalRadiusSize;
-    material = *(MaterialHandle *)(cg + 0xba30) /* TODO: unknown offset - likely cgs->media.balloonMaterial */;
+    material = *(MaterialHandle *)(cg + 0xba30); /* cg->media.balloonMaterial at 0xba30 */
     CG_PlayerFloatSprite(cent, material,
         *(float *)(*(byte **)cg_sprite2_ptr + 8), height, 0);
 }
@@ -435,7 +435,7 @@ void CG_Player(centity_t *cent)
 
             /* line 234 */
             pAnimTree = ((clientInfo_t *)turretCi)->pXAnimTree;
-            pXAnims = *(void **)(cg + 0xe08cc) /* TODO: unknown offset - bgs anim data */;
+            pXAnims = *(void **)(cg + 0xe08cc); /* cg->bgs.weaponAnims at 0xe08cc */
             baseAnim = (unsigned short)(animValue & ~0x200);
             if (!pAnimTree)
                 goto render;
