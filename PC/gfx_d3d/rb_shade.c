@@ -115,7 +115,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
     ib = *(IDirect3DIndexBuffer9 **)(lockState + 8);
 
     /* D3DLOCK_NOOVERWRITE (0) when safe to append; D3DLOCK_DISCARD (0x2000) to reset */
-    if (!overflow && (*(int *)(dx + 0x2c20) != 0 || byteOffset != 0)) /* TODO: DxGlobals offset 0x2c20 */
+    if (!overflow && (((DxGlobals *)dx)->gpuSync != 0 || byteOffset != 0))
         lockFlags = 0;       /* D3DLOCK_NOOVERWRITE */
     else
         lockFlags = 0x2000;  /* D3DLOCK_DISCARD */
@@ -260,16 +260,16 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     }
 
     case 17: { /* shadow cookie 0 */
-        char *entry = (char *)((r_backEndGlobals_t *)backEnd)->light[0].def;
-        *image = *(void **)(entry + 0x0c);
-        *samplerState = *(byte *)(entry + 0x10);
+        GfxLightDef *entry = ((r_backEndGlobals_t *)backEnd)->light[0].def;
+        *image = entry->attenuation.image;
+        *samplerState = entry->attenuation.samplerState;
         return;
     }
 
     case 18: { /* shadow cookie 1 */
-        char *entry = (char *)((r_backEndGlobals_t *)backEnd)->light[1].def;
-        *image = *(void **)(entry + 0x0c);
-        *samplerState = *(byte *)(entry + 0x10);
+        GfxLightDef *entry = ((r_backEndGlobals_t *)backEnd)->light[1].def;
+        *image = entry->attenuation.image;
+        *samplerState = entry->attenuation.samplerState;
         return;
     }
 
@@ -555,21 +555,21 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
 {
     char *dx = (char *)imp_dx;
     int totalSize = stride * vertexCount;
-    int *lockSlot = *(int **)(dx + 0x2db4); /* TODO: DxGlobals.vertexLockSlot */
+    r_vb_state_t *lockSlot = ((DxGlobals *)dx)->dynamicVertexBuffer;
     IDirect3DVertexBuffer9 *dxVb;
     int writeOffset;
 
     if (!lockSlot)
         return;
 
-    dxVb = *(IDirect3DVertexBuffer9 **)(lockSlot + 2); /* lockSlot[8] = VB ptr */
-    writeOffset = lockSlot[0];
+    dxVb = (IDirect3DVertexBuffer9 *)lockSlot->buffer;
+    writeOffset = lockSlot->used;
     DWORD lockFlags;
     byte *bufferData;
     HRESULT hr;
 
     /* Determine lock flags: DISCARD if at start, NOOVERWRITE if appending */
-    if (writeOffset == 0 || *(int *)(dx + 0x2c20) == 0) /* TODO: DxGlobals offset 0x2c20 */
+    if (writeOffset == 0 || ((DxGlobals *)dx)->gpuSync == 0)
         lockFlags = 0x2000; /* D3DLOCK_DISCARD */
     else
         lockFlags = 0; /* D3DLOCK_NOOVERWRITE */
@@ -632,7 +632,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
     {
         char *dxState = (char *)imp_dxState;
         int ssOfs = streamIndex * 12;
-        int vertexOffset = lockSlot[0];
+        int vertexOffset = lockSlot->used;
 
         if (dxVb != ((DxState *)dxState)->streams[streamIndex].vb) {
             RB_ChangeStreamSource(streamIndex, dxVb, vertexOffset, stride);
@@ -643,7 +643,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
     }
 
     /* Advance the write position in the lock slot */
-    lockSlot[0] += totalSize;
+    lockSlot->used += totalSize;
 }
 
 #if 0 /* original naked — replaced above */
@@ -4018,7 +4018,7 @@ void RB_EndSurface(void)
         RB_UpdateViewport();
 
     /* Skip draw if dxState device lost / not ready */
-    if (*(byte *)((char *)imp_dxState + 0x20c8)) { /* TODO: unknown DxState offset */
+    if (((DxState *)imp_dxState)->viewportIsNull) {
         g_rb_endsurface_dxstate++;
         goto cleanup;
     }
@@ -4111,16 +4111,16 @@ void RB_EndSurface(void)
     /* Dynamic VB overflow check: reset write offset if data won't fit */
     {
         char *dx = (char *)imp_dx;
-        int *lockSlot = *(int **)(dx + 0x2db4); /* TODO: DxGlobals.vertexLockSlot */
+        r_vb_state_t *lockSlot = ((DxGlobals *)dx)->dynamicVertexBuffer;
         if (!lockSlot) {
             static int lockslot_warn = 0;
             if (lockslot_warn++ < 5)
                 fprintf(stderr, "[EndSurf] lockSlot NULL at dx+0x2db4, skipping draw\n");
             goto cleanup;
         }
-        int needed = ((materialCommands_t *)tess)->vertexCount * vertexStride + lockSlot[0];
-        if (needed > lockSlot[1])
-            lockSlot[0] = 0;
+        int needed = ((materialCommands_t *)tess)->vertexCount * vertexStride + lockSlot->used;
+        if (needed > lockSlot->total)
+            lockSlot->used = 0;
     }
 
     /* Upload vertex data to GPU vertex buffer */
@@ -4230,19 +4230,19 @@ static void RB_EvalStateMap(byte *stateMap, byte *refStateBits, int stateBits[2]
         int matched = 0;
 
         for (ruleIdx = 0; ruleIdx < ruleCount; ruleIdx++) {
-            byte *rule = ruleSet + 4 + ruleIdx * 0x20;
+            const MaterialStateMapRule *rule = &((const MaterialStateMapRuleSet *)ruleSet)->rules[ruleIdx];
             /* Check if rule matches current state */
-            if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+            if ((*(int *)(refStateBits + 0) & rule->stateBitsMask[1]) != rule->stateBitsValue[1])
                 continue;
-            if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+            if ((*(int *)(refStateBits + 4) & rule->stateBitsValue[0]) != rule->stateBitsSet[0])
                 continue;
 
-            /* Apply rule: AND with mask, OR with value for each state word */
+            /* Apply rule: AND with clear mask, OR with set value for each state word */
             {
                 int k;
                 for (k = 0; k < 2; k++) {
-                    stateBits[k] &= *(int *)(rule + 0x18 + k*4);
-                    stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                    stateBits[k] &= rule->stateBitsClear[k];
+                    stateBits[k] |= rule->stateBitsSet[k];
                 }
             }
             matched = 1;
@@ -4290,13 +4290,13 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         MaterialShader *psShader = ((MaterialPassDx9 *)pass)->pixelShader;
         void *pixelShader = (void *)psShader->u.ps;
 
-        if (pixelShader != *(void **)(dxState + 0x2138)) { /* TODO: DxState.pixelShader */
+        if (pixelShader != ((DxState *)dxState)->pixelShader) {
             do {
                 device = *(byte **)(dx + 8);
                 vtable = *(void ***)device;
                 ((void (*)(void *, void *))vtable[0x1ac/4])(device, pixelShader);
             } while (*alwaysfails);
-            *(void **)(dxState + 0x2138) = pixelShader; /* TODO: DxState.pixelShader */
+            ((DxState *)dxState)->pixelShader = pixelShader;
         }
     }
 
@@ -4305,13 +4305,13 @@ static void RB_SetShaderAndDecl(byte *pass, int vertDeclType, byte *dxState)
         MaterialShader *vsShader = ((MaterialPassDx9 *)pass)->vertexShader;
         void *vertexShader = (void *)vsShader->u.vs;
 
-        if (vertexShader != *(void **)(dxState + 0x213c)) { /* TODO: DxState.vertexShader */
+        if (vertexShader != ((DxState *)dxState)->vertexShader) {
             do {
                 device = *(byte **)(dx + 8);
                 vtable = *(void ***)device;
                 ((void (*)(void *, void *))vtable[0x170/4])(device, vertexShader);
             } while (*alwaysfails);
-            *(void **)(dxState + 0x213c) = vertexShader; /* TODO: DxState.vertexShader */
+            ((DxState *)dxState)->vertexShader = vertexShader;
         }
     }
 
@@ -4435,17 +4435,17 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     int matched = 0;
 
                     for (ri2 = 0; ri2 < rc; ri2++) {
-                        byte *rule = ruleSet + 4 + ri2 * 0x20;
-                        if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+                        const MaterialStateMapRule *rule = &((const MaterialStateMapRuleSet *)ruleSet)->rules[ri2];
+                        if ((*(int *)(refStateBits + 0) & rule->stateBitsMask[1]) != rule->stateBitsValue[1])
                             continue;
-                        if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+                        if ((*(int *)(refStateBits + 4) & rule->stateBitsValue[0]) != rule->stateBitsSet[0])
                             continue;
 
                         {
                             int k;
                             for (k = 0; k < 2; k++) {
-                                stateBits[k] &= *(int *)(rule + 0x18 + k*4);
-                                stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                                stateBits[k] &= rule->stateBitsClear[k];
+                                stateBits[k] |= rule->stateBitsSet[k];
                             }
                         }
                         matched = 1;
@@ -4495,7 +4495,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             /* Set normalizeNormals render state if pass[4] differs */
             {
                 byte passNormalize = *(byte *)(pass + 4);
-                if (passNormalize != *(byte *)(dxState + 0x2094)) { /* TODO: unknown DxState offset */
+                if (passNormalize != ((DxState *)dxState)->gridLighting) {
                     byte *dx = (byte *)imp_dx;
                     volatile int *af = (volatile int *)imp_alwaysfails;
                     do {
@@ -4504,7 +4504,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                         ((void (*)(void *, int, int))vt[0xe4/4])(dev, 0x89,
                             passNormalize ? 1 : 0);
                     } while (*af);
-                    *(byte *)(dxState + 0x2094) = passNormalize; /* TODO: unknown DxState offset */
+                    ((DxState *)dxState)->gridLighting = passNormalize;
                 }
             }
 
@@ -4591,24 +4591,21 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
             /* Set Dx7 texture stage states (8 stages) */
             {
                 int stageIdx;
-                byte *stagePtr = pass + 0x1c;
-                byte *dxStagePtr = dxState + 0x2014;
+                int *stagePtr = ((MaterialPassDx7 *)pass)->colorStageBits;
+                int *dxStagePtr = ((DxState *)dxState)->refColorStageBits;
 
                 for (stageIdx = 0; stageIdx < 8; stageIdx++) {
-                    int colorBits = *(int *)stagePtr;
-                    if (colorBits != *(int *)dxStagePtr) {
-                        *(int *)dxStagePtr = colorBits;
+                    int colorBits = stagePtr[stageIdx];
+                    if (colorBits != dxStagePtr[stageIdx]) {
+                        dxStagePtr[stageIdx] = colorBits;
                         RB_ChangeColorStageState(stageIdx, colorBits);
                     }
 
-                    int alphaBits = *(int *)(stagePtr + 0x20);
-                    if (alphaBits != *(int *)(dxStagePtr + 0x20)) {
-                        *(int *)(dxStagePtr + 0x20) = alphaBits;
+                    int alphaBits = ((MaterialPassDx7 *)pass)->alphaStageBits[stageIdx];
+                    if (alphaBits != ((DxState *)dxState)->refAlphaStageBits[stageIdx]) {
+                        ((DxState *)dxState)->refAlphaStageBits[stageIdx] = alphaBits;
                         RB_ChangeAlphaStageState(stageIdx, alphaBits);
                     }
-
-                    stagePtr += 4;
-                    dxStagePtr += 4;
                 }
             }
         } else {
@@ -4663,17 +4660,17 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                     int matched = 0;
 
                     for (ri2 = 0; ri2 < rc; ri2++) {
-                        byte *rule = ruleSet + 4 + ri2 * 0x20;
-                        if ((*(int *)(refStateBits + 0) & *(int *)(rule + 4)) != *(int *)(rule + 0xc))
+                        const MaterialStateMapRule *rule = &((const MaterialStateMapRuleSet *)ruleSet)->rules[ri2];
+                        if ((*(int *)(refStateBits + 0) & rule->stateBitsMask[1]) != rule->stateBitsValue[1])
                             continue;
-                        if ((*(int *)(refStateBits + 4) & *(int *)(rule + 8)) != *(int *)(rule + 0x10))
+                        if ((*(int *)(refStateBits + 4) & rule->stateBitsValue[0]) != rule->stateBitsSet[0])
                             continue;
 
                         {
                             int k;
                             for (k = 0; k < 2; k++) {
-                                stateBits[k] &= *(int *)(rule + 0x18 + k*4);
-                                stateBits[k] |= *(int *)(rule + 0x10 + k*4);
+                                stateBits[k] &= rule->stateBitsClear[k];
+                                stateBits[k] |= rule->stateBitsSet[k];
                             }
                         }
                         matched = 1;
@@ -5003,8 +5000,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
 
         /* Dx7 post-pass: restore W matrix */
         if (isDx7) {
-            byte *techPtr = technique;
-            if (*(byte *)(techPtr + 0xd)) {
+            if (((MaterialTechnique *)technique)->passArray.dx7[0].projectToInfinity) {
                 RB_SetViewMatrixForWDx7(0.0f);
                 /* ... draw with Dx7 W override ... */
                 RB_SetViewMatrixForWDx7(1.0f);

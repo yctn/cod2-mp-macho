@@ -426,24 +426,24 @@ long int R_InitRenderTargets(void)
 
         /* line 366: Allocate image prog 2 */
         image = Image_AllocProg(2, 6);
-        *(GfxImage **)(dxPtr + 0x2c94) = image;
+        ((DxGlobals *)dxPtr)->renderTargets[5].image = image;
 
         /* line 371: Setup as 128x128 A8R8G8B8 render target */
         Image_SetupRenderTarget(image, 128, 128, D3DFMT_A8R8G8B8);
 
         /* line 373: Get surface */
-        image = *(GfxImage **)(dxPtr + 0x2c94);
-        *(IDirect3DSurface9 **)(dxPtr + 0x2c98) = Image_GetSurface(image);
-        *(int *)(dxPtr + 0x2ca0) = 128;   /* line 374: width */
-        *(int *)(dxPtr + 0x2ca4) = 128;   /* line 375: height */
+        image = ((DxGlobals *)dxPtr)->renderTargets[5].image;
+        ((DxGlobals *)dxPtr)->renderTargets[5].colorSurface = Image_GetSurface(image);
+        ((DxGlobals *)dxPtr)->renderTargets[5].width = 128;   /* line 374: width */
+        ((DxGlobals *)dxPtr)->renderTargets[5].height = 128;   /* line 375: height */
 
         /* line 383: Track texture */
-        Image_TrackTexture(*(GfxImage **)(dxPtr + 0x2c94), 3, D3DFMT_A8R8G8B8, 128, 128, 1);
+        Image_TrackTexture(((DxGlobals *)dxPtr)->renderTargets[5].image, 3, D3DFMT_A8R8G8B8, 128, 128, 1);
 
         /* line 174: Reuse 128x128 depth stencil */
         depthSurface = R_CreateSmallDepthStencil(dxPtr);
         dxPtr = DX();
-        *(IDirect3DSurface9 **)(dxPtr + 0x2c9c) = depthSurface;
+        ((DxGlobals *)dxPtr)->renderTargets[5].depthStencilSurface = depthSurface;
     }
 
     /* line 543: Init renderTargets[8] (BLURRED_SCREEN) - picmip=2, format=backBufferFormat, usage=READBACK */

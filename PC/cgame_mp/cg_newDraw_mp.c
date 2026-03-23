@@ -652,7 +652,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         rect->horzAlign,
         rect->vertAlign,
         color,
-        *(MaterialHandle *)(cgs + 0xbc78)); /* cgs->media.breathHintMaterial at 0xbc78 */
+        ((cgs_t *)cgs)->media.mantleHint);
 }
 
 /* line 1615 */

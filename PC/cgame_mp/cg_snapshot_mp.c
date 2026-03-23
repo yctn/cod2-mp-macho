@@ -247,19 +247,14 @@ static void CG_ResetEntity(char *cent)
         clientNum = ((centity_t *)cent)->nextState.clientNum;
         ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum] - 0x14; /* clientInfo base (0x14 before clientinfo[] entry) */
 
-        /* line 76: ci->legs.oldFrameModel = cent->nextState.index (at 0x15c from cent) */
-        /* ci + 0x14 + 0x3e0 = ci + 0x3f4 = leftHandGun offset */
-        /* Actually: leal 0x14(%eax), %ecx gets us to ci+0x14 (the "real" clientInfo start)
-         * Then 0x3e0(%ecx) = ci + 0x14 + 0x3e0 = ci + 0x3f4
-         * In clientInfo_t, offset 0x3f4 = leftHandGun
-         * cent + 0x15c = nextState offset 0x6c (from nextState base 0xf0: 0xf0+0x6c=0x15c)
-         * entityState offset 0x6c = angles2[0] (angles2 at 0x68, so 0x6c = angles2[1])
-         * Hmm, actually 0x15c = 0xf0 + 0x6c. entityState offset 0x6c = angles2[1]
+        /* line 76: ci->lerpMoveDir = cent->nextState.angles2[1]
+         * ci = &clientinfo[clientNum] - 0x14, so (ci+0x14) = &clientinfo[clientNum]
+         * (ci+0x14)+0x3e0 = clientinfo[clientNum].lerpMoveDir
          */
-        *(int *)(ci + 0x14 + 0x3e0) /* ci->leftHandGun at ci+0x3f4 */ = *(int *)(cent + 0x15c) /* cent->nextState.angles2[1] at 0x15c */;
+        ((clientInfo_t *)(ci + 0x14))->lerpMoveDir = *(int *)(cent + 0x15c) /* cent->nextState.angles2[1] */;
 
-        /* line 77: ci + 0x14 + 0x3e4 = cent + 0x1c4 (nextState.leanf) */
-        *(int *)(ci + 0x14 + 0x3e4) /* ci->leanf at ci+0x3f8 */ = ((centity_t *)cent)->nextState.leanf;
+        /* line 77: ci->lerpLean = cent->nextState.leanf */
+        ((clientInfo_t *)(ci + 0x14))->lerpLean = *(int *)&((centity_t *)cent)->nextState.leanf;
 
         /* line 78: VectorCopy cent->lerpAngles to ci + 0x3fc */
         {

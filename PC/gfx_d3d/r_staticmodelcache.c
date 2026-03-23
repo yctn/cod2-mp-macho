@@ -889,7 +889,7 @@ void R_InitStaticModelCache(void)
         device = ((DxGlobals *)imp_dx)->device;
         vtable = *(void ***)device;
         ((int (*)(void *, int, int, int, int, void *, int))vtable[0x68 / 4])(
-            device, size, 0x400208, 0, 0, &((DxGlobals *)imp_dx)->smodelCacheVb, 0); /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */
+            device, size, 0x400208, 0, 0, &((DxGlobals *)imp_dx)->smodelCacheVb, 0);
     } while (*(volatile int *)imp_alwaysfails != 0);
 
     /* Reset the cache */
@@ -1804,14 +1804,14 @@ void R_ShutdownStaticModelCache(void)
 
 release_vb:
     /* Release the smodel cache vertex buffer */
-    vb = ((DxGlobals *)imp_dx)->smodelCacheVb /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */;
+    vb = ((DxGlobals *)imp_dx)->smodelCacheVb;
     if (vb) {
         do {
-            vb = ((DxGlobals *)imp_dx)->smodelCacheVb /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */;
+            vb = ((DxGlobals *)imp_dx)->smodelCacheVb;
             vtable = *(void ***)vb;
             if (vtable && vtable[8 / 4])
                 ((int (*)(void *))vtable[8 / 4])(vb);
-            ((DxGlobals *)imp_dx)->smodelCacheVb = NULL; /* TODO: verify offset 0x2dc4 maps to smodelCacheVb */
+            ((DxGlobals *)imp_dx)->smodelCacheVb = NULL;
         } while (*(volatile int *)imp_alwaysfails != 0);
     }
 }
@@ -2449,7 +2449,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         /* Lock VB and copy Dx7 vertices */
         {
             byte *dx = (byte *)imp_dx;
-            byte *vb = *(byte **)(dx + 0x2dc4);
+            byte *vb = (byte *)((DxGlobals *)dx)->smodelCacheVb;
             void **vtable = *(void ***)vb;
             int lockSize = vertCount * 0x18;
             int lockOffset = baseVertIndex * 0x18;

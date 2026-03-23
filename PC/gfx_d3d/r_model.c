@@ -297,7 +297,7 @@ extern void R_FatalLockError(HRESULT hr);
 void R_LockSkinnedCache(GfxLockType lockType)
 {
     byte *frontEndData = *(byte **)imp_frontEndDataOut;
-    byte *vb = *(byte **)(*(byte **)(frontEndData + 0x217c78) + 8);
+    byte *vb = *(byte **)((byte *)((GfxBackEndData *)frontEndData)->skinnedCacheVb + 8);
     byte *dx = (byte *)imp_dx;
     void **vtable;
     DWORD lockFlags;
@@ -307,7 +307,7 @@ void R_LockSkinnedCache(GfxLockType lockType)
         return;
 
     /* D3DLOCK_NOOVERWRITE(0x1000) if GPU sync active or lockType!=0, else D3DLOCK_DISCARD(0x2000) */
-    if (*(int *)(dx + 0x2c20) != 0 || lockType != 0)
+    if (((DxGlobals *)dx)->gpuSync != 0 || lockType != 0)
         lockFlags = 0x1000;
     else
         lockFlags = 0x2000;
@@ -315,16 +315,16 @@ void R_LockSkinnedCache(GfxLockType lockType)
     /* IDirect3DVertexBuffer9::Lock(0, 0, &pData, lockFlags) — vtable 0x2C */
     vtable = *(void ***)vb;
     hr = ((HRESULT (*)(void *, UINT, UINT, void **, DWORD))(vtable[0x2C / 4]))(
-        vb, 0, 0, (void **)(dx + 0x2dc0), lockFlags);
+        vb, 0, 0, (void **)&((DxGlobals *)dx)->skinnedCacheLockAddr, lockFlags);
 
     if (hr < 0)
         R_FatalLockError(hr);
 
     /* Check alignment of locked pointer */
-    if (*(int *)(dx + 0x2dc0) & 0xf) {
+    if ((uintptr_t)((DxGlobals *)dx)->skinnedCacheLockAddr & 0xf) {
         vtable = *(void ***)vb;
         ((HRESULT (*)(void *))(vtable[0x30 / 4]))(vb);
-        *(int *)(dx + 0x2dc0) = 0;
+        ((DxGlobals *)dx)->skinnedCacheLockAddr = NULL;
     }
 }
 
@@ -1319,10 +1319,10 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
         int stride = isDx7 ? 0x24 : 0x40;
         char *dx = (char *)imp_dx;
 
-        if (*(void **)(dx + 0x2dc0)) {
+        if (((DxGlobals *)dx)->skinnedCacheLockAddr) {
             /* Try allocating from locked skin cache */
             char *fed = *(char **)imp_frontEndDataOut;
-            void *lockPtr = *(void **)(fed + 0x217c78);
+            void *lockPtr = ((GfxBackEndData *)fed)->skinnedCacheVb;
             int offset = InterlockedExchangeAdd((volatile int *)lockPtr, vertCount * stride);
             int capacity = *(int *)((char *)lockPtr + 4);
             if (*(int *)lockPtr > capacity) {
@@ -1337,7 +1337,7 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
             }
             *(int *)(surfPos + 8) = offset;
             if (offset >= 0) {
-                void *basePtr = *(void **)(dx + 0x2dc0);
+                void *basePtr = ((DxGlobals *)dx)->skinnedCacheLockAddr;
                 if ((char *)basePtr + *(int *)lockPtr) {
                     /* Cached path */
                     *(int *)surfPos = 3;
@@ -1356,7 +1356,7 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
         int stride = isDx7 ? 0x24 : 0x40;
         int needed = vertCount * stride;
         char *dx = (char *)imp_dx;
-        int current = *(int *)(dx + 0x2dd4);
+        int current = ((DxGlobals *)dx)->tempSkinPos;
         if (current + needed > 0xa00000) {
             char *fed = *(char **)imp_frontEndDataOut;
             if (*(int *)fed != warnCount) {
@@ -1365,8 +1365,8 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
             }
             return 0;
         }
-        *(int *)(surfPos + 0xc) = *(int *)(dx + 0x2dd0) + current;
-        *(int *)(dx + 0x2dd4) += needed;
+        *(int *)(surfPos + 0xc) = (int)(uintptr_t)((DxGlobals *)dx)->tempSkinBuf + current;
+        ((DxGlobals *)dx)->tempSkinPos += needed;
         /* Lock and zero the buffer */
         ((void (*)(void *, int))ri.Z_VirtualCommitInternal)((void *)*(int *)(surfPos + 0xc), needed);
     }
@@ -1658,10 +1658,10 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     /* Allocate scene surface entries atomically */
     {
         char *scene = (char *)imp_scene;
-        int startIndex = InterlockedExchangeAdd((volatile int *)(scene + 0x1a55c), surfaceCount);
+        int startIndex = InterlockedExchangeAdd((volatile int *)&((GfxScene *)scene)->sceneEntMaterialCount, surfaceCount);
         extern int __mh_execute_header;
         if (startIndex + surfaceCount > (int)(unsigned int)&__mh_execute_header) {
-            *(int *)(scene + 0x1a55c) = (int)(unsigned int)&__mh_execute_header;
+            ((GfxScene *)scene)->sceneEntMaterialCount = (int)(unsigned int)&__mh_execute_header;
             {
                 byte *fed = *(byte **)imp_frontEndDataOut;
                 if (*(int *)fed != warnCount) {
@@ -1697,9 +1697,9 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         {
             int size = (int)(surfPtr - surfBuf);
             byte *fed = *(byte **)imp_frontEndDataOut;
-            int offset = InterlockedExchangeAdd((volatile int *)(fed + 0x80008), size);
+            int offset = InterlockedExchangeAdd((volatile int *)&((GfxBackEndData *)fed)->surfPos, size);
             if (offset + size > 0x20000) {
-                *(int *)(fed + 0x80008) = 0x20000;
+                ((GfxBackEndData *)fed)->surfPos = 0x20000;
                 if (*(int *)fed != warnCount) {
                     warnCount = *(int *)fed;
                     typedef int (*PrintFunc)(int, const char *, ...);
@@ -2089,8 +2089,8 @@ static int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int 
                 /* Check for valid material technique for SMC */
                 void *mat = (void *)((GfxSceneEntity *)sceneEnt)->materials[surfaceIndex];
                 void *techSet = (void *)((Material *)mat)->techniqueSet;
-                void *tech34 = *(void **)((char *)techSet + 0x34);
-                if (tech34 && *(short *)((char *)tech34 + 6) && *(byte *)((char *)tech34 + 0xc)) {
+                MaterialTechnique *tech34 = ((MaterialTechniqueSet *)techSet)->techniques[12];
+                if (tech34 && tech34->passCount && tech34->passArray.dx7[0].gridLighting) {
                     goto try_smc;
                 }
             } else {
@@ -2132,9 +2132,9 @@ no_smc:
         int isDx7 = (*(int *)(*(char **)imp_r_rendererInUse + 8) == 2);
         int stride = isDx7 ? 0x24 : 0x40;
         char *dx = (char *)imp_dx;
-        if (*(void **)(dx + 0x2dc0)) {
+        if (((DxGlobals *)dx)->skinnedCacheLockAddr) {
             char *fed = *(char **)imp_frontEndDataOut;
-            void *lockPtr = *(void **)(fed + 0x217c78);
+            void *lockPtr = ((GfxBackEndData *)fed)->skinnedCacheVb;
             int offset = InterlockedExchangeAdd((volatile int *)lockPtr, vertCount * stride);
             if (*(int *)lockPtr > *(int *)((char *)lockPtr + 4)) {
                 if (offset <= *(int *)((char *)lockPtr + 4))
@@ -2146,7 +2146,7 @@ no_smc:
                 offset = -1;
             }
             *(int *)(surfPos + 8) = offset;
-            if (offset >= 0 && (char *)*(void **)(dx + 0x2dc0) + *(int *)lockPtr) {
+            if (offset >= 0 && (char *)((DxGlobals *)dx)->skinnedCacheLockAddr + *(int *)lockPtr) {
                 *(int *)surfPos = 3;
                 *(void **)(surfPos + 4) = xsurf;
                 *needSkinningSurf = 1;
@@ -2161,7 +2161,7 @@ no_smc:
         int stride = isDx7 ? 0x24 : 0x40;
         int needed = vertCount * stride;
         char *dx = (char *)imp_dx;
-        int current = *(int *)(dx + 0x2dd4);
+        int current = ((DxGlobals *)dx)->tempSkinPos;
         if (current + needed > 0xa00000) {
             char *fed = *(char **)imp_frontEndDataOut;
             if (*(int *)fed != warnCount) {
@@ -2170,8 +2170,8 @@ no_smc:
             }
             return 0;
         }
-        *(int *)(surfPos + 0xc) = *(int *)(dx + 0x2dd0) + current;
-        *(int *)(dx + 0x2dd4) += needed;
+        *(int *)(surfPos + 0xc) = (int)(uintptr_t)((DxGlobals *)dx)->tempSkinBuf + current;
+        ((DxGlobals *)dx)->tempSkinPos += needed;
         ((void (*)(void *, int))ri.Z_VirtualCommitInternal)((void *)*(int *)(surfPos + 0xc), needed);
     }
     *(int *)surfPos = 3;
@@ -2487,10 +2487,10 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
     /* Allocate scene surface entries */
     {
         char *scene = (char *)imp_scene;
-        int startIdx = InterlockedExchangeAdd((volatile int *)(scene + 0x1a55c), surfaceCount);
+        int startIdx = InterlockedExchangeAdd((volatile int *)&((GfxScene *)scene)->sceneEntMaterialCount, surfaceCount);
         extern int __mh_execute_header;
         if (startIdx + surfaceCount > (int)(unsigned int)&__mh_execute_header) {
-            *(int *)(scene + 0x1a55c) = (int)(unsigned int)&__mh_execute_header;
+            ((GfxScene *)scene)->sceneEntMaterialCount = (int)(unsigned int)&__mh_execute_header;
             byte *fed = *(byte **)imp_frontEndDataOut;
             if (*(int *)fed != warnCount) {
                 warnCount = *(int *)fed;
@@ -2517,9 +2517,9 @@ static void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelInd
         {
             int size = (int)(surfPtr - surfBuf);
             byte *fed = *(byte **)imp_frontEndDataOut;
-            int offset = InterlockedExchangeAdd((volatile int *)(fed + 0x80008), size);
+            int offset = InterlockedExchangeAdd((volatile int *)&((GfxBackEndData *)fed)->surfPos, size);
             if (offset + size > 0x20000) {
-                *(int *)(fed + 0x80008) = 0x20000;
+                ((GfxBackEndData *)fed)->surfPos = 0x20000;
                 if (*(int *)fed != warnCount) {
                     warnCount = *(int *)fed;
                     (*(int (**)(int, const char *, ...))imp_ri)(2, "MAX_SKINNED_CACHE exceeded\n");
