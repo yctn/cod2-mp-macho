@@ -15,8 +15,7 @@ extern void *vtbl_COpenGLVertexProgram[];
 /* COpenGL::sOpenGL — large struct, accessed by offset from other .c files */
 /* The asm symbol __ZN7COpenGL7sOpenGLE is the mangled name for COpenGL::sOpenGL */
 unsigned char __attribute__((visibility("default")))
-    COpenGL_sOpenGL_storage[4096]
-    __asm__("__ZN7COpenGL7sOpenGLE") = {0};
+    COpenGL_sOpenGL_storage[4096] = {0};
 
 /* Pointer used by generated_syms.h: imp__ZN7COpenGL7sOpenGLE */
 void *imp__ZN7COpenGL7sOpenGLE = COpenGL_sOpenGL_storage;

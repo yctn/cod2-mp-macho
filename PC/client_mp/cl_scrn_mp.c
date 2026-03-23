@@ -22,7 +22,7 @@ extern const char str_002acd10[];
 extern const char str_002acd14[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 szShotName_storage[7] __asm__("szShotName") = {
+UInt32 szShotName_storage[7] = {
     (UInt32)str_002acd00,
     (UInt32)str_002acd04,
     (UInt32)str_002acd08,

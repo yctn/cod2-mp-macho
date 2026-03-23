@@ -66,11 +66,11 @@ typedef struct {
     bool (*isFixedFunction)(const CVAOPacket *);
 } CVAOPacketVTable;
 
-extern unsigned char COpenGL_sOpenGLE_storage[] __asm__("__ZN7COpenGL7sOpenGLE");
-extern VAOStatus CVAOPacket_sVAOStatus __asm__("__ZN10CVAOPacket10sVAOStatusE"); /* 0x0 */
-extern UINT32 CVAOPacket_sCurrentPacket __asm__("__ZN10CVAOPacket14sCurrentPacketE"); /* 0x0 */
-extern unsigned char CVAOPacket_sGenericPacket_storage[] __asm__("__ZN10CVAOPacket14sGenericPacketE"); /* 0x0 */
-extern unsigned char CVAOPacket_sAllPackets_storage[] __asm__("__ZN10CVAOPacket11sAllPacketsE"); /* 0x0 */
+extern unsigned char COpenGL_sOpenGLE_storage[];
+extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
+extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
+extern unsigned char CVAOPacket_sGenericPacket_storage[]; /* 0x0 */
+extern unsigned char CVAOPacket_sAllPackets_storage[]; /* 0x0 */
 
 extern void *vtbl_CVAOPacket[];
 

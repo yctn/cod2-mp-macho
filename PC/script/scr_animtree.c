@@ -29,7 +29,7 @@ extern const char str_0021dd70[];
 extern const char str_0021dd7c[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 propertyNames_storage[8] __asm__("propertyNames") = {
+UInt32 propertyNames_storage[8] = {
     (UInt32)str_0021dd64,
     (UInt32)str_0021dd70,
     (UInt32)str_0021dd7c,

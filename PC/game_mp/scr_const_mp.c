@@ -70,7 +70,7 @@ void GScr_LoadConsts(void)
     scr_const.binocular_drop = GScr_AllocString("binocular_drop");   /* line 66 */
     scr_const.begin = GScr_AllocString("begin");                     /* line 69 */
     {
-        extern unsigned char imp_scr_const_raw[] __asm__("imp_scr_const");
+        extern unsigned char imp_scr_const_raw[];
         Com_Printf("[GScr_LoadConsts] &scr_const=%p imp_scr_const=%p begin=%u menuresponse=%u\n",
             (void*)&scr_const, *(void**)imp_scr_const_raw, (unsigned)scr_const.begin, (unsigned)scr_const.menuresponse);
     }

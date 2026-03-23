@@ -29,7 +29,7 @@ extern void CL_AddReliableCommand(const char *cmd);
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 
 __attribute__((used, aligned(4)))
-int lastLeadTeam_storage[8] __asm__("lastLeadTeam") = {
+int lastLeadTeam_storage[8] = {
     2, 0, 0, 0, 0, 0, 0, 0,
 }; /* 0x314640 */
 

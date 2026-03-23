@@ -9,7 +9,7 @@
 HCURSOR SetWinCursor(HCURSOR hCursor);
 
 __attribute__((used, packed, aligned(4)))
-UInt32 sResult_storage[8] __asm__("sResult") = {
+UInt32 sResult_storage[8] = {
     0, 0, 0, 0, 0, 0, 0, 0,
 }; /* 0x308060 */
 #define sResult (*(int *)&sResult_storage[0])

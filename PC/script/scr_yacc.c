@@ -50,7 +50,7 @@ extern char *yy_last_accepting_cpos; /* yy_last_accepting_cpos - BSS */
 extern char ch_buf[]; /* ch_buf - BSS */
 
 __attribute__((used, aligned(4)))
-int yy_init_storage[6] __asm__("yy_init") = {
+int yy_init_storage[6] = {
     1, 0, 0, 0, 0, 0,
 }; /* 0x311468 */
 

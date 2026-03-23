@@ -20,7 +20,7 @@ extern const char str_002ab028[];
 extern const char str_002ab030[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 netsrcString_storage[7] __asm__("netsrcString") = {
+UInt32 netsrcString_storage[7] = {
     (UInt32)str_002ab028,
     (UInt32)str_002ab030,
     0,

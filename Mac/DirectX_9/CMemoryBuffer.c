@@ -17,8 +17,8 @@
 extern void *vtbl_CMemoryBuffer[];
 
 /* Globals with mangled name aliases matching import_pointers.S expectations */
-int CMemoryBuffer_sDelayedFreeRequests __asm__("__ZN13CMemoryBuffer20sDelayedFreeRequestsE") = 0;
-UINT32 CMemoryBuffer_sMemoryDesignatedForDelayedFree __asm__("__ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE") = 0;
+int CMemoryBuffer_sDelayedFreeRequests = 0;
+UINT32 CMemoryBuffer_sMemoryDesignatedForDelayedFree = 0;
 
 typedef struct {
     int vptr;

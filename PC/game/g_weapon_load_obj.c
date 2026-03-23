@@ -17,7 +17,7 @@ extern const char str_002b8750[];
 extern const char str_002b8758[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 accuracyDirName_storage[9] __asm__("accuracyDirName") = {
+UInt32 accuracyDirName_storage[9] = {
     (UInt32)str_002b8750,
     (UInt32)str_002b8758,
     0,

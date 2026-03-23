@@ -165,7 +165,7 @@ __attribute__((used)) const char *xdebugNames[5] = {
     0,
 }; /* 0x3110fc */
 __attribute__((used, packed, aligned(4)))
-UInt32 textureModeNames_storage[10] __asm__("textureModeNames") = {
+UInt32 textureModeNames_storage[10] = {
     (UInt32)str_00222fe4,
     (UInt32)str_0021a1a4,
     (UInt32)str_00222fec,

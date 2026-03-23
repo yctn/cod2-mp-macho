@@ -61,7 +61,7 @@ typedef struct COpenGLVAOBindingNode {
     GLuint *vaoId;
 } COpenGLVAOBindingNode;
 
-extern unsigned char COpenGL_sOpenGLE_storage[] __asm__("__ZN7COpenGL7sOpenGLE");
+extern unsigned char COpenGL_sOpenGLE_storage[];
 
 void *__Znwm(size_t size);
 void __ZdlPv(void *ptr);

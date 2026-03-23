@@ -41,7 +41,7 @@ extern void CL_RegisterHudMsgIconMaterial(const char *name);
 extern byte scr_const[];
 static const int iSlotPreferenceOrder[2]; /* iSlotPreferenceOrder */
 __attribute__((used, packed, aligned(4)))
-UInt32 s_barrelTags_storage[8] __asm__("s_barrelTags") = {
+UInt32 s_barrelTags_storage[8] = {
     (UInt32)(scr_const + 140),
     (UInt32)(scr_const + 142),
     (UInt32)(scr_const + 144),

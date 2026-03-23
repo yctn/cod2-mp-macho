@@ -80,7 +80,7 @@ extern const char str_00216004[];
 extern const char str_0021601c[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 noticeErrors_storage[8] __asm__("noticeErrors") = {
+UInt32 noticeErrors_storage[8] = {
     (UInt32)str_00215f8c,
     (UInt32)str_00215fa4,
     (UInt32)str_00215fb8,

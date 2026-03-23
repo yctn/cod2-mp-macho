@@ -29,7 +29,7 @@ typedef struct {
 /* Global: the original used __asm__ label for the mangled name.
  * We define it here as a regular C global and provide the mangled alias
  * via the asm name attribute. */
-CFenceUnusedIdsVector CFence_sUnusedFenceIDs __asm__("__ZN6CFence15sUnusedFenceIDsE") = { NULL, NULL, NULL };
+CFenceUnusedIdsVector CFence_sUnusedFenceIDs = { NULL, NULL, NULL };
 
 /* Forward declarations */
 void CFence_CFence(const CFence * _this, const void * Start, UINT32 SizeInBytes, UINT32 FrameCount);

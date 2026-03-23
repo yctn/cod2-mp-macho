@@ -31,14 +31,14 @@ extern const char str_0021e038[];
 extern const char str_0021e04c[];
 
 __attribute__((used, aligned(4)))
-UInt32 s_mantleTrans_storage[24] __asm__("s_mantleTrans") = {
+UInt32 s_mantleTrans_storage[24] = {
     0x00000001, 0x00000008, 0x42640000, 0x00000002, 0x00000008, 0x424c0000,
     0x00000003, 0x00000009, 0x42340000, 0x00000004, 0x00000009, 0x421c0000,
     0x00000005, 0x00000009, 0x42040000, 0x00000006, 0x0000000a, 0x41d80000,
     0x00000007, 0x0000000a, 0x41a80000, 0x00000000, 0x00000000, 0x00000000,
 }; /* 0x30aaa0 */
 __attribute__((used, aligned(4)))
-UInt32 s_mantleAnimNames_storage[16] __asm__("s_mantleAnimNames") = {
+UInt32 s_mantleAnimNames_storage[16] = {
     (UInt32)str_0021dfa4, (UInt32)str_0021dfb4, (UInt32)str_0021dfc4, (UInt32)str_0021dfd4,
     (UInt32)str_0021dfe4, (UInt32)str_0021dff4, (UInt32)str_0021e004, (UInt32)str_0021e014,
     (UInt32)str_0021e024, (UInt32)str_0021e038, (UInt32)str_0021e04c, 0,

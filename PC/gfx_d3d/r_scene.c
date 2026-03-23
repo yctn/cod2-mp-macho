@@ -18,7 +18,7 @@ __attribute__((used)) byte s_XModelSurfaceSize[8] = {
     0x00, 0x00, 0x00, 0x10, 0x38, 0x10, 0x00, 0x00,
 }; /* 0x311080 */
 __attribute__((used, aligned(4)))
-surfaceType_t s_entitySurface_storage[6] __asm__("s_entitySurface") = {
+surfaceType_t s_entitySurface_storage[6] = {
     2, 0, 0, 0, 0, 0,
 }; /* 0x311088 */
 

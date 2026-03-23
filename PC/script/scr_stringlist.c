@@ -979,7 +979,7 @@ store_and_return:
     }
 
     if (esi_sv == 374) {
-        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
+        extern unsigned char scrMemTreeGlob_arr2[];
         unsigned short tree1_head = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*1);
         unsigned short tree2_head = *(unsigned short *)(scrMemTreeGlob_arr2 + 525056 + 2*2);
         /* Check tree[1] for node 374 and tree[2] for node 372 */
@@ -1771,7 +1771,7 @@ unsigned int Scr_ShutdownGameStrings(void)
 unsigned int SL_Init(void)
 {
     {
-        extern unsigned char scrMemTreeGlob_dbg[] __asm__("scrMemTreeGlob");
+        extern unsigned char scrMemTreeGlob_dbg[];
         Com_Printf("DBG SL_Init: init_flag=%d totalAlloc=%d totalAllocBuckets=%d\n",
             SG_INIT_FLAG != 0 ? 1 : 0,
             *(int *)(scrMemTreeGlob_dbg + 525092), *(int *)(scrMemTreeGlob_dbg + 525096));

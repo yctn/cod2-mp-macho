@@ -58,7 +58,7 @@ __attribute__((used)) const char *g_he_alignx[3] = {
     str_002b4d28,
 }; /* 0x3144cc */
 __attribute__((used, aligned(4)))
-UInt32 g_he_font_storage[10] __asm__("g_he_font") = {
+UInt32 g_he_font_storage[10] = {
     (UInt32)str_00220284,
     (UInt32)str_002b4d3c,
     (UInt32)str_002b4d48,

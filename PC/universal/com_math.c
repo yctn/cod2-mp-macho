@@ -23,7 +23,7 @@ extern vec3_t bytedirs[162];
 extern vec2_t vec2_origin;
 extern vec3_t vec3_origin;
 extern const float identityMatrix44[4][4];
-__attribute__((used)) UInt32 holdrand_storage[2] __asm__("holdrand") = {
+__attribute__((used)) UInt32 holdrand_storage[2] = {
     0x89abcdef,
     0,
 }; /* 0x308b58 */

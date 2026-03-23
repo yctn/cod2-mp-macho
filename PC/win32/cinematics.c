@@ -40,12 +40,11 @@ extern short unsigned int vq4[65536]; /* vq4 */
 extern short unsigned int vq8[262144]; /* vq8 */
 extern struct cinematics_t cin; /* cin */
 extern cin_cache cinTable[16]; /* cinTable */
-__attribute__((used)) int CL_handle __asm__("CL_handle") = -1; /* 0x30f580 */
+__attribute__((used)) int CL_handle = -1; /* 0x30f580 */
 __attribute__((used, section(".data.currentHandle"), aligned(4)))
 int currentHandle = -1; /* 0x30f584 */
 __attribute__((used, section(".data.currentHandle"), aligned(4)))
-static int currentHandle_pad[6];
-__asm__(".size currentHandle, 28");
+static int currentHandle_pad[6];;
 
 static void recurseQuad(long int startX, long int startY, long int quadSize, long int xOff, long int yOff);
 static void RoQPrepMcomp(long int xoff, long int yoff);

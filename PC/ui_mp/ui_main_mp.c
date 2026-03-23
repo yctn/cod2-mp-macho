@@ -86,7 +86,7 @@ extern const char str_002a9e80[];
 extern const char str_002a9e90[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 MonthAbbrev_storage[12] __asm__("MonthAbbrev") = {
+UInt32 MonthAbbrev_storage[12] = {
     (UInt32)str_002a9d68,
     (UInt32)str_002a9d80,
     (UInt32)str_002a9d98,
@@ -101,7 +101,7 @@ UInt32 MonthAbbrev_storage[12] __asm__("MonthAbbrev") = {
     (UInt32)str_002a9e5c,
 }; /* 0x311e80 */
 __attribute__((used, packed, aligned(4)))
-UInt32 netSources_storage[3] __asm__("netSources") = {
+UInt32 netSources_storage[3] = {
     (UInt32)str_002a9e74,
     (UInt32)str_002a9e80,
     (UInt32)str_002a9e90,

@@ -46,7 +46,7 @@ extern const char str_0021ec20[];
 extern const char str_0021ec28[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 g_pszSndAliasKeyNames_storage[24] __asm__("g_pszSndAliasKeyNames") = {
+UInt32 g_pszSndAliasKeyNames_storage[24] = {
     0,
     (UInt32)str_002194b4,
     (UInt32)str_0021eaec,
@@ -73,7 +73,7 @@ UInt32 g_pszSndAliasKeyNames_storage[24] __asm__("g_pszSndAliasKeyNames") = {
     (UInt32)str_0021ebd8,
 }; /* 0x3128bc */
 __attribute__((used, packed, aligned(4)))
-UInt32 g_pszChannelNames_storage[16] __asm__("g_pszChannelNames") = {
+UInt32 g_pszChannelNames_storage[16] = {
     (UInt32)str_0021ebe8,
     (UInt32)str_0021ebf0,
     (UInt32)str_00216cd8,

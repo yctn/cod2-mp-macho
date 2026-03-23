@@ -10,11 +10,11 @@
  */
 
 __attribute__((used, aligned(4)))
-int endOffset_storage[1] __asm__("endOffset") = {
+int endOffset_storage[1] = {
     1,
 }; /* 0x312620 */
 __attribute__((used, aligned(4)))
-int startOffset_storage[7] __asm__("startOffset") = {
+int startOffset_storage[7] = {
     2, 0, 0, 0, 0, 0, 0,
 }; /* 0x312624 */
 

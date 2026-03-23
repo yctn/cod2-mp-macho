@@ -129,7 +129,7 @@ static qboolean debugMode; /* debugMode */
 static int lastListBoxClickTime; /* lastListBoxClickTime */
 #include "ui_shared_mp_g_bindings_decls.inc"
 __attribute__((used, packed, aligned(4)))
-UInt32 g_bindings_storage[280] __asm__("g_bindings") = {
+UInt32 g_bindings_storage[280] = {
 #include "ui_shared_mp_g_bindings.inc"
 }; /* 0x3121a0 */
 #define g_bindings ((bind_t *)g_bindings_storage)

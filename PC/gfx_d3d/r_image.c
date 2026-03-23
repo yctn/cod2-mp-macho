@@ -36,7 +36,7 @@ extern const char str_002251ec[];
 extern const char str_002251fc[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 imageTypeName_storage[16] __asm__("imageTypeName") = {
+UInt32 imageTypeName_storage[16] = {
     (UInt32)str_00225118,
     (UInt32)str_00225120,
     (UInt32)str_00225128,
@@ -55,7 +55,7 @@ UInt32 imageTypeName_storage[16] __asm__("imageTypeName") = {
     0,
 }; /* 0x3111c0 */
 __attribute__((used, packed, aligned(4)))
-UInt32 g_imageProgNames_storage[16] __asm__("g_imageProgNames") = {
+UInt32 g_imageProgNames_storage[16] = {
     (UInt32)str_00225168,
     (UInt32)str_0022517c,
     (UInt32)str_0022518c,

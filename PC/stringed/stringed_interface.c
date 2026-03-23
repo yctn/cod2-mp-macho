@@ -14,13 +14,13 @@ extern void FS_FreeFileList(const char **list, int allocTrackType);
 
 /* C++ std::string mangled imports (already declared in imports/libc.h with different signatures) */
 /* std::string::append(const char*, size_t) */
-extern void *__ZNSs6appendEPKcm(void *_this, const char *s, unsigned int n) __asm__("__ZNSs6appendEPKcm");
+extern void *__ZNSs6appendEPKcm(void *_this, const char *s, unsigned int n);
 /* std::string::reserve(size_t) */
-extern void __ZNSs7reserveEm(void *_this, unsigned int n) __asm__("__ZNSs7reserveEm");
+extern void __ZNSs7reserveEm(void *_this, unsigned int n);
 /* std::string::assign(const char*, size_t) */
-extern void *__ZNSs6assignEPKcm(void *_this, const char *s, unsigned int n) __asm__("__ZNSs6assignEPKcm");
+extern void *__ZNSs6assignEPKcm(void *_this, const char *s, unsigned int n);
 /* std::string::_Rep::_S_terminal - the null terminator */
-extern char __ZNSs4_Rep11_S_terminalE __asm__("__ZNSs4_Rep11_S_terminalE");
+extern char __ZNSs4_Rep11_S_terminalE;
 
 unsigned char * SE_LoadFileData(const char *psFileName);
 void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile);

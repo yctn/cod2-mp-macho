@@ -55,13 +55,13 @@ typedef struct {
 } animConditionTableRaw_t;
 
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animStateStr_storage[8] __asm__("animStateStr") = {
+animStringItemRaw_t animStateStr_storage[8] = {
     {(UInt32)str_002aed1c, 0xffffffff}, {(UInt32)str_002aed24, 0xffffffff},
     {(UInt32)str_002aed2c, 0xffffffff}, {(UInt32)str_002aed34, 0xffffffff},
     {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x312f20 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animMoveTypesStr_storage[44] __asm__("animMoveTypesStr") = {
+animStringItemRaw_t animMoveTypesStr_storage[44] = {
     {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002aeaf4, 0xffffffff}, {(UInt32)str_002aeafc, 0xffffffff}, {(UInt32)str_002aeb04, 0xffffffff},
     {(UInt32)str_002aeb10, 0xffffffff}, {(UInt32)str_002aeb18, 0xffffffff}, {(UInt32)str_002aeb20, 0xffffffff}, {(UInt32)str_002aeb28, 0xffffffff},
     {(UInt32)str_002aeb34, 0xffffffff}, {(UInt32)str_002aeb40, 0xffffffff}, {(UInt32)str_002aeb4c, 0xffffffff}, {(UInt32)str_002aeb50, 0xffffffff},
@@ -75,7 +75,7 @@ animStringItemRaw_t animMoveTypesStr_storage[44] __asm__("animMoveTypesStr") = {
     {(UInt32)str_002aed04, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x312dc0 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animEventTypesStr_storage[20] __asm__("animEventTypesStr") = {
+animStringItemRaw_t animEventTypesStr_storage[20] = {
     {(UInt32)str_002ae9fc, 0xffffffff}, {(UInt32)str_002aea04, 0xffffffff}, {(UInt32)str_002aea0c, 0xffffffff}, {(UInt32)str_002aea18, 0xffffffff},
     {(UInt32)str_002aea20, 0xffffffff}, {(UInt32)str_002aea28, 0xffffffff}, {(UInt32)str_002aea30, 0xffffffff}, {(UInt32)str_002aea3c, 0xffffffff},
     {(UInt32)str_002aea48, 0xffffffff}, {(UInt32)str_002aea54, 0xffffffff}, {(UInt32)str_002aea64, 0xffffffff}, {(UInt32)str_002aea6c, 0xffffffff},
@@ -83,42 +83,42 @@ animStringItemRaw_t animEventTypesStr_storage[20] __asm__("animEventTypesStr") =
     {(UInt32)str_002aeabc, 0xffffffff}, {(UInt32)str_002aeacc, 0xffffffff}, {(UInt32)str_002aead8, 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312d20 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animBodyPartsStr_storage[8] __asm__("animBodyPartsStr") = {
+animStringItemRaw_t animBodyPartsStr_storage[8] = {
     {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002aee70, 0xffffffff}, {(UInt32)str_002aee78, 0xffffffff}, {(UInt32)str_002aee80, 0xffffffff},
     {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x313140 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animConditionMountedStr_storage[5] __asm__("animConditionMountedStr") = {
+animStringItemRaw_t animConditionMountedStr_storage[5] = {
     {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002abcf4, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
     {0, 0x00000000},
 }; /* 0x312ff8 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animWeaponClassStr_storage[12] __asm__("animWeaponClassStr") = {
+animStringItemRaw_t animWeaponClassStr_storage[12] = {
     {(UInt32)str_002aed58, 0xffffffff}, {(UInt32)str_002aed60, 0xffffffff}, {(UInt32)str_002aed64, 0xffffffff}, {(UInt32)str_002aed68, 0xffffffff},
     {(UInt32)str_002aed70, 0xffffffff}, {(UInt32)str_002aed78, 0xffffffff}, {(UInt32)str_002aed80, 0xffffffff}, {(UInt32)str_002aed90, 0xffffffff},
     {(UInt32)str_002aed98, 0xffffffff}, {(UInt32)str_002aeda4, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
 }; /* 0x313020 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animWeaponPositionStr_storage[3] __asm__("animWeaponPositionStr") = {
+animStringItemRaw_t animWeaponPositionStr_storage[3] = {
     {(UInt32)str_002aed50, 0xffffffff}, {(UInt32)str_002aed54, 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312fe0 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animStrafeStateStr_storage[4] __asm__("animStrafeStateStr") = {
+animStringItemRaw_t animStrafeStateStr_storage[4] = {
     {(UInt32)str_002aed3c, 0xffffffff}, {(UInt32)str_002aed40, 0xffffffff}, {(UInt32)str_002aed48, 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312fc0 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animConditionsStr_storage[12] __asm__("animConditionsStr") = {
+animStringItemRaw_t animConditionsStr_storage[12] = {
     {(UInt32)str_002aedac, 0xffffffff}, {(UInt32)str_002aedbc, 0xffffffff}, {(UInt32)str_002aedc8, 0xffffffff}, {(UInt32)str_002aedd0, 0xffffffff},
     {(UInt32)str_002aeddc, 0xffffffff}, {(UInt32)str_002aede8, 0xffffffff}, {(UInt32)str_002aedf4, 0xffffffff}, {(UInt32)str_002aedfc, 0xffffffff},
     {(UInt32)str_002aee0c, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x313080 */
 __attribute__((used, aligned(4)))
-animStringItemRaw_t animParseModesStr_storage[6] __asm__("animParseModesStr") = {
+animStringItemRaw_t animParseModesStr_storage[6] = {
     {(UInt32)str_002aee18, 0xffffffff}, {(UInt32)str_002aee20, 0xffffffff}, {(UInt32)str_002aee2c, 0xffffffff}, {(UInt32)str_002aee40, 0xffffffff},
     {(UInt32)str_002aee50, 0xffffffff}, {0, 0xffffffff},
 }; /* 0x3130e0 */
 __attribute__((used, aligned(4)))
-animConditionTableRaw_t animConditionsTable_storage[12] __asm__("animConditionsTable") = {
+animConditionTableRaw_t animConditionsTable_storage[12] = {
     {0, (UInt32)weaponStrings},
     {0, (UInt32)animWeaponClassStr_storage},
     {1, (UInt32)animConditionMountedStr_storage},
@@ -134,7 +134,7 @@ animConditionTableRaw_t animConditionsTable_storage[12] __asm__("animConditionsT
 }; /* 0x312f60 */
 __attribute__((used)) char *globalFilename = (char *)str_002aee58; /* 0x313110 */
 __attribute__((used, aligned(4)))
-UInt32 controller_names_storage[11] __asm__("controller_names") = {
+UInt32 controller_names_storage[11] = {
     (UInt32)&scr_const.back_low,
     (UInt32)&scr_const.back_mid,
     (UInt32)&scr_const.back_up,

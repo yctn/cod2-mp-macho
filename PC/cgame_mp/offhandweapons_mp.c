@@ -36,7 +36,7 @@ extern const char str_002b51bc[];
 extern const char str_002b51d0[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 offhandStrings_storage[8] __asm__("offhandStrings") = {
+UInt32 offhandStrings_storage[8] = {
     (UInt32)str_002157b8,
     (UInt32)str_002b51bc,
     (UInt32)str_002b51d0,

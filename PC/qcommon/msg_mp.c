@@ -12,7 +12,7 @@ static char string_00f0ec60[8192]; /* string */
 static char string_00f10c60[1024]; /* string */
 static struct huffman_t msgHuff; /* msgHuff */
 static qboolean msgInit; /* msgInit */
-__attribute__((used)) unsigned int kbitmask_storage[40] __asm__("kbitmask") = {
+__attribute__((used)) unsigned int kbitmask_storage[40] = {
     0x00000000, 0x00000001, 0x00000003, 0x00000007,
     0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
     0x000000FF, 0x000001FF, 0x000003FF, 0x000007FF,

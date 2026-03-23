@@ -25,12 +25,9 @@ extern bool g_InhibitCopy;
 extern bool g_NoTextureID;
 
 /* Validation flags — asm symbol names for link compatibility */
-bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsVertexShaderValidation
-    __asm__("__ZN15CDirect3DDevice28mNeedsVertexShaderValidationE");
-bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsTransformationValidation
-    __asm__("__ZN15CDirect3DDevice30mNeedsTransformationValidationE");
-bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsRasterizationValidation
-    __asm__("__ZN15CDirect3DDevice29mNeedsRasterizationValidationE");
+bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsVertexShaderValidation;
+bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsTransformationValidation;
+bool __attribute__((visibility("default"))) CDirect3DDevice_mNeedsRasterizationValidation;
 
 /* GaussianBlurWeights and sPointScale - statics from original */
 static const float GaussianBlurWeights[5] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f};

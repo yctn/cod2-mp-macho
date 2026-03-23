@@ -135,7 +135,7 @@ extern const char str_002a8868[];
 extern const char str_002a8888[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 cg_shock_dvar_names_storage[32] __asm__("cg_shock_dvar_names") = {
+UInt32 cg_shock_dvar_names_storage[32] = {
     (UInt32)str_002a85bc,
     (UInt32)str_002a85d8,
     (UInt32)str_002a85f8,

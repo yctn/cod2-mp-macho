@@ -18,10 +18,10 @@ void free(void *ptr);
 #define CSOUNDOBJECT_VTABLE_PTR ((void *)0x332548)
 
 /* Static callback globals (defined in data.S with mangled names) */
-extern AIL_file_open_callback __ZN12CSoundObject13sOpenCallbackE  __asm__("__ZN12CSoundObject13sOpenCallbackE");
-extern AIL_file_close_callback __ZN12CSoundObject14sCloseCallbackE __asm__("__ZN12CSoundObject14sCloseCallbackE");
-extern AIL_file_seek_callback __ZN12CSoundObject13sSeekCallbackE  __asm__("__ZN12CSoundObject13sSeekCallbackE");
-extern AIL_file_read_callback __ZN12CSoundObject13sReadCallbackE  __asm__("__ZN12CSoundObject13sReadCallbackE");
+extern AIL_file_open_callback __ZN12CSoundObject13sOpenCallbackE;
+extern AIL_file_close_callback __ZN12CSoundObject14sCloseCallbackE;
+extern AIL_file_seek_callback __ZN12CSoundObject13sSeekCallbackE;
+extern AIL_file_read_callback __ZN12CSoundObject13sReadCallbackE;
 
 void ZN12CSoundObjectD2Ev(char *_this); /* CSoundObject_~CSoundObject */
 void ZN12CSoundObjectD1Ev(char *_this); /* CSoundObject_~CSoundObject */

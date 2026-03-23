@@ -29,7 +29,7 @@ extern const char str_002169fc[];
 extern const char str_00216a04[];
 extern const char str_00216a0c[];
 __attribute__((used, packed, aligned(4)))
-UInt32 g_languages_storage[32] __asm__("g_languages") = {
+UInt32 g_languages_storage[32] = {
     (UInt32)str_0021699c, 0,
     (UInt32)str_002169a4, 0,
     (UInt32)str_002169ac, 0,
