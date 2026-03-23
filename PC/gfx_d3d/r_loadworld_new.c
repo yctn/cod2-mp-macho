@@ -139,6 +139,7 @@ static int R_ValidateLumpRaw(const byte *header, const byte *fileBase, int fileS
 #define LUMP_OFS_GRIDCOLORS      0x20   /* lump 3: lightgrid colors (24 bytes each) */
 #define LUMP_OFS_TRIANGLES       0x40   /* lump 7: triangle soups (16 bytes each) */
 #define LUMP_OFS_CULLGROUPIDX    0x60   /* lump 11: cull group indices (4 bytes each) */
+#define LUMP_OFS_OCCLUDERS       0xA8   /* lump 20: occluder planes */
 #define LUMP_OFS_OCCLUDERIDX     0xB0   /* lump 21: occluder indices (2 bytes each) */
 #define LUMP_OFS_SUBMODELS       0x120  /* lump 35: submodels (48 bytes each) */
 #define LUMP_OFS_ENTITIES        0x130  /* lump 37: entity string data */
@@ -778,7 +779,7 @@ GfxWorld *R_LoadWorldInternal(const char *name)
     {
         /* Check if occluder lump exists before calling the ASM loader,
            which has an inline validation that fatally errors on empty lumps. */
-        int occLumpSize = *(int *)(header + 0xA8); /* occluder lump size (lump 20) */
+        int occLumpSize = *(int *)(header + LUMP_OFS_OCCLUDERS);
         if (occLumpSize > 0)
             CALL_LOADER_EAX(R_LoadOccluders, &load);
     }
