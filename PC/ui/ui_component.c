@@ -8,6 +8,7 @@
 extern UI_Component_data_t UI_Component_g; /* __ZN12UI_Component1gE */
 extern void *imp_cls;
 extern void *imp_re;
+extern refexport_t re; /* imp_re */
 extern void *imp_com_developer;
 
 void UI_Component_Init(void);
@@ -16,13 +17,12 @@ void UI_Component_Init(void);
 void UI_Component_Init(void)
 {
     byte *globals;
-    byte *vtable;
     byte *developerDvar;
 
     globals = (byte *)imp_cls;
 
     /* Check if initialized */
-    if (*(int *)(globals + 0x110) == 0)
+    if (!((clientStatic_t *)globals)->uiStarted)
         return;
 
     /* Clear component data */
@@ -45,12 +45,6 @@ void UI_Component_Init(void)
     }
 
     /* Register UI materials */
-    vtable = (byte *)imp_re;
-    {
-        typedef MaterialHandle (*RegisterMaterialFn)(const char *, int, int);
-        RegisterMaterialFn registerMat = *(RegisterMaterialFn *)(vtable + 0x10);
-
-        UI_Component_g.cursor = registerMat("ui/assets/3_cursor3", 0x30, 1);
-        UI_Component_g.filledCircle = registerMat("ui/assets/sliderbutt_1", 0x30, 1);
-    }
+    UI_Component_g.cursor = re.RegisterMaterial("ui/assets/3_cursor3", 0x30, 1);
+    UI_Component_g.filledCircle = re.RegisterMaterial("ui/assets/sliderbutt_1", 0x30, 1);
 }

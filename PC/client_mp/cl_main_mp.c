@@ -598,12 +598,12 @@ Bool CL_IsPlayerTalking(int clientIndex)
 /* line 4736 */
 void CL_SetupForNewServerMap(const char *pszMapName, const char *pszGametype)
 {
-    byte *hacks = *(byte **)imp_legacyHacks;
+    LegacyHacks *hacks = *(LegacyHacks **)imp_legacyHacks;
 
     Com_Printf("Server changing map %s, gametype %s\n", pszMapName, pszGametype);
-    I_strncpyz((char *)(hacks + 0x5c), pszMapName, 0x40);
-    I_strncpyz((char *)(hacks + 0x9c), pszGametype, 0x40);
-    *(byte *)(hacks + 0xdc) = 0;
+    I_strncpyz(hacks->cl_serverloadmap, pszMapName, sizeof(hacks->cl_serverloadmap));
+    I_strncpyz(hacks->cl_serverloadgametype, pszGametype, sizeof(hacks->cl_serverloadgametype));
+    hacks->cl_serverloadwaiting = 0;
 
     if (!(*(const dvar_t **)imp_com_sv_running)->current.enabled) {
         Dvar_SetInt(*(const dvar_t **)imp_com_expectedHunkUsage, 0);
@@ -747,9 +747,9 @@ void CL_InitRenderer(void)
 /* line 3342 */
 void CL_StartHunkUsers(void)
 {
-    byte *hacks = *(byte **)imp_legacyHacks;
+    LegacyHacks *hacks = *(LegacyHacks **)imp_legacyHacks;
 
-    if (!*(int *)(hacks + 4))
+    if (!hacks->cl_running)
         return;
 
     if (!cls.soundStarted) {
@@ -1247,7 +1247,7 @@ void CL_OpenScriptMenu_f(void)
         return;
     }
 
-    if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed))
+    if (!(*(LegacyHacks **)imp_legacyHacks)->ui_scriptMenuAllowResponse)
         return;
     if (!cls.uiStarted)
         return;
@@ -2070,7 +2070,7 @@ void CL_InitLoad(const char *mapname, const char *gametype)
 {
     byte *cc;
 
-    if (!*(int *)(*(byte **)imp_legacyHacks + 4))
+    if (!(*(LegacyHacks **)imp_legacyHacks)->cl_running)
         return;
 
     Dvar_SetInt(*(const dvar_t **)imp_com_expectedHunkUsage, 0);

@@ -2245,13 +2245,13 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
     /* Get vertex info */
     {
-        byte *xsurfPtr = xsurf;
-        vertCount = (int)(*(short *)(xsurfPtr + 2));
+        const XSurface *xs = (const XSurface *)xsurf;
+        vertCount = (int)xs->vertCount;
         baseVertIndex = *(int *)cached;
     }
 
     /* Get source vertex data */
-    skinVerts = *(byte **)(xsurf + 0xc);
+    skinVerts = (byte *)((const XSurface *)xsurf)->verts;
 
     /* Check renderer type for Dx7 vs non-Dx7 path */
     isDx7 = (*(int *)(*(byte **)imp_r_rendererInUse + 8) == 2);
@@ -2262,8 +2262,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 
         /* Compute base lighting coordinates */
         {
-            byte *rgp2 = (byte *)imp_rgp;
-            byte *world2 = *(byte **)(rgp2 + 0x109c);
+            byte *world2 = (byte *)rgp.world;
             float *blc = (float *)(*(byte **)(world2 + 0xf8) + smodelIndex * 96 + 0x54);
             float val;
 

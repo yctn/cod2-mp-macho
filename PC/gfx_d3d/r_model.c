@@ -38,6 +38,7 @@ extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
 extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 extern Bool R_ValidXModelName(const char *name);
 extern refimport_t ri; /* imp_ri */
+extern r_global_permanent_t rgp; /* imp_rgp */
 __attribute__((used)) const int boxVerts[24][3] = {
     { 0, 0, 0 }, { 1, 0, 0 },
     { 0, 0, 0 }, { 0, 1, 0 },
@@ -132,7 +133,7 @@ struct XModel * R_RegisterModel(const char *name)
 /* line 200 */
 GfxBrushModel * R_RegisterInlineModel(int modelIndex)
 {
-    GfxWorld *world = *(GfxWorld **)((byte *)imp_rgp + 0x109c); /* TODO: unknown rgp offset 0x109c */
+    GfxWorld *world = rgp.world;
     return &world->models[modelIndex];
 }
 
@@ -1367,7 +1368,7 @@ static int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj,
         *(int *)(surfPos + 0xc) = *(int *)(dx + 0x2dd0) + current;
         *(int *)(dx + 0x2dd4) += needed;
         /* Lock and zero the buffer */
-        ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x24))((void *)*(int *)(surfPos + 0xc), needed);
+        ((void (*)(void *, int))ri.Z_VirtualCommitInternal)((void *)*(int *)(surfPos + 0xc), needed);
     }
     *(int *)surfPos = 3;
     *(void **)(surfPos + 4) = xsurf;
@@ -2171,7 +2172,7 @@ no_smc:
         }
         *(int *)(surfPos + 0xc) = *(int *)(dx + 0x2dd0) + current;
         *(int *)(dx + 0x2dd4) += needed;
-        ((void (*)(void *, int))*(void **)((char *)imp_ri + 0x24))((void *)*(int *)(surfPos + 0xc), needed);
+        ((void (*)(void *, int))ri.Z_VirtualCommitInternal)((void *)*(int *)(surfPos + 0xc), needed);
     }
     *(int *)surfPos = 3;
     *(void **)(surfPos + 4) = xsurf;

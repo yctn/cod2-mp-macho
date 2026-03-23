@@ -131,17 +131,16 @@ Bool G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
     int dirIdx;
 
     /* accuracyDirName has 3 entries, weaponDef has graph data at specific offsets */
-    byte *wdef = (byte *)weaponDef;
+    WeaponDef *wdef = (WeaponDef *)weaponDef;
 
     for (dirIdx = 0; dirIdx < 3; dirIdx++) {
         memset(accuracyGraphKnots, 0, sizeof(accuracyGraphKnots));
 
         const char *dirName = accuracyDirName[dirIdx];
-        const char *graphName = *(const char **)(wdef + 0x50c + dirIdx * 4);
+        const char *graphName = wdef->accuracyGraphName[dirIdx];
 
         /* Check weapon type */
-        int weapType = *(int *)(wdef + 0x78);
-        if (weapType != 0 && weapType != 2)
+        if (wdef->weapType != 0 && wdef->weapType != 2)
             continue;
 
         if (!graphName || *graphName == '\0')
@@ -218,9 +217,9 @@ Bool G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
 
         int size = knotCountIndex * 8;
         float *knots = (float *)Hunk_AllocLowAlignInternal(size, 4);
-        *(float **)(wdef + 0x514 + dirIdx * 4) = knots;
+        wdef->accuracyGraphKnots[dirIdx] = (vec2_t *)knots;
         memcpy(knots, accuracyGraphKnots, size);
-        *(int *)(wdef + 0x51c + dirIdx * 4) = knotCountIndex;
+        wdef->accuracyGraphKnotCount[dirIdx] = knotCountIndex;
     }
 
     return 1;

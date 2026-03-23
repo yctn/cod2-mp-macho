@@ -2206,7 +2206,7 @@ void SND_Update(void)
             SND_Restore(&memFile);
             Z_FreeInternal((void *)g_snd.restore.buffer);
             g_snd.restore.buffer = 0;
-            *(int *)((char *)&g_snd + 0x20) = 0;
+            g_snd.restore.size = 0;
         }
 
         /* Update timescale */

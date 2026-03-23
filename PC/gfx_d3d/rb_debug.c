@@ -312,7 +312,6 @@ static JCOEF RB_DrawPolyInteriors(void)
     byte *drawSurf;
     int polyCount;
     int polyIndex;
-    int polyOffset;
 
     /* Begin surface with white material, technique type 3, no lightmap */
     RB_BeginSurface(rgp.whiteMaterial, 3, 0);
@@ -325,30 +324,28 @@ static JCOEF RB_DrawPolyInteriors(void)
         return 0;
     }
 
-    polyOffset = 0;
     drawSurf = *(byte **)g_drawSurf;
 
     for (polyIndex = 0; polyIndex < polyCount; polyIndex++) {
-        byte *poly;
+        GfxDebugPoly *poly;
         vec3_t *polyVerts;
         int polyVertCount;
         int indexCount;
         int vertIndex;
         D3DCOLOR colorBytes;
 
-        poly = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->polys + polyOffset;
+        poly = &((DebugGlobals *)(data + DBGGLOB_OFF))->polys[polyIndex];
 
         /* Get polygon vertices */
         {
-            int firstVert = *(int *)(poly + 0x10); /* GfxDebugPoly.firstVert */
             vec3_t *vertsBase = ((DebugGlobals *)(data + DBGGLOB_OFF))->verts;
-            polyVerts = &vertsBase[firstVert];
+            polyVerts = &vertsBase[poly->firstVert];
         }
 
         /* Convert color */
-        R_ConvertColorToBytes((const vec_t *)poly, (byte *)&colorBytes);
+        R_ConvertColorToBytes((const vec_t *)poly->color, (byte *)&colorBytes);
 
-        polyVertCount = *(int *)(poly + 0x14); /* GfxDebugPoly.vertCount */
+        polyVertCount = poly->vertCount;
         indexCount = polyVertCount * 3 - 6; /* triangle fan: (n-2) * 3 indices */
 
         /* Check if we need to overflow / restart the surface */
@@ -481,8 +478,6 @@ static JCOEF RB_DrawPolyInteriors(void)
         /* Advance vertex base count */
         ((materialCommands_t *)drawSurf)->vertexCount += polyVertCount;
 
-        /* Next poly */
-        polyOffset += 0x18;
         data = *(byte **)g_viewParms;
         drawSurf = *(byte **)g_drawSurf;
     }
@@ -512,10 +507,8 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 
     if (plumeCount > 0) {
         const vec_t *dir = viewParms->axis[1]; /* axis[1] at offset 0x18 */
-        int plumeOffset = 0;
-
         for (plumeIndex = 0; plumeIndex < plumeCount; plumeIndex++) {
-            byte *plume;
+            GfxDebugPlume *plume;
             int time;
             int startTime;
             int duration;
@@ -523,36 +516,34 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
             vec3_t org;
 
             data = *(byte **)g_viewParms;
-            plume = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
+            plume = &((DebugGlobals *)(data + DBGGLOB_OFF))->plumes[plumeIndex];
 
             time = backEnd.sceneDef.time;
 
-            startTime = *(int *)(plume + 0x20); /* GfxDebugPlume.startTime */
+            startTime = plume->startTime;
             elapsed = time - startTime;
 
             if (elapsed < 0) {
-                plumeOffset += 0x28;
                 continue;
             }
 
-            duration = *(int *)(plume + 0x24); /* GfxDebugPlume.duration */
+            duration = plume->duration;
             if (elapsed > duration) {
-                plumeOffset += 0x28;
                 continue;
             }
 
             /* Set alpha based on fade */
-            *(float *)(plume + 0x18) = 1.0f; /* GfxDebugPlume.alpha */
+            plume->color[3] = 1.0f; /* alpha */
 
             data = *(byte **)g_viewParms;
             {
-                byte *plumeData = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
+                GfxDebugPlume *plumeData = &((DebugGlobals *)(data + DBGGLOB_OFF))->plumes[plumeIndex];
 
                 if (elapsed * 2 > duration) {
                     /* Fading out: alpha = -2*elapsed/duration + 2 */
                     float fElapsed = (float)elapsed;
                     float fDuration = (float)duration;
-                    *(float *)(plumeData + 0x18) = fElapsed * -2.0f / fDuration + 2.0f; /* GfxDebugPlume.alpha */
+                    plumeData->color[3] = fElapsed * -2.0f / fDuration + 2.0f; /* alpha */
                 }
             }
 
@@ -564,12 +555,12 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 
                 data = *(byte **)g_viewParms;
                 {
-                    byte *plumeOrigin = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
+                    GfxDebugPlume *plumeOrigin = &((DebugGlobals *)(data + DBGGLOB_OFF))->plumes[plumeIndex];
 
-                    /* org = plumeOrigin.xyz + height * viewParms->axis[1] */
-                    org[0] = height * viewParms->axis[1][0] + *(float *)(plumeOrigin + 0);
-                    org[1] = height * viewParms->axis[1][1] + *(float *)(plumeOrigin + 4);
-                    org[2] = height * viewParms->axis[1][2] + *(float *)(plumeOrigin + 8);
+                    /* org = plume.origin + height * viewParms->axis[1] */
+                    org[0] = height * viewParms->axis[1][0] + plumeOrigin->origin[0];
+                    org[1] = height * viewParms->axis[1][1] + plumeOrigin->origin[1];
+                    org[2] = height * viewParms->axis[1][2] + plumeOrigin->origin[2];
 
                     /* Adjust Z by small vertical offset */
                     org[2] = (float)elapsed * 0.06400000303983688f + org[2];
@@ -578,20 +569,18 @@ JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
                 /* Add debug string showing the score */
                 data = *(byte **)g_viewParms;
                 {
-                    byte *plumeData2 = (byte *)((DebugGlobals *)(data + DBGGLOB_OFF))->plumes + plumeOffset;
-                    const char *scoreStr = va("%i", *(int *)(plumeData2 + 0x1c)); /* GfxDebugPlume.score */
+                    GfxDebugPlume *plumeData2 = &((DebugGlobals *)(data + DBGGLOB_OFF))->plumes[plumeIndex];
+                    const char *scoreStr = va("%i", plumeData2->score);
 
                     R_AddDebugString(
                         (DebugGlobals *)(data + DBGGLOB_OFF),
                         org,
-                        (const vec_t *)(plumeData2 + 0xc), /* GfxDebugPlume.color */
+                        (const vec_t *)plumeData2->color,
                         0.5f,
                         scoreStr
                     );
                 }
             }
-
-            plumeOffset += 0x28;
         }
     }
 

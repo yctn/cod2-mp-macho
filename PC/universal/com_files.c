@@ -555,9 +555,9 @@ float FS_ClearIwdReferences(void)
     byte *search;
 
     for (search = (byte *)fs_searchpaths; search; search = *(byte **)search) {
-        byte *pack = *(byte **)(search + 4);
+        pack_t *pack = *(pack_t **)(search + 4);
         if (pack)
-            *(byte *)(pack + 0x310) = 0;
+            pack->referenced = 0;
     }
 }
 

@@ -62,13 +62,13 @@ float Com_GetVolumeFalloffCurveValue(SndCurve *volumeFalloffCurve, float fractio
 /* line 874 */
 const char * Com_GetSoundFileName(const snd_alias_t *pAlias)
 {
-    return *(const char **)(*(int *)((byte *)pAlias + 0xc));
+    return pAlias->soundFile->soundName;
 }
 
 /* line 887 */
 J_COLOR_SPACE * Com_GetSoundFileMem(const snd_alias_t *pAlias)
 {
-    return *(J_COLOR_SPACE **)(*(int *)((byte *)pAlias + 0xc) + 4);
+    return (J_COLOR_SPACE *)pAlias->soundFile->fileMem;
 }
 
 /* line 979 */

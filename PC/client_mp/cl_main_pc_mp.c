@@ -1409,17 +1409,17 @@ int CL_Connect_f(void)
             if (memcmp(server, (const char *)str_002a8ab8, 10) == 0) /* "localhost" */
             {
                 /* connecting to localhost while server is running */
-                byte *legacyHacks = *(byte **)imp_legacyHacks;
-                *(byte *)(legacyHacks + 0xdd) = 1; /* legacyHacks->localConnect */
+                LegacyHacks *legacyHacks = *(LegacyHacks **)imp_legacyHacks;
+                legacyHacks->sv_killserver = 1; /* localConnect flag */
             }
         }
     }
 
     {
-        byte *legacyHacks = *(byte **)imp_legacyHacks;
-        *(char *)(legacyHacks + 0x5c) = '\0'; /* legacyHacks->mapName[0] */
-        legacyHacks = *(byte **)imp_legacyHacks;
-        *(char *)(legacyHacks + 0x9c) = '\0'; /* legacyHacks->gametype[0] */
+        LegacyHacks *legacyHacks = *(LegacyHacks **)imp_legacyHacks;
+        legacyHacks->cl_serverloadmap[0] = '\0';
+        legacyHacks = *(LegacyHacks **)imp_legacyHacks;
+        legacyHacks->cl_serverloadgametype[0] = '\0';
     }
 
     SV_Frame(0);

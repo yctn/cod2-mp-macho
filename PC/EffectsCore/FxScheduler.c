@@ -17,6 +17,7 @@
  */
 
 extern int irand(int min, int max);
+extern refexport_t re; /* imp_re */
 
 extern FxScheduler * fxSchedulers[1]; /* 0x0 */
 static EffectTemplate * effectTemplateArray[256]; /* effectTemplateArray */
@@ -767,10 +768,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
     if (numAdded) {
         dvar_t *countDvar = *(dvar_t **)&imp_fx_count;
         if (countDvar->current.enabled != 0) {
-            void (*debugAddNum)(const vec_t *, int, const vec_t *, int);
-            byte *rePtr = *(byte **)&imp_re;
-            debugAddNum = *(void (**)(const vec_t *, int, const vec_t *, int))((byte *)rePtr + 0x104); /* TODO: unknown struct offset for re->debugAddNum */
-            debugAddNum(or_.origin, numAdded, *(const vec_t **)&imp_colorYellow, 3000);
+            re.AddPlume(or_.origin, numAdded, *(const vec_t **)&imp_colorYellow, 3000);
         }
     }
 }

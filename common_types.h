@@ -6090,13 +6090,6 @@ struct FxChannelInstance {
     float scale;
 };
 
-struct Cloud {
-    Bool useLength;
-    float randomLengthWeight;
-    FxChannelInstance lengthChannelInstance;
-    FxChannelInstance lengthRandChannelInstance;
-};
-
 struct FxFlagEntry {
     const char *flag;
     unsigned int masks[2];
@@ -7176,13 +7169,6 @@ struct LegacyHacks {
     int persid;
 };
 
-struct Light {
-    FxChannelInstance colorChannelInstance;
-    FxChannelInstance colorRandChannelInstance;
-    FxChannelInstance sizeChannelInstance;
-    FxChannelInstance sizeRandChannelInstance;
-};
-
 struct LightInfoType {
     bool Enabled;
     DWORD Type;
@@ -7407,6 +7393,16 @@ struct Effect {
     int mTimeStart;             /* 0xb8 */
     int mTimeEnd;               /* 0xbc */
     struct FxBoltFramePtr mBolt;/* 0xc0 */
+};
+
+struct Light {
+    struct Effect base;                     /* 0x00-0xc3 */
+    byte _pad_0xc4[8];                      /* 0xc4-0xcb */
+    FxChannelInstance colorChannelInstance;     /* 0xcc */
+    FxChannelInstance colorRandChannelInstance; /* 0xd8 */
+    FxChannelInstance sizeChannelInstance;      /* 0xe4 */
+    FxChannelInstance sizeRandChannelInstance;  /* 0xf0 */
+    /* total: 0xfc */
 };
 
 struct GfxCmdDrawText {
@@ -7773,28 +7769,77 @@ struct ParameterType {
 };
 
 struct Particle {
-    FxChannelInstance colorChannelInstance;
-    FxChannelInstance colorRandChannelInstance;
-    FxChannelInstance alphaChannelInstance;
-    FxChannelInstance alphaRandChannelInstance;
-    FxChannelInstance sizeChannelInstance;
-    FxChannelInstance sizeRandChannelInstance;
-    FxChannelInstance size2ChannelInstance;
-    FxChannelInstance size2RandChannelInstance;
-    FxChannelInstance rotationDeltaChannelInstance;
-    FxChannelInstance rotationDeltaRandChannelInstance;
-    FxChannelInstance velocityXChannelInstance;
-    FxChannelInstance velocityYChannelInstance;
-    FxChannelInstance velocityZChannelInstance;
-    FxChannelInstance velocityXRandChannelInstance;
-    FxChannelInstance velocityYRandChannelInstance;
-    FxChannelInstance velocityZRandChannelInstance;
-    FxChannelInstance velocity2XChannelInstance;
-    FxChannelInstance velocity2YChannelInstance;
-    FxChannelInstance velocity2ZChannelInstance;
-    FxChannelInstance velocity2XRandChannelInstance;
-    FxChannelInstance velocity2YRandChannelInstance;
-    FxChannelInstance velocity2ZRandChannelInstance;
+    /* Embedded Effect base: 0x00-0xc3 */
+    int _vptr$Effect;                /* 0x00 */
+    struct FxGfxEntity mRefEnt;      /* 0x04 */
+    vec3_t worldColor;               /* 0x6c */
+    struct XModel *mModel;           /* 0x78 */
+    vec3_t worldOrigin;              /* 0x7c */
+    float worldRadius[2];            /* 0x88 */
+    byte worldRGBA[4];               /* 0x90 */
+    float worldSubimageIndex;        /* 0x94 */
+    float worldScale;                /* 0x98 */
+    vec3_t worldEndpos;              /* 0x9c */
+    int mFlags;                      /* 0xa8 - attributeFlags */
+    int mClusterId;                  /* 0xac - clusterId */
+    int mSortGroup;                  /* 0xb0 - activeFlag */
+    struct XModel *mModelPtr;        /* 0xb4 */
+    int mTimeStart;                  /* 0xb8 */
+    int mTimeEnd;                    /* 0xbc */
+    struct FxBoltFramePtr mBolt;     /* 0xc0 */
+    /* Particle-specific: 0xc4+ */
+    byte _pad_0xc4[12];              /* 0xc4-0xcf */
+    float displayAxis[3][3];         /* 0xd0 */
+    float gravity;                   /* 0xf4 */
+    float windModifier;              /* 0xf8 */
+    int _unk_0xfc;                   /* 0xfc */
+    float elasticity;                /* 0x100 */
+    byte nonUniformScale;            /* 0x104 */
+    byte _pad_0x105[3];              /* alignment padding */
+    int startFrame;                  /* 0x108 */
+    float frameRate;                 /* 0x10c */
+    int sequenceLoopMode;            /* 0x110 */
+    int sequenceLoopTimes;           /* 0x114 */
+    float blendWeight[5];            /* 0x118 */
+    float velocityWeightX;           /* 0x12c */
+    float velocityWeightY;           /* 0x130 */
+    float velocityWeightZ;           /* 0x134 */
+    float velocity2WeightX;          /* 0x138 */
+    float velocity2WeightY;          /* 0x13c */
+    float velocity2WeightZ;          /* 0x140 */
+    FxChannelInstance colorChannelInstance;             /* 0x144 */
+    FxChannelInstance colorRandChannelInstance;         /* 0x150 */
+    FxChannelInstance alphaChannelInstance;             /* 0x15c */
+    FxChannelInstance alphaRandChannelInstance;         /* 0x168 */
+    FxChannelInstance sizeChannelInstance;              /* 0x174 */
+    FxChannelInstance sizeRandChannelInstance;          /* 0x180 */
+    FxChannelInstance size2ChannelInstance;             /* 0x18c */
+    FxChannelInstance size2RandChannelInstance;         /* 0x198 */
+    FxChannelInstance rotationDeltaChannelInstance;     /* 0x1a4 */
+    FxChannelInstance rotationDeltaRandChannelInstance; /* 0x1b0 */
+    FxChannelInstance velocityXChannelInstance;         /* 0x1bc */
+    FxChannelInstance velocityYChannelInstance;         /* 0x1c8 */
+    FxChannelInstance velocityZChannelInstance;         /* 0x1d4 */
+    FxChannelInstance velocityXRandChannelInstance;     /* 0x1e0 */
+    FxChannelInstance velocityYRandChannelInstance;     /* 0x1ec */
+    FxChannelInstance velocityZRandChannelInstance;     /* 0x1f8 */
+    FxChannelInstance velocity2XChannelInstance;        /* 0x204 */
+    FxChannelInstance velocity2YChannelInstance;        /* 0x210 */
+    FxChannelInstance velocity2ZChannelInstance;        /* 0x21c */
+    FxChannelInstance velocity2XRandChannelInstance;    /* 0x228 */
+    FxChannelInstance velocity2YRandChannelInstance;    /* 0x234 */
+    FxChannelInstance velocity2ZRandChannelInstance;    /* 0x240 */
+    /* total: 0x24c */
+};
+
+struct Cloud {
+    struct Particle base;               /* 0x00-0x24b, size 0x24c */
+    Bool useLength;                     /* 0x24c */
+    float randomLengthWeight;           /* 0x250 */
+    byte _pad_0x254[16];                /* 0x254-0x263 */
+    FxChannelInstance lengthChannelInstance;     /* 0x264 */
+    FxChannelInstance lengthRandChannelInstance; /* 0x270 */
+    /* total: 0x27c */
 };
 
 struct PassOptionDx7 {
@@ -8808,9 +8853,13 @@ struct TXNTypeAttributes {
 };
 
 struct Tail {
-    float randomLengthWeight;
-    FxChannelInstance lengthChannelInstance;
-    FxChannelInstance lengthRandChannelInstance;
+    struct Particle base;               /* 0x00-0x24b, size 0x24c */
+    float endpoint[3];                  /* 0x24c */
+    float tailLength;                   /* 0x258 */
+    byte _pad_0x25c[4];                 /* 0x25c-0x25f */
+    FxChannelInstance lengthChannelInstance;     /* 0x260 */
+    FxChannelInstance lengthRandChannelInstance; /* 0x26c */
+    /* total: 0x278 */
 };
 
 struct TestLod {

@@ -1564,7 +1564,6 @@ void UI_CloseMenu_f(void)
 /* line 4148 */
 void UI_Init(void)
 {
-    byte *legacyBase;
     int width, height;
     int menuList;
     int netGameTypeIdx;
@@ -1621,16 +1620,18 @@ void UI_Init(void)
     ui_playerProfileSelected = Dvar_RegisterString_mac("ui_playerProfileSelected", str_002157b8, 0x1040);
     ui_playerProfileNameNew = Dvar_RegisterString_mac("ui_playerProfileNameNew", str_002157b8, 0x1000);
 
-    /* initialize legacy hacks state — TODO: unknown offset into legacyHacksArray struct */
-    legacyBase = (byte *)imp_legacyHacksArray;
-    *(byte *)(legacyBase + 0x2e4) = 0;  /* TODO: unknown offset */
-    *(int *)(legacyBase + 0x3e4) = -1;  /* TODO: unknown offset */
-    *(byte *)(legacyBase + 0x1de) = 0;  /* TODO: unknown offset */
-    *(int *)(legacyBase + 0x2e0) = -1;  /* TODO: unknown offset */
-    *(byte *)(legacyBase + 0x4ed) = 1;  /* TODO: unknown offset */
-    *(byte *)(legacyBase + 0x3e8) = 0;  /* TODO: unknown offset */
-    *(int *)(legacyBase + 0x4e8) = -1;  /* TODO: unknown offset */
-    *(byte *)(legacyBase + 0x4ec) = 0;  /* TODO: unknown offset */
+    /* initialize legacy hacks state */
+    {
+        LegacyHacks *lh = (LegacyHacks *)imp_legacyHacksArray;
+        lh->ui_newScriptMenu[0] = '\0';
+        lh->ui_newScriptMenuIndex = -1;
+        lh->ui_scriptMenu[0] = '\0';
+        lh->ui_scriptMenuIndex = -1;
+        lh->ui_scriptMenuAllowResponse = 1;
+        lh->ui_waitingScriptMenu[0] = '\0';
+        lh->ui_waitingScriptMenuIndex = -1;
+        lh->ui_waitingScriptMenuNoMouse = 0;
+    }
 
     String_Init();
     Menu_Setup(uiInfo);
@@ -1859,11 +1860,11 @@ qboolean UI_SetActiveMenu(int menu)
                 return 0;
         }
 
-        legacyBase = *(byte **)imp_legacyHacks;
+        legacyBase = (byte *)*(LegacyHacks **)imp_legacyHacks;
 
         if (pFocus) {
             /* check if focused menu name matches buf */
-            if (I_stricmp(((menuDef_t *)pFocus)->window.name, (const char *)(legacyBase + 0x2e4)) == 0) /* TODO: unknown offset into legacyHacks */
+            if (I_stricmp(((menuDef_t *)pFocus)->window.name, ((LegacyHacks *)legacyBase)->ui_newScriptMenu) == 0)
                 return 1;
         }
 
@@ -1877,13 +1878,16 @@ qboolean UI_SetActiveMenu(int menu)
         Key_SetCatcher(8);
         Menus_CloseAll(uiInfo);
 
-        /* copy buf to secondary location, save/clear state — TODO: unknown offsets into legacyHacks */
-        strcpy((char *)(legacyBase + 0x1de), (const char *)(legacyBase + 0x2e4));
-        *(int *)(legacyBase + 0x2e0) = *(int *)(legacyBase + 0x3e4);
-        *(byte *)(legacyBase + 0x2e4) = 0;
-        *(int *)(legacyBase + 0x3e4) = -1;
+        /* copy newScriptMenu → scriptMenu, save index, clear new */
+        {
+            LegacyHacks *lh = (LegacyHacks *)legacyBase;
+            strcpy(lh->ui_scriptMenu, lh->ui_newScriptMenu);
+            lh->ui_scriptMenuIndex = lh->ui_newScriptMenuIndex;
+            lh->ui_newScriptMenu[0] = '\0';
+            lh->ui_newScriptMenuIndex = -1;
 
-        Menus_OpenByName(uiInfo, (const char *)(legacyBase + 0x1de)); /* TODO: unknown offset into legacyHacks */
+            Menus_OpenByName(uiInfo, lh->ui_scriptMenu);
+        }
         return 1;
 
     case 11: /* player_profile */
@@ -7761,10 +7765,10 @@ static void UI_ReadableSize_wrap(char *buf, int bufsize, int value)
 static
 void UI_DisplayDownloadInfo(const char *downloadName, float centerPoint, float yStart, FontHandle font, float scale)
 {
-    byte *legacyBase = *(byte **)imp_legacyHacks;
-    int downloadSize = *(int *)(legacyBase + 0x10);  /* TODO: unknown offset into legacyHacks */
-    int downloadCount = *(int *)(legacyBase + 0x14); /* TODO: unknown offset into legacyHacks */
-    int downloadTime = *(int *)(legacyBase + 0x18);  /* TODO: unknown offset into legacyHacks */
+    LegacyHacks *legacyBase = *(LegacyHacks **)imp_legacyHacks;
+    int downloadSize = legacyBase->cl_downloadSize;
+    int downloadCount = legacyBase->cl_downloadCount;
+    int downloadTime = legacyBase->cl_downloadTime;
     vec_t color[4];
     float y1, y2, y3;
     int xferRate = 0;
@@ -7949,14 +7953,15 @@ void UI_DrawConnectScreen(void)
     const char *mapDisplayName;
     const float connectScale = 0.5f;
 
-    legacyBase = *(byte **)imp_legacyHacks;
+    legacyBase = (byte *)*(LegacyHacks **)imp_legacyHacks;
     if (!legacyBase)
         return;
 
     /* determine loading flag */
     {
         int loading = 0;
-        if (legacyBase[0x5c] != 0 || legacyBase[0x9c] != 0) /* TODO: unknown offsets into legacyHacks */
+        if (((LegacyHacks *)legacyBase)->cl_serverloadmap[0] != '\0' ||
+            ((LegacyHacks *)legacyBase)->cl_serverloadgametype[0] != '\0')
             loading = 1;
         CG_DrawInformation(loading);
     }
@@ -8127,10 +8132,10 @@ check_connection_state:
         } else if (cs == 5) {
             /* CA_CONNECTED - downloading */
             /* Reload legacyBase: stack corruption can zero the local */
-            legacyBase = *(byte **)imp_legacyHacks;
-            if (!legacyBase || legacyBase[0x1c] == 0) /* TODO: unknown offset into legacyHacks */
+            legacyBase = (byte *)*(LegacyHacks **)imp_legacyHacks;
+            if (!legacyBase || ((LegacyHacks *)legacyBase)->cl_downloadName[0] == '\0')
                 return;
-            UI_DisplayDownloadInfo((const char *)(legacyBase + 0x1c), 320.0f, 89.0f, font, connectScale); /* TODO: unknown offset into legacyHacks */
+            UI_DisplayDownloadInfo(((LegacyHacks *)legacyBase)->cl_downloadName, 320.0f, 89.0f, font, connectScale);
         } else if (cs == 3) {
             /* CA_CONNECTING */
             if (bConnectInfoDisplayed)

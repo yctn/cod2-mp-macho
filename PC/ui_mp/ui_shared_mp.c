@@ -630,7 +630,7 @@ void Script_ScriptMenuResponse(displayContextDef_t *dc, itemDef_t *item, const c
     int iIndex;
     (void)dc;
 
-    if (!*(byte *)(*(byte **)imp_legacyHacks + 0x4ed)) /* TODO: unknown offset into legacyHacks */
+    if (!(*(LegacyHacks **)imp_legacyHacks)->ui_scriptMenuAllowResponse)
         return;
 
     if (!String_Parse(args, val, 0x400))

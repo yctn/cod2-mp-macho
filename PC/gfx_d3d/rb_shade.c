@@ -16,6 +16,7 @@
 extern const float lightGridLookupMatrix[4][4]; /* rodata.c */
 extern const vec4_t debugShaderConsts[]; /* rodata.c */
 extern const GfxStateOverride overrideEnableRenormalize; /* rodata.c */
+extern refimport_t ri; /* imp_ri */
 extern const DWORD s_fvfForVertDeclType[]; /* rodata.c */
 
 extern void R_FatalLockError(HRESULT hr);
@@ -407,7 +408,7 @@ void RB_SetEntityHwLightsDx7(void)
 /* line 1785 */
 void RB_CreateDynamicBuffers(void)
 {
-    void *(*hunkAlloc)(int) = *(void *(**)(int))((byte *)imp_ri + 0xc); /* ri.Hunk_Alloc */
+    void *(*hunkAlloc)(int) = (void *(*)(int))ri.Hunk_AllocInternal;
     materialCommands_t *t = (materialCommands_t *)imp_tess;
     t->indices = (r_index_t *)hunkAlloc(0x200000);
     t->optimizedIndices = (r_index_t *)hunkAlloc(0x200000);
