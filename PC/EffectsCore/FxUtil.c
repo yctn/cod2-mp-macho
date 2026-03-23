@@ -3884,14 +3884,14 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
     Particle_GetTotalVelocityAtTime0(p, vel);
     ((Tail *)p)->tailLength = vel[0]; ((Tail *)p)->lengthBlendFactor = vel[1]; *(float *)&((Tail *)p)->lengthChannelInstance = vel[2];
     /* Store spawn parameters */
-    *(float *)(p + 0x278) = spawnSize;
-    *(float *)(p + 0x284) = spawnDensity;
-    *(float *)(p + 0x28c) = spawnStep;
-    *(float *)(p + 0x294) = spawnVariance;
+    ((Emitter *)p)->spawnSize = spawnSize;
+    ((Emitter *)p)->spawnDensity = spawnDensity;
+    ((Emitter *)p)->spawnStep = spawnStep;
+    ((Emitter *)p)->spawnVariance = spawnVariance;
     /* Set model reference from primTemp */
     *(int *)&((Effect *)p)->mModelPtr = *(int *)&((PrimitiveTemplate *)primTemp)->mAngle3Delta; /* TODO: subclass field at 0xb4 */
     /* Set emitter effect template */
-    *(int *)(p + 0x290) = *(int *)&((PrimitiveTemplate *)primTemp)->mPlayFxHandles; /* TODO: subclass field at 0x290 */
+    ((Emitter *)p)->emitFx = (void *)((PrimitiveTemplate *)primTemp)->mPlayFxHandles;
     /* Set material + refractive flag */
     *(void **)&((Effect *)p)->mRefEnt.origin[0] = material;
     ((Effect *)p)->mSortGroup = 0;

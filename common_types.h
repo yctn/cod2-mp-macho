@@ -5914,7 +5914,20 @@ struct EffectVisInfo {
 };
 
 struct Emitter {
-    int _placeholder;
+    /* Effect base occupies 0x00-0x87 (0x88 bytes); Emitter-specific data follows */
+    char _base[0x1C4];   /* 0x000: Effect base (0x88) + unknown Emitter fields (0x13C) */
+    vec3_t emitPos;      /* 0x1C4 — emit origin position */
+    char _pad1[12];      /* 0x1D0: gap to emitVel */
+    vec3_t emitVel;      /* 0x1DC — emit velocity */
+    int emitNextTime;    /* 0x1E8 — next emit timestamp */
+    float emitStep;      /* 0x1EC — emission step size */
+    float spawnSize;     /* 0x1F0 — spawn size parameter */
+    char _pad2[8];       /* 0x1F4: gap */
+    float spawnDensity;  /* 0x1FC — spawn density */
+    float _pad3;         /* 0x200: gap */
+    float spawnStep;     /* 0x204 — spawn step */
+    void *emitFx;        /* 0x208 — effect handle to spawn */
+    float spawnVariance; /* 0x20C — spawn variance */
 };
 
 struct EncState {
@@ -7197,7 +7210,9 @@ struct LightInfoType {
 };
 
 struct Line {
-    int _placeholder;
+    /* Effect base occupies 0x00-0x87 (0x88 bytes); Line-specific data follows */
+    char _base[0x1C4];   /* 0x000: Effect base (0x88) + unknown Line fields (0x13C) */
+    vec3_t endpoint;     /* 0x1C4 — line endpoint in local space */
 };
 
 struct LocalDateTime {
@@ -7753,7 +7768,9 @@ struct OpenGLStateInfoType {
 };
 
 struct OrientedParticle {
-    int _placeholder;
+    /* Effect base occupies 0x00-0x87 (0x88 bytes); OrientedParticle-specific data follows */
+    char _base[0x1C4];   /* 0x000: Effect base (0x88) + unknown OrientedParticle fields (0x13C) */
+    vec3_t normal;       /* 0x1C4 — surface normal in local space */
 };
 
 struct OutdoorGlob {

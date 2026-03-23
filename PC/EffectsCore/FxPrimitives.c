@@ -199,7 +199,7 @@ const orientation_t * FxBoltFrame_GetOrientation(const FxBoltFrame * _this)
 
     /* line 94: check if server time changed */
     cl_ptr = *(byte **)imp_cl;
-    serverTime = *(int *)(cl_ptr + 0x864c) /* clientActive_t.serverTime */;
+    serverTime = ((clientActive_t *)cl_ptr)->serverTime;
     if (serverTime != ((FxBoltFrame *)_this)->cachedServerTime) {
         /* line 96: update cached time */
         ((FxBoltFrame *)_this)->cachedServerTime = serverTime;
@@ -2968,7 +2968,7 @@ void Tail_InitEndPoint(const Tail *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -3236,7 +3236,7 @@ Bool Light_Update(const Light *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -5061,9 +5061,9 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
     if (frameTimeMs == 0)
         return;
 
-    float step = *(float *)(self + 0x274) /* Emitter.emitStep */;
+    float step = ((Emitter *)self)->emitStep;
     float step2 = step * step;
-    int t = *(int *)(self + 0x270) /* Emitter.emitNextTime */;
+    int t = ((Emitter *)self)->emitNextTime;
     int startTime = ((Effect *)self)->mTimeStart;
     float age = (float)(((FxHelper *)helper)->mTime - startTime) * 0.001f;
     float lifeTime = (float)(((Effect *)self)->mTimeEnd - startTime) * 0.001f;
@@ -5078,9 +5078,9 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
 
         /* Save old position */
         vec3_t oldorg;
-        oldorg[0] = *(float *)(self + 0x24c) /* Emitter.emitPos[0] */ + *(float *)(self + 0x264) /* Emitter.emitVel[0] */;
-        oldorg[1] = *(float *)(self + 0x250) /* Emitter.emitPos[1] */ + *(float *)(self + 0x268) /* Emitter.emitVel[1] */;
-        oldorg[2] = *(float *)(self + 0x254) /* Emitter.emitPos[2] */ + *(float *)(self + 0x26c) /* Emitter.emitVel[2] */;
+        oldorg[0] = ((Emitter *)self)->emitPos[0] + ((Emitter *)self)->emitVel[0];
+        oldorg[1] = ((Emitter *)self)->emitPos[1] + ((Emitter *)self)->emitVel[1];
+        oldorg[2] = ((Emitter *)self)->emitPos[2] + ((Emitter *)self)->emitVel[2];
 
         /* Compute normalized time */
         float normTime = (ftimeTotal + age) / lifeTime;
@@ -5092,9 +5092,9 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
 
         /* Compute new position = base + velocity * ftime */
         vec3_t org;
-        org[0] = *(float *)(self + 0x24c) /* Emitter.emitPos[0] */ + velocity[0] * ftime;
-        org[1] = *(float *)(self + 0x250) /* Emitter.emitPos[1] */ + velocity[1] * ftime;
-        org[2] = *(float *)(self + 0x254) /* Emitter.emitPos[2] */ + velocity[2] * ftime;
+        org[0] = ((Emitter *)self)->emitPos[0] + velocity[0] * ftime;
+        org[1] = ((Emitter *)self)->emitPos[1] + velocity[1] * ftime;
+        org[2] = ((Emitter *)self)->emitPos[2] + velocity[2] * ftime;
 
         /* Add bind velocity if present */
         if (or_ && bindVelocity) {
@@ -5123,7 +5123,7 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
         if (((Effect *)self)->mBolt.value)
             boltInfo = &(((Effect *)self)->mBolt.value)->mBolt;
 
-        void *emitEffect = *(void **)(self + 0x290) /* Emitter.emitFx */;
+        void *emitEffect = ((Emitter *)self)->emitFx;
         FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, emitEffect, spawnPos, NULL);
 
         /* Advance with adaptive time step based on velocity */
@@ -5151,17 +5151,17 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
         Particle_GetTotalVelocity((const Particle *)_this, nextNormTime, nextVel, or_);
 
         /* Update emitter origin to new position */
-        *(float *)(self + 0x24c) /* Emitter.emitPos[0] */ = org[0];
-        *(float *)(self + 0x250) /* Emitter.emitPos[1] */ = org[1];
-        *(float *)(self + 0x254) /* Emitter.emitPos[2] */ = org[2];
-        *(float *)(self + 0x264) /* Emitter.emitVel[0] */ = nextVel[0] * nextFtime - velocity[0] * ftime;
-        *(float *)(self + 0x268) /* Emitter.emitVel[1] */ = nextVel[1] * nextFtime - velocity[1] * ftime;
-        *(float *)(self + 0x26c) /* Emitter.emitVel[2] */ = nextVel[2] * nextFtime - velocity[2] * ftime;
+        ((Emitter *)self)->emitPos[0] = org[0];
+        ((Emitter *)self)->emitPos[1] = org[1];
+        ((Emitter *)self)->emitPos[2] = org[2];
+        ((Emitter *)self)->emitVel[0] = nextVel[0] * nextFtime - velocity[0] * ftime;
+        ((Emitter *)self)->emitVel[1] = nextVel[1] * nextFtime - velocity[1] * ftime;
+        ((Emitter *)self)->emitVel[2] = nextVel[2] * nextFtime - velocity[2] * ftime;
 
         ftimeTotal += nextFtime;
         dif = (int)(ftimeTotal * 1000.0f);
         t = startTime + dif;
-        *(int *)(self + 0x270) /* Emitter.emitNextTime */ = t;
+        ((Emitter *)self)->emitNextTime = t;
     }
 }
 #if 0 /* Original ASM (367 lines) */
@@ -5549,7 +5549,7 @@ void Particle_GetTotalVelocityAtTime0(const Particle *_this, vec_t *outVector)
             outVector[0] = outVector[1] = outVector[2] = 0.0f;
             return;
         }
-        int curTime = *(int *)(*(int *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+        int curTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
         if (curTime != boltFrame->cachedServerTime) {
             boltFrame->cachedServerTime = curTime;
             Bool ok = FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation);
@@ -6144,7 +6144,7 @@ Bool Emitter_Update(const Emitter *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -6969,7 +6969,7 @@ Bool Cylinder_Update(const Cylinder *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -7744,7 +7744,7 @@ Bool Tail_Update(const Tail *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -8347,7 +8347,7 @@ Bool Line_Update(const Line *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -8373,11 +8373,11 @@ Bool Line_Update(const Line *_this)
 
     /* Transform endpoint (0x24c) to world space (0x9c) */
     if (orient)
-        OrientationPosToWorldPos(orient, (vec_t *)(self + 0x24c), (vec_t *)((Effect *)self)->worldEndpos);
+        OrientationPosToWorldPos(orient, ((Line *)self)->endpoint, (vec_t *)((Effect *)self)->worldEndpos);
     else {
-        ((Effect *)self)->worldEndpos[0] = *(float *)(self + 0x24c) /* Line.endpoint[0] */;
-        ((Effect *)self)->worldEndpos[1] = *(float *)(self + 0x250) /* Line.endpoint[1] */;
-        ((Effect *)self)->worldEndpos[2] = *(float *)(self + 0x254) /* Line.endpoint[2] */;
+        ((Effect *)self)->worldEndpos[0] = ((Line *)self)->endpoint[0];
+        ((Effect *)self)->worldEndpos[1] = ((Line *)self)->endpoint[1];
+        ((Effect *)self)->worldEndpos[2] = ((Line *)self)->endpoint[2];
     }
 
     /* Evaluate radius */
@@ -8716,7 +8716,7 @@ Bool Cloud_Update(const Cloud *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -9700,7 +9700,7 @@ Bool OrientedParticle_Update(const OrientedParticle *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -9718,7 +9718,7 @@ Bool OrientedParticle_Update(const OrientedParticle *_this)
         OrientationDirFromWorldDir(orient, (vec_t *)(self + 0x24c), (vec_t *)((Effect *)self)->worldEndpos);
     } else {
         ((Effect *)self)->worldOrigin[0] = *(float *)&((Effect *)self)->mRefEnt.customMaterial /* localOrigin[0] */; ((Effect *)self)->worldOrigin[1] = ((Effect *)self)->mRefEnt.rotation /* localOrigin[1] */; ((Effect *)self)->worldOrigin[2] = ((Effect *)self)->mRefEnt.axis[0][0] /* localOrigin[2] */;
-        ((Effect *)self)->worldEndpos[0] = *(float *)(self + 0x24c) /* OrientedParticle.normal[0] */; ((Effect *)self)->worldEndpos[1] = *(float *)(self + 0x250) /* OrientedParticle.normal[1] */; ((Effect *)self)->worldEndpos[2] = *(float *)(self + 0x254) /* OrientedParticle.normal[2] */;
+        ((Effect *)self)->worldEndpos[0] = ((OrientedParticle *)self)->normal[0]; ((Effect *)self)->worldEndpos[1] = ((OrientedParticle *)self)->normal[1]; ((Effect *)self)->worldEndpos[2] = ((OrientedParticle *)self)->normal[2];
     }
 
     float radius;
@@ -10530,7 +10530,7 @@ Bool Particle_Update(const Particle *_this, const Particle *_this_1, const Cloud
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int cachedTime = ((FxBoltFrame *)boltFrame)->cachedServerTime;
-            int clTime = *(int *)(*(byte *)imp_cl + 0x864c); /* clientActive_t.serverTime */
+            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
             if (cachedTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 Bool ok = FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */);
@@ -11836,9 +11836,9 @@ void OrientedParticle_Archive(const OrientedParticle *_this, FxArchive *arch)
         FxArchive_ReadData(arch, self + 0x24c, 0xc);
     } else {
         float f;
-        f = *(float *)(self + 0x24c) /* OrientedParticle.normal[0] */; FxArchive_WriteData(arch, &f, 4);
-        f = *(float *)(self + 0x250) /* OrientedParticle.normal[1] */; FxArchive_WriteData(arch, &f, 4);
-        f = *(float *)(self + 0x254) /* OrientedParticle.normal[2] */; FxArchive_WriteData(arch, &f, 4);
+        f = ((OrientedParticle *)self)->normal[0]; FxArchive_WriteData(arch, &f, 4);
+        f = ((OrientedParticle *)self)->normal[1]; FxArchive_WriteData(arch, &f, 4);
+        f = ((OrientedParticle *)self)->normal[2]; FxArchive_WriteData(arch, &f, 4);
     }
 }
 
@@ -11969,9 +11969,9 @@ void Line_Archive(const Line *_this, FxArchive *arch)
         FxArchive_ReadData(arch, self + 0x24c, 0xc);
     } else {
         float f;
-        f = *(float *)(self + 0x24c) /* Line.endpoint[0] */; FxArchive_WriteData(arch, &f, 4);
-        f = *(float *)(self + 0x250) /* Line.endpoint[1] */; FxArchive_WriteData(arch, &f, 4);
-        f = *(float *)(self + 0x254) /* Line.endpoint[2] */; FxArchive_WriteData(arch, &f, 4);
+        f = ((Line *)self)->endpoint[0]; FxArchive_WriteData(arch, &f, 4);
+        f = ((Line *)self)->endpoint[1]; FxArchive_WriteData(arch, &f, 4);
+        f = ((Line *)self)->endpoint[2]; FxArchive_WriteData(arch, &f, 4);
     }
 }
 
