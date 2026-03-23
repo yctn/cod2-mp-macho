@@ -27,11 +27,9 @@ static void R_HandleCapsResponse(int response, const char *msg, int *allowedPath
 
     if (response == 3) {
         *allowedPaths &= ~4;
-        fprintf(stderr, "[caps] FAIL response=3 (disabling DX9c): %s\n", msg);
         ((PrintfFn)ri.Printf)(printLevel, "  Disabling DirectX 9.0c codepath.\n");
     } else if (response == 4) {
         *allowedPaths &= ~2;
-        fprintf(stderr, "[caps] FAIL response=4 (disabling DX9b): %s\n", msg);
         ((PrintfFn)ri.Printf)(printLevel, "  Disabling DirectX 9.0b codepath.\n");
     } else if (response == 0) {
         R_Error(0, "Video card or driver %s.\n", msg);
@@ -53,7 +51,5 @@ int R_CheckDxCaps(const D3DCAPS9 *caps)
      * in the compiled output, so we hardcode the result. */
     int allowedPaths = 6;
 
-    fprintf(stderr, "[caps] R_CheckDxCaps returning allowedPaths=%d (videoMemory=%d)\n",
-            allowedPaths, videoMemory);
     return allowedPaths;
 }

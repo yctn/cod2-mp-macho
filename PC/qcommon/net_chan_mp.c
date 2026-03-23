@@ -418,24 +418,8 @@ qboolean NET_StringToAdr(const char *s, netadr_t *a)
 }
 
 /* line 1389 */
-static int net_send_diag = 0;
 Bool NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
 {
-    net_send_diag++;
-    if (net_send_diag <= 50) {
-        const char *d = (const char *)data;
-        const char *payload = (length > 4 && d[0]==(char)0xff) ? d+4 : d;
-        int plen = (length > 4 && d[0]==(char)0xff) ? length-4 : length;
-        /* print replacing newlines with | */
-        char buf[256];
-        int i;
-        for (i = 0; i < plen && i < 255; i++) {
-            buf[i] = (payload[i] == '\n') ? '|' : (payload[i] ? payload[i] : '?');
-        }
-        buf[i] = 0;
-        fprintf(stderr, "[NET_Send#%d] sock=%d type=%d len=%d data=[%s]\n",
-                net_send_diag, sock, to.type, length, buf);
-    }
     if (showpackets->current.enabled) {
         if (*(int *)data != -1) {
             Com_Printf("[client %i] send packet %4i\n", 0, length);
@@ -658,13 +642,6 @@ qboolean NET_GetLoopPacket(netsrc_t sock, netadr_t *net_from, msg_t *net_message
     int send = loop->send;
     int get  = loop->get;
     int pending = send - get;
-
-    static int getloop_diag = 0;
-    if (pending > 0 && getloop_diag < 40) {
-        getloop_diag++;
-        fprintf(stderr, "[GetLoop#%d] sock=%d send=%d get=%d pending=%d\n",
-                getloop_diag, sock, send, get, pending);
-    }
 
     if (pending > 16) {
         /* drop overflow */

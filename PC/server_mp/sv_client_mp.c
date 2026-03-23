@@ -11,14 +11,6 @@ extern void Com_DPrintf(const char *fmt, ...);
 extern const char *SV_Cmd_Argv(int arg);
 extern int atoi(const char *s);
 
-static int sv_exec_dbg_count = 0;
-void SV_ExecDbg(const char *fmt, int clSid, int svSid, int clState) {
-    if (sv_exec_dbg_count < 20 || (sv_exec_dbg_count % 500 == 0)) {
-        fprintf(stderr, fmt, clSid, svSid, clState);
-    }
-    sv_exec_dbg_count++;
-}
-
 void SV_AuthorizeRequest(struct netadr_t from, int challenge);
 static qboolean SV_IsBannedGuid(void);
 void SV_BanGuidBriefly(int guid);

@@ -4,9 +4,6 @@
    the Mach-O convention. We wrap them here. */
 
 #include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
-#include <ctype.h>
 
 /* For each double-underscore symbol, we define a function that calls the 
    single-underscore version. Using asm labels is the cleanest approach. */
@@ -21,4 +18,3 @@ void __ZdlPv(void *p) { free(p); }
 void _ZdaPv(void *p) { free(p); }
 void __ZdaPv(void *p) { free(p); }
 
-/* These don't work with alias for extern symbols. Use asm names instead. */

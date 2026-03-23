@@ -889,14 +889,6 @@ void CL_ParseSnapshot(msg_t *msg)
 
     /* line 549 */
     cla->newSnapshots = 1;
-    {
-        static int snap_diag = 0;
-        if (snap_diag < 5) {
-            fprintf(stderr, "[CL_ParseSnapshot#%d] set newSnapshots=1 at %p\n",
-                    snap_diag, (void *)&cla->newSnapshots);
-            snap_diag++;
-        }
-    }
 
     ZN10LargeLocalD1Ev(&newSnap_large_local);
 }

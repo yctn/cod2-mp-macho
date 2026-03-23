@@ -36,23 +36,12 @@ void rdsl_log_null_technique2(void *material, int techType)
  */
 
 extern int printf(const char *, ...);
-static const char rb_rdsl_fmt[] = "[RB_RDSL#%d] surfs=%p count=%d tech=%d order=%d\n";
-static const char rb_dxstate_skip_fmt[] = "[DRAWSURF_SKIP#%d] dxState+0x20c8=%d\n";
 int rb_drawsurfscmd_count = 0;
 int rb_drawsurfscmd_dxskip = 0;
 
-static int diag_rb_frame = 0;
-static int diag_rb_cmds_in_frame = 0;
-static int diag_rb_has_drawsurfs = 0;
-static int diag_rb_has_beginview = 0;
 static int diag_rb_skip_this_frame = 0;
 static void diag_rb_cmd(int cmdType) {
     (void)cmdType;
-}
-
-static int diag_rb_entry_count = 0;
-static void diag_rb_entry(void) {
-    (void)diag_rb_entry_count;
 }
 
 extern unsigned char dxState[];

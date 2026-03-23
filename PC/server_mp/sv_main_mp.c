@@ -8,14 +8,6 @@ extern void Scr_FreeValue(int value);
 extern void SV_ResetSkeletonCache(void);
 extern void G_RunFrame(int levelTime);
 
-static int sv_pkt_dbg_count = 0;
-void SV_PktEvtDbg(const char *fmt, int netchanResult, int clState, int serverId, int relAck) {
-    if (sv_pkt_dbg_count < 30 || (sv_pkt_dbg_count % 500 == 0)) {
-        fprintf(stderr, fmt, netchanResult, clState, serverId, relAck);
-    }
-    sv_pkt_dbg_count++;
-}
-
 extern struct serverStatic_t svs; /* 0x0 */
 extern struct server_t sv; /* 0x0 */
 extern const dvar_t *sv_fps; /* 0x0 */

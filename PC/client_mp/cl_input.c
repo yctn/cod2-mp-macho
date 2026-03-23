@@ -59,12 +59,8 @@ extern struct clientStatic_t cls; /* 0x0 */
 extern int com_frameTime; /* 0x0 */
 extern unsigned int frame_msec; /* 0x0 */
 
-static int cl_wp_dbg_count = 0;
 void CL_WritePacketDbg(const char *fmt, int serverId) {
-    if (cl_wp_dbg_count < 20 || (cl_wp_dbg_count % 500 == 0)) {
-        fprintf(stderr, fmt, serverId);
-    }
-    cl_wp_dbg_count++;
+    (void)fmt; (void)serverId;
 }
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */

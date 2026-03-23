@@ -437,12 +437,7 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
 
 void R_dpvs_diag_print(int cameraCellIndex, int drawWorld, int cellPtr)
 {
-    static int diag = 0;
-    if (diag < 30) {
-        fprintf(stderr, "[DPVS#%d] cellIdx=%d drawWorld=%d drawSurfCount=%d\n",
-                diag, cameraCellIndex, drawWorld, scene.drawSurfCount);
-    }
-    diag++;
+    (void)cameraCellIndex; (void)drawWorld; (void)cellPtr;
 }
 
 /* line 696 */
@@ -579,35 +574,14 @@ R_AddClearCommandsForFrameBuffer(int dynamicShadowType)
     R_AddCmdClearScreen(whichToClear, clearColor, 1.0f, 0);
 }
 
-/* diagnostic for R_RenderScene */
 static void R_RenderScene_diag(int registered, int norefresh, int drawSurfCount)
 {
-    static int diag = 0;
-    if (diag < 20 || (diag >= 60 && diag < 70)) {
-        fprintf(stderr, "[R_RenderScene#%d] registered=%d norefresh=%d drawSurfCount=%d scene.dsc=%d\n",
-                diag, registered, norefresh, drawSurfCount, scene.drawSurfCount);
-    }
-    diag++;
+    (void)registered; (void)norefresh; (void)drawSurfCount;
 }
 extern unsigned char dpvsGlob[];
 static void R_WorldCheck_diag(void *rgp_field, void *cell_ptr, int cellIdx)
 {
-    static int diag = 0;
-    if (diag < 10 || (diag % 120 == 0 && diag < 600)) {
-        GfxWorld *w = (GfxWorld *)rgp_field;
-        int cellCount = w ? w->cellCount : -1;
-        GfxCell *cells = w ? w->cells : NULL;
-        GfxCell *thisCell = cells ? &cells[cellIdx] : NULL;
-        GfxAabbTree *tree = NULL;
-        int treeSC = 0;
-        if (thisCell) {
-            tree = thisCell->aabbTree;
-            if (tree) treeSC = tree->childCount;
-        }
-        fprintf(stderr, "[WORLD#%d] ci=%d cc=%d cell=%p tree=%p tsc=%d dsc=%d\n",
-                diag, cellIdx, cellCount, thisCell, tree, treeSC, scene.drawSurfCount);
-    }
-    diag++;
+    (void)rgp_field; (void)cell_ptr; (void)cellIdx;
 }
 
 /* line 1476 */

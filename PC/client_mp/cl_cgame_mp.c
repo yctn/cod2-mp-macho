@@ -178,7 +178,6 @@ static void CL_FirstSnapshot(void)
     clientConnection_t *clui = CLUI_STATE;
 
     clui->state = 8; /* CA_ACTIVE */
-    fprintf(stderr, "[CL_FirstSnapshot] set connstate=8 clui=%p\n", clui);
     int serverTime = cl->snap.serverTime;
     clientStatic_t *cls = CLS;
     cl->serverTimeDelta = serverTime - cls->realtime;
@@ -758,17 +757,7 @@ void CL_SwitchFog(int fogvar, int startTime, int transitionTime)
 extern void *s_cmdList;
 void CL_RenderScene(const refdef_t *fd)
 {
-    static int diag = 0;
-    if (diag < 10) {
-        int used_before = s_cmdList ? *(int *)((char *)s_cmdList + 0x30000) : -1; /* s_cmdList cmd buffer usage counter at offset 0x30000 */
-        RE->RenderScene(fd);
-        int used_after = s_cmdList ? *(int *)((char *)s_cmdList + 0x30000) : -1; /* s_cmdList cmd buffer usage counter at offset 0x30000 */
-        fprintf(stderr, "[CL_RenderScene#%d] cmdList=%p before=%d after=%d delta=%d\n",
-                diag, s_cmdList, used_before, used_after, used_after - used_before);
-        diag++;
-    } else {
-        RE->RenderScene(fd);
-    }
+    RE->RenderScene(fd);
 }
 
 /* line 946 */
@@ -1369,16 +1358,6 @@ void CL_SetCGameTime(void)
     if (state != 8 && state != 7)
         return;
 
-    {
-        static int sct_diag = 0;
-        if (sct_diag < 20 || (sct_diag % 200 == 0)) {
-            clientActive_t *cl_tmp = CL_LOCAL;
-            fprintf(stderr, "[CL_SetCGameTime#%d] state=%d cl=%p newSnap=%d snap.valid=%d\n",
-                    sct_diag, state, cl_tmp, cl_tmp->newSnapshots,
-                    cl_tmp->snap.valid);
-        }
-        sct_diag++;
-    }
 
     if (state == 7) {
         /* CA_PRIMED */

@@ -26,23 +26,6 @@ static char input[100000]; /* input */
 static qboolean bScriptFileLoaded; /* bScriptFileLoaded */
 extern animStringItem_t weaponStrings[]; /* weaponStrings — bss.c (NOT static, animConditionsTable points to global) */
 extern scr_const_t scr_const;
-extern const char "MG42"[], "PAIN"[], "DEATH"[], "FIREWEAPON"[], "JUMP"[], "JUMPBK"[];
-extern const char "LAND"[], "DROPWEAPON"[], "RAISEWEAPON"[], "CLIMBMOUNT"[], "CLIMBDISMOUNT"[], "RELOAD"[];
-extern const char "CROUCH_TO_PRONE"[], "PRONE_TO_CROUCH"[], "STAND_TO_CROUCH"[], "CROUCH_TO_STAND"[], "STAND_TO_PRONE"[], "PRONE_TO_STAND"[];
-extern const char "MELEEATTACK"[], "SHELLSHOCK"[], "** UNUSED **"[], "IDLE"[], "IDLECR"[], "IDLEPRONE"[];
-extern const char "WALK"[], "WALKBK"[], "WALKCR"[], "WALKCRBK"[], "WALKPRONE"[], "WALKPRONEBK"[];
-extern const char "RUN"[], "RUNBK"[], "RUNCR"[], "RUNCRBK"[], "TURNRIGHT"[], "TURNLEFT"[];
-extern const char "TURNRIGHTCR"[], "TURNLEFTCR"[], "CLIMBUP"[], "CLIMBDOWN"[], "MANTLE_ROOT"[], "MANTLE_UP_57"[];
-extern const char "MANTLE_UP_51"[], "MANTLE_UP_45"[], "MANTLE_UP_39"[], "MANTLE_UP_33"[], "MANTLE_UP_27"[], "MANTLE_UP_21"[];
-extern const char "MANTLE_OVER_HIGH"[], "MANTLE_OVER_MID"[], "MANTLE_OVER_LOW"[], "FLINCH_FORWARD"[], "FLINCH_BACKWARD"[], "FLINCH_LEFT"[];
-extern const char "FLINCH_RIGHT"[], "STUMBLE_FORWARD"[], "STUMBLE_BACKWARD"[], "STUMBLE_WALK_FORWARD"[], "STUMBLE_WALK_BACKWARD"[], "STUMBLE_CROUCH_FORWARD"[];
-extern const char "STUMBLE_CROUCH_BACKWARD"[], "RELAXED"[], "QUERY"[], "ALERT"[], "COMBAT"[], "NOT"[];
-extern const char "LEFT"[], "RIGHT"[], "HIP"[], "ADS"[], "RIFLE"[], "MG"[];
-extern const char "SMG"[], "SPREAD"[], "PISTOL"[], "GRENADE"[], "ROCKETLAUNCHER"[], "TURRET"[];
-extern const char "NON-PLAYER"[], "ITEM"[], "PLAYERANIMTYPE"[], "WEAPONCLASS"[], "MOUNTED"[], "MOVETYPE"[];
-extern const char "UNDERHAND"[], "CROUCHING"[], "FIRING"[], "WEAPON_POSITION"[], "STRAFING"[], "defines"[];
-extern const char "animations"[], "canned_animations"[], "statechanges"[], "events"[], "mp/playeranim.script"[], "LEGS"[];
-extern const char "TORSO"[], "BOTH"[];
 
 typedef struct {
     UInt32 string;

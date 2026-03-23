@@ -19,7 +19,7 @@ static const char str_dbg_ff_gls[] = "DBG function_frame after G_LoadStructs: %p
 static const char str_dbg_endload[] = "after Scr_EndLoadScripts";
 
 void G_InitDbgPrint(const char *fmt, void *ptr) {
-    fprintf(stderr, fmt, ptr);
+    (void)fmt; (void)ptr;
 }
 
 extern entityHandler_t entityHandlers[20]; /* 0x0 */
@@ -188,7 +188,6 @@ int G_GetClientScore(int clientNum)
 int G_GetClientArchiveTime(int clientNum)
 {
     if (!level.clients) {
-        fprintf(stderr, "[G_GetClientArchiveTime] level.clients is NULL! clientNum=%d\n", clientNum);
         return 0;
     }
     return level.clients[clientNum].sess.archiveTime;

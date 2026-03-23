@@ -1469,31 +1469,13 @@ int Com_EventLoop(void)
         switch (evType) {
         case 0: /* SE_NONE */
             while (NET_GetLoopPacket(0, &evFrom, &buf)) {
-                {
-                    static int _lpk0_cnt = 0;
-                    if (_lpk0_cnt < 100) {
-                        extern int clientConnections;
-                        int _first4 = (buf.cursize >= 4) ? *(int *)buf.data : 0;
-                        Com_Printf("[LOOP0] pkt#%d type=%d sz=%d cs=%d first4=0x%08x\n",
-                            _lpk0_cnt, *(int *)&evFrom, buf.cursize, *(int *)&clientConnections, _first4);
-                        _lpk0_cnt++;
-                    }
-                }
                 CL_PacketEvent(evFrom, &buf, evTime);
             }
             while (NET_GetLoopPacket(1, &evFrom, &buf)) {
-                static int _svpkt_cnt = 0;
-                _svpkt_cnt++;
                 CL_SwitchToLocalClient(0);
                 if (com_sv_running->current.enabled) {
-                    if (_svpkt_cnt <= 30)
-                        fprintf(stderr, "[SV_Loop#%d] sz=%d port=%d first4=0x%08x\n",
-                            _svpkt_cnt, buf.cursize, evFrom.port,
-                            (buf.cursize >= 4) ? *(int *)buf.data : 0);
                     SV_PacketEvent(evFrom, &buf);
                 } else {
-                    if (_svpkt_cnt <= 30)
-                        fprintf(stderr, "[SV_Loop#%d] sv_running=0, routing to CL\n", _svpkt_cnt);
                     CL_PacketEvent(evFrom, &buf, evTime);
                 }
             }
