@@ -142,7 +142,6 @@ void FxArchive_ReadData(const FxArchive * _this, void *p, int byteCount)
     }
 }
 
-
 /*
  * Helper: read a single compressed byte via FxArchive_ReadData and return it.
  */
@@ -196,7 +195,6 @@ void FxArchive_WriteData(const FxArchive * _this, const void *p, int byteCount)
     }
 }
 
-
 /* line 376 */
 void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx)
 {
@@ -222,14 +220,14 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
         len = (unsigned char)ch;
         FxArchive_ReadData(_this, chEffectName, len); /* line 75 */
         chEffectName[len] = '\0';
-        Com_sprintf(filename, 0x40, str_0021e4f0, chEffectName); /* "fx/%s" */
+        Com_sprintf(filename, 0x40, "fx/%s", chEffectName); /* "fx/%s" */
         *fx = (const EffectTemplate *)FX_RegisterEffect(filename); /* line 77, 379 */
     } else {
         /* Writing path: line 381 */
         if (*fx != (void *)0) {
             effectName = (*fx)->mEffectName; /* line 186 -- first field is the name */
         } else {
-            effectName = str_002157b8; /* empty string */
+            effectName = ""; /* empty string */
         }
         /* Write strlen as length byte, then the string data */
         len = strlen(effectName);
@@ -240,7 +238,6 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
         }
     }
 }
-
 
 /* line 385 */
 void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
@@ -273,7 +270,7 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
             void *fxHelper = *(void **)imp_theFxHelper;
             materialName = FxHelper_GetMaterialName(fxHelper, *ph); /* line 204 */
         } else {
-            materialName = str_002157b8; /* empty string */
+            materialName = ""; /* empty string */
         }
         /* Write strlen as length byte, then the string data */
         len = strlen(materialName);
@@ -284,7 +281,6 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
         }
     }
 }
-
 
 /* line 394 */
 void FxArchive_ArchiveModel(const FxArchive * _this, struct XModel * *model)
@@ -316,7 +312,7 @@ void FxArchive_ArchiveModel(const FxArchive * _this, struct XModel * *model)
         if (*model != (void *)0) { /* line 221 */
             pszModelName = XModelGetName(*model);
         } else {
-            pszModelName = str_002157b8; /* empty string */
+            pszModelName = ""; /* empty string */
         }
         /* Write strlen as length byte, then the string data */
         len = strlen(pszModelName);
@@ -327,7 +323,6 @@ void FxArchive_ArchiveModel(const FxArchive * _this, struct XModel * *model)
         }
     }
 }
-
 
 /* line 403 */
 void FxArchive_ArchiveChannelInstance(const FxArchive * _this, FxChannelInstance *channelInstance)
@@ -353,7 +348,6 @@ void FxArchive_ArchiveChannelInstance(const FxArchive * _this, FxChannelInstance
     }
 }
 
-
 /* line 442 */
 void FxArchive_ArchiveFxBoltInfo(const FxArchive * _this, FxBoltInfo *bolt)
 {
@@ -372,7 +366,6 @@ void FxArchive_ArchiveFxBoltInfo(const FxArchive * _this, FxBoltInfo *bolt)
         FxArchive_WriteData(_this, temp, 8); /* line 454 */
     }
 }
-
 
 /* line 458 */
 void FxArchive_ArchiveFxGfxEntity(const FxArchive * _this, FxGfxEntity *entity)

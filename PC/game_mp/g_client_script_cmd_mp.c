@@ -95,12 +95,12 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
     classnum = entref.classnum;
 
     if (classnum != 0) {
-        Scr_ObjectError(str_002b21c8);
+        Scr_ObjectError("not an entity");
         pSelf = NULL;
     } else {
         pSelf = &((gentity_t *)imp_g_entities)[entnum];
         if (pSelf->client == NULL) {
-            Scr_ObjectError(va(str_002b5dd4, (int)entnum));
+            Scr_ObjectError(va("entity %i is not a player", (int)entnum));
         }
     }
 

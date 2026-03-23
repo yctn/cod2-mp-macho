@@ -26,23 +26,23 @@ static char input[100000]; /* input */
 static qboolean bScriptFileLoaded; /* bScriptFileLoaded */
 extern animStringItem_t weaponStrings[]; /* weaponStrings — bss.c (NOT static, animConditionsTable points to global) */
 extern scr_const_t scr_const;
-extern const char str_002abcf4[], str_002ae9fc[], str_002aea04[], str_002aea0c[], str_002aea18[], str_002aea20[];
-extern const char str_002aea28[], str_002aea30[], str_002aea3c[], str_002aea48[], str_002aea54[], str_002aea64[];
-extern const char str_002aea6c[], str_002aea7c[], str_002aea8c[], str_002aea9c[], str_002aeaac[], str_002aeabc[];
-extern const char str_002aeacc[], str_002aead8[], str_002aeae4[], str_002aeaf4[], str_002aeafc[], str_002aeb04[];
-extern const char str_002aeb10[], str_002aeb18[], str_002aeb20[], str_002aeb28[], str_002aeb34[], str_002aeb40[];
-extern const char str_002aeb4c[], str_002aeb50[], str_002aeb58[], str_002aeb60[], str_002aeb68[], str_002aeb74[];
-extern const char str_002aeb80[], str_002aeb8c[], str_002aeb98[], str_002aeba0[], str_002aebac[], str_002aebb8[];
-extern const char str_002aebc8[], str_002aebd8[], str_002aebe8[], str_002aebf8[], str_002aec08[], str_002aec18[];
-extern const char str_002aec28[], str_002aec3c[], str_002aec4c[], str_002aec5c[], str_002aec6c[], str_002aec7c[];
-extern const char str_002aec88[], str_002aec98[], str_002aeca8[], str_002aecbc[], str_002aecd4[], str_002aecec[];
-extern const char str_002aed04[], str_002aed1c[], str_002aed24[], str_002aed2c[], str_002aed34[], str_002aed3c[];
-extern const char str_002aed40[], str_002aed48[], str_002aed50[], str_002aed54[], str_002aed58[], str_002aed60[];
-extern const char str_002aed64[], str_002aed68[], str_002aed70[], str_002aed78[], str_002aed80[], str_002aed90[];
-extern const char str_002aed98[], str_002aeda4[], str_002aedac[], str_002aedbc[], str_002aedc8[], str_002aedd0[];
-extern const char str_002aeddc[], str_002aede8[], str_002aedf4[], str_002aedfc[], str_002aee0c[], str_002aee18[];
-extern const char str_002aee20[], str_002aee2c[], str_002aee40[], str_002aee50[], str_002aee58[], str_002aee70[];
-extern const char str_002aee78[], str_002aee80[];
+extern const char "MG42"[], "PAIN"[], "DEATH"[], "FIREWEAPON"[], "JUMP"[], "JUMPBK"[];
+extern const char "LAND"[], "DROPWEAPON"[], "RAISEWEAPON"[], "CLIMBMOUNT"[], "CLIMBDISMOUNT"[], "RELOAD"[];
+extern const char "CROUCH_TO_PRONE"[], "PRONE_TO_CROUCH"[], "STAND_TO_CROUCH"[], "CROUCH_TO_STAND"[], "STAND_TO_PRONE"[], "PRONE_TO_STAND"[];
+extern const char "MELEEATTACK"[], "SHELLSHOCK"[], "** UNUSED **"[], "IDLE"[], "IDLECR"[], "IDLEPRONE"[];
+extern const char "WALK"[], "WALKBK"[], "WALKCR"[], "WALKCRBK"[], "WALKPRONE"[], "WALKPRONEBK"[];
+extern const char "RUN"[], "RUNBK"[], "RUNCR"[], "RUNCRBK"[], "TURNRIGHT"[], "TURNLEFT"[];
+extern const char "TURNRIGHTCR"[], "TURNLEFTCR"[], "CLIMBUP"[], "CLIMBDOWN"[], "MANTLE_ROOT"[], "MANTLE_UP_57"[];
+extern const char "MANTLE_UP_51"[], "MANTLE_UP_45"[], "MANTLE_UP_39"[], "MANTLE_UP_33"[], "MANTLE_UP_27"[], "MANTLE_UP_21"[];
+extern const char "MANTLE_OVER_HIGH"[], "MANTLE_OVER_MID"[], "MANTLE_OVER_LOW"[], "FLINCH_FORWARD"[], "FLINCH_BACKWARD"[], "FLINCH_LEFT"[];
+extern const char "FLINCH_RIGHT"[], "STUMBLE_FORWARD"[], "STUMBLE_BACKWARD"[], "STUMBLE_WALK_FORWARD"[], "STUMBLE_WALK_BACKWARD"[], "STUMBLE_CROUCH_FORWARD"[];
+extern const char "STUMBLE_CROUCH_BACKWARD"[], "RELAXED"[], "QUERY"[], "ALERT"[], "COMBAT"[], "NOT"[];
+extern const char "LEFT"[], "RIGHT"[], "HIP"[], "ADS"[], "RIFLE"[], "MG"[];
+extern const char "SMG"[], "SPREAD"[], "PISTOL"[], "GRENADE"[], "ROCKETLAUNCHER"[], "TURRET"[];
+extern const char "NON-PLAYER"[], "ITEM"[], "PLAYERANIMTYPE"[], "WEAPONCLASS"[], "MOUNTED"[], "MOVETYPE"[];
+extern const char "UNDERHAND"[], "CROUCHING"[], "FIRING"[], "WEAPON_POSITION"[], "STRAFING"[], "defines"[];
+extern const char "animations"[], "canned_animations"[], "statechanges"[], "events"[], "mp/playeranim.script"[], "LEGS"[];
+extern const char "TORSO"[], "BOTH"[];
 
 typedef struct {
     UInt32 string;
@@ -56,66 +56,66 @@ typedef struct {
 
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animStateStr[8] = {
-    {(UInt32)str_002aed1c, 0xffffffff}, {(UInt32)str_002aed24, 0xffffffff},
-    {(UInt32)str_002aed2c, 0xffffffff}, {(UInt32)str_002aed34, 0xffffffff},
+    {"RELAXED", 0xffffffff}, {"QUERY", 0xffffffff},
+    {"ALERT", 0xffffffff}, {"COMBAT", 0xffffffff},
     {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x312f20 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animMoveTypesStr[44] = {
-    {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002aeaf4, 0xffffffff}, {(UInt32)str_002aeafc, 0xffffffff}, {(UInt32)str_002aeb04, 0xffffffff},
-    {(UInt32)str_002aeb10, 0xffffffff}, {(UInt32)str_002aeb18, 0xffffffff}, {(UInt32)str_002aeb20, 0xffffffff}, {(UInt32)str_002aeb28, 0xffffffff},
-    {(UInt32)str_002aeb34, 0xffffffff}, {(UInt32)str_002aeb40, 0xffffffff}, {(UInt32)str_002aeb4c, 0xffffffff}, {(UInt32)str_002aeb50, 0xffffffff},
-    {(UInt32)str_002aeb58, 0xffffffff}, {(UInt32)str_002aeb60, 0xffffffff}, {(UInt32)str_002aeb68, 0xffffffff}, {(UInt32)str_002aeb74, 0xffffffff},
-    {(UInt32)str_002aeb80, 0xffffffff}, {(UInt32)str_002aeb8c, 0xffffffff}, {(UInt32)str_002aeb98, 0xffffffff}, {(UInt32)str_002aeba0, 0xffffffff},
-    {(UInt32)str_002aebac, 0xffffffff}, {(UInt32)str_002aebb8, 0xffffffff}, {(UInt32)str_002aebc8, 0xffffffff}, {(UInt32)str_002aebd8, 0xffffffff},
-    {(UInt32)str_002aebe8, 0xffffffff}, {(UInt32)str_002aebf8, 0xffffffff}, {(UInt32)str_002aec08, 0xffffffff}, {(UInt32)str_002aec18, 0xffffffff},
-    {(UInt32)str_002aec28, 0xffffffff}, {(UInt32)str_002aec3c, 0xffffffff}, {(UInt32)str_002aec4c, 0xffffffff}, {(UInt32)str_002aec5c, 0xffffffff},
-    {(UInt32)str_002aec6c, 0xffffffff}, {(UInt32)str_002aec7c, 0xffffffff}, {(UInt32)str_002aec88, 0xffffffff}, {(UInt32)str_002aec98, 0xffffffff},
-    {(UInt32)str_002aeca8, 0xffffffff}, {(UInt32)str_002aecbc, 0xffffffff}, {(UInt32)str_002aecd4, 0xffffffff}, {(UInt32)str_002aecec, 0xffffffff},
-    {(UInt32)str_002aed04, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
+    {"** UNUSED **", 0xffffffff}, {"IDLE", 0xffffffff}, {"IDLECR", 0xffffffff}, {"IDLEPRONE", 0xffffffff},
+    {"WALK", 0xffffffff}, {"WALKBK", 0xffffffff}, {"WALKCR", 0xffffffff}, {"WALKCRBK", 0xffffffff},
+    {"WALKPRONE", 0xffffffff}, {"WALKPRONEBK", 0xffffffff}, {"RUN", 0xffffffff}, {"RUNBK", 0xffffffff},
+    {"RUNCR", 0xffffffff}, {"RUNCRBK", 0xffffffff}, {"TURNRIGHT", 0xffffffff}, {"TURNLEFT", 0xffffffff},
+    {"TURNRIGHTCR", 0xffffffff}, {"TURNLEFTCR", 0xffffffff}, {"CLIMBUP", 0xffffffff}, {"CLIMBDOWN", 0xffffffff},
+    {"MANTLE_ROOT", 0xffffffff}, {"MANTLE_UP_57", 0xffffffff}, {"MANTLE_UP_51", 0xffffffff}, {"MANTLE_UP_45", 0xffffffff},
+    {"MANTLE_UP_39", 0xffffffff}, {"MANTLE_UP_33", 0xffffffff}, {"MANTLE_UP_27", 0xffffffff}, {"MANTLE_UP_21", 0xffffffff},
+    {"MANTLE_OVER_HIGH", 0xffffffff}, {"MANTLE_OVER_MID", 0xffffffff}, {"MANTLE_OVER_LOW", 0xffffffff}, {"FLINCH_FORWARD", 0xffffffff},
+    {"FLINCH_BACKWARD", 0xffffffff}, {"FLINCH_LEFT", 0xffffffff}, {"FLINCH_RIGHT", 0xffffffff}, {"STUMBLE_FORWARD", 0xffffffff},
+    {"STUMBLE_BACKWARD", 0xffffffff}, {"STUMBLE_WALK_FORWARD", 0xffffffff}, {"STUMBLE_WALK_BACKWARD", 0xffffffff}, {"STUMBLE_CROUCH_FORWARD", 0xffffffff},
+    {"STUMBLE_CROUCH_BACKWARD", 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x312dc0 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animEventTypesStr[20] = {
-    {(UInt32)str_002ae9fc, 0xffffffff}, {(UInt32)str_002aea04, 0xffffffff}, {(UInt32)str_002aea0c, 0xffffffff}, {(UInt32)str_002aea18, 0xffffffff},
-    {(UInt32)str_002aea20, 0xffffffff}, {(UInt32)str_002aea28, 0xffffffff}, {(UInt32)str_002aea30, 0xffffffff}, {(UInt32)str_002aea3c, 0xffffffff},
-    {(UInt32)str_002aea48, 0xffffffff}, {(UInt32)str_002aea54, 0xffffffff}, {(UInt32)str_002aea64, 0xffffffff}, {(UInt32)str_002aea6c, 0xffffffff},
-    {(UInt32)str_002aea7c, 0xffffffff}, {(UInt32)str_002aea8c, 0xffffffff}, {(UInt32)str_002aea9c, 0xffffffff}, {(UInt32)str_002aeaac, 0xffffffff},
-    {(UInt32)str_002aeabc, 0xffffffff}, {(UInt32)str_002aeacc, 0xffffffff}, {(UInt32)str_002aead8, 0xffffffff}, {0, 0xffffffff},
+    {"PAIN", 0xffffffff}, {"DEATH", 0xffffffff}, {"FIREWEAPON", 0xffffffff}, {"JUMP", 0xffffffff},
+    {"JUMPBK", 0xffffffff}, {"LAND", 0xffffffff}, {"DROPWEAPON", 0xffffffff}, {"RAISEWEAPON", 0xffffffff},
+    {"CLIMBMOUNT", 0xffffffff}, {"CLIMBDISMOUNT", 0xffffffff}, {"RELOAD", 0xffffffff}, {"CROUCH_TO_PRONE", 0xffffffff},
+    {"PRONE_TO_CROUCH", 0xffffffff}, {"STAND_TO_CROUCH", 0xffffffff}, {"CROUCH_TO_STAND", 0xffffffff}, {"STAND_TO_PRONE", 0xffffffff},
+    {"PRONE_TO_STAND", 0xffffffff}, {"MELEEATTACK", 0xffffffff}, {"SHELLSHOCK", 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312d20 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animBodyPartsStr[8] = {
-    {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002aee70, 0xffffffff}, {(UInt32)str_002aee78, 0xffffffff}, {(UInt32)str_002aee80, 0xffffffff},
+    {"** UNUSED **", 0xffffffff}, {"LEGS", 0xffffffff}, {"TORSO", 0xffffffff}, {"BOTH", 0xffffffff},
     {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x313140 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animConditionMountedStr[5] = {
-    {(UInt32)str_002aeae4, 0xffffffff}, {(UInt32)str_002abcf4, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
+    {"** UNUSED **", 0xffffffff}, {"MG42", 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
     {0, 0x00000000},
 }; /* 0x312ff8 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animWeaponClassStr[12] = {
-    {(UInt32)str_002aed58, 0xffffffff}, {(UInt32)str_002aed60, 0xffffffff}, {(UInt32)str_002aed64, 0xffffffff}, {(UInt32)str_002aed68, 0xffffffff},
-    {(UInt32)str_002aed70, 0xffffffff}, {(UInt32)str_002aed78, 0xffffffff}, {(UInt32)str_002aed80, 0xffffffff}, {(UInt32)str_002aed90, 0xffffffff},
-    {(UInt32)str_002aed98, 0xffffffff}, {(UInt32)str_002aeda4, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
+    {"RIFLE", 0xffffffff}, {"MG", 0xffffffff}, {"SMG", 0xffffffff}, {"SPREAD", 0xffffffff},
+    {"PISTOL", 0xffffffff}, {"GRENADE", 0xffffffff}, {"ROCKETLAUNCHER", 0xffffffff}, {"TURRET", 0xffffffff},
+    {"NON-PLAYER", 0xffffffff}, {"ITEM", 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000},
 }; /* 0x313020 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animWeaponPositionStr[3] = {
-    {(UInt32)str_002aed50, 0xffffffff}, {(UInt32)str_002aed54, 0xffffffff}, {0, 0xffffffff},
+    {"HIP", 0xffffffff}, {"ADS", 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312fe0 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animStrafeStateStr[4] = {
-    {(UInt32)str_002aed3c, 0xffffffff}, {(UInt32)str_002aed40, 0xffffffff}, {(UInt32)str_002aed48, 0xffffffff}, {0, 0xffffffff},
+    {"NOT", 0xffffffff}, {"LEFT", 0xffffffff}, {"RIGHT", 0xffffffff}, {0, 0xffffffff},
 }; /* 0x312fc0 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animConditionsStr[12] = {
-    {(UInt32)str_002aedac, 0xffffffff}, {(UInt32)str_002aedbc, 0xffffffff}, {(UInt32)str_002aedc8, 0xffffffff}, {(UInt32)str_002aedd0, 0xffffffff},
-    {(UInt32)str_002aeddc, 0xffffffff}, {(UInt32)str_002aede8, 0xffffffff}, {(UInt32)str_002aedf4, 0xffffffff}, {(UInt32)str_002aedfc, 0xffffffff},
-    {(UInt32)str_002aee0c, 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
+    {"PLAYERANIMTYPE", 0xffffffff}, {"WEAPONCLASS", 0xffffffff}, {"MOUNTED", 0xffffffff}, {"MOVETYPE", 0xffffffff},
+    {"UNDERHAND", 0xffffffff}, {"CROUCHING", 0xffffffff}, {"FIRING", 0xffffffff}, {"WEAPON_POSITION", 0xffffffff},
+    {"STRAFING", 0xffffffff}, {0, 0xffffffff}, {0, 0x00000000}, {0, 0x00000000},
 }; /* 0x313080 */
 __attribute__((used, aligned(4)))
 animStringItemRaw_t animParseModesStr[6] = {
-    {(UInt32)str_002aee18, 0xffffffff}, {(UInt32)str_002aee20, 0xffffffff}, {(UInt32)str_002aee2c, 0xffffffff}, {(UInt32)str_002aee40, 0xffffffff},
-    {(UInt32)str_002aee50, 0xffffffff}, {0, 0xffffffff},
+    {"defines", 0xffffffff}, {"animations", 0xffffffff}, {"canned_animations", 0xffffffff}, {"statechanges", 0xffffffff},
+    {"events", 0xffffffff}, {0, 0xffffffff},
 }; /* 0x3130e0 */
 __attribute__((used, aligned(4)))
 animConditionTableRaw_t animConditionsTable[12] = {
@@ -132,7 +132,7 @@ animConditionTableRaw_t animConditionsTable[12] = {
     {0, 0},
     {0, 0},
 }; /* 0x312f60 */
-__attribute__((used)) char *globalFilename = (char *)str_002aee58; /* 0x313110 */
+__attribute__((used)) char *globalFilename = (char *)"mp/playeranim.script"; /* 0x313110 */
 __attribute__((used, aligned(4)))
 UInt32 controller_names[11] = {
     (UInt32)&scr_const.back_low,

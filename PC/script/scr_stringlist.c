@@ -784,7 +784,7 @@ loop_top:
                             /* .Lf43a06_00043dcb: */
                             Scr_DumpScriptThreads();
                             Scr_DumpScriptVariables();
-                            Com_Error(1, str_00217bd0);
+                            Com_Error(1, "\x15" "exceeded maximum number of script strings\n");
                             newIndex = (unsigned int)SG_W0(0);
                         }
 
@@ -845,7 +845,7 @@ loop_top:
                     {
                         Scr_DumpScriptThreads();
                         Scr_DumpScriptVariables();
-                        Com_Error(1, str_00217bd0);
+                        Com_Error(1, "\x15" "exceeded maximum number of script strings\n");
                         newIndex2 = (unsigned int)SG_W0(0);
                     }
 
@@ -910,7 +910,7 @@ loop_top:
                         /* .Lf43a06_00043dee: */
                         Scr_DumpScriptThreads();
                         Scr_DumpScriptVariables();
-                        Com_Error(1, str_00217bd0);
+                        Com_Error(1, "\x15" "exceeded maximum number of script strings\n");
                         newIndex3 = (unsigned int)SG_W0(0);
                     }
 
@@ -1074,7 +1074,7 @@ unsigned int SL_GetLowercaseString_(const char *str, unsigned int user, int type
 
     if ((unsigned int)slen > 0x2000)
     {
-        Com_Error(1, str_00217bfc, str);
+        Com_Error(1, "max string length exceeded: \"%s\"", str);
         return 0;
     }
 
@@ -2042,7 +2042,7 @@ unsigned int SL_GetStringForFloat(float f)
     char tempString[0x88];
     unsigned int len;
 
-    sprintf(tempString, str_00217c20, (double)f);
+    sprintf(tempString, "%g", (double)f);
     len = (unsigned int)strlen(tempString) + 1;
     return SL_GetStringOfLen(tempString, 0, len, 0xe);
 }
@@ -2056,7 +2056,7 @@ unsigned int SL_GetStringForInt(int i)
     char tempString[0x88];
     unsigned int len;
 
-    sprintf(tempString, str_0021785c, i);
+    sprintf(tempString, "%i", i);
     len = (unsigned int)strlen(tempString) + 1;
     return SL_GetStringOfLen(tempString, 0, len, 0xe);
 }
@@ -2070,7 +2070,7 @@ unsigned int SL_GetStringForVector(const float *v)
     char tempString[0x88];
     unsigned int len;
 
-    sprintf(tempString, str_00217c24, (double)v[0], (double)v[1], (double)v[2]);
+    sprintf(tempString, "(%g, %g, %g)", (double)v[0], (double)v[1], (double)v[2]);
     len = (unsigned int)strlen(tempString) + 1;
     return SL_GetStringOfLen(tempString, 0, len, 0xe);
 }
@@ -2181,7 +2181,7 @@ tolower_store:
     remaining--;
     if (remaining == 0)
     {
-        Com_Error(1, str_00217c34, filename, 0);
+        Com_Error(1, "\x15" "Filename '%s' exceeds maximum length of %d", filename, 0);
         /* After error: fall through to inner_loop */
     }
 

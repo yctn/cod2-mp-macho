@@ -235,6 +235,6 @@ const char * DObjGetSurfaceName(DObj *obj, int modelIndex, int subMatIndex, int 
     unsigned short *matNames = model->lodInfo[lod].surfNames;
     unsigned short name = matNames[subMatIndex];
     if (!name)
-        return (const char *)str_00217dc0;
+        return (const char *)"DEFAULT";
     return SL_ConvertToString(name);
 }

@@ -13,23 +13,19 @@ extern void Com_EndParseSession(void);
 extern const char *Com_Parse(const char **buf);
 extern void Com_Printf(const char *fmt, ...);
 extern void *Hunk_AllocLowAlignInternal(int size, int align);
-extern const char str_002b8750[];
-extern const char str_002b8758[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 accuracyDirName[9] = {
-    (UInt32)str_002b8750,
-    (UInt32)str_002b8758,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * accuracyDirName[] = {
+    "aivsai",
+    "aivsplayer",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x314b40 */
-
-#define accuracyDirName ((const char * const *)accuracyDirName)
 
 static Bool G_ParseWeaponAccuracyGraph(const char *dirName, const char *graphName,
                                        float accuracyGraphKnots[16][2],

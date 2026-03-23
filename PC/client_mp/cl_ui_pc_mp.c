@@ -18,8 +18,6 @@ extern int FS_Write(const void *buffer, int len, fileHandle_t h);
 extern void FS_FCloseFile(fileHandle_t h);
 extern int CL_SortGlobalServers(void);
 
-extern const char str_002b6980[]; /* "servercache.dat" */
-
 /*
  * The global at imp_cls is a pointer to a clientStatic_t structure.
  * We access it as a byte pointer and use offsets for fields that don't
@@ -188,7 +186,7 @@ int LAN_LoadCachedServers(void)
     int success;
     byte *base;
 
-    if (!FS_SV_FOpenFileRead(str_002b6980, &fileIn)) {
+    if (!FS_SV_FOpenFileRead("servercache.dat", &fileIn)) {
         base = CLS;
         CLS_NUMGLOBALSERVERS(base) = 0;
         CLS_NUMFAVORITESERVERS(base) = 0;
@@ -266,7 +264,7 @@ int LAN_SaveServersToCache(void)
     int d;
     serverInfo_t *servers;
 
-    fileOut = FS_SV_FOpenFileWrite(str_002b6980);
+    fileOut = FS_SV_FOpenFileWrite("servercache.dat");
     if (!fileOut) {
         return 0;
     }

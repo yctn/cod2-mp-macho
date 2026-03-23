@@ -1802,10 +1802,6 @@ lit8_00307fb8: .long 0xbc6a7efa, 0x3f689374 /* 0.003 */
 lit8_00307fc0: .long 0x00000000, 0x40efffe0 /* 65535.0 */
 
 
-/* String literals */
-.section .rodata
-.globl str_002157b8
-str_002157b8: .byte 0  /* empty string */
 
 /* Missing global variables */
 .data

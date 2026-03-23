@@ -69,46 +69,29 @@ static int tleIndex; /* tleIndex */
 static char g_mapname[64]; /* g_mapname */
 static char g_gametype[64]; /* g_gametype */
 static Bool g_ingameMenusLoaded; /* g_ingameMenusLoaded */
-extern const char str_002a9d68[];
-extern const char str_002a9d80[];
-extern const char str_002a9d98[];
-extern const char str_002a9dac[];
-extern const char str_002a9dc0[];
-extern const char str_002a9dd4[];
-extern const char str_002a9de8[];
-extern const char str_002a9dfc[];
-extern const char str_002a9e14[];
-extern const char str_002a9e2c[];
-extern const char str_002a9e44[];
-extern const char str_002a9e5c[];
-extern const char str_002a9e74[];
-extern const char str_002a9e80[];
-extern const char str_002a9e90[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 MonthAbbrev[12] = {
-    (UInt32)str_002a9d68,
-    (UInt32)str_002a9d80,
-    (UInt32)str_002a9d98,
-    (UInt32)str_002a9dac,
-    (UInt32)str_002a9dc0,
-    (UInt32)str_002a9dd4,
-    (UInt32)str_002a9de8,
-    (UInt32)str_002a9dfc,
-    (UInt32)str_002a9e14,
-    (UInt32)str_002a9e2c,
-    (UInt32)str_002a9e44,
-    (UInt32)str_002a9e5c,
+const char * MonthAbbrev[] = {
+    "EXE_MONTH_ABV_JANUARY",
+    "EXE_MONTH_ABV_FEBRUARY",
+    "EXE_MONTH_ABV_MARCH",
+    "EXE_MONTH_ABV_APRIL",
+    "EXE_MONTH_ABV_MAY",
+    "EXE_MONTH_ABV_JUN",
+    "EXE_MONTH_ABV_JULY",
+    "EXE_MONTH_ABV_AUGUST",
+    "EXE_MONTH_ABV_SEPTEMBER",
+    "EXE_MONTH_ABV_OCTOBER",
+    "EXE_MONTH_ABV_NOVEMBER",
+    "EXE_MONTH_ABV_DECEMBER",
 }; /* 0x311e80 */
 __attribute__((used, packed, aligned(4)))
-UInt32 netSources[3] = {
-    (UInt32)str_002a9e74,
-    (UInt32)str_002a9e80,
-    (UInt32)str_002a9e90,
+const char * netSources[] = {
+    "EXE_LOCAL",
+    "EXE_INTERNET",
+    "EXE_FAVORITES",
 }; /* 0x311eb0 */
 
-#define MonthAbbrev ((const char * const *)MonthAbbrev)
-#define netSources ((const char * const *)netSources)
 static const serverFilter_t serverFilters[1]; /* serverFilters */
 static char menuBuf2[32768]; /* menuBuf2 */
 static int ui_serverFilterType; /* ui_serverFilterType */

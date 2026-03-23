@@ -169,9 +169,9 @@ unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alp
 /* line 241 */
 unsigned int CG_DrawScriptUsage(void)
 {
-    CG_DrawStringExt(480.0f, 80.0f, va(str_002b6fbc, Scr_GetNumScriptVars()), colorWhite, 1, 1, 16.0f, 1);
-    CG_DrawStringExt(480.0f, 96.0f, va(str_002b6fcc, Scr_GetNumScriptThreads()), colorWhite, 1, 1, 16.0f, 1);
-    CG_DrawStringExt(480.0f, 112.0f, va(str_002b6fdc, Scr_GetStringUsage()), colorWhite, 1, 1, 16.0f, 1);
+    CG_DrawStringExt(480.0f, 80.0f, va("num vars:    %d", Scr_GetNumScriptVars()), colorWhite, 1, 1, 16.0f, 1);
+    CG_DrawStringExt(480.0f, 96.0f, va("num threads: %d", Scr_GetNumScriptThreads()), colorWhite, 1, 1, 16.0f, 1);
+    CG_DrawStringExt(480.0f, 112.0f, va("string usage: %d", Scr_GetStringUsage()), colorWhite, 1, 1, 16.0f, 1);
     return 0;
 }
 
@@ -236,13 +236,13 @@ unsigned int CG_DrawDisconnect(void)
         return 0;
     }
 
-    text = UI_SafeTranslateString(str_002b6ff0);
+    text = UI_SafeTranslateString("CGAME_CONNECTIONINTERUPTED");
     font = UI_GetFontHandle(0, 0.5f);
     textWidth = UI_TextWidth(text, 0, font, 0.5f);
     UI_DrawText(text, 0x7fffffff, font, (float)((640 - textWidth) / 2), 100.0f, 0, 0, 0.5f, color, 3);
     if (!(((byte *)&cg->time)[1] & 2))
     {
-        UI_DrawHandlePic(296.0f, 416.0f, 48.0f, 48.0f, 0, 0, 0, CL_RegisterMaterial(str_002a89c8, 7));
+        UI_DrawHandlePic(296.0f, 416.0f, 48.0f, 48.0f, 0, 0, 0, CL_RegisterMaterial("net_disconnect", 7));
     }
 
     return 0;
@@ -264,7 +264,7 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
         return 0;
     }
 
-    CG_TranslateHudElemMessage(str, str_002b700c, hudElemString);
+    CG_TranslateHudElemMessage(str, "Center Print", hudElemString);
     I_strncpyz(cg->centerPrint, hudElemString, 0x100);
     cg->centerPrintPriority = priority;
 
@@ -479,7 +479,7 @@ unsigned int CG_DrawCrosshairNames(void)
         return 0;
     }
 
-    name = va(str_00216058, targetClientInfo->name);
+    name = va("%s", targetClientInfo->name);
     if (!name || !name[0])
     {
         return 0;
@@ -552,7 +552,7 @@ unsigned int CG_CheckTimedMenus(void)
         serverTime = cg->time;
         if (serverTime - timedMenuTime > 2500) {
             /* line 2420 */
-            Menus_CloseByName(*(void **)imp_cgDC, (const char *)str_002b701c);
+            Menus_CloseByName(*(void **)imp_cgDC, (const char *)"voiceMenu");
             cg->voiceTime = 0;
         }
     }
@@ -665,9 +665,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2277 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7028);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Health");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7030);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Health_mp");
                 }
                 /* line 2281 */
                 if (menu)
@@ -695,9 +695,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2303 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b5978);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"weaponinfo");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b703c);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"weaponinfo_mp");
                 }
                 /* line 2307 */
                 if (menu)
@@ -719,9 +719,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2325 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002a79e0);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Compass");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002a79e8);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Compass_mp");
                 }
                 /* line 2329 */
                 if (menu)
@@ -756,9 +756,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2354 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_00221984);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"stance");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b704c);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"stance_mp");
                 }
                 /* line 2359 */
                 if (menu)
@@ -780,9 +780,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2378 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7058);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"offhandinfo");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7064);
+                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"offhandinfo_mp");
                 }
                 /* line 2382 */
                 if (menu)
@@ -800,7 +800,7 @@ after_buttons:
         serverTime = cg->time;
         if (serverTime - cg->scoreFadeTime > 100) {
             /* line 2401 */
-            menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)str_002b7074);
+            menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"objectiveinfo");
             if (menu)
                 Window_RemoveDynamicFlags(menu, 4);
         }
@@ -980,10 +980,10 @@ qboolean CG_DrawFollow(void)
     }
     else
     {
-        clientName = str_0022292c;
+        clientName = "?";
     }
 
-    followingString = SEH_LocalizeTextMessage(str_002b7124, str_002b710c, 0);
+    followingString = SEH_LocalizeTextMessage("CGAME_FOLLOWING\x15", "spectator follow string", 0);
     scale = CL_IsRenderingSplitScreen() ? 0.5f : (1.0f / 3.0f);
     font = UI_GetFontHandle(0, 1.0f / 3.0f);
 

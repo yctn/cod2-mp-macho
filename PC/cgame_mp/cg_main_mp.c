@@ -232,82 +232,48 @@ static cg_weaponsArray_t cg_weaponsArray; /* cg_weaponsArray */
 static cg_itemsArray_t cg_itemsArray; /* cg_itemsArray */
 static Bool g_ambientStarted; /* g_ambientStarted */
 static Bool g_mapLoaded; /* g_mapLoaded */
-extern const char str_00218e0c[]; /* "generic" */
-extern const char str_00218e14[]; /* "paddedcell" */
-extern const char str_00218e20[]; /* "room" */
-extern const char str_00218e28[]; /* "bathroom" */
-extern const char str_00218e34[]; /* "livingroom" */
-extern const char str_00218e40[]; /* "stoneroom" */
-extern const char str_00218e4c[]; /* "auditorium" */
-extern const char str_00218e58[]; /* "concerthall" */
-extern const char str_00218e64[]; /* "cave" */
-extern const char str_00218e6c[]; /* "arena" */
-extern const char str_00218e74[]; /* "hangar" */
-extern const char str_00218e7c[]; /* "carpetedhallway" */
-extern const char str_00218e8c[]; /* "hallway" */
-extern const char str_00218e94[]; /* "stonecorridor" */
-extern const char str_00218ea4[]; /* "alley" */
-extern const char str_00218eac[]; /* "forest" */
-extern const char str_00218eb4[]; /* "city" */
-extern const char str_00218ebc[]; /* "mountains" */
-extern const char str_00218ec8[]; /* "quarry" */
-extern const char str_00218ed0[]; /* "plain" */
-extern const char str_00218ed8[]; /* "parkinglot" */
-extern const char str_00218ee4[]; /* "sewerpipe" */
-extern const char str_00218ef0[]; /* "underwater" */
-extern const char str_00218efc[]; /* "drugged" */
-extern const char str_00218f04[]; /* "dizzy" */
-extern const char str_00218f0c[]; /* "psychotic" */
-extern const char str_00221b40[]; /* "None" */
-extern const char str_002a7520[]; /* "3D" */
-extern const char str_002a7524[]; /* "Stream" */
-extern const char str_002a752c[]; /* "2D" */
-extern const char str_002a7530[]; /* "Off" */
-extern const char str_002a7534[]; /* "Simple" */
-extern const char str_002a753c[]; /* "Verbose" */
-extern const char str_002a7544[]; /* "Time" */
 
 __attribute__((used)) const char *cg_soundRoomTypes[27] = {
-    str_00218e0c,
-    str_00218e14,
-    str_00218e20,
-    str_00218e28,
-    str_00218e34,
-    str_00218e40,
-    str_00218e4c,
-    str_00218e58,
-    str_00218e64,
-    str_00218e6c,
-    str_00218e74,
-    str_00218e7c,
-    str_00218e8c,
-    str_00218e94,
-    str_00218ea4,
-    str_00218eac,
-    str_00218eb4,
-    str_00218ebc,
-    str_00218ec8,
-    str_00218ed0,
-    str_00218ed8,
-    str_00218ee4,
-    str_00218ef0,
-    str_00218efc,
-    str_00218f04,
-    str_00218f0c,
+    "generic",
+    "paddedcell",
+    "room",
+    "bathroom",
+    "livingroom",
+    "stoneroom",
+    "auditorium",
+    "concerthall",
+    "cave",
+    "arena",
+    "hangar",
+    "carpetedhallway",
+    "hallway",
+    "stonecorridor",
+    "alley",
+    "forest",
+    "city",
+    "mountains",
+    "quarry",
+    "plain",
+    "parkinglot",
+    "sewerpipe",
+    "underwater",
+    "drugged",
+    "dizzy",
+    "psychotic",
     0,
 }; /* 0x311b80 */
 __attribute__((used)) const char *cg_drawSoundOverlayStrings[5] = {
-    str_00221b40,
-    str_002a7530,
-    str_002a7534,
-    str_002a753c,
-    str_002a7544,
+    "None",
+    "Off",
+    "Simple",
+    "Verbose",
+    "Time",
 }; /* 0x311bec */
 __attribute__((used)) const char *cg_drawFpsNames[8] = {
-    str_002a7520,
-    str_002a7524,
-    str_002a752c,
-    str_00221b40,
+    "3D",
+    "Stream",
+    "2D",
+    "None",
     0,
     0,
     0,
@@ -394,8 +360,8 @@ void CG_StartAmbient(void)
 
     infoString = CL_GetConfigString(3);
     SND_PlayAmbientAlias(
-        CL_PickSoundAlias(Info_ValueForKey(infoString, str_002a67e4)),
-        ((fadeTime = atoi(Info_ValueForKey(infoString, str_002a79b8))) - cg->time < 0 || cg->time == 0) ? 0 : fadeTime - cg->time,
+        CL_PickSoundAlias(Info_ValueForKey(infoString, "n")),
+        ((fadeTime = atoi(Info_ValueForKey(infoString, "t"))) - cg->time < 0 || cg->time == 0) ? 0 : fadeTime - cg->time,
         1);
 }
 
@@ -431,12 +397,12 @@ static Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
     srcString[*dstLen] = '\0';
 
     /* line 1314: search for "[{" from searchPos */
-    pFound = (char *)strstr(srcString + *searchPos, (const char *)str_002a79bc);
+    pFound = (char *)strstr(srcString + *searchPos, (const char *)"[{");
     if (!pFound)
         return 0;
 
     /* line 1318: search for "}]" */
-    pEnd = (char *)strstr(pFound, (const char *)str_002a79c0);
+    pEnd = (char *)strstr(pFound, (const char *)"}]");
     if (!pEnd)
         return 0;
 
@@ -455,7 +421,7 @@ static Bool CG_ReplaceDirective(int *searchPos, int *dstLen, char *dstString)
     /* line 1341: get key binding */
     if (!GetKeyBindingLocalizedString(directive, keyBinding)) {
         /* line 1342: fallback to "KEY_UNBOUND" */
-        I_strncpyz(keyBinding, UI_SafeTranslateString((const char *)str_002a79c4), 0x100);
+        I_strncpyz(keyBinding, UI_SafeTranslateString((const char *)"KEY_UNBOUND"), 0x100);
     }
 
     /* line 1344: compute strlen of keyBinding using inline repne scasb equivalent */

@@ -165,9 +165,9 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
         item = (gitem_t *)imp_bg_itemlist + iItemIndex;
         name = item->pickup_name;
         if (!name || *name == '\0') {
-            name = str_002b4984; /* "" or unknown */
+            name = "<<unknown>>"; /* "" or unknown */
         }
-        Scr_Error(va(str_002b4990, name));
+        Scr_Error(va("game tried to register the item '%s' after initialization finished\n", name));
     }
 
     /* Mark as registered */

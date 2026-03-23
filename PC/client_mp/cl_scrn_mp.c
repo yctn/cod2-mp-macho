@@ -14,25 +14,17 @@
 
 extern qboolean scr_initialized; /* 0x0 */
 extern Bool updateScreenCalled; /* 0x0 */
-extern const char str_002acd00[];
-extern const char str_002acd04[];
-extern const char str_002acd08[];
-extern const char str_002acd0c[];
-extern const char str_002acd10[];
-extern const char str_002acd14[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 szShotName[7] = {
-    (UInt32)str_002acd00,
-    (UInt32)str_002acd04,
-    (UInt32)str_002acd08,
-    (UInt32)str_002acd0c,
-    (UInt32)str_002acd10,
-    (UInt32)str_002acd14,
-    0,
+const char * szShotName[] = {
+    "_up",
+    "_dn",
+    "_lf",
+    "_rt",
+    "_ft",
+    "_bk",
+    NULL,
 }; /* 0x312604 */
-
-#define szShotName ((const char * const *)szShotName)
 
 /* Global pointers */
 /* decompiler alias for imp_re; use the live import pointer rather than the zeroed stub */

@@ -67,7 +67,7 @@ static client_t * SV_GetPlayerByName(void) {
         return 0;
 
     if (SV_Cmd_Argc() - 1 <= 0) {
-        Com_Printf((const char *)str_002ac3e4);
+        Com_Printf((const char *)"No player specified.\n");
         return 0;
     }
 
@@ -90,6 +90,6 @@ next:
         cl++;
     }
 
-    Com_Printf((const char *)str_002ac3fc, s);
+    Com_Printf((const char *)"Player %s is not on the server\n", s);
     return 0;
 }

@@ -205,9 +205,9 @@ fileHandle_t FS_HandleForFile(qboolean streamThread) {
     }
 
     for (i = 1; i < 74; i++) {
-        Com_Printf((const char *)str_00216c70, i, (byte *)fsh + i * 0x11c + 28);
+        Com_Printf((const char *)"FILE %2i: '%s'\n", i, (byte *)fsh + i * 0x11c + 28);
     }
-    Com_Error(1, (const char *)str_00216c80);
+    Com_Error(1, (const char *)"\x15" "FS_HandleForFile: none free");
     return -1;
 }
 
@@ -226,8 +226,8 @@ qboolean FS_CreatePath(char *OSPath)
     char *ofs;
 
     /* Refuse relative paths */
-    if (strstr(OSPath, str_00216ca0) || strstr(OSPath, str_00215bf8)) {
-        Com_Printf(str_00216ca4, OSPath);
+    if (strstr(OSPath, "..") || strstr(OSPath, "::")) {
+        Com_Printf("WARNING: refusing to create relative path \"%s\"\n", OSPath);
         return 1;
     }
 
@@ -285,15 +285,15 @@ qboolean FS_PureIgnoresExtension(const char *extension)
     if (*extension == '.')
         extension++;
 
-    if (!stricmp(extension, str_00216cd4))
+    if (!stricmp(extension, "cfg"))
         return 1;
-    if (!I_stricmp(extension, str_00216cd8))
+    if (!I_stricmp(extension, "menu"))
         return 1;
-    if (!I_stricmp(extension, str_00216ce0))
+    if (!I_stricmp(extension, "str"))
         return 1;
-    if (!I_stricmp(extension, str_00216ce4))
+    if (!I_stricmp(extension, "roq"))
         return 1;
-    if (!I_stricmp(extension, str_00216ce8))
+    if (!I_stricmp(extension, ".dm_NETWORK_PROTOCOL_VERSION"))
         return 1;
     return 0;
 }
@@ -345,22 +345,22 @@ Bool FS_RegisterDvars(void) {
     if (fs_debug)
         return 0;
 
-    fs_debug = Dvar_RegisterInt(str_00216d08, 0, 0, 2, 0x1000);
-    fs_copyfiles = Dvar_RegisterBool_mac(str_00216d14, 0, 0x1010);
-    fs_cdpath = Dvar_RegisterString_mac(str_00216d24, Sys_DefaultCDPath(), 0x1010);
-    fs_basepath = Dvar_RegisterString_mac(str_00216d30, Sys_DefaultInstallPath(), 0x1010);
-    fs_basegame = Dvar_RegisterString_mac(str_00216d3c, (const char *)str_002157b8, 0x1010);
-    fs_useOldAssets = Dvar_RegisterBool_mac(str_00216d48, 0, 0x1000);
+    fs_debug = Dvar_RegisterInt("fs_debug", 0, 0, 2, 0x1000);
+    fs_copyfiles = Dvar_RegisterBool_mac("fs_copyfiles", 0, 0x1010);
+    fs_cdpath = Dvar_RegisterString_mac("fs_cdpath", Sys_DefaultCDPath(), 0x1010);
+    fs_basepath = Dvar_RegisterString_mac("fs_basepath", Sys_DefaultInstallPath(), 0x1010);
+    fs_basegame = Dvar_RegisterString_mac("fs_basegame", (const char *)"", 0x1010);
+    fs_useOldAssets = Dvar_RegisterBool_mac("fs_useOldAssets", 0, 0x1000);
 
     homePath = Sys_DefaultHomePath();
     if (!homePath || !homePath[0]) {
         homePath = *(const char **)(*(byte **)&fs_basepath + 8);
     }
 
-    fs_homepath = Dvar_RegisterString_mac(str_00216d58, homePath, 0x1010);
-    fs_gameDirVar = Dvar_RegisterString_mac(str_00216d64, (const char *)str_002157b8, 0x101c);
-    fs_restrict = Dvar_RegisterBool_mac(str_00216d6c, 0, 0x1010);
-    fs_ignoreLocalized = Dvar_RegisterBool_mac(str_00216d78, 0, 0x10a0);
+    fs_homepath = Dvar_RegisterString_mac("fs_homepath", homePath, 0x1010);
+    fs_gameDirVar = Dvar_RegisterString_mac("fs_game", (const char *)"", 0x101c);
+    fs_restrict = Dvar_RegisterBool_mac("fs_restrict", 0, 0x1010);
+    fs_ignoreLocalized = Dvar_RegisterBool_mac("fs_ignoreLocalized", 0, 0x10a0);
 
     return 1;
 }
@@ -380,10 +380,10 @@ float FS_ClearIwdReferences(void)
 /* line 4057 */
 const char * GetBspExtension(void)
 {
-    const char *ext = Dvar_GetString((const char *)str_00216d8c);
+    const char *ext = Dvar_GetString((const char *)"gfx_driver");
     if (*ext)
         return va("%sbsp", ext);
-    return va((const char *)str_00216da0);
+    return va((const char *)"d3dbsp");
 }
 
 /* line 2180 */

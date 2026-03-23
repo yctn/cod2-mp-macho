@@ -141,7 +141,7 @@ restart_scan:
         /* Execute action based on yy_act */
         if ((unsigned int)yy_act > 0x61) {
             /* Default: echo to output (fatal error in this grammar) */
-            fprintf(stderr, "%s\n", (const char *)str_00228d88);
+            fprintf(stderr, "%s\n", (const char *)"fatal flex scanner internal error--no action found");
             exit(2);
         }
 
@@ -184,7 +184,7 @@ restart_scan:
             slen -= 2;
             const char *src = yytext + 1;
             if (slen > 0x1fff) {
-                CompileError(p, (const char *)str_00217bfc, src);
+                CompileError(p, (const char *)"max string length exceeded: \"%s\"", src);
                 return 0x101;
             }
             char *end = yyparse_unescape(string_buf, src, slen);
@@ -202,7 +202,7 @@ restart_scan:
             slen -= 3;
             const char *src = yytext + 2;
             if (slen > 0x1fff) {
-                CompileError(p, (const char *)str_00217bfc, src);
+                CompileError(p, (const char *)"max string length exceeded: \"%s\"", src);
                 return 0x101;
             }
             char *end = yyparse_unescape(string_buf, src, slen);
@@ -379,7 +379,7 @@ restart_scan:
         {
             unsigned int p = g_out_pos; yylval.pos = p; g_sourcePos = p;
             g_out_pos = p + yyleng;
-            CompileError(p, (const char *)str_00228d14, yytext);
+            CompileError(p, (const char *)"bad token '%s'", yytext);
             return 0x101;
         }
         case 93: /* ECHO: fwrite to yyout (line 193) */
@@ -446,7 +446,7 @@ restart_scan:
                     }
                     b->yy_ch_buf = (char *)realloc(b->yy_ch_buf, (size_t)(b->yy_buf_size + 2));
                     if (!b->yy_ch_buf) {
-                        fprintf(stderr, "%s\n", (const char *)str_00228d5c);
+                        fprintf(stderr, "%s\n", (const char *)"fatal error - scanner input buffer overflow");
                         exit(2);
                     }
                     yy_c_buf_p = b->yy_ch_buf + buf_offset;
@@ -784,9 +784,9 @@ yy_post_reduce:
 yyerrlab:
     if (yyerrstatus == 0) {
         yynerrs++;
-        if (yychar == 0) CompileError(g_sourcePos,(const char*)str_00228ce8);
+        if (yychar == 0) CompileError(g_sourcePos,(const char*)"unexpected end of file found");
         else if (yychar == 0x101) { /* fall through */ }
-        else CompileError(g_sourcePos,(const char*)str_00228d08);
+        else CompileError(g_sourcePos,(const char*)"bad syntax");
     }
     if (yyerrstatus == 3) {
         if (yychar == 0) return 1;
@@ -811,8 +811,8 @@ yyerrlab:
 
 yyoverflow:
     { int ch=yychar;
-      if(ch==0) CompileError(g_sourcePos,(const char*)str_00228ce8);
+      if(ch==0) CompileError(g_sourcePos,(const char*)"unexpected end of file found");
       else if(ch==0x101) { }
-      else CompileError(g_sourcePos,(const char*)str_00228d08);
+      else CompileError(g_sourcePos,(const char*)"bad syntax");
       return 2; }
 }

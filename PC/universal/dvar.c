@@ -42,15 +42,14 @@ enum {
     DVAR_INVALID_ENUM_INDEX = -1337
 };
 static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
-extern const char str_00219524[];
-extern const char str_00219528[];
+
 __attribute__((used, packed, aligned(4)))
-UInt32 dvarOnOffStrings[8] = {
-    (UInt32)str_00219524,
-    (UInt32)str_00219528,
-    0, 0, 0, 0, 0, 0,
+const char * dvarOnOffStrings[] = {
+    "off",
+    "on",
+    NULL, NULL, NULL, NULL, NULL, NULL,
 }; /* 0x30a3e0 */
-#define dvarOnOffStrings ((const char **)dvarOnOffStrings)
+
 static Bool isDvarSystemActive; /* isDvarSystemActive */
 static Bool isLoadingAutoExecGlobalFlag; /* isLoadingAutoExecGlobalFlag */
 
@@ -234,7 +233,7 @@ static unsigned int Dvar_GenerateHashValue(const char *name)
     int i;
 
     if (!name) {
-        Com_Error(1, str_00219550);
+        Com_Error(1, "\x15null name in generateHashValue");
         return 0;
     }
 
@@ -1732,7 +1731,7 @@ static unsigned char Dvar_HashName(const char *name)
     int i;
 
     if (!name) {
-        Com_Error(1, (const char *)str_00219550);
+        Com_Error(1, (const char *)"\x15null name in generateHashValue");
     }
 
     p = name;
@@ -1756,7 +1755,7 @@ static const char *Dvar_ConvertStringValue(const char *value, int type)
     unsigned char ch;
 
     if (value == NULL || *value == '\0') {
-        return (const char *)str_002157b8;
+        return (const char *)"";
     }
 
     ch = *(unsigned char *)(value + 1);
@@ -1803,7 +1802,7 @@ static const dvar_t *Dvar_RegisterVariant_impl(
 
     /* line 68: null name check */
     if (!dvarName) {
-        Com_Error(1, (const char *)str_00219550);
+        Com_Error(1, (const char *)"\x15null name in generateHashValue");
     }
 
     /* Compute hash */

@@ -76,18 +76,18 @@ static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]) 
 
         if (posType == 0xc) {
             if (type == 7) {
-                CompileError2(*value, (const char *)str_0021d718);
+                CompileError2(*value, (const char *)"normal script cannot reference a function in a /# ... #/ comment");
                 continue;
             }
         } else {
             if (!posType) {
-                CompileError2(*value, (const char *)str_0021d75c);
+                CompileError2(*value, (const char *)"unknown function");
                 continue;
             }
             if (!allowFarCall) {
                 int *target = (int *)*value;
                 if (*target == 1) {
-                    CompileError2(*value, (const char *)str_0021d75c);
+                    CompileError2(*value, (const char *)"unknown function");
                     continue;
                 }
             }

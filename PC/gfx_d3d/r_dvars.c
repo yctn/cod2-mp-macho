@@ -138,125 +138,85 @@ extern const dvar_t *vid_ypos; /* 0x0 */
 extern const dvar_t *developer; /* 0x0 */
 extern const dvar_t *sys_SSE; /* 0x0 */
 extern const dvar_t *r_sse_skinning; /* 0x0 */
-extern const char str_002157b8[]; /* "" */
-extern const char str_00218298[]; /* "none" */
-extern const char str_0021a1a4[]; /* "linear" */
-extern const char str_00222ef0[]; /* "dx9" */
-extern const char str_00222ef4[]; /* "dx7" */
-extern const char str_00222f4c[]; /* "boxes" */
-extern const char str_00222f54[]; /* "axes" */
-extern const char str_00222f5c[]; /* "both" */
-extern const char str_00222fe4[]; /* "nearest" */
-extern const char str_00222fec[]; /* "bilinear" */
-extern const char str_00222ff8[]; /* "trilinear" */
-extern const char str_00223004[]; /* "anisotropic" */
 
 __attribute__((used)) const char *s_technologyNames[4] = {
-    str_00218298,
-    str_00222ef0,
-    str_00222ef4,
+    "none",
+    "dx9",
+    "dx7",
     0,
 }; /* 0x3110b4 */
 __attribute__((used)) const char *xdebugNames[5] = {
-    str_002157b8,
-    str_00222f4c,
-    str_00222f54,
-    str_00222f5c,
+    "",
+    "boxes",
+    "axes",
+    "both",
     0,
 }; /* 0x3110fc */
 __attribute__((used, packed, aligned(4)))
-UInt32 textureModeNames[10] = {
-    (UInt32)str_00222fe4,
-    (UInt32)str_0021a1a4,
-    (UInt32)str_00222fec,
-    (UInt32)str_00222ff8,
-    (UInt32)str_00223004,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * textureModeNames[] = {
+    "nearest",
+    "linear",
+    "bilinear",
+    "trilinear",
+    "anisotropic",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x311158 */
 
-#define textureModeNames ((const char * const *)textureModeNames)
-extern const char str_00218298[]; /* "none" */
-extern const char str_00219524[]; /* "off" */
-extern const char str_0021ebe8[]; /* "auto" */
-extern const char str_00221b40[]; /* "None" */
-extern const char str_00222ecc[]; /* "standard" */
-extern const char str_00222ed8[]; /* "wide 16:10" */
-extern const char str_00222ee4[]; /* "wide 16:9" */
-extern const char str_00222ef8[]; /* "high" */
-extern const char str_00222f00[]; /* "medium" */
-extern const char str_00222f08[]; /* "low" */
-extern const char str_00222f0c[]; /* "lowest" */
-extern const char str_00222f14[]; /* "Screen" */
-extern const char str_00222f1c[]; /* "Feedback" */
-extern const char str_00222f28[]; /* "dither (fast)" */
-extern const char str_00222f38[]; /* "supersample (nice)" */
-extern const char str_00222f64[]; /* "Unchanged" */
-extern const char str_00222f70[]; /* "Flat" */
-extern const char str_00222f78[]; /* "White" */
-extern const char str_00222f80[]; /* "Black" */
-extern const char str_00222f88[]; /* "beginning" */
-extern const char str_00222f94[]; /* "beforePresent" */
-extern const char str_00222fa4[]; /* "adaptive" */
-extern const char str_00222fb0[]; /* "normal" */
-extern const char str_00222fb8[]; /* "basisTangent" */
-extern const char str_00222fc8[]; /* "basisBinormal" */
-extern const char str_00222fd8[]; /* "basisNormal" */
-
 static const char *s_aspectRatioNames[5] = {
-    str_0021ebe8,
-    str_00222ecc,
-    str_00222ed8,
-    str_00222ee4,
+    "auto",
+    "standard",
+    "wide 16:10",
+    "wide 16:9",
     0,
 }; /* 0x3110a0 */
 static const char *r_forceLodNames[6] = {
-    str_00222ef8,
-    str_00222f00,
-    str_00222f08,
-    str_00222f0c,
-    str_00218298,
+    "high",
+    "medium",
+    "low",
+    "lowest",
+    "none",
     0,
 }; /* 0x3110c4 */
 static const char *fbColorDebugNames[4] = {
-    str_00221b40,
-    str_00222f14,
-    str_00222f1c,
+    "None",
+    "Screen",
+    "Feedback",
     0,
 }; /* 0x3110dc */
 static const char *s_aaAlphaNames[4] = {
-    str_00219524,
-    str_00222f28,
-    str_00222f38,
+    "off",
+    "dither (fast)",
+    "supersample (nice)",
     0,
 }; /* 0x3110ec */
 static const char *normalMapNames[3] = {
-    str_00222f64,
-    str_00222f70,
+    "Unchanged",
+    "Flat",
     0,
 }; /* 0x311110 */
 static const char *colorMapNames[4] = {
-    str_00222f64,
-    str_00222f78,
-    str_00222f80,
+    "Unchanged",
+    "White",
+    "Black",
     0,
 }; /* 0x31111c */
 static const char *gpuSyncNames[5] = {
-    str_00219524,
-    str_00222f88,
-    str_00222f94,
-    str_00222fa4,
+    "off",
+    "beginning",
+    "beforePresent",
+    "adaptive",
     0,
 }; /* 0x31112c */
 static const char *debugShaderNames[6] = {
-    str_00218298,
-    str_00222fb0,
-    str_00222fb8,
-    str_00222fc8,
-    str_00222fd8,
+    "none",
+    "normal",
+    "basisTangent",
+    "basisBinormal",
+    "basisNormal",
     0,
 }; /* 0x311140 */
 

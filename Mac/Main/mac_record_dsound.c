@@ -52,7 +52,7 @@ int DSOUNDRecord_Start(recordingSample_t *pRecSample)
 
     if (!CAudioRecorder_Start(sAudioRecorder))
     {
-        Com_Printf(str_002b920c);
+        Com_Printf("error: Unable to Read to Buffer\n");
         return -1;
     }
 

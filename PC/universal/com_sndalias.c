@@ -175,7 +175,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
     /* line 1035 */
     if (fileCount == 0) {
         /* line 1037 */
-        Com_Printf((const char *)str_0021e5b0);
+        Com_Printf((const char *)"WARNING: can't find any sound alias files (soundaliases/*.csv)\n");
         goto done;
     }
 

@@ -381,11 +381,11 @@ void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, i
     int i;
 
     if (len >= iBufferSize) {
-        Com_Printf((const char *)str_002ad8b0, len, iBufferSize, pszCommand);
+        Com_Printf((const char *)"WARNING: Reliable command is too long (%i/%i) and will be truncated: '%s'\n", len, iBufferSize, pszCommand);
     }
 
     if (len == 0) {
-        Com_Printf((const char *)str_002ad8fc);
+        Com_Printf((const char *)"WARNING: Empty reliable command\n");
     }
 
     if (iBufferSize <= 0) {

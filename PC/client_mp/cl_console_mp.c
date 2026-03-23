@@ -254,15 +254,15 @@ static void Con_Dump_f(void)
     short *linePtr;
 
     if (Cmd_Argc() != 2) {
-        Com_Printf(str_002ab710); /* "usage: condump <filename>\n" */
+        Com_Printf("usage: condump <filename>\n"); /* "usage: condump <filename>\n" */
         return;
     }
 
-    Com_Printf(str_002ab72c, Cmd_Argv(1)); /* "Dumped console text to %s.\n" */
+    Com_Printf("Dumped console text to %s.\n", Cmd_Argv(1)); /* "Dumped console text to %s.\n" */
 
     f = FS_FOpenFileWrite(Cmd_Argv(1));
     if (!f) {
-        Com_Printf(str_002a9268); /* "Couldn't open.\n" */
+        Com_Printf("ERROR: couldn't open.\n"); /* "Couldn't open.\n" */
         return;
     }
 
@@ -299,7 +299,7 @@ static void Con_Dump_f(void)
         buffer[trimLen + 1] = '\0';
 
         /* Append newline and write */
-        I_strncat(buffer, str_002160e8, 0x400); /* "\n" */
+        I_strncat(buffer, "\n", 0x400); /* "\n" */
         FS_Write(buffer, strlen(buffer), f);
     }
 

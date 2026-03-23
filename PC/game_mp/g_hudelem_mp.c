@@ -10,68 +10,51 @@
 
 extern game_hudelem_t g_hudelems[1024]; /* 0x0 */
 static const game_hudelem_field_t fields[16]; /* fields */
-extern const char str_00220284[]; /* "default" */
-extern const char str_00227904[]; /* "left" */
-extern const char str_002b3f60[]; /* "fullscreen" */
-extern const char str_002b4cd8[]; /* "subtop" */
-extern const char str_002b4ce0[]; /* "top" */
-extern const char str_002b4ce4[]; /* "middle" */
-extern const char str_002b4cec[]; /* "bottom" */
-extern const char str_002b4cf4[]; /* "noscale" */
-extern const char str_002b4cfc[]; /* "alignto480" */
-extern const char str_002b4d08[]; /* "center_safearea" */
-extern const char str_002b4d18[]; /* "subleft" */
-extern const char str_002b4d20[]; /* "center" */
-extern const char str_002b4d28[]; /* "right" */
-extern const char str_002b4d30[]; /* "alignto640" */
-extern const char str_002b4d3c[]; /* "bigfixed" */
-extern const char str_002b4d48[]; /* "smallfixed" */
 
 __attribute__((used)) const char *g_he_vertalign[8] = {
-    str_002b4cd8,
-    str_002b4ce0,
-    str_002b4ce4,
-    str_002b4cec,
-    str_002b3f60,
-    str_002b4cf4,
-    str_002b4cfc,
-    str_002b4d08,
+    "subtop",
+    "top",
+    "middle",
+    "bottom",
+    "fullscreen",
+    "noscale",
+    "alignto480",
+    "center_safearea",
 }; /* 0x314480 */
 __attribute__((used)) const char *g_he_horzalign[8] = {
-    str_002b4d18,
-    str_00227904,
-    str_002b4d20,
-    str_002b4d28,
-    str_002b3f60,
-    str_002b4cf4,
-    str_002b4d30,
-    str_002b4d08,
+    "subleft",
+    "left",
+    "center",
+    "right",
+    "fullscreen",
+    "noscale",
+    "alignto640",
+    "center_safearea",
 }; /* 0x3144a0 */
 __attribute__((used)) const char *g_he_aligny[3] = {
-    str_002b4ce0,
-    str_002b4ce4,
-    str_002b4cec,
+    "top",
+    "middle",
+    "bottom",
 }; /* 0x3144c0 */
 __attribute__((used)) const char *g_he_alignx[3] = {
-    str_00227904,
-    str_002b4d20,
-    str_002b4d28,
+    "left",
+    "center",
+    "right",
 }; /* 0x3144cc */
 __attribute__((used, aligned(4)))
-UInt32 g_he_font[10] = {
-    (UInt32)str_00220284,
-    (UInt32)str_002b4d3c,
-    (UInt32)str_002b4d48,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * g_he_font[] = {
+    "default",
+    "bigfixed",
+    "smallfixed",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x3144d8 */
 
-#define g_he_font ((const char * const *)g_he_font)
 static void HECmd_SetText(scr_entref_t entref);
 static void HECmd_SetPlayerNameString(scr_entref_t entref);
 static void HECmd_SetMapNameString(scr_entref_t entref);
@@ -200,9 +183,9 @@ static void HudElem_SetEnumString_impl(game_hudelem_t *hud_base, const game_hude
     }
 
     /* Not found: build error message */
-    sprintf(errormsg, str_002b4d54, selectedName, f->name);
+    sprintf(errormsg, "\"%s\" is not a valid value for hudelem field \"%s\"\nShould be one of:", selectedName, f->name);
     for (nameIndex = 0; nameIndex < nameCount; nameIndex++) {
-        strncat(errormsg, va(str_002abc2c, names[nameIndex]), 0x800);
+        strncat(errormsg, va(" %s", names[nameIndex]), 0x800);
         errormsg[0x800 - 1] = '\0';
     }
     Scr_Error(errormsg);

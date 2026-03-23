@@ -8,8 +8,7 @@
  *   #include "Mac/Tools/MacSwap.h"
  */
 
-extern const char str_00228dbc[]; /* "mac.sound.high.quality" */
-__attribute__((used)) static const char *kHighQualityKey = str_00228dbc; /* 0x311480 */
+__attribute__((used)) static const char *kHighQualityKey = "mac.sound.high.quality"; /* 0x311480 */
 static Boolean sHighQualityEngine; /* 0xceb304 */
 static CSoundEngine *sSoundEngine; /* 0xceb300 */
 
@@ -164,7 +163,6 @@ long int AIL_startup(long unsigned int bus_count)
     return 0;
 }
 
-
 /* line 64 — C replacement from snd_mac.c */
 void AIL_shutdown(void)
 {
@@ -190,7 +188,7 @@ long int AIL_set_preference(long unsigned int number, long int value)
 /* line 91 — C replacement from snd_mac.c */
 char * AIL_last_error(void)
 {
-    return str_00228dd4;
+    return "Audio Error 1";
 }
 
 /* line 104 — C replacement from snd_mac.c */

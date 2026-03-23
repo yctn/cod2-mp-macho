@@ -62,10 +62,10 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
     weapDef = BG_GetWeaponDef(cent->nextState.weapon);
 
     /* line 261: create anim tree with 3 slots, name "MG42" */
-    pAnims = XAnimCreateAnims((const char *)str_002abcf4, 3, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
+    pAnims = XAnimCreateAnims((const char *)"MG42", 3, (void *)*(int *)&imp_Hunk_AllocXAnimClient);
 
     /* line 265: blend root node: index 0, name "root", children 1, num 2, flags 0 */
-    XAnimBlend(pAnims, 0, (const char *)str_0021df18, 1, 2, 0);
+    XAnimBlend(pAnims, 0, (const char *)"root", 1, 2, 0);
 
     /* line 269: precache first anim (szXAnims[1]) */
     XAnimPrecache(weapDef->szXAnims[1], (void *)*(int *)&imp_Hunk_AllocXAnimPrecache);

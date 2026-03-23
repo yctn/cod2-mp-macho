@@ -319,7 +319,7 @@ static void CG_ResetEntity(char *cent)
                 char *modelDst = corpseInfo;
                 for (attachIndex = 0; attachIndex < 6; attachIndex++)
                 {
-                    if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
+                    if (I_stricmp(tagSrc, (const char *)"J_Spine4") == 0)
                     {
                         ((clientInfo_t *)modelDst)->attachModelNames[0][0] = 0;   /* attachModelNames[i][0] = 0 */
                         ((clientInfo_t *)modelDst)->attachTagNames[0][0] = 0;   /* attachTagNames[i][0] = 0 */
@@ -369,7 +369,7 @@ static void CG_ResetEntity(char *cent)
                         char *modelDst = corpseInfo;
                         for (attachIndex = 0; attachIndex < 6; attachIndex++)
                         {
-                            if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
+                            if (I_stricmp(tagSrc, (const char *)"J_Spine4") == 0)
                             {
                                 ((clientInfo_t *)modelDst)->attachModelNames[0][0] = 0;
                                 ((clientInfo_t *)modelDst)->attachTagNames[0][0] = 0;
@@ -416,7 +416,7 @@ static void CG_ClearClientInfos_Inline(char *dest, char *src, char *tagBase, int
 
     for (attachIndex = 0; attachIndex < 6; attachIndex++)
     {
-        if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
+        if (I_stricmp(tagSrc, (const char *)"J_Spine4") == 0)
         {
             ((clientInfo_t *)dst)->attachModelNames[0][0] = 0;
             ((clientInfo_t *)dst)->attachTagNames[0][0] = 0;
@@ -609,8 +609,8 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                         if (((clientInfo_t *)ci)->name[0] != 0)
                         {
                             /* line 383 */
-                            const char *translated = UI_SafeTranslateString((const char *)str_002b7f74);
-                            const char *msg = va((const char *)str_002b7f88, ciName, translated, clName);
+                            const char *translated = UI_SafeTranslateString((const char *)"CGAME_PLAYERRENAMES");
+                            const char *msg = va((const char *)"%s^7 %s %s", ciName, translated, clName);
                             CG_GameMessage(msg);
                         }
 
@@ -1126,7 +1126,7 @@ void CG_ProcessSnapshots(void)
     if (n < cg->latestSnapshotNum)
     {
         /* line 590-593: error */
-        Com_Error(1, (const char *)str_002b7f94);
+        Com_Error(1, (const char *)"\x15" "CG_ProcessSnapshots: n < cg->latestSnapshotNum");
     }
     cg->latestSnapshotNum = n;
 
@@ -1214,7 +1214,7 @@ void CG_ProcessSnapshots(void)
 
         if (((snapshot_t *)snap)->serverTime < ((snapshot_t *)curSnap)->serverTime)
         {
-            Com_Error(1, (const char *)str_002b8000);
+            Com_Error(1, (const char *)"\x15" "CG_ProcessSnapshots: Server time went backwards");
         }
 
         CG_SetNextSnap((snapshot_t *)snap);

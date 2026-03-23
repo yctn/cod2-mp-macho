@@ -105,7 +105,7 @@ void XAnimInit(void) {
     g_xAnimInfo[0].s.oldTime = 0.0f;
     g_xAnimInfo[0].s.timeCount = 0;
     g_xAnimInfo[0].s.oldTimeCount = 0;
-    g_end = SL_GetString_(str_00217830, 0, 3);
+    g_end = SL_GetString_("end", 0, 3);
     g_anim_developer = *(int *)(*(byte **)imp_com_developer + 8) != 0;
 }
 

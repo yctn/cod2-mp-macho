@@ -779,7 +779,7 @@ int unzOpenCurrentFile(unzFile file)
     readInfo->stream.total_out = 0;
 
     if (readInfo->compression_method != 0) {
-        if (inflateInit2_(&readInfo->stream, -15, str_00215d44, sizeof(readInfo->stream)) == UNZ_OK)
+        if (inflateInit2_(&readInfo->stream, -15, "1.1.4", sizeof(readInfo->stream)) == UNZ_OK)
             readInfo->stream_initialised = 1;
     }
 

@@ -324,7 +324,7 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
     char *cdkey;
     char *cdkey2;
 
-    Dvar_RegisterString((const char *)str_00216d64, (const char *)str_002157b8, 0x101c); /* "fs_game" */
+    Dvar_RegisterString((const char *)"fs_game", (const char *)"", 0x101c); /* "fs_game" */
 
     cdkey = (char *)imp_cl_cdkey;
     memcpy(buf, cdkey, 16);

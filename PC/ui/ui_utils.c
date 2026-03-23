@@ -15,11 +15,10 @@ extern const char * Com_ParseOnLine(const char **p);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void Com_Printf(const char *fmt, ...);
 
-extern const char str_002157b8[];
 __attribute__((used, packed, aligned(4)))
-UInt32 staticNULL[8] = {
-    (UInt32)str_002157b8,
-    0, 0, 0, 0, 0, 0, 0,
+const char * staticNULL[] = {
+    "",
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 }; /* 0x3131a0 */
 #define staticNULL (*(const char **)&staticNULL[0])
 static stringDef_t * g_strHandle[2048]; /* g_strHandle */

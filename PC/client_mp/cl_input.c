@@ -354,7 +354,7 @@ void IN_KeyDown(kbutton_t *b)
     }
     else
     {
-        Com_Printf(str_002af610);
+        Com_Printf("Three keys down for a button!\n");
         return;
     }
 
@@ -915,7 +915,7 @@ void CL_WriteVoicePacket(void)
     }
 
     MSG_Init(&msg, data, sizeof(data));
-    MSG_WriteString(&msg, (const char *)str_002a9440);
+    MSG_WriteString(&msg, (const char *)"v");
     MSG_WriteShort(&msg, clc->qport);
 
     cl = *(clientActive_t **)imp_cl;
@@ -929,7 +929,7 @@ void CL_WriteVoicePacket(void)
 
     if (cl_showSend->current.enabled)
     {
-        Com_Printf((const char *)str_002af630, msg.cursize);
+        Com_Printf((const char *)"voice: %i\n", msg.cursize);
     }
 
     NET_OutOfBandVoiceData(clc->netchan.sock, clc->serverAddress, msg.data, msg.cursize);
@@ -1000,7 +1000,7 @@ void CL_WritePacket(void)
 
     if (compressedSize > 0x20)
     {
-        Com_Printf((const char *)str_002af63c);
+        Com_Printf((const char *)"MAX_PACKET_USERCMDS\n");
         compressedSize = 0x20;
     }
 
@@ -1015,7 +1015,7 @@ void CL_WritePacket(void)
         const dvar_t *showSend = *(const dvar_t **)imp_cl_showSend;
         if (showSend->current.enabled)
         {
-            Com_Printf((const char *)str_002af654, compressedSize);
+            Com_Printf((const char *)"(%i)", compressedSize);
         }
     }
 
@@ -1106,7 +1106,7 @@ write_footer:
             const dvar_t *showSend2 = *(const dvar_t **)imp_cl_showSend;
             if (showSend2->current.enabled)
             {
-                Com_Printf((const char *)str_00217fac, compressedSize);
+                Com_Printf((const char *)"%i ", compressedSize);
             }
         }
 
@@ -1276,7 +1276,7 @@ void CL_MouseMove(usercmd_t *cmd)
 
     if (rate != 0.0f && cl_showMouseRate->current.enabled)
     {
-        Com_Printf((const char *)str_002af7cc, rate, sensitivity);
+        Com_Printf((const char *)"%f : %f\n", rate, sensitivity);
     }
 
     if ((short)cl->snap.ps.pm_flags < 0)
@@ -1609,7 +1609,7 @@ void CL_SendCmdInternal(void)
 not_ready:
     if (cl_showSend->current.enabled)
     {
-        Com_Printf((const char *)str_002af7d8);
+        Com_Printf((const char *)". ");
     }
 }
 

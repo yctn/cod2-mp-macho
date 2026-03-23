@@ -642,7 +642,7 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
         /* Initialize raw sample handle */
         milesGlob.raw.handle = AIL_allocate_sample_handle(milesGlob.driver_2D);
         if (milesGlob.raw.handle == NULL) {
-            Com_Error(1, (const char *)str_0021992c);
+            Com_Error(1, (const char *)"\x15MILES 2D sound sample allocation failed on raw channel\n");
         }
         milesGlob.raw.rate = rate;
         milesGlob.raw.width = width;
@@ -1056,15 +1056,15 @@ void SND_LoadSoundFile(SoundFile *soundFile)
         return;
     }
 
-    sprintf(realname, (const char *)str_00219968, soundFile->soundName); /* "sound/%s" */
+    sprintf(realname, (const char *)"sound/%s", soundFile->soundName); /* "sound/%s" */
     if (FS_ReadFile(realname, &buffer) < 0) {
-        Com_Printf((const char *)str_00219974, realname); /* "^1ERROR: Sound file '%s' not found\n" */
+        Com_Printf((const char *)"^1ERROR: Sound file '%s' not found\n", realname); /* "^1ERROR: Sound file '%s' not found\n" */
         soundFile->fileMem = NULL;
         return;
     }
 
     if (!AIL_WAV_info(buffer, mixinfo)) {
-        Com_Printf((const char *)str_00219998, realname); /* "^1ERROR: Sound file '%s' is in an invalid..." */
+        Com_Printf((const char *)"^1ERROR: Sound file '%s' is in an invalid or corrupted format\n", realname); /* "^1ERROR: Sound file '%s' is in an invalid..." */
         sound = NULL;
     } else {
         /* mixinfo layout: [0]=format, [1]=dataPtr, [2]=datasize, [3]=rate, [4]=bits, [5]=channels, [6]=samples, [7]=blockSize */
@@ -1079,7 +1079,7 @@ void SND_LoadSoundFile(SoundFile *soundFile)
 
         totalSize = datasize + 0x24;
         if (totalSize == 0) {
-            Com_Printf((const char *)str_002199d8, realname); /* "^1ERROR: Sound file '%s' is zero length..." */
+            Com_Printf((const char *)"^1ERROR: Sound file '%s' is zero length, invalid\n", realname); /* "^1ERROR: Sound file '%s' is zero length..." */
             sound = NULL;
         } else {
             maxRate = sndGlob->playback_rate;
@@ -1406,7 +1406,6 @@ int SND_StartAlias3DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
 
 /* REMOVED old SND_StartAlias3DSample asm - replaced with C above */
 
-
 /* line 848 */
 int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t *pAlias1, float lerp, int entnum, const vec_t *org, float volume, float pitch, int timeshift, float fraction, int startDelay, int master, int index, snd_alias_system_t system)
 {
@@ -1429,7 +1428,7 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
 
     /* Check if sound file data exists */
     if (pAlias0->soundFile->isStreamFound == 0) {
-        Com_DPrintf((const char *)str_00219a0c, Com_GetSoundFileName(pAlias0), pAlias0->pszAliasName);
+        Com_DPrintf((const char *)"Tried to play streamed sound '%s' from alias '%s', but it was not found at load time.\n", Com_GetSoundFileName(pAlias0), pAlias0->pszAliasName);
         return 0;
     }
 
@@ -1441,7 +1440,7 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
     }
 
     /* Build filename */
-    sprintf(realname, (const char *)str_00219968, Com_GetSoundFileName(pAlias0));
+    sprintf(realname, (const char *)"sound/%s", Com_GetSoundFileName(pAlias0));
 
     /* Try to open stream - first try mss_q3fs path, then filesystem path */
     if (mss_q3fs->current.enabled != 0) {
@@ -1454,7 +1453,7 @@ int SND_StartAliasStreamOnChannel(const snd_alias_t *pAlias0, const snd_alias_t 
 
     handle = AIL_open_stream(milesGlob.driver_2D, FS_ShortOSFilePath(realname), 0);
     if (handle == NULL) {
-        Com_Printf((const char *)str_00219a64, realname, pAlias0->pszAliasName, AIL_last_error());
+        Com_Printf((const char *)"Couldn't play stream '%s' from alias '%s' - %s\n", realname, pAlias0->pszAliasName, AIL_last_error());
         return 0;
     }
 
@@ -1510,7 +1509,7 @@ got_handle:
         return 0;
     }
     if (total_msec == 0) {
-        Com_Printf((const char *)str_002199d8, realname);
+        Com_Printf((const char *)"^1ERROR: Sound file '%s' is zero length, invalid\n", realname);
         return 0;
     }
 
@@ -1733,19 +1732,19 @@ Bool SND_InitDriver(void)
     unsigned int maxRate;
 
     /* Register mss_q3fs dvar */
-    mss_q3fs = Dvar_RegisterBool((const char *)str_00219a94, 1, 0x1020);
+    mss_q3fs = Dvar_RegisterBool((const char *)"mss_q3fs", 1, 0x1020);
     if (mss_q3fs->current.enabled != 0) {
         AIL_set_file_callbacks((void *)MSS_FileOpenCallback, (void *)MSS_FileCloseCallback, (void *)MSS_FileSeekCallback, (void *)MSS_FileReadCallback);
     }
 
     /* Initialize Miles */
-    AIL_set_redist_directory((const char *)str_00219aa0);
+    AIL_set_redist_directory((const char *)"miles");
     if (!AIL_startup(0x75)) {
         goto startup_failed;
     }
 
     /* Register 3D provider dvar */
-    mss_3d_provider = Dvar_RegisterString((const char *)str_00219b04, (const char *)str_00219ae4, 0x1021);
+    mss_3d_provider = Dvar_RegisterString((const char *)"mss_3d_provider", (const char *)"Miles Fast 2D Positional Audio", 0x1021);
 
     /* Read snd_khz */
     sndKhzVal = ((dvar_t *)*(void **)imp_snd_khz)->current.integer;
@@ -1763,7 +1762,7 @@ Bool SND_InitDriver(void)
         case 0x16: /* 22 khz */
         default:
             if (sndKhzVal != 0x16) {
-                Com_Printf((const char *)str_00219b14, sndKhzVal);
+                Com_Printf((const char *)"invalid value %i for snd_khz, using 22 khz instead\n", sndKhzVal);
             }
             freq = 0x5622;
             khz = 0x16;
@@ -1778,7 +1777,7 @@ Bool SND_InitDriver(void)
         bits = 8;
     } else {
         if (sndBitsVal != 0x10) {
-            Com_Printf((const char *)str_00219b48, sndBitsVal);
+            Com_Printf((const char *)"invalid value %i for snd_bits (should be 8 or 16), using 16 instead\n", sndBitsVal);
         }
         bytes = 2;
         bits = 0x10;
@@ -1786,22 +1785,22 @@ Bool SND_InitDriver(void)
 
     /* Read snd_channels (stereo) */
     if (((dvar_t *)*(void **)imp_snd_stereo)->current.enabled != 0) {
-        channelStr = (const char *)str_00219b90; /* "stereo" */
+        channelStr = (const char *)"stereo"; /* "stereo" */
         numChannels = 2;
     } else {
-        channelStr = (const char *)str_00219b98; /* "mono" */
+        channelStr = (const char *)"mono"; /* "mono" */
         numChannels = 1;
     }
 
     /* Print format */
-    Com_Printf((const char *)str_00219ba0, khz, bits, channelStr);
+    Com_Printf((const char *)"Attempting %i kHz %i bit %s sound\n", khz, bits, channelStr);
 
     /* Open digital driver */
     AIL_set_preference(1, 0x35);
     milesGlob.driver_2D = AIL_open_digital_driver(rate, bytes, numChannels, 0);
 
     if (milesGlob.driver_2D == NULL) {
-        Com_Printf((const char *)str_00219bc4, AIL_last_error());
+        Com_Printf((const char *)"couldn't initialize 2D provider: %s\n", AIL_last_error());
         goto shutdown_and_fail;
     }
 
@@ -1824,18 +1823,18 @@ Bool SND_InitDriver(void)
 
     /* Enumerate 3D providers */
     wantedName = mss_3d_provider->current.string;
-    Com_Printf((const char *)str_00219bec);
+    Com_Printf((const char *)"available 3D providers:\n");
     providerIter = NULL;
     wantedHandle = NULL;
     defaultHandle = NULL;
 
     if (AIL_enumerate_3D_providers(&providerIter, &handle, &name)) {
         do {
-            Com_Printf((const char *)str_002182fc, name);
+            Com_Printf((const char *)"  %s\n", name);
             if (stricmp(name, wantedName) == 0) {
                 wantedHandle = handle;
             }
-            if (stricmp(name, (const char *)str_00219ae4) == 0) {
+            if (stricmp(name, (const char *)"Miles Fast 2D Positional Audio") == 0) {
                 defaultHandle = handle;
             }
             if (wantedHandle == NULL && defaultHandle == NULL) {
@@ -1849,7 +1848,7 @@ Bool SND_InitDriver(void)
     /* Try to open wanted provider */
     if (wantedHandle != NULL) {
         if (AIL_open_3D_provider(wantedHandle) != 0) {
-            Com_Printf((const char *)str_00219c08, wantedName, AIL_last_error());
+            Com_Printf((const char *)"couldn't open 3D provider '%s': %s\n", wantedName, AIL_last_error());
             /* provider stays NULL */
         } else {
             milesGlob.provider_3D = wantedHandle;
@@ -1868,19 +1867,19 @@ Bool SND_InitDriver(void)
 
     /* Try default provider */
     if (wantedName[0] != 0) {
-        if (stricmp(wantedName, (const char *)str_00219ae4) != 0) {
-            Com_Printf((const char *)str_00219c2c, wantedName);
+        if (stricmp(wantedName, (const char *)"Miles Fast 2D Positional Audio") != 0) {
+            Com_Printf((const char *)"trying to use 'Miles Fast 2D Positional Audio' instead of '%s'\n", wantedName);
         }
     }
 
     if (AIL_open_3D_provider(defaultHandle) != 0) {
-        Com_Printf((const char *)str_00219c08, (const char *)str_00219ae4, AIL_last_error());
+        Com_Printf((const char *)"couldn't open 3D provider '%s': %s\n", (const char *)"Miles Fast 2D Positional Audio", AIL_last_error());
         if (milesGlob.provider_3D == NULL) {
             goto shutdown_and_fail;
         }
     } else {
         milesGlob.provider_3D = defaultHandle;
-        Dvar_SetString(mss_3d_provider, (const char *)str_00219ae4);
+        Dvar_SetString(mss_3d_provider, (const char *)"Miles Fast 2D Positional Audio");
         if (milesGlob.provider_3D == NULL) {
             goto shutdown_and_fail;
         }
@@ -1890,11 +1889,11 @@ configure_provider:
     /* Configure 3D provider */
     sndGlob = *(byte **)imp_g_snd;
     ((snd_local_t *)sndGlob)->Initialized3d = 1;
-    AIL_3D_provider_attribute(milesGlob.provider_3D, (const char *)str_00219c6c, (void *)&((snd_local_t *)sndGlob)->max_3D_channels);
+    AIL_3D_provider_attribute(milesGlob.provider_3D, (const char *)"Maximum supported samples", (void *)&((snd_local_t *)sndGlob)->max_3D_channels);
     if (((snd_local_t *)sndGlob)->max_3D_channels > 0x20) {
         ((snd_local_t *)sndGlob)->max_3D_channels = 0x20;
     }
-    Com_Printf((const char *)str_00219c88, ((snd_local_t *)sndGlob)->max_3D_channels);
+    Com_Printf((const char *)"%i max 3D channels\n", ((snd_local_t *)sndGlob)->max_3D_channels);
     {
         int distFactor = 0x3cd013a9;
         AIL_set_3D_distance_factor(milesGlob.provider_3D, *(float *)&distFactor);
@@ -1906,7 +1905,7 @@ configure_provider:
     for (i = 0; i < ((snd_local_t *)sndGlob)->max_2D_channels; i++) {
         milesGlob.handle_2D[i] = AIL_allocate_sample_handle(milesGlob.driver_2D);
         if (milesGlob.handle_2D[i] == NULL) {
-            Com_Error(1, (const char *)str_00219c9c, i + 1);
+            Com_Error(1, (const char *)"\x15MILES 2D sound sample allocation failed on channel %i\n", i + 1);
         }
     }
 
@@ -1915,7 +1914,7 @@ configure_provider:
     for (i = 0; i < ((snd_local_t *)sndGlob)->max_3D_channels; i++) {
         milesGlob.handle_3D[i] = AIL_allocate_3D_sample_handle(milesGlob.provider_3D);
         if (milesGlob.handle_3D[i] == NULL) {
-            Com_Error(1, (const char *)str_00219cd4, i + 1);
+            Com_Error(1, (const char *)"\x15MILES 3D sound sample allocation failed on channel %i\n", i + 1);
         }
     }
 
@@ -1928,13 +1927,12 @@ shutdown_and_fail:
     memset(&milesGlob, 0, 0x130);
 
 startup_failed:
-    if (Dvar_GetInt((const char *)str_00219aa8) == 2) {
+    if (Dvar_GetInt((const char *)"r_vc_compile") == 2) {
         return 0;
     }
-    Com_Printf((const char *)str_00219ab8);
+    Com_Printf((const char *)"Miles sound system initialization failed\n");
     return 0;
 }
-
 
 /* line 1264 */
 void SND_SetStreamChannelFromSaveInfo(int index, snd_save_stream_t *info)

@@ -235,7 +235,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         cg = *((char **)cg_dvar_debug);
         if (*(char *)(cg + 8) != 0) {
             /* "CG_EntityEvent: NULL\n" */
-            Com_Printf((const char *)str_002b83c8);
+            Com_Printf((const char *)"CG_EntityEvent:ZERO EVENT\n");
         }
         return;
     }
@@ -264,13 +264,13 @@ void CG_EntityEvent(centity_t *cent, int event)
     cg = *((char **)cg_dvar_debug);
     if (*(char *)(cg + 8) != 0) {
         /* "ent:%3i  event:%3i " */
-        Com_Printf((const char *)str_002b83e4, es->number, event);
+        Com_Printf((const char *)"ent:%3i  event:%3i ", es->number, event);
         /* line 380 */
         cg = *((char **)cg_dvar_debug);
         if (*(char *)(cg + 8) != 0) {
             /* "CG_EntityEvent:%s\n" */
             char **eventNames = (char **)(*cg_eventNames);
-            Com_Printf((const char *)str_002b83f8, eventNames[event]);
+            Com_Printf((const char *)"CG_EntityEvent:%s\n", eventNames[event]);
         }
     }
 
@@ -517,7 +517,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 859: unknown event */
             char **eventNames = (char **)(*cg_eventNames);
             /* "Unknown event: '%s'" */
-            Com_Error(1, (const char *)str_002b84e8, eventNames[event]);
+            Com_Error(1, (const char *)"\x15Unknown event: '%s'", eventNames[event]);
             return;
         }
 
@@ -541,7 +541,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 /* "Event %s just for client %i was sent to other clients\n" */
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)str_002b840c, eventNames2[0x8c], clientNum);
+                Com_DPrintf((const char *)"Event %s just for client %i was sent to other clients\n", eventNames2[0x8c], clientNum);
                 return;
             }
             /* line 492 */
@@ -559,7 +559,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)str_002b840c, eventNames2[0x8d], clientNum);
+                Com_DPrintf((const char *)"Event %s just for client %i was sent to other clients\n", eventNames2[0x8d], clientNum);
                 return;
             }
             /* line 501 */
@@ -577,7 +577,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)str_002b840c, eventNames2[0x8e], clientNum);
+                Com_DPrintf((const char *)"Event %s just for client %i was sent to other clients\n", eventNames2[0x8e], clientNum);
                 return;
             }
             /* line 510 */
@@ -595,7 +595,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != ((cg_t *)cg)->predictedPlayerState.clientNum) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)str_002b840c, eventNames2[0x8f], clientNum);
+                Com_DPrintf((const char *)"Event %s just for client %i was sent to other clients\n", eventNames2[0x8f], clientNum);
                 return;
             }
             /* line 523 */
@@ -1462,7 +1462,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 if (*killIcon == '\0') {
                     /* Default icon */
                     iconWidth = f_1_4;
-                    iconShader = (const char *)str_002a763c;
+                    iconShader = (const char *)"killicondied";
                     iconHorzFlip = 0;
                 } else {
                     /* line 102 */
@@ -1483,38 +1483,38 @@ void CG_EntityEvent(centity_t *cent, int event)
                 if ((unsigned int)mod > 5) {
                     /* default icon */
                     iconWidth = f_1_4;
-                    iconShader = (const char *)str_002a763c;
+                    iconShader = (const char *)"killicondied";
                     iconHorzFlip = 0;
                 } else {
                     switch (mod) {
                     case 0: /* line 105 - melee icon */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a75fc;
+                        iconShader = (const char *)"killiconmelee";
                         iconHorzFlip = 0;
                         break;
                     case 1: /* line 116 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a762c;
+                        iconShader = (const char *)"killiconcrush";
                         iconHorzFlip = 0;
                         break;
                     case 2: /* line 121 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a89d8;
+                        iconShader = (const char *)"killiconheadshot";
                         iconHorzFlip = 0;
                         break;
                     case 3: /* line 125 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a760c;
+                        iconShader = (const char *)"killiconsuicide";
                         iconHorzFlip = 0;
                         break;
                     case 4: /* line 129 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a761c;
+                        iconShader = (const char *)"killiconfalling";
                         iconHorzFlip = 0;
                         break;
                     default:
                         iconWidth = f_1_4;
-                        iconShader = (const char *)str_002a763c;
+                        iconShader = (const char *)"killicondied";
                         iconHorzFlip = 0;
                         break;
                     }
@@ -1524,7 +1524,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 144: validate target */
             if ((unsigned int)target > 63) {
                 /* line 145 */
-                Com_Error(1, (const char *)str_002b8444);
+                Com_Error(1, (const char *)"\x15" "CG_Obituary: target out of range");
             }
 
             /* line 146: get victim client info */
@@ -1548,7 +1548,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 /* line 150 */
                 I_strncpyz(targetName, clientInfoBase + 0x20, 0x20);
                 /* line 151 */
-                I_strncat(targetName, 0x22, (const char *)str_002b3b48);
+                I_strncat(targetName, 0x22, (const char *)"^7");
                 /* line 152 */
                 CG_DrawScoreboard_GetTeamColor(((clientInfo_t *)(victimCI - 0x14))->oldteam, victimColor);
 
@@ -1572,7 +1572,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 /* line 169 */
                 I_strncpyz(attackerName, atkInfoBase + 0x20, 0x20);
                 /* line 170 */
-                I_strncat(attackerName, 0x22, (const char *)str_002b3b48);
+                I_strncat(attackerName, 0x22, (const char *)"^7");
                 /* line 171 */
                 CG_DrawScoreboard_GetTeamColor(((clientInfo_t *)(attackerCI - 0x14))->oldteam, attackerColor);
 
@@ -1606,7 +1606,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                         int atkTeam = ((clientInfo_t *)(attackerCI - 0x14))->oldteam;
                         if (atkTeam != 0 && atkTeam == ((clientInfo_t *)(victimCI - 0x14))->oldteam) {
                             /* line 186: team kill */
-                            const char *msg = va((const char *)str_002b8478, targetName, (const char *)str_002b8468);
+                            const char *msg = va((const char *)"CGAME_YOUKILLED\x15^1&&2^7 %s\x14%s", targetName, (const char *)"CGAME_TEAMMATE");
                             /* line 205 */
                             cg = *cg_glob;
                             if (((cg_t *)cg)->inKillCam == 0) {
@@ -1615,7 +1615,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         } else {
                             /* line 188 */
-                            const char *msg = va((const char *)str_002b8498, targetName);
+                            const char *msg = va((const char *)"CGAME_YOUKILLED\x15%s", targetName);
                             cg = *cg_glob;
                             if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1623,7 +1623,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         }
                     } else {
-                        const char *msg = va((const char *)str_002b8498, targetName);
+                        const char *msg = va((const char *)"CGAME_YOUKILLED\x15%s", targetName);
                         cg = *cg_glob;
                         if (((cg_t *)cg)->inKillCam == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1636,7 +1636,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                         int atkTeam = ((clientInfo_t *)(attackerCI - 0x14))->oldteam;
                         if (atkTeam != 0 && atkTeam == ((clientInfo_t *)(victimCI - 0x14))->oldteam) {
                             /* line 202 */
-                            const char *msg = va((const char *)str_002b84ac, attackerName, (const char *)str_002b8468);
+                            const char *msg = va((const char *)"CGAME_YOUWEREKILLED\x15^1&&2^7 %s\x14%s", attackerName, (const char *)"CGAME_TEAMMATE");
                             cg = *cg_glob;
                             if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1644,7 +1644,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         } else {
                             /* line 204 */
-                            const char *msg = va((const char *)str_002b84d0, attackerName);
+                            const char *msg = va((const char *)"CGAME_YOUWEREKILLED\x15%s", attackerName);
                             cg = *cg_glob;
                             if (((cg_t *)cg)->inKillCam == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1652,7 +1652,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         }
                     } else {
-                        const char *msg = va((const char *)str_002b84d0, attackerName);
+                        const char *msg = va((const char *)"CGAME_YOUWEREKILLED\x15%s", attackerName);
                         cg = *cg_glob;
                         if (((cg_t *)cg)->inKillCam == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1683,7 +1683,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             int fxIdx = fxIndex - 1;
             if ((unsigned int)fxIdx > 62) {
                 /* line 295 */
-                Com_Printf((const char *)str_002abd90, fxIndex);
+                Com_Printf((const char *)"ERROR: CG_PlayFx called with invalid effect id %i\n", fxIndex);
                 return;
             }
 
@@ -1740,7 +1740,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         {
             /* line 859: unknown event */
             char **eventNames3 = (char **)(*cg_eventNames);
-            Com_Error(1, (const char *)str_002b84e8, eventNames3[event]);
+            Com_Error(1, (const char *)"\x15Unknown event: '%s'", eventNames3[event]);
             return;
         }
 

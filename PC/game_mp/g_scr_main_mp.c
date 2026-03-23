@@ -535,7 +535,7 @@ unsigned int GScr_GetAnimLength(void)
     unsigned int animIndex = anim & 0xffff;
 
     if (!XAnimIsPrimitive(anims, animIndex))
-        Scr_ParamError(0, (const char *)str_002b124c);
+        Scr_ParamError(0, (const char *)"non-primitive animation has no concept of length");
     Scr_AddFloat(XAnimGetLength(anims, animIndex));
     return 0;
 }

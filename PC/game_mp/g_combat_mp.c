@@ -43,55 +43,35 @@ extern unsigned char bulletPriorityMap[19]; /* 0x0 */
 extern unsigned char riflePriorityMap[19]; /* 0x0 */
 extern char * modNames[15]; /* 0x0 */
 extern float g_fHitLocDamageMult[19]; /* 0x0 */
-extern const char str_00218298[];
-extern const char str_002b65d0[];
-extern const char str_002b65d8[];
-extern const char str_002b65e0[];
-extern const char str_002b65e8[];
-extern const char str_002b65f4[];
-extern const char str_002b6600[];
-extern const char str_002b6610[];
-extern const char str_002b6620[];
-extern const char str_002b6630[];
-extern const char str_002b6640[];
-extern const char str_002b664c[];
-extern const char str_002b6658[];
-extern const char str_002b6668[];
-extern const char str_002b6678[];
-extern const char str_002b6688[];
-extern const char str_002b6698[];
-extern const char str_002b66a4[];
-extern const char str_002b66b0[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 g_HitLocNames[24] = {
-    (UInt32)str_00218298,
-    (UInt32)str_002b65d0,
-    (UInt32)str_002b65d8,
-    (UInt32)str_002b65e0,
-    (UInt32)str_002b65e8,
-    (UInt32)str_002b65f4,
-    (UInt32)str_002b6600,
-    (UInt32)str_002b6610,
-    (UInt32)str_002b6620,
-    (UInt32)str_002b6630,
-    (UInt32)str_002b6640,
-    (UInt32)str_002b664c,
-    (UInt32)str_002b6658,
-    (UInt32)str_002b6668,
-    (UInt32)str_002b6678,
-    (UInt32)str_002b6688,
-    (UInt32)str_002b6698,
-    (UInt32)str_002b66a4,
-    (UInt32)str_002b66b0,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * g_HitLocNames[] = {
+    "none",
+    "helmet",
+    "head",
+    "neck",
+    "torso_upper",
+    "torso_lower",
+    "right_arm_upper",
+    "left_arm_upper",
+    "right_arm_lower",
+    "left_arm_lower",
+    "right_hand",
+    "left_hand",
+    "right_leg_upper",
+    "left_leg_upper",
+    "right_leg_lower",
+    "left_leg_lower",
+    "right_foot",
+    "left_foot",
+    "gun",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x3145e0 */
 
-#define g_HitLocNames ((const char * const *)g_HitLocNames)
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 #define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 

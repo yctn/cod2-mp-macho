@@ -94,9 +94,9 @@ void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(_D3DDISP
 void R_FatalInitError(const char *msg)
 {
     void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
-    printFunc(0, (const char *)str_002238dc);
-    printFunc(0, (const char *)str_00223938);
-    printFunc(0, (const char *)str_00223994);
+    printFunc(0, (const char *)"********** DirectX returned an unrecoverable error code during initialization  **********\n");
+    printFunc(0, (const char *)"********** Initialization also happens while playing if DirectX loses a device **********\n");
+    printFunc(0, (const char *)"********** Consult the readme for how to continue from this problem            **********\n");
     printFunc(0, "\n%s\n", msg);
     ((void (*)(void))*(void * *)((char *)&ri + 72))();
 }
@@ -161,7 +161,6 @@ static void R_CreateParticleCloudBuffer(void)
     R_FinishStaticIndexBuffer(*(void **)((byte *)&dx + 11708));
     R_FinishStaticVertexBuffer(*(void **)((byte *)&dx + 11704));
 }
-
 
 /* line 930 */
 /* Helper: release a COM object and null the pointer */
@@ -242,7 +241,6 @@ static void R_ReleaseForShutdownOrReset(void)
     }
 }
 
-
 /* line 968 */
 static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMODE *mode1)
 {
@@ -297,7 +295,6 @@ static HRESULT R_CreateDevice(HWND hwnd, DWORD behavior, void *d3dpp)
 {
     return R_CreateDevice_impl(hwnd, behavior, d3dpp);
 }
-
 
 /* line 1256 */
 void R_UpdateGpuSyncType(void)
@@ -485,7 +482,7 @@ void R_Error(errorParm_t errorLevel, const char *msg, ...)
     va_end(vargs);
     text[1023] = '\0';
 
-    ((void (*)(int, const char *, ...))*(void **)((char *)&ri + 4))(errorLevel, str_00216058, text);
+    ((void (*)(int, const char *, ...))*(void **)((char *)&ri + 4))(errorLevel, "%s", text);
 }
 
 /* line 802 */
@@ -529,7 +526,7 @@ static void R_InitSystems(void)
 void R_FatalLockError(HRESULT hr)
 {
     void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
-    printFunc(0, (const char *)str_00223a4c);
+    printFunc(0, (const char *)"********** DirectX failed a call to lock a vertex buffer or an index buffer **********\n");
     printFunc(0, "********** error information:  %s\n", DXGetErrorDescription9A(hr));
     ((void (*)(void))*(void * *)((char *)&ri + 72))();
 }
@@ -585,7 +582,6 @@ static void R_Shutdown(qboolean destroyWindow)
 
     R_UnregisterCmds();
 }
-
 
 /* line 789 */
 void R_SetColorMappings(void)
@@ -843,7 +839,6 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
     memcpy(vidConfigOut, imp_vidConfig, 44);
 }
 
-
 void R_BeginRegistration(vidConfig_t *vidConfigOut)
 {
     R_BeginRegistration_impl(vidConfigOut);
@@ -987,7 +982,6 @@ aa_done:;
     return 1;
 }
 
-
 /* std::__adjust_heap for _D3DDISPLAYMODE* — heap sift-down + push-up (16-byte elements) */
 void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
     _D3DDISPLAYMODE *first, int holeIndex, int len, _D3DDISPLAYMODE value, D3DDispModeCompFunc comp)
@@ -1015,7 +1009,6 @@ void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(
     first[holeIndex] = value;
 }
 
-
 /* std::__insertion_sort for _D3DDISPLAYMODE* — insertion sort with 16-byte element copies */
 void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(
     _D3DDISPLAYMODE *first, _D3DDISPLAYMODE *last, D3DDispModeCompFunc comp)
@@ -1039,7 +1032,6 @@ void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(
         }
     }
 }
-
 
 /* line 2514 */
 /* std::__introsort_loop for _D3DDISPLAYMODE* — introsort with heapsort fallback (16-byte elements) */

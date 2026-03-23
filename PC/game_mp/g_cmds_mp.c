@@ -10,27 +10,19 @@
  */
 
 static char line[1024]; /* line */
-extern const char str_002b3564[];
-extern const char str_002b3580[];
-extern const char str_002b359c[];
-extern const char str_002b35b0[];
-extern const char str_002b35c0[];
-extern const char str_002b35d8[];
-extern const char str_002b35f0[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 gc_orders[8] = {
-    (UInt32)str_002b3564,
-    (UInt32)str_002b3580,
-    (UInt32)str_002b359c,
-    (UInt32)str_002b35b0,
-    (UInt32)str_002b35c0,
-    (UInt32)str_002b35d8,
-    (UInt32)str_002b35f0,
-    0,
+const char * gc_orders[] = {
+    "GAME_GC_HOLDYOURPOSITION",
+    "GAME_GC_HOLDTHISPOSITION",
+    "GAME_GC_COMEHERE",
+    "GAME_GC_COVERME",
+    "GAME_GC_GUARDLOCATION",
+    "GAME_GC_SEARCHDESTROY",
+    "GAME_GC_REPORT",
+    NULL,
 }; /* 0x313c80 */
 
-#define gc_orders ((char **)gc_orders)
 extern level_locals_t level;
 extern gentity_t g_entities[1024];
 extern const dvar_t *g_cheats;
@@ -214,7 +206,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir) {
     int maxclients;
 
     if (dir != 1 && dir != -1) {
-        Com_Error(1, str_002b3724, dir);
+        Com_Error(1, "\x15" "Cmd_FollowCycle_f: bad dir %i", dir);
     }
 
     client = ent->client;

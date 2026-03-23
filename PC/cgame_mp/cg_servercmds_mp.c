@@ -95,23 +95,23 @@ void CG_ParseServerinfo(void)
 
     info = CL_GetConfigString(0);
 
-    val = Info_ValueForKey(info, (const char *)str_002a714c);
+    val = Info_ValueForKey(info, (const char *)"sv_hostname");
     cgs = CGS_PTR;
     strncpy(cgs->szHostName, val, 0x100);
 
-    val = Info_ValueForKey(info, (const char *)str_002a7100);
+    val = Info_ValueForKey(info, (const char *)"g_gametype");
     strncpy(cgs->gametype, val, 0x20);
 
     if (cgs->localServer == 0) {
-        Dvar_SetStringByName((const char *)str_002a7100, cgs->gametype);
+        Dvar_SetStringByName((const char *)"g_gametype", cgs->gametype);
     }
 
-    val = Info_ValueForKey(info, (const char *)str_002a70dc);
+    val = Info_ValueForKey(info, (const char *)"sv_maxclients");
     cgs->maxclients = atoi(val);
 
-    mapname = Info_ValueForKey(info, (const char *)str_002a7124);
+    mapname = Info_ValueForKey(info, (const char *)"mapname");
     ext = GetBspExtension();
-    Com_sprintf(cgs->mapname, 0x40, (const char *)str_002a74ac, mapname, ext);
+    Com_sprintf(cgs->mapname, 0x40, (const char *)"maps/mp/%s.%s", mapname, ext);
 }
 
 /* line 172 */

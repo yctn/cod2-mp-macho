@@ -39,9 +39,9 @@ static const listColumnInfo_t columnInfo[6] = {
     {LCT_NAME, 0.46f, "", 0},
     {LCT_STATUS_ICON, 0.05f, "", 0},
     {LCT_TALKING_ICON, 0.05f, "", 0},
-    {LCT_SCORE, 0.15f, str_002b6804, 2},
-    {LCT_DEATHS, 0.15f, str_002b6814, 2},
-    {LCT_PING, 0.14f, str_002b6824, 2},
+    {LCT_SCORE, 0.15f, "CGAME_SB_SCORE", 2},
+    {LCT_DEATHS, 0.15f, "CGAME_SB_DEATHS", 2},
+    {LCT_PING, 0.14f, "CGAME_SB_PING", 2},
 }; /* columnInfo */
 
 qboolean CG_ScoreboardDisplayed(void);
@@ -93,22 +93,22 @@ float CG_ScrollScoreboardDown(void)
 /* line 1427 */
 float CG_RegisterScoreboardGraphics(void)
 {
-    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)str_00226ec8, 7); /* "black" */
-    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)str_00226ec8, 7); /* "black" */
-    CL_RegisterMaterialNoMip((const char *)str_002b6834, 7); /* "hudscoreboardscroll_uparrow" */
-    CL_RegisterMaterialNoMip((const char *)str_002b6850, 7); /* "hudscoreboardscroll_upkey" */
-    CL_RegisterMaterialNoMip((const char *)str_002b686c, 7); /* "hudscoreboardscroll_downarrow" */
-    CL_RegisterMaterialNoMip((const char *)str_002b688c, 7); /* "hudscoreboardscroll_downkey" */
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b4730), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b46e8), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b46c0), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b4708), 7);
-    CL_RegisterMaterialNoMip((const char *)str_002aa96c, 7); /* "voice_on" */
-    CL_RegisterMaterialNoMip((const char *)str_002b68a8, 7); /* "voice_off" */
+    CL_RegisterMaterialNoMip((const char *)"white", 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)"white", 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)"black", 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)"white", 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)"white", 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)"black", 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)"hudscoreboardscroll_uparrow", 7); /* "hudscoreboardscroll_uparrow" */
+    CL_RegisterMaterialNoMip((const char *)"hudscoreboardscroll_upkey", 7); /* "hudscoreboardscroll_upkey" */
+    CL_RegisterMaterialNoMip((const char *)"hudscoreboardscroll_downarrow", 7); /* "hudscoreboardscroll_downarrow" */
+    CL_RegisterMaterialNoMip((const char *)"hudscoreboardscroll_downkey", 7); /* "hudscoreboardscroll_downkey" */
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)"g_ScoresBanner_Spectators"), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)"g_ScoresBanner_Axis"), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)"g_ScoresBanner_Allies"), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)"g_ScoresBanner_None"), 7);
+    CL_RegisterMaterialNoMip((const char *)"voice_on", 7); /* "voice_on" */
+    CL_RegisterMaterialNoMip((const char *)"voice_off", 7); /* "voice_off" */
     return 0;
 }
 
@@ -140,9 +140,9 @@ float CG_DrawScoreboard_GetTeamColor(int team, vec_t *color)
     float savedAlpha = color[3];
 
     if (team == 1) {
-        Dvar_GetUnpackedColorByName((const char *)str_002addd4, color); /* "g_TeamColor_Axis" */
+        Dvar_GetUnpackedColorByName((const char *)"g_TeamColor_Axis", color); /* "g_TeamColor_Axis" */
     } else if (team == 2) {
-        Dvar_GetUnpackedColorByName((const char *)str_002addc0, color); /* "g_TeamColor_Allies" */
+        Dvar_GetUnpackedColorByName((const char *)"g_TeamColor_Allies", color); /* "g_TeamColor_Allies" */
     } else {
         color[0] = 1.0f;
         color[1] = 1.0f;
@@ -216,7 +216,7 @@ qboolean CG_DrawScoreboard(void)
             int lastScoreTime = cg->scoresRequestTime;
             if (lastScoreTime + 0x7d0 < serverTime) {
                 cg->scoresRequestTime = serverTime;
-                CL_AddReliableCommand((const char *)str_002b3bec);
+                CL_AddReliableCommand((const char *)"score");
             }
         }
     }
@@ -229,7 +229,7 @@ qboolean CG_DrawScoreboard(void)
         color[2] = *(float *)(cb + 8);
         color[3] = bgAlpha;
         {
-            struct Material *whiteMat = CL_RegisterMaterialNoMip((const char *)str_00224184, 7);
+            struct Material *whiteMat = CL_RegisterMaterialNoMip((const char *)"white", 7);
             {
                 float x = 120.0f;   /* 0x42f00000 */
                 float yy = 22.0f;   /* 0x41b00000 */
@@ -247,7 +247,7 @@ qboolean CG_DrawScoreboard(void)
         color[1] = *(float *)(cw + 4);
         color[2] = *(float *)(cw + 8);
         color[3] = borderAlpha;
-        material = CL_RegisterMaterialNoMip((const char *)str_00224184, 7);
+        material = CL_RegisterMaterialNoMip((const char *)"white", 7);
         numLines = CalcBorderLines(borderLines);
         if (numLines > 0) {
             int lineIdx;
@@ -263,7 +263,7 @@ qboolean CG_DrawScoreboard(void)
     cgsPtr = *(byte **)imp_cgs;
     gameType = (const char *)SEH_LocalizeTextMessage(
         UI_GetGameTypeDisplayName((const char *)(cgsPtr + 0x5ea4)),
-        (const char *)str_002b693c, 0);
+        (const char *)"scoreboard gametype display", 0);
 
     /* Draw game type header */
     {
@@ -310,14 +310,14 @@ qboolean CG_DrawScoreboard(void)
                 mapLen = len;
             }
             /* line 524: strip ".bsp" extension */
-            if (mapLen >= 4 && I_strnicmp(mapBuffer + mapLen - 4, (const char *)str_00217ff4, 3) == 0) {
+            if (mapLen >= 4 && I_strnicmp(mapBuffer + mapLen - 4, (const char *)"bsp", 3) == 0) {
                 mapBuffer[mapLen - 4] = '\0';
             }
         }
 
         /* line 528: strip "maps/" prefix */
         map = mapBuffer;
-        if (I_strnicmp(mapBuffer, (const char *)str_002b6958, 4) == 0) {
+        if (I_strnicmp(mapBuffer, (const char *)"maps", 4) == 0) {
             char c = mapBuffer[4];
             if (c == '/' || c == '\\') {
                 map = mapBuffer + 5;
@@ -325,7 +325,7 @@ qboolean CG_DrawScoreboard(void)
         }
 
         /* line 530: strip "mp/" prefix */
-        if (I_strnicmp(map, (const char *)str_0021cc10, 2) == 0) {
+        if (I_strnicmp(map, (const char *)"mp", 2) == 0) {
             char c = map[2];
             if (c == '/' || c == '\\') {
                 map = map + 3;
@@ -375,8 +375,8 @@ qboolean CG_DrawScoreboard(void)
         serverName = (const char *)(cgsPtr + 0x5ec4);
         serverIP = (const char *)CL_GetServerIPAddress();
 
-        if (I_stricmp(serverIP, (const char *)str_002b6960) == 0) {
-            serverIP = (const char *)UI_SafeTranslateString((const char *)str_002b696c);
+        if (I_stricmp(serverIP, (const char *)"0.0.0.0:0") == 0) {
+            serverIP = (const char *)UI_SafeTranslateString((const char *)"CGAME_LISTENSERVER");
         }
 
         /* line 573-580: compute footer font scale */

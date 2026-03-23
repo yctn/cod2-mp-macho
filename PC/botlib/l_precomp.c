@@ -69,7 +69,7 @@ void SourceError(source_t *source, char *str, ...) {
     va_end(ap);
     {
         script_t *scriptfile = source->scriptstack;
-        Com_Printf((const char *)str_002220ac, scriptfile, scriptfile->line, text);
+        Com_Printf((const char *)"^1Error: file %s, line %d: %s\n", scriptfile, scriptfile->line, text);
     }
 }
 
@@ -82,7 +82,7 @@ void SourceWarning(source_t *source, char *str, ...) {
     va_end(ap);
     {
         script_t *scriptfile = source->scriptstack;
-        Com_Printf((const char *)str_002220cc, scriptfile, scriptfile->line, text);
+        Com_Printf((const char *)"^3Warning: file %s, line %d: %s\n", scriptfile, scriptfile->line, text);
     }
 }
 
@@ -106,7 +106,7 @@ int PC_StringizeTokens(token_t *tokens, token_t *token) {
     }
 
     len = strlen((char *)token);
-    strncat((char *)token, (const char *)str_00222120, 0x401 - len);
+    strncat((char *)token, (const char *)"\"", 0x401 - len);
 
     return 1;
 }

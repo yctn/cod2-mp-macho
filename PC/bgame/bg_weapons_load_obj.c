@@ -28,93 +28,66 @@ extern void I_strlwr(char *s);
 static WeaponDef bg_defaultWeaponDefs; /* bg_defaultWeaponDefs */
 static int g_playerAnimTypeNamesCount; /* g_playerAnimTypeNamesCount */
 static char * g_playerAnimTypeNames[64]; /* g_playerAnimTypeNames */
-extern const char str_00218298[];
-extern const char str_0021ec08[];
-extern const char str_00221b40[];
-extern const char str_00221b48[];
-extern const char str_00221b58[];
-extern const char str_00221b68[];
-extern const char str_00221b70[];
-extern const char str_00221b78[];
-extern const char str_00221b80[];
-extern const char str_00221b88[];
-extern const char str_00221b90[];
-extern const char str_00221b98[];
-extern const char str_00221ba4[];
-extern const char str_00221bb0[];
-extern const char str_00221bb8[];
-extern const char str_00221bc4[];
-extern const char str_00221bd0[];
-extern const char str_00221bd8[];
-extern const char str_00221bdc[];
-extern const char str_00221be0[];
-extern const char str_00221be8[];
-extern const char str_00221bf0[];
-extern const char str_00221c00[];
-extern const char str_00221c08[];
-extern const char str_00221c14[];
-extern const char str_00221c1c[];
+
 #include "bg_weapons_load_obj_weaponDefFields_decls.inc"
 
 __attribute__((used)) char *offhandClassNames[3] = {
-    (char *)str_00221b40,
-    (char *)str_00221b48,
-    (char *)str_00221b58,
+    (char *)"None",
+    (char *)"Frag Grenade",
+    (char *)"Smoke Grenade",
 }; /* 0x310c08 */
 __attribute__((used)) char *szProjectileExplosionNames[3] = {
-    (char *)str_00221b68,
-    (char *)str_00221b70,
-    (char *)str_00218298,
+    (char *)"grenade",
+    (char *)"rocket",
+    (char *)"none",
 }; /* 0x310c14 */
 __attribute__((used)) char *szWeapStanceNames[3] = {
-    (char *)str_00221b78,
-    (char *)str_00221b80,
-    (char *)str_00221b88,
+    (char *)"stand",
+    (char *)"duck",
+    (char *)"prone",
 }; /* 0x310c20 */
 __attribute__((used)) char *szWeapSlotNames[3] = {
-    (char *)str_00218298,
-    (char *)str_00221b90,
-    (char *)str_00221b98,
+    (char *)"none",
+    (char *)"primary",
+    (char *)"primaryb",
 }; /* 0x310c2c */
 __attribute__((used, packed, aligned(4)))
-UInt32 szWeapOverlayReticleNames[10] = {
-    (UInt32)str_00218298,
-    (UInt32)str_00221ba4,
-    (UInt32)str_00221bb0,
-    (UInt32)str_00221bb8,
-    (UInt32)str_00221bc4,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * szWeapOverlayReticleNames[] = {
+    "none",
+    "crosshair",
+    "FG42",
+    "Springfield",
+    "binoculars",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x310c38 */
 __attribute__((used)) char *szWeapClassNames[10] = {
-    (char *)str_00221bd0,
-    (char *)str_00221bd8,
-    (char *)str_00221bdc,
-    (char *)str_00221be0,
-    (char *)str_00221be8,
-    (char *)str_00221b68,
-    (char *)str_00221bf0,
-    (char *)str_00221c00,
-    (char *)str_00221c08,
-    (char *)str_0021ec08,
+    (char *)"rifle",
+    (char *)"mg",
+    (char *)"smg",
+    (char *)"spread",
+    (char *)"pistol",
+    (char *)"grenade",
+    (char *)"rocketlauncher",
+    (char *)"turret",
+    (char *)"non-player",
+    (char *)"item",
 }; /* 0x310c60 */
 __attribute__((used, packed, aligned(4)))
-UInt32 szWeapTypeNames[6] = {
-    (UInt32)str_00221c14,
-    (UInt32)str_00221b68,
-    (UInt32)str_00221c1c,
-    (UInt32)str_00221bc4,
-    0,
-    0,
+const char * szWeapTypeNames[] = {
+    "bullet",
+    "grenade",
+    "projectile",
+    "binoculars",
+    NULL,
+    NULL,
 }; /* 0x310c88 */
 
-#define szWeapOverlayReticleNames ((char **)szWeapOverlayReticleNames)
-#define szWeapTypeNames ((char **)szWeapTypeNames)
 __attribute__((used, packed, aligned(4)))
-UInt32 weaponDefFields[1098] = {
+const char * weaponDefFields[] = {
 #include "bg_weapons_load_obj_weaponDefFields.inc"
 }; /* 0x30fae0 */
 #define weaponDefFields ((cspField_t *)weaponDefFields)

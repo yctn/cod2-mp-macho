@@ -175,7 +175,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     case 4: { /* smodelLighting */
         GfxWorld *w = rgp->world;
         if (!w || !w->smodelLightingImage)
-            Com_Error(1, str_002266cc);
+            Com_Error(1, "Sampler 'smodelLighting' is only valid in a map.\n");
         *image = rgp->world->smodelLightingImage;
         *samplerState = 0x72;
         return;
@@ -200,7 +200,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
         lmapIdx = ((materialCommands_t *)tess)->lmapIndex;
         if (lmapIdx == 0x1f) {
             char *mat = (char *)((materialCommands_t *)tess)->material;
-            R_Error(0, str_00226700, *(char **)mat);
+            R_Error(0, "Material '%s' tried to use a lightmap but doesn't have one set.\n\nThis is usually because a model skin uses a world material type.\nSometimes it is caused by a material switching after a map was\ncompiled to a surface type that uses a lightmap.\n", *(char **)mat);
             tess = (char *)imp_tess;
             lmapIdx = ((materialCommands_t *)tess)->lmapIndex;
         }
@@ -246,7 +246,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     case 16: { /* sky sampler */
         world = rgp->world;
         if (!world || !world->skyImage)
-            R_Error(1, str_00226828);
+            R_Error(1, "Tried to use 'sampler.sky' when it isn't valid\n");
         world = rgp->world;
         *image = world->skyImage;
         *samplerState = world->skySamplerState;
@@ -285,7 +285,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     case 20: { /* outdoor sampler */
         world = rgp->world;
         if (!world || !world->outdoorImage)
-            R_Error(1, str_002267f4);
+            R_Error(1, "Tried to use 'sampler.outdoor' when it isn't valid\n");
         *image = rgp->world->outdoorImage;
         *samplerState = 0x32;
         return;
@@ -591,7 +591,6 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
     lockSlot->used += totalSize;
 }
 
-
 /* line 710 */
 /* line 710 — Compute activeMatrices base from matrix stack index */
 static inline char *RB_GetActiveMatrices(void)
@@ -809,7 +808,6 @@ static const float *RB_GetCodeMatrix(int source, int firstRow)
 {
     return RB_GetCodeMatrix_impl(source, firstRow);
 }
-
 
 /* line 1439 — D3D shader technique application: iterates technique passes,
  * sets vertex declarations, pixel/vertex shaders, sampler states, render states,

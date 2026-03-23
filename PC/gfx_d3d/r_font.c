@@ -100,13 +100,13 @@ FontHandle R_RegisterFont(const char *fontName, int imageTrack)
     }
 
     if (registeredFontCount > 15) {
-        R_Error(1, (const char *)str_00225884);
+        R_Error(1, (const char *)"R_RegisterFont: Too many fonts registered already.\n");
         return 0;
     }
 
     font = R_LoadFont(fontName, imageTrack);
     if (!font) {
-        R_Error(1, (const char *)str_002258b8, fontName);
+        R_Error(1, (const char *)"R_RegisterFont: Error while reading font '%s'", fontName);
     }
 
     registeredFont[registeredFontCount] = font;
@@ -138,7 +138,7 @@ int R_DuplicateFont(FontHandle fontCopy, const char *name)
     }
 
     if (registeredFontCount > 15) {
-        return R_Error(1, (const char *)str_002258e8);
+        return R_Error(1, (const char *)"R_DuplicateFont: Too many fonts registered already.\n");
     }
 
     newFont = alloc(0x14);

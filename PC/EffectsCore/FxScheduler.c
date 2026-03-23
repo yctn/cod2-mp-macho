@@ -163,7 +163,7 @@ EffectTemplate * FX_TryRegisterEffect(const char *name)
 
     /* Register the new template */
     if (effectTemplateArrayCount == 256) {
-        FX_Print(str_0021a904, 256);
+        FX_Print("^1Max effect templates of '%i' exceeded\n", 256);
         ZN14GenericParser2D1Ev(&parser);
         return NULL;
     }
@@ -175,7 +175,6 @@ EffectTemplate * FX_TryRegisterEffect(const char *name)
     ZN14GenericParser2D1Ev(&parser);
     return registeredTemplate;
 }
-
 
 /* line 952 */
 static void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global constructors keyed to PrimitiveTemplate_gmMemMgr */
@@ -236,7 +235,6 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
 
     return 1; /* true */
 }
-
 
 /* line 688 */
 void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *fx, const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, const vec_t *origin, MediaHandles * (*axis)[4], int lateTime, int indexInBatch)
@@ -321,7 +319,6 @@ cleanup:
     }
 }
 
-
 /* line 283 */
 void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx, const vec_t *origin, MediaHandles * (*axis)[4], const FxBoltInfo *bolt)
 {
@@ -348,10 +345,10 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
     /* Handle null fx */
     if (!fx) {
         FxHelper_SetIgnorePrecacheErrors(helper, 1);
-        fx = FX_RegisterEffect(str_0021a930);
+        fx = FX_RegisterEffect("fx/error.efx");
         FxHelper_SetIgnorePrecacheErrors(helper, 0);
         if (!fx) {
-            FX_Print(str_0021a940);
+            FX_Print("FxScheduler::PlayEffect called with invalid effect\n");
             return;
         }
     }
@@ -520,7 +517,6 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
     }
 }
 
-
 /* overload skip: FxScheduler_PlayEffect (0x61ef6) */
 
 /* overload skip: FxScheduler_PlayEffect (0x61f6a) */
@@ -562,7 +558,6 @@ void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTe
         effectTemplateArrayCount = 1;
     }
 }
-
 
 /*
  * Helper: advance FxCurveIterator to find the key segment containing time t.
@@ -721,7 +716,6 @@ void FxScheduler_GetDecalColor(const FxScheduler * _this, const PrimitiveTemplat
     }
 }
 
-
 /* line 505 */
 float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
 {
@@ -781,7 +775,6 @@ float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTempla
     return result;
 }
 
-
 /* line 531 */
 float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
 {
@@ -835,7 +828,6 @@ float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplat
     return result;
 }
 
-
 /* line 69 */
 EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
 {
@@ -849,7 +841,6 @@ EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
     elements = *(TMediaElement **)_this; /* mMediaList.elements */
     return (EffectTemplate *)elements[irand(0, count)].data;
 }
-
 
 /* line 554 */
 void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *org, MediaHandles * (*ax)[4])
@@ -887,7 +878,6 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
     /* Call CG_ImpactMark */
     CG_ImpactMark(markMaterial, org, (const vec_t *)ax, rotation, rgba, size);
 }
-
 
 /* Helper: Archive an int field (read or write depending on arch->isReading at offset 4) */
 static void FxArchive_ArchiveInt(const FxArchive *arch, int *field)
@@ -954,7 +944,6 @@ void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch)
     /* Archive mSeed */
     FxArchive_ArchiveInt(arch, &sfxPtr->mSeed);
 }
-
 
 /* line 710 */
 void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)

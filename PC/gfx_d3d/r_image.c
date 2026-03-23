@@ -12,70 +12,45 @@
 extern const char * g_platform_name[2]; /* 0x0 */
 static int imageGlobals[2064]; /* imageGlobals */
 static GfxImage g_imageProgs[12]; /* g_imageProgs */
-extern const char str_00224568[];
-extern const char str_00225118[];
-extern const char str_00225120[];
-extern const char str_00225128[];
-extern const char str_00225130[];
-extern const char str_00225138[];
-extern const char str_00225140[];
-extern const char str_00225148[];
-extern const char str_00225150[];
-extern const char str_00225158[];
-extern const char str_00225160[];
-extern const char str_00225168[];
-extern const char str_0022517c[];
-extern const char str_0022518c[];
-extern const char str_002251a0[];
-extern const char str_002251b0[];
-extern const char str_002251b8[];
-extern const char str_002251c0[];
-extern const char str_002251cc[];
-extern const char str_002251d8[];
-extern const char str_002251ec[];
-extern const char str_002251fc[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 imageTypeName[16] = {
-    (UInt32)str_00225118,
-    (UInt32)str_00225120,
-    (UInt32)str_00225128,
-    (UInt32)str_00225130,
-    (UInt32)str_00225138,
-    (UInt32)str_00225140,
-    (UInt32)str_00225148,
-    (UInt32)str_00225150,
-    (UInt32)str_00225158,
-    (UInt32)str_00225160,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * imageTypeName[] = {
+    "misc  ",
+    "debug ",
+    "$tex+?",
+    "ui    ",
+    "lmap  ",
+    "light ",
+    "f/x   ",
+    "hud   ",
+    "model ",
+    "world ",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x3111c0 */
 __attribute__((used, packed, aligned(4)))
-UInt32 g_imageProgNames[16] = {
-    (UInt32)str_00225168,
-    (UInt32)str_0022517c,
-    (UInt32)str_0022518c,
-    (UInt32)str_002251a0,
-    (UInt32)str_002251b0,
-    (UInt32)str_002251b8,
-    (UInt32)str_002251c0,
-    (UInt32)str_002251cc,
-    (UInt32)str_002251d8,
-    (UInt32)str_002251ec,
-    (UInt32)str_002251fc,
-    (UInt32)str_00224568,
-    0,
-    0,
-    0,
-    0,
+const char * g_imageProgNames[] = {
+    "$dynamic_shadows",
+    "$shadow_cookie",
+    "$shadow_cookie_blur",
+    "$blurred_screen",
+    "$glow_0",
+    "$glow_1",
+    "$pingpong_0",
+    "$pingpong_1",
+    "$resolved_post_sun",
+    "$resolved_scene",
+    "$savedscreen",
+    "$raw",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x311200 */
-
-#define imageTypeName ((const char * const *)imageTypeName)
-#define g_imageProgNames ((const char * const *)g_imageProgNames)
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
 extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);
@@ -897,7 +872,6 @@ void R_ImageList_f(void)
         Com_Printf(0, "\n");
     }
 }
-
 
 /* line 881 */
 extern GfxImage * Image_Load(const char *name, int semantic, int imageTrack);

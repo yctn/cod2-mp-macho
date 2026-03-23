@@ -900,7 +900,7 @@ void SV_ArchiveSnapshot(void)
                         int newClientIdx = svs3->nextCachedSnapshotClients + 1;
                         svs3->nextCachedSnapshotClients = newClientIdx;
                         if (newClientIdx > 0x7ffffffd) {
-                            Com_Error(0, str_002b0440);
+                            Com_Error(0, "\x15svs.nextCachedSnapshotClients wrapped");
                         }
                     }
 
@@ -982,7 +982,7 @@ void SV_ArchiveSnapshot(void)
                             int newEntIdx = svs5->nextCachedSnapshotEntities + 1;
                             svs5->nextCachedSnapshotEntities = newEntIdx;
                             if (newEntIdx > 0x7ffffffd) {
-                                Com_Error(0, str_002b0468);
+                                Com_Error(0, "\x15svs.nextCachedSnapshotEntities wrapped");
                             }
                         }
 
@@ -1002,7 +1002,7 @@ void SV_ArchiveSnapshot(void)
             int newFrameNum = svs5->nextCachedSnapshotFrames + 1;
             svs5->nextCachedSnapshotFrames = newFrameNum;
             if (newFrameNum > 0x7ffffffd) {
-                Com_Error(0, str_002b0490);
+                Com_Error(0, "\x15svs.nextCachedSnapshotFrames wrapped");
             }
         }
     }
@@ -1015,7 +1015,7 @@ write_frame:
     {
         int overflowed = *(int *)msg; /* msg.overflowed at offset 0 */
         if (overflowed != 0) {
-            Com_DPrintf(str_002b04b8); /* "SV_ArchiveSnapshot: ignoring snapshot because it overflowed.\n" */
+            Com_DPrintf("SV_ArchiveSnapshot: ignoring snapshot because it overflowed.\n"); /* "SV_ArchiveSnapshot: ignoring snapshot because it overflowed.\n" */
             goto cleanup;
         }
     }
@@ -1077,7 +1077,7 @@ write_frame:
         int newCount = svs2->nextArchivedSnapshotFrames + 1;
         svs2->nextArchivedSnapshotFrames = newCount;
         if (newCount > 0x7ffffffd) {
-            Com_Error(0, str_002b0520);
+            Com_Error(0, "\x15svs.nextArchivedSnapshotFrames wrapped");
         }
     }
 

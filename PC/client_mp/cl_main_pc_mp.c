@@ -208,9 +208,9 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
     clientStatic_t *cls;
 
     infoString = MSG_ReadString(msg);
-    prot = atoi(Info_ValueForKey(infoString, (const char *)str_002a7118));
+    prot = atoi(Info_ValueForKey(infoString, (const char *)"protocol"));
 
-    protoStr = Dvar_GetString((const char *)str_002aa7ec);
+    protoStr = Dvar_GetString((const char *)"debug_protocol");
     if (*protoStr)
         expectedProt = atoi(protoStr);
     else
@@ -218,7 +218,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
 
     if (prot != expectedProt)
     {
-        Com_DPrintf((const char *)str_002ab8d8, infoString);
+        Com_DPrintf((const char *)"Different protocol info packet: %s\n", infoString);
         return 0;
     }
 
@@ -245,7 +245,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
             ping->time = pingTime;
         }
 
-        Com_DPrintf((const char *)str_002ab8fc, ping->time, NET_AdrToString(from));
+        Com_DPrintf((const char *)"ping time %dms from %s\n", ping->time, NET_AdrToString(from));
 
         /* copy infoString into ping info buffer */
         I_strncpyz(ping->info, infoString, sizeof(ping->info));
@@ -253,7 +253,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         /* set nettype */
         {
             int nettype = (from.type >= 3 && from.type <= 4) ? 1 : 0;
-            Info_SetValueForKey(ping->info, (const char *)str_002ab8c0, va((const char *)str_00215a64, nettype));
+            Info_SetValueForKey(ping->info, (const char *)"nettype", va((const char *)"%d", nettype));
         }
 
         CL_SetServerInfoByAddress(from, infoString, ping->time);
@@ -310,13 +310,13 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
                 info[len + 1] = '\0';
             }
 
-            Com_Printf((const char *)str_002ab944, NET_AdrToString(from), info);
+            Com_Printf((const char *)"%s: %s", NET_AdrToString(from), info);
             return 0;
         }
     }
 
     /* all 128 slots full */
-    Com_DPrintf((const char *)str_002ab914);
+    Com_DPrintf((const char *)"MAX_OTHER_SERVERS hit, dropping infoResponse\n");
     return 0;
 }
 
@@ -327,7 +327,6 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
     (void)checksum;
     return 1;
 }
-
 
 /* line 432 */
 int CL_SortGlobalServers(void)
@@ -356,18 +355,18 @@ int CL_Rcon_f(void)
 
     if (Cmd_Argc() <= 1)
     {
-        Com_Printf((const char *)str_002ab94c);
+        Com_Printf((const char *)"USAGE: rcon <command> <options...>\n");
         return 0;
     }
 
     cmd = Cmd_Argv(1);
 
     /* "login" subcommand */
-    if (I_stricmp(cmd, (const char *)str_002ab970) == 0)
+    if (I_stricmp(cmd, (const char *)"login") == 0)
     {
         if (Cmd_Argc() != 3)
         {
-            Com_Printf((const char *)str_002ab978);
+            Com_Printf((const char *)"USAGE: rcon login <password>\n");
             return 0;
         }
         {
@@ -375,7 +374,7 @@ int CL_Rcon_f(void)
             int passLen = strlen(pass);
             if (passLen > 0x17)
             {
-                Com_Printf((const char *)str_002ab998, 0x18);
+                Com_Printf((const char *)"rcon password must be %i characters or less\n", 0x18);
                 return 0;
             }
             memcpy(&rconGlob, pass, passLen + 1);
@@ -384,11 +383,11 @@ int CL_Rcon_f(void)
     }
 
     /* "logout" subcommand */
-    if (I_stricmp(cmd, (const char *)str_002ab9c8) == 0)
+    if (I_stricmp(cmd, (const char *)"logout") == 0)
     {
         if (!*(byte *)&rconGlob)
         {
-            Com_Printf((const char *)str_002ab9d0);
+            Com_Printf((const char *)"Not logged in\n");
             return 0;
         }
         *(byte *)&rconGlob = 0;
@@ -396,16 +395,16 @@ int CL_Rcon_f(void)
     }
 
     /* "address" subcommand */
-    if (I_stricmp(cmd, (const char *)str_002ab9e0) == 0)
+    if (I_stricmp(cmd, (const char *)"host") == 0)
     {
         if (Cmd_Argc() != 3)
         {
-            Com_Printf((const char *)str_002ab9e8);
+            Com_Printf((const char *)"USAGE: rcon host <address>\n");
             return 0;
         }
         if (!NET_StringToAdr(Cmd_Argv(2), (netadr_t *)((char *)&rconGlob + 24)))
         {
-            Com_Printf((const char *)str_002aba04);
+            Com_Printf((const char *)"bad host address\n");
             return 0;
         }
         if (*(unsigned short *)((char *)&rconGlob + 32) == 0)
@@ -418,7 +417,7 @@ int CL_Rcon_f(void)
     /* send rcon command */
     if (!*(byte *)&rconGlob)
     {
-        Com_Printf((const char *)str_002aba18);
+        Com_Printf((const char *)"You need to log in with 'rcon login <password>' before using rcon.\n");
         return 0;
     }
 
@@ -429,18 +428,18 @@ int CL_Rcon_f(void)
     message[3] = (char)0xff;
     message[4] = '\0';
 
-    offset = Com_AddToString((const char *)str_002aba5c, message, 0x400, 4, 0);
+    offset = Com_AddToString((const char *)"rcon ", message, 0x400, 4, 0);
     offset = Com_AddToString((char *)&rconGlob, message, 0x400, offset, 0);
 
     for (i = 1; i < Cmd_Argc(); i++)
     {
-        offset = Com_AddToString((const char *)str_00217914, message, 0x400, offset, 0);
+        offset = Com_AddToString((const char *)" ", message, 0x400, offset, 0);
         offset = Com_AddToString(Cmd_Argv(i), message, 0x400, offset, 1);
     }
 
     if (offset == 0x400)
     {
-        Com_Printf((const char *)str_002aba64, 0x3ff);
+        Com_Printf((const char *)"rcon commands are limited to %i characters\n", 0x3ff);
         return 0;
     }
 
@@ -459,9 +458,9 @@ int CL_Rcon_f(void)
             int addrType = *(int *)((char *)&rconGlob + 24);
             if (addrType == 1)
             {
-                Com_Printf((const char *)str_002aba90);
-                Com_Printf((const char *)str_002abacc);
-                Com_Printf((const char *)str_002abaf0);
+                Com_Printf((const char *)"Can't determine rcon target.  You can fix this by either:\n");
+                Com_Printf((const char *)"1) Joining the server as a player.\n");
+                Com_Printf((const char *)"2) Setting the host server with 'rcon host <address>'.\n");
                 return 0;
             }
             memcpy(&sendAdr, (char *)&rconGlob + 24, sizeof(netadr_t));
@@ -507,12 +506,12 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 
     /* read server info line */
     line = MSG_ReadStringLine(msg);
-    Com_sprintf(serverStatus->string, 0x2000, (const char *)str_00216058, line);
+    Com_sprintf(serverStatus->string, 0x2000, (const char *)"%s", line);
 
     /* print server info header if callback is set */
     if (serverStatus->print)
     {
-        Com_Printf((const char *)str_002abb28);
+        Com_Printf((const char *)"Server settings:\n");
 
         /* parse key-value pairs from info line */
         while (*line)
@@ -529,9 +528,9 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
                 info[j] = '\0';
 
                 if (infoField == 0)
-                    Com_Printf((const char *)str_002abb3c, info);
+                    Com_Printf((const char *)"%-24s", info);
                 else
-                    Com_Printf((const char *)str_00215bbc, info);
+                    Com_Printf((const char *)"%s\n", info);
             }
             if (!*line)
                 break;
@@ -541,14 +540,14 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
     /* append newline to status string */
     {
         int statusLen = strlen(serverStatus->string);
-        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
+        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)"\\");
     }
 
     /* print player table header if callback is set */
     if (serverStatus->print)
     {
-        Com_Printf((const char *)str_002abb44);
-        Com_Printf((const char *)str_002abb50);
+        Com_Printf((const char *)"\nPlayers:\n");
+        Com_Printf((const char *)"num: score: ping: name:\n");
     }
 
     /* read player lines */
@@ -563,14 +562,14 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
             /* append player line to status string */
             {
                 int statusLen = strlen(serverStatus->string);
-                Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_002a6fb8, line);
+                Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)"\\%s", line);
             }
 
             if (serverStatus->print)
             {
                 int ping = 0, score = 0;
                 const char *name;
-                sscanf(line, (const char *)str_002abb6c, &score, &ping);
+                sscanf(line, (const char *)"%d %d", &score, &ping);
                 name = strchr(line, ' ');
                 if (name)
                 {
@@ -578,13 +577,13 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
                     if (name)
                         name++;
                     else
-                        name = (const char *)str_002abb74;
+                        name = (const char *)"unknown";
                 }
                 else
                 {
-                    name = (const char *)str_002abb74;
+                    name = (const char *)"unknown";
                 }
-                Com_Printf((const char *)str_002abb7c, playerIdx, score, ping, name);
+                Com_Printf((const char *)"%-2d   %-3d    %-3d   %s\n", playerIdx, score, ping, name);
             }
 
             playerIdx++;
@@ -594,7 +593,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
     /* append final newline */
     {
         int statusLen = strlen(serverStatus->string);
-        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)str_00222630);
+        Com_sprintf(serverStatus->string + statusLen, 0x2000 - statusLen, (const char *)"\\");
     }
 
     /* update server status metadata */
@@ -653,7 +652,7 @@ int CL_GlobalServers_f(void)
 
     if (Cmd_Argc() <= 2)
     {
-        Com_Printf((const char *)str_002abbb8); /* "usage: globalservers <master# 0-1> <protocol> [keywords]\n" */
+        Com_Printf((const char *)"usage: globalservers <master# 0-1> <protocol> [keywords]\n"); /* "usage: globalservers <master# 0-1> <protocol> [keywords]\n" */
         return 0;
     }
 
@@ -673,10 +672,10 @@ int CL_GlobalServers_f(void)
         }
     }
 
-    Com_Printf((const char *)str_002abbf4); /* "Requesting servers from the master...\n" */
+    Com_Printf((const char *)"Requesting servers from the master...\n"); /* "Requesting servers from the master...\n" */
 
     /* resolve master server address */
-    NET_StringToAdr((const char *)str_002a9298, &to); /* "cod2master.activision.com" */
+    NET_StringToAdr((const char *)"cod2master.activision.com", &to); /* "cod2master.activision.com" */
 
     {
         clientStatic_t *cls = (clientStatic_t *)imp_cls;
@@ -688,7 +687,7 @@ int CL_GlobalServers_f(void)
     to.port = (unsigned short)0xe650;  /* 58960 */
 
     /* build command string */
-    sprintf(command, (const char *)str_002abc1c, Cmd_Argv(2)); /* "getservers %s" */
+    sprintf(command, (const char *)"getservers %s", Cmd_Argv(2)); /* "getservers %s" */
 
     buffptr = command + strlen(command);
 
@@ -698,12 +697,12 @@ int CL_GlobalServers_f(void)
         /* append extra keyword arguments */
         for (i = 3; i != count; i++)
         {
-            buffptr += sprintf(buffptr, (const char *)str_002abc2c, Cmd_Argv(i)); /* " %s" */
+            buffptr += sprintf(buffptr, (const char *)" %s", Cmd_Argv(i)); /* " %s" */
         }
     }
 
     /* check fs_restrict dvar — if restricted, append " demo" */
-    if (Dvar_GetBool((const char *)str_00216d6c)) /* "fs_restrict" */
+    if (Dvar_GetBool((const char *)"fs_restrict")) /* "fs_restrict" */
     {
         *(int *)buffptr = 0x6d656420;         /* " dem" */
         *(short *)(buffptr + 4) = 0x6f;       /* "o\0" */
@@ -733,7 +732,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
 
     Com_PumpMessageLoop();
 
-    Com_Printf((const char *)str_002abc30); /* "CL_ServersResponsePacket\n" */
+    Com_Printf((const char *)"CL_ServersResponsePacket\n"); /* "CL_ServersResponsePacket\n" */
 
     cls = (byte *)imp_cls;
     ((clientStatic_t *)cls)->pingUpdateSource = 0;
@@ -781,7 +780,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         if (*buffptr != '\\')
             break;
 
-        Com_DPrintf((const char *)str_002abc4c, numservers, ip[0], ip[1], ip[2], ip[3], (int)port);
+        Com_DPrintf((const char *)"server: %d ip: %d.%d.%d.%d:%d\n", numservers, ip[0], ip[1], ip[2], ip[3], (int)port);
             /* "server: %d ip: %d.%d.%d.%d:%d\n" */
 
         numservers++;
@@ -924,7 +923,7 @@ next_server:
     ((clientStatic_t *)cls)->numglobalservers = count;
     qsort(((clientStatic_t *)cls)->globalServers, count, sizeof(serverInfo_t), (int (*)(const void *, const void *))CL_CompareAdrSigned);
 
-    Com_Printf((const char *)str_002abc6c, numservers, count);
+    Com_Printf((const char *)"%d servers parsed (total %d)\n", numservers, count);
         /* "%d servers parsed (total %d)\n" */
 
     return 0;
@@ -942,7 +941,7 @@ int CL_Ping_f(void)
 
     if (Cmd_Argc() != 2)
     {
-        Com_Printf((const char *)str_002abc8c); /* "usage: ping [server]\n" */
+        Com_Printf((const char *)"usage: ping [server]\n"); /* "usage: ping [server]\n" */
         return 0;
     }
 
@@ -1022,7 +1021,7 @@ fill_slot:
     }
 
     /* send getinfo request */
-    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002a9420);
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)"getinfo xxx");
         /* "getinfo xxx" */
 
     return 0;
@@ -1037,7 +1036,7 @@ int CL_Connect_f(void)
 
     if (Cmd_Argc() != 2)
     {
-        Com_Printf((const char *)str_002abca4); /* "usage: connect [server]\n" */
+        Com_Printf((const char *)"usage: connect [server]\n"); /* "usage: connect [server]\n" */
         return 0;
     }
 
@@ -1055,7 +1054,7 @@ int CL_Connect_f(void)
         if (*(byte *)(sv_running + 8) != 0)
         {
             /* compare server arg with "localhost" (10 chars including null) */
-            if (memcmp(server, (const char *)str_002a8ab8, 10) == 0) /* "localhost" */
+            if (memcmp(server, (const char *)"localhost", 10) == 0) /* "localhost" */
             {
                 /* connecting to localhost while server is running */
                 LegacyHacks *legacyHacks = *(LegacyHacks **)imp_legacyHacks;
@@ -1085,7 +1084,7 @@ int CL_Connect_f(void)
         clientConnection_t *clcConn = (clientConnection_t *)clc;
         if (!NET_StringToAdr((const char *)cls_servername, &clcConn->serverAddress))
         {
-            Com_Printf((const char *)str_002abcc0); /* "Bad server address\n" */
+            Com_Printf((const char *)"Bad server address\n"); /* "Bad server address\n" */
             clcConn->state = 0; /* state = 0 */
             return 0;
         }
@@ -1101,7 +1100,7 @@ int CL_Connect_f(void)
             unsigned short netPort = clcConn->serverAddress.port;
             /* byte swap port for display */
             short displayPort = (short)((netPort >> 8) | (netPort << 8));
-            Com_Printf((const char *)str_002a92e0, /* "%s resolved to %i.%i.%i.%i:%i\n" */
+            Com_Printf((const char *)"%s resolved to %i.%i.%i.%i:%i\n", /* "%s resolved to %i.%i.%i.%i:%i\n" */
                 cls_servername,
                 (int)clcConn->serverAddress.ip[0],
                 (int)clcConn->serverAddress.ip[1],
@@ -1140,11 +1139,11 @@ int CL_Connect_f(void)
             cdkey++;
         }
 
-        sprintf(chs, (const char *)str_00228f18, crc); /* "%04x" */
+        sprintf(chs, (const char *)"%04x", crc); /* "%04x" */
 
         if (I_strnicmp(chs, (const char *)imp_cl_cdkeychecksum, 4) != 0)
         {
-            Com_Error(1, (const char *)str_002a9280); /* "EXE_ERR_INVALID_CD_KEY" */
+            Com_Error(1, (const char *)"EXE_ERR_INVALID_CD_KEY"); /* "EXE_ERR_INVALID_CD_KEY" */
             return 0;
         }
     }
@@ -1298,7 +1297,7 @@ found_entry:
             serverStatus->startTime = Sys_Milliseconds();
 
             /* send getstatus */
-            NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+            NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)"getstatus");
             return 0;
         }
     }
@@ -1316,7 +1315,7 @@ found_entry:
     serverStatus->time = 0;
 
     /* send getstatus */
-    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)"getstatus");
     return 0;
 }
 
@@ -1352,7 +1351,7 @@ int CL_ServerStatus_f(void)
         return 0;
 
     /* send getstatus request */
-    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)str_002ab528);
+    NET_OutOfBandPrint(0, to.type, *(int *)((byte *)&to + 4), *(int *)((byte *)&to + 8), (const char *)"getstatus");
         /* "getstatus" */
 
     /* CL_GetServerStatusList — find or allocate entry for this address */
@@ -1409,7 +1408,7 @@ store_entry:
     return 0;
 
 not_connected:
-    Com_Printf((const char *)str_002a8b24); /* "Not connected to a server.\n" */
-    Com_Printf((const char *)str_002abcd4); /* "Usage: serverstatus [server]\n" */
+    Com_Printf((const char *)"Not connected to a server.\n"); /* "Not connected to a server.\n" */
+    Com_Printf((const char *)"Usage: serverstatus [server]\n"); /* "Usage: serverstatus [server]\n" */
     return 0;
 }

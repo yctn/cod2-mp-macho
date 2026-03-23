@@ -56,7 +56,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
 /* line 56 */
 void CG_FxRestart(void)
 {
-    Com_Printf((const char *)str_002b74b0);
+    Com_Printf((const char *)"FX Restarting so off-line changes are loaded.\n");
     FX_FreeSystem();
     FX_InitSystem(1);
 }
@@ -69,7 +69,7 @@ void CG_FxTest(void)
     int fx;
 
     if (Cmd_Argc() - 1 <= 0) {
-        Com_Printf((const char *)str_002b74e0);
+        Com_Printf((const char *)"Must supply filename from base path.  Optional restart time.\n");
     }
 
     cg_s = (char *)*(int *)imp_cg;
@@ -79,7 +79,7 @@ void CG_FxTest(void)
         I_strncpyz(fxName, CG_Argv(1), 0x40);
 
         fx = FX_RegisterEffect(fxName);
-        Com_Printf((const char *)str_002b7520, fxName);
+        Com_Printf((const char *)"Spawning Fx %s\n", fxName);
         FX_PlaySimpleEffect(fx, (const vec_t *)cg->testFxPos);
         cg->testFxTime = cg->time;
 
@@ -203,7 +203,7 @@ void CG_FxSetTestPosition(void)
     result[1] = start[1] + 100.0f * dir[1];
     result[2] = start[2] + 100.0f * dir[2];
 
-    Com_Printf((const char *)str_002b7530,
+    Com_Printf((const char *)"\n\nFX Testing position set to: (%f, %f, %f)\n\n",
                (double)result[0], (double)result[1], (double)result[2]);
 }
 

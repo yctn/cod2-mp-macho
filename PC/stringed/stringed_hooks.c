@@ -14,37 +14,24 @@ extern const dvar_t *loc_warningsAsErrors; /* 0x0 */
 static char szErrorString[1024]; /* szErrorString */
 static int iCurrString; /* iCurrString */
 static char szStrings[2][1024]; /* szStrings */
-extern const char str_0021699c[];
-extern const char str_002169a4[];
-extern const char str_002169ac[];
-extern const char str_002169b4[];
-extern const char str_002169bc[];
-extern const char str_002169c4[];
-extern const char str_002169cc[];
-extern const char str_002169d4[];
-extern const char str_002169dc[];
-extern const char str_002169e4[];
-extern const char str_002169f0[];
-extern const char str_002169fc[];
-extern const char str_00216a04[];
-extern const char str_00216a0c[];
+
 __attribute__((used, packed, aligned(4)))
-UInt32 g_languages[32] = {
-    (UInt32)str_0021699c, 0,
-    (UInt32)str_002169a4, 0,
-    (UInt32)str_002169ac, 0,
-    (UInt32)str_002169b4, 0,
-    (UInt32)str_002169bc, 0,
-    (UInt32)str_002169c4, 0,
-    (UInt32)str_002169cc, 0,
-    (UInt32)str_002169d4, 0,
-    (UInt32)str_002169dc, 0,
-    (UInt32)str_002169e4, 0,
-    (UInt32)str_002169f0, 0,
-    (UInt32)str_002169fc, 0,
-    (UInt32)str_00216a04, 0,
-    (UInt32)str_00216a0c, 0,
-    0, 0, 0, 0,
+const char * g_languages[] = {
+    "english", NULL,
+    "french", NULL,
+    "german", NULL,
+    "italian", NULL,
+    "spanish", NULL,
+    "british", NULL,
+    "russian", NULL,
+    "polish", NULL,
+    "korean", NULL,
+    "taiwanese", NULL,
+    "japanese", NULL,
+    "chinese", NULL,
+    "thai", NULL,
+    "leet", NULL,
+    NULL, NULL, NULL, NULL,
 }; /* 0x308bc0 */
 #define g_languages ((languageInfo_t *)g_languages)
 static qboolean g_currentAsian; /* g_currentAsian */

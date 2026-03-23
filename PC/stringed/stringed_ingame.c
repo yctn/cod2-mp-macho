@@ -47,7 +47,7 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
         psDest[charsToCopy] = '\0';
         *psParsePos = p + charsToCopy;
         /* skip newline-like characters */
-        while (**psParsePos && strchr((const char *)str_00218068, **psParsePos)) {
+        while (**psParsePos && strchr((const char *)"\r\n", **psParsePos)) {
             (*psParsePos)++;
         }
     } else {
@@ -70,7 +70,7 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
     {
         char *s = psDest;
         for (;;) {
-            char *comment = strstr(s, (const char *)str_00218064);
+            char *comment = strstr(s, (const char *)"//");
             int quoteCount = 0;
             if (!comment)
                 return 1;

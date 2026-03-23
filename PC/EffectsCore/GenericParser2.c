@@ -14,7 +14,6 @@ extern void *Z_MallocInternal(int size);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern int strcmpi(const char *str1, const char *str2);
 
-
 /*
  * Reconstructed struct layouts from offset analysis:
  *
@@ -461,7 +460,7 @@ void GenericParser2_GenericParser2(const GenericParser2 * _this)
 {
     /* GenericParser2 extends GPGroup with textPoolList and writeable */
     GPGroup *grp = (GPGroup *)_this;
-    grp->name = str_0021e4f8; /* "Top Level" */
+    grp->name = "Top Level"; /* "Top Level" */
     grp->nextUnsorted = NULL;
     grp->sortedNext = NULL;
     grp->sortedPrev = NULL;
@@ -785,7 +784,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         }
 
         /* Check for "}" — end of group */
-        if (strcmpi(tok, str_0021e508) == 0) {
+        if (strcmpi(tok, "}") == 0) {
             return 1;
         }
 
@@ -795,7 +794,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         /* Get next token to determine what follows the name */
         tok = GetToken_impl(dataPtr, 1, 1);
 
-        if (strcmpi(tok, str_0021e50c) == 0) {
+        if (strcmpi(tok, "{") == 0) {
             /* "{" — sub-group */
             GPGroup *newGroup;
             newGroup = GPGroup_AddGroup(_this, lastToken, textPool);
@@ -808,7 +807,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
             continue;
         }
 
-        if (strcmpi(tok, str_0021e510) == 0) {
+        if (strcmpi(tok, "[") == 0) {
             /* "[" — list of values */
             GPValue *newPair;
             newPair = GPGroup_AddPair(_this, lastToken, NULL, textPool);
@@ -819,7 +818,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
                 if (tok[0] == '\0') {
                     return 0;
                 }
-                if (strcmpi(tok, str_0021e504) == 0) {
+                if (strcmpi(tok, "]") == 0) {
                     /* "]" — end of list */
                     break;
                 }

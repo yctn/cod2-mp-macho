@@ -24,23 +24,18 @@ extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
 extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern struct scrParserPub_t scrParserPub; /* 0x0 */
 extern struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob - BSS */
-extern const char str_0021dd64[];
-extern const char str_0021dd70[];
-extern const char str_0021dd7c[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 propertyNames[8] = {
-    (UInt32)str_0021dd64,
-    (UInt32)str_0021dd70,
-    (UInt32)str_0021dd7c,
-    0,
-    0,
-    0,
-    0,
-    0,
+const char * propertyNames[] = {
+    "loopsync",
+    "nonloopsync",
+    "complete",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x30aa80 */
-
-#define propertyNames ((const char * const *)propertyNames)
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
 
@@ -110,28 +105,6 @@ extern void Com_Error(int code, const char *fmt, ...);
 extern int sprintf(char *buf, const char *fmt, ...);
 
 /* string literals referenced from asm */
-extern const char str_0021dd88[];  /* "duplicate animation '%s' in 'animtrees/%s.atr'" */
-extern const char str_0021ddb8[];
-extern const char str_0021d930[];
-extern const char str_00216058[];  /* "%s" */
-extern const char str_0021de10[];
-extern const char str_0021ddcc[];
-extern const char str_0021dde0[];
-extern const char str_0021de04[];
-extern const char str_0021de28[];
-extern const char str_0021de60[];
-extern const char str_0021de7c[];
-extern const char str_0021de04[];
-extern const char str_0021dea4[];
-extern const char str_0021debc[];
-extern const char str_0021ded8[]; /* "animtrees/%s.atr" */
-extern const char str_0021deec[];
-extern const char str_0021df00[]; /* "unknown anim tree '%s'" */
-extern const char str_0021df18[]; /* "root" */
-extern const char str_0021df20[]; /* "animation '%s' not defined in anim tree '%s'" */
-extern const char str_00217870[];
-extern const char str_00217a74[]; /* "void_loop" */
-extern const char str_0021cdd0[];
 
 /* line 60 */
 void SetAnimCheck(int bAnimCheck)

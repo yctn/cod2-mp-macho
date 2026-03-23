@@ -768,11 +768,11 @@ int G_ShutdownGame(qboolean freeScripts)
 {
     int i;
 
-    Com_Printf((const char *)str_002b4950);
+    Com_Printf((const char *)"==== ShutdownGame ====\n");
 
     if (level.logFile > 0) {
-        G_LogPrintf((const char *)str_002b4968);
-        G_LogPrintf((const char *)str_002b4898);
+        G_LogPrintf((const char *)"ShutdownGame:\n");
+        G_LogPrintf((const char *)"------------------------------------------------------------\n");
         FS_FCloseFile(level.logFile);
     }
 

@@ -104,73 +104,42 @@ static inline int float_seconds_to_ms(float val) {
     return (int)floorf(val * 1000.0f + 0.5f);
 }
 
-extern const char str_002a85bc[];
-extern const char str_002a85d8[];
-extern const char str_002a85f8[];
-extern const char str_002a8610[];
-extern const char str_002a8628[];
-extern const char str_002a8638[];
-extern const char str_002a8654[];
-extern const char str_002a8670[];
-extern const char str_002a868c[];
-extern const char str_002a86a8[];
-extern const char str_002a86c0[];
-extern const char str_002a86d8[];
-extern const char str_002a86f0[];
-extern const char str_002a870c[];
-extern const char str_002a8724[];
-extern const char str_002a873c[];
-extern const char str_002a8754[];
-extern const char str_002a876c[];
-extern const char str_002a8784[];
-extern const char str_002a879c[];
-extern const char str_002a87b4[];
-extern const char str_002a87cc[];
-extern const char str_002a87e4[];
-extern const char str_002a8800[];
-extern const char str_002a881c[];
-extern const char str_002a882c[];
-extern const char str_002a884c[];
-extern const char str_002a8868[];
-extern const char str_002a8888[];
-
 __attribute__((used, packed, aligned(4)))
-UInt32 cg_shock_dvar_names[32] = {
-    (UInt32)str_002a85bc,
-    (UInt32)str_002a85d8,
-    (UInt32)str_002a85f8,
-    (UInt32)str_002a8610,
-    (UInt32)str_002a8628,
-    (UInt32)str_002a8638,
-    (UInt32)str_002a8654,
-    (UInt32)str_002a8670,
-    (UInt32)str_002a868c,
-    (UInt32)str_002a86a8,
-    (UInt32)str_002a86c0,
-    (UInt32)str_002a86d8,
-    (UInt32)str_002a86f0,
-    (UInt32)str_002a870c,
-    (UInt32)str_002a8724,
-    (UInt32)str_002a873c,
-    (UInt32)str_002a8754,
-    (UInt32)str_002a876c,
-    (UInt32)str_002a8784,
-    (UInt32)str_002a879c,
-    (UInt32)str_002a87b4,
-    (UInt32)str_002a87cc,
-    (UInt32)str_002a87e4,
-    (UInt32)str_002a8800,
-    (UInt32)str_002a881c,
-    (UInt32)str_002a882c,
-    (UInt32)str_002a884c,
-    (UInt32)str_002a8868,
-    (UInt32)str_002a8888,
-    0,
-    0,
-    0,
+const char * cg_shock_dvar_names[] = {
+    "cg_shock_screenBlendTime",
+    "cg_shock_screenBlendFadeTime",
+    "cg_shock_viewKickPeriod",
+    "cg_shock_viewKickRadius",
+    "cg_shock_sound",
+    "cg_shock_soundFadeInTime",
+    "cg_shock_soundFadeOutTime",
+    "cg_shock_soundLoopFadeTime",
+    "cg_shock_soundLoopEndDelay",
+    "cg_shock_soundRoomType",
+    "cg_shock_soundDryLevel",
+    "cg_shock_soundWetLevel",
+    "cg_shock_soundModEndDelay",
+    "cg_shock_volume_auto",
+    "cg_shock_volume_auto2d",
+    "cg_shock_volume_menu",
+    "cg_shock_volume_weapon",
+    "cg_shock_volume_voice",
+    "cg_shock_volume_item",
+    "cg_shock_volume_body",
+    "cg_shock_volume_local",
+    "cg_shock_volume_music",
+    "cg_shock_volume_announcer",
+    "cg_shock_volume_shellshock",
+    "cg_shock_mouse",
+    "cg_shock_mouse_maxpitchspeed",
+    "cg_shock_mouse_maxyawspeed",
+    "cg_shock_mouse_sensitivityscale",
+    "cg_shock_mouse_fadeTime",
+    NULL,
+    NULL,
+    NULL,
 }; /* 0x314a80 */
 
-#define cg_shock_dvar_names ((const char * const *)cg_shock_dvar_names)
 static vec2_t cg_perturbations[131]; /* cg_perturbations */
 
 void CG_PerturbCamera(void);

@@ -231,96 +231,56 @@ int FindNextComponent() { return 0; } /* Mac Carbon stub: no audio components */
 char ForeColor[64] __attribute__((aligned(4))) = {0};
 char FrameRoundRect[64] __attribute__((aligned(4))) = {0};
 /* FxFlagEntry = { const char *flag, unsigned int masks[2] } — 12 bytes each */
-extern const char str_00219f74[]; /* org2fromTrace */
-extern const char str_00219f84[]; /* traceImpactFx */
-extern const char str_00219f94[]; /* org2isOffset */
-extern const char str_00219fa4[]; /* cheapOrgCalc */
-extern const char str_00219fb4[]; /* cheapOrg2Calc */
-extern const char str_00219fc4[]; /* orgOnSphere */
-extern const char str_00219fd0[]; /* orgOnCylinder */
-extern const char str_00219fe0[]; /* axisFromSphere */
-extern const char str_00219ff0[]; /* randrotaroundfwd */
-extern const char str_0021a09c[]; /* useAlpha */
-extern const char str_0021a0a8[]; /* useRandomColors */
-extern const char str_0021a0b8[]; /* useRandomAlpha */
-extern const char str_0021a0c8[]; /* useRandomSize */
-extern const char str_0021a0d8[]; /* useRandomSize2 */
-extern const char str_0021a0e8[]; /* useRandomLength */
-extern const char str_0021a0f8[]; /* useRandomRotationDelta */
-extern const char str_0021a110[]; /* useRandomVelocity */
-extern const char str_0021a124[]; /* useRandomVelocity2 */
-extern const char str_0021a138[]; /* absoluteVel2 */
-extern const char str_0021a148[]; /* affectedByWind */
-extern const char str_0021a158[]; /* emitFx */
-extern const char str_0021a160[]; /* relative */
-extern const char str_0021a16c[]; /* blocksSight */
-extern const char str_0021a178[]; /* disableFarPlaneCulling */
-extern const char str_0021a024[]; /* absoluteVel */
-extern const char str_0021a068[]; /* useBBox */
-extern const char str_0021a070[]; /* usePhysics */
-extern const char str_0021a07c[]; /* impactKills */
-extern const char str_0021a088[]; /* impactFx */
-extern const char str_0021a1a4[]; /* linear */
+
 struct { const char *flag; unsigned int masks[2]; }
 fxAttributeFlags[26] __attribute__((aligned(4))) = {
-    { str_00219f74, { 0x000001, 0 } }, /* org2fromTrace */
-    { str_00219f84, { 0x000002, 0 } }, /* traceImpactFx */
-    { str_00219f94, { 0x000004, 0 } }, /* org2isOffset */
-    { str_00219fa4, { 0x000008, 0 } }, /* cheapOrgCalc */
-    { str_00219fb4, { 0x000010, 0 } }, /* cheapOrg2Calc */
-    { str_0021a024, { 0x000020, 0 } }, /* absoluteVel (was spawn→attr) */
-    { str_0021a068, { 0x000040, 0 } }, /* useBBox (was spawn→attr) */
-    { str_0021a070, { 0x000080, 0 } }, /* usePhysics (was spawn→attr) */
-    { str_0021a07c, { 0x000100, 0 } }, /* impactKills (was spawn→attr) */
-    { str_0021a09c, { 0x000200, 0 } }, /* useAlpha */
-    { str_0021a0a8, { 0x000400, 0 } }, /* useRandomColors */
-    { str_0021a0b8, { 0x000800, 0 } }, /* useRandomAlpha */
-    { str_0021a0c8, { 0x001000, 0 } }, /* useRandomSize */
-    { str_0021a0d8, { 0x002000, 0 } }, /* useRandomSize2 */
-    { str_0021a0e8, { 0x004000, 0 } }, /* useRandomLength */
-    { str_0021a0f8, { 0x008000, 0 } }, /* useRandomRotationDelta */
-    { str_0021a110, { 0x010000, 0 } }, /* useRandomVelocity */
-    { str_0021a124, { 0x020000, 0 } }, /* useRandomVelocity2 */
-    { str_0021a138, { 0x040000, 0 } }, /* absoluteVel2 */
-    { str_0021a148, { 0x080000, 0 } }, /* affectedByWind */
-    { str_0021a158, { 0x100000, 0 } }, /* emitFx */
-    { str_0021a160, { 0x200000, 0 } }, /* relative */
-    { str_0021a16c, { 0x400000, 0 } }, /* blocksSight */
-    { str_0021a178, { 0x800000, 0 } }, /* disableFarPlaneCulling */
-    { str_0021a088, { 0x1000000, 0 } }, /* impactFx (also in spawnFlags) */
-    { str_0021a1a4, { 0x2000000, 0 } }, /* linear */
+    { "org2fromTrace", { 0x000001, 0 } }, /* org2fromTrace */
+    { "traceImpactFx", { 0x000002, 0 } }, /* traceImpactFx */
+    { "org2isOffset", { 0x000004, 0 } }, /* org2isOffset */
+    { "cheapOrgCalc", { 0x000008, 0 } }, /* cheapOrgCalc */
+    { "cheapOrg2Calc", { 0x000010, 0 } }, /* cheapOrg2Calc */
+    { "absoluteVel", { 0x000020, 0 } }, /* absoluteVel (was spawn→attr) */
+    { "useBBox", { 0x000040, 0 } }, /* useBBox (was spawn→attr) */
+    { "usePhysics", { 0x000080, 0 } }, /* usePhysics (was spawn→attr) */
+    { "impactKills", { 0x000100, 0 } }, /* impactKills (was spawn→attr) */
+    { "useAlpha", { 0x000200, 0 } }, /* useAlpha */
+    { "useRandomColors", { 0x000400, 0 } }, /* useRandomColors */
+    { "useRandomAlpha", { 0x000800, 0 } }, /* useRandomAlpha */
+    { "useRandomSize", { 0x001000, 0 } }, /* useRandomSize */
+    { "useRandomSize2", { 0x002000, 0 } }, /* useRandomSize2 */
+    { "useRandomLength", { 0x004000, 0 } }, /* useRandomLength */
+    { "useRandomRotationDelta", { 0x008000, 0 } }, /* useRandomRotationDelta */
+    { "useRandomVelocity", { 0x010000, 0 } }, /* useRandomVelocity */
+    { "useRandomVelocity2", { 0x020000, 0 } }, /* useRandomVelocity2 */
+    { "absoluteVel2", { 0x040000, 0 } }, /* absoluteVel2 */
+    { "affectedByWind", { 0x080000, 0 } }, /* affectedByWind */
+    { "emitFx", { 0x100000, 0 } }, /* emitFx */
+    { "relative", { 0x200000, 0 } }, /* relative */
+    { "blocksSight", { 0x400000, 0 } }, /* blocksSight */
+    { "disableFarPlaneCulling", { 0x800000, 0 } }, /* disableFarPlaneCulling */
+    { "impactFx", { 0x1000000, 0 } }, /* impactFx (also in spawnFlags) */
+    { "linear", { 0x2000000, 0 } }, /* linear */
 };
 /* fx_developer_check_ptr: aliased to imp_g_rendererExists in import_pointers.S */
 /* fx_helper_ptr: alias for imp_theFxHelper — defined in import_pointers.S */
 /* fx_scheduler_ptr: alias for imp_theFxScheduler — defined in import_pointers.S */
 char fx_sort_ptr[64] __attribute__((aligned(4))) = {0};
-extern const char str_0021a004[]; /* evenDistribution */
-extern const char str_0021a018[]; /* frustumCull */
-extern const char str_0021a024[]; /* absoluteVel */
-extern const char str_0021a030[]; /* absoluteAccel */
-extern const char str_0021a040[]; /* depthHack */
-extern const char str_0021a04c[]; /* setShaderTime */
-extern const char str_0021a05c[]; /* useModel */
-extern const char str_0021a068[]; /* useBBox */
-extern const char str_0021a070[]; /* usePhysics */
-extern const char str_0021a07c[]; /* impactKills */
-extern const char str_0021a088[]; /* impactFx */
-extern const char str_0021a094[]; /* deathFx */
+
 struct { const char *flag; unsigned int masks[2]; }
 fxSpawnFlags[13] __attribute__((aligned(4))) = {
-    { str_0021a004, { 0, 0x001 } }, /* evenDistribution */
-    { str_0021a018, { 0, 0x002 } }, /* frustumCull */
-    { str_00219fc4, { 0, 0x004 } }, /* orgOnSphere (was attr→spawn) */
-    { str_0021a030, { 0, 0x008 } }, /* absoluteAccel */
-    { str_0021a040, { 0, 0x010 } }, /* depthHack */
-    { str_0021a04c, { 0, 0x020 } }, /* setShaderTime */
-    { str_0021a05c, { 0, 0x040 } }, /* useModel */
-    { str_00219fd0, { 0, 0x080 } }, /* orgOnCylinder (was attr→spawn) */
-    { str_00219fe0, { 0, 0x100 } }, /* axisFromSphere (was attr→spawn) */
-    { str_00219ff0, { 0, 0x200 } }, /* randrotaroundfwd (was attr→spawn) */
-    { str_0021a088, { 0, 0x400 } }, /* impactFx */
-    { str_0021a094, { 0, 0x800 } }, /* deathFx */
-    { str_0021a158, { 0, 0x1000 } }, /* emitFx (reuse) */
+    { "evenDistribution", { 0, 0x001 } }, /* evenDistribution */
+    { "frustumCull", { 0, 0x002 } }, /* frustumCull */
+    { "orgOnSphere", { 0, 0x004 } }, /* orgOnSphere (was attr→spawn) */
+    { "absoluteAccel", { 0, 0x008 } }, /* absoluteAccel */
+    { "depthHack", { 0, 0x010 } }, /* depthHack */
+    { "setShaderTime", { 0, 0x020 } }, /* setShaderTime */
+    { "useModel", { 0, 0x040 } }, /* useModel */
+    { "orgOnCylinder", { 0, 0x080 } }, /* orgOnCylinder (was attr→spawn) */
+    { "axisFromSphere", { 0, 0x100 } }, /* axisFromSphere (was attr→spawn) */
+    { "randrotaroundfwd", { 0, 0x200 } }, /* randrotaroundfwd (was attr→spawn) */
+    { "impactFx", { 0, 0x400 } }, /* impactFx */
+    { "deathFx", { 0, 0x800 } }, /* deathFx */
+    { "emitFx", { 0, 0x1000 } }, /* emitFx (reuse) */
 };
 char fx_time_dst1[64] __attribute__((aligned(4))) = {0};
 char fx_time_dst2[64] __attribute__((aligned(4))) = {0};

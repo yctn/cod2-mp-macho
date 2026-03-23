@@ -223,7 +223,7 @@ void UI_MapLoadInfo(const char *filename) {
         return;
 
     if (FS_ReadFile(filename, &loadfile) < 0) {
-        Com_Printf((const char *)str_002b4034, filename);
+        Com_Printf((const char *)"^3WARNING: Could not find '%s'.\n", filename);
         return;
     }
 
@@ -239,7 +239,7 @@ void UI_MapLoadInfo(const char *filename) {
         tokenLen = strlen(token);
         if (tokenLen + 1 > 255) {
             Com_EndParseSession();
-            Com_Error(1, (const char *)str_002b4058, key, tokenLen, 255);
+            Com_Error(1, (const char *)"key '%s' is %i > %i characters long", key, tokenLen, 255);
         }
 
         memcpy(key, token, tokenLen + 1);
@@ -247,11 +247,11 @@ void UI_MapLoadInfo(const char *filename) {
         value = Com_ParseOnLine(&parse);
         if (!value[0]) {
             Com_EndParseSession();
-            Com_Error(1, (const char *)str_002b407c, key, filename);
+            Com_Error(1, (const char *)"key '%s' missing value in '%s'\n", key, filename);
         }
 
         material = (int)CL_RegisterMaterialNoMip(value, 3);
-        Com_sprintf(name, 64, (const char *)str_002b409c, key);
+        Com_sprintf(name, 64, (const char *)"$%s", key);
         I_strlwr(name);
         CL_Material_Duplicate(material, name);
     }

@@ -321,7 +321,7 @@ int R_CellForPoint(const vec_t *origin)
 
     world = ((r_global_permanent_t *)imp_rgp)->world;
     if (!world) {
-        R_Error(1, str_002259d0);
+        R_Error(1, "\x15R_CellForCamera: bad model");
         world = ((r_global_permanent_t *)imp_rgp)->world;
     }
 
@@ -1585,7 +1585,6 @@ static void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, 
     R_VisitPortalsForCell_impl(cell, parentPortal, parentPlane, planes, planeCount, clipChildren);
 }
 
-
 /* Shared: heap pop-min from portal queue (sift down).
  * Returns top element and re-heaps. */
 static inline GfxPortal *R_PortalQueuePopMin(void)
@@ -1905,7 +1904,6 @@ static void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, co
 {
     R_VisitPortals_impl(cell, parentPlane, planes, planeCount);
 }
-
 
 /* Shared: initialize a DpvsPlane's coeffs as a near-eye plane, compute side bytes and dist.
  * Sets coeffs[0..2] = normal, coeffs[3] = -(dot(normal, eyePos) - epsilon).

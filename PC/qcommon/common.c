@@ -71,27 +71,18 @@ static int iWeaponInfoSource; /* iWeaponInfoSource */
 static char *rd_buffer; /* rd_buffer */
 static int rd_buffersize; /* rd_buffersize */
 static void (*rd_flush)(); /* rd_flush */
-extern const char str_00215f8c[];
-extern const char str_00215fa4[];
-extern const char str_00215fb8[];
-extern const char str_00215fcc[];
-extern const char str_00215fe8[];
-extern const char str_00216004[];
-extern const char str_0021601c[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 noticeErrors[8] = {
-    (UInt32)str_00215f8c,
-    (UInt32)str_00215fa4,
-    (UInt32)str_00215fb8,
-    (UInt32)str_00215fcc,
-    (UInt32)str_00215fe8,
-    (UInt32)str_00216004,
-    (UInt32)str_0021601c,
-    0,
+const char * noticeErrors[] = {
+    "EXE_SERVER_DISCONNECTED",
+    "EXE_DISCONNECTED",
+    "EXE_SERVERISFULL",
+    "XBOXLIVE_SIGNEDOUTOFLIVE",
+    "XBOXLIVE_CANTJOINSESSION",
+    "XBOXLIVE_MPNOTALLOWED",
+    "XBOXLIVE_MUSTLOGIN",
+    NULL,
 }; /* 0x308ba0 */
-
-#define noticeErrors ((char **)noticeErrors)
 
 extern char *va(const char *format, ...);
 extern void *Sys_GetValue(int valueIndex);

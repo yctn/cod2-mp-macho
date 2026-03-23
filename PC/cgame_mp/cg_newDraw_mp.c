@@ -218,12 +218,12 @@ const char * CG_GetUseString(void)
         return 0;
     }
 
-    if (!GetKeyBindingLocalizedString(str_002ac020, binding))
+    if (!GetKeyBindingLocalizedString("+activate", binding))
     {
-        I_strncpyz(binding, UI_SafeTranslateString(str_002afa64), sizeof(binding));
+        I_strncpyz(binding, UI_SafeTranslateString("KEY_USE"), sizeof(binding));
     }
 
-    return UI_ReplaceConversionString(SEH_LocalizeTextMessage(hintString, str_002afa6c, 0), binding);
+    return UI_ReplaceConversionString(SEH_LocalizeTextMessage(hintString, "Hint String", 0), binding);
 }
 
 /* line 1408 */
@@ -351,7 +351,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
             pickupWeapDef = (byte *)BG_GetWeaponDef(weapIdx);
 
             /* line 1340: get key binding */
-            GetKeyBindingLocalizedString(str_002ac020, binding); /* "+activate" */
+            GetKeyBindingLocalizedString("+activate", binding); /* "+activate" */
 
             /* line 1344: check if weapon needs a slot */
             if (BG_DoesWeaponNeedSlot(weapIdx)) {
@@ -370,7 +370,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
                             goto draw_icon;
                         }
                         /* line 1357: different weapon, same type - swap */
-                        text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa94), binding);
+                        text = UI_ReplaceConversionString(UI_SafeTranslateString("PLATFORM_SWAPWEAPONS"), binding);
                         goto check_text;
                     }
 
@@ -381,13 +381,13 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
                     }
 
                     /* line 1357: swap weapons */
-                    text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa94), binding);
+                    text = UI_ReplaceConversionString(UI_SafeTranslateString("PLATFORM_SWAPWEAPONS"), binding);
                     goto check_text;
                 }
             }
 
             /* line 1361: pick up new weapon (empty slot available or doesn't need slot) */
-            text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afa78), binding);
+            text = UI_ReplaceConversionString(UI_SafeTranslateString("PLATFORM_PICKUPNEWWEAPON"), binding);
             goto check_text;
         }
     } else {
@@ -398,8 +398,8 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
             /* line 1494: check if hint is health pickup (cursorHintValue == 3) */
             if (cursorHintValue == 3) {
                 /* line 1496: health pickup hint */
-                GetKeyBindingLocalizedString(str_002ac020, binding); /* "+activate" */
-                text = UI_ReplaceConversionString(UI_SafeTranslateString(str_002afaac), binding);
+                GetKeyBindingLocalizedString("+activate", binding); /* "+activate" */
+                text = UI_ReplaceConversionString(UI_SafeTranslateString("PLATFORM_PICKUPHEALTH"), binding);
                 widthScale = 1.0f;
                 widthOfs = 0.0f;
             } else {

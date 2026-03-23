@@ -294,30 +294,30 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         /* Overflow: dump pending commands and disconnect */
         int dumpFrom;
 
-        Com_Printf(str_002ab3d4); /* "===== pending server commands =====\n" */
+        Com_Printf("===== pending server commands =====\n"); /* "===== pending server commands =====\n" */
 
         dumpFrom = client->reliableAcknowledge + 1;
         while (dumpFrom <= client->reliableSent) {
             int dumpSlot = dumpFrom & 0x7f;
-            Com_Printf(str_002ab3fc, dumpFrom, client->reliableCommandInfo[dumpSlot].time,
+            Com_Printf("cmd %5d: %8d: %s\n", dumpFrom, client->reliableCommandInfo[dumpSlot].time,
                         client->reliableCommandInfo[dumpSlot].cmd);
             dumpFrom++;
         }
 
         /* Send current command info */
-        Com_Printf(str_002ab3fc, i, *(int *)((byte *)&svs + 4), cmd);
+        Com_Printf("cmd %5d: %8d: %s\n", i, *(int *)((byte *)&svs + 4), cmd);
 
         /* Send disconnect to client via OOB */
         {
             netadr_t addr = client->netchan.remoteAddress;
-            NET_OutOfBandPrint(1, *(int *)&addr, ((int *)&addr)[1], ((int *)&addr)[2], str_00228e90); /* "disconnect" */
+            NET_OutOfBandPrint(1, *(int *)&addr, ((int *)&addr)[1], ((int *)&addr)[2], "disconnect"); /* "disconnect" */
         }
 
         /* Delay-drop the client */
-        SV_DelayDropClient(client, str_002ab410); /* "EXE_SERVERCOMMANDOVERFLOW" */
+        SV_DelayDropClient(client, "EXE_SERVERCOMMANDOVERFLOW"); /* "EXE_SERVERCOMMANDOVERFLOW" */
 
         /* Replace command with overflow indicator */
-        cmd = va(str_002ab42c, 0x77); /* "%c \"EXE_SERVERCOMMANDOVERFLOW\"" */
+        cmd = va("%c \"EXE_SERVERCOMMANDOVERFLOW\"", 0x77); /* "%c \"EXE_SERVERCOMMANDOVERFLOW\"" */
         type = 1;
         i = client->reliableSent;
     }

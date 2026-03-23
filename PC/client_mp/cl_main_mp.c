@@ -372,7 +372,7 @@ void CL_StopRecord_f(void)
     int len;
 
     if (!((clientConnection_t *)cc)->demorecording) {
-        Com_Printf(str_002a8a78);
+        Com_Printf("Not recording a demo.\n");
         return;
     }
 
@@ -382,7 +382,7 @@ void CL_StopRecord_f(void)
     FS_FCloseFile(((clientConnection_t *)cc)->demofile);
     ((clientConnection_t *)cc)->demofile = 0;
     ((clientConnection_t *)cc)->demorecording = 0;
-    Com_Printf(str_002a8a90);
+    Com_Printf("Stopped demo.\n");
 }
 
 /* line 1161 */
@@ -473,19 +473,19 @@ void CL_Setenv_f(void)
     if (argc > 2) {
         /* Set environment variable: "setenv VAR value1 value2 ..." */
         I_strncpyz(buffer, Cmd_Argv(1), 0x400);
-        I_strncat(buffer, 0x400, str_00222904); /* "=" */
+        I_strncat(buffer, 0x400, "="); /* "=" */
         for (i = 2; i < argc; i++) {
             I_strncat(buffer, 0x400, Cmd_Argv(i));
-            I_strncat(buffer, 0x400, str_00217914); /* " " */
+            I_strncat(buffer, 0x400, " "); /* " " */
         }
         putenv(buffer);
     } else if (argc == 2) {
         /* Print environment variable */
         env = getenv(Cmd_Argv(1));
         if (env)
-            Com_Printf(str_002a8aa0, Cmd_Argv(1), env);
+            Com_Printf("%s=%s\n", Cmd_Argv(1), env);
         else
-            Com_Printf(str_002a8aa8, Cmd_Argv(1));
+            Com_Printf("%s undefined\n", Cmd_Argv(1));
     }
 }
 
@@ -497,12 +497,12 @@ void CL_Reconnect_f(void)
     char *server = cls.servername;
 
     /* Don't reconnect to empty or localhost */
-    if (!*server || !memcmp(server, str_002a8ab8, 10)) {
-        Com_Printf(str_002a8ac4);
+    if (!*server || !memcmp(server, "localhost", 10)) {
+        Com_Printf("Can't reconnect to localhost.\n");
         return;
     }
 
-    Cbuf_AddText(va(str_002a8ae4, server));
+    Cbuf_AddText(va("connect %s\n", server));
 }
 
 /* line 1946 */
@@ -525,7 +525,7 @@ void CL_Configstrings_f(void)
     int offset;
 
     if (*(int *)&clientConnections[0] != 8) {
-        Com_Printf(str_002a8b24);
+        Com_Printf("Not connected to a server.\n");
         return;
     }
 
@@ -533,7 +533,7 @@ void CL_Configstrings_f(void)
     for (i = 0; i < 0x800; i++) {
         offset = ((clientActive_t *)cl)->gameState.stringOffsets[i];
         if (offset)
-            Com_Printf(str_002a8b40, i, ((clientActive_t *)cl)->gameState.stringData + offset);
+            Com_Printf("%4i: %s\n", i, ((clientActive_t *)cl)->gameState.stringData + offset);
     }
 }
 
@@ -542,12 +542,12 @@ extern const char *Dvar_InfoString(int bit);
 extern void Info_Print(const char *s);
 void CL_Clientinfo_f(void)
 {
-    Com_Printf(str_002a8b4c);
-    Com_Printf(str_002a8b74, **(int **)imp_clc);
-    Com_Printf(str_002a74a0, cls.servername);
-    Com_Printf(str_002a8b80);
+    Com_Printf("--------- Client Information ---------\n");
+    Com_Printf("state: %i\n", **(int **)imp_clc);
+    Com_Printf("Server: %s\n", cls.servername);
+    Com_Printf("User info settings:\n");
     Info_Print(Dvar_InfoString(2));
-    Com_Printf(str_002a8b98);
+    Com_Printf("--------------------------------------\n");
 }
 
 /* line 2413 */
@@ -569,14 +569,14 @@ void CL_VoicePacket(msg_t *msg)
         dataLen = MSG_ReadByte(msg);
 
         if (dataLen < 1 || dataLen > 256) {
-            Com_Printf(str_002a8bc0, dataLen);
+            Com_Printf("Invalid server voice packet of %i bytes\n", dataLen);
             return;
         }
 
         MSG_ReadData(msg, voiceData, dataLen);
 
         if (talker > 63) {
-            Com_Printf(str_002a8bec, talker);
+            Com_Printf("Invalid voice packet - talker was %i\n", talker);
             return;
         }
 
@@ -645,7 +645,7 @@ Bool Voice_SendVoiceData(void)
         return 0;
 
     /* Check voice rate limit */
-    if (Dvar_GetInt(str_002a8c54) <= 0x1387)
+    if (Dvar_GetInt("rate") <= 0x1387)
         return 0;
 
     /* Must be fully connected */
@@ -955,8 +955,8 @@ void CL_OpenScriptMenu_f(void)
     int menuIndex;
 
     if (Cmd_Argc() != 3) {
-        Com_Printf(str_002a8cbc);
-        Com_Printf(str_002a8d00);
+        Com_Printf("USAGE: openscriptmenu <parent menu name> <script menu response>\n");
+        Com_Printf("EXAMPLE: openscriptmenu ingame changeweapon\n");
         return;
     }
 
@@ -982,7 +982,7 @@ void CL_OpenScriptMenu_f(void)
         }
     }
 
-    Cbuf_ExecuteText(2, va("cmd mr %i %i %s\n", Dvar_GetInt(str_002a8d30), menuIndex, menuResponse));
+    Cbuf_ExecuteText(2, va("cmd mr %i %i %s\n", Dvar_GetInt("sv_serverId"), menuIndex, menuResponse));
 }
 
 /* line 3970 */
@@ -1002,7 +1002,7 @@ void CL_InitOnceForAllClients(void)
     cl_showSend = Dvar_RegisterBool_mac("cl_showSend", 0, 0);
     cl_showTimeDelta = Dvar_RegisterBool_mac("cl_showTimeDelta", 0, 0);
     cl_freezeDemo = Dvar_RegisterBool_mac("cl_freezeDemo", 0, 0);
-    cl_activeAction = Dvar_RegisterString_mac("activeAction", str_002157b8, 0);
+    cl_activeAction = Dvar_RegisterString_mac("activeAction", "", 0);
     cl_avidemo = Dvar_RegisterInt("cl_avidemo", 0, 0, 0x7fffffff, 0);
     cl_forceavidemo = Dvar_RegisterBool_mac("cl_forceavidemo", 0, 0);
 
@@ -1032,13 +1032,13 @@ void CL_InitOnceForAllClients(void)
     m_filter = Dvar_RegisterBool_mac("m_filter", 0, 0x1001);
     input_viewSensitivity = Dvar_RegisterFloat("input_viewSensitivity", 1.0f, 0.0001f, 5.0f, 0x1001);
     *(const dvar_t **)imp_cg_drawCrosshair = Dvar_RegisterBool_mac("cg_drawCrosshair", 1, 0x1001);
-    cl_motdString = Dvar_RegisterString_mac("cl_motdString", str_002157b8, 0x1040);
+    cl_motdString = Dvar_RegisterString_mac("cl_motdString", "", 0x1040);
     cl_ingame = Dvar_RegisterBool_mac("cl_ingame", 0, 0x1040);
     Dvar_RegisterInt("cl_maxPing", 800, 20, 2000, 0x1001);
     name = Dvar_RegisterString_mac("name", "Unknown Soldier", 0x1003);
     Dvar_RegisterInt("rate", 5000, 1000, 25000, 0x1003);
     Dvar_RegisterInt("snaps", 20, 1, 30, 0x1003);
-    Dvar_RegisterString_mac("password", str_002157b8, 0x1002);
+    Dvar_RegisterString_mac("password", "", 0x1002);
 
     fx_enable = Dvar_RegisterBool_mac("fx_enable", 1, 0x1080);
     fx_draw = Dvar_RegisterBool_mac("fx_draw", 1, 0x1080);
@@ -1050,7 +1050,7 @@ void CL_InitOnceForAllClients(void)
     fx_count = Dvar_RegisterBool_mac("fx_count", 0, 0x1080);
     fx_visMinTraceDist = Dvar_RegisterFloat("fx_visMinTraceDist", 80.0f, 0.0f, 1000.0f, 0x1080);
     fx_profile = Dvar_RegisterBool_mac("fx_profile", 0, 0x1080);
-    nextdemo = Dvar_RegisterString_mac("nextdemo", str_002157b8, 0);
+    nextdemo = Dvar_RegisterString_mac("nextdemo", "", 0);
     Dvar_RegisterBool_mac("hud_enable", 1, 0x1001);
     Dvar_RegisterBool_mac("cg_blood", 1, 0x1001);
 
@@ -1065,10 +1065,10 @@ void CL_InitOnceForAllClients(void)
     Cmd_AddCommand("stoprecord", CL_StopRecord_f);
     Cmd_AddCommand("demo", CL_PlayDemo_f);
     Cmd_AddCommand("timedemo", CL_PlayDemo_f);
-    Cmd_SetAutoComplete("demo", "demos", str_002a9094);
-    Cmd_SetAutoComplete("timedemo", "demos", str_002a9094);
+    Cmd_SetAutoComplete("demo", "demos", "dm_1");
+    Cmd_SetAutoComplete("timedemo", "demos", "dm_1");
     Cmd_AddCommand("cinematic", CL_PlayCinematic_f);
-    Cmd_SetAutoComplete("cinematic", "video", str_00216ce4);
+    Cmd_SetAutoComplete("cinematic", "video", "roq");
     Cmd_AddCommand("logo", CL_PlayLogo_f);
     Cmd_AddCommand("connect", CL_Connect_f);
     Cmd_AddCommand("reconnect", CL_Reconnect_f);

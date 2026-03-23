@@ -18,17 +18,6 @@ static const dvar_t *mantle_check_range; /* mantle_check_range */
 static const dvar_t *mantle_check_radius; /* mantle_check_radius */
 static const dvar_t *mantle_check_angle; /* mantle_check_angle */
 static const dvar_t *mantle_view_yawcap; /* mantle_view_yawcap */
-extern const char str_0021dfa4[];
-extern const char str_0021dfb4[];
-extern const char str_0021dfc4[];
-extern const char str_0021dfd4[];
-extern const char str_0021dfe4[];
-extern const char str_0021dff4[];
-extern const char str_0021e004[];
-extern const char str_0021e014[];
-extern const char str_0021e024[];
-extern const char str_0021e038[];
-extern const char str_0021e04c[];
 
 __attribute__((used, aligned(4)))
 UInt32 s_mantleTrans[24] = {
@@ -38,16 +27,15 @@ UInt32 s_mantleTrans[24] = {
     0x00000007, 0x0000000a, 0x41a80000, 0x00000000, 0x00000000, 0x00000000,
 }; /* 0x30aaa0 */
 __attribute__((used, aligned(4)))
-UInt32 s_mantleAnimNames[16] = {
-    (UInt32)str_0021dfa4, (UInt32)str_0021dfb4, (UInt32)str_0021dfc4, (UInt32)str_0021dfd4,
-    (UInt32)str_0021dfe4, (UInt32)str_0021dff4, (UInt32)str_0021e004, (UInt32)str_0021e014,
-    (UInt32)str_0021e024, (UInt32)str_0021e038, (UInt32)str_0021e04c, 0,
-    0, 0, 0, 0,
+const char * s_mantleAnimNames[] = {
+    "mp_mantle_root", "mp_mantle_up_57", "mp_mantle_up_51", "mp_mantle_up_45",
+    "mp_mantle_up_39", "mp_mantle_up_33", "mp_mantle_up_27", "mp_mantle_up_21",
+    "mp_mantle_over_high", "mp_mantle_over_mid", "player_mantle_over_low", NULL,
+    NULL, NULL, NULL, NULL,
 }; /* 0x30ab00 */
 static char (*s_mantleAnims)[64]; /* s_mantleAnims */
 
 #define s_mantleTrans ((MantleAnimTransition *)s_mantleTrans)
-#define s_mantleAnimNames ((char **)s_mantleAnimNames)
 
 extern const dvar_t *Dvar_RegisterBool(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);

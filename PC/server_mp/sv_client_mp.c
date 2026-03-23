@@ -5,17 +5,6 @@
 #include "imports.h"
 
 static int botport; /* botport */
-extern const char str_00228e90[];
-extern const char str_002a96d4[];
-extern const char str_002a98b0[];
-extern const char str_002adea0[];
-extern const char str_002adeac[];
-extern const char str_002adeb0[];
-extern const char str_002adebc[];
-extern const char str_002adec4[];
-extern const char str_002adecc[];
-extern const char str_002aded8[];
-extern const char str_002adee4[];
 
 extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
 extern void Com_DPrintf(const char *fmt, ...);
@@ -66,17 +55,17 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg);
 gentity_t * SV_AddTestClient(void);
 
 __attribute__((used)) ucmd_t ucmds[12] = {
-    { (char *)str_002adea0, (void (*)())SV_UpdateUserinfo_f },
-    { (char *)str_00228e90, (void (*)())SV_Disconnect_f },
-    { (char *)str_002adeac, (void (*)())SV_VerifyIwds_f },
-    { (char *)str_002a96d4, (void (*)())SV_ResetPureClient_f },
-    { (char *)str_002adeb0, (void (*)())SV_BeginDownload_f },
-    { (char *)str_002adebc, (void (*)())SV_NextDownload_f },
-    { (char *)str_002adec4, (void (*)())SV_StopDownload_f },
-    { (char *)str_002a98b0, (void (*)())SV_DoneDownload_f },
-    { (char *)str_002adecc, (void (*)())SV_RetransmitDownload_f },
-    { (char *)str_002aded8, (void (*)())SV_MutePlayer_f },
-    { (char *)str_002adee4, (void (*)())SV_UnmutePlayer_f },
+    { (char *)"userinfo", (void (*)())SV_UpdateUserinfo_f },
+    { (char *)"disconnect", (void (*)())SV_Disconnect_f },
+    { (char *)"cp", (void (*)())SV_VerifyIwds_f },
+    { (char *)"vdr", (void (*)())SV_ResetPureClient_f },
+    { (char *)"download", (void (*)())SV_BeginDownload_f },
+    { (char *)"nextdl", (void (*)())SV_NextDownload_f },
+    { (char *)"stopdl", (void (*)())SV_StopDownload_f },
+    { (char *)"donedl", (void (*)())SV_DoneDownload_f },
+    { (char *)"retransdl", (void (*)())SV_RetransmitDownload_f },
+    { (char *)"muteplayer", (void (*)())SV_MutePlayer_f },
+    { (char *)"unmuteplayer", (void (*)())SV_UnmutePlayer_f },
     { 0, 0 },
 }; /* 0x312ca0 */
 
@@ -107,7 +96,7 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
     game[0] = '\0';
 
     /* line 150 */
-    const dvar_t *fs_game = Dvar_RegisterString_mac_sv((const char *)str_00216d64, (const char *)str_002157b8, 0x101c);
+    const dvar_t *fs_game = Dvar_RegisterString_mac_sv((const char *)"fs_game", (const char *)"", 0x101c);
 
     /* line 151 */
     if (fs_game) {
@@ -119,13 +108,13 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
     }
 
     /* line 154 */
-    Com_DPrintf((const char *)str_002adef4, NET_AdrToString(from));
+    Com_DPrintf((const char *)"sending getIpAuthorize for %s\n", NET_AdrToString(from));
 
     /* line 155 */
-    Bool allowAnon = Dvar_GetBool((const char *)str_002a718c);
+    Bool allowAnon = Dvar_GetBool((const char *)"sv_allowAnonymous");
 
     /* line 158 */
-    const char *s = va((const char *)str_002adf14, challenge,
+    const char *s = va((const char *)"getIpAuthorize %i %i.%i.%i.%i %s %i", challenge,
         (unsigned int)from.ip[0], (unsigned int)from.ip[1],
         (unsigned int)from.ip[2], (unsigned int)from.ip[3],
         game, (int)(unsigned char)allowAnon);

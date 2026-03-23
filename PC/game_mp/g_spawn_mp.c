@@ -479,7 +479,7 @@ qboolean G_SpawnString(const char *key, const char *defaultString, const char * 
 /* line 47 */
 static void Scr_ReadOnlyField(gentity_t *ent, int offset)
 {
-    Scr_Error((const char *)str_002b33d0);
+    Scr_Error((const char *)"Tried to set a read only entity field");
 }
 
 /* line 160 */
@@ -623,7 +623,7 @@ qboolean G_CallSpawnEntity(gentity_t *ent)
     int i;
 
     if (!ent->classname) {
-        Com_Printf((const char *)str_002b3400);
+        Com_Printf((const char *)"G_CallSpawnEntity: NULL classname\n");
         return 0;
     }
 
@@ -660,7 +660,7 @@ void GScr_AddFieldsForEntity(void)
 /* line 543 */
 void GScr_AddFieldsForRadiant(void)
 {
-    Scr_AddFields("radiant", (const void *)str_002b3448);
+    Scr_AddFields("radiant", (const void *)"txt");
 }
 
 /* line 814 */
@@ -676,7 +676,7 @@ gentity_t * Scr_GetEntity(unsigned int index)
 
     ref = Scr_GetEntityRef(index);
     if (ref.classnum) {
-        Scr_ParamError(index, (const char *)str_002b21c8);
+        Scr_ParamError(index, (const char *)"not an entity");
         return NULL;
     }
 
@@ -893,7 +893,7 @@ void Scr_GetEnt(void)
         }
 
         if (found) {
-            Scr_Error((const char *)str_002b3454);
+            Scr_Error((const char *)"getent used with more than one entity");
         }
         found = ent;
     }
@@ -1056,7 +1056,7 @@ void G_LoadStructs(void)
     Scr_FreeThread(threadId);
 
     while (G_ParseSpawnVars(G_LevelSpawnVar())) {
-        G_SpawnString("classname", (const char *)str_002157b8, &classname);
+        G_SpawnString("classname", (const char *)"", &classname);
         if (!strcmp("script_struct", classname)) {
             G_SpawnStruct();
         }
@@ -1142,10 +1142,10 @@ void G_CallSpawn(void)
     spawn_t *spawn;
     gentity_t *ent;
 
-    G_SpawnString("classname", (const char *)str_002157b8, &classname);
+    G_SpawnString("classname", (const char *)"", &classname);
 
     if (!classname) {
-        Com_Printf((const char *)str_002b34ec);
+        Com_Printf((const char *)"G_CallSpawn: NULL classname\n");
         return;
     }
 
@@ -1180,7 +1180,7 @@ void G_CallSpawn(void)
 void G_SpawnEntitiesFromString(void)
 {
     if (!G_ParseSpawnVars(G_LevelSpawnVar())) {
-        Com_Error(1, (const char *)str_002b350c);
+        Com_Error(1, (const char *)"\x15SpawnEntities: no entities");
     }
 
     SP_worldspawn();
