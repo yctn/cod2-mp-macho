@@ -445,7 +445,7 @@ static void CG_TransitionSnapshot_Inline(void)
     for (i = 0; i < numClients; i++)
     {
         char *clState = (char *)snap + SNAP_CLIENTS + i * CLSTATE_STRIDE;
-        int clientNum = ((clientState_t *)clState)->clientNum; /* clientState_t->clientNum */
+        int clientNum = ((clientState_t *)clState)->clientIndex;
         char *ci = (char *)&((cg_t *)cg)->bgs.clientinfo[clientNum];
 
         /* line 248: check ci->nextValid */
