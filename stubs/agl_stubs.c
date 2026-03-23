@@ -1,49 +1,12 @@
 #define _GNU_SOURCE
 /* Platform stubs for agl (macOS → Linux) */
 #include "agl_stubs.h"
-#ifndef __EMSCRIPTEN__
-#include <ucontext.h>
-#include <GL/gl.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <sys/mman.h>
-#endif
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
 
-#ifndef __EMSCRIPTEN__
-static void crash_handler(int sig, siginfo_t *info, void *ucontext) {
-    ucontext_t *uc = (ucontext_t *)ucontext;
-    unsigned int eip = uc->uc_mcontext.gregs[REG_EIP];
-    unsigned int eax = uc->uc_mcontext.gregs[REG_EAX];
-    unsigned int ebx = uc->uc_mcontext.gregs[REG_EBX];
-    unsigned int ecx = uc->uc_mcontext.gregs[REG_ECX];
-    unsigned int edx = uc->uc_mcontext.gregs[REG_EDX];
-    unsigned int esp = uc->uc_mcontext.gregs[REG_ESP];
-    unsigned int ebp = uc->uc_mcontext.gregs[REG_EBP];
-    fprintf(stderr, "\n*** SIGSEGV at eip=0x%08x addr=%p ***\n", eip, info->si_addr);
-    fprintf(stderr, "  eax=%08x ebx=%08x ecx=%08x edx=%08x esp=%08x ebp=%08x\n",
-            eax, ebx, ecx, edx, esp, ebp);
-    unsigned int *sp = (unsigned int *)(unsigned long)esp;
-    fprintf(stderr, "  stack: [esp]=%08x [esp+4]=%08x [esp+8]=%08x [esp+c]=%08x\n",
-            sp[0], sp[1], sp[2], sp[3]);
-    void *bt[20];
-    int n = backtrace(bt, 20);
-    backtrace_symbols_fd(bt, n, 2);
-    _exit(139);
-}
-__attribute__((constructor)) static void install_crash_handler(void) {
-    struct sigaction sa = {0};
-    sa.sa_sigaction = crash_handler;
-    sa.sa_flags = SA_SIGINFO;
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGILL, &sa, NULL);
-    sigaction(SIGBUS, &sa, NULL);
-}
-#endif
 
 static long long get_ms(void) {
     struct timeval tv;
@@ -52,19 +15,6 @@ static long long get_ms(void) {
 }
 
 /* Intercept glDrawRangeElements to dump GL state at draw time */
-#ifndef __EMSCRIPTEN__
-void glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const void *indices)
-{
-    typedef void (*fn_t)(GLenum, GLuint, GLuint, GLsizei, GLenum, const void *);
-    static fn_t real_fn = NULL;
-    if (!real_fn) real_fn = (fn_t)dlsym(RTLD_NEXT, "glDrawRangeElements");
-
-    extern int g_draw_count;
-    g_draw_count++;
-
-    real_fn(mode, start, end, count, type, indices);
-}
-#endif
 
 /* Intercept glTexImage2D to check texture uploads */
 /* glTexImage2D interceptor disabled — was calling glGetIntegerv inside GL calls */

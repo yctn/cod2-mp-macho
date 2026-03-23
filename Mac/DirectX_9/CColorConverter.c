@@ -544,8 +544,4 @@ void ZN22ATI4CompsConverterABGRD0Ev(ATI4CompsConverterABGR * _this) /* ATI4Comps
 
 
 /* Register global constructor */
-#ifndef __EMSCRIPTEN__
-__asm__(".section .init_array,\"aw\",@init_array\n.long GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE\n.section .text\n");
-#else
 __attribute__((constructor)) static void _ctor_CColorConverter(void) { GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE(); }
-#endif

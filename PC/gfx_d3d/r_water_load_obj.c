@@ -13,9 +13,6 @@ extern void *Material_Alloc(int size);
 extern void GaussianRandom(float *real, float *imag);
 extern GfxImage *R_CreateWaterMap(const char *name, int M, int N);
 extern const char *va(const char *fmt, ...);
-#ifndef __EMSCRIPTEN__
-extern void *memcpy(void *dest, const void *src, unsigned int n);
-#endif
 extern double exp(double x);
 extern float fabsf(float x);
 extern float sqrtf(float x);

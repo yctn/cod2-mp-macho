@@ -457,33 +457,6 @@ float last_pitch_gain)
       {
          int j;
          int pp=pitch+1-i;
-#if 0
-         for (j=0;j<nsf;j++)
-         {
-            if (j-pp<0)
-               e[i][j]=exc[j-pp];
-            else if (j-pp-pitch<0)
-               e[i][j]=exc[j-pp-pitch];
-            else
-               e[i][j]=0;
-         }
-#else
-         {
-            int tmp1, tmp3;
-            tmp1=nsf;
-            if (tmp1>pp)
-               tmp1=pp;
-            for (j=0;j<tmp1;j++)
-               e[i][j]=exc[j-pp];
-            tmp3=nsf;
-            if (tmp3>pp+pitch)
-               tmp3=pp+pitch;
-            for (j=tmp1;j<tmp3;j++)
-               e[i][j]=exc[j-pp-pitch];
-            for (j=tmp3;j<nsf;j++)
-               e[i][j]=0;
-         }
-#endif
       }
       for (i=0;i<nsf;i++)
            exc[i]=VERY_SMALL+gain[0]*e[2][i]+gain[1]*e[1][i]+gain[2]*e[0][i];

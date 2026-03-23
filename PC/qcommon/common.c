@@ -133,9 +133,6 @@ extern int FS_FOpenFileWrite(const char *filename);
 extern void FS_Printf(int f, const char *fmt, ...);
 extern void Key_WriteBindings(int f);
 extern void Dvar_WriteVariables(int f);
-#ifndef __EMSCRIPTEN__
-extern int snprintf(char *str, unsigned int size, const char *format, ...);
-#endif
 void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)());
 void Com_EndRedirect(void);
 void Com_Printf(const char *fmt, ...);
@@ -367,29 +364,13 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
         }
         {
             int uiStarted;
-#ifndef __EMSCRIPTEN__
-            __asm__ __volatile__ (
-                "movl imp_cls, %%eax\n"
-                "movl 0x110(%%eax), %%eax\n"
-                : "=a"(uiStarted) :: "memory"
-            );
-#else
             uiStarted = ((clientStatic_t *)imp_cls)->uiStarted;
-#endif
             if (uiStarted) {
                 if (!UI_AnyFullScreenMenuVisible()) {
                     Com_SetErrorMessage(com_errorMessage);
                     UI_SetActiveMenu(1);
                 }
-#ifndef __EMSCRIPTEN__
-                __asm__ __volatile__ (
-                    "movl imp_cls, %%eax\n"
-                    "movl 0x110(%%eax), %%eax\n"
-                    : "=a"(uiStarted) :: "memory"
-                );
-#else
                 uiStarted = ((clientStatic_t *)imp_cls)->uiStarted;
-#endif
                 if (uiStarted) {
                     com_errorEntered = 0;
                     return;
@@ -952,9 +933,6 @@ void Com_SetRecommended(qboolean restart)
     Com_Printf("========= autoconfigure\n");
     Sys_GetInfo(&info);
     /* Startup code can leave MMX state live, which breaks the first x87 double op. */
-#ifndef __EMSCRIPTEN__
-    __builtin_ia32_emms();
-#endif
     info.cpuGHz *= 1.02;
     if (info.sysMB <= 0x7f)
         info.sysMB = 0x80;
@@ -1339,11 +1317,7 @@ static void Com_ErrorCleanup(void)
     /* Call re->Shutdown (offset 0x14c) if available */
     {
         void *re;
-#ifndef __EMSCRIPTEN__
-        __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
-#else
         re = imp_re;
-#endif
         {
             void (*fn)(void) = ((refexport_t *)re)->AbortRenderCommands;
             if (fn) fn();
@@ -1366,15 +1340,7 @@ static void Com_ErrorCleanup(void)
                 I_strncpyz(com_errorMessage, localized, sizeof(com_errorMessage));
         }
     } else {
-#ifndef __EMSCRIPTEN__
-        __asm__ __volatile__ (
-            "movl imp_cls, %%eax\n"
-            "movl 0x110(%%eax), %%eax\n"
-            : "=a"(rendererStarted) :: "memory"
-        );
-#else
         rendererStarted = ((clientStatic_t *)imp_cls)->uiStarted;
-#endif
         if (rendererStarted)
             UI_SetActiveMenu(0);
     }
@@ -1391,11 +1357,7 @@ static void Com_ErrorCleanup(void)
     /* Call re->SyncRender (offset 0xe4) if available */
     {
         void *re;
-#ifndef __EMSCRIPTEN__
-        __asm__ __volatile__ ("movl imp_re, %%eax" : "=a"(re) :: "memory");
-#else
         re = imp_re;
-#endif
         {
             void (*fn)(void) = ((refexport_t *)re)->ResetImageAllocations;
             if (fn) fn();
@@ -1422,15 +1384,7 @@ static void Com_ErrorCleanup(void)
     }
 
     /* Clear updateScreenCalled */
-#ifndef __EMSCRIPTEN__
-    __asm__ __volatile__ (
-        "movl imp_updateScreenCalled, %%eax\n"
-        "movb $0, (%%eax)\n"
-        ::: "eax", "memory"
-    );
-#else
     *(byte *)imp_updateScreenCalled = 0;
-#endif
 
     if (errorcode == 2) {
         Com_ShutdownInternal("Server fatal crashed: %s\n");
@@ -1442,15 +1396,7 @@ static void Com_ErrorCleanup(void)
     /* errorcode == 1 or 3 */
     Com_Printf("********************\nERROR: %s\n********************\n", com_errorMessage);
     if (errorcode == 1) {
-#ifndef __EMSCRIPTEN__
-        __asm__ __volatile__ (
-            "movl imp_cls, %%eax\n"
-            "movl 0x110(%%eax), %%eax\n"
-            : "=a"(rendererStarted) :: "memory"
-        );
-#else
         rendererStarted = ((clientStatic_t *)imp_cls)->uiStarted;
-#endif
         if (rendererStarted && !com_fixedConsolePosition)
             CL_ConsoleFixPosition();
     }
@@ -2108,16 +2054,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
     com_sv_running = Dvar_RegisterBool("sv_running", 0, 0x1040);
 
     /* Clear legacyHacks field */
-#ifndef __EMSCRIPTEN__
-    __asm__ __volatile__ (
-        "movl imp_legacyHacks, %%eax\n"
-        "movl (%%eax), %%eax\n"
-        "movl $0, 4(%%eax)\n"
-        ::: "eax", "memory"
-    );
-#else
     *(int *)((byte *)(*(void **)imp_legacyHacks) + 4) = 0;
-#endif
 
     com_introPlayed = Dvar_RegisterBool("com_introPlayed", 0, 0x1001);
     com_animCheck = Dvar_RegisterBool("com_animCheck", 0, 0x1000);
@@ -2154,15 +2091,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
     Com_InitHunkMemory();
 
     /* Clear dvar modified flags bit 0 */
-#ifndef __EMSCRIPTEN__
-    __asm__ __volatile__ (
-        "movl imp_dvar_modifiedFlags, %%eax\n"
-        "andl $0xfffffffe, (%%eax)\n"
-        ::: "eax", "memory"
-    );
-#else
     *(int *)imp_dvar_modifiedFlags &= 0xfffffffe;
-#endif
     com_codeTimeScale = 1.0f;
 
     /* Developer commands */
@@ -2250,11 +2179,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
             /* Client renderer & sound init */
             {
                 char *cls_ptr;
-#ifndef __EMSCRIPTEN__
-                __asm__ __volatile__ ("movl imp_cls, %%eax\n" : "=a"(cls_ptr) :: "memory");
-#else
                 cls_ptr = (char *)imp_cls;
-#endif
                 ((clientStatic_t *)cls_ptr)->rendererStarted = 1;
                 CL_InitRenderer();
                 ((clientStatic_t *)cls_ptr)->soundStarted = 1;

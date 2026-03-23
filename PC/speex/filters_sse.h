@@ -237,50 +237,6 @@ void iir_mem2(float *x, float *_den, float *y, int N, int ord, float *_mem)
 
    for (i=0;i<N;i++)
    {
-#if 0
-      y[i] = x[i] + mem[0];
-      for (j=0;j<ord-1;j++)
-      {
-         mem[j] = mem[j+1] - den[j+1]*y[i];
-      }
-      mem[ord-1] = - den[ord]*y[i];
-#else
-      __asm__ __volatile__ 
-      (
-       "\tmovss (%1), %%xmm0\n"
-       "\tmovss (%0), %%xmm1\n"
-       "\taddss %%xmm0, %%xmm1\n"
-       "\tmovss %%xmm1, (%2)\n"
-       "\tshufps $0x00, %%xmm0, %%xmm0\n"
-       "\tshufps $0x00, %%xmm1, %%xmm1\n"
-
-       
-       "\tmovaps 4(%3),  %%xmm2\n"
-       "\tmovaps 20(%3), %%xmm3\n"
-       "\tmulps  %%xmm1, %%xmm2\n"
-       "\tmulps  %%xmm1, %%xmm3\n"
-       "\tmovss  36(%3), %%xmm4\n"
-       "\tmovss  40(%3), %%xmm5\n"
-       "\tmulss  %%xmm1, %%xmm4\n"
-       "\tmulss  %%xmm1, %%xmm5\n"
-       "\tmovaps 4(%0),  %%xmm6\n"
-       "\tsubps  %%xmm2, %%xmm6\n"
-       "\tmovups %%xmm6, (%0)\n"
-       "\tmovaps 20(%0), %%xmm7\n"
-       "\tsubps  %%xmm3, %%xmm7\n"
-       "\tmovups %%xmm7, 16(%0)\n"
-
-
-       "\tmovss  36(%0), %%xmm7\n"
-       "\tsubss  %%xmm4, %%xmm7\n"
-       "\tmovss  %%xmm7, 32(%0)       \n"
-       "\txorps  %%xmm2, %%xmm2\n"
-       "\tsubss  %%xmm5, %%xmm2\n"
-       "\tmovss  %%xmm2, 36(%0)\n"
-
-       : : "r" (mem), "r" (x+i), "r" (y+i), "r" (den)
-       : "memory" );
-#endif
    }
    for (i=0;i<ord;i++)
       _mem[i]=mem[i];

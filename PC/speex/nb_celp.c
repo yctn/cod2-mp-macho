@@ -962,15 +962,6 @@ static void nb_decode_lost(DecState *st, float *out, char *stack)
          innov_gain=sqrt(innov_gain/st->frameSize);
       for (i=0;i<st->subframeSize;i++)
       {
-#if 0
-         exc[i] = pitch_gain * exc[i - st->last_pitch] + fact*sqrt(1-pitch_gain)*st->innov[i+offset];
-         /*Just so it give the same lost packets as with if 0*/
-         /*rand();*/
-#else
-         /*exc[i]=pitch_gain*exc[i-st->last_pitch] +  fact*st->innov[i+offset];*/
-         exc[i]=pitch_gain*(exc[i-st->last_pitch]+VERY_SMALL) + 
-         fact*sqrt(1-pitch_gain)*speex_rand(innov_gain);
-#endif
       }
       }
       for (i=0;i<st->subframeSize;i++)

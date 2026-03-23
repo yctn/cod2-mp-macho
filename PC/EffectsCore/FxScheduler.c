@@ -176,92 +176,6 @@ EffectTemplate * FX_TryRegisterEffect(const char *name)
     return registeredTemplate;
 }
 
-#if 0
-/* Original ASM for FX_TryRegisterEffect */
-__attribute__((naked))
-EffectTemplate * FX_TryRegisterEffect(const char *name)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "leal -0x50(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll GenericParser2_GenericParser2\n"
-        "movl effectTemplateArrayCount, %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jle .Lf6164a_00061693\n"
-        "xorl %edi, %edi\n"
-        "movl $effectTemplateArray, %esi\n"
-        ".Lf6164a_00061671:\n"
-        "movl (%esi), %ebx\n"
-        "movl 8(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf6164a_000616c8\n"
-        "addl $1, %edi\n"
-        "addl $4, %esi\n"
-        "cmpl %edi, -0x5c(%ebp)\n"
-        "jne .Lf6164a_00061671\n"
-        ".Lf6164a_00061693:\n"
-        "movl 8(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x50(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_ParseEffect\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n"
-        "je .Lf6164a_000616f1\n"
-        "movl effectTemplateArrayCount, %eax\n"
-        "cmpl $0x100, %eax\n"
-        "je .Lf6164a_000616dd\n"
-        "movl %edx, effectTemplateArray(, %eax, 4)\n"
-        "addl $1, %eax\n"
-        "movl %eax, effectTemplateArrayCount\n"
-        "movl %edx, %ebx\n"
-        ".Lf6164a_000616c8:\n"
-        "leal -0x50(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN14GenericParser2D1Ev\n"
-        "movl %ebx, %eax\n"
-        "addl $0x6c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf6164a_000616dd:\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl $str_0021a904, (%esp)\n"
-        "calll FX_Print\n"
-        ".Lf6164a_000616f1:\n"
-        "xorl %ebx, %ebx\n"
-        "leal -0x50(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN14GenericParser2D1Ev\n"
-        "movl %ebx, %eax\n"
-        "addl $0x6c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl %eax, %ebx\n"
-        "leal -0x50(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ZN14GenericParser2D1Ev\n"
-        "movl %ebx, (%esp)\n"
-        "calll __Unwind_Resume\n"
-    );
-}
-#endif
 
 /* line 952 */
 static void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global constructors keyed to PrimitiveTemplate_gmMemMgr */
@@ -323,85 +237,6 @@ Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bol
     return 1; /* true */
 }
 
-#if 0
-/* Original ASM for FX_GetBoltingFrame */
-__attribute__((naked))
-Bool FX_GetBoltingFrame(const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, FxBoltFramePtr *boltFrame)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0xc(%ebp), %edx\n"
-        "movl 0x10(%ebp), %ebx\n"
-        "movl 8(%ebp), %eax\n"
-        "testb $2, 0x90(%eax)\n"
-        "je .Lf61724_000617a0\n"
-        "testl %edx, %edx\n"
-        "je .Lf61724_000617a0\n"
-        "movl (%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "js .Lf61724_000617a0\n"
-        "leal -0xc(%ebp), %eax\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Acquire\n"
-        "subl $4, %esp\n"
-        "movl (%ebx), %eax\n"
-        "cmpl -0xc(%ebp), %eax\n"
-        "je .Lf61724_00061779\n"
-        "testl %eax, %eax\n"
-        "je .Lf61724_00061772\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Release\n"
-        "movl $0, (%ebx)\n"
-        ".Lf61724_00061772:\n"
-        "movl -0xc(%ebp), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf61724_000617aa\n"
-        ".Lf61724_00061779:\n"
-        "testl %eax, %eax\n"
-        "je .Lf61724_00061785\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Release\n"
-        ".Lf61724_00061785:\n"
-        "movl (%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf61724_00061792\n"
-        ".Lf61724_0006178b:\n"
-        "xorl %eax, %eax\n"
-        "movl -4(%ebp), %ebx\n"
-        "leave\n"
-        "retl\n"
-        ".Lf61724_00061792:\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_GetOrientation\n"
-        "testl %eax, %eax\n"
-        "je .Lf61724_0006178b\n"
-        ".Lf61724_000617a0:\n"
-        "movl $1, %eax\n"
-        "movl -4(%ebp), %ebx\n"
-        "leave\n"
-        "retl\n"
-        ".Lf61724_000617aa:\n"
-        "addl $1, (%eax)\n"
-        "movl %eax, (%ebx)\n"
-        "movl -0xc(%ebp), %eax\n"
-        "jmp .Lf61724_00061779\n"
-        "movl %eax, %ebx\n"
-        "movl -0xc(%ebp), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf61724_000617c5\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Release\n"
-        ".Lf61724_000617c5:\n"
-        "movl %ebx, (%esp)\n"
-        "calll __Unwind_Resume\n"
-    );
-}
-#endif
 
 /* line 688 */
 void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *fx, const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, const vec_t *origin, MediaHandles * (*axis)[4], int lateTime, int indexInBatch)
@@ -486,94 +321,6 @@ cleanup:
     }
 }
 
-#if 0
-/* Original ASM for FxScheduler_CreateEffect */
-__attribute__((naked))
-void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *fx, const PrimitiveTemplate *primTemp, const FxBoltInfo *bolt, const vec_t *origin, MediaHandles * (*axis)[4], int lateTime, int indexInBatch)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 0x10(%ebp), %ebx\n"
-        "movl $0, -0x1c(%ebp)\n"
-        "leal -0x48(%ebp), %esi\n"
-        "movl %esi, 4(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll AxisCopy\n"
-        "testb $1, 0x95(%ebx)\n"
-        "je .Lf617ce_00061840\n"
-        "movl $0x43b40000, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "leal -0x3c(%ebp), %edi\n"
-        "fstps 0xc(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n"
-        "addl $0xc, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll RotatePointAroundVector\n"
-        "leal -0x30(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll Vec3Cross\n"
-        ".Lf617ce_00061840:\n"
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FX_GetBoltingFrame\n"
-        "testb %al, %al\n"
-        "je .Lf617ce_00061869\n"
-        "movl 0xc(%ebp), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %ebx, -0x20(%ebp)\n"
-        "cmpl $0xc, 0x40(%ebx)\n"
-        "jbe .Lf617ce_00061880\n"
-        ".Lf617ce_00061869:\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf617ce_00061878\n"
-        "movl %eax, (%esp)\n"
-        "calll FxBoltFrame_Release\n"
-        ".Lf617ce_00061878:\n"
-        "addl $0x5c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf617ce_00061880:\n"
-        "movl 0x40(%ebx), %eax\n"
-        "jmpl *.Ljt_617ce_0(, %eax, 4)\n"
-        /* ... jump table cases ... */
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_617ce_0:\n"
-        ".long .Lf617ce_00061869\n"
-        ".long .Lf617ce_0006188a\n"
-        ".long .Lf617ce_00061a47\n"
-        ".long .Lf617ce_00061a1e\n"
-        ".long .Lf617ce_000619f5\n"
-        ".long .Lf617ce_000619cc\n"
-        ".long .Lf617ce_000619a3\n"
-        ".long .Lf617ce_0006197a\n"
-        ".long .Lf617ce_00061951\n"
-        ".long .Lf617ce_00061928\n"
-        ".long .Lf617ce_000618ff\n"
-        ".long .Lf617ce_000618d6\n"
-        ".long .Lf617ce_000618b0\n"
-        ".text\n"
-    );
-}
-#endif
 
 /* line 283 */
 void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx, const vec_t *origin, MediaHandles * (*axis)[4], const FxBoltInfo *bolt)
@@ -773,9 +520,6 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
     }
 }
 
-#if 0
-/* Original ASM for FxScheduler_PlayEffect preserved in original file */
-#endif
 
 /* overload skip: FxScheduler_PlayEffect (0x61ef6) */
 
@@ -819,76 +563,6 @@ void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTe
     }
 }
 
-#if 0
-/* Original ASM for FxScheduler_Clean */
-__attribute__((naked))
-void FxScheduler_Clean(const FxScheduler * _this, int bRemoveTemplates, EffectTemplate *fxToPreserve)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n"
-        "movzbl 0xc(%ebp), %esi\n"
-        "jmp .Lf6201c_0006203c\n"
-        ".Lf6201c_0006202e:\n"
-        "movl 0x4c(%edx), %eax\n"
-        "movl %eax, 4(%ebx)\n"
-        "movl %edx, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf6201c_0006203c:\n"
-        "movl 4(%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf6201c_0006202e\n"
-        "movl $0, 8(%ebx)\n"
-        "movl %esi, %eax\n"
-        "testb %al, %al\n"
-        "je .Lf6201c_000620b2\n"
-        "movl effectTemplateArrayCount, %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf6201c_0006208e\n"
-        "xorl %esi, %esi\n"
-        "xorl %edi, %edi\n"
-        "movl $effectTemplateArray, %ebx\n"
-        "jmp .Lf6201c_00062080\n"
-        ".Lf6201c_00062064:\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_CleanTemplate\n"
-        "movl $0, (%ebx)\n"
-        ".Lf6201c_00062072:\n"
-        "addl $1, %esi\n"
-        "addl $4, %ebx\n"
-        "cmpl %esi, effectTemplateArrayCount\n"
-        "jle .Lf6201c_00062090\n"
-        ".Lf6201c_00062080:\n"
-        "movl (%ebx), %eax\n"
-        "cmpl %eax, 0x10(%ebp)\n"
-        "jne .Lf6201c_00062064\n"
-        "movl $1, %edi\n"
-        "jmp .Lf6201c_00062072\n"
-        ".Lf6201c_0006208e:\n"
-        "xorl %edi, %edi\n"
-        ".Lf6201c_00062090:\n"
-        "movl $0, effectTemplateArrayCount\n"
-        "movl %edi, %eax\n"
-        "testb %al, %al\n"
-        "je .Lf6201c_000620b2\n"
-        "movl 0x10(%ebp), %eax\n"
-        "movl %eax, effectTemplateArray\n"
-        "movl $1, effectTemplateArrayCount\n"
-        ".Lf6201c_000620b2:\n"
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
-#endif
 
 /*
  * Helper: advance FxCurveIterator to find the key segment containing time t.
@@ -1047,9 +721,6 @@ void FxScheduler_GetDecalColor(const FxScheduler * _this, const PrimitiveTemplat
     }
 }
 
-#if 0
-/* Original ASM for FxScheduler_GetDecalColor preserved in original file */
-#endif
 
 /* line 505 */
 float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
@@ -1110,9 +781,6 @@ float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTempla
     return result;
 }
 
-#if 0
-/* Original ASM for FxScheduler_GetDecalAlpha preserved in original file */
-#endif
 
 /* line 531 */
 float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplate *primTemp)
@@ -1167,9 +835,6 @@ float FxScheduler_GetDecalSize(const FxScheduler * _this, const PrimitiveTemplat
     return result;
 }
 
-#if 0
-/* Original ASM for FxScheduler_GetDecalSize preserved in original file */
-#endif
 
 /* line 69 */
 EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
@@ -1185,39 +850,6 @@ EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
     return (EffectTemplate *)elements[irand(0, count)].data;
 }
 
-#if 0
-/* Original ASM for MediaHandles_GetEffect */
-__attribute__((naked))
-EffectTemplate * MediaHandles_GetEffect(const MediaHandles * _this)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n"
-        "movzwl 4(%edx), %eax\n"
-        "testw %ax, %ax\n"
-        "jne .Lf628a0_000628bb\n"
-        "xorl %eax, %eax\n"
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf628a0_000628bb:\n"
-        "movl (%edx), %ebx\n"
-        "movzwl %ax, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll irand\n"
-        "movl (%ebx, %eax, 4), %eax\n"
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
-#endif
 
 /* line 554 */
 void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *org, MediaHandles * (*ax)[4])
@@ -1256,70 +888,6 @@ void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTem
     CG_ImpactMark(markMaterial, org, (const vec_t *)ax, rotation, rgba, size);
 }
 
-#if 0
-/* Original ASM for FxScheduler_CreateDecalEffect */
-__attribute__((naked))
-void FxScheduler_CreateDecalEffect(const FxScheduler * _this, const PrimitiveTemplate *primTemp, vec_t *org, MediaHandles * (*ax)[4])
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %ebx\n"
-        "movl 0xc(%ebp), %esi\n"
-        "leal 0x220(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxRange_GetVal\n"
-        "fstps -0x30(%ebp)\n"
-        "leal -0x28(%ebp), %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxScheduler_GetDecalColor\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxScheduler_GetDecalAlpha\n"
-        "fstps -0x1c(%ebp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FxScheduler_GetDecalSize\n"
-        "fstps -0x2c(%ebp)\n"
-        "movzwl 0x6c(%esi), %eax\n"
-        "testw %ax, %ax\n"
-        "jne .Lf628da_0006296e\n"
-        "xorl %edx, %edx\n"
-        ".Lf628da_00062936:\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, 0x14(%esp)\n"
-        "movl %edi, 0x10(%esp)\n"
-        "movss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl 0x14(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_ImpactMark\n"
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf628da_0006296e:\n"
-        "movl 0x68(%esi), %ebx\n"
-        "movzwl %ax, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll irand\n"
-        "movl (%ebx, %eax, 4), %edx\n"
-        "jmp .Lf628da_00062936\n"
-    );
-}
-#endif
 
 /* Helper: Archive an int field (read or write depending on arch->isReading at offset 4) */
 static void FxArchive_ArchiveInt(const FxArchive *arch, int *field)
@@ -1387,9 +955,6 @@ void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch)
     FxArchive_ArchiveInt(arch, &sfxPtr->mSeed);
 }
 
-#if 0
-/* Original ASM for ScheduledEffect_Archive preserved in original file */
-#endif
 
 /* line 710 */
 void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
@@ -1452,111 +1017,3 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
     }
 }
 
-#if 0
-/* Original ASM for FxScheduler_Archive */
-__attribute__((naked))
-void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n"
-        "movl 0xc(%ebp), %esi\n"
-        "cmpb $0, 4(%esi)\n"
-        "je .Lf62cc8_00062d14\n"
-        "movl $0, 4(%edi)\n"
-        "movl $0, 8(%edi)\n"
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FxArchive_ReadData\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jne .Lf62cc8_00062d67\n"
-        ".Lf62cc8_00062d0c:\n"
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf62cc8_00062d14:\n"
-        "movl 8(%edi), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl $4, 8(%esp)\n"
-        "leal -0x1c(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll FxArchive_WriteData\n"
-        "movl imp_theFxScheduler, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf62cc8_00062d0c\n"
-        ".Lf62cc8_00062d3f:\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll ScheduledEffect_Archive\n"
-        "movl 0x4c(%ebx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf62cc8_00062d0c\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll ScheduledEffect_Archive\n"
-        "movl 0x4c(%ebx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lf62cc8_00062d3f\n"
-        "jmp .Lf62cc8_00062d0c\n"
-        ".Lf62cc8_00062d67:\n"
-        "movl $0, -0x2c(%ebp)\n"
-        "jmp .Lf62cc8_00062d95\n"
-        ".Lf62cc8_00062d70:\n"
-        "movl 8(%edx, %eax, 4), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf62cc8_00062ddd\n"
-        "movl 4(%edi), %eax\n"
-        "movl %eax, 0x4c(%ebx)\n"
-        "movl %ebx, 4(%edi)\n"
-        "addl $1, 8(%edi)\n"
-        ".Lf62cc8_00062d85:\n"
-        "addl $1, -0x2c(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "cmpl %eax, -0x30(%ebp)\n"
-        "je .Lf62cc8_00062d0c\n"
-        ".Lf62cc8_00062d95:\n"
-        "movl $0x50, (%esp)\n"
-        "calll __Znam\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n"
-        "je .Lf62cc8_00062dbf\n"
-        "movl $0x50, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        ".Lf62cc8_00062dbf:\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll ScheduledEffect_Archive\n"
-        "movl (%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf62cc8_00062ddd\n"
-        "movl 4(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "js .Lf62cc8_00062ddd\n"
-        "cmpl 4(%edx), %eax\n"
-        "jl .Lf62cc8_00062d70\n"
-        ".Lf62cc8_00062ddd:\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf62cc8_00062d85\n"
-        "movl %ebx, (%esp)\n"
-        "calll __ZdaPv\n"
-        "jmp .Lf62cc8_00062d85\n"
-    );
-}
-#endif

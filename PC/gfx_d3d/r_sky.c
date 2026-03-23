@@ -43,9 +43,6 @@ extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_
 extern const char *va(const char *format, ...);
 extern double cos(double);
 extern float floorf(float);
-#ifndef __EMSCRIPTEN__
-extern unsigned int strlen(const char *);
-#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

@@ -22,8 +22,7 @@ static cg_eachClientLocalEntities_t cg_eachClientLocalEntities; /* cg_eachClient
 
 void CG_InitLocalEntities(void);
 void CG_AddMovingTracer(localEntity_t *le);
-static void __static_initialization_and_destruction_0(void);
-static void GLOBAL__I_cg_eachClientActiveLocalEntities(void); /* global constructors keyed to cg_eachClientActiveLocalEntities */
+static void GLOBAL__I_cg_eachClientActiveLocalEntities(void);
 localEntity_t * CG_AllocLocalEntity(void);
 void CG_AddLocalEntities(void);
 
@@ -107,38 +106,12 @@ void CG_AddMovingTracer(localEntity_t *le)
     CG_DrawTracer(start, end);
 }
 
-/* line 157 */
-static void __static_initialization_and_destruction_0(void)
+/* line 157-158: C++ global constructor — initialise cg_freeLocalEntities from
+ * the per-client free-list pointer on startup. */
+static __attribute__((constructor))
+void GLOBAL__I_cg_eachClientActiveLocalEntities(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "cmpl $0xffff, %edx\n"
-        "je .Lf1dd90a_001dd917\n"
-        ".Lf1dd90a_001dd915:\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1dd90a_001dd917:\n"
-        "subl $1, %eax\n"
-        "jne .Lf1dd90a_001dd915\n"
-        "movl cg_eachClientFreeLocalEntities, %eax\n"
-        "movl %eax, cg_freeLocalEntities\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
-
-/* line 158 */
-static void GLOBAL__I_cg_eachClientActiveLocalEntities(void) /* global constructors keyed to cg_eachClientActiveLocalEntities */
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    cg_freeLocalEntities = *cg_eachClientFreeLocalEntities;
 }
 
 /* line 78 */
