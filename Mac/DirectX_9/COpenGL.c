@@ -254,6 +254,7 @@ static void GLOBAL__D__ZN7COpenGL7sOpenGLE(void)
     /* Global destructor for COpenGL::sOpenGL — no-op */
 }
 
+__attribute__((constructor))
 void GLOBAL__I__ZN7COpenGL7sOpenGLE(void)
 {
     /* Global constructor for COpenGL::sOpenGL — call COpenGL_COpenGL */
