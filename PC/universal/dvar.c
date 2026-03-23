@@ -45,12 +45,12 @@ static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
 extern const char str_00219524[];
 extern const char str_00219528[];
 __attribute__((used, packed, aligned(4)))
-UInt32 dvarOnOffStrings_storage[8] = {
+UInt32 dvarOnOffStrings[8] = {
     (UInt32)str_00219524,
     (UInt32)str_00219528,
     0, 0, 0, 0, 0, 0,
 }; /* 0x30a3e0 */
-#define dvarOnOffStrings ((const char **)dvarOnOffStrings_storage)
+#define dvarOnOffStrings ((const char **)dvarOnOffStrings)
 static Bool isDvarSystemActive; /* isDvarSystemActive */
 static Bool isLoadingAutoExecGlobalFlag; /* isLoadingAutoExecGlobalFlag */
 

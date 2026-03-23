@@ -29,11 +29,11 @@ extern void CL_AddReliableCommand(const char *cmd);
 extern float *CG_FadeColor(int startMsec, int totalMsec, int fadeMsec);
 
 __attribute__((used, aligned(4)))
-int lastLeadTeam_storage[8] = {
+int lastLeadTeam[8] = {
     2, 0, 0, 0, 0, 0, 0, 0,
 }; /* 0x314640 */
 
-#define lastLeadTeam (lastLeadTeam_storage[0])
+#define lastLeadTeam (lastLeadTeam[0])
 /* The decompiler dropped the original scoreboard column table. */
 static const listColumnInfo_t columnInfo[6] = {
     {LCT_NAME, 0.46f, "", 0},

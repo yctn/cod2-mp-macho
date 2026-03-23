@@ -19,7 +19,7 @@ extern const char str_002b35d8[];
 extern const char str_002b35f0[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 gc_orders_storage[8] = {
+UInt32 gc_orders[8] = {
     (UInt32)str_002b3564,
     (UInt32)str_002b3580,
     (UInt32)str_002b359c,
@@ -30,7 +30,7 @@ UInt32 gc_orders_storage[8] = {
     0,
 }; /* 0x313c80 */
 
-#define gc_orders ((char **)gc_orders_storage)
+#define gc_orders ((char **)gc_orders)
 extern level_locals_t level;
 extern gentity_t g_entities[1024];
 extern const dvar_t *g_cheats;

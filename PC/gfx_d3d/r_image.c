@@ -36,7 +36,7 @@ extern const char str_002251ec[];
 extern const char str_002251fc[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 imageTypeName_storage[16] = {
+UInt32 imageTypeName[16] = {
     (UInt32)str_00225118,
     (UInt32)str_00225120,
     (UInt32)str_00225128,
@@ -55,7 +55,7 @@ UInt32 imageTypeName_storage[16] = {
     0,
 }; /* 0x3111c0 */
 __attribute__((used, packed, aligned(4)))
-UInt32 g_imageProgNames_storage[16] = {
+UInt32 g_imageProgNames[16] = {
     (UInt32)str_00225168,
     (UInt32)str_0022517c,
     (UInt32)str_0022518c,
@@ -74,8 +74,8 @@ UInt32 g_imageProgNames_storage[16] = {
     0,
 }; /* 0x311200 */
 
-#define imageTypeName ((const char * const *)imageTypeName_storage)
-#define g_imageProgNames ((const char * const *)g_imageProgNames_storage)
+#define imageTypeName ((const char * const *)imageTypeName)
+#define g_imageProgNames ((const char * const *)g_imageProgNames)
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
 extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);

@@ -135,7 +135,7 @@ extern const char str_002a8868[];
 extern const char str_002a8888[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 cg_shock_dvar_names_storage[32] = {
+UInt32 cg_shock_dvar_names[32] = {
     (UInt32)str_002a85bc,
     (UInt32)str_002a85d8,
     (UInt32)str_002a85f8,
@@ -170,7 +170,7 @@ UInt32 cg_shock_dvar_names_storage[32] = {
     0,
 }; /* 0x314a80 */
 
-#define cg_shock_dvar_names ((const char * const *)cg_shock_dvar_names_storage)
+#define cg_shock_dvar_names ((const char * const *)cg_shock_dvar_names)
 static vec2_t cg_perturbations[131]; /* cg_perturbations */
 
 void CG_PerturbCamera(void);

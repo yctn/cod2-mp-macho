@@ -10,16 +10,16 @@
  */
 
 __attribute__((used, aligned(4)))
-int endOffset_storage[1] = {
+int endOffset[1] = {
     1,
 }; /* 0x312620 */
 __attribute__((used, aligned(4)))
-int startOffset_storage[7] = {
+int startOffset[7] = {
     2, 0, 0, 0, 0, 0, 0,
 }; /* 0x312624 */
 
-#define endOffset (endOffset_storage[0])
-#define startOffset (startOffset_storage[0])
+#define endOffset (endOffset[0])
+#define startOffset (startOffset[0])
 
 /* Global pointers accessed by absolute address */
 extern byte svs_ptr[];              /* imp_svs - serverStatic_t */

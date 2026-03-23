@@ -58,7 +58,7 @@ __attribute__((used)) const char *g_he_alignx[3] = {
     str_002b4d28,
 }; /* 0x3144cc */
 __attribute__((used, aligned(4)))
-UInt32 g_he_font_storage[10] = {
+UInt32 g_he_font[10] = {
     (UInt32)str_00220284,
     (UInt32)str_002b4d3c,
     (UInt32)str_002b4d48,
@@ -71,7 +71,7 @@ UInt32 g_he_font_storage[10] = {
     0,
 }; /* 0x3144d8 */
 
-#define g_he_font ((const char * const *)g_he_font_storage)
+#define g_he_font ((const char * const *)g_he_font)
 static void HECmd_SetText(scr_entref_t entref);
 static void HECmd_SetPlayerNameString(scr_entref_t entref);
 static void HECmd_SetMapNameString(scr_entref_t entref);

@@ -61,7 +61,7 @@ typedef struct COpenGLVAOBindingNode {
     GLuint *vaoId;
 } COpenGLVAOBindingNode;
 
-extern unsigned char COpenGL_sOpenGLE_storage[];
+extern unsigned char COpenGL_sOpenGLE[];
 
 void *__Znwm(size_t size);
 void __ZdlPv(void *ptr);
@@ -128,7 +128,7 @@ void COpenGLVAO_CreateNewBinding(const COpenGLVAO * _this)
 
     bindingNode = (COpenGLVAOBindingNode *)__Znwm(sizeof(*bindingNode));
     bindingNode->vaoId = vaoId;
-    bindingList = (void *)(COpenGL_sOpenGLE_storage + 0x674);
+    bindingList = (void *)(COpenGL_sOpenGLE + 0x674);
     __ZNSt15_List_node_base4hookEPS_(bindingNode, bindingList);
 
     vao->mpVAOID = vaoId;

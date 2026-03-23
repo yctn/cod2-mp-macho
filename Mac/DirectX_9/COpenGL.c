@@ -15,10 +15,10 @@ extern void *vtbl_COpenGLVertexProgram[];
 /* COpenGL::sOpenGL — large struct, accessed by offset from other .c files */
 /* The asm symbol __ZN7COpenGL7sOpenGLE is the mangled name for COpenGL::sOpenGL */
 unsigned char __attribute__((visibility("default")))
-    COpenGL_sOpenGL_storage[4096] = {0};
+    COpenGL_sOpenGL[4096] = {0};
 
 /* Pointer used by generated_syms.h: imp__ZN7COpenGL7sOpenGLE */
-void *imp__ZN7COpenGL7sOpenGLE = COpenGL_sOpenGL_storage;
+void *imp__ZN7COpenGL7sOpenGLE = COpenGL_sOpenGL;
 
 /* Other COpenGL statics */
 UINT32 COpenGL_sFrameCount = 0;
@@ -257,7 +257,7 @@ static void GLOBAL__D__ZN7COpenGL7sOpenGLE(void)
 void GLOBAL__I__ZN7COpenGL7sOpenGLE(void)
 {
     /* Global constructor for COpenGL::sOpenGL — call COpenGL_COpenGL */
-    COpenGL_COpenGL((const COpenGL *)COpenGL_sOpenGL_storage);
+    COpenGL_COpenGL((const COpenGL *)COpenGL_sOpenGL);
 }
 
 /* ============================================================ */

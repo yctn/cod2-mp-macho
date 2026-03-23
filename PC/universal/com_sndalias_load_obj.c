@@ -46,7 +46,7 @@ extern const char str_0021ec20[];
 extern const char str_0021ec28[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 g_pszSndAliasKeyNames_storage[24] = {
+UInt32 g_pszSndAliasKeyNames[24] = {
     0,
     (UInt32)str_002194b4,
     (UInt32)str_0021eaec,
@@ -73,7 +73,7 @@ UInt32 g_pszSndAliasKeyNames_storage[24] = {
     (UInt32)str_0021ebd8,
 }; /* 0x3128bc */
 __attribute__((used, packed, aligned(4)))
-UInt32 g_pszChannelNames_storage[16] = {
+UInt32 g_pszChannelNames[16] = {
     (UInt32)str_0021ebe8,
     (UInt32)str_0021ebf0,
     (UInt32)str_00216cd8,
@@ -92,8 +92,8 @@ UInt32 g_pszChannelNames_storage[16] = {
     0,
 }; /* 0x31291c */
 
-#define g_pszSndAliasKeyNames ((const char * const *)g_pszSndAliasKeyNames_storage)
-#define g_pszChannelNames ((const char * const *)g_pszChannelNames_storage)
+#define g_pszSndAliasKeyNames ((const char * const *)g_pszSndAliasKeyNames)
+#define g_pszChannelNames ((const char * const *)g_pszChannelNames)
 
 extern int I_stricmp(const char *s0, const char *s1);
 extern void Com_Printf(const char *fmt, ...);

@@ -64,7 +64,7 @@ extern const char str_002b66a4[];
 extern const char str_002b66b0[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 g_HitLocNames_storage[24] = {
+UInt32 g_HitLocNames[24] = {
     (UInt32)str_00218298,
     (UInt32)str_002b65d0,
     (UInt32)str_002b65d8,
@@ -91,7 +91,7 @@ UInt32 g_HitLocNames_storage[24] = {
     0,
 }; /* 0x3145e0 */
 
-#define g_HitLocNames ((const char * const *)g_HitLocNames_storage)
+#define g_HitLocNames ((const char * const *)g_HitLocNames)
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 #define SCR_CONST() ((const scr_const_t *)imp_scr_const)
 

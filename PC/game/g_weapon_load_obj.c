@@ -17,7 +17,7 @@ extern const char str_002b8750[];
 extern const char str_002b8758[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 accuracyDirName_storage[9] = {
+UInt32 accuracyDirName[9] = {
     (UInt32)str_002b8750,
     (UInt32)str_002b8758,
     0,
@@ -29,7 +29,7 @@ UInt32 accuracyDirName_storage[9] = {
     0,
 }; /* 0x314b40 */
 
-#define accuracyDirName ((const char * const *)accuracyDirName_storage)
+#define accuracyDirName ((const char * const *)accuracyDirName)
 
 static Bool G_ParseWeaponAccuracyGraph(const char *dirName, const char *graphName,
                                        float accuracyGraphKnots[16][2],

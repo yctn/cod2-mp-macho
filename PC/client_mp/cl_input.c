@@ -69,7 +69,7 @@ void CL_WritePacketDbg(const char *fmt, int serverId) {
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */
 __attribute__((used, packed, aligned(4)))
-UInt32 kb_storage[8] = {
+UInt32 kb[8] = {
     (UInt32)playersKb,
     0,
     0,
@@ -80,7 +80,7 @@ UInt32 kb_storage[8] = {
     0,
 }; /* 0x313180 */
 
-#define kb ((kbutton_t *)kb_storage[0])
+#define kb ((kbutton_t *)kb[0])
 
 typedef struct
 {

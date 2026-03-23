@@ -9,10 +9,10 @@
 HCURSOR SetWinCursor(HCURSOR hCursor);
 
 __attribute__((used, packed, aligned(4)))
-UInt32 sResult_storage[8] = {
+UInt32 sResult[8] = {
     0, 0, 0, 0, 0, 0, 0, 0,
 }; /* 0x308060 */
-#define sResult (*(int *)&sResult_storage[0])
+#define sResult (*(int *)&sResult[0])
 extern int sSavedWinCursor;
 extern int sCurrentCursor; /* WinCursor* */
 static CFStringRef sResult_00334b04; /* 0x334b04 */

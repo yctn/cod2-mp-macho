@@ -31,14 +31,14 @@ extern const char str_0021e038[];
 extern const char str_0021e04c[];
 
 __attribute__((used, aligned(4)))
-UInt32 s_mantleTrans_storage[24] = {
+UInt32 s_mantleTrans[24] = {
     0x00000001, 0x00000008, 0x42640000, 0x00000002, 0x00000008, 0x424c0000,
     0x00000003, 0x00000009, 0x42340000, 0x00000004, 0x00000009, 0x421c0000,
     0x00000005, 0x00000009, 0x42040000, 0x00000006, 0x0000000a, 0x41d80000,
     0x00000007, 0x0000000a, 0x41a80000, 0x00000000, 0x00000000, 0x00000000,
 }; /* 0x30aaa0 */
 __attribute__((used, aligned(4)))
-UInt32 s_mantleAnimNames_storage[16] = {
+UInt32 s_mantleAnimNames[16] = {
     (UInt32)str_0021dfa4, (UInt32)str_0021dfb4, (UInt32)str_0021dfc4, (UInt32)str_0021dfd4,
     (UInt32)str_0021dfe4, (UInt32)str_0021dff4, (UInt32)str_0021e004, (UInt32)str_0021e014,
     (UInt32)str_0021e024, (UInt32)str_0021e038, (UInt32)str_0021e04c, 0,
@@ -46,8 +46,8 @@ UInt32 s_mantleAnimNames_storage[16] = {
 }; /* 0x30ab00 */
 static char (*s_mantleAnims)[64]; /* s_mantleAnims */
 
-#define s_mantleTrans ((MantleAnimTransition *)s_mantleTrans_storage)
-#define s_mantleAnimNames ((char **)s_mantleAnimNames_storage)
+#define s_mantleTrans ((MantleAnimTransition *)s_mantleTrans)
+#define s_mantleAnimNames ((char **)s_mantleAnimNames)
 
 extern const dvar_t *Dvar_RegisterBool(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);

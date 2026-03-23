@@ -77,7 +77,7 @@ __attribute__((used)) char *szWeapSlotNames[3] = {
     (char *)str_00221b98,
 }; /* 0x310c2c */
 __attribute__((used, packed, aligned(4)))
-UInt32 szWeapOverlayReticleNames_storage[10] = {
+UInt32 szWeapOverlayReticleNames[10] = {
     (UInt32)str_00218298,
     (UInt32)str_00221ba4,
     (UInt32)str_00221bb0,
@@ -102,7 +102,7 @@ __attribute__((used)) char *szWeapClassNames[10] = {
     (char *)str_0021ec08,
 }; /* 0x310c60 */
 __attribute__((used, packed, aligned(4)))
-UInt32 szWeapTypeNames_storage[6] = {
+UInt32 szWeapTypeNames[6] = {
     (UInt32)str_00221c14,
     (UInt32)str_00221b68,
     (UInt32)str_00221c1c,
@@ -111,13 +111,13 @@ UInt32 szWeapTypeNames_storage[6] = {
     0,
 }; /* 0x310c88 */
 
-#define szWeapOverlayReticleNames ((char **)szWeapOverlayReticleNames_storage)
-#define szWeapTypeNames ((char **)szWeapTypeNames_storage)
+#define szWeapOverlayReticleNames ((char **)szWeapOverlayReticleNames)
+#define szWeapTypeNames ((char **)szWeapTypeNames)
 __attribute__((used, packed, aligned(4)))
-UInt32 weaponDefFields_storage[1098] = {
+UInt32 weaponDefFields[1098] = {
 #include "bg_weapons_load_obj_weaponDefFields.inc"
 }; /* 0x30fae0 */
-#define weaponDefFields ((cspField_t *)weaponDefFields_storage)
+#define weaponDefFields ((cspField_t *)weaponDefFields)
 
 int BG_GetWeaponSlotForName(const char *pszSlotName);
 const char * BG_GetWeaponSlotNameForIndex(int iSlot);

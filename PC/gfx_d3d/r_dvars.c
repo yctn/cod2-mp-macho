@@ -165,7 +165,7 @@ __attribute__((used)) const char *xdebugNames[5] = {
     0,
 }; /* 0x3110fc */
 __attribute__((used, packed, aligned(4)))
-UInt32 textureModeNames_storage[10] = {
+UInt32 textureModeNames[10] = {
     (UInt32)str_00222fe4,
     (UInt32)str_0021a1a4,
     (UInt32)str_00222fec,
@@ -178,7 +178,7 @@ UInt32 textureModeNames_storage[10] = {
     0,
 }; /* 0x311158 */
 
-#define textureModeNames ((const char * const *)textureModeNames_storage)
+#define textureModeNames ((const char * const *)textureModeNames)
 extern const char str_00218298[]; /* "none" */
 extern const char str_00219524[]; /* "off" */
 extern const char str_0021ebe8[]; /* "auto" */

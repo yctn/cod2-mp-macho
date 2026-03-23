@@ -66,11 +66,11 @@ typedef struct {
     bool (*isFixedFunction)(const CVAOPacket *);
 } CVAOPacketVTable;
 
-extern unsigned char COpenGL_sOpenGLE_storage[];
+extern unsigned char COpenGL_sOpenGLE[];
 extern VAOStatus CVAOPacket_sVAOStatus; /* 0x0 */
 extern UINT32 CVAOPacket_sCurrentPacket; /* 0x0 */
-extern unsigned char CVAOPacket_sGenericPacket_storage[]; /* 0x0 */
-extern unsigned char CVAOPacket_sAllPackets_storage[]; /* 0x0 */
+extern unsigned char CVAOPacket_sGenericPacket[]; /* 0x0 */
+extern unsigned char CVAOPacket_sAllPackets[]; /* 0x0 */
 
 extern void *vtbl_CVAOPacket[];
 
@@ -95,7 +95,7 @@ void *__ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base(void *node);
 
 static CVAOPacketImpl *CVAOPacket_GetGenericPacket(UINT32 index)
 {
-    return (CVAOPacketImpl *)(CVAOPacket_sGenericPacket_storage + index * sizeof(CVAOPacketImpl));
+    return (CVAOPacketImpl *)(CVAOPacket_sGenericPacket + index * sizeof(CVAOPacketImpl));
 }
 
 static CVAOPacketRbTreeNode *CVAOPacket_GetTreeNode(CVAOPacketRbTreeNodeBase *node)
@@ -177,7 +177,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 
     CVAOPacket_sVAOStatus = bIsCached ? USING_CACHED_VAO : USING_VIRGIN_VAO;
     isFixedFunction = CVAOPacket_GetVTable(_this)->isFixedFunction(_this);
-    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE,
                    (const COpenGLVAO *)_this,
                    isFixedFunction,
                    0);
@@ -186,7 +186,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
 void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
 {
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    IsFixedFunction,
                    ForceValidation);
@@ -199,7 +199,7 @@ void CVAOPacket_InitializeGenericVAO(void)
     CVAOPacketImpl *genericPacket;
     int i;
 
-    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
+    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets;
     genericPacket = CVAOPacket_GetGenericPacket(0);
 
     allPackets->_M_node_count = 0;
@@ -232,7 +232,7 @@ void CVAOPacket_InitializeGenericVAO(void)
 
     COpenGLVAO_CreateNewBinding((const COpenGLVAO *)genericPacket);
     CVAOPacket_sVAOStatus = USING_GENERIC_VAO;
-    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE_storage,
+    COpenGL_SetVAO((const COpenGL *)COpenGL_sOpenGLE,
                    (const COpenGLVAO *)CVAOPacket_GetGenericPacket(CVAOPacket_sCurrentPacket),
                    1,
                    1);
@@ -278,7 +278,7 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
 
     pStart = (const unsigned char *)p;
     pEnd = pStart + Length;
-    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
+    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets;
     header = &allPackets->_M_header;
     iter = allPackets->_M_header._M_left;
 
@@ -325,7 +325,7 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
 
             /* Release the VAO binding */
             COpenGL_ReleaseVAOBinding(
-                (const COpenGL *)COpenGL_sOpenGLE_storage,
+                (const COpenGL *)COpenGL_sOpenGLE,
                 (const GLuint *)packetVAOID);
             packet->mpVAOID = NULL;
 
@@ -369,7 +369,7 @@ bool CVAOPacket_IsCached(CVAOPacket *v)
     CVAOPacketRbTreeNodeBase *iter;
     CVAOPacketRbTreeNodeBase *header;
 
-    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
+    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets;
     header = &allPackets->_M_header;
 
     Code = COpenGLVAO_GetCode((const COpenGLVAO *)v);
@@ -491,7 +491,7 @@ void CVAOPacket_Cache(CVAOPacket *v)
         /* For linking: the function takes (tree*, pair*) in cdecl */
         typedef void (*insert_equal_fn)(void *tree, void *kv);
         insert_equal_fn fn = (insert_equal_fn)ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE12insert_equalERKS3_;
-        fn(CVAOPacket_sAllPackets_storage, InsertBuf);
+        fn(CVAOPacket_sAllPackets, InsertBuf);
     }
 
     /* Destruct temporaries */
@@ -514,7 +514,7 @@ void CVAOPacket_Shutdown(void)
     CVAOPacketRbTreeNodeBase *root;
     CVAOPacketRbTreeNodeBase *header;
 
-    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
+    allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets;
     header = &allPackets->_M_header;
     root = allPackets->_M_header._M_parent;
 
@@ -525,7 +525,7 @@ void CVAOPacket_Shutdown(void)
         {
             typedef void (*erase_fn)(void *tree, void *node);
             erase_fn fn = (erase_fn)ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E;
-            fn(CVAOPacket_sAllPackets_storage, root->_M_right);
+            fn(CVAOPacket_sAllPackets, root->_M_right);
         }
 
         left = root->_M_left;
@@ -559,18 +559,18 @@ static void __static_initialization_and_destruction_0(int __initialize_p, int __
     }
 
     if (__initialize_p == 1) {
-        allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets_storage;
+        allPackets = (CVAOPacketRbTree *)CVAOPacket_sAllPackets;
         allPackets->_M_node_count = 0;
         allPackets->_M_header._M_color = 0;
         allPackets->_M_header._M_parent = NULL;
         allPackets->_M_header._M_left = &allPackets->_M_header;
         allPackets->_M_header._M_right = &allPackets->_M_header;
-        CVAOPacket_CVAOPacket((const CVAOPacket *)CVAOPacket_sGenericPacket_storage);
+        CVAOPacket_CVAOPacket((const CVAOPacket *)CVAOPacket_sGenericPacket);
         return;
     }
 
     if (__initialize_p == 0) {
-        ZN10CVAOPacketD2Ev((const CVAOPacket *)CVAOPacket_sGenericPacket_storage);
+        ZN10CVAOPacketD2Ev((const CVAOPacket *)CVAOPacket_sGenericPacket);
         CVAOPacket_Shutdown();
     }
 }

@@ -29,7 +29,7 @@ extern const char str_002169fc[];
 extern const char str_00216a04[];
 extern const char str_00216a0c[];
 __attribute__((used, packed, aligned(4)))
-UInt32 g_languages_storage[32] = {
+UInt32 g_languages[32] = {
     (UInt32)str_0021699c, 0,
     (UInt32)str_002169a4, 0,
     (UInt32)str_002169ac, 0,
@@ -46,7 +46,7 @@ UInt32 g_languages_storage[32] = {
     (UInt32)str_00216a0c, 0,
     0, 0, 0, 0,
 }; /* 0x308bc0 */
-#define g_languages ((languageInfo_t *)g_languages_storage)
+#define g_languages ((languageInfo_t *)g_languages)
 static qboolean g_currentAsian; /* g_currentAsian */
 
 extern const dvar_t *com_developer; /* imp_fs_ignoreLocalized */

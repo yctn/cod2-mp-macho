@@ -305,7 +305,7 @@ struct _Rep_base {
 struct _Vector_impl {
     MacRect *_M_start;
     MacRect *_M_finish;
-    MacRect *_M_end_of_storage;
+    MacRect *_M_end_of;
 };
 
 struct allocator_char {

@@ -86,7 +86,7 @@ extern const char str_002a9e80[];
 extern const char str_002a9e90[];
 
 __attribute__((used, packed, aligned(4)))
-UInt32 MonthAbbrev_storage[12] = {
+UInt32 MonthAbbrev[12] = {
     (UInt32)str_002a9d68,
     (UInt32)str_002a9d80,
     (UInt32)str_002a9d98,
@@ -101,14 +101,14 @@ UInt32 MonthAbbrev_storage[12] = {
     (UInt32)str_002a9e5c,
 }; /* 0x311e80 */
 __attribute__((used, packed, aligned(4)))
-UInt32 netSources_storage[3] = {
+UInt32 netSources[3] = {
     (UInt32)str_002a9e74,
     (UInt32)str_002a9e80,
     (UInt32)str_002a9e90,
 }; /* 0x311eb0 */
 
-#define MonthAbbrev ((const char * const *)MonthAbbrev_storage)
-#define netSources ((const char * const *)netSources_storage)
+#define MonthAbbrev ((const char * const *)MonthAbbrev)
+#define netSources ((const char * const *)netSources)
 static const serverFilter_t serverFilters[1]; /* serverFilters */
 static char menuBuf2[32768]; /* menuBuf2 */
 static int ui_serverFilterType; /* ui_serverFilterType */

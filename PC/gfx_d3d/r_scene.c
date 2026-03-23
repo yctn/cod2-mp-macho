@@ -18,11 +18,11 @@ __attribute__((used)) byte s_XModelSurfaceSize[8] = {
     0x00, 0x00, 0x00, 0x10, 0x38, 0x10, 0x00, 0x00,
 }; /* 0x311080 */
 __attribute__((used, aligned(4)))
-surfaceType_t s_entitySurface_storage[6] = {
+surfaceType_t s_entitySurface[6] = {
     2, 0, 0, 0, 0, 0,
 }; /* 0x311088 */
 
-#define s_entitySurface (s_entitySurface_storage[0])
+#define s_entitySurface (s_entitySurface[0])
 
 extern GfxBackEndData *frontEndDataOut;
 extern r_global_permanent_t rgp;       /* imp_rgp */
