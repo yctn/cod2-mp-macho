@@ -9,7 +9,7 @@
 #include <GL/gl.h>
 #include "stubs/gcc40_compat.h"
 
-/* Forward declaration for ___maskrune */
+/* BSD __runetype[256] table for macOS ctype compatibility; see init_rune_locale() below */
 static unsigned int bsd_rune_data[13 + 256];
 
 /* macOS ___tolower / ___maskrune are used by naked ASM code */
@@ -72,7 +72,6 @@ void *___sF[3] = {0, 0, 0};
  *   bit 14 (0x4000) = _CTYPE_S (space)     - shrl $0xe + andl $1
  *   bit  2 (0x0004) = old BSD _N (digit)   - C code: & 4
  */
-static unsigned int bsd_rune_data[13 + 256]; /* 0x34 header + __runetype[256] */
 void *__DefaultRuneLocale;
 
 __attribute__((constructor))
@@ -298,13 +297,9 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
     return (ContextRef)ctx;
 }
 
-static int swap_diag = 0;
 void MacDisplay_SwapContext(ContextRef ctx)
 {
-    if (swap_diag < 5) {
-        fprintf(stderr, "[SWAP#%d] win=%p ctx=%p\n", swap_diag, sdl_gl_window, (void*)(uintptr_t)ctx);
-        swap_diag++;
-    }
+    (void)ctx;
     if (sdl_gl_window)
         SDL_GL_SwapWindow(sdl_gl_window);
 }

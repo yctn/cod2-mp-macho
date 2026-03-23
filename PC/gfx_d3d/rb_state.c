@@ -15,7 +15,6 @@ extern struct DxState dxState; /* 0x0 */
 extern r_backEndGlobals_t backEnd; /* imp_backEnd */
 static const DxTextureStageEnums texStageEnums; /* texStageEnums */
 static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
-static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
 extern const byte defaultSamplerStateTable[]; /* rodata.c */
 extern const DWORD s_blendTable[]; /* rodata.c */
 extern const DWORD s_blendOpTable[]; /* rodata.c */

@@ -2,47 +2,19 @@
 /* Platform stubs for agl (macOS → Linux) */
 #include "agl_stubs.h"
 #include <SDL2/SDL.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <signal.h>
 
+extern SDL_Window *sdl_gl_window; /* exposed from macos_compat.c */
 
-static long long get_ms(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (long long)tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
-
-/* Intercept glDrawRangeElements to dump GL state at draw time */
-
-/* Intercept glTexImage2D to check texture uploads */
-/* glTexImage2D interceptor disabled — was calling glGetIntegerv inside GL calls */
-
-/* glCompressedTexImage2DARB interceptor disabled */
-
-/* glTexSubImage2D and glCompressedTexSubImage2D interceptors disabled */
-
-/* glBindTexture interceptor REMOVED — was breaking texture binding */
-
-/* glBindProgramARB and glProgramStringARB interceptors removed — diagnostics only */
-
-
-/* glProgramEnvParameter4fvARB interceptor REMOVED — was potentially breaking shader params */
 
 /* Counters for DrawIndexedPrimitive flow tracing */
-int g_dip_enter = 0;        /* entered DrawIndexedPrimitive */
 int g_dip_is_tri = 0;       /* mode == GL_TRIANGLES */
 int g_dip_drawflag_zero = 0; /* sDrawFlag was 0 → early return */
 int g_dip_numelems_zero = 0; /* NumElements was 0 → skip draw */
 int g_dip_gl_draw = 0;       /* reached glDrawRangeElements */
-int g_dip_last_numelems = 0;
-int g_dip_last_mode = 0;
 
 /* Fragment program diagnostics */
 int g_fp_enable_count = 0;
 int g_fp_bind_count = 0;
-int g_vp_enable_count = 0;
 
 AGLPixelFormat aglChoosePixelFormat(void *gdevs, int ndev, const int *attribs)
 {
@@ -61,7 +33,6 @@ int aglDestroyContext(AGLContext ctx)
 
 int aglSetCurrentContext(AGLContext ctx)
 {
-    extern SDL_Window *sdl_gl_window;
     if (sdl_gl_window && ctx) {
         SDL_GL_MakeCurrent(sdl_gl_window, (SDL_GLContext)ctx);
     }
@@ -87,16 +58,11 @@ int aglUpdateContext(AGLContext ctx)
     return 1;
 }
 
-extern SDL_Window *sdl_gl_window; /* exposed from macos_compat.c */
-
 void aglSwapBuffers(AGLContext ctx)
 {
-    static int swap_count = 0;
+    (void)ctx;
     if (!sdl_gl_window)
         return;
-
-    if (swap_count++ < 10)
-        fprintf(stderr, "[SEQ] aglSwapBuffers\n");
     SDL_PumpEvents();
     SDL_GL_SwapWindow(sdl_gl_window);
 }
