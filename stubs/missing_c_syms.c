@@ -86,6 +86,8 @@ void Scr_LoadGameType(void) {}
 void Scr_StartupGameType(void) {}
 /* GScr_LoadScripts is now real - in g_scr_main_mp.c */
 void Scr_SetClassMap(int classnum) {}
+void ScriptParse(void *parseData, int a2) { Com_Printf("ScriptParse: stub (script compiler not yet implemented)\n"); }
+void ScriptCompile(void *parseData, unsigned int compiledObj, unsigned int scriptId) {}
 void GScr_AddFieldsForHudElems(void) {}
 void Scr_FreeScripts(int a) {}
 void Scr_BeginLoadAnimScripts(void) {}

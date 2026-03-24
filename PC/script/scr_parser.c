@@ -45,6 +45,52 @@ void Scr_InitOpcodeLookup(void) {
 }
 
 /* line 92 */
+extern int FS_FOpenFileByMode(const char *, int *, int);
+extern int FS_Read(void *, int, int);
+extern void FS_FCloseFile(int);
+extern void *Hunk_AllocateTempMemoryHighInternal(int size);
+extern void Com_Printf(const char *fmt, ...);
+
+/* Scr_AddSourceBufferInternal: store source buffer metadata */
+static void Scr_AddSourceBufferInternal(const char *codePos, char *sourceBuf, int len, int doEolFixup, int archive)
+{
+    /* Stub: just store the source buffer info if in developer mode */
+    (void)codePos; (void)sourceBuf; (void)len; (void)doEolFixup; (void)archive;
+}
+
+/* Scr_ReadFile: read a script file from the filesystem */
+static char *Scr_ReadFile(const char *filename, const char *extFilename, const char *codePos, int archive)
+{
+    int file;
+    int len;
+    char *buf;
+
+    len = FS_FOpenFileByMode(extFilename, &file, 0 /* FS_READ */);
+    if (len < 0) {
+        Scr_AddSourceBufferInternal(codePos, NULL, -1, 1, archive);
+        return NULL;
+    }
+
+    buf = (char *)Hunk_AllocateTempMemoryHighInternal(len + 1);
+    FS_Read(buf, len, file);
+    buf[len] = 0;
+    FS_FCloseFile(file);
+
+    Scr_AddSourceBufferInternal(codePos, buf, len, 1, archive);
+    return buf;
+}
+
+/* Scr_AddSourceBuffer: load source for a script file.
+ * Currently returns NULL because ScriptParse/ScriptCompile are not yet
+ * implemented. This causes Scr_LoadScript to bail out early. */
+char *Scr_AddSourceBuffer(const char *filename, const char *extFilename, const char *codePos, int archive)
+{
+    /* TODO: enable when ScriptParse/ScriptCompile are implemented:
+     * return Scr_ReadFile(filename, extFilename, codePos, archive);
+     */
+    return NULL;
+}
+
 void Scr_ShutdownOpcodeLookup(void) {
     int i;
 
