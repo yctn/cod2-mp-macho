@@ -41,6 +41,19 @@ void R_LoadPortalVerts(void) {}
 void R_LoadSurfaces(void) {}
 void ZN14CAudioRecorderD1Ev(void) {}
 
+/* Console/UI stubs */
+void CL_ConsolePrint(int channel, const char *txt, int duration, int linewidth) {}
+
+/* MSG_Init: initialize a message buffer */
+#include "common_types.h"
+void MSG_Init(msg_t *buf, byte *data, int length) {
+    memset(buf, 0, sizeof(*buf));
+    buf->data = data;
+    buf->maxsize = length;
+}
+void UI_SetMap(const char *mapname, const char *gametype) {}
+void CL_StartHunkUsers(void) {}
+
 /* Stubs for functions called during map loading */
 int Com_LoadVolumeFalloffCurve(const char *name, void *curve) { return 1; }
 int Com_InitDefaultSoundAliasVolumeFalloffCurve(void *curve) { return 1; }
