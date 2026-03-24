@@ -109,5 +109,62 @@ YY_BUFFER_STATE yy_create_buffer(FILE *file, int size)
     return b;
 }
 
+/* yy_flush_buffer / yy_init_buffer / yy_load_buffer_state */
+static void yy_load_buffer_state(void)
+{
+    yy_n_chars = yy_current_buffer->yy_n_chars;
+    yy_c_buf_p = yy_current_buffer->yy_buf_pos;
+    yytext = yy_c_buf_p;
+    yyin = yy_current_buffer->yy_input_file;
+    yy_hold_char = *yy_c_buf_p;
+}
+
+void yy_flush_buffer(YY_BUFFER_STATE b)
+{
+    if (!b) return;
+    b->yy_n_chars = 0;
+    b->yy_ch_buf[0] = 0;
+    b->yy_ch_buf[1] = 0;
+    b->yy_buf_pos = b->yy_ch_buf;
+    b->yy_at_bol = 1;
+    b->yy_buffer_status = 0;
+    if (b == yy_current_buffer)
+        yy_load_buffer_state();
+}
+
+void yy_init_buffer(YY_BUFFER_STATE b, FILE *file)
+{
+    yy_flush_buffer(b);
+    b->yy_input_file = file;
+    b->yy_fill_buffer = 1;
+    b->yy_is_interactive = 0;
+}
+
+/* ScriptParse: set up yacc state and parse a script */
+void ScriptParse(sval_t *parseData, int user)
+{
+    struct yy_buffer_state buffer_state;
+
+    g_out_pos = (unsigned int)-1;
+    g_sourcePos = 0;
+    g_parse_user = (unsigned char)user;
+    g_dummyVal.node = 0;
+
+    yy_init = 1;
+
+    buffer_state.yy_buf_size = 16384;
+    buffer_state.yy_ch_buf = ch_buf;
+    buffer_state.yy_is_our_buffer = 0;
+
+    yy_init_buffer((YY_BUFFER_STATE)&buffer_state, 0);
+
+    yy_current_buffer = (YY_BUFFER_STATE)&buffer_state;
+    yy_start = 3;
+
+    yyparse();
+
+    *parseData = yaccResult;
+}
+
 /* line 463 */
 #include "yyparse_impl.h"

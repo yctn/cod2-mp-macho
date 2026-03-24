@@ -80,15 +80,10 @@ static char *Scr_ReadFile(const char *filename, const char *extFilename, const c
     return buf;
 }
 
-/* Scr_AddSourceBuffer: load source for a script file.
- * Currently returns NULL because ScriptParse/ScriptCompile are not yet
- * implemented. This causes Scr_LoadScript to bail out early. */
+/* Scr_AddSourceBuffer: load source for a script file */
 char *Scr_AddSourceBuffer(const char *filename, const char *extFilename, const char *codePos, int archive)
 {
-    /* TODO: enable when ScriptParse/ScriptCompile are implemented:
-     * return Scr_ReadFile(filename, extFilename, codePos, archive);
-     */
-    return NULL;
+    return Scr_ReadFile(filename, extFilename, codePos, archive);
 }
 
 void Scr_ShutdownOpcodeLookup(void) {
