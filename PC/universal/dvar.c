@@ -2078,3 +2078,321 @@ static const dvar_t * Dvar_RegisterVariant(const char *dvarName, short unsigned 
        In Emscripten, Dvar_RegisterVariantReg calls Dvar_RegisterVariant_impl directly. */
     return NULL;
 }
+
+const dvar_t * Dvar_RegisterBool(const char *dvarName, int value, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    memset(&dvarValue, 0, sizeof(dvarValue));
+    memset(&dvarDomain, 0, sizeof(dvarDomain));
+    dvarValue.enabled = value;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_BOOL, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterInt(const char *dvarName, int value, int min, int max, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    memset(&dvarValue, 0, sizeof(dvarValue));
+    dvarValue.integer = value;
+    dvarDomain.integer.min = min;
+    dvarDomain.integer.max = max;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_INT, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterFloat(const char *dvarName, float value, float min, float max, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    memset(&dvarValue, 0, sizeof(dvarValue));
+    dvarValue.value = value;
+    dvarDomain.value.min = min;
+    dvarDomain.value.max = max;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_FLOAT, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    memset(&dvarDomain, 0, sizeof(dvarDomain));
+    dvarValue.string = value;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_STRING, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterEnum(const char *dvarName, const char * *valueList, int defaultIndex, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    dvarDomain.enumeration.strings = valueList;
+    dvarDomain.enumeration.stringCount = 0;
+    while (valueList[dvarDomain.enumeration.stringCount] != NULL)
+        dvarDomain.enumeration.stringCount++;
+    dvarValue.integer = defaultIndex;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_ENUM, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterVec2(const char *dvarName, float x, float y, float min, float max, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    vec_t *v = Dvar_AllocTempVector(2);
+    v[0] = x;
+    v[1] = y;
+    dvarValue.vector = v;
+    dvarDomain.vector.min = min;
+    dvarDomain.vector.max = max;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC2, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterVec3(const char *dvarName, float x, float y, float z, float min, float max, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    vec_t *v = Dvar_AllocTempVector(3);
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    dvarValue.vector = v;
+    dvarDomain.vector.min = min;
+    dvarDomain.vector.max = max;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC3, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterVec4(const char *dvarName, float x, float y, float z, float w, float min, float max, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    vec_t *v = Dvar_AllocTempVector(4);
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    v[3] = w;
+    dvarValue.vector = v;
+    dvarDomain.vector.min = min;
+    dvarDomain.vector.max = max;
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_VEC4, flags, dvarValue, dvarDomain);
+}
+
+const dvar_t * Dvar_RegisterColor(const char *dvarName, float r, float g, float b, float a, int flags)
+{
+    DvarValue dvarValue;
+    DvarLimits dvarDomain;
+    memset(&dvarDomain, 0, sizeof(dvarDomain));
+    dvarValue.color[0] = (byte)(255.0f * (r < 0.0f ? 0.0f : (r > 1.0f ? 1.0f : r)) + 0.001f);
+    dvarValue.color[1] = (byte)(255.0f * (g < 0.0f ? 0.0f : (g > 1.0f ? 1.0f : g)) + 0.001f);
+    dvarValue.color[2] = (byte)(255.0f * (b < 0.0f ? 0.0f : (b > 1.0f ? 1.0f : b)) + 0.001f);
+    dvarValue.color[3] = (byte)(255.0f * (a < 0.0f ? 0.0f : (a > 1.0f ? 1.0f : a)) + 0.001f);
+    return Dvar_RegisterVariantReg(dvarName, DVAR_TYPE_COLOR, flags, dvarValue, dvarDomain);
+}
+
+void Dvar_SetBool(const dvar_t *dvar, int value)
+{
+    Dvar_SetBoolFromSource(dvar, value, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetInt(const dvar_t *dvar, int value)
+{
+    Dvar_SetIntFromSource(dvar, value, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetFloat(const dvar_t *dvar, float value)
+{
+    Dvar_SetFloatFromSource(dvar, value, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetVec2(const dvar_t *dvar, float x, float y)
+{
+    DvarValue newValue;
+    char string[64];
+    if (dvar->type == DVAR_TYPE_VEC2) {
+        vec_t *v = Dvar_AllocTempVector(2);
+        v[0] = x; v[1] = y;
+        newValue.vector = v;
+    } else {
+        Com_sprintf(string, sizeof(string), "%g %g", x, y);
+        newValue.string = string;
+    }
+    Dvar_SetVariantReg(dvar, newValue, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetVec3(const dvar_t *dvar, float x, float y, float z)
+{
+    DvarValue newValue;
+    char string[96];
+    if (dvar->type == DVAR_TYPE_VEC3) {
+        vec_t *v = Dvar_AllocTempVector(3);
+        v[0] = x; v[1] = y; v[2] = z;
+        newValue.vector = v;
+    } else {
+        Com_sprintf(string, sizeof(string), "%g %g %g", x, y, z);
+        newValue.string = string;
+    }
+    Dvar_SetVariantReg(dvar, newValue, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetVec4(const dvar_t *dvar, float x, float y, float z, float w)
+{
+    DvarValue newValue;
+    char string[128];
+    if (dvar->type == DVAR_TYPE_VEC4) {
+        vec_t *v = Dvar_AllocTempVector(4);
+        v[0] = x; v[1] = y; v[2] = z; v[3] = w;
+        newValue.vector = v;
+    } else {
+        Com_sprintf(string, sizeof(string), "%g %g %g %g", x, y, z, w);
+        newValue.string = string;
+    }
+    Dvar_SetVariantReg(dvar, newValue, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_SetBoolByName(const char *dvarName, int value)
+{
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetBool(dvar, value);
+    else
+        Dvar_RegisterString(dvarName, value ? "1" : "0", 0x4000);
+}
+
+void Dvar_SetIntByName(const char *dvarName, int value)
+{
+    char buf[32];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetInt(dvar, value);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%i", value);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+void Dvar_SetFloatByName(const char *dvarName, float value)
+{
+    char buf[32];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetFloat(dvar, value);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%g", value);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+void Dvar_SetVec2ByName(const char *dvarName, float x, float y)
+{
+    char buf[64];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetVec2(dvar, x, y);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%g %g", x, y);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+void Dvar_SetVec3ByName(const char *dvarName, float x, float y, float z)
+{
+    char buf[128];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetVec3(dvar, x, y, z);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%g %g %g", x, y, z);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+void Dvar_SetVec4ByName(const char *dvarName, float x, float y, float z, float w)
+{
+    char buf[128];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetVec4(dvar, x, y, z, w);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%g %g %g %g", x, y, z, w);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+void Dvar_SetStringByName(const char *dvarName, const char *value)
+{
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetString(dvar, value);
+    else
+        Dvar_RegisterString(dvarName, value, 0x4000);
+}
+
+void Dvar_SetColorByName(const char *dvarName, int r, int g, int b, int a)
+{
+    char buf[128];
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (dvar)
+        Dvar_SetColor(dvar, (float)r/255.0f, (float)g/255.0f, (float)b/255.0f, (float)a/255.0f);
+    else {
+        Com_sprintf(buf, sizeof(buf), "%g %g %g %g", (float)r/255.0f, (float)g/255.0f, (float)b/255.0f, (float)a/255.0f);
+        Dvar_RegisterString(dvarName, buf, 0x4000);
+    }
+}
+
+const dvar_t * Dvar_SetFromStringByNameFromSource(const char *dvarName, const char *string, DvarSetSource source)
+{
+    const dvar_t *dvar = Dvar_FindVar(dvarName);
+    if (!dvar)
+        return Dvar_RegisterString(dvarName, string, 0x4000);
+    Dvar_SetFromString(dvar, string);
+    return dvar;
+}
+
+void Dvar_SetCommand(const char *dvarName, const char *string)
+{
+    const dvar_t *dvar = Dvar_SetFromStringByNameFromSource(dvarName, string, DVAR_SOURCE_EXTERNAL);
+    if (dvar && isLoadingAutoExecGlobalFlag) {
+        Dvar_AddFlags(dvar, 0x2000);
+        Dvar_UpdateResetValueReg(dvar, dvar->current);
+    }
+}
+
+void Dvar_SetFromStringByName(const char *dvarName, const char *string)
+{
+    Dvar_SetFromStringByNameFromSource(dvarName, string, DVAR_SOURCE_INTERNAL);
+}
+
+void Dvar_ResetDvars(unsigned int filter, DvarSetSource setSource)
+{
+    dvar_t *dvar;
+    int i;
+    for (i = 0; i < dvarCount; i++) {
+        dvar = &dvarPool[i];
+        if (dvar->flags & filter)
+            Dvar_Reset(dvar, setSource);
+    }
+}
+
+qboolean Com_LoadDvarsFromBuffer(const char * *dvarnames, int numDvars, const char *buffer, const char *filename)
+{
+    int i;
+    const char *token;
+
+    Com_BeginParseSession(filename);
+
+    for (i = 0; i < numDvars; i++) {
+        token = Com_Parse(&buffer);
+        if (!token || !*token) {
+            Com_EndParseSession();
+            return 0;
+        }
+        Dvar_SetCommand(dvarnames[i], token);
+    }
+
+    Com_EndParseSession();
+    return 1;
+}
+
+void Dvar_Init(void)
+{
+    isDvarSystemActive = 1;
+    dvar_cheats = Dvar_RegisterBool("sv_cheats", 0, 0x1018);
+    Dvar_AddCommands();
+}

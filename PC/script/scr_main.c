@@ -41,6 +41,11 @@ extern void Com_Printf(const char *fmt, ...);
 extern unsigned int FindNextSibling(unsigned int id);
 extern unsigned int GetVariableName(unsigned int id);
 
+extern void SL_CheckInit(void);
+extern void Var_Init(void);
+extern void Scr_VM_Init(void);
+extern void Scr_InitSystem(void);
+
 void DumpCompiledObject(const char *label, unsigned int compiledObj)
 {
     unsigned int child;
@@ -504,6 +509,37 @@ void Scr_BeginLoadScripts(void)
 
     Scr_BeginLoadAnimTrees(1);
     TempMemoryReset();
+}
+
+/*
+ * Scr_Init: top-level script system initialization.
+ * Called from common.c during game init. Initializes the string list,
+ * variable system, and VM. Sets bInited=1 when complete.
+ * ref: Scr_Init @ 0807F91E
+ */
+void Scr_Init(void)
+{
+    struct scrVarPub_t *scrVarPub = (struct scrVarPub_t *)imp_scrVarPub;
+    struct scrCompilePub_t *scrCompPub = (struct scrCompilePub_t *)imp_scrCompilePub;
+
+    if (scrVarPub->bInited)
+        return;
+
+    SL_CheckInit();
+    Var_Init();
+    Scr_VM_Init();
+
+    /* Zero compiler/script state (corresponds to Linux scrCompilePub fields
+     * byte_8202A64, byte_8202858, dword_8202A4C, dword_8202A48,
+     * dword_8202440, dword_8202A54, dword_8202A50 being zeroed).
+     * In our struct these map to: script_loading, and the array ID fields. */
+    scrCompPub->script_loading = 0;
+    scrCompPub->loadedscripts = 0;
+    scrCompPub->scripts = 0;
+    scrCompPub->builtinFunc = 0;
+    scrCompPub->builtinMeth = 0;
+
+    scrVarPub->bInited = 1;
 }
 
 /* line 154 */

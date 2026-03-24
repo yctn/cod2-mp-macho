@@ -93,3 +93,81 @@ next:
     Com_Printf((const char *)"Player %s is not on the server\n", s);
     return 0;
 }
+
+const char * SV_GetMapBaseName(const char *mapname)
+{
+    return FS_GetMapBaseName(mapname);
+}
+
+static short int SV_Map_f(void)
+{
+    extern void I_strlwr(char *s);
+    extern char *va(const char *fmt, ...);
+    extern const char *GetBspExtension(void);
+    extern int FS_ReadFile(const char *qpath, void **buffer);
+    extern void FS_ConvertPath(char *s);
+    extern void SV_SpawnServer(const char *server);
+    extern void Dvar_SetBool(const dvar_t *dvar, int value);
+    extern const dvar_t *sv_cheats;
+
+    char mapname[64];
+    char *expanded;
+    const char *map;
+
+    map = SV_Cmd_Argv(1);
+    if (!map || !map[0])
+        return 0;
+
+    I_strncpyz(mapname, SV_GetMapBaseName(map), sizeof(mapname));
+    I_strlwr(mapname);
+
+    expanded = va("maps/mp/%s.%s", mapname, GetBspExtension());
+    if (FS_ReadFile(expanded, NULL) == -1) {
+        Com_Printf("Can't find map %s\n", expanded);
+        return 0;
+    }
+
+    FS_ConvertPath(mapname);
+    SV_SpawnServer(mapname);
+
+    Dvar_SetBool(sv_cheats, I_stricmp(SV_Cmd_Argv(0), "devmap") == 0);
+    return 0;
+}
+
+short int SV_AddOperatorCommands(void)
+{
+    extern void *imp_com_dedicated;
+
+    if (initialized)
+        return 0;
+    initialized = 1;
+    Cmd_AddCommand("heartbeat", (void (*)(void))SV_Heartbeat_f);
+    Cmd_AddCommand("onlykick", (void (*)(void))SV_Drop_f);
+    Cmd_AddCommand("banUser", (void (*)(void))SV_Ban_f);
+    Cmd_AddCommand("banClient", (void (*)(void))SV_BanNum_f);
+    Cmd_AddCommand("kick", (void (*)(void))SV_TempBan_f);
+    Cmd_AddCommand("tempBanUser", (void (*)(void))SV_TempBan_f);
+    Cmd_AddCommand("tempBanClient", (void (*)(void))SV_TempBanNum_f);
+    Cmd_AddCommand("unbanUser", (void (*)(void))SV_Unban_f);
+    Cmd_AddCommand("clientkick", (void (*)(void))SV_DropNum_f);
+    Cmd_AddCommand("status", (void (*)(void))SV_Status_f);
+    Cmd_AddCommand("serverinfo", (void (*)(void))SV_Serverinfo_f);
+    Cmd_AddCommand("systeminfo", (void (*)(void))SV_Systeminfo_f);
+    Cmd_AddCommand("dumpuser", (void (*)(void))SV_DumpUser_f);
+    Cmd_AddCommand("map_restart", (void (*)(void))SV_MapRestart_f);
+    Cmd_AddCommand("fast_restart", (void (*)(void))SV_FastRestart_f);
+    Cmd_AddCommand("map", (void (*)(void))SV_Map_f);
+    Cmd_SetAutoComplete("map", "maps/mp", "d3dbsp");
+    Cmd_AddCommand("map_rotate", (void (*)(void))SV_MapRotate_f);
+    Cmd_AddCommand("gameCompleteStatus", (void (*)(void))SV_GameCompleteStatus_f);
+    Cmd_AddCommand("devmap", (void (*)(void))SV_Map_f);
+    Cmd_SetAutoComplete("devmap", "maps/mp", "d3dbsp");
+    Cmd_AddCommand("killserver", (void (*)(void))SV_KillServer_f);
+    if (*(int *)((byte *)(*(void **)imp_com_dedicated) + 8)) {
+        Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
+        Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);
+    }
+    Cmd_AddCommand("scriptUsage", (void (*)(void))SV_ScriptUsage_f);
+    Cmd_AddCommand("stringUsage", (void (*)(void))SV_StringUsage_f);
+    return 0;
+}

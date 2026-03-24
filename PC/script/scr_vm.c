@@ -44,7 +44,8 @@ static void VM_TrimStack(unsigned int startLocalId, VariableStackBuffer *stackVa
 static void Scr_CancelWaittill(void);
 void Scr_CancelNotifyList(unsigned int notifyListOwnerId);
 void Scr_FreeThread(int handle);
-void Scr_InitSystem(int sys);
+void Scr_VM_Init(void);
+void Scr_InitSystem(void);
 void Scr_ShutdownSystem(int sys, int bComplete);
 int Scr_IsSystemActive(int sys);
 unsigned int Scr_GetNumParam(void);
@@ -154,6 +155,92 @@ void Scr_SetLoading(int bLoading)
 unsigned int Scr_GetNumScriptThreads(void)
 {
     return 0;
+}
+
+extern unsigned int AllocValue(void);
+extern unsigned int AllocObject(void);
+extern unsigned int Scr_AllocArray(void);
+
+/*
+ * Scr_VM_Init: initialize the script VM state.
+ * ref: Scr_VM_Init @ 0807F834
+ */
+void Scr_VM_Init(void)
+{
+    struct scrVarPub_t *p = (struct scrVarPub_t *)imp_scrVarPub;
+    struct scrVmPub_t  *vm = (struct scrVmPub_t *)imp_scrVmPub;
+
+    /* Set up eval stack pointer: top points to the first stack entry */
+    vm->top = &vm->stack[0];
+    /* maxstack: upper bound (one past last usable entry) */
+    vm->maxstack = &vm->stack[2047];
+    /* function frame starts at function_frame_start[0] */
+    vm->function_frame = &vm->function_frame_start[0];
+    vm->function_count = 0;
+
+    /* localVars: point to scrVmGlob.localVarsStack[0].
+     * scrVmGlob layout: eval_stack(16) + dialog_err(4) + loading(4) + starttime(4) + localVarsStack(0...)
+     * => localVarsStack[0] is at scrVmGlob + 28 */
+    vm->localVars = (unsigned int *)((char *)&scrVmGlob + 28);
+
+    /* Clear flags */
+    vm->debugCode = 0;
+    vm->terminal_error = 0;
+    vm->inparamcount = 0;
+    vm->outparamcount = 0;
+
+    /* scrVarPub.evaluate = 0 */
+    p->evaluate = 0;
+
+    Scr_ClearErrorMessage();
+
+    /* Allocate the temp variable slot */
+    p->tempVariable = AllocValue();
+
+    /* Zero the entity/game/anim array IDs */
+    p->timeArrayId   = 0;
+    p->pauseArrayId  = 0;
+    p->levelId       = 0;
+    p->gameId        = 0;
+    p->animId        = 0;
+    p->freeEntList   = 0;
+
+    /* Clear loading state */
+    *(int *)((char *)&scrVmGlob + 20) = 0;  /* scrVmGlob.loading = 0 */
+}
+
+/*
+ * Scr_InitSystem: allocate the top-level game variable objects.
+ * ref: Scr_InitSystem @ 08083E96
+ */
+void Scr_InitSystem(void)
+{
+    struct scrVarPub_t *p = (struct scrVarPub_t *)imp_scrVarPub;
+
+    p->timeArrayId  = AllocObject();
+    p->pauseArrayId = Scr_AllocArray();
+    p->levelId      = AllocObject();
+    p->gameId       = AllocObject();
+
+    p->entId        = 0;
+    /* g_script_error_level sentinel */
+    *(int *)((char *)&scrVmGlob + 20) = 0;   /* loading = 0, repurpose as level sentinel */
+    /* The reference also sets dword_8394018 = 0, dword_83D553C = -1.
+     * dword_8394018 is not in our scrVarPub_t struct definition but
+     * it's BSS-zeroed at startup so we don't need to explicitly zero it. */
+}
+
+extern void Com_Error(int code, const char *fmt, ...);
+
+/*
+ * Scr_TerminalError: set terminal error flag and abort with a fatal error.
+ * ref: Scr_TerminalError @ 0807FAC0 area
+ */
+void Scr_TerminalError(const char *error)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    vm->terminal_error = 1;
+    Com_Error(1, "%s", error);
 }
 
 /* line 5100 */

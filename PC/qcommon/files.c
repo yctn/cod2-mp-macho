@@ -1273,3 +1273,833 @@ need_iwds:
     Com_Printf("Need iwds: %s\n", needediwds); /* line 847 */
     return 1;
 }
+
+/* =============================================================
+ * New filesystem function implementations
+ * ============================================================= */
+
+/* Globals defined in com_files.c / bss */
+extern searchpath_t *fs_searchpaths;
+extern char fs_gamedir[256];
+extern int fs_loadStack;
+extern int fs_packFiles;
+extern int fs_fakeChkSum;
+extern int fs_checksumFeed;
+extern int fs_numServerIwds;
+
+extern const dvar_t *fs_gameDirVar;
+extern const dvar_t *fs_restrict;
+extern const dvar_t *fs_ignoreLocalized;
+extern const dvar_t *fs_basegame;
+extern const dvar_t *fs_copyfiles;
+extern const dvar_t *fs_useOldAssets;
+
+/* Functions defined in com_files.c (use existing extern decls where possible) */
+extern Bool FS_RegisterDvars(void);
+extern long int FS_HashFileName(const char *fname, int hashSize);
+/* FS_UseSearchPath is already declared as: extern int FS_UseSearchPath(void *sp); */
+/* FS_FilenameCompare is already declared above */
+/* FS_FreeFileList is already declared above */
+
+/* Unzip API */
+extern void *unzOpen(const char *path);
+extern int unzGetGlobalInfo(void *file, unz_global_info *pglobal_info);
+extern int unzGoToFirstFile(void *file);
+extern int unzGoToNextFile(void *file);
+extern int unzGetCurrentFileInfo(void *file, unz_file_info *pfile_info,
+                                  char *szFileName, uLong fileNameBufferSize,
+                                  void *extraField, uLong extraFieldBufferSize,
+                                  char *szComment, uLong commentBufferSize);
+extern void unzGetCurrentFileInfoPosition(void *file, uLong *pos);
+extern int unzSetCurrentFileInfoPosition(void *file, uLong pos);
+extern int unzOpenCurrentFile(void *file);
+extern int unzReadCurrentFile(void *file, void *buf, unsigned len);
+extern void *unzReOpen(const char *path, void *file);
+
+/* Memory / string functions not yet declared */
+extern void *Hunk_AllocateTempMemoryInternal(int size);
+extern void Hunk_FreeTempMemory(void *buf);
+
+/* Dvar */
+extern const dvar_t *Dvar_RegisterString_mac(const char *name, const char *value, int flags);
+extern const dvar_t *Dvar_RegisterBool_mac(const char *name, int value, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
+extern void Dvar_ClearModified(const dvar_t *dvar);
+extern void Dvar_SetString(const dvar_t *dvar, const char *value);
+
+/* System */
+extern const char *Sys_DefaultInstallPath(void);
+extern const char *Sys_DefaultCDPath(void);
+extern const char *Sys_DefaultHomePath(void);
+extern void Com_StartupVariable(const char *match);
+
+/* Compute a checksum over a buffer */
+extern unsigned int Com_BlockChecksum(const void *buffer, int length);
+extern unsigned int Com_BlockChecksumKey(const void *buffer, int length, int key);
+
+#define BASEGAME "main"
+#define MAX_IWDFILES 1024
+#define MAX_FILEHASH_SIZE 1024
+#define MAX_FOUND_FILES 0x1000
+#define MAX_ZPATH 256
+
+/* ---------------------------------------------------------------
+ * FS_BuildOSPath
+ * Builds a full OS path: base/game/qpath -> ospath
+ * (This is the public version; delegates to the internal helper)
+ * --------------------------------------------------------------- */
+void FS_BuildOSPath(const char *base, const char *game, const char *qpath, char *ospath)
+{
+    unsigned int lenBase, lenGame, lenQpath;
+    char *p;
+
+    if (!game || !game[0])
+        game = fs_gamedir;
+
+    lenBase  = (unsigned int)strlen(base);
+    lenGame  = (unsigned int)strlen(game);
+    lenQpath = (unsigned int)strlen(qpath);
+
+    if ((int)(lenBase + lenGame + 1 + lenQpath + 1) >= 256) {
+        Com_Error(0, "FS_BuildOSPath: os path length exceeded\n");
+        return;
+    }
+
+    /* Assemble  base '/' game '/' qpath */
+    memcpy(ospath, base, lenBase);
+    ospath[lenBase] = '/';
+    memcpy(ospath + lenBase + 1, game, lenGame);
+    ospath[lenBase + 1 + lenGame] = '/';
+    memcpy(ospath + lenBase + 2 + lenGame, qpath, lenQpath + 1);
+
+    /* Normalise separators */
+    for (p = ospath; *p; p++) {
+        if (*p == '\\')
+            *p = '/';
+    }
+}
+
+/* ---------------------------------------------------------------
+ * Internal helper: load a ZIP/IWD file into a pack_t
+ * --------------------------------------------------------------- */
+static pack_t *FS_LoadZipFile(char *zipfile, const char *basename)
+{
+    fileInPack_t    *buildBuffer;
+    pack_t          *pack;
+    void            *uf;
+    int              err;
+    unz_global_info  gi;
+    char             filename_inzip[MAX_ZPATH];
+    unz_file_info    file_info;
+    int              i, len;
+    long             hash;
+    int              fs_numHeaderLongs;
+    unsigned int    *fs_headerLongs;
+    char            *namePtr;
+
+    fs_numHeaderLongs = 0;
+
+    uf = unzOpen(zipfile);
+    if (!uf)
+        return NULL;
+
+    err = unzGetGlobalInfo(uf, &gi);
+    if (err != 0 /*UNZ_OK*/) {
+        return NULL;
+    }
+
+    fs_packFiles += gi.number_entry;
+
+    /* First pass: compute total name-string space needed */
+    len = 0;
+    unzGoToFirstFile(uf);
+    for (i = 0; i < (int)gi.number_entry; i++) {
+        err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip,
+                                    sizeof(filename_inzip), NULL, 0, NULL, 0);
+        if (err != 0)
+            break;
+        len += (int)strlen(filename_inzip) + 1;
+        unzGoToNextFile(uf);
+    }
+
+    buildBuffer = (fileInPack_t *)Z_MallocInternal(
+                      (int)(gi.number_entry * sizeof(fileInPack_t)) + len);
+    namePtr      = (char *)buildBuffer + gi.number_entry * sizeof(fileInPack_t);
+    fs_headerLongs = (unsigned int *)Z_MallocInternal(
+                         (int)(gi.number_entry * sizeof(unsigned int)));
+
+    /* Compute hash-table size (next power of 2 >= numFiles) */
+    i = 1;
+    while (i <= (int)gi.number_entry && i < MAX_FILEHASH_SIZE)
+        i <<= 1;
+
+    pack = (pack_t *)Z_MallocInternal((int)(sizeof(pack_t) +
+                                             i * sizeof(fileInPack_t *)));
+    pack->hashSize  = i;
+    pack->hashTable = (fileInPack_t **)((char *)pack + sizeof(pack_t));
+    for (i = 0; i < pack->hashSize; i++)
+        pack->hashTable[i] = NULL;
+
+    I_strncpyz(pack->iwdFilename, zipfile, sizeof(pack->iwdFilename));
+    I_strncpyz(pack->iwdBasename, basename, sizeof(pack->iwdBasename));
+
+    /* Strip ".iwd" extension from basename */
+    {
+        int blen = (int)strlen(pack->iwdBasename);
+        if (blen > 4 && I_stricmp(pack->iwdBasename + blen - 4, ".iwd") == 0)
+            pack->iwdBasename[blen - 4] = '\0';
+    }
+
+    pack->handle   = uf;
+    pack->numfiles = (int)gi.number_entry;
+
+    /* Second pass: fill build buffer */
+    unzGoToFirstFile(uf);
+    for (i = 0; i < (int)gi.number_entry; i++) {
+        err = unzGetCurrentFileInfo(uf, &file_info, filename_inzip,
+                                    sizeof(filename_inzip), NULL, 0, NULL, 0);
+        if (err != 0)
+            break;
+
+        if (file_info.uncompressed_size > 0)
+            fs_headerLongs[fs_numHeaderLongs++] = file_info.crc;
+
+        I_strlwr(filename_inzip);
+        hash = FS_HashFileName(filename_inzip, pack->hashSize);
+
+        buildBuffer[i].name = namePtr;
+        strcpy(buildBuffer[i].name, filename_inzip);
+        namePtr += strlen(filename_inzip) + 1;
+
+        unzGetCurrentFileInfoPosition(uf, &buildBuffer[i].pos);
+
+        buildBuffer[i].next      = (int)(uintptr_t)pack->hashTable[hash];
+        pack->hashTable[hash]    = &buildBuffer[i];
+
+        unzGoToNextFile(uf);
+    }
+
+    pack->checksum      = (int)Com_BlockChecksum(fs_headerLongs,
+                              (int)(sizeof(unsigned int) * fs_numHeaderLongs));
+    pack->pure_checksum = (int)Com_BlockChecksumKey(fs_headerLongs,
+                              (int)(sizeof(unsigned int) * fs_numHeaderLongs),
+                              fs_checksumFeed);
+
+    Z_FreeInternal(fs_headerLongs);
+
+    pack->buildBuffer = buildBuffer;
+    return pack;
+}
+
+/* ---------------------------------------------------------------
+ * FS_AddSearchPath - insert search path into the linked list
+ * --------------------------------------------------------------- */
+static void FS_AddSearchPath(searchpath_t *search)
+{
+    searchpath_t **pSearch;
+
+    pSearch = &fs_searchpaths;
+    if (search->bLocalized) {
+        while (*pSearch && !(*pSearch)->bLocalized)
+            pSearch = (searchpath_t **)(uintptr_t)&(*pSearch)->next;
+    }
+    search->next = (int)(uintptr_t)*pSearch;
+    *pSearch     = search;
+}
+
+/* ---------------------------------------------------------------
+ * FS_AddIwdFilesForGameDirectory
+ * Scans 'path/dir' for *.iwd files and adds them as search paths
+ * --------------------------------------------------------------- */
+static void FS_AddIwdFilesForGameDirectory(const char *path, const char *dir)
+{
+    int           numfiles;
+    int           i;
+    pack_t       *pack;
+    char        **iwdfiles;
+    char          iwdfile[256];
+
+    FS_BuildOSPath(path, dir, "", iwdfile);
+    /* strip trailing slash */
+    iwdfile[strlen(iwdfile) - 1] = '\0';
+
+    iwdfiles = Sys_ListFiles(iwdfile, "iwd", NULL, &numfiles, 0);
+
+    if (numfiles > MAX_IWDFILES) {
+        Com_Printf("WARNING: Exceeded max number of iwd files in %s %s (%d %d)\n",
+                   path, dir, numfiles, MAX_IWDFILES);
+        numfiles = MAX_IWDFILES;
+    }
+
+    for (i = 0; i < numfiles; i++) {
+        FS_BuildOSPath(path, dir, iwdfiles[i], iwdfile);
+
+        pack = FS_LoadZipFile(iwdfile, iwdfiles[i]);
+        if (!pack)
+            continue;
+
+        I_strncpyz(pack->iwdGamename, dir, sizeof(pack->iwdGamename));
+
+        {
+            searchpath_t *search = (searchpath_t *)Z_MallocInternal(sizeof(searchpath_t));
+            Com_Memset(search, 0, sizeof(searchpath_t));
+            search->pack        = pack;
+            search->bLocalized  = 0;
+            search->language    = 0;
+            search->next        = (int)(uintptr_t)fs_searchpaths;
+            fs_searchpaths      = search;
+        }
+    }
+
+    Sys_FreeFileList(iwdfiles);
+}
+
+/* ---------------------------------------------------------------
+ * FS_AddGameDirectory
+ * Adds 'path/dir' as a search path and loads its IWD files
+ * --------------------------------------------------------------- */
+void FS_AddGameDirectory(const char *path, const char *dir)
+{
+    searchpath_t *search;
+    searchpath_t *sp;
+
+    /* Don't add the same directory twice */
+    for (sp = fs_searchpaths; sp; sp = (searchpath_t *)(uintptr_t)sp->next) {
+        if (sp->dir &&
+            I_stricmp(sp->dir->path,    path) == 0 &&
+            I_stricmp(sp->dir->gamedir, dir)  == 0) {
+            return;
+        }
+    }
+
+    I_strncpyz(fs_gamedir, dir, sizeof(fs_gamedir));
+
+    search = (searchpath_t *)Z_MallocInternal(sizeof(searchpath_t));
+    Com_Memset(search, 0, sizeof(searchpath_t));
+    search->dir = (directory_t *)Z_MallocInternal(sizeof(directory_t));
+    Com_Memset(search->dir, 0, sizeof(directory_t));
+
+    I_strncpyz(search->dir->path,    path, sizeof(search->dir->path));
+    I_strncpyz(search->dir->gamedir, dir,  sizeof(search->dir->gamedir));
+
+    search->bLocalized = 0;
+    search->language   = 0;
+
+    FS_AddSearchPath(search);
+    FS_AddIwdFilesForGameDirectory(path, dir);
+}
+
+/* ---------------------------------------------------------------
+ * FS_Read
+ * Read data from a file handle (IWD zip or loose file).
+ * --------------------------------------------------------------- */
+int FS_Read(void *buffer, int len, fileHandle_t f)
+{
+    byte *buf = (byte *)buffer;
+    int remaining = len;
+    int read;
+
+    if (!f)
+        return 0;
+
+    /* zipFile flag is at offset 20 in fileHandleData_t (284 bytes per entry) */
+    if (fsh[f].zipFile) {
+        /* IWD (zip) file - read in chunks like the original engine */
+        while (remaining > 0) {
+            int block = remaining;
+            if (block > 65536)
+                block = 65536;
+            read = (int)unzReadCurrentFile(fsh[f].handleFiles.file.z, buf, (unsigned)block);
+            if (read <= 0)
+                break;
+            remaining -= read;
+            buf += read;
+        }
+        return len - remaining;
+    } else {
+        /* Regular file */
+        FILE *fp = fsh[f].handleFiles.file.o;
+        if (!fp)
+            return 0;
+        while (remaining > 0) {
+            read = (int)fread(buf, 1, (size_t)remaining, fp);
+            if (read <= 0)
+                break;
+            remaining -= read;
+            buf += read;
+        }
+        return len - remaining;
+    }
+}
+
+/* ---------------------------------------------------------------
+ * FS_FOpenFileRead
+ * Opens a file for reading by searching all search paths.
+ * Returns file length on success, -1 on failure.
+ * Sets *file = 0 if not found.
+ * --------------------------------------------------------------- */
+int FS_FOpenFileRead(const char *filename, fileHandle_t *file, int uniqueFILE)
+{
+    char          netpath[256];
+    searchpath_t *search;
+    pack_t       *pack;
+    fileInPack_t *iwdFile;
+    long          hash;
+    directory_t  *dir;
+    unz_s        *zfi;
+    FILE         *filetemp;
+
+    FS_CheckFileSystemStarted();
+
+    if (!filename || !filename[0]) {
+        Com_Error(0, "FS_FOpenFileRead: empty filename\n");
+        return -1;
+    }
+
+    /* Existence check only */
+    if (file == NULL) {
+        for (search = fs_searchpaths; search; search = (searchpath_t *)(uintptr_t)search->next) {
+            if (!FS_UseSearchPath(search))
+                continue;
+
+            pack = search->pack;
+            if (pack && pack->numfiles) {
+                hash = FS_HashFileName(filename, pack->hashSize);
+                for (iwdFile = pack->hashTable[hash]; iwdFile;
+                     iwdFile = (fileInPack_t *)(uintptr_t)iwdFile->next) {
+                    if (!FS_FilenameCompare(iwdFile->name, filename))
+                        return 1;
+                }
+            } else if (search->dir) {
+                dir = search->dir;
+                FS_BuildOSPath(dir->path, dir->gamedir, filename, netpath);
+                filetemp = FS_FileOpen(netpath, "rb");
+                if (filetemp) {
+                    FS_FileClose(filetemp);
+                    return 1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    *file = FS_HandleForFile(0);
+    if (*file <= 0) {
+        Com_Printf("FS_FOpenFileRead: HandleForFile returned %d for '%s'\n", *file, filename);
+        return -1;
+    }
+    fsh[*file].handleFiles.unique = (qboolean)uniqueFILE;
+
+    for (search = fs_searchpaths; search; search = (searchpath_t *)(uintptr_t)search->next) {
+        if (!FS_UseSearchPath(search))
+            continue;
+
+        pack = search->pack;
+        if (pack && pack->numfiles) {
+            hash = FS_HashFileName(filename, pack->hashSize);
+            for (iwdFile = pack->hashTable[hash]; iwdFile;
+                 iwdFile = (fileInPack_t *)(uintptr_t)iwdFile->next) {
+                if (!FS_FilenameCompare(iwdFile->name, filename)) {
+                    /* Mark referenced */
+                    if (!pack->referenced)
+                        pack->referenced = 1;
+
+                    if (uniqueFILE) {
+                        fsh[*file].handleFiles.file.z =
+                            unzReOpen(pack->iwdFilename, pack->handle);
+                        if (!fsh[*file].handleFiles.file.z)
+                            Com_Error(0, "Couldn't reopen %s", pack->iwdFilename);
+                    } else {
+                        fsh[*file].handleFiles.file.z = pack->handle;
+                    }
+
+                    I_strncpyz(fsh[*file].name, filename, sizeof(fsh[*file].name));
+                    fsh[*file].zipFile = pack;
+
+                    zfi      = (unz_s *)fsh[*file].handleFiles.file.z;
+                    filetemp = (FILE *)zfi->file;
+
+                    unzSetCurrentFileInfoPosition(pack->handle, iwdFile->pos);
+                    Com_Memcpy(zfi, pack->handle, sizeof(unz_s));
+                    zfi->file = filetemp;
+
+                    unzOpenCurrentFile(fsh[*file].handleFiles.file.z);
+                    fsh[*file].zipFilePos = (int)iwdFile->pos;
+
+                    if (*(int *)((char *)fs_debug + 8))
+                        Com_Printf("FS_FOpenFileRead: %s (found in '%s')\n",
+                                   filename, pack->iwdFilename);
+
+                    return (int)zfi->cur_file_info.uncompressed_size;
+                }
+            }
+        } else if (search->dir) {
+            dir = search->dir;
+            FS_BuildOSPath(dir->path, dir->gamedir, filename, netpath);
+            fsh[*file].handleFiles.file.o = FS_FileOpen(netpath, "rb");
+            if (!fsh[*file].handleFiles.file.o)
+                continue;
+
+            I_strncpyz(fsh[*file].name, filename, sizeof(fsh[*file].name));
+            fsh[*file].zipFile = NULL;
+
+            if (*(int *)((char *)fs_debug + 8))
+                Com_Printf("FS_FOpenFileRead: %s (found in '%s/%s')\n",
+                           filename, dir->path, dir->gamedir);
+
+            return FS_filelength(*file);
+        }
+    }
+
+    if (*(int *)((char *)fs_debug + 8))
+        Com_Printf("Can't find %s\n", filename);
+
+    FS_FCloseFile(*file);
+    *file = 0;
+    return -1;
+}
+
+/* ---------------------------------------------------------------
+ * FS_FOpenFileWrite
+ * Opens a file for writing in the home directory.
+ * --------------------------------------------------------------- */
+fileHandle_t FS_FOpenFileWrite(const char *filename)
+{
+    char          ospath[256];
+    fileHandle_t  f;
+    FILE         *fp;
+
+    FS_CheckFileSystemStarted();
+
+    FS_BuildOSPath(*(const char **)((char *)fs_homepath + 8),
+                   fs_gamedir, filename, ospath);
+
+    if (*(int *)((char *)fs_debug + 8))
+        Com_Printf("FS_FOpenFileWrite: %s\n", ospath);
+
+    if (FS_CreatePath(ospath))
+        return 0;
+
+    fp = FS_FileOpen(ospath, "wb");
+    if (!fp)
+        return 0;
+
+    f = FS_HandleForFile(0);
+    fsh[f].zipFile             = NULL;
+    fsh[f].handleFiles.file.o  = fp;
+    I_strncpyz(fsh[f].name, filename, sizeof(fsh[f].name));
+    fsh[f].handleSync          = 0;
+
+    return f;
+}
+
+/* ---------------------------------------------------------------
+ * FS_ReadFile
+ * Reads an entire file into a buffer allocated from the hunk.
+ * Caller must call FS_FreeFile when done.
+ * Returns file length, or -1 if not found.
+ * --------------------------------------------------------------- */
+int FS_ReadFile(const char *qpath, void **buffer)
+{
+    char         *buf;
+    int           len;
+    fileHandle_t  h;
+
+    FS_CheckFileSystemStarted();
+
+    if (!qpath || !qpath[0])
+        Com_Error(0, "FS_ReadFile with empty name\n");
+
+    len = FS_FOpenFileRead(qpath, &h, 0);
+
+    if (h == 0) {
+        if (buffer)
+            *buffer = NULL;
+        return -1;
+    }
+
+    if (buffer) {
+        fs_loadStack++;
+        buf     = (char *)Hunk_AllocateTempMemoryInternal(len + 1);
+        *buffer = buf;
+
+        {
+            int read = 0;
+            int remaining = len;
+            while (remaining > 0) {
+                int block = remaining;
+                if (fsh[h].zipFile) {
+                    read = (int)unzReadCurrentFile(fsh[h].handleFiles.file.z, buf, (unsigned)block);
+                } else {
+                    FILE *fp = fsh[h].handleFiles.file.o;
+                    if (fp)
+                        read = (int)fread(buf, 1, (size_t)block, fp);
+                    else
+                        read = 0;
+                }
+                if (read <= 0)
+                    break;
+                remaining -= read;
+                buf       += read;
+            }
+        }
+
+        /* Guarantee null terminator for string use */
+        ((char *)*buffer)[len] = '\0';
+    }
+
+    FS_FCloseFile(h);
+    return len;
+}
+
+/* ---------------------------------------------------------------
+ * Internal: add a unique name to a file list array
+ * --------------------------------------------------------------- */
+static int FS_AddFileToList(char *name, char *list[], int nfiles)
+{
+    int i;
+
+    if (nfiles == MAX_FOUND_FILES - 1)
+        return nfiles;
+
+    for (i = 0; i < nfiles; i++) {
+        if (!I_stricmp(name, list[i]))
+            return nfiles;
+    }
+    list[nfiles] = CopyStringInternal(name);
+    nfiles++;
+    return nfiles;
+}
+
+/* ---------------------------------------------------------------
+ * FS_ListFiles
+ * Returns a NULL-terminated array of file names matching path/ext.
+ * Caller owns the list; free with FS_FreeFileList.
+ * 'behavior' controls whether to search loose files (non-zero = yes).
+ * 'flags' is an allocTrackType (ignored in this implementation).
+ * --------------------------------------------------------------- */
+char **FS_ListFiles(const char *path, const char *extension, int behavior, int *numfiles, int flags)
+{
+    int           nfiles;
+    char        **listCopy;
+    char         *list[MAX_FOUND_FILES];
+    searchpath_t *search;
+    int           i;
+    int           pathLength;
+    int           extensionLength;
+    pack_t       *pack;
+    fileInPack_t *buildBuffer;
+    char          netpath[256];
+
+    FS_CheckFileSystemStarted();
+
+    if (!path) {
+        *numfiles = 0;
+        return NULL;
+    }
+    if (!extension)
+        extension = "";
+
+    pathLength      = (int)strlen(path);
+    extensionLength = (int)strlen(extension);
+    nfiles          = 0;
+
+    for (search = fs_searchpaths; search; search = (searchpath_t *)(uintptr_t)search->next) {
+        if (!FS_UseSearchPath(search))
+            continue;
+
+        pack = search->pack;
+        if (pack && pack->numfiles) {
+            /* Search inside IWD */
+            buildBuffer = pack->buildBuffer;
+            for (i = 0; i < pack->numfiles; i++) {
+                char *name = buildBuffer[i].name;
+                int   nameLen;
+
+                /* Path prefix match */
+                if (pathLength > 0 &&
+                    I_strnicmp(name, path, pathLength) != 0)
+                    continue;
+
+                if (pathLength > 0 && name[pathLength] != '/')
+                    continue;
+
+                nameLen = (int)strlen(name);
+
+                /* Extension match */
+                if (extensionLength > 0) {
+                    if (nameLen <= extensionLength ||
+                        name[nameLen - extensionLength - 1] != '.' ||
+                        I_stricmp(&name[nameLen - extensionLength], extension))
+                        continue;
+                }
+
+                {
+                    /* Strip path prefix */
+                    char *leafName = (pathLength > 0) ? name + pathLength + 1 : name;
+                    nfiles = FS_AddFileToList(leafName, list, nfiles);
+                }
+            }
+        } else if (search->dir && behavior) {
+            /* Search loose directory */
+            int    numSys;
+            char **sysFiles;
+            char  *name;
+
+            FS_BuildOSPath(search->dir->path, search->dir->gamedir, path, netpath);
+            sysFiles = Sys_ListFiles(netpath, extension, NULL, &numSys, 0);
+            for (i = 0; i < numSys; i++) {
+                name   = sysFiles[i];
+                nfiles = FS_AddFileToList(name, list, nfiles);
+            }
+            Sys_FreeFileList(sysFiles);
+        }
+    }
+
+    *numfiles = nfiles;
+
+    if (!nfiles)
+        return NULL;
+
+    listCopy = (char **)Z_MallocInternal((nfiles + 1) * sizeof(char *));
+    for (i = 0; i < nfiles; i++)
+        listCopy[i] = list[i];
+    listCopy[i] = NULL;
+
+    return listCopy;
+}
+
+/* ---------------------------------------------------------------
+ * FS_GetFileList
+ * Packs file names into a contiguous string buffer.
+ * Returns the count of names written.
+ * --------------------------------------------------------------- */
+int FS_GetFileList(const char *path, const char *extension, char *listbuf, int bufsize)
+{
+    char **fileNames;
+    int    nLen;
+    int    nTotal;
+    int    i;
+    int    fileCount;
+
+    *listbuf  = '\0';
+    fileCount = 0;
+    nTotal    = 0;
+
+    fileNames = FS_ListFiles(path, extension, 1, &fileCount, 0);
+
+    for (i = 0; i < fileCount; i++) {
+        nLen = (int)strlen(fileNames[i]) + 1;
+        if (nTotal + nLen + 1 >= bufsize) {
+            fileCount = i;
+            break;
+        }
+        strcpy(listbuf, fileNames[i]);
+        listbuf += nLen;
+        nTotal  += nLen;
+    }
+
+    /* Free strings */
+    if (fileNames) {
+        for (i = 0; fileNames[i]; i++)
+            Z_FreeInternal(fileNames[i]);
+        Z_FreeInternal(fileNames);
+    }
+
+    return fileCount;
+}
+
+/* ---------------------------------------------------------------
+ * FS_Startup
+ * Registers dvars and builds the search path list.
+ * --------------------------------------------------------------- */
+void FS_Startup(const char *gameName)
+{
+    Com_Printf("----- FS_Startup -----\n");
+
+    fs_packFiles = 0;
+    FS_RegisterDvars();
+
+    /* basepath */
+    if (*(const char **)((char *)fs_basepath + 8) &&
+        (*(const char **)((char *)fs_basepath + 8))[0]) {
+        FS_AddGameDirectory(*(const char **)((char *)fs_basepath + 8), gameName);
+    }
+
+    /* homepath (if different from basepath) */
+    if (*(const char **)((char *)fs_homepath + 8) &&
+        (*(const char **)((char *)fs_homepath + 8))[0] &&
+        I_stricmp(*(const char **)((char *)fs_homepath + 8),
+                  *(const char **)((char *)fs_basepath + 8)) != 0) {
+        FS_AddGameDirectory(*(const char **)((char *)fs_homepath + 8), gameName);
+    }
+
+    /* cdpath */
+    if (*(const char **)((char *)fs_cdpath + 8) &&
+        (*(const char **)((char *)fs_cdpath + 8))[0]) {
+        FS_AddGameDirectory(*(const char **)((char *)fs_cdpath + 8), gameName);
+    }
+
+    /* fs_basegame (additional game directory) */
+    if (*(const char **)((char *)fs_basegame + 8) &&
+        (*(const char **)((char *)fs_basegame + 8))[0] &&
+        I_stricmp(gameName, BASEGAME) == 0 &&
+        I_stricmp(*(const char **)((char *)fs_basegame + 8), gameName) != 0) {
+        const char *bgame = *(const char **)((char *)fs_basegame + 8);
+
+        if (*(const char **)((char *)fs_cdpath   + 8) && (*(const char **)((char *)fs_cdpath   + 8))[0])
+            FS_AddGameDirectory(*(const char **)((char *)fs_cdpath   + 8), bgame);
+        if (*(const char **)((char *)fs_basepath + 8) && (*(const char **)((char *)fs_basepath + 8))[0])
+            FS_AddGameDirectory(*(const char **)((char *)fs_basepath + 8), bgame);
+        if (*(const char **)((char *)fs_homepath + 8) && (*(const char **)((char *)fs_homepath + 8))[0] &&
+            I_stricmp(*(const char **)((char *)fs_homepath + 8),
+                      *(const char **)((char *)fs_basepath + 8)) != 0)
+            FS_AddGameDirectory(*(const char **)((char *)fs_homepath + 8), bgame);
+    }
+
+    /* fs_game (mod directory) */
+    if (*(const char **)((char *)fs_gameDirVar + 8) &&
+        (*(const char **)((char *)fs_gameDirVar + 8))[0] &&
+        I_stricmp(gameName, BASEGAME) == 0 &&
+        I_stricmp(*(const char **)((char *)fs_gameDirVar + 8), gameName) != 0) {
+        const char *gdir = *(const char **)((char *)fs_gameDirVar + 8);
+
+        if (*(const char **)((char *)fs_cdpath   + 8) && (*(const char **)((char *)fs_cdpath   + 8))[0])
+            FS_AddGameDirectory(*(const char **)((char *)fs_cdpath   + 8), gdir);
+        if (*(const char **)((char *)fs_basepath + 8) && (*(const char **)((char *)fs_basepath + 8))[0])
+            FS_AddGameDirectory(*(const char **)((char *)fs_basepath + 8), gdir);
+        if (*(const char **)((char *)fs_homepath + 8) && (*(const char **)((char *)fs_homepath + 8))[0] &&
+            I_stricmp(*(const char **)((char *)fs_homepath + 8),
+                      *(const char **)((char *)fs_basepath + 8)) != 0)
+            FS_AddGameDirectory(*(const char **)((char *)fs_homepath + 8), gdir);
+    }
+
+    FS_AddCommands();
+    Dvar_ClearModified(fs_gameDirVar);
+
+    Com_Printf("----------------------\n");
+    Com_Printf("%d files in iwd files\n", fs_packFiles);
+}
+
+/* ---------------------------------------------------------------
+ * FS_InitFilesystem
+ * Top-level entry point: process command-line dvars, then start.
+ * --------------------------------------------------------------- */
+void FS_InitFilesystem(void)
+{
+    Com_StartupVariable("fs_cdpath");
+    Com_StartupVariable("fs_basepath");
+    Com_StartupVariable("fs_homepath");
+    Com_StartupVariable("fs_game");
+    Com_StartupVariable("fs_copyfiles");
+    Com_StartupVariable("fs_restrict");
+
+    FS_Startup(BASEGAME);
+
+    /* Verify we can read the default config */
+    if (FS_ReadFile("default.cfg", NULL) <= 0) {
+        Com_Error(0,
+            "Couldn't load default.cfg. "
+            "Make sure Call of Duty 2 is run from the correct folder.");
+    }
+}

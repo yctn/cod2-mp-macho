@@ -10,7 +10,7 @@ SDL2_LIBS = $(shell pkg-config --libs sdl2 2>/dev/null || echo -lSDL2)
 CFLAGS = -std=$(CSTD) -m32 -fno-pie -no-pie -w -O0 -g -msse -fno-omit-frame-pointer -DSDL_DISABLE_IMMINTRIN_H -IPC/speex -I. $(SDL2_CFLAGS) -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=return-mismatch
 LDFLAGS = -m32 -no-pie -L/usr/lib32 -L/usr/lib/i386-linux-gnu
 LINK_UNRESOLVED_FLAGS ?= -Wl,--unresolved-symbols=ignore-all -Wl,--noinhibit-exec
-LIBS = -lGL -lm -lpthread -ldl $(LIBSTDCPP) $(SDL2_LIBS)
+LIBS = -lGL -lm -lpthread -ldl -lz $(LIBSTDCPP) $(SDL2_LIBS)
 TARGET = cod2_linux
 COMPARE_DIR ?= .compare
 COMPARE_BINARY ?= toolchain/utils/binary.x86
@@ -27,7 +27,7 @@ COMPARE_DATA_REPORT = $(COMPARE_REPORT_DIR)/data_symbol_ownership.tsv
 COMPARE_OVERLAP_REPORT = $(COMPARE_REPORT_DIR)/compare_overlap_report.tsv
 COMPARE_SIZE_REPORT = $(COMPARE_REPORT_DIR)/compare_size_report.tsv
 COMPARE_SPLIT_GEN_DIR = $(COMPARE_GENERATED_DIR)/split_naked
-PROJECT_SOURCE_EXCLUDES = -not -path './toolchain/*' -not -path './utils/*' -not -path './toolchains/*' -not -path './.compare*/*'
+PROJECT_SOURCE_EXCLUDES = -not -path './toolchain/*' -not -path './utils/*' -not -path './toolchains/*' -not -path './.compare*/*' -not -name 'inflate.c' -not -name 'infblock.c' -not -name 'infcodes.c' -not -name 'inffast.c' -not -name 'inftrees.c' -not -name 'infutil.c' -not -name 'adler32.c' -not -name 'zutil.c'
 DATA_INPUT = $(firstword $(wildcard data.c data.c.bak))
 COMPARE_FILTERED_C_SRCS = ./bss.c ./rodata.c ./stubs/audio_stubs.c ./stubs/cpp_compat.c ./stubs/link_stubs.c ./stubs/macos_compat.c
 # Optional compare-only split path for naked-heavy TUs.

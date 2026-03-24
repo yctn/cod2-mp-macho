@@ -12,7 +12,7 @@ unsigned char ___progname[20] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-static char g_InhibitOpenGLErrors[32] = {0};
+char g_InhibitOpenGLErrors[32] = {0};
 
 unsigned char sEnableSwap[4] = {
     0x01, 0x00, 0x00, 0x00
@@ -84,7 +84,7 @@ unsigned char sANSI_VK_Map[128] = {
     0x00, 0x7e, 0x2d, 0x24, 0x21, 0x2e, 0x73, 0x23, 0x71, 0x22, 0x70, 0x25, /* ptr: str_00262598+655 = "!!ARBvp1.0\nOUTPUT oPos = result.position;\nOUTPUT oD0 = result.color;\nOUTPUT oD1 = result.color.secondary;\nOUTPUT oFog = result.fogcoord;\nOUTPUT oT0 = result.texcoord[0];\nOUTPUT oT1 = result.texcoord[1];\nOUTPUT oT2 = result.texcoord[2];\nOUTPUT oT3 = result.texcoord[3];\nOUTPUT oT4 = result.texcoord[4];\nTEMP r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;\nADDRESS a0;\nMOV oFog.x, 1;\nPARAM c11 = program.env[11];\nPARAM c23[4] =  { program.env[23..26] };\nPARAM c4[3] =  { program.env[4..6] };\nPARAM c8[3] =  { program.env[8..10] };\nPARAM c0 = { 1.44269502, 3.05175781e-005, 0, 0.5 };\nATTRIB v0 = vertex.attrib[0];\nATTRIB v1 = vertex.attrib[3];\nATTRIB v2 = vertex.attrib[5];\nATTRIB v3 = vertex.attrib[8];\nATTRIB v4 = vertex.attrib[9];\nATTRIB v5 = vertex.attrib[10];\nATTRIB v6 = vertex.attrib[11];\nDP4 oPos.x, v0, c23[0];\nDP4 oPos.y, v0, c23[1];\nDP4 oPos.z, v0, c23[2];\nDP4 oPos.w, v0, c23[3];\nDP3 r0.x, v1, c4[0];\nDP3 r0.y, v1, c4[1];\nDP3 r0.z, v1, c4[2];\nDP3 r3.x, v4, c4[0];\nDP3 r3.y, v4, c4[1];\nDP3 r3.z, v4, c4[2];\nDP3 r2.x, v5, c4[0];\nDP3 r2.y, v5, c4[1];\nDP4 r1.x, v0, c8[0];\nDP4 r1.y, v0, c8[1];\nDP4 r1.z, v0, c8[2];\nDP3 r2.z, v5, c4[2];\nDP3 r4.x, r1, r1;\nADD r1.xyz, r3, r2;\nRSQ r0.w, r4.x;\nADD oT1.xyz, r3, r3;\nMUL r0.w, r4.x, r0.w;\nADD oT2.xyz, r2, r2;\nMUL r0.w, r0.w, c11.z;\nADD oT3.xyz, r0, -r1;\nMUL r0.w, r0.w, c0.x;\nEX2 oFog, r0.w;\nMOV oD0, v2;\nMOV oT0.xy, v3;\nMAD oT4.xyz, v6, c0.y, c0.zzww;\nEND" */ 0x00, 0x00, 0x00, 0x00
 };
 
-static char g_CurrentGenericPacket[12] = {0};
+char g_CurrentGenericPacket[12] = {0};
 
 unsigned char D3DToOpenGLPrimitive[52] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00,
@@ -93,7 +93,7 @@ unsigned char D3DToOpenGLPrimitive[52] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-static char g_InhibitCopy[4] = {0};
+char g_InhibitCopy[4] = {0};
 
 unsigned char g_scale2[4] = {
     0x00, 0x00, 0x80, 0x4b
@@ -105,11 +105,11 @@ unsigned char g_scale1[4] = {
 
 static char g_showtexid[4] = {0};
 
-static char g_RenderToShadowCookie[4] = {0};
+char g_RenderToShadowCookie[4] = {0};
 
-static char g_NumBlurShadowPasses[4] = {0};
+char g_NumBlurShadowPasses[4] = {0};
 
-static char g_ShowShadowCookies[1] = {0};
+char g_ShowShadowCookies[1] = {0};
 
 unsigned char __ZN15CDirect3DDevice29mNeedsRasterizationValidationE[1] = {
     0x01
@@ -129,13 +129,13 @@ unsigned char g_VAOID[4] = {
     0xff, 0xff, 0xff, 0xff
 };
 
-static char __ZN7COpenGL14sShowTextureIDE[4] = {0};
+char __ZN7COpenGL14sShowTextureIDE[4] = {0};
 
 unsigned char __ZN7COpenGL9sDrawFlagE[4] = {
     0x01, 0x00, 0x00, 0x00
 };
 
-static char __ZN7COpenGL11sFrameCountE[24] = {0};
+char __ZN7COpenGL11sFrameCountE[24] = {0};
 
 static char g_NumShadowCookies[24] = {0};
 
@@ -331,11 +331,11 @@ unsigned char g_languages[128] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char fs_numServerIwds[4] = {0};
+char fs_numServerIwds[4] = {0};
 
-static char fs_packFiles[4] = {0};
+char fs_packFiles[4] = {0};
 
-static char fs_searchpaths[24] = {0};
+char fs_searchpaths[24] = {0};
 
 static char TheStringPackage[32] = {0};
 
@@ -727,7 +727,7 @@ unsigned char dvarOnOffStrings[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char fxInitialized[4] = {0};
+char fxInitialized[4] = {0};
 
 unsigned char theFxHelper[4] = {
     /* ptr: theFxHelpers */ 0x00, 0x00, 0x00, 0x00
@@ -745,9 +745,9 @@ unsigned char effectClusters[16] = {
     /* ptr: effectClusterArray */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char defaultEffect[4] = {0};
+char defaultEffect[4] = {0};
 
-static char theFxScheduler[28] = {0};
+char theFxScheduler[28] = {0};
 
 unsigned char g_rendererExists[32] = {
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -856,9 +856,9 @@ unsigned char viewLerp_CrouchProne[160] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char bg_iNumWeapons[32] = {0};
+char bg_iNumWeapons[32] = {0};
 
-static char g_EndPos[32] = {0};
+char g_EndPos[32] = {0};
 
 const char *var_typename[] = {
     "undefined",
@@ -915,7 +915,7 @@ unsigned char s_mantleAnimNames[64] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char __ZN11FxBoltFrame12g_mFrameListE[32] = {0};
+char __ZN11FxBoltFrame12g_mFrameListE[32] = {0};
 
 unsigned char g_parse[18912] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2612,7 +2612,7 @@ unsigned char default_punctuations[640] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char gConsoleRunning[32] = {0};
+char gConsoleRunning[32] = {0};
 
 unsigned char s_XModelSurfaceSize[8] = {
     0x00, 0x00, 0x00, 0x10, /* ptr: __mh_execute_header+56 */ 0x00, 0x00, 0x00, 0x00
@@ -2674,7 +2674,7 @@ unsigned char textureModeNames[40] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char alwaysfails[32] = {0};
+char alwaysfails[32] = {0};
 
 unsigned char g_platform_name[32] = {
     /* ptr: str_00225108 = "current" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_00225110 = " min_pc" */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2709,9 +2709,9 @@ unsigned char R_BoundsForDrawSurfTable[32] = {
     /* ptr: R_BoundsForSurf_ModelInst */ 0x00, 0x00, 0x00, 0x00, /* ptr: R_BoundsForSurf_StaticModelCached */ 0x00, 0x00, 0x00, 0x00, /* ptr: R_BoundsForSurf_Triangles */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char g_TotalFilterPasses[4] = {0};
+char g_TotalFilterPasses[4] = {0};
 
-static char g_LastGlowFilter[28] = {0};
+char g_LastGlowFilter[28] = {0};
 
 unsigned char extendedVirtualKeyConvert[64] = {
     0xb5, 0x80, 0xbf, 0x81, 0xdf, 0x82, 0xe0, 0x83, 0xe1, 0x84, 0xe4, 0x85, 0xe5, 0x86, 0xe6, 0x87,
@@ -2743,9 +2743,9 @@ unsigned char virtualKeyConvert[320] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char yyout[4] = {0};
+char yyout[4] = {0};
 
-static char yyin[4] = {0};
+char yyin[4] = {0};
 
 unsigned char yy_init[24] = {
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -2754,9 +2754,9 @@ unsigned char yy_init[24] = {
 
 const char *kHighQualityKey = "mac.sound.high.quality";
 
-static char __ZN10CVAOPacket14sCurrentPacketE[4] = {0};
+char __ZN10CVAOPacket14sCurrentPacketE[4] = {0};
 
-static char __ZN10CVAOPacket10sVAOStatusE[24] = {0};
+char __ZN10CVAOPacket10sVAOStatusE[24] = {0};
 
 static char __ZN12CSoundObject13sReadCallbackE[4] = {0};
 
@@ -2900,7 +2900,7 @@ unsigned char chatField[24] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char sv_serverId_value[32] = {0};
+char sv_serverId_value[32] = {0};
 
 unsigned char cg_soundRoomTypes[108] = {
     /* ptr: str_00218e0c = "generic" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_00218e14 = "paddedcell" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_00218e20 = "room" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_00218e28 = "bathroom" */ 0x00, 0x00, 0x00, 0x00,
@@ -2922,7 +2922,7 @@ unsigned char cg_drawFpsNames[32] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char cl_shownet[32] = {0};
+char cl_shownet[32] = {0};
 
 unsigned char boxVerts[288] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
@@ -3032,7 +3032,7 @@ unsigned char dlText[31] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char g_qport[4] = {0};
+char g_qport[4] = {0};
 
 unsigned char netsrcString[28] = {
     /* ptr: str_002ab028 = "client1" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_002ab030 = "server" */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -3072,9 +3072,9 @@ unsigned char commandList[224] = {
 
 static char g_editItem[4] = {0};
 
-static char g_editingField[4] = {0};
+char g_editingField[4] = {0};
 
-static char g_waitingForKey[24] = {0};
+char g_waitingForKey[24] = {0};
 
 unsigned char g_bindings[1120] = {
     /* ptr: str_002abf48 = "+scores" */ 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -3149,7 +3149,7 @@ unsigned char g_bindings[1120] = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-static char updateScreenCalled[4] = {0};
+char updateScreenCalled[4] = {0};
 
 unsigned char szShotName[28] = {
     /* ptr: str_002acd00 = "_up" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_002acd04 = "_dn" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_002acd08 = "_lf" */ 0x00, 0x00, 0x00, 0x00, /* ptr: str_002acd0c = "_rt" */ 0x00, 0x00, 0x00, 0x00,
@@ -3281,7 +3281,7 @@ unsigned char ucmds[96] = {
     /* ptr: str_002adee4 = "unmuteplayer" */ 0x00, 0x00, 0x00, 0x00, /* ptr: SV_UnmutePlayer_f */ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-static char bgs[32] = {0};
+char bgs[32] = {0};
 
 unsigned char animEventTypesStr[160] = {
     /* ptr: str_002ae9fc = "PAIN" */ 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, /* ptr: str_002aea04 = "DEATH" */ 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff,
@@ -3951,28 +3951,28 @@ unsigned char accuracyDirName[36] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-static char sampleCount[8] = {0};
+char sampleCount[8] = {0};
 
-static char g_voice_initialized[4] = {0};
+char g_voice_initialized[4] = {0};
 
 unsigned char voice_current_scaler[20] = {
     0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00
 };
 
-static char samples_in_partial_audio_buffer[4] = {0};
+char samples_in_partial_audio_buffer[4] = {0};
 
-static char enc_buffer_pos[24] = {0};
+char enc_buffer_pos[24] = {0};
 
-static char g_current_decode_bandwidth_setting[4] = {0};
+char g_current_decode_bandwidth_setting[4] = {0};
 
-static char g_decoder[28] = {0};
+char g_decoder[28] = {0};
 
-static char g_speex_initialized[4] = {0};
+char g_speex_initialized[4] = {0};
 
-static char g_frame_size[4] = {0};
+char g_frame_size[4] = {0};
 
-static char g_current_bandwidth_setting[4] = {0};
+char g_current_bandwidth_setting[4] = {0};
 
 unsigned char g_encoder_samplerate[4] = {
     /* ptr: __mh_execute_header+4096 */ 0x00, 0x00, 0x00, 0x00

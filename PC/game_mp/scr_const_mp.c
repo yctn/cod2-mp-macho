@@ -69,11 +69,7 @@ void GScr_LoadConsts(void)
     scr_const.binocular_release = GScr_AllocString("binocular_release"); /* line 65 */
     scr_const.binocular_drop = GScr_AllocString("binocular_drop");   /* line 66 */
     scr_const.begin = GScr_AllocString("begin");                     /* line 69 */
-    {
-        extern unsigned char imp_scr_const_raw[];
-        Com_Printf("[GScr_LoadConsts] &scr_const=%p imp_scr_const=%p begin=%u menuresponse=%u\n",
-            (void*)&scr_const, *(void**)imp_scr_const_raw, (unsigned)scr_const.begin, (unsigned)scr_const.menuresponse);
-    }
+    /* removed: debug block dereferencing imp_scr_const_raw (unresolved) */
     scr_const.intermission = GScr_AllocString("intermission");       /* line 70 */
     scr_const.menuresponse = GScr_AllocString("menuresponse");       /* line 71 */
     scr_const.playing = GScr_AllocString("playing");                 /* line 72 */

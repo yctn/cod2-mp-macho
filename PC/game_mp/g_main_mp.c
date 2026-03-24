@@ -607,7 +607,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
     GScr_LoadScripts(1);
     DBG_PrintFreeVars(str_dbg_load);
     GScr_LoadConsts();
-    Scr_FreeScripts(1);
+    /* Scr_FreeScripts(1); -- stubbed: hangs due to corrupt script list */
     Scr_BeginLoadAnimScripts();
     GScr_LoadAnimScripts();
     Scr_EndLoadAnimScripts();

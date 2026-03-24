@@ -40,6 +40,8 @@ extern void Scr_DumpScriptVariables(void);
 extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 
+void SL_CheckInit(void);
+void SL_RelocateSystem(void);
 unsigned int SL_ConvertFromString(const char *str);
 unsigned int SL_Shutdown(void);
 const char * SL_ConvertToString(unsigned int stringValue);
@@ -67,6 +69,30 @@ unsigned int SL_GetStringForVector(const float *v);
 unsigned int Scr_CreateCanonicalFilename(const char *filename);
 
 /* line 206 */
+/* SL_CheckInit: if already initialized, relocate; otherwise init fresh */
+void SL_CheckInit(void)
+{
+    if (SG_INIT_FLAG)
+        SL_RelocateSystem();
+    else
+        SL_Init();
+}
+
+/*
+ * SL_RelocateSystem: relocate the string list (called on re-initialization).
+ * This frees all non-script strings and rebuilds the tree.
+ * Only called when SG_INIT_FLAG != 0 (i.e., string system was already initialized).
+ * Dependencies (SL_FreeEntry, MT_BeginRelocate, MT_EndRelocate, MT_FreeForLength)
+ * are not yet implemented -- this path is only taken on re-init, not first boot.
+ */
+void SL_RelocateSystem(void)
+{
+    /* Stub: on first boot this is never called (SG_INIT_FLAG=0 → SL_Init() is taken).
+     * For re-init support, implement the full relocation once the MT_ helpers exist.
+     * For now, fall back to a full re-init to avoid a crash if somehow reached. */
+    SL_Init();
+}
+
 unsigned int SL_ConvertFromString(const char *str)
 {
     return (int)((byte *)str - 4 - *(byte **)imp_scrMemTreePub) >> 3;
@@ -1770,12 +1796,7 @@ unsigned int Scr_ShutdownGameStrings(void)
  */
 unsigned int SL_Init(void)
 {
-    {
-        extern unsigned char scrMemTreeGlob_dbg[];
-        Com_Printf("DBG SL_Init: init_flag=%d totalAlloc=%d totalAllocBuckets=%d\n",
-            SG_INIT_FLAG != 0 ? 1 : 0,
-            *(int *)(scrMemTreeGlob_dbg + 525092), *(int *)(scrMemTreeGlob_dbg + 525096));
-    }
+    /* SL_Init entry */
     /* Phase check */
     if (SG_INIT_FLAG != 0)
     {

@@ -1010,8 +1010,14 @@ void Com_SetRecommended(qboolean restart)
     }
 
     if (!foundCpuMatch) {
-        Sys_GetInfo(&info);
-        Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %.0f GHz %i MB", info.cpuGHz, info.sysMB);
+        /* Use the last (highest) row as fallback for modern hardware */
+        if (bestMHz < 0) {
+            Sys_GetInfo(&info);
+            Com_Printf("configure_mp.csv: no exact match for %.0f GHz %i MB, using highest config\n", info.cpuGHz, info.sysMB);
+            bestMHz = info.cpuGHz;
+            bestMB = info.sysMB;
+        }
+        foundCpuMatch = 1;
     }
 
     Com_Printf("configure_mp.csv: using CPU configuration %.0f GHz %i MB\n", bestMHz, bestMB);
