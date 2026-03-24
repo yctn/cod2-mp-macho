@@ -638,3 +638,448 @@ JCOEF ClearVariableValue(unsigned int id)
     VG_STATUS(id) = (VG_STATUS(id) & 0x1F00FFFFu);
     return 0;
 }
+
+/* ============================================================
+ * Hash table lookup and variable management functions.
+ * Translated from reference: CoD2rev_Server/src/script/scr_variable.cpp
+ * ============================================================ */
+
+/*
+ * Constants mirrored from script_public.h (reference).
+ * These are not in common_types.h so we define them locally.
+ */
+#define SCRVL_VAR_STAT_FREE     0x00u
+#define SCRVL_VAR_STAT_MOVABLE  0x20u
+#define SCRVL_VAR_STAT_HEAD     0x40u
+#define SCRVL_VAR_STAT_EXTERNAL 0x60u
+#define SCRVL_VAR_STAT_MASK     0x60u
+#define SCRVL_VAR_NAME_BITS     8u
+#define SCRVL_VAR_NAME_LOW_MASK 0xFFFFFFu
+#define SCRVL_VAR_MASK          0x1Fu
+#define SCRVL_VAR_UNDEFINED     0u
+#define SCRVL_VAR_POINTER       1u
+#define SCRVL_VAR_STRING        2u
+#define SCRVL_VAR_ARRAY         22u
+#define SCRVL_VARIABLELIST_CHILD_SIZE 0xFFFEu
+#define SCRVL_SL_MAX_STRING_INDEX     0x10000u
+#define SCRVL_OBJECT_NOTIFY_LIST      0x1FFFEu
+/* Offset 6 within a 16-byte entry: ObjectInfo.u.size (array element count) */
+#define VG_OBJSIZE(i)   (*(unsigned short *)(VG_BASE + (unsigned int)(i)*16 + 6))
+
+/*
+ * FindVariableIndexInternal2: walk the hash chain rooted at bucket `index`
+ * looking for an entry whose stored name equals `name`.
+ * Returns the bucket index if found, 0 if not found.
+ * ref: scr_variable.cpp line 3569
+ */
+static unsigned int FindVariableIndexInternal2(unsigned int name, unsigned int index)
+{
+    unsigned int headId;
+    unsigned int newIndex;
+    unsigned int newHeadId;
+
+    /* entry[index].hash.id is the "value" slot that owns this bucket */
+    headId = (unsigned int)VG_ID(index);
+
+    /* If the value slot is not a HEAD, this bucket is empty / unused */
+    if ((VG_STATUS(headId) & SCRVL_VAR_STAT_MASK) != SCRVL_VAR_STAT_HEAD)
+        return 0;
+
+    /* Check the first entry in the chain */
+    if ((VG_STATUS(headId) >> SCRVL_VAR_NAME_BITS) == name)
+        return index;
+
+    /* Walk movable collision chain: entry[headId].v.index is the next bucket */
+    newIndex = (unsigned int)VG_VNEXT(headId);
+
+    while (newIndex != index) {
+        newHeadId = (unsigned int)VG_ID(newIndex);
+        /* All chained entries must be MOVABLE */
+        if ((VG_STATUS(newHeadId) >> SCRVL_VAR_NAME_BITS) == name)
+            return newIndex;
+        newIndex = (unsigned int)VG_VNEXT(newHeadId);
+    }
+
+    return 0;
+}
+
+/*
+ * FindVariableIndexInternal: entry point for hash lookup.
+ * Computes the canonical bucket for (parentId, name) and calls
+ * FindVariableIndexInternal2.
+ * ref: scr_variable.cpp line 3702
+ */
+static unsigned int FindVariableIndexInternal(unsigned int parentId, unsigned int name)
+{
+    unsigned int bucket;
+    bucket = (parentId + name) % (SCRVL_VARIABLELIST_CHILD_SIZE - 1) + 1;
+    return FindVariableIndexInternal2(name, bucket);
+}
+
+/*
+ * FindVariable: find a child variable of parentId by name/index.
+ * Returns the child's id (hash.id of the found bucket), or 0 if not found.
+ * ref: scr_variable.cpp line 752
+ */
+unsigned int FindVariable(unsigned int parentId, unsigned int index)
+{
+    unsigned int bucket = FindVariableIndexInternal(parentId, index);
+    if (!bucket)
+        return 0;
+    return (unsigned int)VG_ID(bucket);
+}
+
+/*
+ * FindObjectVariable: find a child object variable by object id.
+ * Object variables are stored with name = id + SL_MAX_STRING_INDEX.
+ * ref: scr_variable.cpp line 742
+ */
+unsigned int FindObjectVariable(unsigned int parentId, unsigned int id)
+{
+    unsigned int bucket = FindVariableIndexInternal(parentId,
+                              id + SCRVL_SL_MAX_STRING_INDEX);
+    if (!bucket)
+        return 0;
+    return (unsigned int)VG_ID(bucket);
+}
+
+/*
+ * FindObject: return the pointer value (object id) stored in a POINTER variable.
+ * ref: scr_variable.cpp line 194
+ */
+unsigned int FindObject(unsigned int id)
+{
+    return VG_U32(id);
+}
+
+/*
+ * GetVariableName: return the name field stored in a leaf variable's w word.
+ * The name occupies bits [31:8] of w.status (i.e. w >> VAR_NAME_BITS).
+ * ref: scr_variable.cpp line 212
+ */
+unsigned int GetVariableName(unsigned int id)
+{
+    return VG_STATUS(id) >> SCRVL_VAR_NAME_BITS;
+}
+
+/*
+ * GetNewVariableIndexInternal3: allocate and initialise a hash bucket slot at
+ * `index` for a new child variable of `parentId` with the given `name`.
+ *
+ * This is the core "claim a free or collision slot" routine.  It handles four
+ * cases depending on what currently occupies `index`:
+ *   FREE     – the slot is on the free list: claim it directly.
+ *   HEAD     – the slot already owns a HEAD entry: either steal a free entry
+ *              for the new HEAD and demote the existing one to MOVABLE, or
+ *              grab a free entry from elsewhere.
+ *   MOVABLE/EXTERNAL – the slot is occupied by a movable entry: either move
+ *              it aside or grab a fresh free entry.
+ *
+ * After claiming the slot the function stamps the name into the value entry's
+ * w word and, if the parent is an array, increments its size counter and adds
+ * a ref to the key value.
+ *
+ * ref: scr_variable.cpp line 3874
+ */
+static unsigned int GetNewVariableIndexInternal3(unsigned int parentId,
+                                                  unsigned int name,
+                                                  unsigned int index)
+{
+    unsigned int type;
+    unsigned int headId;      /* VG_ID(index)  – value slot for current bucket */
+    unsigned int newIndex;
+    unsigned int newHeadId;
+    unsigned int next, prev;
+    unsigned int nextSiblingIndex;
+    unsigned int prevId;
+
+    headId = (unsigned int)VG_ID(index);
+    type = VG_STATUS(headId) & SCRVL_VAR_STAT_MASK;
+
+    switch (type) {
+
+    /* ---- Slot is FREE ---- */
+    case SCRVL_VAR_STAT_FREE: {
+        newIndex = (unsigned int)VG_VNEXT(headId);
+        next     = (unsigned int)VG_U16(headId);
+        unsigned int newEntryId;
+
+        if (newIndex == headId ||
+            (VG_STATUS(index) & SCRVL_VAR_STAT_MASK) != 0)
+        {
+            /* Use headId as the value entry directly */
+            newEntryId = headId;
+        } else {
+            /* Displace the entry: point newIndex at headId, reclaim index */
+            VG_ID(newIndex) = VG_ID(headId);
+            VG_ID(index) = (unsigned short)index;
+
+            VG_VNEXT(headId) = (unsigned short)newIndex;
+            VG_U16(headId)   = VG_U16(index);
+
+            newEntryId = index;
+        }
+
+        prev = (unsigned int)VG_PREV(index);
+
+        /* Unlink from the free list: list[list[prev].id].u.next = next */
+        VG_U16(VG_ID(prev)) = (unsigned short)next;
+        VG_PREV(next)        = (unsigned short)prev;
+
+        VG_STATUS(newEntryId) = SCRVL_VAR_STAT_HEAD;
+        VG_VNEXT(newEntryId)  = (unsigned short)index;
+        break;
+    }
+
+    /* ---- Slot holds a HEAD entry ---- */
+    case SCRVL_VAR_STAT_HEAD: {
+        if (VG_STATUS(index) & SCRVL_VAR_STAT_MASK) {
+            /* index's own status bits are non-zero: grab a fresh free entry */
+            newIndex = (unsigned int)VG_U16(0);
+            if (!newIndex)
+                Scr_TerminalError("exceeded maximum number of script variables");
+
+            newHeadId = (unsigned int)VG_ID(newIndex);
+            next = (unsigned int)VG_U16(newHeadId);
+
+            VG_U16(0) = (unsigned short)next;
+            VG_PREV(next) = 0;
+
+            /* Demote existing HEAD to MOVABLE, chain new entry */
+            VG_STATUS(newHeadId) = SCRVL_VAR_STAT_MOVABLE;
+            VG_VNEXT(newHeadId)  = VG_VNEXT(headId);
+            VG_VNEXT(headId)     = (unsigned short)newIndex;
+        } else {
+            /* Steal the free entry pointed to by index.v.index */
+            unsigned int freeIndex = (unsigned int)VG_VNEXT(index);
+            unsigned int freeEntry = &((char *)0)[0]; /* just a placeholder */
+            /* Actually: newIndex = entry[index].v.index (= VG_VNEXT(index)) */
+            /* wait — v.index and v.next share the same offset (12);
+             * VG_VNEXT reads offset 12 which is v.next/index */
+            newIndex  = (unsigned int)VG_VNEXT(index); /* = entry[index].v.index */
+            newHeadId = (unsigned int)VG_ID(newIndex); /* freeEntry = &list[newIndex] */
+
+            prev = (unsigned int)VG_PREV(newIndex);
+            next = (unsigned int)VG_U16(headId); /* entry[headId].u.next */
+
+            /* Unlink newIndex from free list */
+            VG_U16(VG_ID(prev)) = (unsigned short)next;
+            VG_PREV(next)        = (unsigned short)VG_SIBLING(newIndex); /* prev of next = prevSibling field */
+
+            /* Swap: newIndex takes headId's id, index takes index */
+            VG_ID(newIndex) = VG_ID(index);
+            VG_ID(index)    = (unsigned short)index;
+            VG_PREV(newIndex) = VG_PREV(index); /* copy prevSibling */
+
+            /* Update sibling chain pointers */
+            VG_SIBLING(VG_ID(VG_PREV(newIndex))) = (unsigned short)newIndex;
+            VG_PREV(VG_SIBLING(headId))           = (unsigned short)newIndex;
+
+            /* Demote headId from HEAD to MOVABLE */
+            VG_STATUS(headId) = (VG_STATUS(headId) & ~SCRVL_VAR_STAT_MASK) | SCRVL_VAR_STAT_MOVABLE;
+
+            VG_STATUS(newHeadId) = SCRVL_VAR_STAT_HEAD;
+        }
+        /* In both sub-cases the new value entry is VG_ID(index) = index */
+        /* headId is now the id for this slot */
+        break;
+    }
+
+    /* ---- Slot holds a MOVABLE or EXTERNAL entry ---- */
+    default: {
+        /* type is MOVABLE (0x20) or EXTERNAL (0x60) */
+        if (VG_STATUS(index) & SCRVL_VAR_STAT_MASK) {
+            /* Grab a fresh free entry */
+            newIndex = (unsigned int)VG_U16(0);
+            if (!newIndex)
+                Scr_TerminalError("exceeded maximum number of script variables");
+
+            newHeadId = (unsigned int)VG_ID(newIndex);
+            next = (unsigned int)VG_U16(newHeadId);
+
+            VG_U16(0)     = (unsigned short)next;
+            VG_PREV(next) = 0;
+        } else {
+            /* Move the existing entry aside */
+            newIndex  = (unsigned int)VG_VNEXT(index);
+            newHeadId = (unsigned int)VG_ID(newIndex); /* = index (free-list item) */
+
+            prev = (unsigned int)VG_PREV(newIndex);
+            next = (unsigned int)VG_U16(headId);
+
+            VG_U16(VG_ID(prev)) = (unsigned short)next;
+            VG_PREV(next)        = (unsigned short)prev;
+        }
+
+        /* Update sibling chain: replace index with newIndex */
+        nextSiblingIndex = (unsigned int)VG_SIBLING(headId);
+        VG_SIBLING(VG_ID(VG_PREV(index))) = (unsigned short)newIndex;
+        VG_PREV(nextSiblingIndex)           = (unsigned short)newIndex;
+
+        if (type == SCRVL_VAR_STAT_MOVABLE) {
+            /* Walk the HEAD/MOVABLE chain of this object to find who points at index */
+            nextSiblingIndex = (unsigned int)VG_VNEXT(index);
+            prevId = (unsigned int)VG_ID(nextSiblingIndex);
+
+            while (VG_VNEXT(prevId) != (unsigned short)index) {
+                prevId = (unsigned int)VG_ID(VG_VNEXT(prevId));
+            }
+            VG_VNEXT(prevId) = (unsigned short)newIndex;
+        } else {
+            /* EXTERNAL: the parent's v.index points directly to the bucket */
+            VG_VNEXT(headId) = (unsigned short)newIndex;
+        }
+
+        /* Swap ids: newIndex gets the old headId, index gets index */
+        VG_PREV(newIndex) = VG_PREV(index);
+        {
+            unsigned short tmp = VG_ID(newIndex);
+            VG_ID(newIndex)    = VG_ID(index);
+            VG_ID(index)       = tmp;
+        }
+        VG_STATUS(VG_ID(index)) = SCRVL_VAR_STAT_HEAD;
+        VG_VNEXT(VG_ID(index))  = (unsigned short)index;
+        break;
+    }
+    } /* switch */
+
+    /* Stamp the name into the new value entry's w word (bits [31:8]) */
+    {
+        unsigned int valId = (unsigned int)VG_ID(index);
+        /* Clear upper bits, set name */
+        VG_STATUS(valId) = (VG_STATUS(valId) & 0xFFu) | (name << SCRVL_VAR_NAME_BITS);
+
+        /* If the parent is an array, increment its size and addref the key */
+        if ((VG_STATUS(parentId) & SCRVL_VAR_MASK) == SCRVL_VAR_ARRAY) {
+            VG_OBJSIZE(parentId)++;
+            /* AddRef the array key value */
+            if (name < SCRVL_SL_MAX_STRING_INDEX) {
+                /* String key */
+                VariableUnion ku;
+                ku.stringValue = (unsigned int)(unsigned short)name;
+                AddRefToValue(2 /* VAR_STRING */, ku);
+            } else if (name < SCRVL_OBJECT_NOTIFY_LIST) {
+                /* Object pointer key */
+                VariableUnion ku;
+                ku.pointerValue = name - SCRVL_SL_MAX_STRING_INDEX;
+                AddRefToValue(1 /* VAR_POINTER */, ku);
+            }
+            /* else: special sentinel – no ref needed */
+        }
+    }
+
+    return index;
+}
+
+/*
+ * GetNewVariableIndexInternal2: claim a slot and link the new child at the
+ * FRONT of the parent's sibling chain (normal insertion order).
+ * ref: scr_variable.cpp line 4130
+ */
+static unsigned int GetNewVariableIndexInternal2(unsigned int parentId,
+                                                  unsigned int name,
+                                                  unsigned int index)
+{
+    unsigned int siblingId;
+    unsigned int entryValId;
+
+    index = GetNewVariableIndexInternal3(parentId, name, index);
+
+    entryValId = (unsigned int)VG_ID(index);
+    siblingId  = (unsigned int)VG_SIBLING(parentId);
+
+    /* entry[entryValId].nextSibling = parentId's current first child */
+    VG_SIBLING(entryValId) = (unsigned short)siblingId;
+    /* child's prev (prevSibling) in the sibling's hash = index */
+    VG_PREV(siblingId) = (unsigned short)index;
+
+    /* entry[index].hash.u.prev = parent's v.next (the chain anchor) */
+    VG_PREV(index) = VG_VNEXT(parentId);
+    /* parent now points to index as first child */
+    VG_SIBLING(parentId) = (unsigned short)index;
+
+    return index;
+}
+
+/*
+ * GetVariableIndexInternal: find an existing child bucket, or create one.
+ * ref: scr_variable.cpp line 4162
+ */
+static unsigned int GetVariableIndexInternal(unsigned int parentId, unsigned int name)
+{
+    unsigned int bucket;
+    bucket = (parentId + name) % (SCRVL_VARIABLELIST_CHILD_SIZE - 1) + 1;
+
+    unsigned int found = FindVariableIndexInternal2(name, bucket);
+    if (!found)
+        found = GetNewVariableIndexInternal2(parentId, name, bucket);
+
+    return found;
+}
+
+/*
+ * GetNewVariableIndexInternal: assert the slot doesn't exist, then create it.
+ * ref: scr_variable.cpp line 4199
+ */
+static unsigned int GetNewVariableIndexInternal(unsigned int parentId,
+                                                 unsigned int name)
+{
+    unsigned int bucket;
+    bucket = (parentId + name) % (SCRVL_VARIABLELIST_CHILD_SIZE - 1) + 1;
+    return GetNewVariableIndexInternal2(parentId, name, bucket);
+}
+
+/*
+ * GetVariable: find or create a child variable of parentId with the given name.
+ * ref: scr_variable.cpp line 1353
+ */
+unsigned int GetVariable(unsigned int parentId, unsigned int unsignedValue)
+{
+    return (unsigned int)VG_ID(GetVariableIndexInternal(parentId, unsignedValue));
+}
+
+/*
+ * GetNewVariable: create a new child variable (must not already exist).
+ * ref: scr_variable.cpp line 1343
+ */
+unsigned int GetNewVariable(unsigned int parentId, unsigned int unsignedValue)
+{
+    return (unsigned int)VG_ID(GetNewVariableIndexInternal(parentId, unsignedValue));
+}
+
+/*
+ * GetObjectVariable: find-or-create an object-keyed child of an array.
+ * Object variables use name = id + SL_MAX_STRING_INDEX.
+ * ref: scr_variable.cpp line 1332
+ */
+unsigned int GetObjectVariable(unsigned int parentId, unsigned int id)
+{
+    return (unsigned int)VG_ID(
+        GetVariableIndexInternal(parentId, id + SCRVL_SL_MAX_STRING_INDEX));
+}
+
+/*
+ * GetObjectA: return the pointer value stored in variable `id`, allocating
+ * a fresh object if the variable is currently UNDEFINED.
+ * ref: scr_variable.cpp line 4973
+ */
+unsigned int GetObjectA(unsigned int id)
+{
+    unsigned int type = VG_STATUS(id) & SCRVL_VAR_MASK;
+
+    if (type == SCRVL_VAR_UNDEFINED) {
+        /* Set type to POINTER and allocate a new object */
+        VG_STATUS(id) = (VG_STATUS(id) & ~SCRVL_VAR_MASK) | SCRVL_VAR_POINTER;
+        VG_U32(id) = AllocObject();
+    }
+    return VG_U32(id);
+}
+
+/*
+ * GetObject_ (GetObject): same semantics as GetObjectA – kept as alias.
+ * ref: scr_variable.cpp line 1285
+ */
+unsigned int GetObject_(unsigned int id)
+{
+    return GetObjectA(id);
+}
