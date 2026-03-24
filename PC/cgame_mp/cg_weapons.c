@@ -56,7 +56,7 @@ UInt32 s_barrelTags[8] = {
 
 static void CG_PlayADSAnim(void);
 int CG_WeaponDObjHandle(int weaponNum);
-void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]);
+void CG_Weapons_SetToDefault(int weaponNum, DObjModel_s (*dobjModels)[4]);
 void CG_HoldBreathInit(void);
 void CG_SetupWeaponDef(void);
 void CG_SelectWeaponIndex(int weaponIndex);
@@ -115,7 +115,7 @@ int CG_WeaponDObjHandle(int weaponNum)
 }
 
 /* line 363 */
-void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
+void CG_Weapons_SetToDefault(int weaponNum, DObjModel_s (*dobjModels)[4]) {
     byte *weapDef;
     char modelFile[80]; /* 0x58 bytes local */
     const char *handModel;
@@ -138,9 +138,9 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4]) {
 
     viewModel = ((WeaponDef *)weapDef)->szHandXModel;
     sprintf(modelFile, "%s%s", "xmodel/", viewModel);
-    ((DObjModel_s *)dobjModels)[0].model = (struct XModel *)CL_RegisterModel(modelFile);
+    (*dobjModels)[0].model = (struct XModel *)CL_RegisterModel(modelFile);
 
     handModel = ((WeaponDef *)weapDef)->szGunXModel;
     sprintf(modelFile, "%s%s", "xmodel/", handModel);
-    dobjModels[1].model = (struct XModel *)CL_RegisterModel(modelFile);
+    (*dobjModels)[1].model = (struct XModel *)CL_RegisterModel(modelFile);
 }

@@ -39,5 +39,5 @@ const char *Material_TechniqueNames[] = {
     "\"debug bumpmap\""
 };
 
-/* 'string' global */
-char string[1024] = {0};
+/* Preserve the original linker symbol name without colliding with the typedef. */
+char material_tech_string[1024] __asm__("string") = {0};

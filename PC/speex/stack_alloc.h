@@ -34,5 +34,25 @@
 #ifndef STACK_ALLOC_H
 #define STACK_ALLOC_H
 
+#include <stddef.h>
+#include <stdint.h>
+
+static inline void *speex_stack_push_impl(char **stack, size_t count, size_t elem_size, size_t align)
+{
+   uintptr_t ptr = (uintptr_t)*stack;
+   uintptr_t mask = align - 1;
+
+   if (mask)
+      ptr = (ptr + mask) & ~mask;
+
+   *stack = (char *)(ptr + count * elem_size);
+   return (void *)ptr;
+}
+
+#define PUSH(stack, count, type) \
+   ((type *)speex_stack_push_impl(&(stack), (size_t)(count), sizeof(type), __alignof__(type)))
+
+#define PUSHS(stack, type) \
+   ((type *)speex_stack_push_impl(&(stack), 1u, sizeof(type), __alignof__(type)))
 
 #endif

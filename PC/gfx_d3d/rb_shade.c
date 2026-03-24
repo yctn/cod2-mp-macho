@@ -1592,7 +1592,7 @@ static void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const Gf
                                     /* Check for colorMap/specularMap/normalMap override (semantic 3 at image+0) */
                                     if (image && *(int *)image == 3) {
                                         /* Handle image type overrides */
-                                        byte imgSemantic = texEntry[5];
+                                        byte imgSemantic = ((GfxImage *)image)->semantic;
                                         /* ... override logic ... */
                                     }
                                     break;

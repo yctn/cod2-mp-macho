@@ -1,6 +1,7 @@
 /* Converted from stubs/cpp_trampoline.S */
 /* Mac Mach-O triple-underscore → Linux ELF double-underscore trampolines */
 #include <stddef.h>
+#include <stdint.h>
 
 extern void __cxa_allocate_exception(void);
 extern void __cxa_begin_catch(void);

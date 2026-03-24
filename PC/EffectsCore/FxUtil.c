@@ -1249,7 +1249,7 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
     /* Set model reference from primTemp */
     *(int *)&((Effect *)p)->mModelPtr = *(int *)&((PrimitiveTemplate *)primTemp)->mAngle3Delta; /* TODO: subclass field at 0xb4 */
     /* Set emitter effect template */
-    ((Emitter *)p)->emitFx = (void *)((PrimitiveTemplate *)primTemp)->mPlayFxHandles;
+    ((Emitter *)p)->emitFx = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mPlayFxHandles);
     /* Set material + refractive flag */
     *(void **)&((Effect *)p)->mRefEnt.origin[0] = material;
     ((Effect *)p)->mSortGroup = 0;
@@ -1824,7 +1824,7 @@ int FX_Restore(MemoryFile *memFile)
             effectBlockSightCount++;
 
         /* Add to bolt or non-bolt list */
-        if (((Effect *)eff)->mBolt) {
+        if (((Effect *)eff)->mBolt.value) {
             ((byte **)effectListBolt)[effectActiveCountBolt] = eff;
             effectActiveCountBolt++;
         } else {

@@ -225,7 +225,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             ((pointtrace_t *)clip)->bLocational = locational;
 
             /* Set priorityMap */
-            ((pointtrace_t *)clip)->priorityMap = (int)(intptr_t)priorityMap;
+            ((pointtrace_t *)clip)->priorityMap = priorityMap;
 
             /* Look up ownerNum */
             if (passEntityNum == 0x3ff) {
@@ -246,6 +246,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
         } else {
             /* Box trace path */
             byte clip[0x70]; /* moveclip_t - sized from stack layout */
+            moveclip_t *moveClip = (moveclip_t *)clip;
             int ownerNum;
             float halfX, halfY, halfZ;
             float midX, midY, midZ;
@@ -259,10 +260,10 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
             midZ = (maxs[2] + mins[2]) * 0.5f;
 
             /* Set contentmask */
-            ((moveclip_t *)clip)->contentmask = contentmask;
+            moveClip->contentmask = contentmask;
 
             /* Set passEntityNum */
-            ((moveclip_t *)clip)->passEntityNum = passEntityNum;
+            moveClip->passEntityNum = passEntityNum;
 
             /* Look up ownerNum */
             if (passEntityNum == 0x3ff) {
@@ -273,38 +274,38 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
                 if (ownerNum == 0x3ff)
                     ownerNum = -1;
             }
-            ((moveclip_t *)clip)->passOwnerNum = ownerNum;
+            moveClip->passOwnerNum = ownerNum;
 
             /* mins = -halfExtent */
-            ((pointtrace_t *)clip)->extents.start[0] = -halfX;
-            ((pointtrace_t *)clip)->extents.start[1] = -halfY;
-            ((pointtrace_t *)clip)->extents.start[2] = -halfZ;
+            moveClip->mins[0] = -halfX;
+            moveClip->mins[1] = -halfY;
+            moveClip->mins[2] = -halfZ;
 
             /* maxs = halfExtent */
-            ((pointtrace_t *)clip)->extents.end[0] = halfX;
-            ((pointtrace_t *)clip)->extents.end[1] = halfY;
-            ((pointtrace_t *)clip)->extents.end[2] = halfZ;
+            moveClip->maxs[0] = halfX;
+            moveClip->maxs[1] = halfY;
+            moveClip->maxs[2] = halfZ;
 
             /* outerSize = halfExtent + 1.0 */
-            ((pointtrace_t *)clip)->extents.invDelta[0] = halfX + 1.0f;
-            ((pointtrace_t *)clip)->extents.invDelta[1] = halfY + 1.0f;
-            ((pointtrace_t *)clip)->extents.invDelta[2] = halfZ + 1.0f;
+            moveClip->outerSize[0] = halfX + 1.0f;
+            moveClip->outerSize[1] = halfY + 1.0f;
+            moveClip->outerSize[2] = halfZ + 1.0f;
 
             /* start = midpoint + start */
-            ((pointtrace_t *)clip)->passEntityNum = midX + start[0];
-            ((pointtrace_t *)clip)->passOwnerNum = midY + start[1];
-            ((pointtrace_t *)clip)->contentmask = midZ + start[2];
+            moveClip->extents.start[0] = midX + start[0];
+            moveClip->extents.start[1] = midY + start[1];
+            moveClip->extents.start[2] = midZ + start[2];
 
             /* end = midpoint + end */
-            ((pointtrace_t *)clip)->bLocational = midX + end[0];
-            ((pointtrace_t *)clip)->priorityMap = midY + end[1];
-            ((moveclip_t *)clip)->extents.end[2] = midZ + end[2];
+            moveClip->extents.end[0] = midX + end[0];
+            moveClip->extents.end[1] = midY + end[1];
+            moveClip->extents.end[2] = midZ + end[2];
 
             /* Calculate trace extents */
-            CM_CalcTraceEntents(&((moveclip_t *)clip)->extents);
+            CM_CalcTraceEntents(&moveClip->extents);
 
             /* Call CM_ClipMoveToEntities */
-            CM_ClipMoveToEntities((const moveclip_t *)clip, results);
+            CM_ClipMoveToEntities(moveClip, results);
         }
     }
 

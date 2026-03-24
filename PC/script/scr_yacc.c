@@ -35,7 +35,7 @@ extern YY_BUFFER_STATE yy_current_buffer; /* yy_current_buffer - BSS */
 extern char yy_hold_char; /* yy_hold_char - BSS */
 extern int yy_n_chars; /* yy_n_chars - BSS */
 extern char *yy_c_buf_p; /* yy_c_buf_p - BSS */
-extern int yy_init; /* yy_init */
+extern int yy_init[]; /* yy_init */
 extern int yy_start; /* yy_start - BSS */
 extern int yy_did_buffer_switch_on_eof; /* yy_did_buffer_switch_on_eof - BSS */
 extern const unsigned char yy_accept[];

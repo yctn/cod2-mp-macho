@@ -87,7 +87,7 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
     gentity_t *pSelf;
     const char *weaponName;
     int iWeaponIndex;
-    void *client;
+    gclient_t *client;
     int ammoIndex;
     int clipIndex;
 

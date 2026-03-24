@@ -86,20 +86,20 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
 /* line 288 */
 static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
 {
-    byte *cg_s;
-    byte *ps;
-    byte *s1;
-    byte *obj;
+    cg_t *cg_s;
+    playerState_t *ps;
+    const entityState_t *s1;
+    void *obj;
     float angles[3];
-    byte *scr;
+    const scr_const_t *scr;
     struct XAnim_s *tree;
     int animIndex;
 
-    s1 = (byte *)cent + 0xf0;
+    s1 = (const entityState_t *)((const byte *)cent + 0xf0);
 
     /* line 301 */
-    cg_s = *(byte **)imp_cg;
-    ps = cg_s + 0x25bc4;
+    cg_s = *(cg_t **)imp_cg;
+    ps = (playerState_t *)((byte *)cg_s + 0x25bc4);
 
     /* line 303: get DObj for this entity */
     obj = (byte *)Com_GetClientDObj(s1->number, cent->localClientNum);
@@ -107,26 +107,26 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     /* line 306: check if player state flags & 0x300 set */
     if ((ps->eFlags & 0x300) && ps->viewlocked_entNum == s1->number) {
         /* line 308: player is using this MG42 - use AngleSubtract from viewangles */
-        angles[0] = AngleSubtract(((cg_t *)cg_s)->refdefViewAngles[0], cent->lerpAngles[0]);
-        angles[1] = AngleSubtract(((cg_t *)cg_s)->refdefViewAngles[1], cent->lerpAngles[1]);
+        angles[0] = AngleSubtract(cg_s->refdefViewAngles[0], cent->lerpAngles[0]);
+        angles[1] = AngleSubtract(cg_s->refdefViewAngles[1], cent->lerpAngles[1]);
         angles[2] = 0.0f;
     } else {
         /* line 314: not our MG42 - lerp angles from entity state */
-        angles[0] = LerpAngle(*(int *)&s1->angles2[0], *(int *)&s1->angles2[0], ((cg_t *)cg_s)->frameInterpolation);
-        angles[1] = LerpAngle(*(int *)&s1->angles2[1], *(int *)&s1->angles2[1], ((cg_t *)cg_s)->frameInterpolation);
+        angles[0] = LerpAngle(s1->angles2[0], s1->angles2[0], cg_s->frameInterpolation);
+        angles[1] = LerpAngle(s1->angles2[1], s1->angles2[1], cg_s->frameInterpolation);
         angles[2] = 0.0f;
     }
 
     /* line 319: set tag_turret control tag angles */
-    scr = *(scr_const_t **)imp_scr_const;
+    scr = *(const scr_const_t **)imp_scr_const;
     DObjSetControlTagAngles(obj, partBits, scr->tag_aim, angles);
 
     /* line 320: set tag_turret_pitch control tag angles */
     DObjSetControlTagAngles(obj, partBits, scr->tag_aim_animated, angles);
 
     /* line 322: lerp barrel angle */
-    cg_s = *(byte **)imp_cg;
-    angles[0] = LerpAngle(*(int *)&s1->angles2[2], *(int *)&s1->angles2[2], ((cg_t *)cg_s)->frameInterpolation);
+    cg_s = *(cg_t **)imp_cg;
+    angles[0] = LerpAngle(s1->angles2[2], s1->angles2[2], cg_s->frameInterpolation);
     angles[1] = 0.0f;
 
     /* line 325: set tag_barrel control tag angles */
@@ -136,8 +136,8 @@ static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partB
     tree = (struct XAnim_s *)DObjGetTree(obj);
 
     /* line 330-335: determine anim index based on player state */
-    if (((cg_t *)cg_s)->predictedPlayerState.eFlags & 0x300) {
-        if (((cg_t *)cg_s)->predictedPlayerState.viewlocked_entNum == s1->number) {
+    if (cg_s->predictedPlayerState.eFlags & 0x300) {
+        if (cg_s->predictedPlayerState.viewlocked_entNum == s1->number) {
             animIndex = 1;
         } else {
             if (*(byte *)&cent->nextState.eFlags & 0x40) {

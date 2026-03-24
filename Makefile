@@ -9,6 +9,7 @@ SDL2_CFLAGS = $(shell pkg-config --cflags sdl2 2>/dev/null || echo -I/usr/includ
 SDL2_LIBS = $(shell pkg-config --libs sdl2 2>/dev/null || echo -lSDL2)
 CFLAGS = -std=$(CSTD) -m32 -fno-pie -no-pie -w -O0 -g -msse -fno-omit-frame-pointer -DSDL_DISABLE_IMMINTRIN_H -IPC/speex -I. $(SDL2_CFLAGS) -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=return-mismatch
 LDFLAGS = -m32 -no-pie -L/usr/lib32 -L/usr/lib/i386-linux-gnu
+LINK_UNRESOLVED_FLAGS ?= -Wl,--unresolved-symbols=ignore-all -Wl,--noinhibit-exec
 LIBS = -lGL -lm -lpthread -ldl $(LIBSTDCPP) $(SDL2_LIBS)
 TARGET = cod2_linux
 COMPARE_DIR ?= .compare
@@ -113,7 +114,7 @@ endif
 	python3 -m utils.decomp.run_compare_experiment $(SPLIT_SRC) --binary $(COMPARE_BINARY)
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ -Wl,--allow-multiple-definition -Wl,--wrap,FX_TryRegisterEffect -Wl,--wrap,FX_CreateDefaultEffect -Wl,--wrap,FX_RegisterEffect -Wl,--wrap,R_Error -Wl,--defsym,__mh_execute_header=0x1000 -Wl,--defsym,level_ptr=level -Wl,--defsym,g_entities_ptr=g_entities -Wl,--defsym,scr_const_ptr=scr_const -Wl,--defsym,playerCorpseInfo_ptr=g_scr_data -Wl,--defsym,g_renderer_ptr=re -Wl,--defsym,scrAnimPub_ptr=scrAnimPub -Wl,--defsym,scrCompPub_ptr=scrCompilePub -Wl,--defsym,scrParserPub_ptr=scrParserPub -Wl,--defsym,r_frontEndData_ptr=rg -Wl,--defsym,r_sys_ptr=ri -Wl,--defsym,r_limits_ptr=vidConfig -Wl,--defsym,sv_ptr=sv -Wl,--defsym,svs_ptr=svs -Wl,--defsym,cg_globUI=legacyHacks -Wl,--defsym,g_time=imp_level_bgs -Wl,--defsym,g_time_ptr=imp_bgs $(LIBS)
+	$(CC) $(LDFLAGS) $(LINK_UNRESOLVED_FLAGS) -o $@ $^ -Wl,--allow-multiple-definition -Wl,--wrap,FX_TryRegisterEffect -Wl,--wrap,FX_CreateDefaultEffect -Wl,--wrap,FX_RegisterEffect -Wl,--wrap,R_Error -Wl,--defsym,__mh_execute_header=0x1000 -Wl,--defsym,level_ptr=level -Wl,--defsym,g_entities_ptr=g_entities -Wl,--defsym,scr_const_ptr=scr_const -Wl,--defsym,playerCorpseInfo_ptr=g_scr_data -Wl,--defsym,g_renderer_ptr=re -Wl,--defsym,scrAnimPub_ptr=scrAnimPub -Wl,--defsym,scrCompPub_ptr=scrCompilePub -Wl,--defsym,scrParserPub_ptr=scrParserPub -Wl,--defsym,r_frontEndData_ptr=rg -Wl,--defsym,r_sys_ptr=ri -Wl,--defsym,r_limits_ptr=vidConfig -Wl,--defsym,sv_ptr=sv -Wl,--defsym,svs_ptr=svs -Wl,--defsym,cg_globUI=legacyHacks -Wl,--defsym,g_time=imp_level_bgs -Wl,--defsym,g_time_ptr=imp_bgs $(LIBS)
 
 # Old GCC 4.0 mishandles x86 __attribute__((naked)) functions and emits a
 # normal prologue, so build those translation units with the host GCC instead.

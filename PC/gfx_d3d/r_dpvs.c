@@ -62,10 +62,10 @@ int R_CellForPoint(const vec_t *origin);
 static vec3_t * R_ChopPortalWinding_impl(vec3_t *vertsIn, int *vertexCount, const float *plane, vec3_t *vertsOut);
 static void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals);
 static void R_GetSidePlaneNormals_impl(vec3_t *winding, int vertexCount, vec3_t *normals);
-static __attribute_regparm__(3) void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static void R_AddStaticModelWithCull(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 static void R_AddStaticModelWithCull_impl(int smodelIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int sidePlaneCount, DpvsPlane *frustumPlanes);
-static __attribute_regparm__(3) void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
+static void R_AddWorldSurfaceWithCull(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 static void R_AddWorldSurfaceWithCull_impl(int surfIndex, const DpvsPlane *planes, int planeCount, int stackLevel);
 
 /* Shared helper: test a DpvsPlane against AABB bounds (mins+maxs, 24 bytes).
@@ -2298,4 +2298,3 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
 {
     R_AddWorldSurfacesDpvs_impl(viewParms, cameraCellIndex);
 }
-
