@@ -288,6 +288,11 @@ scr_thread_t Scr_ExecThread(scr_func_t handle, unsigned int numArgs)
 
     const char *pos = (const char *)(codepos_base + handle);
 
+    /* Guard: if no compiled code exists, skip execution */
+    if (!codepos_base || !pos || (unsigned int)pos < 0x08000000) {
+        return 0;
+    }
+
     if (!vm->function_count)
         Scr_ResetTimeout();
 

@@ -310,7 +310,7 @@ unsigned int Scr_PlayFX(void);
 unsigned int iprintln(void);
 unsigned int iprintlnbold(void);
 unsigned int GScr_LoadGameTypeScript(void);
-unsigned int GScr_LoadScripts(void);
+unsigned int GScr_LoadScripts(int inst);
 
 /* line 35 */
 unsigned int GScr_AllocString(const char *s)
@@ -685,5 +685,65 @@ unsigned int Scr_Objective_OnEntity(void) {
     /* Store entity number */
     obj->entNum = newEnt->s.number;
 
+    return 0;
+}
+
+/* ============================================
+ * GScr_LoadGameTypeScript: load gametype scripts
+ * ref: 0810DDAC
+ * ============================================ */
+static unsigned int GScr_LoadGameTypeScript_impl(void)
+{
+    extern const dvar_t *g_gametype;
+    extern unsigned int Scr_GetFunctionHandle(const char *file, const char *func, int developer);
+    extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+    char s[64];
+
+    Com_sprintf(s, sizeof(s), "maps/mp/gametypes/%s", g_gametype->current.string);
+    g_scr_data.gametype.main = Scr_GetFunctionHandle(s, "main", 1);
+    g_scr_data.gametype.startupgametype = 0; /* not in MP 1.3 */
+    g_scr_data.gametype.playerconnect = Scr_GetFunctionHandle("maps/mp/gametypes/_callbacksetup", "CodeCallback_PlayerConnect", 1);
+    g_scr_data.gametype.playerdisconnect = Scr_GetFunctionHandle("maps/mp/gametypes/_callbacksetup", "CodeCallback_PlayerDisconnect", 1);
+    g_scr_data.gametype.playerdamage = Scr_GetFunctionHandle("maps/mp/gametypes/_callbacksetup", "CodeCallback_PlayerDamage", 1);
+    g_scr_data.gametype.playerkilled = Scr_GetFunctionHandle("maps/mp/gametypes/_callbacksetup", "CodeCallback_PlayerKilled", 1);
+}
+
+/* ============================================
+ * GScr_LoadScripts: main script loading entry point
+ * ref: 0810DFA0
+ * ============================================ */
+unsigned int GScr_LoadScripts(int inst)
+{
+    extern unsigned int Scr_GetFunctionHandle(const char *file, const char *func, int developer);
+    extern void Scr_SetClassMap(int classnum);
+    extern void GScr_AddFieldsForEntity(void);
+    extern void GScr_AddFieldsForHudElems(void);
+    extern void GScr_AddFieldsForRadiant(void);
+    extern const dvar_t *mapname;
+    extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+    int i;
+    char s[64];
+
+    g_scr_data.delete_ = Scr_GetFunctionHandle("codescripts/delete", "main", 1);
+    g_scr_data.initstructs = Scr_GetFunctionHandle("codescripts/struct", "initstructs", 1);
+    g_scr_data.createstruct = Scr_GetFunctionHandle("codescripts/struct", "createstruct", 1);
+
+    GScr_LoadGameTypeScript_impl();
+
+    /* Load map script */
+    {
+        extern const dvar_t *sv_mapname;
+        if (sv_mapname && sv_mapname->current.string && sv_mapname->current.string[0]) {
+            Com_sprintf(s, sizeof(s), "maps/mp/%s", sv_mapname->current.string);
+            g_scr_data.levelscript = Scr_GetFunctionHandle(s, "main", 0);
+        }
+    }
+
+    /* Set class maps and add fields */
+    for (i = 0; i <= 3; i++)
+        Scr_SetClassMap(i);
+    GScr_AddFieldsForEntity();
+    GScr_AddFieldsForHudElems();
+    GScr_AddFieldsForRadiant();
     return 0;
 }

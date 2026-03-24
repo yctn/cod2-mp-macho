@@ -84,7 +84,9 @@ void Scr_FreeEntityList(void) {}
 void Scr_AllocGameVariable(void) {}
 void Scr_LoadGameType(void) {}
 void Scr_StartupGameType(void) {}
-void GScr_LoadScripts(int a) {}
+/* GScr_LoadScripts is now real - in g_scr_main_mp.c */
+void Scr_SetClassMap(int classnum) {}
+void GScr_AddFieldsForHudElems(void) {}
 void Scr_FreeScripts(int a) {}
 void Scr_BeginLoadAnimScripts(void) {}
 void GScr_LoadAnimScripts(void) {}
