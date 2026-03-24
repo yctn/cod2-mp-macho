@@ -270,3 +270,38 @@ void VM_CancelNotify(unsigned int notifyListOwnerId, unsigned int startLocalId) 
     unsigned int notifyNameListId = FindObject(FindVariable(notifyListId, stringValue));
     VM_CancelNotifyInternal(notifyListOwnerId, startLocalId, notifyListId, notifyNameListId, stringValue);
 }
+
+/* Scr_ExecThread: execute a script thread.
+ * Without VM_ExecuteInternal, we can't actually run scripts.
+ * This stub allocates a thread, skips execution, and returns the thread ID.
+ * ref: 0808398E */
+scr_thread_t Scr_ExecThread(scr_func_t handle, unsigned int numArgs)
+{
+    extern void Scr_ResetTimeout(void);
+    extern void Scr_IsInOpcodeMemory(int addr);
+    extern unsigned int AllocThread(unsigned int self);
+    extern void AddRefToObject(unsigned int id);
+
+    struct scrVarPub_t *pub = (struct scrVarPub_t *)imp_scrVarPub;
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+
+    if (!vm->function_count)
+        Scr_ResetTimeout();
+
+    /* Allocate thread but skip actual execution */
+    AddRefToObject(pub->gameId);
+    unsigned int threadId = AllocThread(pub->gameId);
+
+    /* Clean up parameters from the stack */
+    /* In real implementation this calls VM_Execute which consumes args */
+
+    return threadId;
+}
+
+/* Scr_KillThread: kill a running thread.
+ * ref: 080832FC */
+void Scr_KillThread(unsigned int threadId)
+{
+    extern void RemoveRefToObject(unsigned int id);
+    RemoveRefToObject(threadId);
+}

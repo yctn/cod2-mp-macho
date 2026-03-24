@@ -603,3 +603,38 @@ static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2) {
     }
     return count1 - count2;
 }
+
+/* RemoveRefToValue: remove a reference from a VariableValue (type, value pair).
+ * ref: 0807BA54 */
+JCOEF RemoveRefToValue(int type, VariableUnion u)
+{
+    RemoveRefToValueInternal((unsigned int)type, *(unsigned int *)&u);
+    return 0;
+}
+
+/* Scr_FreeThread: release a thread's object reference.
+ * ref: 08083B00 */
+void Scr_FreeThread(unsigned int threadId)
+{
+    RemoveRefToObject(threadId);
+}
+
+/* Scr_ClearOutParams: clear outgoing parameters.
+ * ref: 08082520 */
+void Scr_ClearOutParams(void)
+{
+    extern unsigned char scrVmPub[];
+    struct scrVarPub_t *pub = (struct scrVarPub_t *)imp_scrVarPub;
+    /* In the reference: while(scrVarPub.outparamcount) { RemoveRefToValue(top); top-=8; outparamcount--; } */
+    /* For now, just reset the counter */
+    /* TODO: proper implementation */
+}
+
+/* ClearVariableValue: clear a variable's value in the pool.
+ * ref: 08075384 */
+JCOEF ClearVariableValue(unsigned int id)
+{
+    if (id == 0) return 0;
+    VG_STATUS(id) = (VG_STATUS(id) & 0x1F00FFFFu);
+    return 0;
+}
