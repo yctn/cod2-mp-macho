@@ -2096,7 +2096,11 @@ Material * Material_Load(const char *name, int imageTrack)
     Bool result;
     result = Material_FinishLoadingInstance((MaterialObj *)mtlData, imageTrack);
     if (!result) {
-        return NULL;
+        /* If the material failed to fully load (e.g. technique set parsing failed),
+         * still return the partially-loaded material data as a fallback.
+         * This allows the renderer to have *something* for default materials like $raw. */
+        Com_Printf("Material_Load: '%s' FinishLoadingInstance failed, using partial data\n", name);
+        return (Material *)mtlData;
     }
     return (Material *)mtlData;
 }
