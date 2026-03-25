@@ -152,6 +152,7 @@ const MtlStateMapBitName s_polygonOffsetBitNames[] = {
 /* Wireframe */
 const MtlStateMapBitName s_wireframeBitNames[] = {
     {"Disable", 0x00},
+    {"Enable",  0x01},
     {"false", 0x00},
     {"true",  0x01},
     {NULL, 0}

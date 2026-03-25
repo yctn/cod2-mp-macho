@@ -1921,7 +1921,7 @@ char **FS_ListFiles(const char *path, const char *extension, int behavior, int *
                     I_strnicmp(name, path, pathLength) != 0)
                     continue;
 
-                if (pathLength > 0 && name[pathLength] != '/')
+                if (pathLength > 0 && path[pathLength - 1] != '/' && name[pathLength] != '/')
                     continue;
 
                 nameLen = (int)strlen(name);
@@ -1936,7 +1936,8 @@ char **FS_ListFiles(const char *path, const char *extension, int behavior, int *
 
                 {
                     /* Strip path prefix */
-                    char *leafName = (pathLength > 0) ? name + pathLength + 1 : name;
+                    char *leafName = name + pathLength;
+                    if (*leafName == '/') leafName++;
                     nfiles = FS_AddFileToList(leafName, list, nfiles);
                 }
             }
