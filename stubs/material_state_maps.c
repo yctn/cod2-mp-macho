@@ -178,11 +178,15 @@ const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[] = {
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[] = {
-    {"blendFunc", s_srcBlendRgbBitNames, {0xFF00, 0}},
+    {"blendOp",   s_blendOpRgbBitNames,   {0xC0, 0}},
+    {"srcBlend",  s_srcBlendRgbBitNames,   {0xF00, 0}},
+    {"dstBlend",  s_dstBlendRgbBitNames,   {0xF000, 0}},
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[] = {
-    {"separateAlphaBlendFunc", s_srcBlendAlphaBitNames, {0xFF00, 0}},
+    {"blendOp",   s_blendOpAlphaBitNames,  {0, 0xC0}},
+    {"srcBlend",  s_srcBlendAlphaBitNames,  {0, 0xF00}},
+    {"dstBlend",  s_dstBlendAlphaBitNames,  {0, 0xF000}},
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[] = {
@@ -198,7 +202,8 @@ const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[] = {
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[] = {
-    {"colorWrite", s_colorWriteRgbBitNames, {0x03, 0}},
+    {"colorWriteRgb",   s_colorWriteRgbBitNames,   {0x01, 0}},
+    {"colorWriteAlpha", s_colorWriteAlphaBitNames,  {0x02, 0}},
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstFogBitGroup[] = {
@@ -209,8 +214,33 @@ const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[] = {
     {"polygonOffset", s_polygonOffsetBitNames, {0x30, 0}},
     {NULL, NULL, {0, 0}}
 };
+const MtlStateMapBitName s_stencilModeBitNames[] = {
+    {"Disable",     0x00},
+    {"OneSided",    0x01},
+    {"TwoSided",    0x02},
+    {"passthrough", 0x00},
+    {NULL, 0}
+};
+const MtlStateMapBitName s_stencilFuncBitNames[] = {
+    {"Always",       0x00}, {"Never",        0x01}, {"Less",      0x02},
+    {"Equal",        0x03}, {"LessEqual",    0x04}, {"Greater",   0x05},
+    {"NotEqual",     0x06}, {"GreaterEqual", 0x07},
+    {"Keep",         0x00}, {"Zero",         0x00}, {"Replace",   0x01},
+    {"IncrSat",      0x02}, {"DecrSat",      0x03}, {"Invert",    0x04},
+    {"Incr",         0x05}, {"Decr",         0x06},
+    {"passthrough",  0x00},
+    {NULL, 0}
+};
 const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[] = {
-    {"stencil", s_alphaTestBitNames, {0, 0}}, /* placeholder */
+    {"mode",    s_stencilModeBitNames,   {0, 0}},
+    {"func1",   s_stencilFuncBitNames,   {0, 0}},
+    {"pass1",   s_stencilFuncBitNames,   {0, 0}},
+    {"fail1",   s_stencilFuncBitNames,   {0, 0}},
+    {"zfail1",  s_stencilFuncBitNames,   {0, 0}},
+    {"func2",   s_stencilFuncBitNames,   {0, 0}},
+    {"pass2",   s_stencilFuncBitNames,   {0, 0}},
+    {"fail2",   s_stencilFuncBitNames,   {0, 0}},
+    {"zfail2",  s_stencilFuncBitNames,   {0, 0}},
     {NULL, NULL, {0, 0}}
 };
 const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[] = {
