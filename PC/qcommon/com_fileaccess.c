@@ -22,6 +22,7 @@ FILE *FS_FileOpen(const char *filename, const char *mode)
 
 int FS_FileClose(FILE *stream)
 {
+    if (!stream) return 0;
     return fclose(stream);
 }
 

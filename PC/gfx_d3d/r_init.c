@@ -733,6 +733,7 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
     PrintFunc ri_printf = *(PrintFunc *)&ri;
 
     /* Phase 1: Register dvars, commands, clear global state */
+    if (!ri_printf) return;
     ri_printf(0, "----- R_Init -----\n");
     Swap_Init();
     R_RegisterDvars();
