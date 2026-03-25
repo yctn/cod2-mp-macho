@@ -211,7 +211,7 @@ const char * CG_GetUseString(void)
     const char *hintString;
     char binding[0x100];
 
-    cg = (byte *)*(void **)imp_cg;
+    cg = (byte *)(void *)imp_cg;
     hintString = CL_GetConfigString(((cg_t *)cg)->cursorHintString + 0x4fe);
     if (!hintString || !*hintString)
     {
@@ -246,26 +246,26 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
     char binding[0x100];
 
     /* line 1426: check if cursor hints are enabled */
-    if (!*(int *)((byte *)*(void **)imp_cg_cursorHints + 8))
+    if (!*(int *)((byte *)(void *)imp_cg_cursorHints + 8))
         return;
 
     /* line 1308: check for cursor hint in cg struct */
-    cg = (byte *)*(void **)imp_cg;
+    cg = (byte *)(void *)imp_cg;
     if (!((cg_t *)cg)->renderingThirdPerson) {
         /* line 1311: check snapshot for new hint data */
         snap = (byte *)((cg_t *)cg)->nextSnap;
         if (((snapshot_t *)snap)->ps.cursorHint) {
             /* line 1313-1316: copy hint data from snapshot */
             ((cg_t *)cg)->cursorHintTime = ((cg_t *)cg)->time; /* hintStartTime = time */
-            ((cg_t *)cg)->cursorHintFade = *(int *)((byte *)*(void **)imp_cg_hintFadeTime + 8); /* hintFadeTime = dvar */
+            ((cg_t *)cg)->cursorHintFade = *(int *)((byte *)(void *)imp_cg_hintFadeTime + 8); /* hintFadeTime = dvar */
             ((cg_t *)cg)->cursorHintIcon = ((snapshot_t *)snap)->ps.cursorHint; /* cursorHintValue */
             ((cg_t *)cg)->cursorHintString = ((snapshot_t *)snap)->ps.cursorHintString; /* cursorHintString */
         }
-        cg = (byte *)*(void **)imp_cg;
+        cg = (byte *)(void *)imp_cg;
     }
 
     /* line 1431: get hint icon material */
-    cgs = (byte *)*(void **)imp_cgs;
+    cgs = (byte *)(void *)imp_cgs;
     cursorHintValue = ((cg_t *)cg)->cursorHintIcon;
     hintIcon = ((MaterialHandle *)(cgs + 0xba44))[cursorHintValue]; /* cgs->media.hintIcons[cursorHintValue] at 0xba44 */
     if (!hintIcon)
@@ -283,14 +283,14 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
     Controls_GetConfig();
 
     /* line 1450: check cursorHints dvar for display mode */
-    cursorHintsDvarVal = *(int *)((byte *)*(void **)imp_cg_cursorHints + 8);
+    cursorHintsDvarVal = *(int *)((byte *)(void *)imp_cg_cursorHints + 8);
 
     if (cursorHintsDvarVal == 3) {
         /* line 1451: pulsing alpha mode */
         float sinVal = sinf((float)((cg_t *)cg)->time / 150.0f);
         fadeColor[3] *= sinVal * 0.5f + 0.5f;
         /* reload dvar since cg_cursorHints was read again in ASM */
-        cursorHintsDvarVal = *(int *)((byte *)*(void **)imp_cg_cursorHints + 8);
+        cursorHintsDvarVal = *(int *)((byte *)(void *)imp_cg_cursorHints + 8);
     }
 
     /* line 1454-1465: compute scale and halfscale based on display mode */
@@ -312,7 +312,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
     }
 
     /* line 1468: check if this is a weapon hint (cursorHintValue 5-132) */
-    cg = (byte *)*(void **)imp_cg;
+    cg = (byte *)(void *)imp_cg;
     cursorHintValue = ((cg_t *)cg)->cursorHintIcon;
     text = NULL;
     widthScale = 1.0f;
@@ -335,7 +335,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
         /* line 1480: check if weapon type is melee (type == 7) */
         if (((WeaponDef *)weapDef)->weapClass == 7) {
             /* line 1482: melee weapon - use cursorHintString */
-            cg = (byte *)*(void **)imp_cg;
+            cg = (byte *)(void *)imp_cg;
             cursorHintString = ((cg_t *)cg)->cursorHintString;
             if (cursorHintString >= 0) {
                 text = CG_GetUseString();
@@ -346,7 +346,7 @@ static void CG_DrawCursorhint(const rectDef_t *rect, struct Font_s *font, float 
             byte *pickupWeapDef;
             byte *cgPtr;
 
-            cgPtr = (byte *)*(void **)imp_cg;
+            cgPtr = (byte *)(void *)imp_cg;
             weapIdx = ((cg_t *)cgPtr)->cursorHintIcon - 4;
             pickupWeapDef = (byte *)BG_GetWeaponDef(weapIdx);
 

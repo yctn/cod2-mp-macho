@@ -403,7 +403,7 @@ double FS_NewDir_f(void)
 
     /* line 668 | list filtered files starting from fs_searchpaths */
     {
-        void *searchpaths = *(void **)imp_fs_searchpaths;
+        void *searchpaths = (void *)imp_fs_searchpaths;
         dirnames = FS_ListFilteredFiles(searchpaths, "", "", filter, &ndirs, 10);
     }
 
@@ -513,7 +513,7 @@ double FS_SetRestrictions(void)
     FS_Startup("main"); /* line 914 */
 
     /* line 923 | walk search paths and verify checksums */
-    path = *(void **)imp_fs_searchpaths;
+    path = (void *)imp_fs_searchpaths;
     while (path != NULL) {
         /* line 925 */
         if (FS_UseSearchPath(path)) {
@@ -540,7 +540,7 @@ const char * FS_LoadedIwdChecksums(void)
     info2[0] = '\0'; /* line 955 */
 
     /* line 957 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
+    search = (void *)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = ((searchpath_t *)search)->pack; /* line 960 */
         if (iwd != NULL) {
@@ -564,7 +564,7 @@ const char * FS_LoadedIwdNames(void)
     info3[0] = '\0'; /* line 986 */
 
     /* line 988 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
+    search = (void *)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = ((searchpath_t *)search)->pack; /* line 991 */
         if (iwd != NULL) {
@@ -592,7 +592,7 @@ const char * FS_LoadedIwdPureChecksums(void)
     info4[0] = '\0'; /* line 1021 */
 
     /* line 1023 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
+    search = (void *)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = ((searchpath_t *)search)->pack; /* line 1026 */
         if (iwd != NULL) {
@@ -616,7 +616,7 @@ const char * FS_ReferencedIwdChecksums(void)
     info5[0] = '\0'; /* line 1052 */
 
     /* line 1054 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
+    search = (void *)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = ((searchpath_t *)search)->pack; /* line 1057 */
         if (iwd != NULL) {
@@ -652,7 +652,7 @@ const char * FS_ReferencedIwdNames(void)
     info8[0] = '\0'; /* line 1080 */
 
     /* line 1084 | walk search paths */
-    search = *(void **)imp_fs_searchpaths;
+    search = (void *)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = ((searchpath_t *)search)->pack; /* line 1087 */
         if (iwd != NULL) {
@@ -1178,7 +1178,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
 
         /* line 793 | check if this iwd is in search paths */
         {
-            void *search = *(void **)imp_fs_searchpaths;
+            void *search = (void *)imp_fs_searchpaths;
             int found = 0;
             while (search != NULL) {
                 void *iwd = ((searchpath_t *)search)->pack; /* line 795 */

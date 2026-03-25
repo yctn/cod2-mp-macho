@@ -552,7 +552,7 @@ unsigned int CG_CheckTimedMenus(void)
         serverTime = cg->time;
         if (serverTime - timedMenuTime > 2500) {
             /* line 2420 */
-            Menus_CloseByName(*(void **)imp_cgDC, (const char *)"voiceMenu");
+            Menus_CloseByName((void *)imp_cgDC, (const char *)"voiceMenu");
             cg->voiceTime = 0;
         }
     }
@@ -665,9 +665,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2277 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Health");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"Health");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Health_mp");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"Health_mp");
                 }
                 /* line 2281 */
                 if (menu)
@@ -695,9 +695,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2303 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"weaponinfo");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"weaponinfo");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"weaponinfo_mp");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"weaponinfo_mp");
                 }
                 /* line 2307 */
                 if (menu)
@@ -719,9 +719,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2325 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Compass");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"Compass");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"Compass_mp");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"Compass_mp");
                 }
                 /* line 2329 */
                 if (menu)
@@ -756,9 +756,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2354 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"stance");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"stance");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"stance_mp");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"stance_mp");
                 }
                 /* line 2359 */
                 if (menu)
@@ -780,9 +780,9 @@ after_buttons:
             if ((float)(serverTime - showTime) > fadeVal * 1000.0f) {
                 /* line 2378 */
                 if (CL_GetLocalClientActiveCount() == 1) {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"offhandinfo");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"offhandinfo");
                 } else {
-                    menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"offhandinfo_mp");
+                    menu = Menus_FindByName((void *)imp_cgDC, (const char *)"offhandinfo_mp");
                 }
                 /* line 2382 */
                 if (menu)
@@ -800,7 +800,7 @@ after_buttons:
         serverTime = cg->time;
         if (serverTime - cg->scoreFadeTime > 100) {
             /* line 2401 */
-            menu = Menus_FindByName(*(void **)imp_cgDC, (const char *)"objectiveinfo");
+            menu = Menus_FindByName((void *)imp_cgDC, (const char *)"objectiveinfo");
             if (menu)
                 Window_RemoveDynamicFlags(menu, 4);
         }

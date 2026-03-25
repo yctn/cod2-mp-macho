@@ -117,7 +117,7 @@ void BG_ClearWeaponDef(void) {
 
     /* The original loop writes base+0x48, then advances by sizeof(gitem_t).
        That maps to giType for item slots 1..128, leaving slot 0 untouched. */
-    itemList = (gitem_t *)(*(void **)imp_bg_itemlist);
+    itemList = (gitem_t *)((void *)imp_bg_itemlist);
     for (i = 1; i <= 128; i++) {
         itemList[i].giType = 0;
     }

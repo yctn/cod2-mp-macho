@@ -775,7 +775,7 @@ int G_ShutdownGame(qboolean freeScripts)
         FS_FCloseFile(level.logFile);
     }
 
-    *(void **)imp_bgs = NULL;
+    *(void **)&imp_bgs = NULL;
 
     for (i = 0; i < level.num_entities; i++) {
         if (g_entities[i].r.inuse)
@@ -1162,6 +1162,6 @@ int G_RunFrame(int levelTime) {
         }
     }
 
-    *(void **)imp_bgs = NULL;
+    *(void **)&imp_bgs = NULL;
     return 0;
 }

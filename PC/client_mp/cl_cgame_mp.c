@@ -96,8 +96,8 @@ extern const vec4_t g_color_table[]; /* g_color_table — rodata.c */
 
 #define RE         ((refexport_t *)imp_re)
 #define CLS        ((clientStatic_t *)imp_cls)
-#define CL_LOCAL   ((clientActive_t *)*(void **)imp_cl)
-#define CLUI_STATE ((clientConnection_t *)*(void **)imp_clc)
+#define CL_LOCAL   ((clientActive_t *)(void *)imp_cl)
+#define CLUI_STATE ((clientConnection_t *)(void *)imp_clc)
 
 void CL_GetScreenDimensions(int *width, int *height, float *aspect);
 qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);
@@ -185,7 +185,7 @@ static void CL_FirstSnapshot(void)
     clui->timeDemoBaseTime = serverTime;
 
     /* Execute autorecord command if set */
-    char *autorecDvar = (char *)*(void **)imp_cl_activeAction;
+    char *autorecDvar = (char *)(void *)imp_cl_activeAction;
     if (autorecDvar) {
         const char *autorecStr = *(const char **)(autorecDvar + 8);
         if (autorecStr && *autorecStr) {
@@ -286,7 +286,7 @@ qboolean CL_GetSnapshot(int snapshotNumber, snapshot_t *snapshot)
     /* Entity states count */
     count = clSnap->numEntities;
     if (count > 256) {
-        char *statmonCfg = *(char **)*(void **)imp_com_statmon;
+        char *statmonCfg = *(char **)(void *)imp_com_statmon;
         if (*(unsigned char *)(statmonCfg + 8)) {
             StatMon_Warning(4, 3000, "CL_GetSnapshot: truncated entities");
         } else {
@@ -438,7 +438,7 @@ qboolean CL_GetServerCommand(int serverCommandNumber)
     clui->lastExecutedServerCommand = serverCommandNumber;
 
     {
-        char *debugCvar = *(char **)*(void **)imp_cl_showServerCommands;
+        char *debugCvar = *(char **)(void *)imp_cl_showServerCommands;
         if (*(unsigned char *)(debugCvar + 8)) {
             Com_DPrintf("serverCommand: %i : %s\n", serverCommandNumber, s);
         }
@@ -543,7 +543,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
         if (!token || *token == '\0')
             continue;
 
-        Dvar_SetInt(*(void **)imp_com_expectedHunkUsage, atoi(token));
+        Dvar_SetInt((void *)imp_com_expectedHunkUsage, atoi(token));
         Z_FreeInternal(buf);
         return;
     }
@@ -551,7 +551,7 @@ void CL_SetExpectedHunkUsage(const char *mapname)
     Z_FreeInternal(buf);
 
 set_default:
-    Dvar_SetInt(*(void **)imp_com_expectedHunkUsage, 0);
+    Dvar_SetInt((void *)imp_com_expectedHunkUsage, 0);
 }
 
 /* line 522 */
@@ -562,7 +562,7 @@ void CL_CM_LoadMap(const char *mapname)
     Com_LoadBsp(mapname);
     CM_LoadMap(mapname, &checksum);
 
-    if (!*(unsigned char *)(*(char **)*(void **)imp_com_sv_running + 8)) {
+    if (!*(unsigned char *)(*(char **)(void *)imp_com_sv_running + 8)) {
         CM_LinkWorld();
     }
 }
@@ -642,7 +642,7 @@ void CL_SubtitlePrint(const char *pszText, int iDuration, int iLineWidth)
     }
 
     {
-        char *locCvar = *(char **)*(void **)imp_loc_warnings;
+        char *locCvar = *(char **)(void *)imp_loc_warnings;
         if (!*(unsigned char *)(locCvar + 8)) {
             CL_ConsolePrint(3, pszText, iDuration, iLineWidth);
             return;
@@ -650,7 +650,7 @@ void CL_SubtitlePrint(const char *pszText, int iDuration, int iLineWidth)
     }
 
     {
-        char *devCvar = *(char **)*(void **)imp_loc_warningsAsErrors;
+        char *devCvar = *(char **)(void *)imp_loc_warningsAsErrors;
         if (*(unsigned char *)(devCvar + 8)) {
             Com_Error(ERR_FATAL, "Could not translate subtitle text: \"%s\"", pszText);
         } else {
@@ -1092,7 +1092,7 @@ void CL_InitCGame(void)
         Com_sprintf(cl->mapname, 64, "maps/mp/%s.%s", mapname, ext);
     }
 
-    if (!*(unsigned char *)(*(char **)*(void **)imp_com_sv_running + 8)) {
+    if (!*(unsigned char *)(*(char **)(void *)imp_com_sv_running + 8)) {
         Com_InitDObj();
         CL_SetExpectedHunkUsage(cl->mapname);
     }
@@ -1176,7 +1176,7 @@ void CL_AdjustTimeDelta(void)
         cl->oldServerTime = cl->snap.serverTime;
         cl->serverTime = cl->snap.serverTime;
         {
-            char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
+            char *debugCvar = *(char **)(void *)imp_cl_showTimeDelta;
             if (*(unsigned char *)(debugCvar + 8)) {
                 Com_Printf("cl_showTimeDelta: reset\n");
             }
@@ -1187,7 +1187,7 @@ void CL_AdjustTimeDelta(void)
     if (deltaDiff > 100) {
         /* Average the delta */
         {
-            char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
+            char *debugCvar = *(char **)(void *)imp_cl_showTimeDelta;
             if (*(unsigned char *)(debugCvar + 8)) {
                 Com_Printf("cl_showTimeDelta: average\n");
             }
@@ -1199,7 +1199,7 @@ void CL_AdjustTimeDelta(void)
 
 smooth:
     {
-        float timescale = *(float *)*(void **)imp_com_timescaleValue;
+        float timescale = *(float *)(void *)imp_com_timescaleValue;
         if (timescale != 1.0f)
             goto debug_print;
     }
@@ -1216,7 +1216,7 @@ smooth:
 
 debug_print:
     {
-        char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
+        char *debugCvar = *(char **)(void *)imp_cl_showTimeDelta;
         if (*(unsigned char *)(debugCvar + 8)) {
             cl = CL_LOCAL;
             {
@@ -1391,11 +1391,11 @@ void CL_SetCGameTime(void)
 
     /* Check sv_paused / loading */
     {
-        char *tsCvar = *(char **)*(void **)imp_sv_paused;
+        char *tsCvar = *(char **)(void *)imp_sv_paused;
         if (*(int *)(tsCvar + 8)) {
-            char *loadCvar = *(char **)*(void **)imp_cl_paused;
+            char *loadCvar = *(char **)(void *)imp_cl_paused;
             if (*(int *)(loadCvar + 8)) {
-                char *rendCvar = *(char **)*(void **)imp_com_sv_running;
+                char *rendCvar = *(char **)(void *)imp_com_sv_running;
                 if (*(unsigned char *)(rendCvar + 8))
                     return;
             }
@@ -1428,7 +1428,7 @@ void CL_SetCGameTime(void)
         int demoPlaying = clui->demoplaying;
         clientStatic_t *cls = CLS;
 
-        if (!demoPlaying || !*(unsigned char *)(*(char **)*(void **)imp_cl_freezeDemo + 8)) {
+        if (!demoPlaying || !*(unsigned char *)(*(char **)(void *)imp_cl_freezeDemo + 8)) {
             /* Live game or not timedemo */
             int timeDelta = cl->serverTimeDelta;
             int realtime = cls->realtime;
@@ -1444,7 +1444,7 @@ void CL_SetCGameTime(void)
             if (timeDelta + realtime < serverTime - 5) {
                 cl->extrapolatedSnapshot = 1;
                 {
-                    char *debugCvar = *(char **)*(void **)imp_cl_showTimeDelta;
+                    char *debugCvar = *(char **)(void *)imp_cl_showTimeDelta;
                     if (*(unsigned char *)(debugCvar + 8)) {
                         Com_Printf("%.6f extrapolating\n");
                     }

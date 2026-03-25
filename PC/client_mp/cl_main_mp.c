@@ -787,7 +787,7 @@ void CL_InitRef(void) {
 
     /* Fill refimport function pointer table.
      * The imp_X globals store function addresses directly (not GOT pointers).
-     * The original Mac code used *(void **)imp_X for GOT indirection,
+     * The original Mac code used (void *)imp_X for GOT indirection,
      * but on Linux we just need the stored value. */
     ri_local.Cmd_AddCommand = (void *)imp_Cmd_AddCommand;
     ri_local.Cmd_RemoveCommand = (void *)imp_Cmd_RemoveCommand;
@@ -925,7 +925,7 @@ void CL_InitRef(void) {
     memcpy(&re, ret, 0x160);
 
     /* Reset cl_paused dvar */
-    Dvar_SetInt(*(void **)imp_cl_paused, 0);
+    Dvar_SetInt((void *)imp_cl_paused, 0);
 }
 
 /* line 3739 */

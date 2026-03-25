@@ -267,7 +267,7 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
     } else {
         /* Writing path: line 390 */
         if (*(MaterialHandle *)ph != (MaterialHandle)0) { /* line 203 */
-            void *fxHelper = *(void **)imp_theFxHelper;
+            void *fxHelper = (void *)imp_theFxHelper;
             materialName = FxHelper_GetMaterialName(fxHelper, *ph); /* line 204 */
         } else {
             materialName = ""; /* empty string */

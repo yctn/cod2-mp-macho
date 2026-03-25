@@ -39,5 +39,9 @@ const char *Material_TechniqueNames[] = {
     "\"debug bumpmap\""
 };
 
+/* Alias for s_techniqueTypeNames used by r_material_load_obj.c.
+ * Must be an array (not pointer) so memcpy copies from array data. */
+extern const char * const s_techniqueTypeNames[] __attribute__((alias("Material_TechniqueNames")));
+
 /* Preserve the original linker symbol name without colliding with the typedef. */
 char material_tech_string[1024] __asm__("string") = {0};

@@ -208,7 +208,7 @@ static void R_ReleaseModel(union XAssetHeader header, void *data)
 /* line 2949 */
 void R_OptimizeAllModels(void)
 {
-    if (!*(int *)((char *)(*(void **)imp_r_optimizeXModels) + 8))
+    if (!*(int *)((char *)((void *)imp_r_optimizeXModels) + 8))
         return;
     DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }

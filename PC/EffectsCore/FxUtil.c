@@ -243,7 +243,7 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
         if (flags & 0x10) {
             void *effect = MediaHandles_GetEffect(&((PrimitiveTemplate *)pt)->mImpactFxHandles);
             vec_t *traceNormal = (vec_t *)(trace + 0x24);
-            FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, effect, org2, (vec3_t *)traceNormal, NULL);
+            FxScheduler_PlayEffect((void *)imp_theFxScheduler, effect, org2, (vec3_t *)traceNormal, NULL);
         }
     } else {
         /* No projectToInfinity: compute org2 from range values */
@@ -666,7 +666,7 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
     byte *primTemp = (byte *)prim->primTemp;
     FxBoltFrame *bolt = (FxBoltFrame *)(size_t)prim->boltFrame._placeholder;
     void *effect = MediaHandles_GetEffect(&((PrimitiveTemplate *)primTemp)->mPlayFxHandles);
-    void *scheduler = *(void **)imp_theFxScheduler;
+    void *scheduler = (void *)imp_theFxScheduler;
     if (bolt) {
         FxScheduler_PlayEffect(scheduler, effect, newOrigin, NULL, &bolt->mBolt);
     } else {
@@ -684,7 +684,7 @@ void FX_AddDecal(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
     vec3_t newOrigin;
     /* FX_CalcOriginAndAxis: register convention eax=prim, edx=orgOut, stack=ax */
     FX_CalcOriginAndAxis_impl((byte *)prim, newOrigin, ax);
-    FxScheduler_CreateDecalEffect(*(void **)imp_theFxScheduler, (void *)prim->primTemp, newOrigin, ax);
+    FxScheduler_CreateDecalEffect((void *)imp_theFxScheduler, (void *)prim->primTemp, newOrigin, ax);
 }
 
 /* FX_DrawAll — cull, sort, draw all visible effects */
@@ -1876,7 +1876,7 @@ int FX_Init(int rendererExists)
         FxScheduler_Clean(*schedulerPtr, 1, 0);
         Z_FreeInternal(*schedulerPtr);
         *schedulerPtr = NULL;
-        *(void **)imp_fxSchedulers = NULL;
+        *(void **)&imp_fxSchedulers = NULL;
     }
 
     *(byte *)imp_g_rendererExists = (byte)rendererExists;
@@ -1887,7 +1887,7 @@ int FX_Init(int rendererExists)
 
     FX_InitTemplates();
 
-    *(void **)imp_fxSchedulers = *schedulerPtr;
+    *(void **)&imp_fxSchedulers = *schedulerPtr;
 
     FxHelper_Init(theFxHelper);
     return 1;
@@ -1928,7 +1928,7 @@ void FX_Free(int bRemoveTemplates)
         if ((byte)bRemoveTemplates) {
             Z_FreeInternal(*schedulerPtr);
             *schedulerPtr = NULL;
-            *(void **)imp_fxSchedulers = NULL;
+            *(void **)&imp_fxSchedulers = NULL;
         }
     }
 }

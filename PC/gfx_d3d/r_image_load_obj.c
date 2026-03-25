@@ -79,7 +79,7 @@ void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int 
 /* line 1180 */
 void Image_BuildWaterMap(GfxImage *image)
 {
-    if (*(int *)((char *)(*(void **)imp_r_rendererInUse) + 8) == 2) {
+    if (*(int *)((char *)((void *)imp_r_rendererInUse) + 8) == 2) {
         Image_Create2DTexture(image, image->width, image->height, 1, 0x200, 0x16, 0);
     } else {
         Image_Create2DTexture(image, image->width, image->height, 0, 0x200, 0x32, 0);

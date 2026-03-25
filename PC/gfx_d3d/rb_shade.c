@@ -209,7 +209,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
         *samplerState = 0x32;
         /* r_lightMap debug mode override */
         {
-            int mode = *(int *)((char *)*(void **)imp_r_lightMap + 8);
+            int mode = *(int *)((char *)(void *)imp_r_lightMap + 8);
             if (mode == 1) {
                 *image = rgp->whiteImage;
                 *samplerState = 1;
@@ -268,7 +268,7 @@ static void RB_GetTextureFromCode_impl(int codeTexture, void **image, byte *samp
     }
 
     case 19: { /* shadow cookie conditional */
-        int sc_on = *(byte *)((char *)*(void **)imp_sc_enable + 8);
+        int sc_on = *(byte *)((char *)(void *)imp_sc_enable + 8);
         if (sc_on) {
             char *entity = (char *)((r_backEndGlobals_t *)backEnd)->currentEntity;
             if (*(int *)entity > 2 || (*(byte *)(entity + 5) & 1)) {

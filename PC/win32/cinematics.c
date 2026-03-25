@@ -196,11 +196,11 @@ static void RoQShutdown(void)
         }
 
         if (cinTable[currentHandle].alterGameState) {
-            clcState = (int *)*(void **)imp_clc;
+            clcState = (int *)(void *)imp_clc;
             *clcState = cinTable[currentHandle].previousGameState;
             CL_handle = -1;
             if (*clcState == 0) {
-                nextMapStr = ((dvar_t *)*(void **)imp_nextmap)->current.string;
+                nextMapStr = ((dvar_t *)(void *)imp_nextmap)->current.string;
                 if (*nextMapStr != '\0') {
                     if (!sAspyrIntroPlayed) {
                         if (strstr(nextMapStr, "IW_logo")) {
@@ -208,11 +208,11 @@ static void RoQShutdown(void)
                             sAspyrIntroPlayed = 1;
                         } else {
                             Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
-                            Dvar_SetString(*(void **)imp_nextmap, "");
+                            Dvar_SetString((void *)imp_nextmap, "");
                         }
                     } else {
                         Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
-                        Dvar_SetString(*(void **)imp_nextmap, "");
+                        Dvar_SetString((void *)imp_nextmap, "");
                     }
                     UI_SetActiveMenu(1);
                 } else {
@@ -245,7 +245,7 @@ e_status ROQ_StopCinematicFromHandle(int handle)
         return FMV_EOF;
     }
     if (cinTable[currentHandle].alterGameState) {
-        if (*(int *)*(void **)imp_clc != 1) {
+        if (*(int *)(void *)imp_clc != 1) {
             return cinTable[currentHandle].status;
         }
     }
@@ -279,7 +279,7 @@ void ROQ_UploadCinematicFromHandle(int handle)
                 cinTable[handle].dirty = 0;
             }
         }
-        if (!((dvar_t *)*(void **)imp_cl_inGameVideo)->current.enabled) { /* cl_inGameVideo->current.enabled */
+        if (!((dvar_t *)(void *)imp_cl_inGameVideo)->current.enabled) { /* cl_inGameVideo->current.enabled */
             if (cinTable[handle].playonwalls == 1) {
                 cinTable[handle].playonwalls = 0;
             }
@@ -566,7 +566,7 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
             UI_SetActiveMenu(0);
         }
     } else {
-        cinTable[handle].playonwalls = ((dvar_t *)*(void **)imp_cl_inGameVideo)->current.enabled != 0;
+        cinTable[handle].playonwalls = ((dvar_t *)(void *)imp_cl_inGameVideo)->current.enabled != 0;
     }
 
     if (handle >= 0) {
@@ -629,7 +629,7 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     Com_DPrintf("trFMV::play(), playing %s\n", arg);
 
     if (cinTable[currentHandle].alterGameState) {
-        int *clcState = (int *)*(void **)imp_clc;
+        int *clcState = (int *)(void *)imp_clc;
         cinTable[currentHandle].previousGameState = (connstate_t)*clcState;
         *clcState = 1;
     }
@@ -789,7 +789,7 @@ void ROQ_CloseAllVideos(void)
         if (!cinTable[currentHandle].buf) {
             continue;
         }
-        if (!cinTable[currentHandle].alterGameState || *(int *)*(void **)imp_clc == 1) {
+        if (!cinTable[currentHandle].alterGameState || *(int *)(void *)imp_clc == 1) {
             cinTable[currentHandle].status = FMV_EOF;
             RoQShutdown();
         }
@@ -807,7 +807,7 @@ void ROQ_StopCinematic(void)
             currentHandle = h;
             Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
             if (cinTable[currentHandle].buf) {
-                if (!cinTable[currentHandle].alterGameState || *(int *)*(void **)imp_clc == 1) {
+                if (!cinTable[currentHandle].alterGameState || *(int *)(void *)imp_clc == 1) {
                     cinTable[currentHandle].status = FMV_EOF;
                     RoQShutdown();
                 }
@@ -848,7 +848,7 @@ e_status ROQ_RunCinematicFromHandle(int handle)
     currentHandle = handle;
 
     if (cinTable[handle].alterGameState) {
-        if (*(int *)*(void **)imp_clc != 1) {
+        if (*(int *)(void *)imp_clc != 1) {
             return cinTable[handle].status;
         }
     }
@@ -1336,7 +1336,7 @@ void ROQ_PlayCinematic_f(void)
     int h;
 
     Com_DPrintf("CL_PlayCinematic_f\n");
-    argc = *(int *)*(void **)imp_clc;
+    argc = *(int *)(void *)imp_clc;
 
     if (argc == 1) {
         /* inlined ROQ_StopCinematic */
@@ -1346,7 +1346,7 @@ void ROQ_PlayCinematic_f(void)
                 currentHandle = h;
                 Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
                 if (cinTable[currentHandle].buf) {
-                    if (!cinTable[currentHandle].alterGameState || *(int *)*(void **)imp_clc == 1) {
+                    if (!cinTable[currentHandle].alterGameState || *(int *)(void *)imp_clc == 1) {
                         cinTable[currentHandle].status = FMV_EOF;
                         RoQShutdown();
                     }

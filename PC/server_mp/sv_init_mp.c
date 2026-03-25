@@ -679,7 +679,7 @@ void SV_Startup(void)
     }
 
     /* Allocate snapshot entities */
-    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
+    isDedicated = *(int *)((byte *)(void *)imp_com_dedicated + 8);
     maxclients = *(dvar_t **)imp_sv_maxclients;
     numClients = *(int *)((byte *)maxclients + 8);
     if (isDedicated) {
@@ -772,7 +772,7 @@ void SV_ChangeMaxClients(void)
     Hunk_FreeTempMemory(oldClients);
 
     /* Update snapshot entity counts */
-    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
+    isDedicated = *(int *)((byte *)(void *)imp_com_dedicated + 8);
     numClients = *(int *)(*(byte **)imp_sv_maxclients + 8);
     svs = (serverStatic_t *)imp_svs;
     if (isDedicated) {
@@ -852,7 +852,7 @@ void SV_SpawnServer(const char *server)
     }
 
     /* Free FX system if dedicated */
-    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
+    isDedicated = *(int *)((byte *)(void *)imp_com_dedicated + 8);
     if (isDedicated) {
         FX_FreeSystem();
     }
@@ -981,7 +981,7 @@ void SV_SpawnServer(const char *server)
     SV_InitGameProgs(savepersist);
 
     /* Init FX system */
-    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
+    isDedicated = *(int *)((byte *)(void *)imp_com_dedicated + 8);
     if (isDedicated) {
         FX_InitSystem(0);
         FX_CreateDefaultEffect();

@@ -1151,7 +1151,7 @@ void Material_Init(void)
         if (rawMaterial->textureCount != 1) {
             /* Incompatible: fall back to $default */
             typedef void (*ri_Printf_fn)(int, const char *, ...);
-            ((ri_Printf_fn)(*(void **)imp_ri))(3, "$raw material is not compatible with $default");
+            ((ri_Printf_fn)((void *)imp_ri))(3, "$raw material is not compatible with $default");
             rawMaterial = defaultMaterial;
             ((r_global_permanent_t *)rgp_ptr)->rawMaterial = defaultMaterial;
         }

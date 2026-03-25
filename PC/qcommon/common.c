@@ -2033,7 +2033,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
     com_sv_running = Dvar_RegisterBool("sv_running", 0, 0x1040);
 
     /* Clear legacyHacks field */
-    *(int *)((byte *)(*(void **)imp_legacyHacks) + 4) = 0;
+    *(int *)((byte *)((void *)imp_legacyHacks) + 4) = 0;
 
     com_introPlayed = Dvar_RegisterBool("com_introPlayed", 0, 0x1001);
     com_animCheck = Dvar_RegisterBool("com_animCheck", 0, 0x1000);

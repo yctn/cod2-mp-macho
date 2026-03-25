@@ -1478,7 +1478,7 @@ check_material:
     if (materialTime != materialTimePrev || materialTime != materialTime) {
         float w = backEnd.sceneDef.floatTime - materialTime;
         float frac = w - floorf(w);
-        int isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+        int isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
         if (isDx7) {
             backEnd.texScrollAmountDx7 = frac;
         } else {
@@ -1765,7 +1765,7 @@ static void RB_Set2D(void)
     }
 
     /* Dx7: set D3D transforms directly */
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
     if (isDx7) {
         char *dx = (char *)imp_dx;
         /* SetTransform: vtable[0xb0/4] = index 44 */
@@ -1887,7 +1887,7 @@ static void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         indices[ic + i] = (r_index_t)(vc + indexData[i]);
 
     /* Copy vertices */
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     for (i = 0; i < vertexCount; i++) {
         float px = xyzwData[i * 4 + 0];
@@ -2001,10 +2001,10 @@ static void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
 
     if (!needCopy) {
         /* Check glow support: not Dx7, hardware supports it, glow enabled, not fullbright */
-        int isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+        int isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
         if (!isDx7 && ((DxGlobals *)imp_dx)->hasSeparateAlphaBlend) {
-            if (((const dvar_t *)*(void **)imp_r_glow)->current.enabled) {
-                needCopy = !((const dvar_t *)*(void **)imp_r_fullbright)->current.enabled;
+            if (((const dvar_t *)(void *)imp_r_glow)->current.enabled) {
+                needCopy = !((const dvar_t *)(void *)imp_r_fullbright)->current.enabled;
             }
         }
     }
@@ -2158,7 +2158,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
     if (count <= 0)
         return;
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     for (lineIdx = 0; lineIdx < count; lineIdx++) {
         const GfxPointVertex *p0 = &verts[lineIdx * 2];
@@ -2263,7 +2263,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
     /* Function to read next character code from text string */
     Q_ReadToken = (int (*)(const char **, int))((refimport_t *)imp_ri)->SEH_ReadCharFromString;
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     while (*text) {
         int charCode;
@@ -2400,7 +2400,7 @@ static float RB_TestFillPass3D_impl(const Material *material, MaterialTechniqueT
     origin[1] += axis[1];
     origin[2] += axis[2];
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
     x0 = origin[0];
     y0 = origin[1];
     z0 = origin[2];
@@ -2578,7 +2578,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
     indices[ic + 4] = (r_index_t)vc;
     indices[ic + 5] = (r_index_t)(vc + 1);
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     if (isDx7) {
         /* Dx7 vertex layout: stride 36 (0x24)
@@ -2921,7 +2921,7 @@ void RB_ExecuteRenderCommands(const void *data)
         RB_TouchAllImages();
 
     /* Check r_skipBackEnd */
-    if (((const dvar_t *)*(void **)imp_r_skipBackEnd)->current.enabled) {
+    if (((const dvar_t *)(void *)imp_r_skipBackEnd)->current.enabled) {
         g_rb_skip_reason = 3;
         diag_rb_skip_this_frame = 3;
         goto post_render;
@@ -2962,7 +2962,7 @@ post_render:
     {
         const GfxViewParms *vp = backEnd.viewParms;
         if (vp) {
-            int dev = ((const dvar_t *)*(void **)imp_developer)->current.integer;
+            int dev = ((const dvar_t *)(void *)imp_developer)->current.integer;
             if (dev)
                 RB_DrawDebug(vp);
         }
@@ -3001,9 +3001,9 @@ post_render:
 
     /* r_testFill benchmark */
     {
-        int testFillCount = ((const dvar_t *)*(void **)imp_r_testFill)->current.integer;
+        int testFillCount = ((const dvar_t *)(void *)imp_r_testFill)->current.integer;
         if (testFillCount > 0) {
-            if (!((const dvar_t *)*(void **)imp_r_testFillEnable)->current.enabled) {
+            if (!((const dvar_t *)(void *)imp_r_testFillEnable)->current.enabled) {
                 typedef int (*PrintFunc)(int, const char *, ...);
                 PrintFunc ri_printf = *(PrintFunc *)imp_ri;
                 ri_printf(0, "Fill testing uses extra textures and materials, so it is usu");
@@ -3061,7 +3061,7 @@ post_render:
 
     /* r_testTransform benchmark */
     {
-        int testTransformCount = ((const dvar_t *)*(void **)imp_r_testTransform)->current.integer;
+        int testTransformCount = ((const dvar_t *)(void *)imp_r_testTransform)->current.integer;
         if (testTransformCount > 0) {
             typedef int (*PrintFunc)(int, const char *, ...);
             PrintFunc ri_printf = *(PrintFunc *)imp_ri;
@@ -3537,7 +3537,7 @@ static void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
     backEnd.resolvedSceneTarget = 0xe;
     blurRadius = ((GfxCmdApplyLatePostEffects *)cmd)->blurRadius;
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
     hasGlowSupport = !isDx7 && ((DxGlobals *)imp_dx)->hasSeparateAlphaBlend;
 
     /* Determine if we need to copy backbuffer for effects */
@@ -3769,7 +3769,7 @@ static void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
     v3x = midX - cx + sy;  v3y = midY - sx + cy;
 
     color = ((GfxCmdStretchPicRotate *)cmd)->color.packed;
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     RB_SetVertex2D(t, vc + 0, isDx7, v0x, v0y, ((GfxCmdStretchPicRotate *)cmd)->s0, ((GfxCmdStretchPicRotate *)cmd)->t0, color);
     RB_SetVertex2D(t, vc + 1, isDx7, v1x, v1y, ((GfxCmdStretchPicRotate *)cmd)->s1, ((GfxCmdStretchPicRotate *)cmd)->t0, color);
@@ -3805,7 +3805,7 @@ static void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
     RB_WriteQuadIndices(t, vc);
 
     color = ((GfxCmdDrawQuadPic *)cmd)->color.packed;
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     /* 4 explicit corner positions with fixed texcoords */
     RB_SetVertex2D(t, vc + 0, isDx7, ((GfxCmdDrawQuadPic *)cmd)->verts[0][0], ((GfxCmdDrawQuadPic *)cmd)->verts[0][1], 0.0f, 0.0f, color);
@@ -3870,7 +3870,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         invHeight = fWidth / screenH;
     }
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     /* Process each line */
     for (lineIndex = 0; lineIndex < count; lineIndex++) {
@@ -4099,7 +4099,7 @@ static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
     if (planeCount <= 0)
         goto done;
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     for (planeIdx = 0; planeIdx < planeCount; planeIdx++) {
         float d = ((GfxCmdStencilPlanes *)cmd)->planeDists[planeIdx];
@@ -4160,7 +4160,7 @@ static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         RB_BeginSurface(debugMtl, 3, 0x1f);
     }
 
-    isDx7 = (((const dvar_t *)*(void **)imp_r_rendererInUse)->current.integer == 2);
+    isDx7 = (((const dvar_t *)(void *)imp_r_rendererInUse)->current.integer == 2);
 
     if (backEnd.projection2D) {
         /* === 3D path: transform through viewProjection matrix === */

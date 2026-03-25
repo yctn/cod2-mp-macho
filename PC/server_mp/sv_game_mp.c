@@ -425,7 +425,7 @@ void SV_SetGametype(void)
         server_t *sv = (server_t *)imp_sv;
         I_strncpyz(gametype, sv->gametype, 64);
     } else {
-        I_strncpyz(gametype, *(char **)((char *)*(void **)imp_sv_gametype + 8), 64);
+        I_strncpyz(gametype, *(char **)((char *)(void *)imp_sv_gametype + 8), 64);
     }
 
     /* Lowercase the gametype string */

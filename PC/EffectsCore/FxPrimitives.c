@@ -543,7 +543,7 @@ static void FX_AddFxToScene_impl(byte *effect, int reType)
     int flags = eff->mFlags;
     if (flags & 1) gfxEnt->renderFxFlags |= 8;
     if (flags & 0x4000000) gfxEnt->renderFxFlags |= 0x80;
-    FxHelper_AddFxToScene(*(void **)imp_theFxHelper, ent, (int)(size_t)eff->mModel);
+    FxHelper_AddFxToScene((void *)imp_theFxHelper, ent, (int)(size_t)eff->mModel);
 }
 /* Register-convention trampoline: never called directly in Emscripten mode.
    Callers already have #else branches that call FX_AddFxToScene_impl directly. */
@@ -1005,7 +1005,7 @@ void Particle_Die(const Particle * _this)
     }
 
     /* line 389: play death effect */
-    scheduler = *(void **)imp_theFxScheduler;
+    scheduler = (void *)imp_theFxScheduler;
     FxScheduler_PlayEffect(scheduler, *(void **)&((Effect *)p)->mRefEnt.dlightColor[1] /* deathFxHandle */, (float *)&((Effect *)p)->mRefEnt.customMaterial /* localOrigin[0] */, norm);
 }
 
@@ -1521,7 +1521,7 @@ void Tail_InitEndPoint(const Tail *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -1556,7 +1556,7 @@ Bool Light_Update(const Light *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -1789,7 +1789,7 @@ void Emitter_UpdateEmitFx(const Emitter *_this, vec_t *bindVelocity, const orien
             boltInfo = &(((Effect *)self)->mBolt.value)->mBolt;
 
         void *emitEffect = ((Emitter *)self)->emitFx;
-        FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, emitEffect, spawnPos, NULL);
+        FxScheduler_PlayEffect((void *)imp_theFxScheduler, emitEffect, spawnPos, NULL);
 
         /* Advance with adaptive time step based on velocity */
         float velLenSq = velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2];
@@ -1840,7 +1840,7 @@ void Particle_GetTotalVelocityAtTime0(const Particle *_this, vec_t *outVector)
             outVector[0] = outVector[1] = outVector[2] = 0.0f;
             return;
         }
-        int curTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+        int curTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
         if (curTime != boltFrame->cachedServerTime) {
             boltFrame->cachedServerTime = curTime;
             Bool ok = FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation);
@@ -1991,7 +1991,7 @@ Bool Particle_UpdateOrigin(const Particle *_this, const orientation_t *or_)
                 endpos[0] = start_pt[0] + (end_pt[0] - start_pt[0]) * fraction;
                 endpos[1] = start_pt[1] + (end_pt[1] - start_pt[1]) * fraction;
                 endpos[2] = start_pt[2] + (end_pt[2] - start_pt[2]) * fraction;
-                FxScheduler_PlayEffect(*(void **)imp_theFxScheduler, *(void **)&((Effect *)self)->mRefEnt.axis[2][2] /* impactFxHandle */, endpos, (vec_t *)(trace + 0x24) /* trace.normal */);
+                FxScheduler_PlayEffect((void *)imp_theFxScheduler, *(void **)&((Effect *)self)->mRefEnt.axis[2][2] /* impactFxHandle */, endpos, (vec_t *)(trace + 0x24) /* trace.normal */);
             }
 
             if (flags & 0x400) {
@@ -2042,7 +2042,7 @@ Bool Emitter_Update(const Emitter *_this)
     if (boltFrame) {
         int boneIdx = boltFrame->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (boltFrame->cachedServerTime != clTime) {
                 boltFrame->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((int *)&boltFrame->mBolt, &boltFrame->orientation))
@@ -2154,7 +2154,7 @@ Bool Cylinder_Update(const Cylinder *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -2233,7 +2233,7 @@ Bool Tail_Update(const Tail *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -2309,7 +2309,7 @@ Bool Line_Update(const Line *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -2385,7 +2385,7 @@ Bool Cloud_Update(const Cloud *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -2459,7 +2459,7 @@ Bool OrientedParticle_Update(const OrientedParticle *_this)
     if (boltFrame) {
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (((FxBoltFrame *)boltFrame)->cachedServerTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 if (!FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */))
@@ -2535,7 +2535,7 @@ Bool Particle_Update(const Particle *_this, const Particle *_this_1, const Cloud
         int boneIdx = ((FxBoltFrame *)boltFrame)->mBolt.dobjHandle;
         if (boneIdx >= 0) {
             int cachedTime = ((FxBoltFrame *)boltFrame)->cachedServerTime;
-            int clTime = ((clientActive_t *)(*(void **)imp_cl))->serverTime;
+            int clTime = ((clientActive_t *)((void *)imp_cl))->serverTime;
             if (cachedTime != clTime) {
                 ((FxBoltFrame *)boltFrame)->cachedServerTime = clTime;
                 Bool ok = FX_GetBoneOrientation((void *)(boltFrame + 0x3c), (void *)(boltFrame + 8) /* FxBoltFrame.orientation */ /* FxBoltFrame.orientation */);

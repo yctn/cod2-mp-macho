@@ -65,7 +65,7 @@ extern int stricmp(const char *s1, const char *s2);
  */
 #define CGS_PTR      (*(cgs_t **)imp_cgs)
 #define CG_PTR       (*(cg_t **)imp_cg)
-#define CGUI_PTR     ((LegacyHacks *)*(void **)imp_legacyHacks)
+#define CGUI_PTR     ((LegacyHacks *)(void *)imp_legacyHacks)
 
 void CG_ParseServerinfo(void);
 void CG_ParseCodinfo(void);
@@ -150,11 +150,11 @@ static void CG_AddToTeamChat_impl(const char *str)
     const char *p;
 
     /* line 547: get chat height dvar */
-    chatHeight = ((dvar_t *)*(void **)imp_cg_chatHeight)->current.integer;
+    chatHeight = ((dvar_t *)(void *)imp_cg_chatHeight)->current.integer;
     if (chatHeight == 0)
         goto zero_out;
 
-    if (((dvar_t *)*(void **)imp_cg_chatTime)->current.integer <= 0)
+    if (((dvar_t *)(void *)imp_cg_chatTime)->current.integer <= 0)
         goto zero_out;
 
     /* line 557: compute destination row */

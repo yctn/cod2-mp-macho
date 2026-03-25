@@ -746,7 +746,7 @@ void SND_Update2DChannelReverb(int index)
     const snd_alias_t *pAlias = chaninfo->pAlias0;
     float reverbLevel;
 
-    if (pAlias == NULL || (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
+    if (pAlias == NULL || (((dvar_t *)(void *)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = sndGlob->effect->wetlevel;
@@ -762,7 +762,7 @@ void SND_Update3DChannelReverb(int index)
     const snd_alias_t *pAlias = chaninfo->pAlias0;
     float reverbLevel;
 
-    if (pAlias == NULL || (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
+    if (pAlias == NULL || (((dvar_t *)(void *)imp_snd_enableReverb)->current.enabled != 0 && !(pAlias->flags & 0x10))) {
         reverbLevel = 0;
     } else {
         reverbLevel = sndGlob->effect->wetlevel;
@@ -1242,7 +1242,7 @@ int SND_StartAlias2DSample(const snd_alias_t *pAlias0, const snd_alias_t *pAlias
     AIL_set_sample_loop_count(handle, ((byte)(pAlias0->flags) & 1) ^ 1);
 
     /* Reverb */
-    if (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
+    if (((dvar_t *)(void *)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
         reverbLevel = ((snd_local_t *)*(snd_local_t **)imp_g_snd)->effect->wetlevel;
     } else {
         reverbLevel = 0;
@@ -1496,7 +1496,7 @@ got_handle:
     AIL_set_stream_loop_count(handle, ((byte)(pAlias0->flags) & 1) ^ 1);
 
     /* Reverb */
-    if (((dvar_t *)*(void **)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
+    if (((dvar_t *)(void *)imp_snd_enableReverb)->current.enabled != 0 && !((byte)(pAlias0->flags) & 0x10)) {
         reverbLevel = ((snd_local_t *)*(snd_local_t **)imp_g_snd)->effect->wetlevel;
     } else {
         reverbLevel = 0;
@@ -1747,7 +1747,7 @@ Bool SND_InitDriver(void)
     mss_3d_provider = Dvar_RegisterString((const char *)"mss_3d_provider", (const char *)"Miles Fast 2D Positional Audio", 0x1021);
 
     /* Read snd_khz */
-    sndKhzVal = ((dvar_t *)*(void **)imp_snd_khz)->current.integer;
+    sndKhzVal = ((dvar_t *)(void *)imp_snd_khz)->current.integer;
     switch (sndKhzVal) {
         case 0x2c: /* 44 khz */
             freq = 0xac44;
@@ -1771,7 +1771,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_bits */
-    sndBitsVal = ((dvar_t *)*(void **)imp_snd_bits)->current.integer;
+    sndBitsVal = ((dvar_t *)(void *)imp_snd_bits)->current.integer;
     if (sndBitsVal == 8) {
         bytes = 1;
         bits = 8;
@@ -1784,7 +1784,7 @@ Bool SND_InitDriver(void)
     }
 
     /* Read snd_channels (stereo) */
-    if (((dvar_t *)*(void **)imp_snd_stereo)->current.enabled != 0) {
+    if (((dvar_t *)(void *)imp_snd_stereo)->current.enabled != 0) {
         channelStr = (const char *)"stereo"; /* "stereo" */
         numChannels = 2;
     } else {

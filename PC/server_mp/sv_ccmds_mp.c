@@ -163,7 +163,7 @@ short int SV_AddOperatorCommands(void)
     Cmd_AddCommand("devmap", (void (*)(void))SV_Map_f);
     Cmd_SetAutoComplete("devmap", "maps/mp", "d3dbsp");
     Cmd_AddCommand("killserver", (void (*)(void))SV_KillServer_f);
-    if (*(int *)((byte *)(*(void **)imp_com_dedicated) + 8)) {
+    if (*(int *)((byte *)((void *)imp_com_dedicated) + 8)) {
         Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
         Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);
     }

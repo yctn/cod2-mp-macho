@@ -2095,9 +2095,9 @@ Material * Material_Load(const char *name, int imageTrack)
     /* Material_FinishLoadingInstance uses register convention: eax=mtlData, edx=imageTrack */
     Bool result;
     result = Material_FinishLoadingInstance((MaterialObj *)mtlData, imageTrack);
-
-    if (!result)
+    if (!result) {
         return NULL;
+    }
     return (Material *)mtlData;
 }
 

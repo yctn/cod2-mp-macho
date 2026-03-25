@@ -347,9 +347,9 @@ set_cvars:
     ri = (byte *)imp_ri;
     Cvar_SetValue = (void (*)(void *, int))((refimport_t *)ri)->Dvar_SetInt;
     ri_Printf = *(void (**)(int, const char *, ...))ri;
-    Cvar_SetValue(*(void **)imp_r_picmip, imageGlobals[2048]);
-    Cvar_SetValue(*(void **)imp_r_picmip_bump, imageGlobals[2049]);
-    Cvar_SetValue(*(void **)imp_r_picmip_spec, imageGlobals[2050]);
+    Cvar_SetValue((void *)imp_r_picmip, imageGlobals[2048]);
+    Cvar_SetValue((void *)imp_r_picmip_bump, imageGlobals[2049]);
+    Cvar_SetValue((void *)imp_r_picmip_spec, imageGlobals[2050]);
     ri_Printf(0, "Using picmip %i on most textures, %i on normal maps, and %i on spec maps",
         imageGlobals[2048], imageGlobals[2049], imageGlobals[2050]);
 }

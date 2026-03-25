@@ -72,7 +72,7 @@ void FxHelper_Init(const FxHelper *_this)
 void FxHelper_AdjustTime(const FxHelper *_this, int intime)
 {
     FxHelper *self = (FxHelper *)_this;
-    char *frozenStruct = *(char **)*(void **)imp_fx_freeze;
+    char *frozenStruct = *(char **)(void *)imp_fx_freeze;
 
     if (frozenStruct[8]) {
         self->mFrameTime = 0;
@@ -101,7 +101,7 @@ void FxHelper_AdjustTime(const FxHelper *_this, int intime)
 void FxHelper_WarpTime(const FxHelper *_this, int intime)
 {
     FxHelper *self = (FxHelper *)_this;
-    char *frozenStruct = *(char **)*(void **)imp_fx_freeze;
+    char *frozenStruct = *(char **)(void *)imp_fx_freeze;
     int frameTime;
 
     if (frozenStruct[8] || self->time == 0) {

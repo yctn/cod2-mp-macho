@@ -198,7 +198,7 @@ void Con_ToggleConsole_f(void)
     /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
        Fixed: only restrict when con_restricted IS set. */
     if (Dvar_GetBool("con_restricted")) {
-        if (((PlayerKeyState *)*(void **)imp_keys)->keys[135].binding) /* keys[135].binding - console key binding check */
+        if (((PlayerKeyState *)(void *)imp_keys)->keys[135].binding) /* keys[135].binding - console key binding check */
             goto toggle;
         if (!((*(clientActive_t **)imp_cl)->keyCatchers & 1))
             return;
@@ -393,7 +393,7 @@ static void Con_UpdateMessageWindowLine_impl(MessageWindow *msgwnd, qboolean lin
         /* line 648: check if this line's fade period hasn't started yet */
         endTime = otherLine->endTime;
         fadeout = msgwnd->fadeout;
-        cl_ptr = (char *)*(void **)imp_cl;
+        cl_ptr = (char *)(void *)imp_cl;
         curTime = ((clientActive_t *)cl_ptr)->serverTime;
 
         if (endTime - fadeout > curTime) {

@@ -337,7 +337,7 @@ static unsigned char RB_TessSunBillboard(float widthInClipSpace, float heightInC
     /* Compiler passes color in eax, widthInClipSpace in xmm0, heightInClipSpace in xmm1 */
     /* In the naked asm, eax = color, xmm0 = widthInClipSpace, xmm1 = heightInClipSpace */
 
-    rendererGlob = *(void **)imp_r_rendererInUse;
+    rendererGlob = (void *)imp_r_rendererInUse;
     if (FIELD(rendererGlob, 8, int) == 2) {
         /* Dx7 path */
         void *frontEnd = r_frontEndDataOut;
@@ -970,7 +970,7 @@ after_sun_trace:
 
         /* Draw sun corona */
         {
-            void *rendererGlob = *(void **)imp_r_rendererInUse;
+            void *rendererGlob = (void *)imp_r_rendererInUse;
 
             if (FIELD(rendererGlob, 8, int) == 2) {
                 /* Dx7 path */
