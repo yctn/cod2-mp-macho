@@ -89,6 +89,30 @@ void Scr_SetClassMap(int classnum) {}
 void ScriptParse(void *parseData, int a2) { Com_Printf("ScriptParse: stub (script compiler not yet implemented)\n"); }
 void ScriptCompile(void *parseData, unsigned int compiledObj, unsigned int scriptId) {}
 void GScr_AddFieldsForHudElems(void) {}
+
+/* UI functions - stub for rendering */
+int UI_IsFullscreen(void) { return 0; }
+int UI_GetActiveMenu(void) { return 0; }
+void UI_SetActiveMenu(int menu) {}
+void UI_DrawMenu(void) {}
+void UI_Refresh(int time) {}
+
+/* CGame rendering - stubs */
+int CG_DrawActiveFrame(int serverTime, int stereoView, int demoPlayback, int a4, int a5) { return 0; }
+void CL_CGameRendering(int serverTime) {}
+
+/* RE_ renderer interface wrappers */
+extern void R_BeginFrame(void);
+extern void R_EndFrame(void);
+extern void R_RenderScene(void *refdef);
+void RE_BeginFrame(void) { R_BeginFrame(); }
+void RE_EndFrame(void) { R_EndFrame(); }
+void RE_RenderScene(void *refdef) { R_RenderScene(refdef); }
+
+/* Client functions needed for render path */
+void CL_ShutdownCGame(void) {}
+void CIN_CloseAllVideos(void) {}
+void SND_ShutdownChannels(void) {}
 void Scr_FreeScripts(int a) {}
 void Scr_BeginLoadAnimScripts(void) {}
 void GScr_LoadAnimScripts(void) {}

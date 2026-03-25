@@ -1467,6 +1467,7 @@ static void __attribute_regparm__(3) Dvar_MakeExplicitType(
     vec_t *vectorStorage;
     int components;
 
+    if (!dvar || (unsigned int)dvar < 0x08000000) return;
     dvar->type = (byte)type;
     dvar->domain = domain;
 
