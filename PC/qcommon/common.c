@@ -1587,6 +1587,8 @@ void Com_Frame_Try_Block_Function(void)
     int msec, rawMsec, minMsec, maxMsec;
     qboolean useTimescale;
 
+
+
     /* Write player profile if dvar flags changed */
     if (com_fullyInitialized && (dvar_modifiedFlags & 1)) {
         dvar_modifiedFlags &= ~1;
@@ -1617,14 +1619,31 @@ void Com_Frame_Try_Block_Function(void)
     }
 
     /* Event pump loop — wait until enough time has elapsed */
-    do {
-        com_frameTime = Com_EventLoop();
-        if (com_frameTime < com_lastFrameTime)
-            com_lastFrameTime = com_frameTime;
-        rawMsec = com_frameTime - com_lastFrameTime;
-        if (rawMsec < minMsec)
-            NET_Sleep(0);
-    } while (rawMsec < minMsec);
+    {
+        int loopCount = 0;
+        do {
+            com_frameTime = Com_EventLoop();
+            if (com_frameTime < com_lastFrameTime)
+                com_lastFrameTime = com_frameTime;
+            rawMsec = com_frameTime - com_lastFrameTime;
+            if (rawMsec < minMsec) {
+                NET_Sleep(0);
+                loopCount++;
+                if (loopCount > 100000) {
+                    /* Stuck loop detection: force advance time */
+                    static int dbg_stuck = 0;
+                    if (dbg_stuck < 3) {
+                        Com_Printf("DBG LOOP STUCK: frameTime=%d lastFrame=%d rawMsec=%d minMsec=%d\n",
+                                   com_frameTime, com_lastFrameTime, rawMsec, minMsec);
+                        dbg_stuck++;
+                    }
+                    com_lastFrameTime = com_frameTime - minMsec;
+                    rawMsec = minMsec;
+                    break;
+                }
+            }
+        } while (rawMsec < minMsec);
+    }
 
     Cbuf_Execute();
     com_lastFrameTime = com_frameTime;
@@ -2175,7 +2194,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         /* Intro cinematic (non-dedicated only) */
         dedicated_val = com_dedicated->current.integer;
         if (!dedicated_val) {
-            if (!com_introPlayed->current.enabled && !Com_HasStartupCommandsOtherThanSet()) {
+            if (com_introPlayed && !com_introPlayed->current.enabled && !Com_HasStartupCommandsOtherThanSet()) {
                 Cbuf_AddText("cinematic atvi\n");
                 Dvar_SetString(nextmap, "cinematic IW_logo; set nextmap cinematic cod_intro");
                 Dvar_SetBool(com_introPlayed, 1);

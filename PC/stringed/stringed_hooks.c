@@ -173,8 +173,15 @@ int SEH_UpdateLanguageInfo(void) {
     int i;
     int iNumLanguages;
 
-    Dvar_RegisterInt(loc_language->name, 0, 0, 13, 0x1021);
-    Dvar_RegisterBool(loc_forceEnglish->name, 0, 0x1021);
+    if (loc_language)
+        Dvar_RegisterInt(loc_language->name, 0, 0, 13, 0x1021);
+    else
+        loc_language = Dvar_RegisterInt("loc_language", 0, 0, 13, 0x1021);
+
+    if (loc_forceEnglish)
+        Dvar_RegisterBool(loc_forceEnglish->name, 0, 0x1021);
+    else
+        loc_forceEnglish = Dvar_RegisterBool("loc_forceEnglish", 0, 0x1021);
 
     g_currentAsian = ((unsigned int)(loc_language->current.integer - 8) <= 4);
 

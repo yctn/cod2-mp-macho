@@ -96,7 +96,7 @@ extern const vec4_t g_color_table[]; /* g_color_table — rodata.c */
 
 #define RE         ((refexport_t *)imp_re)
 #define CLS        ((clientStatic_t *)imp_cls)
-#define CL_LOCAL   ((clientActive_t *)(void *)imp_cl)
+#define CL_LOCAL   (*(clientActive_t **)(void *)&imp_cl)
 #define CLUI_STATE ((clientConnection_t *)(void *)imp_clc)
 
 void CL_GetScreenDimensions(int *width, int *height, float *aspect);
@@ -1020,13 +1020,15 @@ void CL_UpdateLevelHunkUsage(void)
     /* Write updated file */
     handle = FS_FOpenFileWrite("hunkusage.dat");
     if (!handle) {
-        Com_Error(ERR_DROP, va("EXE_ERR_CANT_CREATE%s", "hunkusage.dat"));
+        /* Non-fatal: hunkusage.dat write failure shouldn't abort the game */
+        Com_Printf("Warning: cannot write hunkusage.dat\n");
+        return;
     }
 
     {
         int outLen = strlen(outbuf);
         if (FS_Write(outbuf, outLen, handle) != outLen) {
-            Com_Error(ERR_DROP, va("EXE_ERR_CANT_WRITE%s", "hunkusage.dat"));
+            Com_Printf("Warning: failed to write hunkusage.dat\n");
         }
     }
     FS_FCloseFile(handle);

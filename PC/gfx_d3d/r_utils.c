@@ -31,6 +31,7 @@ int R_HashAssetName(const char *name)
     int mult = 0x77;
     int i;
 
+    if (!name) return 0;
     for (i = 0; name[i]; i++) {
         hash += (signed char)name[i] * mult;
         mult++;

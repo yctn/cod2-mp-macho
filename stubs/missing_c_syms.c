@@ -98,7 +98,7 @@ void UI_DrawMenu(void) {}
 void UI_Refresh(int time) {}
 
 /* CGame rendering - stubs */
-int CG_DrawActiveFrame(int serverTime, int stereoView, int demoPlayback, int a4, int a5) { return 0; }
+/* CG_DrawActiveFrame moved to PC/cgame_mp/cg_view_mp.c */
 void CL_CGameRendering(int serverTime) {}
 
 /* RE_ renderer interface wrappers */
@@ -129,10 +129,75 @@ void GScr_LoadConsts(void) {}
 
 void Scr_ParseGameTypeList(void) {}
 void CL_InitLoad(const char *server, const char *gametype) {}
-void CL_MapLoading(const char *server) {}
+/* CL_MapLoading: prepare local client for map loading during devmap.
+   Sets client connection state so the engine connects to the loopback server. */
+void CL_MapLoading(const char *server) {
+    extern clientConnection_t clientConnections[];
+    extern void *imp_cls;
+
+    clientConnection_t *clc = &clientConnections[0];
+
+    /* If client isn't even initialized, bail */
+    if (!*(int *)&imp_cls)
+        return;
+
+    /* If already connected or beyond, just set loading state */
+    if (clc->state >= CA_CONNECTED) {
+        clc->state = CA_LOADING;
+        return;
+    }
+
+    /* For devmap: set up loopback connection */
+    clc->state = CA_CONNECTED;
+    clc->clientNum = 0;
+
+    /* Set the server address to loopback */
+    clc->serverAddress.type = 3; /* NA_LOOPBACK */
+}
 void CL_ShutdownAll(void) {}
 void CM_LinkWorld(void) {}
 void SV_RunFrame(void) {}
+
+/* SV_Frame — server frame processing.
+   Runs game logic and sends snapshots to connected clients.
+   Decompiled from Mach-O binary at VMA 0x15b00a. */
+extern void G_RunFrame(int levelTime);
+extern void SV_ResetSkeletonCache(void);
+extern void SV_SendClientMessages(void);
+extern void *imp_sv;
+extern void *imp_svs;
+extern void *imp_com_sv_running;
+
+void SV_Frame(int msec) {
+    server_t *sv_local = (server_t *)imp_sv;
+    serverStatic_t *svs_local = (serverStatic_t *)imp_svs;
+
+    /* Check if server is running */
+    {
+        const dvar_t *running = *(const dvar_t **)&imp_com_sv_running;
+        if (!running || !running->current.enabled)
+            return;
+    }
+
+    /* Accumulate time */
+    svs_local->time += msec;
+
+    /* Check if it's time for a server frame (sv_fps default = 20) */
+    if (svs_local->time - sv_local->start_frameTime < 50)
+        return;
+
+    /* Advance server time */
+    sv_local->start_frameTime = svs_local->time;
+
+    /* Reset skeleton cache */
+    SV_ResetSkeletonCache();
+
+    /* Run game logic frame */
+    G_RunFrame(svs_local->time);
+
+    /* Send snapshots to clients */
+    SV_SendClientMessages();
+}
 void SV_DropClient(void *cl, const char *reason) {}
 void SV_Heartbeat_f(void) {}
 void FS_Restart(int checksumFeed) {}
@@ -145,3 +210,23 @@ int CVAOPacket_sVAOStatus[16] = {0};
 int faceAxis[64] = {0};
 void *imp__ZTV5Flash = 0;
 int iSlotPreferenceOrder[64] = {0};
+void Con_Init(void) {}
+
+/* === Stubs for unresolved functions causing SIGSEGV === */
+void BG_SetupWeaponIndex(int weapIndex) {}
+void BG_SetupWeaponAlts(int weapIndex, void *regWeap) {}
+void SV_LinkEntity(void *ent) {}
+void DObjCreate(void *models, unsigned short numModels, void *tree, void *buf, unsigned short handle) {}
+int Scr_IsValidGameType(const char *gt) { return 1; }
+void Com_UnloadSoundAliases(int type) {}
+void Com_LoadSoundAliasFile(const char *spec, int loadSpec, const char *filename) {}
+void Com_MakeSoundAliasesPermanent(int type) {}
+void Scr_Error(const char *msg) { Com_Printf("^1Script Error: %s\n", msg); }
+void CL_RunOncePerClientFrame(int msec) {}
+void Con_ClearSubtitles(void) {}
+void Scr_AddClassField(int classnum, const char *name, unsigned int offset) {}
+void Scr_AddFields(const char *name, const void *data) {}
+void Scr_NotifyNum(int entnum, int classnum, unsigned short stringValue, int paramcount) {}
+void Con_ClearNotify(void) {}
+void Scr_PlayerConnect(void *ent) {}
+void CL_Init(void) {}

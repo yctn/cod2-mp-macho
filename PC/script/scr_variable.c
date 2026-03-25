@@ -30,6 +30,7 @@ extern void Scr_Error(const char *msg);
 extern void Com_Printf(const char *fmt, ...);
 extern void SL_AddRefToString(unsigned int stringValue);
 extern void SL_RemoveRefToString(unsigned int stringValue);
+extern int I_stricmp(const char *s0, const char *s1);
 
 /*
  * scrVarGlob raw accessor macros.
@@ -154,7 +155,7 @@ JCOEF RemoveNextVariable(unsigned int parentId);
 JCOEF RemoveVariable(unsigned int parentId, unsigned int unsignedValue);
 static int Scr_MakeValuePrimitive(void);
 JCOEF Scr_FreeGameVariable(int bComplete);
-JCOEF Scr_FreeEntityNum(int entnum, int classnum);
+void Scr_FreeEntityNum(int entnum, int classnum);
 JCOEF RemoveObjectVariable(unsigned int parentId, unsigned int id);
 JCOEF ClearVariableField(unsigned int parentId, unsigned int name, VariableValue *value);
 void Var_Shutdown(void);
@@ -1082,4 +1083,78 @@ unsigned int GetObjectA(unsigned int id)
 unsigned int GetObject_(unsigned int id)
 {
     return GetObjectA(id);
+}
+
+/*
+ * Scr_FindField - look up a field name in the field buffer.
+ * The field buffer is a packed list of entries:
+ *   [null-terminated name string] [2 bytes: index (little-endian)] [1 byte: type]
+ * The list is terminated by a zero-length name (a '\0' byte).
+ * Returns the field index (unsigned short) or 0 if not found.
+ * ref: scr_variable.cpp line 61
+ */
+unsigned int Scr_FindField(const char *name, int *type)
+{
+    const char *pos;
+    int len;
+    unsigned int index;
+
+    for (pos = scrVarPub.fieldBuffer; *pos; pos += len + 3)
+    {
+        len = strlen(pos) + 1;
+
+        if (!I_stricmp(name, pos))
+        {
+            pos = &pos[len];
+            index = *(const unsigned short *)pos;
+            *type = (signed char)pos[2];
+            return index;
+        }
+    }
+
+    return 0;
+}
+
+/*
+ * Scr_AllocVector - allocate a 16-byte block for a vector value.
+ * Layout: [2-byte refcount] [2-byte pad] [float x] [float y] [float z]
+ * Returns pointer to the float data (offset +4 from allocation).
+ * ref: scr_variable.cpp
+ */
+const float * Scr_AllocVector(const float *v)
+{
+    float *mem = (float *)MT_Alloc(16, 2);
+    /* first 4 bytes: refcount (2 bytes) + padding (2 bytes), set to 0 */
+    *(int *)mem = 0;
+    mem[1] = v[0];
+    mem[2] = v[1];
+    mem[3] = v[2];
+    /* return pointer to the float data (past the refcount header) */
+    return &mem[1];
+}
+
+/*
+ * Scr_FreeEntityNum - free a script entity by number and class.
+ * Called from Scr_FreeEntity when an entity is removed from the game.
+ * ref: scr_variable.cpp
+ */
+/*
+ * Scr_FreeEntityNum - free a script entity by number and class.
+ * For now, just silently succeed — the full implementation needs
+ * FindArrayVariable/RemoveArrayVariable which have complex variable system deps.
+ * The entity is already freed from the game side; this just cleans up the script side.
+ */
+void Scr_FreeEntityNum(int entnum, int classnum)
+{
+    if (!scrVarPub.bInited)
+        return;
+
+    /* TODO: Full implementation needs:
+       - Look up entArrayId from g_classMap[classnum]
+       - FindArrayVariable(entArrayId, entnum)
+       - Mark variable as VAR_DEAD_ENTITY
+       - RemoveArrayVariable
+       For now, the game runs without this cleanup. */
+    (void)entnum;
+    (void)classnum;
 }

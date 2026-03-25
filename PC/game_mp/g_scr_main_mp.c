@@ -155,12 +155,12 @@ unsigned int Scr_ToLower(void);
 unsigned int Scr_StrTok(void);
 unsigned int Scr_MusicPlay(void);
 unsigned int Scr_SoundFade(void);
-unsigned int Scr_PrecacheModel(void);
-unsigned int Scr_PrecacheShellShock(void);
-unsigned int Scr_PrecacheItem(void);
-unsigned int Scr_PrecacheShader(void);
-unsigned int Scr_PrecacheString(void);
-unsigned int Scr_PrecacheRumble(void);
+void Scr_PrecacheModel(void);
+void Scr_PrecacheShellShock(void);
+void Scr_PrecacheItem(void);
+void Scr_PrecacheShader(void);
+void Scr_PrecacheString(void);
+void Scr_PrecacheRumble(void);
 unsigned int GScr_RadiusDamage(void);
 unsigned int GScr_SetPlayerIgnoreRadiusDamage(void);
 unsigned int GScr_GetMoveDelta(void);
@@ -746,4 +746,151 @@ unsigned int GScr_LoadScripts(int inst)
     GScr_AddFieldsForHudElems();
     GScr_AddFieldsForRadiant();
     return 0;
+}
+
+/* --- Precache builtin functions --- */
+extern const gitem_t *G_FindItem(const char *name);
+extern void RegisterItem(int itemIndex, int precache);
+extern int G_ModelIndex(const char *name);
+extern void Scr_ParamError(unsigned int index, const char *msg);
+extern int Scr_GetNumParam(void);
+extern int G_ShaderIndex(const char *name);
+extern unsigned int Scr_GetConstIString(unsigned int index);
+extern const gitem_t bg_itemlist[];
+
+void Scr_PrecacheItem(void)
+{
+    const char *name;
+    const gitem_t *item;
+
+    if (!level.initializing) {
+        Scr_Error("precacheItem must be called before any wait statements in the gametype or level script\n");
+        return;
+    }
+
+    name = Scr_GetString(0);
+    item = G_FindItem(name);
+    if (!item) {
+        Scr_ParamError(0, va("unknown item '%s'", name));
+        return;
+    }
+
+    RegisterItem((int)(item - bg_itemlist), 1);
+}
+
+void Scr_PrecacheModel(void)
+{
+    const char *name;
+
+    if (!level.initializing) {
+        Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
+        return;
+    }
+
+    name = Scr_GetString(0);
+    G_ModelIndex(name);
+}
+
+void Scr_PrecacheShader(void)
+{
+    const char *name;
+
+    if (!level.initializing) {
+        Scr_Error("precacheShader must be called before any wait statements in the gametype or level script\n");
+        return;
+    }
+
+    name = Scr_GetString(0);
+    G_ShaderIndex(name);
+}
+
+void Scr_PrecacheString(void)
+{
+    if (!level.initializing) {
+        Scr_Error("precacheString must be called before any wait statements in the gametype or level script\n");
+        return;
+    }
+    /* Just consumes the argument — strings are implicitly precached */
+    Scr_GetConstIString(0);
+}
+
+void Scr_PrecacheShellShock(void)
+{
+    /* Stub — shellshock effects not implemented yet */
+    if (!level.initializing) {
+        Scr_Error("precacheShellshock must be called before any wait statements in the gametype or level script\n");
+        return;
+    }
+    Scr_GetString(0);
+}
+
+void Scr_PrecacheRumble(void)
+{
+    /* Stub — rumble not implemented yet */
+    Scr_GetString(0);
+}
+
+/* --- Script VM builtin dispatch --- */
+
+#define FUNCTIONS_COUNT 145
+#define METHODS_COUNT   37
+
+BuiltinFunction Scr_GetFunction(const char **pName, int *type)
+{
+    int i;
+    for (i = 0; i < FUNCTIONS_COUNT; i++)
+    {
+        if (I_stricmp(*pName, functions[i].actionString) == 0)
+        {
+            *pName = functions[i].actionString;
+            *type = functions[i].type;
+            return functions[i].actionFunc;
+        }
+    }
+    return (BuiltinFunction)0;
+}
+
+static BuiltinMethod BuiltIn_GetMethod(const char **pName, int *type)
+{
+    int i;
+    for (i = 0; i < METHODS_COUNT; i++)
+    {
+        if (I_stricmp(*pName, methods[i].actionString) == 0)
+        {
+            *pName = methods[i].actionString;
+            *type = methods[i].type;
+            return methods[i].actionFunc;
+        }
+    }
+    return (BuiltinMethod)0;
+}
+
+extern BuiltinMethod HudElem_GetMethod(const char **pName);
+
+BuiltinMethod Scr_GetMethod(const char **pName, int *type)
+{
+    BuiltinMethod meth;
+    BuiltinMethod scriptent_meth;
+    BuiltinMethod scr_meth;
+    BuiltinMethod hud_meth;
+
+    *type = 0;
+
+    meth = Player_GetMethod(pName);
+    scriptent_meth = ScriptEnt_GetMethod(pName);
+
+    if (!meth)
+        meth = scriptent_meth;
+
+    scr_meth = BuiltIn_GetMethod(pName, type);
+
+    if (!meth)
+        meth = scr_meth;
+
+    hud_meth = HudElem_GetMethod(pName);
+
+    if (!meth)
+        meth = hud_meth;
+
+    return meth;
 }

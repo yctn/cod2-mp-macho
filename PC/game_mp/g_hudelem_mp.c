@@ -284,3 +284,19 @@ static void HudElem_GetVertAlign(game_hudelem_t *hud, int offset) {
     value = (value >> shift) & mask;
     Scr_AddString(g_he_vertalign[value]);
 }
+
+#define ARRAY_COUNT(a) (sizeof(a) / sizeof((a)[0]))
+
+BuiltinMethod HudElem_GetMethod(const char **pName)
+{
+    int i;
+    for (i = 0; i < (int)ARRAY_COUNT(methods); i++)
+    {
+        if (I_stricmp(*pName, methods[i].actionString) == 0)
+        {
+            *pName = methods[i].actionString;
+            return methods[i].actionFunc;
+        }
+    }
+    return (BuiltinMethod)0;
+}

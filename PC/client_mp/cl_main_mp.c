@@ -1161,3 +1161,139 @@ void CL_GetPing(int n, char *buf, int buflen, int *pingtime) {
     CL_SetServerInfoByAddress(ping->adr.type, *(int *)ping->adr.ip, ping->adr.port, ping->info, ping->time);
     *pingtime = time;
 }
+
+/* ============================================================
+ * CL_Frame — main client frame processing.
+ * Decompiled from Mach-O binary at VMA 0x14bc6a.
+ * Handles client connection state machine and per-frame updates.
+ * ============================================================ */
+extern void CL_CheckForResend(void);
+extern void CL_SetCGameTime(void);
+extern void CL_UpdateColor(void);
+
+void CL_Frame(int msec)
+{
+    clientConnection_t *clc_local = &clientConnections[0];
+
+    /* If not connected at all, nothing to do */
+    if (clc_local->state == CA_DISCONNECTED)
+        return;
+
+    /* Process connection state machine */
+    switch (clc_local->state) {
+    case CA_CONNECTING:
+    case CA_CHALLENGING:
+        /* Send connection request / challenge response */
+        CL_CheckForResend();
+        break;
+
+    case CA_CONNECTED:
+        /* We're connected but haven't loaded yet — transition to loading.
+           For devmap/loopback, trigger the client enter flow.
+           Only do this ONCE (check cgameInitCalled flag). */
+        {
+            extern void *imp_cl;
+            clientActive_t *ca = *(clientActive_t **)imp_cl;
+
+            if (clc_local->serverAddress.type == 3 && ca && !ca->cgameInitCalled) {
+                /* Mark as called to prevent re-entry */
+                ca->cgameInitCalled = 1;
+
+                /* Call ClientConnect through the game module */
+                const char *result = (const char *)ClientConnect(0, 0);
+                if (result) {
+                    Com_Printf("ClientConnect failed: %s\n", result);
+                    clc_local->state = CA_DISCONNECTED;
+                    break;
+                }
+
+                /* Enter the world */
+                ClientBegin(0);
+
+                /* Initialize cgame module */
+                {
+                    extern void CL_InitCGame(void);
+                    CL_InitCGame();
+                }
+
+                /* Set client to active */
+                clc_local->state = CA_ACTIVE;
+                clc_local->clientNum = 0;
+
+                Com_Printf("Local client connected and entered world\n");
+            }
+        }
+        break;
+
+    case CA_LOADING:
+    case CA_ACTIVE:
+        /* Active game — populate local snapshot and update time */
+        {
+            /* For loopback: build snapshot from server game state */
+            extern void *imp_cl;     /* → cl (pointer to clientActive_t) */
+            extern void *imp_svs;
+            extern gentity_t g_entities[];
+
+            clientActive_t *ca = *(clientActive_t **)imp_cl;
+            serverStatic_t *svs_local = (serverStatic_t *)imp_svs;
+
+            if (ca && svs_local) {
+                static int snapNum = 1;
+                int ringIdx;
+                clSnapshot_t *ringSnap;
+
+                /* Set server time on client */
+                ca->serverTime = svs_local->time;
+                ca->oldServerTime = svs_local->time - 50;
+                ca->oldFrameServerTime = svs_local->time - 50;
+
+                /* Write snapshot to the ring buffer that CL_GetSnapshot reads from.
+                   Ring buffer: 32 entries of 0x26d8 bytes at cl + 0x495e0 */
+                ringIdx = snapNum & 0x1f;
+                ringSnap = (clSnapshot_t *)((byte *)ca + 0x495e0 + ringIdx * 0x26d8);
+
+                ringSnap->valid = 1;
+                ringSnap->serverTime = svs_local->time;
+                ringSnap->snapFlags = 0;
+                ringSnap->messageNum = snapNum;
+                ringSnap->deltaNum = 0;
+                ringSnap->ping = 0;
+                ringSnap->cmdNum = 0;
+                ringSnap->numEntities = 0;
+                ringSnap->numClients = 0;
+
+                /* Copy player state from game entity 0 */
+                {
+                    gclient_t *gc = g_entities[0].client;
+                    if (gc) {
+                        memcpy(&ringSnap->ps, &gc->ps, sizeof(playerState_t));
+                    }
+                }
+
+                /* Also update the inline snap for direct access */
+                memcpy(&ca->snap, ringSnap, sizeof(clSnapshot_t));
+
+                /* Set latestSnapshotNum/Time for CL_GetCurrentSnapshotNumber
+                   which reads from cl+0x24 (snapNum) and cl+0x20 (serverTime) */
+                *(int *)((byte *)ca + 0x24) = snapNum;
+                *(int *)((byte *)ca + 0x20) = svs_local->time;
+
+                snapNum++;
+                ca->active = 1;
+            }
+        }
+        CL_SetCGameTime();
+
+        /* Force render: call SCR_UpdateScreenInternal directly from CL_Frame
+           to ensure the screen gets drawn even if the main frame timing loop
+           doesn't reach the normal SCR_UpdateScreenInternal call path. */
+        {
+            extern void SCR_UpdateScreenInternal(void);
+            SCR_UpdateScreenInternal();
+        }
+        break;
+
+    default:
+        break;
+    }
+}

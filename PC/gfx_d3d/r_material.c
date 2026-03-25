@@ -556,13 +556,16 @@ MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 /* line 569 */
 MaterialTechnique * Material_FindTechnique(const char *name)
 {
-    int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechnique *entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash]; /* techniqueTable */
+    int hash;
+    MaterialTechnique *entry;
+    if (!name) return NULL;
+    hash = R_HashAssetName(name) & 0x3ff;
+    entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash];
     while (entry) {
-        if (stricmp(entry->name, name) == 0)
+        if (entry->name && stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash]; /* techniqueTable */
+        entry = ((MaterialTechnique **)(materialGlobals + 0x130C))[hash];
     }
     return NULL;
 }
@@ -1145,7 +1148,9 @@ void Material_Init(void)
     Material *defaultMaterial = ((r_global_permanent_t *)rgp_ptr)->defaultMaterial;
 
     /* First pass: check if raw material is compatible with default */
-    if (rawMaterial->textures != defaultMaterial->textures ||
+    if (!rawMaterial || !defaultMaterial) {
+        /* Materials not loaded — skip compatibility check */
+    } else if (rawMaterial->textures != defaultMaterial->textures ||
         rawMaterial->constants != defaultMaterial->constants ||
         rawMaterial->techniqueSet != defaultMaterial->techniqueSet) {
         if (rawMaterial->textureCount != 1) {
@@ -1162,6 +1167,9 @@ void Material_Init(void)
     defaultMaterial = ((r_global_permanent_t *)rgp_ptr)->defaultMaterial;
 
     /* Second pass: if textures/constants/techniqueSet still differ, copy technique data */
+    if (!rawMaterial || !defaultMaterial) {
+        return;
+    }
     if (rawMaterial->textures != defaultMaterial->textures ||
         rawMaterial->constants != defaultMaterial->constants ||
         rawMaterial->techniqueSet != defaultMaterial->techniqueSet) {

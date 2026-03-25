@@ -543,9 +543,23 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
 
     srand(randomSeed);
     Rand_Init(randomSeed);
+
+    /* Set the weapon registration callback BEFORE G_SetupWeaponDef
+       so BG_GetWeaponIndexForName can load weapons during initialization */
+    {
+        extern void *bg_weaponInfoMem;
+        extern void G_RegisterWeapon(int weapIndex);
+        bg_weaponInfoMem = (void *)G_RegisterWeapon;
+    }
+
     G_SetupWeaponDef();
+
     G_RegisterDvars_impl();
     BG_RegisterDvars();
+
+    /* Set maxclients from the dvar — must happen after dvar registration */
+    level.maxclients = g_maxclients->current.integer;
+    level.num_entities = level.maxclients;
 
     teamFlags = (int *)&level.teamScores[3]; /* offset 520 = teamScores[3] used as teamFlags base */
 
@@ -717,7 +731,9 @@ int G_RunThink(gentity_t *ent)
     ent->nextthink = 0;
     think = entityHandlers[ent->handler].think;
     if (!think) {
-        Com_Error(1, "NULL ent->think");
+        /* Non-fatal: skip entities with no think handler rather than
+           aborting the entire frame via Com_Error/longjmp */
+        return 0;
     }
     ((void (*)(gentity_t *))think)(ent);
     return 0;

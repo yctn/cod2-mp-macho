@@ -361,8 +361,10 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 /* line 899 */
 void RB_DecideDefaultSamplerState(void)
 {
-    int idx = (*(const dvar_t **)imp_r_textureMode)->current.integer;
-    ((r_backEndGlobals_t *)imp_backEnd)->defaultSamplerState = defaultSamplerStateTable[idx]; /* TODO: verify field name for offset 0x4be */
+    const dvar_t *texMode = *(const dvar_t **)imp_r_textureMode;
+    if (!texMode) return;
+    int idx = texMode->current.integer;
+    ((r_backEndGlobals_t *)imp_backEnd)->defaultSamplerState = defaultSamplerStateTable[idx];
 }
 
 /* line 907 */
@@ -376,6 +378,7 @@ void RB_SetAnisotropy(void)
     int samplerIndex;
 
     anisotropyDvar = *(const dvar_t **)imp_r_anisotropy;
+    if (!anisotropyDvar) return;
     dx = (DxGlobals *)imp_dx;
     dx->anisotropy = anisotropyDvar->current.integer;
     if (dx->anisotropy > dx->maxAnisotropy) {

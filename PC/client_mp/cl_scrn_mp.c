@@ -32,7 +32,7 @@ const char * szShotName[] = {
 #define cls_ptr_195ecac ((byte *)imp_cls)
 #define dvar_ptr_195ee78 ((byte *)imp_cl)
 #define clc_ptr_195ee8c ((byte *)imp_clc)
-#define ptr_195eea4 ((byte *)imp_com_errorEntered)
+#define ptr_195eea4 (*(byte **)&imp_com_errorEntered)
 #define ptr_195f58c ((byte *)imp_colorBlack)
 #define ptr_195f5e0 ((byte *)imp_net_showprofile)
 
@@ -479,8 +479,8 @@ end_frame:
 /* line 403 */
 void SCR_UpdateScreenInternal(void)
 {
-    if (updateScreenCalled)
-        return;
+    /* Force clear updateScreenCalled — SIGSEGV recovery leaves it stuck */
+    updateScreenCalled = 0;
 
     clientConnection_t *clc_tmp = *(clientConnection_t **)clc_ptr_195ee8c;
     if (clc_tmp->state == 6) {

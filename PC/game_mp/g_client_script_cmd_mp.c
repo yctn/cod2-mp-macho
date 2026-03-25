@@ -117,3 +117,81 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref) {
 
     BG_TakePlayerWeapon(&pSelf->client->ps, iWeaponIndex);
 }
+
+static const BuiltinMethodDef player_methods[] = {
+    {"giveweapon", (BuiltinMethod)PlayerCmd_giveWeapon, 0},
+    {"takeweapon", (BuiltinMethod)PlayerCmd_takeWeapon, 0},
+    {"takeallweapons", (BuiltinMethod)PlayerCmd_takeAllWeapons, 0},
+    {"getcurrentweapon", (BuiltinMethod)PlayerCmd_getCurrentWeapon, 0},
+    {"getcurrentoffhand", (BuiltinMethod)PlayerCmd_getCurrentOffhand, 0},
+    {"hasweapon", (BuiltinMethod)PlayerCmd_hasWeapon, 0},
+    {"switchtoweapon", (BuiltinMethod)PlayerCmd_switchToWeapon, 0},
+    {"switchtooffhand", (BuiltinMethod)PlayerCmd_switchToOffhand, 0},
+    {"givestartammo", (BuiltinMethod)PlayerCmd_giveStartAmmo, 0},
+    {"givemaxammo", (BuiltinMethod)PlayerCmd_giveMaxAmmo, 0},
+    {"getfractionstartammo", (BuiltinMethod)PlayerCmd_getFractionStartAmmo, 0},
+    {"getfractionmaxammo", (BuiltinMethod)PlayerCmd_getFractionMaxAmmo, 0},
+    {"setorigin", (BuiltinMethod)PlayerCmd_setOrigin, 0},
+    {"setplayerangles", (BuiltinMethod)PlayerCmd_setAngles, 0},
+    {"getplayerangles", (BuiltinMethod)PlayerCmd_getAngles, 0},
+    {"usebuttonpressed", (BuiltinMethod)PlayerCmd_useButtonPressed, 0},
+    {"attackbuttonpressed", (BuiltinMethod)PlayerCmd_attackButtonPressed, 0},
+    {"meleebuttonpressed", (BuiltinMethod)PlayerCmd_meleeButtonPressed, 0},
+    {"playerads", (BuiltinMethod)PlayerCmd_playerADS, 0},
+    {"isonground", (BuiltinMethod)PlayerCmd_isOnGround, 0},
+    {"pingplayer", (BuiltinMethod)PlayerCmd_pingPlayer, 0},
+    {"setviewmodel", (BuiltinMethod)PlayerCmd_SetViewmodel, 0},
+    {"getviewmodel", (BuiltinMethod)PlayerCmd_GetViewmodel, 0},
+    {"sayall", (BuiltinMethod)PlayerCmd_SayAll, 0},
+    {"sayteam", (BuiltinMethod)PlayerCmd_SayTeam, 0},
+    {"showscoreboard", (BuiltinMethod)PlayerCmd_showScoreboard, 0},
+    {"setspawnweapon", (BuiltinMethod)PlayerCmd_setSpawnWeapon, 0},
+    {"dropitem", (BuiltinMethod)PlayerCmd_dropItem, 0},
+    {"finishplayerdamage", (BuiltinMethod)PlayerCmd_finishPlayerDamage, 0},
+    {"suicide", (BuiltinMethod)PlayerCmd_Suicide, 0},
+    {"openmenu", (BuiltinMethod)PlayerCmd_OpenMenu, 0},
+    {"openmenunomouse", (BuiltinMethod)PlayerCmd_OpenMenuNoMouse, 0},
+    {"closemenu", (BuiltinMethod)PlayerCmd_CloseMenu, 0},
+    {"closeingamemenu", (BuiltinMethod)PlayerCmd_CloseInGameMenu, 0},
+    {"freezecontrols", (BuiltinMethod)PlayerCmd_FreezeControls, 0},
+    {"disableweapon", (BuiltinMethod)PlayerCmd_DisableWeapon, 0},
+    {"enableweapon", (BuiltinMethod)PlayerCmd_EnableWeapon, 0},
+    {"setreverb", (BuiltinMethod)PlayerCmd_SetReverb, 0},
+    {"deactivatereverb", (BuiltinMethod)PlayerCmd_DeactivateReverb, 0},
+    {"setchannelvolumes", (BuiltinMethod)PlayerCmd_SetChannelVolumes, 0},
+    {"deactivatechannelvolumes", (BuiltinMethod)PlayerCmd_DeactivateChannelVolumes, 0},
+    {"getweaponslotweapon", (BuiltinMethod)PlayerCmd_GetWeaponSlotWeapon, 0},
+    {"setweaponslotweapon", (BuiltinMethod)PlayerCmd_SetWeaponSlotWeapon, 0},
+    {"getweaponslotammo", (BuiltinMethod)PlayerCmd_GetWeaponSlotAmmo, 0},
+    {"setweaponslotammo", (BuiltinMethod)PlayerCmd_SetWeaponSlotAmmo, 0},
+    {"getweaponslotclipammo", (BuiltinMethod)PlayerCmd_GetWeaponSlotClipAmmo, 0},
+    {"setweaponslotclipammo", (BuiltinMethod)PlayerCmd_SetWeaponSlotClipAmmo, 0},
+    {"setweaponclipammo", (BuiltinMethod)PlayerCmd_SetWeaponClipAmmo, 0},
+    {"iprintln", (BuiltinMethod)iclientprintln, 0},
+    {"iprintlnbold", (BuiltinMethod)iclientprintlnbold, 0},
+    {"spawn", (BuiltinMethod)PlayerCmd_spawn, 0},
+    {"setentertime", (BuiltinMethod)PlayerCmd_setEnterTime, 0},
+    {"cloneplayer", (BuiltinMethod)PlayerCmd_ClonePlayer, 0},
+    {"setclientcvar", (BuiltinMethod)PlayerCmd_SetClientDvar, 0},
+    {"islookingat", (BuiltinMethod)ScrCmd_IsLookingAt, 0},
+    {"playlocalsound", (BuiltinMethod)ScrCmd_PlayLocalSound, 0},
+    {"istalking", (BuiltinMethod)PlayerCmd_IsTalking, 0},
+    {"allowspectateteam", (BuiltinMethod)PlayerCmd_AllowSpectateTeam, 0},
+    {"getguid", (BuiltinMethod)PlayerCmd_GetGuid, 0},
+};
+
+#define ARRAY_COUNT(a) (sizeof(a) / sizeof((a)[0]))
+
+BuiltinMethod Player_GetMethod(const char **pName)
+{
+    int i;
+    for (i = 0; i < (int)ARRAY_COUNT(player_methods); i++)
+    {
+        if (I_stricmp(*pName, player_methods[i].actionString) == 0)
+        {
+            *pName = player_methods[i].actionString;
+            return player_methods[i].actionFunc;
+        }
+    }
+    return (BuiltinMethod)0;
+}

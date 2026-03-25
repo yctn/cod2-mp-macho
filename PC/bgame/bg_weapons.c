@@ -159,3 +159,71 @@ int BG_FindWeaponIndexForName(const char *name)
     }
     return 0;
 }
+
+/* --- BG_LoadWeaponDef: load weapon definition from file ---
+   Ref: bg_weapons.cpp */
+extern WeaponDef *BG_LoadWeaponDefInternal(const char *folder, const char *name);
+extern void SetConfigString(char **field, const char *value);
+
+static WeaponDef *BG_LoadWeaponDef(const char *folder, const char *name)
+{
+    WeaponDef *weapDef;
+
+    if (!name[0])
+        return NULL;
+
+    weapDef = BG_LoadWeaponDefInternal(folder, name);
+    if (weapDef)
+        return weapDef;
+
+    weapDef = BG_LoadWeaponDefInternal(folder, "defaultweapon_mp");
+    if (!weapDef)
+        Com_Error(1, "BG_LoadWeaponDef: Could not find default weapon");
+
+    SetConfigString((char **)&weapDef->szInternalName, name);
+    return weapDef;
+}
+
+/* --- BG_SetupWeaponDef: register a loaded weapon into the weapon table ---
+   Ref: bg_weapons.cpp */
+extern void BG_SetupWeaponIndex(int weapIndex);
+extern void BG_SetupWeaponAlts(int weapIndex, void *regWeap);
+
+static int BG_SetupWeaponDef(WeaponDef *weapDef, void (*regWeap)(int))
+{
+    int weapIndex;
+
+    bg_iNumWeapons++;
+    weapIndex = bg_iNumWeapons;
+    bg_weaponDefs[weapIndex] = weapDef;
+
+    BG_SetupWeaponIndex(weapIndex);
+    BG_SetupWeaponAlts(weapIndex, (void *)regWeap);
+
+    if (regWeap)
+        regWeap(weapIndex);
+
+    return weapIndex;
+}
+
+/* --- BG_GetWeaponIndexForName: find or load a weapon by name ---
+   Ref: bg_weapons.cpp */
+int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
+{
+    WeaponDef *weapDef;
+    int weapIndex;
+
+    if (!name[0] || I_stricmp(name, "none") == 0)
+        return 0;
+
+    weapIndex = BG_FindWeaponIndexForName(name);
+    if (weapIndex)
+        return weapIndex;
+
+    weapDef = BG_LoadWeaponDef("mp", name);
+    if (weapDef)
+        return BG_SetupWeaponDef(weapDef, (void (*)(int))regWeap);
+
+    Com_Printf("Couldn't find weapon \"%s\"\n", name);
+    return 0;
+}

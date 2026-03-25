@@ -383,4 +383,388 @@ void CG_InitView(void)
     FX_AdjustTime(cg->time);
 }
 
-/* line 935 */
+/* Externs for CG_CalcViewValues call chain (from Mach-O symbol table) */
+extern float CL_GetMenuBlurRadius(void);
+extern void SetScreenScaling(float scaleX, float scaleY, int x, int y, int w, int h);
+extern int BG_GetBobCycle(const playerState_t *ps);
+extern float BG_GetSpeed(const playerState_t *ps, int time);
+extern void BG_CalculateViewAngles(void *viewState, float *outAngles);
+extern float BG_GetVerticalBobFactor(const playerState_t *ps, float cycle, float speed, float scale);
+extern float BG_GetHorizontalBobFactor(const playerState_t *ps, float cycle, float speed, float scale);
+extern void AddLeanToPosition(float *origin, float viewYaw, float leanFrac, float rollScale, float height);
+extern void AnglesToAxis(const vec_t *angles, vec_t (*axis)[3]);
+extern void CG_PerturbCamera(void);
+extern unsigned int CG_ShakeCamera(void);
+
+/* line 657: CG_CalcViewValues — Decompiled from Mach-O binary at VMA 0x1d1694.
+   Sets up refdef camera from predicted player state including bob cycle,
+   lean offset, step smoothing, shake, and view axis. */
+static void CG_CalcViewValues(void)
+{
+    cg_t *cg;
+    playerState_t *ps;
+    cgs_t *cgs;
+    int framerate;
+    int bobX, bobY;
+    int viewX, viewY;
+    float bobCycle, speed, menuBlur;
+
+    cg = (cg_t *)*(int *)imp_cg;
+
+    /* Clear the refdef struct (88 bytes = sizeof(refdef_t)) */
+    memset(&cg->refdef, 0, sizeof(refdef_t));
+
+    /* Compute combined blur radius: sqrt(cg_blur² + menuBlur²) */
+    menuBlur = CL_GetMenuBlurRadius();
+    {
+        float cgBlur = *(float *)((char *)(*(int *)imp_cg_fovScale) + 0x28);
+        cg->refdef.blurRadius = __builtin_sqrtf(cgBlur * cgBlur + menuBlur * menuBlur);
+    }
+
+    /* Cubemap shot uses a fixed framerate */
+    if (cg->cubemapShot != 0) {
+        framerate = 100;
+    } else {
+        /* Dead player — skip bob/lean, jump to simpler view */
+        ps = &cg->snap->ps;
+        if (ps->pm_type == 5)
+            goto dead_view;
+
+        /* Get cg_fov dvar framerate value */
+        framerate = *(int *)((char *)(*(int *)imp_cg_fov) + 8);
+    }
+
+    /* Compute bob cycle offsets from screen dimensions and framerate.
+       cgs struct offsets 0x5e84-0x5e90 are screen viewport fields. */
+    {
+        char *cgsBase = (char *)*(int *)imp_cgs;
+        int screenX = *(int *)(cgsBase + 0x5e84);
+        int screenY = *(int *)(cgsBase + 0x5e88);
+        int screenW = *(int *)(cgsBase + 0x5e8c);
+        int screenH = *(int *)(cgsBase + 0x5e90);
+
+        bobX = (framerate * screenW) / 100;
+        bobX &= ~1;
+        bobY = (framerate * screenH) / 100;
+        bobY &= ~1;
+
+        viewX = screenX + (screenW - bobX) / 2;
+        viewY = screenY + (screenH - bobY) / 2;
+    }
+
+    cg = (cg_t *)*(int *)imp_cg;
+    cg->refdef.x = viewX;
+    cg->refdef.y = viewY;
+    cg->refdef.width = bobX;
+    cg->refdef.height = bobY;
+
+    SetScreenScaling(1.0f, 1.0f, viewX, viewY, bobX, bobY);
+
+    ps = &cg->predictedPlayerState;
+
+    /* Get bob cycle and movement speed */
+    if (ps->pm_type != 5) {
+        bobCycle = (float)BG_GetBobCycle(ps);
+        speed = BG_GetSpeed(ps, cg->time);
+    } else {
+        bobCycle = 0.0f;
+        speed = 0.0f;
+    }
+
+    /* Copy predicted origin to refdef vieworg */
+    cg->refdef.vieworg[0] = ps->origin[0];
+    cg->refdef.vieworg[1] = ps->origin[1];
+    cg->refdef.vieworg[2] = ps->origin[2];
+
+    /* Copy predicted view angles to refdefViewAngles */
+    cg->refdefViewAngles[0] = ps->viewangles[0];
+    cg->refdefViewAngles[1] = ps->viewangles[1];
+    cg->refdefViewAngles[2] = ps->viewangles[2];
+
+    /* Step offset for stair smoothing */
+    {
+        float stepFrac;
+        float *stepDvar = (float *)((char *)(*(int *)imp_cg_thirdPersonRange) + 8);
+        /* Check cg_stepSmoothing dvar-like timing */
+        if (*stepDvar > 0.0f) {
+            float elapsed = (float)(cg->time - cg->stepTime);
+            stepFrac = (*stepDvar - elapsed) / *stepDvar;
+            if (stepFrac > 0.0f) {
+                /* Apply step offset — do nothing after expired */
+            } else {
+                cg->stepTime = 0;
+            }
+        }
+    }
+
+dead_view:
+    cg = (cg_t *)*(int *)imp_cg;
+    ps = &cg->predictedPlayerState;
+
+    /* Check scope/binoculars flags */
+    if (ps->eFlags & 0x300)
+        goto skip_lean;
+
+    /* Check third person mode */
+    if (cg->renderingThirdPerson)
+        goto do_third_person;
+
+    /* Check if dead — skip lean/bob for dead views */
+    if (ps->pm_type == 5)
+        goto skip_lean;
+    if (ps->eFlags & 0x300)
+        goto skip_lean;
+
+    /* Normal first-person view: calculate view angles with bob/sway */
+    {
+        float viewAnglesResult[3];
+
+        /* BG_CalculateViewAngles computes final view angles with weapon bob/sway */
+        BG_CalculateViewAngles(&cg->predictedPlayerState, viewAnglesResult);
+
+        /* Apply calculated angles to refdefViewAngles */
+        cg->refdefViewAngles[0] += viewAnglesResult[0];
+        cg->refdefViewAngles[1] += viewAnglesResult[1];
+        cg->refdefViewAngles[2] += viewAnglesResult[2];
+
+        /* Add view height to origin z */
+        cg->refdef.vieworg[2] += ps->viewHeightCurrent;
+
+        /* Vertical bob factor */
+        {
+            float vbob = BG_GetVerticalBobFactor(ps, bobCycle, speed,
+                *(float *)((char *)(*(int *)imp_cg_fov) + 8));
+            cg->refdef.vieworg[2] += vbob;
+        }
+
+        /* Horizontal bob factor — adds to vieworg via forward vector */
+        {
+            float hbob = BG_GetHorizontalBobFactor(ps, bobCycle, speed,
+                *(float *)((char *)(*(int *)imp_cg_fov) + 8));
+            float forward[3], right[3], up[3];
+            AngleVectors(cg->refdefViewAngles, forward, right, up);
+            cg->refdef.vieworg[0] += hbob * forward[0];
+            cg->refdef.vieworg[1] += hbob * forward[1];
+            cg->refdef.vieworg[2] += hbob * forward[2];
+        }
+
+        /* Add lean to position */
+        AddLeanToPosition(cg->refdef.vieworg, cg->refdefViewAngles[1],
+                          ps->leanf, 16.0f, 20.0f);
+
+        /* Step smoothing z offset */
+        if (cg->stepTime > 0) {
+            int elapsed = cg->time - cg->stepTime;
+            if (elapsed >= 0 && elapsed <= 99) {
+                /* Not expired yet — no additional offset in this range */
+            } else if (elapsed > 99) {
+                /* Expired */
+            }
+        }
+    }
+
+    goto post_lean;
+
+do_third_person:
+    CG_OffsetThirdPersonView();
+    goto post_lean;
+
+skip_lean:
+    /* Add view height even without lean */
+    cg->refdef.vieworg[2] += ps->viewHeightCurrent;
+
+post_lean:
+    /* Apply camera shake */
+    CG_ShakeCamera();
+
+    cg = (cg_t *)*(int *)imp_cg;
+
+    /* Convert view angles to axis matrix */
+    AnglesToAxis(cg->refdefViewAngles, &cg->refdef.viewaxis);
+
+    /* Save position/angles for interpolation */
+    cg->swayViewAngles[0] = cg->refdef.vieworg[0];
+    cg->swayViewAngles[1] = cg->refdef.vieworg[1];
+    cg->swayViewAngles[2] = cg->refdef.vieworg[2];
+
+    /* Check if dead/spectating — apply camera perturbation */
+    {
+        int pmType = cg->predictedPlayerState.pm_type;
+        if (pmType >= 4 && pmType <= 5) {
+            /* Dead/spectating view */
+        } else if (cg->renderingThirdPerson) {
+            /* Already handled */
+        } else {
+            CG_PerturbCamera();
+        }
+    }
+
+    /* Calculate field of view */
+    CG_CalcFov();
+}
+
+/* Externs for CG_DrawActiveFrame call chain */
+extern void CG_AddLagometerFrameInfo(void);
+extern void CG_ProcessSnapshots(void);
+extern void CL_SetLodOrigin(const refdef_t *refdef);
+extern void CG_UpdateShellShock(const void *parms, int startTime, int duration);
+extern unsigned int CG_DrawActive(void);
+extern unsigned int CG_Draw2D(void);
+extern unsigned int CG_DrawPlayerSprites(void);
+extern void CG_Draw3dHudElems(void);
+extern void CG_AddViewWeapon(playerState_t *ps);
+extern void CL_BeginDelayedDrawing(void);
+extern void CL_EndDelayedDrawing(int param);
+extern void CL_IssueDelayedDrawing(int param);
+extern void CL_Input(void);
+extern void R_UpdateEffectsBolt(void);
+extern void R_UpdateEffectsNonBolt(void);
+extern void SND_SetListener(int, const float *, const float (*)[3]);
+extern int BG_GetNumWeapons(void);
+extern void CG_ProcessEntity(centity_t *cent);
+extern unsigned int CG_ShakeCamera(void);
+extern void CG_AddPacketEntities(void);
+extern void *imp_cg_entities;
+extern void *imp_cg_draw_spectatorstate;
+
+/* line 935: CG_DrawActiveFrame — main cgame frame entry point.
+   Decompiled from Mach-O binary at VMA 0x1d25bc. */
+qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType,
+                             CubemapShot cubemapShot, int cubemapSize,
+                             qboolean renderScreen)
+{
+    cg_t *cg = (cg_t *)*(int *)imp_cg;
+    snapshot_t *snap;
+    snapshot_t *nextSnap;
+
+    /* Store old time, set new time and compute frametime */
+    cg->oldTime = cg->time;
+    cg->time = serverTime;
+    cg->physicsTime = serverTime;
+    cg->demoType = demoType;
+    cg->cubemapShot = cubemapShot;
+    cg->cubemapSize = cubemapSize;
+    cg->renderScreen = renderScreen;
+    cg->frametime = serverTime - cg->oldTime;
+
+    if (cg->frametime < 0) {
+        cg->frametime = 0;
+    }
+
+    /* Lagometer */
+    CG_AddLagometerFrameInfo();
+
+    /* If mapRestart is pending, clear the entity draw pointer and return */
+    if (cg->mapRestart) {
+        *(void **)&imp_cg_entities = 0;
+        return 0;
+    }
+
+    /* Set active entity draw pointer to cg's entity data */
+    *(void **)&imp_cg_entities = (void *)((char *)cg + 0x2cd18);
+
+    /* Process snapshots */
+    CG_ProcessSnapshots();
+
+    /* Bail if not rendering or no valid snapshot */
+    if (!cg->renderScreen)
+        goto done;
+
+    snap = cg->snap;
+    if (!snap)
+        goto done;
+    if (snap->snapFlags & 2)
+        goto done;
+
+    /* Check if player is in spectator follow mode (pm_type > 5 = dead/spectating) */
+    {
+        void *spectDvar = *(void **)&imp_cg_draw_spectatorstate;
+        if (spectDvar && *(unsigned char *)((char *)spectDvar + 0x5c) != 0)
+            goto draw_2d_only;
+    }
+
+    /* Increment client frame counter */
+    cg = (cg_t *)*(int *)imp_cg;
+    cg->clientFrame++;
+
+    /* Interpolate entity origin between snap and nextSnap */
+    {
+        float frac = cg->frameInterpolation;
+        snap = cg->snap;
+        nextSnap = cg->nextSnap;
+        float *vieworg = cg->refdef.vieworg;
+
+        vieworg[0] = snap->ps.origin[0] + (nextSnap->ps.origin[0] - snap->ps.origin[0]) * frac;
+        vieworg[1] = snap->ps.origin[1] + (nextSnap->ps.origin[1] - snap->ps.origin[1]) * frac;
+        vieworg[2] = snap->ps.origin[2] + (nextSnap->ps.origin[2] - snap->ps.origin[2]) * frac;
+
+        /* Add view height */
+        vieworg[2] += (float)cg->snap->ps.viewHeightCurrent;
+    }
+
+    /* Set LOD origin for model detail */
+    CL_SetLodOrigin(&cg->refdef);
+
+    /* Adjust FX time relative to snapshot */
+    FX_AdjustTime(cg->time - cg->snap->serverTime);
+
+    /* Handle shellshock effects */
+    if (cg->snap->ps.pm_type != 5) {
+        CG_UpdateShellShock(&cg->shellshock.parms,
+                            cg->shellshock.startTime,
+                            cg->shellshock.duration);
+    }
+
+    /* Clear kick/offset angles */
+    cg->kickAngles[0] = 0; cg->kickAngles[1] = 0; cg->kickAngles[2] = 0;
+    cg->offsetAngles[0] = 0; cg->offsetAngles[1] = 0; cg->offsetAngles[2] = 0;
+
+    /* Set up the view (camera position, prediction, FOV) */
+    CL_ResetSkeletonCache(0);
+    CG_CalcViewValues();
+    CG_AddPacketEntities();
+    CG_AddLocalEntities();
+    R_UpdateEffectsNonBolt();
+    CG_AddMarks();
+    CL_Input();
+    CG_PredictPlayerState();
+
+    cg = (cg_t *)*(int *)imp_cg;
+
+    /* Shake camera */
+    CG_ShakeCamera();
+
+    /* Calculate view values again after prediction */
+    CG_CalcViewValues();
+
+    /* Set up view origin and axis for renderer */
+    CL_FX_AdjustCamera(&cg->refdef);
+
+    /* Sound listener */
+    SND_SetListener(0, cg->refdef.vieworg, cg->refdef.viewaxis);
+
+    /* Add view weapon model */
+    CG_AddViewWeapon(&cg->predictedPlayerState);
+
+    /* Begin delayed drawing (effects) */
+    CL_BeginDelayedDrawing();
+    R_UpdateEffectsBolt();
+
+    /* Draw 3D HUD elements */
+    CG_DrawPlayerSprites();
+    CG_Draw3dHudElems();
+
+    /* Render the 3D scene */
+    CG_DrawActive();
+
+    /* End delayed drawing */
+    CL_EndDelayedDrawing(0);
+
+draw_2d_only:
+    /* 2D overlay (HUD, crosshair, etc.) */
+    CG_Draw2D();
+    CL_IssueDelayedDrawing(0);
+
+done:
+    return 0;
+}

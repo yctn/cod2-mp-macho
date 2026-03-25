@@ -28,6 +28,15 @@ extern void RemoveVariable(unsigned int parentId, unsigned int value);
 extern unsigned int FindObject(unsigned int id);
 extern unsigned int FindVariable(unsigned int parentId, unsigned int value);
 extern unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId);
+extern void Scr_ClearOutParams(void);
+extern void RemoveRefToValue(VariableValue *value);
+extern unsigned int SL_GetString(const char *str, unsigned int user);
+extern void SL_AddRefToString(unsigned int stringValue);
+extern const float * Scr_AllocVector(const float *v);
+extern void AddRefToObject(unsigned int id);
+extern unsigned int AllocObject(void);
+extern void RemoveRefToObject(unsigned int id);
+extern unsigned int Scr_AllocArray(void);
 
 void Scr_ClearErrorMessage(void);
 void Scr_Settings(int developer, int developer_script, int abort_on_error);
@@ -318,6 +327,188 @@ void Scr_KillThread(unsigned int threadId)
 {
     extern void RemoveRefToObject(unsigned int id);
     RemoveRefToObject(threadId);
+}
+
+/* VariableValue type enum (matches reference script_public.h) */
+#ifndef VAR_UNDEFINED
+#define VAR_UNDEFINED        0
+#define VAR_POINTER          1
+#define VAR_STRING           2
+#define VAR_ISTRING          3
+#define VAR_VECTOR           4
+#define VAR_FLOAT            5
+#define VAR_INTEGER          6
+#define VAR_CODEPOS          7
+#define VAR_PRECODEPOS       8
+#define VAR_FUNCTION         9
+#define VAR_STACK            10
+#define VAR_ANIMATION        11
+#define VAR_DEVELOPER_CODEPOS 12
+#define VAR_INCLUDE_CODEPOS  13
+#define VAR_THREAD_LIST      14
+#define VAR_THREAD           15
+#define VAR_NOTIFY_THREAD    16
+#define VAR_TIME_THREAD      17
+#define VAR_CHILD_THREAD     18
+#define VAR_OBJECT           19
+#define VAR_DEAD_ENTITY      20
+#define VAR_ENTITY           21
+#define VAR_ARRAY            22
+#define VAR_DEAD_THREAD      23
+#endif
+
+/* =========================================================
+ * IncInParam - clear out params, advance stack top, bump in-param count.
+ * Inlined in original; we implement as a static helper.
+ * ref: scr_vm.cpp line 2610
+ * ========================================================= */
+static void IncInParam(void)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+
+    Scr_ClearOutParams();
+
+    if (vm->top == vm->maxstack)
+    {
+        extern void Com_Error(int type, const char *fmt, ...);
+        Com_Error(1, "Internal script stack overflow");
+    }
+
+    vm->top++;
+    vm->inparamcount++;
+}
+
+/* =========================================================
+ * Scr_AddInt - push an integer value onto the script stack.
+ * ref: scr_vm.cpp line 1476
+ * ========================================================= */
+void Scr_AddInt(int value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_INTEGER;
+    vm->top->u.intValue = value;
+}
+
+/* =========================================================
+ * Scr_AddFloat - push a float value onto the script stack.
+ * ref: scr_vm.cpp line 1463
+ * ========================================================= */
+void Scr_AddFloat(float value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_FLOAT;
+    vm->top->u.floatValue = value;
+}
+
+/* =========================================================
+ * Scr_AddUndefined - push an undefined value onto the script stack.
+ * ref: scr_vm.cpp line 1439
+ * ========================================================= */
+void Scr_AddUndefined(void)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_UNDEFINED;
+}
+
+/* =========================================================
+ * Scr_AddString - push a string value onto the script stack.
+ * ref: scr_vm.cpp line 1403
+ * ========================================================= */
+void Scr_AddString(const char *value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_STRING;
+    vm->top->u.stringValue = SL_GetString(value, 0);
+}
+
+/* =========================================================
+ * Scr_AddConstString - push a pre-resolved const string onto the stack.
+ * ref: scr_vm.cpp line 1373
+ * ========================================================= */
+void Scr_AddConstString(unsigned int value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_STRING;
+    vm->top->u.stringValue = value;
+    SL_AddRefToString(value);
+}
+
+/* =========================================================
+ * Scr_AddVector - push a vector value onto the script stack.
+ * ref: scr_vm.cpp line 1360
+ * ========================================================= */
+void Scr_AddVector(const float *value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_VECTOR;
+    vm->top->u.vectorValue = Scr_AllocVector(value);
+}
+
+/* =========================================================
+ * Scr_AddObject - push an object reference onto the script stack.
+ * ref: scr_vm.cpp line 1417
+ * ========================================================= */
+void Scr_AddObject(unsigned int id)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_POINTER;
+    vm->top->u.pointerValue = id;
+    AddRefToObject(id);
+}
+
+/* =========================================================
+ * Scr_AddBool - push a boolean (as integer) onto the script stack.
+ * ref: scr_vm.cpp line 1489
+ * ========================================================= */
+void Scr_AddBool(int value)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_INTEGER;
+    vm->top->u.intValue = value;
+}
+
+/* =========================================================
+ * Scr_AddStruct - allocate a new object and push it onto the stack.
+ * ref: scr_vm.cpp line 1503
+ * ========================================================= */
+void Scr_AddStruct(void)
+{
+    unsigned int id = AllocObject();
+    Scr_AddObject(id);
+    RemoveRefToObject(id);
+}
+
+/* =========================================================
+ * Scr_AddEntityNum - push an entity reference onto the script stack.
+ * ref: scr_vm.cpp line 1516
+ * Note: uses Scr_GetEntityId in ref, which calls FindEntityId.
+ * ========================================================= */
+void Scr_AddEntityNum(int entnum, int classnum)
+{
+    extern unsigned int FindEntityId(unsigned int entnum, unsigned int classnum);
+    unsigned int id = FindEntityId((unsigned int)entnum, (unsigned int)classnum);
+    if (id)
+        Scr_AddObject(id);
+}
+
+/* =========================================================
+ * Scr_MakeArray - push a new empty array onto the script stack.
+ * ref: scr_vm.cpp line 1347
+ * ========================================================= */
+void Scr_MakeArray(void)
+{
+    struct scrVmPub_t *vm = (struct scrVmPub_t *)imp_scrVmPub;
+    IncInParam();
+    vm->top->type = VAR_POINTER;
+    vm->top->u.pointerValue = Scr_AllocArray();
 }
 
 /* =========================================================

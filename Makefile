@@ -7,7 +7,7 @@ CSTD ?= gnu99
 LIBSTDCPP ?= /usr/lib32/libstdc++.so.6
 SDL2_CFLAGS = $(shell pkg-config --cflags sdl2 2>/dev/null || echo -I/usr/include/SDL2)
 SDL2_LIBS = $(shell pkg-config --libs sdl2 2>/dev/null || echo -lSDL2)
-CFLAGS = -std=$(CSTD) -m32 -fno-pie -no-pie -w -O0 -g -msse -fno-omit-frame-pointer -DSDL_DISABLE_IMMINTRIN_H -IPC/speex -I. $(SDL2_CFLAGS) -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=return-mismatch
+CFLAGS = -std=$(CSTD) -m32 -fno-pie -no-pie -w -O0 -g -msse -msse2 -mfpmath=sse -fno-omit-frame-pointer -DSDL_DISABLE_IMMINTRIN_H -IPC/speex -I. $(SDL2_CFLAGS) -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=return-mismatch
 LDFLAGS = -m32 -no-pie -L/usr/lib32 -L/usr/lib/i386-linux-gnu
 LINK_UNRESOLVED_FLAGS ?= -Wl,--unresolved-symbols=ignore-all -Wl,--noinhibit-exec
 LIBS = -lGL -lm -lpthread -ldl -lz $(LIBSTDCPP) $(SDL2_LIBS)

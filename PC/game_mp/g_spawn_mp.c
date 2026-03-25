@@ -72,17 +72,66 @@ extern void Dvar_SetFloat(const dvar_t *dvar, float value);
 extern const dvar_t *g_gravity;
 extern const dvar_t *g_motd;
 
-extern spawn_t spawns[22]; /* 0x0 */
-/* Entity fields table — data extracted from Mac binary (utils/binary.x86 @ 0x333360):
- *   classname(0x168,STR) origin(0x138,VEC) model(0x164,MDL) spawnflags(0x170,INT)
- *   target(0x16a,STR) targetname(0x16c,STR) count(0x1a0,INT) health(0x194,INT)
- *   dmg(0x19c,INT) angles(0x144,VEC)
- * Currently disabled — enabling causes cascading script errors because the
- * game scripts access many more fields (client fields, custom fields) that
- * aren't registered yet. The GetEntityFieldValue calling convention is fixed. */
-/* Entity fields — data from Mac binary (utils/binary.x86 @ 0x333360).
- * Disabled until script VM cast errors are fully handled. */
-static const ent_field_t fields[11];
+/* Spawn functions */
+extern void SP_info_null(gentity_t *ent);
+extern void SP_info_notnull(gentity_t *ent);
+extern void SP_trigger_multiple(gentity_t *ent);
+extern void SP_trigger_radius(gentity_t *ent);
+extern void SP_trigger_disk(gentity_t *ent);
+extern void SP_trigger_hurt(gentity_t *ent);
+extern void SP_trigger_once(gentity_t *ent);
+extern void SP_light(gentity_t *ent);
+extern void SP_misc_model(gentity_t *ent);
+extern void SP_turret(gentity_t *ent);
+extern void SP_corona(gentity_t *ent);
+extern void trigger_use(gentity_t *ent);
+extern void trigger_use_touch(gentity_t *ent);
+extern void SP_trigger_damage(gentity_t *ent);
+extern void SP_trigger_lookat(gentity_t *ent);
+extern void SP_script_brushmodel(gentity_t *ent);
+extern void SP_script_model(gentity_t *ent);
+extern void SP_script_origin(gentity_t *ent);
+extern void G_FreeEntity(gentity_t *ent);
+
+spawn_t spawns[22] = {
+    { "info_null",         (void(*)())SP_info_null },
+    { "info_notnull",      (void(*)())SP_info_notnull },
+    { "func_group",        (void(*)())SP_info_null },
+    { "trigger_multiple",  (void(*)())SP_trigger_multiple },
+    { "trigger_radius",    (void(*)())SP_trigger_radius },
+    { "trigger_disk",      (void(*)())SP_trigger_disk },
+    { "trigger_hurt",      (void(*)())SP_trigger_hurt },
+    { "trigger_once",      (void(*)())SP_trigger_once },
+    { "light",             (void(*)())SP_light },
+    { "misc_model",        (void(*)())SP_misc_model },
+    { "misc_mg42",         (void(*)())SP_turret },
+    { "misc_turret",       (void(*)())SP_turret },
+    { "corona",            (void(*)())SP_corona },
+    { "trigger_use",       (void(*)())trigger_use },
+    { "trigger_use_touch", (void(*)())trigger_use_touch },
+    { "trigger_damage",    (void(*)())SP_trigger_damage },
+    { "trigger_lookat",    (void(*)())SP_trigger_lookat },
+    { "script_brushmodel", (void(*)())SP_script_brushmodel },
+    { "script_model",      (void(*)())SP_script_model },
+    { "script_origin",     (void(*)())SP_script_origin },
+    { "script_struct",     (void(*)())G_FreeEntity },
+    { NULL,                NULL }
+};
+/* Entity fields table — data extracted from Mac binary (utils/binary.x86 @ 0x333360).
+ * Matches reference: g_spawn_mp.cpp g_entity_fields[] */
+static const ent_field_t fields[11] = {
+    { "classname",  0x168, F_STRING, NULL },  /* Scr_ReadOnlyField */
+    { "origin",     0x138, F_VECTOR, NULL },  /* Scr_SetOrigin */
+    { "model",      0x164, F_MODEL,  NULL },  /* Scr_ReadOnlyField */
+    { "spawnflags", 0x170, F_INT,    NULL },  /* Scr_ReadOnlyField */
+    { "target",     0x16a, F_STRING, NULL },
+    { "targetname", 0x16c, F_STRING, NULL },
+    { "count",      0x1a0, F_INT,    NULL },
+    { "health",     0x194, F_INT,    NULL },  /* Scr_SetHealth */
+    { "dmg",        0x19c, F_INT,    NULL },
+    { "angles",     0x144, F_VECTOR, NULL },  /* Scr_SetAngles */
+    { NULL,         0,     F_INT,    NULL }   /* terminator */
+};
 
 enum {
     GSP_CS_GAME_VERSION = 2,

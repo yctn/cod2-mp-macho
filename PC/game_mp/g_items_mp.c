@@ -190,3 +190,41 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS) {
         level.bRegisterItems = 1;
     }
 }
+
+/* line 676: G_RegisterWeapon — register a weapon for use during map initialization.
+   Called via BG_GetWeaponIndexForName callback during level.initializing. */
+extern qboolean itemRegistered[];
+extern int G_XModelBad(int modelIndex);
+extern void G_OverrideModel(int modelIndex, const char *replacement);
+extern int G_GetHintStringIndex(int *indexOut, const char *hintString);
+
+void G_RegisterWeapon(int weapIndex)
+{
+    WeaponDef *weapDef;
+    int modelIndex;
+
+    itemRegistered[weapIndex] = 1;
+
+    level.bRegisterItems = 1;
+    level.registerWeapons = 1;
+
+    weapDef = BG_GetWeaponDef(weapIndex);
+
+    if (weapDef->szUseHintString && weapDef->szUseHintString[0] &&
+        !G_GetHintStringIndex(&weapDef->iUseHintStringIndex, weapDef->szUseHintString))
+    {
+        Com_Error(1, "Too many different hintstring values on weapons. Max allowed is %i different strings", 12);
+    }
+
+    if (weapDef->dropHintString && weapDef->dropHintString[0] &&
+        !G_GetHintStringIndex(&weapDef->dropHintStringIndex, weapDef->dropHintString))
+    {
+        Com_Error(1, "Too many different hintstring values on weapons. Max allowed is %i different strings", 12);
+    }
+
+    modelIndex = G_ModelIndex(weapDef->szWorldModel);
+    if (modelIndex && G_XModelBad(modelIndex))
+        G_OverrideModel(modelIndex, "xmodel/defaultweapon");
+
+    G_ModelIndex(weapDef->szProjectileModel);
+}

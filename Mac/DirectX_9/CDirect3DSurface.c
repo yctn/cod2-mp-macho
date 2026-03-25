@@ -208,6 +208,10 @@ void CDirect3DSurface_UpdateOpenGLSurfaceObject(const CDirect3DSurface *_this, i
     if (!surface->surfaceMemory)
         return;
 
+    /* Validate GL format is set before uploading */
+    if (!surface->openGLInternalFormat || !surface->openGLFormat)
+        return;
+
     if (surface->surfaceType == 1)
         target = surface->cubemapTarget;
     else
