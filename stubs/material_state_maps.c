@@ -24,6 +24,7 @@ const MtlStateMapBitName s_alphaTestBitNames[] = {
 
 /* Blend operations (D3DBLENDOP) */
 const MtlStateMapBitName s_blendOpRgbBitNames[] = {
+    {"Disable",     0x00},
     {"Add",         0x00},
     {"Subtract",    0x40},
     {"RevSubtract", 0x80},
@@ -64,6 +65,7 @@ const MtlStateMapBitName s_dstBlendRgbBitNames[] = {
 };
 
 const MtlStateMapBitName s_blendOpAlphaBitNames[] = {
+    {"Disable",     0x00},
     {"Add",         0x00},
     {"Subtract",    0x40},
     {"RevSubtract", 0x80},
@@ -73,6 +75,7 @@ const MtlStateMapBitName s_blendOpAlphaBitNames[] = {
 };
 
 const MtlStateMapBitName s_srcBlendAlphaBitNames[] = {
+    {"Disable",        0x000},
     {"Zero",           0x000},
     {"One",            0x100},
     {"SrcAlpha",       0x400},
@@ -132,8 +135,9 @@ const MtlStateMapBitName s_colorWriteAlphaBitNames[] = {
 
 /* Fog */
 const MtlStateMapBitName s_fogBitNames[] = {
-    {"Enable",  0x00},
-    {"Disable", 0x01},
+    {"Enable",      0x00},
+    {"Disable",     0x01},
+    {"passthrough", 0x00},
     {NULL, 0}
 };
 
@@ -147,6 +151,7 @@ const MtlStateMapBitName s_polygonOffsetBitNames[] = {
 
 /* Wireframe */
 const MtlStateMapBitName s_wireframeBitNames[] = {
+    {"Disable", 0x00},
     {"false", 0x00},
     {"true",  0x01},
     {NULL, 0}
@@ -164,6 +169,52 @@ const MtlStateMapBitGroup s_stateMapSrcBitGroup[] = {
     {"mtlDepthWrite",    s_depthWriteBitNames,      {0x04, 0}},
     {"mtlPolygonOffset", s_polygonOffsetBitNames,   {0x30, 0}},
     {"mtlCullFace",      s_cullFaceBitNames,        {0xC0, 0}},
+    {NULL, NULL, {0, 0}}
+};
+
+/* Destination state map bit groups for Material_LoadPassStateMap */
+const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[] = {
+    {"alphaTest", s_alphaTestBitNames, {0x30, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[] = {
+    {"blendFunc", s_srcBlendRgbBitNames, {0xFF00, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[] = {
+    {"separateAlphaBlendFunc", s_srcBlendAlphaBitNames, {0xFF00, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[] = {
+    {"cullFace", s_cullFaceBitNames, {0xC0, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstDepthTestBitGroup[] = {
+    {"depthTest", s_depthTestBitNames, {0x70, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[] = {
+    {"depthWrite", s_depthWriteBitNames, {0x04, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[] = {
+    {"colorWrite", s_colorWriteRgbBitNames, {0x03, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstFogBitGroup[] = {
+    {"fog", s_fogBitNames, {0x01, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[] = {
+    {"polygonOffset", s_polygonOffsetBitNames, {0x30, 0}},
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[] = {
+    {"stencil", s_alphaTestBitNames, {0, 0}}, /* placeholder */
+    {NULL, NULL, {0, 0}}
+};
+const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[] = {
+    {"wireframe", s_wireframeBitNames, {0x01, 0}},
     {NULL, NULL, {0, 0}}
 };
 
