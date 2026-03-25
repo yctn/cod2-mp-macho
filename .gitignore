@@ -1,6 +1,44 @@
+# Build artifacts
 *.o
+cod2_linux
+main
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Toolchain and reference (large external repos)
+toolchain/
+utils/ref/
+utils/binary.x86
+utils/decomp_compare
+utils/__pycache__/
+utils/decomp/__pycache__/
+
+# Generated/temporary files
+output/
+common_types.h.manual
+cl_offsets_tmp
 *.log
-*.err
-*.bak
-*.out
+
+# Helper scripts (not part of decompilation source)
+convert_data_s.py
+convert_offsets.py
+convert_snd.py
+inline_strings.py
+rename_storage.py
+strip_asm.py
+test.py
+fix_string_addrs.py
+fix_str_offsets.py
+utils/dump_struct.py
+utils/extract_static_data.py
+utils/fix_addresses.py
+utils/fix_data_pointers.py
+utils/fix_hardcoded_addrs.py
+utils/fix_jump_tables.py
+utils/scan_macho_ptrs.py
+
+# Misc
 *.dat
+servercache.dat
