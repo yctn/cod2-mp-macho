@@ -264,8 +264,11 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
             SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
             sdl_gl_width, sdl_gl_height,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
-        if (!sdl_gl_window)
+        if (!sdl_gl_window) {
+            fprintf(stderr, "SDL_CreateWindow FAILED: %s\n", SDL_GetError());
             return (ContextRef)0;
+        }
+        fprintf(stderr, "Game window created: %dx%d\n", sdl_gl_width, sdl_gl_height);
         /* Exit immediately on window close regardless of game loop speed */
         SDL_AddEventWatch(sdl_quit_watch, NULL);
     }
