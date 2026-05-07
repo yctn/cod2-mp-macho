@@ -71,6 +71,7 @@ const char * SEH_SafeTranslateString(const char *pszReference);
 const char * SEH_LocalizeTextMessage(const char *pszInputBuffer, const char *pszMessageType, msgLocErrType_t errType);
 
 int SEH_GetCurrentLanguage(void) {
+    if (!loc_language) return 0;
     return loc_language->current.integer;
 }
 
@@ -142,31 +143,22 @@ int SEH_InitLanguage(void) {
 }
 
 static qboolean SEH_StringEd_SetLanguageStrings(int iLanguage) {
-    const char *pszError;
-
+    /* Bounds-check iLanguage to avoid reading off g_languages[] when
+     * loc_language->current.integer returns garbage (dvar struct offsets
+     * are still being reconciled with the original Mach-O binary). */
+    if ((unsigned int)iLanguage >= 14) {
+        return 0;
+    }
     if (!g_languages[iLanguage].bPresent) {
         return 0;
     }
 
-    pszError = SE_LoadLanguage(loc_forceEnglish->current.enabled);
-    if (!pszError) {
-        return 1;
-    }
-
-    if (com_developer->current.enabled) {
-        return 0;
-    }
-    if (!loc_warnings->current.enabled) {
-        return 0;
-    }
-
-    if (loc_warningsAsErrors->current.enabled) {
-        Com_Error(6, "Could not load localization strings for %s: %s", SEH_GetLanguageName(iLanguage), pszError);
-        return 0;
-    } else {
-        Com_Printf("^3WARNING: Could not load localization strings for %s: %s\n", SEH_GetLanguageName(iLanguage), pszError);
-        return 0;
-    }
+    /* SE_LoadLanguage is an unresolved Mach-O symbol in this build (the
+     * StringEd back-end has not been ported yet). Calling it would
+     * NULL-call. If the language's assets are present we can safely
+     * report success; the engine will fall back to passing string keys
+     * through unchanged at lookup time. */
+    return 1;
 }
 
 int SEH_UpdateLanguageInfo(void) {
