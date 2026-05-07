@@ -81,7 +81,12 @@ extern void * Com_Memcpy(void *dest, const void *src, size_t count);
 extern void SND_StopSounds(int flags);
 extern void FS_ShutdownServerReferencedIwds(void);
 extern int I_strnicmp(const char *s1, const char *s2, int n);
+extern int I_strncmp(const char *s1, const char *s2, int n);
 extern char * stricmp(const char *s1, const char *s2);
+extern qboolean SEH_GetLanguageIndexForName(const char *pszLanguageName, int *piLanguageIndex);
+extern const char * SEH_GetLanguageName(const int iLanguage);
+extern int isalpha(int c);
+extern void qsort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
 extern void * Z_MallocInternal(int size);
 extern char ** Sys_ListFiles(const char *directory, const char *extension, const char *filter, int *numfiles, int wantSubs);
 extern void Sys_FreeFileList(char **list);
@@ -1342,6 +1347,7 @@ extern unsigned int Com_BlockChecksumKey(const void *buffer, int length, int key
 #define MAX_FILEHASH_SIZE 1024
 #define MAX_FOUND_FILES 0x1000
 #define MAX_ZPATH 256
+#define MAX_LANGUAGES 14
 
 /* ---------------------------------------------------------------
  * FS_BuildOSPath
@@ -1508,21 +1514,97 @@ static void FS_AddSearchPath(searchpath_t *search)
 }
 
 /* ---------------------------------------------------------------
+ * FS_PathCmp
+ * Case-insensitive path compare with '\\' and ':' folded to '/'.
+ * --------------------------------------------------------------- */
+static int FS_PathCmp(const char *s1, const char *s2)
+{
+    int c1, c2;
+    do {
+        c1 = (unsigned char)*s1++;
+        c2 = (unsigned char)*s2++;
+        if (c1 >= 'a' && c1 <= 'z') c1 -= ('a' - 'A');
+        if (c2 >= 'a' && c2 <= 'z') c2 -= ('a' - 'A');
+        if (c1 == '\\' || c1 == ':') c1 = '/';
+        if (c2 == '\\' || c2 == ':') c2 = '/';
+        if (c1 < c2) return -1;
+        if (c1 > c2) return  1;
+    } while (c1);
+    return 0;
+}
+
+/* ---------------------------------------------------------------
+ * IwdFileLanguage
+ * Reads the language token from a "localized_<lang>_*.iwd" basename.
+ * Uses a flipped pair of static buffers so two consecutive callers
+ * (e.g. inside a comparator) get distinct results.
+ * --------------------------------------------------------------- */
+static const char * IwdFileLanguage(const char *instr)
+{
+    static qboolean flip;
+    static char Array64[128];
+    int i;
+
+    flip ^= 1u;
+    if (strlen(instr) >= 10) {
+        Com_Memset(&Array64[64 * flip], 0, 64);
+        for (i = 10; i < 64 && instr[i] != '\0' && isalpha(instr[i]); i++) {
+            Array64[(64 * flip) + i - 10] = instr[i];
+        }
+        return &Array64[64 * flip];
+    }
+
+    Array64[64 * flip] = 0;
+    return &Array64[64 * flip];
+}
+
+/* ---------------------------------------------------------------
+ * iwdsort
+ * Sort comparator: non-localized first, then English-localized,
+ * then other-localized. The "localized_" prefix is temporarily
+ * blanked to 10 spaces by the caller so this comparator detects
+ * localized entries via that marker.
+ * --------------------------------------------------------------- */
+static int iwdsort(const void *cmp1_arg, const void *cmp2_arg)
+{
+    const char *cmp1 = *(const char * const *)cmp1_arg;
+    const char *cmp2 = *(const char * const *)cmp2_arg;
+
+    if (I_strncmp(cmp1, "          ", 10) || I_strncmp(cmp2, "          ", 10))
+        return FS_PathCmp(cmp1, cmp2);
+
+    if (I_stricmp(IwdFileLanguage(cmp1), "english")) {
+        if (!I_stricmp(IwdFileLanguage(cmp2), "english"))
+            return 1;
+    } else {
+        if (I_stricmp(IwdFileLanguage(cmp2), "english"))
+            return -1;
+    }
+    return FS_PathCmp(cmp1, cmp2);
+}
+
+/* ---------------------------------------------------------------
  * FS_AddIwdFilesForGameDirectory
- * Scans 'path/dir' for *.iwd files and adds them as search paths
+ * Scans 'path/dir' for *.iwd files and adds them as search paths.
+ * Ported from CoD2rev_Server (com_files.cpp), adapted to the
+ * decompiled struct layout (pack, bLocalized, Z_MallocInternal).
  * --------------------------------------------------------------- */
 static void FS_AddIwdFilesForGameDirectory(const char *path, const char *dir)
 {
+    searchpath_t *search;
+    int           langindex;
     int           numfiles;
-    int           i;
+    const char   *language;
+    qboolean      islocalized;
+    int           i, j;
     pack_t       *pack;
     char        **iwdfiles;
     char          iwdfile[256];
+    char         *sorted[MAX_IWDFILES];
+    qboolean      languagesListed;
 
     FS_BuildOSPath(path, dir, "", iwdfile);
-    /* strip trailing slash */
     iwdfile[strlen(iwdfile) - 1] = '\0';
-
     iwdfiles = Sys_ListFiles(iwdfile, "iwd", NULL, &numfiles, 0);
 
     if (numfiles > MAX_IWDFILES) {
@@ -1532,23 +1614,60 @@ static void FS_AddIwdFilesForGameDirectory(const char *path, const char *dir)
     }
 
     for (i = 0; i < numfiles; i++) {
-        FS_BuildOSPath(path, dir, iwdfiles[i], iwdfile);
+        sorted[i] = iwdfiles[i];
+        if (!I_strncmp(sorted[i], "localized_", 10)) {
+            Com_Memcpy(sorted[i], "          ", 10);
+        }
+    }
 
-        pack = FS_LoadZipFile(iwdfile, iwdfiles[i]);
+    qsort(sorted, numfiles, sizeof(intptr_t), iwdsort);
+
+    languagesListed = 0;
+
+    for (i = 0; i < numfiles; i++) {
+        islocalized = 0;
+        langindex   = 0;
+
+        if (!I_strncmp(sorted[i], "          ", 10)) {
+            if (fs_ignoreLocalized->current.enabled)
+                continue;
+
+            Com_Memcpy(sorted[i], "localized_", 10);
+            language = IwdFileLanguage(sorted[i]);
+            if (!language[0]) {
+                Com_Printf("WARNING: Localized assets iwd file %s/%s/%s has invalid name (no language specified). Proper naming convention is: localized_[language]_iwd#.iwd\n",
+                           path, dir, sorted[i]);
+                continue;
+            }
+            if (!SEH_GetLanguageIndexForName(language, &langindex)) {
+                Com_Printf("WARNING: Localized assets iwd file %s/%s/%s has invalid name (bad language name specified). Proper naming convention is: localized_[language]_iwd#.iwd\n",
+                           path, dir, sorted[i]);
+                if (!languagesListed) {
+                    Com_Printf("Supported languages are:\n");
+                    for (j = 0; j < MAX_LANGUAGES; j++) {
+                        Com_Printf("    %s\n", SEH_GetLanguageName(j));
+                    }
+                    languagesListed = 1;
+                }
+                continue;
+            }
+            islocalized = 1;
+        }
+
+        FS_BuildOSPath(path, dir, sorted[i], iwdfile);
+        pack = FS_LoadZipFile(iwdfile, sorted[i]);
         if (!pack)
             continue;
 
         I_strncpyz(pack->iwdGamename, dir, sizeof(pack->iwdGamename));
 
-        {
-            searchpath_t *search = (searchpath_t *)Z_MallocInternal(sizeof(searchpath_t));
-            Com_Memset(search, 0, sizeof(searchpath_t));
-            search->pack        = pack;
-            search->bLocalized  = 0;
-            search->language    = 0;
-            search->next        = (int)(uintptr_t)fs_searchpaths;
-            fs_searchpaths      = search;
-        }
+        search = (searchpath_t *)Z_MallocInternal(sizeof(searchpath_t));
+        Com_Memset(search, 0, sizeof(searchpath_t));
+        search->pack       = pack;
+        search->bLocalized = islocalized;
+        search->language   = langindex;
+        search->next       = (int)(uintptr_t)fs_searchpaths;
+        fs_searchpaths     = search;
     }
 
     Sys_FreeFileList(iwdfiles);
